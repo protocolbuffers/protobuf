@@ -111,6 +111,7 @@ void Printer::Print(const std::map<string, string>& variables,
   int size = strlen(text);
   int pos = 0;  // The number of bytes we've written so far.
   substitutions_.clear();
+  line_start_variables_.clear();
 
   for (int i = 0; i < size; i++) {
     if (text[i] == '\n') {
@@ -122,6 +123,7 @@ void Printer::Print(const std::map<string, string>& variables,
       // Setting this true will cause the next WriteRaw() to insert an indent
       // first.
       at_start_of_line_ = true;
+      line_start_variables_.clear();
 
     } else if (text[i] == variable_delimiter_) {
       // Saw the start of a variable name.
@@ -148,12 +150,15 @@ void Printer::Print(const std::map<string, string>& variables,
         if (iter == variables.end()) {
           GOOGLE_LOG(DFATAL) << " Undefined variable: " << varname;
         } else {
-          size_t begin = offset_;
+          if (at_start_of_line_ && iter->second.empty()) {
+            line_start_variables_.push_back(varname);
+          }
           WriteRaw(iter->second.data(), iter->second.size());
           std::pair<std::map<string, std::pair<size_t, size_t> >::iterator,
                     bool>
-              inserted = substitutions_.insert(
-                  std::make_pair(varname, std::make_pair(begin, offset_)));
+              inserted = substitutions_.insert(std::make_pair(
+                  varname,
+                  std::make_pair(offset_ - iter->second.size(), offset_)));
           if (!inserted.second) {
             // This variable was used multiple times.  Make its span have
             // negative length so we can detect it if it gets used in an
@@ -319,9 +324,28 @@ void Printer::WriteRaw(const char* data, int size) {
   if (at_start_of_line_ && (size > 0) && (data[0] != '\n')) {
     // Insert an indent.
     at_start_of_line_ = false;
-    WriteRaw(indent_.data(), indent_.size());
+    CopyToBuffer(indent_.data(), indent_.size());
     if (failed_) return;
+    // Fix up empty variables (e.g., "{") that should be annotated as
+    // coming after the indent.
+    for (std::vector<string>::iterator i = line_start_variables_.begin();
+         i != line_start_variables_.end(); ++i) {
+      substitutions_[*i].first += indent_.size();
+      substitutions_[*i].second += indent_.size();
+    }
   }
+
+  // If we're going to write any data, clear line_start_variables_, since
+  // we've either updated them in the block above or they no longer refer to
+  // the current line.
+  line_start_variables_.clear();
+
+  CopyToBuffer(data, size);
+}
+
+void Printer::CopyToBuffer(const char* data, int size) {
+  if (failed_) return;
+  if (size == 0) return;
 
   while (size > buffer_size_) {
     // Data exceeds space in the buffer.  Copy what we can and request a

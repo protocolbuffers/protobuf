@@ -439,3 +439,18 @@ message TestHugeFieldNumbersLite {
 extend TestHugeFieldNumbersLite {
   optional TestAllTypesLite test_all_types_lite = 536860000;
 }
+
+message TestOneofParsingLite {
+  oneof oneof_field {
+    int32 oneof_int32 = 1;
+    TestAllTypesLite oneof_submessage = 2;
+    string oneof_string = 3;
+    bytes oneof_bytes = 4 [default = "default bytes"];
+    string oneof_string_cord = 5 [ctype = CORD, default = "default Cord"];
+    bytes oneof_bytes_cord = 6 [ctype = CORD];
+    string oneof_string_string_piece = 7 [ctype = STRING_PIECE];
+    bytes oneof_bytes_string_piece = 8
+        [ctype = STRING_PIECE, default = "default StringPiece"];
+    V2EnumLite oneof_enum = 9;
+  }
+}

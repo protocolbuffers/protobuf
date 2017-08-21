@@ -438,6 +438,11 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // SpaceUsed()).
   size_t SpaceUsedExcludingSelfLong() const;
 
+  // This method just calls SpaceUsedExcludingSelfLong() but it can not be
+  // inlined because the definition of SpaceUsedExcludingSelfLong() is not
+  // included in lite runtime and when an inline method refers to it MSVC
+  // will complain about unresolved symbols when building the lite runtime
+  // as .dll.
   int SpaceUsedExcludingSelf() const;
 
  private:

@@ -42,12 +42,23 @@ declare -a RUNTIME_PROTO_FILES=(\
   google/protobuf/wrappers.proto)
 
 declare -a COMPILER_PROTO_FILES=(\
-  google/protobuf/compiler/plugin.proto \
-  google/protobuf/compiler/profile.proto \
-)
+  google/protobuf/compiler/plugin.proto)
 
 CORE_PROTO_IS_CORRECT=0
 PROCESS_ROUND=1
+BOOTSTRAP_PROTOC=""
+while [ $# -gt 0 ]; do
+  case $1 in
+    --bootstrap_protoc)
+      BOOTSTRAP_PROTOC=$2
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
 TMP=$(mktemp -d)
 echo "Updating descriptor protos..."
 while [ $CORE_PROTO_IS_CORRECT -ne 1 ]
@@ -55,14 +66,20 @@ do
   echo "Round $PROCESS_ROUND"
   CORE_PROTO_IS_CORRECT=1
 
-  make $@ protoc
-  if test $? -ne 0; then
-    echo "Failed to build protoc."
-    exit 1
+  if [ "$BOOTSTRAP_PROTOC" != "" ]; then
+    PROTOC=$BOOTSTRAP_PROTOC
+    BOOTSTRAP_PROTOC=""
+  else
+    make $@ protoc
+    if test $? -ne 0; then
+      echo "Failed to build protoc."
+      exit 1
+    fi
+    PROTOC="./protoc"
   fi
 
-  ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
-  ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP ${COMPILER_PROTO_FILES[@]}
+  $PROTOC --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
+  $PROTOC --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP ${COMPILER_PROTO_FILES[@]}
 
   for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]} ${COMPILER_PROTO_FILES[@]}; do
     BASE_NAME=${PROTO_FILE%.*}

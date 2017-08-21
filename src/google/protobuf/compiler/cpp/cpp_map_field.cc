@@ -150,6 +150,7 @@ GeneratePrivateMembers(io::Printer* printer) const {
                    "    $map_classname$;\n");
   }
   printer->Print(variables_,
+                 "private:\n"
                  "::google::protobuf::internal::MapField$lite$<\n"
                  "    $map_classname$,\n"
                  "    $key_cpp$, $val_cpp$,\n"
@@ -161,11 +162,15 @@ GeneratePrivateMembers(io::Printer* printer) const {
 
 void MapFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
-  printer->Print(variables_,
+  printer->Print(
+      variables_,
       "$deprecated_attr$const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
-      "    $name$() const;\n"
-      "$deprecated_attr$::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
-      "    mutable_$name$();\n");
+      "    $name$() const;\n");
+  printer->Annotate("name", descriptor_);
+  printer->Print(variables_,
+                 "$deprecated_attr$::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
+                 "    ${$mutable_$name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void MapFieldGenerator::

@@ -123,6 +123,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/arenastring_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_move_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/metadata_test.cc
@@ -160,7 +161,6 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128_unittest.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/once_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/status_test.cc
@@ -200,7 +200,6 @@ target_link_libraries(tests libprotoc libprotobuf gmock_main)
 
 set(test_plugin_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/test_plugin.cc

@@ -13,8 +13,8 @@
  <date>2017-01-13</date>
  <time>16:06:07</time>
  <version>
-  <release>3.3.2</release>
-  <api>3.3.0</api>
+  <release>3.4.0</release>
+  <api>3.4.0</api>
  </version>
  <stability>
   <release>stable</release>
@@ -130,6 +130,22 @@ GA release.
     <api>stable</api>
    </stability>
    <date>2017-06-21</date>
+   <time>15:33:07</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+GA release.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.4.0</release>
+    <api>3.4.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2017-08-16</date>
    <time>15:33:07</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>

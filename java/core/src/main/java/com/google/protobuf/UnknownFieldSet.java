@@ -715,7 +715,7 @@ public final class UnknownFieldSet implements MessageLite {
    * @see UnknownFieldSet
    */
   public static final class Field {
-    Field() {}
+    private Field() {}
 
     /** Construct a new {@link Builder}. */
     public static Builder newBuilder() {

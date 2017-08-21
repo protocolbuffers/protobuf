@@ -663,7 +663,7 @@ TEST_F(ParseMessageTest, ReservedRange) {
   ExpectParsesTo(
     "message TestMessage {\n"
     "  required int32 foo = 1;\n"
-    "  reserved 2, 15, 9 to 11, 3;\n"
+    "  reserved 2, 15, 9 to 11, 3, 20 to max;\n"
     "}\n",
 
     "message_type {"
@@ -673,6 +673,29 @@ TEST_F(ParseMessageTest, ReservedRange) {
     "  reserved_range { start:15  end:16        }"
     "  reserved_range { start:9   end:12        }"
     "  reserved_range { start:3   end:4         }"
+    "  reserved_range { start:20  end:536870912 }"
+    "}");
+}
+
+TEST_F(ParseMessageTest, ReservedRangeOnMessageSet) {
+  ExpectParsesTo(
+    "message TestMessage {\n"
+    "  option message_set_wire_format = true;\n"
+    "  reserved 20 to max;\n"
+    "}\n",
+
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  options {"
+    "    uninterpreted_option {"
+    "      name {"
+    "        name_part: \"message_set_wire_format\""
+    "        is_extension: false"
+    "      }"
+    "      identifier_value: \"true\""
+    "    }"
+    "  }"
+    "  reserved_range { start:20  end:2147483647 }"
     "}");
 }
 
@@ -703,6 +726,30 @@ TEST_F(ParseMessageTest, ExtensionRange) {
     "}");
 }
 
+TEST_F(ParseMessageTest, ExtensionRangeWithOptions) {
+  ExpectParsesTo(
+    "message TestMessage {\n"
+    "  extensions 10 to 19 [(i) = 5];\n"
+    "}\n",
+
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  extension_range {"
+    "    start:10"
+    "    end:20"
+    "    options {"
+    "      uninterpreted_option {"
+    "        name {"
+    "          name_part: \"i\""
+    "          is_extension: true"
+    "        }"
+    "        positive_int_value: 5"
+    "      }"
+    "    }"
+    "  }"
+    "}");
+}
+
 TEST_F(ParseMessageTest, CompoundExtensionRange) {
   ExpectParsesTo(
     "message TestMessage {\n"
@@ -716,6 +763,82 @@ TEST_F(ParseMessageTest, CompoundExtensionRange) {
     "  extension_range { start:9   end:12        }"
     "  extension_range { start:100 end:536870912 }"
     "  extension_range { start:3   end:4         }"
+    "}");
+}
+
+TEST_F(ParseMessageTest, CompoundExtensionRangeWithOptions) {
+  ExpectParsesTo(
+    "message TestMessage {\n"
+    "  extensions 2, 15, 9 to 11, 100 to max, 3 [(i) = 5];\n"
+    "}\n",
+
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  extension_range {"
+    "    start:2"
+    "    end:3"
+    "    options {"
+    "      uninterpreted_option {"
+    "        name {"
+    "          name_part: \"i\""
+    "          is_extension: true"
+    "        }"
+    "        positive_int_value: 5"
+    "      }"
+    "    }"
+    "  }"
+    "  extension_range {"
+    "    start:15"
+    "    end:16"
+    "    options {"
+    "      uninterpreted_option {"
+    "        name {"
+    "          name_part: \"i\""
+    "          is_extension: true"
+    "        }"
+    "        positive_int_value: 5"
+    "      }"
+    "    }"
+    "  }"
+    "  extension_range {"
+    "    start:9"
+    "    end:12"
+    "    options {"
+    "      uninterpreted_option {"
+    "        name {"
+    "          name_part: \"i\""
+    "          is_extension: true"
+    "        }"
+    "        positive_int_value: 5"
+    "      }"
+    "    }"
+    "  }"
+    "  extension_range {"
+    "    start:100"
+    "    end:536870912"
+    "    options {"
+    "      uninterpreted_option {"
+    "        name {"
+    "          name_part: \"i\""
+    "          is_extension: true"
+    "        }"
+    "        positive_int_value: 5"
+    "      }"
+    "    }"
+    "  }"
+    "  extension_range {"
+    "    start:3"
+    "    end:4"
+    "    options {"
+    "      uninterpreted_option {"
+    "        name {"
+    "          name_part: \"i\""
+    "          is_extension: true"
+    "        }"
+    "        positive_int_value: 5"
+    "      }"
+    "    }"
+    "  }"
     "}");
 }
 
@@ -1368,12 +1491,12 @@ TEST_F(ParseErrorTest, EnumValueMissingNumber) {
 // -------------------------------------------------------------------
 // Reserved field number errors
 
-TEST_F(ParseErrorTest, ReservedMaxNotAllowed) {
+TEST_F(ParseErrorTest, ReservedStandaloneMaxNotAllowed) {
   ExpectHasErrors(
     "message Foo {\n"
-    "  reserved 10 to max;\n"
+    "  reserved max;\n"
     "}\n",
-    "1:17: Expected integer.\n");
+    "1:11: Expected field name or number range.\n");
 }
 
 TEST_F(ParseErrorTest, ReservedMixNameAndNumber) {

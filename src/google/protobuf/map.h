@@ -932,12 +932,16 @@ class Map {
 
  public:
   // Iterators
-  class const_iterator
-      : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
-                             const value_type*, const value_type&> {
+  class const_iterator {
     typedef typename InnerMap::const_iterator InnerIt;
 
    public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::value_type value_type;
+    typedef ptrdiff_t difference_type;
+    typedef const value_type* pointer;
+    typedef const value_type& reference;
+
     const_iterator() {}
     explicit const_iterator(const InnerIt& it) : it_(it) {}
 
@@ -963,10 +967,16 @@ class Map {
     InnerIt it_;
   };
 
-  class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
+  class iterator {
     typedef typename InnerMap::iterator InnerIt;
 
    public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::value_type value_type;
+    typedef ptrdiff_t difference_type;
+    typedef value_type* pointer;
+    typedef value_type& reference;
+
     iterator() {}
     explicit iterator(const InnerIt& it) : it_(it) {}
 

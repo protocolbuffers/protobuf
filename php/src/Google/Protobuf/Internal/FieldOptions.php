@@ -39,13 +39,14 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     /**
      * The jstype option determines the JavaScript type used for values of the
      * field.  The option is permitted only for 64 bit integral and fixed types
-     * (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
-     * represented as JavaScript strings.  This avoids loss of precision that can
-     * happen when a large value is converted to a floating point JavaScript
-     * numbers.  Specifying JS_NUMBER for the jstype causes the generated
-     * JavaScript code to use the JavaScript "number" type instead of strings.
-     * This option is an enum to permit additional types to be added,
-     * e.g. goog.math.Integer.
+     * (int64, uint64, sint64, fixed64, sfixed64).  A field with jstype JS_STRING
+     * is represented as JavaScript string, which avoids loss of precision that
+     * can happen when a large value is converted to a floating point JavaScript.
+     * Specifying JS_NUMBER for the jstype causes the generated JavaScript code to
+     * use the JavaScript "number" type.  The behavior of the default option
+     * JS_NORMAL is implementation dependent.
+     * This option is an enum to permit additional types to be added, e.g.
+     * goog.math.Integer.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
      */
@@ -192,13 +193,14 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     /**
      * The jstype option determines the JavaScript type used for values of the
      * field.  The option is permitted only for 64 bit integral and fixed types
-     * (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
-     * represented as JavaScript strings.  This avoids loss of precision that can
-     * happen when a large value is converted to a floating point JavaScript
-     * numbers.  Specifying JS_NUMBER for the jstype causes the generated
-     * JavaScript code to use the JavaScript "number" type instead of strings.
-     * This option is an enum to permit additional types to be added,
-     * e.g. goog.math.Integer.
+     * (int64, uint64, sint64, fixed64, sfixed64).  A field with jstype JS_STRING
+     * is represented as JavaScript string, which avoids loss of precision that
+     * can happen when a large value is converted to a floating point JavaScript.
+     * Specifying JS_NUMBER for the jstype causes the generated JavaScript code to
+     * use the JavaScript "number" type.  The behavior of the default option
+     * JS_NORMAL is implementation dependent.
+     * This option is an enum to permit additional types to be added, e.g.
+     * goog.math.Integer.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
      * @return int
@@ -211,13 +213,14 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     /**
      * The jstype option determines the JavaScript type used for values of the
      * field.  The option is permitted only for 64 bit integral and fixed types
-     * (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
-     * represented as JavaScript strings.  This avoids loss of precision that can
-     * happen when a large value is converted to a floating point JavaScript
-     * numbers.  Specifying JS_NUMBER for the jstype causes the generated
-     * JavaScript code to use the JavaScript "number" type instead of strings.
-     * This option is an enum to permit additional types to be added,
-     * e.g. goog.math.Integer.
+     * (int64, uint64, sint64, fixed64, sfixed64).  A field with jstype JS_STRING
+     * is represented as JavaScript string, which avoids loss of precision that
+     * can happen when a large value is converted to a floating point JavaScript.
+     * Specifying JS_NUMBER for the jstype causes the generated JavaScript code to
+     * use the JavaScript "number" type.  The behavior of the default option
+     * JS_NORMAL is implementation dependent.
+     * This option is an enum to permit additional types to be added, e.g.
+     * goog.math.Integer.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
      * @param int $var

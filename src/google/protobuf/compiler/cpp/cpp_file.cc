@@ -126,11 +126,19 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
         new EnumGenerator(file->enum_type(i), options));
     enum_generators_.push_back(enum_generators_owner_[i].get());
   }
+  for (int i = 0; i < enum_generators_.size(); i++) {
+    enum_generators_[i]->index_in_metadata_ = i;
+  }
 
   for (int i = 0; i < file->service_count(); i++) {
     service_generators_owner_[i].reset(
         new ServiceGenerator(file->service(i), options));
     service_generators_.push_back(service_generators_owner_[i].get());
+  }
+  if (HasGenericServices(file_, options_)) {
+    for (int i = 0; i < service_generators_.size(); i++) {
+      service_generators_[i]->index_in_metadata_ = i;
+    }
   }
 
   for (int i = 0; i < file->extension_count(); i++) {
@@ -343,9 +351,10 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
                "::";
     }
     printer->Print(
-        "class $classname$DefaultTypeInternal : "
-        "public ::google::protobuf::internal::ExplicitlyConstructed<$parent$$classname$> "
-        "{\n",
+        "class $classname$DefaultTypeInternal {\n"
+        "public:\n"
+        " ::google::protobuf::internal::ExplicitlyConstructed<$parent$$classname$>\n"
+        "     _instance;\n",
         "parent", parent, "classname", message_generators_[i]->classname_);
     printer->Indent();
     message_generators_[i]->GenerateExtraDefaultFields(printer);
@@ -545,7 +554,8 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // table-driven parsing.
 
   printer->Print("PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::ParseTableField\n"
-                 "    const TableStruct::entries[] = {\n");
+                 "    const TableStruct::entries[] "
+                 "GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {\n");
   printer->Indent();
 
   std::vector<size_t> entries;
@@ -566,7 +576,8 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       "};\n"
       "\n"
       "PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::AuxillaryParseTableField\n"
-      "    const TableStruct::aux[] = {\n");
+      "    const TableStruct::aux[] "
+      "GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {\n");
   printer->Indent();
 
   std::vector<size_t> aux_entries;
@@ -585,7 +596,8 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   printer->Print(
       "};\n"
       "PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::ParseTable const\n"
-      "    TableStruct::schema[] = {\n");
+      "    TableStruct::schema[] "
+      "GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {\n");
   printer->Indent();
 
   size_t offset = 0;
@@ -597,7 +609,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   }
 
   if (message_generators_.empty()) {
-    printer->Print("{ NULL, NULL, 0, -1, -1, false },\n");
+    printer->Print("{ NULL, NULL, 0, -1, -1, -1, -1, NULL, false },\n");
   }
 
   printer->Outdent();
@@ -605,9 +617,47 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       "};\n"
       "\n");
 
+  if (!message_generators_.empty() && options_.table_driven_serialization) {
+    printer->Print(
+        "const ::google::protobuf::internal::FieldMetadata TableStruct::field_metadata[] "
+        "= {\n");
+    printer->Indent();
+    std::vector<int> field_metadata_offsets;
+    int idx = 0;
+    for (int i = 0; i < message_generators_.size(); i++) {
+      field_metadata_offsets.push_back(idx);
+      idx += message_generators_[i]->GenerateFieldMetadata(printer);
+    }
+    field_metadata_offsets.push_back(idx);
+    printer->Outdent();
+    printer->Print(
+        "};\n"
+        "const ::google::protobuf::internal::SerializationTable "
+        "TableStruct::serialization_table[] = {\n");
+    printer->Indent();
+    // We rely on the order we layout the tables to match the order we
+    // calculate them with FlattenMessagesInFile, so we check here that
+    // these match exactly.
+    std::vector<const Descriptor*> calculated_order =
+        FlattenMessagesInFile(file_);
+    GOOGLE_CHECK_EQ(calculated_order.size(), message_generators_.size());
+    for (int i = 0; i < message_generators_.size(); i++) {
+      GOOGLE_CHECK_EQ(calculated_order[i], message_generators_[i]->descriptor_);
+      printer->Print(
+          "{$num_fields$, TableStruct::field_metadata + $index$},\n",
+          "classname", message_generators_[i]->classname_, "num_fields",
+          SimpleItoa(field_metadata_offsets[i + 1] - field_metadata_offsets[i]),
+          "index", SimpleItoa(field_metadata_offsets[i]));
+    }
+    printer->Outdent();
+    printer->Print(
+        "};\n"
+        "\n");
+  }
   if (HasDescriptorMethods(file_, options_)) {
     if (!message_generators_.empty()) {
-      printer->Print("const ::google::protobuf::uint32 TableStruct::offsets[] = {\n");
+      printer->Print("const ::google::protobuf::uint32 TableStruct::offsets[] "
+                     "GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {\n");
       printer->Indent();
       std::vector<std::pair<size_t, size_t> > pairs;
       for (int i = 0; i < message_generators_.size(); i++) {
@@ -616,8 +666,8 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       printer->Outdent();
       printer->Print(
           "};\n"
-          "\n"
-          "static const ::google::protobuf::internal::MigrationSchema schemas[] = {\n");
+          "static const ::google::protobuf::internal::MigrationSchema schemas[] "
+          "GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {\n");
       printer->Indent();
       {
         int offset = 0;
@@ -648,7 +698,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       // we still need these symbols to exist
       printer->Print(
           // MSVC doesn't like empty arrays, so we add a dummy.
-          "const ::google::protobuf::uint32 TableStruct::offsets[] = { ~0u };\n"
+          "const ::google::protobuf::uint32 TableStruct::offsets[1] = {};\n"
           "static const ::google::protobuf::internal::MigrationSchema* schemas = NULL;\n"
           "static const ::google::protobuf::Message* const* "
           "file_default_instances = NULL;\n");
@@ -691,7 +741,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       printer->Print(
           "file_level_metadata[$index$].reflection = "
           "$parent$::$classname$::CreateReflection(file_level_metadata[$index$]"
-          ".descriptor, _$classname$_default_instance_.get_mutable());\n",
+          ".descriptor, _$classname$_default_instance_._instance.get_mutable());\n",
           "index", SimpleItoa(i), "parent",
           ClassName(message_generators_[i]->descriptor_->containing_type(),
                     false),
@@ -737,33 +787,6 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       "\n"
       "}  // namespace\n");
   }
-
-  // -----------------------------------------------------------------
-
-  // ShutdownFile():  Deletes descriptors, default instances, etc. on shutdown.
-  printer->Print(
-    "\n"
-    "void TableStruct::Shutdown() {\n");
-  printer->Indent();
-
-  for (int i = 0; i < message_generators_.size(); i++) {
-    message_generators_[i]->GenerateShutdownCode(printer);
-  }
-
-  if (HasDescriptorMethods(file_, options_)) {
-    for (int i = 0; i < message_generators_.size(); i++) {
-      if (!IsMapEntryMessage(message_generators_[i]->descriptor_)) continue;
-      printer->Print(
-          "delete file_level_metadata[$index$].reflection;\n",
-          "index", SimpleItoa(i));
-    }
-  }
-
-  printer->Outdent();
-  printer->Print(
-    "}\n\n");
-
-  // -----------------------------------------------------------------
 
   // Now generate the InitDefaultsImpl() function.
   printer->Print(
@@ -826,7 +849,8 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     string file_data;
     file_proto.SerializeToString(&file_data);
 
-    printer->Print("static const char descriptor[] = {\n");
+    printer->Print("static const char descriptor[] "
+                   "GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {\n");
     printer->Indent();
 
     if (file_data.size() > 66535) {
@@ -876,9 +900,6 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     printer->Print("$file_namespace$::AddDescriptors();\n", "file_namespace",
                    file_namespace);
   }
-
-  printer->Print(
-      "::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);\n");
 
   printer->Outdent();
   printer->Print(
@@ -1022,11 +1043,11 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
         "#include <google/protobuf/map.h>"
         "  // IWYU pragma: export\n");
     if (HasDescriptorMethods(file_, options_)) {
-      printer->Print(
-          "#include <google/protobuf/map_field_inl.h>\n");
+      printer->Print("#include <google/protobuf/map_entry.h>\n");
+      printer->Print("#include <google/protobuf/map_field_inl.h>\n");
     } else {
-      printer->Print(
-          "#include <google/protobuf/map_field_lite.h>\n");
+      printer->Print("#include <google/protobuf/map_entry_lite.h>\n");
+      printer->Print("#include <google/protobuf/map_field_lite.h>\n");
     }
   }
 
@@ -1093,7 +1114,7 @@ void FileGenerator::GenerateDependencyIncludes(io::Printer* printer) {
 
 void FileGenerator::GenerateGlobalStateFunctionDeclarations(
     io::Printer* printer) {
-  // Forward-declare the AddDescriptors, AssignDescriptors, and ShutdownFile
+  // Forward-declare the AddDescriptors, AssignDescriptors
   // functions, so that we can declare them to be friends of each class.
   printer->Print(
       "\n"
@@ -1104,12 +1125,14 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
       "  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];\n"
       "  static const ::google::protobuf::internal::ParseTable schema[];\n"
       "  static const ::google::protobuf::uint32 offsets[];\n"
+      "  static const ::google::protobuf::internal::FieldMetadata field_metadata[];\n"
+      "  static const ::google::protobuf::internal::SerializationTable "
+      "serialization_table[];\n"
       // The following function(s) need to be able to access private members of
       // the messages defined in the file. So we make them static members.
       // This is the internal implementation of InitDefaults. It should only
       // be called by InitDefaults which makes sure it will be called only once.
       "  static void InitDefaultsImpl();\n"
-      "  static void Shutdown();\n"
       "};\n"
       "void $dllexport_decl$AddDescriptors();\n"
       "void $dllexport_decl$InitDefaults();\n"
@@ -1199,6 +1222,13 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
   //     dependent.
 
   printer->Print("#if !PROTOBUF_INLINE_NOT_IN_HEADERS\n");
+  // TODO(gerbens) remove pragmas when gcc is no longer used. Current version
+  // of gcc fires a bogus error when compiled with strict-aliasing.
+  printer->Print(
+    "#ifdef __GNUC__\n"
+    "  #pragma GCC diagnostic push\n"
+    "  #pragma GCC diagnostic ignored \"-Wstrict-aliasing\"\n"
+    "#endif  // __GNUC__\n");
   // Generate class inline methods.
   for (int i = 0; i < message_generators_.size(); i++) {
     if (i > 0) {
@@ -1208,6 +1238,10 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
     message_generators_[i]->GenerateInlineMethods(printer,
                                                   /* is_inline = */ true);
   }
+  printer->Print(
+    "#ifdef __GNUC__\n"
+    "  #pragma GCC diagnostic pop\n"
+    "#endif  // __GNUC__\n");
   printer->Print("#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS\n");
 
   for (int i = 0; i < message_generators_.size(); i++) {
@@ -1224,13 +1258,8 @@ void FileGenerator::GenerateProto2NamespaceEnumSpecializations(
     io::Printer* printer) {
   // Emit GetEnumDescriptor specializations into google::protobuf namespace:
   if (HasEnumDefinitions(file_)) {
-    // The SWIG conditional is to avoid a null-pointer dereference
-    // (bug 1984964) in swig-1.3.21 resulting from the following syntax:
-    //   namespace X { void Y<Z::W>(); }
-    // which appears in GetEnumDescriptor() specializations.
     printer->Print(
         "\n"
-        "#ifndef SWIG\n"
         "namespace google {\nnamespace protobuf {\n"
         "\n");
     for (int i = 0; i < enum_generators_.size(); i++) {
@@ -1238,8 +1267,7 @@ void FileGenerator::GenerateProto2NamespaceEnumSpecializations(
     }
     printer->Print(
         "\n"
-        "}  // namespace protobuf\n}  // namespace google\n"
-        "#endif  // SWIG\n");
+        "}  // namespace protobuf\n}  // namespace google\n");
   }
 }
 

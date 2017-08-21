@@ -107,11 +107,12 @@ public abstract class GeneratedMessageLite<
   @SuppressWarnings("unchecked") // Guaranteed by runtime
   @Override
   public int hashCode() {
-    if (memoizedHashCode == 0) {
-      HashCodeVisitor visitor = new HashCodeVisitor();
-      visit(visitor, (MessageType) this);
-      memoizedHashCode = visitor.hashCode;
+    if (memoizedHashCode != 0) {
+      return memoizedHashCode;
     }
+    HashCodeVisitor visitor = new HashCodeVisitor();
+    visit(visitor, (MessageType) this);
+    memoizedHashCode = visitor.hashCode;
     return memoizedHashCode;
   }
 
@@ -331,7 +332,7 @@ public abstract class GeneratedMessageLite<
       if (isBuilt) {
         MessageType newInstance =
             (MessageType) instance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
-        newInstance.visit(MergeFromVisitor.INSTANCE, instance);
+        mergeFromInstance(newInstance, instance);
         instance = newInstance;
         isBuilt = false;
       }
@@ -386,8 +387,12 @@ public abstract class GeneratedMessageLite<
     /** All subclasses implement this. */
     public BuilderType mergeFrom(MessageType message) {
       copyOnWrite();
-      instance.visit(MergeFromVisitor.INSTANCE, message);
+      mergeFromInstance(instance, message);
       return (BuilderType) this;
+    }
+
+    private void mergeFromInstance(MessageType dest, MessageType src) {
+      dest.visit(MergeFromVisitor.INSTANCE, src);
     }
 
     @Override
@@ -1713,7 +1718,6 @@ public abstract class GeneratedMessageLite<
     Object visitOneofLong(boolean minePresent, Object mine, Object other);
     Object visitOneofString(boolean minePresent, Object mine, Object other);
     Object visitOneofByteString(boolean minePresent, Object mine, Object other);
-    Object visitOneofLazyMessage(boolean minePresent, Object mine, Object other);
     Object visitOneofMessage(boolean minePresent, Object mine, Object other);
     void visitOneofNotSet(boolean minePresent);
 
@@ -1721,7 +1725,6 @@ public abstract class GeneratedMessageLite<
      * Message fields use null sentinals.
      */
     <T extends MessageLite> T visitMessage(T mine, T other);
-    LazyFieldLite visitLazyMessage(LazyFieldLite mine, LazyFieldLite other);
 
     <T> ProtobufList<T> visitList(ProtobufList<T> mine, ProtobufList<T> other);
     BooleanList visitBooleanList(BooleanList mine, BooleanList other);
@@ -1865,14 +1868,6 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public Object visitOneofLazyMessage(boolean minePresent, Object mine, Object other) {
-      if (minePresent && mine.equals(other)) {
-        return mine;
-      }
-      throw NOT_EQUALS;
-    }
-
-    @Override
     public Object visitOneofMessage(boolean minePresent, Object mine, Object other) {
       if (minePresent && ((GeneratedMessageLite<?, ?>) mine).equals(this, (MessageLite) other)) {
         return mine;
@@ -1900,21 +1895,6 @@ public abstract class GeneratedMessageLite<
       ((GeneratedMessageLite<?, ?>) mine).equals(this, other);
 
       return mine;
-    }
-
-    @Override
-    public LazyFieldLite visitLazyMessage(
-        LazyFieldLite mine, LazyFieldLite other) {
-      if (mine == null && other == null) {
-        return null;
-      }
-      if (mine == null || other == null) {
-        throw NOT_EQUALS;
-      }
-      if (mine.equals(other)) {
-        return mine;
-      }
-      throw NOT_EQUALS;
     }
 
     @Override
@@ -2094,12 +2074,6 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public Object visitOneofLazyMessage(boolean minePresent, Object mine, Object other) {
-      hashCode = (53 * hashCode) + mine.hashCode();
-      return mine;
-    }
-
-    @Override
     public Object visitOneofMessage(boolean minePresent, Object mine, Object other) {
       return visitMessage((MessageLite) mine, (MessageLite) other);
     }
@@ -2120,18 +2094,6 @@ public abstract class GeneratedMessageLite<
         } else {
           protoHash = mine.hashCode();
         }
-      } else {
-        protoHash = 37;
-      }
-      hashCode = (53 * hashCode) + protoHash;
-      return mine;
-    }
-
-    @Override
-    public LazyFieldLite visitLazyMessage(LazyFieldLite mine, LazyFieldLite other) {
-      final int protoHash;
-      if (mine != null) {
-        protoHash = mine.hashCode();
       } else {
         protoHash = 37;
       }
@@ -2282,13 +2244,6 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public Object visitOneofLazyMessage(boolean minePresent, Object mine, Object other) {
-      LazyFieldLite lazy = minePresent ? (LazyFieldLite) mine : new LazyFieldLite();
-      lazy.merge((LazyFieldLite) other);
-      return lazy;
-    }
-
-    @Override
     public Object visitOneofMessage(boolean minePresent, Object mine, Object other) {
       if (minePresent) {
         return visitMessage((MessageLite) mine, (MessageLite) other);
@@ -2309,17 +2264,6 @@ public abstract class GeneratedMessageLite<
       }
 
       return mine != null ? mine : other;
-    }
-
-    @Override
-    public LazyFieldLite visitLazyMessage(LazyFieldLite mine, LazyFieldLite other) {
-      if (other != null) {
-        if (mine == null) {
-          mine = new LazyFieldLite();
-        }
-        mine.merge(other);
-      }
-      return mine;
     }
 
     @Override

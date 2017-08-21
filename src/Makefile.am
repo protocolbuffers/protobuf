@@ -48,8 +48,7 @@ nobase_dist_proto_DATA = google/protobuf/descriptor.proto      \
                          google/protobuf/timestamp.proto       \
                          google/protobuf/type.proto            \
                          google/protobuf/wrappers.proto        \
-                         google/protobuf/compiler/plugin.proto \
-                         google/protobuf/compiler/profile.proto
+                         google/protobuf/compiler/plugin.proto
 
 # Not sure why these don't get cleaned automatically.
 clean-local:
@@ -104,6 +103,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/api.pb.h                                       \
   google/protobuf/any.h                                          \
   google/protobuf/arena.h                                        \
+  google/protobuf/arena_impl.h                                   \
   google/protobuf/arenastring.h                                  \
   google/protobuf/descriptor_database.h                          \
   google/protobuf/descriptor.h                                   \
@@ -158,7 +158,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/parser.h                              \
   google/protobuf/compiler/plugin.h                              \
   google/protobuf/compiler/plugin.pb.h                           \
-  google/protobuf/compiler/profile.pb.h                          \
   google/protobuf/compiler/cpp/cpp_generator.h                   \
   google/protobuf/compiler/csharp/csharp_generator.h             \
   google/protobuf/compiler/csharp/csharp_names.h                 \
@@ -184,7 +183,7 @@ nobase_include_HEADERS =                                         \
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_lite_la_LDFLAGS = -version-info 13:2:0 -export-dynamic -no-undefined
+libprotobuf_lite_la_LDFLAGS = -version-info 14:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_lite_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf-lite.map
 EXTRA_libprotobuf_lite_la_DEPENDENCIES = libprotobuf-lite.map
@@ -222,6 +221,8 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
+  google/protobuf/generated_message_table_driven_lite.h        \
+  google/protobuf/generated_message_table_driven_lite.cc       \
   google/protobuf/message_lite.cc                              \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
@@ -231,7 +232,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 13:2:0 -export-dynamic -no-undefined
+libprotobuf_la_LDFLAGS = -version-info 14:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf.map
 EXTRA_libprotobuf_la_DEPENDENCIES = libprotobuf.map
@@ -252,6 +253,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/extension_set_heavy.cc                       \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_reflection.cc              \
+  google/protobuf/generated_message_table_driven_lite.h        \
   google/protobuf/generated_message_table_driven.cc            \
   google/protobuf/map_field.cc                                 \
   google/protobuf/message.cc                                   \
@@ -321,7 +323,7 @@ libprotobuf_la_SOURCES =                                       \
 nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
-libprotoc_la_LDFLAGS = -version-info 13:2:0 -export-dynamic -no-undefined
+libprotoc_la_LDFLAGS = -version-info 14:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotoc_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotoc.map
 EXTRA_libprotoc_la_DEPENDENCIES = libprotoc.map
@@ -331,7 +333,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/command_line_interface.cc           \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
-  google/protobuf/compiler/profile.pb.cc                       \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \
   google/protobuf/compiler/zip_writer.cc                       \
@@ -680,10 +681,10 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_preserve_unknown_enum.pb.h             \
   google/protobuf/unittest_proto3_arena.pb.cc                     \
   google/protobuf/unittest_proto3_arena.pb.h                      \
-  google/protobuf/unittest_proto3_arena_lite.pb.cc                     \
-  google/protobuf/unittest_proto3_arena_lite.pb.h                      \
-  google/protobuf/unittest_proto3_lite.pb.cc                     \
-  google/protobuf/unittest_proto3_lite.pb.h                      \
+  google/protobuf/unittest_proto3_arena_lite.pb.cc                \
+  google/protobuf/unittest_proto3_arena_lite.pb.h                 \
+  google/protobuf/unittest_proto3_lite.pb.cc                      \
+  google/protobuf/unittest_proto3_lite.pb.h                       \
   google/protobuf/unittest_well_known_types.pb.cc                 \
   google/protobuf/unittest_well_known_types.pb.h                  \
   google/protobuf/util/internal/testdata/anys.pb.cc               \
@@ -790,8 +791,8 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/no_field_presence_test.cc                    \
   google/protobuf/preserve_unknown_enum_test.cc                \
   google/protobuf/proto3_arena_unittest.cc                     \
-  google/protobuf/proto3_arena_lite_unittest.cc                     \
-  google/protobuf/proto3_lite_unittest.cc                     \
+  google/protobuf/proto3_arena_lite_unittest.cc                \
+  google/protobuf/proto3_lite_unittest.cc                      \
   google/protobuf/reflection_ops_unittest.cc                   \
   google/protobuf/repeated_field_reflection_unittest.cc        \
   google/protobuf/repeated_field_unittest.cc                   \
@@ -809,6 +810,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/mock_code_generator.h               \
   google/protobuf/compiler/parser_unittest.cc                  \
   google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc       \
+  google/protobuf/compiler/cpp/cpp_move_unittest.cc            \
   google/protobuf/compiler/cpp/cpp_unittest.h                  \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
@@ -920,15 +922,11 @@ no_warning_test.cc:
 	    echo "#include <$${FILE}>" >> no_warning_test.cc; \
 	  fi \
 	done
-	echo "#include <gtest/gtest.h>" >> no_warning_test.cc
-	echo "TEST(NoWarningTest, Empty) {}" >> no_warning_test.cc
+	echo "int main(int, char**) { return 0; }" >> no_warning_test.cc
 
-no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la      \
-                        ../gmock/gtest/lib/libgtest.la      \
-                        ../gmock/gtest/lib/libgtest_main.la
-no_warning_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
+no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
-                           -Wall -Wconversion -Werror -Werror=missing-declarations
+                           -Wall -Wextra -Werror -Wno-unused-parameter
 nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
 
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \

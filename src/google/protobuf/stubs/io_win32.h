@@ -48,30 +48,38 @@
 #if defined(_WIN32)
 
 #include <string>
+#include <google/protobuf/stubs/port.h>
 
+// Compilers on Windows other than MSVC (e.g. Cygwin, MinGW32) define the
+// following functions already, except for mkdir.
+#ifdef _MSC_VER
 namespace google {
 namespace protobuf {
 namespace internal {
 namespace win32 {
 
-FILE* fopen(const char* path, const char* mode);
-int access(const char* path, int mode);
-int chdir(const char* path);
-int close(int fd);
-int dup(int fd);
-int dup2(int fd1, int fd2);
-int mkdir(const char* path, int _mode);
-int open(const char* path, int flags, int mode = 0);
-int read(int fd, void* buffer, size_t size);
-int setmode(int fd, int mode);
-int stat(const char* path, struct _stat* buffer);
-int write(int fd, const void* buffer, size_t size);
-std::wstring testonly_path_to_winpath(const std::string& path);
+LIBPROTOBUF_EXPORT FILE* fopen(const char* path, const char* mode);
+LIBPROTOBUF_EXPORT int access(const char* path, int mode);
+LIBPROTOBUF_EXPORT int chdir(const char* path);
+LIBPROTOBUF_EXPORT int close(int fd);
+LIBPROTOBUF_EXPORT int dup(int fd);
+LIBPROTOBUF_EXPORT int dup2(int fd1, int fd2);
+LIBPROTOBUF_EXPORT int mkdir(const char* path, int _mode);
+LIBPROTOBUF_EXPORT int open(const char* path, int flags, int mode = 0);
+LIBPROTOBUF_EXPORT int read(int fd, void* buffer, size_t size);
+LIBPROTOBUF_EXPORT int setmode(int fd, int mode);
+LIBPROTOBUF_EXPORT int stat(const char* path, struct _stat* buffer);
+LIBPROTOBUF_EXPORT int write(int fd, const void* buffer, size_t size);
+LIBPROTOBUF_EXPORT std::wstring testonly_path_to_winpath(
+    const std::string& path);
 
 }  // namespace win32
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+#else  // _MSC_VER
+#define mkdir(name, mode) mkdir(name)
+#endif // !_MSC_VER
 
 #ifndef W_OK
 #define W_OK 02  // not defined by MSVC for whatever reason

@@ -180,6 +180,8 @@ m4_define([_AX_CXX_COMPILE_STDCXX_testbody_new_in_11], [[
 
 #else
 
+#include <utility>
+
 namespace cxx11
 {
 
@@ -443,6 +445,23 @@ namespace cxx11
 
     void test() { func<foo>(0); }
 
+  }
+
+  namespace test_std_move_and_forward
+  {
+    struct message {};
+    char foo(message&) { return '\0'; }
+    int foo(message&&) { return 0; }
+
+    template<typename Arg, typename RT>
+    void check(Arg&& arg, RT rt) {
+      static_assert(sizeof(rt) == sizeof(foo(std::forward<Arg>(arg))), "");
+    }
+    void test() {
+      message a;
+      check(a, char());
+      check(std::move(a), int());
+    }
   }
 
 }  // namespace cxx11

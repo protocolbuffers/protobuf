@@ -32,16 +32,21 @@
 
 #include <google/protobuf/arenastring.h>
 
-#include <string>
+#include <algorithm>
+#include <cstdlib>
 #include <memory>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
-#include <cstdlib>
+#include <string>
+#include <vector>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+
 
 namespace google {
 using google::protobuf::internal::ArenaString;
@@ -87,7 +92,8 @@ TEST(ArenaStringPtrTest, ArenaStringPtrOnArena) {
   EXPECT_EQ(string("default"), field.Get());
   field.Set(&default_value, WrapString("Test short"), &arena);
   EXPECT_EQ(string("Test short"), field.Get());
-  field.Set(&default_value, WrapString("Test long long long long value"), &arena);
+  field.Set(&default_value, WrapString("Test long long long long value"),
+            &arena);
   EXPECT_EQ(string("Test long long long long value"), field.Get());
   field.Set(&default_value, string(""), &arena);
   field.Destroy(&default_value, &arena);
@@ -103,6 +109,7 @@ TEST(ArenaStringPtrTest, ArenaStringPtrOnArena) {
   EXPECT_EQ(string("Test long long long long value"), field2.Get());
   field2.Destroy(&default_value, &arena);
 }
+
 
 }  // namespace protobuf
 }  // namespace google

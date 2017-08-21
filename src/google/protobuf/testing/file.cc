@@ -55,6 +55,9 @@ namespace protobuf {
 #define lstat stat
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
+#endif
+
+#ifdef _MSC_VER
 using google::protobuf::internal::win32::access;
 using google::protobuf::internal::win32::chdir;
 using google::protobuf::internal::win32::fopen;

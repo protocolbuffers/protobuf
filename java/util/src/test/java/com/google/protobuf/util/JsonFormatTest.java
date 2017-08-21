@@ -73,7 +73,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import junit.framework.TestCase;
 
@@ -1144,7 +1143,8 @@ public class JsonFormatTest extends TestCase {
   }
 
   public void testParserAcceptBase64Variants() throws Exception {
-    assertAccepts("optionalBytes", "AQI");
+    assertAccepts("optionalBytes", "AQI");  // No padding
+    assertAccepts("optionalBytes", "-_w");  // base64Url, no padding
   }
 
   public void testParserRejectInvalidEnumValue() throws Exception {

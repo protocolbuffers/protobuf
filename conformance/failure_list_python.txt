@@ -1,10 +1,11 @@
+Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
+Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
 Recommended.Proto3.JsonInput.DoubleFieldInfinityNotQuoted
 Recommended.Proto3.JsonInput.DoubleFieldNanNotQuoted
 Recommended.Proto3.JsonInput.DoubleFieldNegativeInfinityNotQuoted
 Recommended.Proto3.JsonInput.FloatFieldInfinityNotQuoted
 Recommended.Proto3.JsonInput.FloatFieldNanNotQuoted
 Recommended.Proto3.JsonInput.FloatFieldNegativeInfinityNotQuoted
-Required.Proto3.JsonInput.BytesFieldInvalidBase64Characters
 Required.Proto3.JsonInput.DoubleFieldTooSmall
 Required.Proto3.JsonInput.EnumFieldUnknownValue.Validator
 Required.Proto3.JsonInput.FloatFieldTooLarge

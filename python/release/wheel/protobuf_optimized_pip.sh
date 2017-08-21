@@ -47,6 +47,9 @@ cd $DIR/protobuf-${PROTOBUF_VERSION}
 sed -i '/AC_PROG_OBJC/d' configure.ac
 sed -i 's/conformance\/Makefile//g' configure.ac
 
+# Use the /usr/bin/autoconf and related tools to pick the correct aclocal macros
+export PATH="/usr/bin:$PATH"
+
 # Build protoc
 ./autogen.sh
 CXXFLAGS="-fPIC -g -O2" ./configure

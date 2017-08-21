@@ -87,6 +87,16 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
  *       any.Unpack(foo)
  *       ...
  *
+ *  Example 4: Pack and unpack a message in Go
+ *
+ *      foo := &pb.Foo{...}
+ *      any, err := ptypes.MarshalAny(foo)
+ *      ...
+ *      foo := &pb.Foo{}
+ *      if err := ptypes.UnmarshalAny(any, foo); err != nil {
+ *        ...
+ *      }
+ *
  * The pack methods provided by protobuf library will by default use
  * 'type.googleapis.com/full.type.name' as the type URL and the unpack
  * methods only use the fully qualified type name after the last '/'

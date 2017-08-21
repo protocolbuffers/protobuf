@@ -92,5 +92,31 @@ public class TestBadIdentifiers extends TestCase {
     assertEquals(0L, message.getExtension(
         TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList).longValue());
 
+    assertEquals("", message.getFieldName32());
+    assertEquals("", message.getFieldName33());
+    assertEquals(0, message.get2Conflict34());
+    assertEquals(0, message.get2Conflict35());
+
+  }
+
+  public void testNumberFields() throws Exception {
+    TestBadIdentifiersProto.TestLeadingNumberFields message =
+        TestBadIdentifiersProto.TestLeadingNumberFields.getDefaultInstance();
+    // Make sure generated accessors are properly named.
+    assertFalse(message.has30DayImpressions());
+    assertEquals(0, message.get30DayImpressions());
+    assertEquals(0, message.get60DayImpressionsCount());
+    assertEquals(0, message.get60DayImpressionsList().size());
+
+    assertFalse(message.has2Underscores());
+    assertEquals("", message.get2Underscores());
+    assertEquals(0, message.get2RepeatedUnderscoresCount());
+    assertEquals(0, message.get2RepeatedUnderscoresList().size());
+
+    assertFalse(message.has32());
+    assertEquals(0, message.get32());
+    assertEquals(0, message.get64Count());
+    assertEquals(0, message.get64List().size());
+
   }
 }
