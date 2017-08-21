@@ -9,6 +9,12 @@ os:
   - osx
 # The Objective C build needs Xcode 7.0 or later.
 osx_image: xcode8.3
+addons:
+  apt:
+    sources:
+    - deadsnakes
+    packages:
+    - python3.5
 script:
   - ./tests.sh $CONFIG
 env:
