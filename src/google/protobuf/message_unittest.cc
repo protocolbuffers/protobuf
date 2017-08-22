@@ -257,44 +257,6 @@ TEST(MessageTest, CheckInitialized) {
     "fields: a, b, c");
 }
 
-TEST(MessageTest, CheckOverflow) {
-  unittest::TestAllTypes message;
-  // Create a message with size just over 2GB. This triggers integer overflow
-  // when computing message size.
-  const string data(1024, 'x');
-  Cord one_megabyte;
-  for (int i = 0; i < 1024; i++) {
-    one_megabyte.Append(data);
-  }
-
-  for (int i = 0; i < 2 * 1024 + 1; ++i) {
-    message.add_repeated_cord()->CopyFrom(one_megabyte);
-  }
-
-  Cord serialized;
-  EXPECT_FALSE(message.AppendToCord(&serialized));
-}
-
-TEST(MessageTest, CheckBigOverflow) {
-  // Checking for 4GB buffers on 32 bit systems is problematic.
-  if (sizeof(void*) < 8) return;
-  unittest::TestAllTypes message;
-  // Create a message with size just over 4GB. We should be able to detect this
-  // too, even though it will make a plain "int" wrap back to a positive number.
-  const string data(1024, 'x');
-  Cord one_megabyte;
-  for (int i = 0; i < 1024; i++) {
-    one_megabyte.Append(data);
-  }
-
-  for (int i = 0; i < 4 * 1024 + 1; ++i) {
-    message.add_repeated_cord()->CopyFrom(one_megabyte);
-  }
-
-  Cord serialized;
-  EXPECT_FALSE(message.AppendToCord(&serialized));
-}
-
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 namespace {
