@@ -1062,7 +1062,8 @@ const zend_class_entry* field_type_class(
 #endif
 
 // Message handler
-static inline zval* php_proto_message_read_property(zval* msg, zval* member) {
+static inline zval* php_proto_message_read_property(
+    zval* msg, zval* member PHP_PROTO_TSRMLS_DC) {
 #if PHP_MAJOR_VERSION < 7
   return message_handlers->read_property(msg, member, BP_VAR_R,
                                          NULL PHP_PROTO_TSRMLS_CC);

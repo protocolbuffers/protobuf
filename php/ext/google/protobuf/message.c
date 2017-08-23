@@ -461,7 +461,8 @@ PHP_METHOD(Any, getValue) {
   PHP_PROTO_ZVAL_STRING(&member, "value", 1);
 
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-  zval* value = php_proto_message_read_property(getThis(), &member);
+  zval* value =
+      php_proto_message_read_property(getThis(), &member PHP_PROTO_TSRMLS_CC);
   PHP_PROTO_FAKE_SCOPE_END;
 
   PHP_PROTO_RETVAL_ZVAL(value);
@@ -494,8 +495,8 @@ PHP_METHOD(Any, unpack) {
   zval type_url_member;
   PHP_PROTO_ZVAL_STRING(&type_url_member, "type_url", 1);
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-  zval* type_url_php =
-      php_proto_message_read_property(getThis(), &type_url_member);
+  zval* type_url_php = php_proto_message_read_property(
+      getThis(), &type_url_member PHP_PROTO_TSRMLS_CC);
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Get fully-qualified name from type url.
@@ -529,7 +530,8 @@ PHP_METHOD(Any, unpack) {
   zval value_member;
   PHP_PROTO_ZVAL_STRING(&value_member, "value", 1);
   PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
-  zval* value = php_proto_message_read_property(getThis(), &value_member);
+  zval* value = php_proto_message_read_property(
+      getThis(), &value_member PHP_PROTO_TSRMLS_CC);
   PHP_PROTO_FAKE_SCOPE_END;
 
   merge_from_string(Z_STRVAL_P(value), Z_STRLEN_P(value), desc, msg);
@@ -596,7 +598,8 @@ PHP_METHOD(Any, is) {
   Descriptor* desc =
       UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(klass));
   const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
-  size_t type_url_len = strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
+  size_t type_url_len =
+      strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
   char* type_url = ALLOC_N(char, type_url_len);
   sprintf(type_url, "%s%s", TYPE_URL_PREFIX, fully_qualified_name);
 
@@ -604,7 +607,8 @@ PHP_METHOD(Any, is) {
   zval member;
   PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-  zval* value = php_proto_message_read_property(getThis(), &member);
+  zval* value =
+      php_proto_message_read_property(getThis(), &member PHP_PROTO_TSRMLS_CC);
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Compare two type url.
