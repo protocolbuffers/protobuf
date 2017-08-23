@@ -192,3 +192,10 @@ message TestReverseFieldOrder {
   repeated int32 a = 2;
   string b = 1;
 }
+
+message testLowerCaseMessage {
+}
+
+enum testLowerCaseEnum {
+  VALUE = 0;
+}

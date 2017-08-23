@@ -14,6 +14,8 @@ use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
 use Foo\TestReverseFieldOrder;
+use Foo\testLowerCaseMessage;
+use Foo\testLowerCaseEnum;
 use Php\Test\TestNamespace;
 
 class GeneratedClassTest extends TestBase
@@ -714,5 +716,15 @@ class GeneratedClassTest extends TestBase
         $m->setB("abc");
         $this->assertSame("abc", $m->getB());
         $this->assertNotSame("abc", $m->getA());
+    }
+
+    #########################################################
+    # Test Reverse Field Order.
+    #########################################################
+
+    public function testLowerCase()
+    {
+        $m = new testLowerCaseMessage();
+        $n = testLowerCaseEnum::VALUE;
     }
 }

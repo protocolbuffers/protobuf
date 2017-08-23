@@ -23,6 +23,8 @@ require_once('generated/Foo/TestPhpDoc.php');
 require_once('generated/Foo/TestRandomFieldOrder.php');
 require_once('generated/Foo/TestReverseFieldOrder.php');
 require_once('generated/Foo/TestUnpackedMessage.php');
+require_once('generated/Foo/testLowerCaseMessage.php');
+require_once('generated/Foo/testLowerCaseEnum.php');
 require_once('generated/GPBMetadata/Proto/Test.php');
 require_once('generated/GPBMetadata/Proto/TestEmptyPhpNamespace.php');
 require_once('generated/GPBMetadata/Proto/TestInclude.php');

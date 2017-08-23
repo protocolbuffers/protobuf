@@ -270,7 +270,7 @@ class GPBUtil
         $name,
         $file_proto)
     {
-        $classname = implode('_', array_map('ucwords', explode('.', $name)));
+        $classname = implode('_', explode('.', $name));
         return static::getClassNamePrefix($classname, $file_proto) . $classname;
     }
 
