@@ -36,6 +36,7 @@
 
 zend_class_entry* message_type;
 zend_object_handlers* message_handlers;
+static const char TYPE_URL_PREFIX[] = "type.googleapis.com/";
 
 static  zend_function_entry message_methods[] = {
   PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
@@ -420,8 +421,7 @@ PHP_METHOD(Any, getTypeUrl) {
   zval member;
   PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
 
-  zend_class_entry* old_scope = EG(scope);
-  EG(scope) = any_type;
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
 #if PHP_MAJOR_VERSION < 7
   zval* value = message_handlers->read_property(getThis(), &member, BP_VAR_R,
                                                 NULL PHP_PROTO_TSRMLS_CC);
@@ -429,13 +429,9 @@ PHP_METHOD(Any, getTypeUrl) {
   zval* value = message_handlers->read_property(getThis(), &member, BP_VAR_R,
                                                 NULL, NULL PHP_PROTO_TSRMLS_CC);
 #endif
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_END;
 
-#if PHP_MAJOR_VERSION < 7
-  ZVAL_ZVAL(return_value, value, 1, 0);
-#else
-  ZVAL_COPY(return_value, value);
-#endif
+  PHP_PROTO_RETVAL_ZVAL(value);
 }
 
 PHP_METHOD(Any, setTypeUrl) {
@@ -452,39 +448,23 @@ PHP_METHOD(Any, setTypeUrl) {
   PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
   PHP_PROTO_ZVAL_STRINGL(&value, type_url, type_url_len, 1);
 
-  zend_class_entry* old_scope = EG(scope);
-  EG(scope) = any_type;
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   message_handlers->write_property(getThis(), &member, &value,
                                    NULL PHP_PROTO_TSRMLS_CC);
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_END;
 
-#if PHP_MAJOR_VERSION < 7
-  ZVAL_ZVAL(return_value, getThis(), 1, 0);
-#else
-  ZVAL_COPY(return_value, getThis());
-#endif
+  PHP_PROTO_RETVAL_ZVAL(getThis());
 }
 
 PHP_METHOD(Any, getValue) {
   zval member;
   PHP_PROTO_ZVAL_STRING(&member, "value", 1);
 
-  zend_class_entry* old_scope = EG(scope);
-  EG(scope) = any_type;
-#if PHP_MAJOR_VERSION < 7
-  zval* value = message_handlers->read_property(getThis(), &member, BP_VAR_R,
-                                                NULL PHP_PROTO_TSRMLS_CC);
-#else
-  zval* value = message_handlers->read_property(getThis(), &member, BP_VAR_R,
-                                                NULL, NULL PHP_PROTO_TSRMLS_CC);
-#endif
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
+  zval* value = php_proto_message_read_property(getThis(), &member);
+  PHP_PROTO_FAKE_SCOPE_END;
 
-#if PHP_MAJOR_VERSION < 7
-  ZVAL_ZVAL(return_value, value, 1, 0);
-#else
-  ZVAL_COPY(return_value, value);
-#endif
+  PHP_PROTO_RETVAL_ZVAL(value);
 }
 
 PHP_METHOD(Any, setValue) {
@@ -501,42 +481,30 @@ PHP_METHOD(Any, setValue) {
   PHP_PROTO_ZVAL_STRING(&member, "value", 1);
   PHP_PROTO_ZVAL_STRINGL(&value_to_set, value, value_len, 1);
 
-  zend_class_entry* old_scope = EG(scope);
-  EG(scope) = any_type;
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   message_handlers->write_property(getThis(), &member, &value_to_set,
                                    NULL PHP_PROTO_TSRMLS_CC);
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_END;
 
-#if PHP_MAJOR_VERSION < 7
-  ZVAL_ZVAL(return_value, getThis(), 1, 0);
-#else
-  ZVAL_COPY(return_value, getThis());
-#endif
+  PHP_PROTO_RETVAL_ZVAL(getThis());
 }
 
 PHP_METHOD(Any, unpack) {
   // Get type url.
   zval type_url_member;
   PHP_PROTO_ZVAL_STRING(&type_url_member, "type_url", 1);
-  zend_class_entry* old_scope = EG(scope);
-  EG(scope) = any_type;
-#if PHP_MAJOR_VERSION < 7
-  zval* type_url_php = message_handlers->read_property(
-      getThis(), &type_url_member, BP_VAR_R, NULL PHP_PROTO_TSRMLS_CC);
-#else
-  zval* type_url_php = message_handlers->read_property(
-      getThis(), &type_url_member, BP_VAR_R, NULL, NULL PHP_PROTO_TSRMLS_CC);
-#endif
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
+  zval* type_url_php =
+      php_proto_message_read_property(getThis(), &type_url_member);
+  PHP_PROTO_FAKE_SCOPE_END;
 
   // Get fully-qualified name from type url.
-  const char* url_prefix = "type.googleapis.com/";
-  size_t url_prefix_len = strlen(url_prefix);
+  size_t url_prefix_len = strlen(TYPE_URL_PREFIX);
   const char* type_url = Z_STRVAL_P(type_url_php);
   size_t type_url_len = Z_STRLEN_P(type_url_php);
 
   if (url_prefix_len > type_url_len ||
-      strncmp(url_prefix, type_url, url_prefix_len) != 0) {
+      strncmp(TYPE_URL_PREFIX, type_url, url_prefix_len) != 0) {
     zend_throw_exception(
         NULL, "Type url needs to be type.googleapis.com/fully-qulified",
         0 TSRMLS_CC);
@@ -560,16 +528,9 @@ PHP_METHOD(Any, unpack) {
   // Get value.
   zval value_member;
   PHP_PROTO_ZVAL_STRING(&value_member, "value", 1);
-  old_scope = EG(scope);
-  EG(scope) = any_type;
-#if PHP_MAJOR_VERSION < 7
-  zval* value = message_handlers->read_property(
-      getThis(), &value_member, BP_VAR_R, NULL PHP_PROTO_TSRMLS_CC);
-#else
-  zval* value = message_handlers->read_property(
-      getThis(), &value_member, BP_VAR_R, NULL, NULL PHP_PROTO_TSRMLS_CC);
-#endif
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
+  zval* value = php_proto_message_read_property(getThis(), &value_member);
+  PHP_PROTO_FAKE_SCOPE_END;
 
   merge_from_string(Z_STRVAL_P(value), Z_STRLEN_P(value), desc, msg);
 }
@@ -594,29 +555,27 @@ PHP_METHOD(Any, pack) {
   zval member;
   PHP_PROTO_ZVAL_STRING(&member, "value", 1);
 
-  zend_class_entry* old_scope = EG(scope);
-  EG(scope) = any_type;
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   message_handlers->write_property(getThis(), &member, &data,
                                    NULL PHP_PROTO_TSRMLS_CC);
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_END;
 
   // Set type url.
   Descriptor* desc =
       UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(val)));
   const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
-  const char* url_prefix = "type.googleapis.com/";
-  size_t type_url_len = strlen(url_prefix) + strlen(fully_qualified_name) + 1;
+  size_t type_url_len =
+      strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
   char* type_url = ALLOC_N(char, type_url_len);
-  sprintf(type_url, "%s%s", url_prefix, fully_qualified_name);
+  sprintf(type_url, "%s%s", TYPE_URL_PREFIX, fully_qualified_name);
   zval type_url_php;
   PHP_PROTO_ZVAL_STRING(&type_url_php, type_url, 1);
   PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
 
-  old_scope = EG(scope);
-  EG(scope) = any_type;
+  PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
   message_handlers->write_property(getThis(), &member, &type_url_php,
                                    NULL PHP_PROTO_TSRMLS_CC);
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_END;
   FREE(type_url);
 }
 
@@ -637,24 +596,16 @@ PHP_METHOD(Any, is) {
   Descriptor* desc =
       UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(klass));
   const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
-  const char* url_prefix = "type.googleapis.com/";
-  size_t type_url_len = strlen(url_prefix) + strlen(fully_qualified_name) + 1;
+  size_t type_url_len = strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
   char* type_url = ALLOC_N(char, type_url_len);
-  sprintf(type_url, "%s%s", url_prefix, fully_qualified_name);
+  sprintf(type_url, "%s%s", TYPE_URL_PREFIX, fully_qualified_name);
 
   // Fetch stored type url.
   zval member;
   PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
-  zend_class_entry* old_scope = EG(scope);
-  EG(scope) = any_type;
-#if PHP_MAJOR_VERSION < 7
-  zval* value = message_handlers->read_property(getThis(), &member, BP_VAR_R,
-                                                NULL PHP_PROTO_TSRMLS_CC);
-#else
-  zval* value = message_handlers->read_property(getThis(), &member, BP_VAR_R,
-                                                NULL, NULL PHP_PROTO_TSRMLS_CC);
-#endif
-  EG(scope) = old_scope;
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
+  zval* value = php_proto_message_read_property(getThis(), &member);
+  PHP_PROTO_FAKE_SCOPE_END;
 
   // Compare two type url.
   bool is = strcmp(type_url, Z_STRVAL_P(value)) == 0;

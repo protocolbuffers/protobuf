@@ -226,6 +226,8 @@
 #define php_proto_zend_lookup_class(name, name_length, ce) \
   zend_lookup_class(name, name_length, ce TSRMLS_CC)
 
+#define PHP_PROTO_RETVAL_ZVAL(value) ZVAL_ZVAL(return_value, value, 1, 0)
+
 #else  // PHP_MAJOR_VERSION >= 7
 
 #define php_proto_zend_literal void**
@@ -461,7 +463,27 @@ static inline int php_proto_zend_lookup_class(
   return *ce != NULL ? SUCCESS : FAILURE;
 }
 
+#define PHP_PROTO_RETVAL_ZVAL(value) ZVAL_COPY(return_value, value)
+
 #endif  // PHP_MAJOR_VERSION >= 7
+
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
+#define PHP_PROTO_FAKE_SCOPE_BEGIN(klass)  \
+  zend_class_entry* old_scope = EG(scope); \
+  EG(scope) = klass;
+#define PHP_PROTO_FAKE_SCOPE_RESTART(klass) \
+  old_scope = EG(scope);                    \
+  EG(scope) = klass;
+#define PHP_PROTO_FAKE_SCOPE_END EG(scope) = old_scope;
+#else
+#define PHP_PROTO_FAKE_SCOPE_BEGIN(klass)       \
+  zend_class_entry* old_scope = EG(fake_scope); \
+  EG(fake_scope) = klass;
+#define PHP_PROTO_FAKE_SCOPE_RESTART(klass) \
+  old_scope = EG(fake_scope);               \
+  EG(fake_scope) = klass;
+#define PHP_PROTO_FAKE_SCOPE_END EG(fake_scope) = old_scope;
+#endif
 
 // Define PHP class
 #define DEFINE_PROTOBUF_INIT_CLASS(CLASSNAME, CAMELNAME, LOWERNAME) \
@@ -1038,5 +1060,16 @@ const zend_class_entry* field_type_class(
                       .object_buckets[Z_OBJ_HANDLE_P(zval_p)] \
                       .bucket.obj.object))
 #endif
+
+// Message handler
+static inline zval* php_proto_message_read_property(zval* msg, zval* member) {
+#if PHP_MAJOR_VERSION < 7
+  return message_handlers->read_property(msg, member, BP_VAR_R,
+                                         NULL PHP_PROTO_TSRMLS_CC);
+#else
+  return message_handlers->read_property(msg, member, BP_VAR_R, NULL,
+                                         NULL PHP_PROTO_TSRMLS_CC);
+#endif
+}
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PROTOBUF_H__
