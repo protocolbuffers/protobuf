@@ -982,8 +982,10 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   cmake/libprotoc.cmake                  \
   cmake/protobuf-config-version.cmake.in \
   cmake/protobuf-config.cmake.in         \
+  cmake/protobuf-lite.pc.cmake           \
   cmake/protobuf-module.cmake.in         \
   cmake/protobuf-options.cmake           \
+  cmake/protobuf.pc.cmake                \
   cmake/protoc.cmake                     \
   cmake/tests.cmake                      \
   editors/README.txt                     \
