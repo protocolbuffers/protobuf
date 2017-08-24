@@ -112,6 +112,4 @@ void Init_protobuf_c() {
 
   upb_def_to_ruby_obj_map = rb_hash_new();
   rb_gc_register_address(&upb_def_to_ruby_obj_map);
-  map_parse_frames = rb_ary_new();
-  rb_gc_register_address(&map_parse_frames);
 }
