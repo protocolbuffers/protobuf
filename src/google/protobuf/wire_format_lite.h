@@ -341,7 +341,7 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   };
 
   // Returns true if the data is valid UTF-8.
-  static bool VerifyUtf8String(const char* data, int size,
+  static bool VerifyUtf8String(const char* data, size_t size,
                                Operation op,
                                const char* field_name);
 

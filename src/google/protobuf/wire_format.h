@@ -233,11 +233,11 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // Verifies that a string field is valid UTF8, logging an error if not.
   // This function will not be called by newly generated protobuf code
   // but remains present to support existing code.
-  static void VerifyUTF8String(const char* data, int size, Operation op);
+  static void VerifyUTF8String(const char* data, size_t size, Operation op);
   // The NamedField variant takes a field name in order to produce an
   // informative error message if verification fails.
   static void VerifyUTF8StringNamedField(const char* data,
-                                         int size,
+                                         size_t size,
                                          Operation op,
                                          const char* field_name);
 
@@ -305,7 +305,7 @@ inline size_t WireFormat::TagSize(int field_number,
         implicit_cast<int>(type)));
 }
 
-inline void WireFormat::VerifyUTF8String(const char* data, int size,
+inline void WireFormat::VerifyUTF8String(const char* data, size_t size,
     WireFormat::Operation op) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   WireFormatLite::VerifyUtf8String(
@@ -317,7 +317,7 @@ inline void WireFormat::VerifyUTF8String(const char* data, int size,
 }
 
 inline void WireFormat::VerifyUTF8StringNamedField(
-    const char* data, int size, WireFormat::Operation op,
+    const char* data, size_t size, WireFormat::Operation op,
     const char* field_name) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   WireFormatLite::VerifyUtf8String(

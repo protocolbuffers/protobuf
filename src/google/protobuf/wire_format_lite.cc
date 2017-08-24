@@ -607,7 +607,7 @@ bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string** p) {
 }
 
 bool WireFormatLite::VerifyUtf8String(const char* data,
-                                      int size,
+                                      size_t size,
                                       Operation op,
                                       const char* field_name) {
   if (!IsStructurallyValidUTF8(data, size)) {
