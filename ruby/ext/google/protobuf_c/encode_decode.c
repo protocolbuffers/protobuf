@@ -280,11 +280,6 @@ rb_data_type_t MapParseFrame_type = {
   { MapParseFrame_mark, MapParseFrame_free, NULL },
 };
 
-// Array of Ruby objects wrapping map_parse_frame_t.
-// We don't allow multiple concurrent decodes, so we assume that this global
-// variable is specific to the "current" decode.
-VALUE map_parse_frames;
-
 static map_parse_frame_t* map_push_frame(VALUE map,
                                          const map_handlerdata_t* handlerdata) {
   map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
@@ -293,14 +288,10 @@ static map_parse_frame_t* map_push_frame(VALUE map,
   native_slot_init(handlerdata->key_field_type, &frame->key_storage);
   native_slot_init(handlerdata->value_field_type, &frame->value_storage);
 
-  rb_ary_push(map_parse_frames,
+  Map_push_frame(map,
               TypedData_Wrap_Struct(rb_cObject, &MapParseFrame_type, frame));
 
   return frame;
-}
-
-static void map_pop_frame() {
-  rb_ary_pop(map_parse_frames);
 }
 
 // Handler to begin a map entry: allocates a temporary frame. This is the
@@ -336,7 +327,7 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);
-  map_pop_frame();
+  Map_pop_frame(frame->map);
 
   return true;
 }
@@ -775,10 +766,6 @@ VALUE Message_decode(VALUE klass, VALUE data) {
   msg_rb = rb_class_new_instance(0, NULL, msgklass);
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
-  // We generally expect this to be clear already, but clear it in case parsing
-  // previously got interrupted somehow.
-  rb_ary_clear(map_parse_frames);
-
   {
     const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
     const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
@@ -822,10 +809,6 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
 
   msg_rb = rb_class_new_instance(0, NULL, msgklass);
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
-
-  // We generally expect this to be clear already, but clear it in case parsing
-  // previously got interrupted somehow.
-  rb_ary_clear(map_parse_frames);
 
   {
     const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);

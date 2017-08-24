@@ -96,8 +96,18 @@ module BasicTest
         optional :d, :enum, 4, "TestEnum"
       end
     end
+
+    add_message "repro.Outer" do
+      map :items, :int32, :message, 1, "repro.Inner"
+    end
+
+    add_message "repro.Inner" do
+    end
   end
 
+
+  Outer = pool.lookup("repro.Outer").msgclass
+  Inner = pool.lookup("repro.Inner").msgclass
   Foo = pool.lookup("Foo").msgclass
   Bar = pool.lookup("Bar").msgclass
   Baz = pool.lookup("Baz").msgclass
@@ -673,6 +683,21 @@ module BasicTest
       m = MapMessage.new(map_string_int32: { "aaa" => 1 })
       m.map_string_int32['podid'] = 2
       m.map_string_int32['aaa'] = 3
+    end
+
+    def test_concurrent_decoding
+      o = Outer.new
+      o.items[0] = Inner.new
+      raw = Outer.encode(o)
+
+      thds = 2.times.map do
+        Thread.new do
+          100000.times do
+            assert_equal o, Outer.decode(raw)
+          end
+        end
+      end
+      thds.map(&:join)
     end
 
     def test_map_encode_decode

@@ -166,8 +166,6 @@ extern VALUE cBuilder;
 extern VALUE cError;
 extern VALUE cParseError;
 
-extern VALUE map_parse_frames;
-
 // We forward-declare all of the Ruby method implementations here because we
 // sometimes call the methods directly across .c files, rather than going
 // through Ruby's method dispatching (e.g. during message parse). It's cleaner
@@ -397,6 +395,7 @@ typedef struct {
   upb_fieldtype_t key_type;
   upb_fieldtype_t value_type;
   VALUE value_type_class;
+  VALUE parse_frames;
   upb_strtable table;
 } Map;
 
@@ -405,6 +404,8 @@ void Map_free(void* self);
 VALUE Map_alloc(VALUE klass);
 VALUE Map_init(int argc, VALUE* argv, VALUE self);
 void Map_register(VALUE module);
+VALUE Map_push_frame(VALUE self, VALUE val);
+VALUE Map_pop_frame(VALUE self);
 
 extern const rb_data_type_t Map_type;
 extern VALUE cMap;
