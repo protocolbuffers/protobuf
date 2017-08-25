@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+package foo_bar_proto2;
+
+option ruby_package = "A.B.Proto2";
+
+message TestRubyPackageMessage {}
