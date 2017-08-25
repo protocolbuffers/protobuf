@@ -106,6 +106,52 @@ static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
   return ID2SYM(rb_intern(upb_fielddef_name(f)));
 }
 
+enum {
+  METHOD_UNKNOWN = 0,
+  METHOD_GETTER = 1,
+  METHOD_SETTER = 2,
+  METHOD_CLEAR = 3,
+  METHOD_PRESENCE = 4
+};
+
+static int extract_method_call(VALUE method_name, MessageHeader* self, const upb_fielddef **f, const upb_oneofdef **o) {
+  Check_Type(method_name, T_SYMBOL);
+
+  VALUE method_str = rb_id2str(SYM2ID(method_name));
+  char* name = RSTRING_PTR(method_str);
+  size_t name_len = RSTRING_LEN(method_str);
+  int accessor_type;
+  const upb_oneofdef* test_o;
+  const upb_fielddef* test_f;
+
+  if (name[name_len - 1] == '=') {
+    accessor_type = METHOD_SETTER;
+    name_len--;
+  // We want to ensure if the proto has something named clear_foo or has_foo?, we don't strip the prefix.
+  } else if (strncmp("clear_", name, 6) == 0 &&
+             !upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len, &test_f, &test_o)) {
+    accessor_type = METHOD_CLEAR;
+    name = name + 6;
+    name_len = name_len - 6;
+  } else if (strncmp("has_", name, 4) == 0 && name[name_len - 1] == '?' &&
+             !upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len, &test_f, &test_o)) {
+    accessor_type = METHOD_PRESENCE;
+    name = name + 4;
+    name_len = name_len - 5;
+  } else {
+    accessor_type = METHOD_GETTER;
+  }
+
+  // Verify the name corresponds to a oneof or field in this message.
+  if (!upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len, &test_f, &test_o)) {
+    return METHOD_UNKNOWN;
+  }
+
+  *o = test_o;
+  *f = test_f;
+  return accessor_type;
+}
+
 /*
  * call-seq:
  *     Message.method_missing(*args)
@@ -125,10 +171,6 @@ static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
  */
 VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
-  VALUE method_name, method_str;
-  char* name;
-  size_t name_len;
-  bool setter;
   const upb_oneofdef* o;
   const upb_fielddef* f;
 
@@ -136,54 +178,42 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
-  method_name = argv[0];
-  if (!SYMBOL_P(method_name)) {
-    rb_raise(rb_eArgError, "Expected symbol as method name.");
-  }
-  method_str = rb_id2str(SYM2ID(method_name));
-  name = RSTRING_PTR(method_str);
-  name_len = RSTRING_LEN(method_str);
-  setter = false;
 
-  // Setters have names that end in '='.
-  if (name[name_len - 1] == '=') {
-    setter = true;
-    name_len--;
-  }
-
-  // See if this name corresponds to either a oneof or field in this message.
-  if (!upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len, &f,
-                             &o)) {
+  int accessor_type = extract_method_call(argv[0], self, &f, &o);
+  if (accessor_type == METHOD_UNKNOWN || (o == NULL && f == NULL) ) {
     return rb_call_super(argc, argv);
+  } else if (accessor_type == METHOD_SETTER) {
+    if (argc != 2) {
+      rb_raise(rb_eArgError, "Expected 2 arguments, received %d", argc);
+    }
+  } else if (argc != 1) {
+    rb_raise(rb_eArgError, "Expected 1 argument, received %d", argc);
   }
 
+  // Return which of the oneof fields are set
   if (o != NULL) {
-    // This is a oneof -- return which field inside the oneof is set.
-    if (setter) {
-      rb_raise(rb_eRuntimeError, "Oneof accessors are read-only.");
+    if (accessor_type == METHOD_SETTER) {
+      rb_raise(rb_eRuntimeError, "Oneoff accessors are read-only.");
     }
+
     return which_oneof_field(self, o);
+  // Otherwise we're operating on a single proto field
+  } else if (accessor_type == METHOD_SETTER) {
+    layout_set(self->descriptor->layout, Message_data(self), f, argv[1]);
+    return Qnil;
+  } else if (accessor_type == METHOD_CLEAR && upb_fielddef_haspresence(f)) {
+    layout_clear(self->descriptor->layout, Message_data(self), f);
+    return Qnil;
+  } else if (accessor_type == METHOD_PRESENCE && upb_fielddef_haspresence(f)) {
+    return layout_has(self->descriptor->layout, Message_data(self), f);
   } else {
-    // This is a field -- get or set the field's value.
-    assert(f);
-    if (setter) {
-      if (argc < 2) {
-        rb_raise(rb_eArgError, "No value provided to setter.");
-      }
-      layout_set(self->descriptor->layout, Message_data(self), f, argv[1]);
-      return Qnil;
-    } else {
-      return layout_get(self->descriptor->layout, Message_data(self), f);
-    }
+    return layout_get(self->descriptor->layout, Message_data(self), f);
   }
 }
 
+
 VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
-  VALUE method_name, method_str;
-  char* name;
-  size_t name_len;
-  bool setter;
   const upb_oneofdef* o;
   const upb_fielddef* f;
 
@@ -191,30 +221,15 @@ VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
-  method_name = argv[0];
-  if (!SYMBOL_P(method_name)) {
-    rb_raise(rb_eArgError, "Expected symbol as method name.");
-  }
-  method_str = rb_id2str(SYM2ID(method_name));
-  name = RSTRING_PTR(method_str);
-  name_len = RSTRING_LEN(method_str);
-  setter = false;
 
-  // Setters have names that end in '='.
-  if (name[name_len - 1] == '=') {
-    setter = true;
-    name_len--;
-  }
-
-  // See if this name corresponds to either a oneof or field in this message.
-  if (!upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len, &f,
-                             &o)) {
+  int accessor_type = extract_method_call(argv[0], self, &f, &o);
+  if (accessor_type == METHOD_UNKNOWN) {
     return rb_call_super(argc, argv);
+  } else if (o != NULL) {
+    return accessor_type == METHOD_SETTER ? Qfalse : Qtrue;
+  } else {
+    return Qtrue;
   }
-  if (o != NULL) {
-    return setter ? Qfalse : Qtrue;
-  }
-  return Qtrue;
 }
 
 VALUE create_submsg_from_hash(const upb_fielddef *f, VALUE hash) {
@@ -433,13 +448,23 @@ VALUE Message_to_h(VALUE _self) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
+    if (field_contains_hasbit(self->descriptor->layout, field)) {
+      if (!layout_has(self->descriptor->layout, Message_data(self), field)) {
+        continue;
+      }
+    }
+
     VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self),
                                  field);
     VALUE msg_key   = ID2SYM(rb_intern(upb_fielddef_name(field)));
-    if (upb_fielddef_ismap(field)) {
+    if (is_map_field(field)) {
       msg_value = Map_to_h(msg_value);
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       msg_value = RepeatedField_to_ary(msg_value);
+      if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
+          RARRAY_LEN(msg_value) == 0) {
+        continue;
+      }
 
       if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
         for (int i = 0; i < RARRAY_LEN(msg_value); i++) {
@@ -447,6 +472,7 @@ VALUE Message_to_h(VALUE _self) {
           rb_ary_store(msg_value, i, Message_to_h(elem));
         }
       }
+
     } else if (msg_value != Qnil &&
                upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
       msg_value = Message_to_h(msg_value);

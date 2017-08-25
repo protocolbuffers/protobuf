@@ -6,9 +6,12 @@ require 'test/unit'
 
 # ------------- generated code --------------
 
-module BasicTest
+module BasicTestProto2
+  file_descriptor = Google::Protobuf::FileDescriptor.new
+  file_descriptor.syntax = :proto2
+
   pool = Google::Protobuf::DescriptorPool.new
-  pool.build do
+  pool.build(file_descriptor) do
     add_message "Foo" do
       optional :bar, :message, 1, "Bar"
       repeated :baz, :message, 2, "Baz"
@@ -47,26 +50,23 @@ module BasicTest
       repeated :repeated_msg,    :message,      21, "TestMessage2"
       repeated :repeated_enum,   :enum,         22, "TestEnum"
     end
+
+    add_message "TestMessageDefaults" do
+      optional :optional_int32,  :int32,        1,  default: 1
+      optional :optional_int64,  :int64,        2,  default: 2
+      optional :optional_uint32, :uint32,       3,  default: 3
+      optional :optional_uint64, :uint64,       4,  default: 4
+      optional :optional_bool,   :bool,         5,  default: true
+      optional :optional_float,  :float,        6,  default: 6
+      optional :optional_double, :double,       7,  default: 7
+      optional :optional_string, :string,       8,  default: "Default Str"
+      optional :optional_bytes,  :bytes,        9,  default: "\xCF\xA5s\xBD\xBA\xE6".force_encoding("ASCII-8BIT")
+      optional :optional_enum,   :enum,         10, "TestNonZeroEnum", default: 2
+      optional :optional_msg,    :message,      11, "TestMessage2"
+    end
+
     add_message "TestMessage2" do
       optional :foo, :int32, 1
-    end
-
-    add_message "TestEmbeddedMessageParent" do
-      optional :child_msg, :message, 1, "TestEmbeddedMessageChild"
-      optional :number, :int32, 2
-
-      repeated :repeated_msg, :message, 3, "TestEmbeddedMessageChild"
-      repeated :repeated_number, :int32, 4
-    end
-    add_message "TestEmbeddedMessageChild" do
-      optional :sub_child, :message, 1, "TestMessage"
-    end
-
-    add_message "Recursive1" do
-      optional :foo, :message, 1, "Recursive2"
-    end
-    add_message "Recursive2" do
-      optional :foo, :message, 1, "Recursive1"
     end
 
     add_enum "TestEnum" do
@@ -76,15 +76,23 @@ module BasicTest
       value :C, 3
     end
 
+    add_enum "TestNonZeroEnum" do
+      value :A, 1
+      value :B, 2
+      value :C, 3
+    end
+
+    add_message "Recursive1" do
+      optional :foo, :message, 1, "Recursive2"
+    end
+    add_message "Recursive2" do
+      optional :foo, :message, 1, "Recursive1"
+    end
+
     add_message "BadFieldNames" do
       optional :dup, :int32, 1
       optional :class, :int32, 2
       optional :"a.b", :int32, 3
-    end
-
-    add_message "MapMessage" do
-      map :map_string_int32, :string, :int32, 1
-      map :map_string_msg, :string, :message, 2, "TestMessage2"
     end
     add_message "MapMessageWireEquiv" do
       repeated :map_string_int32, :message, 1, "MapMessageWireEquiv_entry1"
@@ -107,30 +115,19 @@ module BasicTest
         optional :d, :enum, 4, "TestEnum"
       end
     end
-
-    add_message "repro.Outer" do
-      map :items, :int32, :message, 1, "repro.Inner"
-    end
-
-    add_message "repro.Inner" do
-    end
   end
 
-
-  Outer = pool.lookup("repro.Outer").msgclass
-  Inner = pool.lookup("repro.Inner").msgclass
   Foo = pool.lookup("Foo").msgclass
   Bar = pool.lookup("Bar").msgclass
   Baz = pool.lookup("Baz").msgclass
   TestMessage = pool.lookup("TestMessage").msgclass
   TestMessage2 = pool.lookup("TestMessage2").msgclass
-  TestEmbeddedMessageParent = pool.lookup("TestEmbeddedMessageParent").msgclass
-  TestEmbeddedMessageChild = pool.lookup("TestEmbeddedMessageChild").msgclass
+  TestMessageDefaults = pool.lookup("TestMessageDefaults").msgclass
   Recursive1 = pool.lookup("Recursive1").msgclass
   Recursive2 = pool.lookup("Recursive2").msgclass
   TestEnum = pool.lookup("TestEnum").enummodule
+  TestNonZeroEnum = pool.lookup("TestNonZeroEnum").enummodule
   BadFieldNames = pool.lookup("BadFieldNames").msgclass
-  MapMessage = pool.lookup("MapMessage").msgclass
   MapMessageWireEquiv = pool.lookup("MapMessageWireEquiv").msgclass
   MapMessageWireEquiv_entry1 =
     pool.lookup("MapMessageWireEquiv_entry1").msgclass
@@ -142,7 +139,7 @@ module BasicTest
 
   class MessageContainerTest < Test::Unit::TestCase
 
-    def test_defaults
+    def test_type_defaults
       m = TestMessage.new
       assert m.optional_int32 == 0
       assert m.optional_int64 == 0
@@ -155,6 +152,68 @@ module BasicTest
       assert m.optional_bytes == ""
       assert m.optional_msg == nil
       assert m.optional_enum == :Default
+
+      assert_false m.has_optional_int32?
+      assert_false m.has_optional_int64?
+      assert_false m.has_optional_uint32?
+      assert_false m.has_optional_uint64?
+      assert_false m.has_optional_bool?
+      assert_false m.has_optional_float?
+      assert_false m.has_optional_double?
+      assert_false m.has_optional_string?
+      assert_false m.has_optional_bytes?
+      assert_false m.has_optional_enum?
+    end
+
+    def test_defined_defaults
+      m = TestMessageDefaults.new
+      assert_equal 1, m.optional_int32
+      assert_equal 2, m.optional_int64
+      assert_equal 3, m.optional_uint32
+      assert_equal 4, m.optional_uint64
+      assert_equal true, m.optional_bool
+      assert_equal 6.0, m.optional_float
+      assert_equal 7.0, m.optional_double
+      assert_equal "Default Str", m.optional_string
+      assert_equal "\xCF\xA5s\xBD\xBA\xE6".force_encoding("ASCII-8BIT"), m.optional_bytes
+      assert_equal :B, m.optional_enum
+
+      assert_false m.has_optional_int32?
+      assert_false m.has_optional_int64?
+      assert_false m.has_optional_uint32?
+      assert_false m.has_optional_uint64?
+      assert_false m.has_optional_bool?
+      assert_false m.has_optional_float?
+      assert_false m.has_optional_double?
+      assert_false m.has_optional_string?
+      assert_false m.has_optional_bytes?
+      assert_false m.has_optional_enum?
+    end
+
+    def test_set_clear_defaults
+      m = TestMessageDefaults.new
+
+      m.optional_int32 = -42
+      assert_equal -42, m.optional_int32
+      assert_true m.has_optional_int32?
+      m.clear_optional_int32
+      assert_equal 1, m.optional_int32
+      assert_false m.has_optional_int32?
+
+      m.optional_string = "foo bar"
+      assert_equal "foo bar", m.optional_string
+      assert_true m.has_optional_string?
+      m.clear_optional_string
+      assert_equal "Default Str", m.optional_string
+      assert_false m.has_optional_string?
+
+      m.optional_msg = TestMessage2.new(:foo => 42)
+      assert_equal TestMessage2.new(:foo => 42), m.optional_msg
+      assert_true m.has_optional_msg?
+
+      m.clear_optional_msg
+      assert_equal nil, m.optional_msg
+      assert_false m.has_optional_msg?
     end
 
     def test_setters
@@ -174,18 +233,12 @@ module BasicTest
       m.optional_double = 0.5
       m.optional_string = "hello"
       assert m.optional_string == "hello"
-      m.optional_string = :hello
-      assert m.optional_string == "hello"
       m.optional_bytes = "world".encode!('ASCII-8BIT')
       assert m.optional_bytes == "world"
       m.optional_msg = TestMessage2.new(:foo => 42)
       assert m.optional_msg == TestMessage2.new(:foo => 42)
       m.optional_msg = nil
       assert m.optional_msg == nil
-      m.optional_enum = :C
-      assert m.optional_enum == :C
-      m.optional_enum = 'C'
-      assert m.optional_enum == :C
     end
 
     def test_ctor_args
@@ -202,40 +255,12 @@ module BasicTest
       assert m.repeated_string[2] == "world"
     end
 
-    def test_ctor_string_symbol_args
-      m = TestMessage.new(:optional_enum => 'C', :repeated_enum => ['A', 'B'])
-      assert_equal :C, m.optional_enum
-      assert_equal [:A, :B], m.repeated_enum
-
-      m = TestMessage.new(:optional_string => :foo, :repeated_string => [:foo, :bar])
-      assert_equal 'foo', m.optional_string
-      assert_equal ['foo', 'bar'], m.repeated_string
-    end
-
-    def test_embeddedmsg_hash_init
-      m = TestEmbeddedMessageParent.new(:child_msg => {sub_child: {optional_int32: 1}},
-                                        :number => 2,
-                                        :repeated_msg => [{sub_child: {optional_int32: 3}}],
-                                        :repeated_number => [10, 20, 30])
-
-      assert_equal 2, m.number
-      assert_equal [10, 20, 30], m.repeated_number
-
-      assert_not_nil m.child_msg
-      assert_not_nil m.child_msg.sub_child
-      assert_equal m.child_msg.sub_child.optional_int32, 1
-
-      assert_not_nil m.repeated_msg
-      assert_equal 1, m.repeated_msg.length
-      assert_equal 3, m.repeated_msg.first.sub_child.optional_int32
-    end
-
     def test_inspect
       m = TestMessage.new(:optional_int32 => -42,
                           :optional_enum => :A,
                           :optional_msg => TestMessage2.new,
                           :repeated_string => ["hello", "there", "world"])
-      expected = '<BasicTest::TestMessage: optional_int32: -42, optional_int64: 0, optional_uint32: 0, optional_uint64: 0, optional_bool: false, optional_float: 0.0, optional_double: 0.0, optional_string: "", optional_bytes: "", optional_msg: <BasicTest::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: ["hello", "there", "world"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>'
+      expected = '<BasicTestProto2::TestMessage: optional_int32: -42, optional_int64: 0, optional_uint32: 0, optional_uint64: 0, optional_bool: false, optional_float: 0.0, optional_double: 0.0, optional_string: "", optional_bytes: "", optional_msg: <BasicTestProto2::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: ["hello", "there", "world"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>'
       assert_equal expected, m.inspect
     end
 
@@ -269,11 +294,6 @@ module BasicTest
         TestMessage.new(:hello => "world")
       end
       assert_match(/hello/, e.message)
-
-      e = assert_raise ArgumentError do
-        MapMessage.new(:map_string_int32 => "hello")
-      end
-      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32'."
 
       e = assert_raise ArgumentError do
         TestMessage.new(:repeated_uint32 => "hello")
@@ -636,138 +656,6 @@ module BasicTest
       end
     end
 
-    def test_map_msg_enum_valuetypes
-      m = Google::Protobuf::Map.new(:string, :message, TestMessage)
-      m["asdf"] = TestMessage.new
-      assert_raise TypeError do
-        m["jkl;"] = TestMessage2.new
-      end
-
-      m = Google::Protobuf::Map.new(
-        :string, :message, TestMessage,
-        { "a" => TestMessage.new(:optional_int32 => 42),
-          "b" => TestMessage.new(:optional_int32 => 84) })
-      assert m.length == 2
-      assert m.values.map{|msg| msg.optional_int32}.sort == [42, 84]
-
-      m = Google::Protobuf::Map.new(:string, :enum, TestEnum,
-                                    { "x" => :A, "y" => :B, "z" => :C })
-      assert m.length == 3
-      assert m["z"] == :C
-      m["z"] = 2
-      assert m["z"] == :B
-      m["z"] = 4
-      assert m["z"] == 4
-      assert_raise RangeError do
-        m["z"] = :Z
-      end
-      assert_raise RangeError do
-        m["z"] = "z"
-      end
-    end
-
-    def test_map_dup_deep_copy
-      m = Google::Protobuf::Map.new(
-        :string, :message, TestMessage,
-        { "a" => TestMessage.new(:optional_int32 => 42),
-          "b" => TestMessage.new(:optional_int32 => 84) })
-
-      m2 = m.dup
-      assert m == m2
-      assert m.object_id != m2.object_id
-      assert m["a"].object_id == m2["a"].object_id
-      assert m["b"].object_id == m2["b"].object_id
-
-      m2 = Google::Protobuf.deep_copy(m)
-      assert m == m2
-      assert m.object_id != m2.object_id
-      assert m["a"].object_id != m2["a"].object_id
-      assert m["b"].object_id != m2["b"].object_id
-    end
-
-    def test_map_field
-      m = MapMessage.new
-      assert m.map_string_int32 == {}
-      assert m.map_string_msg == {}
-
-      m = MapMessage.new(
-        :map_string_int32 => {"a" => 1, "b" => 2},
-        :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                            "b" => TestMessage2.new(:foo => 2)})
-      assert m.map_string_int32.keys.sort == ["a", "b"]
-      assert m.map_string_int32["a"] == 1
-      assert m.map_string_msg["b"].foo == 2
-
-      m.map_string_int32["c"] = 3
-      assert m.map_string_int32["c"] == 3
-      m.map_string_msg["c"] = TestMessage2.new(:foo => 3)
-      assert m.map_string_msg["c"] == TestMessage2.new(:foo => 3)
-      m.map_string_msg.delete("b")
-      m.map_string_msg.delete("c")
-      assert m.map_string_msg == { "a" => TestMessage2.new(:foo => 1) }
-
-      assert_raise TypeError do
-        m.map_string_msg["e"] = TestMessage.new # wrong value type
-      end
-      # ensure nothing was added by the above
-      assert m.map_string_msg == { "a" => TestMessage2.new(:foo => 1) }
-
-      m.map_string_int32 = Google::Protobuf::Map.new(:string, :int32)
-      assert_raise TypeError do
-        m.map_string_int32 = Google::Protobuf::Map.new(:string, :int64)
-      end
-      assert_raise TypeError do
-        m.map_string_int32 = {}
-      end
-
-      assert_raise TypeError do
-        m = MapMessage.new(:map_string_int32 => { 1 => "I am not a number" })
-      end
-    end
-
-    def test_map_corruption
-      # This pattern led to a crash in a previous version of upb/protobuf.
-      m = MapMessage.new(map_string_int32: { "aaa" => 1 })
-      m.map_string_int32['podid'] = 2
-      m.map_string_int32['aaa'] = 3
-    end
-
-    def test_concurrent_decoding
-      o = Outer.new
-      o.items[0] = Inner.new
-      raw = Outer.encode(o)
-
-      thds = 2.times.map do
-        Thread.new do
-          100000.times do
-            assert_equal o, Outer.decode(raw)
-          end
-        end
-      end
-      thds.map(&:join)
-    end
-
-    def test_map_encode_decode
-      m = MapMessage.new(
-        :map_string_int32 => {"a" => 1, "b" => 2},
-        :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                            "b" => TestMessage2.new(:foo => 2)})
-      m2 = MapMessage.decode(MapMessage.encode(m))
-      assert m == m2
-
-      m3 = MapMessageWireEquiv.decode(MapMessage.encode(m))
-      assert m3.map_string_int32.length == 2
-
-      kv = {}
-      m3.map_string_int32.map { |msg| kv[msg.key] = msg.value }
-      assert kv == {"a" => 1, "b" => 2}
-
-      kv = {}
-      m3.map_string_msg.map { |msg| kv[msg.key] = msg.value }
-      assert kv == {"a" => TestMessage2.new(:foo => 1),
-                    "b" => TestMessage2.new(:foo => 2)}
-    end
-
     def test_oneof_descriptors
       d = OneofMessage.descriptor
       o = d.lookup_oneof("my_oneof")
@@ -974,43 +862,15 @@ module BasicTest
     end
 
     def test_to_h
-      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
+      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
       expected_result = {
         :optional_bool=>true,
-        :optional_bytes=>"",
         :optional_double=>-10.100001,
-        :optional_enum=>:Default,
-        :optional_float=>0.0,
-        :optional_int32=>0,
-        :optional_int64=>0,
         :optional_string=>"foo",
-        :optional_uint32=>0,
-        :optional_uint64=>0,
-        :repeated_bool=>[],
-        :repeated_bytes=>[],
-        :repeated_double=>[],
-        :repeated_enum=>[],
-        :repeated_float=>[],
-        :repeated_int32=>[],
-        :repeated_int64=>[],
-        :repeated_msg=>[{:foo => 100}],
         :repeated_string=>["bar1", "bar2"],
-        :repeated_uint32=>[],
-        :repeated_uint64=>[]
-      }
-      assert_equal expected_result, m.to_h
-
-      m = MapMessage.new(
-        :map_string_int32 => {"a" => 1, "b" => 2},
-        :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
-                            "b" => TestMessage2.new(:foo => 2)})
-      expected_result = {
-        :map_string_int32 => {"a" => 1, "b" => 2},
-        :map_string_msg => {"a" => {:foo => 1}, "b" => {:foo => 2}}
       }
       assert_equal expected_result, m.to_h
     end
-
 
     def test_def_errors
       s = Google::Protobuf::DescriptorPool.new
@@ -1361,41 +1221,32 @@ module BasicTest
       assert JSON.parse(actual, :symbolize_names => true) == expected
     end
 
-    def test_json_maps
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
-      m = MapMessage.new(:map_string_int32 => {"a" => 1})
-      expected = {mapStringInt32: {a: 1}, mapStringMsg: {}}
-      expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}}
-      assert JSON.parse(MapMessage.encode_json(m), :symbolize_names => true) == expected
+    def test_map_keyword_disabled
+      file_descriptor = Google::Protobuf::FileDescriptor.new
+      file_descriptor.syntax = :proto2
 
-      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
-      assert JSON.parse(json, :symbolize_names => true) == expected_preserve
+      pool = Google::Protobuf::DescriptorPool.new
 
-      m2 = MapMessage.decode_json(MapMessage.encode_json(m))
-      assert m == m2
-    end
+      e = assert_raise ArgumentError do
+        pool.build(file_descriptor) do
+          add_message "MapMessage" do
+            map :map_string_int32, :string, :int32, 1
+            map :map_string_msg, :string, :message, 2, "TestMessage2"
+          end
+        end
+      end
 
-    def test_json_maps_emit_defaults_submsg
-      # TODO: Fix JSON in JRuby version.
-      return if RUBY_PLATFORM == "java"
-      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new})
-      expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}}
-
-      actual = MapMessage.encode_json(m, :emit_defaults => true)
-
-      assert JSON.parse(actual, :symbolize_names => true) == expected
+      assert_match(/Cannot add a native map/, e.message)
     end
 
     def test_comparison_with_arbitrary_object
-      assert MapMessage.new != nil
+      assert TestMessage.new != nil
     end
 
     def test_respond_to
       # This test fails with JRuby 1.7.23, likely because of an old JRuby bug.
       return if RUBY_PLATFORM == "java"
-      msg = MapMessage.new
-      assert msg.respond_to?(:map_string_int32)
+      msg = TestMessage.new
       assert !msg.respond_to?(:bacon)
     end
   end

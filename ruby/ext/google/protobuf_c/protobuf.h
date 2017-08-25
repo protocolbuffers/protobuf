@@ -40,6 +40,7 @@
 // Forward decls.
 struct DescriptorPool;
 struct Descriptor;
+struct FileDescriptor;
 struct FieldDescriptor;
 struct EnumDescriptor;
 struct MessageLayout;
@@ -51,6 +52,7 @@ struct Builder;
 
 typedef struct DescriptorPool DescriptorPool;
 typedef struct Descriptor Descriptor;
+typedef struct FileDescriptor FileDescriptor;
 typedef struct FieldDescriptor FieldDescriptor;
 typedef struct OneofDescriptor OneofDescriptor;
 typedef struct EnumDescriptor EnumDescriptor;
@@ -122,6 +124,10 @@ struct Descriptor {
   VALUE typeclass_references;
 };
 
+struct FileDescriptor {
+  const upb_filedef* filedef;
+};
+
 struct FieldDescriptor {
   const upb_fielddef* fielddef;
 };
@@ -151,11 +157,13 @@ struct EnumBuilderContext {
 
 struct Builder {
   VALUE pending_list;
+  VALUE file_descriptor;
   upb_def** defs;  // used only while finalizing
 };
 
 extern VALUE cDescriptorPool;
 extern VALUE cDescriptor;
+extern VALUE cFileDescriptor;
 extern VALUE cFieldDescriptor;
 extern VALUE cEnumDescriptor;
 extern VALUE cMessageBuilderContext;
@@ -178,7 +186,7 @@ VALUE DescriptorPool_alloc(VALUE klass);
 void DescriptorPool_register(VALUE module);
 DescriptorPool* ruby_to_DescriptorPool(VALUE value);
 VALUE DescriptorPool_add(VALUE _self, VALUE def);
-VALUE DescriptorPool_build(VALUE _self);
+VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self);
 VALUE DescriptorPool_lookup(VALUE _self, VALUE name);
 VALUE DescriptorPool_generated_pool(VALUE _self);
 
@@ -187,6 +195,7 @@ void Descriptor_free(void* _self);
 VALUE Descriptor_alloc(VALUE klass);
 void Descriptor_register(VALUE module);
 Descriptor* ruby_to_Descriptor(VALUE value);
+VALUE Descriptor_initialize(VALUE _self, VALUE file_descriptor_rb);
 VALUE Descriptor_name(VALUE _self);
 VALUE Descriptor_name_set(VALUE _self, VALUE str);
 VALUE Descriptor_each(VALUE _self);
@@ -198,6 +207,14 @@ VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name);
 VALUE Descriptor_msgclass(VALUE _self);
 extern const rb_data_type_t _Descriptor_type;
 
+void FileDescriptor_mark(void* _self);
+void FileDescriptor_free(void* _self);
+VALUE FileDescriptor_alloc(VALUE klass);
+void FileDescriptor_register(VALUE module);
+FileDescriptor* ruby_to_FileDescriptor(VALUE value);
+VALUE FileDescriptor_syntax(VALUE _self);
+VALUE FileDescriptor_syntax_set(VALUE _self, VALUE syntax);
+
 void FieldDescriptor_mark(void* _self);
 void FieldDescriptor_free(void* _self);
 VALUE FieldDescriptor_alloc(VALUE klass);
@@ -207,6 +224,8 @@ VALUE FieldDescriptor_name(VALUE _self);
 VALUE FieldDescriptor_name_set(VALUE _self, VALUE str);
 VALUE FieldDescriptor_type(VALUE _self);
 VALUE FieldDescriptor_type_set(VALUE _self, VALUE type);
+VALUE FieldDescriptor_default(VALUE _self);
+VALUE FieldDescriptor_default_set(VALUE _self, VALUE default_value);
 VALUE FieldDescriptor_label(VALUE _self);
 VALUE FieldDescriptor_label_set(VALUE _self, VALUE label);
 VALUE FieldDescriptor_number(VALUE _self);
@@ -214,6 +233,7 @@ VALUE FieldDescriptor_number_set(VALUE _self, VALUE number);
 VALUE FieldDescriptor_submsg_name(VALUE _self);
 VALUE FieldDescriptor_submsg_name_set(VALUE _self, VALUE value);
 VALUE FieldDescriptor_subtype(VALUE _self);
+VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb);
 VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb);
 VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value);
 upb_fieldtype_t ruby_to_fieldtype(VALUE type);
@@ -234,6 +254,7 @@ void EnumDescriptor_free(void* _self);
 VALUE EnumDescriptor_alloc(VALUE klass);
 void EnumDescriptor_register(VALUE module);
 EnumDescriptor* ruby_to_EnumDescriptor(VALUE value);
+VALUE EnumDescriptor_initialize(VALUE _self, VALUE file_descriptor_rb);
 VALUE EnumDescriptor_name(VALUE _self);
 VALUE EnumDescriptor_name_set(VALUE _self, VALUE str);
 VALUE EnumDescriptor_add_value(VALUE _self, VALUE name, VALUE number);
@@ -280,6 +301,7 @@ void Builder_free(void* _self);
 VALUE Builder_alloc(VALUE klass);
 void Builder_register(VALUE module);
 Builder* ruby_to_Builder(VALUE value);
+VALUE Builder_initialize(VALUE _self, VALUE file_descriptor_rb);
 VALUE Builder_add_message(VALUE _self, VALUE name);
 VALUE Builder_add_enum(VALUE _self, VALUE name);
 VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
@@ -445,10 +467,12 @@ VALUE Map_iter_value(Map_iter* iter);
 // -----------------------------------------------------------------------------
 
 #define MESSAGE_FIELD_NO_CASE ((size_t)-1)
+#define MESSAGE_FIELD_NO_HASBIT ((size_t)-1)
 
 struct MessageField {
   size_t offset;
   size_t case_offset;  // for oneofs, a uint32. Else, MESSAGE_FIELD_NO_CASE.
+  size_t hasbit;
 };
 
 struct MessageLayout {
@@ -459,6 +483,9 @@ struct MessageLayout {
 
 MessageLayout* create_layout(const upb_msgdef* msgdef);
 void free_layout(MessageLayout* layout);
+bool field_contains_hasbit(MessageLayout* layout,
+                 const upb_fielddef* field);
+VALUE layout_get_default(const upb_fielddef* field);
 VALUE layout_get(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field);
@@ -466,6 +493,12 @@ void layout_set(MessageLayout* layout,
                 void* storage,
                 const upb_fielddef* field,
                 VALUE val);
+VALUE layout_has(MessageLayout* layout,
+                 const void* storage,
+                 const upb_fielddef* field);
+void layout_clear(MessageLayout* layout,
+                 const void* storage,
+                 const upb_fielddef* field);
 void layout_init(MessageLayout* layout, void* storage);
 void layout_mark(MessageLayout* layout, void* storage);
 void layout_dup(MessageLayout* layout, void* to, void* from);
