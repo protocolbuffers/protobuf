@@ -600,6 +600,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/upb.c                                       \
   php/ext/google/protobuf/protobuf.c                                  \
   php/src/phpdoc.dist.xml                                             \
+  php/src/Google/Protobuf/Any.php                                     \
   php/src/Google/Protobuf/Descriptor.php                              \
   php/src/Google/Protobuf/DescriptorPool.php                          \
   php/src/Google/Protobuf/EnumDescriptor.php                          \
@@ -664,6 +665,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/SourceCodeInfo.php                 \
   php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
+  php/src/GPBMetadata/Google/Protobuf/Any.php                         \
   php/src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php         \
   php/tests/array_test.php                                            \
   php/tests/autoload.php                                              \
