@@ -607,6 +607,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/EnumValueDescriptor.php                     \
   php/src/Google/Protobuf/FieldDescriptor.php                         \
   php/src/Google/Protobuf/OneofDescriptor.php                         \
+  php/src/Google/Protobuf/Timestamp.php                               \
   php/src/Google/Protobuf/Internal/CodedInputStream.php               \
   php/src/Google/Protobuf/Internal/CodedOutputStream.php              \
   php/src/Google/Protobuf/Internal/DescriptorPool.php                 \
@@ -666,6 +667,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
+  php/src/GPBMetadata/Google/Protobuf/Timestamp.php                   \
   php/src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php         \
   php/tests/array_test.php                                            \
   php/tests/autoload.php                                              \

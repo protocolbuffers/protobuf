@@ -560,11 +560,6 @@ static size_t align_up_to(size_t offset, size_t granularity) {
   return (offset + granularity - 1) & ~(granularity - 1);
 }
 
-static void* slot_memory(MessageLayout* layout, const void* storage,
-                         const upb_fielddef* field) {
-  return ((uint8_t*)storage) + layout->fields[upb_fielddef_index(field)].offset;
-}
-
 static uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
                                  const upb_fielddef* field) {
   return (uint32_t*)(((uint8_t*)storage) +
@@ -574,6 +569,11 @@ static uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
 static int slot_property_cache(MessageLayout* layout, const void* storage,
                                const upb_fielddef* field) {
   return layout->fields[upb_fielddef_index(field)].cache_index;
+}
+
+void* slot_memory(MessageLayout* layout, const void* storage,
+                         const upb_fielddef* field) {
+  return ((uint8_t*)storage) + layout->fields[upb_fielddef_index(field)].offset;
 }
 
 MessageLayout* create_layout(const upb_msgdef* msgdef) {
