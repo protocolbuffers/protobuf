@@ -2570,6 +2570,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* release_php_namespace();
   void set_allocated_php_namespace(::std::string* php_namespace);
 
+  // optional bool cc_enable_arenas = 31 [default = false];
+  bool has_cc_enable_arenas() const;
+  void clear_cc_enable_arenas();
+  static const int kCcEnableArenasFieldNumber = 31;
+  bool cc_enable_arenas() const;
+  void set_cc_enable_arenas(bool value);
+
   // optional bool java_multiple_files = 10 [default = false];
   bool has_java_multiple_files() const;
   void clear_java_multiple_files();
@@ -2612,10 +2619,10 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   bool py_generic_services() const;
   void set_py_generic_services(bool value);
 
-  // optional bool php_generic_services = 19 [default = false];
+  // optional bool php_generic_services = 42 [default = false];
   bool has_php_generic_services() const;
   void clear_php_generic_services();
-  static const int kPhpGenericServicesFieldNumber = 19;
+  static const int kPhpGenericServicesFieldNumber = 42;
   bool php_generic_services() const;
   void set_php_generic_services(bool value);
 
@@ -2625,13 +2632,6 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   static const int kDeprecatedFieldNumber = 23;
   bool deprecated() const;
   void set_deprecated(bool value);
-
-  // optional bool cc_enable_arenas = 31 [default = false];
-  bool has_cc_enable_arenas() const;
-  void clear_cc_enable_arenas();
-  static const int kCcEnableArenasFieldNumber = 31;
-  bool cc_enable_arenas() const;
-  void set_cc_enable_arenas(bool value);
 
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
   bool has_optimize_for() const;
@@ -2694,6 +2694,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::google::protobuf::internal::ArenaStringPtr swift_prefix_;
   ::google::protobuf::internal::ArenaStringPtr php_class_prefix_;
   ::google::protobuf::internal::ArenaStringPtr php_namespace_;
+  bool cc_enable_arenas_;
   bool java_multiple_files_;
   bool java_generate_equals_and_hash_;
   bool java_string_check_utf8_;
@@ -2702,7 +2703,6 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   bool py_generic_services_;
   bool php_generic_services_;
   bool deprecated_;
-  bool cc_enable_arenas_;
   int optimize_for_;
   friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
@@ -7205,13 +7205,13 @@ inline void FileOptions::set_allocated_java_outer_classname(::std::string* java_
 
 // optional bool java_multiple_files = 10 [default = false];
 inline bool FileOptions::has_java_multiple_files() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void FileOptions::set_has_java_multiple_files() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void FileOptions::clear_has_java_multiple_files() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void FileOptions::clear_java_multiple_files() {
   java_multiple_files_ = false;
@@ -7229,13 +7229,13 @@ inline void FileOptions::set_java_multiple_files(bool value) {
 
 // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
 inline bool FileOptions::has_java_generate_equals_and_hash() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void FileOptions::set_has_java_generate_equals_and_hash() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void FileOptions::clear_has_java_generate_equals_and_hash() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void FileOptions::clear_java_generate_equals_and_hash() {
   java_generate_equals_and_hash_ = false;
@@ -7253,13 +7253,13 @@ inline void FileOptions::set_java_generate_equals_and_hash(bool value) {
 
 // optional bool java_string_check_utf8 = 27 [default = false];
 inline bool FileOptions::has_java_string_check_utf8() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void FileOptions::set_has_java_string_check_utf8() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void FileOptions::clear_has_java_string_check_utf8() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void FileOptions::clear_java_string_check_utf8() {
   java_string_check_utf8_ = false;
@@ -7365,13 +7365,13 @@ inline void FileOptions::set_allocated_go_package(::std::string* go_package) {
 
 // optional bool cc_generic_services = 16 [default = false];
 inline bool FileOptions::has_cc_generic_services() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void FileOptions::set_has_cc_generic_services() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void FileOptions::clear_has_cc_generic_services() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void FileOptions::clear_cc_generic_services() {
   cc_generic_services_ = false;
@@ -7389,13 +7389,13 @@ inline void FileOptions::set_cc_generic_services(bool value) {
 
 // optional bool java_generic_services = 17 [default = false];
 inline bool FileOptions::has_java_generic_services() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void FileOptions::set_has_java_generic_services() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void FileOptions::clear_has_java_generic_services() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void FileOptions::clear_java_generic_services() {
   java_generic_services_ = false;
@@ -7413,13 +7413,13 @@ inline void FileOptions::set_java_generic_services(bool value) {
 
 // optional bool py_generic_services = 18 [default = false];
 inline bool FileOptions::has_py_generic_services() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void FileOptions::set_has_py_generic_services() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void FileOptions::clear_has_py_generic_services() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void FileOptions::clear_py_generic_services() {
   py_generic_services_ = false;
@@ -7435,15 +7435,15 @@ inline void FileOptions::set_py_generic_services(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.py_generic_services)
 }
 
-// optional bool php_generic_services = 19 [default = false];
+// optional bool php_generic_services = 42 [default = false];
 inline bool FileOptions::has_php_generic_services() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void FileOptions::set_has_php_generic_services() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void FileOptions::clear_has_php_generic_services() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void FileOptions::clear_php_generic_services() {
   php_generic_services_ = false;
@@ -7461,13 +7461,13 @@ inline void FileOptions::set_php_generic_services(bool value) {
 
 // optional bool deprecated = 23 [default = false];
 inline bool FileOptions::has_deprecated() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void FileOptions::set_has_deprecated() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void FileOptions::clear_has_deprecated() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void FileOptions::clear_deprecated() {
   deprecated_ = false;
@@ -7485,13 +7485,13 @@ inline void FileOptions::set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = false];
 inline bool FileOptions::has_cc_enable_arenas() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void FileOptions::set_has_cc_enable_arenas() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void FileOptions::clear_has_cc_enable_arenas() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   cc_enable_arenas_ = false;

@@ -361,7 +361,7 @@ message FileOptions {
   optional bool cc_generic_services = 16 [default=false];
   optional bool java_generic_services = 17 [default=false];
   optional bool py_generic_services = 18 [default=false];
-  optional bool php_generic_services = 19 [default=false];
+  optional bool php_generic_services = 42 [default=false];
 
   // Is this file deprecated?
   // Depending on the target platform, this can emit Deprecated annotations
