@@ -288,7 +288,7 @@ static map_parse_frame_t* map_push_frame(VALUE map,
   native_slot_init(handlerdata->key_field_type, &frame->key_storage);
   native_slot_init(handlerdata->value_field_type, &frame->value_storage);
 
-  Map_push_frame(map,
+  Map_set_frame(map,
               TypedData_Wrap_Struct(rb_cObject, &MapParseFrame_type, frame));
 
   return frame;
@@ -327,7 +327,7 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);
-  Map_pop_frame(frame->map);
+  Map_set_frame(frame->map, Qnil);
 
   return true;
 }
