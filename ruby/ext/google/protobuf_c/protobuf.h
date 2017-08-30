@@ -395,7 +395,7 @@ typedef struct {
   upb_fieldtype_t key_type;
   upb_fieldtype_t value_type;
   VALUE value_type_class;
-  VALUE parse_frames;
+  VALUE parse_frame;
   upb_strtable table;
 } Map;
 
@@ -404,8 +404,7 @@ void Map_free(void* self);
 VALUE Map_alloc(VALUE klass);
 VALUE Map_init(int argc, VALUE* argv, VALUE self);
 void Map_register(VALUE module);
-VALUE Map_push_frame(VALUE self, VALUE val);
-VALUE Map_pop_frame(VALUE self);
+VALUE Map_set_frame(VALUE self, VALUE val);
 
 extern const rb_data_type_t Map_type;
 extern VALUE cMap;

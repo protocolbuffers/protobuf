@@ -146,7 +146,7 @@ void Map_mark(void* _self) {
   Map* self = _self;
 
   rb_gc_mark(self->value_type_class);
-  rb_gc_mark(self->parse_frames);
+  rb_gc_mark(self->parse_frame);
 
   if (self->value_type == UPB_TYPE_STRING ||
       self->value_type == UPB_TYPE_BYTES ||
@@ -175,14 +175,10 @@ VALUE Map_alloc(VALUE klass) {
   return TypedData_Wrap_Struct(klass, &Map_type, self);
 }
 
-VALUE Map_push_frame(VALUE map, VALUE val) {
+VALUE Map_set_frame(VALUE map, VALUE val) {
   Map* self = ruby_to_Map(map);
-  return rb_ary_push(self->parse_frames, val);
-}
-
-VALUE Map_pop_frame(VALUE map) {
-  Map* self = ruby_to_Map(map);
-  return rb_ary_pop(self->parse_frames);
+  self->parse_frame = val;
+  return val;
 }
 
 static bool needs_typeclass(upb_fieldtype_t type) {
@@ -238,7 +234,7 @@ VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->key_type = ruby_to_fieldtype(argv[0]);
   self->value_type = ruby_to_fieldtype(argv[1]);
-  self->parse_frames = rb_ary_new();
+  self->parse_frame = Qnil;
 
   // Check that the key type is an allowed type.
   switch (self->key_type) {
