@@ -619,6 +619,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/EnumOptions.php                    \
   php/src/Google/Protobuf/Internal/EnumValueDescriptorProto.php       \
   php/src/Google/Protobuf/Internal/EnumValueOptions.php               \
+  php/src/Google/Protobuf/Internal/ExtensionRangeOptions.php          \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
   php/src/Google/Protobuf/Internal/FieldDescriptor.php                \

@@ -398,17 +398,17 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_ATTRIBUTE_SECTION
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, uninterpreted_option_),
   0,
   1,
-  8,
   9,
   10,
+  11,
   17,
   2,
-  11,
   12,
   13,
   14,
   15,
   16,
+  8,
   3,
   4,
   5,
@@ -812,7 +812,7 @@ void AddDescriptorsImpl() {
       "_package\030\013 \001(\t\022\"\n\023cc_generic_services\030\020 "
       "\001(\010:\005false\022$\n\025java_generic_services\030\021 \001("
       "\010:\005false\022\"\n\023py_generic_services\030\022 \001(\010:\005f"
-      "alse\022#\n\024php_generic_services\030\023 \001(\010:\005fals"
+      "alse\022#\n\024php_generic_services\030* \001(\010:\005fals"
       "e\022\031\n\ndeprecated\030\027 \001(\010:\005false\022\037\n\020cc_enabl"
       "e_arenas\030\037 \001(\010:\005false\022\031\n\021objc_class_pref"
       "ix\030$ \001(\t\022\030\n\020csharp_namespace\030% \001(\t\022\024\n\014sw"
@@ -8871,9 +8871,9 @@ FileOptions::FileOptions(const FileOptions& from)
   if (from.has_php_namespace()) {
     php_namespace_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.php_namespace_);
   }
-  ::memcpy(&java_multiple_files_, &from.java_multiple_files_,
+  ::memcpy(&cc_enable_arenas_, &from.cc_enable_arenas_,
     static_cast<size_t>(reinterpret_cast<char*>(&optimize_for_) -
-    reinterpret_cast<char*>(&java_multiple_files_)) + sizeof(optimize_for_));
+    reinterpret_cast<char*>(&cc_enable_arenas_)) + sizeof(optimize_for_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileOptions)
 }
 
@@ -8887,9 +8887,9 @@ void FileOptions::SharedCtor() {
   swift_prefix_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   php_class_prefix_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   php_namespace_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&java_multiple_files_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&cc_enable_arenas_) -
-      reinterpret_cast<char*>(&java_multiple_files_)) + sizeof(cc_enable_arenas_));
+  ::memset(&cc_enable_arenas_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&deprecated_) -
+      reinterpret_cast<char*>(&cc_enable_arenas_)) + sizeof(deprecated_));
   optimize_for_ = 1;
 }
 
@@ -8976,12 +8976,12 @@ void FileOptions::Clear() {
     }
   }
   if (cached_has_bits & 65280u) {
-    ::memset(&java_multiple_files_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&deprecated_) -
-        reinterpret_cast<char*>(&java_multiple_files_)) + sizeof(deprecated_));
+    ::memset(&cc_enable_arenas_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&php_generic_services_) -
+        reinterpret_cast<char*>(&cc_enable_arenas_)) + sizeof(php_generic_services_));
   }
   if (cached_has_bits & 196608u) {
-    cc_enable_arenas_ = false;
+    deprecated_ = false;
     optimize_for_ = 1;
   }
   _has_bits_.Clear();
@@ -9116,20 +9116,6 @@ bool FileOptions::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
                  input, &py_generic_services_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // optional bool php_generic_services = 19 [default = false];
-      case 19: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(152u /* 152 & 0xFF */)) {
-          set_has_php_generic_services();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &php_generic_services_)));
         } else {
           goto handle_unusual;
         }
@@ -9272,6 +9258,20 @@ bool FileOptions::MergePartialFromCodedStream(
         break;
       }
 
+      // optional bool php_generic_services = 42 [default = false];
+      case 42: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(80u /* 336 & 0xFF */)) {
+          set_has_php_generic_services();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &php_generic_services_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
@@ -9344,7 +9344,7 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional bool java_multiple_files = 10 [default = false];
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(10, this->java_multiple_files(), output);
   }
 
@@ -9359,42 +9359,37 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional bool cc_generic_services = 16 [default = false];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(16, this->cc_generic_services(), output);
   }
 
   // optional bool java_generic_services = 17 [default = false];
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(17, this->java_generic_services(), output);
   }
 
   // optional bool py_generic_services = 18 [default = false];
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(18, this->py_generic_services(), output);
   }
 
-  // optional bool php_generic_services = 19 [default = false];
-  if (cached_has_bits & 0x00004000u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(19, this->php_generic_services(), output);
-  }
-
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(20, this->java_generate_equals_and_hash(), output);
   }
 
   // optional bool deprecated = 23 [default = false];
-  if (cached_has_bits & 0x00008000u) {
+  if (cached_has_bits & 0x00010000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(23, this->deprecated(), output);
   }
 
   // optional bool java_string_check_utf8 = 27 [default = false];
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(27, this->java_string_check_utf8(), output);
   }
 
   // optional bool cc_enable_arenas = 31 [default = false];
-  if (cached_has_bits & 0x00010000u) {
+  if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(31, this->cc_enable_arenas(), output);
   }
 
@@ -9446,6 +9441,11 @@ void FileOptions::SerializeWithCachedSizes(
       "google.protobuf.FileOptions.php_namespace");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       41, this->php_namespace(), output);
+  }
+
+  // optional bool php_generic_services = 42 [default = false];
+  if (cached_has_bits & 0x00008000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(42, this->php_generic_services(), output);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9503,7 +9503,7 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional bool java_multiple_files = 10 [default = false];
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(10, this->java_multiple_files(), target);
   }
 
@@ -9519,42 +9519,37 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional bool cc_generic_services = 16 [default = false];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(16, this->cc_generic_services(), target);
   }
 
   // optional bool java_generic_services = 17 [default = false];
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(17, this->java_generic_services(), target);
   }
 
   // optional bool py_generic_services = 18 [default = false];
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(18, this->py_generic_services(), target);
   }
 
-  // optional bool php_generic_services = 19 [default = false];
-  if (cached_has_bits & 0x00004000u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(19, this->php_generic_services(), target);
-  }
-
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(20, this->java_generate_equals_and_hash(), target);
   }
 
   // optional bool deprecated = 23 [default = false];
-  if (cached_has_bits & 0x00008000u) {
+  if (cached_has_bits & 0x00010000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(23, this->deprecated(), target);
   }
 
   // optional bool java_string_check_utf8 = 27 [default = false];
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(27, this->java_string_check_utf8(), target);
   }
 
   // optional bool cc_enable_arenas = 31 [default = false];
-  if (cached_has_bits & 0x00010000u) {
+  if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(31, this->cc_enable_arenas(), target);
   }
 
@@ -9611,6 +9606,11 @@ void FileOptions::SerializeWithCachedSizes(
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
         41, this->php_namespace(), target);
+  }
+
+  // optional bool php_generic_services = 42 [default = false];
+  if (cached_has_bits & 0x00008000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(42, this->php_generic_services(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9714,6 +9714,11 @@ size_t FileOptions::ByteSizeLong() const {
 
   }
   if (_has_bits_[8 / 32] & 65280u) {
+    // optional bool cc_enable_arenas = 31 [default = false];
+    if (has_cc_enable_arenas()) {
+      total_size += 2 + 1;
+    }
+
     // optional bool java_multiple_files = 10 [default = false];
     if (has_java_multiple_files()) {
       total_size += 1 + 1;
@@ -9744,20 +9749,15 @@ size_t FileOptions::ByteSizeLong() const {
       total_size += 2 + 1;
     }
 
-    // optional bool php_generic_services = 19 [default = false];
+    // optional bool php_generic_services = 42 [default = false];
     if (has_php_generic_services()) {
-      total_size += 2 + 1;
-    }
-
-    // optional bool deprecated = 23 [default = false];
-    if (has_deprecated()) {
       total_size += 2 + 1;
     }
 
   }
   if (_has_bits_[16 / 32] & 196608u) {
-    // optional bool cc_enable_arenas = 31 [default = false];
-    if (has_cc_enable_arenas()) {
+    // optional bool deprecated = 23 [default = false];
+    if (has_deprecated()) {
       total_size += 2 + 1;
     }
 
@@ -9836,34 +9836,34 @@ void FileOptions::MergeFrom(const FileOptions& from) {
   }
   if (cached_has_bits & 65280u) {
     if (cached_has_bits & 0x00000100u) {
-      java_multiple_files_ = from.java_multiple_files_;
+      cc_enable_arenas_ = from.cc_enable_arenas_;
     }
     if (cached_has_bits & 0x00000200u) {
-      java_generate_equals_and_hash_ = from.java_generate_equals_and_hash_;
+      java_multiple_files_ = from.java_multiple_files_;
     }
     if (cached_has_bits & 0x00000400u) {
-      java_string_check_utf8_ = from.java_string_check_utf8_;
+      java_generate_equals_and_hash_ = from.java_generate_equals_and_hash_;
     }
     if (cached_has_bits & 0x00000800u) {
-      cc_generic_services_ = from.cc_generic_services_;
+      java_string_check_utf8_ = from.java_string_check_utf8_;
     }
     if (cached_has_bits & 0x00001000u) {
-      java_generic_services_ = from.java_generic_services_;
+      cc_generic_services_ = from.cc_generic_services_;
     }
     if (cached_has_bits & 0x00002000u) {
-      py_generic_services_ = from.py_generic_services_;
+      java_generic_services_ = from.java_generic_services_;
     }
     if (cached_has_bits & 0x00004000u) {
-      php_generic_services_ = from.php_generic_services_;
+      py_generic_services_ = from.py_generic_services_;
     }
     if (cached_has_bits & 0x00008000u) {
-      deprecated_ = from.deprecated_;
+      php_generic_services_ = from.php_generic_services_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 196608u) {
     if (cached_has_bits & 0x00010000u) {
-      cc_enable_arenas_ = from.cc_enable_arenas_;
+      deprecated_ = from.deprecated_;
     }
     if (cached_has_bits & 0x00020000u) {
       optimize_for_ = from.optimize_for_;
@@ -9910,6 +9910,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
   swift_prefix_.Swap(&other->swift_prefix_);
   php_class_prefix_.Swap(&other->php_class_prefix_);
   php_namespace_.Swap(&other->php_namespace_);
+  swap(cc_enable_arenas_, other->cc_enable_arenas_);
   swap(java_multiple_files_, other->java_multiple_files_);
   swap(java_generate_equals_and_hash_, other->java_generate_equals_and_hash_);
   swap(java_string_check_utf8_, other->java_string_check_utf8_);
@@ -9918,7 +9919,6 @@ void FileOptions::InternalSwap(FileOptions* other) {
   swap(py_generic_services_, other->py_generic_services_);
   swap(php_generic_services_, other->php_generic_services_);
   swap(deprecated_, other->deprecated_);
-  swap(cc_enable_arenas_, other->cc_enable_arenas_);
   swap(optimize_for_, other->optimize_for_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -10062,13 +10062,13 @@ void FileOptions::set_allocated_java_outer_classname(::std::string* java_outer_c
 
 // optional bool java_multiple_files = 10 [default = false];
 bool FileOptions::has_java_multiple_files() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 void FileOptions::set_has_java_multiple_files() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 void FileOptions::clear_has_java_multiple_files() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 void FileOptions::clear_java_multiple_files() {
   java_multiple_files_ = false;
@@ -10086,13 +10086,13 @@ void FileOptions::set_java_multiple_files(bool value) {
 
 // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
 bool FileOptions::has_java_generate_equals_and_hash() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 void FileOptions::set_has_java_generate_equals_and_hash() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 void FileOptions::clear_has_java_generate_equals_and_hash() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 void FileOptions::clear_java_generate_equals_and_hash() {
   java_generate_equals_and_hash_ = false;
@@ -10110,13 +10110,13 @@ void FileOptions::set_java_generate_equals_and_hash(bool value) {
 
 // optional bool java_string_check_utf8 = 27 [default = false];
 bool FileOptions::has_java_string_check_utf8() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 void FileOptions::set_has_java_string_check_utf8() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 void FileOptions::clear_has_java_string_check_utf8() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 void FileOptions::clear_java_string_check_utf8() {
   java_string_check_utf8_ = false;
@@ -10222,13 +10222,13 @@ void FileOptions::set_allocated_go_package(::std::string* go_package) {
 
 // optional bool cc_generic_services = 16 [default = false];
 bool FileOptions::has_cc_generic_services() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 void FileOptions::set_has_cc_generic_services() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 void FileOptions::clear_has_cc_generic_services() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 void FileOptions::clear_cc_generic_services() {
   cc_generic_services_ = false;
@@ -10246,13 +10246,13 @@ void FileOptions::set_cc_generic_services(bool value) {
 
 // optional bool java_generic_services = 17 [default = false];
 bool FileOptions::has_java_generic_services() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 void FileOptions::set_has_java_generic_services() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 void FileOptions::clear_has_java_generic_services() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 void FileOptions::clear_java_generic_services() {
   java_generic_services_ = false;
@@ -10270,13 +10270,13 @@ void FileOptions::set_java_generic_services(bool value) {
 
 // optional bool py_generic_services = 18 [default = false];
 bool FileOptions::has_py_generic_services() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 void FileOptions::set_has_py_generic_services() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 void FileOptions::clear_has_py_generic_services() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 void FileOptions::clear_py_generic_services() {
   py_generic_services_ = false;
@@ -10292,15 +10292,15 @@ void FileOptions::set_py_generic_services(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.py_generic_services)
 }
 
-// optional bool php_generic_services = 19 [default = false];
+// optional bool php_generic_services = 42 [default = false];
 bool FileOptions::has_php_generic_services() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 void FileOptions::set_has_php_generic_services() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 void FileOptions::clear_has_php_generic_services() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 void FileOptions::clear_php_generic_services() {
   php_generic_services_ = false;
@@ -10318,13 +10318,13 @@ void FileOptions::set_php_generic_services(bool value) {
 
 // optional bool deprecated = 23 [default = false];
 bool FileOptions::has_deprecated() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 void FileOptions::set_has_deprecated() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 void FileOptions::clear_has_deprecated() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 void FileOptions::clear_deprecated() {
   deprecated_ = false;
@@ -10342,13 +10342,13 @@ void FileOptions::set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = false];
 bool FileOptions::has_cc_enable_arenas() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 void FileOptions::set_has_cc_enable_arenas() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00000100u;
 }
 void FileOptions::clear_has_cc_enable_arenas() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 void FileOptions::clear_cc_enable_arenas() {
   cc_enable_arenas_ = false;
