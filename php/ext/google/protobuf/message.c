@@ -606,10 +606,10 @@ zend_class_entry* timestamp_type;
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Timestamp",
                                  Timestamp, timestamp)
   zend_class_implements(timestamp_type TSRMLS_CC, 1, message_type);
-  zend_declare_property_string(timestamp_type, "seconds", strlen("seconds"),
-                               "" ,ZEND_ACC_PRIVATE TSRMLS_CC);
-  zend_declare_property_string(timestamp_type, "nanos", strlen("nanos"),
-                               "" ,ZEND_ACC_PRIVATE TSRMLS_CC);
+  zend_declare_property_long(timestamp_type, "seconds", strlen("seconds"),
+                             0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
+  zend_declare_property_long(timestamp_type, "nanos", strlen("nanos"),
+                             0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Timestamp, __construct) {

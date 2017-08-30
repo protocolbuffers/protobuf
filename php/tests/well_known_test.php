@@ -94,7 +94,7 @@ class WellKnownTest extends TestBase {
 
         $timestamp->setSeconds(1);
         $timestamp->setNanos(2);
-        $this->assertSame(1, $timestamp->getSeconds());
+        $this->assertEquals(1, $timestamp->getSeconds());
         $this->assertSame(2, $timestamp->getNanos());
 
         date_default_timezone_set('UTC');
