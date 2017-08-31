@@ -531,6 +531,7 @@ struct RepeatedFieldIter;
 struct Map;
 struct MapIter;
 struct Oneof;
+struct Timestamp;
 
 typedef struct Any Any;
 typedef struct DescriptorPool DescriptorPool;
@@ -547,6 +548,7 @@ typedef struct RepeatedFieldIter RepeatedFieldIter;
 typedef struct Map Map;
 typedef struct MapIter MapIter;
 typedef struct Oneof Oneof;
+typedef struct Timestamp Timestamp;
 
 // -----------------------------------------------------------------------------
 // Globals.
@@ -569,6 +571,7 @@ void message_init(TSRMLS_D);
 void oneof_descriptor_init(TSRMLS_D);
 void repeated_field_init(TSRMLS_D);
 void repeated_field_iter_init(TSRMLS_D);
+void timestamp_init(TSRMLS_D);
 void util_init(TSRMLS_D);
 
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
@@ -787,6 +790,8 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
 const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
+void* slot_memory(MessageLayout* layout, const void* storage,
+                  const upb_fielddef* field);
 
 PHP_METHOD(Message, clear);
 PHP_METHOD(Message, mergeFrom);
@@ -1029,7 +1034,16 @@ PHP_METHOD(Any, unpack);
 PHP_METHOD(Any, pack);
 PHP_METHOD(Any, is);
 
+PHP_METHOD(Timestamp, __construct);
+PHP_METHOD(Timestamp, fromDateTime);
+PHP_METHOD(Timestamp, toDateTime);
+PHP_METHOD(Timestamp, getSeconds);
+PHP_METHOD(Timestamp, setSeconds);
+PHP_METHOD(Timestamp, getNanos);
+PHP_METHOD(Timestamp, setNanos);
+
 extern zend_class_entry* any_type;
+extern zend_class_entry* timestamp_type;
 
 // -----------------------------------------------------------------------------
 // Upb.

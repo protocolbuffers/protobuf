@@ -5,6 +5,7 @@ require_once('test_util.php');
 
 use Google\Protobuf\GPBEmpty;
 use Google\Protobuf\Any;
+use Google\Protobuf\Timestamp;
 
 use Foo\TestMessage;
 
@@ -85,5 +86,25 @@ class WellKnownTest extends TestBase {
         $any->setTypeUrl("type.googleapis.com/foo.TestMessage");
         $any->setValue("abc");
         $any->unpack();
+    }
+
+    public function testTimestamp()
+    {
+        $timestamp = new Timestamp();
+
+        $timestamp->setSeconds(1);
+        $timestamp->setNanos(2);
+        $this->assertEquals(1, $timestamp->getSeconds());
+        $this->assertSame(2, $timestamp->getNanos());
+
+        date_default_timezone_set('UTC');
+        $from = new DateTime('2011-01-01T15:03:01.012345UTC');
+        $timestamp->fromDateTime($from);
+        $this->assertEquals($from->format('U'), $timestamp->getSeconds());
+        $this->assertSame(0, $timestamp->getNanos());
+
+        $to = $timestamp->toDateTime();
+        $this->assertSame(\DateTime::class, get_class($to));
+        $this->assertSame($from->format('U'), $to->format('U'));
     }
 }

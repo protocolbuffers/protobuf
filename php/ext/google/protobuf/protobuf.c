@@ -257,6 +257,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
   repeated_field_iter_init(TSRMLS_C);
   util_init(TSRMLS_C);
   any_init(TSRMLS_C);
+  timestamp_init(TSRMLS_C);
 
   return 0;
 }

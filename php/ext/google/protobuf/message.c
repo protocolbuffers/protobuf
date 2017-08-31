@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <php.h>
+#include <ext/date/php_date.h>
 #include <stdlib.h>
 
 #include "protobuf.h"
@@ -105,6 +106,20 @@ PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\Message",
   message_handlers->get_gc = message_get_gc;
 PHP_PROTO_INIT_CLASS_END
 
+static void message_set_property_internal(zval* object, zval* member,
+                                          zval* value TSRMLS_DC) {
+  const upb_fielddef* field;
+
+  MessageHeader* self = UNBOX(MessageHeader, object);
+
+  field = upb_msgdef_ntofz(self->descriptor->msgdef, Z_STRVAL_P(member));
+  if (field == NULL) {
+    zend_error(E_USER_ERROR, "Unknown field: %s", Z_STRVAL_P(member));
+  }
+
+  layout_set(self->descriptor->layout, self, field, value TSRMLS_CC);
+}
+
 #if PHP_MAJOR_VERSION < 7
 static void message_set_property(zval* object, zval* member, zval* value,
                                  php_proto_zend_literal key TSRMLS_DC) {
@@ -127,16 +142,32 @@ static void message_set_property(zval* object, zval* member, zval* value,
     return;
   }
 
-  const upb_fielddef* field;
+  message_set_property_internal(object, member, value TSRMLS_CC);
+}
 
+static zval* message_get_property_internal(zval* object,
+                                           zval* member TSRMLS_DC) {
   MessageHeader* self = UNBOX(MessageHeader, object);
-
+  const upb_fielddef* field;
   field = upb_msgdef_ntofz(self->descriptor->msgdef, Z_STRVAL_P(member));
   if (field == NULL) {
-    zend_error(E_USER_ERROR, "Unknown field: %s", Z_STRVAL_P(member));
+    return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
   }
 
-  layout_set(self->descriptor->layout, self, field, value TSRMLS_CC);
+  zend_property_info* property_info;
+#if PHP_MAJOR_VERSION < 7
+  property_info =
+      zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
+  return layout_get(
+      self->descriptor->layout, message_data(self), field,
+      OBJ_PROP(Z_OBJ_P(object), property_info->offset) TSRMLS_CC);
+#else
+  property_info =
+      zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
+  return layout_get(
+      self->descriptor->layout, message_data(self), field,
+      OBJ_PROP(Z_OBJ_P(object), property_info->offset) TSRMLS_CC);
+#endif
 }
 
 #if PHP_MAJOR_VERSION < 7
@@ -161,27 +192,7 @@ static zval* message_get_property(zval* object, zval* member, int type,
     return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
   }
 
-  MessageHeader* self = UNBOX(MessageHeader, object);
-  const upb_fielddef* field;
-  field = upb_msgdef_ntofz(self->descriptor->msgdef, Z_STRVAL_P(member));
-  if (field == NULL) {
-    return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
-  }
-
-  zend_property_info* property_info;
-#if PHP_MAJOR_VERSION < 7
-  property_info =
-      zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
-  return layout_get(
-      self->descriptor->layout, message_data(self), field,
-      OBJ_PROP(Z_OBJ_P(object), property_info->offset) TSRMLS_CC);
-#else
-  property_info =
-      zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
-  return layout_get(
-      self->descriptor->layout, message_data(self), field,
-      OBJ_PROP(Z_OBJ_P(object), property_info->offset) TSRMLS_CC);
-#endif
+  return message_get_property_internal(object, member TSRMLS_CC);
 }
 
 #if PHP_MAJOR_VERSION < 7
@@ -346,6 +357,32 @@ PHP_METHOD(Message, whichOneof) {
 }
 
 // -----------------------------------------------------------------------------
+// Well Known Types Support
+// -----------------------------------------------------------------------------
+
+#define PHP_PROTO_FIELD_ACCESSORS(UPPER_CLASS, LOWER_CLASS, UPPER_FIELD,       \
+                                  LOWER_FIELD)                                 \
+  PHP_METHOD(UPPER_CLASS, get##UPPER_FIELD) {                                  \
+    zval member;                                                               \
+    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 1);                            \
+    PHP_PROTO_FAKE_SCOPE_BEGIN(LOWER_CLASS##_type);                            \
+    zval* value = message_get_property_internal(getThis(), &member TSRMLS_CC); \
+    PHP_PROTO_FAKE_SCOPE_END;                                                  \
+    PHP_PROTO_RETVAL_ZVAL(value);                                              \
+  }                                                                            \
+  PHP_METHOD(UPPER_CLASS, set##UPPER_FIELD) {                                  \
+    zval* value = NULL;                                                        \
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &value) ==       \
+        FAILURE) {                                                             \
+      return;                                                                  \
+    }                                                                          \
+    zval member;                                                               \
+    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 1);                            \
+    message_set_property_internal(getThis(), &member, value TSRMLS_CC);        \
+    PHP_PROTO_RETVAL_ZVAL(getThis());                                          \
+  }
+
+// -----------------------------------------------------------------------------
 // Any
 // -----------------------------------------------------------------------------
 
@@ -417,78 +454,8 @@ PHP_METHOD(Any, __construct) {
   custom_data_init(any_type, intern PHP_PROTO_TSRMLS_CC);
 }
 
-PHP_METHOD(Any, getTypeUrl) {
-  zval member;
-  PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
-
-  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-#if PHP_MAJOR_VERSION < 7
-  zval* value = message_handlers->read_property(getThis(), &member, BP_VAR_R,
-                                                NULL PHP_PROTO_TSRMLS_CC);
-#else
-  zval* value = message_handlers->read_property(getThis(), &member, BP_VAR_R,
-                                                NULL, NULL PHP_PROTO_TSRMLS_CC);
-#endif
-  PHP_PROTO_FAKE_SCOPE_END;
-
-  PHP_PROTO_RETVAL_ZVAL(value);
-}
-
-PHP_METHOD(Any, setTypeUrl) {
-  char *type_url = NULL;
-  PHP_PROTO_SIZE type_url_len;
-
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &type_url,
-                            &type_url_len) == FAILURE) {
-    return;
-  }
-
-  zval member;
-  zval value;
-  PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
-  PHP_PROTO_ZVAL_STRINGL(&value, type_url, type_url_len, 1);
-
-  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-  message_handlers->write_property(getThis(), &member, &value,
-                                   NULL PHP_PROTO_TSRMLS_CC);
-  PHP_PROTO_FAKE_SCOPE_END;
-
-  PHP_PROTO_RETVAL_ZVAL(getThis());
-}
-
-PHP_METHOD(Any, getValue) {
-  zval member;
-  PHP_PROTO_ZVAL_STRING(&member, "value", 1);
-
-  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-  zval* value =
-      php_proto_message_read_property(getThis(), &member PHP_PROTO_TSRMLS_CC);
-  PHP_PROTO_FAKE_SCOPE_END;
-
-  PHP_PROTO_RETVAL_ZVAL(value);
-}
-
-PHP_METHOD(Any, setValue) {
-  char *value = NULL;
-  PHP_PROTO_SIZE value_len;
-
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &value,
-                            &value_len) == FAILURE) {
-    return;
-  }
-
-  zval member;
-  zval value_to_set;
-  PHP_PROTO_ZVAL_STRING(&member, "value", 1);
-  PHP_PROTO_ZVAL_STRINGL(&value_to_set, value, value_len, 1);
-
-  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-  message_handlers->write_property(getThis(), &member, &value_to_set,
-                                   NULL PHP_PROTO_TSRMLS_CC);
-  PHP_PROTO_FAKE_SCOPE_END;
-
-  PHP_PROTO_RETVAL_ZVAL(getThis());
-}
+PHP_PROTO_FIELD_ACCESSORS(Any, any, TypeUrl, "type_url")
+PHP_PROTO_FIELD_ACCESSORS(Any, any, Value,   "value")
 
 PHP_METHOD(Any, unpack) {
   // Get type url.
@@ -616,4 +583,125 @@ PHP_METHOD(Any, is) {
   FREE(type_url);
 
   RETURN_BOOL(is);
+}
+
+// -----------------------------------------------------------------------------
+// Timestamp
+// -----------------------------------------------------------------------------
+
+static  zend_function_entry timestamp_methods[] = {
+  PHP_ME(Timestamp, __construct, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Timestamp, fromDateTime, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Timestamp, toDateTime, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Timestamp, getSeconds, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Timestamp, setSeconds, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Timestamp, getNanos, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Timestamp, setNanos, NULL, ZEND_ACC_PUBLIC)
+  {NULL, NULL, NULL}
+};
+
+zend_class_entry* timestamp_type;
+
+// Init class entry.
+PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Timestamp",
+                                 Timestamp, timestamp)
+  zend_class_implements(timestamp_type TSRMLS_CC, 1, message_type);
+  zend_declare_property_long(timestamp_type, "seconds", strlen("seconds"),
+                             0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
+  zend_declare_property_long(timestamp_type, "nanos", strlen("nanos"),
+                             0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
+PHP_PROTO_INIT_SUBMSGCLASS_END
+
+PHP_METHOD(Timestamp, __construct) {
+  PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(timestamp_type);
+  if (desc_php == NULL) {
+    init_generated_pool_once(TSRMLS_C);
+    const char* generated_file =
+      "0ae7010a1f676f6f676c652f70726f746f6275662f74696d657374616d70"
+      "2e70726f746f120f676f6f676c652e70726f746f627566222b0a0954696d"
+      "657374616d70120f0a077365636f6e6473180120012803120d0a056e616e"
+      "6f73180220012805427e0a13636f6d2e676f6f676c652e70726f746f6275"
+      "66420e54696d657374616d7050726f746f50015a2b6769746875622e636f"
+      "6d2f676f6c616e672f70726f746f6275662f7074797065732f74696d6573"
+      "74616d70f80101a20203475042aa021e476f6f676c652e50726f746f6275"
+      "662e57656c6c4b6e6f776e5479706573620670726f746f33";
+    char* binary;
+    int binary_len;
+    hex_to_binary(generated_file, &binary, &binary_len);
+
+    internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
+    FREE(binary);
+  }
+
+  MessageHeader* intern = UNBOX(MessageHeader, getThis());
+  custom_data_init(timestamp_type, intern PHP_PROTO_TSRMLS_CC);
+}
+
+PHP_PROTO_FIELD_ACCESSORS(Timestamp, timestamp, Seconds, "seconds")
+PHP_PROTO_FIELD_ACCESSORS(Timestamp, timestamp, Nanos,   "nanos")
+
+PHP_METHOD(Timestamp, fromDateTime) {
+  zval* datetime;
+  zval member;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &datetime,
+                            php_date_get_date_ce()) == FAILURE) {
+    return;
+  }
+
+  php_date_obj* dateobj = UNBOX(php_date_obj, datetime);
+  if (!dateobj->time->sse_uptodate) {
+    timelib_update_ts(dateobj->time, NULL);
+  }
+
+  int64_t timestamp = dateobj->time->sse;
+
+  // Set seconds
+  MessageHeader* self = UNBOX(MessageHeader, getThis());
+  const upb_fielddef* field =
+      upb_msgdef_ntofz(self->descriptor->msgdef, "seconds");
+  void* storage = message_data(self);
+  void* memory = slot_memory(self->descriptor->layout, storage, field);
+  *(int64_t*)memory = dateobj->time->sse;
+
+  // Set nanos
+  field = upb_msgdef_ntofz(self->descriptor->msgdef, "nanos");
+  storage = message_data(self);
+  memory = slot_memory(self->descriptor->layout, storage, field);
+  *(int32_t*)memory = 0;
+}
+
+PHP_METHOD(Timestamp, toDateTime) {
+  zval datetime;
+  php_date_instantiate(php_date_get_date_ce(), &datetime TSRMLS_CC);
+  php_date_obj* dateobj = UNBOX(php_date_obj, &datetime);
+
+  // Get seconds
+  MessageHeader* self = UNBOX(MessageHeader, getThis());
+  const upb_fielddef* field =
+      upb_msgdef_ntofz(self->descriptor->msgdef, "seconds");
+  void* storage = message_data(self);
+  void* memory = slot_memory(self->descriptor->layout, storage, field);
+  int64_t seconds = *(int64_t*)memory;
+
+  // Get nanos
+  field = upb_msgdef_ntofz(self->descriptor->msgdef, "nanos");
+  memory = slot_memory(self->descriptor->layout, storage, field);
+  int32_t nanos = *(int32_t*)memory;
+
+  // Get formated time string.
+  char formated_time[50];
+  time_t raw_time = seconds;
+  struct tm *utc_time = gmtime(&raw_time);
+  strftime(formated_time, sizeof(formated_time), "%Y-%m-%dT%H:%M:%SUTC",
+           utc_time);
+
+  if (!php_date_initialize(dateobj, formated_time, strlen(formated_time), NULL,
+                           NULL, 0 TSRMLS_CC)) {
+    zval_dtor(&datetime);
+    RETURN_NULL();
+  }
+
+  zval* datetime_ptr = &datetime;
+  PHP_PROTO_RETVAL_ZVAL(datetime_ptr);
 }
