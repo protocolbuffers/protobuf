@@ -33,3 +33,6 @@ syntax = "proto3";
 package deprecated_file;
 
 option deprecated = true;
+
+// TODO (liujisi): Add deprecation options on messages, enums fields as well and
+// add tests to verify those annotations are actually generated.
