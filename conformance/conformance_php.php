@@ -38,6 +38,10 @@ require_once("GPBMetadata/Google/Protobuf/TestMessagesProto3.php");
 
 use  \Conformance\WireFormat;
 
+if (!ini_get("date.timezone")) {
+  ini_set("date.timezone", "UTC");
+}
+
 $test_count = 0;
 
 function doTest($request)
