@@ -519,6 +519,7 @@ static inline int php_proto_zend_lookup_class(
 struct Any;
 struct DescriptorPool;
 struct Descriptor;
+struct Duration;
 struct EnumDescriptor;
 struct EnumValueDescriptor;
 struct FieldDescriptor;
@@ -536,6 +537,7 @@ struct Timestamp;
 typedef struct Any Any;
 typedef struct DescriptorPool DescriptorPool;
 typedef struct Descriptor Descriptor;
+typedef struct Duration Duration;
 typedef struct EnumDescriptor EnumDescriptor;
 typedef struct EnumValueDescriptor EnumValueDescriptor;
 typedef struct FieldDescriptor FieldDescriptor;
@@ -560,6 +562,7 @@ ZEND_END_MODULE_GLOBALS(protobuf)
 // Init module and PHP classes.
 void any_init(TSRMLS_D);
 void descriptor_init(TSRMLS_D);
+void duration_init(TSRMLS_D);
 void enum_descriptor_init(TSRMLS_D);
 void descriptor_pool_init(TSRMLS_D);
 void internal_descriptor_pool_init(TSRMLS_D);
@@ -1034,6 +1037,12 @@ PHP_METHOD(Any, unpack);
 PHP_METHOD(Any, pack);
 PHP_METHOD(Any, is);
 
+PHP_METHOD(Duration, __construct);
+PHP_METHOD(Duration, getSeconds);
+PHP_METHOD(Duration, setSeconds);
+PHP_METHOD(Duration, getNanos);
+PHP_METHOD(Duration, setNanos);
+
 PHP_METHOD(Timestamp, __construct);
 PHP_METHOD(Timestamp, fromDateTime);
 PHP_METHOD(Timestamp, toDateTime);
@@ -1043,6 +1052,7 @@ PHP_METHOD(Timestamp, getNanos);
 PHP_METHOD(Timestamp, setNanos);
 
 extern zend_class_entry* any_type;
+extern zend_class_entry* duration_type;
 extern zend_class_entry* timestamp_type;
 
 // -----------------------------------------------------------------------------
