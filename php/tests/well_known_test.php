@@ -5,6 +5,7 @@ require_once('test_util.php');
 
 use Google\Protobuf\GPBEmpty;
 use Google\Protobuf\Any;
+use Google\Protobuf\Duration;
 use Google\Protobuf\Timestamp;
 
 use Foo\TestMessage;
@@ -106,5 +107,15 @@ class WellKnownTest extends TestBase {
         $to = $timestamp->toDateTime();
         $this->assertSame(\DateTime::class, get_class($to));
         $this->assertSame($from->format('U'), $to->format('U'));
+    }
+
+    public function testDuration()
+    {
+        $duration = new Duration();
+
+        $duration->setSeconds(1);
+        $duration->setNanos(2);
+        $this->assertEquals(1, $duration->getSeconds());
+        $this->assertSame(2, $duration->getNanos());
     }
 }
