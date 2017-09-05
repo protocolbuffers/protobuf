@@ -6,7 +6,7 @@
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
     <VersionPrefix>3.4.0</VersionPrefix>
     <Authors>Google Inc.</Authors>
-    <TargetFrameworks>netstandard1.0;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard1.0;net45</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
