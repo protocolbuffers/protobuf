@@ -1,3 +1,5 @@
+workspace(name = "com_google_protobuf")
+
 new_git_repository(
     name = "googletest",
     build_file = "gmock.BUILD",
