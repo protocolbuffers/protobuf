@@ -2876,6 +2876,29 @@ void Generator::GenerateClassDeserializeBinaryField(
                         "Group" : "Message",
           "grpfield", (field->type() == FieldDescriptor::TYPE_GROUP) ?
                       (SimpleItoa(field->number()) + ", ") : "");
+    } else if (field->is_repeated() &&
+               field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+      printer->Print(
+          "      if (reader.getWireType() == 2) {\n"
+          "        var value = /** @type {$fieldtype_packed$} */ "
+          "(reader.readPacked$reader$());\n"
+          "        msg.set$list_name$(value);\n"
+          "      } else {\n"
+          "        var value = /** @type {$fieldtype$} */ "
+          "(reader.read$reader$());\n"
+          "        msg.add$name$(value);\n"
+          "      }\n",
+          "fieldtype_packed", JSFieldTypeAnnotation(options, field, false, true,
+                                             /* singular_if_not_packed */ false,
+                                             BYTES_U8),
+          "fieldtype", JSFieldTypeAnnotation(options, field, false, true,
+                                             /* singular_if_not_packed */ true,
+                                             BYTES_U8),
+          "reader", JSBinaryReaderMethodType(field),
+          "list_name", JSGetterName(options, field),
+          "name", JSGetterName(options, field,
+                               BYTES_DEFAULT, /* drop_list = */ true)
+      );
     } else {
       printer->Print(
           "      var value = /** @type {$fieldtype$} */ "
@@ -2887,14 +2910,15 @@ void Generator::GenerateClassDeserializeBinaryField(
           JSBinaryReadWriteMethodName(field, /* is_writer = */ false));
     }
 
-    if (field->is_repeated() && !field->is_packed()) {
+    if (field->is_repeated() &&
+        (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+         field->cpp_type() == FieldDescriptor::CPPTYPE_STRING)) {
       printer->Print(
           "      msg.add$name$(value);\n", "name",
           JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));
-    } else {
-      // Singular fields, and packed repeated fields, receive a |value| either
-      // as the field's value or as the array of all the field's values; set
-      // this as the field's value directly.
+    } else if (!field->is_repeated()) {
+      // Singular fields, receive a |value| as the field's value ; set this as
+      // the field's value directly.
       printer->Print(
           "      msg.set$name$(value);\n",
           "name", JSGetterName(options, field));
