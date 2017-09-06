@@ -237,7 +237,11 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #define GOOGLE_SAFE_CONCURRENT_WRITES_END()
 #endif
 
-#if defined(__clang__) && defined(__has_cpp_attribute) \
+#if __cplusplus > 201402L && __has_cpp_attribute(fallthrough)
+# define GOOGLE_FALLTHROUGH_INTENDED [[fallthrough]]
+#elif __has_cpp_attribute(gnu::fallthrough)
+# define GOOGLE_FALLTHROUGH_INTENDED [[gnu::fallthrough]]
+#elif defined(__clang__) && defined(__has_cpp_attribute) \
     && !defined(GOOGLE_PROTOBUF_OS_APPLE)
 # if defined(GOOGLE_PROTOBUF_OS_NACL) || defined(EMSCRIPTEN) || \
      __has_cpp_attribute(clang::fallthrough)
