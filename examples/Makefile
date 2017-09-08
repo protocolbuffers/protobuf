@@ -51,7 +51,7 @@ list_people_gotest: list_people.go list_people_go
 	go test list_people.go list_people_test.go
 
 javac_middleman: AddPerson.java ListPeople.java protoc_middleman
-	javac -cp ../java/core/target/*.jar AddPerson.java ListPeople.java com/example/tutorial/AddressBookProtos.java
+	javac -cp $$CLASSPATH AddPerson.java ListPeople.java com/example/tutorial/AddressBookProtos.java
 	@touch javac_middleman
 
 add_person_java: javac_middleman
