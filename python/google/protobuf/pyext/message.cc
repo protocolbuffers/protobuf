@@ -67,7 +67,6 @@
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/safe_numerics.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
-#include <google/protobuf/stubs/strutil.h>
 
 #if PY_MAJOR_VERSION >= 3
   #define PyInt_AsLong PyLong_AsLong
@@ -101,6 +100,17 @@ static PyObject* WKT_classes = NULL;
 namespace message_meta {
 
 static int InsertEmptyWeakref(PyTypeObject* base);
+
+namespace {
+// Copied oveer from internal 'google/protobuf/stubs/strutil.h'.
+inline void UpperString(string * s) {
+  string::iterator end = s->end();
+  for (string::iterator i = s->begin(); i != end; ++i) {
+    // toupper() changes based on locale.  We don't want this!
+    if ('a' <= *i && *i <= 'z') *i += 'A' - 'a';
+  }
+}
+}
 
 // Add the number of a field descriptor to the containing message class.
 // Equivalent to:
