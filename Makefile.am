@@ -686,6 +686,10 @@ php_EXTRA_DIST=                                                       \
   php/tests/proto/test_no_namespace.proto                             \
   php/tests/proto/test_php_namespace.proto                            \
   php/tests/proto/test_prefix.proto                                   \
+  php/tests/proto/test_reserved_enum_lower.proto                      \
+  php/tests/proto/test_reserved_enum_upper.proto                      \
+  php/tests/proto/test_reserved_message_lower.proto                   \
+  php/tests/proto/test_reserved_message_upper.proto                   \
   php/tests/proto/test_service.proto                                  \
   php/tests/proto/test_service_namespace.proto                        \
   php/tests/test.sh                                                   \

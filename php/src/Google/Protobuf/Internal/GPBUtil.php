@@ -252,9 +252,23 @@ class GPBUtil
             return $prefix;
         }
 
-        $reserved_words = array("Empty", "ECHO", "ARRAY");
+        $reserved_words = array(
+            "abstract", "and", "array", "as", "break", "callable", "case",
+            "catch", "class", "clone", "const", "continue", "declare",
+            "default", "die", "do", "echo", "else", "elseif", "empty",
+            "enddeclare", "endfor", "endforeach", "endif", "endswitch",
+            "endwhile", "eval", "exit", "extends", "final", "for", "foreach",
+            "function", "global", "goto", "if", "implements", "include",
+            "include_once", "instanceof", "insteadof", "interface", "isset",
+            "list", "namespace", "new", "or", "print", "private", "protected",
+            "public", "require", "require_once", "return", "static", "switch",
+            "throw", "trait", "try", "unset", "use", "var", "while", "xor",
+            "int", "float", "bool", "string", "true", "false", "null", "void",
+            "iterable"
+
+        );
         foreach ($reserved_words as $reserved_word) {
-            if ($classname === $reserved_word) {
+            if (strtolower($classname) === $reserved_word) {
                 if ($file_proto->getPackage() === "google.protobuf") {
                     return "GPB";
                 } else {

@@ -30,8 +30,23 @@
 
 #include "protobuf.h"
 
-const char* const kReservedNames[] = {"Empty", "ECHO", "ARRAY"};
-const int kReservedNamesSize = 3;
+const char *const kReservedNames[] = {
+    "abstract",   "and",        "array",        "as",           "break",
+    "callable",   "case",       "catch",        "class",        "clone",
+    "const",      "continue",   "declare",      "default",      "die",
+    "do",         "echo",       "else",         "elseif",       "empty",
+    "enddeclare", "endfor",     "endforeach",   "endif",        "endswitch",
+    "endwhile",   "eval",       "exit",         "extends",      "final",
+    "for",        "foreach",    "function",     "global",       "goto",
+    "if",         "implements", "include",      "include_once", "instanceof",
+    "insteadof",  "interface",  "isset",        "list",         "namespace",
+    "new",        "or",         "print",        "private",      "protected",
+    "public",     "require",    "require_once", "return",       "static",
+    "switch",     "throw",      "trait",        "try",          "unset",
+    "use",        "var",        "while",        "xor",          "int",
+    "float",      "bool",       "string",       "true",         "false",
+    "null",       "void",       "iterable"};
+const int kReservedNamesSize = 73;
 
 // Forward declare.
 static void descriptor_init_c_instance(Descriptor* intern TSRMLS_DC);
@@ -774,12 +789,21 @@ static const char *classname_prefix(const char *classname,
     return prefix_given;
   }
 
+  char* lower = ALLOC_N(char, strlen(classname) + 1);
+  i = 0;
+  while(classname[i]) {
+    lower[i] = (char)tolower(classname[i]);
+    i++;
+  }
+  lower[i] = 0;
+
   for (i = 0; i < kReservedNamesSize; i++) {
-    if (strcmp(kReservedNames[i], classname) == 0) {
+    if (strcmp(kReservedNames[i], lower) == 0) {
       is_reserved = true;
       break;
     }
   }
+  FREE(lower);
 
   if (is_reserved) {
     if (package_name != NULL && strcmp("google.protobuf", package_name) == 0) {

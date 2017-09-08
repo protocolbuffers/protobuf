@@ -49,8 +49,23 @@ const std::string kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
-const char* const kReservedNames[] = {"ARRAY", "Empty", "ECHO"};
-const int kReservedNamesSize = 3;
+const char* const kReservedNames[] = {
+    "abstract",   "and",        "array",        "as",           "break",
+    "callable",   "case",       "catch",        "class",        "clone",
+    "const",      "continue",   "declare",      "default",      "die",
+    "do",         "echo",       "else",         "elseif",       "empty",
+    "enddeclare", "endfor",     "endforeach",   "endif",        "endswitch",
+    "endwhile",   "eval",       "exit",         "extends",      "final",
+    "for",        "foreach",    "function",     "global",       "goto",
+    "if",         "implements", "include",      "include_once", "instanceof",
+    "insteadof",  "interface",  "isset",        "list",         "namespace",
+    "new",        "or",         "print",        "private",      "protected",
+    "public",     "require",    "require_once", "return",       "static",
+    "switch",     "throw",      "trait",        "try",          "unset",
+    "use",        "var",        "while",        "xor",          "int",
+    "float",      "bool",       "string",       "true",         "false",
+    "null",       "void",       "iterable"};
+const int kReservedNamesSize = 73;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -125,8 +140,11 @@ std::string ClassNamePrefix(const string& classname,
 
   bool is_reserved = false;
 
+  string lower = classname;
+  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
   for (int i = 0; i < kReservedNamesSize; i++) {
-    if (classname == kReservedNames[i]) {
+    if (lower == kReservedNames[i]) {
       is_reserved = true;
       break;
     }
