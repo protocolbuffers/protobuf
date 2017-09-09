@@ -90,7 +90,7 @@ class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
   if _USE_C_DESCRIPTORS:
     # The class, or tuple of classes, that are considered as "virtual
     # subclasses" of this descriptor class.
-    _C_DESCRIPTOR_CLASS = ()
+    _C_DESCRIPTOR_CLASS = _message.DescriptorBase
 
   def __init__(self, options, options_class_name):
     """Initialize the descriptor given its options message and the name of the
