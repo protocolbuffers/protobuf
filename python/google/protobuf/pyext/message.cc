@@ -3035,6 +3035,8 @@ bool InitProto2MessageModule(PyObject *m) {
   // descriptor.py can use them in replacement of the Python classes.
   PyModule_AddIntConstant(m, "_USE_C_DESCRIPTORS", 1);
 
+  PyModule_AddObject(m, "DescriptorBase", reinterpret_cast<PyObject*>(
+      &PyBaseDescriptor_Type));
   PyModule_AddObject(m, "Descriptor", reinterpret_cast<PyObject*>(
       &PyMessageDescriptor_Type));
   PyModule_AddObject(m, "FieldDescriptor", reinterpret_cast<PyObject*>(

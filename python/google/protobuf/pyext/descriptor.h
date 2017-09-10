@@ -41,6 +41,7 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+extern PyTypeObject PyBaseDescriptor_Type;
 extern PyTypeObject PyMessageDescriptor_Type;
 extern PyTypeObject PyFieldDescriptor_Type;
 extern PyTypeObject PyEnumDescriptor_Type;
