@@ -253,27 +253,28 @@ class GPBUtil
         }
 
         $reserved_words = array(
-            "abstract", "and", "array", "as", "break", "callable", "case",
-            "catch", "class", "clone", "const", "continue", "declare",
-            "default", "die", "do", "echo", "else", "elseif", "empty",
-            "enddeclare", "endfor", "endforeach", "endif", "endswitch",
-            "endwhile", "eval", "exit", "extends", "final", "for", "foreach",
-            "function", "global", "goto", "if", "implements", "include",
-            "include_once", "instanceof", "insteadof", "interface", "isset",
-            "list", "namespace", "new", "or", "print", "private", "protected",
-            "public", "require", "require_once", "return", "static", "switch",
-            "throw", "trait", "try", "unset", "use", "var", "while", "xor",
-            "int", "float", "bool", "string", "true", "false", "null", "void",
-            "iterable"
-
+            "abstract"=>0, "and"=>0, "array"=>0, "as"=>0, "break"=>0,
+            "callable"=>0, "case"=>0, "catch"=>0, "class"=>0, "clone"=>0,
+            "const"=>0, "continue"=>0, "declare"=>0, "default"=>0, "die"=>0,
+            "do"=>0, "echo"=>0, "else"=>0, "elseif"=>0, "empty"=>0,
+            "enddeclare"=>0, "endfor"=>0, "endforeach"=>0, "endif"=>0,
+            "endswitch"=>0, "endwhile"=>0, "eval"=>0, "exit"=>0, "extends"=>0,
+            "final"=>0, "for"=>0, "foreach"=>0, "function"=>0, "global"=>0,
+            "goto"=>0, "if"=>0, "implements"=>0, "include"=>0,
+            "include_once"=>0, "instanceof"=>0, "insteadof"=>0, "interface"=>0,
+            "isset"=>0, "list"=>0, "namespace"=>0, "new"=>0, "or"=>0,
+            "print"=>0, "private"=>0, "protected"=>0, "public"=>0, "require"=>0,
+            "require_once"=>0, "return"=>0, "static"=>0, "switch"=>0,
+            "throw"=>0, "trait"=>0, "try"=>0, "unset"=>0, "use"=>0, "var"=>0,
+            "while"=>0, "xor"=>0, "int"=>0, "float"=>0, "bool"=>0, "string"=>0,
+            "true"=>0, "false"=>0, "null"=>0, "void"=>0, "iterable"=>0
         );
-        foreach ($reserved_words as $reserved_word) {
-            if (strtolower($classname) === $reserved_word) {
-                if ($file_proto->getPackage() === "google.protobuf") {
-                    return "GPB";
-                } else {
-                    return "PB";
-                }
+
+        if (array_key_exists(strtolower($classname), $reserved_words)) {
+            if ($file_proto->getPackage() === "google.protobuf") {
+                return "GPB";
+            } else {
+                return "PB";
             }
         }
 
