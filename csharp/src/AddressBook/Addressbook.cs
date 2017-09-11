@@ -22,19 +22,21 @@ namespace Google.Protobuf.Examples.AddressBook {
     static AddressbookReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwi1QEKBlBlcnNvbhIMCgRu",
-            "YW1lGAEgASgJEgoKAmlkGAIgASgFEg0KBWVtYWlsGAMgASgJEiwKBnBob25l",
-            "cxgEIAMoCzIcLnR1dG9yaWFsLlBlcnNvbi5QaG9uZU51bWJlchpHCgtQaG9u",
-            "ZU51bWJlchIOCgZudW1iZXIYASABKAkSKAoEdHlwZRgCIAEoDjIaLnR1dG9y",
-            "aWFsLlBlcnNvbi5QaG9uZVR5cGUiKwoJUGhvbmVUeXBlEgoKBk1PQklMRRAA",
-            "EggKBEhPTUUQARIICgRXT1JLEAIiLwoLQWRkcmVzc0Jvb2sSIAoGcGVvcGxl",
-            "GAEgAygLMhAudHV0b3JpYWwuUGVyc29uQlAKFGNvbS5leGFtcGxlLnR1dG9y",
-            "aWFsQhFBZGRyZXNzQm9va1Byb3Rvc6oCJEdvb2dsZS5Qcm90b2J1Zi5FeGFt",
-            "cGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
+            "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwaH2dvb2dsZS9wcm90b2J1",
+            "Zi90aW1lc3RhbXAucHJvdG8ihwIKBlBlcnNvbhIMCgRuYW1lGAEgASgJEgoK",
+            "AmlkGAIgASgFEg0KBWVtYWlsGAMgASgJEiwKBnBob25lcxgEIAMoCzIcLnR1",
+            "dG9yaWFsLlBlcnNvbi5QaG9uZU51bWJlchIwCgxsYXN0X3VwZGF0ZWQYBSAB",
+            "KAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGkcKC1Bob25lTnVtYmVy",
+            "Eg4KBm51bWJlchgBIAEoCRIoCgR0eXBlGAIgASgOMhoudHV0b3JpYWwuUGVy",
+            "c29uLlBob25lVHlwZSIrCglQaG9uZVR5cGUSCgoGTU9CSUxFEAASCAoESE9N",
+            "RRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZwZW9wbGUYASADKAsy",
+            "EC50dXRvcmlhbC5QZXJzb25CUAoUY29tLmV4YW1wbGUudHV0b3JpYWxCEUFk",
+            "ZHJlc3NCb29rUHJvdG9zqgIkR29vZ2xlLlByb3RvYnVmLkV4YW1wbGVzLkFk",
+            "ZHJlc3NCb29rYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), global::Google.Protobuf.Examples.AddressBook.Person.Parser, new[]{ "Name", "Id", "Email", "Phones" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser, new[]{ "Number", "Type" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), global::Google.Protobuf.Examples.AddressBook.Person.Parser, new[]{ "Name", "Id", "Email", "Phones", "LastUpdated" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser, new[]{ "Number", "Type" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), global::Google.Protobuf.Examples.AddressBook.AddressBook.Parser, new[]{ "People" }, null, null, null)
           }));
     }
@@ -73,6 +75,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       id_ = other.id_;
       email_ = other.email_;
       phones_ = other.phones_.Clone();
+      LastUpdated = other.lastUpdated_ != null ? other.LastUpdated.Clone() : null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -126,6 +129,17 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return phones_; }
     }
 
+    /// <summary>Field number for the "last_updated" field.</summary>
+    public const int LastUpdatedFieldNumber = 5;
+    private global::Google.Protobuf.WellKnownTypes.Timestamp lastUpdated_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.Timestamp LastUpdated {
+      get { return lastUpdated_; }
+      set {
+        lastUpdated_ = value;
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Person);
@@ -143,6 +157,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (Id != other.Id) return false;
       if (Email != other.Email) return false;
       if(!phones_.Equals(other.phones_)) return false;
+      if (!object.Equals(LastUpdated, other.LastUpdated)) return false;
       return true;
     }
 
@@ -153,6 +168,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (Id != 0) hash ^= Id.GetHashCode();
       if (Email.Length != 0) hash ^= Email.GetHashCode();
       hash ^= phones_.GetHashCode();
+      if (lastUpdated_ != null) hash ^= LastUpdated.GetHashCode();
       return hash;
     }
 
@@ -176,6 +192,10 @@ namespace Google.Protobuf.Examples.AddressBook {
         output.WriteString(Email);
       }
       phones_.WriteTo(output, _repeated_phones_codec);
+      if (lastUpdated_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(LastUpdated);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -191,6 +211,9 @@ namespace Google.Protobuf.Examples.AddressBook {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Email);
       }
       size += phones_.CalculateSize(_repeated_phones_codec);
+      if (lastUpdated_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(LastUpdated);
+      }
       return size;
     }
 
@@ -209,6 +232,12 @@ namespace Google.Protobuf.Examples.AddressBook {
         Email = other.Email;
       }
       phones_.Add(other.phones_);
+      if (other.lastUpdated_ != null) {
+        if (lastUpdated_ == null) {
+          lastUpdated_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+        }
+        LastUpdated.MergeFrom(other.LastUpdated);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -233,6 +262,13 @@ namespace Google.Protobuf.Examples.AddressBook {
           }
           case 34: {
             phones_.AddEntriesFrom(input, _repeated_phones_codec);
+            break;
+          }
+          case 42: {
+            if (lastUpdated_ == null) {
+              lastUpdated_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            }
+            input.ReadMessage(lastUpdated_);
             break;
           }
         }
