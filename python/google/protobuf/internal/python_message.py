@@ -1208,8 +1208,17 @@ def _AddMergeFromMethod(cls):
   LABEL_REPEATED = _FieldDescriptor.LABEL_REPEATED
   CPPTYPE_MESSAGE = _FieldDescriptor.CPPTYPE_MESSAGE
 
+  def __IsInstance(msg, cls):
+      """Check if msg is an instance of class, handling protos correctly."""
+      if isinstance(msg, cls):
+          return True
+      if hasattr(msg, "DESCRIPTOR") and hasattr(
+              cls, "DESCRIPTOR") and msg.DESCRIPTOR == cls.DESCRIPTOR:
+          return True
+      return False
+
   def MergeFrom(self, msg):
-    if not isinstance(msg, cls):
+    if not __IsInstance(msg, cls):
       raise TypeError(
           "Parameter to MergeFrom() must be instance of same class: "
           'expected %s got %s.' % (cls.__name__, msg.__class__.__name__))
