@@ -270,24 +270,7 @@ describe('binaryDecoderTest', function() {
     assertThrows(function() {decoder.readSignedVarint64()});
     decoder.reset();
     assertThrows(function() {decoder.readZigzagVarint64()});
-
-    // Positive 32-bit varints encoded with 1 bits in positions 33 through 35
-    // should trigger assertions.
-    decoder.setBlock([255, 255, 255, 255, 0x1F]);
-    assertThrows(function() {decoder.readUnsignedVarint32()});
-
-    decoder.setBlock([255, 255, 255, 255, 0x2F]);
-    assertThrows(function() {decoder.readUnsignedVarint32()});
-
-    decoder.setBlock([255, 255, 255, 255, 0x4F]);
-    assertThrows(function() {decoder.readUnsignedVarint32()});
-
-    // Negative 32-bit varints encoded with non-1 bits in the high dword should
-    // trigger assertions.
-    decoder.setBlock([255, 255, 255, 255, 255, 255, 0, 255, 255, 1]);
-    assertThrows(function() {decoder.readUnsignedVarint32()});
-
-    decoder.setBlock([255, 255, 255, 255, 255, 255, 255, 255, 255, 0]);
+    decoder.reset();
     assertThrows(function() {decoder.readUnsignedVarint32()});
   });
 
