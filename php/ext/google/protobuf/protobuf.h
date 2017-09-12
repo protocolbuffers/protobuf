@@ -934,5 +934,6 @@ const zend_class_entry* field_type_class(
 
 // Reserved name
 bool is_reserved_name(const char* name);
+bool is_valid_constant_name(const char* name);
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PROTOBUF_H__

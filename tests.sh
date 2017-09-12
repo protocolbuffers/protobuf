@@ -346,19 +346,21 @@ generate_php_test_proto() {
   # Generate test file
   rm -rf generated
   mkdir generated
-  ../../src/protoc --php_out=generated      \
-    proto/test.proto                        \
-    proto/test_include.proto                \
-    proto/test_no_namespace.proto           \
-    proto/test_prefix.proto                 \
-    proto/test_php_namespace.proto          \
-    proto/test_empty_php_namespace.proto    \
-    proto/test_reserved_enum_lower.proto    \
-    proto/test_reserved_enum_upper.proto    \
-    proto/test_reserved_message_lower.proto \
-    proto/test_reserved_message_upper.proto \
-    proto/test_service.proto                \
-    proto/test_service_namespace.proto      \
+  ../../src/protoc --php_out=generated         \
+    proto/test.proto                           \
+    proto/test_include.proto                   \
+    proto/test_no_namespace.proto              \
+    proto/test_prefix.proto                    \
+    proto/test_php_namespace.proto             \
+    proto/test_empty_php_namespace.proto       \
+    proto/test_reserved_enum_lower.proto       \
+    proto/test_reserved_enum_upper.proto       \
+    proto/test_reserved_enum_value_lower.proto \
+    proto/test_reserved_enum_value_upper.proto \
+    proto/test_reserved_message_lower.proto    \
+    proto/test_reserved_message_upper.proto    \
+    proto/test_service.proto                   \
+    proto/test_service_namespace.proto         \
     proto/test_descriptors.proto
   pushd ../../src
   ./protoc --php_out=../php/tests/generated google/protobuf/empty.proto
