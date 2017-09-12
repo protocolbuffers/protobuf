@@ -22,12 +22,12 @@ clean:
 	rmdir com 2>/dev/null || true
 
 protoc_middleman: addressbook.proto
-	protoc --cpp_out=. --java_out=. --python_out=. addressbook.proto
+	protoc $$PROTO_PATH --cpp_out=. --java_out=. --python_out=. addressbook.proto
 	@touch protoc_middleman
 
 protoc_middleman_go: addressbook.proto
-	mkdir tutorial # make directory for go package
-	protoc --go_out=tutorial addressbook.proto
+	mkdir -p tutorial # make directory for go package
+	protoc $$PROTO_PATH --go_out=tutorial addressbook.proto
 	@touch protoc_middleman_go
 
 add_person_cpp: add_person.cc protoc_middleman
