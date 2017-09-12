@@ -600,7 +600,7 @@ module BasicTest
       assert_raise RangeError do
         m["z"] = :Z
       end
-      assert_raise TypeError do
+      assert_raise RangeError do
         m["z"] = "z"
       end
     end
