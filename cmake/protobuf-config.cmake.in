@@ -9,14 +9,17 @@ include("${CMAKE_CURRENT_LIST_DIR}/protobuf-targets.cmake")
 
 function(protobuf_generate)
   include(CMakeParseArguments)
+
+  set(_options APPEND_PATH)
   set(_singleargs LANGUAGE OUT_VAR)
   if(COMMAND target_sources)
     list(APPEND _singleargs TARGET)
   endif()
+  set(_multiargs PROTOS IMPORT_DIRS GENERATE_EXTENSIONS)
 
-  cmake_parse_arguments(protobuf_generate "APPEND_PATH" "${_singleargs}" "PROTOS IMPORT_DIRS GENERATE_EXTENSIONS" "${ARGN}")
+  cmake_parse_arguments(protobuf_generate "${_options}" "${_singleargs}" "${_multiargs}" "${ARGN}")
 
-  if(protobuf_generate_PROTOS AND NOT protobuf_generate_TARGET)
+  if(NOT protobuf_generate_PROTOS AND NOT protobuf_generate_TARGET)
     message(SEND_ERROR "Error: protobuf_generate called without any targets or source files")
     return()
   endif()
@@ -78,14 +81,16 @@ function(protobuf_generate)
     return()
   endif()
 
-  set(_generated_srcs)
+  set(_generated_srcs_all)
   foreach(_proto ${protobuf_generate_PROTOS})
     get_filename_component(_abs_file ${_proto} ABSOLUTE)
     get_filename_component(_basename ${_proto} NAME_WE)
 
-    foreach(_ext ${_output_extensions})
+    set(_generated_srcs)
+    foreach(_ext ${protobuf_GENERATE_EXTENSIONS})
       list(APPEND _generated_srcs "${CMAKE_CURRENT_BINARY_DIR}/${_basename}${_ext}")
     endforeach()
+    list(APPEND _generated_srcs_all ${_generated_srcs})
 
     add_custom_command(
       OUTPUT ${_generated_srcs}
@@ -96,12 +101,12 @@ function(protobuf_generate)
       VERBATIM )
   endforeach()
 
-  set_source_files_properties(${_generated_srcs} PROPERTIES GENERATED TRUE)
+  set_source_files_properties(${_generated_srcs_all} PROPERTIES GENERATED TRUE)
   if(protobuf_generate_OUT_VAR)
-    set(${protobuf_generate_OUT_VAR} ${_generated_srcs} PARENT_SCOPE)
+    set(${protobuf_generate_OUT_VAR} ${_generated_srcs_all} PARENT_SCOPE)
   endif()
   if(protobuf_generate_TARGET)
-    target_sources(${protobuf_generate_TARGET} PUBLIC ${_generated_srcs})
+    target_sources(${protobuf_generate_TARGET} PUBLIC ${_generated_srcs_all})
   endif()
 
 endfunction()
