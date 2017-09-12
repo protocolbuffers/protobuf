@@ -184,11 +184,6 @@ TEST(CsharpBootstrapTest, GeneratedCsharpDescriptorMatches) {
                     "../csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs");
 
   generate_test.SetParameter("");
-  source_tree.MapPath("", TestSourceDir() + "/../examples");
-  generate_test.Run(importer.Import("addressbook.proto"),
-                    "Addressbook.cs",
-                    "../csharp/src/AddressBook/Addressbook.cs");
-
   source_tree.MapPath("", TestSourceDir() + "/../conformance");
   generate_test.Run(importer.Import("conformance.proto"),
                     "Conformance.cs",

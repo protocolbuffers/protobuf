@@ -995,19 +995,20 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   editors/README.txt                     \
   editors/proto.vim                      \
   editors/protobuf-mode.el               \
-  examples/CMakeLists.txt                \
-  examples/README.txt                    \
-  examples/Makefile                      \
-  examples/addressbook.proto             \
-  examples/add_person.cc                 \
-  examples/add_person.go                 \
-  examples/add_person_test.go            \
-  examples/list_people.cc                \
-  examples/list_people.go                \
   examples/AddPerson.java                \
+  examples/BUILD                         \
   examples/CMakeLists.txt                \
   examples/ListPeople.java               \
+  examples/Makefile                      \
+  examples/README.md                     \
+  examples/WORKSPACE                     \
+  examples/add_person.cc                 \
+  examples/add_person.go                 \
   examples/add_person.py                 \
+  examples/add_person_test.go            \
+  examples/addressbook.proto             \
+  examples/list_people.cc                \
+  examples/list_people.go                \
   examples/list_people.py                \
   examples/list_people_test.go           \
   protobuf.bzl                           \
