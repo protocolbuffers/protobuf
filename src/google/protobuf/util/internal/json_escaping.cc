@@ -207,7 +207,7 @@ StringPiece ToHex(uint16 cp, char* buffer) {
   buffer[3] = kHex[cp & 0x0f];
   cp >>= 4;
   buffer[2] = kHex[cp & 0x0f];
-  return StringPiece(buffer).substr(0, 6);
+  return StringPiece(buffer, 6);
 }
 
 // Stores the 32-bit unicode code point as its hexadecimal digits in buffer

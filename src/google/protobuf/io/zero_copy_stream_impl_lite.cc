@@ -196,27 +196,6 @@ void StringOutputStream::SetString(string* target) {
 
 // ===================================================================
 
-LazyStringOutputStream::LazyStringOutputStream(
-    ResultCallback<string*>* callback)
-    : StringOutputStream(NULL),
-      callback_(GOOGLE_CHECK_NOTNULL(callback)),
-      string_is_set_(false) {
-}
-
-bool LazyStringOutputStream::Next(void** data, int* size) {
-  if (!string_is_set_) {
-    SetString(callback_->Run());
-    string_is_set_ = true;
-  }
-  return StringOutputStream::Next(data, size);
-}
-
-int64 LazyStringOutputStream::ByteCount() const {
-  return string_is_set_ ? StringOutputStream::ByteCount() : 0;
-}
-
-// ===================================================================
-
 int CopyingInputStream::Skip(int count) {
   char junk[4096];
   int skipped = 0;

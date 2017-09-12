@@ -1142,9 +1142,7 @@ class Map {
 
   // Access to hasher.  Currently this returns a copy, but it may
   // be modified to return a const reference in the future.
-  hasher hash_function() const {
-    return elements_->hash_function();
-  }
+  hasher hash_function() const { return elements_->hash_function(); }
 
  private:
   // Set default enum value only for proto2 map field whose value is enum type.

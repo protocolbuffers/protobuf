@@ -28,7 +28,32 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <Python.h>
+
 #include <google/protobuf/pyext/message.h>
+
+#include <google/protobuf/message_lite.h>
+
+static PyObject* GetPythonProto3PreserveUnknownsDefault(
+    PyObject* /*m*/, PyObject* /*args*/) {
+  if (google::protobuf::internal::GetProto3PreserveUnknownsDefault()) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
+static PyObject* SetPythonProto3PreserveUnknownsDefault(
+    PyObject* /*m*/, PyObject* arg) {
+  if (!arg || !PyBool_Check(arg)) {
+    PyErr_SetString(
+        PyExc_TypeError,
+        "Argument to SetPythonProto3PreserveUnknownsDefault must be boolean");
+    return NULL;
+  }
+  google::protobuf::internal::SetProto3PreserveUnknownsDefault(PyObject_IsTrue(arg));
+  Py_RETURN_NONE;
+}
 
 static const char module_docstring[] =
 "python-proto2 is a module that can be used to enhance proto2 Python API\n"
@@ -41,6 +66,14 @@ static PyMethodDef ModuleMethods[] = {
   {"SetAllowOversizeProtos",
     (PyCFunction)google::protobuf::python::cmessage::SetAllowOversizeProtos,
     METH_O, "Enable/disable oversize proto parsing."},
+  // DO NOT USE: For migration and testing only.
+  {"GetPythonProto3PreserveUnknownsDefault",
+    (PyCFunction)GetPythonProto3PreserveUnknownsDefault,
+    METH_NOARGS, "Get Proto3 preserve unknowns default."},
+  // DO NOT USE: For migration and testing only.
+  {"SetPythonProto3PreserveUnknownsDefault",
+    (PyCFunction)SetPythonProto3PreserveUnknownsDefault,
+    METH_O, "Enable/disable proto3 unknowns preservation."},
   { NULL, NULL}
 };
 

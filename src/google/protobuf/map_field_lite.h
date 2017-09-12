@@ -121,6 +121,21 @@ bool AllAreInitialized(const Map<Key, T>& t) {
   return true;
 }
 
+template <typename MEntry>
+struct MapEntryToMapField : MapEntryToMapField<typename MEntry::SuperType> {};
+
+template <typename T, typename Key, typename Value,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
+struct MapEntryToMapField<MapEntryLite<T, Key, Value, kKeyFieldType,
+                                       kValueFieldType, default_enum_value> > {
+  typedef MapFieldLite<MapEntryLite<T, Key, Value, kKeyFieldType,
+                                    kValueFieldType, default_enum_value>,
+                       Key, Value, kKeyFieldType, kValueFieldType,
+                       default_enum_value>
+      MapFieldType;
+};
+
 }  // namespace internal
 }  // namespace protobuf
 

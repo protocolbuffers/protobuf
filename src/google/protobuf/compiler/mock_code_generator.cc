@@ -57,12 +57,12 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <gtest/gtest.h>
 
-#ifdef major		
-#undef major		
-#endif		
-#ifdef minor		
-#undef minor		
-#endif		
+#ifdef major
+#undef major
+#endif
+#ifdef minor
+#undef minor
+#endif
 
 namespace google {
 namespace protobuf {

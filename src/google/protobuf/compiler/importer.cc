@@ -54,12 +54,16 @@
 #include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/io_win32.h>
 
 #ifdef _WIN32
 #include <ctype.h>
 #endif
+
+namespace google {
+namespace protobuf {
+namespace compiler {
 
 #ifdef _MSC_VER
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
@@ -67,10 +71,6 @@
 using google::protobuf::internal::win32::access;
 using google::protobuf::internal::win32::open;
 #endif
-
-namespace google {
-namespace protobuf {
-namespace compiler {
 
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with

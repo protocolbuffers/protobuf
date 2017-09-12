@@ -32,11 +32,20 @@ package com.google.protobuf;
 
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
+import protobuf_unittest.UnittestProto;
+import protobuf_unittest.UnittestProto.ForeignEnum;
+import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestEmptyMessage;
+import protobuf_unittest.UnittestProto.TestPackedExtensions;
+import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 import junit.framework.TestCase;
 
 /**
@@ -45,7 +54,44 @@ import junit.framework.TestCase;
  * @author dweis@google.com (Daniel Weis)
  */
 public class UnknownFieldSetLiteTest extends TestCase {
-  
+  @Override
+  public void setUp() throws Exception {
+    allFields = TestUtil.getAllSet();
+    allFieldsData = allFields.toByteString();
+    emptyMessage = TestEmptyMessage.parseFrom(allFieldsData);
+    unknownFields = emptyMessage.getUnknownFields();
+  }
+
+  TestAllTypes allFields;
+  ByteString allFieldsData;
+
+  // Constructs a protocol buffer which contains fields with all the same
+  // numbers as allFieldsData except that each field is some other wire
+  // type.
+  private ByteString getBizarroData() throws Exception {
+    UnknownFieldSet.Builder bizarroFields = UnknownFieldSet.newBuilder();
+
+    UnknownFieldSet.Field varintField = UnknownFieldSet.Field.newBuilder().addVarint(1).build();
+    UnknownFieldSet.Field fixed32Field = UnknownFieldSet.Field.newBuilder().addFixed32(1).build();
+
+    for (Map.Entry<Integer, UnknownFieldSet.Field> entry : unknownFields.asMap().entrySet()) {
+      if (entry.getValue().getVarintList().isEmpty()) {
+        // Original field is not a varint, so use a varint.
+        bizarroFields.addField(entry.getKey(), varintField);
+      } else {
+        // Original field *is* a varint, so use something else.
+        bizarroFields.addField(entry.getKey(), fixed32Field);
+      }
+    }
+
+    return bizarroFields.build().toByteString();
+  }
+
+  // An empty message that has been parsed from allFieldsData.  So, it has
+  // unknown fields of every type.
+  TestEmptyMessage emptyMessage;
+  UnknownFieldSet unknownFields;
+
   public void testDefaultInstance() {
     UnknownFieldSetLite unknownFields = UnknownFieldSetLite.getDefaultInstance();
 
@@ -330,5 +376,204 @@ public class UnknownFieldSetLiteTest extends TestCase {
       throw new RuntimeException(e);
     }
     return ByteString.copyFrom(byteArrayOutputStream.toByteArray());
+  }
+
+  public void testSerializeLite() throws Exception {
+    UnittestLite.TestEmptyMessageLite emptyMessageLite =
+        UnittestLite.TestEmptyMessageLite.parseFrom(allFieldsData);
+    assertEquals(allFieldsData.size(), emptyMessageLite.getSerializedSize());
+    ByteString data = emptyMessageLite.toByteString();
+    TestAllTypes message = TestAllTypes.parseFrom(data);
+    TestUtil.assertAllFieldsSet(message);
+    assertEquals(allFieldsData, data);
+  }
+
+  public void testAllExtensionsLite() throws Exception {
+    TestAllExtensions allExtensions = TestUtil.getAllExtensionsSet();
+    ByteString allExtensionsData = allExtensions.toByteString();
+    UnittestLite.TestEmptyMessageLite emptyMessageLite =
+        UnittestLite.TestEmptyMessageLite.parser().parseFrom(allExtensionsData);
+    ByteString data = emptyMessageLite.toByteString();
+    TestAllExtensions message = TestAllExtensions.parseFrom(data, TestUtil.getExtensionRegistry());
+    TestUtil.assertAllExtensionsSet(message);
+    assertEquals(allExtensionsData, data);
+  }
+
+  public void testAllPackedFieldsLite() throws Exception {
+    TestPackedTypes allPackedFields = TestUtil.getPackedSet();
+    ByteString allPackedData = allPackedFields.toByteString();
+    UnittestLite.TestEmptyMessageLite emptyMessageLite =
+        UnittestLite.TestEmptyMessageLite.parseFrom(allPackedData);
+    ByteString data = emptyMessageLite.toByteString();
+    TestPackedTypes message = TestPackedTypes.parseFrom(data, TestUtil.getExtensionRegistry());
+    TestUtil.assertPackedFieldsSet(message);
+    assertEquals(allPackedData, data);
+  }
+
+  public void testAllPackedExtensionsLite() throws Exception {
+    TestPackedExtensions allPackedExtensions = TestUtil.getPackedExtensionsSet();
+    ByteString allPackedExtensionsData = allPackedExtensions.toByteString();
+    UnittestLite.TestEmptyMessageLite emptyMessageLite =
+        UnittestLite.TestEmptyMessageLite.parseFrom(allPackedExtensionsData);
+    ByteString data = emptyMessageLite.toByteString();
+    TestPackedExtensions message =
+        TestPackedExtensions.parseFrom(data, TestUtil.getExtensionRegistry());
+    TestUtil.assertPackedExtensionsSet(message);
+    assertEquals(allPackedExtensionsData, data);
+  }
+
+  public void testCopyFromLite() throws Exception {
+    UnittestLite.TestEmptyMessageLite emptyMessageLite =
+        UnittestLite.TestEmptyMessageLite.parseFrom(allFieldsData);
+    UnittestLite.TestEmptyMessageLite emptyMessageLite2 =
+        UnittestLite.TestEmptyMessageLite.newBuilder().mergeFrom(emptyMessageLite).build();
+    assertEquals(emptyMessageLite.toByteString(), emptyMessageLite2.toByteString());
+  }
+
+  public void testMergeFromLite() throws Exception {
+    TestAllTypes message1 =
+        TestAllTypes.newBuilder()
+            .setOptionalInt32(1)
+            .setOptionalString("foo")
+            .addRepeatedString("bar")
+            .setOptionalNestedEnum(TestAllTypes.NestedEnum.BAZ)
+            .build();
+
+    TestAllTypes message2 =
+        TestAllTypes.newBuilder()
+            .setOptionalInt64(2)
+            .setOptionalString("baz")
+            .addRepeatedString("qux")
+            .setOptionalForeignEnum(ForeignEnum.FOREIGN_BAZ)
+            .build();
+
+    ByteString data1 = message1.toByteString();
+    UnittestLite.TestEmptyMessageLite emptyMessageLite1 =
+        UnittestLite.TestEmptyMessageLite.parseFrom(data1);
+    ByteString data2 = message2.toByteString();
+    UnittestLite.TestEmptyMessageLite emptyMessageLite2 =
+        UnittestLite.TestEmptyMessageLite.parseFrom(data2);
+
+    message1 = TestAllTypes.newBuilder(message1).mergeFrom(message2).build();
+    emptyMessageLite1 =
+        UnittestLite.TestEmptyMessageLite.newBuilder(emptyMessageLite1)
+            .mergeFrom(emptyMessageLite2)
+            .build();
+
+    data1 = emptyMessageLite1.toByteString();
+    message2 = TestAllTypes.parseFrom(data1);
+
+    assertEquals(message1, message2);
+  }
+
+  public void testWrongTypeTreatedAsUnknownLite() throws Exception {
+    // Test that fields of the wrong wire type are treated like unknown fields
+    // when parsing.
+
+    ByteString bizarroData = getBizarroData();
+    TestAllTypes allTypesMessage = TestAllTypes.parseFrom(bizarroData);
+    UnittestLite.TestEmptyMessageLite emptyMessageLite =
+        UnittestLite.TestEmptyMessageLite.parseFrom(bizarroData);
+    ByteString data = emptyMessageLite.toByteString();
+    TestAllTypes allTypesMessage2 = TestAllTypes.parseFrom(data);
+
+    assertEquals(allTypesMessage.toString(), allTypesMessage2.toString());
+  }
+
+  public void testUnknownExtensionsLite() throws Exception {
+    // Make sure fields are properly parsed to the UnknownFieldSet even when
+    // they are declared as extension numbers.
+
+    UnittestLite.TestEmptyMessageWithExtensionsLite message =
+        UnittestLite.TestEmptyMessageWithExtensionsLite.parseFrom(allFieldsData);
+
+    assertEquals(allFieldsData, message.toByteString());
+  }
+
+  public void testWrongExtensionTypeTreatedAsUnknownLite() throws Exception {
+    // Test that fields of the wrong wire type are treated like unknown fields
+    // when parsing extensions.
+
+    ByteString bizarroData = getBizarroData();
+    TestAllExtensions allExtensionsMessage = TestAllExtensions.parseFrom(bizarroData);
+    UnittestLite.TestEmptyMessageLite emptyMessageLite =
+        UnittestLite.TestEmptyMessageLite.parseFrom(bizarroData);
+
+    // All fields should have been interpreted as unknown, so the byte strings
+    // should be the same.
+    assertEquals(emptyMessageLite.toByteString(), allExtensionsMessage.toByteString());
+  }
+
+  public void testParseUnknownEnumValueLite() throws Exception {
+    Descriptors.FieldDescriptor singularField =
+        TestAllTypes.getDescriptor().findFieldByName("optional_nested_enum");
+    Descriptors.FieldDescriptor repeatedField =
+        TestAllTypes.getDescriptor().findFieldByName("repeated_nested_enum");
+    assertNotNull(singularField);
+    assertNotNull(repeatedField);
+
+    ByteString data =
+        UnknownFieldSet.newBuilder()
+            .addField(
+                singularField.getNumber(),
+                UnknownFieldSet.Field.newBuilder()
+                    .addVarint(TestAllTypes.NestedEnum.BAR.getNumber())
+                    .addVarint(5) // not valid
+                    .build())
+            .addField(
+                repeatedField.getNumber(),
+                UnknownFieldSet.Field.newBuilder()
+                    .addVarint(TestAllTypes.NestedEnum.FOO.getNumber())
+                    .addVarint(4) // not valid
+                    .addVarint(TestAllTypes.NestedEnum.BAZ.getNumber())
+                    .addVarint(6) // not valid
+                    .build())
+            .build()
+            .toByteString();
+
+    UnittestLite.TestEmptyMessageLite emptyMessageLite =
+        UnittestLite.TestEmptyMessageLite.parseFrom(data);
+    data = emptyMessageLite.toByteString();
+
+    {
+      TestAllTypes message = TestAllTypes.parseFrom(data);
+      assertEquals(TestAllTypes.NestedEnum.BAR, message.getOptionalNestedEnum());
+      assertEquals(
+          Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
+          message.getRepeatedNestedEnumList());
+      assertEquals(
+          Arrays.asList(5L),
+          message.getUnknownFields().getField(singularField.getNumber()).getVarintList());
+      assertEquals(
+          Arrays.asList(4L, 6L),
+          message.getUnknownFields().getField(repeatedField.getNumber()).getVarintList());
+    }
+
+    {
+      TestAllExtensions message =
+          TestAllExtensions.parseFrom(data, TestUtil.getExtensionRegistry());
+      assertEquals(
+          TestAllTypes.NestedEnum.BAR,
+          message.getExtension(UnittestProto.optionalNestedEnumExtension));
+      assertEquals(
+          Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
+          message.getExtension(UnittestProto.repeatedNestedEnumExtension));
+      assertEquals(
+          Arrays.asList(5L),
+          message.getUnknownFields().getField(singularField.getNumber()).getVarintList());
+      assertEquals(
+          Arrays.asList(4L, 6L),
+          message.getUnknownFields().getField(repeatedField.getNumber()).getVarintList());
+    }
+  }
+
+  public void testClearLite() throws Exception {
+    UnittestLite.TestEmptyMessageLite emptyMessageLite1 =
+        UnittestLite.TestEmptyMessageLite.parseFrom(allFieldsData);
+    UnittestLite.TestEmptyMessageLite emptyMessageLite2 =
+        UnittestLite.TestEmptyMessageLite.newBuilder().mergeFrom(emptyMessageLite1).clear().build();
+    assertEquals(0, emptyMessageLite2.getSerializedSize());
+    ByteString data = emptyMessageLite2.toByteString();
+    assertEquals(0, data.size());
   }
 }

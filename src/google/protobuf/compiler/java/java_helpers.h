@@ -136,6 +136,13 @@ inline string ShortMutableJavaClassName(const Descriptor* descriptor) {
   return descriptor->name();
 }
 
+// Whether the given descriptor is for one of the core descriptor protos. We
+// cannot currently use the new runtime with core protos since there is a
+// bootstrapping problem with obtaining their descriptors.
+inline bool IsDescriptorProto(const Descriptor* descriptor) {
+  return descriptor->file()->name() == "google/protobuf/descriptor.proto";
+}
+
 
 // Whether we should generate multiple java files for messages.
 inline bool MultipleJavaFiles(
@@ -371,6 +378,10 @@ inline bool IsAnyMessage(const Descriptor* descriptor) {
   return descriptor->full_name() == "google.protobuf.Any";
 }
 
+inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
+  return descriptor->name() == "google/protobuf/wrappers.proto";
+}
+
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
   return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
       descriptor->file()->options().java_string_check_utf8();
@@ -378,6 +389,10 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
 
 inline string GeneratedCodeVersionSuffix() {
   return "V3";
+}
+
+inline bool EnableExperimentalRuntime(Context* context) {
+  return false;
 }
 }  // namespace java
 }  // namespace compiler

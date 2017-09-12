@@ -97,6 +97,8 @@
 #include <byteswap.h>  // IWYU pragma: export
 #endif
 
+#define PROTOBUF_RUNTIME_DEPRECATED(message)
+
 // ===================================================================
 // from google3/base/port.h
 
@@ -106,6 +108,18 @@
 // undefined otherwise.  Do NOT define it to 0 -- that causes
 // '#ifdef LANG_CXX11' to behave differently from '#if LANG_CXX11'.
 #define LANG_CXX11 1
+#endif
+
+#if LANG_CXX11 && !defined(__NVCC__)
+#define PROTOBUF_CXX11 1
+#else
+#define PROTOBUF_CXX11 0
+#endif
+
+#if PROTOBUF_CXX11
+#define PROTOBUF_FINAL final
+#else
+#define PROTOBUF_FINAL
 #endif
 
 namespace google {
@@ -177,6 +191,8 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #endif
 #endif
 
+#define GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+
 #ifndef GOOGLE_ATTRIBUTE_NOINLINE
 #if defined(__GNUC__) && (__GNUC__ > 3 ||(__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 // For functions we want to force not inline.
@@ -191,23 +207,7 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #endif
 #endif
 
-#ifndef GOOGLE_ATTRIBUTE_NORETURN
-#ifdef __GNUC__
-// Tell the compiler that a given function never returns.
-#define GOOGLE_ATTRIBUTE_NORETURN __attribute__((noreturn))
-#else
-#define GOOGLE_ATTRIBUTE_NORETURN
-#endif
-#endif
-
-#ifndef GOOGLE_ATTRIBUTE_DEPRECATED
-#ifdef __GNUC__
-// If the method/variable/type is used anywhere, produce a warning.
-#define GOOGLE_ATTRIBUTE_DEPRECATED __attribute__((deprecated))
-#else
-#define GOOGLE_ATTRIBUTE_DEPRECATED
-#endif
-#endif
+#define GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE GOOGLE_ATTRIBUTE_NOINLINE
 
 #ifndef GOOGLE_PREDICT_TRUE
 #ifdef __GNUC__
@@ -255,7 +255,6 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #ifdef GOOGLE_PROTOBUF_DONT_USE_UNALIGNED
 # define GOOGLE_PROTOBUF_USE_UNALIGNED 0
 #else
-// x86 and x86-64 can perform unaligned loads/stores directly.
 # if defined(_M_X64) || defined(__x86_64__) || defined(_M_IX86) || defined(__i386__)
 #  define GOOGLE_PROTOBUF_USE_UNALIGNED 1
 # else
@@ -263,7 +262,49 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 # endif
 #endif
 
-#if GOOGLE_PROTOBUF_USE_UNALIGNED
+#define GOOGLE_PROTOBUF_ATTRIBUTE_COLD GOOGLE_ATTRIBUTE_COLD
+
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||\
+    defined(MEMORY_SANITIZER)
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+uint16_t __sanitizer_unaligned_load16(const void *p);
+uint32_t __sanitizer_unaligned_load32(const void *p);
+uint64_t __sanitizer_unaligned_load64(const void *p);
+void __sanitizer_unaligned_store16(void *p, uint16_t v);
+void __sanitizer_unaligned_store32(void *p, uint32_t v);
+void __sanitizer_unaligned_store64(void *p, uint64_t v);
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+inline uint16 GOOGLE_UNALIGNED_LOAD16(const void *p) {
+  return __sanitizer_unaligned_load16(p);
+}
+
+inline uint32 GOOGLE_UNALIGNED_LOAD32(const void *p) {
+  return __sanitizer_unaligned_load32(p);
+}
+
+inline uint64 GOOGLE_UNALIGNED_LOAD64(const void *p) {
+  return __sanitizer_unaligned_load64(p);
+}
+
+inline void GOOGLE_UNALIGNED_STORE16(void *p, uint16 v) {
+  __sanitizer_unaligned_store16(p, v);
+}
+
+inline void GOOGLE_UNALIGNED_STORE32(void *p, uint32 v) {
+  __sanitizer_unaligned_store32(p, v);
+}
+
+inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
+  __sanitizer_unaligned_store64(p, v);
+}
+
+#elif GOOGLE_PROTOBUF_USE_UNALIGNED
 
 #define GOOGLE_UNALIGNED_LOAD16(_p) (*reinterpret_cast<const uint16 *>(_p))
 #define GOOGLE_UNALIGNED_LOAD32(_p) (*reinterpret_cast<const uint32 *>(_p))
@@ -473,6 +514,8 @@ class BigEndian {
 #ifndef GOOGLE_ATTRIBUTE_SECTION_VARIABLE
 #define GOOGLE_ATTRIBUTE_SECTION_VARIABLE(name)
 #endif
+
+#define GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(name)
 
 }  // namespace protobuf
 }  // namespace google

@@ -43,25 +43,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/once.h>
-
-
-#if LANG_CXX11 && !defined(__NVCC__)
-#define PROTOBUF_CXX11 1
-#else
-#define PROTOBUF_CXX11 0
-#endif
-
-#if PROTOBUF_CXX11
-#define PROTOBUF_FINAL final
-#else
-#define PROTOBUF_FINAL
-#endif
-
-#ifndef LIBPROTOBUF_EXPORT
-#define LIBPROTOBUF_EXPORT
-#endif
-
-#define PROTOBUF_RUNTIME_DEPRECATED(message)
+#include <google/protobuf/stubs/port.h>
 
 namespace google {
 namespace protobuf {

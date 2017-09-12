@@ -38,6 +38,8 @@
 #include <sanitizer/asan_interface.h>
 #endif  // ADDRESS_SANITIZER
 
+#include <google/protobuf/stubs/port.h>
+
 namespace google {
 static const size_t kMinCleanupListElements = 8;
 static const size_t kMaxCleanupListElements = 64;  // 1kB on 64-bit.
@@ -162,7 +164,8 @@ ArenaImpl::Block* ArenaImpl::ExpandCleanupList(Block* b) {
   return b;
 }
 
-inline GOOGLE_ATTRIBUTE_ALWAYS_INLINE void ArenaImpl::AddCleanupInBlock(
+inline GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+void ArenaImpl::AddCleanupInBlock(
     Block* b, void* elem, void (*cleanup)(void*)) {
   if (b->cleanup == NULL || b->cleanup->len == b->cleanup->size) {
     b = ExpandCleanupList(b);
@@ -194,7 +197,8 @@ void* ArenaImpl::AllocateAlignedAndAddCleanup(size_t n,
   return mem;
 }
 
-inline GOOGLE_ATTRIBUTE_ALWAYS_INLINE ArenaImpl::Block* ArenaImpl::GetBlock(size_t n) {
+inline GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+ArenaImpl::Block* ArenaImpl::GetBlock(size_t n) {
   Block* my_block = NULL;
 
   // If this thread already owns a block in this arena then try to use that.
@@ -221,8 +225,8 @@ inline GOOGLE_ATTRIBUTE_ALWAYS_INLINE ArenaImpl::Block* ArenaImpl::GetBlock(size
   return GetBlockSlow(tc, my_block, n);
 }
 
-inline GOOGLE_ATTRIBUTE_ALWAYS_INLINE void* ArenaImpl::AllocFromBlock(Block* b,
-                                                               size_t n) {
+inline GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+void* ArenaImpl::AllocFromBlock(Block* b, size_t n) {
   GOOGLE_DCHECK_EQ(internal::AlignUpTo8(b->pos), b->pos);  // Must be already aligned.
   GOOGLE_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
   GOOGLE_DCHECK_GE(b->avail(), n);
@@ -345,6 +349,19 @@ ArenaImpl::Block* ArenaImpl::FindBlock(void* me) {
 }
 
 }  // namespace internal
+
+void Arena::CallDestructorHooks() {
+  uint64 space_allocated = SpaceAllocated();
+  // Call the reset hook
+  if (on_arena_reset_ != NULL) {
+    on_arena_reset_(this, hooks_cookie_, space_allocated);
+  }
+
+  // Call the destruction hook
+  if (on_arena_destruction_ != NULL) {
+    on_arena_destruction_(this, hooks_cookie_, space_allocated);
+  }
+}
 
 void Arena::OnArenaAllocation(const std::type_info* allocated_type,
                               size_t n) const {

@@ -988,3 +988,18 @@ TEST(Lite, AllLite44) {
 
   std::cout << "PASS" << std::endl;
 }
+
+TEST(Lite, AllLite45) {
+  // Test unknown fields are not discarded upon parsing.
+  string data = "\20\1";  // varint 1 with field number 2
+
+  protobuf_unittest::ForeignMessageLite a;
+  EXPECT_TRUE(a.ParseFromString(data));
+  google::protobuf::io::CodedInputStream input_stream(
+      reinterpret_cast<const ::google::protobuf::uint8*>(data.data()), data.size());
+  EXPECT_TRUE(a.MergePartialFromCodedStream(&input_stream));
+
+  string serialized = a.SerializeAsString();
+  EXPECT_EQ(serialized.substr(0, 2), data);
+  EXPECT_EQ(serialized.substr(2), data);
+}

@@ -70,88 +70,91 @@ namespace Google.Protobuf.Reflection {
             "IkMKBUxhYmVsEhIKDkxBQkVMX09QVElPTkFMEAESEgoOTEFCRUxfUkVRVUlS",
             "RUQQAhISCg5MQUJFTF9SRVBFQVRFRBADIlQKFE9uZW9mRGVzY3JpcHRvclBy",
             "b3RvEgwKBG5hbWUYASABKAkSLgoHb3B0aW9ucxgCIAEoCzIdLmdvb2dsZS5w",
-            "cm90b2J1Zi5PbmVvZk9wdGlvbnMijAEKE0VudW1EZXNjcmlwdG9yUHJvdG8S",
+            "cm90b2J1Zi5PbmVvZk9wdGlvbnMipAIKE0VudW1EZXNjcmlwdG9yUHJvdG8S",
             "DAoEbmFtZRgBIAEoCRI4CgV2YWx1ZRgCIAMoCzIpLmdvb2dsZS5wcm90b2J1",
             "Zi5FbnVtVmFsdWVEZXNjcmlwdG9yUHJvdG8SLQoHb3B0aW9ucxgDIAEoCzIc",
-            "Lmdvb2dsZS5wcm90b2J1Zi5FbnVtT3B0aW9ucyJsChhFbnVtVmFsdWVEZXNj",
-            "cmlwdG9yUHJvdG8SDAoEbmFtZRgBIAEoCRIOCgZudW1iZXIYAiABKAUSMgoH",
-            "b3B0aW9ucxgDIAEoCzIhLmdvb2dsZS5wcm90b2J1Zi5FbnVtVmFsdWVPcHRp",
-            "b25zIpABChZTZXJ2aWNlRGVzY3JpcHRvclByb3RvEgwKBG5hbWUYASABKAkS",
-            "NgoGbWV0aG9kGAIgAygLMiYuZ29vZ2xlLnByb3RvYnVmLk1ldGhvZERlc2Ny",
-            "aXB0b3JQcm90bxIwCgdvcHRpb25zGAMgASgLMh8uZ29vZ2xlLnByb3RvYnVm",
-            "LlNlcnZpY2VPcHRpb25zIsEBChVNZXRob2REZXNjcmlwdG9yUHJvdG8SDAoE",
-            "bmFtZRgBIAEoCRISCgppbnB1dF90eXBlGAIgASgJEhMKC291dHB1dF90eXBl",
-            "GAMgASgJEi8KB29wdGlvbnMYBCABKAsyHi5nb29nbGUucHJvdG9idWYuTWV0",
-            "aG9kT3B0aW9ucxIfChBjbGllbnRfc3RyZWFtaW5nGAUgASgIOgVmYWxzZRIf",
-            "ChBzZXJ2ZXJfc3RyZWFtaW5nGAYgASgIOgVmYWxzZSLwBQoLRmlsZU9wdGlv",
-            "bnMSFAoMamF2YV9wYWNrYWdlGAEgASgJEhwKFGphdmFfb3V0ZXJfY2xhc3Nu",
-            "YW1lGAggASgJEiIKE2phdmFfbXVsdGlwbGVfZmlsZXMYCiABKAg6BWZhbHNl",
-            "EikKHWphdmFfZ2VuZXJhdGVfZXF1YWxzX2FuZF9oYXNoGBQgASgIQgIYARIl",
-            "ChZqYXZhX3N0cmluZ19jaGVja191dGY4GBsgASgIOgVmYWxzZRJGCgxvcHRp",
-            "bWl6ZV9mb3IYCSABKA4yKS5nb29nbGUucHJvdG9idWYuRmlsZU9wdGlvbnMu",
-            "T3B0aW1pemVNb2RlOgVTUEVFRBISCgpnb19wYWNrYWdlGAsgASgJEiIKE2Nj",
-            "X2dlbmVyaWNfc2VydmljZXMYECABKAg6BWZhbHNlEiQKFWphdmFfZ2VuZXJp",
-            "Y19zZXJ2aWNlcxgRIAEoCDoFZmFsc2USIgoTcHlfZ2VuZXJpY19zZXJ2aWNl",
-            "cxgSIAEoCDoFZmFsc2USIwoUcGhwX2dlbmVyaWNfc2VydmljZXMYEyABKAg6",
-            "BWZhbHNlEhkKCmRlcHJlY2F0ZWQYFyABKAg6BWZhbHNlEh8KEGNjX2VuYWJs",
-            "ZV9hcmVuYXMYHyABKAg6BWZhbHNlEhkKEW9iamNfY2xhc3NfcHJlZml4GCQg",
-            "ASgJEhgKEGNzaGFycF9uYW1lc3BhY2UYJSABKAkSFAoMc3dpZnRfcHJlZml4",
-            "GCcgASgJEhgKEHBocF9jbGFzc19wcmVmaXgYKCABKAkSFQoNcGhwX25hbWVz",
-            "cGFjZRgpIAEoCRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5n",
-            "b29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbiI6CgxPcHRpbWl6",
-            "ZU1vZGUSCQoFU1BFRUQQARINCglDT0RFX1NJWkUQAhIQCgxMSVRFX1JVTlRJ",
-            "TUUQAyoJCOgHEICAgIACSgQIJhAnIvIBCg5NZXNzYWdlT3B0aW9ucxImChdt",
-            "ZXNzYWdlX3NldF93aXJlX2Zvcm1hdBgBIAEoCDoFZmFsc2USLgofbm9fc3Rh",
-            "bmRhcmRfZGVzY3JpcHRvcl9hY2Nlc3NvchgCIAEoCDoFZmFsc2USGQoKZGVw",
-            "cmVjYXRlZBgDIAEoCDoFZmFsc2USEQoJbWFwX2VudHJ5GAcgASgIEkMKFHVu",
-            "aW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5V",
-            "bmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAJKBAgIEAlKBAgJEAoingMK",
-            "DEZpZWxkT3B0aW9ucxI6CgVjdHlwZRgBIAEoDjIjLmdvb2dsZS5wcm90b2J1",
-            "Zi5GaWVsZE9wdGlvbnMuQ1R5cGU6BlNUUklORxIOCgZwYWNrZWQYAiABKAgS",
-            "PwoGanN0eXBlGAYgASgOMiQuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9u",
-            "cy5KU1R5cGU6CUpTX05PUk1BTBITCgRsYXp5GAUgASgIOgVmYWxzZRIZCgpk",
-            "ZXByZWNhdGVkGAMgASgIOgVmYWxzZRITCgR3ZWFrGAogASgIOgVmYWxzZRJD",
-            "ChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9i",
-            "dWYuVW5pbnRlcnByZXRlZE9wdGlvbiIvCgVDVHlwZRIKCgZTVFJJTkcQABII",
-            "CgRDT1JEEAESEAoMU1RSSU5HX1BJRUNFEAIiNQoGSlNUeXBlEg0KCUpTX05P",
-            "Uk1BTBAAEg0KCUpTX1NUUklORxABEg0KCUpTX05VTUJFUhACKgkI6AcQgICA",
-            "gAJKBAgEEAUiXgoMT25lb2ZPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0",
-            "aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0",
-            "aW9uKgkI6AcQgICAgAIikwEKC0VudW1PcHRpb25zEhMKC2FsbG93X2FsaWFz",
-            "GAIgASgIEhkKCmRlcHJlY2F0ZWQYAyABKAg6BWZhbHNlEkMKFHVuaW50ZXJw",
-            "cmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVy",
-            "cHJldGVkT3B0aW9uKgkI6AcQgICAgAJKBAgFEAYifQoQRW51bVZhbHVlT3B0",
-            "aW9ucxIZCgpkZXByZWNhdGVkGAEgASgIOgVmYWxzZRJDChR1bmludGVycHJl",
-            "dGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnBy",
-            "ZXRlZE9wdGlvbioJCOgHEICAgIACInsKDlNlcnZpY2VPcHRpb25zEhkKCmRl",
-            "cHJlY2F0ZWQYISABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9u",
-            "GOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9u",
-            "KgkI6AcQgICAgAIirQIKDU1ldGhvZE9wdGlvbnMSGQoKZGVwcmVjYXRlZBgh",
-            "IAEoCDoFZmFsc2USXwoRaWRlbXBvdGVuY3lfbGV2ZWwYIiABKA4yLy5nb29n",
-            "bGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucy5JZGVtcG90ZW5jeUxldmVsOhNJ",
-            "REVNUE9URU5DWV9VTktOT1dOEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcH",
-            "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uIlAK",
-            "EElkZW1wb3RlbmN5TGV2ZWwSFwoTSURFTVBPVEVOQ1lfVU5LTk9XThAAEhMK",
-            "D05PX1NJREVfRUZGRUNUUxABEg4KCklERU1QT1RFTlQQAioJCOgHEICAgIAC",
-            "Ip4CChNVbmludGVycHJldGVkT3B0aW9uEjsKBG5hbWUYAiADKAsyLS5nb29n",
-            "bGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbi5OYW1lUGFydBIYChBp",
-            "ZGVudGlmaWVyX3ZhbHVlGAMgASgJEhoKEnBvc2l0aXZlX2ludF92YWx1ZRgE",
-            "IAEoBBIaChJuZWdhdGl2ZV9pbnRfdmFsdWUYBSABKAMSFAoMZG91YmxlX3Zh",
-            "bHVlGAYgASgBEhQKDHN0cmluZ192YWx1ZRgHIAEoDBIXCg9hZ2dyZWdhdGVf",
-            "dmFsdWUYCCABKAkaMwoITmFtZVBhcnQSEQoJbmFtZV9wYXJ0GAEgAigJEhQK",
-            "DGlzX2V4dGVuc2lvbhgCIAIoCCLVAQoOU291cmNlQ29kZUluZm8SOgoIbG9j",
-            "YXRpb24YASADKAsyKC5nb29nbGUucHJvdG9idWYuU291cmNlQ29kZUluZm8u",
-            "TG9jYXRpb24ahgEKCExvY2F0aW9uEhAKBHBhdGgYASADKAVCAhABEhAKBHNw",
-            "YW4YAiADKAVCAhABEhgKEGxlYWRpbmdfY29tbWVudHMYAyABKAkSGQoRdHJh",
-            "aWxpbmdfY29tbWVudHMYBCABKAkSIQoZbGVhZGluZ19kZXRhY2hlZF9jb21t",
-            "ZW50cxgGIAMoCSKnAQoRR2VuZXJhdGVkQ29kZUluZm8SQQoKYW5ub3RhdGlv",
-            "bhgBIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5B",
-            "bm5vdGF0aW9uGk8KCkFubm90YXRpb24SEAoEcGF0aBgBIAMoBUICEAESEwoL",
-            "c291cmNlX2ZpbGUYAiABKAkSDQoFYmVnaW4YAyABKAUSCwoDZW5kGAQgASgF",
-            "QowBChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9yUHJvdG9zSAFa",
-            "PmdpdGh1Yi5jb20vZ29sYW5nL3Byb3RvYnVmL3Byb3RvYy1nZW4tZ28vZGVz",
-            "Y3JpcHRvcjtkZXNjcmlwdG9yogIDR1BCqgIaR29vZ2xlLlByb3RvYnVmLlJl",
-            "ZmxlY3Rpb24="));
+            "Lmdvb2dsZS5wcm90b2J1Zi5FbnVtT3B0aW9ucxJOCg5yZXNlcnZlZF9yYW5n",
+            "ZRgEIAMoCzI2Lmdvb2dsZS5wcm90b2J1Zi5FbnVtRGVzY3JpcHRvclByb3Rv",
+            "LkVudW1SZXNlcnZlZFJhbmdlEhUKDXJlc2VydmVkX25hbWUYBSADKAkaLwoR",
+            "RW51bVJlc2VydmVkUmFuZ2USDQoFc3RhcnQYASABKAUSCwoDZW5kGAIgASgF",
+            "ImwKGEVudW1WYWx1ZURlc2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEg4K",
+            "Bm51bWJlchgCIAEoBRIyCgdvcHRpb25zGAMgASgLMiEuZ29vZ2xlLnByb3Rv",
+            "YnVmLkVudW1WYWx1ZU9wdGlvbnMikAEKFlNlcnZpY2VEZXNjcmlwdG9yUHJv",
+            "dG8SDAoEbmFtZRgBIAEoCRI2CgZtZXRob2QYAiADKAsyJi5nb29nbGUucHJv",
+            "dG9idWYuTWV0aG9kRGVzY3JpcHRvclByb3RvEjAKB29wdGlvbnMYAyABKAsy",
+            "Hy5nb29nbGUucHJvdG9idWYuU2VydmljZU9wdGlvbnMiwQEKFU1ldGhvZERl",
+            "c2NyaXB0b3JQcm90bxIMCgRuYW1lGAEgASgJEhIKCmlucHV0X3R5cGUYAiAB",
+            "KAkSEwoLb3V0cHV0X3R5cGUYAyABKAkSLwoHb3B0aW9ucxgEIAEoCzIeLmdv",
+            "b2dsZS5wcm90b2J1Zi5NZXRob2RPcHRpb25zEh8KEGNsaWVudF9zdHJlYW1p",
+            "bmcYBSABKAg6BWZhbHNlEh8KEHNlcnZlcl9zdHJlYW1pbmcYBiABKAg6BWZh",
+            "bHNlIvAFCgtGaWxlT3B0aW9ucxIUCgxqYXZhX3BhY2thZ2UYASABKAkSHAoU",
+            "amF2YV9vdXRlcl9jbGFzc25hbWUYCCABKAkSIgoTamF2YV9tdWx0aXBsZV9m",
+            "aWxlcxgKIAEoCDoFZmFsc2USKQodamF2YV9nZW5lcmF0ZV9lcXVhbHNfYW5k",
+            "X2hhc2gYFCABKAhCAhgBEiUKFmphdmFfc3RyaW5nX2NoZWNrX3V0ZjgYGyAB",
+            "KAg6BWZhbHNlEkYKDG9wdGltaXplX2ZvchgJIAEoDjIpLmdvb2dsZS5wcm90",
+            "b2J1Zi5GaWxlT3B0aW9ucy5PcHRpbWl6ZU1vZGU6BVNQRUVEEhIKCmdvX3Bh",
+            "Y2thZ2UYCyABKAkSIgoTY2NfZ2VuZXJpY19zZXJ2aWNlcxgQIAEoCDoFZmFs",
+            "c2USJAoVamF2YV9nZW5lcmljX3NlcnZpY2VzGBEgASgIOgVmYWxzZRIiChNw",
+            "eV9nZW5lcmljX3NlcnZpY2VzGBIgASgIOgVmYWxzZRIjChRwaHBfZ2VuZXJp",
+            "Y19zZXJ2aWNlcxgqIAEoCDoFZmFsc2USGQoKZGVwcmVjYXRlZBgXIAEoCDoF",
+            "ZmFsc2USHwoQY2NfZW5hYmxlX2FyZW5hcxgfIAEoCDoFZmFsc2USGQoRb2Jq",
+            "Y19jbGFzc19wcmVmaXgYJCABKAkSGAoQY3NoYXJwX25hbWVzcGFjZRglIAEo",
+            "CRIUCgxzd2lmdF9wcmVmaXgYJyABKAkSGAoQcGhwX2NsYXNzX3ByZWZpeBgo",
+            "IAEoCRIVCg1waHBfbmFtZXNwYWNlGCkgASgJEkMKFHVuaW50ZXJwcmV0ZWRf",
+            "b3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVk",
+            "T3B0aW9uIjoKDE9wdGltaXplTW9kZRIJCgVTUEVFRBABEg0KCUNPREVfU0la",
+            "RRACEhAKDExJVEVfUlVOVElNRRADKgkI6AcQgICAgAJKBAgmECci8gEKDk1l",
+            "c3NhZ2VPcHRpb25zEiYKF21lc3NhZ2Vfc2V0X3dpcmVfZm9ybWF0GAEgASgI",
+            "OgVmYWxzZRIuCh9ub19zdGFuZGFyZF9kZXNjcmlwdG9yX2FjY2Vzc29yGAIg",
+            "ASgIOgVmYWxzZRIZCgpkZXByZWNhdGVkGAMgASgIOgVmYWxzZRIRCgltYXBf",
+            "ZW50cnkYByABKAgSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQu",
+            "Z29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICA",
+            "AkoECAgQCUoECAkQCiKeAwoMRmllbGRPcHRpb25zEjoKBWN0eXBlGAEgASgO",
+            "MiMuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5DVHlwZToGU1RSSU5H",
+            "Eg4KBnBhY2tlZBgCIAEoCBI/CgZqc3R5cGUYBiABKA4yJC5nb29nbGUucHJv",
+            "dG9idWYuRmllbGRPcHRpb25zLkpTVHlwZToJSlNfTk9STUFMEhMKBGxhenkY",
+            "BSABKAg6BWZhbHNlEhkKCmRlcHJlY2F0ZWQYAyABKAg6BWZhbHNlEhMKBHdl",
+            "YWsYCiABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMo",
+            "CzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uIi8KBUNU",
+            "eXBlEgoKBlNUUklORxAAEggKBENPUkQQARIQCgxTVFJJTkdfUElFQ0UQAiI1",
+            "CgZKU1R5cGUSDQoJSlNfTk9STUFMEAASDQoJSlNfU1RSSU5HEAESDQoJSlNf",
+            "TlVNQkVSEAIqCQjoBxCAgICAAkoECAQQBSJeCgxPbmVvZk9wdGlvbnMSQwoU",
+            "dW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVm",
+            "LlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiKTAQoLRW51bU9wdGlv",
+            "bnMSEwoLYWxsb3dfYWxpYXMYAiABKAgSGQoKZGVwcmVjYXRlZBgDIAEoCDoF",
+            "ZmFsc2USQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xl",
+            "LnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAkoECAUQ",
+            "BiJ9ChBFbnVtVmFsdWVPcHRpb25zEhkKCmRlcHJlY2F0ZWQYASABKAg6BWZh",
+            "bHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5w",
+            "cm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIiewoOU2Vy",
+            "dmljZU9wdGlvbnMSGQoKZGVwcmVjYXRlZBghIAEoCDoFZmFsc2USQwoUdW5p",
+            "bnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVu",
+            "aW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICAAiKtAgoNTWV0aG9kT3B0aW9u",
+            "cxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJfChFpZGVtcG90ZW5jeV9s",
+            "ZXZlbBgiIAEoDjIvLmdvb2dsZS5wcm90b2J1Zi5NZXRob2RPcHRpb25zLklk",
+            "ZW1wb3RlbmN5TGV2ZWw6E0lERU1QT1RFTkNZX1VOS05PV04SQwoUdW5pbnRl",
+            "cnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50",
+            "ZXJwcmV0ZWRPcHRpb24iUAoQSWRlbXBvdGVuY3lMZXZlbBIXChNJREVNUE9U",
+            "RU5DWV9VTktOT1dOEAASEwoPTk9fU0lERV9FRkZFQ1RTEAESDgoKSURFTVBP",
+            "VEVOVBACKgkI6AcQgICAgAIingIKE1VuaW50ZXJwcmV0ZWRPcHRpb24SOwoE",
+            "bmFtZRgCIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0",
+            "aW9uLk5hbWVQYXJ0EhgKEGlkZW50aWZpZXJfdmFsdWUYAyABKAkSGgoScG9z",
+            "aXRpdmVfaW50X3ZhbHVlGAQgASgEEhoKEm5lZ2F0aXZlX2ludF92YWx1ZRgF",
+            "IAEoAxIUCgxkb3VibGVfdmFsdWUYBiABKAESFAoMc3RyaW5nX3ZhbHVlGAcg",
+            "ASgMEhcKD2FnZ3JlZ2F0ZV92YWx1ZRgIIAEoCRozCghOYW1lUGFydBIRCglu",
+            "YW1lX3BhcnQYASACKAkSFAoMaXNfZXh0ZW5zaW9uGAIgAigIItUBCg5Tb3Vy",
+            "Y2VDb2RlSW5mbxI6Cghsb2NhdGlvbhgBIAMoCzIoLmdvb2dsZS5wcm90b2J1",
+            "Zi5Tb3VyY2VDb2RlSW5mby5Mb2NhdGlvbhqGAQoITG9jYXRpb24SEAoEcGF0",
+            "aBgBIAMoBUICEAESEAoEc3BhbhgCIAMoBUICEAESGAoQbGVhZGluZ19jb21t",
+            "ZW50cxgDIAEoCRIZChF0cmFpbGluZ19jb21tZW50cxgEIAEoCRIhChlsZWFk",
+            "aW5nX2RldGFjaGVkX2NvbW1lbnRzGAYgAygJIqcBChFHZW5lcmF0ZWRDb2Rl",
+            "SW5mbxJBCgphbm5vdGF0aW9uGAEgAygLMi0uZ29vZ2xlLnByb3RvYnVmLkdl",
+            "bmVyYXRlZENvZGVJbmZvLkFubm90YXRpb24aTwoKQW5ub3RhdGlvbhIQCgRw",
+            "YXRoGAEgAygFQgIQARITCgtzb3VyY2VfZmlsZRgCIAEoCRINCgViZWdpbhgD",
+            "IAEoBRILCgNlbmQYBCABKAVCjwEKE2NvbS5nb29nbGUucHJvdG9idWZCEERl",
+            "c2NyaXB0b3JQcm90b3NIAVo+Z2l0aHViLmNvbS9nb2xhbmcvcHJvdG9idWYv",
+            "cHJvdG9jLWdlbi1nby9kZXNjcmlwdG9yO2Rlc2NyaXB0b3L4AQGiAgNHUEKq",
+            "AhpHb29nbGUuUHJvdG9idWYuUmVmbGVjdGlvbg=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -162,7 +165,7 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ExtensionRangeOptions), global::Google.Protobuf.Reflection.ExtensionRangeOptions.Parser, new[]{ "UninterpretedOption" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto), global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser, new[]{ "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "OneofIndex", "JsonName", "Options" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type), typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofDescriptorProto), global::Google.Protobuf.Reflection.OneofDescriptorProto.Parser, new[]{ "Name", "Options" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumDescriptorProto), global::Google.Protobuf.Reflection.EnumDescriptorProto.Parser, new[]{ "Name", "Value", "Options" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumDescriptorProto), global::Google.Protobuf.Reflection.EnumDescriptorProto.Parser, new[]{ "Name", "Value", "Options", "ReservedRange", "ReservedName" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange), global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange.Parser, new[]{ "Start", "End" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueDescriptorProto), global::Google.Protobuf.Reflection.EnumValueDescriptorProto.Parser, new[]{ "Name", "Number", "Options" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceDescriptorProto), global::Google.Protobuf.Reflection.ServiceDescriptorProto.Parser, new[]{ "Name", "Method", "Options" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser, new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null),
@@ -2144,6 +2147,8 @@ namespace Google.Protobuf.Reflection {
       name_ = other.name_;
       value_ = other.value_.Clone();
       Options = other.options_ != null ? other.Options.Clone() : null;
+      reservedRange_ = other.reservedRange_.Clone();
+      reservedName_ = other.reservedName_.Clone();
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2183,6 +2188,35 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    /// <summary>Field number for the "reserved_range" field.</summary>
+    public const int ReservedRangeFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange> _repeated_reservedRange_codec
+        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange> reservedRange_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange>();
+    /// <summary>
+    /// Range of reserved numeric values. Reserved numeric values may not be used
+    /// by enum values in the same enum declaration. Reserved ranges may not
+    /// overlap.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange> ReservedRange {
+      get { return reservedRange_; }
+    }
+
+    /// <summary>Field number for the "reserved_name" field.</summary>
+    public const int ReservedNameFieldNumber = 5;
+    private static readonly pb::FieldCodec<string> _repeated_reservedName_codec
+        = pb::FieldCodec.ForString(42);
+    private readonly pbc::RepeatedField<string> reservedName_ = new pbc::RepeatedField<string>();
+    /// <summary>
+    /// Reserved enum value names, which may not be reused. A given name may only
+    /// be reserved once.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> ReservedName {
+      get { return reservedName_; }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnumDescriptorProto);
@@ -2199,6 +2233,8 @@ namespace Google.Protobuf.Reflection {
       if (Name != other.Name) return false;
       if(!value_.Equals(other.value_)) return false;
       if (!object.Equals(Options, other.Options)) return false;
+      if(!reservedRange_.Equals(other.reservedRange_)) return false;
+      if(!reservedName_.Equals(other.reservedName_)) return false;
       return true;
     }
 
@@ -2208,6 +2244,8 @@ namespace Google.Protobuf.Reflection {
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       hash ^= value_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
+      hash ^= reservedRange_.GetHashCode();
+      hash ^= reservedName_.GetHashCode();
       return hash;
     }
 
@@ -2227,6 +2265,8 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(26);
         output.WriteMessage(Options);
       }
+      reservedRange_.WriteTo(output, _repeated_reservedRange_codec);
+      reservedName_.WriteTo(output, _repeated_reservedName_codec);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2239,6 +2279,8 @@ namespace Google.Protobuf.Reflection {
       if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
+      size += reservedRange_.CalculateSize(_repeated_reservedRange_codec);
+      size += reservedName_.CalculateSize(_repeated_reservedName_codec);
       return size;
     }
 
@@ -2257,6 +2299,8 @@ namespace Google.Protobuf.Reflection {
         }
         Options.MergeFrom(other.Options);
       }
+      reservedRange_.Add(other.reservedRange_);
+      reservedName_.Add(other.reservedName_);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2282,9 +2326,183 @@ namespace Google.Protobuf.Reflection {
             input.ReadMessage(options_);
             break;
           }
+          case 34: {
+            reservedRange_.AddEntriesFrom(input, _repeated_reservedRange_codec);
+            break;
+          }
+          case 42: {
+            reservedName_.AddEntriesFrom(input, _repeated_reservedName_codec);
+            break;
+          }
         }
       }
     }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the EnumDescriptorProto message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      /// <summary>
+      /// Range of reserved numeric values. Reserved values may not be used by
+      /// entries in the same enum. Reserved ranges may not overlap.
+      ///
+      /// Note that this is distinct from DescriptorProto.ReservedRange in that it
+      /// is inclusive such that it can appropriately represent the entire int32
+      /// domain.
+      /// </summary>
+      internal sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange> {
+        private static readonly pb::MessageParser<EnumReservedRange> _parser = new pb::MessageParser<EnumReservedRange>(() => new EnumReservedRange());
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<EnumReservedRange> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::Google.Protobuf.Reflection.EnumDescriptorProto.Descriptor.NestedTypes[0]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public EnumReservedRange() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public EnumReservedRange(EnumReservedRange other) : this() {
+          start_ = other.start_;
+          end_ = other.end_;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public EnumReservedRange Clone() {
+          return new EnumReservedRange(this);
+        }
+
+        /// <summary>Field number for the "start" field.</summary>
+        public const int StartFieldNumber = 1;
+        private int start_;
+        /// <summary>
+        /// Inclusive.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int Start {
+          get { return start_; }
+          set {
+            start_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "end" field.</summary>
+        public const int EndFieldNumber = 2;
+        private int end_;
+        /// <summary>
+        /// Inclusive.
+        /// </summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int End {
+          get { return end_; }
+          set {
+            end_ = value;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as EnumReservedRange);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(EnumReservedRange other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (Start != other.Start) return false;
+          if (End != other.End) return false;
+          return true;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (Start != 0) hash ^= Start.GetHashCode();
+          if (End != 0) hash ^= End.GetHashCode();
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (Start != 0) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Start);
+          }
+          if (End != 0) {
+            output.WriteRawTag(16);
+            output.WriteInt32(End);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (Start != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(Start);
+          }
+          if (End != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(End);
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(EnumReservedRange other) {
+          if (other == null) {
+            return;
+          }
+          if (other.Start != 0) {
+            Start = other.Start;
+          }
+          if (other.End != 0) {
+            End = other.End;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                input.SkipLastField();
+                break;
+              case 8: {
+                Start = input.ReadInt32();
+                break;
+              }
+              case 16: {
+                End = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
+    }
+    #endregion
 
   }
 
@@ -3135,7 +3353,7 @@ namespace Google.Protobuf.Reflection {
     }
 
     /// <summary>Field number for the "php_generic_services" field.</summary>
-    public const int PhpGenericServicesFieldNumber = 19;
+    public const int PhpGenericServicesFieldNumber = 42;
     private bool phpGenericServices_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool PhpGenericServices {
@@ -3366,10 +3584,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(144, 1);
         output.WriteBool(PyGenericServices);
       }
-      if (PhpGenericServices != false) {
-        output.WriteRawTag(152, 1);
-        output.WriteBool(PhpGenericServices);
-      }
       if (JavaGenerateEqualsAndHash != false) {
         output.WriteRawTag(160, 1);
         output.WriteBool(JavaGenerateEqualsAndHash);
@@ -3405,6 +3619,10 @@ namespace Google.Protobuf.Reflection {
       if (PhpNamespace.Length != 0) {
         output.WriteRawTag(202, 2);
         output.WriteString(PhpNamespace);
+      }
+      if (PhpGenericServices != false) {
+        output.WriteRawTag(208, 2);
+        output.WriteBool(PhpGenericServices);
       }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
@@ -3572,10 +3790,6 @@ namespace Google.Protobuf.Reflection {
             PyGenericServices = input.ReadBool();
             break;
           }
-          case 152: {
-            PhpGenericServices = input.ReadBool();
-            break;
-          }
           case 160: {
             JavaGenerateEqualsAndHash = input.ReadBool();
             break;
@@ -3610,6 +3824,10 @@ namespace Google.Protobuf.Reflection {
           }
           case 330: {
             PhpNamespace = input.ReadString();
+            break;
+          }
+          case 336: {
+            PhpGenericServices = input.ReadBool();
             break;
           }
           case 7994: {

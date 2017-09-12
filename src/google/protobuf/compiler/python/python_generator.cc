@@ -1151,7 +1151,7 @@ void Generator::PrintFieldDescriptor(
     "  has_default_value=$has_default_value$, default_value=$default_value$,\n"
     "  message_type=None, enum_type=None, containing_type=None,\n"
     "  is_extension=$is_extension$, extension_scope=None,\n"
-    "  options=$options$$json_name$)";
+    "  options=$options$$json_name$, file=DESCRIPTOR)";
   printer_->Print(m, field_descriptor_decl);
 }
 

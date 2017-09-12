@@ -540,8 +540,8 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
 
     @Override
     public boolean hasNext() {
-      return (pos + 1) < entryList.size() ||
-          getOverflowIterator().hasNext();
+      return (pos + 1) < entryList.size()
+          || (!overflowEntries.isEmpty() && getOverflowIterator().hasNext());
     }
 
     @Override

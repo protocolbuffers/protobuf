@@ -69,9 +69,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/compiler/subprocess.h>
 #include <google/protobuf/compiler/zip_writer.h>
 #include <google/protobuf/compiler/plugin.pb.h>
@@ -83,16 +80,11 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/io_win32.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/stubs/io_win32.h>
 
 
 namespace google {
@@ -232,7 +224,7 @@ bool IsInstalledProtoPath(const string& path) {
   return access(file_path.c_str(), F_OK) != -1;
 }
 
-// Add the paths where google/protobuf/descritor.proto and other well-known
+// Add the paths where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
 void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
   // TODO(xiaofeng): The code currently only checks relative paths of where
@@ -876,6 +868,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     return 1;
   }
 
+
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
@@ -1019,7 +1012,8 @@ bool CommandLineInterface::PopulateSimpleDescriptorDatabase(
     bool parsed = file_descriptor_set.ParseFromFileDescriptor(fd);
     if (close(fd) != 0) {
       std::cerr << descriptor_set_in_names_[i] << ": close: "
-                << strerror(errno);
+                << strerror(errno)
+                << std::endl;
       return false;
     }
 
@@ -1172,6 +1166,21 @@ bool CommandLineInterface::MakeInputsBeProtoPathRelative(
   return true;
 }
 
+bool CommandLineInterface::ExpandArgumentFile(const string& file,
+                                              std::vector<string>* arguments) {
+  // The argument file is searched in the working directory only. We don't
+  // use the proto import path here.
+  std::ifstream file_stream(file.c_str());
+  if (!file_stream.is_open()) {
+    return false;
+  }
+  string argument;
+  // We don't support any kind of shell expansion right now.
+  while (std::getline(file_stream, argument)) {
+    arguments->push_back(argument);
+  }
+  return true;
+}
 
 CommandLineInterface::ParseArgumentStatus
 CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
@@ -1179,11 +1188,19 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
 
   std::vector<string> arguments;
   for (int i = 1; i < argc; ++i) {
+    if (argv[i][0] == '@') {
+      if (!ExpandArgumentFile(argv[i] + 1, &arguments)) {
+        std::cerr << "Failed to open argument file: " << (argv[i] + 1)
+                  << std::endl;
+        return PARSE_ARGUMENT_FAIL;
+      }
+      continue;
+    }
     arguments.push_back(argv[i]);
   }
 
   // if no arguments are given, show help
-  if(arguments.empty()) {
+  if (arguments.empty()) {
     PrintHelpText();
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
   }
@@ -1749,6 +1766,20 @@ void CommandLineInterface::PrintHelpText() {
               << string(19 - iter->first.size(), ' ')  // Spaces for alignment.
               << iter->second.help_text << std::endl;
   }
+  std::cerr <<
+"  @<filename>                 Read options and filenames from file. If a\n"
+"                              relative file path is specified, the file\n"
+"                              will be searched in the working directory.\n"
+"                              The --proto_path option will not affect how\n"
+"                              this argument file is searched. Content of\n"
+"                              the file will be expanded in the position of\n"
+"                              @<filename> as in the argument list. Note\n"
+"                              that shell expansion is not applied to the\n"
+"                              content of the file (i.e., you cannot use\n"
+"                              quotes, wildcards, escapes, commands, etc.).\n"
+"                              Each line corresponds to a single argument,\n"
+"                              even if it contains spaces."
+      << std::endl;
 }
 
 bool CommandLineInterface::GenerateOutput(

@@ -197,6 +197,8 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
   vars["nested_name"] = descriptor_->name();
   vars["classname"] = classname_;
   vars["constexpr"] = options_.proto_h ? "constexpr " : "";
+  vars["{"] = "";
+  vars["}"] = "";
   printer->Print(vars, "typedef $classname$ $nested_name$;\n");
 
   for (int j = 0; j < descriptor_->value_count(); j++) {
@@ -204,22 +206,27 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
     vars["deprecated_attr"] = descriptor_->value(j)->options().deprecated() ?
       "GOOGLE_PROTOBUF_DEPRECATED_ATTR " : "";
     printer->Print(vars,
-      "$deprecated_attr$static $constexpr$const $nested_name$ $tag$ =\n"
+      "$deprecated_attr$static $constexpr$const $nested_name$ ${$$tag$$}$ =\n"
       "  $classname$_$tag$;\n");
+    printer->Annotate("{", "}", descriptor_->value(j));
   }
 
   printer->Print(vars,
     "static inline bool $nested_name$_IsValid(int value) {\n"
     "  return $classname$_IsValid(value);\n"
     "}\n"
-    "static const $nested_name$ $nested_name$_MIN =\n"
-    "  $classname$_$nested_name$_MIN;\n"
-    "static const $nested_name$ $nested_name$_MAX =\n"
+    "static const $nested_name$ ${$$nested_name$_MIN$}$ =\n"
+    "  $classname$_$nested_name$_MIN;\n");
+  printer->Annotate("{", "}", descriptor_);
+  printer->Print(vars,
+    "static const $nested_name$ ${$$nested_name$_MAX$}$ =\n"
     "  $classname$_$nested_name$_MAX;\n");
+  printer->Annotate("{", "}", descriptor_);
   if (generate_array_size_) {
     printer->Print(vars,
-      "static const int $nested_name$_ARRAYSIZE =\n"
+      "static const int ${$$nested_name$_ARRAYSIZE$}$ =\n"
       "  $classname$_$nested_name$_ARRAYSIZE;\n");
+    printer->Annotate("{", "}", descriptor_);
   }
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
@@ -242,27 +249,10 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
   }
 }
 
-void EnumGenerator::GenerateDescriptorInitializer(io::Printer* printer) {
-  std::map<string, string> vars;
-  vars["index"] = SimpleItoa(descriptor_->index());
-  vars["index_in_metadata"] = SimpleItoa(index_in_metadata_);
-
-  if (descriptor_->containing_type() == NULL) {
-    printer->Print(vars,
-                   "file_level_enum_descriptors[$index_in_metadata$] = "
-                   "file->enum_type($index$);\n");
-  } else {
-    vars["parent"] = ClassName(descriptor_->containing_type(), false);
-    printer->Print(vars,
-                   "file_level_enum_descriptors[$index_in_metadata$] = "
-                   "$parent$_descriptor->enum_type($index$);\n");
-  }
-}
-
-void EnumGenerator::GenerateMethods(io::Printer* printer) {
+void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
   std::map<string, string> vars;
   vars["classname"] = classname_;
-  vars["index_in_metadata"] = SimpleItoa(index_in_metadata_);
+  vars["index_in_metadata"] = SimpleItoa(idx);
   vars["constexpr"] = options_.proto_h ? "constexpr " : "";
   vars["file_namespace"] = FileLevelNamespace(descriptor_->file()->name());
 

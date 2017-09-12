@@ -34,6 +34,7 @@
 //
 // This file makes extensive use of RFC 3092.  :)
 
+#include <limits>
 #include <memory>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
@@ -61,6 +62,7 @@
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+
 
 namespace google {
 namespace protobuf {
@@ -152,6 +154,14 @@ DescriptorProto::ExtensionRange* AddExtensionRange(DescriptorProto* parent,
 DescriptorProto::ReservedRange* AddReservedRange(DescriptorProto* parent,
                                                  int start, int end) {
   DescriptorProto::ReservedRange* result = parent->add_reserved_range();
+  result->set_start(start);
+  result->set_end(end);
+  return result;
+}
+
+EnumDescriptorProto::EnumReservedRange* AddReservedRange(
+    EnumDescriptorProto* parent, int start, int end) {
+  EnumDescriptorProto::EnumReservedRange* result = parent->add_reserved_range();
   result->set_start(start);
   result->set_end(end);
   return result;
@@ -2047,6 +2057,137 @@ TEST_F(ReservedDescriptorTest, IsReservedName) {
 
 // ===================================================================
 
+// Test reserved enum fields.
+class ReservedEnumDescriptorTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    // Build descriptors for the following definitions:
+    //
+    //   enum Foo {
+    //     BAR = 1;
+    //     reserved 2, 9 to 11, 15;
+    //     reserved "foo", "bar";
+    //   }
+
+    FileDescriptorProto foo_file;
+    foo_file.set_name("foo.proto");
+
+    EnumDescriptorProto* foo = AddEnum(&foo_file, "Foo");
+    EnumDescriptorProto* edge1 = AddEnum(&foo_file, "Edge1");
+    EnumDescriptorProto* edge2 = AddEnum(&foo_file, "Edge2");
+
+    AddEnumValue(foo, "BAR", 4);
+    AddReservedRange(foo, -5, -3);
+    AddReservedRange(foo, -2, 1);
+    AddReservedRange(foo, 2, 3);
+    AddReservedRange(foo, 9, 12);
+    AddReservedRange(foo, 15, 16);
+
+    foo->add_reserved_name("foo");
+    foo->add_reserved_name("bar");
+
+    // Some additional edge cases that cover most or all of the range of enum
+    // values
+
+    // Note: We use INT_MAX as the maximum reserved range upper bound,
+    // inclusive.
+    AddEnumValue(edge1, "EDGE1", 1);
+    AddReservedRange(edge1, 10, INT_MAX);
+    AddEnumValue(edge2, "EDGE2", 15);
+    AddReservedRange(edge2, INT_MIN, 10);
+
+    // Build the descriptors and get the pointers.
+    foo_file_ = pool_.BuildFile(foo_file);
+    ASSERT_TRUE(foo_file_ != NULL);
+
+    ASSERT_EQ(3, foo_file_->enum_type_count());
+    foo_ = foo_file_->enum_type(0);
+    edge1_ = foo_file_->enum_type(1);
+    edge2_ = foo_file_->enum_type(2);
+  }
+
+  DescriptorPool pool_;
+  const FileDescriptor* foo_file_;
+  const EnumDescriptor* foo_;
+  const EnumDescriptor* edge1_;
+  const EnumDescriptor* edge2_;
+};
+
+TEST_F(ReservedEnumDescriptorTest, ReservedRanges) {
+  ASSERT_EQ(5, foo_->reserved_range_count());
+
+  EXPECT_EQ(-5, foo_->reserved_range(0)->start);
+  EXPECT_EQ(-3, foo_->reserved_range(0)->end);
+
+  EXPECT_EQ(-2, foo_->reserved_range(1)->start);
+  EXPECT_EQ(1, foo_->reserved_range(1)->end);
+
+  EXPECT_EQ(2, foo_->reserved_range(2)->start);
+  EXPECT_EQ(3, foo_->reserved_range(2)->end);
+
+  EXPECT_EQ(9, foo_->reserved_range(3)->start);
+  EXPECT_EQ(12, foo_->reserved_range(3)->end);
+
+  EXPECT_EQ(15, foo_->reserved_range(4)->start);
+  EXPECT_EQ(16, foo_->reserved_range(4)->end);
+
+  ASSERT_EQ(1, edge1_->reserved_range_count());
+  EXPECT_EQ(10, edge1_->reserved_range(0)->start);
+  EXPECT_EQ(INT_MAX, edge1_->reserved_range(0)->end);
+
+  ASSERT_EQ(1, edge2_->reserved_range_count());
+  EXPECT_EQ(INT_MIN, edge2_->reserved_range(0)->start);
+  EXPECT_EQ(10, edge2_->reserved_range(0)->end);
+}
+
+TEST_F(ReservedEnumDescriptorTest, IsReservedNumber) {
+  EXPECT_TRUE(foo_->IsReservedNumber(-5));
+  EXPECT_TRUE(foo_->IsReservedNumber(-4));
+  EXPECT_TRUE(foo_->IsReservedNumber(-3));
+  EXPECT_TRUE(foo_->IsReservedNumber(-2));
+  EXPECT_TRUE(foo_->IsReservedNumber(-1));
+  EXPECT_TRUE(foo_->IsReservedNumber(0));
+  EXPECT_TRUE(foo_->IsReservedNumber(1));
+  EXPECT_TRUE (foo_->IsReservedNumber(2));
+  EXPECT_TRUE(foo_->IsReservedNumber(3));
+  EXPECT_FALSE(foo_->IsReservedNumber(8));
+  EXPECT_TRUE (foo_->IsReservedNumber(9));
+  EXPECT_TRUE (foo_->IsReservedNumber(10));
+  EXPECT_TRUE (foo_->IsReservedNumber(11));
+  EXPECT_TRUE(foo_->IsReservedNumber(12));
+  EXPECT_FALSE(foo_->IsReservedNumber(13));
+  EXPECT_FALSE(foo_->IsReservedNumber(13));
+  EXPECT_FALSE(foo_->IsReservedNumber(14));
+  EXPECT_TRUE (foo_->IsReservedNumber(15));
+  EXPECT_TRUE(foo_->IsReservedNumber(16));
+  EXPECT_FALSE(foo_->IsReservedNumber(17));
+
+  EXPECT_FALSE(edge1_->IsReservedNumber(9));
+  EXPECT_TRUE(edge1_->IsReservedNumber(10));
+  EXPECT_TRUE(edge1_->IsReservedNumber(INT_MAX - 1));
+  EXPECT_TRUE(edge1_->IsReservedNumber(INT_MAX));
+
+  EXPECT_TRUE(edge2_->IsReservedNumber(INT_MIN));
+  EXPECT_TRUE(edge2_->IsReservedNumber(9));
+  EXPECT_TRUE(edge2_->IsReservedNumber(10));
+  EXPECT_FALSE(edge2_->IsReservedNumber(11));
+}
+
+TEST_F(ReservedEnumDescriptorTest, ReservedNames) {
+  ASSERT_EQ(2, foo_->reserved_name_count());
+
+  EXPECT_EQ("foo", foo_->reserved_name(0));
+  EXPECT_EQ("bar", foo_->reserved_name(1));
+}
+
+TEST_F(ReservedEnumDescriptorTest, IsReservedName) {
+  EXPECT_TRUE (foo_->IsReservedName("foo"));
+  EXPECT_TRUE (foo_->IsReservedName("bar"));
+  EXPECT_FALSE(foo_->IsReservedName("baz"));
+}
+
+// ===================================================================
+
 class MiscTest : public testing::Test {
  protected:
   // Function which makes a field descriptor of the given type.
@@ -3769,6 +3910,138 @@ TEST_F(ValidationErrorTest, ReservedFieldsDebugString) {
     "syntax = \"proto2\";\n\n"
     "message Foo {\n"
     "  reserved 5, 10 to 19;\n"
+    "  reserved \"foo\", \"bar\";\n"
+    "}\n\n",
+    file->DebugString());
+}
+
+TEST_F(ValidationErrorTest, EnumReservedFieldError) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"BAR\" number:15 }"
+    "  reserved_range { start: 10 end: 20 }"
+    "}",
+
+    "foo.proto: BAR: NUMBER: Enum value \"BAR\" uses reserved number 15.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumNegativeReservedFieldError) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"BAR\" number:-15 }"
+    "  reserved_range { start: -20 end: -10 }"
+    "}",
+
+    "foo.proto: BAR: NUMBER: Enum value \"BAR\" uses reserved number -15.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumReservedRangeOverlap) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"BAR\" number:0 }"
+    "  reserved_range { start: 10 end: 20 }"
+    "  reserved_range { start: 5 end: 15 }"
+    "}",
+
+    "foo.proto: Foo: NUMBER: Reserved range 5 to 14"
+    " overlaps with already-defined range 10 to 19.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumNegativeReservedRangeOverlap) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"BAR\" number:0 }"
+    "  reserved_range { start: -20 end: -10 }"
+    "  reserved_range { start: -15 end: -5 }"
+    "}",
+
+    "foo.proto: Foo: NUMBER: Reserved range -15 to -6"
+    " overlaps with already-defined range -20 to -11.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumMixedReservedRangeOverlap) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"BAR\" number:20 }"
+    "  reserved_range { start: -20 end: 10 }"
+    "  reserved_range { start: -15 end: 5 }"
+    "}",
+
+    "foo.proto: Foo: NUMBER: Reserved range -15 to 4"
+    " overlaps with already-defined range -20 to 9.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumReservedRangeStartGreaterThanEnd) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"BAR\" number:20 }"
+    "  reserved_range { start: 11 end: 10 }"
+    "}",
+
+    "foo.proto: Foo: NUMBER: Reserved range end number must be greater"
+    " than start number.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumReservedNameError) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"FOO\" number:15 }"
+    "  value { name:\"BAR\" number:15 }"
+    "  reserved_name: \"FOO\""
+    "  reserved_name: \"BAR\""
+    "}",
+
+    "foo.proto: FOO: NAME: Enum value \"FOO\" is reserved.\n"
+    "foo.proto: BAR: NAME: Enum value \"BAR\" is reserved.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumReservedNameRedundant) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"FOO\" number:15 }"
+    "  reserved_name: \"foo\""
+    "  reserved_name: \"foo\""
+    "}",
+
+    "foo.proto: foo: NAME: Enum value \"foo\" is reserved multiple times.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumReservedFieldsDebugString) {
+  const FileDescriptor* file = BuildFile(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"FOO\" number:3 }"
+    "  reserved_name: \"foo\""
+    "  reserved_name: \"bar\""
+    "  reserved_range { start: -6 end: -6 }"
+    "  reserved_range { start: -5 end: -4 }"
+    "  reserved_range { start: -1 end: 1 }"
+    "  reserved_range { start: 5 end: 5 }"
+    "  reserved_range { start: 10 end: 19 }"
+    "}");
+
+  ASSERT_EQ(
+    "syntax = \"proto2\";\n\n"
+    "enum Foo {\n"
+    "  FOO = 3;\n"
+    "  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;\n"
     "  reserved \"foo\", \"bar\";\n"
     "}\n\n",
     file->DebugString());

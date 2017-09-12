@@ -130,7 +130,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, map_.at(key));
     Map<int32, int32>::iterator it = map_.find(key);
 
-    // interator dereferenceable
+    // iterator dereferenceable
     EXPECT_EQ(key,   (*it).first);
     EXPECT_EQ(value, (*it).second);
     EXPECT_EQ(key,   it->first);
@@ -158,7 +158,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, const_map_.at(key));
     Map<int32, int32>::const_iterator const_it = const_map_.find(key);
 
-    // interator dereferenceable
+    // iterator dereferenceable
     EXPECT_EQ(key, (*const_it).first);
     EXPECT_EQ(value, (*const_it).second);
     EXPECT_EQ(key, const_it->first);
@@ -558,7 +558,7 @@ TEST_F(MapImplTest, IteratorInvalidation) {
 #endif
   std::set<int> s;
   int n = kMaxSizeToTest;
-  int frog = k1 + n;
+  unsigned int frog = k1 + n;
   while (n > 1 && s.size() < 25) {
     s.insert(n);
     n = static_cast<int>(n * 100 / (101.0 + (frog & 63)));

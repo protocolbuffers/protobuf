@@ -473,7 +473,7 @@ def _IsValidPath(message_descriptor, path):
   parts = path.split('.')
   last = parts.pop()
   for name in parts:
-    field = message_descriptor.fields_by_name[name]
+    field = message_descriptor.fields_by_name.get(name)
     if (field is None or
         field.label == FieldDescriptor.LABEL_REPEATED or
         field.type != FieldDescriptor.TYPE_MESSAGE):
@@ -698,6 +698,12 @@ def _SetStructValue(struct_value, value):
     struct_value.string_value = value
   elif isinstance(value, _INT_OR_FLOAT):
     struct_value.number_value = value
+  elif isinstance(value, dict):
+    struct_value.struct_value.Clear()
+    struct_value.struct_value.update(value)
+  elif isinstance(value, list):
+    struct_value.list_value.Clear()
+    struct_value.list_value.extend(value)
   else:
     raise ValueError('Unexpected type')
 
@@ -733,13 +739,21 @@ class Struct(object):
 
   def get_or_create_list(self, key):
     """Returns a list for this key, creating if it didn't exist already."""
+    if not self.fields[key].HasField('list_value'):
+      # Clear will mark list_value modified which will indeed create a list.
+      self.fields[key].list_value.Clear()
     return self.fields[key].list_value
 
   def get_or_create_struct(self, key):
     """Returns a struct for this key, creating if it didn't exist already."""
+    if not self.fields[key].HasField('struct_value'):
+      # Clear will mark struct_value modified which will indeed create a struct.
+      self.fields[key].struct_value.Clear()
     return self.fields[key].struct_value
 
-  # TODO(haberman): allow constructing/merging from dict.
+  def update(self, dictionary):  # pylint: disable=invalid-name
+    for key, value in dictionary.items():
+      _SetStructValue(self.fields[key], value)
 
 
 class ListValue(object):
@@ -768,11 +782,17 @@ class ListValue(object):
 
   def add_struct(self):
     """Appends and returns a struct value as the next value in the list."""
-    return self.values.add().struct_value
+    struct_value = self.values.add().struct_value
+    # Clear will mark struct_value modified which will indeed create a struct.
+    struct_value.Clear()
+    return struct_value
 
   def add_list(self):
     """Appends and returns a list value as the next value in the list."""
-    return self.values.add().list_value
+    list_value = self.values.add().list_value
+    # Clear will mark list_value modified which will indeed create a list.
+    list_value.Clear()
+    return list_value
 
 
 WKTBASES = {

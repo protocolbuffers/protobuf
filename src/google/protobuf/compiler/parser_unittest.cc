@@ -994,6 +994,42 @@ TEST_F(ParseEnumTest, ValueOptions) {
     "}");
 }
 
+TEST_F(ParseEnumTest, ReservedRange) {
+  ExpectParsesTo(
+    "enum TestEnum {\n"
+    "  FOO = 0;\n"
+    "  reserved -2147483648, -6 to -4, -1 to 1, 2, 15, 9 to 11, 3, 20 to max;\n"
+    "}\n",
+
+    "enum_type {"
+    "  name: \"TestEnum\""
+    "  value { name:\"FOO\" number:0 }"
+    "  reserved_range { start:-2147483648  end:-2147483648 }"
+    "  reserved_range { start:-6           end:-4          }"
+    "  reserved_range { start:-1           end:1           }"
+    "  reserved_range { start:2            end:2           }"
+    "  reserved_range { start:15           end:15          }"
+    "  reserved_range { start:9            end:11          }"
+    "  reserved_range { start:3            end:3           }"
+    "  reserved_range { start:20           end:2147483647  }"
+    "}");
+}
+
+TEST_F(ParseEnumTest, ReservedNames) {
+  ExpectParsesTo(
+    "enum TestEnum {\n"
+    "  FOO = 0;\n"
+    "  reserved \"foo\", \"bar\";\n"
+    "}\n",
+
+    "enum_type {"
+    "  name: \"TestEnum\""
+    "  value { name:\"FOO\" number:0 }"
+    "  reserved_name: \"foo\""
+    "  reserved_name: \"bar\""
+    "}");
+}
+
 // ===================================================================
 
 typedef ParserTest ParseServiceTest;
@@ -1488,6 +1524,51 @@ TEST_F(ParseErrorTest, EnumValueMissingNumber) {
     "1:5: Missing numeric value for enum constant.\n");
 }
 
+TEST_F(ParseErrorTest, EnumReservedStandaloneMaxNotAllowed) {
+  ExpectHasErrors(
+    "enum TestEnum {\n"
+    "  FOO = 1;\n"
+    "  reserved max;\n"
+    "}\n",
+    "2:11: Expected enum value or number range.\n");
+}
+
+TEST_F(ParseErrorTest, EnumReservedMixNameAndNumber) {
+  ExpectHasErrors(
+    "enum TestEnum {\n"
+    "  FOO = 1;\n"
+    "  reserved 10, \"foo\";\n"
+    "}\n",
+    "2:15: Expected enum number range.\n");
+}
+
+TEST_F(ParseErrorTest, EnumReservedPositiveNumberOutOfRange) {
+  ExpectHasErrors(
+    "enum TestEnum {\n"
+       "FOO = 1;\n"
+    "  reserved 2147483648;\n"
+    "}\n",
+    "2:11: Integer out of range.\n");
+}
+
+TEST_F(ParseErrorTest, EnumReservedNegativeNumberOutOfRange) {
+  ExpectHasErrors(
+    "enum TestEnum {\n"
+       "FOO = 1;\n"
+    "  reserved -2147483649;\n"
+    "}\n",
+    "2:12: Integer out of range.\n");
+}
+
+TEST_F(ParseErrorTest, EnumReservedMissingQuotes) {
+  ExpectHasErrors(
+    "enum TestEnum {\n"
+    "  FOO = 1;\n"
+    "  reserved foo;\n"
+    "}\n",
+    "2:11: Expected enum value or number range.\n");
+}
+
 // -------------------------------------------------------------------
 // Reserved field number errors
 
@@ -1514,6 +1595,23 @@ TEST_F(ParseErrorTest, ReservedMissingQuotes) {
     "}\n",
     "1:11: Expected field name or number range.\n");
 }
+
+TEST_F(ParseErrorTest, ReservedNegativeNumber) {
+  ExpectHasErrors(
+    "message Foo {\n"
+    "  reserved -10;\n"
+    "}\n",
+    "1:11: Expected field name or number range.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedNumberOutOfRange) {
+  ExpectHasErrors(
+    "message Foo {\n"
+    "  reserved 2147483648;\n"
+    "}\n",
+    "1:11: Integer out of range.\n");
+}
+
 
 // -------------------------------------------------------------------
 // Service errors

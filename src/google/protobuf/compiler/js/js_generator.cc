@@ -1082,6 +1082,40 @@ string JSReturnClause(const FieldDescriptor* desc) {
   return "";
 }
 
+string JSTypeTag(const FieldDescriptor* desc) {
+  switch (desc->type()) {
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT:
+      return "Float";
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_SFIXED64:
+      if (IsIntegralFieldWithStringJSType(desc)) {
+        return "StringInt";
+      } else {
+        return "Int";
+      }
+    case FieldDescriptor::TYPE_BOOL:
+      return "Boolean";
+    case FieldDescriptor::TYPE_STRING:
+      return "String";
+    case FieldDescriptor::TYPE_BYTES:
+      return "Bytes";
+    case FieldDescriptor::TYPE_ENUM:
+      return "Enum";
+    default:
+      assert(false);
+  }
+  return "";
+}
+
 string JSReturnDoc(const GeneratorOptions& options,
                    const FieldDescriptor* desc) {
   return "";
@@ -2569,26 +2603,44 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
               /* singular_if_not_packed = */ false),
           "returndoc", JSReturnDoc(options, field));
     }
-    printer->Print(
-        "$class$.prototype.set$name$ = function(value) {\n"
-        "  jspb.Message.set$oneoftag$Field(this, $index$",
-        "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
-        "oneoftag", (field->containing_oneof() ? "Oneof" : ""),
-        "index", JSFieldIndex(field));
-    printer->Print(
-        "$oneofgroup$, $type$value$rptvalueinit$$typeclose$);$returnvalue$\n"
-        "};\n"
-        "\n"
-        "\n",
-        "type",
-        untyped ? "/** @type{string|number|boolean|Array|undefined} */(" : "",
-        "typeclose", untyped ? ")" : "",
-        "oneofgroup",
-        (field->containing_oneof() ? (", " + JSOneofArray(options, field))
-                                   : ""),
-        "returnvalue", JSReturnClause(field), "rptvalueinit",
-        (field->is_repeated() ? " || []" : ""));
+
+    if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
+        !field->is_repeated() && !field->is_map() &&
+        !HasFieldPresence(options, field)) {
+      // Proto3 non-repeated and non-map fields without presence use the
+      // setProto3*Field function.
+      printer->Print(
+          "$class$.prototype.set$name$ = function(value) {\n"
+          "  jspb.Message.setProto3$typetag$Field(this, $index$, "
+          "value);$returnvalue$\n"
+          "};\n"
+          "\n"
+          "\n",
+          "class", GetMessagePath(options, field->containing_type()), "name",
+          JSGetterName(options, field), "typetag", JSTypeTag(field), "index",
+          JSFieldIndex(field), "returnvalue", JSReturnClause(field));
+    } else {
+      // Otherwise, use the regular setField function.
+      printer->Print(
+          "$class$.prototype.set$name$ = function(value) {\n"
+          "  jspb.Message.set$oneoftag$Field(this, $index$",
+          "class", GetMessagePath(options, field->containing_type()), "name",
+          JSGetterName(options, field), "oneoftag",
+          (field->containing_oneof() ? "Oneof" : ""), "index",
+          JSFieldIndex(field));
+      printer->Print(
+          "$oneofgroup$, $type$value$rptvalueinit$$typeclose$);$returnvalue$\n"
+          "};\n"
+          "\n"
+          "\n",
+          "type",
+          untyped ? "/** @type{string|number|boolean|Array|undefined} */(" : "",
+          "typeclose", untyped ? ")" : "", "oneofgroup",
+          (field->containing_oneof() ? (", " + JSOneofArray(options, field))
+                                     : ""),
+          "returnvalue", JSReturnClause(field), "rptvalueinit",
+          (field->is_repeated() ? " || []" : ""));
+    }
 
     if (untyped) {
       printer->Print(

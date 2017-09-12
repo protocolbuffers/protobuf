@@ -35,10 +35,12 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FILE_H__
 
+#include <algorithm>
 #include <memory>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
+#include <set>
 #include <string>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
@@ -82,16 +84,21 @@ class FileGenerator {
                         const string& info_path);
   void GenerateSource(io::Printer* printer);
 
+  int NumMessages() const { return message_generators_.size(); }
+  // Similar to GenerateSource but generates only one message
+  void GenerateSourceForMessage(int idx, io::Printer* printer);
+  void GenerateGlobalSource(io::Printer* printer);
+
  private:
   // Internal type used by GenerateForwardDeclarations (defined in file.cc).
   class ForwardDeclarations;
 
-  // Generate the BuildDescriptors() procedure, which builds all descriptors
-  // for types defined in the file.
-  void GenerateBuildDescriptors(io::Printer* printer);
+  void GenerateSourceIncludes(io::Printer* printer);
+  void GenerateSourceDefaultInstance(int idx, io::Printer* printer);
 
-  void GenerateNamespaceOpeners(io::Printer* printer);
-  void GenerateNamespaceClosers(io::Printer* printer);
+  void GenerateInitForSCC(const SCC* scc, io::Printer* printer);
+  void GenerateInitializationCode(io::Printer* printer);
+  void GenerateReflectionInitializationCode(io::Printer* printer);
 
   // For other imports, generates their forward-declarations.
   void GenerateForwardDeclarations(io::Printer* printer);
@@ -143,10 +150,22 @@ class FileGenerator {
   // a breaking change so we prefer the #undef approach.
   void GenerateMacroUndefs(io::Printer* printer);
 
+  bool IsSCCRepresentative(const Descriptor* d) {
+    return GetSCCRepresentative(d) == d;
+  }
+  const Descriptor* GetSCCRepresentative(const Descriptor* d) {
+    return GetSCC(d)->GetRepresentative();
+  }
+  const SCC* GetSCC(const Descriptor* d) {
+    return scc_analyzer_.GetSCC(d);
+  }
+
+
   const FileDescriptor* file_;
   const Options options_;
 
   SCCAnalyzer scc_analyzer_;
+
 
   // Contains the post-order walk of all the messages (and child messages) in
   // this file. If you need a pre-order walk just reverse iterate.
@@ -155,10 +174,8 @@ class FileGenerator {
   std::vector<ServiceGenerator*> service_generators_;
   std::vector<ExtensionGenerator*> extension_generators_;
 
-  // These members are just for owning (and thus proper deleting). Some of the
-  // message_ and enum_generators above are owned by child messages.
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<MessageGenerator> >
-      message_generators_owner_;
+  // These members are just for owning (and thus proper deleting).
+  // Nested (enum/extension)_generators are owned by child messages.
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<EnumGenerator> > enum_generators_owner_;
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<ServiceGenerator> >
       service_generators_owner_;

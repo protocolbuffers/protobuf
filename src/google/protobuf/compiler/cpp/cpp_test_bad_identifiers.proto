@@ -151,6 +151,10 @@ enum ConflictingEnum {  // NO_PROTO3
 
 message DummyMessage {}
 
+// Message names that could conflict.
+message Shutdown {}
+message TableStruct {}
+
 service TestConflictingMethodNames {
   rpc Closure(DummyMessage) returns (DummyMessage);
 }

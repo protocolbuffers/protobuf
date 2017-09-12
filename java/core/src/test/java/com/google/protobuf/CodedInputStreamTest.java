@@ -41,6 +41,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import junit.framework.TestCase;
 
@@ -50,6 +51,9 @@ import junit.framework.TestCase;
  * @author kenton@google.com Kenton Varda
  */
 public class CodedInputStreamTest extends TestCase {
+  
+  private static final int DEFAULT_BLOCK_SIZE = 4096; 
+  
   private enum InputType {
     ARRAY {
       @Override
@@ -77,7 +81,43 @@ public class CodedInputStreamTest extends TestCase {
       CodedInputStream newDecoder(byte[] data, int blockSize) {
         return CodedInputStream.newInstance(new SmallBlockInputStream(data, blockSize));
       }
+    },
+    ITER_DIRECT {
+      @Override
+      CodedInputStream newDecoder(byte[] data, int blockSize) {
+        if (blockSize > DEFAULT_BLOCK_SIZE) {
+          blockSize = DEFAULT_BLOCK_SIZE;
+        }
+        ArrayList <ByteBuffer> input = new ArrayList <ByteBuffer>();
+        for (int i = 0; i < data.length; i += blockSize) {
+          int rl = Math.min(blockSize, data.length - i); 
+          ByteBuffer rb = ByteBuffer.allocateDirect(rl); 
+          rb.put(data, i, rl);
+          rb.flip();
+          input.add(rb);
+        }
+        return CodedInputStream.newInstance(input);
+      }
+    },
+    STREAM_ITER_DIRECT {
+      @Override
+      CodedInputStream newDecoder(byte[] data, int blockSize) {
+        if (blockSize > DEFAULT_BLOCK_SIZE) {
+          blockSize = DEFAULT_BLOCK_SIZE;
+        }
+        ArrayList <ByteBuffer> input = new ArrayList <ByteBuffer>();
+        for (int i = 0; i < data.length; i += blockSize) {
+          int rl = Math.min(blockSize, data.length - i); 
+          ByteBuffer rb = ByteBuffer.allocateDirect(rl); 
+          rb.put(data, i, rl);
+          rb.flip();
+          input.add(rb);
+        }
+        return CodedInputStream.newInstance(new IterableByteBufferInputStream(input));
+      }
     };
+    
+    
 
     CodedInputStream newDecoder(byte[] data) {
       return newDecoder(data, data.length);
@@ -994,7 +1034,9 @@ public class CodedInputStreamTest extends TestCase {
     byte[] data = byteArrayStream.toByteArray();
 
     for (InputType inputType : InputType.values()) {
-      if (inputType == InputType.STREAM) {
+      if (inputType == InputType.STREAM 
+          || inputType == InputType.STREAM_ITER_DIRECT 
+          || inputType == InputType.ITER_DIRECT) {
         // Aliasing doesn't apply to stream-backed CIS.
         continue;
       }
@@ -1019,7 +1061,7 @@ public class CodedInputStreamTest extends TestCase {
       assertEquals(inputType.name(), (byte) 89, result.get());
 
       // Enable aliasing
-      inputStream = inputType.newDecoder(data);
+      inputStream = inputType.newDecoder(data, data.length);
       inputStream.enableAliasing(true);
       result = inputStream.readByteBuffer();
       assertEquals(inputType.name(), 0, result.capacity());

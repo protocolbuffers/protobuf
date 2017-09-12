@@ -245,9 +245,8 @@ GenerateSwappingCode(io::Printer* printer) const {
 
 void PrimitiveOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "_$classname$_default_instance_.$name$_ = $default$;\n");
+  printer->Print(variables_,
+                 "$ns$::_$classname$_default_instance_.$name$_ = $default$;\n");
 }
 
 void PrimitiveOneofFieldGenerator::
@@ -433,7 +432,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "    ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,\n"
       "    target);\n"
       "  target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(\n"
-      "      static_cast< ::google::protobuf::uint32>(\n"
+      "      static_cast< ::google::protobuf::int32>(\n"
       "          _$name$_cached_byte_size_), target);\n"
       "  target = ::google::protobuf::internal::WireFormatLite::\n"
       "    Write$declared_type$NoTagToArray(this->$name$_, target);\n"

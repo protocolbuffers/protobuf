@@ -279,9 +279,21 @@ public final class TextFormat {
         generator.print(String.format((Locale) null, "0x%016x", (Long) value));
         break;
       case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-        generator.print("\"");
-        generator.print(escapeBytes((ByteString) value));
-        generator.print("\"");
+        try {
+          // Try to parse and print the field as an embedded message
+          UnknownFieldSet message = UnknownFieldSet.parseFrom((ByteString) value);
+          generator.print("{");
+          generator.eol();
+          generator.indent();
+          Printer.DEFAULT.printUnknownFields(message, generator);
+          generator.outdent();
+          generator.print("}");
+        } catch (InvalidProtocolBufferException e) {
+          // If not parseable as a message, print as a String
+          generator.print("\"");
+          generator.print(escapeBytes((ByteString) value));
+          generator.print("\"");
+        }
         break;
       case WireFormat.WIRETYPE_START_GROUP:
         Printer.DEFAULT.printUnknownFields((UnknownFieldSet) value, generator);

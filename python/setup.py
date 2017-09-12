@@ -78,6 +78,7 @@ def generate_proto(source, require = True):
 
 def GenerateUnittestProtos():
   generate_proto("../src/google/protobuf/any_test.proto", False)
+  generate_proto("../src/google/protobuf/map_proto2_unittest.proto", False)
   generate_proto("../src/google/protobuf/map_unittest.proto", False)
   generate_proto("../src/google/protobuf/test_messages_proto3.proto", False)
   generate_proto("../src/google/protobuf/test_messages_proto2.proto", False)

@@ -33,6 +33,7 @@
 
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_entry_lite.h>
+#include <google/protobuf/map_field_lite.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -196,20 +197,6 @@ bool MergePartialFromCodedStream(MessageLite* msg, const ParseTable& table,
                                  io::CodedInputStream* input);
 bool MergePartialFromCodedStreamLite(MessageLite* msg, const ParseTable& table,
                                  io::CodedInputStream* input);
-
-template <typename MEntry>
-struct MapEntryToMapField;
-
-template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-struct MapEntryToMapField<MapEntryLite<Key, Value, kKeyFieldType,
-                                       kValueFieldType, default_enum_value> > {
-  typedef MapFieldLite<MapEntryLite<Key, Value, kKeyFieldType, kValueFieldType,
-                                    default_enum_value>,
-                       Key, Value, kKeyFieldType, kValueFieldType,
-                       default_enum_value>
-      MapFieldType;
-};
 
 template <typename Entry>
 bool ParseMap(io::CodedInputStream* input, void* map_field) {

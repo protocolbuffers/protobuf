@@ -58,8 +58,8 @@ void SetStringVariables(const FieldDescriptor* descriptor,
   (*variables)["default_variable"] =
       descriptor->default_value_string().empty()
           ? "&::google::protobuf::internal::GetEmptyStringAlreadyInited()"
-          : "&" + (*variables)["classname"] + "::" + default_variable_string +
-                ".get()";
+          : "&" + Namespace(descriptor) + "::" + (*variables)["classname"] +
+                "::" + default_variable_string + ".get()";
   (*variables)["pointer_type"] =
       descriptor->type() == FieldDescriptor::TYPE_BYTES ? "void" : "char";
   (*variables)["null_check"] = "GOOGLE_DCHECK(value != NULL);\n";
@@ -71,6 +71,9 @@ void SetStringVariables(const FieldDescriptor* descriptor,
   (*variables)["full_name"] = descriptor->full_name();
 
   (*variables)["string_piece"] = "::std::string";
+
+  (*variables)["lite"] =
+      HasDescriptorMethods(descriptor->file(), options) ? "" : "Lite";
 }
 
 }  // namespace
@@ -79,7 +82,8 @@ void SetStringVariables(const FieldDescriptor* descriptor,
 
 StringFieldGenerator::StringFieldGenerator(const FieldDescriptor* descriptor,
                                            const Options& options)
-    : FieldGenerator(options), descriptor_(descriptor) {
+    : FieldGenerator(options), descriptor_(descriptor),
+    lite_(!HasDescriptorMethods(descriptor->file(), options)) {
   SetStringVariables(descriptor, &variables_, options);
 }
 
@@ -207,13 +211,13 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "}\n"
         "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
         "  $set_hasbit$\n"
-        "  $name$_.Set($default_variable$, value, GetArenaNoVirtual());\n"
+        "  $name$_.Set$lite$($default_variable$, value, GetArenaNoVirtual());\n"
         "  // @@protoc_insertion_point(field_set:$full_name$)\n"
         "}\n"
         "#if LANG_CXX11\n"
         "$inline$void $classname$::set_$name$(::std::string&& value) {\n"
         "  $set_hasbit$\n"
-        "  $name$_.Set(\n"
+        "  $name$_.Set$lite$(\n"
         "    $default_variable$, ::std::move(value), GetArenaNoVirtual());\n"
         "  // @@protoc_insertion_point(field_set_rvalue:$full_name$)\n"
         "}\n"
@@ -221,7 +225,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "$inline$void $classname$::set_$name$(const char* value) {\n"
         "  $null_check$"
         "  $set_hasbit$\n"
-        "  $name$_.Set($default_variable$, $string_piece$(value),\n"
+        "  $name$_.Set$lite$($default_variable$, $string_piece$(value),\n"
         "              GetArenaNoVirtual());\n"
         "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
         "}\n"
@@ -229,7 +233,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "void $classname$::set_$name$(const $pointer_type$* value,\n"
         "    size_t size) {\n"
         "  $set_hasbit$\n"
-        "  $name$_.Set($default_variable$, $string_piece$(\n"
+        "  $name$_.Set$lite$($default_variable$, $string_piece$(\n"
         "      reinterpret_cast<const char*>(value), size), "
         "GetArenaNoVirtual());\n"
         "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
@@ -453,7 +457,7 @@ GenerateCopyConstructorCode(io::Printer* printer) const {
   if (SupportsArenas(descriptor_) || descriptor_->containing_oneof() != NULL) {
     // TODO(gpike): improve this
     printer->Print(variables_,
-      "$name$_.Set($default_variable$, from.$name$(),\n"
+      "$name$_.Set$lite$($default_variable$, from.$name$(),\n"
       "  GetArenaNoVirtual());\n");
   } else {
     printer->Print(variables_,
@@ -480,13 +484,14 @@ GenerateDestructorCode(io::Printer* printer) const {
 void StringFieldGenerator::
 GenerateDefaultInstanceAllocator(io::Printer* printer) const {
   if (!descriptor_->default_value_string().empty()) {
-    printer->Print(variables_,
-                   "$classname$::$default_variable_name$.DefaultConstruct();\n"
-                   "*$classname$::$default_variable_name$.get_mutable() = "
-                   "::std::string($default$, $default_length$);\n"
-                   "::google::protobuf::internal::OnShutdownDestroyString(\n"
-                   "    $classname$::$default_variable_name$.get_mutable());\n"
-                   );
+    printer->Print(
+        variables_,
+        "$ns$::$classname$::$default_variable_name$.DefaultConstruct();\n"
+        "*$ns$::$classname$::$default_variable_name$.get_mutable() = "
+        "::std::string($default$, $default_length$);\n"
+        "::google::protobuf::internal::OnShutdownDestroyString(\n"
+        "    $ns$::$classname$::$default_variable_name$.get_mutable());\n"
+    );
   }
 }
 
@@ -572,7 +577,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "    set_has_$name$();\n"
         "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
         "  }\n"
-        "  $oneof_prefix$$name$_.Set($default_variable$, value,\n"
+        "  $oneof_prefix$$name$_.Set$lite$($default_variable$, value,\n"
         "      GetArenaNoVirtual());\n"
         "  // @@protoc_insertion_point(field_set:$full_name$)\n"
         "}\n"
@@ -584,7 +589,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "    set_has_$name$();\n"
         "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
         "  }\n"
-        "  $oneof_prefix$$name$_.Set(\n"
+        "  $oneof_prefix$$name$_.Set$lite$(\n"
         "    $default_variable$, ::std::move(value), GetArenaNoVirtual());\n"
         "  // @@protoc_insertion_point(field_set_rvalue:$full_name$)\n"
         "}\n"
@@ -596,7 +601,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "    set_has_$name$();\n"
         "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
         "  }\n"
-        "  $oneof_prefix$$name$_.Set($default_variable$,\n"
+        "  $oneof_prefix$$name$_.Set$lite$($default_variable$,\n"
         "      $string_piece$(value), GetArenaNoVirtual());\n"
         "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
         "}\n"
@@ -608,7 +613,8 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "    set_has_$name$();\n"
         "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
         "  }\n"
-        "  $oneof_prefix$$name$_.Set($default_variable$, $string_piece$(\n"
+        "  $oneof_prefix$$name$_.Set$lite$(\n"
+        "      $default_variable$, $string_piece$(\n"
         "      reinterpret_cast<const char*>(value), size),\n"
         "      GetArenaNoVirtual());\n"
         "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
@@ -806,7 +812,7 @@ void StringOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "_$classname$_default_instance_.$name$_.UnsafeSetDefault(\n"
+      "$ns$::_$classname$_default_instance_.$name$_.UnsafeSetDefault(\n"
       "    $default_variable$);\n");
 }
 

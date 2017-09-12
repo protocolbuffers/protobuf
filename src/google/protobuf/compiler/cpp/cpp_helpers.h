@@ -38,16 +38,13 @@
 #include <map>
 #include <string>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
-
-namespace io {
-class Printer;
-}
-
 namespace compiler {
 namespace cpp {
 
@@ -56,6 +53,31 @@ namespace cpp {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
+// Name space of the proto file. This namespace is such that the string
+// "<namespace>::some_name" is the correct fully qualified namespace.
+// This means if the package is empty the namespace is "", and otherwise
+// the namespace is "::foo::bar::...::baz" without trailing semi-colons.
+string Namespace(const string& package);
+inline string Namespace(const FileDescriptor* d) {
+  return Namespace(d->package());
+}
+template <typename Desc>
+string Namespace(const Desc* d) {
+  return Namespace(d->file());
+}
+
+// Returns true if it's safe to reset "field" to zero.
+bool CanInitializeByZeroing(const FieldDescriptor* field);
+
+string ClassName(const Descriptor* descriptor);
+string ClassName(const EnumDescriptor* enum_descriptor);
+template <typename Desc>
+string QualifiedClassName(const Desc* d) {
+  return Namespace(d) + "::" + ClassName(d);
+}
+
+// DEPRECATED just use ClassName or QualifiedClassName, a boolean is very
+// unreadable at the callsite.
 // Returns the non-nested type name for the given type.  If "qualified" is
 // true, prefix the type with the full namespace.  For example, if you had:
 //   package foo.bar;
@@ -64,11 +86,21 @@ extern const char kThinSeparator[];
 //   ::foo::bar::Baz_Qux
 // While the non-qualified version would be:
 //   Baz_Qux
-string ClassName(const Descriptor* descriptor, bool qualified);
-string ClassName(const EnumDescriptor* enum_descriptor, bool qualified);
+inline string ClassName(const Descriptor* descriptor, bool qualified) {
+  return qualified ? QualifiedClassName(descriptor) : ClassName(descriptor);
+}
+
+inline string ClassName(const EnumDescriptor* descriptor, bool qualified) {
+  return qualified ? QualifiedClassName(descriptor) : ClassName(descriptor);
+}
 
 // Fully qualified name of the default_instance of this message.
 string DefaultInstanceName(const Descriptor* descriptor);
+
+// Returns the name of a no-op function that we can call to introduce a linker
+// dependency on the given message type. This is used to implement implicit weak
+// fields.
+string ReferenceFunctionName(const Descriptor* descriptor);
 
 // Name of the CRTP class template (for use with proto_h).
 // This is a class name, like "ProtoName_InternalBase".
@@ -91,6 +123,12 @@ string FieldName(const FieldDescriptor* field);
 
 // Get the sanitized name that should be used for the given enum in C++ code.
 string EnumValueName(const EnumValueDescriptor* enum_value);
+
+// Returns an estimate of the compiler's alignment for the field.  This
+// can't guarantee to be correct because the generated code could be compiled on
+// different systems with different alignment rules.  The estimates below assume
+// 64-bit pointers.
+int EstimateAlignmentSize(const FieldDescriptor* field);
 
 // Get the unqualified name that should be used for a field's field
 // number constant.
@@ -150,6 +188,12 @@ string FilenameIdentifier(const string& filename);
 // For each .proto file generates a unique namespace. In this namespace global
 // definitions are put to prevent collisions.
 string FileLevelNamespace(const string& filename);
+inline string FileLevelNamespace(const FileDescriptor* file) {
+  return FileLevelNamespace(file->name());
+}
+inline string FileLevelNamespace(const Descriptor* d) {
+  return FileLevelNamespace(d->file());
+}
 
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name);
@@ -225,10 +269,6 @@ inline bool HasFastArraySerialization(const FileDescriptor* file,
   return GetOptimizeFor(file, options) == FileOptions::SPEED;
 }
 
-// Returns whether we have to generate code with static initializers.
-bool StaticInitializersForced(const FileDescriptor* file,
-                              const Options& options);
-
 
 inline bool IsMapEntryMessage(const Descriptor* descriptor) {
   return descriptor->options().map_entry();
@@ -289,11 +329,24 @@ inline ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(
 }
 
 // This orders the messages in a .pb.cc as it's outputted by file.cc
-std::vector<const Descriptor*> FlattenMessagesInFile(
-    const FileDescriptor* file);
+void FlattenMessagesInFile(const FileDescriptor* file,
+                           std::vector<const Descriptor*>* result);
+inline std::vector<const Descriptor*> FlattenMessagesInFile(
+    const FileDescriptor* file) {
+  std::vector<const Descriptor*> result;
+  FlattenMessagesInFile(file, &result);
+  return result;
+}
 
 bool HasWeakFields(const Descriptor* desc);
 bool HasWeakFields(const FileDescriptor* desc);
+
+// Indicates whether we should use implicit weak fields for this file.
+bool UsingImplicitWeakFields(const FileDescriptor* file,
+                             const Options& options);
+
+// Indicates whether to treat this field as implicitly weak.
+bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options);
 
 // Returns true if the "required" restriction check should be ignored for the
 // given field.
@@ -302,8 +355,46 @@ inline static bool ShouldIgnoreRequiredFieldCheck(const FieldDescriptor* field,
   return false;
 }
 
+class LIBPROTOC_EXPORT NamespaceOpener {
+ public:
+  explicit NamespaceOpener(io::Printer* printer) : printer_(printer) {}
+  NamespaceOpener(const string& name, io::Printer* printer)
+      : printer_(printer) {
+    ChangeTo(name);
+  }
+  ~NamespaceOpener() { ChangeTo(""); }
+
+  void ChangeTo(const string& name) {
+    std::vector<string> new_stack_ =
+        Split(name, "::", true);
+    int len = std::min(name_stack_.size(), new_stack_.size());
+    int common_idx = 0;
+    while (common_idx < len) {
+      if (name_stack_[common_idx] != new_stack_[common_idx]) break;
+      common_idx++;
+    }
+    for (int i = name_stack_.size() - 1; i >= common_idx; i--) {
+      printer_->Print("}  // namespace $ns$\n", "ns", name_stack_[i]);
+    }
+    name_stack_.swap(new_stack_);
+    for (int i = common_idx; i < name_stack_.size(); i++) {
+      printer_->Print("namespace $ns$ {\n", "ns", name_stack_[i]);
+    }
+  }
+
+ private:
+  io::Printer* printer_;
+  std::vector<string> name_stack_;
+};
+
+// Description of each strongly connected component. Note that the order
+// of both the descriptors in this SCC and the order of children is
+// deterministic.
 struct SCC {
   std::vector<const Descriptor*> descriptors;
+  std::vector<const SCC*> children;
+
+  const Descriptor* GetRepresentative() const { return descriptors[0]; }
 };
 
 struct MessageAnalysis {
@@ -357,7 +448,15 @@ class LIBPROTOC_EXPORT SCCAnalyzer {
 
   // Tarjan's Strongly Connected Components algo
   NodeData DFS(const Descriptor* descriptor);
+
+  // Add the SCC's that are children of this SCC to its children.
+  void AddChildren(SCC* scc);
 };
+
+void ListAllFields(const FileDescriptor* d,
+                   std::vector<const FieldDescriptor*>* fields);
+void ListAllTypesForServices(const FileDescriptor* fd,
+                             std::vector<const Descriptor*>* types);
 
 }  // namespace cpp
 }  // namespace compiler

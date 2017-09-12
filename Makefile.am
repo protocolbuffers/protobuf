@@ -225,6 +225,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/IntArrayList.java                    \
   java/core/src/main/java/com/google/protobuf/Internal.java                        \
   java/core/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java  \
+  java/core/src/main/java/com/google/protobuf/IterableByteBufferInputStream.java   \
   java/core/src/main/java/com/google/protobuf/LazyField.java                       \
   java/core/src/main/java/com/google/protobuf/LazyFieldLite.java                   \
   java/core/src/main/java/com/google/protobuf/LazyStringArrayList.java             \

@@ -52,6 +52,7 @@ using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
 using google::protobuf::util::TypeResolver;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
+using protobuf_test_messages::proto2::TestAllTypesProto2;
 using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";

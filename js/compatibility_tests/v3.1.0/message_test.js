@@ -643,12 +643,7 @@ describe('Message test suite', function() {
 
   it('testInitialization_emptyArray', function() {
     var msg = new proto.jspb.test.HasExtensions([]);
-    if (jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS) {
-      assertArrayEquals([], msg.toArray());
-    } else {
-      // Extension object is created past all regular fields.
-      assertArrayEquals([,,, {}], msg.toArray());
-    }
+    assertArrayEquals([], msg.toArray());
   });
 
   it('testInitialization_justExtensionObject', function() {

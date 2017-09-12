@@ -44,6 +44,8 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
+bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options);
+
 class MessageFieldGenerator : public FieldGenerator {
  public:
   MessageFieldGenerator(const FieldDescriptor* descriptor,
@@ -78,6 +80,7 @@ class MessageFieldGenerator : public FieldGenerator {
 
   const FieldDescriptor* descriptor_;
   const bool dependent_field_;
+  const bool implicit_weak_field_;
   std::map<string, string> variables_;
 
  private:

@@ -168,6 +168,7 @@ public class TextFormatTest extends TestCase {
 
   // Creates an example unknown field set.
   private UnknownFieldSet makeUnknownFieldSet() {
+
     return UnknownFieldSet.newBuilder()
         .addField(5,
             UnknownFieldSet.Field.newBuilder()
@@ -175,6 +176,12 @@ public class TextFormatTest extends TestCase {
             .addFixed32(2)
             .addFixed64(3)
             .addLengthDelimited(ByteString.copyFromUtf8("4"))
+            .addLengthDelimited(UnknownFieldSet.newBuilder()
+                .addField(12,
+                    UnknownFieldSet.Field.newBuilder()
+                        .addVarint(6)
+                        .build())
+                .build().toByteString())
             .addGroup(
                 UnknownFieldSet.newBuilder()
                 .addField(10,
@@ -207,20 +214,23 @@ public class TextFormatTest extends TestCase {
         .build();
 
     assertEquals(
-      "5: 1\n" +
-      "5: 0x00000002\n" +
-      "5: 0x0000000000000003\n" +
-      "5: \"4\"\n" +
-      "5 {\n" +
-      "  10: 5\n" +
-      "}\n" +
-      "8: 1\n" +
-      "8: 2\n" +
-      "8: 3\n" +
-      "15: 12379813812177893520\n" +
-      "15: 0xabcd1234\n" +
-      "15: 0xabcdef1234567890\n",
-      TextFormat.printToString(message));
+        "5: 1\n"
+            + "5: 0x00000002\n"
+            + "5: 0x0000000000000003\n"
+            + "5: \"4\"\n"
+            + "5: {\n"
+            + "  12: 6\n"
+            + "}\n"
+            + "5 {\n"
+            + "  10: 5\n"
+            + "}\n"
+            + "8: 1\n"
+            + "8: 2\n"
+            + "8: 3\n"
+            + "15: 12379813812177893520\n"
+            + "15: 0xabcd1234\n"
+            + "15: 0xabcdef1234567890\n",
+        TextFormat.printToString(message));
   }
 
   public void testPrintField() throws Exception {
@@ -861,7 +871,7 @@ public class TextFormatTest extends TestCase {
   }
 
   public void testShortDebugString_unknown() {
-    assertEquals("5: 1 5: 0x00000002 5: 0x0000000000000003 5: \"4\" 5 { 10: 5 }"
+    assertEquals("5: 1 5: 0x00000002 5: 0x0000000000000003 5: \"4\" 5: { 12: 6 } 5 { 10: 5 }"
         + " 8: 1 8: 2 8: 3 15: 12379813812177893520 15: 0xabcd1234 15:"
         + " 0xabcdef1234567890",
         TextFormat.shortDebugString(makeUnknownFieldSet()));

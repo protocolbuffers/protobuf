@@ -140,13 +140,16 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
     "java.lang.String[] descriptorData = {\n");
   printer->Indent();
 
-  // Only write 40 bytes per line.
+  // Limit the number of bytes per line.
   static const int kBytesPerLine = 40;
+  // Limit the number of lines per string part.
+  static const int kLinesPerPart = 400;
+  // Every block of bytes, start a new string literal, in order to avoid the
+  // 64k length limit. Note that this value needs to be <64k.
+  static const int kBytesPerPart = kBytesPerLine * kLinesPerPart;
   for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
     if (i > 0) {
-      // Every 400 lines, start a new string literal, in order to avoid the
-      // 64k length limit.
-      if (i % 400 == 0) {
+      if (i % kBytesPerPart == 0) {
         printer->Print(",\n");
       } else {
         printer->Print(" +\n");
