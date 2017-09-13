@@ -166,8 +166,7 @@ std::string ClassNamePrefix(const string& classname,
   return "";
 }
 
-std::string ClassNamePrefix(const string& classname,
-                            const EnumValueDescriptor* desc) {
+std::string ConstantNamePrefix(const string& classname) {
   bool is_reserved = false;
 
   string lower = classname;
@@ -729,7 +728,7 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
     const EnumValueDescriptor* value = en->value(i);
     printer->Print(
         "->value(\"^name^\", ^number^)\n",
-        "name", ClassNamePrefix(value->name(), value) + value->name(),
+        "name", ConstantNamePrefix(value->name()) + value->name(),
         "number", IntToString(value->number()));
   }
   printer->Print("->finalizeToPool();\n\n");
@@ -1032,7 +1031,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     const EnumValueDescriptor* value = en->value(i);
     GenerateEnumValueDocComment(&printer, value);
     printer.Print("const ^name^ = ^number^;\n",
-                  "name", ClassNamePrefix(value->name(), value) + value->name(),
+                  "name", ConstantNamePrefix(value->name()) + value->name(),
                   "number", IntToString(value->number()));
   }
 
