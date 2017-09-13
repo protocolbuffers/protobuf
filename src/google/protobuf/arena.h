@@ -853,7 +853,7 @@ class LIBPROTOBUF_EXPORT Arena {
 
   template <typename T>
   GOOGLE_ATTRIBUTE_ALWAYS_INLINE static ::google::protobuf::Arena* GetArenaInternal(
-      const T* value, google::protobuf::internal::false_type) {
+      const T* /* value */, google::protobuf::internal::false_type) {
     return NULL;
   }
 
