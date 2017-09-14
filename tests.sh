@@ -129,7 +129,7 @@ build_golang() {
   export PATH="$GOPATH/bin:$PATH"
   go get github.com/golang/protobuf/protoc-gen-go
 
-  cd examples && make gotest && cd ..
+  cd examples && PROTO_PATH="-I../src -I." make gotest && cd ..
 }
 
 use_java() {
