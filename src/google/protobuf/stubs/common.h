@@ -132,10 +132,19 @@ std::string LIBPROTOBUF_EXPORT VersionString(int version);
 // to use the protobuf library) to verify that the version you link against
 // matches the headers you compiled against.  If a version mismatch is
 // detected, the process will abort.
+// NOTE: This macro called by InitDefaultsImpl in all .pb.cc files.
+
+#ifdef NDEBUG
+#define GOOGLE_PROTOBUF_VERIFY_VERSION                                    \
+  ::google::protobuf::internal::VerifyVersion(                            \
+    GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION,         \
+    "" /* filename omitted when NDEBUG defined */ )
+#else // NDEBUG
 #define GOOGLE_PROTOBUF_VERIFY_VERSION                                    \
   ::google::protobuf::internal::VerifyVersion(                            \
     GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION,         \
     __FILE__)
+#endif // NDEBUG
 
 
 // ===================================================================
