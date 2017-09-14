@@ -44,25 +44,26 @@
 #include <algorithm>
 #include <limits>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/io/strtod.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/io/strtod.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor_database.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/text_format.h>
+#include <google/protobuf/unknown_field_set.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/substitute.h>
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -1953,6 +1954,10 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
     DescriptorProto::ExtensionRange* range = proto->add_extension_range();
     range->set_start(extension_range(i)->start);
     range->set_end(extension_range(i)->end);
+    const ExtensionRangeOptions* options = extension_range(i)->options_;
+    if (options != &ExtensionRangeOptions::default_instance()) {
+      range->mutable_options()->CopyFrom(*options);
+    }
   }
   for (int i = 0; i < extension_count(); i++) {
     extension(i)->CopyTo(proto->add_extension());
@@ -3203,6 +3208,8 @@ class DescriptorBuilder {
   void CrossLinkMessage(Descriptor* message, const DescriptorProto& proto);
   void CrossLinkField(FieldDescriptor* field,
                       const FieldDescriptorProto& proto);
+  void CrossLinkExtensionRange(Descriptor::ExtensionRange* range,
+                               const DescriptorProto::ExtensionRange& proto);
   void CrossLinkEnum(EnumDescriptor* enum_type,
                      const EnumDescriptorProto& proto);
   void CrossLinkEnumValue(EnumValueDescriptor* enum_value,
@@ -3382,6 +3389,8 @@ class DescriptorBuilder {
   void DetectMapConflicts(const Descriptor* message,
                           const DescriptorProto& proto);
 
+  void ValidateJSType(FieldDescriptor* field,
+                      const FieldDescriptorProto& proto);
 };
 
 const FileDescriptor* DescriptorPool::BuildFile(
@@ -3509,8 +3518,8 @@ void DescriptorBuilder::AddWarning(
 bool DescriptorBuilder::IsInPackage(const FileDescriptor* file,
                                     const string& package_name) {
   return HasPrefixString(file->package(), package_name) &&
-           (file->package().size() == package_name.size() ||
-            file->package()[package_name.size()] == '.');
+         (file->package().size() == package_name.size() ||
+          file->package()[package_name.size()] == '.');
 }
 
 void DescriptorBuilder::RecordPublicDependencies(const FileDescriptor* file) {
@@ -4776,6 +4785,13 @@ void DescriptorBuilder::BuildExtensionRange(
              DescriptorPool::ErrorCollector::NUMBER,
              "Extension range end number must be greater than start number.");
   }
+
+  if (!proto.has_options()) {
+    result->options_ = NULL;  // Will set to default_instance later.
+  } else {
+    AllocateOptionsImpl(parent->full_name(), parent->full_name(),
+                        proto.options(), result);
+  }
 }
 
 void DescriptorBuilder::BuildReservedRange(
@@ -5100,6 +5116,11 @@ void DescriptorBuilder::CrossLinkMessage(
     CrossLinkField(&message->extensions_[i], proto.extension(i));
   }
 
+  for (int i = 0; i < message->extension_range_count(); i++) {
+    CrossLinkExtensionRange(&message->extension_ranges_[i],
+                            proto.extension_range(i));
+  }
+
   // Set up field array for each oneof.
 
   // First count the number of fields per oneof.
@@ -5159,6 +5180,14 @@ void DescriptorBuilder::CrossLinkMessage(
       mutable_oneof_decl->fields_[mutable_oneof_decl->field_count_++] =
           message->field(i);
     }
+  }
+}
+
+void DescriptorBuilder::CrossLinkExtensionRange(
+    Descriptor::ExtensionRange* range,
+    const DescriptorProto::ExtensionRange& proto) {
+  if (range->options_ == NULL) {
+    range->options_ = &ExtensionRangeOptions::default_instance();
   }
 }
 
@@ -5734,6 +5763,8 @@ void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
     }
   }
 
+  ValidateJSType(field, proto);
+
 }
 
 void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
@@ -5922,6 +5953,40 @@ void DescriptorBuilder::DetectMapConflicts(const Descriptor* message,
   }
 }
 
+void DescriptorBuilder::ValidateJSType(FieldDescriptor* field,
+                                       const FieldDescriptorProto& proto) {
+  FieldOptions::JSType jstype = field->options().jstype();
+  // The default is always acceptable.
+  if (jstype == FieldOptions::JS_NORMAL) {
+    return;
+  }
+
+  switch (field->type()) {
+    // Integral 64-bit types may be represented as JavaScript numbers or
+    // strings.
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+      if (jstype == FieldOptions::JS_STRING ||
+          jstype == FieldOptions::JS_NUMBER) {
+        return;
+      }
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+               "Illegal jstype for int64, uint64, sint64, fixed64 "
+               "or sfixed64 field: " +
+               FieldOptions_JSType_descriptor()->value(jstype)->name());
+      break;
+
+    // No other types permit a jstype option.
+    default:
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+               "jstype is only allowed on int64, uint64, sint64, fixed64 "
+               "or sfixed64 fields.");
+      break;
+  }
+}
 
 #undef VALIDATE_OPTIONS_FROM_ARRAY
 
@@ -6662,6 +6727,7 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
     annotation_extensions.insert("google.protobuf.FileOptions");
     annotation_extensions.insert("google.protobuf.FieldOptions");
     annotation_extensions.insert("google.protobuf.EnumOptions");
+    annotation_extensions.insert("google.protobuf.EnumValueOptions");
     annotation_extensions.insert("google.protobuf.EnumValueOptions");
     annotation_extensions.insert("google.protobuf.ServiceOptions");
     annotation_extensions.insert("google.protobuf.MethodOptions");

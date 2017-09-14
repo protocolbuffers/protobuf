@@ -44,17 +44,25 @@ namespace Google.Protobuf.WellKnownTypes
             prefix.EndsWith("/") ? prefix + descriptor.FullName : prefix + "/" + descriptor.FullName;
 
         /// <summary>
-        /// Retrieves the type name for a type URL. This is always just the last part of the URL,
-        /// after the trailing slash. No validation of anything before the trailing slash is performed.
-        /// If the type URL does not include a slash, an empty string is returned rather than an exception
-        /// being thrown; this won't match any types, and the calling code is probably in a better position
-        /// to give a meaningful error.
-        /// There is no handling of fragments or queries  at the moment.
+        /// Retrieves the type name for a type URL, matching the <see cref="DescriptorBase.FullName"/>
+        /// of the packed message type.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This is always just the last part of the URL, after the final slash. No validation of 
+        /// anything before the trailing slash is performed. If the type URL does not include a slash,
+        /// an empty string is returned rather than an exception being thrown; this won't match any types,
+        /// and the calling code is probably in a better position to give a meaningful error.
+        /// </para>
+        /// <para>
+        /// There is no handling of fragments or queries  at the moment.
+        /// </para>
+        /// </remarks>
         /// <param name="typeUrl">The URL to extract the type name from</param>
         /// <returns>The type name</returns>
-        internal static string GetTypeName(string typeUrl)
+        public static string GetTypeName(string typeUrl)
         {
+            ProtoPreconditions.CheckNotNull(typeUrl, nameof(typeUrl));
             int lastSlash = typeUrl.LastIndexOf('/');
             return lastSlash == -1 ? "" : typeUrl.Substring(lastSlash + 1);
         }
@@ -78,6 +86,27 @@ namespace Google.Protobuf.WellKnownTypes
             }
             target.MergeFrom(Value);
             return target;
+        }
+
+        /// <summary>
+        /// Attempts to unpack the content of this Any message into the target message type,
+        /// if it matches the type URL within this Any message.
+        /// </summary>
+        /// <typeparam name="T">The type of message to attempt to unpack the content into.</typeparam>
+        /// <returns><c>true</c> if the message was successfully unpacked; <c>false</c> if the type name didn't match</returns>
+        public bool TryUnpack<T>(out T result) where T : IMessage, new()
+        {
+            // Note: deliberately avoid writing anything to result until the end, in case it's being
+            // monitored by other threads. (That would be a bug in the calling code, but let's not make it worse.)
+            T target = new T();
+            if (GetTypeName(TypeUrl) != target.Descriptor.FullName)
+            {
+                result = default(T); // Can't use null as there's no class constraint, but this always *will* be null in real usage.
+                return false;
+            }
+            target.MergeFrom(Value);
+            result = target;
+            return true;
         }
 
         /// <summary>

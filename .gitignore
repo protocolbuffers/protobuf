@@ -87,6 +87,8 @@ src/**/*.trs
 java/core/target
 java/util/target
 javanano/target
+java/.idea
+java/**/*.iml
 
 # Windows native output.
 cmake/build
@@ -132,10 +134,13 @@ conformance/Google/
 conformance/Protobuf_test_messages/
 conformance/conformance-php
 conformance/conformance-php-c
+conformance/*.class
 
 # php test output
 composer.lock
 php/tests/generated/
+php/tests/old_protoc
+php/tests/protobuf/
 php/ext/google/protobuf/.libs/
 php/ext/google/protobuf/Makefile.fragments
 php/ext/google/protobuf/Makefile.global
@@ -151,8 +156,18 @@ vendor/
 
 # JavaScript artifacts
 js/commonjs_out/
+js/compatibility_tests/v3.0.0/commonjs_out*
+js/compatibility_tests/v3.0.0/protoc
+js/compatibility_tests/v3.0.0/testproto_libs1.js
+js/compatibility_tests/v3.0.0/testproto_libs1_new.js
+js/compatibility_tests/v3.0.0/testproto_libs2.js
+js/compatibility_tests/v3.0.0/testproto_libs2_new.js
 js/deps.js
 js/google-protobuf.js
 js/google/
 js/node_modules/
-js/testproto_libs.js
+js/testproto_libs1.js
+js/testproto_libs2.js
+
+# Ignore the bazel symlinks
+/bazel-*

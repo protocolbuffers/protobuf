@@ -130,7 +130,7 @@ static NSError *ErrorFromException(NSException *exception) {
 
 static void CheckExtension(GPBMessage *self,
                            GPBExtensionDescriptor *extension) {
-  if ([self class] != extension.containingMessageClass) {
+  if (![self isKindOfClass:extension.containingMessageClass]) {
     [NSException
          raise:NSInvalidArgumentException
         format:@"Extension %@ used on wrong class (%@ instead of %@)",
@@ -2372,17 +2372,11 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         // zero signals EOF / limit reached
         return;
       } else {
-        if (GPBPreserveUnknownFields(syntax)) {
-          if (![self parseUnknownField:input
-                     extensionRegistry:extensionRegistry
-                                   tag:tag]) {
-            // it's an endgroup tag
-            return;
-          }
-        } else {
-          if (![input skipField:tag]) {
-            return;
-          }
+        if (![self parseUnknownField:input
+                   extensionRegistry:extensionRegistry
+                                 tag:tag]) {
+          // it's an endgroup tag
+          return;
         }
       }
     }  // if(!merged)
@@ -3083,7 +3077,7 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
 + (BOOL)resolveInstanceMethod:(SEL)sel {
   const GPBDescriptor *descriptor = [self descriptor];
   if (!descriptor) {
-    return NO;
+    return [super resolveInstanceMethod:sel];
   }
 
   // NOTE: hasOrCountSel_/setHasSel_ will be NULL if the field for the given
@@ -3189,7 +3183,7 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
 
 + (BOOL)resolveClassMethod:(SEL)sel {
   // Extensions scoped to a Message and looked up via class methods.
-  if (GPBResolveExtensionClassMethod(self, sel)) {
+  if (GPBResolveExtensionClassMethod([self descriptor].messageClass, sel)) {
     return YES;
   }
   return [super resolveClassMethod:sel];

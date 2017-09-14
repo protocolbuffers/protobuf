@@ -46,6 +46,7 @@
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
+#include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/reflection.h>
 
@@ -137,9 +138,12 @@ static PyObject* AddToAttached(RepeatedCompositeContainer* self,
   if (cmessage::AssureWritable(self->parent) == -1)
     return NULL;
   Message* message = self->message;
+
   Message* sub_message =
-      message->GetReflection()->AddMessage(message,
-                                           self->parent_field_descriptor);
+      message->GetReflection()->AddMessage(
+          message,
+          self->parent_field_descriptor,
+          self->child_message_class->py_message_factory->message_factory);
   CMessage* cmsg = cmessage::NewEmptyMessage(self->child_message_class);
   if (cmsg == NULL)
     return NULL;
@@ -266,10 +270,11 @@ int AssignSubscript(RepeatedCompositeContainer* self,
     if (PySlice_Check(slice)) {
 #if PY_MAJOR_VERSION >= 3
       if (PySlice_GetIndicesEx(slice,
+                               length, &from, &to, &step, &slicelength) == -1) {
 #else
       if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice),
-#endif
                                length, &from, &to, &step, &slicelength) == -1) {
+#endif
         return -1;
       }
       return PySequence_DelSlice(self->child_messages, from, to);
@@ -333,6 +338,18 @@ static PyObject* RichCompare(RepeatedCompositeContainer* self,
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
   }
+}
+
+static PyObject* ToStr(RepeatedCompositeContainer* self) {
+  ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
+  if (full_slice == NULL) {
+    return NULL;
+  }
+  ScopedPyObjectPtr list(Subscript(self, full_slice.get()));
+  if (list == NULL) {
+    return NULL;
+  }
+  return PyObject_Repr(list.get());
 }
 
 // ---------------------------------------------------------------------
@@ -607,7 +624,7 @@ PyTypeObject RepeatedCompositeContainer_Type = {
   0,                                   //  tp_getattr
   0,                                   //  tp_setattr
   0,                                   //  tp_compare
-  0,                                   //  tp_repr
+  (reprfunc)repeated_composite_container::ToStr,      //  tp_repr
   0,                                   //  tp_as_number
   &repeated_composite_container::SqMethods,   //  tp_as_sequence
   &repeated_composite_container::MpMethods,   //  tp_as_mapping

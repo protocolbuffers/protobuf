@@ -490,19 +490,13 @@ public class MapTest extends TestCase {
   public void testPutForUnknownEnumValues() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder()
         .putInt32ToEnumFieldValue(0, 0)
-        .putInt32ToEnumFieldValue(1, 1);
-
-    try {
-      builder.putInt32ToEnumFieldValue(2, 1000);  // unknown value.
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
-
+        .putInt32ToEnumFieldValue(1, 1)
+        .putInt32ToEnumFieldValue(2, 1000);  // unknown value.
     TestMap message = builder.build();
     assertEquals(0, message.getInt32ToEnumFieldValueOrThrow(0));
     assertEquals(1, message.getInt32ToEnumFieldValueOrThrow(1));
-    assertEquals(2, message.getInt32ToEnumFieldCount());
+    assertEquals(1000, message.getInt32ToEnumFieldValueOrThrow(2));
+    assertEquals(3, message.getInt32ToEnumFieldCount());
   }
 
   public void testPutChecksNullKeysAndValues() throws Exception {
@@ -582,12 +576,12 @@ public class MapTest extends TestCase {
     TestMap map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putInt32ToInt32Field(5, bytes)
         .build());
-    assertEquals(map.getInt32ToInt32FieldOrDefault(5, -1), 0);
+    assertEquals(0, map.getInt32ToInt32FieldOrDefault(5, -1));
 
     map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putInt32ToStringField(stringKey, 5)
         .build());
-    assertEquals(map.getInt32ToStringFieldOrDefault(0, null), "");
+    assertEquals("", map.getInt32ToStringFieldOrDefault(0, null));
 
     map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putInt32ToBytesField(stringKey, 5)
@@ -597,7 +591,7 @@ public class MapTest extends TestCase {
     map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putInt32ToEnumField(stringKey, bytes)
         .build());
-    assertEquals(map.getInt32ToEnumFieldOrDefault(0, null), TestMap.EnumValue.FOO);
+    assertEquals(TestMap.EnumValue.FOO, map.getInt32ToEnumFieldOrDefault(0, null));
 
     try {
       tryParseTestMap(BizarroTestMap.newBuilder()
@@ -613,7 +607,7 @@ public class MapTest extends TestCase {
     map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putStringToInt32Field(stringKey, bytes)
         .build());
-    assertEquals(map.getStringToInt32FieldOrDefault(stringKey, -1), 0);
+    assertEquals(0, map.getStringToInt32FieldOrDefault(stringKey, -1));
   }
 
   public void testMergeFrom() throws Exception {
@@ -1251,12 +1245,9 @@ public class MapTest extends TestCase {
     builder.putInt32ToEnumFieldValue(1, TestMap.EnumValue.BAR.getNumber());
     assertEquals(
         TestMap.EnumValue.BAR.getNumber(), builder.getInt32ToEnumFieldValueOrThrow(1));
-    try {
-      builder.putInt32ToEnumFieldValue(1, -1);
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
+    builder.putInt32ToEnumFieldValue(1, -1);
+    assertEquals(-1, builder.getInt32ToEnumFieldValueOrThrow(1));
+    assertEquals(TestMap.EnumValue.UNRECOGNIZED, builder.getInt32ToEnumFieldOrThrow(1));
 
     builder.putStringToInt32Field("a", 1);
     assertEquals(1, builder.getStringToInt32FieldOrThrow("a"));

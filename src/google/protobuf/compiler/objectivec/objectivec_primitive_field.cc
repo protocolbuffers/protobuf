@@ -118,7 +118,7 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
 }
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           map<string, string>* variables) {
+                           std::map<string, string>* variables) {
   std::string primitive_name = PrimitiveTypeName(descriptor);
   (*variables)["type"] = primitive_name;
   (*variables)["storage_type"] = primitive_name;

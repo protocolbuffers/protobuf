@@ -33,7 +33,7 @@
 namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\EnumDescriptor;
-use Google\Protobuf\Internal\EnumValueDescriptor;
+use Google\Protobuf\EnumValueDescriptor;
 
 class EnumBuilderContext
 {
@@ -51,7 +51,7 @@ class EnumBuilderContext
 
     public function value($name, $number)
     {
-        $value = new EnumValueDescriptor();
+        $value = new EnumValueDescriptor($name, $number);
         $this->descriptor->addValue($number, $value);
         return $this;
     }

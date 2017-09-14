@@ -32,77 +32,84 @@ Installation
 
 1) Make sure you have Python 2.6 or newer.  If in doubt, run:
 
-     $ python -V
+       $ python -V
 
 2) If you do not have setuptools installed, note that it will be
-   downloaded and installed automatically as soon as you run setup.py.
+   downloaded and installed automatically as soon as you run `setup.py`.
    If you would rather install it manually, you may do so by following
-   the instructions on this page:
+   the instructions on [this page](https://packaging.python.org/en/latest/installing.html#setup-for-installing-packages).
 
-     https://packaging.python.org/en/latest/installing.html#setup-for-installing-packages
-
-3) Build the C++ code, or install a binary distribution of protoc.  If
+3) Build the C++ code, or install a binary distribution of `protoc`.  If
    you install a binary distribution, make sure that it is the same
    version as this package.  If in doubt, run:
 
-     $ protoc --version
+       $ protoc --version
 
 4) Build and run the tests:
 
-     $ python setup.py build
-     $ python setup.py test
+       $ python setup.py build
+       $ python setup.py test
 
-     To build, test, and use the C++ implementation, you must first compile
-     libprotobuf.so:
+   To build, test, and use the C++ implementation, you must first compile
+   `libprotobuf.so`:
 
-     $ (cd .. && make)
+       $ (cd .. && make)
 
-     On OS X:
+   On OS X:
 
-      If you are running a homebrew-provided python, you must make sure another
-      version of protobuf is not already installed, as homebrew's python will
-      search /usr/local/lib for libprotobuf.so before it searches ../src/.libs
-      You can either unlink homebrew's protobuf or install the libprotobuf you
-      built earlier:
+   If you are running a Homebrew-provided Python, you must make sure another
+   version of protobuf is not already installed, as Homebrew's Python will
+   search `/usr/local/lib` for `libprotobuf.so` before it searches
+   `../src/.libs`.
 
-      $ brew unlink protobuf
-      or
-      $ (cd .. && make install)
+   You can either unlink Homebrew's protobuf or install the `libprotobuf` you
+   built earlier:
 
-     On other *nix:
+       $ brew unlink protobuf
 
-      You must make libprotobuf.so dynamically available. You can either
-      install libprotobuf you built earlier, or set LD_LIBRARY_PATH:
+   or
 
-      $ export LD_LIBRARY_PATH=../src/.libs
-      or
-      $ (cd .. && make install)
+       $ (cd .. && make install)
 
-     To build the C++ implementation run:
-     $ python setup.py build --cpp_implementation
+    On other *nix:
 
-     Then run the tests like so:
-     $ python setup.py test --cpp_implementation
+    You must make `libprotobuf.so` dynamically available. You can either
+    install libprotobuf you built earlier, or set `LD_LIBRARY_PATH`:
+
+       $ export LD_LIBRARY_PATH=../src/.libs
+
+    or
+
+       $ (cd .. && make install)
+
+   To build the C++ implementation run:
+
+       $ python setup.py build --cpp_implementation
+
+   Then run the tests like so:
+
+       $ python setup.py test --cpp_implementation
 
    If some tests fail, this library may not work correctly on your
    system.  Continue at your own risk.
 
    Please note that there is a known problem with some versions of
    Python on Cygwin which causes the tests to fail after printing the
-   error:  "sem_init: Resource temporarily unavailable".  This appears
-   to be a bug either in Cygwin or in Python:
-     http://www.cygwin.com/ml/cygwin/2005-07/msg01378.html
+   error:  `sem_init: Resource temporarily unavailable`.  This appears
+   to be a [bug either in Cygwin or in
+   Python](http://www.cygwin.com/ml/cygwin/2005-07/msg01378.html).
+
    We do not know if or when it might be fixed.  We also do not know
    how likely it is that this bug will affect users in practice.
 
 5) Install:
 
-    $ python setup.py install
+       $ python setup.py install
 
-  or:
+   or:
 
-    $ (cd .. && make install)
-    $ python setup.py install --cpp_implementation
+       $ (cd .. && make install)
+       $ python setup.py install --cpp_implementation
 
    This step may require superuser privileges.
    NOTE: To use C++ implementation, you need to export an environment

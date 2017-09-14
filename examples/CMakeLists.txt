@@ -32,22 +32,6 @@ foreach(example add_person list_people)
   if(protobuf_MODULE_COMPATIBLE) #Legacy Support
     protobuf_generate_cpp(${example}_PROTO_SRCS ${example}_PROTO_HDRS ${${example}_PROTOS})
     list(APPEND ${example}_SRCS ${${example}_PROTO_SRCS} ${${example}_PROTO_HDRS})
-  else()
-
-    foreach(proto_file ${${example}_PROTOS})
-      get_filename_component(proto_file_abs ${proto_file} ABSOLUTE)
-      get_filename_component(basename ${proto_file} NAME_WE)
-      set(generated_files ${basename}.pb.cc ${basename}.pb.h)
-      list(APPEND ${example}_SRCS ${generated_files})
-
-      add_custom_command(
-        OUTPUT ${generated_files}
-        COMMAND protobuf::protoc
-        ARGS --cpp_out ${CMAKE_CURRENT_BINARY_DIR} -I ${CMAKE_CURRENT_SOURCE_DIR} ${proto_file_abs}
-        COMMENT "Generating ${generated_files} from ${proto_file}"
-        VERBATIM
-      )
-    endforeach()
   endif()
 
   #Executable setup
@@ -58,6 +42,7 @@ foreach(example add_person list_people)
     target_link_libraries(${executable_name} ${PROTOBUF_LIBRARIES})
   else()
     target_link_libraries(${executable_name} protobuf::libprotobuf)
+    protobuf_generate(TARGET ${executable_name})
   endif()
 
 endforeach()

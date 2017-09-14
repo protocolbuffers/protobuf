@@ -30,7 +30,6 @@
 
 #include <php.h>
 #include <stdlib.h>
-#include <ext/json/php_json.h>
 
 #include "protobuf.h"
 
@@ -41,8 +40,8 @@ static  zend_function_entry message_methods[] = {
   PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, jsonEncode, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, jsonDecode, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToJsonString, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFromJsonString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
@@ -173,7 +172,7 @@ static zval* message_get_property(zval* object, zval* member, int type,
       zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
   return layout_get(
       self->descriptor->layout, message_data(self), field,
-      &Z_OBJ_P(object)->properties_table[property_info->offset] TSRMLS_CC);
+      OBJ_PROP(Z_OBJ_P(object), property_info->offset) TSRMLS_CC);
 #else
   property_info =
       zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
@@ -223,7 +222,7 @@ void custom_data_init(const zend_class_entry* ce,
   // case a collection happens during object creation in layout_init().
   intern->descriptor = desc;
   layout_init(desc->layout, message_data(intern),
-              intern->std.properties_table PHP_PROTO_TSRMLS_CC);
+              &intern->std PHP_PROTO_TSRMLS_CC);
 }
 
 void build_class_from_descriptor(
@@ -266,8 +265,7 @@ PHP_METHOD(Message, clear) {
   zend_class_entry* ce = desc->klass;
 
   object_properties_init(&msg->std, ce);
-  layout_init(desc->layout, message_data(msg),
-              msg->std.properties_table TSRMLS_CC);
+  layout_init(desc->layout, message_data(msg), &msg->std TSRMLS_CC);
 }
 
 PHP_METHOD(Message, mergeFrom) {
@@ -302,7 +300,8 @@ PHP_METHOD(Message, readOneof) {
 
   int property_cache_index =
       msg->descriptor->layout->fields[upb_fielddef_index(field)].cache_index;
-  zval* property_ptr = OBJ_PROP(Z_OBJ_P(getThis()), property_cache_index);
+  zval* property_ptr = CACHED_PTR_TO_ZVAL_PTR(
+      OBJ_PROP(Z_OBJ_P(getThis()), property_cache_index));
 
   // Unlike singular fields, oneof fields share cached property. So we cannot
   // let lay_get modify the cached property. Instead, we pass in the return

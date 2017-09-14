@@ -49,11 +49,16 @@ class Descriptor
         $pool->addMessage('google.protobuf.internal.DescriptorProto.ExtensionRange', \Google\Protobuf\Internal\DescriptorProto_ExtensionRange::class)
             ->optional('start', \Google\Protobuf\Internal\GPBType::INT32, 1)
             ->optional('end', \Google\Protobuf\Internal\GPBType::INT32, 2)
+            ->optional('options', \Google\Protobuf\Internal\GPBType::MESSAGE, 3, 'google.protobuf.internal.ExtensionRangeOptions')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.DescriptorProto.ReservedRange', \Google\Protobuf\Internal\DescriptorProto_ReservedRange::class)
             ->optional('start', \Google\Protobuf\Internal\GPBType::INT32, 1)
             ->optional('end', \Google\Protobuf\Internal\GPBType::INT32, 2)
+            ->finalizeToPool();
+
+        $pool->addMessage('google.protobuf.internal.ExtensionRangeOptions', \Google\Protobuf\Internal\ExtensionRangeOptions::class)
+            ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.FieldDescriptorProto', \Google\Protobuf\Internal\FieldDescriptorProto::class)
@@ -139,12 +144,14 @@ class Descriptor
             ->optional('cc_generic_services', \Google\Protobuf\Internal\GPBType::BOOL, 16)
             ->optional('java_generic_services', \Google\Protobuf\Internal\GPBType::BOOL, 17)
             ->optional('py_generic_services', \Google\Protobuf\Internal\GPBType::BOOL, 18)
+            ->optional('php_generic_services', \Google\Protobuf\Internal\GPBType::BOOL, 42)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 23)
             ->optional('cc_enable_arenas', \Google\Protobuf\Internal\GPBType::BOOL, 31)
             ->optional('objc_class_prefix', \Google\Protobuf\Internal\GPBType::STRING, 36)
             ->optional('csharp_namespace', \Google\Protobuf\Internal\GPBType::STRING, 37)
             ->optional('swift_prefix', \Google\Protobuf\Internal\GPBType::STRING, 39)
             ->optional('php_class_prefix', \Google\Protobuf\Internal\GPBType::STRING, 40)
+            ->optional('php_namespace', \Google\Protobuf\Internal\GPBType::STRING, 41)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 

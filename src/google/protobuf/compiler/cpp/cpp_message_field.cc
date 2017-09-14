@@ -50,6 +50,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = FieldMessageTypeName(descriptor);
+  (*variables)["type_default_instance"] =
+      DefaultInstanceName(descriptor->message_type());
   if (descriptor->options().weak() || !descriptor->containing_oneof()) {
     (*variables)["non_null_ptr_to_name"] =
         StrCat("this->", (*variables)["name"], "_");
@@ -98,6 +100,7 @@ void MessageFieldGenerator::
 GenerateGetterDeclaration(io::Printer* printer) const {
   printer->Print(variables_,
       "$deprecated_attr$const $type$& $name$() const;\n");
+  printer->Annotate("name", descriptor_);
 }
 
 void MessageFieldGenerator::
@@ -107,9 +110,14 @@ GenerateDependentAccessorDeclarations(io::Printer* printer) const {
   }
   // Arena manipulation code is out-of-line in the derived message class.
   printer->Print(variables_,
-    "$deprecated_attr$$type$* mutable_$name$();\n"
-    "$deprecated_attr$$type$* $release_name$();\n"
-    "$deprecated_attr$void set_allocated_$name$($type$* $name$);\n");
+                 "$deprecated_attr$$type$* ${$mutable_$name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
+  printer->Print(variables_, "$deprecated_attr$$type$* $release_name$();\n");
+  printer->Annotate("release_name", descriptor_);
+  printer->Print(variables_,
+                 "$deprecated_attr$void ${$set_allocated_$name$$}$"
+                 "($type$* $name$);\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void MessageFieldGenerator::
@@ -130,15 +138,25 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   GenerateGetterDeclaration(printer);
   if (!dependent_field_) {
     printer->Print(variables_,
-      "$deprecated_attr$$type$* mutable_$name$();\n"
-      "$deprecated_attr$$type$* $release_name$();\n"
-      "$deprecated_attr$void set_allocated_$name$($type$* $name$);\n");
+                   "$deprecated_attr$$type$* ${$mutable_$name$$}$();\n");
+    printer->Annotate("{", "}", descriptor_);
+    printer->Print(variables_, "$deprecated_attr$$type$* $release_name$();\n");
+    printer->Annotate("release_name", descriptor_);
+    printer->Print(variables_,
+                   "$deprecated_attr$void ${$set_allocated_$name$$}$"
+                   "($type$* $name$);\n");
+    printer->Annotate("{", "}", descriptor_);
   }
   if (SupportsArenas(descriptor_)) {
+    printer->Print(
+        variables_,
+        "$deprecated_attr$$type$* ${$unsafe_arena_release_$name$$}$();\n");
+    printer->Annotate("{", "}", descriptor_);
     printer->Print(variables_,
-      "$deprecated_attr$$type$* unsafe_arena_release_$name$();\n"
-      "$deprecated_attr$void unsafe_arena_set_allocated_$name$(\n"
-      "    $type$* $name$);\n");
+                   "$deprecated_attr$void "
+                   "${$unsafe_arena_set_allocated_$name$$}$(\n"
+                   "    $type$* $name$);\n");
+    printer->Annotate("{", "}", descriptor_);
   }
 }
 
@@ -346,29 +364,17 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  if (dependent_field_) {
-    // for dependent fields we cannot access its internal_default_instance,
-    // because the type is incomplete.
-    // TODO(gerbens) deprecate dependent base class.
-    std::map<string, string> variables(variables_);
-    variables["inline"] = is_inline ? "inline " : "";
-    printer->Print(variables,
-      "$inline$const $type$& $classname$::$name$() const {\n"
-      "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-      "  return $name$_ != NULL ? *$name$_\n"
-      "                         : *internal_default_instance()->$name$_;\n"
-      "}\n");
-    return;
-  }
-
   std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$const $type$& $classname$::$name$() const {\n"
+    "  const $type$* p = $name$_;\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-    "  return $name$_ != NULL ? *$name$_\n"
-    "                         : *$type$::internal_default_instance();\n"
+    "  return p != NULL ? *p : *reinterpret_cast<const $type$*>(\n"
+    "      &$type_default_instance$);\n"
     "}\n");
+
+  if (dependent_field_) return;
 
   if (SupportsArenas(descriptor_)) {
     printer->Print(variables,
@@ -511,18 +517,18 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void MessageFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "std::swap($name$_, other->$name$_);\n");
+  printer->Print(variables_, "swap($name$_, other->$name$_);\n");
 }
 
 void MessageFieldGenerator::
 GenerateDestructorCode(io::Printer* printer) const {
+  // TODO(gerbens) Remove this when we don't need to destruct default instances.
   // In google3 a default instance will never get deleted so we don't need to
   // worry about that but in opensource protobuf default instances are deleted
   // in shutdown process and we need to take special care when handling them.
   printer->Print(variables_,
-    "if (this != internal_default_instance()) {\n"
-    "  delete $name$_;\n"
-    "}\n");
+    "if (this != internal_default_instance()) ");
+  printer->Print(variables_, "delete $name$_;\n");
 }
 
 void MessageFieldGenerator::
@@ -899,16 +905,20 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 InternalGenerateTypeDependentAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "$deprecated_attr$$type$* mutable_$name$(int index);\n"
-    "$deprecated_attr$$type$* add_$name$();\n");
+                 "$deprecated_attr$$type$* ${$mutable_$name$$}$(int index);\n");
+  printer->Annotate("{", "}", descriptor_);
+  printer->Print(variables_, "$deprecated_attr$$type$* ${$add_$name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   if (dependent_getter_) {
     printer->Print(variables_,
       "$deprecated_attr$const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
       "    $name$() const;\n");
+    printer->Annotate("name", descriptor_);
   }
   printer->Print(variables_,
-    "$deprecated_attr$::google::protobuf::RepeatedPtrField< $type$ >*\n"
-    "    mutable_$name$();\n");
+                 "$deprecated_attr$::google::protobuf::RepeatedPtrField< $type$ >*\n"
+                 "    ${$mutable_$name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void RepeatedMessageFieldGenerator::
@@ -916,6 +926,7 @@ GenerateDependentAccessorDeclarations(io::Printer* printer) const {
   if (dependent_getter_) {
     printer->Print(variables_,
       "$deprecated_attr$const $type$& $name$(int index) const;\n");
+    printer->Annotate("name", descriptor_);
   }
   if (dependent_field_) {
     InternalGenerateTypeDependentAccessorDeclarations(printer);
@@ -927,6 +938,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   if (!dependent_getter_) {
     printer->Print(variables_,
       "$deprecated_attr$const $type$& $name$(int index) const;\n");
+    printer->Annotate("name", descriptor_);
   }
   if (!dependent_field_) {
     InternalGenerateTypeDependentAccessorDeclarations(printer);
@@ -935,6 +947,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
     printer->Print(variables_,
       "$deprecated_attr$const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
       "    $name$() const;\n");
+    printer->Annotate("name", descriptor_);
   }
 }
 
@@ -1084,19 +1097,21 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "for (unsigned int i = 0, n = this->$name$_size(); i < n; i++) {\n"
+    "for (unsigned int i = 0,\n"
+    "    n = static_cast<unsigned int>(this->$name$_size()); i < n; i++) {\n"
     "  ::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
-    "    $number$, this->$name$(i), output);\n"
+    "    $number$, this->$name$(static_cast<int>(i)), output);\n"
     "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
-    "for (unsigned int i = 0, n = this->$name$_size(); i < n; i++) {\n"
+    "for (unsigned int i = 0,\n"
+    "    n = static_cast<unsigned int>(this->$name$_size()); i < n; i++) {\n"
     "  target = ::google::protobuf::internal::WireFormatLite::\n"
     "    InternalWrite$declared_type$NoVirtualToArray(\n"
-    "      $number$, this->$name$(i), deterministic, target);\n"
+    "      $number$, this->$name$(static_cast<int>(i)), deterministic, target);\n"
     "}\n");
 }
 
@@ -1104,14 +1119,14 @@ void RepeatedMessageFieldGenerator::
 GenerateByteSize(io::Printer* printer) const {
   printer->Print(variables_,
     "{\n"
-    "  unsigned int count = this->$name$_size();\n");
+    "  unsigned int count = static_cast<unsigned int>(this->$name$_size());\n");
   printer->Indent();
   printer->Print(variables_,
     "total_size += $tag_size$UL * count;\n"
     "for (unsigned int i = 0; i < count; i++) {\n"
     "  total_size +=\n"
     "    ::google::protobuf::internal::WireFormatLite::$declared_type$SizeNoVirtual(\n"
-    "      this->$name$(i));\n"
+    "      this->$name$(static_cast<int>(i)));\n"
     "}\n");
   printer->Outdent();
   printer->Print("}\n");

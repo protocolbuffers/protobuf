@@ -91,12 +91,40 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         [Test]
+        public void TryUnpack_WrongType()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var any = Any.Pack(message);
+            Assert.False(any.TryUnpack(out TestOneof unpacked));
+            Assert.Null(unpacked);
+        }
+
+        [Test]
+        public void TryUnpack_RightType()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var any = Any.Pack(message);
+            Assert.IsTrue(any.TryUnpack(out TestAllTypes unpacked));
+            Assert.AreEqual(message, unpacked);
+        }
+
+        [Test]
         public void ToString_WithValues()
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message);
             var text = any.ToString();
             Assert.That(text, Does.Contain("\"@value\": \"" + message.ToByteString().ToBase64() + "\""));
+        }
+
+        [Test]
+        [TestCase("proto://foo.bar", "foo.bar")]
+        [TestCase("/foo/bar/baz", "baz")]
+        [TestCase("foobar", "")]
+        public void GetTypeName(string typeUrl, string expectedTypeName)
+        {
+            var any = new Any { TypeUrl = typeUrl };
+            Assert.AreEqual(expectedTypeName, Any.GetTypeName(typeUrl));
         }
 
         [Test]

@@ -14,6 +14,7 @@ environment:
       UNICODE: ON
 
     - language: csharp
+      image: Visual Studio 2017
 
 # Our build scripts run tests automatically; we don't want AppVeyor
 # to try to detect them itself.
@@ -29,8 +30,6 @@ install:
   - del /Q release-1.7.0.zip
   - rename googletest-release-1.7.0 gtest
   - move gtest gmock
-  - curl -L -o dotnetsdk.exe "https://go.microsoft.com/fwlink/?LinkID=809122"
-  - dotnetsdk.exe /install /quiet /norestart
 
 before_build:
   - if %platform%==Win32 set generator=Visual Studio 12

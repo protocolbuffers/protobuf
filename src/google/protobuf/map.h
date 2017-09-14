@@ -47,9 +47,6 @@
 #include <google/protobuf/generated_enum_util.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/stubs/hash.h>
-#if __cpp_exceptions && LANG_CXX11
-#include <random>
-#endif
 
 namespace google {
 namespace protobuf {
@@ -161,7 +158,7 @@ class Map {
 
  private:
   void Init() {
-    elements_ = Arena::Create<InnerMap>(arena_, 0, hasher(), Allocator(arena_));
+    elements_ = Arena::Create<InnerMap>(arena_, 0u, hasher(), Allocator(arena_));
   }
 
   // re-implement std::allocator to use arena allocator for memory allocation.
@@ -184,7 +181,7 @@ class Map {
     MapAllocator(const MapAllocator<X>& allocator)
         : arena_(allocator.arena()) {}
 
-    pointer allocate(size_type n, const void* hint = 0) {
+    pointer allocate(size_type n, const void* /* hint */ = 0) {
       // If arena is not given, malloc needs to be called which doesn't
       // construct element object.
       if (arena_ == NULL) {
@@ -200,6 +197,7 @@ class Map {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
         ::operator delete(p, n * sizeof(value_type));
 #else
+        (void)n;
         ::operator delete(p);
 #endif
       }
@@ -865,14 +863,7 @@ class Map {
     size_type BucketNumber(const Key& k) const {
       // We inherit from hasher, so one-arg operator() provides a hash function.
       size_type h = (*const_cast<InnerMap*>(this))(k);
-      // To help prevent people from making assumptions about the hash function,
-      // we use the seed differently depending on NDEBUG.  The default hash
-      // function, the seeding, etc., are all likely to change in the future.
-#ifndef NDEBUG
-      return (h * (seed_ | 1)) & (num_buckets_ - 1);
-#else
       return (h + seed_) & (num_buckets_ - 1);
-#endif
     }
 
     bool IsMatch(const Key& k0, const Key& k1) const {
@@ -922,16 +913,6 @@ class Map {
 
     // Return a randomish value.
     size_type Seed() const {
-      // random_device can throw, so avoid it unless we are compiling with
-      // exceptions enabled.
-#if __cpp_exceptions && LANG_CXX11
-      try {
-        std::random_device rd;
-        std::knuth_b knuth(rd());
-        std::uniform_int_distribution<size_type> u;
-        return u(knuth);
-      } catch (...) { }
-#endif
       size_type s = static_cast<size_type>(reinterpret_cast<uintptr_t>(this));
 #if defined(__x86_64__) && defined(__GNUC__)
       uint32 hi, lo;
@@ -952,12 +933,16 @@ class Map {
 
  public:
   // Iterators
-  class const_iterator
-      : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
-                             const value_type*, const value_type&> {
+  class const_iterator {
     typedef typename InnerMap::const_iterator InnerIt;
 
    public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::value_type value_type;
+    typedef ptrdiff_t difference_type;
+    typedef const value_type* pointer;
+    typedef const value_type& reference;
+
     const_iterator() {}
     explicit const_iterator(const InnerIt& it) : it_(it) {}
 
@@ -983,10 +968,16 @@ class Map {
     InnerIt it_;
   };
 
-  class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
+  class iterator {
     typedef typename InnerMap::iterator InnerIt;
 
    public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::value_type value_type;
+    typedef ptrdiff_t difference_type;
+    typedef value_type* pointer;
+    typedef value_type& reference;
+
     iterator() {}
     explicit iterator(const InnerIt& it) : it_(it) {}
 

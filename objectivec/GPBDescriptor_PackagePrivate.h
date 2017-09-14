@@ -286,10 +286,6 @@ uint32_t GPBFieldTag(GPBFieldDescriptor *self);
 // would be the wire type for packed.
 uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self);
 
-GPB_INLINE BOOL GPBPreserveUnknownFields(GPBFileSyntax syntax) {
-  return syntax != GPBFileSyntaxProto3;
-}
-
 GPB_INLINE BOOL GPBHasPreservingUnknownEnumSemantics(GPBFileSyntax syntax) {
   return syntax == GPBFileSyntaxProto3;
 }

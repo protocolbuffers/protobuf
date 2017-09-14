@@ -59,7 +59,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/type_traits.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 
 
@@ -281,9 +280,6 @@ class RepeatedField PROTOBUF_FINAL {
   friend class Arena;
   typedef void InternalArenaConstructable_;
 
-  // Move the contents of |from| into |to|, possibly clobbering |from| in the
-  // process.  For primitive types this is just a memcpy(), but it could be
-  // specialized for non-primitive types to, say, swap each element instead.
   void MoveArray(Element* to, Element* from, int size);
 
   // Copy the elements of |from| into |to|.
@@ -302,7 +298,7 @@ class RepeatedField PROTOBUF_FINAL {
       Element* e = &rep->elements[0];
       Element* limit = &rep->elements[size];
       for (; e < limit; e++) {
-        e->Element::~Element();
+        e->~Element();
       }
       if (rep->arena == NULL) {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
@@ -597,6 +593,7 @@ class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Reserve() and MergeFrom() to reduce code size. |extend_amount| must be > 0.
   void** InternalExtend(int extend_amount);
 
+  friend class AccessorHelper;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPtrFieldBase);
 };
 
@@ -609,8 +606,7 @@ class GenericTypeHandler {
 #endif
 
   static inline GenericType* New(Arena* arena) {
-    return ::google::protobuf::Arena::CreateMaybeMessage<Type>(
-        arena, static_cast<GenericType*>(0));
+    return ::google::protobuf::Arena::CreateMaybeMessage<Type>(arena);
   }
   static inline GenericType* NewFromPrototype(
       const GenericType* prototype, ::google::protobuf::Arena* arena = NULL);
@@ -1335,7 +1331,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
       static_cast<size_t>(new_size),
       (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
       << "Requested size is too large to fit into size_t.";
-  size_t bytes = kRepHeaderSize + sizeof(Element) * new_size;
+  size_t bytes = kRepHeaderSize + sizeof(Element) * static_cast<size_t>(new_size);
   if (arena == NULL) {
     rep_ = static_cast<Rep*>(::operator new(bytes));
   } else {
@@ -1399,7 +1395,7 @@ void ElementCopier<Element, HasTrivialCopy>::operator()(
 template <typename Element>
 struct ElementCopier<Element, true> {
   void operator()(Element* to, const Element* from, int array_size) {
-    memcpy(to, from, array_size * sizeof(Element));
+    memcpy(to, from, static_cast<size_t>(array_size) * sizeof(Element));
   }
 };
 
@@ -1651,7 +1647,7 @@ inline void RepeatedPtrFieldBase::SwapElements(int index1, int index2) {
 
 template <typename TypeHandler>
 inline size_t RepeatedPtrFieldBase::SpaceUsedExcludingSelfLong() const {
-  size_t allocated_bytes = total_size_ * sizeof(void*);
+  size_t allocated_bytes = static_cast<size_t>(total_size_) * sizeof(void*);
   if (rep_ != NULL) {
     for (int i = 0; i < rep_->allocated_size; ++i) {
       allocated_bytes += TypeHandler::SpaceUsedLong(
@@ -2449,6 +2445,12 @@ template<typename T> class RepeatedPtrFieldBackInsertIterator
     *field_->Add() = *ptr_to_value;
     return *this;
   }
+#if LANG_CXX11
+  RepeatedPtrFieldBackInsertIterator<T>& operator=(T&& value) {
+    *field_->Add() = std::move(value);
+    return *this;
+  }
+#endif
   RepeatedPtrFieldBackInsertIterator<T>& operator*() {
     return *this;
   }

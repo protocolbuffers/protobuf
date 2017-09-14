@@ -49,7 +49,7 @@ namespace objectivec {
 namespace {
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             map<string, string>* variables) {
+                             std::map<string, string>* variables) {
   string camel_case_name = FieldName(descriptor);
   string raw_field_name;
   if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {
@@ -178,7 +178,7 @@ void FieldGenerator::GenerateCFunctionImplementations(
 }
 
 void FieldGenerator::DetermineForwardDeclarations(
-    set<string>* fwd_decls) const {
+    std::set<string>* fwd_decls) const {
   // Nothing
 }
 
@@ -228,8 +228,8 @@ int FieldGenerator::ExtraRuntimeHasBitsNeeded(void) const {
 void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
   // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
   // error cases, so it seems to be ok to use as a back door for errors.
-  cerr << "Error: should have overridden SetExtraRuntimeHasBitsBase()." << endl;
-  cerr.flush();
+  std::cerr << "Error: should have overridden SetExtraRuntimeHasBitsBase()." << std::endl;
+  std::cerr.flush();
   abort();
 }
 

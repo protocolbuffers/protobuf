@@ -23,9 +23,9 @@ require_once("Google/Protobuf/StringValue.php");
 require_once("Google/Protobuf/UInt64Value.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
 require_once("Protobuf_test_messages/Proto3/ForeignEnum.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypes.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypes_NestedMessage.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypes_NestedEnum.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedMessage.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedEnum.php");
 
 require_once("GPBMetadata/Conformance.php");
 require_once("GPBMetadata/Google/Protobuf/Any.php");
@@ -42,18 +42,25 @@ $test_count = 0;
 
 function doTest($request)
 {
-    $test_message = new \Protobuf_test_messages\Proto3\TestAllTypes();
+    $test_message = new \Protobuf_test_messages\Proto3\TestAllTypesProto3();
     $response = new \Conformance\ConformanceResponse();
     if ($request->getPayload() == "protobuf_payload") {
-      try {
+      if ($request->getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
+        try {
           $test_message->mergeFromString($request->getProtobufPayload());
-      } catch (Exception $e) {
+        } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
+        }
+      } elseif ($request->getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2") {
+	$response->setSkipped("PHP doesn't support proto2");
+	return $response;
+      } else {
+	trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
       }
     } elseif ($request->getPayload() == "json_payload") {
       try {
-          $test_message->jsonDecode($request->getJsonPayload());
+          $test_message->mergeFromJsonString($request->getJsonPayload());
       } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
@@ -67,7 +74,7 @@ function doTest($request)
     } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
       $response->setProtobufPayload($test_message->serializeToString());
     } elseif ($request->getRequestedOutputFormat() == WireFormat::JSON) {
-      $response->setJsonPayload($test_message->jsonEncode());
+      $response->setJsonPayload($test_message->serializeToJsonString());
     }
 
     return $response;
@@ -79,7 +86,8 @@ function doTestIO()
     if (strlen($length_bytes) == 0) {
       return false;   # EOF
     } elseif (strlen($length_bytes) != 4) {
-      trigger_error("I/O error", E_USER_ERROR);
+      fwrite(STDERR, "I/O error\n");
+      return false;
     }
 
     $length = unpack("V", $length_bytes)[1];

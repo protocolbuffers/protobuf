@@ -180,10 +180,6 @@ class FieldGenerator {
   virtual void GenerateDefaultInstanceAllocator(io::Printer* /*printer*/)
       const {}
 
-  // Generate code that should be run when ShutdownProtobufLibrary() is called,
-  // to delete all dynamically-allocated objects.
-  virtual void GenerateShutdownCode(io::Printer* /*printer*/) const {}
-
   // Generate lines to decode this field, which will be placed inside the
   // message's MergeFromCodedStream() method.
   virtual void GenerateMergeFromCodedStream(io::Printer* printer) const = 0;
@@ -232,7 +228,6 @@ class FieldGeneratorMap {
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };
-
 
 }  // namespace cpp
 }  // namespace compiler

@@ -123,6 +123,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/arenastring_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_move_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/metadata_test.cc
@@ -160,6 +161,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/once_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/status_test.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/statusor_test.cc

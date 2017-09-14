@@ -19,7 +19,9 @@ resolve imports at compile time.
 To use Protocol Buffers with JavaScript, you need two main components:
 
 1. The protobuf runtime library.  You can install this with
-   `npm install google-protobuf`, or use the files in this directory.
+   `npm install google-protobuf`, or use the files in this directory.  
+    If npm is not being used, as of 3.3.0, the files needed are located in binary subdirectory; 
+    arith.js, constants.js, decoder.js, encoder.js, map.js, message.js, reader.js, utils.js, writer.js
 2. The Protocol Compiler `protoc`.  This translates `.proto` files
    into `.js` files.  The compiler is not currently available via
    npm, but you can download a pre-built binary
@@ -92,6 +94,12 @@ statements like:
     goog.require('proto.my.package.MyMessage');
 
     var message = proto.my.package.MyMessage();
+
+If unfamiliar with Closure or it's compiler, consider reviewing Closure documentation
+https://developers.google.com/closure/library/docs/tutorial
+https://developers.google.com/closure/library/docs/closurebuilder
+https://developers.google.com/closure/library/docs/depswriter
+At a high level, closurebuilder.py can walk dependencies, and compile your code, and all dependencies for Protobuf into a single .js file.  Using depsbuilder.py to generate a dependency file can also be considered for non-production dev environments.
 
 CommonJS imports
 ----------------

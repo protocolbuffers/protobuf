@@ -143,6 +143,7 @@ static zend_function_entry map_field_methods[] = {
   PHP_ME(MapField, offsetSet,    arginfo_offsetSet, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, offsetUnset,  arginfo_offsetGet, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, count,        arginfo_void,      ZEND_ACC_PUBLIC)
+  PHP_ME(MapField, getIterator,  arginfo_void,      ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -156,7 +157,10 @@ static void map_field_write_dimension(zval *object, zval *key,
 // -----------------------------------------------------------------------------
 
 zend_class_entry* map_field_type;
+zend_class_entry* map_field_iter_type;
+
 zend_object_handlers* map_field_handlers;
+zend_object_handlers* map_field_iter_handlers;
 
 static void map_begin_internal(Map *map, MapIter *iter) {
   iter->self = map;
@@ -231,8 +235,8 @@ PHP_PROTO_OBJECT_CREATE_END(Map, map_field)
 // Init class entry.
 PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\MapField", Map,
                            map_field)
-zend_class_implements(map_field_type TSRMLS_CC, 2, spl_ce_ArrayAccess,
-                      spl_ce_Countable);
+zend_class_implements(map_field_type TSRMLS_CC, 3, spl_ce_ArrayAccess,
+                      zend_ce_aggregate, spl_ce_Countable);
 map_field_handlers->write_dimension = map_field_write_dimension;
 map_field_handlers->get_gc = map_field_get_gc;
 PHP_PROTO_INIT_CLASS_END
@@ -281,7 +285,7 @@ static bool map_field_read_dimension(zval *object, zval *key, int type,
 
   if (upb_strtable_lookup2(&intern->table, keyval, length, &v)) {
     void* mem = upb_value_memory(&v);
-    native_slot_get_by_array(intern->value_type, mem, retval TSRMLS_CC);
+    native_slot_get_by_map_value(intern->value_type, mem, retval TSRMLS_CC);
     return true;
   } else {
     zend_error(E_USER_ERROR, "Given key doesn't exist.");
@@ -314,7 +318,7 @@ static void map_field_write_dimension(zval *object, zval *key,
 
   mem = upb_value_memory(&v);
   memset(mem, 0, native_slot_size(intern->value_type));
-  if (!native_slot_set_by_array(intern->value_type, intern->msg_ce, mem,
+  if (!native_slot_set_by_map(intern->value_type, intern->msg_ce, mem,
                                 value TSRMLS_CC)) {
     return;
   }
@@ -444,6 +448,15 @@ PHP_METHOD(MapField, count) {
   RETURN_LONG(upb_strtable_count(&intern->table));
 }
 
+PHP_METHOD(MapField, getIterator) {
+  CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(return_value,
+                                   map_field_iter_type);
+
+  Map *intern = UNBOX(Map, getThis());
+  MapIter *iter = UNBOX(MapIter, return_value);
+  map_begin(getThis(), iter TSRMLS_CC);
+}
+
 // -----------------------------------------------------------------------------
 // Map Iterator
 // -----------------------------------------------------------------------------
@@ -469,4 +482,80 @@ const char *map_iter_key(MapIter *iter, int *len) {
 upb_value map_iter_value(MapIter *iter, int *len) {
   *len = native_slot_size(iter->self->value_type);
   return upb_strtable_iter_value(&iter->it);
+}
+
+// -----------------------------------------------------------------------------
+// MapFieldIter methods
+// -----------------------------------------------------------------------------
+static zend_function_entry map_field_iter_methods[] = {
+  PHP_ME(MapFieldIter, rewind,      arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, current,     arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, key,         arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, next,        arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, valid,       arginfo_void, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+
+// -----------------------------------------------------------------------------
+// MapFieldIter creation/desctruction
+// -----------------------------------------------------------------------------
+
+// Define object free method.
+PHP_PROTO_OBJECT_FREE_START(MapIter, map_field_iter)
+PHP_PROTO_OBJECT_FREE_END
+
+PHP_PROTO_OBJECT_DTOR_START(MapIter, map_field_iter)
+PHP_PROTO_OBJECT_DTOR_END
+
+// Define object create method.
+PHP_PROTO_OBJECT_CREATE_START(MapIter, map_field_iter)
+intern->self = NULL;
+PHP_PROTO_OBJECT_CREATE_END(MapIter, map_field_iter)
+
+// Init class entry.
+PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\MapFieldIter",
+                           MapIter, map_field_iter)
+zend_class_implements(map_field_iter_type TSRMLS_CC, 1, zend_ce_iterator);
+PHP_PROTO_INIT_CLASS_END
+
+// -----------------------------------------------------------------------------
+// PHP MapFieldIter Methods
+// -----------------------------------------------------------------------------
+
+PHP_METHOD(MapFieldIter, rewind) {
+  MapIter *intern = UNBOX(MapIter, getThis());
+  map_begin_internal(intern->self, intern);
+}
+
+PHP_METHOD(MapFieldIter, current) {
+  MapIter *intern = UNBOX(MapIter, getThis());
+  Map *map_field = intern->self;
+
+  int value_length = 0;
+  upb_value value = map_iter_value(intern, &value_length);
+
+  void* mem = upb_value_memory(&value);
+  native_slot_get_by_map_value(map_field->value_type, mem,
+                               ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+}
+
+PHP_METHOD(MapFieldIter, key) {
+  MapIter *intern = UNBOX(MapIter, getThis());
+  Map *map_field = intern->self;
+
+  int key_length = 0;
+  const char* key = map_iter_key(intern, &key_length);
+
+  native_slot_get_by_map_key(map_field->key_type, key, key_length,
+                             ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+}
+
+PHP_METHOD(MapFieldIter, next) {
+  MapIter *intern = UNBOX(MapIter, getThis());
+  map_next(intern);
+}
+
+PHP_METHOD(MapFieldIter, valid) {
+  MapIter *intern = UNBOX(MapIter, getThis());
+  RETURN_BOOL(!map_done(intern));
 }

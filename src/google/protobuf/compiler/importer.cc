@@ -32,8 +32,9 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+
 #ifdef _MSC_VER
-#include <io.h>
+#include <direct.h>
 #else
 #include <unistd.h>
 #endif
@@ -53,18 +54,23 @@
 #include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/strutil.h>
+
+#ifdef _WIN32
+#include <ctype.h>
+#endif
+
+#ifdef _MSC_VER
+// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
+// them like we do below.
+using google::protobuf::internal::win32::access;
+using google::protobuf::internal::win32::open;
+#endif
 
 namespace google {
 namespace protobuf {
 namespace compiler {
-
-#ifdef _WIN32
-#ifndef F_OK
-#define F_OK 00  // not defined by MSVC for whatever reason
-#endif
-#include <ctype.h>
-#endif
 
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
@@ -295,10 +301,8 @@ static string CanonicalizePath(string path) {
 }
 
 static inline bool ContainsParentReference(const string& path) {
-  return path == ".." ||
-         HasPrefixString(path, "../") ||
-         HasSuffixString(path, "/..") ||
-         path.find("/../") != string::npos;
+  return path == ".." || HasPrefixString(path, "../") ||
+         HasSuffixString(path, "/..") || path.find("/../") != string::npos;
 }
 
 // Maps a file from an old location to a new one.  Typically, old_prefix is
@@ -328,8 +332,7 @@ static bool ApplyMapping(const string& filename,
       // We do not allow the file name to use "..".
       return false;
     }
-    if (HasPrefixString(filename, "/") ||
-        IsWindowsAbsolutePath(filename)) {
+    if (HasPrefixString(filename, "/") || IsWindowsAbsolutePath(filename)) {
       // This is an absolute path, so it isn't matched by the empty string.
       return false;
     }

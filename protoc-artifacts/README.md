@@ -72,6 +72,7 @@ deployment for all platforms. Currently the following platforms are supported:
 - Windows (x86_32 and x86_64) with
  - Cygwin64 with MinGW compilers (x86_64)
  - MSYS with MinGW32 (x86_32)
+ - Cross compile in Linux with MinGW-w64 (x86_32, x86_64)
 - MacOSX (x86_32 and x86_64)
 
 As for MSYS2/MinGW64 for Windows: protoc will build, but it insists on
@@ -97,6 +98,9 @@ $ mvn clean deploy -P release -Dstaging.repository=comgoogle-123
 
 A 32-bit artifact can be deployed from a 64-bit host with
 ``-Dos.detected.arch=x86_32``
+
+A windows artifact can be deployed from a linux machine with
+``-Dos.detected.name=windows``
 
 When you have done deployment for all platforms, go to
 https://oss.sonatype.org/#stagingRepositories, verify that the staging
@@ -173,5 +177,7 @@ We have successfully built artifacts on the following environments:
  - Centos 6.6 (within Docker 1.6.1)
  - Ubuntu 14.04.2 64-bit
 - Windows x86_32: MSYS with ``mingw32-gcc-g++ 4.8.1-4`` on Windows 7 64-bit
+- Windows x86_32: Cross compile with ``i686-w64-mingw32-g++ 4.8.2`` on Ubuntu 14.04.2 64-bit
 - Windows x86_64: Cygwin64 with ``mingw64-x86_64-gcc-g++ 4.8.3-1`` on Windows 7 64-bit
+- Windows x86_64: Cross compile with ``x86_64-w64-mingw32-g++ 4.8.2`` on Ubuntu 14.04.2 64-bit
 - Mac OS X x86_32 and x86_64: Mac OS X 10.9.5

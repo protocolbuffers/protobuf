@@ -162,7 +162,7 @@ void MapFieldGenerator::FinishInitialization(void) {
 }
 
 void MapFieldGenerator::DetermineForwardDeclarations(
-    set<string>* fwd_decls) const {
+    std::set<string>* fwd_decls) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->FindFieldByName("value");

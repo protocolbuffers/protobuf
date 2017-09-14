@@ -230,15 +230,15 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
   }
 
   state->lastTag = ReadRawVarint32(state);
-  if (state->lastTag == 0) {
-    // If we actually read zero, that's not a valid tag.
-    RaiseException(GPBCodedInputStreamErrorInvalidTag,
-                   @"A zero tag on the wire is invalid.");
-  }
-  // Tags have to include a valid wireformat, check that also.
+  // Tags have to include a valid wireformat.
   if (!GPBWireFormatIsValidTag(state->lastTag)) {
     RaiseException(GPBCodedInputStreamErrorInvalidTag,
                    @"Invalid wireformat in tag.");
+  }
+  // Zero is not a valid field number.
+  if (GPBWireFormatGetTagFieldNumber(state->lastTag) == 0) {
+    RaiseException(GPBCodedInputStreamErrorInvalidTag,
+                   @"A zero field number on the wire is invalid.");
   }
   return state->lastTag;
 }

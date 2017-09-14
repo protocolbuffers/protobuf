@@ -55,15 +55,14 @@ static void add_to_table(HashTable* t, const void* def, void* value) {
   uint nIndex = (ulong)def & t->nTableMask;
 
   zval* pDest = NULL;
-  php_proto_zend_hash_index_update(t, (zend_ulong)def, &value, sizeof(zval*),
-                                   (void**)&pDest);
+  php_proto_zend_hash_index_update_mem(t, (zend_ulong)def, &value,
+                                       sizeof(zval*), (void**)&pDest);
 }
 
 static void* get_from_table(const HashTable* t, const void* def) {
   void** value;
-  if (php_proto_zend_hash_index_find(t, (zend_ulong)def, (void**)&value) ==
+  if (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def, (void**)&value) ==
       FAILURE) {
-    zend_error(E_ERROR, "PHP object not found for given definition.\n");
     return NULL;
   }
   return *value;
@@ -71,13 +70,13 @@ static void* get_from_table(const HashTable* t, const void* def) {
 
 static bool exist_in_table(const HashTable* t, const void* def) {
   void** value;
-  return (php_proto_zend_hash_index_find(t, (zend_ulong)def, (void**)&value) ==
-          SUCCESS);
+  return (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def,
+                                             (void**)&value) == SUCCESS);
 }
 
 static void add_to_list(HashTable* t, void* value) {
   zval* pDest = NULL;
-  php_proto_zend_hash_next_index_insert(t, &value, sizeof(void*),
+  php_proto_zend_hash_next_index_insert_mem(t, &value, sizeof(void*),
                                         (void**)&pDest);
 }
 
@@ -166,6 +165,7 @@ static PHP_RINIT_FUNCTION(protobuf) {
 
   generated_pool = NULL;
   generated_pool_php = NULL;
+  internal_generated_pool_php = NULL;
 
   return 0;
 }
@@ -182,20 +182,40 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
     zval_dtor(generated_pool_php);
     FREE_ZVAL(generated_pool_php);
   }
+  if (internal_generated_pool_php != NULL) {
+    zval_dtor(internal_generated_pool_php);
+    FREE_ZVAL(internal_generated_pool_php);
+  }
+#else
+  if (generated_pool_php != NULL) {
+    zval tmp;
+    ZVAL_OBJ(&tmp, generated_pool_php);
+    zval_dtor(&tmp);
+  }
+  if (internal_generated_pool_php != NULL) {
+    zval tmp;
+    ZVAL_OBJ(&tmp, internal_generated_pool_php);
+    zval_dtor(&tmp);
+  }
 #endif
 
   return 0;
 }
 
 static PHP_MINIT_FUNCTION(protobuf) {
-  map_field_init(TSRMLS_C);
-  repeated_field_init(TSRMLS_C);
-  repeated_field_iter_init(TSRMLS_C);
-  gpb_type_init(TSRMLS_C);
-  message_init(TSRMLS_C);
   descriptor_pool_init(TSRMLS_C);
   descriptor_init(TSRMLS_C);
   enum_descriptor_init(TSRMLS_C);
+  enum_value_descriptor_init(TSRMLS_C);
+  field_descriptor_init(TSRMLS_C);
+  gpb_type_init(TSRMLS_C);
+  internal_descriptor_pool_init(TSRMLS_C);
+  map_field_init(TSRMLS_C);
+  map_field_iter_init(TSRMLS_C);
+  message_init(TSRMLS_C);
+  oneof_descriptor_init(TSRMLS_C);
+  repeated_field_init(TSRMLS_C);
+  repeated_field_iter_init(TSRMLS_C);
   util_init(TSRMLS_C);
 
   return 0;
@@ -206,6 +226,7 @@ static PHP_MSHUTDOWN_FUNCTION(protobuf) {
   PEFREE(repeated_field_handlers);
   PEFREE(repeated_field_iter_handlers);
   PEFREE(map_field_handlers);
+  PEFREE(map_field_iter_handlers);
 
   return 0;
 }

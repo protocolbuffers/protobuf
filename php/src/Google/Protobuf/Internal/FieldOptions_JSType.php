@@ -5,32 +5,26 @@
 namespace Google\Protobuf\Internal;
 
 /**
- * Protobuf enum <code>google.protobuf.FieldOptions.JSType</code>
+ * Protobuf enum <code>Google\Protobuf\Internal</code>
  */
 class FieldOptions_JSType
 {
     /**
-     * <pre>
      * Use the default type.
-     * </pre>
      *
-     * <code>JS_NORMAL = 0;</code>
+     * Generated from protobuf enum <code>JS_NORMAL = 0;</code>
      */
     const JS_NORMAL = 0;
     /**
-     * <pre>
      * Use JavaScript strings.
-     * </pre>
      *
-     * <code>JS_STRING = 1;</code>
+     * Generated from protobuf enum <code>JS_STRING = 1;</code>
      */
     const JS_STRING = 1;
     /**
-     * <pre>
      * Use JavaScript numbers.
-     * </pre>
      *
-     * <code>JS_NUMBER = 2;</code>
+     * Generated from protobuf enum <code>JS_NUMBER = 2;</code>
      */
     const JS_NUMBER = 2;
 }

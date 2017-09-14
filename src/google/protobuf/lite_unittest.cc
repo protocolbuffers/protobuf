@@ -48,7 +48,7 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
-using namespace std;
+using std::string;
 
 namespace {
 // Helper methods to test parsing merge behavior.
@@ -859,6 +859,131 @@ TEST(Lite, AllLite42) {
 
       EXPECT_EQ(v2_message.int_field(), same_v2_message.int_field());
       EXPECT_EQ(v2_message.enum_field(), same_v2_message.enum_field());
+  }
+}
+
+// Test that when parsing a oneof, we can successfully clear whatever already
+// happened to be stored in the oneof.
+TEST(Lite, AllLite43) {
+  protobuf_unittest::TestOneofParsingLite message1;
+
+  message1.set_oneof_int32(17);
+  string serialized;
+  EXPECT_TRUE(message1.SerializeToString(&serialized));
+
+  // Submessage
+  {
+    protobuf_unittest::TestOneofParsingLite message2;
+    message2.mutable_oneof_submessage();
+    google::protobuf::io::CodedInputStream input_stream(
+        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+    EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
+    EXPECT_EQ(17, message2.oneof_int32());
+  }
+
+  // String
+  {
+    protobuf_unittest::TestOneofParsingLite message2;
+    message2.set_oneof_string("string");
+    google::protobuf::io::CodedInputStream input_stream(
+        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+    EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
+    EXPECT_EQ(17, message2.oneof_int32());
+  }
+
+  // Bytes
+  {
+    protobuf_unittest::TestOneofParsingLite message2;
+    message2.set_oneof_bytes("bytes");
+    google::protobuf::io::CodedInputStream input_stream(
+        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+    EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
+    EXPECT_EQ(17, message2.oneof_int32());
+  }
+}
+
+// Verify that we can successfully parse fields of various types within oneof
+// fields. We also verify that we can parse the same data twice into the same
+// message.
+TEST(Lite, AllLite44) {
+  // Int32
+  {
+    protobuf_unittest::TestOneofParsingLite original;
+    original.set_oneof_int32(17);
+    string serialized;
+    EXPECT_TRUE(original.SerializeToString(&serialized));
+    protobuf_unittest::TestOneofParsingLite parsed;
+    for (int i = 0; i < 2; ++i) {
+      google::protobuf::io::CodedInputStream input_stream(
+          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          serialized.size());
+      EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
+      EXPECT_EQ(17, parsed.oneof_int32());
+    }
+  }
+
+  // Submessage
+  {
+    protobuf_unittest::TestOneofParsingLite original;
+    original.mutable_oneof_submessage()->set_optional_int32(5);
+    string serialized;
+    EXPECT_TRUE(original.SerializeToString(&serialized));
+    protobuf_unittest::TestOneofParsingLite parsed;
+    for (int i = 0; i < 2; ++i) {
+      google::protobuf::io::CodedInputStream input_stream(
+          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          serialized.size());
+      EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
+      EXPECT_EQ(5, parsed.oneof_submessage().optional_int32());
+    }
+  }
+
+  // String
+  {
+    protobuf_unittest::TestOneofParsingLite original;
+    original.set_oneof_string("string");
+    string serialized;
+    EXPECT_TRUE(original.SerializeToString(&serialized));
+    protobuf_unittest::TestOneofParsingLite parsed;
+    for (int i = 0; i < 2; ++i) {
+      google::protobuf::io::CodedInputStream input_stream(
+          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          serialized.size());
+      EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
+      EXPECT_EQ("string", parsed.oneof_string());
+    }
+  }
+
+  // Bytes
+  {
+    protobuf_unittest::TestOneofParsingLite original;
+    original.set_oneof_bytes("bytes");
+    string serialized;
+    EXPECT_TRUE(original.SerializeToString(&serialized));
+    protobuf_unittest::TestOneofParsingLite parsed;
+    for (int i = 0; i < 2; ++i) {
+      google::protobuf::io::CodedInputStream input_stream(
+          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          serialized.size());
+      EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
+      EXPECT_EQ("bytes", parsed.oneof_bytes());
+    }
+  }
+
+  // Enum
+  {
+    protobuf_unittest::TestOneofParsingLite original;
+    original.set_oneof_enum(protobuf_unittest::V2_SECOND);
+    string serialized;
+    EXPECT_TRUE(original.SerializeToString(&serialized));
+    protobuf_unittest::TestOneofParsingLite parsed;
+    for (int i = 0; i < 2; ++i) {
+      google::protobuf::io::CodedInputStream input_stream(
+          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          serialized.size());
+      EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
+      EXPECT_EQ(protobuf_unittest::V2_SECOND, parsed.oneof_enum());
+    }
   }
 
   std::cout << "PASS" << std::endl;

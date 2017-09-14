@@ -51,6 +51,12 @@
                   Identifier = "DescriptorTests">
                </Test>
                <Test
+                  Identifier = "GPBAutocreatedArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBAutocreatedDictionaryTests">
+               </Test>
+               <Test
                   Identifier = "GPBBoolArrayTests">
                </Test>
                <Test
@@ -88,6 +94,9 @@
                </Test>
                <Test
                   Identifier = "GPBEnumArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBExtensionRegistryTest">
                </Test>
                <Test
                   Identifier = "GPBFloatArrayTests">

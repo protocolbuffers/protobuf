@@ -406,6 +406,8 @@ class FieldDescriptor(DescriptorBase):
 
     containing_oneof: (OneofDescriptor) If the field is a member of a oneof
       union, contains its descriptor. Otherwise, None.
+
+    file: (FileDescriptor) Reference to file descriptor.
   """
 
   # Must be consistent with C++ FieldDescriptor::Type enum in
@@ -490,7 +492,8 @@ class FieldDescriptor(DescriptorBase):
     def __new__(cls, name, full_name, index, number, type, cpp_type, label,
                 default_value, message_type, enum_type, containing_type,
                 is_extension, extension_scope, options=None,
-                has_default_value=True, containing_oneof=None, json_name=None):
+                has_default_value=True, containing_oneof=None, json_name=None,
+                file=None):
       _message.Message._CheckCalledFromGeneratedFile()
       if is_extension:
         return _message.default_pool.FindExtensionByName(full_name)
@@ -500,7 +503,8 @@ class FieldDescriptor(DescriptorBase):
   def __init__(self, name, full_name, index, number, type, cpp_type, label,
                default_value, message_type, enum_type, containing_type,
                is_extension, extension_scope, options=None,
-               has_default_value=True, containing_oneof=None, json_name=None):
+               has_default_value=True, containing_oneof=None, json_name=None,
+               file=None):
     """The arguments are as described in the description of FieldDescriptor
     attributes above.
 
@@ -511,6 +515,7 @@ class FieldDescriptor(DescriptorBase):
     super(FieldDescriptor, self).__init__(options, 'FieldOptions')
     self.name = name
     self.full_name = full_name
+    self.file = file
     self._camelcase_name = None
     if json_name is None:
       self.json_name = _ToJsonName(name)

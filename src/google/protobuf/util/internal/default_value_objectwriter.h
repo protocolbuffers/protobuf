@@ -172,7 +172,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // If this node is a leaf (has data), writes the current node to the
     // ObjectWriter; if not, then recursively writes the children to the
     // ObjectWriter.
-    void WriteTo(ObjectWriter* ow);
+    virtual void WriteTo(ObjectWriter* ow);
 
     // Accessors
     const string& name() const { return name_; }
@@ -261,6 +261,10 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // Creates a DataPiece containing the default value of the type of the field.
   static DataPiece CreateDefaultDataPieceForField(
       const google::protobuf::Field& field, const TypeInfo* typeinfo);
+
+ protected:
+  // Returns a pointer to current Node in tree.
+  Node* current() { return current_; }
 
  private:
   // Populates children of "node" if it is an "any" Node and its real type has

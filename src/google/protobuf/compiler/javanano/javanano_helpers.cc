@@ -428,9 +428,9 @@ string DefaultValue(const Params& params, const FieldDescriptor* field) {
              "L";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
-      if (value == numeric_limits<double>::infinity()) {
+      if (value == std::numeric_limits<double>::infinity()) {
         return "Double.POSITIVE_INFINITY";
-      } else if (value == -numeric_limits<double>::infinity()) {
+      } else if (value == -std::numeric_limits<double>::infinity()) {
         return "Double.NEGATIVE_INFINITY";
       } else if (value != value) {
         return "Double.NaN";
@@ -440,9 +440,9 @@ string DefaultValue(const Params& params, const FieldDescriptor* field) {
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
       float value = field->default_value_float();
-      if (value == numeric_limits<float>::infinity()) {
+      if (value == std::numeric_limits<float>::infinity()) {
         return "Float.POSITIVE_INFINITY";
-      } else if (value == -numeric_limits<float>::infinity()) {
+      } else if (value == -std::numeric_limits<float>::infinity()) {
         return "Float.NEGATIVE_INFINITY";
       } else if (value != value) {
         return "Float.NaN";
@@ -567,7 +567,7 @@ string GenerateDifferentBit(int bit_index) {
 }
 
 void SetBitOperationVariables(const string name,
-    int bitIndex, map<string, string>* variables) {
+    int bitIndex, std::map<string, string>* variables) {
   (*variables)["get_" + name] = GenerateGetBit(bitIndex);
   (*variables)["set_" + name] = GenerateSetBit(bitIndex);
   (*variables)["clear_" + name] = GenerateClearBit(bitIndex);

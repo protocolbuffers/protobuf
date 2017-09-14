@@ -1558,7 +1558,7 @@ public class JsonFormat {
         BigDecimal value = new BigDecimal(json.getAsString());
         return value.longValueExact();
       } catch (Exception e) {
-        throw new InvalidProtocolBufferException("Not an int32 value: " + json);
+        throw new InvalidProtocolBufferException("Not an int64 value: " + json);
       }
     }
 
@@ -1686,7 +1686,11 @@ public class JsonFormat {
     }
 
     private ByteString parseBytes(JsonElement json) throws InvalidProtocolBufferException {
-      return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
+      try {
+        return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
+      } catch (IllegalArgumentException e) {
+        return ByteString.copyFrom(BaseEncoding.base64Url().decode(json.getAsString()));
+      }
     }
 
     private EnumValueDescriptor parseEnum(EnumDescriptor enumDescriptor, JsonElement json)

@@ -6,12 +6,12 @@ require_once('test_util.php');
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
 use Foo\TestPackedMessage;
-use Google\Protobuf\Internal\InputStream;
+use Google\Protobuf\Internal\CodedInputStream;
 use Google\Protobuf\Internal\FileDescriptorSet;
 use Google\Protobuf\Internal\GPBLabel;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\OutputStream;
+use Google\Protobuf\Internal\CodedOutputStream;
 
 class ImplementationTest extends TestBase
 {
@@ -21,17 +21,17 @@ class ImplementationTest extends TestBase
         $value = null;
 
         // Positive number.
-        $input = new InputStream(hex2bin("01"));
+        $input = new CodedInputStream(hex2bin("01"));
         GPBWire::readInt32($input, $value);
         $this->assertSame(1, $value);
 
         // Negative number.
-        $input = new InputStream(hex2bin("ffffffff0f"));
+        $input = new CodedInputStream(hex2bin("ffffffff0f"));
         GPBWire::readInt32($input, $value);
         $this->assertSame(-1, $value);
 
         // Discard overflow bits.
-        $input = new InputStream(hex2bin("ffffffff7f"));
+        $input = new CodedInputStream(hex2bin("ffffffff7f"));
         GPBWire::readInt32($input, $value);
         $this->assertSame(-1, $value);
     }
@@ -41,17 +41,17 @@ class ImplementationTest extends TestBase
         $value = null;
 
         // Positive number.
-        $input = new InputStream(hex2bin("01"));
+        $input = new CodedInputStream(hex2bin("01"));
         GPBWire::readUint32($input, $value);
         $this->assertSame(1, $value);
 
         // Max uint32.
-        $input = new InputStream(hex2bin("ffffffff0f"));
+        $input = new CodedInputStream(hex2bin("ffffffff0f"));
         GPBWire::readUint32($input, $value);
         $this->assertSame(-1, $value);
 
         // Discard overflow bits.
-        $input = new InputStream(hex2bin("ffffffff7f"));
+        $input = new CodedInputStream(hex2bin("ffffffff7f"));
         GPBWire::readUint32($input, $value);
         $this->assertSame(-1, $value);
     }
@@ -61,17 +61,17 @@ class ImplementationTest extends TestBase
         $value = null;
 
         // Positive number.
-        $input = new InputStream(hex2bin("01"));
+        $input = new CodedInputStream(hex2bin("01"));
         GPBWire::readInt64($input, $value);
         $this->assertEquals(1, $value);
 
         // Negative number.
-        $input = new InputStream(hex2bin("ffffffffffffffffff01"));
+        $input = new CodedInputStream(hex2bin("ffffffffffffffffff01"));
         GPBWire::readInt64($input, $value);
         $this->assertEquals(-1, $value);
 
         // Discard overflow bits.
-        $input = new InputStream(hex2bin("ffffffffffffffffff0f"));
+        $input = new CodedInputStream(hex2bin("ffffffffffffffffff0f"));
         GPBWire::readInt64($input, $value);
         $this->assertEquals(-1, $value);
     }
@@ -81,17 +81,17 @@ class ImplementationTest extends TestBase
         $value = null;
 
         // Positive number.
-        $input = new InputStream(hex2bin("01"));
+        $input = new CodedInputStream(hex2bin("01"));
         GPBWire::readUint64($input, $value);
         $this->assertEquals(1, $value);
 
         // Negative number.
-        $input = new InputStream(hex2bin("FFFFFFFFFFFFFFFFFF01"));
+        $input = new CodedInputStream(hex2bin("FFFFFFFFFFFFFFFFFF01"));
         GPBWire::readUint64($input, $value);
         $this->assertEquals(-1, $value);
 
         // Discard overflow bits.
-        $input = new InputStream(hex2bin("FFFFFFFFFFFFFFFFFF0F"));
+        $input = new CodedInputStream(hex2bin("FFFFFFFFFFFFFFFFFF0F"));
         GPBWire::readUint64($input, $value);
         $this->assertEquals(-1, $value);
     }
@@ -100,15 +100,15 @@ class ImplementationTest extends TestBase
     {
         $value = null;
 
-        $input = new InputStream(hex2bin("00"));
+        $input = new CodedInputStream(hex2bin("00"));
         GPBWire::readSint32($input, $value);
         $this->assertSame(0, $value);
 
-        $input = new InputStream(hex2bin("01"));
+        $input = new CodedInputStream(hex2bin("01"));
         GPBWire::readSint32($input, $value);
         $this->assertSame(-1, $value);
 
-        $input = new InputStream(hex2bin("02"));
+        $input = new CodedInputStream(hex2bin("02"));
         GPBWire::readSint32($input, $value);
         $this->assertSame(1, $value);
     }
@@ -117,15 +117,15 @@ class ImplementationTest extends TestBase
     {
         $value = null;
 
-        $input = new InputStream(hex2bin("00"));
+        $input = new CodedInputStream(hex2bin("00"));
         GPBWire::readSint64($input, $value);
         $this->assertEquals(0, $value);
 
-        $input = new InputStream(hex2bin("01"));
+        $input = new CodedInputStream(hex2bin("01"));
         GPBWire::readSint64($input, $value);
         $this->assertEquals(-1, $value);
 
-        $input = new InputStream(hex2bin("02"));
+        $input = new CodedInputStream(hex2bin("02"));
         GPBWire::readSint64($input, $value);
         $this->assertEquals(1, $value);
     }
@@ -133,7 +133,7 @@ class ImplementationTest extends TestBase
     public function testReadFixed32()
     {
         $value = null;
-        $input = new InputStream(hex2bin("12345678"));
+        $input = new CodedInputStream(hex2bin("12345678"));
         GPBWire::readFixed32($input, $value);
         $this->assertSame(0x78563412, $value);
     }
@@ -141,7 +141,7 @@ class ImplementationTest extends TestBase
     public function testReadFixed64()
     {
         $value = null;
-        $input = new InputStream(hex2bin("1234567812345678"));
+        $input = new CodedInputStream(hex2bin("1234567812345678"));
         GPBWire::readFixed64($input, $value);
         if (PHP_INT_SIZE == 4) {
             $this->assertSame("8671175386481439762", $value);
@@ -153,7 +153,7 @@ class ImplementationTest extends TestBase
     public function testReadSfixed32()
     {
         $value = null;
-        $input = new InputStream(hex2bin("12345678"));
+        $input = new CodedInputStream(hex2bin("12345678"));
         GPBWire::readSfixed32($input, $value);
         $this->assertSame(0x78563412, $value);
     }
@@ -161,7 +161,7 @@ class ImplementationTest extends TestBase
     public function testReadFloat()
     {
         $value = null;
-        $input = new InputStream(hex2bin("0000803F"));
+        $input = new CodedInputStream(hex2bin("0000803F"));
         GPBWire::readFloat($input, $value);
         $this->assertSame(1.0, $value);
     }
@@ -170,11 +170,11 @@ class ImplementationTest extends TestBase
     {
         $value = null;
 
-        $input = new InputStream(hex2bin("00"));
+        $input = new CodedInputStream(hex2bin("00"));
         GPBWire::readBool($input, $value);
         $this->assertSame(false, $value);
 
-        $input = new InputStream(hex2bin("01"));
+        $input = new CodedInputStream(hex2bin("01"));
         GPBWire::readBool($input, $value);
         $this->assertSame(true, $value);
     }
@@ -182,7 +182,7 @@ class ImplementationTest extends TestBase
     public function testReadDouble()
     {
         $value = null;
-        $input = new InputStream(hex2bin("000000000000F03F"));
+        $input = new CodedInputStream(hex2bin("000000000000F03F"));
         GPBWire::readDouble($input, $value);
         $this->assertSame(1.0, $value);
     }
@@ -190,7 +190,7 @@ class ImplementationTest extends TestBase
     public function testReadSfixed64()
     {
         $value = null;
-        $input = new InputStream(hex2bin("1234567812345678"));
+        $input = new CodedInputStream(hex2bin("1234567812345678"));
         GPBWire::readSfixed64($input, $value);
         if (PHP_INT_SIZE == 4) {
             $this->assertSame("8671175386481439762", $value);
@@ -207,8 +207,7 @@ class ImplementationTest extends TestBase
         $this->assertSame(3, GPBWire::zigZagEncode32(-2));
         $this->assertSame(0x7FFFFFFE, GPBWire::zigZagEncode32(0x3FFFFFFF));
         $this->assertSame(0x7FFFFFFF, GPBWire::zigZagEncode32(0xC0000000));
-        $this->assertSame(-2, GPBWire::zigZagEncode32(0x7FFFFFFF));
-        $this->assertSame(-1, GPBWire::zigZagEncode32(0x80000000));
+        $this->assertSame(0x7FFFFFFF, GPBWire::zigZagEncode32(-1073741824));
 
         $this->assertSame(0,  GPBWire::zigZagDecode32(0));
         $this->assertSame(-1, GPBWire::zigZagDecode32(1));
@@ -220,6 +219,8 @@ class ImplementationTest extends TestBase
         $this->assertSame((int)-2147483648,GPBWire::zigZagDecode32(0xFFFFFFFF));
 
         if (PHP_INT_SIZE == 4) {
+            $this->assertSame(-2, GPBWire::zigZagEncode32(0x7FFFFFFF));
+            $this->assertSame(-1, GPBWire::zigZagEncode32(0x80000000));
             $this->assertSame('0', GPBWire::zigZagEncode64(0));
             $this->assertSame('1', GPBWire::zigZagEncode64(-1));
             $this->assertSame('2', GPBWire::zigZagEncode64(1));
@@ -250,6 +251,8 @@ class ImplementationTest extends TestBase
             $this->assertSame('1', GPBWire::zigZagDecode64(2));
             $this->assertSame('-2', GPBWire::zigZagDecode64(3));
         } else {
+            $this->assertSame(4294967294, GPBWire::zigZagEncode32(0x7FFFFFFF));
+            $this->assertSame(4294967295, GPBWire::zigZagEncode32(0x80000000));
             $this->assertSame(0, GPBWire::zigZagEncode64(0));
             $this->assertSame(1, GPBWire::zigZagEncode64(-1));
             $this->assertSame(2, GPBWire::zigZagEncode64(1));
@@ -330,19 +333,19 @@ class ImplementationTest extends TestBase
         $var = 0;
 
         // Empty buffer.
-        $input = new InputStream(hex2bin(''));
+        $input = new CodedInputStream(hex2bin(''));
         $this->assertFalse($input->readVarint64($var));
 
         // The largest varint is 10 bytes long.
-        $input = new InputStream(hex2bin('8080808080808080808001'));
+        $input = new CodedInputStream(hex2bin('8080808080808080808001'));
         $this->assertFalse($input->readVarint64($var));
 
         // Corrupted varint.
-        $input = new InputStream(hex2bin('808080'));
+        $input = new CodedInputStream(hex2bin('808080'));
         $this->assertFalse($input->readVarint64($var));
 
         // Normal case.
-        $input = new InputStream(hex2bin('808001'));
+        $input = new CodedInputStream(hex2bin('808001'));
         $this->assertTrue($input->readVarint64($var));
         if (PHP_INT_SIZE == 4) {
             $this->assertSame('16384', $var);
@@ -352,7 +355,7 @@ class ImplementationTest extends TestBase
         $this->assertFalse($input->readVarint64($var));
 
         // Read two varint.
-        $input = new InputStream(hex2bin('808001808002'));
+        $input = new CodedInputStream(hex2bin('808001808002'));
         $this->assertTrue($input->readVarint64($var));
         if (PHP_INT_SIZE == 4) {
             $this->assertSame('16384', $var);
@@ -390,7 +393,7 @@ class ImplementationTest extends TestBase
         );
 
         foreach ($testVals as $original => $encoded) {
-            $input = new InputStream(hex2bin($encoded));
+            $input = new CodedInputStream(hex2bin($encoded));
             $this->assertTrue($input->readVarint64($var));
             $this->assertEquals($original, $var);
         }
@@ -401,25 +404,25 @@ class ImplementationTest extends TestBase
         $var = 0;
 
         // Empty buffer.
-        $input = new InputStream(hex2bin(''));
+        $input = new CodedInputStream(hex2bin(''));
         $this->assertFalse($input->readVarint32($var));
 
         // The largest varint is 10 bytes long.
-        $input = new InputStream(hex2bin('8080808080808080808001'));
+        $input = new CodedInputStream(hex2bin('8080808080808080808001'));
         $this->assertFalse($input->readVarint32($var));
 
         // Corrupted varint.
-        $input = new InputStream(hex2bin('808080'));
+        $input = new CodedInputStream(hex2bin('808080'));
         $this->assertFalse($input->readVarint32($var));
 
         // Normal case.
-        $input = new InputStream(hex2bin('808001'));
+        $input = new CodedInputStream(hex2bin('808001'));
         $this->assertTrue($input->readVarint32($var));
         $this->assertSame(16384, $var);
         $this->assertFalse($input->readVarint32($var));
 
         // Read two varint.
-        $input = new InputStream(hex2bin('808001808002'));
+        $input = new CodedInputStream(hex2bin('808001808002'));
         $this->assertTrue($input->readVarint32($var));
         $this->assertSame(16384, $var);
         $this->assertTrue($input->readVarint32($var));
@@ -427,7 +430,7 @@ class ImplementationTest extends TestBase
         $this->assertFalse($input->readVarint32($var));
 
         // Read a 64-bit integer. High-order bits should be discarded.
-        $input = new InputStream(hex2bin('808081808001'));
+        $input = new CodedInputStream(hex2bin('808081808001'));
         $this->assertTrue($input->readVarint32($var));
         $this->assertSame(16384, $var);
         $this->assertFalse($input->readVarint32($var));
@@ -435,7 +438,7 @@ class ImplementationTest extends TestBase
 
     public function testReadTag()
     {
-        $input = new InputStream(hex2bin('808001'));
+        $input = new CodedInputStream(hex2bin('808001'));
         $tag = $input->readTag();
         $this->assertSame(16384, $tag);
         $tag = $input->readTag();
@@ -444,7 +447,7 @@ class ImplementationTest extends TestBase
 
     public function testPushPopLimit()
     {
-        $input = new InputStream(hex2bin('808001'));
+        $input = new CodedInputStream(hex2bin('808001'));
         $old_limit = $input->pushLimit(0);
         $tag = $input->readTag();
         $this->assertSame(0, $tag);
@@ -455,7 +458,7 @@ class ImplementationTest extends TestBase
 
     public function testReadRaw()
     {
-        $input = new InputStream(hex2bin('808001'));
+        $input = new CodedInputStream(hex2bin('808001'));
         $buffer = null;
 
         $this->assertTrue($input->readRaw(3, $buffer));
@@ -466,33 +469,33 @@ class ImplementationTest extends TestBase
 
     public function testWriteVarint32()
     {
-        $output = new OutputStream(3);
-        $output->writeVarint32(16384);
+        $output = new CodedOutputStream(3);
+        $output->writeVarint32(16384, true);
         $this->assertSame(hex2bin('808001'), $output->getData());
 
         // Negative numbers are padded to be compatible with int64.
-        $output = new OutputStream(10);
-        $output->writeVarint32(-43);
+        $output = new CodedOutputStream(10);
+        $output->writeVarint32(-43, false);
         $this->assertSame(hex2bin('D5FFFFFFFFFFFFFFFF01'), $output->getData());
     }
 
     public function testWriteVarint64()
     {
-        $output = new OutputStream(10);
+        $output = new CodedOutputStream(10);
         $output->writeVarint64(-43);
         $this->assertSame(hex2bin('D5FFFFFFFFFFFFFFFF01'), $output->getData());
     }
 
     public function testWriteLittleEndian32()
     {
-        $output = new OutputStream(4);
+        $output = new CodedOutputStream(4);
         $output->writeLittleEndian32(46);
         $this->assertSame(hex2bin('2E000000'), $output->getData());
     }
 
     public function testWriteLittleEndian64()
     {
-        $output = new OutputStream(8);
+        $output = new CodedOutputStream(8);
         $output->writeLittleEndian64(47);
         $this->assertSame(hex2bin('2F00000000000000'), $output->getData());
     }

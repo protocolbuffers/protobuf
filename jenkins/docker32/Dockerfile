@@ -98,7 +98,7 @@ RUN composer config -g -- secure-http false
 RUN cd /tmp && \
   git clone https://github.com/google/protobuf.git && \
   cd protobuf/php && \
-  git reset --hard 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
+  git reset --hard 49b44bff2b6257a119f9c6a342d6151c736586b8 && \
   ln -sfn /usr/local/php-5.5/bin/php /usr/bin/php && \
   ln -sfn /usr/local/php-5.5/bin/php-config /usr/bin/php-config && \
   ln -sfn /usr/local/php-5.5/bin/phpize /usr/bin/phpize && \
