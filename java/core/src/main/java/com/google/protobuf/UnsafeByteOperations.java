@@ -98,6 +98,17 @@ public final class UnsafeByteOperations {
   }
 
   /**
+   * An unsafe operation that returns a {@link ByteString} that is backed by the provided buffer.
+   * @param buffer the ByteInput buffer to be wrapped
+   * @param offset the offset of the wrapped byteinput
+   * @param length the number of bytes of the byteinput
+   * @return a {@link ByteString} backed by the provided buffer
+   */
+  public static ByteString unsafeWrap(ByteInput buffer, int offset, int len) {
+    return ByteString.wrap(buffer, offset, len);
+  }
+
+  /**
    * Writes the given {@link ByteString} to the provided {@link ByteOutput}. Calling this method may
    * result in multiple operations on the target {@link ByteOutput}
    * (i.e. for roped {@link ByteString}s).
