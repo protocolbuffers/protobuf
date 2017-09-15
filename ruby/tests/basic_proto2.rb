@@ -214,6 +214,14 @@ module BasicTestProto2
       m.clear_optional_msg
       assert_equal nil, m.optional_msg
       assert_false m.has_optional_msg?
+
+      m.optional_msg = TestMessage2.new(:foo => 42)
+      assert_equal TestMessage2.new(:foo => 42), m.optional_msg
+      assert_true TestMessageDefaults.descriptor.lookup('optional_msg').has?(m)
+
+      TestMessageDefaults.descriptor.lookup('optional_msg').clear(m)
+      assert_equal nil, m.optional_msg
+      assert_false TestMessageDefaults.descriptor.lookup('optional_msg').has?(m)
     end
 
     def test_setters

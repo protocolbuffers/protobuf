@@ -637,7 +637,8 @@ void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "submsg_name", FieldDescriptor_submsg_name, 0);
   rb_define_method(klass, "submsg_name=", FieldDescriptor_submsg_name_set, 1);
   rb_define_method(klass, "subtype", FieldDescriptor_subtype, 0);
-  rb_define_method(klass, "has", FieldDescriptor_has, 1);
+  rb_define_method(klass, "has?", FieldDescriptor_has, 1);
+  rb_define_method(klass, "clear", FieldDescriptor_clear, 1);
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
   cFieldDescriptor = klass;
@@ -1043,7 +1044,7 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
 
 /*
  * call-seq:
- *     FieldDescriptor.has(message) => boolean
+ *     FieldDescriptor.has?(message) => boolean
  *
  * Returns whether the value is set on the given message. Raises an
  * exception when calling with proto syntax 3.
@@ -1055,10 +1056,30 @@ VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(rb_eTypeError, "has method called on wrong message type");
   } else if (!upb_fielddef_haspresence(self->fielddef)) {
-    rb_raise(rb_eArgError, "You cannot check if a field is presence on this field type");
+    rb_raise(rb_eArgError, "does not track presence");
   }
 
   return layout_has(msg->descriptor->layout, Message_data(msg), self->fielddef);
+}
+
+/*
+ * call-seq:
+ *     FieldDescriptor.clear(message)
+ *
+ * Clears the field from the message if it's set.
+ */
+VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
+  DEFINE_SELF(FieldDescriptor, self, _self);
+  MessageHeader* msg;
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+  if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
+    rb_raise(rb_eTypeError, "has method called on wrong message type");
+  } else if (!upb_fielddef_haspresence(self->fielddef)) {
+    rb_raise(rb_eArgError, "does not track presence and cannot be cleared");
+  }
+
+  layout_clear(msg->descriptor->layout, Message_data(msg), self->fielddef);
+  return Qnil;
 }
 
 /*

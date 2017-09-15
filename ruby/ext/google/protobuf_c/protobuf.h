@@ -234,6 +234,7 @@ VALUE FieldDescriptor_submsg_name(VALUE _self);
 VALUE FieldDescriptor_submsg_name_set(VALUE _self, VALUE value);
 VALUE FieldDescriptor_subtype(VALUE _self);
 VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb);
+VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb);
 VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb);
 VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value);
 upb_fieldtype_t ruby_to_fieldtype(VALUE type);
