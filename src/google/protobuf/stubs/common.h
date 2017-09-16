@@ -128,23 +128,20 @@ std::string LIBPROTOBUF_EXPORT VersionString(int version);
 
 }  // namespace internal
 
+#define GOOGLE_PROTOBUF_VERIFY_VERSION_FOR(_MSG_OR_FILE_NAME)             \
+  ::google::protobuf::internal::VerifyVersion(                            \
+    GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION,         \
+    (_MSG_OR_FILE_NAME) )
+
 // Place this macro in your main() function (or somewhere before you attempt
 // to use the protobuf library) to verify that the version you link against
 // matches the headers you compiled against.  If a version mismatch is
 // detected, the process will abort.
-// NOTE: This macro called by InitDefaultsImpl in all .pb.cc files.
+// NOTE: uses __FILE__ macro, so the compiled binary will contain string
+// of source filename (potentially entire path).
 
-#ifdef NDEBUG
 #define GOOGLE_PROTOBUF_VERIFY_VERSION                                    \
-  ::google::protobuf::internal::VerifyVersion(                            \
-    GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION,         \
-    "" /* filename omitted when NDEBUG defined */ )
-#else // NDEBUG
-#define GOOGLE_PROTOBUF_VERIFY_VERSION                                    \
-  ::google::protobuf::internal::VerifyVersion(                            \
-    GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION,         \
-    __FILE__)
-#endif // NDEBUG
+           GOOGLE_PROTOBUF_VERIFY_VERSION_FOR(__FILE__)
 
 
 // ===================================================================
