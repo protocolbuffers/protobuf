@@ -195,7 +195,7 @@ void TableStruct::Shutdown() {
 }
 
 void TableStruct::InitDefaultsImpl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  GOOGLE_PROTOBUF_VERIFY_VERSION_FOR("google/protobuf/wrappers");
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _DoubleValue_default_instance_.DefaultConstruct();

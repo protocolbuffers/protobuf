@@ -91,7 +91,7 @@ void TableStruct::Shutdown() {
 }
 
 void TableStruct::InitDefaultsImpl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  GOOGLE_PROTOBUF_VERIFY_VERSION_FOR("google/protobuf/field_mask");
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _FieldMask_default_instance_.DefaultConstruct();
