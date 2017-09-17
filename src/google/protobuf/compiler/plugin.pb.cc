@@ -153,7 +153,7 @@ void TableStruct::Shutdown() {
 }
 
 void TableStruct::InitDefaultsImpl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  GOOGLE_PROTOBUF_VERIFY_VERSION_FOR("google/protobuf/compiler/plugin");
 
   ::google::protobuf::internal::InitProtobufDefaults();
   ::google::protobuf::protobuf_google_2fprotobuf_2fdescriptor_2eproto::InitDefaults();

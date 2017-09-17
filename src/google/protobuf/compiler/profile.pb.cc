@@ -131,7 +131,7 @@ void TableStruct::Shutdown() {
 }
 
 void TableStruct::InitDefaultsImpl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  GOOGLE_PROTOBUF_VERIFY_VERSION_FOR("google/protobuf/compiler/profile");
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _FieldAccessInfo_default_instance_.DefaultConstruct();

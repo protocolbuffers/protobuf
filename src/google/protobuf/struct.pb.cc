@@ -137,7 +137,7 @@ void TableStruct::Shutdown() {
 }
 
 void TableStruct::InitDefaultsImpl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  GOOGLE_PROTOBUF_VERIFY_VERSION_FOR("google/protobuf/struct");
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _Struct_FieldsEntry_default_instance_.DefaultConstruct();

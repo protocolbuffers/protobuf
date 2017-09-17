@@ -92,7 +92,7 @@ void TableStruct::Shutdown() {
 }
 
 void TableStruct::InitDefaultsImpl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  GOOGLE_PROTOBUF_VERIFY_VERSION_FOR("google/protobuf/any");
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _Any_default_instance_.DefaultConstruct();

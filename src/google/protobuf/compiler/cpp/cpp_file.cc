@@ -767,7 +767,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // -----------------------------------------------------------------
 
   // Now generate the InitDefaultsImpl() function.
-  // pass "FirstMessageName" or "FileName.pb.cc" to VerifyVersion()
+  // pass basename of .proto file to VerifyVersion()
   // rather than __FILE__, which might include entire path string in binary.
   string message_or_file_name = (message_generators_.size() == 0 ? file_->name() : ClassName(message_generators_[0]->descriptor_, false));
   printer->Print(
@@ -775,7 +775,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       "  GOOGLE_PROTOBUF_VERIFY_VERSION_FOR(\"$name$\");\n\n"
       // Force initialization of primitive values we depend on.
       "  ::google::protobuf::internal::InitProtobufDefaults();\n",
-      "name", message_or_file_name);
+      "name", StripProto(file_->name()));
 
   printer->Indent();
 

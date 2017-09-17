@@ -607,7 +607,7 @@ void TableStruct::Shutdown() {
 }
 
 void TableStruct::InitDefaultsImpl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  GOOGLE_PROTOBUF_VERIFY_VERSION_FOR("google/protobuf/descriptor");
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _FileDescriptorSet_default_instance_.DefaultConstruct();
