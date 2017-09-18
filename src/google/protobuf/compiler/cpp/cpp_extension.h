@@ -67,9 +67,6 @@ class ExtensionGenerator {
   // Source file stuff.
   void GenerateDefinition(io::Printer* printer);
 
-  // Generate code to register the extension.
-  void GenerateRegistration(io::Printer* printer);
-
  private:
   const FieldDescriptor* descriptor_;
   string type_traits_;

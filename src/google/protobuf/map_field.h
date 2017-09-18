@@ -217,8 +217,9 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
   // Define message type for internal repeated field.
   typedef Derived EntryType;
-  typedef MapEntryLite<Key, T, kKeyFieldType, kValueFieldType,
-                       default_enum_value> EntryLiteType;
+  typedef MapEntryLite<Derived, Key, T, kKeyFieldType, kValueFieldType,
+                       default_enum_value>
+      EntryLiteType;
 
   // Define abbreviation for parent MapFieldLite
   typedef MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType,
@@ -295,11 +296,13 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapField);
 };
 
-template <typename MEntry>
-struct MapEntryToMapField {
-  typedef DeconstructMapEntry<typename MEntry::SuperType> T;
-  typedef MapField<MEntry, typename T::Key, typename T::Value, T::kKeyFieldType,
-                   T::kValueFieldType, T::default_enum_value>
+template <typename T, typename Key, typename Value,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
+struct MapEntryToMapField<MapEntry<T, Key, Value, kKeyFieldType,
+                                   kValueFieldType, default_enum_value> > {
+  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType,
+                   default_enum_value>
       MapFieldType;
 };
 

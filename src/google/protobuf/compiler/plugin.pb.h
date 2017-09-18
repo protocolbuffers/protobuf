@@ -37,6 +37,33 @@
 #ifdef minor
 #undef minor
 #endif
+
+namespace protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
+// Internal implementation detail -- do not use these members.
+struct LIBPROTOC_EXPORT TableStruct {
+  static const ::google::protobuf::internal::ParseTableField entries[];
+  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
+  static const ::google::protobuf::internal::ParseTable schema[4];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
+  static const ::google::protobuf::uint32 offsets[];
+};
+void LIBPROTOC_EXPORT AddDescriptors();
+void LIBPROTOC_EXPORT InitDefaultsVersionImpl();
+void LIBPROTOC_EXPORT InitDefaultsVersion();
+void LIBPROTOC_EXPORT InitDefaultsCodeGeneratorRequestImpl();
+void LIBPROTOC_EXPORT InitDefaultsCodeGeneratorRequest();
+void LIBPROTOC_EXPORT InitDefaultsCodeGeneratorResponse_FileImpl();
+void LIBPROTOC_EXPORT InitDefaultsCodeGeneratorResponse_File();
+void LIBPROTOC_EXPORT InitDefaultsCodeGeneratorResponseImpl();
+void LIBPROTOC_EXPORT InitDefaultsCodeGeneratorResponse();
+inline void LIBPROTOC_EXPORT InitDefaults() {
+  InitDefaultsVersion();
+  InitDefaultsCodeGeneratorRequest();
+  InitDefaultsCodeGeneratorResponse_File();
+  InitDefaultsCodeGeneratorResponse();
+}
+}  // namespace protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -55,25 +82,9 @@ LIBPROTOC_EXPORT extern VersionDefaultTypeInternal _Version_default_instance_;
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
 namespace google {
 namespace protobuf {
 namespace compiler {
-
-namespace protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
-// Internal implementation detail -- do not call these.
-struct LIBPROTOC_EXPORT TableStruct {
-  static const ::google::protobuf::internal::ParseTableField entries[];
-  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[];
-  static const ::google::protobuf::uint32 offsets[];
-  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
-  static const ::google::protobuf::internal::SerializationTable serialization_table[];
-  static void InitDefaultsImpl();
-};
-void LIBPROTOC_EXPORT AddDescriptors();
-void LIBPROTOC_EXPORT InitDefaults();
-}  // namespace protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto
 
 // ===================================================================
 
@@ -113,6 +124,7 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
   static const ::google::protobuf::Descriptor* descriptor();
   static const Version& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Version* internal_default_instance() {
     return reinterpret_cast<const Version*>(
                &_Version_default_instance_);
@@ -219,7 +231,8 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::int32 major_;
   ::google::protobuf::int32 minor_;
   ::google::protobuf::int32 patch_;
-  friend struct protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::InitDefaultsVersionImpl();
 };
 // -------------------------------------------------------------------
 
@@ -259,6 +272,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorRequest& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const CodeGeneratorRequest* internal_default_instance() {
     return reinterpret_cast<const CodeGeneratorRequest*>(
                &_CodeGeneratorRequest_default_instance_);
@@ -383,7 +397,8 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
   ::google::protobuf::internal::ArenaStringPtr parameter_;
   ::google::protobuf::compiler::Version* compiler_version_;
-  friend struct protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::InitDefaultsCodeGeneratorRequestImpl();
 };
 // -------------------------------------------------------------------
 
@@ -423,6 +438,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorResponse_File& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const CodeGeneratorResponse_File* internal_default_instance() {
     return reinterpret_cast<const CodeGeneratorResponse_File*>(
                &_CodeGeneratorResponse_File_default_instance_);
@@ -535,7 +551,8 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr insertion_point_;
   ::google::protobuf::internal::ArenaStringPtr content_;
-  friend struct protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::InitDefaultsCodeGeneratorResponse_FileImpl();
 };
 // -------------------------------------------------------------------
 
@@ -575,6 +592,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorResponse& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const CodeGeneratorResponse* internal_default_instance() {
     return reinterpret_cast<const CodeGeneratorResponse*>(
                &_CodeGeneratorResponse_default_instance_);
@@ -666,14 +684,14 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
   ::google::protobuf::internal::ArenaStringPtr error_;
-  friend struct protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::InitDefaultsCodeGeneratorResponseImpl();
 };
 // ===================================================================
 
 
 // ===================================================================
 
-#if !PROTOBUF_INLINE_NOT_IN_HEADERS
 #ifdef __GNUC__
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
@@ -1320,7 +1338,6 @@ CodeGeneratorResponse::file() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -1329,7 +1346,6 @@ CodeGeneratorResponse::file() const {
 
 
 // @@protoc_insertion_point(namespace_scope)
-
 
 }  // namespace compiler
 }  // namespace protobuf

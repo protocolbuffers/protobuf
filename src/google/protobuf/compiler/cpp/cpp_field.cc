@@ -61,6 +61,7 @@ using internal::WireFormat;
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<string, string>* variables,
                              const Options& options) {
+  (*variables)["ns"] = Namespace(descriptor);
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["index"] = SimpleItoa(descriptor->index());
   (*variables)["number"] = SimpleItoa(descriptor->number());

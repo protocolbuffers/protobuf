@@ -30,6 +30,24 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
+
+namespace protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto {
+// Internal implementation detail -- do not use these members.
+struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::internal::ParseTableField entries[];
+  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
+  static const ::google::protobuf::internal::ParseTable schema[1];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
+  static const ::google::protobuf::uint32 offsets[];
+};
+void LIBPROTOBUF_EXPORT AddDescriptors();
+void LIBPROTOBUF_EXPORT InitDefaultsSourceContextImpl();
+void LIBPROTOBUF_EXPORT InitDefaultsSourceContext();
+inline void LIBPROTOBUF_EXPORT InitDefaults() {
+  InitDefaultsSourceContext();
+}
+}  // namespace protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto
 namespace google {
 namespace protobuf {
 class SourceContext;
@@ -37,24 +55,8 @@ class SourceContextDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-
 namespace google {
 namespace protobuf {
-
-namespace protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto {
-// Internal implementation detail -- do not call these.
-struct LIBPROTOBUF_EXPORT TableStruct {
-  static const ::google::protobuf::internal::ParseTableField entries[];
-  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[];
-  static const ::google::protobuf::uint32 offsets[];
-  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
-  static const ::google::protobuf::internal::SerializationTable serialization_table[];
-  static void InitDefaultsImpl();
-};
-void LIBPROTOBUF_EXPORT AddDescriptors();
-void LIBPROTOBUF_EXPORT InitDefaults();
-}  // namespace protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto
 
 // ===================================================================
 
@@ -87,6 +89,7 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   static const ::google::protobuf::Descriptor* descriptor();
   static const SourceContext& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const SourceContext* internal_default_instance() {
     return reinterpret_cast<const SourceContext*>(
                &_SourceContext_default_instance_);
@@ -159,14 +162,14 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::ArenaStringPtr file_name_;
   mutable int _cached_size_;
-  friend struct protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::InitDefaultsSourceContextImpl();
 };
 // ===================================================================
 
 
 // ===================================================================
 
-#if !PROTOBUF_INLINE_NOT_IN_HEADERS
 #ifdef __GNUC__
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
@@ -229,10 +232,8 @@ inline void SourceContext::set_allocated_file_name(::std::string* file_name) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
-
 
 }  // namespace protobuf
 }  // namespace google

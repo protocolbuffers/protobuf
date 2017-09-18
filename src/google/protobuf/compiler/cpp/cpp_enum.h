@@ -86,13 +86,10 @@ class EnumGenerator {
 
   // Source file stuff.
 
-  // Generate code that initializes the global variable storing the enum's
-  // descriptor.
-  void GenerateDescriptorInitializer(io::Printer* printer);
-
   // Generate non-inline methods related to the enum, such as IsValidValue().
-  // Goes in the .cc file.
-  void GenerateMethods(io::Printer* printer);
+  // Goes in the .cc file. EnumDescriptors are stored in an array, idx is
+  // the index in this array that corresponds with this enum.
+  void GenerateMethods(int idx, io::Printer* printer);
 
  private:
   const EnumDescriptor* descriptor_;
@@ -100,8 +97,6 @@ class EnumGenerator {
   const Options& options_;
   // whether to generate the *_ARRAYSIZE constant.
   const bool generate_array_size_;
-
-  int index_in_metadata_;
 
   friend class FileGenerator;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);

@@ -42,6 +42,8 @@
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/type_traits.h>
 
+#include <google/protobuf/stubs/port.h>
+
 namespace google {
 
 namespace protobuf {
@@ -131,7 +133,8 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
     // aligned at a multiple of 8 bytes.
     size_t pos;
     size_t size;  // total size of the block.
-    GOOGLE_ATTRIBUTE_ALWAYS_INLINE size_t avail() const { return size - pos; }
+    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+    size_t avail() const { return size - pos; }
     // data follows
   };
 

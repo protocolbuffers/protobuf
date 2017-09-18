@@ -371,6 +371,12 @@ class LIBPROTOBUF_EXPORT Parser {
                           const LocationRecorder& parent_location);
   bool ParseReservedNumbers(DescriptorProto* message,
                             const LocationRecorder& parent_location);
+  bool ParseReserved(EnumDescriptorProto* message,
+                     const LocationRecorder& message_location);
+  bool ParseReservedNames(EnumDescriptorProto* message,
+                          const LocationRecorder& parent_location);
+  bool ParseReservedNumbers(EnumDescriptorProto* message,
+                            const LocationRecorder& parent_location);
 
   // Parse an "extend" declaration.  (See also comments for
   // ParseMessageField().)

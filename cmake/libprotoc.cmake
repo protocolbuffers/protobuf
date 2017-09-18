@@ -11,6 +11,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_map_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_service.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_string_field.cc

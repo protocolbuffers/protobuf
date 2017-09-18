@@ -35,6 +35,7 @@
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 
+import math
 import re
 import six
 import string
@@ -53,8 +54,8 @@ from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import any_test_pb2 as test_extend_any
-from google.protobuf.internal import test_util
 from google.protobuf.internal import message_set_extensions_pb2
+from google.protobuf.internal import test_util
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
 
@@ -371,7 +372,10 @@ class TextFormatTest(TextFormatBase):
   def testParseInvalidUtf8(self, message_module):
     message = message_module.TestAllTypes()
     text = 'repeated_string: "\\xc3\\xc3"'
-    self.assertRaises(text_format.ParseError, text_format.Parse, text, message)
+    with self.assertRaises(text_format.ParseError) as e:
+      text_format.Parse(text, message)
+    self.assertEqual(e.exception.GetLine(), 1)
+    self.assertEqual(e.exception.GetColumn(), 28)
 
   def testParseSingleWord(self, message_module):
     message = message_module.TestAllTypes()
@@ -784,13 +788,14 @@ class Proto2Tests(TextFormatBase):
             '    bin: "\xe0"'
             '    [nested_unknown_ext]: {\n'
             '      i: 23\n'
+            '      x: x\n'
             '      test: "test_string"\n'
             '      floaty_float: -0.315\n'
             '      num: -inf\n'
             '      multiline_str: "abc"\n'
             '          "def"\n'
             '          "xyz."\n'
-            '      [nested_unknown_ext]: <\n'
+            '      [nested_unknown_ext.ext]: <\n'
             '        i: 23\n'
             '        i: 24\n'
             '        pointfloat: .3\n'
@@ -895,6 +900,14 @@ class Proto2Tests(TextFormatBase):
     ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
     self.assertEqual(23, message.message_set.Extensions[ext1].i)
     self.assertEqual('foo', message.message_set.Extensions[ext2].str)
+
+  def testParseBadIdentifier(self):
+    message = unittest_pb2.TestAllTypes()
+    text = ('optional_nested_message { "bb": 1 }')
+    with self.assertRaises(text_format.ParseError) as e:
+      text_format.Parse(text, message)
+    self.assertEqual(str(e.exception),
+                     '1:27 : Expected identifier or number, got "bb".')
 
   def testParseBadExtension(self):
     message = unittest_pb2.TestAllExtensions()
@@ -1095,6 +1108,19 @@ class Proto3Tests(unittest.TestCase):
         ' < data: "string" > '
         '>')
 
+  def testUnknownEnums(self):
+    message = unittest_proto3_arena_pb2.TestAllTypes()
+    message2 = unittest_proto3_arena_pb2.TestAllTypes()
+    message.optional_nested_enum = 999
+    text_string = text_format.MessageToString(message)
+    # TODO(jieluo): proto3 should support numeric unknown enum.
+    with self.assertRaises(text_format.ParseError) as e:
+      text_format.Parse(text_string, message2)
+      self.assertEqual(999, message2.optional_nested_enum)
+    self.assertEqual(str(e.exception),
+                     '1:23 : Enum type "proto3_arena_unittest.TestAllTypes.'
+                     'NestedEnum" has no value with number 999.')
+
   def testMergeExpandedAny(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
@@ -1180,6 +1206,15 @@ class Proto3Tests(unittest.TestCase):
     message.any_value.Unpack(packed_message)
     self.assertEqual('string', packed_message.data)
 
+  def testMergeMissingAnyEndToken(self):
+    message = any_test_pb2.TestAny()
+    text = ('any_value {\n'
+            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '    data: "string"\n')
+    with self.assertRaises(text_format.ParseError) as e:
+      text_format.Merge(text, message)
+    self.assertEqual(str(e.exception), '3:11 : Expected "}".')
+
 
 class TokenizerTest(unittest.TestCase):
 
@@ -1191,7 +1226,7 @@ class TokenizerTest(unittest.TestCase):
             'ID9: 22 ID10: -111111111111111111 ID11: -22\n'
             'ID12: 2222222222222222222 ID13: 1.23456f ID14: 1.2e+2f '
             'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f '
-            'False_bool: False True_bool: True')
+            'False_bool: False True_bool: True X:iNf Y:-inF Z:nAN')
     tokenizer = text_format.Tokenizer(text.splitlines())
     methods = [(tokenizer.ConsumeIdentifier, 'identifier1'), ':',
                (tokenizer.ConsumeString, 'string1'),
@@ -1239,7 +1274,13 @@ class TokenizerTest(unittest.TestCase):
                (tokenizer.ConsumeIdentifier, 'False_bool'), ':',
                (tokenizer.ConsumeBool, False),
                (tokenizer.ConsumeIdentifier, 'True_bool'), ':',
-               (tokenizer.ConsumeBool, True)]
+               (tokenizer.ConsumeBool, True),
+               (tokenizer.ConsumeIdentifier, 'X'), ':',
+               (tokenizer.ConsumeFloat, float('inf')),
+               (tokenizer.ConsumeIdentifier, 'Y'), ':',
+               (tokenizer.ConsumeFloat, float('-inf')),
+               (tokenizer.ConsumeIdentifier, 'Z'), ':',
+               (tokenizer.ConsumeFloat, float('nan'))]
 
     i = 0
     while not tokenizer.AtEnd():
@@ -1248,6 +1289,8 @@ class TokenizerTest(unittest.TestCase):
         token = tokenizer.token
         self.assertEqual(token, m)
         tokenizer.NextToken()
+      elif isinstance(m[1], float) and math.isnan(m[1]):
+        self.assertTrue(math.isnan(m[0]()))
       else:
         self.assertEqual(m[1], m[0]())
       i += 1
@@ -1266,10 +1309,15 @@ class TokenizerTest(unittest.TestCase):
     self.assertEqual(int64_max + 1, tokenizer.ConsumeInteger())
     self.assertTrue(tokenizer.AtEnd())
 
-    text = '-0 0'
+    text = '-0 0 0 1.2'
     tokenizer = text_format.Tokenizer(text.splitlines())
     self.assertEqual(0, tokenizer.ConsumeInteger())
     self.assertEqual(0, tokenizer.ConsumeInteger())
+    self.assertEqual(True, tokenizer.TryConsumeInteger())
+    self.assertEqual(False, tokenizer.TryConsumeInteger())
+    with self.assertRaises(text_format.ParseError):
+      tokenizer.ConsumeInteger()
+    self.assertEqual(1.2, tokenizer.ConsumeFloat())
     self.assertTrue(tokenizer.AtEnd())
 
   def testConsumeIntegers(self):

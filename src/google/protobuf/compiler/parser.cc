@@ -1540,7 +1540,6 @@ bool Parser::ParseReserved(DescriptorProto* message,
   }
 }
 
-
 bool Parser::ParseReservedNames(DescriptorProto* message,
                                 const LocationRecorder& parent_location) {
   do {
@@ -1591,6 +1590,81 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
     // Users like to specify inclusive ranges, but in code we like the end
     // number to be exclusive.
     ++end;
+
+    range->set_start(start);
+    range->set_end(end);
+    first = false;
+  } while (TryConsume(","));
+
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReserved(EnumDescriptorProto* message,
+                          const LocationRecorder& message_location) {
+  // Parse the declaration.
+  DO(Consume("reserved"));
+  if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    LocationRecorder location(message_location,
+                              DescriptorProto::kReservedNameFieldNumber);
+    return ParseReservedNames(message, location);
+  } else {
+    LocationRecorder location(message_location,
+                              DescriptorProto::kReservedRangeFieldNumber);
+    return ParseReservedNumbers(message, location);
+  }
+}
+
+bool Parser::ParseReservedNames(EnumDescriptorProto* message,
+                                const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, message->reserved_name_size());
+    DO(ConsumeString(message->add_reserved_name(), "Expected enum value."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedNumbers(EnumDescriptorProto* message,
+                                  const LocationRecorder& parent_location) {
+  bool first = true;
+  do {
+    LocationRecorder location(parent_location, message->reserved_range_size());
+
+    EnumDescriptorProto::EnumReservedRange* range =
+        message->add_reserved_range();
+    int start, end;
+    io::Tokenizer::Token start_token;
+    {
+      LocationRecorder start_location(
+          location, EnumDescriptorProto::EnumReservedRange::kStartFieldNumber);
+      start_token = input_->current();
+      DO(ConsumeSignedInteger(&start, (first ?
+                                 "Expected enum value or number range." :
+                                 "Expected enum number range.")));
+    }
+
+    if (TryConsume("to")) {
+      LocationRecorder end_location(
+          location, EnumDescriptorProto::EnumReservedRange::kEndFieldNumber);
+      if (TryConsume("max")) {
+        // This is in the enum descriptor path, which doesn't have the message
+        // set duality to fix up, so it doesn't integrate with the sentinel.
+
+        // Evaluate 'max' to INT_MAX - 1 so that incrementing to create the
+        // exclusive range end doesn't cause an overflow.
+        // Note, this prevents reserving the actual INT_MAX enum value.
+        end = INT_MAX;
+      } else {
+        DO(ConsumeSignedInteger(&end, "Expected integer."));
+      }
+    } else {
+      LocationRecorder end_location(
+          location, EnumDescriptorProto::EnumReservedRange::kEndFieldNumber);
+      end_location.StartAt(start_token);
+      end_location.EndAt(start_token);
+      end = start;
+    }
 
     range->set_start(start);
     range->set_end(end);
@@ -1781,6 +1855,8 @@ bool Parser::ParseEnumStatement(EnumDescriptorProto* enum_type,
                               EnumDescriptorProto::kOptionsFieldNumber);
     return ParseOption(enum_type->mutable_options(), location,
                        containing_file, OPTION_STATEMENT);
+  } else if (LookingAt("reserved")) {
+    return ParseReserved(enum_type, enum_location);
   } else {
     LocationRecorder location(enum_location,
         EnumDescriptorProto::kValueFieldNumber, enum_type->value_size());
@@ -2167,4 +2243,5 @@ void SourceLocationTable::Clear() {
 
 }  // namespace compiler
 }  // namespace protobuf
+
 }  // namespace google

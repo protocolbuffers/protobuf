@@ -744,21 +744,6 @@ TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
   TestUtil::ExpectAllFieldsSet(message1);
 }
 
-#if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
-    !defined(GOOGLE_PROTOBUF_NO_RTTI)
-#ifdef PROTOBUF_HAS_DEATH_TEST
-#ifndef NDEBUG
-
-TEST(GeneratedMessageTest, MergeFromSelf) {
-  unittest::TestAllTypes message;
-  EXPECT_DEATH(message.MergeFrom(message), "pb[.]cc.*Check failed:");
-  EXPECT_DEATH(message.MergeFrom(implicit_cast<const Message&>(message)),
-               "pb[.]cc.*Check failed:");
-}
-
-#endif  // NDEBUG
-#endif  // PROTOBUF_HAS_DEATH_TEST
-#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS || !GOOGLE_PROTOBUF_NO_RTTI
 
 // Test the generated SerializeWithCachedSizesToArray(),
 TEST(GeneratedMessageTest, SerializationToArray) {

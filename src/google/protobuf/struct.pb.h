@@ -34,6 +34,24 @@
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
+
+namespace protobuf_google_2fprotobuf_2fstruct_2eproto {
+// Internal implementation detail -- do not use these members.
+struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::internal::ParseTableField entries[];
+  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
+  static const ::google::protobuf::internal::ParseTable schema[4];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
+  static const ::google::protobuf::uint32 offsets[];
+};
+void LIBPROTOBUF_EXPORT AddDescriptors();
+void LIBPROTOBUF_EXPORT InitDefaultsListValueImpl();
+void LIBPROTOBUF_EXPORT InitDefaultsListValue();
+inline void LIBPROTOBUF_EXPORT InitDefaults() {
+  InitDefaultsListValue();
+}
+}  // namespace protobuf_google_2fprotobuf_2fstruct_2eproto
 namespace google {
 namespace protobuf {
 class ListValue;
@@ -42,32 +60,16 @@ LIBPROTOBUF_EXPORT extern ListValueDefaultTypeInternal _ListValue_default_instan
 class Struct;
 class StructDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern StructDefaultTypeInternal _Struct_default_instance_;
-class Struct_FieldsEntry;
-class Struct_FieldsEntryDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern Struct_FieldsEntryDefaultTypeInternal _Struct_FieldsEntry_default_instance_;
+class Struct_FieldsEntry_DoNotUse;
+class Struct_FieldsEntry_DoNotUseDefaultTypeInternal;
+LIBPROTOBUF_EXPORT extern Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
 class Value;
 class ValueDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern ValueDefaultTypeInternal _Value_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-
 namespace google {
 namespace protobuf {
-
-namespace protobuf_google_2fprotobuf_2fstruct_2eproto {
-// Internal implementation detail -- do not call these.
-struct LIBPROTOBUF_EXPORT TableStruct {
-  static const ::google::protobuf::internal::ParseTableField entries[];
-  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[];
-  static const ::google::protobuf::uint32 offsets[];
-  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
-  static const ::google::protobuf::internal::SerializationTable serialization_table[];
-  static void InitDefaultsImpl();
-};
-void LIBPROTOBUF_EXPORT AddDescriptors();
-void LIBPROTOBUF_EXPORT InitDefaults();
-}  // namespace protobuf_google_2fprotobuf_2fstruct_2eproto
 
 enum NullValue {
   NULL_VALUE = 0,
@@ -91,6 +93,24 @@ inline bool NullValue_Parse(
 }
 // ===================================================================
 
+class Struct_FieldsEntry_DoNotUse : public ::google::protobuf::internal::MapEntry<Struct_FieldsEntry_DoNotUse, 
+    ::std::string, ::google::protobuf::Value,
+    ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+    ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
+    0 > {
+public:
+  typedef ::google::protobuf::internal::MapEntry<Struct_FieldsEntry_DoNotUse, 
+    ::std::string, ::google::protobuf::Value,
+    ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+    ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
+    0 > SuperType;
+  Struct_FieldsEntry_DoNotUse();
+  Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena);
+  void MergeFrom(const Struct_FieldsEntry_DoNotUse& other);
+  static const Struct_FieldsEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(&_Struct_FieldsEntry_DoNotUse_default_instance_); }
+  void MergeFrom(const ::google::protobuf::Message& other) PROTOBUF_FINAL;
+  ::google::protobuf::Metadata GetMetadata() const;
+};
 
 // -------------------------------------------------------------------
 
@@ -129,6 +149,7 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
   static const ::google::protobuf::Descriptor* descriptor();
   static const Struct& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Struct* internal_default_instance() {
     return reinterpret_cast<const Struct*>(
                &_Struct_default_instance_);
@@ -204,35 +225,15 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
   template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  public:
-  class Struct_FieldsEntry : public ::google::protobuf::internal::MapEntry<Struct_FieldsEntry, 
-      ::std::string, ::google::protobuf::Value,
-      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
-      0 > {
-  public:
-    typedef ::google::protobuf::internal::MapEntry<Struct_FieldsEntry, 
-      ::std::string, ::google::protobuf::Value,
-      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
-      0 > SuperType;
-    Struct_FieldsEntry();
-    Struct_FieldsEntry(::google::protobuf::Arena* arena);
-    void MergeFrom(const ::google::protobuf::Message& other) PROTOBUF_FINAL;
-    void MergeFrom(const Struct_FieldsEntry& other);
-    static const Message* internal_default_instance() { return reinterpret_cast<const Message*>(&_Struct_FieldsEntry_default_instance_); }
-    ::google::protobuf::Metadata GetMetadata() const;
-  };
-  private:
   ::google::protobuf::internal::MapField<
-      Struct_FieldsEntry,
+      Struct_FieldsEntry_DoNotUse,
       ::std::string, ::google::protobuf::Value,
       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
       0 > fields_;
-  private:
   mutable int _cached_size_;
-  friend struct protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2fstruct_2eproto::InitDefaultsListValueImpl();
 };
 // -------------------------------------------------------------------
 
@@ -281,6 +282,7 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
     KIND_NOT_SET = 0,
   };
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Value* internal_default_instance() {
     return reinterpret_cast<const Value*>(
                &_Value_default_instance_);
@@ -452,7 +454,8 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   mutable int _cached_size_;
   ::google::protobuf::uint32 _oneof_case_[1];
 
-  friend struct protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2fstruct_2eproto::InitDefaultsListValueImpl();
 };
 // -------------------------------------------------------------------
 
@@ -491,6 +494,7 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
   static const ::google::protobuf::Descriptor* descriptor();
   static const ListValue& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const ListValue* internal_default_instance() {
     return reinterpret_cast<const ListValue*>(
                &_ListValue_default_instance_);
@@ -570,14 +574,14 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
   typedef void DestructorSkippable_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
   mutable int _cached_size_;
-  friend struct protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2fstruct_2eproto::InitDefaultsListValueImpl();
 };
 // ===================================================================
 
 
 // ===================================================================
 
-#if !PROTOBUF_INLINE_NOT_IN_HEADERS
 #ifdef __GNUC__
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
@@ -728,7 +732,8 @@ inline void Value::set_string_value(const char* value,
     set_has_string_value();
     kind_.string_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
-  kind_.string_value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  kind_.string_value_.Set(
+      &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
       reinterpret_cast<const char*>(value), size),
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Value.string_value)
@@ -886,7 +891,7 @@ inline void Value::set_allocated_struct_value(::google::protobuf::Struct* struct
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.struct_value)
 }
-inline  ::google::protobuf::Struct* Value::unsafe_arena_release_struct_value() {
+inline ::google::protobuf::Struct* Value::unsafe_arena_release_struct_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.struct_value)
   if (has_struct_value()) {
     clear_has_kind();
@@ -974,7 +979,7 @@ inline void Value::set_allocated_list_value(::google::protobuf::ListValue* list_
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.list_value)
 }
-inline  ::google::protobuf::ListValue* Value::unsafe_arena_release_list_value() {
+inline ::google::protobuf::ListValue* Value::unsafe_arena_release_list_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.list_value)
   if (has_list_value()) {
     clear_has_kind();
@@ -1040,7 +1045,6 @@ ListValue::values() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -1049,7 +1053,6 @@ ListValue::values() const {
 
 
 // @@protoc_insertion_point(namespace_scope)
-
 
 }  // namespace protobuf
 }  // namespace google

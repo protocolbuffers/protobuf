@@ -741,6 +741,9 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
+  // Returns true if this is a map message type.
+  bool is_map_message_type() const;
+
   const string* name_;
   const string* full_name_;
   const string* lowercase_name_;
@@ -924,11 +927,41 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
   // See Descriptor::DebugStringWithOptions().
   string DebugStringWithOptions(const DebugStringOptions& options) const;
 
-
   // Returns true if this is a placeholder for an unknown enum. This will
   // only be the case if this descriptor comes from a DescriptorPool
   // with AllowUnknownDependencies() set.
   bool is_placeholder() const;
+
+  // Reserved fields -------------------------------------------------
+
+  // A range of reserved field numbers.
+  struct ReservedRange {
+    int start;  // inclusive
+    int end;    // inclusive
+  };
+
+  // The number of reserved ranges in this message type.
+  int reserved_range_count() const;
+  // Gets an reserved range by index, where 0 <= index <
+  // reserved_range_count(). These are returned in the order they were defined
+  // in the .proto file.
+  const EnumDescriptor::ReservedRange* reserved_range(int index) const;
+
+  // Returns true if the number is in one of the reserved ranges.
+  bool IsReservedNumber(int number) const;
+
+  // Returns NULL if no reserved range contains the given number.
+  const EnumDescriptor::ReservedRange*
+      FindReservedRangeContainingNumber(int number) const;
+
+  // The number of reserved field names in this message type.
+  int reserved_name_count() const;
+
+  // Gets a reserved name by index, where 0 <= index < reserved_name_count().
+  const string& reserved_name(int index) const;
+
+  // Returns true if the field name is reserved.
+  bool IsReservedName(const string& name) const;
 
   // Source Location ---------------------------------------------------
 
@@ -976,6 +1009,12 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
 
   int value_count_;
   EnumValueDescriptor* values_;
+
+  int reserved_range_count_;
+  int reserved_name_count_;
+  EnumDescriptor::ReservedRange* reserved_ranges_;
+  const string** reserved_names_;
+
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<EnumDescriptor>() and AllocateArray<EnumDescriptor>() in
   // descriptor.cc and update them to initialize the field.
@@ -1864,6 +1903,10 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, value,
                                const EnumValueDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(EnumDescriptor, EnumOptions)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, is_placeholder, bool)
+PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_range_count, int)
+PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
+                               const EnumDescriptor::ReservedRange*)
+PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
 PROTOBUF_DEFINE_STRING_ACCESSOR(EnumValueDescriptor, name)
 PROTOBUF_DEFINE_STRING_ACCESSOR(EnumValueDescriptor, full_name)
@@ -1935,6 +1978,32 @@ inline const string& Descriptor::reserved_name(int index) const {
   return *reserved_names_[index];
 }
 
+inline bool EnumDescriptor::IsReservedNumber(int number) const {
+  return FindReservedRangeContainingNumber(number) != NULL;
+}
+
+inline bool EnumDescriptor::IsReservedName(const string& name) const {
+  for (int i = 0; i < reserved_name_count(); i++) {
+    if (name == reserved_name(i)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
+// an array of pointers rather than the usual array of objects.
+inline const string& EnumDescriptor::reserved_name(int index) const {
+  return *reserved_names_[index];
+}
+
+inline FieldDescriptor::Type FieldDescriptor::type() const {
+  if (type_once_) {
+    type_once_->Init(&FieldDescriptor::TypeOnceInit, this);
+  }
+  return type_;
+}
+
 inline bool FieldDescriptor::is_required() const {
   return label() == LABEL_REQUIRED;
 }
@@ -1949,6 +2018,10 @@ inline bool FieldDescriptor::is_repeated() const {
 
 inline bool FieldDescriptor::is_packable() const {
   return is_repeated() && IsTypePackable(type());
+}
+
+inline bool FieldDescriptor::is_map() const {
+  return type() == TYPE_MESSAGE && is_map_message_type();
 }
 
 // To save space, index() is computed by looking at the descriptor's position

@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -83,6 +84,7 @@ using google::protobuf::internal::win32::write;
 // Disable the whole test when we use tcmalloc for "draconian" heap checks, in
 // which case tcmalloc will print warnings that fail the plugin tests.
 #if !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
+
 
 namespace {
 
@@ -1558,6 +1560,36 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
 #endif  // !_WIN32
+
+TEST_F(CommandLineInterfaceTest, TestArgumentFile) {
+  // Test parsing multiple input files using an argument file.
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n"
+    "message Bar {}\n");
+  CreateTempFile("arguments.txt",
+                 "--test_out=$tmpdir\n"
+                 "--plug_out=$tmpdir\n"
+                 "--proto_path=$tmpdir\n"
+                 "--direct_dependencies_violation_msg=%s is not imported\n"
+                 "foo.proto\n"
+                 "bar.proto");
+
+  Run("protocol_compiler @$tmpdir/arguments.txt");
+
+  ExpectNoErrors();
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+}
 
 
 // -------------------------------------------------------------------

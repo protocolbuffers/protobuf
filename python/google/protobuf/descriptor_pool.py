@@ -127,9 +127,6 @@ class DescriptorPool(object):
     self._service_descriptors = {}
     self._file_descriptors = {}
     self._toplevel_extensions = {}
-    # TODO(jieluo): Remove _file_desc_by_toplevel_extension when
-    # FieldDescriptor.file is added in code gen.
-    self._file_desc_by_toplevel_extension = {}
     # We store extensions in two two-level mappings: The first key is the
     # descriptor of the message being extended, the second key is the extension
     # full name or its tag number.
@@ -255,11 +252,6 @@ class DescriptorPool(object):
     """
 
     self._AddFileDescriptor(file_desc)
-    # TODO(jieluo): This is a temporary solution for FieldDescriptor.file.
-    # Remove it when FieldDescriptor.file is added in code gen.
-    for extension in file_desc.extensions_by_name.values():
-      self._file_desc_by_toplevel_extension[
-          extension.full_name] = file_desc
 
   def _AddFileDescriptor(self, file_desc):
     """Adds a FileDescriptor to the pool, non-recursively.
@@ -339,7 +331,7 @@ class DescriptorPool(object):
       pass
 
     try:
-      return self._file_desc_by_toplevel_extension[symbol]
+      return self._toplevel_extensions[symbol].file
     except KeyError:
       pass
 
@@ -404,6 +396,23 @@ class DescriptorPool(object):
     message_name, _, field_name = full_name.rpartition('.')
     message_descriptor = self.FindMessageTypeByName(message_name)
     return message_descriptor.fields_by_name[field_name]
+
+  def FindOneofByName(self, full_name):
+    """Loads the named oneof descriptor from the pool.
+
+    Args:
+      full_name: The full name of the oneof descriptor to load.
+
+    Returns:
+      The oneof descriptor for the named oneof.
+
+    Raises:
+      KeyError: if the oneof cannot be found in the pool.
+    """
+    full_name = _NormalizeFullyQualifiedName(full_name)
+    message_name, _, oneof_name = full_name.rpartition('.')
+    message_descriptor = self.FindMessageTypeByName(message_name)
+    return message_descriptor.oneofs_by_name[oneof_name]
 
   def FindExtensionByName(self, full_name):
     """Loads the named extension descriptor from the pool.

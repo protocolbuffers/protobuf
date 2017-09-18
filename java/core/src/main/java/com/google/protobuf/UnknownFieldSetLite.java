@@ -81,7 +81,7 @@ public final class UnknownFieldSetLite {
     System.arraycopy(second.objects, 0, objects, first.count, second.count);
     return new UnknownFieldSetLite(count, tags, objects, true /* isMutable */);
   }
-  
+
   /**
    * The number of elements in the set.
    */
@@ -323,6 +323,7 @@ public final class UnknownFieldSetLite {
 
   // Package private for unsafe experimental runtime.
   void storeField(int tag, Object value) {
+    checkMutable();
     ensureCapacity();
     
     tags[count] = tag;

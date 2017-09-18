@@ -720,14 +720,17 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
                                        map_key, &value);
     ScopedPyObjectPtr key(PyLong_FromVoidPtr(value.MutableMessageValue()));
 
-    // PyDict_DelItem will have key error if the key is not in the map. We do
-    // not want to call PyErr_Clear() which may clear other errors. Thus
-    // PyDict_Contains() check is called before delete.
-    int contains = PyDict_Contains(self->message_dict, key.get());
-    if (contains < 0) {
-      return -1;
-    }
-    if (contains) {
+    PyObject* cmsg_value = PyDict_GetItem(self->message_dict, key.get());
+    if (cmsg_value) {
+      // Need to keep CMessage stay alive if it is still referenced after
+      // deletion. Makes a new message and swaps values into CMessage
+      // instead of just removing.
+      CMessage* cmsg =  reinterpret_cast<CMessage*>(cmsg_value);
+      Message* msg = cmsg->message;
+      cmsg->owner.reset(msg->New());
+      cmsg->message = cmsg->owner.get();
+      cmsg->parent = NULL;
+      msg->GetReflection()->Swap(msg, cmsg->message);
       if (PyDict_DelItem(self->message_dict, key.get()) < 0) {
         return -1;
       }

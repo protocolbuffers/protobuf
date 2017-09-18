@@ -40,6 +40,7 @@ except ImportError:
   import unittest
 
 from google.protobuf import descriptor_pb2
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf import descriptor_database
@@ -130,6 +131,21 @@ class MessageFactoryTest(unittest.TestCase):
       msg1.Extensions[ext2] = 'test2'
       self.assertEqual('test1', msg1.Extensions[ext1])
       self.assertEqual('test2', msg1.Extensions[ext2])
+      self.assertEqual(None,
+                       msg1.Extensions._FindExtensionByNumber(12321))
+      if api_implementation.Type() == 'cpp':
+        # TODO(jieluo): Fix len to return the correct value.
+        # self.assertEqual(2, len(msg1.Extensions))
+        self.assertEqual(len(msg1.Extensions), len(msg1.Extensions))
+        self.assertRaises(TypeError,
+                          msg1.Extensions._FindExtensionByName, 0)
+        self.assertRaises(TypeError,
+                          msg1.Extensions._FindExtensionByNumber, '')
+      else:
+        self.assertEqual(None,
+                         msg1.Extensions._FindExtensionByName(0))
+        self.assertEqual(None,
+                         msg1.Extensions._FindExtensionByNumber(''))
 
   def testDuplicateExtensionNumber(self):
     pool = descriptor_pool.DescriptorPool()

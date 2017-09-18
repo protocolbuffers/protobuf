@@ -252,10 +252,6 @@ final class UnsafeUtil {
     MEMORY_ACCESSOR.putLong(address, value);
   }
 
-  static void copyMemory(long srcAddress, long targetAddress, long length) {
-    MEMORY_ACCESSOR.copyMemory(srcAddress, targetAddress, length);
-  }
-
   /**
    * Gets the offset of the {@code address} field of the given direct {@link ByteBuffer}.
    */
@@ -478,8 +474,6 @@ final class UnsafeUtil {
 
     public abstract void putLong(long address, long value);
 
-    public abstract void copyMemory(long srcAddress, long targetAddress, long length);
-
     public abstract Object getStaticObject(Field field);
     
     public abstract void copyMemory(long srcOffset, byte[] target, long targetIndex, long length);
@@ -561,11 +555,6 @@ final class UnsafeUtil {
     @Override
     public void putDouble(Object target, long offset, double value) {
       unsafe.putDouble(target, offset, value);
-    }
-
-    @Override
-    public void copyMemory(long srcAddress, long targetAddress, long length) {
-      unsafe.copyMemory(srcAddress, targetAddress, length);
     }
     
     @Override 

@@ -82,6 +82,10 @@ class FooUnitTest(unittest.TestCase):
     service_descriptor = unittest_pb2.TestService.GetDescriptor()
     srvc.CallMethod(service_descriptor.methods[1], rpc_controller,
                     unittest_pb2.BarRequest(), MyCallback)
+    self.assertTrue(srvc.GetRequestClass(service_descriptor.methods[1]) is
+                    unittest_pb2.BarRequest)
+    self.assertTrue(srvc.GetResponseClass(service_descriptor.methods[1]) is
+                    unittest_pb2.BarResponse)
     self.assertEqual('Method Bar not implemented.',
                      rpc_controller.failure_message)
     self.assertEqual(None, self.callback_response)

@@ -819,7 +819,7 @@ def MapEncoder(field_descriptor):
   encode_message = MessageEncoder(field_descriptor.number, False, False)
 
   def EncodeField(write, value, deterministic):
-    value_keys = sorted(value.keys()) if deterministic else value.keys()
+    value_keys = sorted(value.keys()) if deterministic else value
     for key in value_keys:
       entry_msg = message_type._concrete_class(key=key, value=value[key])
       encode_message(write, entry_msg, deterministic)

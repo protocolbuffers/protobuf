@@ -890,6 +890,100 @@ jspb.Message.setField = function(msg, fieldNumber, value) {
 
 
 /**
+ * Sets the value of a non-extension integer field of a proto3
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {number} value New value
+ * @protected
+ */
+jspb.Message.setProto3IntField = function(msg, fieldNumber, value) {
+  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, 0);
+};
+
+
+/**
+ * Sets the value of a non-extension floating point field of a proto3
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {number} value New value
+ * @protected
+ */
+jspb.Message.setProto3FloatField = function(msg, fieldNumber, value) {
+  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, 0.0);
+};
+
+
+/**
+ * Sets the value of a non-extension boolean field of a proto3
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {boolean} value New value
+ * @protected
+ */
+jspb.Message.setProto3BooleanField = function(msg, fieldNumber, value) {
+  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, false);
+};
+
+
+/**
+ * Sets the value of a non-extension String field of a proto3
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {string} value New value
+ * @protected
+ */
+jspb.Message.setProto3StringField = function(msg, fieldNumber, value) {
+  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, "");
+};
+
+
+/**
+ * Sets the value of a non-extension Bytes field of a proto3
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {!Uint8Array|string} value New value
+ * @protected
+ */
+jspb.Message.setProto3BytesField = function(msg, fieldNumber, value) {
+  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, "");
+};
+
+
+/**
+ * Sets the value of a non-extension enum field of a proto3
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {number} value New value
+ * @protected
+ */
+jspb.Message.setProto3EnumField = function(msg, fieldNumber, value) {
+  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, 0);
+};
+
+
+
+/**
+ * Sets the value of a non-extension primitive field, with proto3 (non-nullable
+ * primitives) semantics of ignoring values that are equal to the type's
+ * default.
+ * @template T
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {!Uint8Array|string|number|boolean|undefined} value New value
+ * @param {!Uint8Array|string|number|boolean} defaultValue The default value.
+ * @private
+ */
+jspb.Message.setFieldIgnoringDefault_ = function(
+    msg, fieldNumber, value, defaultValue) {
+  if (value != defaultValue) {
+    jspb.Message.setField(msg, fieldNumber, value);
+  } else {
+    msg.array[jspb.Message.getIndex_(msg, fieldNumber)] = null;
+  }
+};
+
+
+/**
  * Adds a value to a repeated, primitive field.
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.

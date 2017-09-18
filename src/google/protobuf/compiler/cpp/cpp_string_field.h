@@ -73,6 +73,7 @@ class StringFieldGenerator : public FieldGenerator {
  protected:
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;
+  const bool lite_;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringFieldGenerator);

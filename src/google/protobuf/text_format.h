@@ -49,6 +49,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
 
 namespace google {
 namespace protobuf {
@@ -143,8 +144,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastFieldValuePrinter);
   };
 
-// DEPRECATED: Please use FastFieldValuePrinter.
-  class LIBPROTOBUF_EXPORT FieldValuePrinter {
+  class LIBPROTOBUF_EXPORT PROTOBUF_RUNTIME_DEPRECATED("Please use FastFieldValuePrinter")
+      FieldValuePrinter {
    public:
     FieldValuePrinter();
     virtual ~FieldValuePrinter();

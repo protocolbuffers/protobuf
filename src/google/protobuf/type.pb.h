@@ -33,6 +33,36 @@
 #include <google/protobuf/any.pb.h>
 #include <google/protobuf/source_context.pb.h>
 // @@protoc_insertion_point(includes)
+
+namespace protobuf_google_2fprotobuf_2ftype_2eproto {
+// Internal implementation detail -- do not use these members.
+struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::internal::ParseTableField entries[];
+  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
+  static const ::google::protobuf::internal::ParseTable schema[5];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
+  static const ::google::protobuf::uint32 offsets[];
+};
+void LIBPROTOBUF_EXPORT AddDescriptors();
+void LIBPROTOBUF_EXPORT InitDefaultsTypeImpl();
+void LIBPROTOBUF_EXPORT InitDefaultsType();
+void LIBPROTOBUF_EXPORT InitDefaultsFieldImpl();
+void LIBPROTOBUF_EXPORT InitDefaultsField();
+void LIBPROTOBUF_EXPORT InitDefaultsEnumImpl();
+void LIBPROTOBUF_EXPORT InitDefaultsEnum();
+void LIBPROTOBUF_EXPORT InitDefaultsEnumValueImpl();
+void LIBPROTOBUF_EXPORT InitDefaultsEnumValue();
+void LIBPROTOBUF_EXPORT InitDefaultsOptionImpl();
+void LIBPROTOBUF_EXPORT InitDefaultsOption();
+inline void LIBPROTOBUF_EXPORT InitDefaults() {
+  InitDefaultsType();
+  InitDefaultsField();
+  InitDefaultsEnum();
+  InitDefaultsEnumValue();
+  InitDefaultsOption();
+}
+}  // namespace protobuf_google_2fprotobuf_2ftype_2eproto
 namespace google {
 namespace protobuf {
 class Enum;
@@ -52,24 +82,8 @@ class TypeDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
 }  // namespace protobuf
 }  // namespace google
-
 namespace google {
 namespace protobuf {
-
-namespace protobuf_google_2fprotobuf_2ftype_2eproto {
-// Internal implementation detail -- do not call these.
-struct LIBPROTOBUF_EXPORT TableStruct {
-  static const ::google::protobuf::internal::ParseTableField entries[];
-  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[];
-  static const ::google::protobuf::uint32 offsets[];
-  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
-  static const ::google::protobuf::internal::SerializationTable serialization_table[];
-  static void InitDefaultsImpl();
-};
-void LIBPROTOBUF_EXPORT AddDescriptors();
-void LIBPROTOBUF_EXPORT InitDefaults();
-}  // namespace protobuf_google_2fprotobuf_2ftype_2eproto
 
 enum Field_Kind {
   Field_Kind_TYPE_UNKNOWN = 0,
@@ -190,6 +204,7 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   static const ::google::protobuf::Descriptor* descriptor();
   static const Type& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Type* internal_default_instance() {
     return reinterpret_cast<const Type*>(
                &_Type_default_instance_);
@@ -347,7 +362,8 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2ftype_2eproto::InitDefaultsTypeImpl();
 };
 // -------------------------------------------------------------------
 
@@ -386,6 +402,7 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   static const ::google::protobuf::Descriptor* descriptor();
   static const Field& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Field* internal_default_instance() {
     return reinterpret_cast<const Field*>(
                &_Field_default_instance_);
@@ -662,7 +679,8 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::int32 oneof_index_;
   bool packed_;
   mutable int _cached_size_;
-  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2ftype_2eproto::InitDefaultsFieldImpl();
 };
 // -------------------------------------------------------------------
 
@@ -701,6 +719,7 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   static const ::google::protobuf::Descriptor* descriptor();
   static const Enum& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Enum* internal_default_instance() {
     return reinterpret_cast<const Enum*>(
                &_Enum_default_instance_);
@@ -835,7 +854,8 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2ftype_2eproto::InitDefaultsEnumImpl();
 };
 // -------------------------------------------------------------------
 
@@ -874,6 +894,7 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   static const ::google::protobuf::Descriptor* descriptor();
   static const EnumValue& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const EnumValue* internal_default_instance() {
     return reinterpret_cast<const EnumValue*>(
                &_EnumValue_default_instance_);
@@ -978,7 +999,8 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::int32 number_;
   mutable int _cached_size_;
-  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2ftype_2eproto::InitDefaultsEnumValueImpl();
 };
 // -------------------------------------------------------------------
 
@@ -1017,6 +1039,7 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   static const ::google::protobuf::Descriptor* descriptor();
   static const Option& default_instance();
 
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Option* internal_default_instance() {
     return reinterpret_cast<const Option*>(
                &_Option_default_instance_);
@@ -1118,14 +1141,14 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::Any* value_;
   mutable int _cached_size_;
-  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct ::protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend void ::protobuf_google_2fprotobuf_2ftype_2eproto::InitDefaultsOptionImpl();
 };
 // ===================================================================
 
 
 // ===================================================================
 
-#if !PROTOBUF_INLINE_NOT_IN_HEADERS
 #ifdef __GNUC__
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
@@ -1386,6 +1409,13 @@ inline  void Type::set_allocated_source_context(::google::protobuf::SourceContex
     
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Type.source_context)
+}
+inline ::google::protobuf::SourceContext* Type::unsafe_arena_release_source_context() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Type.source_context)
+  
+  ::google::protobuf::SourceContext* temp = source_context_;
+  source_context_ = NULL;
+  return temp;
 }
 
 // .google.protobuf.Syntax syntax = 6;
@@ -1996,6 +2026,13 @@ inline  void Enum::set_allocated_source_context(::google::protobuf::SourceContex
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Enum.source_context)
 }
+inline ::google::protobuf::SourceContext* Enum::unsafe_arena_release_source_context() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Enum.source_context)
+  
+  ::google::protobuf::SourceContext* temp = source_context_;
+  source_context_ = NULL;
+  return temp;
+}
 
 // .google.protobuf.Syntax syntax = 5;
 inline void Enum::clear_syntax() {
@@ -2264,11 +2301,17 @@ inline  void Option::set_allocated_value(::google::protobuf::Any* value) {
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Option.value)
 }
+inline ::google::protobuf::Any* Option::unsafe_arena_release_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Option.value)
+  
+  ::google::protobuf::Any* temp = value_;
+  value_ = NULL;
+  return temp;
+}
 
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -2279,7 +2322,6 @@ inline  void Option::set_allocated_value(::google::protobuf::Any* value) {
 
 
 // @@protoc_insertion_point(namespace_scope)
-
 
 }  // namespace protobuf
 }  // namespace google

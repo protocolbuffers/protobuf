@@ -36,6 +36,7 @@
  * @author aappleby@google.com (Austin Appleby)
  */
 
+goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
 goog.require('goog.testing.asserts');
 goog.require('jspb.BinaryConstants');

@@ -58,11 +58,11 @@ message ForeignMessage {
   repeated int32 d = 2;
 }
 
-message TestAllExtensions {
+message TestAllExtensions {  // extension begin
   extensions 1 to max;
-}
+}  // extension end
 
-extend TestAllExtensions {
+extend TestAllExtensions {  // extension begin
   optional TestAllTypes.NestedMessage optional_nested_message_extension = 1;
   repeated TestAllTypes.NestedMessage repeated_nested_message_extension = 2;
-}
+}  // extension end

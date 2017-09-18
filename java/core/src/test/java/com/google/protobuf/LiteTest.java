@@ -1453,6 +1453,36 @@ public class LiteTest extends TestCase {
             UnittestLite.optionalFixed32ExtensionLite));
   }
 
+  // Builder.mergeFrom() should keep existing extensions.
+  public void testBuilderMergeFromWithExtensions() throws Exception {
+    TestAllExtensionsLite message =
+        TestAllExtensionsLite.newBuilder()
+            .addExtension(UnittestLite.repeatedInt32ExtensionLite, 12)
+            .build();
+
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    UnittestLite.registerAllExtensions(registry);
+
+    TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.newBuilder();
+    builder.mergeFrom(message.toByteArray(), registry);
+    builder.mergeFrom(message.toByteArray(), registry);
+    TestAllExtensionsLite result = builder.build();
+    assertEquals(2, result.getExtensionCount(UnittestLite.repeatedInt32ExtensionLite));
+    assertEquals(12, result.getExtension(UnittestLite.repeatedInt32ExtensionLite, 0).intValue());
+    assertEquals(12, result.getExtension(UnittestLite.repeatedInt32ExtensionLite, 1).intValue());
+  }
+
+  // Builder.mergeFrom() should keep existing unknown fields.
+  public void testBuilderMergeFromWithUnknownFields() throws Exception {
+    TestAllTypesLite message = TestAllTypesLite.newBuilder().addRepeatedInt32(1).build();
+
+    NestedMessage.Builder builder = NestedMessage.newBuilder();
+    builder.mergeFrom(message.toByteArray());
+    builder.mergeFrom(message.toByteArray());
+    NestedMessage result = builder.build();
+    assertEquals(message.getSerializedSize() * 2, result.getSerializedSize());
+  }
+
   public void testToStringDefaultInstance() throws Exception {
     assertToStringEquals("", TestAllTypesLite.getDefaultInstance());
   }
@@ -2590,6 +2620,14 @@ public class LiteTest extends TestCase {
       }
       wasIterated = true;
       return list.iterator();
+    }
+  }
+
+  public void testNullExtensionRegistry() throws Exception {
+    try {
+      TestAllTypesLite.parseFrom(new byte[] {}, null);
+      fail();
+    } catch (NullPointerException expected) {
     }
   }
 }
