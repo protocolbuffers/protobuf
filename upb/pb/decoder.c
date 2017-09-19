@@ -543,7 +543,7 @@ UPB_NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
 
 int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, int32_t fieldnum,
                                   uint8_t wire_type) {
-  upb_addunknown_handlerfunc *addunknown;
+  upb_unknown_handlerfunc *addunknown;
   const void* hd;
 
   if (fieldnum >= 0)
@@ -599,7 +599,7 @@ have_tag:
     }
 
     if (d->top->groupnum >= 0) {
-      addunknown = (upb_addunknown_handlerfunc *)upb_handlers_gethandler(
+      addunknown = (upb_unknown_handlerfunc *)upb_handlers_gethandler(
           (d->top->sink).handlers, UPB_UNKNOWN_SELECTOR);
       if (addunknown != NULL) {
         hd = upb_handlers_gethandlerdata((d->top->sink).handlers,
