@@ -583,9 +583,12 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   upb_msg_oneof_iter oit;
   size_t off = 0;
   int i = 0;
+
+  // Reserve space for unknown fields.
+  off += sizeof(void*);
+
   TSRMLS_FETCH();
   Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(msgdef));
-
   layout->fields = ALLOC_N(MessageField, nfields);
 
   for (upb_msg_field_begin(&it, msgdef); !upb_msg_field_done(&it);
@@ -744,6 +747,10 @@ void layout_init(MessageLayout* layout, void* storage,
                  zend_object* object PHP_PROTO_TSRMLS_DC) {
   int i;
   upb_msg_field_iter it;
+
+  // Init unknown fields
+  memset(storage, 0, sizeof(void*));
+
   for (upb_msg_field_begin(&it, layout->msgdef), i = 0; !upb_msg_field_done(&it);
        upb_msg_field_next(&it), i++) {
     const upb_fielddef* field = upb_msg_iter_field(&it);

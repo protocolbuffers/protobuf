@@ -944,6 +944,43 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   upb_handlerattr_uninit(&attr);
 }
 
+typedef struct {
+  stringsink sink;
+  upb_env env;
+  upb_pb_encoder *encoder;
+  char allocbuf[4096];
+} unknownfields;
+
+void unknownfields_init(void *c) {
+  unknownfields* unknown = c;
+  stringsink_init(&unknown->sink);
+  upb_env_init2(&unknown->env, unknown->allocbuf, sizeof(unknown->allocbuf),
+                NULL);
+  unknown->encoder =
+      upb_pb_encoder_create(&unknown->env, NULL, &(unknown->sink).sink);
+}
+
+void unknownfields_uninit(void* c) {
+  unknownfields* unknown = c;
+  stringsink_uninit(&unknown->sink);
+  upb_env_uninit(&unknown->env);
+}
+
+void* add_unknown_handler(void* closure, const void* hd) {
+  UPB_UNUSED(hd);
+
+  MessageHeader* msg = (MessageHeader*)closure;
+  unknownfields* unknown =
+      DEREF(message_data(msg), 0, unknownfields*);
+  if (unknown == NULL) {
+    DEREF(message_data(msg), 0, unknownfields*) = ALLOC(unknownfields);
+    unknown = DEREF(message_data(msg), 0, unknownfields*);
+    unknownfields_init(unknown);
+  }
+
+  return unknown->encoder;
+}
+
 static void add_handlers_for_message(const void* closure,
                                      upb_handlers* h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
@@ -966,6 +1003,8 @@ static void add_handlers_for_message(const void* closure,
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc->msgdef);
   }
+
+  upb_handlers_setaddunknown(h, add_unknown_handler, NULL);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
        !upb_msg_field_done(&i);
@@ -1276,6 +1315,12 @@ static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
 
 #undef T
     }
+  }
+
+  // unknown_fields_t* unknown = DEREF(message_data(msg), 0, unknown_fields_t*);
+  stringsink* unknown = DEREF(message_data(msg), 0, stringsink*);
+  if (unknown != NULL) {
+    upb_sink_putunknown(sink, unknown->ptr, unknown->len);
   }
 
   upb_sink_endmsg(sink, &status);

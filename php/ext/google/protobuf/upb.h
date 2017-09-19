@@ -4150,7 +4150,8 @@ UPB_END_EXTERN_C
 /* Static selectors for upb::Handlers. */
 #define UPB_STARTMSG_SELECTOR 0
 #define UPB_ENDMSG_SELECTOR 1
-#define UPB_STATIC_SELECTOR_COUNT 2
+#define UPB_UNKNOWN_SELECTOR 2
+#define UPB_STATIC_SELECTOR_COUNT 3
 
 /* Static selectors for upb::BytesHandler. */
 #define UPB_STARTSTR_SELECTOR 0
@@ -4679,6 +4680,9 @@ UPB_BEGIN_EXTERN_C
 /* Native C API. */
 
 /* Handler function typedefs. */
+typedef void *upb_addunknown_handlerfunc(void *c, const void* hd);
+typedef bool upb_unknown_handlerfunc(void *c, const void *hd, const char *buf,
+                                     size_t n);
 typedef bool upb_startmsg_handlerfunc(void *c, const void*);
 typedef bool upb_endmsg_handlerfunc(void *c, const void *, upb_status *status);
 typedef void* upb_startfield_handlerfunc(void *c, const void *hd);
@@ -4732,6 +4736,11 @@ const upb_status *upb_handlers_status(upb_handlers *h);
 void upb_handlers_clearerr(upb_handlers *h);
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h);
 bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *hfree);
+bool upb_handlers_setaddunknown(upb_handlers *h,
+                                upb_addunknown_handlerfunc *func,
+                                upb_handlerattr *attr);
+bool upb_handlers_setunknown(upb_handlers *h, upb_unknown_handlerfunc *func,
+                             upb_handlerattr *attr);
 
 bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
                               upb_handlerattr *attr);
@@ -6299,6 +6308,18 @@ UPB_INLINE size_t upb_sink_putstring(upb_sink *s, upb_selector_t sel,
   if (!handler) return n;
   hd = upb_handlers_gethandlerdata(s->handlers, sel);
   return handler(s->closure, hd, buf, n, handle);
+}
+
+UPB_INLINE bool upb_sink_putunknown(upb_sink *s, const char *buf, size_t n) {
+  typedef upb_unknown_handlerfunc func;
+  func *handler;
+  const void *hd;
+  if (!s->handlers) return true;
+  handler = (func *)upb_handlers_gethandler(s->handlers, UPB_UNKNOWN_SELECTOR);
+
+  if (!handler) return n;
+  // hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  return handler(s->closure, hd, buf, n);
 }
 
 UPB_INLINE bool upb_sink_startmsg(upb_sink *s) {
