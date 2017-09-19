@@ -73,6 +73,10 @@
 #include <pthread.h>
 #endif
 
+#if __GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#define GNUC_PRAGMA_DIAGNOSTIC 1
+#endif
+
 #if defined(_WIN32) && defined(GetMessage)
 // Allow GetMessage to be used as a valid method name in protobuf classes.
 // windows.h defines GetMessage() as a macro.  Let's re-define it as an inline

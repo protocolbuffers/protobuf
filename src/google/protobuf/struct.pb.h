@@ -582,10 +582,10 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
 
 // ===================================================================
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 // -------------------------------------------------------------------
 
 // Struct
@@ -1042,9 +1042,10 @@ ListValue::values() const {
   return values_;
 }
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
+#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

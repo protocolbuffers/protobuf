@@ -5521,10 +5521,10 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
 
 // ===================================================================
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 // FileDescriptorSet
 
 // repeated .google.protobuf.FileDescriptorProto file = 1;
@@ -11218,9 +11218,9 @@ GeneratedCodeInfo::annotation() const {
   return annotation_;
 }
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

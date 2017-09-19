@@ -178,10 +178,10 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
 
 // ===================================================================
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 // FieldMask
 
 // repeated string paths = 1;
@@ -253,9 +253,10 @@ FieldMask::mutable_paths() {
   return &paths_;
 }
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
+#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
 

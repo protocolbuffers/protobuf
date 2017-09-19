@@ -1149,10 +1149,10 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
 
 // ===================================================================
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 // Type
 
 // string name = 1;
@@ -2309,9 +2309,10 @@ inline ::google::protobuf::Any* Option::unsafe_arena_release_value() {
   return temp;
 }
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
+#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
