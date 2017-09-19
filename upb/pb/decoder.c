@@ -543,9 +543,6 @@ UPB_NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
 
 int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, int32_t fieldnum,
                                   uint8_t wire_type) {
-  upb_unknown_handlerfunc *addunknown;
-  const void* hd;
-
   if (fieldnum >= 0)
     goto have_tag;
 
