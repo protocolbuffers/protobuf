@@ -374,6 +374,12 @@ static void *encode_startdelimfield(void *c, const void *hd) {
   return ok ? c : UPB_BREAK;
 }
 
+static bool encode_unknown(void *c, const void *hd, const char *buf,
+                           size_t len) {
+  UPB_UNUSED(hd);
+  return encode_bytes(c, buf, len) && commit(c);
+}
+
 static bool encode_enddelimfield(void *c, const void *hd) {
   UPB_UNUSED(hd);
   return end_delim(c);
@@ -436,6 +442,7 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
 
   upb_handlers_setstartmsg(h, startmsg, NULL);
   upb_handlers_setendmsg(h, endmsg, NULL);
+  upb_handlers_setunknown(h, encode_unknown, NULL);
 
   m = upb_handlers_msgdef(h);
   for(upb_msg_field_begin(&i, m);
@@ -564,3 +571,9 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
 }
 
 upb_sink *upb_pb_encoder_input(upb_pb_encoder *e) { return &e->input_; }
+
+void upb_pb_encoder_encode_unknown(upb_pb_encoder *p, const char *buf,
+                                   size_t size) {
+  encode_bytes(p, buf, size);
+  commit(p);
+}

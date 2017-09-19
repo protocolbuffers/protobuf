@@ -372,6 +372,19 @@ SETTER(endseq,      upb_endfield_handlerfunc*,    UPB_HANDLER_ENDSEQ)
 
 #undef SETTER
 
+bool upb_handlers_setaddunknown(upb_handlers *h,
+                                upb_addunknown_handlerfunc *func,
+                                upb_handlerattr *attr) {
+  return doset(h, UPB_UNKNOWN_SELECTOR, NULL, UPB_HANDLER_INT32,
+               (upb_func *)func, attr);
+}
+
+bool upb_handlers_setunknown(upb_handlers *h, upb_unknown_handlerfunc *func,
+                             upb_handlerattr *attr) {
+  return doset(h, UPB_UNKNOWN_SELECTOR, NULL, UPB_HANDLER_INT32,
+               (upb_func *)func, attr);
+}
+
 bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
                               upb_handlerattr *attr) {
   return doset(h, UPB_STARTMSG_SELECTOR, NULL, UPB_HANDLER_INT32,

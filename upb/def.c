@@ -327,6 +327,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
     v = upb_value_bool(true);
     upb_inttable_insert(&t, UPB_STARTMSG_SELECTOR, v);
     upb_inttable_insert(&t, UPB_ENDMSG_SELECTOR, v);
+    upb_inttable_insert(&t, UPB_UNKNOWN_SELECTOR, v);
     for(upb_msg_field_begin(&j, m);
         !upb_msg_field_done(&j);
         upb_msg_field_next(&j)) {
