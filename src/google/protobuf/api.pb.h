@@ -1152,7 +1152,6 @@ inline void Mixin::set_allocated_root(::std::string* root) {
 #ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
 #endif  // GNUC_PRAGMA_DIAGNOSTIC
-#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

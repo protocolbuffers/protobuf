@@ -2312,7 +2312,6 @@ inline ::google::protobuf::Any* Option::unsafe_arena_release_value() {
 #ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
 #endif  // GNUC_PRAGMA_DIAGNOSTIC
-#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

@@ -221,7 +221,6 @@ inline void Timestamp::set_nanos(::google::protobuf::int32 value) {
 #ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
 #endif  // GNUC_PRAGMA_DIAGNOSTIC
-#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
 

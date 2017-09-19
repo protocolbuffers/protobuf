@@ -1324,7 +1324,6 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
     "#ifdef GNUC_PRAGMA_DIAGNOSTIC\n"
     "  #pragma GCC diagnostic pop\n"
     "#endif  // GNUC_PRAGMA_DIAGNOSTIC\n");
-  printer->Print("#endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS\n");
 
   for (int i = 0; i < message_generators_.size(); i++) {
     if (i > 0) {
