@@ -9835,13 +9835,7 @@ have_tag:
     }
 
     if (d->top->groupnum >= 0) {
-      addunknown = (upb_unknown_handlerfunc *)upb_handlers_gethandler(
-          (d->top->sink).handlers, UPB_UNKNOWN_SELECTOR);
-      if (addunknown != NULL) {
-        hd = upb_handlers_gethandlerdata((d->top->sink).handlers, UPB_UNKNOWN_SELECTOR);
-        addunknown((d->top->sink).closure, hd, d->checkpoint,
-                   d->ptr - d->checkpoint);
-      }
+      upb_sink_putunknown(&d->top->sink, d->checkpoint, d->ptr - d->checkpoint);
       return DECODE_OK;
     }
 

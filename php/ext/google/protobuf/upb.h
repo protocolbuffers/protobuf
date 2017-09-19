@@ -6314,7 +6314,7 @@ UPB_INLINE bool upb_sink_putunknown(upb_sink *s, const char *buf, size_t n) {
   handler = (func *)upb_handlers_gethandler(s->handlers, UPB_UNKNOWN_SELECTOR);
 
   if (!handler) return n;
-  // hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  hd = upb_handlers_gethandlerdata(s->handlers, UPB_UNKNOWN_SELECTOR);
   return handler(s->closure, hd, buf, n);
 }
 
