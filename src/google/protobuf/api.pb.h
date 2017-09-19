@@ -535,10 +535,10 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 // Api
 
 // string name = 1;
@@ -1136,9 +1136,9 @@ inline void Mixin::set_allocated_root(::std::string* root) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.root)
 }
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
