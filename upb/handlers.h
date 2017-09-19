@@ -634,8 +634,6 @@ UPB_BEGIN_EXTERN_C
 /* Native C API. */
 
 /* Handler function typedefs. */
-typedef bool upb_addunknown_handlerfunc(void *c, const void *hd,
-                                        const char *buf, size_t n);
 typedef bool upb_unknown_handlerfunc(void *c, const void *hd, const char *buf,
                                      size_t n);
 typedef bool upb_startmsg_handlerfunc(void *c, const void*);
