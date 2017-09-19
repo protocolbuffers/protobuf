@@ -9785,6 +9785,7 @@ static bool encode_bytes(upb_pb_encoder *e, const void *data, size_t len);
 
 int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, int32_t fieldnum,
                                   uint8_t wire_type) {
+  const void* hd;
   upb_addunknown_handlerfunc *addunknown;
   upb_pb_encoder *encoder;
 
@@ -9844,9 +9845,9 @@ have_tag:
       addunknown = (upb_addunknown_handlerfunc *)upb_handlers_gethandler(
           (d->top->sink).handlers, UPB_UNKNOWN_SELECTOR);
       if (addunknown != NULL) {
-        encoder = addunknown((d->top->sink).closure, NULL);
-        encode_bytes(encoder, d->checkpoint, d->ptr - d->checkpoint);
-        commit(encoder);
+        hd = upb_handlers_gethandlerdata((d->top->sink).handlers, UPB_UNKNOWN_SELECTOR);
+        addunknown((d->top->sink).closure, hd, d->checkpoint,
+                   d->ptr - d->checkpoint);
       }
       return DECODE_OK;
     }
@@ -10901,7 +10902,11 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
 
 upb_sink *upb_pb_encoder_input(upb_pb_encoder *e) { return &e->input_; }
 
-
+void upb_pb_encoder_encode_unknown(upb_pb_encoder *p, const char *buf,
+                                   size_t size) {
+  encode_bytes(p, buf, size);
+  commit(p);
+}
 
 upb_filedef **upb_loaddescriptor(const char *buf, size_t n, const void *owner,
                                  upb_status *status) {

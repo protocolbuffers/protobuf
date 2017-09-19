@@ -142,6 +142,21 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   return hd_ofs;
 }
 
+typedef void (*encodeunknown_handlerfunc)(upb_pb_encoder* p, const char* buf, size_t size);
+
+typedef struct {
+  encodeunknown_handlerfunc handler;
+} unknownfields_handlerdata_t;
+
+// Creates a handlerdata for unknown fields.
+static const void *newunknownfieldshandlerdata(upb_handlers* h) {
+  unknownfields_handlerdata_t* hd =
+      (unknownfields_handlerdata_t*)malloc(sizeof(unknownfields_handlerdata_t));
+  hd->handler = upb_pb_encoder_encode_unknown;
+  upb_handlers_addcleanup(h, hd, free);
+  return hd;
+}
+
 typedef struct {
   size_t ofs;
   const upb_msgdef *md;
@@ -966,7 +981,26 @@ void unknownfields_uninit(void* c) {
   upb_env_uninit(&unknown->env);
 }
 
-void* add_unknown_handler(void* closure, const void* hd) {
+bool add_unknown_handler(void* closure, const void* hd, const char* buf,
+                         size_t size) {
+  encodeunknown_handlerfunc handler =
+      ((unknownfields_handlerdata_t*)hd)->handler;
+
+  MessageHeader* msg = (MessageHeader*)closure;
+  unknownfields* unknown =
+      DEREF(message_data(msg), 0, unknownfields*);
+  if (unknown == NULL) {
+    DEREF(message_data(msg), 0, unknownfields*) = ALLOC(unknownfields);
+    unknown = DEREF(message_data(msg), 0, unknownfields*);
+    unknownfields_init(unknown);
+  }
+
+  handler(unknown->encoder, buf, size);
+
+  return true;
+}
+
+void* add_unknown_handlerdata(void* closure, const void* hd) {
   UPB_UNUSED(hd);
 
   MessageHeader* msg = (MessageHeader*)closure;
@@ -1004,7 +1038,9 @@ static void add_handlers_for_message(const void* closure,
     desc->layout = create_layout(desc->msgdef);
   }
 
-  upb_handlers_setaddunknown(h, add_unknown_handler, NULL);
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(&attr, newunknownfieldshandlerdata(h));
+  upb_handlers_setaddunknown(h, add_unknown_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
        !upb_msg_field_done(&i);
