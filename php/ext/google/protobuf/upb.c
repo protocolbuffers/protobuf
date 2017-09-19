@@ -2731,13 +2731,6 @@ SETTER(endseq,      upb_endfield_handlerfunc*,    UPB_HANDLER_ENDSEQ)
 
 #undef SETTER
 
-bool upb_handlers_setaddunknown(upb_handlers *h,
-                                upb_addunknown_handlerfunc *func,
-                                upb_handlerattr *attr) {
-  return doset(h, UPB_UNKNOWN_SELECTOR, NULL, UPB_HANDLER_INT32,
-               (upb_func *)func, attr);
-}
-
 bool upb_handlers_setunknown(upb_handlers *h, upb_unknown_handlerfunc *func,
                              upb_handlerattr *attr) {
   return doset(h, UPB_UNKNOWN_SELECTOR, NULL, UPB_HANDLER_INT32,
@@ -9786,7 +9779,7 @@ static bool encode_bytes(upb_pb_encoder *e, const void *data, size_t len);
 int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, int32_t fieldnum,
                                   uint8_t wire_type) {
   const void* hd;
-  upb_addunknown_handlerfunc *addunknown;
+  upb_unknown_handlerfunc *addunknown;
   upb_pb_encoder *encoder;
 
   if (fieldnum >= 0)
@@ -9842,7 +9835,7 @@ have_tag:
     }
 
     if (d->top->groupnum >= 0) {
-      addunknown = (upb_addunknown_handlerfunc *)upb_handlers_gethandler(
+      addunknown = (upb_unknown_handlerfunc *)upb_handlers_gethandler(
           (d->top->sink).handlers, UPB_UNKNOWN_SELECTOR);
       if (addunknown != NULL) {
         hd = upb_handlers_gethandlerdata((d->top->sink).handlers, UPB_UNKNOWN_SELECTOR);

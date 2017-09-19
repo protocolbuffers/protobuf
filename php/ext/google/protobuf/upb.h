@@ -4680,8 +4680,6 @@ UPB_BEGIN_EXTERN_C
 /* Native C API. */
 
 /* Handler function typedefs. */
-typedef bool upb_addunknown_handlerfunc(void *c, const void *hd,
-                                        const char *buf, size_t n);
 typedef bool upb_unknown_handlerfunc(void *c, const void *hd, const char *buf,
                                      size_t n);
 typedef bool upb_startmsg_handlerfunc(void *c, const void*);
@@ -4737,9 +4735,6 @@ const upb_status *upb_handlers_status(upb_handlers *h);
 void upb_handlers_clearerr(upb_handlers *h);
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h);
 bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *hfree);
-bool upb_handlers_setaddunknown(upb_handlers *h,
-                                upb_addunknown_handlerfunc *func,
-                                upb_handlerattr *attr);
 bool upb_handlers_setunknown(upb_handlers *h, upb_unknown_handlerfunc *func,
                              upb_handlerattr *attr);
 

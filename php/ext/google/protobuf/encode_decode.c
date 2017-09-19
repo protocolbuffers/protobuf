@@ -1040,7 +1040,7 @@ static void add_handlers_for_message(const void* closure,
 
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
   upb_handlerattr_sethandlerdata(&attr, newunknownfieldshandlerdata(h));
-  upb_handlers_setaddunknown(h, add_unknown_handler, &attr);
+  upb_handlers_setunknown(h, add_unknown_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
        !upb_msg_field_done(&i);
