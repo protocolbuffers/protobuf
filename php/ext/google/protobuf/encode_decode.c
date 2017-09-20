@@ -142,7 +142,8 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   return hd_ofs;
 }
 
-typedef void (*encodeunknown_handlerfunc)(upb_pb_encoder* p, const char* buf, size_t size);
+typedef bool (*encodeunknown_handlerfunc)(void* p, const void* hd,
+                                          const char* buf, size_t size);
 
 typedef struct {
   encodeunknown_handlerfunc handler;
@@ -152,7 +153,7 @@ typedef struct {
 static const void *newunknownfieldshandlerdata(upb_handlers* h) {
   unknownfields_handlerdata_t* hd =
       (unknownfields_handlerdata_t*)malloc(sizeof(unknownfields_handlerdata_t));
-  hd->handler = upb_pb_encoder_encode_unknown;
+  hd->handler = encode_unknown;
   upb_handlers_addcleanup(h, hd, free);
   return hd;
 }
@@ -995,7 +996,7 @@ bool add_unknown_handler(void* closure, const void* hd, const char* buf,
     unknownfields_init(unknown);
   }
 
-  handler(unknown->encoder, buf, size);
+  handler(unknown->encoder, NULL, buf, size);
 
   return true;
 }
