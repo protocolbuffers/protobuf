@@ -420,7 +420,7 @@ VALUE Message_to_h(VALUE _self) {
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       msg_value = RepeatedField_to_ary(msg_value);
 
-      if (upb_fieldddef_type(field) == UPB_TYPE_MESSAGE) {
+      if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
         for (int i = 0; i < RARRAY_LEN(msg_value); i++) {
           VALUE elem = rb_ary_entry(msg_value, i);
           rb_ary_store(msg_value, i, Message_to_h(elem));
