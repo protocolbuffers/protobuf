@@ -674,6 +674,7 @@ php_EXTRA_DIST=                                                       \
   php/src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php         \
   php/tests/array_test.php                                            \
   php/tests/autoload.php                                              \
+  php/tests/bootstrap_phpunit.php                                     \
   php/tests/compatibility_test.sh                                     \
   php/tests/descriptors_test.php                                      \
   php/tests/encode_decode_test.php                                    \
