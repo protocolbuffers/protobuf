@@ -10692,7 +10692,8 @@ static void *encode_startdelimfield(void *c, const void *hd) {
   return ok ? c : UPB_BREAK;
 }
 
-bool encode_unknown(void *c, const void *hd, const char *buf, size_t len) {
+static bool encode_unknown(void *c, const void *hd, const char *buf,
+                           size_t len) {
   UPB_UNUSED(hd);
   return encode_bytes(c, buf, len) && commit(c);
 }
