@@ -207,7 +207,6 @@ class Any extends \Google\Protobuf\Internal\Message
     public function unpack()
     {
         // Get fully qualifed name from type url.
-        $type_url_len = strlen($this->type_url);
         $url_prifix_len = strlen(Any::TYPE_URL_PREFIX);
         if (substr($this->type_url, 0, $url_prifix_len) !=
                 Any::TYPE_URL_PREFIX) {
@@ -215,7 +214,7 @@ class Any extends \Google\Protobuf\Internal\Message
                 "Type url needs to be type.googleapis.com/fully-qulified");
         }
         $fully_qualifed_name =
-            substr($this->type_url, $url_prifix_len, $type_url_len);
+            substr($this->type_url, $url_prifix_len);
 
         // Create message according to fully qualified name.
         $pool = DescriptorPool::getGeneratedPool();
