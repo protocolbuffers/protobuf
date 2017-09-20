@@ -64,8 +64,6 @@ const upb_handlers *upb_pb_encoder_newhandlers(const upb_msgdef *m,
 upb_sink *upb_pb_encoder_input(upb_pb_encoder *p);
 upb_pb_encoder* upb_pb_encoder_create(upb_env* e, const upb_handlers* h,
                                       upb_bytessink* output);
-bool encode_unknown(upb_pb_encoder* p, const void* hd, const char* buf,
-                    size_t size);
 
 UPB_END_EXTERN_C
 
