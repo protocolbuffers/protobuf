@@ -367,7 +367,19 @@ public class RubyMessage extends RubyObject {
         for (Descriptors.FieldDescriptor fdef : this.descriptor.getFields()) {
             IRubyObject value = getField(context, fdef);
             if (!value.isNil()) {
-                if (value.respondsTo("to_h")) {
+                if (fdef.isRepeated() && !fdef.isMapField()) {
+                    if (fdef.getType() != Descriptors.FieldDescriptor.Type.MESSAGE) {
+                        value = Helpers.invoke(context, value, "to_a");
+                    } else {
+                        RubyArray ary = value.convertToArray();
+                        for (int i = 0; i < ary.size(); i++) {
+                            IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
+                            ary.eltInternalSet(i, submsg);
+                        }
+
+                        value = ary.to_ary();
+                    }
+                } else if (value.respondsTo("to_h")) {
                     value = Helpers.invoke(context, value, "to_h");
                 } else if (value.respondsTo("to_a")) {
                     value = Helpers.invoke(context, value, "to_a");

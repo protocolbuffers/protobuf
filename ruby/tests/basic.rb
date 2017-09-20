@@ -927,7 +927,7 @@ module BasicTest
     end
 
     def test_to_h
-      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
       expected_result = {
         :optional_bool=>true,
         :optional_bytes=>"",
@@ -947,7 +947,7 @@ module BasicTest
         :repeated_float=>[],
         :repeated_int32=>[],
         :repeated_int64=>[],
-        :repeated_msg=>[],
+        :repeated_msg=>[{:foo => 100}],
         :repeated_string=>["bar1", "bar2"],
         :repeated_uint32=>[],
         :repeated_uint64=>[]
