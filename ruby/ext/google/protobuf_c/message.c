@@ -260,7 +260,6 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
     Map_merge_into_self(map, val);
   } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
     VALUE ary;
-    VALUE entry;
 
     if (TYPE(val) != T_ARRAY) {
       rb_raise(rb_eArgError,
@@ -268,7 +267,7 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
     }
     ary = layout_get(self->descriptor->layout, Message_data(self), f);
     for (int i = 0; i < RARRAY_LEN(val); i++) {
-      entry = rb_ary_entry(val, i);
+      VALUE entry = rb_ary_entry(val, i);
       if (TYPE(entry) == T_HASH && upb_fielddef_issubmsg(f)) {
         entry = create_submsg_from_hash(f, entry);
       }
