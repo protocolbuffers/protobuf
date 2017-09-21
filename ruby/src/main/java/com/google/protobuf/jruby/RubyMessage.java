@@ -82,8 +82,8 @@ public class RubyMessage extends RubyObject {
             hash.visitAll(new RubyHash.Visitor() {
                 @Override
                 public void visit(IRubyObject key, IRubyObject value) {
-                    if (!(key instanceof RubySymbol))
-                        throw runtime.newTypeError("Expected symbols as hash keys in initialization map.");
+                    if (!(key instanceof RubySymbol) && !(key instanceof RubyString))
+                        throw runtime.newTypeError("Expected string or symbols as hash keys in initialization map.");
                     final Descriptors.FieldDescriptor fieldDescriptor = findField(context, key);
 
                     if (Utils.isMapEntry(fieldDescriptor)) {
@@ -103,9 +103,15 @@ public class RubyMessage extends RubyObject {
                         if (oneof != null) {
                             oneofCases.put(oneof, fieldDescriptor);
                         }
+
+                        if (value instanceof RubyHash && fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                            RubyDescriptor descriptor = (RubyDescriptor) getDescriptorForField(context, fieldDescriptor);
+                            RubyClass typeClass = (RubyClass) descriptor.msgclass(context);
+                            value = (IRubyObject) typeClass.newInstance(context, value, Block.NULL_BLOCK);
+                        }
+
                         fields.put(fieldDescriptor, value);
                     }
-
                 }
             });
         }
@@ -530,19 +536,12 @@ public class RubyMessage extends RubyObject {
                 val = value.isTrue();
                 break;
             case BYTES:
+                Utils.validateStringEncoding(context, fieldDescriptor.getType(), value);
+                val = ByteString.copyFrom(((RubyString) value).getBytes());
+                break;
             case STRING:
                 Utils.validateStringEncoding(context, fieldDescriptor.getType(), value);
-                RubyString str = (RubyString) value;
-                switch (fieldDescriptor.getType()) {
-                    case BYTES:
-                        val = ByteString.copyFrom(str.getBytes());
-                        break;
-                    case STRING:
-                        val = str.asJavaString();
-                        break;
-                    default:
-                        break;
-                }
+                val = ((RubyString) value).asJavaString();
                 break;
             case MESSAGE:
                 RubyClass typeClass = (RubyClass) ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
@@ -555,7 +554,7 @@ public class RubyMessage extends RubyObject {
 
                 if (Utils.isRubyNum(value)) {
                     val = enumDescriptor.findValueByNumberCreatingIfUnknown(RubyNumeric.num2int(value));
-                } else if (value instanceof RubySymbol) {
+                } else if (value instanceof RubySymbol || value instanceof RubyString) {
                     val = enumDescriptor.findValueByName(value.asJavaString());
                 } else {
                     throw runtime.newTypeError("Expected number or symbol type for enum field.");
@@ -753,8 +752,20 @@ public class RubyMessage extends RubyObject {
                                                   Descriptors.FieldDescriptor fieldDescriptor, IRubyObject value) {
         RubyArray arr = value.convertToArray();
         RubyRepeatedField repeatedField = repeatedFieldForFieldDescriptor(context, fieldDescriptor);
+
+        RubyClass typeClass = null;
+        if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+            RubyDescriptor descriptor = (RubyDescriptor) getDescriptorForField(context, fieldDescriptor);
+            typeClass = (RubyClass) descriptor.msgclass(context);
+        }
+
         for (int i = 0; i < arr.size(); i++) {
-            repeatedField.push(context, arr.eltInternal(i));
+            IRubyObject row = arr.eltInternal(i);
+            if (row instanceof RubyHash && typeClass != null) {
+                row = (IRubyObject) typeClass.newInstance(context, row, Block.NULL_BLOCK);
+            }
+
+            repeatedField.push(context, row);
         }
         return repeatedField;
     }
