@@ -428,6 +428,8 @@ class GeneratedDescriptorTest(unittest.TestCase):
 
   def CheckMessageDescriptor(self, message_descriptor):
     # Basic properties
+    self.assertIsInstance(message_descriptor, descriptor.Descriptor)
+    self.assertIsInstance(message_descriptor, descriptor.DescriptorBase)
     self.assertEqual(message_descriptor.name, 'TestAllTypes')
     self.assertEqual(message_descriptor.full_name,
                      'protobuf_unittest.TestAllTypes')
@@ -445,6 +447,8 @@ class GeneratedDescriptorTest(unittest.TestCase):
 
   def CheckFieldDescriptor(self, field_descriptor):
     # Basic properties
+    self.assertIsInstance(field_descriptor, descriptor.FieldDescriptor)
+    self.assertIsInstance(field_descriptor, descriptor.DescriptorBase)
     self.assertEqual(field_descriptor.name, 'optional_int32')
     self.assertEqual(field_descriptor.camelcase_name, 'optionalInt32')
     self.assertEqual(field_descriptor.full_name,
