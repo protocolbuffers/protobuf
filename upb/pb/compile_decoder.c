@@ -267,7 +267,7 @@ static void put32(compiler *c, uint32_t v) {
   *c->pc++ = v;
 }
 
-static void putop(compiler *c, opcode op, ...) {
+static void putop(compiler *c, int op, ...) {
   va_list ap;
   va_start(ap, op);
 
