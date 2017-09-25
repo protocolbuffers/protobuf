@@ -776,6 +776,11 @@ static void jitdispatch(jitcompiler *jc,
   |
   |5:
   |  // Field isn't in our table.
+  |
+  |  // For pushing unknown fields to the unknown field handler.
+  |  mov64 rax, (uintptr_t)method->dest_handlers_
+  |  mov FRAME->sink.handlers, rax
+  |
   |  call ->parse_unknown
   |  test eax, eax  // ENDGROUP?
   |  jz   <1
