@@ -19,7 +19,7 @@ function(PROTOBUF_GENERATE_CPP SRCS HDRS)
   endif()
 
   set(_outvar)
-  protobuf_generate(${append_arg} LANGUAGE cpp EXPORT_MACRO ${protobuf_generate_cpp_EXPORT_MACRO} OUT_VAR _outvar ${_import_arg} PROTOS ${_proto_files})
+  protobuf_generate(${_append_arg} LANGUAGE cpp EXPORT_MACRO ${protobuf_generate_cpp_EXPORT_MACRO} OUT_VAR _outvar ${_import_arg} PROTOS ${_proto_files})
 
   set(${SRCS})
   set(${HDRS})
@@ -49,7 +49,7 @@ function(PROTOBUF_GENERATE_PYTHON SRCS)
   endif()
 
   set(_outvar)
-  protobuf_generate(${append_arg} LANGUAGE cpp OUT_VAR _outvar ${_import_arg} PROTOS ${ARGN})
+  protobuf_generate(${_append_arg} LANGUAGE python OUT_VAR _outvar ${_import_arg} PROTOS ${ARGN})
   set(${SRCS} ${_outvar} PARENT_SCOPE)
 endfunction()
 
