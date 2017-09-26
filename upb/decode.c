@@ -97,7 +97,7 @@ static bool upb_decode_32bit(const char **ptr, const char *limit,
 
 static bool upb_decode_tag(const char **ptr, const char *limit,
                            int *field_number, int *wire_type) {
-  uint32_t tag;
+  uint32_t tag = 0;
   CHK(upb_decode_varint32(ptr, limit, &tag));
   *field_number = tag >> 3;
   *wire_type = tag & 7;

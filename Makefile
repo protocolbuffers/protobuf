@@ -72,8 +72,8 @@ ifeq ($(CXX), clang++)
 endif
 
 ifneq ($(UPB_FAIL_WARNINGS), no)
-  WARNFLAGS += -Werror
-  WARNFLAGS_CXX += -Werror
+  WARNFLAGS += -Werror -Wno-keyword-macro
+  WARNFLAGS_CXX += -Werror -Wno-keyword-macro
 endif
 
 # Build with "make Q=" to see all commands that are being executed.

@@ -558,7 +558,6 @@ have_tag:
       return upb_pbdecoder_suspend(d);
     }
 
-    /* TODO: deliver to unknown field callback. */
     switch (wire_type) {
       case UPB_WIRE_TYPE_32BIT:
         CHECK_RETURN(skip(d, 4));
@@ -596,6 +595,8 @@ have_tag:
     }
 
     if (d->top->groupnum >= 0) {
+      /* TODO: More code needed for handling unknown groups. */
+      upb_sink_putunknown(&d->top->sink, d->checkpoint, d->ptr - d->checkpoint);
       return DECODE_OK;
     }
 
