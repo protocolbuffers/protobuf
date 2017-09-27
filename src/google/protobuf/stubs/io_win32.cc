@@ -195,12 +195,12 @@ string normalize(string path) {
   // Join all segments.
   bool first = true;
   std::ostringstream result;
-  for (const auto& s : segments) {
+  for (int i = 0; i < segments.size(); ++i) {
     if (!first) {
       result << '\\';
     }
     first = false;
-    result << s;
+    result << segments[i];
   }
   // Preserve trailing separator if the input contained it.
   if (!path.empty() && is_separator(path[path.size() - 1])) {
