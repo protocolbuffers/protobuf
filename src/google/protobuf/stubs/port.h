@@ -47,7 +47,9 @@
 #include <google/protobuf/stubs/platform_macros.h>
 
 #undef PROTOBUF_LITTLE_ENDIAN
-#ifdef _WIN32
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__)
+  #define PROTOBUF_LITTLE_ENDIAN (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#elif defined(_WIN32)
   // Assuming windows is always little-endian.
   // TODO(xiaofeng): The PROTOBUF_LITTLE_ENDIAN is not only used for
   // optimization but also for correctness. We should define an
