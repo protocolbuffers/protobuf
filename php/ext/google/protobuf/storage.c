@@ -858,7 +858,6 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
     if (EXPECTED(property_ptr != val)) {
       zend_class_entry *subce = NULL;
       zval converted_value;
-      Z_SET_REFCOUNT_P(&converted_value, 1);
 
       if (upb_fielddef_ismap(field)) {
         const upb_msgdef* mapmsg = upb_fielddef_msgsubdef(field);

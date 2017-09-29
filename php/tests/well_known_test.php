@@ -123,11 +123,9 @@ class WellKnownTest extends TestBase {
 
         $m->setMethods([new Method()]);
         $this->assertSame(1, count($m->getMethods()));
-        var_dump($m->getMethods());
 
         $m->setOptions([new Option()]);
         $this->assertSame(1, count($m->getOptions()));
-        var_dump($m->getOptions());
 
         $m->setVersion("a");
         $this->assertSame("a", $m->getVersion());
