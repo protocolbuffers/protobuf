@@ -428,15 +428,8 @@ PHP_METHOD(Util, checkMessage) {
   RETURN_ZVAL(val, 1, 0);
 }
 
-PHP_METHOD(Util, checkRepeatedField) {
-  zval* val;
-  PHP_PROTO_LONG type;
-  const zend_class_entry* klass = NULL;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zl|C", &val, &type,
-                            &klass) == FAILURE) {
-    return;
-  }
-
+void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
+                          zval* val, zval* return_value) {
 #if PHP_MAJOR_VERSION >= 7
   if (Z_ISREF_P(val)) {
     ZVAL_DEREF(val);
@@ -492,18 +485,23 @@ PHP_METHOD(Util, checkRepeatedField) {
     zend_error(E_USER_ERROR, "Incorrect repeated field type.");
     return;
   }
-
 }
 
-PHP_METHOD(Util, checkMapField) {
+PHP_METHOD(Util, checkRepeatedField) {
   zval* val;
-  PHP_PROTO_LONG key_type, value_type;
+  PHP_PROTO_LONG type;
   const zend_class_entry* klass = NULL;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zll|C", &val, &key_type,
-                            &value_type, &klass) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zl|C", &val, &type,
+                            &klass) == FAILURE) {
     return;
   }
+  // check_repeated_field(klass, type, val, return_value);
 
+  RETURN_ZVAL(val, 1, 0);
+}
+
+void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
+                     PHP_PROTO_LONG value_type, zval* val, zval* return_value) {
 #if PHP_MAJOR_VERSION >= 7
   if (Z_ISREF_P(val)) {
     ZVAL_DEREF(val);
@@ -564,4 +562,15 @@ PHP_METHOD(Util, checkMapField) {
     zend_error(E_USER_ERROR, "Incorrect map field type.");
     return;
   }
+}
+
+PHP_METHOD(Util, checkMapField) {
+  zval* val;
+  PHP_PROTO_LONG key_type, value_type;
+  const zend_class_entry* klass = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zll|C", &val, &key_type,
+                            &value_type, &klass) == FAILURE) {
+    return;
+  }
+  RETURN_ZVAL(val, 1, 0);
 }
