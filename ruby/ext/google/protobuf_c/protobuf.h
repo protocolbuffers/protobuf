@@ -119,7 +119,7 @@ struct Descriptor {
   // Handlers hold type class references for sub-message fields directly in some
   // cases. We need to keep these rooted because they might otherwise be
   // collected.
-  VALUE typeclass_references;
+  // VALUE typeclass_references;
 };
 
 struct FieldDescriptor {
@@ -280,6 +280,7 @@ void Builder_free(void* _self);
 VALUE Builder_alloc(VALUE klass);
 void Builder_register(VALUE module);
 Builder* ruby_to_Builder(VALUE value);
+VALUE Builder_initialize(VALUE _self);
 VALUE Builder_add_message(VALUE _self, VALUE name);
 VALUE Builder_add_enum(VALUE _self, VALUE name);
 VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);

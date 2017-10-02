@@ -99,10 +99,12 @@ Gem::PackageTask.new(spec) do |pkg|
 end
 
 Rake::TestTask.new(:test => :build) do |t|
-  t.test_files = FileList["tests/*.rb"]
+  # t.test_files = FileList["tests/*.rb"]
+  t.test_files = FileList["test.rb"]
 end
 
-task :build => [:clean, :compile, :genproto]
+# task :build => [:clean, :compile, :genproto]
+task :build => [:clean, :compile]
 task :default => [:build]
 
 # vim:sw=2:et
