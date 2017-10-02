@@ -44,7 +44,8 @@
 // We require C++11 and Clang to use constexpr for variables, as GCC 4.8
 // requires constexpr to be consistent between declarations of variables
 // unnecessarily (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58541).
-#ifdef __clang__
+// VS 2017 Update 3 also supports this usage of constexpr.
+#if defined(__clang__) || (defined(_MSC_VER) && _MSC_VER >= 1911)
 #define PROTOBUF_CONSTEXPR_VAR constexpr
 #else  // !__clang__
 #define PROTOBUF_CONSTEXPR_VAR
