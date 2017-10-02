@@ -34,6 +34,10 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 
+static NSData *DataFromCStr(const char *str) {
+  return [NSData dataWithBytes:str length:strlen(str)];
+}
+
 @interface GPBUnknownFieldSet (GPBUnknownFieldSetTest)
 - (void)getTags:(int32_t*)tags;
 @end
@@ -112,6 +116,9 @@
   field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:4];
   [set1 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:10] autorelease];
+  [field addLengthDelimited:DataFromCStr("data1")];
+  [set1 addField:field];
 
   GPBUnknownFieldSet* set2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
   field = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
@@ -120,22 +127,26 @@
   field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:3];
   [set2 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:10] autorelease];
+  [field addLengthDelimited:DataFromCStr("data2")];
+  [set2 addField:field];
 
   GPBUnknownFieldSet* set3 = [[[GPBUnknownFieldSet alloc] init] autorelease];
   field = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
   [field addVarint:1];
   [set3 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
+  [field addVarint:2];
+  [set3 addField:field];
   field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:4];
   [set3 addField:field];
-
-  GPBUnknownFieldSet* set4 = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  field = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
-  [field addVarint:2];
-  [set4 addField:field];
-  field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:3];
-  [set4 addField:field];
+  [set3 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:10] autorelease];
+  [field addLengthDelimited:DataFromCStr("data1")];
+  [field addLengthDelimited:DataFromCStr("data2")];
+  [set3 addField:field];
 
   TestEmptyMessage* source1 = [TestEmptyMessage message];
   [source1 setUnknownFields:set1];
@@ -143,8 +154,6 @@
   [source2 setUnknownFields:set2];
   TestEmptyMessage* source3 = [TestEmptyMessage message];
   [source3 setUnknownFields:set3];
-  TestEmptyMessage* source4 = [TestEmptyMessage message];
-  [source4 setUnknownFields:set4];
 
   TestEmptyMessage* destination1 = [TestEmptyMessage message];
   [destination1 mergeFrom:source1];
@@ -152,9 +161,10 @@
 
   TestEmptyMessage* destination2 = [TestEmptyMessage message];
   [destination2 mergeFrom:source3];
-  [destination2 mergeFrom:source4];
 
   XCTAssertEqualObjects(destination1.data, destination2.data);
+  XCTAssertEqualObjects(destination1.data, source3.data);
+  XCTAssertEqualObjects(destination2.data, source3.data);
 }
 
 - (void)testClearMessage {
