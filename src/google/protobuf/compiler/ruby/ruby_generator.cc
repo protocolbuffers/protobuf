@@ -112,6 +112,21 @@ std::string TypeName(const google::protobuf::FieldDescriptor* field) {
   }
 }
 
+string StringifySyntax(FileDescriptor::Syntax syntax) {
+  switch (syntax) {
+    case FileDescriptor::SYNTAX_PROTO2:
+      return "proto2";
+    case FileDescriptor::SYNTAX_PROTO3:
+      return "proto3";
+    case FileDescriptor::SYNTAX_UNKNOWN:
+    default:
+      GOOGLE_LOG(FATAL) << "Unsupported syntax; this generator only supports proto2 "
+                    "and proto3 syntax.";
+      return "";
+  }
+}
+
+
 void GenerateField(const google::protobuf::FieldDescriptor* field,
                    google::protobuf::io::Printer* printer) {
 
@@ -451,8 +466,18 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
     }
   }
 
+  printer->Print("Google::Protobuf::DescriptorPool.generated_pool.build(\n");
+  printer->Indent();
+  printer->Print("Google::Protobuf::FileDescriptor.new.tap do |f|\n");
+  printer->Indent();
   printer->Print(
-    "Google::Protobuf::DescriptorPool.generated_pool.build do\n");
+    "f.syntax = :$syntax$\n",
+    "syntax", StringifySyntax(file->syntax()));
+  printer->Outdent();
+  printer->Print("end\n");
+  printer->Outdent();
+  printer->Print(") do\n");
+
   printer->Indent();
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessage(file->message_type(i), printer);

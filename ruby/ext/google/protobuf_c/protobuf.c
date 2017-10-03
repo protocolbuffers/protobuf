@@ -90,6 +90,7 @@ void Init_protobuf_c() {
   descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
   DescriptorPool_register(protobuf);
   Descriptor_register(protobuf);
+  FileDescriptor_register(protobuf);
   FieldDescriptor_register(protobuf);
   OneofDescriptor_register(protobuf);
   EnumDescriptor_register(protobuf);
