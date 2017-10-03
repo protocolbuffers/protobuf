@@ -228,7 +228,6 @@ DEFINE_CLASS(Descriptor, "Google::Protobuf::Descriptor");
 void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
-  // rb_gc_mark(self->typeclass_references);
 }
 
 void Descriptor_free(void* _self) {
@@ -283,7 +282,6 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->pb_serialize_handlers = NULL;
   self->json_serialize_handlers = NULL;
   self->json_serialize_handlers_preserve = NULL;
-  // self->typeclass_references = rb_ary_new();
   return ret;
 }
 
@@ -1635,7 +1633,6 @@ VALUE Builder_alloc(VALUE klass) {
   Builder* self = ALLOC(Builder);
   VALUE ret = TypedData_Wrap_Struct(
       klass, &_Builder_type, self);
-  // self->pending_list = rb_ary_new();
   self->pending_list = Qnil;
   self->defs = NULL;
   return ret;

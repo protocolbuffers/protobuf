@@ -116,10 +116,6 @@ struct Descriptor {
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
   const upb_handlers* json_serialize_handlers_preserve;
-  // Handlers hold type class references for sub-message fields directly in some
-  // cases. We need to keep these rooted because they might otherwise be
-  // collected.
-  // VALUE typeclass_references;
 };
 
 struct FieldDescriptor {
