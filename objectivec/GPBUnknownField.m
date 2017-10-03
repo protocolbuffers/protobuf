@@ -79,7 +79,7 @@
   result->mutableFixed32List_ = [mutableFixed32List_ copyWithZone:zone];
   result->mutableFixed64List_ = [mutableFixed64List_ copyWithZone:zone];
   result->mutableLengthDelimitedList_ =
-      [mutableLengthDelimitedList_ copyWithZone:zone];
+      [mutableLengthDelimitedList_ mutableCopyWithZone:zone];
   result->mutableVarintList_ = [mutableVarintList_ copyWithZone:zone];
   if (mutableGroupList_.count) {
     result->mutableGroupList_ = [[NSMutableArray allocWithZone:zone]
