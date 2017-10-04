@@ -436,6 +436,7 @@ void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
   }
 #endif
 
+  TSRMLS_FETCH();
   if (Z_TYPE_P(val) == IS_ARRAY) {
     HashTable* table = HASH_OF(val);
     HashPosition pointer;
@@ -508,6 +509,7 @@ void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
   }
 #endif
 
+  TSRMLS_FETCH();
   if (Z_TYPE_P(val) == IS_ARRAY) {
     HashTable* table = Z_ARRVAL_P(val);
     HashPosition pointer;

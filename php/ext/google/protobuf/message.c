@@ -424,19 +424,19 @@ PHP_METHOD(Message, whichOneof) {
   }
 
 // Forward declare file init functions
-static void init_file_any();
-static void init_file_api();
-static void init_file_duration();
-static void init_file_field_mask();
-static void init_file_empty();
-static void init_file_source_context();
-static void init_file_struct();
-static void init_file_timestamp();
-static void init_file_type();
-static void init_file_wrappers();
+static void init_file_any(TSRMLS_D);
+static void init_file_api(TSRMLS_D);
+static void init_file_duration(TSRMLS_D);
+static void init_file_field_mask(TSRMLS_D);
+static void init_file_empty(TSRMLS_D);
+static void init_file_source_context(TSRMLS_D);
+static void init_file_struct(TSRMLS_D);
+static void init_file_timestamp(TSRMLS_D);
+static void init_file_type(TSRMLS_D);
+static void init_file_wrappers(TSRMLS_D);
 
 // Define file init functions
-static void init_file_any() {
+static void init_file_any(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
   init_generated_pool_once(TSRMLS_C);
@@ -456,11 +456,11 @@ static void init_file_any() {
   is_initialized = true;
 }
 
-static void init_file_api() {
+static void init_file_api(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
-  init_file_source_context();
-  init_file_type();
+  init_file_source_context(TSRMLS_C);
+  init_file_type(TSRMLS_C);
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0aee050a19676f6f676c652f70726f746f6275662f6170692e70726f746f"
@@ -497,7 +497,7 @@ static void init_file_api() {
   is_initialized = true;
 }
 
-static void init_file_duration() {
+static void init_file_duration(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
   init_generated_pool_once(TSRMLS_C);
@@ -518,7 +518,7 @@ static void init_file_duration() {
   is_initialized = true;
 }
 
-static void init_file_field_mask() {
+static void init_file_field_mask(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
   init_generated_pool_once(TSRMLS_C);
@@ -539,7 +539,7 @@ static void init_file_field_mask() {
   is_initialized = true;
 }
 
-static void init_file_empty() {
+static void init_file_empty(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
   init_generated_pool_once(TSRMLS_C);
@@ -559,7 +559,7 @@ static void init_file_empty() {
   is_initialized = true;
 }
 
-static void init_file_source_context() {
+static void init_file_source_context(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
   init_generated_pool_once(TSRMLS_C);
@@ -581,7 +581,7 @@ static void init_file_source_context() {
   is_initialized = true;
 }
 
-static void init_file_struct() {
+static void init_file_struct(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
   init_generated_pool_once(TSRMLS_C);
@@ -616,7 +616,7 @@ static void init_file_struct() {
   is_initialized = true;
 }
 
-static void init_file_timestamp() {
+static void init_file_timestamp(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
   init_generated_pool_once(TSRMLS_C);
@@ -637,11 +637,11 @@ static void init_file_timestamp() {
   is_initialized = true;
 }
 
-static void init_file_type() {
+static void init_file_type(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
-  init_file_any();
-  init_file_source_context();
+  init_file_any(TSRMLS_C);
+  init_file_source_context(TSRMLS_C);
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0aba0c0a1a676f6f676c652f70726f746f6275662f747970652e70726f74"
@@ -706,7 +706,7 @@ static void init_file_type() {
   is_initialized = true;
 }
 
-static void init_file_wrappers() {
+static void init_file_wrappers(TSRMLS_D) {
   static bool is_initialized = false;
   if (is_initialized) return;
   init_generated_pool_once(TSRMLS_C);
@@ -905,7 +905,7 @@ void hex_to_binary(const char* hex, char** binary, int* binary_len) {
 }
 
 PHP_METHOD(Any, __construct) {
-  init_file_any();
+  init_file_any(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(any_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1067,7 +1067,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Duration",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Duration, __construct) {
-  init_file_duration();
+  init_file_duration(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(duration_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1103,7 +1103,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Timestamp",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Timestamp, __construct) {
-  init_file_timestamp();
+  init_file_timestamp(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(timestamp_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1223,7 +1223,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Api",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Api, __construct) {
-  init_file_api();
+  init_file_api(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(api_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1258,7 +1258,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\BoolValue",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(BoolValue, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(bool_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1287,7 +1287,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\BytesValue",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(BytesValue, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(bytes_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1316,7 +1316,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\DoubleValue",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(DoubleValue, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(double_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1361,7 +1361,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Enum",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Enum, __construct) {
-  init_file_type();
+  init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(enum_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1402,7 +1402,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\EnumValue",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(EnumValue, __construct) {
-  init_file_type();
+  init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(enum_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1433,7 +1433,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\FieldMask",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(FieldMask, __construct) {
-  init_file_field_mask();
+  init_file_field_mask(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(field_mask_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1498,7 +1498,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Field",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Field, __construct) {
-  init_file_type();
+  init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(field_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1536,7 +1536,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\FloatValue",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(FloatValue, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(float_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1561,7 +1561,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\GPBEmpty",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(GPBEmpty, __construct) {
-  init_file_empty();
+  init_file_empty(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(g_p_b_empty_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1589,7 +1589,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Int32Value",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Int32Value, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(int32_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1618,7 +1618,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Int64Value",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Int64Value, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(int64_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1647,7 +1647,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\ListValue",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(ListValue, __construct) {
-  init_file_struct();
+  init_file_struct(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(list_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1700,7 +1700,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Method",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Method, __construct) {
-  init_file_api();
+  init_file_api(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(method_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1739,7 +1739,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Mixin",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Mixin, __construct) {
-  init_file_api();
+  init_file_api(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(mixin_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1773,7 +1773,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Option",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Option, __construct) {
-  init_file_type();
+  init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(option_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1803,7 +1803,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\SourceContext",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(SourceContext, __construct) {
-  init_file_source_context();
+  init_file_source_context(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(source_context_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1832,7 +1832,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\StringValue",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(StringValue, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(string_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1861,7 +1861,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Struct",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Struct, __construct) {
-  init_file_struct();
+  init_file_struct(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(struct_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1910,7 +1910,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Type",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Type, __construct) {
-  init_file_type();
+  init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(type_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1944,7 +1944,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\UInt32Value",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(UInt32Value, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(u_int32_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -1973,7 +1973,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\UInt64Value",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(UInt64Value, __construct) {
-  init_file_wrappers();
+  init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(u_int64_value_type, intern PHP_PROTO_TSRMLS_CC);
 }
@@ -2013,7 +2013,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Value",
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(Value, __construct) {
-  init_file_struct();
+  init_file_struct(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
   custom_data_init(value_type, intern PHP_PROTO_TSRMLS_CC);
 }
