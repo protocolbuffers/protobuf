@@ -270,7 +270,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
   field_kind_init(TSRMLS_C);
   field_mask_init(TSRMLS_C);
   float_value_init(TSRMLS_C);
-  g_p_b_empty_init(TSRMLS_C);
+  empty_init(TSRMLS_C);
   int32_value_init(TSRMLS_C);
   int64_value_init(TSRMLS_C);
   list_value_init(TSRMLS_C);
