@@ -99,7 +99,13 @@ Gem::PackageTask.new(spec) do |pkg|
 end
 
 Rake::TestTask.new(:test => :build) do |t|
-  t.test_files = FileList["tests/*.rb"]
+  t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb")
+end
+
+# gc_test needs to be split out to ensure the generated file hasn't been
+# imported by other tests.
+Rake::TestTask.new(:gc_test => :build) do |t|
+  t.test_files = FileList["tests/gc_test.rb"]
 end
 
 task :build => [:clean, :compile, :genproto]

@@ -228,7 +228,6 @@ DEFINE_CLASS(Descriptor, "Google::Protobuf::Descriptor");
 void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
-  rb_gc_mark(self->typeclass_references);
 }
 
 void Descriptor_free(void* _self) {
@@ -283,7 +282,6 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->pb_serialize_handlers = NULL;
   self->json_serialize_handlers = NULL;
   self->json_serialize_handlers_preserve = NULL;
-  self->typeclass_references = rb_ary_new();
   return ret;
 }
 
@@ -1635,7 +1633,7 @@ VALUE Builder_alloc(VALUE klass) {
   Builder* self = ALLOC(Builder);
   VALUE ret = TypedData_Wrap_Struct(
       klass, &_Builder_type, self);
-  self->pending_list = rb_ary_new();
+  self->pending_list = Qnil;
   self->defs = NULL;
   return ret;
 }
@@ -1645,9 +1643,22 @@ void Builder_register(VALUE module) {
   rb_define_alloc_func(klass, Builder_alloc);
   rb_define_method(klass, "add_message", Builder_add_message, 1);
   rb_define_method(klass, "add_enum", Builder_add_enum, 1);
+  rb_define_method(klass, "initialize", Builder_initialize, 0);
   rb_define_method(klass, "finalize_to_pool", Builder_finalize_to_pool, 1);
   cBuilder = klass;
   rb_gc_register_address(&cBuilder);
+}
+
+/*
+ * call-seq:
+ *     Builder.new(d) => builder
+ *
+ * Create a new message builder.
+ */
+VALUE Builder_initialize(VALUE _self) {
+  DEFINE_SELF(Builder, self, _self);
+  self->pending_list = rb_ary_new();
+  return Qnil;
 }
 
 /*

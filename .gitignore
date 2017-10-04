@@ -171,3 +171,8 @@ js/testproto_libs2.js
 
 # Ignore the bazel symlinks
 /bazel-*
+
+# ruby test output
+ruby/lib/
+ruby/tests/generated_code_pb.rb
+ruby/tests/test_import_pb.rb
