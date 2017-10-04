@@ -496,8 +496,6 @@ PHP_METHOD(Util, checkRepeatedField) {
                             &klass) == FAILURE) {
     return;
   }
-  // check_repeated_field(klass, type, val, return_value);
-
   RETURN_ZVAL(val, 1, 0);
 }
 

@@ -256,20 +256,19 @@ static PHP_MINIT_FUNCTION(protobuf) {
   repeated_field_init(TSRMLS_C);
   repeated_field_iter_init(TSRMLS_C);
   util_init(TSRMLS_C);
-  any_init(TSRMLS_C);
-  duration_init(TSRMLS_C);
-  timestamp_init(TSRMLS_C);
 
+  any_init(TSRMLS_C);
   api_init(TSRMLS_C);
   bool_value_init(TSRMLS_C);
   bytes_value_init(TSRMLS_C);
   double_value_init(TSRMLS_C);
+  duration_init(TSRMLS_C);
   enum_init(TSRMLS_C);
   enum_value_init(TSRMLS_C);
-  field_init(TSRMLS_C);
-  field_mask_init(TSRMLS_C);
   field_cardinality_init(TSRMLS_C);
+  field_init(TSRMLS_C);
   field_kind_init(TSRMLS_C);
+  field_mask_init(TSRMLS_C);
   float_value_init(TSRMLS_C);
   g_p_b_empty_init(TSRMLS_C);
   int32_value_init(TSRMLS_C);
@@ -283,6 +282,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
   string_value_init(TSRMLS_C);
   struct_init(TSRMLS_C);
   syntax_init(TSRMLS_C);
+  timestamp_init(TSRMLS_C);
   type_init(TSRMLS_C);
   u_int32_value_init(TSRMLS_C);
   u_int64_value_init(TSRMLS_C);
