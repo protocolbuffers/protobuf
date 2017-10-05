@@ -364,11 +364,11 @@ class WellKnownTest extends TestBase {
 
         $m = new Int64Value();
         $m->setValue(1);
-        $this->assertSame(1, $m->getValue());
+        $this->assertEquals(1, $m->getValue());
 
         $m = new UInt64Value();
         $m->setValue(1);
-        $this->assertSame(1, $m->getValue());
+        $this->assertEquals(1, $m->getValue());
 
         $m = new Int32Value();
         $m->setValue(1);
