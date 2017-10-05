@@ -38,6 +38,7 @@
 zend_class_entry* message_type;
 zend_object_handlers* message_handlers;
 static const char TYPE_URL_PREFIX[] = "type.googleapis.com/";
+static void hex_to_binary(const char* hex, char** binary, int* binary_len);
 
 static  zend_function_entry message_methods[] = {
   PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
@@ -173,12 +174,11 @@ static void message_get_oneof_property_internal(zval* object, zval* member,
   const upb_fielddef* field;
   field = upb_msgdef_ntofz(self->descriptor->msgdef, Z_STRVAL_P(member));
   if (field == NULL) {
-    return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
+    return;
   }
 
-  return layout_get(
-      self->descriptor->layout, message_data(self), field,
-      ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+  layout_get(self->descriptor->layout, message_data(self), field,
+             ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
 #if PHP_MAJOR_VERSION < 7
@@ -883,7 +883,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Any", Any, any)
                                "" ,ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
-void hex_to_binary(const char* hex, char** binary, int* binary_len) {
+static void hex_to_binary(const char* hex, char** binary, int* binary_len) {
   int i;
   int hex_len = strlen(hex);
   *binary_len = hex_len / 2;
