@@ -62,52 +62,101 @@
 #define bytes(...) [self bytes_with_sentinel:0, __VA_ARGS__, 256]
 
 - (void)testDecodeZigZag {
-  XCTAssertEqual(0, GPBDecodeZigZag32(0));
-  XCTAssertEqual(-1, GPBDecodeZigZag32(1));
-  XCTAssertEqual(1, GPBDecodeZigZag32(2));
-  XCTAssertEqual(-2, GPBDecodeZigZag32(3));
-  XCTAssertEqual((int32_t)0x3FFFFFFF, GPBDecodeZigZag32(0x7FFFFFFE));
-  XCTAssertEqual((int32_t)0xC0000000, GPBDecodeZigZag32(0x7FFFFFFF));
-  XCTAssertEqual((int32_t)0x7FFFFFFF, GPBDecodeZigZag32(0xFFFFFFFE));
-  XCTAssertEqual((int32_t)0x80000000, GPBDecodeZigZag32(0xFFFFFFFF));
+  [self assertReadZigZag32:bytes(0x0) value:0];
+  [self assertReadZigZag32:bytes(0x1) value:-1];
+  [self assertReadZigZag32:bytes(0x2) value:1];
+  [self assertReadZigZag32:bytes(0x3) value:-2];
 
-  XCTAssertEqual((int64_t)0, GPBDecodeZigZag64(0));
-  XCTAssertEqual((int64_t)-1, GPBDecodeZigZag64(1));
-  XCTAssertEqual((int64_t)1, GPBDecodeZigZag64(2));
-  XCTAssertEqual((int64_t)-2, GPBDecodeZigZag64(3));
-  XCTAssertEqual((int64_t)0x000000003FFFFFFFL,
-                 GPBDecodeZigZag64(0x000000007FFFFFFEL));
-  XCTAssertEqual((int64_t)0xFFFFFFFFC0000000L,
-                 GPBDecodeZigZag64(0x000000007FFFFFFFL));
-  XCTAssertEqual((int64_t)0x000000007FFFFFFFL,
-                 GPBDecodeZigZag64(0x00000000FFFFFFFEL));
-  XCTAssertEqual((int64_t)0xFFFFFFFF80000000L,
-                 GPBDecodeZigZag64(0x00000000FFFFFFFFL));
-  XCTAssertEqual((int64_t)0x7FFFFFFFFFFFFFFFL,
-                 GPBDecodeZigZag64(0xFFFFFFFFFFFFFFFEL));
-  XCTAssertEqual((int64_t)0x8000000000000000L,
-                 GPBDecodeZigZag64(0xFFFFFFFFFFFFFFFFL));
+  [self assertReadZigZag32:bytes(0xFE, 0xFF, 0xFF, 0xFF, 0x07) value:(int32_t)0x3FFFFFFF];
+  [self assertReadZigZag32:bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x07) value:(int32_t)0xC0000000];
+  [self assertReadZigZag32:bytes(0xFE, 0xFF, 0xFF, 0xFF, 0x0F) value:(int32_t)0x7FFFFFFF];
+  [self assertReadZigZag32:bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x0F) value:(int32_t)0x80000000];
+
+  [self assertReadZigZag64:bytes(0x0) value:0];
+  [self assertReadZigZag64:bytes(0x1) value:-1];
+  [self assertReadZigZag64:bytes(0x2) value:1];
+  [self assertReadZigZag64:bytes(0x3) value:-2];
+
+  [self assertReadZigZag64:bytes(0xFE, 0xFF, 0xFF, 0xFF, 0x07) value:(int32_t)0x3FFFFFFF];
+  [self assertReadZigZag64:bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x07) value:(int32_t)0xC0000000];
+  [self assertReadZigZag64:bytes(0xFE, 0xFF, 0xFF, 0xFF, 0x0F) value:(int32_t)0x7FFFFFFF];
+  [self assertReadZigZag64:bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x0F) value:(int32_t)0x80000000];
+
+  [self assertReadZigZag64:bytes(0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01) value:0x7FFFFFFFFFFFFFFFL];
+  [self assertReadZigZag64:bytes(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01) value:0x8000000000000000L];
 }
 
 - (void)assertReadVarint:(NSData*)data value:(int64_t)value {
-  {
+  if (value <= INT32_MAX && value >= INT32_MIN) {
+    {
+      GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+      XCTAssertEqual((int32_t)value, [input readInt32]);
+    }
+    {
+      GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+      XCTAssertEqual((int32_t)value, [input readEnum]);
+    }
+  }
+  if (value <= UINT32_MAX && value >= 0) {
     GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
-    XCTAssertEqual((int32_t)value, [input readInt32]);
+    XCTAssertEqual((uint32_t)value, [input readUInt32]);
   }
   {
     GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
     XCTAssertEqual(value, [input readInt64]);
   }
+  if (value >= 0) {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual((uint64_t)value, [input readUInt64]);
+  }
 }
 
 - (void)assertReadLittleEndian32:(NSData*)data value:(int32_t)value {
-  GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
-  XCTAssertEqual(value, [input readSFixed32]);
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value, [input readSFixed32]);
+  }
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(GPBConvertInt32ToFloat(value), [input readFloat]);
+  }
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual((uint32_t)value, [input readFixed32]);
+  }
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value, [input readSFixed32]);
+  }
 }
 
 - (void)assertReadLittleEndian64:(NSData*)data value:(int64_t)value {
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value, [input readSFixed64]);
+  }
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(GPBConvertInt64ToDouble(value), [input readDouble]);
+  }
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual((uint64_t)value, [input readFixed64]);
+  }
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value, [input readSFixed64]);
+  }
+}
+
+- (void)assertReadZigZag32:(NSData*)data value:(int64_t)value {
   GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
-  XCTAssertEqual(value, [input readSFixed64]);
+  XCTAssertEqual((int32_t)value, [input readSInt32]);
+}
+
+- (void)assertReadZigZag64:(NSData*)data value:(int64_t)value {
+  GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+  XCTAssertEqual(value, [input readSInt64]);
 }
 
 - (void)assertReadVarintFailure:(NSData*)data {
@@ -128,12 +177,28 @@
   XCTAssertEqual(((uint8_t*)data.bytes)[1], (uint8_t)0x74);
 }
 
+- (void)testReadBool {
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:bytes(0x00)];
+    XCTAssertEqual(NO, [input readBool]);
+  }
+  {
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:bytes(0x01)];
+    XCTAssertEqual(YES, [input readBool]);
+  }
+}
+
 - (void)testReadVarint {
   [self assertReadVarint:bytes(0x00) value:0];
   [self assertReadVarint:bytes(0x01) value:1];
   [self assertReadVarint:bytes(0x7f) value:127];
   // 14882
   [self assertReadVarint:bytes(0xa2, 0x74) value:(0x22 << 0) | (0x74 << 7)];
+  // 1904930
+  [self assertReadVarint:bytes(0xa2, 0xa2, 0x74) value:(0x22 << 0) | (0x22 << 7) | (0x74 << 14)];
+  // 243831074
+  [self assertReadVarint:bytes(0xa2, 0xa2, 0xa2, 0x74)
+                   value:(0x22 << 0) | (0x22 << 7) | (0x22 << 14) | (0x74 << 21)];
   // 2961488830
   [self assertReadVarint:bytes(0xbe, 0xf7, 0x92, 0x84, 0x0b)
                    value:(0x3e << 0) | (0x77 << 7) | (0x12 << 14) |
@@ -161,6 +226,45 @@
   [self assertReadVarintFailure:bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
                                       0x80, 0x80, 0x80, 0x00)];
   [self assertReadVarintFailure:bytes(0x80)];
+}
+
+- (void)testReadVarint32FromVarint64 {
+  {
+    // Turn on lower 31 bits of the upper half on a 64 bit varint.
+    NSData* data = bytes(0x80, 0x80, 0x80, 0x80, 0xF0, 0xFF, 0xFF, 0xFF, 0xFF, 0x7E);
+
+    int32_t value32 = 0x0;
+    GPBCodedInputStream* input32 = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value32, [input32 readInt32]);
+
+    int64_t value64 = INT64_MAX & 0xFFFFFFFF00000000;
+    GPBCodedInputStream* input64 = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value64, [input64 readInt64]);
+  }
+  {
+    // Turn on lower 31 bits and lower 31 bits on upper half on a 64 bit varint.
+    NSData* data = bytes(0xFF, 0xFF, 0xFF, 0xFF, 0xF7, 0xFF, 0xFF, 0xFF, 0xFF, 0x7E);
+
+    int32_t value32 = INT32_MAX;
+    GPBCodedInputStream* input32 = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value32, [input32 readInt32]);
+
+    int64_t value64 = INT64_MAX & 0xFFFFFFFF7FFFFFFF;
+    GPBCodedInputStream* input64 = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value64, [input64 readInt64]);
+  }
+  {
+    // Turn on bits 32 and 64 bit on a 64 bit varint.
+    NSData* data = bytes(0x80, 0x80, 0x80, 0x80, 0x88, 0x80, 0x80, 0x80, 0x80, 0x01);
+
+    int32_t value32 = INT32_MIN;
+    GPBCodedInputStream* input32 = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value32, [input32 readInt32]);
+
+    int64_t value64 = INT64_MIN | (0x01L << 31);
+    GPBCodedInputStream* input64 = [GPBCodedInputStream streamWithData:data];
+    XCTAssertEqual(value64, [input64 readInt64]);
+  }
 }
 
 - (void)testReadLittleEndian {
@@ -263,6 +367,27 @@
   XCTAssertEqual(tag, [input readTag]);
 
   XCTAssertThrows([input readBytes]);
+}
+
+- (void)testReadEmptyString {
+  NSData *data = bytes(0x00);
+  GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+  XCTAssertEqualObjects(@"", [input readString]);
+}
+
+- (void)testInvalidGroupEndTagThrows {
+  NSData *data = bytes(0x0B, 0x1A, 0x02, 0x4B, 0x50, 0x14);
+  GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+  XCTAssertThrowsSpecificNamed([input skipMessage],
+                               NSException,
+                               GPBCodedInputStreamException,
+                               @"should throw a GPBCodedInputStreamException exception ");
+}
+
+- (void)testBytesWithNegativeSize {
+  NSData *data = bytes(0xFF, 0xFF, 0xFF, 0xFF, 0x0F);
+  GPBCodedInputStream *input = [GPBCodedInputStream streamWithData:data];
+  XCTAssertNil([input readBytes]);
 }
 
 // Verifies fix for b/10315336.

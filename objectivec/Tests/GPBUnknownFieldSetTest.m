@@ -34,10 +34,6 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 
-static NSData *DataFromCStr(const char *str) {
-  return [NSData dataWithBytes:str length:strlen(str)];
-}
-
 @interface GPBUnknownFieldSet (GPBUnknownFieldSetTest)
 - (void)getTags:(int32_t*)tags;
 @end
