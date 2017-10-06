@@ -127,6 +127,16 @@
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
   }
 
+#define PHP_PROTO_INIT_ENUMCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)     \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC);
+#define PHP_PROTO_INIT_ENUMCLASS_END \
+  }
+
 #define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
     zend_class_entry class_type;                                             \
@@ -365,6 +375,16 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
   }
 
+#define PHP_PROTO_INIT_ENUMCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)     \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC);
+#define PHP_PROTO_INIT_ENUMCLASS_END \
+  }
+
 #define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
     zend_class_entry class_type;                                             \
@@ -517,40 +537,108 @@ static inline int php_proto_zend_lookup_class(
 // ----------------------------------------------------------------------------
 
 struct Any;
-struct DescriptorPool;
+struct Api;
+struct BoolValue;
+struct BytesValue;
 struct Descriptor;
+struct DescriptorPool;
+struct DoubleValue;
 struct Duration;
+struct Enum;
 struct EnumDescriptor;
+struct EnumValue;
 struct EnumValueDescriptor;
+struct Field;
 struct FieldDescriptor;
+struct FieldMask;
+struct Field_Cardinality;
+struct Field_Kind;
+struct FloatValue;
+struct GPBEmpty;
+struct Int32Value;
+struct Int64Value;
 struct InternalDescriptorPool;
+struct ListValue;
+struct Map;
+struct MapIter;
 struct MessageField;
 struct MessageHeader;
 struct MessageLayout;
+struct Method;
+struct Mixin;
+struct NullValue;
+struct Oneof;
+struct Option;
 struct RepeatedField;
 struct RepeatedFieldIter;
-struct Map;
-struct MapIter;
-struct Oneof;
+struct SourceContext;
+struct StringValue;
+struct Struct;
+struct Syntax;
 struct Timestamp;
+struct Type;
+struct UInt32Value;
+struct UInt64Value;
+struct Value;
 
 typedef struct Any Any;
-typedef struct DescriptorPool DescriptorPool;
+typedef struct Api Api;
+typedef struct BoolValue BoolValue;
+typedef struct BytesValue BytesValue;
 typedef struct Descriptor Descriptor;
+typedef struct Descriptor Descriptor;
+typedef struct DescriptorPool DescriptorPool;
+typedef struct DescriptorPool DescriptorPool;
+typedef struct DoubleValue DoubleValue;
 typedef struct Duration Duration;
+typedef struct Enum Enum;
 typedef struct EnumDescriptor EnumDescriptor;
+typedef struct EnumDescriptor EnumDescriptor;
+typedef struct EnumValue EnumValue;
 typedef struct EnumValueDescriptor EnumValueDescriptor;
+typedef struct EnumValueDescriptor EnumValueDescriptor;
+typedef struct Field Field;
 typedef struct FieldDescriptor FieldDescriptor;
+typedef struct FieldDescriptor FieldDescriptor;
+typedef struct FieldMask FieldMask;
+typedef struct Field_Cardinality Field_Cardinality;
+typedef struct Field_Kind Field_Kind;
+typedef struct FloatValue FloatValue;
+typedef struct GPBEmpty GPBEmpty;
+typedef struct Int32Value Int32Value;
+typedef struct Int64Value Int64Value;
 typedef struct InternalDescriptorPool InternalDescriptorPool;
-typedef struct MessageField MessageField;
-typedef struct MessageHeader MessageHeader;
-typedef struct MessageLayout MessageLayout;
-typedef struct RepeatedField RepeatedField;
-typedef struct RepeatedFieldIter RepeatedFieldIter;
+typedef struct InternalDescriptorPool InternalDescriptorPool;
+typedef struct ListValue ListValue;
+typedef struct Map Map;
 typedef struct Map Map;
 typedef struct MapIter MapIter;
+typedef struct MapIter MapIter;
+typedef struct MessageField MessageField;
+typedef struct MessageField MessageField;
+typedef struct MessageHeader MessageHeader;
+typedef struct MessageHeader MessageHeader;
+typedef struct MessageLayout MessageLayout;
+typedef struct MessageLayout MessageLayout;
+typedef struct Method Method;
+typedef struct Mixin Mixin;
+typedef struct NullValue NullValue;
 typedef struct Oneof Oneof;
+typedef struct Oneof Oneof;
+typedef struct Option Option;
+typedef struct RepeatedField RepeatedField;
+typedef struct RepeatedField RepeatedField;
+typedef struct RepeatedFieldIter RepeatedFieldIter;
+typedef struct RepeatedFieldIter RepeatedFieldIter;
+typedef struct SourceContext SourceContext;
+typedef struct StringValue StringValue;
+typedef struct Struct Struct;
+typedef struct Syntax Syntax;
 typedef struct Timestamp Timestamp;
+typedef struct Type Type;
+typedef struct UInt32Value UInt32Value;
+typedef struct UInt64Value UInt64Value;
+typedef struct Value Value;
 
 // -----------------------------------------------------------------------------
 // Globals.
@@ -561,21 +649,48 @@ ZEND_END_MODULE_GLOBALS(protobuf)
 
 // Init module and PHP classes.
 void any_init(TSRMLS_D);
+void api_init(TSRMLS_D);
+void bool_value_init(TSRMLS_D);
+void bytes_value_init(TSRMLS_D);
 void descriptor_init(TSRMLS_D);
-void duration_init(TSRMLS_D);
-void enum_descriptor_init(TSRMLS_D);
 void descriptor_pool_init(TSRMLS_D);
-void internal_descriptor_pool_init(TSRMLS_D);
+void double_value_init(TSRMLS_D);
+void duration_init(TSRMLS_D);
+void empty_init(TSRMLS_D);
+void enum_descriptor_init(TSRMLS_D);
+void enum_init(TSRMLS_D);
+void enum_value_init(TSRMLS_D);
+void field_cardinality_init(TSRMLS_D);
 void field_descriptor_init(TSRMLS_D);
+void field_init(TSRMLS_D);
+void field_kind_init(TSRMLS_D);
+void field_mask_init(TSRMLS_D);
+void float_value_init(TSRMLS_D);
 void gpb_type_init(TSRMLS_D);
+void int32_value_init(TSRMLS_D);
+void int64_value_init(TSRMLS_D);
+void internal_descriptor_pool_init(TSRMLS_D);
+void list_value_init(TSRMLS_D);
 void map_field_init(TSRMLS_D);
 void map_field_iter_init(TSRMLS_D);
 void message_init(TSRMLS_D);
+void method_init(TSRMLS_D);
+void mixin_init(TSRMLS_D);
+void null_value_init(TSRMLS_D);
 void oneof_descriptor_init(TSRMLS_D);
+void option_init(TSRMLS_D);
 void repeated_field_init(TSRMLS_D);
 void repeated_field_iter_init(TSRMLS_D);
+void source_context_init(TSRMLS_D);
+void string_value_init(TSRMLS_D);
+void struct_init(TSRMLS_D);
+void syntax_init(TSRMLS_D);
 void timestamp_init(TSRMLS_D);
+void type_init(TSRMLS_D);
+void uint32_value_init(TSRMLS_D);
+void uint64_value_init(TSRMLS_D);
 void util_init(TSRMLS_D);
+void value_init(TSRMLS_D);
 
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
@@ -837,6 +952,11 @@ bool protobuf_convert_to_double(zval* from, double* to);
 bool protobuf_convert_to_bool(zval* from, int8_t* to);
 bool protobuf_convert_to_string(zval* from);
 
+void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
+                          zval* val, zval* return_value);
+void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
+                     PHP_PROTO_LONG value_type, zval* val, zval* return_value);
+
 PHP_METHOD(Util, checkInt32);
 PHP_METHOD(Util, checkUint32);
 PHP_METHOD(Util, checkInt64);
@@ -1051,9 +1171,205 @@ PHP_METHOD(Timestamp, setSeconds);
 PHP_METHOD(Timestamp, getNanos);
 PHP_METHOD(Timestamp, setNanos);
 
+PHP_METHOD(Api, __construct);
+PHP_METHOD(Api, getName);
+PHP_METHOD(Api, setName);
+PHP_METHOD(Api, getMethods);
+PHP_METHOD(Api, setMethods);
+PHP_METHOD(Api, getOptions);
+PHP_METHOD(Api, setOptions);
+PHP_METHOD(Api, getVersion);
+PHP_METHOD(Api, setVersion);
+PHP_METHOD(Api, getSourceContext);
+PHP_METHOD(Api, setSourceContext);
+PHP_METHOD(Api, getMixins);
+PHP_METHOD(Api, setMixins);
+PHP_METHOD(Api, getSyntax);
+PHP_METHOD(Api, setSyntax);
+
+PHP_METHOD(BoolValue, __construct);
+PHP_METHOD(BoolValue, getValue);
+PHP_METHOD(BoolValue, setValue);
+
+PHP_METHOD(BytesValue, __construct);
+PHP_METHOD(BytesValue, getValue);
+PHP_METHOD(BytesValue, setValue);
+
+PHP_METHOD(DoubleValue, __construct);
+PHP_METHOD(DoubleValue, getValue);
+PHP_METHOD(DoubleValue, setValue);
+
+PHP_METHOD(Enum, __construct);
+PHP_METHOD(Enum, getName);
+PHP_METHOD(Enum, setName);
+PHP_METHOD(Enum, getEnumvalue);
+PHP_METHOD(Enum, setEnumvalue);
+PHP_METHOD(Enum, getOptions);
+PHP_METHOD(Enum, setOptions);
+PHP_METHOD(Enum, getSourceContext);
+PHP_METHOD(Enum, setSourceContext);
+PHP_METHOD(Enum, getSyntax);
+PHP_METHOD(Enum, setSyntax);
+
+PHP_METHOD(EnumValue, __construct);
+PHP_METHOD(EnumValue, getName);
+PHP_METHOD(EnumValue, setName);
+PHP_METHOD(EnumValue, getNumber);
+PHP_METHOD(EnumValue, setNumber);
+PHP_METHOD(EnumValue, getOptions);
+PHP_METHOD(EnumValue, setOptions);
+
+PHP_METHOD(FieldMask, __construct);
+PHP_METHOD(FieldMask, getPaths);
+PHP_METHOD(FieldMask, setPaths);
+
+PHP_METHOD(Field, __construct);
+PHP_METHOD(Field, getKind);
+PHP_METHOD(Field, setKind);
+PHP_METHOD(Field, getCardinality);
+PHP_METHOD(Field, setCardinality);
+PHP_METHOD(Field, getNumber);
+PHP_METHOD(Field, setNumber);
+PHP_METHOD(Field, getName);
+PHP_METHOD(Field, setName);
+PHP_METHOD(Field, getTypeUrl);
+PHP_METHOD(Field, setTypeUrl);
+PHP_METHOD(Field, getOneofIndex);
+PHP_METHOD(Field, setOneofIndex);
+PHP_METHOD(Field, getPacked);
+PHP_METHOD(Field, setPacked);
+PHP_METHOD(Field, getOptions);
+PHP_METHOD(Field, setOptions);
+PHP_METHOD(Field, getJsonName);
+PHP_METHOD(Field, setJsonName);
+PHP_METHOD(Field, getDefaultValue);
+PHP_METHOD(Field, setDefaultValue);
+
+PHP_METHOD(FloatValue, __construct);
+PHP_METHOD(FloatValue, getValue);
+PHP_METHOD(FloatValue, setValue);
+
+PHP_METHOD(GPBEmpty, __construct);
+
+PHP_METHOD(Int32Value, __construct);
+PHP_METHOD(Int32Value, getValue);
+PHP_METHOD(Int32Value, setValue);
+
+PHP_METHOD(Int64Value, __construct);
+PHP_METHOD(Int64Value, getValue);
+PHP_METHOD(Int64Value, setValue);
+
+PHP_METHOD(ListValue, __construct);
+PHP_METHOD(ListValue, getValues);
+PHP_METHOD(ListValue, setValues);
+
+PHP_METHOD(Method, __construct);
+PHP_METHOD(Method, getName);
+PHP_METHOD(Method, setName);
+PHP_METHOD(Method, getRequestTypeUrl);
+PHP_METHOD(Method, setRequestTypeUrl);
+PHP_METHOD(Method, getRequestStreaming);
+PHP_METHOD(Method, setRequestStreaming);
+PHP_METHOD(Method, getResponseTypeUrl);
+PHP_METHOD(Method, setResponseTypeUrl);
+PHP_METHOD(Method, getResponseStreaming);
+PHP_METHOD(Method, setResponseStreaming);
+PHP_METHOD(Method, getOptions);
+PHP_METHOD(Method, setOptions);
+PHP_METHOD(Method, getSyntax);
+PHP_METHOD(Method, setSyntax);
+
+PHP_METHOD(Mixin, __construct);
+PHP_METHOD(Mixin, getName);
+PHP_METHOD(Mixin, setName);
+PHP_METHOD(Mixin, getRoot);
+PHP_METHOD(Mixin, setRoot);
+
+PHP_METHOD(Option, __construct);
+PHP_METHOD(Option, getName);
+PHP_METHOD(Option, setName);
+PHP_METHOD(Option, getValue);
+PHP_METHOD(Option, setValue);
+
+PHP_METHOD(SourceContext, __construct);
+PHP_METHOD(SourceContext, getFileName);
+PHP_METHOD(SourceContext, setFileName);
+
+PHP_METHOD(StringValue, __construct);
+PHP_METHOD(StringValue, getValue);
+PHP_METHOD(StringValue, setValue);
+
+PHP_METHOD(Struct, __construct);
+PHP_METHOD(Struct, getFields);
+PHP_METHOD(Struct, setFields);
+
+PHP_METHOD(Type, __construct);
+PHP_METHOD(Type, getName);
+PHP_METHOD(Type, setName);
+PHP_METHOD(Type, getFields);
+PHP_METHOD(Type, setFields);
+PHP_METHOD(Type, getOneofs);
+PHP_METHOD(Type, setOneofs);
+PHP_METHOD(Type, getOptions);
+PHP_METHOD(Type, setOptions);
+PHP_METHOD(Type, getSourceContext);
+PHP_METHOD(Type, setSourceContext);
+PHP_METHOD(Type, getSyntax);
+PHP_METHOD(Type, setSyntax);
+
+PHP_METHOD(UInt32Value, __construct);
+PHP_METHOD(UInt32Value, getValue);
+PHP_METHOD(UInt32Value, setValue);
+
+PHP_METHOD(UInt64Value, __construct);
+PHP_METHOD(UInt64Value, getValue);
+PHP_METHOD(UInt64Value, setValue);
+
+PHP_METHOD(Value, __construct);
+PHP_METHOD(Value, getNullValue);
+PHP_METHOD(Value, setNullValue);
+PHP_METHOD(Value, getNumberValue);
+PHP_METHOD(Value, setNumberValue);
+PHP_METHOD(Value, getStringValue);
+PHP_METHOD(Value, setStringValue);
+PHP_METHOD(Value, getBoolValue);
+PHP_METHOD(Value, setBoolValue);
+PHP_METHOD(Value, getStructValue);
+PHP_METHOD(Value, setStructValue);
+PHP_METHOD(Value, getListValue);
+PHP_METHOD(Value, setListValue);
+PHP_METHOD(Value, getKind);
+
 extern zend_class_entry* any_type;
+extern zend_class_entry* api_type;
+extern zend_class_entry* bool_value_type;
+extern zend_class_entry* bytes_value_type;
+extern zend_class_entry* double_value_type;
 extern zend_class_entry* duration_type;
+extern zend_class_entry* empty_type;
+extern zend_class_entry* enum_type;
+extern zend_class_entry* enum_value_type;
+extern zend_class_entry* field_cardinality_type;
+extern zend_class_entry* field_kind_type;
+extern zend_class_entry* field_mask_type;
+extern zend_class_entry* field_type;
+extern zend_class_entry* float_value_type;
+extern zend_class_entry* int32_value_type;
+extern zend_class_entry* int64_value_type;
+extern zend_class_entry* list_value_type;
+extern zend_class_entry* method_type;
+extern zend_class_entry* mixin_type;
+extern zend_class_entry* null_value_type;
+extern zend_class_entry* option_type;
+extern zend_class_entry* source_context_type;
+extern zend_class_entry* string_value_type;
+extern zend_class_entry* struct_type;
+extern zend_class_entry* syntax_type;
 extern zend_class_entry* timestamp_type;
+extern zend_class_entry* type_type;
+extern zend_class_entry* uint32_value_type;
+extern zend_class_entry* uint64_value_type;
+extern zend_class_entry* value_type;
 
 // -----------------------------------------------------------------------------
 // Upb.

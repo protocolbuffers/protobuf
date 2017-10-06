@@ -358,7 +358,6 @@ generate_php_test_proto() {
     proto/test_service_namespace.proto   \
     proto/test_descriptors.proto
   pushd ../../src
-  ./protoc --php_out=../php/tests/generated google/protobuf/empty.proto
   ./protoc --php_out=../php/tests/generated -I../php/tests -I. ../php/tests/proto/test_import_descriptor_proto.proto
   popd
   popd
