@@ -37,7 +37,7 @@ use Google\Protobuf\Internal\Uint64;
 class CodedInputStream
 {
 
-    public $buffer;
+    private $buffer;
     private $buffer_size_after_limit;
     private $buffer_end;
     private $current;
