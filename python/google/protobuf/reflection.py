@@ -51,6 +51,7 @@ __author__ = 'robinson@google.com (Will Robinson)'
 from google.protobuf.internal import api_implementation
 from google.protobuf import message
 
+
 if api_implementation.Type() == 'cpp':
   from google.protobuf.pyext import cpp_message as message_impl
 else:
