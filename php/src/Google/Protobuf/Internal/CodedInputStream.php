@@ -37,7 +37,7 @@ use Google\Protobuf\Internal\Uint64;
 class CodedInputStream
 {
 
-    private $buffer;
+    public $buffer;
     private $buffer_size_after_limit;
     private $buffer_end;
     private $current;
@@ -78,11 +78,16 @@ class CodedInputStream
         return $this->buffer_end - $this->current;
     }
 
-    private function current()
+    public function current()
     {
         return $this->total_bytes_read -
             ($this->buffer_end - $this->current +
             $this->buffer_size_after_limit);
+    }
+
+    public function substr($start, $end)
+    {
+        return substr($this->buffer, $start, $end - $start);
     }
 
     private function recomputeBufferLimits()
