@@ -19,11 +19,39 @@ directory to build `protoc`, since all the tests depend on it.
 
     $ make
 
-Then to run the tests against the C++ implementation, run:
+Running the tests for C++
+-------------------------
+
+To run the tests against the C++ implementation, run:
 
     $ cd conformance && make test_cpp
 
-More tests and languages will be added soon!
+Running the tests for JavaScript (Node.js)
+------------------------------------------
+
+To run the JavaScript tests against Node.js, make sure you have "node"
+on your path and then run:
+
+    $ cd conformance && make test_nodejs
+
+Running the tests for Ruby (MRI)
+--------------------------------
+
+To run the Ruby tests against MRI, first build the C extension:
+
+    $ cd ruby && rake
+
+Then run the tests like so:
+
+    $ cd conformance && make test_ruby
+
+Running the tests for other languages
+-------------------------------------
+
+Most of the languages in the Protobuf source tree are set up to run
+conformance tests.  However some of them are more tricky to set up
+properly.  See `tests.sh` in the base of the repository to see how
+Travis runs the tests.
 
 Testing other Protocol Buffer implementations
 ---------------------------------------------

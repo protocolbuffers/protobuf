@@ -9,14 +9,14 @@ import java.io.PrintStream;
 class ListPeople {
   // Iterates though all people in the AddressBook and prints info about them.
   static void Print(AddressBook addressBook) {
-    for (Person person: addressBook.getPersonList()) {
+    for (Person person: addressBook.getPeopleList()) {
       System.out.println("Person ID: " + person.getId());
       System.out.println("  Name: " + person.getName());
-      if (person.hasEmail()) {
+      if (!person.getEmail().isEmpty()) {
         System.out.println("  E-mail address: " + person.getEmail());
       }
 
-      for (Person.PhoneNumber phoneNumber : person.getPhoneList()) {
+      for (Person.PhoneNumber phoneNumber : person.getPhonesList()) {
         switch (phoneNumber.getType()) {
           case MOBILE:
             System.out.print("  Mobile phone #: ");
@@ -26,6 +26,9 @@ class ListPeople {
             break;
           case WORK:
             System.out.print("  Work phone #: ");
+            break;
+          default:
+            System.out.println(" Unknown phone #: ");
             break;
         }
         System.out.println(phoneNumber.getNumber());

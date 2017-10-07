@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Protocol Buffers - Google's data interchange format
@@ -35,19 +35,35 @@
 
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
-import unittest
-
+try:
+  import unittest2 as unittest  #PY26
+except ImportError:
+  import unittest
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import encoder
+from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import missing_enum_values_pb2
 from google.protobuf.internal import test_util
+from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import type_checkers
 
 
-class UnknownFieldsTest(unittest.TestCase):
+BaseTestCase = testing_refleaks.BaseTestCase
+
+
+# CheckUnknownField() cannot be used by the C++ implementation because
+# some protect members are called. It is not a behavior difference
+# for python and C++ implementation.
+def SkipCheckUnknownFieldIfCppImplementation(func):
+  return unittest.skipIf(
+      api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
+      'Addtional test for pure python involved protect members')(func)
+
+
+class UnknownFieldsTest(BaseTestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -64,11 +80,24 @@ class UnknownFieldsTest(unittest.TestCase):
     # stdout.
     self.assertTrue(data == self.all_fields_data)
 
-  def testSerializeProto3(self):
-    # Verify that proto3 doesn't preserve unknown fields.
+  def expectSerializeProto3(self, preserve):
     message = unittest_proto3_arena_pb2.TestEmptyMessage()
     message.ParseFromString(self.all_fields_data)
-    self.assertEqual(0, len(message.SerializeToString()))
+    if preserve:
+      self.assertEqual(self.all_fields_data, message.SerializeToString())
+    else:
+      self.assertEqual(0, len(message.SerializeToString()))
+
+  def testSerializeProto3(self):
+    # Verify that proto3 unknown fields behavior.
+    default_preserve = (api_implementation
+                        .GetPythonProto3PreserveUnknownsDefault())
+    self.assertEqual(False, default_preserve)
+    self.expectSerializeProto3(default_preserve)
+    api_implementation.SetPythonProto3PreserveUnknownsDefault(
+        not default_preserve)
+    self.expectSerializeProto3(not default_preserve)
+    api_implementation.SetPythonProto3PreserveUnknownsDefault(default_preserve)
 
   def testByteSize(self):
     self.assertEqual(self.all_fields.ByteSize(), self.empty_message.ByteSize())
@@ -84,15 +113,15 @@ class UnknownFieldsTest(unittest.TestCase):
 
     # Add an unknown extension.
     item = raw.item.add()
-    item.type_id = 1545009
-    message1 = unittest_mset_pb2.TestMessageSetExtension1()
+    item.type_id = 98418603
+    message1 = message_set_extensions_pb2.TestMessageSetExtension1()
     message1.i = 12345
     item.message = message1.SerializeToString()
 
     serialized = raw.SerializeToString()
 
     # Parse message using the message set wire format.
-    proto = unittest_mset_pb2.TestMessageSet()
+    proto = message_set_extensions_pb2.TestMessageSet()
     proto.MergeFromString(serialized)
 
     # Verify that the unknown extension is serialized unchanged
@@ -101,13 +130,6 @@ class UnknownFieldsTest(unittest.TestCase):
     new_raw.MergeFromString(reserialized)
     self.assertEqual(raw, new_raw)
 
-  # C++ implementation for proto2 does not currently take into account unknown
-  # fields when checking equality.
-  #
-  # TODO(haberman): fix this.
-  @unittest.skipIf(
-      api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
-      'C++ implementation does not expose unknown fields to Python')
   def testEquals(self):
     message = unittest_pb2.TestEmptyMessage()
     message.ParseFromString(self.all_fields_data)
@@ -117,11 +139,28 @@ class UnknownFieldsTest(unittest.TestCase):
     message.ParseFromString(self.all_fields.SerializeToString())
     self.assertNotEqual(self.empty_message, message)
 
+  def testDiscardUnknownFields(self):
+    self.empty_message.DiscardUnknownFields()
+    self.assertEqual(b'', self.empty_message.SerializeToString())
+    # Test message field and repeated message field.
+    message = unittest_pb2.TestAllTypes()
+    other_message = unittest_pb2.TestAllTypes()
+    other_message.optional_string = 'discard'
+    message.optional_nested_message.ParseFromString(
+        other_message.SerializeToString())
+    message.repeated_nested_message.add().ParseFromString(
+        other_message.SerializeToString())
+    self.assertNotEqual(
+        b'', message.optional_nested_message.SerializeToString())
+    self.assertNotEqual(
+        b'', message.repeated_nested_message[0].SerializeToString())
+    message.DiscardUnknownFields()
+    self.assertEqual(b'', message.optional_nested_message.SerializeToString())
+    self.assertEqual(
+        b'', message.repeated_nested_message[0].SerializeToString())
 
-@unittest.skipIf(
-    api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
-    'C++ implementation does not expose unknown fields to Python')
-class UnknownFieldsAccessorsTest(unittest.TestCase):
+
+class UnknownFieldsAccessorsTest(BaseTestCase):
 
   def setUp(self):
     self.descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -130,51 +169,56 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.all_fields_data = self.all_fields.SerializeToString()
     self.empty_message = unittest_pb2.TestEmptyMessage()
     self.empty_message.ParseFromString(self.all_fields_data)
-    self.unknown_fields = self.empty_message._unknown_fields
 
-  def GetField(self, name):
+  # CheckUnknownField() is an additional Pure Python check which checks
+  # a detail of unknown fields. It cannot be used by the C++
+  # implementation because some protect members are called.
+  # The test is added for historical reasons. It is not necessary as
+  # serialized string is checked.
+
+  def CheckUnknownField(self, name, expected_value):
     field_descriptor = self.descriptor.fields_by_name[name]
     wire_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]
     field_tag = encoder.TagBytes(field_descriptor.number, wire_type)
     result_dict = {}
-    for tag_bytes, value in self.unknown_fields:
+    for tag_bytes, value in self.empty_message._unknown_fields:
       if tag_bytes == field_tag:
         decoder = unittest_pb2.TestAllTypes._decoders_by_tag[tag_bytes][0]
         decoder(value, 0, len(value), self.all_fields, result_dict)
-    return result_dict[field_descriptor]
+    self.assertEqual(expected_value, result_dict[field_descriptor])
 
-  def testEnum(self):
-    value = self.GetField('optional_nested_enum')
-    self.assertEqual(self.all_fields.optional_nested_enum, value)
+  @SkipCheckUnknownFieldIfCppImplementation
+  def testCheckUnknownFieldValue(self):
+    # Test enum.
+    self.CheckUnknownField('optional_nested_enum',
+                           self.all_fields.optional_nested_enum)
+    # Test repeated enum.
+    self.CheckUnknownField('repeated_nested_enum',
+                           self.all_fields.repeated_nested_enum)
 
-  def testRepeatedEnum(self):
-    value = self.GetField('repeated_nested_enum')
-    self.assertEqual(self.all_fields.repeated_nested_enum, value)
+    # Test varint.
+    self.CheckUnknownField('optional_int32',
+                           self.all_fields.optional_int32)
+    # Test fixed32.
+    self.CheckUnknownField('optional_fixed32',
+                           self.all_fields.optional_fixed32)
 
-  def testVarint(self):
-    value = self.GetField('optional_int32')
-    self.assertEqual(self.all_fields.optional_int32, value)
+    # Test fixed64.
+    self.CheckUnknownField('optional_fixed64',
+                           self.all_fields.optional_fixed64)
 
-  def testFixed32(self):
-    value = self.GetField('optional_fixed32')
-    self.assertEqual(self.all_fields.optional_fixed32, value)
+    # Test lengthd elimited.
+    self.CheckUnknownField('optional_string',
+                           self.all_fields.optional_string)
 
-  def testFixed64(self):
-    value = self.GetField('optional_fixed64')
-    self.assertEqual(self.all_fields.optional_fixed64, value)
-
-  def testLengthDelimited(self):
-    value = self.GetField('optional_string')
-    self.assertEqual(self.all_fields.optional_string, value)
-
-  def testGroup(self):
-    value = self.GetField('optionalgroup')
-    self.assertEqual(self.all_fields.optionalgroup, value)
+    # Test group.
+    self.CheckUnknownField('optionalgroup',
+                           self.all_fields.optionalgroup)
 
   def testCopyFrom(self):
     message = unittest_pb2.TestEmptyMessage()
     message.CopyFrom(self.empty_message)
-    self.assertEqual(self.unknown_fields, message._unknown_fields)
+    self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
   def testMergeFrom(self):
     message = unittest_pb2.TestAllTypes()
@@ -188,72 +232,100 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     message.optional_uint32 = 4
     destination = unittest_pb2.TestEmptyMessage()
     destination.ParseFromString(message.SerializeToString())
-    unknown_fields = destination._unknown_fields[:]
 
     destination.MergeFrom(source)
-    self.assertEqual(unknown_fields + source._unknown_fields,
-                     destination._unknown_fields)
+    # Check that the fields where correctly merged, even stored in the unknown
+    # fields set.
+    message.ParseFromString(destination.SerializeToString())
+    self.assertEqual(message.optional_int32, 1)
+    self.assertEqual(message.optional_uint32, 2)
+    self.assertEqual(message.optional_int64, 3)
 
   def testClear(self):
     self.empty_message.Clear()
-    self.assertEqual(0, len(self.empty_message._unknown_fields))
+    # All cleared, even unknown fields.
+    self.assertEqual(self.empty_message.SerializeToString(), b'')
 
   def testUnknownExtensions(self):
     message = unittest_pb2.TestEmptyMessageWithExtensions()
     message.ParseFromString(self.all_fields_data)
-    self.assertEqual(self.empty_message._unknown_fields,
-                     message._unknown_fields)
+    self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
 
-
-@unittest.skipIf(
-    api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
-    'C++ implementation does not expose unknown fields to Python')
-class UnknownEnumValuesTest(unittest.TestCase):
+class UnknownEnumValuesTest(BaseTestCase):
 
   def setUp(self):
     self.descriptor = missing_enum_values_pb2.TestEnumValues.DESCRIPTOR
 
     self.message = missing_enum_values_pb2.TestEnumValues()
+    # TestEnumValues.ZERO = 0, but does not exist in the other NestedEnum.
     self.message.optional_nested_enum = (
-      missing_enum_values_pb2.TestEnumValues.ZERO)
+        missing_enum_values_pb2.TestEnumValues.ZERO)
     self.message.repeated_nested_enum.extend([
-      missing_enum_values_pb2.TestEnumValues.ZERO,
-      missing_enum_values_pb2.TestEnumValues.ONE,
-      ])
+        missing_enum_values_pb2.TestEnumValues.ZERO,
+        missing_enum_values_pb2.TestEnumValues.ONE,
+        ])
     self.message.packed_nested_enum.extend([
-      missing_enum_values_pb2.TestEnumValues.ZERO,
-      missing_enum_values_pb2.TestEnumValues.ONE,
-      ])
+        missing_enum_values_pb2.TestEnumValues.ZERO,
+        missing_enum_values_pb2.TestEnumValues.ONE,
+        ])
     self.message_data = self.message.SerializeToString()
     self.missing_message = missing_enum_values_pb2.TestMissingEnumValues()
     self.missing_message.ParseFromString(self.message_data)
-    self.unknown_fields = self.missing_message._unknown_fields
 
-  def GetField(self, name):
+  # CheckUnknownField() is an additional Pure Python check which checks
+  # a detail of unknown fields. It cannot be used by the C++
+  # implementation because some protect members are called.
+  # The test is added for historical reasons. It is not necessary as
+  # serialized string is checked.
+
+  def CheckUnknownField(self, name, expected_value):
     field_descriptor = self.descriptor.fields_by_name[name]
     wire_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]
     field_tag = encoder.TagBytes(field_descriptor.number, wire_type)
     result_dict = {}
-    for tag_bytes, value in self.unknown_fields:
+    for tag_bytes, value in self.missing_message._unknown_fields:
       if tag_bytes == field_tag:
         decoder = missing_enum_values_pb2.TestEnumValues._decoders_by_tag[
-          tag_bytes][0]
+            tag_bytes][0]
         decoder(value, 0, len(value), self.message, result_dict)
-    return result_dict[field_descriptor]
+    self.assertEqual(expected_value, result_dict[field_descriptor])
+
+  def testUnknownParseMismatchEnumValue(self):
+    just_string = missing_enum_values_pb2.JustString()
+    just_string.dummy = 'blah'
+
+    missing = missing_enum_values_pb2.TestEnumValues()
+    # The parse is invalid, storing the string proto into the set of
+    # unknown fields.
+    missing.ParseFromString(just_string.SerializeToString())
+
+    # Fetching the enum field shouldn't crash, instead returning the
+    # default value.
+    self.assertEqual(missing.optional_nested_enum, 0)
 
   def testUnknownEnumValue(self):
     self.assertFalse(self.missing_message.HasField('optional_nested_enum'))
-    value = self.GetField('optional_nested_enum')
-    self.assertEqual(self.message.optional_nested_enum, value)
+    self.assertEqual(self.missing_message.optional_nested_enum, 2)
+    # Clear does not do anything.
+    serialized = self.missing_message.SerializeToString()
+    self.missing_message.ClearField('optional_nested_enum')
+    self.assertEqual(self.missing_message.SerializeToString(), serialized)
 
   def testUnknownRepeatedEnumValue(self):
-    value = self.GetField('repeated_nested_enum')
-    self.assertEqual(self.message.repeated_nested_enum, value)
+    self.assertEqual([], self.missing_message.repeated_nested_enum)
 
   def testUnknownPackedEnumValue(self):
-    value = self.GetField('packed_nested_enum')
-    self.assertEqual(self.message.packed_nested_enum, value)
+    self.assertEqual([], self.missing_message.packed_nested_enum)
+
+  @SkipCheckUnknownFieldIfCppImplementation
+  def testCheckUnknownFieldValueForEnum(self):
+    self.CheckUnknownField('optional_nested_enum',
+                           self.message.optional_nested_enum)
+    self.CheckUnknownField('repeated_nested_enum',
+                           self.message.repeated_nested_enum)
+    self.CheckUnknownField('packed_nested_enum',
+                           self.message.packed_nested_enum)
 
   def testRoundTrip(self):
     new_message = missing_enum_values_pb2.TestEnumValues()

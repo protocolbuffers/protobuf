@@ -36,6 +36,7 @@
 #ifndef GOOGLE_PROTOBUF_IO_CODED_STREAM_INL_H__
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_INL_H__
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
@@ -64,6 +65,23 @@ inline bool CodedInputStream::InternalReadStringInline(string* buffer,
   }
 
   return ReadStringFallback(buffer, size);
+}
+
+inline bool CodedInputStream::InternalReadRawInline(void* buffer, int size) {
+  int current_buffer_size;
+  while ((current_buffer_size = BufferSize()) < size) {
+    // Reading past end of buffer.  Copy what we have, then refresh.
+    memcpy(buffer, buffer_, current_buffer_size);
+    buffer = reinterpret_cast<uint8*>(buffer) + current_buffer_size;
+    size -= current_buffer_size;
+    Advance(current_buffer_size);
+    if (!Refresh()) return false;
+  }
+
+  memcpy(buffer, buffer_, size);
+  Advance(size);
+
+  return true;
 }
 
 }  // namespace io

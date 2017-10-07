@@ -42,6 +42,10 @@ import java.util.Arrays;
 final class UnknownFieldData {
 
     final int tag;
+    /**
+     * Important: this should be treated as immutable, even though it's possible
+     * to change the array values.
+     */
     final byte[] bytes;
 
     UnknownFieldData(int tag, byte[] bytes) {

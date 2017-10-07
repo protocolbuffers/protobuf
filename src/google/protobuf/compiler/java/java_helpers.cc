@@ -44,6 +44,9 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
+
+#include <google/protobuf/stubs/hash.h>  // for hash<T *>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -101,6 +104,20 @@ string FieldName(const FieldDescriptor* field) {
 
 }  // namespace
 
+void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
+                              const string& annotation_file) {
+  if (annotation_file.empty()) {
+    return;
+  }
+  string ptemplate =
+      "@javax.annotation.Generated(value=\"protoc\", comments=\"annotations:";
+  ptemplate.push_back(delimiter);
+  ptemplate.append("annotation_file");
+  ptemplate.push_back(delimiter);
+  ptemplate.append("\")\n");
+  printer->Print(ptemplate.c_str(), "annotation_file", annotation_file);
+}
+
 string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
   string result;
   // Note:  I distrust ctype.h due to locales.
@@ -150,6 +167,14 @@ string UnderscoresToCamelCase(const MethodDescriptor* method) {
 
 string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
   return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
+}
+
+string CamelCaseFieldName(const FieldDescriptor* field) {
+  string fieldName = UnderscoresToCamelCase(field);
+  if ('0' <= fieldName[0] && fieldName[0] <= '9') {
+    return '_' + fieldName;
+  }
+  return fieldName;
 }
 
 string StripProto(const string& filename) {
@@ -230,6 +255,7 @@ string ClassName(const FileDescriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
+
 
 string ExtraMessageInterfaces(const Descriptor* descriptor) {
   string interfaces = "// @@protoc_insertion_point(message_implements:"
@@ -346,6 +372,7 @@ const char* BoxedPrimitiveTypeName(JavaType type) {
   return NULL;
 }
 
+
 const char* FieldTypeName(FieldDescriptor::Type field_type) {
   switch (field_type) {
     case FieldDescriptor::TYPE_INT32   : return "INT32";
@@ -401,9 +428,9 @@ string DefaultValue(const FieldDescriptor* field, bool immutable,
              "L";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
-      if (value == numeric_limits<double>::infinity()) {
+      if (value == std::numeric_limits<double>::infinity()) {
         return "Double.POSITIVE_INFINITY";
-      } else if (value == -numeric_limits<double>::infinity()) {
+      } else if (value == -std::numeric_limits<double>::infinity()) {
         return "Double.NEGATIVE_INFINITY";
       } else if (value != value) {
         return "Double.NaN";
@@ -413,9 +440,9 @@ string DefaultValue(const FieldDescriptor* field, bool immutable,
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
       float value = field->default_value_float();
-      if (value == numeric_limits<float>::infinity()) {
+      if (value == std::numeric_limits<float>::infinity()) {
         return "Float.POSITIVE_INFINITY";
-      } else if (value == -numeric_limits<float>::infinity()) {
+      } else if (value == -std::numeric_limits<float>::infinity()) {
         return "Float.NEGATIVE_INFINITY";
       } else if (value != value) {
         return "Float.NaN";
@@ -481,9 +508,9 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
       return field->default_value_float() == 0.0;
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() == false;
-
-    case FieldDescriptor::CPPTYPE_STRING:
     case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() == 0;
+    case FieldDescriptor::CPPTYPE_STRING:
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return false;
 
@@ -493,6 +520,11 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
 
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return false;
+}
+
+bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field) {
+  return GetJavaType(field) == JAVATYPE_BYTES &&
+         field->default_value_string() != "";
 }
 
 const char* bit_masks[] = {

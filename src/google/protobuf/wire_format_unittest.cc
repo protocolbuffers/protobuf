@@ -38,10 +38,14 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_proto3_arena.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
+#include <google/protobuf/unittest_mset_wire_format.pb.h>
 #include <google/protobuf/test_util.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -418,7 +422,7 @@ const int kUnknownTypeId = 1550055;
 
 TEST(WireFormatTest, SerializeMessageSet) {
   // Set up a TestMessageSet with two known messages and an unknown one.
-  unittest::TestMessageSet message_set;
+  proto2_wireformat_unittest::TestMessageSet message_set;
   message_set.MutableExtension(
     unittest::TestMessageSetExtension1::message_set_extension)->set_i(123);
   message_set.MutableExtension(
@@ -461,7 +465,7 @@ TEST(WireFormatTest, SerializeMessageSetVariousWaysAreEqual) {
   // Set up a TestMessageSet with two known messages and an unknown one, as
   // above.
 
-  unittest::TestMessageSet message_set;
+  proto2_wireformat_unittest::TestMessageSet message_set;
   message_set.MutableExtension(
     unittest::TestMessageSetExtension1::message_set_extension)->set_i(123);
   message_set.MutableExtension(
@@ -538,7 +542,7 @@ TEST(WireFormatTest, ParseMessageSet) {
   ASSERT_TRUE(raw.SerializeToString(&data));
 
   // Parse as a TestMessageSet and check the contents.
-  unittest::TestMessageSet message_set;
+  proto2_wireformat_unittest::TestMessageSet message_set;
   ASSERT_TRUE(message_set.ParseFromString(data));
 
   EXPECT_EQ(123, message_set.GetExtension(
@@ -552,7 +556,7 @@ TEST(WireFormatTest, ParseMessageSet) {
   EXPECT_EQ("bar", message_set.unknown_fields().field(0).length_delimited());
 
   // Also parse using WireFormat.
-  unittest::TestMessageSet dynamic_message_set;
+  proto2_wireformat_unittest::TestMessageSet dynamic_message_set;
   io::CodedInputStream input(reinterpret_cast<const uint8*>(data.data()),
                              data.size());
   ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &dynamic_message_set));
@@ -582,7 +586,7 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
     coded_output.WriteTag(WireFormatLite::kMessageSetItemEndTag);
   }
   {
-    unittest::TestMessageSet message_set;
+    proto2_wireformat_unittest::TestMessageSet message_set;
     ASSERT_TRUE(message_set.ParseFromString(data));
 
     EXPECT_EQ(123, message_set.GetExtension(
@@ -590,7 +594,7 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
   }
   {
     // Test parse the message via Reflection.
-    unittest::TestMessageSet message_set;
+    proto2_wireformat_unittest::TestMessageSet message_set;
     io::CodedInputStream input(
         reinterpret_cast<const uint8*>(data.data()), data.size());
     EXPECT_TRUE(WireFormat::ParseAndMergePartial(&input, &message_set));
@@ -602,7 +606,7 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
 }
 
 TEST(WireFormatTest, ParseBrokenMessageSet) {
-  unittest::TestMessageSet message_set;
+  proto2_wireformat_unittest::TestMessageSet message_set;
   string input("goodbye");  // Invalid wire format data.
   EXPECT_FALSE(message_set.ParseFromString(input));
 }
@@ -767,7 +771,7 @@ TEST(WireFormatTest, RepeatedScalarsDifferentTagSizes) {
 }
 
 TEST(WireFormatTest, CompatibleTypes) {
-  const int64 data = 0x100000000;
+  const int64 data = 0x100000000LL;
   unittest::Int64Message msg1;
   msg1.set_data(data);
   string serialized;
@@ -792,6 +796,169 @@ TEST(WireFormatTest, CompatibleTypes) {
   unittest::Uint32Message msg5;
   ASSERT_TRUE(msg5.ParseFromString(serialized));
   ASSERT_EQ(static_cast<uint32>(data), msg5.data());
+}
+
+class Proto3PrimitiveRepeatedWireFormatTest : public ::testing::Test {
+ protected:
+  Proto3PrimitiveRepeatedWireFormatTest()
+      : packedTestAllTypes_(
+            "\xFA\x01\x01\x01"
+            "\x82\x02\x01\x01"
+            "\x8A\x02\x01\x01"
+            "\x92\x02\x01\x01"
+            "\x9A\x02\x01\x02"
+            "\xA2\x02\x01\x02"
+            "\xAA\x02\x04\x01\x00\x00\x00"
+            "\xB2\x02\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xBA\x02\x04\x01\x00\x00\x00"
+            "\xC2\x02\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xCA\x02\x04\x00\x00\x80\x3f"
+            "\xD2\x02\x08\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\xDA\x02\x01\x01"
+            "\x9A\x03\x01\x01",
+            86),
+        packedTestUnpackedTypes_(
+            "\x0A\x01\x01"
+            "\x12\x01\x01"
+            "\x1A\x01\x01"
+            "\x22\x01\x01"
+            "\x2A\x01\x02"
+            "\x32\x01\x02"
+            "\x3A\x04\x01\x00\x00\x00"
+            "\x42\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x4A\x04\x01\x00\x00\x00"
+            "\x52\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x5A\x04\x00\x00\x80\x3f"
+            "\x62\x08\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\x6A\x01\x01"
+            "\x72\x01\x01",
+            72),
+        unpackedTestAllTypes_(
+            "\xF8\x01\x01"
+            "\x80\x02\x01"
+            "\x88\x02\x01"
+            "\x90\x02\x01"
+            "\x98\x02\x02"
+            "\xA0\x02\x02"
+            "\xAD\x02\x01\x00\x00\x00"
+            "\xB1\x02\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xBD\x02\x01\x00\x00\x00"
+            "\xC1\x02\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xCD\x02\x00\x00\x80\x3f"
+            "\xD1\x02\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\xD8\x02\x01"
+            "\x98\x03\x01",
+            72),
+        unpackedTestUnpackedTypes_(
+            "\x08\x01"
+            "\x10\x01"
+            "\x18\x01"
+            "\x20\x01"
+            "\x28\x02"
+            "\x30\x02"
+            "\x3D\x01\x00\x00\x00"
+            "\x41\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x4D\x01\x00\x00\x00"
+            "\x51\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x5D\x00\x00\x80\x3f"
+            "\x61\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\x68\x01"
+            "\x70\x01",
+            58) {}
+  template <class Proto>
+  void SetProto3PrimitiveRepeatedFields(Proto* message) {
+    message->add_repeated_int32(1);
+    message->add_repeated_int64(1);
+    message->add_repeated_uint32(1);
+    message->add_repeated_uint64(1);
+    message->add_repeated_sint32(1);
+    message->add_repeated_sint64(1);
+    message->add_repeated_fixed32(1);
+    message->add_repeated_fixed64(1);
+    message->add_repeated_sfixed32(1);
+    message->add_repeated_sfixed64(1);
+    message->add_repeated_float(1.0);
+    message->add_repeated_double(1.0);
+    message->add_repeated_bool(true);
+    message->add_repeated_nested_enum(
+        proto3_arena_unittest::TestAllTypes_NestedEnum_FOO);
+  }
+
+  template <class Proto>
+  void ExpectProto3PrimitiveRepeatedFieldsSet(const Proto& message) {
+    EXPECT_EQ(1, message.repeated_int32(0));
+    EXPECT_EQ(1, message.repeated_int64(0));
+    EXPECT_EQ(1, message.repeated_uint32(0));
+    EXPECT_EQ(1, message.repeated_uint64(0));
+    EXPECT_EQ(1, message.repeated_sint32(0));
+    EXPECT_EQ(1, message.repeated_sint64(0));
+    EXPECT_EQ(1, message.repeated_fixed32(0));
+    EXPECT_EQ(1, message.repeated_fixed64(0));
+    EXPECT_EQ(1, message.repeated_sfixed32(0));
+    EXPECT_EQ(1, message.repeated_sfixed64(0));
+    EXPECT_EQ(1.0, message.repeated_float(0));
+    EXPECT_EQ(1.0, message.repeated_double(0));
+    EXPECT_EQ(true, message.repeated_bool(0));
+    EXPECT_EQ(proto3_arena_unittest::TestAllTypes_NestedEnum_FOO,
+              message.repeated_nested_enum(0));
+  }
+
+  template <class Proto>
+  void TestSerialization(Proto* message, const string& expected) {
+    SetProto3PrimitiveRepeatedFields(message);
+
+    int size = message->ByteSize();
+
+    // Serialize using the generated code.
+    string generated_data;
+    {
+      io::StringOutputStream raw_output(&generated_data);
+      io::CodedOutputStream output(&raw_output);
+      message->SerializeWithCachedSizes(&output);
+      ASSERT_FALSE(output.HadError());
+    }
+    EXPECT_TRUE(expected == generated_data);
+
+    // Serialize using the dynamic code.
+    string dynamic_data;
+    {
+      io::StringOutputStream raw_output(&dynamic_data);
+      io::CodedOutputStream output(&raw_output);
+      WireFormat::SerializeWithCachedSizes(*message, size, &output);
+      ASSERT_FALSE(output.HadError());
+    }
+    EXPECT_TRUE(expected == dynamic_data);
+  }
+
+  template <class Proto>
+  void TestParsing(Proto* message, const string& compatible_data) {
+    message->Clear();
+    message->ParseFromString(compatible_data);
+    ExpectProto3PrimitiveRepeatedFieldsSet(*message);
+
+    message->Clear();
+    io::CodedInputStream input(
+        reinterpret_cast<const uint8*>(compatible_data.data()),
+        compatible_data.size());
+    WireFormat::ParseAndMergePartial(&input, message);
+    ExpectProto3PrimitiveRepeatedFieldsSet(*message);
+  }
+
+  const string packedTestAllTypes_;
+  const string packedTestUnpackedTypes_;
+  const string unpackedTestAllTypes_;
+  const string unpackedTestUnpackedTypes_;
+};
+
+TEST_F(Proto3PrimitiveRepeatedWireFormatTest, Proto3PrimitiveRepeated) {
+  proto3_arena_unittest::TestAllTypes packed_message;
+  proto3_arena_unittest::TestUnpackedTypes unpacked_message;
+  TestSerialization(&packed_message, packedTestAllTypes_);
+  TestParsing(&packed_message, packedTestAllTypes_);
+  TestParsing(&packed_message, unpackedTestAllTypes_);
+  TestSerialization(&unpacked_message, unpackedTestUnpackedTypes_);
+  TestParsing(&unpacked_message, packedTestUnpackedTypes_);
+  TestParsing(&unpacked_message, unpackedTestUnpackedTypes_);
 }
 
 class WireFormatInvalidInputTest : public testing::Test {
@@ -861,6 +1028,29 @@ TEST_F(WireFormatInvalidInputTest, InvalidSubMessage) {
   // The byte is a valid varint but not a valid tag (bad wire type).
   EXPECT_FALSE(message.ParseFromString(MakeInvalidEmbeddedMessage("\017", 1)));
 }
+
+TEST_F(WireFormatInvalidInputTest, InvalidMessageWithExtraZero) {
+  string data;
+  {
+    // Serialize a valid proto
+    unittest::TestAllTypes message;
+    message.set_optional_int32(1);
+    message.SerializeToString(&data);
+    data.push_back(0);  // Append invalid zero tag
+  }
+
+  // Control case.
+  {
+    io::ArrayInputStream ais(data.data(), data.size());
+    io::CodedInputStream is(&ais);
+    unittest::TestAllTypes message;
+    // It should fail but currently passes.
+    EXPECT_TRUE(message.MergePartialFromCodedStream(&is));
+    // Parsing from the string should fail.
+    EXPECT_FALSE(message.ParseFromString(data));
+  }
+}
+
 
 TEST_F(WireFormatInvalidInputTest, InvalidGroup) {
   unittest::TestAllTypes message;
@@ -971,7 +1161,7 @@ class Utf8ValidationTest : public ::testing::Test {
 TEST_F(Utf8ValidationTest, WriteInvalidUTF8String) {
   string wire_buffer;
   protobuf_unittest::OneString input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
@@ -995,7 +1185,7 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
   protobuf_unittest::OneString input;
   WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1018,7 +1208,7 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
 TEST_F(Utf8ValidationTest, WriteValidUTF8String) {
   string wire_buffer;
   protobuf_unittest::OneString input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kValidUTF8String, &input, &wire_buffer);
@@ -1032,7 +1222,7 @@ TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
   protobuf_unittest::OneString input;
   WriteMessage(kValidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1046,7 +1236,7 @@ TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
 TEST_F(Utf8ValidationTest, WriteArbitraryBytes) {
   string wire_buffer;
   protobuf_unittest::OneBytes input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
@@ -1060,7 +1250,7 @@ TEST_F(Utf8ValidationTest, ReadArbitraryBytes) {
   protobuf_unittest::OneBytes input;
   WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneBytes output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1078,7 +1268,7 @@ TEST_F(Utf8ValidationTest, ParseRepeatedString) {
   string wire_buffer = input.SerializeAsString();
 
   protobuf_unittest::MoreString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1097,7 +1287,7 @@ TEST_F(Utf8ValidationTest, ParseRepeatedString) {
 TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
   string data(kInvalidUTF8String);
 
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WireFormat::VerifyUTF8String(data.data(), data.size(),
@@ -1115,6 +1305,136 @@ TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
 #endif
 }
 
+
+TEST(RepeatedVarint, Int32) {
+  RepeatedField<int32> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar Int32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::Int32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::Int32Size(v));
+}
+
+TEST(RepeatedVarint, Int64) {
+  RepeatedField<int64> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar Int64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::Int64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::Int64Size(v));
+}
+
+TEST(RepeatedVarint, SInt32) {
+  RepeatedField<int32> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar SInt32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::SInt32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::SInt32Size(v));
+}
+
+TEST(RepeatedVarint, SInt64) {
+  RepeatedField<int64> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar SInt64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::SInt64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::SInt64Size(v));
+}
+
+TEST(RepeatedVarint, UInt32) {
+  RepeatedField<uint32> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar UInt32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::UInt32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::UInt32Size(v));
+}
+
+TEST(RepeatedVarint, UInt64) {
+  RepeatedField<uint64> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar UInt64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::UInt64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::UInt64Size(v));
+}
+
+TEST(RepeatedVarint, Enum) {
+  RepeatedField<int> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar EnumSize.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::EnumSize(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::EnumSize(v));
+}
 
 }  // namespace
 }  // namespace internal

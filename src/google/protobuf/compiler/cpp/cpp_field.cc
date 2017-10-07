@@ -47,6 +47,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -58,8 +59,9 @@ namespace cpp {
 using internal::WireFormat;
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             map<string, string>* variables,
+                             std::map<string, string>* variables,
                              const Options& options) {
+  (*variables)["ns"] = Namespace(descriptor);
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["index"] = SimpleItoa(descriptor->index());
   (*variables)["number"] = SimpleItoa(descriptor->number());
@@ -76,6 +78,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
     WireFormat::TagSize(descriptor->number(), descriptor->type()));
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? " PROTOBUF_DEPRECATED" : "";
+  (*variables)["deprecated_attr"] = descriptor->options().deprecated()
+      ? "GOOGLE_PROTOBUF_DEPRECATED_ATTR " : "";
 
   (*variables)["cppget"] = "Get";
 
@@ -92,10 +96,17 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   // By default, empty string, so that generic code used for both oneofs and
   // singular fields can be written.
   (*variables)["oneof_prefix"] = "";
+
+  // These variables are placeholders to pick out the beginning and ends of
+  // identifiers for annotations (when doing so with existing variables would
+  // be ambiguous or impossible). They should never be set to anything but the
+  // empty string.
+  (*variables)["{"] = "";
+  (*variables)["}"] = "";
 }
 
 void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
-                                  map<string, string>* variables) {
+                                  std::map<string, string>* variables) {
   const string prefix = descriptor->containing_oneof()->name() + "_.";
   (*variables)["oneof_prefix"] = prefix;
   (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
@@ -120,6 +131,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
                                      const Options& options)
     : descriptor_(descriptor),
+      options_(options),
       field_generators_(
           new google::protobuf::scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
   // Construct all the FieldGenerators.
@@ -189,7 +201,6 @@ const FieldGenerator& FieldGeneratorMap::get(
   GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
-
 
 }  // namespace cpp
 }  // namespace compiler

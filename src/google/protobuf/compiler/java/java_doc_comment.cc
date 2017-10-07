@@ -115,14 +115,12 @@ static void WriteDocCommentBodyForLocation(
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapeJavadoc(comments);
 
-    vector<string> lines = Split(comments, "\n");
+    std::vector<string> lines = Split(comments, "\n");
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }
 
-    printer->Print(
-        " *\n"
-        " * <pre>\n");
+    printer->Print(" * <pre>\n");
     for (int i = 0; i < lines.size(); i++) {
       // Most lines should start with a space.  Watch out for lines that start
       // with a /, since putting that right after the leading asterisk will
@@ -133,7 +131,9 @@ static void WriteDocCommentBodyForLocation(
         printer->Print(" *$line$\n", "line", lines[i]);
       }
     }
-    printer->Print(" * </pre>\n");
+    printer->Print(
+        " * </pre>\n"
+        " *\n");
   }
 }
 
@@ -163,12 +163,12 @@ static string FirstLineOf(const string& value) {
 }
 
 void WriteMessageDocComment(io::Printer* printer, const Descriptor* message) {
-  printer->Print(
-    "/**\n"
-    " * Protobuf type {@code $fullname$}\n",
-    "fullname", EscapeJavadoc(message->full_name()));
+  printer->Print("/**\n");
   WriteDocCommentBody(printer, message);
-  printer->Print(" */\n");
+  printer->Print(
+    " * Protobuf type {@code $fullname$}\n"
+    " */\n",
+    "fullname", EscapeJavadoc(message->full_name()));
 }
 
 void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
@@ -176,55 +176,55 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
   // etc., but in practice everyone already knows the difference between these
   // so it's redundant information.
 
-  // We use the field declaration as the first line of the comment, e.g.:
+  // We start the comment with the main body based on the comments from the
+  // .proto file (if present). We then end with the field declaration, e.g.:
   //   optional string foo = 5;
-  // This communicates a lot of information about the field in a small space.
   // If the field is a group, the debug string might end with {.
+  printer->Print("/**\n");
+  WriteDocCommentBody(printer, field);
   printer->Print(
-    "/**\n"
     " * <code>$def$</code>\n",
     "def", EscapeJavadoc(FirstLineOf(field->DebugString())));
-  WriteDocCommentBody(printer, field);
   printer->Print(" */\n");
 }
 
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_) {
-  printer->Print(
-    "/**\n"
-    " * Protobuf enum {@code $fullname$}\n",
-    "fullname", EscapeJavadoc(enum_->full_name()));
+  printer->Print("/**\n");
   WriteDocCommentBody(printer, enum_);
-  printer->Print(" */\n");
+  printer->Print(
+    " * Protobuf enum {@code $fullname$}\n"
+    " */\n",
+    "fullname", EscapeJavadoc(enum_->full_name()));
 }
 
 void WriteEnumValueDocComment(io::Printer* printer,
                               const EnumValueDescriptor* value) {
-  printer->Print(
-    "/**\n"
-    " * <code>$def$</code>\n",
-    "def", EscapeJavadoc(FirstLineOf(value->DebugString())));
+  printer->Print("/**\n");
   WriteDocCommentBody(printer, value);
-  printer->Print(" */\n");
+  printer->Print(
+    " * <code>$def$</code>\n"
+    " */\n",
+    "def", EscapeJavadoc(FirstLineOf(value->DebugString())));
 }
 
 void WriteServiceDocComment(io::Printer* printer,
                             const ServiceDescriptor* service) {
-  printer->Print(
-    "/**\n"
-    " * Protobuf service {@code $fullname$}\n",
-    "fullname", EscapeJavadoc(service->full_name()));
+  printer->Print("/**\n");
   WriteDocCommentBody(printer, service);
-  printer->Print(" */\n");
+  printer->Print(
+    " * Protobuf service {@code $fullname$}\n"
+    " */\n",
+    "fullname", EscapeJavadoc(service->full_name()));
 }
 
 void WriteMethodDocComment(io::Printer* printer,
                            const MethodDescriptor* method) {
-  printer->Print(
-    "/**\n"
-    " * <code>$def$</code>\n",
-    "def", EscapeJavadoc(FirstLineOf(method->DebugString())));
+  printer->Print("/**\n");
   WriteDocCommentBody(printer, method);
-  printer->Print(" */\n");
+  printer->Print(
+    " * <code>$def$</code>\n"
+    " */\n",
+    "def", EscapeJavadoc(FirstLineOf(method->DebugString())));
 }
 
 }  // namespace java

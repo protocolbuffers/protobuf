@@ -36,7 +36,9 @@
 
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.pb.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -119,7 +121,7 @@ TEST(Printer, VariableSubstitution) {
 
     {
       Printer printer(&output, '$');
-      map<string, string> vars;
+      std::map<string, string> vars;
 
       vars["foo"] = "World";
       vars["bar"] = "$foo$";
@@ -168,6 +170,273 @@ TEST(Printer, InlineVariableSubstitution) {
                buffer);
 }
 
+// MockDescriptorFile defines only those members that Printer uses to write out
+// annotations.
+class MockDescriptorFile {
+ public:
+  explicit MockDescriptorFile(const string& file) : file_(file) {}
+
+  // The mock filename for this file.
+  const string& name() const { return file_; }
+
+ private:
+  string file_;
+};
+
+// MockDescriptor defines only those members that Printer uses to write out
+// annotations.
+class MockDescriptor {
+ public:
+  MockDescriptor(const string& file, const std::vector<int>& path)
+      : file_(file), path_(path) {}
+
+  // The mock file in which this descriptor was defined.
+  const MockDescriptorFile* file() const { return &file_; }
+
+ private:
+  // Allows access to GetLocationPath.
+  friend class ::google::protobuf::io::Printer;
+
+  // Copies the pre-stored path to output.
+  void GetLocationPath(std::vector<int>* output) const { *output = path_; }
+
+  MockDescriptorFile file_;
+  std::vector<int> path_;
+};
+
+TEST(Printer, AnnotateMap) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    std::map<string, string> vars;
+    vars["foo"] = "3";
+    vars["bar"] = "5";
+    printer.Print(vars, "012$foo$4$bar$\n");
+    std::vector<int> path_1;
+    path_1.push_back(33);
+    std::vector<int> path_2;
+    path_2.push_back(11);
+    path_2.push_back(22);
+    MockDescriptor descriptor_1("path_1", path_1);
+    MockDescriptor descriptor_2("path_2", path_2);
+    printer.Annotate("foo", "foo", &descriptor_1);
+    printer.Annotate("bar", "bar", &descriptor_2);
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("012345\n", buffer);
+  ASSERT_EQ(2, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* foo = info.annotation(0).path_size() == 1
+                                                 ? &info.annotation(0)
+                                                 : &info.annotation(1);
+  const GeneratedCodeInfo::Annotation* bar = info.annotation(0).path_size() == 1
+                                                 ? &info.annotation(1)
+                                                 : &info.annotation(0);
+  ASSERT_EQ(1, foo->path_size());
+  ASSERT_EQ(2, bar->path_size());
+  EXPECT_EQ(33, foo->path(0));
+  EXPECT_EQ(11, bar->path(0));
+  EXPECT_EQ(22, bar->path(1));
+  EXPECT_EQ("path_1", foo->source_file());
+  EXPECT_EQ("path_2", bar->source_file());
+  EXPECT_EQ(3, foo->begin());
+  EXPECT_EQ(4, foo->end());
+  EXPECT_EQ(5, bar->begin());
+  EXPECT_EQ(6, bar->end());
+}
+
+TEST(Printer, AnnotateInline) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
+    std::vector<int> path_1;
+    path_1.push_back(33);
+    std::vector<int> path_2;
+    path_2.push_back(11);
+    path_2.push_back(22);
+    MockDescriptor descriptor_1("path_1", path_1);
+    MockDescriptor descriptor_2("path_2", path_2);
+    printer.Annotate("foo", "foo", &descriptor_1);
+    printer.Annotate("bar", "bar", &descriptor_2);
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("012345\n", buffer);
+  ASSERT_EQ(2, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* foo = info.annotation(0).path_size() == 1
+                                                 ? &info.annotation(0)
+                                                 : &info.annotation(1);
+  const GeneratedCodeInfo::Annotation* bar = info.annotation(0).path_size() == 1
+                                                 ? &info.annotation(1)
+                                                 : &info.annotation(0);
+  ASSERT_EQ(1, foo->path_size());
+  ASSERT_EQ(2, bar->path_size());
+  EXPECT_EQ(33, foo->path(0));
+  EXPECT_EQ(11, bar->path(0));
+  EXPECT_EQ(22, bar->path(1));
+  EXPECT_EQ("path_1", foo->source_file());
+  EXPECT_EQ("path_2", bar->source_file());
+  EXPECT_EQ(3, foo->begin());
+  EXPECT_EQ(4, foo->end());
+  EXPECT_EQ(5, bar->begin());
+  EXPECT_EQ(6, bar->end());
+}
+
+TEST(Printer, AnnotateRange) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
+    std::vector<int> path;
+    path.push_back(33);
+    MockDescriptor descriptor("path", path);
+    printer.Annotate("foo", "bar", &descriptor);
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("012345\n", buffer);
+  ASSERT_EQ(1, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* foobar = &info.annotation(0);
+  ASSERT_EQ(1, foobar->path_size());
+  EXPECT_EQ(33, foobar->path(0));
+  EXPECT_EQ("path", foobar->source_file());
+  EXPECT_EQ(3, foobar->begin());
+  EXPECT_EQ(6, foobar->end());
+}
+
+TEST(Printer, AnnotateEmptyRange) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("012$foo$4$baz$$bam$$bar$\n", "foo", "3", "bar", "5", "baz",
+                  "", "bam", "");
+    std::vector<int> path;
+    path.push_back(33);
+    MockDescriptor descriptor("path", path);
+    printer.Annotate("baz", "bam", &descriptor);
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("012345\n", buffer);
+  ASSERT_EQ(1, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* bazbam = &info.annotation(0);
+  ASSERT_EQ(1, bazbam->path_size());
+  EXPECT_EQ(33, bazbam->path(0));
+  EXPECT_EQ("path", bazbam->source_file());
+  EXPECT_EQ(5, bazbam->begin());
+  EXPECT_EQ(5, bazbam->end());
+}
+
+TEST(Printer, AnnotateDespiteUnrelatedMultipleUses) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("012$foo$4$foo$$bar$\n", "foo", "3", "bar", "5");
+    std::vector<int> path;
+    path.push_back(33);
+    MockDescriptor descriptor("path", path);
+    printer.Annotate("bar", "bar", &descriptor);
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("0123435\n", buffer);
+  ASSERT_EQ(1, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* bar = &info.annotation(0);
+  ASSERT_EQ(1, bar->path_size());
+  EXPECT_EQ(33, bar->path(0));
+  EXPECT_EQ("path", bar->source_file());
+  EXPECT_EQ(6, bar->begin());
+  EXPECT_EQ(7, bar->end());
+}
+
+TEST(Printer, AnnotateIndent) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("0\n");
+    printer.Indent();
+    printer.Print("$foo$", "foo", "4");
+    std::vector<int> path;
+    path.push_back(44);
+    MockDescriptor descriptor("path", path);
+    printer.Annotate("foo", &descriptor);
+    printer.Print(",\n");
+    printer.Print("$bar$", "bar", "9");
+    path[0] = 99;
+    MockDescriptor descriptor_two("path", path);
+    printer.Annotate("bar", &descriptor_two);
+    printer.Print("\n${$$D$$}$\n", "{", "", "}", "", "D", "d");
+    path[0] = 1313;
+    MockDescriptor descriptor_three("path", path);
+    printer.Annotate("{", "}", &descriptor_three);
+    printer.Outdent();
+    printer.Print("\n");
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("0\n  4,\n  9\n  d\n\n", buffer);
+  ASSERT_EQ(3, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* foo = &info.annotation(0);
+  ASSERT_EQ(1, foo->path_size());
+  EXPECT_EQ(44, foo->path(0));
+  EXPECT_EQ("path", foo->source_file());
+  EXPECT_EQ(4, foo->begin());
+  EXPECT_EQ(5, foo->end());
+  const GeneratedCodeInfo::Annotation* bar = &info.annotation(1);
+  ASSERT_EQ(1, bar->path_size());
+  EXPECT_EQ(99, bar->path(0));
+  EXPECT_EQ("path", bar->source_file());
+  EXPECT_EQ(9, bar->begin());
+  EXPECT_EQ(10, bar->end());
+  const GeneratedCodeInfo::Annotation* braces = &info.annotation(2);
+  ASSERT_EQ(1, braces->path_size());
+  EXPECT_EQ(1313, braces->path(0));
+  EXPECT_EQ("path", braces->source_file());
+  EXPECT_EQ(13, braces->begin());
+  EXPECT_EQ(14, braces->end());
+}
+
+TEST(Printer, AnnotateIndentNewline) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Indent();
+    printer.Print("$A$$N$$B$C\n", "A", "", "N", "\nz", "B", "");
+    std::vector<int> path;
+    path.push_back(0);
+    MockDescriptor descriptor("path", path);
+    printer.Annotate("A", "B", &descriptor);
+    printer.Outdent();
+    printer.Print("\n");
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("\nz  C\n\n", buffer);
+  ASSERT_EQ(1, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* ab = &info.annotation(0);
+  ASSERT_EQ(1, ab->path_size());
+  EXPECT_EQ(0, ab->path(0));
+  EXPECT_EQ("path", ab->source_file());
+  EXPECT_EQ(0, ab->begin());
+  EXPECT_EQ(4, ab->end());
+}
+
+
 TEST(Printer, Indenting) {
   char buffer[8192];
 
@@ -176,7 +445,7 @@ TEST(Printer, Indenting) {
 
     {
       Printer printer(&output, '$');
-      map<string, string> vars;
+      std::map<string, string> vars;
 
       vars["newline"] = "\n";
 
@@ -230,6 +499,52 @@ TEST(Printer, Death) {
   EXPECT_DEBUG_DEATH(printer.Print("$nosuchvar$"), "Undefined variable");
   EXPECT_DEBUG_DEATH(printer.Print("$unclosed"), "Unclosed variable name");
   EXPECT_DEBUG_DEATH(printer.Outdent(), "without matching Indent");
+}
+
+TEST(Printer, AnnotateMultipleUsesDeath) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("012$foo$4$foo$\n", "foo", "3");
+    std::vector<int> path;
+    path.push_back(33);
+    MockDescriptor descriptor("path", path);
+    EXPECT_DEBUG_DEATH(printer.Annotate("foo", "foo", &descriptor), "multiple");
+  }
+}
+
+TEST(Printer, AnnotateNegativeLengthDeath) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
+    std::vector<int> path;
+    path.push_back(33);
+    MockDescriptor descriptor("path", path);
+    EXPECT_DEBUG_DEATH(printer.Annotate("bar", "foo", &descriptor), "negative");
+  }
+}
+
+TEST(Printer, AnnotateUndefinedDeath) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("012$foo$4$foo$\n", "foo", "3");
+    std::vector<int> path;
+    path.push_back(33);
+    MockDescriptor descriptor("path", path);
+    EXPECT_DEBUG_DEATH(printer.Annotate("bar", "bar", &descriptor),
+                       "Undefined");
+  }
 }
 #endif  // PROTOBUF_HAS_DEATH_TEST
 

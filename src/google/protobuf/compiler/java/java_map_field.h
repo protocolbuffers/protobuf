@@ -60,7 +60,6 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
   void GenerateFieldBuilderInitializationCode(io::Printer* printer) const;
-  void GenerateStaticInitializationCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 
@@ -68,11 +67,9 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
-  const int messageBitIndex_;
-  const int builderBitIndex_;
-  Context* context_;
+  std::map<string, string> variables_;
   ClassNameResolver* name_resolver_;
+  void GenerateMapGetters(io::Printer* printer) const;
 };
 
 }  // namespace java

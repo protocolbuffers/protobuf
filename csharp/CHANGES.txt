@@ -1,0 +1,148 @@
+===============================================================================
+Welcome to the C# port of Google Protocol Buffers, written by Jon Skeet
+(skeet@pobox.com) based on the work of many talented people.
+
+===============================================================================
+RELEASE NOTES - Code imported into Google's main protobuf repository
+===============================================================================
+
+Everything below note this represents history of protobuf-csharp-port project
+before the code was merged into csharp/ subtree of GitHub google/protobuf
+repository.
+Frozen legacy version of the original project is available in
+https://github.com/jskeet/protobuf-csharp-port.
+
+===============================================================================
+RELEASE NOTES - Version 2.4.1.555
+===============================================================================
+
+Changes:
+- Upgrade solution format to Visual Studio 2012.
+- Add the ability to print a builder (not just a message)
+- TextGenerator introduces a new overload of PrintTo
+- Munge protoc's error format into a VS-C#-compatible output format.
+- Work to make ProtoGen clone that acts as a protoc.exe plugin.
+- Added the AllowPartiallyTrustedCallers attribute
+- Optimized enum parsing.
+
+Fixes:
+- Fix for bug in limited input stream's Position, Introduced Position on 
+  output stream
+- Fix for writing a character to a JSON output overflows allocated buffer
+- Optimize FromBase64String to return Empty when presented with empty string.
+- Use string.Concat instead of operator to avoid potential import problems
+- Issue 81: quoting for NUnit parameters.
+- Issue 56: NuGet package is noisy
+- Issue 70: Portable library project has some invalid Nunit-based code.
+- Issue 71: CodedInputStream.ReadBytes go to slow path unnecessarily
+- Issue 84: warning CS0219: The variable `size' is assigned but never used
+
+===============================================================================
+RELEASE NOTES - Version 2.4.1.521
+===============================================================================
+
+Changes:
+- Add generated_code_attributes option, defaulted to false
+- Added support for Portable library
+- Added 'Unsafe' static type in ByteString to allow direct buffer access
+
+Fixes:
+- Issue 50: The XML serializer will fail to deserialize a message with empty 
+  child message
+- Issue 45: Use of 'item' as a field name causes AmbiguousMatchException
+- Issue 49: Generated nested static Types class should be partial
+- Issue 38: Disable CLSCompliant warnings (3021)
+- Issue 40: proto_path does not work for command-line file names
+- Issue 54: should retire all bytes in buffer (bufferSize)
+- Issue 43: Fix to correct identical 'umbrella_classname' options from trying 
+  to write to the same filename.
+
+===============================================================================
+RELEASE NOTES - Version 2.4.1.473
+===============================================================================
+
+Features:
+- Added option service_generator_type to control service generation with
+  NONE, GENERIC, INTERFACE, or IRPCDISPATCH
+- Added interfaces IRpcDispatch and IRpcServerStub to provide for blocking
+  services and implementations.
+- Added ProtoGen.exe command-line argument "--protoc_dir=" to specify the 
+  location of protoc.exe.
+- Extracted interfaces for ICodedInputStream and ICodedOutputStream to allow
+  custom implementation of writers with both speed and size optimizations.
+- Addition of the "Google.ProtoBuffers.Serialization" assembly to support
+  reading and writing messages to/from XML, JSON, IDictionary<,> and others.
+- Several performance related fixes and tweeks
+- Issue 3:	Add option to mark generated code with attribute
+- Issue 20:	Support for decorating classes [Serializable]
+- Issue 21:	Decorate fields with [deprecated=true] as [System.Obsolete]
+- Issue 22:	Reusable Builder classes
+- Issue 24:	Support for using Json/Xml formats with ICodedInputStream
+- Issue 25: Added support for NuGet packages
+- Issue 31: Upgraded protoc.exe and descriptor to 2.4.1
+
+Fixes:
+- Issue 13:	Message with Field same name as message causes uncompilable .cs
+- Issue 16:	Does not integrate well with other tooling
+- Issue 19:	Support for negative enum values
+- Issue 26:	AddRange in GeneratedBuilder iterates twice.
+- Issue 27:	Remove XML documentation output from test projects to clear 
+  warnings/errors.
+- Issue 28: Circular message dependencies result in null default values for 
+  Message fields.
+- Issue 29: Message classes generated have a public default constructor.  You
+  can disable private ctor generation with the option generate_private_ctor.
+- Issue 35: Fixed a bug in ProtoGen handling of arguments with trailing \
+- Big-endian support for float, and double on Silverlight
+- Packed and Unpacked parsing allow for all repeated, as per version 2.3
+- Fix for leaving Builder a public ctor on internal classes for use with
+  generic "where T: new()" constraints.
+
+Other:
+- Changed the code signing key to a privately held key
+- Reformatted all code and line-endings to C# defaults
+- Reworking of performance benchmarks to produce reliable results, option /v2
+- Issue 34: Silverlight assemblies are now unit tested
+
+===============================================================================
+RELEASE NOTES - Version 2.3.0.277
+===============================================================================
+
+Features:
+- Added cls_compliance option to generate attributes indicating 
+  non-CLS-compliance.
+- Added file_extension option to control the generated output file's extension.
+- Added umbrella_namespace option to place the umbrella class into a nested
+  namespace to address issues with proto files having the same name as a 
+  message it contains.
+- Added output_directory option to set the output path for the source file(s).
+- Added ignore_google_protobuf option to avoid generating code for includes 
+  from the google.protobuf package.
+- Added the LITE framework (Google.ProtoBuffersLite.dll) and the ability to
+  generate code with "option optimize_for = LITE_RUNTIME;".
+- Added ability to invoke protoc.exe from within ProtoGen.exe.
+- Upgraded to protoc.exe (2.3) compiler.
+
+Fixes:
+- Issue 9:	Class cannot be static and sealed error
+- Issue 12:	default value for enumerate fields must be filled out
+
+Other:
+- Rewrite of build using MSbuild instead of NAnt
+- Moved to NUnit Version 2.2.8.0
+- Changed to using secure .snk for releases
+
+===============================================================================
+RELEASE NOTES - Version 0.9.1
+===============================================================================
+
+Fixes:
+- issue 10:	Incorrect encoding of packed fields when serialized
+
+===============================================================================
+RELEASE NOTES - Version 0.9.0
+===============================================================================
+
+- Initial release
+
+===============================================================================

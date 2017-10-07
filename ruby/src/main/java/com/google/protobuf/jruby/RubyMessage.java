@@ -41,6 +41,8 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,20 +82,20 @@ public class RubyMessage extends RubyObject {
             hash.visitAll(new RubyHash.Visitor() {
                 @Override
                 public void visit(IRubyObject key, IRubyObject value) {
-                    if (!(key instanceof RubySymbol))
-                        throw runtime.newTypeError("Expected symbols as hash keys in initialization map.");
+                    if (!(key instanceof RubySymbol) && !(key instanceof RubyString))
+                        throw runtime.newTypeError("Expected string or symbols as hash keys in initialization map.");
                     final Descriptors.FieldDescriptor fieldDescriptor = findField(context, key);
 
                     if (Utils.isMapEntry(fieldDescriptor)) {
                         if (!(value instanceof RubyHash))
-                            throw runtime.newArgumentError("Expected Hash object as initializer value for map field.");
+                            throw runtime.newArgumentError("Expected Hash object as initializer value for map field '" +  key.asJavaString() + "'.");
 
                         final RubyMap map = newMapForField(context, fieldDescriptor);
                         map.mergeIntoSelf(context, value);
                         maps.put(fieldDescriptor, map);
                     } else if (fieldDescriptor.isRepeated()) {
                         if (!(value instanceof RubyArray))
-                            throw runtime.newTypeError("Expected array as initializer var for repeated field.");
+                            throw runtime.newArgumentError("Expected array as initializer value for repeated field '" +  key.asJavaString() + "'.");
                         RubyRepeatedField repeatedField = rubyToRepeatedField(context, fieldDescriptor, value);
                         addRepeatedField(fieldDescriptor, repeatedField);
                     } else {
@@ -101,9 +103,15 @@ public class RubyMessage extends RubyObject {
                         if (oneof != null) {
                             oneofCases.put(oneof, fieldDescriptor);
                         }
+
+                        if (value instanceof RubyHash && fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                            RubyDescriptor descriptor = (RubyDescriptor) getDescriptorForField(context, fieldDescriptor);
+                            RubyClass typeClass = (RubyClass) descriptor.msgclass(context);
+                            value = (IRubyObject) typeClass.newInstance(context, value, Block.NULL_BLOCK);
+                        }
+
                         fields.put(fieldDescriptor, value);
                     }
-
                 }
             });
         }
@@ -164,8 +172,21 @@ public class RubyMessage extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject hash(ThreadContext context) {
-        int hashCode = System.identityHashCode(this);
-        return context.runtime.newFixnum(hashCode);
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            for (RubyMap map : maps.values()) {
+                digest.update((byte) map.hashCode());
+            }
+            for (RubyRepeatedField repeatedField : repeatedFields.values()) {
+                digest.update((byte) repeatedFields.hashCode());
+            }
+            for (IRubyObject field : fields.values()) {
+                digest.update((byte) field.hashCode());
+            }
+            return context.runtime.newString(new ByteList(digest.digest()));
+        } catch (NoSuchAlgorithmException ignore) {
+            return context.runtime.newFixnum(System.identityHashCode(this));
+        }
     }
 
     /*
@@ -217,6 +238,9 @@ public class RubyMessage extends RubyObject {
             RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
             IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
             if (oneofDescriptor.isNil()) {
+                if (!hasField(args[0])) {
+                    return Helpers.invokeSuper(context, this, metaClass, "method_missing", args, Block.NULL_BLOCK);
+                }
                 return index(context, args[0]);
             }
             RubyOneofDescriptor rubyOneofDescriptor = (RubyOneofDescriptor) oneofDescriptor;
@@ -233,6 +257,10 @@ public class RubyMessage extends RubyObject {
             if (field.end_with_p(context, equalSign).isTrue()) {
                 field.chomp_bang(context, equalSign);
             }
+
+            if (!hasField(field)) {
+                return Helpers.invokeSuper(context, this, metaClass, "method_missing", args, Block.NULL_BLOCK);
+            }
             return indexSet(context, field, args[1]);
         }
     }
@@ -246,15 +274,14 @@ public class RubyMessage extends RubyObject {
     public IRubyObject dup(ThreadContext context) {
         RubyMessage dup = (RubyMessage) metaClass.newInstance(context, Block.NULL_BLOCK);
         IRubyObject value;
-        for (Descriptors.FieldDescriptor fieldDescriptor : builder.getAllFields().keySet()) {
+        for (Descriptors.FieldDescriptor fieldDescriptor : this.descriptor.getFields()) {
             if (fieldDescriptor.isRepeated()) {
-                dup.repeatedFields.put(fieldDescriptor, getRepeatedField(context, fieldDescriptor));
-            } else if (builder.hasField(fieldDescriptor)) {
-                dup.fields.put(fieldDescriptor, wrapField(context, fieldDescriptor, builder.getField(fieldDescriptor)));
+                dup.addRepeatedField(fieldDescriptor, this.getRepeatedField(context, fieldDescriptor));
+            } else if (fields.containsKey(fieldDescriptor)) {
+                dup.fields.put(fieldDescriptor, fields.get(fieldDescriptor));
+            } else if (this.builder.hasField(fieldDescriptor)) {
+                dup.fields.put(fieldDescriptor, wrapField(context, fieldDescriptor, this.builder.getField(fieldDescriptor)));
             }
-        }
-        for (Descriptors.FieldDescriptor fieldDescriptor : fields.keySet()) {
-            dup.fields.put(fieldDescriptor, fields.get(fieldDescriptor));
         }
         for (Descriptors.FieldDescriptor fieldDescriptor : maps.keySet()) {
             dup.maps.put(fieldDescriptor, maps.get(fieldDescriptor));
@@ -339,16 +366,32 @@ public class RubyMessage extends RubyObject {
         return ret;
     }
 
-    @JRubyMethod(name = "to_h")
+    @JRubyMethod(name = {"to_h", "to_hash"})
     public IRubyObject toHash(ThreadContext context) {
         Ruby runtime = context.runtime;
         RubyHash ret = RubyHash.newHash(runtime);
         for (Descriptors.FieldDescriptor fdef : this.descriptor.getFields()) {
             IRubyObject value = getField(context, fdef);
-            if (value.respondsTo("to_h")) {
-                value = Helpers.invoke(context, value, "to_h");
+            if (!value.isNil()) {
+                if (fdef.isRepeated() && !fdef.isMapField()) {
+                    if (fdef.getType() != Descriptors.FieldDescriptor.Type.MESSAGE) {
+                        value = Helpers.invoke(context, value, "to_a");
+                    } else {
+                        RubyArray ary = value.convertToArray();
+                        for (int i = 0; i < ary.size(); i++) {
+                            IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
+                            ary.eltInternalSet(i, submsg);
+                        }
+
+                        value = ary.to_ary();
+                    }
+                } else if (value.respondsTo("to_h")) {
+                    value = Helpers.invoke(context, value, "to_h");
+                } else if (value.respondsTo("to_a")) {
+                    value = Helpers.invoke(context, value, "to_a");
+                }
             }
-            ret.fastASet(runtime.newString(fdef.getName()), value);
+            ret.fastASet(runtime.newSymbol(fdef.getName()), value);
         }
         return ret;
     }
@@ -411,6 +454,7 @@ public class RubyMessage extends RubyObject {
         for (int i = 0; i < count; i++) {
             ret.push(context, wrapField(context, fieldDescriptor, this.builder.getRepeatedField(fieldDescriptor, i)));
         }
+        addRepeatedField(fieldDescriptor, ret);
         return ret;
     }
 
@@ -429,6 +473,11 @@ public class RubyMessage extends RubyObject {
         if (ret == null)
             throw context.runtime.newArgumentError("field " + fieldName.asJavaString() + " is not found");
         return ret;
+    }
+
+    private boolean hasField(IRubyObject fieldName) {
+        String nameStr = fieldName.asJavaString();
+        return this.descriptor.findFieldByName(Utils.escapeIdentifier(nameStr)) != null;
     }
 
     private void checkRepeatedFieldType(ThreadContext context, IRubyObject value,
@@ -487,19 +536,12 @@ public class RubyMessage extends RubyObject {
                 val = value.isTrue();
                 break;
             case BYTES:
+                Utils.validateStringEncoding(context, fieldDescriptor.getType(), value);
+                val = ByteString.copyFrom(((RubyString) value).getBytes());
+                break;
             case STRING:
-                Utils.validateStringEncoding(context.runtime, fieldDescriptor.getType(), value);
-                RubyString str = (RubyString) value;
-                switch (fieldDescriptor.getType()) {
-                    case BYTES:
-                        val = ByteString.copyFrom(str.getBytes());
-                        break;
-                    case STRING:
-                        val = str.asJavaString();
-                        break;
-                    default:
-                        break;
-                }
+                Utils.validateStringEncoding(context, fieldDescriptor.getType(), value);
+                val = ((RubyString) value).asJavaString();
                 break;
             case MESSAGE:
                 RubyClass typeClass = (RubyClass) ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
@@ -512,7 +554,7 @@ public class RubyMessage extends RubyObject {
 
                 if (Utils.isRubyNum(value)) {
                     val = enumDescriptor.findValueByNumberCreatingIfUnknown(RubyNumeric.num2int(value));
-                } else if (value instanceof RubySymbol) {
+                } else if (value instanceof RubySymbol || value instanceof RubyString) {
                     val = enumDescriptor.findValueByName(value.asJavaString());
                 } else {
                     throw runtime.newTypeError("Expected number or symbol type for enum field.");
@@ -576,13 +618,17 @@ public class RubyMessage extends RubyObject {
     protected IRubyObject getField(ThreadContext context, Descriptors.FieldDescriptor fieldDescriptor) {
         Descriptors.OneofDescriptor oneofDescriptor = fieldDescriptor.getContainingOneof();
         if (oneofDescriptor != null) {
-            if (oneofCases.containsKey(oneofDescriptor)) {
-                if (oneofCases.get(oneofDescriptor) != fieldDescriptor)
-                    return context.runtime.getNil();
+            if (oneofCases.get(oneofDescriptor) == fieldDescriptor) {
                 return fields.get(fieldDescriptor);
             } else {
                 Descriptors.FieldDescriptor oneofCase = builder.getOneofFieldDescriptor(oneofDescriptor);
-                if (oneofCase != fieldDescriptor) return context.runtime.getNil();
+                if (oneofCase != fieldDescriptor) {
+                  if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                    return context.runtime.getNil();
+                  } else {
+                    return wrapField(context, fieldDescriptor, fieldDescriptor.getDefaultValue());
+                  }
+                }
                 IRubyObject value = wrapField(context, oneofCase, builder.getField(oneofCase));
                 fields.put(fieldDescriptor, value);
                 return value;
@@ -659,14 +705,14 @@ public class RubyMessage extends RubyObject {
             } else {
                 Descriptors.FieldDescriptor.Type fieldType = fieldDescriptor.getType();
                 IRubyObject typeClass = context.runtime.getObject();
+                boolean addValue = true;
                 if (fieldType == Descriptors.FieldDescriptor.Type.MESSAGE) {
                     typeClass = ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+                    if (value.isNil()){
+                        addValue = false;
+                    }
                 } else if (fieldType == Descriptors.FieldDescriptor.Type.ENUM) {
                     typeClass = ((RubyEnumDescriptor) getDescriptorForField(context, fieldDescriptor)).enummodule(context);
-                }
-                Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
-                // Convert integer enum to symbol
-                if (fieldType == Descriptors.FieldDescriptor.Type.ENUM) {
                     Descriptors.EnumDescriptor enumDescriptor = fieldDescriptor.getEnumType();
                     if (Utils.isRubyNum(value)) {
                         Descriptors.EnumValueDescriptor val =
@@ -674,7 +720,12 @@ public class RubyMessage extends RubyObject {
                         if (val.getIndex() != -1) value = context.runtime.newSymbol(val.getName());
                     }
                 }
-                this.fields.put(fieldDescriptor, value);
+                if (addValue) {
+                    value = Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+                    this.fields.put(fieldDescriptor, value);
+                } else {
+                    this.fields.remove(fieldDescriptor);
+                }
             }
         }
         return context.runtime.getNil();
@@ -701,8 +752,20 @@ public class RubyMessage extends RubyObject {
                                                   Descriptors.FieldDescriptor fieldDescriptor, IRubyObject value) {
         RubyArray arr = value.convertToArray();
         RubyRepeatedField repeatedField = repeatedFieldForFieldDescriptor(context, fieldDescriptor);
+
+        RubyClass typeClass = null;
+        if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+            RubyDescriptor descriptor = (RubyDescriptor) getDescriptorForField(context, fieldDescriptor);
+            typeClass = (RubyClass) descriptor.msgclass(context);
+        }
+
         for (int i = 0; i < arr.size(); i++) {
-            repeatedField.push(context, arr.eltInternal(i));
+            IRubyObject row = arr.eltInternal(i);
+            if (row instanceof RubyHash && typeClass != null) {
+                row = (IRubyObject) typeClass.newInstance(context, row, Block.NULL_BLOCK);
+            }
+
+            repeatedField.push(context, row);
         }
         return repeatedField;
     }

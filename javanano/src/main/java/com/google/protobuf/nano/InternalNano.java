@@ -67,8 +67,8 @@ public final class InternalNano {
   public static final int TYPE_SINT32   = 17;
   public static final int TYPE_SINT64   = 18;
 
-  protected static final Charset UTF_8 = Charset.forName("UTF-8");
-  protected static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+  static final Charset UTF_8 = Charset.forName("UTF-8");
+  static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   private InternalNano() {}
 
@@ -535,5 +535,13 @@ public final class InternalNano {
       return Arrays.hashCode((byte[]) o);
     }
     return o.hashCode();
+  }
+
+  // This avoids having to make FieldArray public.
+  public static void cloneUnknownFieldData(ExtendableMessageNano original,
+      ExtendableMessageNano cloned) {
+    if (original.unknownFieldData != null) {
+      cloned.unknownFieldData = (FieldArray) original.unknownFieldData.clone();
+    }
   }
 }

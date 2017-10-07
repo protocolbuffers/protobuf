@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "0900"
+   version = "1.3">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7461B52D0F94FAF800A0C422"
+               BuildableName = "libProtocolBuffers.a"
+               BlueprintName = "ProtocolBuffers"
+               ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Release"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      language = ""
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8BBEA4A5147C727100C4ADB7"
+               BuildableName = "UnitTests.xctest"
+               BlueprintName = "UnitTests"
+               ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+            </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "CodedInputStreamTests">
+               </Test>
+               <Test
+                  Identifier = "CodedOutputStreamTests">
+               </Test>
+               <Test
+                  Identifier = "ConcurrencyTests">
+               </Test>
+               <Test
+                  Identifier = "DescriptorTests">
+               </Test>
+               <Test
+                  Identifier = "GPBAutocreatedArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBAutocreatedDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolBoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolDoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolFloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolUInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolUInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBridgeTests">
+               </Test>
+               <Test
+                  Identifier = "GPBDoubleArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBEnumArrayCustomTests">
+               </Test>
+               <Test
+                  Identifier = "GPBEnumArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBExtensionRegistryTest">
+               </Test>
+               <Test
+                  Identifier = "GPBFloatArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32BoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32DoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32EnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32EnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32FloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32Int32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32Int64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32ObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32UInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32UInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64BoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64DoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64EnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64EnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64FloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64Int32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64Int64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64ObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64UInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64UInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBObjectiveCPlusPlusTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringBoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringDoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringEnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringEnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringFloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringUInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringUInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBTestCase">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32BoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32DoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32EnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32EnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32FloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32Int32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32Int64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32ObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32UInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32UInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64BoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64DoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64EnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64EnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64FloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64Int32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64Int64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64ObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64UInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64UInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "MessageMergeTests">
+               </Test>
+               <Test
+                  Identifier = "MessageRuntimeTests">
+               </Test>
+               <Test
+                  Identifier = "MessageSerializationTests">
+               </Test>
+               <Test
+                  Identifier = "MessageTests">
+               </Test>
+               <Test
+                  Identifier = "UnknownFieldSetTest">
+               </Test>
+               <Test
+                  Identifier = "UtilitiesTests">
+               </Test>
+               <Test
+                  Identifier = "WellKnownTypesTest">
+               </Test>
+               <Test
+                  Identifier = "WireFormatTests">
+               </Test>
+            </SkippedTests>
+         </TestableReference>
+      </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "8B9A5EA41831993600A9D33B"
+            BuildableName = "iOSTestHarness.app"
+            BlueprintName = "iOSTestHarness"
+            ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Release"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      language = ""
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "8B9A5EA41831993600A9D33B"
+            BuildableName = "iOSTestHarness.app"
+            BlueprintName = "iOSTestHarness"
+            ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <AdditionalOptions>
+      </AdditionalOptions>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "7461B52D0F94FAF800A0C422"
+            BuildableName = "libProtocolBuffers.a"
+            BlueprintName = "ProtocolBuffers"
+            ReferencedContainer = "container:ProtocolBuffers_iOS.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Release">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

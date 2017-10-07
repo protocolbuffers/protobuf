@@ -111,12 +111,22 @@ inline To down_cast(From& f) {
   return *static_cast<ToAsPointer>(&f);
 }
 
+template<typename To, typename From>
+inline To bit_cast(const From& from) {
+  GOOGLE_COMPILE_ASSERT(sizeof(From) == sizeof(To),
+                        bit_cast_with_different_sizes);
+  To dest;
+  memcpy(&dest, &from, sizeof(dest));
+  return dest;
+}
+
 }  // namespace internal
 
 // We made these internal so that they would show up as such in the docs,
 // but we don't want to stick "internal::" in front of them everywhere.
 using internal::implicit_cast;
 using internal::down_cast;
+using internal::bit_cast;
 
 }  // namespace protobuf
 }  // namespace google

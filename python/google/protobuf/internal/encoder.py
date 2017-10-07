@@ -28,10 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#PY25 compatible for GAE.
-#
-# Copyright 2009 Google Inc. All Rights Reserved.
-
 """Code for encoding protocol message primitives.
 
 Contains the logic for encoding every logical protocol field type
@@ -45,7 +41,7 @@ FieldDescriptor) we construct two functions:  a "sizer" and an "encoder".  The
 sizer takes a value of this field's type and computes its byte size.  The
 encoder takes a writer function and a value.  It encodes the value into byte
 strings and invokes the writer function to write those strings.  Typically the
-writer function is the write() method of a cStringIO.
+writer function is the write() method of a BytesIO.
 
 We try to do as much work as possible when constructing the writer and the
 sizer rather than when calling them.  In particular:
@@ -71,8 +67,9 @@ sizer rather than when calling them.  In particular:
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import struct
-import sys  ##PY25
-_PY2 = sys.version_info[0] < 3  ##PY25
+
+import six
+
 from google.protobuf.internal import wire_format
 
 
@@ -314,7 +311,7 @@ def MessageSizer(field_number, is_repeated, is_packed):
 
 
 # --------------------------------------------------------------------
-# MessageSet is special.
+# MessageSet is special: it needs custom logic to compute its size properly.
 
 
 def MessageSetItemSizer(field_number):
@@ -339,6 +336,35 @@ def MessageSetItemSizer(field_number):
   return FieldSize
 
 
+# --------------------------------------------------------------------
+# Map is special: it needs custom logic to compute its size properly.
+
+
+def MapSizer(field_descriptor, is_message_map):
+  """Returns a sizer for a map field."""
+
+  # Can't look at field_descriptor.message_type._concrete_class because it may
+  # not have been initialized yet.
+  message_type = field_descriptor.message_type
+  message_sizer = MessageSizer(field_descriptor.number, False, False)
+
+  def FieldSize(map_value):
+    total = 0
+    for key in map_value:
+      value = map_value[key]
+      # It's wasteful to create the messages and throw them away one second
+      # later since we'll do the same for the actual encode.  But there's not an
+      # obvious way to avoid this within the current design without tons of code
+      # duplication. For message map, value.ByteSize() should be called to
+      # update the status.
+      entry_msg = message_type._concrete_class(key=key, value=value)
+      total += message_sizer(entry_msg)
+      if is_message_map:
+        value.ByteSize()
+    return total
+
+  return FieldSize
+
 # ====================================================================
 # Encoders!
 
@@ -346,16 +372,14 @@ def MessageSetItemSizer(field_number):
 def _VarintEncoder():
   """Return an encoder for a basic varint value (does not include tag)."""
 
-  local_chr = _PY2 and chr or (lambda x: bytes((x,)))  ##PY25
-##!PY25  local_chr = chr if bytes is str else lambda x: bytes((x,))
-  def EncodeVarint(write, value):
+  def EncodeVarint(write, value, unused_deterministic):
     bits = value & 0x7f
     value >>= 7
     while value:
-      write(local_chr(0x80|bits))
+      write(six.int2byte(0x80|bits))
       bits = value & 0x7f
       value >>= 7
-    return write(local_chr(bits))
+    return write(six.int2byte(bits))
 
   return EncodeVarint
 
@@ -364,18 +388,16 @@ def _SignedVarintEncoder():
   """Return an encoder for a basic signed varint value (does not include
   tag)."""
 
-  local_chr = _PY2 and chr or (lambda x: bytes((x,)))  ##PY25
-##!PY25  local_chr = chr if bytes is str else lambda x: bytes((x,))
-  def EncodeSignedVarint(write, value):
+  def EncodeSignedVarint(write, value, unused_deterministic):
     if value < 0:
       value += (1 << 64)
     bits = value & 0x7f
     value >>= 7
     while value:
-      write(local_chr(0x80|bits))
+      write(six.int2byte(0x80|bits))
       bits = value & 0x7f
       value >>= 7
-    return write(local_chr(bits))
+    return write(six.int2byte(bits))
 
   return EncodeSignedVarint
 
@@ -389,9 +411,8 @@ def _VarintBytes(value):
   called at startup time so it doesn't need to be fast."""
 
   pieces = []
-  _EncodeVarint(pieces.append, value)
-  return "".encode("latin1").join(pieces)  ##PY25
-##!PY25  return b"".join(pieces)
+  _EncodeVarint(pieces.append, value, True)
+  return b"".join(pieces)
 
 
 def TagBytes(field_number, wire_type):
@@ -419,27 +440,27 @@ def _SimpleEncoder(wire_type, encode_value, compute_value_size):
     if is_packed:
       tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
       local_EncodeVarint = _EncodeVarint
-      def EncodePackedField(write, value):
+      def EncodePackedField(write, value, deterministic):
         write(tag_bytes)
         size = 0
         for element in value:
           size += compute_value_size(element)
-        local_EncodeVarint(write, size)
+        local_EncodeVarint(write, size, deterministic)
         for element in value:
-          encode_value(write, element)
+          encode_value(write, element, deterministic)
       return EncodePackedField
     elif is_repeated:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeRepeatedField(write, value):
+      def EncodeRepeatedField(write, value, deterministic):
         for element in value:
           write(tag_bytes)
-          encode_value(write, element)
+          encode_value(write, element, deterministic)
       return EncodeRepeatedField
     else:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeField(write, value):
+      def EncodeField(write, value, deterministic):
         write(tag_bytes)
-        return encode_value(write, value)
+        return encode_value(write, value, deterministic)
       return EncodeField
 
   return SpecificEncoder
@@ -453,27 +474,27 @@ def _ModifiedEncoder(wire_type, encode_value, compute_value_size, modify_value):
     if is_packed:
       tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
       local_EncodeVarint = _EncodeVarint
-      def EncodePackedField(write, value):
+      def EncodePackedField(write, value, deterministic):
         write(tag_bytes)
         size = 0
         for element in value:
           size += compute_value_size(modify_value(element))
-        local_EncodeVarint(write, size)
+        local_EncodeVarint(write, size, deterministic)
         for element in value:
-          encode_value(write, modify_value(element))
+          encode_value(write, modify_value(element), deterministic)
       return EncodePackedField
     elif is_repeated:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeRepeatedField(write, value):
+      def EncodeRepeatedField(write, value, deterministic):
         for element in value:
           write(tag_bytes)
-          encode_value(write, modify_value(element))
+          encode_value(write, modify_value(element), deterministic)
       return EncodeRepeatedField
     else:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeField(write, value):
+      def EncodeField(write, value, deterministic):
         write(tag_bytes)
-        return encode_value(write, modify_value(value))
+        return encode_value(write, modify_value(value), deterministic)
       return EncodeField
 
   return SpecificEncoder
@@ -494,22 +515,22 @@ def _StructPackEncoder(wire_type, format):
     if is_packed:
       tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
       local_EncodeVarint = _EncodeVarint
-      def EncodePackedField(write, value):
+      def EncodePackedField(write, value, deterministic):
         write(tag_bytes)
-        local_EncodeVarint(write, len(value) * value_size)
+        local_EncodeVarint(write, len(value) * value_size, deterministic)
         for element in value:
           write(local_struct_pack(format, element))
       return EncodePackedField
     elif is_repeated:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeRepeatedField(write, value):
+      def EncodeRepeatedField(write, value, unused_deterministic):
         for element in value:
           write(tag_bytes)
           write(local_struct_pack(format, element))
       return EncodeRepeatedField
     else:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeField(write, value):
+      def EncodeField(write, value, unused_deterministic):
         write(tag_bytes)
         return write(local_struct_pack(format, value))
       return EncodeField
@@ -529,33 +550,26 @@ def _FloatingPointEncoder(wire_type, format):
       format:  The format string to pass to struct.pack().
   """
 
-  b = _PY2 and (lambda x:x) or (lambda x:x.encode('latin1'))  ##PY25
   value_size = struct.calcsize(format)
   if value_size == 4:
     def EncodeNonFiniteOrRaise(write, value):
       # Remember that the serialized form uses little-endian byte order.
       if value == _POS_INF:
-        write(b('\x00\x00\x80\x7F'))  ##PY25
-##!PY25        write(b'\x00\x00\x80\x7F')
+        write(b'\x00\x00\x80\x7F')
       elif value == _NEG_INF:
-        write(b('\x00\x00\x80\xFF'))  ##PY25
-##!PY25        write(b'\x00\x00\x80\xFF')
+        write(b'\x00\x00\x80\xFF')
       elif value != value:           # NaN
-        write(b('\x00\x00\xC0\x7F'))  ##PY25
-##!PY25        write(b'\x00\x00\xC0\x7F')
+        write(b'\x00\x00\xC0\x7F')
       else:
         raise
   elif value_size == 8:
     def EncodeNonFiniteOrRaise(write, value):
       if value == _POS_INF:
-        write(b('\x00\x00\x00\x00\x00\x00\xF0\x7F'))  ##PY25
-##!PY25        write(b'\x00\x00\x00\x00\x00\x00\xF0\x7F')
+        write(b'\x00\x00\x00\x00\x00\x00\xF0\x7F')
       elif value == _NEG_INF:
-        write(b('\x00\x00\x00\x00\x00\x00\xF0\xFF'))  ##PY25
-##!PY25        write(b'\x00\x00\x00\x00\x00\x00\xF0\xFF')
+        write(b'\x00\x00\x00\x00\x00\x00\xF0\xFF')
       elif value != value:                         # NaN
-        write(b('\x00\x00\x00\x00\x00\x00\xF8\x7F'))  ##PY25
-##!PY25        write(b'\x00\x00\x00\x00\x00\x00\xF8\x7F')
+        write(b'\x00\x00\x00\x00\x00\x00\xF8\x7F')
       else:
         raise
   else:
@@ -567,9 +581,9 @@ def _FloatingPointEncoder(wire_type, format):
     if is_packed:
       tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
       local_EncodeVarint = _EncodeVarint
-      def EncodePackedField(write, value):
+      def EncodePackedField(write, value, deterministic):
         write(tag_bytes)
-        local_EncodeVarint(write, len(value) * value_size)
+        local_EncodeVarint(write, len(value) * value_size, deterministic)
         for element in value:
           # This try/except block is going to be faster than any code that
           # we could write to check whether element is finite.
@@ -580,7 +594,7 @@ def _FloatingPointEncoder(wire_type, format):
       return EncodePackedField
     elif is_repeated:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeRepeatedField(write, value):
+      def EncodeRepeatedField(write, value, unused_deterministic):
         for element in value:
           write(tag_bytes)
           try:
@@ -590,7 +604,7 @@ def _FloatingPointEncoder(wire_type, format):
       return EncodeRepeatedField
     else:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeField(write, value):
+      def EncodeField(write, value, unused_deterministic):
         write(tag_bytes)
         try:
           write(local_struct_pack(format, value))
@@ -631,16 +645,14 @@ DoubleEncoder   = _FloatingPointEncoder(wire_format.WIRETYPE_FIXED64, '<d')
 def BoolEncoder(field_number, is_repeated, is_packed):
   """Returns an encoder for a boolean field."""
 
-##!PY25  false_byte = b'\x00'
-##!PY25  true_byte = b'\x01'
-  false_byte = '\x00'.encode('latin1')  ##PY25
-  true_byte = '\x01'.encode('latin1')  ##PY25
+  false_byte = b'\x00'
+  true_byte = b'\x01'
   if is_packed:
     tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_LENGTH_DELIMITED)
     local_EncodeVarint = _EncodeVarint
-    def EncodePackedField(write, value):
+    def EncodePackedField(write, value, deterministic):
       write(tag_bytes)
-      local_EncodeVarint(write, len(value))
+      local_EncodeVarint(write, len(value), deterministic)
       for element in value:
         if element:
           write(true_byte)
@@ -649,7 +661,7 @@ def BoolEncoder(field_number, is_repeated, is_packed):
     return EncodePackedField
   elif is_repeated:
     tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_VARINT)
-    def EncodeRepeatedField(write, value):
+    def EncodeRepeatedField(write, value, unused_deterministic):
       for element in value:
         write(tag_bytes)
         if element:
@@ -659,7 +671,7 @@ def BoolEncoder(field_number, is_repeated, is_packed):
     return EncodeRepeatedField
   else:
     tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_VARINT)
-    def EncodeField(write, value):
+    def EncodeField(write, value, unused_deterministic):
       write(tag_bytes)
       if value:
         return write(true_byte)
@@ -675,18 +687,18 @@ def StringEncoder(field_number, is_repeated, is_packed):
   local_len = len
   assert not is_packed
   if is_repeated:
-    def EncodeRepeatedField(write, value):
+    def EncodeRepeatedField(write, value, deterministic):
       for element in value:
         encoded = element.encode('utf-8')
         write(tag)
-        local_EncodeVarint(write, local_len(encoded))
+        local_EncodeVarint(write, local_len(encoded), deterministic)
         write(encoded)
     return EncodeRepeatedField
   else:
-    def EncodeField(write, value):
+    def EncodeField(write, value, deterministic):
       encoded = value.encode('utf-8')
       write(tag)
-      local_EncodeVarint(write, local_len(encoded))
+      local_EncodeVarint(write, local_len(encoded), deterministic)
       return write(encoded)
     return EncodeField
 
@@ -699,16 +711,16 @@ def BytesEncoder(field_number, is_repeated, is_packed):
   local_len = len
   assert not is_packed
   if is_repeated:
-    def EncodeRepeatedField(write, value):
+    def EncodeRepeatedField(write, value, deterministic):
       for element in value:
         write(tag)
-        local_EncodeVarint(write, local_len(element))
+        local_EncodeVarint(write, local_len(element), deterministic)
         write(element)
     return EncodeRepeatedField
   else:
-    def EncodeField(write, value):
+    def EncodeField(write, value, deterministic):
       write(tag)
-      local_EncodeVarint(write, local_len(value))
+      local_EncodeVarint(write, local_len(value), deterministic)
       return write(value)
     return EncodeField
 
@@ -720,16 +732,16 @@ def GroupEncoder(field_number, is_repeated, is_packed):
   end_tag = TagBytes(field_number, wire_format.WIRETYPE_END_GROUP)
   assert not is_packed
   if is_repeated:
-    def EncodeRepeatedField(write, value):
+    def EncodeRepeatedField(write, value, deterministic):
       for element in value:
         write(start_tag)
-        element._InternalSerialize(write)
+        element._InternalSerialize(write, deterministic)
         write(end_tag)
     return EncodeRepeatedField
   else:
-    def EncodeField(write, value):
+    def EncodeField(write, value, deterministic):
       write(start_tag)
-      value._InternalSerialize(write)
+      value._InternalSerialize(write, deterministic)
       return write(end_tag)
     return EncodeField
 
@@ -741,17 +753,17 @@ def MessageEncoder(field_number, is_repeated, is_packed):
   local_EncodeVarint = _EncodeVarint
   assert not is_packed
   if is_repeated:
-    def EncodeRepeatedField(write, value):
+    def EncodeRepeatedField(write, value, deterministic):
       for element in value:
         write(tag)
-        local_EncodeVarint(write, element.ByteSize())
-        element._InternalSerialize(write)
+        local_EncodeVarint(write, element.ByteSize(), deterministic)
+        element._InternalSerialize(write, deterministic)
     return EncodeRepeatedField
   else:
-    def EncodeField(write, value):
+    def EncodeField(write, value, deterministic):
       write(tag)
-      local_EncodeVarint(write, value.ByteSize())
-      return value._InternalSerialize(write)
+      local_EncodeVarint(write, value.ByteSize(), deterministic)
+      return value._InternalSerialize(write, deterministic)
     return EncodeField
 
 
@@ -770,8 +782,7 @@ def MessageSetItemEncoder(field_number):
       }
     }
   """
-  start_bytes = "".encode("latin1").join([  ##PY25
-##!PY25  start_bytes = b"".join([
+  start_bytes = b"".join([
       TagBytes(1, wire_format.WIRETYPE_START_GROUP),
       TagBytes(2, wire_format.WIRETYPE_VARINT),
       _VarintBytes(field_number),
@@ -779,10 +790,38 @@ def MessageSetItemEncoder(field_number):
   end_bytes = TagBytes(1, wire_format.WIRETYPE_END_GROUP)
   local_EncodeVarint = _EncodeVarint
 
-  def EncodeField(write, value):
+  def EncodeField(write, value, deterministic):
     write(start_bytes)
-    local_EncodeVarint(write, value.ByteSize())
-    value._InternalSerialize(write)
+    local_EncodeVarint(write, value.ByteSize(), deterministic)
+    value._InternalSerialize(write, deterministic)
     return write(end_bytes)
+
+  return EncodeField
+
+
+# --------------------------------------------------------------------
+# As before, Map is special.
+
+
+def MapEncoder(field_descriptor):
+  """Encoder for extensions of MessageSet.
+
+  Maps always have a wire format like this:
+    message MapEntry {
+      key_type key = 1;
+      value_type value = 2;
+    }
+    repeated MapEntry map = N;
+  """
+  # Can't look at field_descriptor.message_type._concrete_class because it may
+  # not have been initialized yet.
+  message_type = field_descriptor.message_type
+  encode_message = MessageEncoder(field_descriptor.number, False, False)
+
+  def EncodeField(write, value, deterministic):
+    value_keys = sorted(value.keys()) if deterministic else value
+    for key in value_keys:
+      entry_msg = message_type._concrete_class(key=key, value=value[key])
+      encode_message(write, entry_msg, deterministic)
 
   return EncodeField

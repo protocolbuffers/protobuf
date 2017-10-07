@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
@@ -34,8 +34,12 @@
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-import unittest
+try:
+  import unittest2 as unittest  #PY26
+except ImportError:
+  import unittest
 
+from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf import descriptor_database
@@ -49,18 +53,51 @@ class DescriptorDatabaseTest(unittest.TestCase):
         factory_test2_pb2.DESCRIPTOR.serialized_pb)
     db.Add(file_desc_proto)
 
-    self.assertEquals(file_desc_proto, db.FindFileByName(
+    self.assertEqual(file_desc_proto, db.FindFileByName(
         'google/protobuf/internal/factory_test2.proto'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    # Can find message type.
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    # Can find nested message type.
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message.NestedFactory2Message'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    # Can find enum type.
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Enum'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    # Can find nested enum type.
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message.NestedFactory2Enum'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.MessageWithNestedEnumOnly.NestedEnum'))
+    # Can find field.
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
+        'google.protobuf.python.internal.Factory2Message.list_field'))
+    # Can find enum value.
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
+        'google.protobuf.python.internal.Factory2Enum.FACTORY_2_VALUE_0'))
+    # Can find top level extension.
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
+        'google.protobuf.python.internal.another_field'))
+    # Can find nested extension inside a message.
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
+        'google.protobuf.python.internal.Factory2Message.one_more_field'))
+
+    # Can find service.
+    file_desc_proto2 = descriptor_pb2.FileDescriptorProto.FromString(
+        unittest_pb2.DESCRIPTOR.serialized_pb)
+    db.Add(file_desc_proto2)
+    self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
+        'protobuf_unittest.TestService'))
+
+    # Non-existent field under a valid top level symbol can also be
+    # found. The behavior is the same with protobuf C++.
+    self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
+        'protobuf_unittest.TestAllTypes.none_field'))
+
+    self.assertRaises(KeyError,
+                      db.FindFileContainingSymbol,
+                      'protobuf_unittest.NoneMessage')
+
 
 if __name__ == '__main__':
   unittest.main()

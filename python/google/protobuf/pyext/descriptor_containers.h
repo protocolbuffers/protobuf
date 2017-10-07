@@ -28,6 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_CONTAINERS_H__
+#define GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_CONTAINERS_H__
+
 // Mappings and Sequences of descriptors.
 // They implement containers like fields_by_name, EnumDescriptor.values...
 // See descriptor_containers.cc for more description.
@@ -40,6 +43,7 @@ class Descriptor;
 class FileDescriptor;
 class EnumDescriptor;
 class OneofDescriptor;
+class ServiceDescriptor;
 
 namespace python {
 
@@ -51,6 +55,7 @@ bool InitDescriptorMappingTypes();
 
 namespace message_descriptor {
 PyObject* NewMessageFieldsByName(const Descriptor* descriptor);
+PyObject* NewMessageFieldsByCamelcaseName(const Descriptor* descriptor);
 PyObject* NewMessageFieldsByNumber(const Descriptor* descriptor);
 PyObject* NewMessageFieldsSeq(const Descriptor* descriptor);
 
@@ -85,11 +90,20 @@ PyObject* NewFileEnumTypesByName(const FileDescriptor* descriptor);
 
 PyObject* NewFileExtensionsByName(const FileDescriptor* descriptor);
 
+PyObject* NewFileServicesByName(const FileDescriptor* descriptor);
+
 PyObject* NewFileDependencies(const FileDescriptor* descriptor);
 PyObject* NewFilePublicDependencies(const FileDescriptor* descriptor);
 }  // namespace file_descriptor
 
+namespace service_descriptor {
+PyObject* NewServiceMethodsSeq(const ServiceDescriptor* descriptor);
+PyObject* NewServiceMethodsByName(const ServiceDescriptor* descriptor);
+}  // namespace service_descriptor
+
 
 }  // namespace python
 }  // namespace protobuf
+
 }  // namespace google
+#endif  // GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_CONTAINERS_H__

@@ -73,13 +73,45 @@ void EnumGenerator::Generate(io::Printer* printer) {
       "// enum $classname$\n",
       "classname", descriptor_->name());
 
+  const string classname = RenameJavaKeywords(descriptor_->name());
+
   // Start of container interface
+  // If generating intdefs, we use the container interface as the intdef if
+  // present. Otherwise, we just make an empty @interface parallel to the
+  // constants.
+  bool use_intdef = params_.generate_intdefs();
   bool use_shell_class = params_.java_enum_style();
-  if (use_shell_class) {
-    printer->Print(
-      "public interface $classname$ {\n",
-      "classname", RenameJavaKeywords(descriptor_->name()));
+  if (use_intdef) {
+    // @IntDef annotation so tools can enforce correctness
+    // Annotations will be discarded by the compiler
+    printer->Print("@java.lang.annotation.Retention("
+      "java.lang.annotation.RetentionPolicy.SOURCE)\n"
+      "@android.support.annotation.IntDef({\n");
     printer->Indent();
+    for (int i = 0; i < canonical_values_.size(); i++) {
+      const string constant_name =
+          RenameJavaKeywords(canonical_values_[i]->name());
+      if (use_shell_class) {
+        printer->Print("$classname$.$name$,\n",
+          "classname", classname,
+          "name", constant_name);
+      } else {
+        printer->Print("$name$,\n", "name", constant_name);
+      }
+    }
+    printer->Outdent();
+    printer->Print("})\n");
+  }
+  if (use_shell_class || use_intdef) {
+    printer->Print(
+      "public $at_for_intdef$interface $classname$ {\n",
+      "classname", classname,
+      "at_for_intdef", use_intdef ? "@" : "");
+    if (use_shell_class) {
+        printer->Indent();
+    } else {
+        printer->Print("}\n\n");
+    }
   }
 
   // Canonical values

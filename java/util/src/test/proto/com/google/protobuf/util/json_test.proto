@@ -1,0 +1,178 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+syntax = "proto3";
+
+package json_test;
+
+option java_package = "com.google.protobuf.util";
+option java_outer_classname = "JsonTestProto";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/struct.proto";
+
+message TestAllTypes {
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+  }
+  message NestedMessage {
+    int32 value = 1;
+  }
+
+  int32 optional_int32 = 1;
+  int64 optional_int64 = 2;
+  uint32 optional_uint32 = 3;
+  uint64 optional_uint64 = 4;
+  sint32 optional_sint32 = 5;
+  sint64 optional_sint64 = 6;
+  fixed32 optional_fixed32 = 7;
+  fixed64 optional_fixed64 = 8;
+  sfixed32 optional_sfixed32 = 9;
+  sfixed64 optional_sfixed64 = 10;
+  float optional_float = 11;
+  double optional_double = 12;
+  bool optional_bool = 13;
+  string optional_string = 14;
+  bytes optional_bytes = 15;
+  NestedMessage optional_nested_message = 18;
+  NestedEnum optional_nested_enum = 21;
+
+  // Repeated
+  repeated int32 repeated_int32 = 31;
+  repeated int64 repeated_int64 = 32;
+  repeated uint32 repeated_uint32 = 33;
+  repeated uint64 repeated_uint64 = 34;
+  repeated sint32 repeated_sint32 = 35;
+  repeated sint64 repeated_sint64 = 36;
+  repeated fixed32 repeated_fixed32 = 37;
+  repeated fixed64 repeated_fixed64 = 38;
+  repeated sfixed32 repeated_sfixed32 = 39;
+  repeated sfixed64 repeated_sfixed64 = 40;
+  repeated float repeated_float = 41;
+  repeated double repeated_double = 42;
+  repeated bool repeated_bool = 43;
+  repeated string repeated_string = 44;
+  repeated bytes repeated_bytes = 45;
+  repeated NestedMessage repeated_nested_message = 48;
+  repeated NestedEnum repeated_nested_enum = 51;
+}
+
+message TestOneof {
+  oneof oneof_field {
+    int32 oneof_int32 = 1;
+    TestAllTypes.NestedMessage oneof_nested_message = 2;
+    google.protobuf.NullValue oneof_null_value = 3;
+  }
+}
+
+message TestMap {
+  // Instead of testing all combinations (too many), we only make sure all
+  // valid types have been used at least in one field as key and in one
+  // field as value.
+  map<int32, int32> int32_to_int32_map = 1;
+  map<int64, int32> int64_to_int32_map = 2;
+  map<uint32, int32> uint32_to_int32_map = 3;
+  map<uint64, int32> uint64_to_int32_map = 4;
+  map<sint32, int32> sint32_to_int32_map = 5;
+  map<sint64, int32> sint64_to_int32_map = 6;
+  map<fixed32, int32> fixed32_to_int32_map = 7;
+  map<fixed64, int32> fixed64_to_int32_map = 8;
+  map<sfixed32, int32> sfixed32_to_int32_map = 9;
+  map<sfixed64, int32> sfixed64_to_int32_map = 10;
+  map<bool, int32> bool_to_int32_map = 11;
+  map<string, int32> string_to_int32_map = 12;
+
+  map<int32, int64> int32_to_int64_map = 101;
+  map<int32, uint32> int32_to_uint32_map = 102;
+  map<int32, uint64> int32_to_uint64_map = 103;
+  map<int32, sint32> int32_to_sint32_map = 104;
+  map<int32, sint64> int32_to_sint64_map = 105;
+  map<int32, fixed32> int32_to_fixed32_map = 106;
+  map<int32, fixed64> int32_to_fixed64_map = 107;
+  map<int32, sfixed32> int32_to_sfixed32_map = 108;
+  map<int32, sfixed64> int32_to_sfixed64_map = 109;
+  map<int32, float> int32_to_float_map = 110;
+  map<int32, double> int32_to_double_map = 111;
+  map<int32, bool> int32_to_bool_map = 112;
+  map<int32, string> int32_to_string_map = 113;
+  map<int32, bytes> int32_to_bytes_map = 114;
+  map<int32, TestAllTypes.NestedMessage> int32_to_message_map = 115;
+  map<int32, TestAllTypes.NestedEnum> int32_to_enum_map = 116;
+}
+
+message TestWrappers {
+  google.protobuf.Int32Value int32_value = 1;
+  google.protobuf.UInt32Value uint32_value = 2;
+  google.protobuf.Int64Value int64_value = 3;
+  google.protobuf.UInt64Value uint64_value = 4;
+  google.protobuf.FloatValue float_value = 5;
+  google.protobuf.DoubleValue double_value = 6;
+  google.protobuf.BoolValue bool_value = 7;
+  google.protobuf.StringValue string_value = 8;
+  google.protobuf.BytesValue bytes_value = 9;
+}
+
+message TestTimestamp {
+  google.protobuf.Timestamp timestamp_value = 1;
+}
+
+message TestDuration {
+  google.protobuf.Duration duration_value = 1;
+}
+
+message TestFieldMask {
+  google.protobuf.FieldMask field_mask_value = 1;
+}
+
+message TestStruct {
+  google.protobuf.Struct struct_value = 1;
+  google.protobuf.Value value = 2;
+  google.protobuf.ListValue list_value = 3;
+}
+
+message TestAny {
+  google.protobuf.Any any_value = 1;
+  map<string, google.protobuf.Any> any_map = 2;
+}
+
+message TestCustomJsonName {
+  int32 value = 1 [json_name = "@value"];
+}
+
+message TestRecursive {
+  int32 value = 1;
+  TestRecursive nested = 2;
+}

@@ -49,11 +49,16 @@ namespace protobuf {
 class FieldDescriptor;
 class Message;
 
+#ifdef _SHARED_PTR_H
+using std::shared_ptr;
+#else
 using internal::shared_ptr;
+#endif
 
 namespace python {
 
 struct CMessage;
+struct CMessageClass;
 
 // A RepeatedCompositeContainer can be in one of two states: attached
 // or released.
@@ -90,8 +95,8 @@ typedef struct RepeatedCompositeContainer {
   // calling Clear() or ClearField() on the parent.
   Message* message;
 
-  // A callable that is used to create new child messages.
-  PyObject* subclass_init;
+  // The type used to create new child messages.
+  CMessageClass* child_message_class;
 
   // A list of child messages.
   PyObject* child_messages;
@@ -106,10 +111,7 @@ namespace repeated_composite_container {
 PyObject *NewContainer(
     CMessage* parent,
     const FieldDescriptor* parent_field_descriptor,
-    PyObject *concrete_class);
-
-// Returns the number of items in this repeated composite container.
-static Py_ssize_t Length(RepeatedCompositeContainer* self);
+    CMessageClass *child_message_class);
 
 // Appends a new CMessage to the container and returns it.  The
 // CMessage is initialized using the content of kwargs.
@@ -161,13 +163,13 @@ int SetOwner(RepeatedCompositeContainer* self,
              const shared_ptr<Message>& new_owner);
 
 // Removes the last element of the repeated message field 'field' on
-// the Message 'message', and transfers the ownership of the released
-// Message to 'cmessage'.
+// the Message 'parent', and transfers the ownership of the released
+// Message to 'target'.
 //
 // Corresponds to reflection api method ReleaseMessage.
-void ReleaseLastTo(const FieldDescriptor* field,
-                   Message* message,
-                   CMessage* cmessage);
+void ReleaseLastTo(CMessage* parent,
+                   const FieldDescriptor* field,
+                   CMessage* target);
 
 }  // namespace repeated_composite_container
 }  // namespace python

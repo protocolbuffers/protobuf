@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
@@ -43,7 +43,7 @@ A simple example:
        (4, 5, 9),
        (1, 1, 3))
     def testAddition(self, op1, op2, result):
-      self.assertEquals(result, op1 + op2)
+      self.assertEqual(result, op1 + op2)
 
 
 Each invocation is a separate test case and properly isolated just
@@ -60,7 +60,7 @@ or dictionaries (with named parameters):
        {'op1': 4, 'op2': 5, 'result': 9},
     )
     def testAddition(self, op1, op2, result):
-      self.assertEquals(result, op1 + op2)
+      self.assertEqual(result, op1 + op2)
 
 If a parameterized test fails, the error message will show the
 original test name (which is modified internally) and the arguments
@@ -88,7 +88,7 @@ str()):
        ('EmptyPrefix', '', 'abc', True),
        ('BothEmpty', '', '', True))
     def testStartsWith(self, prefix, string, result):
-      self.assertEquals(result, strings.startswith(prefix))
+      self.assertEqual(result, strings.startswith(prefix))
 
 Named tests also have the benefit that they can be run individually
 from the command line:
@@ -127,7 +127,7 @@ the decorator. This iterable will be used to obtain the test cases:
       c.op1, c.op2, c.result for c in testcases
     )
     def testAddition(self, op1, op2, result):
-      self.assertEquals(result, op1 + op2)
+      self.assertEqual(result, op1 + op2)
 
 
 Single-Argument Test Methods
@@ -149,8 +149,13 @@ import collections
 import functools
 import re
 import types
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 import uuid
+
+import six
 
 ADDR_RE = re.compile(r'\<([a-zA-Z0-9_\-\.]+) object at 0x[a-fA-F0-9]+\>')
 _SEPARATOR = uuid.uuid1().hex
@@ -170,13 +175,13 @@ def _StrClass(cls):
 
 def _NonStringIterable(obj):
   return (isinstance(obj, collections.Iterable) and not
-          isinstance(obj, basestring))
+          isinstance(obj, six.string_types))
 
 
 def _FormatParameterList(testcase_params):
   if isinstance(testcase_params, collections.Mapping):
     return ', '.join('%s=%s' % (argname, _CleanRepr(value))
-                     for argname, value in testcase_params.iteritems())
+                     for argname, value in testcase_params.items())
   elif _NonStringIterable(testcase_params):
     return ', '.join(map(_CleanRepr, testcase_params))
   else:
@@ -258,7 +263,9 @@ def _ModifyClass(class_object, testcases, naming_type):
       'Cannot add parameters to %s,'
       ' which already has parameterized methods.' % (class_object,))
   class_object._id_suffix = id_suffix = {}
-  for name, obj in class_object.__dict__.items():
+  # We change the size of __dict__ while we iterate over it, 
+  # which Python 3.x will complain about, so use copy().
+  for name, obj in class_object.__dict__.copy().items():
     if (name.startswith(unittest.TestLoader.testMethodPrefix)
         and isinstance(obj, types.FunctionType)):
       delattr(class_object, name)
@@ -266,7 +273,7 @@ def _ModifyClass(class_object, testcases, naming_type):
       _UpdateClassDictForParamTestCase(
           methods, id_suffix, name,
           _ParameterizedTestIter(obj, testcases, naming_type))
-      for name, meth in methods.iteritems():
+      for name, meth in methods.items():
         setattr(class_object, name, meth)
 
 
@@ -340,7 +347,7 @@ class TestGeneratorMetaclass(type):
   iterable conforms to the test pattern, the injected methods will be picked
   up as tests by the unittest framework.
 
-  In general, it is supposed to be used in conjuction with the
+  In general, it is supposed to be used in conjunction with the
   Parameters decorator.
   """
 

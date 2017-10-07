@@ -46,6 +46,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -59,7 +60,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
                             const string& parameter,
                             GeneratorContext* generator_context,
                             string* error) const {
-  vector<pair<string, string> > options;
+  std::vector<std::pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
 
   // -----------------------------------------------------------------
@@ -82,13 +83,30 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   //   }
   // FOO_EXPORT is a macro which should expand to __declspec(dllexport) or
   // __declspec(dllimport) depending on what is being compiled.
+  //
   Options file_options;
-
+  bool split_source = false;
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "dllexport_decl") {
       file_options.dllexport_decl = options[i].second;
     } else if (options[i].first == "safe_boundary_check") {
       file_options.safe_boundary_check = true;
+    } else if (options[i].first == "annotate_headers") {
+      file_options.annotate_headers = true;
+    } else if (options[i].first == "annotation_pragma_name") {
+      file_options.annotation_pragma_name = options[i].second;
+    } else if (options[i].first == "annotation_guard_name") {
+      file_options.annotation_guard_name = options[i].second;
+    } else if (options[i].first == "lite") {
+      file_options.enforce_lite = true;
+    } else if (options[i].first == "lite_implicit_weak_fields") {
+      file_options.lite_implicit_weak_fields = true;
+    } else if (options[i].first == "table_driven_parsing") {
+      file_options.table_driven_parsing = true;
+    } else if (options[i].first == "table_driven_serialization") {
+      file_options.table_driven_serialization = true;
+    } else if (options[i].first == "split_source") {
+      split_source = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
@@ -99,22 +117,67 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
 
   string basename = StripProto(file->name());
-  basename.append(".pb");
 
   FileGenerator file_generator(file, file_options);
 
-  // Generate header.
+  // Generate header(s).
+  if (file_options.proto_h) {
+    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+        generator_context->Open(basename + ".proto.h"));
+    GeneratedCodeInfo annotations;
+    io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+        &annotations);
+    string info_path = basename + ".proto.h.meta";
+    io::Printer printer(output.get(), '$', file_options.annotate_headers
+                                               ? &annotation_collector
+                                               : NULL);
+    file_generator.GenerateProtoHeader(
+        &printer, file_options.annotate_headers ? info_path : "");
+    if (file_options.annotate_headers) {
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+          generator_context->Open(info_path));
+      annotations.SerializeToZeroCopyStream(info_output.get());
+    }
+  }
+
   {
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
-        generator_context->Open(basename + ".h"));
-    io::Printer printer(output.get(), '$');
-    file_generator.GenerateHeader(&printer);
+        generator_context->Open(basename + ".pb.h"));
+    GeneratedCodeInfo annotations;
+    io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+        &annotations);
+    string info_path = basename + ".pb.h.meta";
+    io::Printer printer(output.get(), '$', file_options.annotate_headers
+                                               ? &annotation_collector
+                                               : NULL);
+    file_generator.GeneratePBHeader(
+        &printer, file_options.annotate_headers ? info_path : "");
+    if (file_options.annotate_headers) {
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+          generator_context->Open(info_path));
+      annotations.SerializeToZeroCopyStream(info_output.get());
+    }
   }
 
   // Generate cc file.
-  {
+  if (split_source) {
+    {
+      // This is the global .cc file, containing enum/services/tables/reflection
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+          generator_context->Open(basename + ".pb.cc"));
+      io::Printer printer(output.get(), '$');
+      file_generator.GenerateGlobalSource(&printer);
+    }
+    for (int i = 0; i < file_generator.NumMessages(); i++) {
+      // TODO(gerbens) Agree on naming scheme.
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+          generator_context->Open(basename + "." + SimpleItoa(i) + ".cc"));
+      io::Printer printer(output.get(), '$');
+      file_generator.GenerateSourceForMessage(i, &printer);
+    }
+  } else {
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
-        generator_context->Open(basename + ".cc"));
+        generator_context->Open(basename + ".pb.cc"));
     io::Printer printer(output.get(), '$');
     file_generator.GenerateSource(&printer);
   }

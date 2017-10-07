@@ -109,6 +109,10 @@ public final class MessageNanoPrinter {
             for (Field field : clazz.getFields()) {
                 int modifiers = field.getModifiers();
                 String fieldName = field.getName();
+                if ("cachedSize".equals(fieldName)) {
+                    // TODO(bduff): perhaps cachedSize should have a more obscure name.
+                    continue;
+                }
 
                 if ((modifiers & Modifier.PUBLIC) == Modifier.PUBLIC
                         && (modifiers & Modifier.STATIC) != Modifier.STATIC
@@ -152,7 +156,7 @@ public final class MessageNanoPrinter {
                     } catch (NoSuchMethodException e) {
                         continue;
                     }
-                    // If hazzer does't exist or returns false, no need to continue
+                    // If hazzer doesn't exist or returns false, no need to continue
                     if (!(Boolean) hazzer.invoke(object)) {
                         continue;
                     }

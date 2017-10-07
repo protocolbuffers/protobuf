@@ -39,6 +39,9 @@
 // Ruby integers) to MessageDef/EnumDef instances (as Ruby values).
 VALUE upb_def_to_ruby_obj_map;
 
+VALUE cError;
+VALUE cParseError;
+
 void add_def_obj(const void* def, VALUE value) {
   rb_hash_aset(upb_def_to_ruby_obj_map, ULL2NUM((intptr_t)def), value);
 }
@@ -64,6 +67,15 @@ rb_encoding* kRubyStringUtf8Encoding;
 rb_encoding* kRubyStringASCIIEncoding;
 rb_encoding* kRubyString8bitEncoding;
 
+// Ruby-interned string: "descriptor". We use this identifier to store an
+// instance variable on message classes we create in order to link them back to
+// their descriptors.
+//
+// We intern this once at module load time then use the interned identifier at
+// runtime in order to avoid the cost of repeatedly interning in hot paths.
+const char* kDescriptorInstanceVar = "descriptor";
+ID descriptor_instancevar_interned;
+
 // -----------------------------------------------------------------------------
 // Initialization/entry point.
 // -----------------------------------------------------------------------------
@@ -74,6 +86,8 @@ void Init_protobuf_c() {
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
   VALUE internal = rb_define_module_under(protobuf, "Internal");
+
+  descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
   DescriptorPool_register(protobuf);
   Descriptor_register(protobuf);
   FieldDescriptor_register(protobuf);
@@ -86,12 +100,8 @@ void Init_protobuf_c() {
   RepeatedField_register(protobuf);
   Map_register(protobuf);
 
-  rb_define_singleton_method(protobuf, "encode", Google_Protobuf_encode, 1);
-  rb_define_singleton_method(protobuf, "decode", Google_Protobuf_decode, 2);
-  rb_define_singleton_method(protobuf, "encode_json",
-                             Google_Protobuf_encode_json, 1);
-  rb_define_singleton_method(protobuf, "decode_json",
-                             Google_Protobuf_decode_json, 2);
+  cError = rb_const_get(protobuf, rb_intern("Error"));
+  cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
 
   rb_define_singleton_method(protobuf, "deep_copy",
                              Google_Protobuf_deep_copy, 1);
@@ -100,6 +110,6 @@ void Init_protobuf_c() {
   kRubyStringASCIIEncoding = rb_usascii_encoding();
   kRubyString8bitEncoding = rb_ascii8bit_encoding();
 
-  upb_def_to_ruby_obj_map = rb_hash_new();
   rb_gc_register_address(&upb_def_to_ruby_obj_map);
+  upb_def_to_ruby_obj_map = rb_hash_new();
 }

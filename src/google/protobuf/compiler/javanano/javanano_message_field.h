@@ -58,10 +58,11 @@ class MessageFieldGenerator : public FieldGenerator {
   void GenerateSerializedSizeCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCodeCode(io::Printer* printer) const;
+  void GenerateFixClonedCode(io::Printer* printer) const;
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
 };
@@ -80,10 +81,11 @@ class MessageOneofFieldGenerator : public FieldGenerator {
   void GenerateSerializedSizeCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCodeCode(io::Printer* printer) const;
+  void GenerateFixClonedCode(io::Printer* printer) const;
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageOneofFieldGenerator);
 };
@@ -102,10 +104,11 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
   void GenerateSerializedSizeCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCodeCode(io::Printer* printer) const;
+  void GenerateFixClonedCode(io::Printer* printer) const;
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);
 };

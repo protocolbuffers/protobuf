@@ -1,0 +1,17 @@
+{
+    "spec_dir": "",
+    "spec_files": [
+        "*_test.js",
+        "binary/*_test.js"
+    ],
+    "helpers": [
+        "node_modules/google-closure-library/closure/goog/bootstrap/nodejs.js",
+        "node_loader.js",
+        "deps.js",
+        "google/protobuf/any.js",
+        "google/protobuf/struct.js",
+        "google/protobuf/timestamp.js",
+        "testproto_libs1.js",
+        "testproto_libs2.js"
+    ]
+}

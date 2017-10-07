@@ -31,6 +31,9 @@
 syntax = "proto3";
 
 package proto3_preserve_unknown_enum_unittest;
+option objc_class_prefix = "UnknownEnums";
+
+option csharp_namespace = "Google.Protobuf.TestProtos";
 
 enum MyEnum {
   FOO = 0;
@@ -46,7 +49,7 @@ enum MyEnumPlusExtra {
 }
 
 message MyMessage {
-  optional MyEnum e = 1;
+  MyEnum e = 1;
   repeated MyEnum repeated_e = 2;
   repeated MyEnum repeated_packed_e = 3 [packed=true];
   repeated MyEnumPlusExtra repeated_packed_unexpected_e = 4;  // not packed
@@ -57,7 +60,7 @@ message MyMessage {
 }
 
 message MyMessagePlusExtra {
-  optional MyEnumPlusExtra e = 1;
+  MyEnumPlusExtra e = 1;
   repeated MyEnumPlusExtra repeated_e = 2;
   repeated MyEnumPlusExtra repeated_packed_e = 3 [packed=true];
   repeated MyEnumPlusExtra repeated_packed_unexpected_e = 4 [packed=true];

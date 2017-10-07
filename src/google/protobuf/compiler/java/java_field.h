@@ -44,6 +44,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/logging.h>
 
 namespace google {
 namespace protobuf {
@@ -83,7 +84,6 @@ class ImmutableFieldGenerator {
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
   virtual void GenerateFieldBuilderInitializationCode(io::Printer* printer)
       const = 0;
-  virtual void GenerateStaticInitializationCode(io::Printer* printer) const {}
 
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
@@ -92,6 +92,38 @@ class ImmutableFieldGenerator {
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableFieldGenerator);
+};
+
+class ImmutableFieldLiteGenerator {
+ public:
+  ImmutableFieldLiteGenerator() {}
+  virtual ~ImmutableFieldLiteGenerator();
+
+  virtual int GetNumBitsForMessage() const = 0;
+  virtual int GetNumBitsForBuilder() const = 0;
+  virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
+  virtual void GenerateMembers(io::Printer* printer) const = 0;
+  virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
+  virtual void GenerateInitializationCode(io::Printer* printer) const = 0;
+  virtual void GenerateVisitCode(io::Printer* printer) const = 0;
+  virtual void GenerateDynamicMethodMakeImmutableCode(io::Printer* printer)
+      const = 0;
+  virtual void GenerateParsingCode(io::Printer* printer) const = 0;
+  virtual void GenerateParsingCodeFromPacked(io::Printer* printer) const;
+  virtual void GenerateParsingDoneCode(io::Printer* printer) const = 0;
+  virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
+  virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
+  virtual void GenerateFieldBuilderInitializationCode(io::Printer* printer)
+      const = 0;
+
+  virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
+  virtual void GenerateHashCode(io::Printer* printer) const = 0;
+
+
+  virtual string GetBoxedType() const = 0;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableFieldLiteGenerator);
 };
 
 
@@ -138,7 +170,7 @@ struct FieldGeneratorInfo {
   string disambiguated_reason;
 };
 
-// Oneof information used in OneofFieldGeneartors.
+// Oneof information used in OneofFieldGenerators.
 struct OneofGeneratorInfo {
   string name;
   string capitalized_name;
@@ -147,15 +179,15 @@ struct OneofGeneratorInfo {
 // Set some common variables used in variable FieldGenerators.
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              const FieldGeneratorInfo* info,
-                             map<string, string>* variables);
+                             std::map<string, string>* variables);
 
 // Set some common oneof variables used in OneofFieldGenerators.
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,
                              const OneofGeneratorInfo* info,
-                             map<string, string>* variables);
+                             std::map<string, string>* variables);
 
 // Print useful comments before a field's accessors.
-void PrintExtraFieldInfo(const map<string, string>& variables,
+void PrintExtraFieldInfo(const std::map<string, string>& variables,
                          io::Printer* printer);
 
 }  // namespace java

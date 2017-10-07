@@ -166,7 +166,7 @@ bool AllAscii(const string& text) {
 
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params params,
-                           map<string, string>* variables) {
+                           std::map<string, string>* variables) {
   (*variables)["name"] =
     RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
   (*variables)["capitalized_name"] =
@@ -362,6 +362,14 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
       "      .compute$capitalized_type$Size($number$, this.$name$);\n"
       "}\n");
   }
+}
+
+void RepeatedPrimitiveFieldGenerator::
+GenerateFixClonedCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ != null && this.$name$.length > 0) {\n"
+    "  cloned.$name$ = this.$name$.clone();\n"
+    "}\n");
 }
 
 void PrimitiveFieldGenerator::

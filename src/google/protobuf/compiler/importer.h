@@ -121,6 +121,12 @@ class LIBPROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabas
                   ErrorLocation location,
                   const string& message);
 
+    virtual void AddWarning(const string& filename,
+                            const string& element_name,
+                            const Message* descriptor,
+                            ErrorLocation location,
+                            const string& message);
+
    private:
     SourceTreeDescriptorDatabase* owner_;
   };
@@ -169,6 +175,7 @@ class LIBPROTOBUF_EXPORT Importer {
   void AddUnusedImportTrackFile(const string& file_name);
   void ClearUnusedImportTrackFiles();
 
+
  private:
   SourceTreeDescriptorDatabase database_;
   DescriptorPool pool_;
@@ -187,6 +194,9 @@ class LIBPROTOBUF_EXPORT MultiFileErrorCollector {
   // an error with the entire file (e.g. "not found").
   virtual void AddError(const string& filename, int line, int column,
                         const string& message) = 0;
+
+  virtual void AddWarning(const string& filename, int line, int column,
+                          const string& message) {}
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MultiFileErrorCollector);
@@ -296,7 +306,7 @@ class LIBPROTOBUF_EXPORT DiskSourceTree : public SourceTree {
                    const string& disk_path_param)
       : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
   };
-  vector<Mapping> mappings_;
+  std::vector<Mapping> mappings_;
   string last_error_message_;
 
   // Like Open(), but returns the on-disk path in disk_file if disk_file is

@@ -46,13 +46,13 @@
 
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -98,7 +98,6 @@ class MockGeneratorContext : public GeneratorContext {
                           &actual_contents, true));
     EXPECT_TRUE(actual_contents == *expected_contents)
       << physical_filename << " needs to be regenerated.  Please run "
-         "google/protobuf/compiler/release_compiler.sh and "
          "generate_descriptor_proto.sh. Then add this file "
          "to your CL.";
   }
@@ -107,14 +106,14 @@ class MockGeneratorContext : public GeneratorContext {
 
   virtual io::ZeroCopyOutputStream* Open(const string& filename) {
     string** map_slot = &files_[filename];
-    if (*map_slot != NULL) delete *map_slot;
+    delete *map_slot;
     *map_slot = new string;
 
     return new io::StringOutputStream(*map_slot);
   }
 
  private:
-  map<string, string*> files_;
+  std::map<string, string*> files_;
 };
 
 TEST(BootstrapTest, GeneratedDescriptorMatches) {
@@ -133,8 +132,7 @@ TEST(BootstrapTest, GeneratedDescriptorMatches) {
   CppGenerator generator;
   MockGeneratorContext context;
   string error;
-  string parameter;
-  parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
+  string parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
   ASSERT_TRUE(generator.Generate(proto_file, parameter,
                                  &context, &error));
   parameter = "dllexport_decl=LIBPROTOC_EXPORT";

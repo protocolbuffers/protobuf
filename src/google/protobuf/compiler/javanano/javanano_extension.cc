@@ -78,7 +78,7 @@ const char* GetTypeConstantName(const FieldDescriptor::Type type) {
 }  // namespace
 
 void SetVariables(const FieldDescriptor* descriptor, const Params params,
-                  map<string, string>* variables) {
+                  std::map<string, string>* variables) {
   (*variables)["extends"] = ClassName(params, descriptor->containing_type());
   (*variables)["name"] = RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
   bool repeated = descriptor->is_repeated();
@@ -140,7 +140,7 @@ void ExtensionGenerator::Generate(io::Printer* printer) const {
     "        com.google.protobuf.nano.Extension.create$repeated$$ext_type$(\n"
     "            com.google.protobuf.nano.Extension.$type$,\n"
     "            $class$.class,\n"
-    "            $tag_params$);\n");
+    "            $tag_params$L);\n");
 }
 
 }  // namespace javanano

@@ -32,34 +32,40 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/text_format.h>
+
 #include <math.h>
 #include <stdlib.h>
 #include <limits>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
-#include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest_mset_wire_format.pb.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/testing/googletest.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/stubs/mathlimits.h>
+
 
 namespace google {
 namespace protobuf {
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace text_format_unittest {
-
-inline bool IsNaN(double value) {
-  // NaN is never equal to anything, even itself.
-  return value != value;
-}
 
 // A basic string with different escapable characters for testing.
 const string kEscapeTestString =
@@ -152,7 +158,21 @@ TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
   TextFormat::Printer printer;
   printer.SetUseShortRepeatedPrimitives(true);
   string text;
-  printer.PrintToString(proto_, &text);
+  EXPECT_TRUE(printer.PrintToString(proto_, &text));
+
+  EXPECT_EQ("optional_int32: 123\n"
+            "repeated_int32: [456, 789]\n"
+            "repeated_string: \"foo\"\n"
+            "repeated_string: \"bar\"\n"
+            "repeated_nested_message {\n  bb: 2\n}\n"
+            "repeated_nested_message {\n  bb: 3\n}\n"
+            "repeated_nested_enum: [FOO, BAR]\n",
+            text);
+
+  // Verify that any existing data in the string is cleared when
+  // PrintToString() is called.
+  text = "just some data here...\n\nblah blah";
+  EXPECT_TRUE(printer.PrintToString(proto_, &text));
 
   EXPECT_EQ("optional_int32: 123\n"
             "repeated_int32: [456, 789]\n"
@@ -165,7 +185,7 @@ TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
 
   // Try in single-line mode.
   printer.SetSingleLineMode(true);
-  printer.PrintToString(proto_, &text);
+  EXPECT_TRUE(printer.PrintToString(proto_, &text));
 
   EXPECT_EQ("optional_int32: 123 "
             "repeated_int32: [456, 789] "
@@ -435,13 +455,29 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
   EXPECT_EQ("optional_int32: value-is(42)\nrepeated_int32: 42\n", text);
 }
 
+TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
+  protobuf_unittest::TestAllTypes message;
+  TextFormat::Printer printer;
+  const FieldDescriptor* const field =
+      message.GetDescriptor()->FindFieldByName("optional_int32");
+  ASSERT_TRUE(printer.RegisterFieldValuePrinter(
+      field, new CustomInt32FieldValuePrinter()));
+  const TextFormat::FieldValuePrinter* const rejected =
+      new CustomInt32FieldValuePrinter();
+  ASSERT_FALSE(printer.RegisterFieldValuePrinter(field, rejected));
+  delete rejected;
+}
+
 TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
   protobuf_unittest::TestAllTypes message;
   TextFormat::Printer printer;
   // NULL printer.
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
       message.GetDescriptor()->FindFieldByName("optional_int32"),
-      NULL));
+      static_cast<const TextFormat::FieldValuePrinter*>(NULL)));
+  EXPECT_FALSE(printer.RegisterFieldValuePrinter(
+      message.GetDescriptor()->FindFieldByName("optional_int32"),
+      static_cast<const TextFormat::FastFieldValuePrinter*>(NULL)));
   // Because registration fails, the ownership of this printer is never taken.
   TextFormat::FieldValuePrinter my_field_printer;
   // NULL field
@@ -451,7 +487,7 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
 class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
   virtual string PrintInt32(int32 v) const {
-    return StrCat(FieldValuePrinter::PrintInt32(v), "  # x", ToHex(v));
+    return StrCat(FieldValuePrinter::PrintInt32(v), "  # x", strings::Hex(v));
   }
 
   virtual string PrintMessageStart(const Message& message,
@@ -628,6 +664,87 @@ TEST_F(TextFormatTest, ParseShortRepeatedForm) {
       "repeated_nested_message: [ { bb: 1 }, { bb : 2 }]\n"
       // Repeated group
       "RepeatedGroup [{ a: 3 },{ a: 4 }]\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
+
+  ASSERT_EQ(3, proto_.repeated_int32_size());
+  EXPECT_EQ(1, proto_.repeated_int32(0));
+  EXPECT_EQ(456, proto_.repeated_int32(1));
+  EXPECT_EQ(789, proto_.repeated_int32(2));
+
+  ASSERT_EQ(3, proto_.repeated_nested_enum_size());
+  EXPECT_EQ(unittest::TestAllTypes::FOO, proto_.repeated_nested_enum(0));
+  EXPECT_EQ(unittest::TestAllTypes::BAR, proto_.repeated_nested_enum(1));
+  EXPECT_EQ(unittest::TestAllTypes::BAZ, proto_.repeated_nested_enum(2));
+
+  ASSERT_EQ(2, proto_.repeated_string_size());
+  EXPECT_EQ("foo", proto_.repeated_string(0));
+  EXPECT_EQ("bar", proto_.repeated_string(1));
+
+  ASSERT_EQ(2, proto_.repeated_nested_message_size());
+  EXPECT_EQ(1, proto_.repeated_nested_message(0).bb());
+  EXPECT_EQ(2, proto_.repeated_nested_message(1).bb());
+
+  ASSERT_EQ(2, proto_.repeatedgroup_size());
+  EXPECT_EQ(3, proto_.repeatedgroup(0).a());
+  EXPECT_EQ(4, proto_.repeatedgroup(1).a());
+}
+
+TEST_F(TextFormatTest, ParseShortRepeatedWithTrailingComma) {
+  string parse_string = "repeated_int32: [456,]\n";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+  parse_string = "repeated_nested_enum: [  FOO , ]";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+  parse_string = "repeated_string: [ \"foo\", ]";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+  parse_string = "repeated_nested_message: [ { bb: 1 }, ]";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+  parse_string = "RepeatedGroup [{ a: 3 },]\n";
+}
+
+TEST_F(TextFormatTest, ParseShortRepeatedEmpty) {
+  string parse_string =
+      "repeated_int32: []\n"
+      "repeated_nested_enum: []\n"
+      "repeated_string: []\n"
+      "repeated_nested_message: []\n"
+      "RepeatedGroup []\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
+
+  EXPECT_EQ(0, proto_.repeated_int32_size());
+  EXPECT_EQ(0, proto_.repeated_nested_enum_size());
+  EXPECT_EQ(0, proto_.repeated_string_size());
+  EXPECT_EQ(0, proto_.repeated_nested_message_size());
+  EXPECT_EQ(0, proto_.repeatedgroup_size());
+}
+
+TEST_F(TextFormatTest, ParseShortRepeatedConcatenatedWithEmpty) {
+  string parse_string =
+      // Starting with empty [] should have no impact.
+      "repeated_int32: []\n"
+      "repeated_nested_enum: []\n"
+      "repeated_string: []\n"
+      "repeated_nested_message: []\n"
+      "RepeatedGroup []\n"
+      // Mixed short-form and long-form are simply concatenated.
+      "repeated_int32: 1\n"
+      "repeated_int32: [456, 789]\n"
+      "repeated_nested_enum: [  FOO ,BAR, # comment\n"
+      "                         3]\n"
+      // Note that while the printer won't print repeated strings in short-form,
+      // the parser will accept them.
+      "repeated_string: [ \"foo\", 'bar' ]\n"
+      // Repeated message
+      "repeated_nested_message: [ { bb: 1 }, { bb : 2 }]\n"
+      // Repeated group
+      "RepeatedGroup [{ a: 3 },{ a: 4 }]\n"
+      // Adding empty [] should have no impact.
+      "repeated_int32: []\n"
+      "repeated_nested_enum: []\n"
+      "repeated_string: []\n"
+      "repeated_nested_message: []\n"
+      "RepeatedGroup []\n";
 
   ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
 
@@ -893,12 +1010,16 @@ TEST_F(TextFormatTest, ParseExotic) {
   EXPECT_EQ(1.235E22  , message.repeated_double(4));
   EXPECT_EQ(1.235E-18 , message.repeated_double(5));
   EXPECT_EQ(123.456789, message.repeated_double(6));
-  EXPECT_EQ(message.repeated_double(7), numeric_limits<double>::infinity());
-  EXPECT_EQ(message.repeated_double(8), numeric_limits<double>::infinity());
-  EXPECT_EQ(message.repeated_double(9), -numeric_limits<double>::infinity());
-  EXPECT_EQ(message.repeated_double(10), -numeric_limits<double>::infinity());
-  EXPECT_TRUE(IsNaN(message.repeated_double(11)));
-  EXPECT_TRUE(IsNaN(message.repeated_double(12)));
+  EXPECT_EQ(message.repeated_double(7),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(message.repeated_double(8),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(message.repeated_double(9),
+            -std::numeric_limits<double>::infinity());
+  EXPECT_EQ(message.repeated_double(10),
+            -std::numeric_limits<double>::infinity());
+  EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(11)));
+  EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(12)));
 
   // Note:  Since these string literals have \0's in them, we must explicitly
   //   pass their sizes to string's constructor.
@@ -932,7 +1053,7 @@ class TextFormatParserTest : public testing::Test {
  protected:
   void ExpectFailure(const string& input, const string& message, int line,
                      int col) {
-    scoped_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
+    google::protobuf::scoped_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
     ExpectFailure(input, message, line, col, proto.get());
   }
 
@@ -993,7 +1114,7 @@ class TextFormatParserTest : public testing::Test {
 };
 
 TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
-  scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  google::protobuf::scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
   const Descriptor* d = message->GetDescriptor();
 
   string stringData =
@@ -1058,7 +1179,7 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
-  scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  google::protobuf::scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
   const Descriptor* d = message->GetDescriptor();
 
 #define EXPECT_FIELD(name, value, valuestring) \
@@ -1191,11 +1312,13 @@ TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
 
 
 TEST_F(TextFormatParserTest, InvalidToken) {
-  ExpectFailure("optional_bool: true\n-5\n", "Expected identifier.",
+  ExpectFailure("optional_bool: true\n-5\n", "Expected identifier, got: -",
                 2, 1);
 
-  ExpectFailure("optional_bool: true!\n", "Expected identifier.", 1, 20);
-  ExpectFailure("\"some string\"", "Expected identifier.", 1, 1);
+  ExpectFailure("optional_bool: true!\n", "Expected identifier, got: !", 1,
+                20);
+  ExpectFailure("\"some string\"",
+                "Expected identifier, got: \"some string\"", 1, 1);
 }
 
 TEST_F(TextFormatParserTest, InvalidFieldName) {
@@ -1243,46 +1366,52 @@ TEST_F(TextFormatParserTest, AllowIgnoreCapitalizationError) {
 
 TEST_F(TextFormatParserTest, InvalidFieldValues) {
   // Invalid values for a double/float field.
-  ExpectFailure("optional_double: \"hello\"\n", "Expected double.", 1, 18);
-  ExpectFailure("optional_double: true\n", "Expected double.", 1, 18);
-  ExpectFailure("optional_double: !\n", "Expected double.", 1, 18);
+  ExpectFailure("optional_double: \"hello\"\n",
+                "Expected double, got: \"hello\"", 1, 18);
+  ExpectFailure("optional_double: true\n", "Expected double, got: true", 1,
+                18);
+  ExpectFailure("optional_double: !\n", "Expected double, got: !", 1, 18);
   ExpectFailure("optional_double {\n  \n}\n", "Expected \":\", found \"{\".",
                 1, 17);
 
   // Invalid values for a signed integer field.
-  ExpectFailure("optional_int32: \"hello\"\n", "Expected integer.", 1, 17);
-  ExpectFailure("optional_int32: true\n", "Expected integer.", 1, 17);
-  ExpectFailure("optional_int32: 4.5\n", "Expected integer.", 1, 17);
-  ExpectFailure("optional_int32: !\n", "Expected integer.", 1, 17);
+  ExpectFailure("optional_int32: \"hello\"\n",
+                "Expected integer, got: \"hello\"", 1, 17);
+  ExpectFailure("optional_int32: true\n", "Expected integer, got: true", 1, 17);
+  ExpectFailure("optional_int32: 4.5\n", "Expected integer, got: 4.5", 1, 17);
+  ExpectFailure("optional_int32: !\n", "Expected integer, got: !", 1, 17);
   ExpectFailure("optional_int32 {\n \n}\n", "Expected \":\", found \"{\".",
                 1, 16);
   ExpectFailure("optional_int32: 0x80000000\n",
-                "Integer out of range.", 1, 17);
+                "Integer out of range (0x80000000)", 1, 17);
   ExpectFailure("optional_int64: 0x8000000000000000\n",
-                "Integer out of range.", 1, 17);
+                "Integer out of range (0x8000000000000000)", 1, 17);
   ExpectFailure("optional_int32: -0x80000001\n",
-                "Integer out of range.", 1, 18);
+                "Integer out of range (0x80000001)", 1, 18);
   ExpectFailure("optional_int64: -0x8000000000000001\n",
-                "Integer out of range.", 1, 18);
+                "Integer out of range (0x8000000000000001)", 1, 18);
 
   // Invalid values for an unsigned integer field.
-  ExpectFailure("optional_uint64: \"hello\"\n", "Expected integer.", 1, 18);
-  ExpectFailure("optional_uint64: true\n", "Expected integer.", 1, 18);
-  ExpectFailure("optional_uint64: 4.5\n", "Expected integer.", 1, 18);
-  ExpectFailure("optional_uint64: -5\n", "Expected integer.", 1, 18);
-  ExpectFailure("optional_uint64: !\n", "Expected integer.", 1, 18);
+  ExpectFailure("optional_uint64: \"hello\"\n",
+                "Expected integer, got: \"hello\"", 1, 18);
+  ExpectFailure("optional_uint64: true\n",
+                "Expected integer, got: true", 1, 18);
+  ExpectFailure("optional_uint64: 4.5\n", "Expected integer, got: 4.5", 1, 18);
+  ExpectFailure("optional_uint64: -5\n", "Expected integer, got: -", 1, 18);
+  ExpectFailure("optional_uint64: !\n", "Expected integer, got: !", 1, 18);
   ExpectFailure("optional_uint64 {\n \n}\n", "Expected \":\", found \"{\".",
                 1, 17);
   ExpectFailure("optional_uint32: 0x100000000\n",
-                "Integer out of range.", 1, 18);
+                "Integer out of range (0x100000000)", 1, 18);
   ExpectFailure("optional_uint64: 0x10000000000000000\n",
-                "Integer out of range.", 1, 18);
+                "Integer out of range (0x10000000000000000)", 1, 18);
 
   // Invalid values for a boolean field.
-  ExpectFailure("optional_bool: \"hello\"\n", "Expected identifier.", 1, 16);
-  ExpectFailure("optional_bool: 5\n", "Integer out of range.", 1, 16);
-  ExpectFailure("optional_bool: -7.5\n", "Expected identifier.", 1, 16);
-  ExpectFailure("optional_bool: !\n", "Expected identifier.", 1, 16);
+  ExpectFailure("optional_bool: \"hello\"\n",
+                "Expected identifier, got: \"hello\"", 1, 16);
+  ExpectFailure("optional_bool: 5\n", "Integer out of range (5)", 1, 16);
+  ExpectFailure("optional_bool: -7.5\n", "Expected identifier, got: -", 1, 16);
+  ExpectFailure("optional_bool: !\n", "Expected identifier, got: !", 1, 16);
 
   ExpectFailure(
       "optional_bool: meh\n",
@@ -1293,16 +1422,16 @@ TEST_F(TextFormatParserTest, InvalidFieldValues) {
                 1, 15);
 
   // Invalid values for a string field.
-  ExpectFailure("optional_string: true\n", "Expected string.", 1, 18);
-  ExpectFailure("optional_string: 5\n", "Expected string.", 1, 18);
-  ExpectFailure("optional_string: -7.5\n", "Expected string.", 1, 18);
-  ExpectFailure("optional_string: !\n", "Expected string.", 1, 18);
+  ExpectFailure("optional_string: true\n", "Expected string, got: true", 1, 18);
+  ExpectFailure("optional_string: 5\n", "Expected string, got: 5", 1, 18);
+  ExpectFailure("optional_string: -7.5\n", "Expected string, got: -", 1, 18);
+  ExpectFailure("optional_string: !\n", "Expected string, got: !", 1, 18);
   ExpectFailure("optional_string {\n \n}\n", "Expected \":\", found \"{\".",
                 1, 17);
 
   // Invalid values for an enumeration field.
   ExpectFailure("optional_nested_enum: \"hello\"\n",
-                "Expected integer or identifier.", 1, 23);
+                "Expected integer or identifier, got: \"hello\"", 1, 23);
 
   // Valid token, but enum value is not defined.
   ExpectFailure("optional_nested_enum: 5\n",
@@ -1310,9 +1439,10 @@ TEST_F(TextFormatParserTest, InvalidFieldValues) {
                 "\"optional_nested_enum\".", 2, 1);
   // We consume the negative sign, so the error position starts one character
   // later.
-  ExpectFailure("optional_nested_enum: -7.5\n", "Expected integer.", 1, 24);
+  ExpectFailure("optional_nested_enum: -7.5\n", "Expected integer, got: 7.5", 1,
+                24);
   ExpectFailure("optional_nested_enum: !\n",
-                "Expected integer or identifier.", 1, 23);
+                "Expected integer or identifier, got: !", 1, 23);
 
   ExpectFailure(
       "optional_nested_enum: grah\n",
@@ -1335,7 +1465,7 @@ TEST_F(TextFormatParserTest, MessageDelimiters) {
 
   // Unending message.
   ExpectFailure("optional_nested_message {\n \nbb: 118\n",
-                "Expected identifier.",
+                "Expected identifier, got: ",
                 4, 1);
 }
 
@@ -1391,7 +1521,7 @@ TEST_F(TextFormatParserTest, ExplicitDelimiters) {
 }
 
 TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
-  vector<string> errors;
+  std::vector<string> errors;
 
   {
     ScopedMemoryLog log;
@@ -1408,7 +1538,7 @@ TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
 }
 
 TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
-  vector<string> errors;
+  std::vector<string> errors;
 
   {
     ScopedMemoryLog log;
@@ -1467,7 +1597,7 @@ TEST_F(TextFormatMessageSetTest, Deserialize) {
     protobuf_unittest::TestMessageSetExtension2::message_set_extension).str());
 
   // Ensure that these are the only entries present.
-  vector<const FieldDescriptor*> descriptors;
+  std::vector<const FieldDescriptor*> descriptors;
   proto.message_set().GetReflection()->ListFields(
     proto.message_set(), &descriptors);
   EXPECT_EQ(2, descriptors.size());

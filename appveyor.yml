@@ -1,0 +1,44 @@
+# Only test one combination: "Visual Studio 12 + Win64 + Debug + DLL". We can
+# test more combinations but AppVeyor just takes too long to finish (each
+# combination takes ~15mins).
+platform:
+  - Win64
+
+configuration:
+  - Debug
+
+environment:
+  matrix:
+    - language: cpp
+      BUILD_DLL: ON
+      UNICODE: ON
+
+    - language: csharp
+      image: Visual Studio 2017
+
+# Our build scripts run tests automatically; we don't want AppVeyor
+# to try to detect them itself.
+test: off
+
+install:
+  - curl -L -o release-1.7.0.zip https://github.com/google/googlemock/archive/release-1.7.0.zip
+  - 7z x release-1.7.0.zip
+  - del /Q release-1.7.0.zip
+  - rename googlemock-release-1.7.0 gmock
+  - curl -L -o release-1.7.0.zip "https://github.com/google/googletest/archive/release-1.7.0.zip"
+  - 7z x release-1.7.0.zip
+  - del /Q release-1.7.0.zip
+  - rename googletest-release-1.7.0 gtest
+  - move gtest gmock
+
+before_build:
+  - if %platform%==Win32 set generator=Visual Studio 12
+  - if %platform%==Win64 set generator=Visual Studio 12 Win64
+  - if %platform%==Win32 set vcplatform=Win32
+  - if %platform%==Win64 set vcplatform=x64
+
+build_script:
+  - CALL appveyor.bat
+
+skip_commits:
+  message: /.*\[skip appveyor\].*/

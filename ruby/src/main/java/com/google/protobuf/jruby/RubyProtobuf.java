@@ -50,56 +50,6 @@ public class RubyProtobuf {
 
     /*
      * call-seq:
-     *     Google::Protobuf.encode(msg) => bytes
-     *
-     * Encodes the given message object to protocol buffers wire format. This is an
-     * alternative to the #encode method on msg's class.
-     */
-    @JRubyMethod(meta = true)
-    public static IRubyObject encode(ThreadContext context, IRubyObject self, IRubyObject message) {
-        return RubyMessage.encode(context, message.getMetaClass(), message);
-    }
-
-    /*
-     * call-seq:
-     *     Google::Protobuf.decode(class, bytes) => msg
-     *
-     * Decodes the given bytes as protocol buffers wire format under the
-     * interpretation given by the given class's message definition. This is an
-     * alternative to the #decode method on the given class.
-     */
-    @JRubyMethod(meta = true)
-    public static IRubyObject decode(ThreadContext context, IRubyObject self, IRubyObject klazz, IRubyObject message) {
-        return RubyMessage.decode(context, klazz, message);
-    }
-
-    /*
-     * call-seq:
-     *     Google::Protobuf.encode_json(msg) => json_string
-     *
-     * Encodes the given message object to its JSON representation. This is an
-     * alternative to the #encode_json method on msg's class.
-     */
-    @JRubyMethod(name = "encode_json", meta = true)
-    public static IRubyObject encodeJson(ThreadContext context, IRubyObject self, IRubyObject message) {
-        return RubyMessage.encodeJson(context, message.getMetaClass(), message);
-    }
-
-    /*
-     * call-seq:
-     *     Google::Protobuf.decode_json(class, json_string) => msg
-     *
-     * Decodes the given JSON string under the interpretation given by the given
-     * class's message definition. This is an alternative to the #decode_json method
-     * on the given class.
-     */
-    @JRubyMethod(name = "decode_json", meta = true)
-    public static IRubyObject decodeJson(ThreadContext context, IRubyObject self, IRubyObject klazz, IRubyObject message) {
-        return RubyMessage.decodeJson(context, klazz, message);
-    }
-
-    /*
-     * call-seq:
      *     Google::Protobuf.deep_copy(obj) => copy_of_obj
      *
      * Performs a deep copy of either a RepeatedField instance or a message object,

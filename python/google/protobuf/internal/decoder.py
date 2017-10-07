@@ -28,10 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#PY25 compatible for GAE.
-#
-# Copyright 2009 Google Inc. All Rights Reserved.
-
 """Code for decoding protocol buffer primitives.
 
 This code is very similar to encoder.py -- read the docs for that module first.
@@ -85,8 +81,12 @@ we repeatedly read a tag, look up the corresponding decoder, and invoke it.
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import struct
-import sys  ##PY25
-_PY2 = sys.version_info[0] < 3  ##PY25
+
+import six
+
+if six.PY3:
+  long = int
+
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
 from google.protobuf import message
@@ -114,14 +114,11 @@ def _VarintDecoder(mask, result_type):
   decoder returns a (value, new_pos) pair.
   """
 
-  local_ord = ord
-  py2 = _PY2  ##PY25
-##!PY25  py2 = str is bytes
   def DecodeVarint(buffer, pos):
     result = 0
     shift = 0
     while 1:
-      b = local_ord(buffer[pos]) if py2 else buffer[pos]
+      b = six.indexbytes(buffer, pos)
       result |= ((b & 0x7f) << shift)
       pos += 1
       if not (b & 0x80):
@@ -134,25 +131,22 @@ def _VarintDecoder(mask, result_type):
   return DecodeVarint
 
 
-def _SignedVarintDecoder(mask, result_type):
+def _SignedVarintDecoder(bits, result_type):
   """Like _VarintDecoder() but decodes signed values."""
 
-  local_ord = ord
-  py2 = _PY2  ##PY25
-##!PY25  py2 = str is bytes
+  signbit = 1 << (bits - 1)
+  mask = (1 << bits) - 1
+
   def DecodeVarint(buffer, pos):
     result = 0
     shift = 0
     while 1:
-      b = local_ord(buffer[pos]) if py2 else buffer[pos]
+      b = six.indexbytes(buffer, pos)
       result |= ((b & 0x7f) << shift)
       pos += 1
       if not (b & 0x80):
-        if result > 0x7fffffffffffffff:
-          result -= (1 << 64)
-          result |= ~mask
-        else:
-          result &= mask
+        result &= mask
+        result = (result ^ signbit) - signbit
         result = result_type(result)
         return (result, pos)
       shift += 7
@@ -165,11 +159,11 @@ def _SignedVarintDecoder(mask, result_type):
 # (e.g. the C++ implementation) simpler.
 
 _DecodeVarint = _VarintDecoder((1 << 64) - 1, long)
-_DecodeSignedVarint = _SignedVarintDecoder((1 << 64) - 1, long)
+_DecodeSignedVarint = _SignedVarintDecoder(64, long)
 
 # Use these versions for values which must be limited to 32 bits.
 _DecodeVarint32 = _VarintDecoder((1 << 32) - 1, int)
-_DecodeSignedVarint32 = _SignedVarintDecoder((1 << 32) - 1, int)
+_DecodeSignedVarint32 = _SignedVarintDecoder(32, int)
 
 
 def ReadTag(buffer, pos):
@@ -183,10 +177,8 @@ def ReadTag(buffer, pos):
   use that, but not in Python.
   """
 
-  py2 = _PY2  ##PY25
-##!PY25  py2 = str is bytes
   start = pos
-  while (ord(buffer[pos]) if py2 else buffer[pos]) & 0x80:
+  while six.indexbytes(buffer, pos) & 0x80:
     pos += 1
   pos += 1
   return (buffer[start:pos], pos)
@@ -301,7 +293,6 @@ def _FloatDecoder():
   """
 
   local_unpack = struct.unpack
-  b = (lambda x:x) if _PY2 else lambda x:x.encode('latin1')  ##PY25
 
   def InnerDecode(buffer, pos):
     # We expect a 32-bit value in little-endian byte order.  Bit 1 is the sign
@@ -312,17 +303,12 @@ def _FloatDecoder():
     # If this value has all its exponent bits set, then it's non-finite.
     # In Python 2.4, struct.unpack will convert it to a finite 64-bit value.
     # To avoid that, we parse it specially.
-    if ((float_bytes[3:4] in b('\x7F\xFF'))  ##PY25
-##!PY25    if ((float_bytes[3:4] in b'\x7F\xFF')
-        and (float_bytes[2:3] >= b('\x80'))):  ##PY25
-##!PY25        and (float_bytes[2:3] >= b'\x80')):
+    if (float_bytes[3:4] in b'\x7F\xFF' and float_bytes[2:3] >= b'\x80'):
       # If at least one significand bit is set...
-      if float_bytes[0:3] != b('\x00\x00\x80'):  ##PY25
-##!PY25      if float_bytes[0:3] != b'\x00\x00\x80':
+      if float_bytes[0:3] != b'\x00\x00\x80':
         return (_NAN, new_pos)
       # If sign bit is set...
-      if float_bytes[3:4] == b('\xFF'):  ##PY25
-##!PY25      if float_bytes[3:4] == b'\xFF':
+      if float_bytes[3:4] == b'\xFF':
         return (_NEG_INF, new_pos)
       return (_POS_INF, new_pos)
 
@@ -341,7 +327,6 @@ def _DoubleDecoder():
   """
 
   local_unpack = struct.unpack
-  b = (lambda x:x) if _PY2 else lambda x:x.encode('latin1')  ##PY25
 
   def InnerDecode(buffer, pos):
     # We expect a 64-bit value in little-endian byte order.  Bit 1 is the sign
@@ -352,12 +337,9 @@ def _DoubleDecoder():
     # If this value has all its exponent bits set and at least one significand
     # bit set, it's not a number.  In Python 2.4, struct.unpack will treat it
     # as inf or -inf.  To avoid that, we treat it specially.
-##!PY25    if ((double_bytes[7:8] in b'\x7F\xFF')
-##!PY25        and (double_bytes[6:7] >= b'\xF0')
-##!PY25        and (double_bytes[0:7] != b'\x00\x00\x00\x00\x00\x00\xF0')):
-    if ((double_bytes[7:8] in b('\x7F\xFF'))  ##PY25
-        and (double_bytes[6:7] >= b('\xF0'))  ##PY25
-        and (double_bytes[0:7] != b('\x00\x00\x00\x00\x00\x00\xF0'))):  ##PY25
+    if ((double_bytes[7:8] in b'\x7F\xFF')
+        and (double_bytes[6:7] >= b'\xF0')
+        and (double_bytes[0:7] != b'\x00\x00\x00\x00\x00\x00\xF0')):
       return (_NAN, new_pos)
 
     # Note that we expect someone up-stack to catch struct.error and convert
@@ -480,12 +462,12 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default):
   """Returns a decoder for a string field."""
 
   local_DecodeVarint = _DecodeVarint
-  local_unicode = unicode
+  local_unicode = six.text_type
 
   def _ConvertToUnicode(byte_str):
     try:
       return local_unicode(byte_str, 'utf-8')
-    except UnicodeDecodeError, e:
+    except UnicodeDecodeError as e:
       # add more information to the error message and re-raise it.
       e.reason = '%s in field: %s' % (e, key.full_name)
       raise
@@ -660,10 +642,10 @@ def MessageDecoder(field_number, is_repeated, is_packed, key, new_default):
 
 MESSAGE_SET_ITEM_TAG = encoder.TagBytes(1, wire_format.WIRETYPE_START_GROUP)
 
-def MessageSetItemDecoder(extensions_by_number):
+def MessageSetItemDecoder(descriptor):
   """Returns a decoder for a MessageSet item.
 
-  The parameter is the _extensions_by_number map for the message class.
+  The parameter is the message Descriptor.
 
   The message set message looks like this:
     message MessageSet {
@@ -712,7 +694,7 @@ def MessageSetItemDecoder(extensions_by_number):
     if message_start == -1:
       raise _DecodeError('MessageSet item missing message.')
 
-    extension = extensions_by_number.get(type_id)
+    extension = message.Extensions._FindExtensionByNumber(type_id)
     if extension is not None:
       value = field_dict.get(extension)
       if value is None:
@@ -731,6 +713,50 @@ def MessageSetItemDecoder(extensions_by_number):
     return pos
 
   return DecodeItem
+
+# --------------------------------------------------------------------
+
+def MapDecoder(field_descriptor, new_default, is_message_map):
+  """Returns a decoder for a map field."""
+
+  key = field_descriptor
+  tag_bytes = encoder.TagBytes(field_descriptor.number,
+                               wire_format.WIRETYPE_LENGTH_DELIMITED)
+  tag_len = len(tag_bytes)
+  local_DecodeVarint = _DecodeVarint
+  # Can't read _concrete_class yet; might not be initialized.
+  message_type = field_descriptor.message_type
+
+  def DecodeMap(buffer, pos, end, message, field_dict):
+    submsg = message_type._concrete_class()
+    value = field_dict.get(key)
+    if value is None:
+      value = field_dict.setdefault(key, new_default(message))
+    while 1:
+      # Read length.
+      (size, pos) = local_DecodeVarint(buffer, pos)
+      new_pos = pos + size
+      if new_pos > end:
+        raise _DecodeError('Truncated message.')
+      # Read sub-message.
+      submsg.Clear()
+      if submsg._InternalParse(buffer, pos, new_pos) != new_pos:
+        # The only reason _InternalParse would return early is if it
+        # encountered an end-group tag.
+        raise _DecodeError('Unexpected end-group tag.')
+
+      if is_message_map:
+        value[submsg.key].MergeFrom(submsg.value)
+      else:
+        value[submsg.key] = submsg.value
+
+      # Predict that the next tag is another copy of the same repeated field.
+      pos = new_pos + tag_len
+      if buffer[new_pos:pos] != tag_bytes or new_pos == end:
+        # Prediction failed.  Return.
+        return new_pos
+
+  return DecodeMap
 
 # --------------------------------------------------------------------
 # Optimization is not as heavy here because calls to SkipField() are rare,

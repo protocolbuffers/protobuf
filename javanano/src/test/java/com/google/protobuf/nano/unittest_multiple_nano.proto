@@ -34,7 +34,7 @@ package protobuf_unittest_import;
 
 import "google/protobuf/nano/unittest_import_nano.proto";
 
-option java_package = "com.google.protobuf.nano";
+option java_package = "com.google.protobuf";
 option java_multiple_files = true;
 
 enum FileScopeEnum {

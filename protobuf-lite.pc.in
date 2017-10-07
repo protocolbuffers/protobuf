@@ -8,6 +8,4 @@ Description: Google's Data Interchange Format
 Version: @VERSION@
 Libs: -L${libdir} -lprotobuf-lite @PTHREAD_CFLAGS@ @PTHREAD_LIBS@
 Cflags: -I${includedir} @PTHREAD_CFLAGS@
-# Commented out because it crashes pkg-config *sigh*:
-#   http://bugs.freedesktop.org/show_bug.cgi?id=13265
-# Conflicts: protobuf
+Conflicts: protobuf

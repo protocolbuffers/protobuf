@@ -79,10 +79,28 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
      * Should be used by the generated code only.
      *
      * @param type {@link #TYPE_MESSAGE} or {@link #TYPE_GROUP}
+     * @deprecated use {@link #createMessageTyped(int, Class, long)} instead.
      */
+    @Deprecated
     public static <M extends ExtendableMessageNano<M>, T extends MessageNano>
             Extension<M, T> createMessageTyped(int type, Class<T> clazz, int tag) {
         return new Extension<M, T>(type, clazz, tag, false);
+    }
+
+    // Note: these create...() methods take a long for the tag parameter,
+    // because tags are represented as unsigned ints, and these values exist
+    // in generated code as long values. However, they can fit in 32-bits, so
+    // it's safe to cast them to int without loss of precision.
+
+    /**
+     * Creates an {@code Extension} of the given message type and tag number.
+     * Should be used by the generated code only.
+     *
+     * @param type {@link #TYPE_MESSAGE} or {@link #TYPE_GROUP}
+     */
+    public static <M extends ExtendableMessageNano<M>, T extends MessageNano>
+            Extension<M, T> createMessageTyped(int type, Class<T> clazz, long tag) {
+        return new Extension<M, T>(type, clazz, (int) tag, false);
     }
 
     /**
@@ -92,8 +110,8 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
      * @param type {@link #TYPE_MESSAGE} or {@link #TYPE_GROUP}
      */
     public static <M extends ExtendableMessageNano<M>, T extends MessageNano>
-            Extension<M, T[]> createRepeatedMessageTyped(int type, Class<T[]> clazz, int tag) {
-        return new Extension<M, T[]>(type, clazz, tag, true);
+            Extension<M, T[]> createRepeatedMessageTyped(int type, Class<T[]> clazz, long tag) {
+        return new Extension<M, T[]>(type, clazz, (int) tag, true);
     }
 
     /**
@@ -104,8 +122,8 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
      * @param clazz the boxed Java type of this extension
      */
     public static <M extends ExtendableMessageNano<M>, T>
-            Extension<M, T> createPrimitiveTyped(int type, Class<T> clazz, int tag) {
-        return new PrimitiveExtension<M, T>(type, clazz, tag, false, 0, 0);
+            Extension<M, T> createPrimitiveTyped(int type, Class<T> clazz, long tag) {
+        return new PrimitiveExtension<M, T>(type, clazz, (int) tag, false, 0, 0);
     }
 
     /**
@@ -117,8 +135,9 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
      */
     public static <M extends ExtendableMessageNano<M>, T>
             Extension<M, T> createRepeatedPrimitiveTyped(
-                    int type, Class<T> clazz, int tag, int nonPackedTag, int packedTag) {
-        return new PrimitiveExtension<M, T>(type, clazz, tag, true, nonPackedTag, packedTag);
+                    int type, Class<T> clazz, long tag, long nonPackedTag, long packedTag) {
+        return new PrimitiveExtension<M, T>(type, clazz, (int) tag, true,
+            (int) nonPackedTag, (int) packedTag);
     }
 
     /**
@@ -136,7 +155,7 @@ public class Extension<M extends ExtendableMessageNano<M>, T> {
     protected final Class<T> clazz;
 
     /**
-     * Tag number of this extension.
+     * Tag number of this extension. The data should be viewed as an unsigned 32-bit value.
      */
     public final int tag;
 

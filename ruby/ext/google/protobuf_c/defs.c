@@ -34,8 +34,6 @@
 // Common utilities.
 // -----------------------------------------------------------------------------
 
-const char* kDescriptorInstanceVar = "descriptor";
-
 static const char* get_str(VALUE str) {
   Check_Type(str, T_STRING);
   return RSTRING_PTR(str);
@@ -90,7 +88,7 @@ static upb_enumdef* check_enum_notfrozen(const upb_enumdef* def) {
     }                                                               \
 
 #define DEFINE_SELF(type, var, rb_var)                              \
-    type* var = ruby_to_ ## type(rb_var);
+    type* var = ruby_to_ ## type(rb_var)
 
 // Global singleton DescriptorPool. The user is free to create others, but this
 // is used by generated code.
@@ -103,7 +101,7 @@ void DescriptorPool_mark(void* _self) {
 
 void DescriptorPool_free(void* _self) {
   DescriptorPool* self = _self;
-  upb_symtab_unref(self->symtab, &self->symtab);
+  upb_symtab_free(self->symtab);
   xfree(self);
 }
 
@@ -115,7 +113,7 @@ void DescriptorPool_free(void* _self) {
  */
 VALUE DescriptorPool_alloc(VALUE klass) {
   DescriptorPool* self = ALLOC(DescriptorPool);
-  self->symtab = upb_symtab_new(&self->symtab);
+  self->symtab = upb_symtab_new();
   return TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
 }
 
@@ -230,7 +228,6 @@ DEFINE_CLASS(Descriptor, "Google::Protobuf::Descriptor");
 void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
-  rb_gc_mark(self->typeclass_references);
 }
 
 void Descriptor_free(void* _self) {
@@ -245,6 +242,10 @@ void Descriptor_free(void* _self) {
   if (self->fill_method) {
     upb_pbdecodermethod_unref(self->fill_method, &self->fill_method);
   }
+  if (self->json_fill_method) {
+    upb_json_parsermethod_unref(self->json_fill_method,
+                                &self->json_fill_method);
+  }
   if (self->pb_serialize_handlers) {
     upb_handlers_unref(self->pb_serialize_handlers,
                        &self->pb_serialize_handlers);
@@ -252,6 +253,10 @@ void Descriptor_free(void* _self) {
   if (self->json_serialize_handlers) {
     upb_handlers_unref(self->json_serialize_handlers,
                        &self->json_serialize_handlers);
+  }
+  if (self->json_serialize_handlers_preserve) {
+    upb_handlers_unref(self->json_serialize_handlers_preserve,
+                       &self->json_serialize_handlers_preserve);
   }
   xfree(self);
 }
@@ -273,9 +278,10 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->layout = NULL;
   self->fill_handlers = NULL;
   self->fill_method = NULL;
+  self->json_fill_method = NULL;
   self->pb_serialize_handlers = NULL;
   self->json_serialize_handlers = NULL;
-  self->typeclass_references = rb_ary_new();
+  self->json_serialize_handlers_preserve = NULL;
   return ret;
 }
 
@@ -548,11 +554,9 @@ upb_fieldtype_t ruby_to_fieldtype(VALUE type) {
     rb_raise(rb_eArgError, "Expected symbol for field type.");
   }
 
-  upb_fieldtype_t upb_type = -1;
-
 #define CONVERT(upb, ruby)                                           \
   if (SYM2ID(type) == rb_intern( # ruby )) {                         \
-    upb_type = UPB_TYPE_ ## upb;                                     \
+    return UPB_TYPE_ ## upb;                                         \
   }
 
   CONVERT(FLOAT, float);
@@ -569,11 +573,8 @@ upb_fieldtype_t ruby_to_fieldtype(VALUE type) {
 
 #undef CONVERT
 
-  if (upb_type == -1) {
-    rb_raise(rb_eArgError, "Unknown field type.");
-  }
-
-  return upb_type;
+  rb_raise(rb_eArgError, "Unknown field type.");
+  return 0;
 }
 
 VALUE fieldtype_to_ruby(upb_fieldtype_t type) {
@@ -596,6 +597,68 @@ VALUE fieldtype_to_ruby(upb_fieldtype_t type) {
   return Qnil;
 }
 
+upb_descriptortype_t ruby_to_descriptortype(VALUE type) {
+  if (TYPE(type) != T_SYMBOL) {
+    rb_raise(rb_eArgError, "Expected symbol for field type.");
+  }
+
+#define CONVERT(upb, ruby)                                           \
+  if (SYM2ID(type) == rb_intern( # ruby )) {                         \
+    return UPB_DESCRIPTOR_TYPE_ ## upb;                              \
+  }
+
+  CONVERT(FLOAT, float);
+  CONVERT(DOUBLE, double);
+  CONVERT(BOOL, bool);
+  CONVERT(STRING, string);
+  CONVERT(BYTES, bytes);
+  CONVERT(MESSAGE, message);
+  CONVERT(GROUP, group);
+  CONVERT(ENUM, enum);
+  CONVERT(INT32, int32);
+  CONVERT(INT64, int64);
+  CONVERT(UINT32, uint32);
+  CONVERT(UINT64, uint64);
+  CONVERT(SINT32, sint32);
+  CONVERT(SINT64, sint64);
+  CONVERT(FIXED32, fixed32);
+  CONVERT(FIXED64, fixed64);
+  CONVERT(SFIXED32, sfixed32);
+  CONVERT(SFIXED64, sfixed64);
+
+#undef CONVERT
+
+  rb_raise(rb_eArgError, "Unknown field type.");
+  return 0;
+}
+
+VALUE descriptortype_to_ruby(upb_descriptortype_t type) {
+  switch (type) {
+#define CONVERT(upb, ruby)                                           \
+    case UPB_DESCRIPTOR_TYPE_ ## upb : return ID2SYM(rb_intern( # ruby ));
+    CONVERT(FLOAT, float);
+    CONVERT(DOUBLE, double);
+    CONVERT(BOOL, bool);
+    CONVERT(STRING, string);
+    CONVERT(BYTES, bytes);
+    CONVERT(MESSAGE, message);
+    CONVERT(GROUP, group);
+    CONVERT(ENUM, enum);
+    CONVERT(INT32, int32);
+    CONVERT(INT64, int64);
+    CONVERT(UINT32, uint32);
+    CONVERT(UINT64, uint64);
+    CONVERT(SINT32, sint32);
+    CONVERT(SINT64, sint64);
+    CONVERT(FIXED32, fixed32);
+    CONVERT(FIXED64, fixed64);
+    CONVERT(SFIXED32, sfixed32);
+    CONVERT(SFIXED64, sfixed64);
+#undef CONVERT
+  }
+  return Qnil;
+}
+
 /*
  * call-seq:
  *     FieldDescriptor.type => type
@@ -611,7 +674,7 @@ VALUE FieldDescriptor_type(VALUE _self) {
   if (!upb_fielddef_typeisset(self->fielddef)) {
     return Qnil;
   }
-  return fieldtype_to_ruby(upb_fielddef_type(self->fielddef));
+  return descriptortype_to_ruby(upb_fielddef_descriptortype(self->fielddef));
 }
 
 /*
@@ -624,7 +687,7 @@ VALUE FieldDescriptor_type(VALUE _self) {
 VALUE FieldDescriptor_type_set(VALUE _self, VALUE type) {
   DEFINE_SELF(FieldDescriptor, self, _self);
   upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
-  upb_fielddef_settype(mut_def, ruby_to_fieldtype(type));
+  upb_fielddef_setdescriptortype(mut_def, ruby_to_descriptortype(type));
   return Qnil;
 }
 
@@ -663,15 +726,17 @@ VALUE FieldDescriptor_label(VALUE _self) {
 VALUE FieldDescriptor_label_set(VALUE _self, VALUE label) {
   DEFINE_SELF(FieldDescriptor, self, _self);
   upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
+  upb_label_t upb_label = -1;
+  bool converted = false;
+
   if (TYPE(label) != T_SYMBOL) {
     rb_raise(rb_eArgError, "Expected symbol for field label.");
   }
 
-  upb_label_t upb_label = -1;
-
 #define CONVERT(upb, ruby)                                           \
   if (SYM2ID(label) == rb_intern( # ruby )) {                        \
     upb_label = UPB_LABEL_ ## upb;                                   \
+    converted = true;                                                \
   }
 
   CONVERT(OPTIONAL, optional);
@@ -680,7 +745,7 @@ VALUE FieldDescriptor_label_set(VALUE _self, VALUE label) {
 
 #undef CONVERT
 
-  if (upb_label == -1) {
+  if (!converted) {
     rb_raise(rb_eArgError, "Unknown field label.");
   }
 
@@ -745,10 +810,10 @@ VALUE FieldDescriptor_submsg_name(VALUE _self) {
 VALUE FieldDescriptor_submsg_name_set(VALUE _self, VALUE value) {
   DEFINE_SELF(FieldDescriptor, self, _self);
   upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
+  const char* str = get_str(value);
   if (!upb_fielddef_hassubdef(self->fielddef)) {
     rb_raise(rb_eTypeError, "FieldDescriptor does not have subdef.");
   }
-  const char* str = get_str(value);
   CHECK_UPB(upb_fielddef_setsubdefname(mut_def, str, &status),
             "Error setting submessage name");
   return Qnil;
@@ -765,10 +830,12 @@ VALUE FieldDescriptor_submsg_name_set(VALUE _self, VALUE value) {
  */
 VALUE FieldDescriptor_subtype(VALUE _self) {
   DEFINE_SELF(FieldDescriptor, self, _self);
+  const upb_def* def;
+
   if (!upb_fielddef_hassubdef(self->fielddef)) {
     return Qnil;
   }
-  const upb_def* def = upb_fielddef_subdef(self->fielddef);
+  def = upb_fielddef_subdef(self->fielddef);
   if (def == NULL) {
     return Qnil;
   }
@@ -1192,14 +1259,15 @@ static VALUE msgdef_add_field(VALUE msgdef,
  */
 VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
+  VALUE name, type, number, type_class;
 
   if (argc < 3) {
     rb_raise(rb_eArgError, "Expected at least 3 arguments.");
   }
-  VALUE name = argv[0];
-  VALUE type = argv[1];
-  VALUE number = argv[2];
-  VALUE type_class = (argc > 3) ? argv[3] : Qnil;
+  name = argv[0];
+  type = argv[1];
+  number = argv[2];
+  type_class = (argc > 3) ? argv[3] : Qnil;
 
   return msgdef_add_field(self->descriptor, "optional",
                           name, type, number, type_class);
@@ -1220,14 +1288,15 @@ VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
  */
 VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
+  VALUE name, type, number, type_class;
 
   if (argc < 3) {
     rb_raise(rb_eArgError, "Expected at least 3 arguments.");
   }
-  VALUE name = argv[0];
-  VALUE type = argv[1];
-  VALUE number = argv[2];
-  VALUE type_class = (argc > 3) ? argv[3] : Qnil;
+  name = argv[0];
+  type = argv[1];
+  number = argv[2];
+  type_class = (argc > 3) ? argv[3] : Qnil;
 
   return msgdef_add_field(self->descriptor, "required",
                           name, type, number, type_class);
@@ -1244,14 +1313,15 @@ VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self) {
  */
 VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
+  VALUE name, type, number, type_class;
 
   if (argc < 3) {
     rb_raise(rb_eArgError, "Expected at least 3 arguments.");
   }
-  VALUE name = argv[0];
-  VALUE type = argv[1];
-  VALUE number = argv[2];
-  VALUE type_class = (argc > 3) ? argv[3] : Qnil;
+  name = argv[0];
+  type = argv[1];
+  number = argv[2];
+  type_class = (argc > 3) ? argv[3] : Qnil;
 
   return msgdef_add_field(self->descriptor, "repeated",
                           name, type, number, type_class);
@@ -1271,15 +1341,17 @@ VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self) {
  */
 VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
+  VALUE name, key_type, value_type, number, type_class;
+  VALUE mapentry_desc, mapentry_desc_name;
 
   if (argc < 4) {
     rb_raise(rb_eArgError, "Expected at least 4 arguments.");
   }
-  VALUE name = argv[0];
-  VALUE key_type = argv[1];
-  VALUE value_type = argv[2];
-  VALUE number = argv[3];
-  VALUE type_class = (argc > 4) ? argv[4] : Qnil;
+  name = argv[0];
+  key_type = argv[1];
+  value_type = argv[2];
+  number = argv[3];
+  type_class = (argc > 4) ? argv[4] : Qnil;
 
   // Validate the key type. We can't accept enums, messages, or floats/doubles
   // as map keys. (We exclude these explicitly, and the field-descriptor setter
@@ -1295,55 +1367,67 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
 
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
-  VALUE mapentry_desc = rb_class_new_instance(0, NULL, cDescriptor);
-  VALUE mapentry_desc_name = rb_funcall(self->descriptor, rb_intern("name"), 0);
+  mapentry_desc = rb_class_new_instance(0, NULL, cDescriptor);
+  mapentry_desc_name = rb_funcall(self->descriptor, rb_intern("name"), 0);
   mapentry_desc_name = rb_str_cat2(mapentry_desc_name, "_MapEntry_");
   mapentry_desc_name = rb_str_cat2(mapentry_desc_name,
                                    rb_id2name(SYM2ID(name)));
   Descriptor_name_set(mapentry_desc, mapentry_desc_name);
 
-  // The 'mapentry' attribute has no Ruby setter because we do not want the user
-  // attempting to DIY the setup below; we want to ensure that the fields are
-  // correct. So we reach into the msgdef here to set the bit manually.
-  Descriptor* mapentry_desc_self = ruby_to_Descriptor(mapentry_desc);
-  upb_msgdef_setmapentry((upb_msgdef*)mapentry_desc_self->msgdef, true);
-
-  // optional <type> key = 1;
-  VALUE key_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
-  FieldDescriptor_name_set(key_field, rb_str_new2("key"));
-  FieldDescriptor_label_set(key_field, ID2SYM(rb_intern("optional")));
-  FieldDescriptor_number_set(key_field, INT2NUM(1));
-  FieldDescriptor_type_set(key_field, key_type);
-  Descriptor_add_field(mapentry_desc, key_field);
-
-  // optional <type> value = 2;
-  VALUE value_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
-  FieldDescriptor_name_set(value_field, rb_str_new2("value"));
-  FieldDescriptor_label_set(value_field, ID2SYM(rb_intern("optional")));
-  FieldDescriptor_number_set(value_field, INT2NUM(2));
-  FieldDescriptor_type_set(value_field, value_type);
-  if (type_class != Qnil) {
-    VALUE submsg_name = rb_str_new2("."); // prepend '.' to make name absolute.
-    submsg_name = rb_str_append(submsg_name, type_class);
-    FieldDescriptor_submsg_name_set(value_field, submsg_name);
+  {
+    // The 'mapentry' attribute has no Ruby setter because we do not want the
+    // user attempting to DIY the setup below; we want to ensure that the fields
+    // are correct. So we reach into the msgdef here to set the bit manually.
+    Descriptor* mapentry_desc_self = ruby_to_Descriptor(mapentry_desc);
+    upb_msgdef_setmapentry((upb_msgdef*)mapentry_desc_self->msgdef, true);
   }
-  Descriptor_add_field(mapentry_desc, value_field);
 
-  // Add the map-entry message type to the current builder, and use the type to
-  // create the map field itself.
-  Builder* builder_self = ruby_to_Builder(self->builder);
-  rb_ary_push(builder_self->pending_list, mapentry_desc);
+  {
+    // optional <type> key = 1;
+    VALUE key_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
+    FieldDescriptor_name_set(key_field, rb_str_new2("key"));
+    FieldDescriptor_label_set(key_field, ID2SYM(rb_intern("optional")));
+    FieldDescriptor_number_set(key_field, INT2NUM(1));
+    FieldDescriptor_type_set(key_field, key_type);
+    Descriptor_add_field(mapentry_desc, key_field);
+  }
 
-  VALUE map_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
-  VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
-  FieldDescriptor_name_set(map_field, name_str);
-  FieldDescriptor_number_set(map_field, number);
-  FieldDescriptor_label_set(map_field, ID2SYM(rb_intern("repeated")));
-  FieldDescriptor_type_set(map_field, ID2SYM(rb_intern("message")));
-  VALUE submsg_name = rb_str_new2("."); // prepend '.' to make name absolute.
-  submsg_name = rb_str_append(submsg_name, mapentry_desc_name);
-  FieldDescriptor_submsg_name_set(map_field, submsg_name);
-  Descriptor_add_field(self->descriptor, map_field);
+  {
+    // optional <type> value = 2;
+    VALUE value_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
+    FieldDescriptor_name_set(value_field, rb_str_new2("value"));
+    FieldDescriptor_label_set(value_field, ID2SYM(rb_intern("optional")));
+    FieldDescriptor_number_set(value_field, INT2NUM(2));
+    FieldDescriptor_type_set(value_field, value_type);
+    if (type_class != Qnil) {
+      VALUE submsg_name = rb_str_new2("."); // prepend '.' to make absolute.
+      submsg_name = rb_str_append(submsg_name, type_class);
+      FieldDescriptor_submsg_name_set(value_field, submsg_name);
+    }
+    Descriptor_add_field(mapentry_desc, value_field);
+  }
+
+  {
+    // Add the map-entry message type to the current builder, and use the type
+    // to create the map field itself.
+    Builder* builder_self = ruby_to_Builder(self->builder);
+    rb_ary_push(builder_self->pending_list, mapentry_desc);
+  }
+
+  {
+    VALUE map_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
+    VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
+    VALUE submsg_name;
+
+    FieldDescriptor_name_set(map_field, name_str);
+    FieldDescriptor_number_set(map_field, number);
+    FieldDescriptor_label_set(map_field, ID2SYM(rb_intern("repeated")));
+    FieldDescriptor_type_set(map_field, ID2SYM(rb_intern("message")));
+    submsg_name = rb_str_new2("."); // prepend '.' to make name absolute.
+    submsg_name = rb_str_append(submsg_name, mapentry_desc_name);
+    FieldDescriptor_submsg_name_set(map_field, submsg_name);
+    Descriptor_add_field(self->descriptor, map_field);
+  }
 
   return Qnil;
 }
@@ -1439,14 +1523,15 @@ VALUE OneofBuilderContext_initialize(VALUE _self,
  */
 VALUE OneofBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(OneofBuilderContext, self, _self);
+  VALUE name, type, number, type_class;
 
   if (argc < 3) {
     rb_raise(rb_eArgError, "Expected at least 3 arguments.");
   }
-  VALUE name = argv[0];
-  VALUE type = argv[1];
-  VALUE number = argv[2];
-  VALUE type_class = (argc > 3) ? argv[3] : Qnil;
+  name = argv[0];
+  type = argv[1];
+  number = argv[2];
+  type_class = (argc > 3) ? argv[3] : Qnil;
 
   return msgdef_add_field(self->descriptor, "optional",
                           name, type, number, type_class);
@@ -1548,7 +1633,7 @@ VALUE Builder_alloc(VALUE klass) {
   Builder* self = ALLOC(Builder);
   VALUE ret = TypedData_Wrap_Struct(
       klass, &_Builder_type, self);
-  self->pending_list = rb_ary_new();
+  self->pending_list = Qnil;
   self->defs = NULL;
   return ret;
 }
@@ -1558,9 +1643,22 @@ void Builder_register(VALUE module) {
   rb_define_alloc_func(klass, Builder_alloc);
   rb_define_method(klass, "add_message", Builder_add_message, 1);
   rb_define_method(klass, "add_enum", Builder_add_enum, 1);
+  rb_define_method(klass, "initialize", Builder_initialize, 0);
   rb_define_method(klass, "finalize_to_pool", Builder_finalize_to_pool, 1);
   cBuilder = klass;
   rb_gc_register_address(&cBuilder);
+}
+
+/*
+ * call-seq:
+ *     Builder.new(d) => builder
+ *
+ * Create a new message builder.
+ */
+VALUE Builder_initialize(VALUE _self) {
+  DEFINE_SELF(Builder, self, _self);
+  self->pending_list = rb_ary_new();
+  return Qnil;
 }
 
 /*
@@ -1590,9 +1688,9 @@ VALUE Builder_add_message(VALUE _self, VALUE name) {
  * call-seq:
  *     Builder.add_enum(name, &block)
  *
- * Creates a new, empty enum descriptor with the given name, and invokes the block in
- * the context of an EnumBuilderContext on that descriptor. The block can then
- * call EnumBuilderContext#add_value to define the enum values.
+ * Creates a new, empty enum descriptor with the given name, and invokes the
+ * block in the context of an EnumBuilderContext on that descriptor. The block
+ * can then call EnumBuilderContext#add_value to define the enum values.
  *
  * This is the recommended, idiomatic way to build enum definitions.
  */

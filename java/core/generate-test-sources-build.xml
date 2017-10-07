@@ -1,0 +1,44 @@
+<project name="generate-test-sources">
+    <mkdir dir="${generated.testsources.dir}"/>
+    <exec executable="${protoc}">
+        <arg value="--java_out=${generated.testsources.dir}"/>
+        <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="--proto_path=${test.proto.dir}"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_import.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_mset.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_mset_wire_format.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_optimize_for.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_custom_options.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_lite.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_lite.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public_lite.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_lite_imports_nonlite.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_enormous_descriptor.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_no_generic_services.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_well_known_types.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/lazy_fields_lite.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/lite_equals_and_hash.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/nested_builders_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/nested_extension.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/nested_extension_lite.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/non_nested_extension.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/non_nested_extension_lite.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test2.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/outer_class_name_test3.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/test_bad_identifiers.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8_size.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/test_custom_options.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/any_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/field_presence_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/map_for_proto2_lite_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/map_for_proto2_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/map_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/map_initialization_order_test.proto"/>
+    </exec>
+</project>

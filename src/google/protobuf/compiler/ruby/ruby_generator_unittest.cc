@@ -46,17 +46,7 @@ namespace ruby {
 namespace {
 
 string FindRubyTestDir() {
-  // Inspired by TestSourceDir() in src/google/protobuf/testing/googletest.cc.
-  string prefix = ".";
-  while (!File::Exists(prefix + "/ruby/tests")) {
-    if (!File::Exists(prefix)) {
-      GOOGLE_LOG(FATAL)
-          << "Could not find Ruby test directory. Please run tests from "
-             "somewhere within the protobuf source package.";
-    }
-    prefix += "/..";
-  }
-  return prefix + "/ruby/tests";
+  return TestSourceDir() + "/google/protobuf/compiler/ruby";
 }
 
 // This test is a simple golden-file test over the output of the Ruby code
@@ -78,11 +68,11 @@ TEST(RubyGeneratorTest, GeneratorTest) {
   // Copy generated_code.proto to the temporary test directory.
   string test_input;
   GOOGLE_CHECK_OK(File::GetContents(
-      ruby_tests + "/generated_code.proto",
+      ruby_tests + "/ruby_generated_code.proto",
       &test_input,
       true));
   GOOGLE_CHECK_OK(File::SetContents(
-      TestTempDir() + "/generated_code.proto",
+      TestTempDir() + "/ruby_generated_code.proto",
       test_input,
       true));
 
@@ -93,7 +83,7 @@ TEST(RubyGeneratorTest, GeneratorTest) {
     "protoc",
     ruby_out.c_str(),
     proto_path.c_str(),
-    "generated_code.proto",
+    "ruby_generated_code.proto",
   };
 
   EXPECT_EQ(0, cli.Run(4, argv));
@@ -101,12 +91,12 @@ TEST(RubyGeneratorTest, GeneratorTest) {
   // Load the generated output and compare to the expected result.
   string output;
   GOOGLE_CHECK_OK(File::GetContents(
-      TestTempDir() + "/generated_code.rb",
+      TestTempDir() + "/ruby_generated_code_pb.rb",
       &output,
       true));
   string expected_output;
   GOOGLE_CHECK_OK(File::GetContents(
-      ruby_tests + "/generated_code.rb",
+      ruby_tests + "/ruby_generated_code_pb.rb",
       &expected_output,
       true));
   EXPECT_EQ(expected_output, output);
