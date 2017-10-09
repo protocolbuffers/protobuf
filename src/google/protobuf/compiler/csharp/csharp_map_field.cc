@@ -91,7 +91,7 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
 void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(
       variables_,
-      "$name$_.Add(other.$name$_);\n");
+      "foreach (var $name$Value_ in other.$name$_) {\n  if (!$name$_.ContainsKey($name$Value_.Key)) {\n    $name$_.Add($name$Value_.Key, $name$Value_.Value);\n  }\n}\n");
 }
 
 void MapFieldGenerator::GenerateParsingCode(io::Printer* printer) {
