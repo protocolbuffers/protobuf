@@ -81,6 +81,10 @@ static HashTable* message_get_properties(zval* object TSRMLS_DC);
 
 // Define object free method.
 PHP_PROTO_OBJECT_FREE_START(MessageHeader, message)
+  if (*(void**)intern->data != NULL) {
+    stringsink_uninit(*(void**)intern->data);
+    FREE(*(void**)intern->data);
+  }
   FREE(intern->data);
 PHP_PROTO_OBJECT_FREE_END
 

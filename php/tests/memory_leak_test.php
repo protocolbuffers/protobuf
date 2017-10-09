@@ -101,6 +101,10 @@ $n = new TestMessage();
 $n->mergeFromString($data);
 assert(1 === $n->getOneofMessage()->getA());
 
+$m = new TestMessage();
+$m->mergeFromString(hex2bin('F80601'));
+assert('F80601', bin2hex($m->serializeToString()));
+
 # $from = new TestMessage();
 # $to = new TestMessage();
 # TestUtil::setTestMessage($from);

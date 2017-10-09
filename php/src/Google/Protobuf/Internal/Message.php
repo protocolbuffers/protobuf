@@ -57,6 +57,7 @@ class Message
      * @ignore
      */
     private $desc;
+    private $unknown = "";
 
     /**
      * @ignore
@@ -226,13 +227,14 @@ class Message
     /**
      * @ignore
      */
-    private static function skipField($input, $tag)
+    private function skipField($input, $tag)
     {
         $number = GPBWire::getTagFieldNumber($tag);
         if ($number === 0) {
             throw new GPBDecodeException("Illegal field number zero.");
         }
 
+        $start = $input->current();
         switch (GPBWire::getTagWireType($tag)) {
             case GPBWireType::VARINT:
                 $uint64 = 0;
@@ -240,21 +242,21 @@ class Message
                     throw new GPBDecodeException(
                         "Unexpected EOF inside varint.");
                 }
-                return;
+                break;
             case GPBWireType::FIXED64:
                 $uint64 = 0;
                 if (!$input->readLittleEndian64($uint64)) {
                     throw new GPBDecodeException(
                         "Unexpected EOF inside fixed64.");
                 }
-                return;
+                break;
             case GPBWireType::FIXED32:
                 $uint32 = 0;
                 if (!$input->readLittleEndian32($uint32)) {
                     throw new GPBDecodeException(
                         "Unexpected EOF inside fixed32.");
                 }
-                return;
+                break;
             case GPBWireType::LENGTH_DELIMITED:
                 $length = 0;
                 if (!$input->readVarint32($length)) {
@@ -266,13 +268,18 @@ class Message
                     throw new GPBDecodeException(
                         "Unexpected EOF inside length delimited data.");
                 }
-                return;
+                break;
             case GPBWireType::START_GROUP:
             case GPBWireType::END_GROUP:
                 throw new GPBDecodeException("Unexpected wire type.");
             default:
                 throw new GPBDecodeException("Unexpected wire type.");
         }
+        $end = $input->current();
+
+        $bytes = str_repeat(chr(0), CodedOutputStream::MAX_VARINT64_BYTES);
+        $size = CodedOutputStream::writeVarintToArray($tag, $bytes, true);
+        $this->unknown .= substr($bytes, 0, $size) . $input->substr($start, $end);
     }
 
     /**
@@ -423,7 +430,7 @@ class Message
         }
 
         if ($value_format === GPBWire::UNKNOWN) {
-            self::skipField($input, $tag);
+            $this->skipField($input, $tag);
             return;
         } elseif ($value_format === GPBWire::NORMAL_FORMAT) {
             self::parseFieldFromStreamNoTag($input, $field, $value);
@@ -461,6 +468,7 @@ class Message
      */
     public function clear()
     {
+        $this->unknown = "";
         foreach ($this->desc->getField() as $field) {
             $setter = $field->getSetter();
             if ($field->isMap()) {
@@ -1043,6 +1051,7 @@ class Message
                 return false;
             }
         }
+        $output->writeRaw($this->unknown, strlen($this->unknown));
         return true;
     }
 
@@ -1428,6 +1437,7 @@ class Message
         foreach ($fields as $field) {
             $size += $this->fieldByteSize($field);
         }
+        $size += strlen($this->unknown);
         return $size;
     }
 
