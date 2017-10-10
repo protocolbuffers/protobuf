@@ -59,5 +59,3 @@ if(MSVC AND protobuf_BUILD_SHARED_LIBS)
     PUBLIC  PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOBUF_EXPORTS)
 endif()
-set_target_properties(protobuf-lite PROPERTIES
-    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")

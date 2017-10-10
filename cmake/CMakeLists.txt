@@ -29,9 +29,6 @@ else (MSVC)
   set(protobuf_WITH_ZLIB_DEFAULT ON)
 endif (MSVC)
 option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
-set(protobuf_DEBUG_POSTFIX "d"
-  CACHE STRING "Default debug postfix")
-mark_as_advanced(protobuf_DEBUG_POSTFIX)
 # User options
 include(protobuf-options.cmake)
 
