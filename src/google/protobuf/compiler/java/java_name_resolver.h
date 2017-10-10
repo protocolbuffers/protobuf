@@ -98,6 +98,7 @@ class ClassNameResolver {
   // For example:
   //   com.package.OuterClass$OuterMessage$InnerMessage
   string GetJavaImmutableClassName(const Descriptor* descriptor);
+  string GetJavaImmutableClassName(const EnumDescriptor* descriptor);
  private:
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.
@@ -111,7 +112,7 @@ class ClassNameResolver {
       const FileDescriptor* file,
       bool immutable);
   // Caches the result to provide better performance.
-  map<const FileDescriptor*, string> file_immutable_outer_class_names_;
+  std::map<const FileDescriptor*, string> file_immutable_outer_class_names_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ClassNameResolver);
 };

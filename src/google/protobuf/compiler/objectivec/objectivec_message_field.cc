@@ -45,7 +45,7 @@ namespace objectivec {
 namespace {
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
-                         map<string, string>* variables) {
+                         std::map<string, string>* variables) {
   const string& message_type = ClassName(descriptor->message_type());
   (*variables)["type"] = message_type;
   (*variables)["containing_class"] = ClassName(descriptor->containing_type());
@@ -58,15 +58,17 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 
 }  // namespace
 
-MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor)
-    : ObjCObjFieldGenerator(descriptor) {
+MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
+                                             const Options& options)
+    : ObjCObjFieldGenerator(descriptor, options) {
   SetMessageVariables(descriptor, &variables_);
 }
 
 MessageFieldGenerator::~MessageFieldGenerator() {}
 
 void MessageFieldGenerator::DetermineForwardDeclarations(
-    set<string>* fwd_decls) const {
+    std::set<string>* fwd_decls) const {
+  ObjCObjFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   // Class name is already in "storage_type".
   fwd_decls->insert("@class " + variable("storage_type"));
 }
@@ -82,13 +84,23 @@ bool MessageFieldGenerator::WantsHasProperty(void) const {
 }
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
+    const FieldDescriptor* descriptor, const Options& options)
+    : RepeatedFieldGenerator(descriptor, options) {
   SetMessageVariables(descriptor, &variables_);
   variables_["array_storage_type"] = "NSMutableArray";
+  variables_["array_property_type"] =
+      "NSMutableArray<" + variables_["storage_type"] + "*>";
 }
 
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
+
+void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
+    std::set<string>* fwd_decls) const {
+  RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls);
+  // Class name is already in "storage_type".
+  fwd_decls->insert("@class " + variable("storage_type"));
+}
+
 
 }  // namespace objectivec
 }  // namespace compiler

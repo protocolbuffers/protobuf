@@ -53,9 +53,14 @@
 #include <vector>
 
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_no_arena.pb.h>
 #include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
+#if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
+// We exclude this large proto from cmake build because it's too large for
+// visual studio to compile (report internal errors).
 #include <google/protobuf/unittest_enormous_descriptor.pb.h>
+#endif
 #include <google/protobuf/unittest_no_generic_services.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
@@ -63,12 +68,14 @@
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
 
+#include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -123,14 +130,15 @@ TEST(GeneratedDescriptorTest, IdenticalDescriptors) {
 
   // Test that descriptors are generated correctly by converting them to
   // FileDescriptorProtos and comparing.
-  FileDescriptorProto generated_decsriptor_proto, parsed_descriptor_proto;
-  generated_descriptor->CopyTo(&generated_decsriptor_proto);
+  FileDescriptorProto generated_descriptor_proto, parsed_descriptor_proto;
+  generated_descriptor->CopyTo(&generated_descriptor_proto);
   parsed_descriptor->CopyTo(&parsed_descriptor_proto);
 
   EXPECT_EQ(parsed_descriptor_proto.DebugString(),
-            generated_decsriptor_proto.DebugString());
+            generated_descriptor_proto.DebugString());
 }
 
+#if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
 // Test that generated code has proper descriptors:
 // Touch a descriptor generated from an enormous message to validate special
 // handling for descriptors exceeding the C++ standard's recommended minimum
@@ -141,6 +149,7 @@ TEST(GeneratedDescriptorTest, EnormousDescriptor) {
 
   EXPECT_TRUE(generated_descriptor != NULL);
 }
+#endif
 
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
@@ -191,14 +200,14 @@ TEST(GeneratedMessageTest, FloatingPointDefaults) {
   EXPECT_EQ(-1.5f, extreme_default.negative_float());
   EXPECT_EQ(2.0e8f, extreme_default.large_float());
   EXPECT_EQ(-8e-28f, extreme_default.small_negative_float());
-  EXPECT_EQ(numeric_limits<double>::infinity(),
+  EXPECT_EQ(std::numeric_limits<double>::infinity(),
             extreme_default.inf_double());
-  EXPECT_EQ(-numeric_limits<double>::infinity(),
+  EXPECT_EQ(-std::numeric_limits<double>::infinity(),
             extreme_default.neg_inf_double());
   EXPECT_TRUE(extreme_default.nan_double() != extreme_default.nan_double());
-  EXPECT_EQ(numeric_limits<float>::infinity(),
+  EXPECT_EQ(std::numeric_limits<float>::infinity(),
             extreme_default.inf_float());
-  EXPECT_EQ(-numeric_limits<float>::infinity(),
+  EXPECT_EQ(-std::numeric_limits<float>::infinity(),
             extreme_default.neg_inf_float());
   EXPECT_TRUE(extreme_default.nan_float() != extreme_default.nan_float());
 }
@@ -411,6 +420,71 @@ TEST(GeneratedMessageTest, StringCharStarLength) {
   EXPECT_EQ("wx", message.repeated_string(0));
 }
 
+#if LANG_CXX11
+TEST(GeneratedMessageTest, StringMove) {
+  // Verify that we trigger the move behavior on a scalar setter.
+  protobuf_unittest_no_arena::TestAllTypes message;
+  {
+    string tmp(32, 'a');
+
+    const char* old_data = tmp.data();
+    message.set_optional_string(std::move(tmp));
+    const char* new_data = message.optional_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'a'), message.optional_string());
+
+    string tmp2(32, 'b');
+    old_data = tmp2.data();
+    message.set_optional_string(std::move(tmp2));
+    new_data = message.optional_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'b'), message.optional_string());
+  }
+
+  // Verify that we trigger the move behavior on a oneof setter.
+  {
+    string tmp(32, 'a');
+
+    const char* old_data = tmp.data();
+    message.set_oneof_string(std::move(tmp));
+    const char* new_data = message.oneof_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'a'), message.oneof_string());
+
+    string tmp2(32, 'b');
+    old_data = tmp2.data();
+    message.set_oneof_string(std::move(tmp2));
+    new_data = message.oneof_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'b'), message.oneof_string());
+  }
+
+  // Verify that we trigger the move behavior on a repeated setter.
+  {
+    string tmp(32, 'a');
+
+    const char* old_data = tmp.data();
+    message.add_repeated_string(std::move(tmp));
+    const char* new_data = message.repeated_string(0).data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'a'), message.repeated_string(0));
+
+    string tmp2(32, 'b');
+    old_data = tmp2.data();
+    message.set_repeated_string(0, std::move(tmp2));
+    new_data = message.repeated_string(0).data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'b'), message.repeated_string(0));
+  }
+}
+#endif
+
 
 TEST(GeneratedMessageTest, CopyFrom) {
   unittest::TestAllTypes message1, message2;
@@ -502,12 +576,93 @@ TEST(GeneratedMessageTest, SwapWithOther) {
   EXPECT_EQ(unittest::TestAllTypes::BAR, message2.repeated_nested_enum(1));
 }
 
-TEST(GeneratedMessageTest, CopyConstructor) {
-  unittest::TestAllTypes message1;
+TEST(GeneratedMessageTest, ADLSwap) {
+  unittest::TestAllTypes message1, message2;
   TestUtil::SetAllFields(&message1);
 
-  unittest::TestAllTypes message2(message1);
+  // Note the address of one of the repeated fields, to verify it was swapped
+  // rather than copied.
+  const int32* addr = &message1.repeated_int32().Get(0);
+
+  using std::swap;
+  swap(message1, message2);
+
   TestUtil::ExpectAllFieldsSet(message2);
+  TestUtil::ExpectClear(message1);
+
+  EXPECT_EQ(addr, &message2.repeated_int32().Get(0));
+}
+
+TEST(GeneratedMessageTest, CopyConstructor) {
+  // All set.
+  {
+    unittest::TestAllTypes message1;
+    TestUtil::SetAllFields(&message1);
+
+    unittest::TestAllTypes message2(message1);
+    TestUtil::ExpectAllFieldsSet(message2);
+  }
+
+  // None set.
+  {
+    unittest::TestAllTypes message1;
+    unittest::TestAllTypes message2(message1);
+
+    EXPECT_FALSE(message1.has_optional_string());
+    EXPECT_FALSE(message2.has_optional_string());
+    EXPECT_EQ(&message1.optional_string(),
+              &message2.optional_string());
+
+    EXPECT_FALSE(message1.has_optional_bytes());
+    EXPECT_FALSE(message2.has_optional_bytes());
+    EXPECT_EQ(&message1.optional_bytes(),
+              &message2.optional_bytes());
+
+    EXPECT_FALSE(message1.has_optional_nested_message());
+    EXPECT_FALSE(message2.has_optional_nested_message());
+    EXPECT_EQ(&message1.optional_nested_message(),
+              &message2.optional_nested_message());
+
+    EXPECT_FALSE(message1.has_optional_foreign_message());
+    EXPECT_FALSE(message2.has_optional_foreign_message());
+    EXPECT_EQ(&message1.optional_foreign_message(),
+              &message2.optional_foreign_message());
+
+    EXPECT_FALSE(message1.has_optional_import_message());
+    EXPECT_FALSE(message2.has_optional_import_message());
+    EXPECT_EQ(&message1.optional_import_message(),
+              &message2.optional_import_message());
+
+    EXPECT_FALSE(message1.has_optional_public_import_message());
+    EXPECT_FALSE(message2.has_optional_public_import_message());
+    EXPECT_EQ(&message1.optional_public_import_message(),
+              &message2.optional_public_import_message());
+
+    EXPECT_FALSE(message1.has_optional_lazy_message());
+    EXPECT_FALSE(message2.has_optional_lazy_message());
+    EXPECT_EQ(&message1.optional_lazy_message(),
+              &message2.optional_lazy_message());
+  }
+}
+
+TEST(GeneratedMessageTest, CopyConstructorWithArenas) {
+  Arena arena;
+  unittest::TestAllTypes* message1 =
+      Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  TestUtil::SetAllFields(message1);
+
+  unittest::TestAllTypes message2_stack(*message1);
+  TestUtil::ExpectAllFieldsSet(message2_stack);
+
+  google::protobuf::scoped_ptr<unittest::TestAllTypes> message2_heap(
+      new unittest::TestAllTypes(*message1));
+  TestUtil::ExpectAllFieldsSet(*message2_heap);
+
+  arena.Reset();
+
+  // Verify that the copies are still intact.
+  TestUtil::ExpectAllFieldsSet(message2_stack);
+  TestUtil::ExpectAllFieldsSet(*message2_heap);
 }
 
 TEST(GeneratedMessageTest, CopyAssignmentOperator) {
@@ -592,14 +747,16 @@ TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
 #if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
     !defined(GOOGLE_PROTOBUF_NO_RTTI)
 #ifdef PROTOBUF_HAS_DEATH_TEST
+#ifndef NDEBUG
 
 TEST(GeneratedMessageTest, MergeFromSelf) {
   unittest::TestAllTypes message;
-  EXPECT_DEATH(message.MergeFrom(message), "Check failed:.*pb[.]cc");
+  EXPECT_DEATH(message.MergeFrom(message), "pb[.]cc.*Check failed:");
   EXPECT_DEATH(message.MergeFrom(implicit_cast<const Message&>(message)),
-               "Check failed:.*pb[.]cc");
+               "pb[.]cc.*Check failed:");
 }
 
+#endif  // NDEBUG
 #endif  // PROTOBUF_HAS_DEATH_TEST
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS || !GOOGLE_PROTOBUF_NO_RTTI
 
@@ -1244,7 +1401,7 @@ class GeneratedServiceTest : public testing::Test {
       foo_(descriptor_->FindMethodByName("Foo")),
       bar_(descriptor_->FindMethodByName("Bar")),
       stub_(&mock_channel_),
-      done_(NewPermanentCallback(&DoNothing)) {}
+      done_(::google::protobuf::NewPermanentCallback(&DoNothing)) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(foo_ != NULL);
@@ -2063,6 +2220,61 @@ TEST_F(OneofTest, MergeFrom) {
   EXPECT_TRUE(message2.has_foogroup());
   EXPECT_EQ(message2.foogroup().a(), 345);
 
+}
+
+TEST(HelpersTest, TestSCC) {
+  protobuf_unittest::TestMutualRecursionA a;
+  SCCAnalyzer scc_analyzer((Options()));
+  const SCC* scc = scc_analyzer.GetSCC(a.GetDescriptor());
+  std::vector<string> names;
+  for (int i = 0; i < scc->descriptors.size(); i++) {
+    names.push_back(scc->descriptors[i]->full_name());
+  }
+  ASSERT_EQ(names.size(), 4);
+  std::sort(names.begin(), names.end());
+  EXPECT_EQ(names[0], "protobuf_unittest.TestMutualRecursionA");
+  EXPECT_EQ(names[1], "protobuf_unittest.TestMutualRecursionA.SubGroup");
+  EXPECT_EQ(names[2], "protobuf_unittest.TestMutualRecursionA.SubMessage");
+  EXPECT_EQ(names[3], "protobuf_unittest.TestMutualRecursionB");
+
+  MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+  EXPECT_EQ(result.is_recursive, true);
+  EXPECT_EQ(result.contains_required, false);
+  EXPECT_EQ(result.contains_cord, true);  // TestAllTypes
+  EXPECT_EQ(result.contains_extension, false);  // TestAllTypes
+}
+
+TEST(HelpersTest, TestSCCAnalysis) {
+  {
+    protobuf_unittest::TestRecursiveMessage msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, true);
+    EXPECT_EQ(result.contains_required, false);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, false);
+  }
+  {
+    protobuf_unittest::TestAllExtensions msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, false);
+    EXPECT_EQ(result.contains_required, false);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, true);
+  }
+  {
+    protobuf_unittest::TestRequired msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, false);
+    EXPECT_EQ(result.contains_required, true);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, false);
+  }
 }
 
 }  // namespace cpp_unittest

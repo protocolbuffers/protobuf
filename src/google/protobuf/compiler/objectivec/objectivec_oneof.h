@@ -61,11 +61,13 @@ class OneofGenerator {
 
   void GeneratePropertyImplementation(io::Printer* printer);
   void GenerateClearFunctionImplementation(io::Printer* printer);
-  void GenerateDescription(io::Printer* printer);
+
+  string DescriptorName(void) const;
+  string HasIndexAsString(void) const;
 
  private:
   const OneofDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OneofGenerator);
 };

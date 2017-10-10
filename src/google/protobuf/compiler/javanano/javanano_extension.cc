@@ -78,7 +78,7 @@ const char* GetTypeConstantName(const FieldDescriptor::Type type) {
 }  // namespace
 
 void SetVariables(const FieldDescriptor* descriptor, const Params params,
-                  map<string, string>* variables) {
+                  std::map<string, string>* variables) {
   (*variables)["extends"] = ClassName(params, descriptor->containing_type());
   (*variables)["name"] = RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
   bool repeated = descriptor->is_repeated();

@@ -36,8 +36,6 @@
 
 @interface GPBUnknownField ()
 
-- (instancetype)initWithNumber:(int32_t)number;
-
 - (void)writeToOutput:(GPBCodedOutputStream *)output;
 - (size_t)serializedSize;
 

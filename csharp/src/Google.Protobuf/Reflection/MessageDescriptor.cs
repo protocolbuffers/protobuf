@@ -34,6 +34,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+#if NET35
+// Needed for ReadOnlyDictionary, which does not exist in .NET 3.5
+using Google.Protobuf.Collections;
+#endif
 
 namespace Google.Protobuf.Reflection
 {
@@ -56,139 +60,156 @@ namespace Google.Protobuf.Reflection
             "google/protobuf/type.proto",
         };
 
-        private readonly DescriptorProto proto;
-        private readonly MessageDescriptor containingType;
-        private readonly IList<MessageDescriptor> nestedTypes;
-        private readonly IList<EnumDescriptor> enumTypes;
         private readonly IList<FieldDescriptor> fieldsInDeclarationOrder;
         private readonly IList<FieldDescriptor> fieldsInNumberOrder;
-        private readonly FieldCollection fields;
-        private readonly IList<OneofDescriptor> oneofs;
-        // CLR representation of the type described by this descriptor, if any.
-        private readonly Type generatedType;
+        private readonly IDictionary<string, FieldDescriptor> jsonFieldMap;
         
-        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedCodeInfo generatedCodeInfo)
+        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
         {
-            this.proto = proto;
-            generatedType = generatedCodeInfo == null ? null : generatedCodeInfo.ClrType;
+            Proto = proto;
+            Parser = generatedCodeInfo?.Parser;
+            ClrType = generatedCodeInfo?.ClrType;
+            ContainingType = parent;
 
-            containingType = parent;
-
-            oneofs = DescriptorUtil.ConvertAndMakeReadOnly(
+            // Note use of generatedCodeInfo. rather than generatedCodeInfo?. here... we don't expect
+            // to see any nested oneofs, types or enums in "not actually generated" code... we do
+            // expect fields though (for map entry messages).
+            Oneofs = DescriptorUtil.ConvertAndMakeReadOnly(
                 proto.OneofDecl,
                 (oneof, index) =>
-                new OneofDescriptor(oneof, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.OneofNames[index]));
+                new OneofDescriptor(oneof, file, this, index, generatedCodeInfo.OneofNames[index]));
 
-            nestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(
+            NestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(
                 proto.NestedType,
                 (type, index) =>
-                new MessageDescriptor(type, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedTypes[index]));
+                new MessageDescriptor(type, file, this, index, generatedCodeInfo.NestedTypes[index]));
 
-            enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(
+            EnumTypes = DescriptorUtil.ConvertAndMakeReadOnly(
                 proto.EnumType,
                 (type, index) =>
-                new EnumDescriptor(type, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedEnums[index]));
+                new EnumDescriptor(type, file, this, index, generatedCodeInfo.NestedEnums[index]));
 
             fieldsInDeclarationOrder = DescriptorUtil.ConvertAndMakeReadOnly(
                 proto.Field,
                 (field, index) =>
-                new FieldDescriptor(field, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.PropertyNames[index]));
+                new FieldDescriptor(field, file, this, index, generatedCodeInfo?.PropertyNames[index]));
             fieldsInNumberOrder = new ReadOnlyCollection<FieldDescriptor>(fieldsInDeclarationOrder.OrderBy(field => field.FieldNumber).ToArray());
+            // TODO: Use field => field.Proto.JsonName when we're confident it's appropriate. (And then use it in the formatter, too.)
+            jsonFieldMap = CreateJsonFieldMap(fieldsInNumberOrder);
             file.DescriptorPool.AddSymbol(this);
-            fields = new FieldCollection(this);
+            Fields = new FieldCollection(this);
         }
-                
-        /// <summary>
-        /// Returns the total number of nested types and enums, recursively.
-        /// </summary>
-        private int CountTotalGeneratedTypes()
+
+        private static ReadOnlyDictionary<string, FieldDescriptor> CreateJsonFieldMap(IList<FieldDescriptor> fields)
         {
-            return nestedTypes.Sum(nested => nested.CountTotalGeneratedTypes()) + enumTypes.Count;
+            var map = new Dictionary<string, FieldDescriptor>();
+            foreach (var field in fields)
+            {
+                map[field.Name] = field;
+                map[field.JsonName] = field;
+            }
+            return new ReadOnlyDictionary<string, FieldDescriptor>(map);
         }
 
         /// <summary>
         /// The brief name of the descriptor's target.
         /// </summary>
-        public override string Name { get { return proto.Name; } }
+        public override string Name => Proto.Name;
 
-        internal DescriptorProto Proto { get { return proto; } }
+        internal DescriptorProto Proto { get; }
 
         /// <summary>
-        /// The generated type for this message, or <c>null</c> if the descriptor does not represent a generated type.
+        /// The CLR type used to represent message instances from this descriptor.
         /// </summary>
-        public Type GeneratedType { get { return generatedType; } }
+        /// <remarks>
+        /// <para>
+        /// The value returned by this property will be non-null for all regular fields. However,
+        /// if a message containing a map field is introspected, the list of nested messages will include
+        /// an auto-generated nested key/value pair message for the field. This is not represented in any
+        /// generated type, so this property will return null in such cases.
+        /// </para>
+        /// <para>
+        /// For wrapper types (<see cref="Google.Protobuf.WellKnownTypes.StringValue"/> and the like), the type returned here
+        /// will be the generated message type, not the native type used by reflection for fields of those types. Code
+        /// using reflection should call <see cref="IsWrapperType"/> to determine whether a message descriptor represents
+        /// a wrapper type, and handle the result appropriately.
+        /// </para>
+        /// </remarks>
+        public Type ClrType { get; }
+
+        /// <summary>
+        /// A parser for this message type.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// As <see cref="MessageDescriptor"/> is not generic, this cannot be statically
+        /// typed to the relevant type, but it should produce objects of a type compatible with <see cref="ClrType"/>.
+        /// </para>
+        /// <para>
+        /// The value returned by this property will be non-null for all regular fields. However,
+        /// if a message containing a map field is introspected, the list of nested messages will include
+        /// an auto-generated nested key/value pair message for the field. No message parser object is created for
+        /// such messages, so this property will return null in such cases.
+        /// </para>
+        /// <para>
+        /// For wrapper types (<see cref="Google.Protobuf.WellKnownTypes.StringValue"/> and the like), the parser returned here
+        /// will be the generated message type, not the native type used by reflection for fields of those types. Code
+        /// using reflection should call <see cref="IsWrapperType"/> to determine whether a message descriptor represents
+        /// a wrapper type, and handle the result appropriately.
+        /// </para>
+        /// </remarks>
+        public MessageParser Parser { get; }
 
         /// <summary>
         /// Returns whether this message is one of the "well known types" which may have runtime/protoc support.
         /// </summary>
-        internal bool IsWellKnownType
-        {
-            get
-            {
-                return File.Package == "google.protobuf" && WellKnownTypeNames.Contains(File.Name);
-            }
-        }
+        internal bool IsWellKnownType => File.Package == "google.protobuf" && WellKnownTypeNames.Contains(File.Name);
+
+        /// <summary>
+        /// Returns whether this message is one of the "wrapper types" used for fields which represent primitive values
+        /// with the addition of presence.
+        /// </summary>
+        internal bool IsWrapperType => File.Package == "google.protobuf" && File.Name == "google/protobuf/wrappers.proto";
 
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
         /// </value>
-        public MessageDescriptor ContainingType
-        {
-            get { return containingType; }
-        }
+        public MessageDescriptor ContainingType { get; }
 
         /// <value>
         /// A collection of fields, which can be retrieved by name or field number.
         /// </value>
-        public FieldCollection Fields
-        {
-            get { return fields; }
-        }
+        public FieldCollection Fields { get; }
 
         /// <value>
         /// An unmodifiable list of this message type's nested types.
         /// </value>
-        public IList<MessageDescriptor> NestedTypes
-        {
-            get { return nestedTypes; }
-        }
+        public IList<MessageDescriptor> NestedTypes { get; }
 
         /// <value>
         /// An unmodifiable list of this message type's enum types.
         /// </value>
-        public IList<EnumDescriptor> EnumTypes
-        {
-            get { return enumTypes; }
-        }
+        public IList<EnumDescriptor> EnumTypes { get; }
 
         /// <value>
         /// An unmodifiable list of the "oneof" field collections in this message type.
         /// </value>
-        public IList<OneofDescriptor> Oneofs
-        {
-            get { return oneofs; }
-        }
+        public IList<OneofDescriptor> Oneofs { get; }
 
         /// <summary>
         /// Finds a field by field name.
         /// </summary>
         /// <param name="name">The unqualified name of the field (e.g. "foo").</param>
         /// <returns>The field's descriptor, or null if not found.</returns>
-        public FieldDescriptor FindFieldByName(String name)
-        {
-            return File.DescriptorPool.FindSymbol<FieldDescriptor>(FullName + "." + name);
-        }
+        public FieldDescriptor FindFieldByName(String name) => File.DescriptorPool.FindSymbol<FieldDescriptor>(FullName + "." + name);
 
         /// <summary>
         /// Finds a field by field number.
         /// </summary>
         /// <param name="number">The field number within this message type.</param>
         /// <returns>The field's descriptor, or null if not found.</returns>
-        public FieldDescriptor FindFieldByNumber(int number)
-        {
-            return File.DescriptorPool.FindFieldByNumber(this, number);
-        }
+        public FieldDescriptor FindFieldByNumber(int number) => File.DescriptorPool.FindFieldByNumber(this, number);
 
         /// <summary>
         /// Finds a nested descriptor by name. The is valid for fields, nested
@@ -196,18 +217,20 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="name">The unqualified name of the descriptor, e.g. "Foo"</param>
         /// <returns>The descriptor, or null if not found.</returns>
-        public T FindDescriptor<T>(string name)
-            where T : class, IDescriptor
-        {
-            return File.DescriptorPool.FindSymbol<T>(FullName + "." + name);
-        }
+        public T FindDescriptor<T>(string name)  where T : class, IDescriptor =>
+            File.DescriptorPool.FindSymbol<T>(FullName + "." + name);
+
+        /// <summary>
+        /// The (possibly empty) set of custom options for this message.
+        /// </summary>
+        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
 
         /// <summary>
         /// Looks up and cross-links all fields and nested types.
         /// </summary>
         internal void CrossLink()
         {
-            foreach (MessageDescriptor message in nestedTypes)
+            foreach (MessageDescriptor message in NestedTypes)
             {
                 message.CrossLink();
             }
@@ -217,7 +240,7 @@ namespace Google.Protobuf.Reflection
                 field.CrossLink();
             }
 
-            foreach (OneofDescriptor oneof in oneofs)
+            foreach (OneofDescriptor oneof in Oneofs)
             {
                 oneof.CrossLink();
             }
@@ -239,10 +262,7 @@ namespace Google.Protobuf.Reflection
             /// Returns the fields in the message as an immutable list, in the order in which they
             /// are declared in the source .proto file.
             /// </value>
-            public IList<FieldDescriptor> InDeclarationOrder()
-            {
-                return messageDescriptor.fieldsInDeclarationOrder;
-            }
+            public IList<FieldDescriptor> InDeclarationOrder() => messageDescriptor.fieldsInDeclarationOrder;
 
             /// <value>
             /// Returns the fields in the message as an immutable list, in ascending field number
@@ -250,10 +270,17 @@ namespace Google.Protobuf.Reflection
             /// index in the list to the field number; to retrieve a field by field number, it is better
             /// to use the <see cref="FieldCollection"/> indexer.
             /// </value>
-            public IList<FieldDescriptor> InFieldNumberOrder()
-            {
-                return messageDescriptor.fieldsInNumberOrder;
-            }
+            public IList<FieldDescriptor> InFieldNumberOrder() => messageDescriptor.fieldsInNumberOrder;
+
+            // TODO: consider making this public in the future. (Being conservative for now...)
+
+            /// <value>
+            /// Returns a read-only dictionary mapping the field names in this message as they're available
+            /// in the JSON representation to the field descriptors. For example, a field <c>foo_bar</c>
+            /// in the message would result two entries, one with a key <c>fooBar</c> and one with a key
+            /// <c>foo_bar</c>, both referring to the same field.
+            /// </value>
+            internal IDictionary<string, FieldDescriptor> ByJsonName() => messageDescriptor.jsonFieldMap;
 
             /// <summary>
             /// Retrieves the descriptor for the field with the given number.

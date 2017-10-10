@@ -67,13 +67,6 @@ bool GenerateHasBits(const Descriptor* descriptor) {
   return SupportFieldPresence(descriptor->file()) ||
       HasRepeatedFields(descriptor);
 }
-
-string MapValueImmutableClassdName(const Descriptor* descriptor,
-                                   ClassNameResolver* name_resolver) {
-  const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
-  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
-  return name_resolver->GetImmutableClassName(value_field->message_type());
-}
 }  // namespace
 
 MessageBuilderLiteGenerator::MessageBuilderLiteGenerator(
@@ -81,8 +74,9 @@ MessageBuilderLiteGenerator::MessageBuilderLiteGenerator(
   : descriptor_(descriptor), context_(context),
     name_resolver_(context->GetNameResolver()),
     field_generators_(descriptor, context_) {
-  GOOGLE_CHECK_EQ(
-      FileOptions::LITE_RUNTIME, descriptor->file()->options().optimize_for());
+  GOOGLE_CHECK(!HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
+      << "Generator factory error: A lite message generator is used to "
+         "generate non-lite messages.";
 }
 
 MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() {}
@@ -105,7 +99,7 @@ Generate(io::Printer* printer) {
   GenerateCommonBuilderMethods(printer);
 
   // oneof
-  map<string, string> vars;
+  std::map<string, string> vars;
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(
         descriptor_->oneof_decl(i))->name;
@@ -146,20 +140,6 @@ Generate(io::Printer* printer) {
     printer->Print("\n");
     field_generators_.get(descriptor_->field(i))
                      .GenerateBuilderMembers(printer);
-  }
-
-  if (!PreserveUnknownFields(descriptor_)) {
-    printer->Print(
-      "public final Builder setUnknownFields(\n"
-      "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
-      "  return this;\n"
-      "}\n"
-      "\n"
-      "public final Builder mergeUnknownFields(\n"
-      "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
-      "  return this;\n"
-      "}\n"
-      "\n");
   }
 
   printer->Print(

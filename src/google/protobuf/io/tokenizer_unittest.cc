@@ -41,6 +41,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
@@ -198,8 +199,8 @@ struct SimpleTokenCase {
   Tokenizer::TokenType type;
 };
 
-inline ostream& operator<<(ostream& out,
-                           const SimpleTokenCase& test_case) {
+inline std::ostream& operator<<(std::ostream& out,
+                                const SimpleTokenCase& test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -332,15 +333,15 @@ struct MultiTokenCase {
                                 // needed.
 };
 
-inline ostream& operator<<(ostream& out,
-                           const MultiTokenCase& test_case) {
+inline std::ostream& operator<<(std::ostream& out,
+                                const MultiTokenCase& test_case) {
   return out << CEscape(test_case.input);
 }
 
 MultiTokenCase kMultiTokenCases[] = {
   // Test empty input.
   { "", {
-    { Tokenizer::TYPE_END       , ""     , 0,  0 },
+    { Tokenizer::TYPE_END       , ""     , 0,  0,  0 },
   }},
 
   // Test all token types at the same time.
@@ -519,8 +520,8 @@ struct DocCommentCase {
   const char* next_leading_comments;
 };
 
-inline ostream& operator<<(ostream& out,
-                           const DocCommentCase& test_case) {
+inline std::ostream& operator<<(std::ostream& out,
+                                const DocCommentCase& test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -692,7 +693,7 @@ TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
   EXPECT_EQ("prev", tokenizer2.current().text);
 
   string prev_trailing_comments;
-  vector<string> detached_comments;
+  std::vector<string> detached_comments;
   string next_leading_comments;
   tokenizer.NextWithComments(&prev_trailing_comments, &detached_comments,
                              &next_leading_comments);
@@ -735,19 +736,13 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_EQ(0, ParseInteger("0x"));
 
   uint64 i;
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+
   // Test invalid integers that will never be tokenized as integers.
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("zxy", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("1.2", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("08", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("0xg", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("-1", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+  EXPECT_FALSE(Tokenizer::ParseInteger("zxy", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("1.2", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("08", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("0xg", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("-1", kuint64max, &i));
 
   // Test overflows.
   EXPECT_TRUE (Tokenizer::ParseInteger("0", 0, &i));
@@ -865,14 +860,15 @@ struct ErrorCase {
   const char* errors;
 };
 
-inline ostream& operator<<(ostream& out,
-                           const ErrorCase& test_case) {
+inline std::ostream& operator<<(std::ostream& out, const ErrorCase& test_case) {
   return out << CEscape(test_case.input);
 }
 
 ErrorCase kErrorCases[] = {
   // String errors.
   { "'\\l' foo", true,
+    "0:2: Invalid escape sequence in string literal.\n" },
+  { "'\\X' foo", true,
     "0:2: Invalid escape sequence in string literal.\n" },
   { "'\\x' foo", true,
     "0:3: Expected hex digits for escape sequence.\n" },

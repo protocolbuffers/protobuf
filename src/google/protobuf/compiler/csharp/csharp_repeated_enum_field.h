@@ -45,7 +45,9 @@ namespace csharp {
 // should probably have a RepeatedFieldGeneratorBase.
 class RepeatedEnumFieldGenerator : public FieldGeneratorBase {
  public:
-  RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
+                             int fieldOrdinal,
+                             const Options *options);
   ~RepeatedEnumFieldGenerator();
 
   virtual void GenerateCloningCode(io::Printer* printer);

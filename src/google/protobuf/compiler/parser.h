@@ -71,7 +71,7 @@ class LIBPROTOBUF_EXPORT Parser {
   // it.  Returns true if no errors occurred, false otherwise.
   bool Parse(io::Tokenizer* input, FileDescriptorProto* file);
 
-  // Optional fetaures:
+  // Optional features:
 
   // DEPRECATED:  New code should use the SourceCodeInfo embedded in the
   //   FileDescriptorProto.
@@ -257,7 +257,7 @@ class LIBPROTOBUF_EXPORT Parser {
     // TODO(kenton):  See comment on TryConsumeEndOfDeclaration(), above, for
     //   why this is const.
     void AttachComments(string* leading, string* trailing,
-                        vector<string>* detached_comments) const;
+                        std::vector<string>* detached_comments) const;
 
    private:
     // Indexes of parent and current location in the parent
@@ -323,7 +323,7 @@ class LIBPROTOBUF_EXPORT Parser {
                          const LocationRecorder& service_location,
                          const FileDescriptorProto* containing_file);
 
-  // Parse one statement within a message, enum, or service block, inclunding
+  // Parse one statement within a message, enum, or service block, including
   // final semicolon.
   bool ParseMessageStatement(DescriptorProto* message,
                              const LocationRecorder& message_location,
@@ -364,7 +364,7 @@ class LIBPROTOBUF_EXPORT Parser {
                        const LocationRecorder& extensions_location,
                        const FileDescriptorProto* containing_file);
 
-  // Parse an "reserved" declaration.
+  // Parse a "reserved" declaration.
   bool ParseReserved(DescriptorProto* message,
                      const LocationRecorder& message_location);
   bool ParseReservedNames(DescriptorProto* message,
@@ -415,7 +415,7 @@ class LIBPROTOBUF_EXPORT Parser {
                           Message* mutable_options);
 
   // Parse "required", "optional", or "repeated" and fill in "label"
-  // with the value. Returns true if shuch a label is consumed.
+  // with the value. Returns true if such a label is consumed.
   bool ParseLabel(FieldDescriptorProto::Label* label,
                   const FileDescriptorProto* containing_file);
 
@@ -438,6 +438,10 @@ class LIBPROTOBUF_EXPORT Parser {
   bool ParseDefaultAssignment(FieldDescriptorProto* field,
                               const LocationRecorder& field_location,
                               const FileDescriptorProto* containing_file);
+
+  bool ParseJsonName(FieldDescriptorProto* field,
+                     const LocationRecorder& field_location,
+                     const FileDescriptorProto* containing_file);
 
   enum OptionStyle {
     OPTION_ASSIGNMENT,  // just "name = value"
@@ -494,6 +498,8 @@ class LIBPROTOBUF_EXPORT Parser {
   }
 
 
+  bool ValidateEnum(const EnumDescriptorProto* proto);
+
   // =================================================================
 
   io::Tokenizer* input_;
@@ -514,7 +520,7 @@ class LIBPROTOBUF_EXPORT Parser {
   // detached comments will be put into the leading_detached_comments field for
   // the next element (See SourceCodeInfo.Location in descriptor.proto), when
   // ConsumeEndOfDeclaration() is called.
-  vector<string> upcoming_detached_comments_;
+  std::vector<string> upcoming_detached_comments_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Parser);
 };
@@ -550,9 +556,9 @@ class LIBPROTOBUF_EXPORT SourceLocationTable {
   void Clear();
 
  private:
-  typedef map<
-    pair<const Message*, DescriptorPool::ErrorCollector::ErrorLocation>,
-    pair<int, int> > LocationMap;
+  typedef std::map<
+    std::pair<const Message*, DescriptorPool::ErrorCollector::ErrorLocation>,
+    std::pair<int, int> > LocationMap;
   LocationMap location_map_;
 };
 

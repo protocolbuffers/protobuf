@@ -73,13 +73,13 @@ namespace Google.Protobuf.Examples.AddressBook
                 switch (type)
                 {
                     case "mobile":
-                        phoneNumber.Type = Person.Types.PhoneType.MOBILE;
+                        phoneNumber.Type = Person.Types.PhoneType.Mobile;
                         break;
                     case "home":
-                        phoneNumber.Type = Person.Types.PhoneType.HOME;
+                        phoneNumber.Type = Person.Types.PhoneType.Home;
                         break;
                     case "work":
-                        phoneNumber.Type = Person.Types.PhoneType.WORK;
+                        phoneNumber.Type = Person.Types.PhoneType.Work;
                         break;
                     default:
                         output.Write("Unknown phone type. Using default.");

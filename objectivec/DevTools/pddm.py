@@ -625,8 +625,7 @@ class SourceFile(object):
 def main(args):
   usage = '%prog [OPTIONS] PATH ...'
   description = (
-      'Processes PDDM directives in the the given paths and write them back'
-      ' out.'
+      'Processes PDDM directives in the given paths and write them back out.'
   )
   parser = optparse.OptionParser(usage=usage, description=description)
   parser.add_option('--dry-run',

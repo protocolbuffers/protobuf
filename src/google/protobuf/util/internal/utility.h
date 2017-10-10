@@ -39,6 +39,7 @@
 #include <utility>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/stringpiece.h>
@@ -63,6 +64,10 @@ class EnumValue;
 namespace protobuf {
 namespace util {
 namespace converter {
+
+// Size of "type.googleapis.com"
+static const int64 kTypeUrlSize = 19;
+
 // Finds the tech option identified by option_name. Parses the boolean value and
 // returns it.
 // When the option with the given name is not found, default_value is returned.
@@ -117,29 +122,42 @@ LIBPROTOBUF_EXPORT const string GetFullTypeWithUrl(StringPiece simple_type);
 
 // Finds and returns option identified by name and option_name within the
 // provided map. Returns NULL if none found.
-LIBPROTOBUF_EXPORT const google::protobuf::Option* FindOptionOrNull(
+const google::protobuf::Option* FindOptionOrNull(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name);
 
 // Finds and returns the field identified by field_name in the passed tech Type
 // object. Returns NULL if none found.
-LIBPROTOBUF_EXPORT const google::protobuf::Field* FindFieldInTypeOrNull(
+const google::protobuf::Field* FindFieldInTypeOrNull(
     const google::protobuf::Type* type, StringPiece field_name);
+
+// Similar to FindFieldInTypeOrNull, but this looks up fields with given
+// json_name.
+const google::protobuf::Field* FindJsonFieldInTypeOrNull(
+    const google::protobuf::Type* type, StringPiece json_name);
+
+// Similar to FindFieldInTypeOrNull, but this looks up fields by number.
+const google::protobuf::Field* FindFieldInTypeByNumberOrNull(
+    const google::protobuf::Type* type, int32 number);
 
 // Finds and returns the EnumValue identified by enum_name in the passed tech
 // Enum object. Returns NULL if none found.
-LIBPROTOBUF_EXPORT const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
+const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
     const google::protobuf::Enum* enum_type, StringPiece enum_name);
 
 // Finds and returns the EnumValue identified by value in the passed tech
 // Enum object. Returns NULL if none found.
-LIBPROTOBUF_EXPORT const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
+const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
     const google::protobuf::Enum* enum_type, int32 value);
 
+// Finds and returns the EnumValue identified by enum_name without underscore in
+// the passed tech Enum object. Returns NULL if none found.
+// For Ex. if enum_name is ACTIONANDADVENTURE it can get accepted if
+// EnumValue's name is action_and_adventure or ACTION_AND_ADVENTURE.
+const google::protobuf::EnumValue* FindEnumValueByNameWithoutUnderscoreOrNull(
+    const google::protobuf::Enum* enum_type, StringPiece enum_name);
+
 // Converts input to camel-case and returns it.
-// Tests are in wrappers/translator/snake2camel_objectwriter_test.cc
-// TODO(skarvaje): Isolate tests for this function and put them in
-// utility_test.cc
 LIBPROTOBUF_EXPORT string ToCamelCase(const StringPiece input);
 
 // Converts input to snake_case and returns it.
@@ -153,8 +171,11 @@ LIBPROTOBUF_EXPORT bool IsWellKnownType(const string& type_name);
 LIBPROTOBUF_EXPORT bool IsValidBoolString(const string& bool_string);
 
 // Returns true if "field" is a protobuf map field based on its type.
-bool IsMap(const google::protobuf::Field& field,
+LIBPROTOBUF_EXPORT bool IsMap(const google::protobuf::Field& field,
            const google::protobuf::Type& type);
+
+// Returns true if the given type has special MessageSet wire format.
+bool IsMessageSetWireFormat(const google::protobuf::Type& type);
 
 // Infinity/NaN-aware conversion to string.
 LIBPROTOBUF_EXPORT string DoubleAsString(double value);

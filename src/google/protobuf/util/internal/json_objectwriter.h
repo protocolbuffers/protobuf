@@ -90,9 +90,11 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   JsonObjectWriter(StringPiece indent_string,
                    google::protobuf::io::CodedOutputStream* out)
       : element_(new Element(NULL)),
-        stream_(out), sink_(out),
-        indent_string_(indent_string.ToString()) {
-  }
+        stream_(out),
+        sink_(out),
+        indent_string_(indent_string.ToString()),
+        use_websafe_base64_for_bytes_(false),
+        empty_name_ok_for_next_key_(false) {}
   virtual ~JsonObjectWriter();
 
   // ObjectWriter methods.
@@ -110,6 +112,18 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   virtual JsonObjectWriter* RenderString(StringPiece name, StringPiece value);
   virtual JsonObjectWriter* RenderBytes(StringPiece name, StringPiece value);
   virtual JsonObjectWriter* RenderNull(StringPiece name);
+  virtual JsonObjectWriter* RenderNullAsEmpty(StringPiece name);
+
+  void set_use_websafe_base64_for_bytes(bool value) {
+    use_websafe_base64_for_bytes_ = value;
+  }
+
+  // Whether empty strings should be rendered for the next JSON key. This
+  // setting is only valid until the next key is rendered, after which it gets
+  // reset to false.
+  virtual void empty_name_ok_for_next_key() {
+    empty_name_ok_for_next_key_ = true;
+  }
 
  protected:
   class LIBPROTOBUF_EXPORT Element : public BaseElement {
@@ -190,10 +204,23 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Writes an individual character to the output.
   void WriteChar(const char c) { stream_->WriteRaw(&c, sizeof(c)); }
 
+  // Returns the current value of empty_name_ok_for_next_key_ and resets it to
+  // false.
+  bool GetAndResetEmptyKeyOk();
+
   google::protobuf::scoped_ptr<Element> element_;
   google::protobuf::io::CodedOutputStream* stream_;
   ByteSinkWrapper sink_;
   const string indent_string_;
+
+  // Whether to use regular or websafe base64 encoding for byte fields. Defaults
+  // to regular base64 encoding.
+  bool use_websafe_base64_for_bytes_;
+
+  // Whether empty strings should be rendered for the next JSON key. This
+  // setting is only valid until the next key is rendered, after which it gets
+  // reset to false.
+  bool empty_name_ok_for_next_key_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonObjectWriter);
 };

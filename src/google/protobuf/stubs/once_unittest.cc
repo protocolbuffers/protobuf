@@ -130,7 +130,8 @@ class OnceInitTest : public testing::Test {
     return new TestThread(NewCallback(this, &OnceInitTest::InitOnce));
   }
   TestThread* RunInitRecursiveOnceInNewThread() {
-    return new TestThread(NewCallback(this, &OnceInitTest::InitRecursiveOnce));
+    return new TestThread(
+        NewCallback(this, &OnceInitTest::InitRecursiveOnce));
   }
 
   enum State {

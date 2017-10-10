@@ -208,7 +208,7 @@ typename Collection::value_type::second_type::element_type&
 FindLinkedPtrOrDie(const Collection& collection,
                    const typename Collection::value_type::first_type& key) {
   typename Collection::const_iterator it = collection.find(key);
-  CHECK(it != collection.end()) <<  "key not found: " << key;
+  GOOGLE_CHECK(it != collection.end()) <<  "key not found: " << key;
   // Since linked_ptr::operator*() is a const member returning a non const,
   // we do not need a version of this function taking a non const collection.
   return *it->second;
@@ -337,14 +337,15 @@ bool InsertIfNotPresent(
 template <class Collection>
 void InsertOrDie(Collection* const collection,
                  const typename Collection::value_type& value) {
-  CHECK(InsertIfNotPresent(collection, value)) << "duplicate value: " << value;
+  GOOGLE_CHECK(InsertIfNotPresent(collection, value))
+      << "duplicate value: " << value;
 }
 
 // Same as above except doesn't log the value on error.
 template <class Collection>
 void InsertOrDieNoPrint(Collection* const collection,
                         const typename Collection::value_type& value) {
-  CHECK(InsertIfNotPresent(collection, value)) << "duplicate value.";
+  GOOGLE_CHECK(InsertIfNotPresent(collection, value)) << "duplicate value.";
 }
 
 // Inserts the key-value pair into the collection. Dies if key was already

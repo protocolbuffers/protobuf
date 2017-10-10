@@ -28,10 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#PY25 compatible for GAE.
-#
-# Copyright 2012 Google Inc. All Rights Reserved.
-
 """Provides a factory class for generating dynamic messages.
 
 The easiest way to use this class is if you have access to the FileDescriptor
@@ -43,8 +39,6 @@ my_proto_instance = message_classes['some.proto.package.MessageName']()
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-import sys  ##PY25
-from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
 from google.protobuf import message
 from google.protobuf import reflection
@@ -55,8 +49,7 @@ class MessageFactory(object):
 
   def __init__(self, pool=None):
     """Initializes a new factory."""
-    self.pool = (pool or descriptor_pool.DescriptorPool(
-        descriptor_database.DescriptorDatabase()))
+    self.pool = pool or descriptor_pool.DescriptorPool()
 
     # local cache of all classes built from protobuf descriptors
     self._classes = {}
@@ -73,26 +66,25 @@ class MessageFactory(object):
     Returns:
       A class describing the passed in descriptor.
     """
-    if descriptor.full_name not in self._classes:
+    if descriptor not in self._classes:
       descriptor_name = descriptor.name
-      if sys.version_info[0] < 3:  ##PY25
-##!PY25      if str is bytes:  # PY2
+      if str is bytes:  # PY2
         descriptor_name = descriptor.name.encode('ascii', 'ignore')
       result_class = reflection.GeneratedProtocolMessageType(
           descriptor_name,
           (message.Message,),
           {'DESCRIPTOR': descriptor, '__module__': None})
           # If module not set, it wrongly points to the reflection.py module.
-      self._classes[descriptor.full_name] = result_class
+      self._classes[descriptor] = result_class
       for field in descriptor.fields:
         if field.message_type:
           self.GetPrototype(field.message_type)
       for extension in result_class.DESCRIPTOR.extensions:
-        if extension.containing_type.full_name not in self._classes:
+        if extension.containing_type not in self._classes:
           self.GetPrototype(extension.containing_type)
-        extended_class = self._classes[extension.containing_type.full_name]
+        extended_class = self._classes[extension.containing_type]
         extended_class.RegisterExtension(extension)
-    return self._classes[descriptor.full_name]
+    return self._classes[descriptor]
 
   def GetMessages(self, files):
     """Gets all the messages from a specified file.
@@ -111,13 +103,8 @@ class MessageFactory(object):
     result = {}
     for file_name in files:
       file_desc = self.pool.FindFileByName(file_name)
-      for name, msg in file_desc.message_types_by_name.iteritems():
-        if file_desc.package:
-          full_name = '.'.join([file_desc.package, name])
-        else:
-          full_name = msg.name
-        result[full_name] = self.GetPrototype(
-            self.pool.FindMessageTypeByName(full_name))
+      for desc in file_desc.message_types_by_name.values():
+        result[desc.full_name] = self.GetPrototype(desc)
 
       # While the extension FieldDescriptors are created by the descriptor pool,
       # the python classes created in the factory need them to be registered
@@ -128,10 +115,10 @@ class MessageFactory(object):
       # ignore the registration if the original was the same, or raise
       # an error if they were different.
 
-      for name, extension in file_desc.extensions_by_name.iteritems():
-        if extension.containing_type.full_name not in self._classes:
+      for extension in file_desc.extensions_by_name.values():
+        if extension.containing_type not in self._classes:
           self.GetPrototype(extension.containing_type)
-        extended_class = self._classes[extension.containing_type.full_name]
+        extended_class = self._classes[extension.containing_type]
         extended_class.RegisterExtension(extension)
     return result
 

@@ -60,10 +60,6 @@
   unknownFields_ = emptyMessage_.unknownFields;
 }
 
-- (GPBUnknownField *)getField:(int32_t)number {
-  return [unknownFields_ getField:number];
-}
-
 // Constructs a protocol buffer which contains fields with all the same
 // numbers as allFieldsData except that each field is some other wire
 // type.

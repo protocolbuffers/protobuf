@@ -21,16 +21,16 @@ ENV JAVA_HOME /var/local/jdk1.8.0_45
 ENV PATH $JAVA_HOME/bin:$PATH
 
 # Install Maven
-RUN wget -q http://apache.cs.utah.edu/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz -O - | \
+RUN wget -q http://apache.cs.utah.edu/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz -O - | \
     tar xz -C /var/local
-ENV PATH /var/local/apache-maven-3.3.3/bin:$PATH
+ENV PATH /var/local/apache-maven-3.3.9/bin:$PATH
 
 # Install GCC 4.7 to support -static-libstdc++
 RUN wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo -P /etc/yum.repos.d
 RUN bash -c 'echo "enabled=1" >> /etc/yum.repos.d/devtools-1.1.repo'
 RUN bash -c "sed -e 's/\$basearch/i386/g' /etc/yum.repos.d/devtools-1.1.repo > /etc/yum.repos.d/devtools-i386-1.1.repo"
 RUN sed -e 's/testing-/testing-i386-/g' -i /etc/yum.repos.d/devtools-i386-1.1.repo
-RUN yum install -y devtoolset-1.1 \
+RUN rpm --rebuilddb && yum install -y devtoolset-1.1 \
                    devtoolset-1.1-libstdc++-devel \
                    devtoolset-1.1-libstdc++-devel.i686
 

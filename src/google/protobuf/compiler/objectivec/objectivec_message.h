@@ -54,7 +54,9 @@ class EnumGenerator;
 
 class MessageGenerator {
  public:
-  MessageGenerator(const string& root_classname, const Descriptor* descriptor);
+  MessageGenerator(const string& root_classname,
+                   const Descriptor* descriptor,
+                   const Options& options);
   ~MessageGenerator();
 
   void GenerateStaticVariablesInitialization(io::Printer* printer);
@@ -62,7 +64,10 @@ class MessageGenerator {
   void GenerateMessageHeader(io::Printer* printer);
   void GenerateSource(io::Printer* printer);
   void GenerateExtensionRegistrationSource(io::Printer* printer);
-  void DetermineForwardDeclarations(set<string>* fwd_decls);
+  void DetermineForwardDeclarations(std::set<string>* fwd_decls);
+
+  // Checks if the message or a nested message includes a oneof definition.
+  bool IncludesOneOfDefinition() const;
 
  private:
   void GenerateParseFromMethodsHeader(io::Printer* printer);
@@ -80,6 +85,7 @@ class MessageGenerator {
   const Descriptor* descriptor_;
   FieldGeneratorMap field_generators_;
   const string class_name_;
+  const string deprecated_attribute_;
   vector<ExtensionGenerator*> extension_generators_;
   vector<EnumGenerator*> enum_generators_;
   vector<MessageGenerator*> nested_message_generators_;

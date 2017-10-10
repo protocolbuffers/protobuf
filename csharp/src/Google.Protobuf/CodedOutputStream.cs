@@ -55,7 +55,7 @@ namespace Google.Protobuf
     /// and <c>MapField&lt;TKey, TValue&gt;</c> to serialize such fields.
     /// </para>
     /// </remarks>
-    public sealed partial class CodedOutputStream
+    public sealed partial class CodedOutputStream : IDisposable
     {
         // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
         internal static readonly Encoding Utf8Encoding = Encoding.UTF8;
@@ -65,6 +65,7 @@ namespace Google.Protobuf
         /// </summary>
         public static readonly int DefaultBufferSize = 4096;
 
+        private readonly bool leaveOpen;
         private readonly byte[] buffer;
         private readonly int limit;
         private int position;
@@ -91,20 +92,24 @@ namespace Google.Protobuf
             this.buffer = buffer;
             this.position = offset;
             this.limit = offset + length;
+            leaveOpen = true; // Simple way of avoiding trying to dispose of a null reference
         }
 
-        private CodedOutputStream(Stream output, byte[] buffer)
+        private CodedOutputStream(Stream output, byte[] buffer, bool leaveOpen)
         {
-            this.output = output;
+            this.output = ProtoPreconditions.CheckNotNull(output, nameof(output));
             this.buffer = buffer;
             this.position = 0;
             this.limit = buffer.Length;
+            this.leaveOpen = leaveOpen;
         }
 
         /// <summary>
-        /// Creates a new CodedOutputStream which write to the given stream.
+        /// Creates a new <see cref="CodedOutputStream" /> which write to the given stream, and disposes of that
+        /// stream when the returned <c>CodedOutputStream</c> is disposed.
         /// </summary>
-        public CodedOutputStream(Stream output) : this(output, DefaultBufferSize)
+        /// <param name="output">The stream to write to. It will be disposed when the returned <c>CodedOutputStream is disposed.</c></param>
+        public CodedOutputStream(Stream output) : this(output, DefaultBufferSize, false)
         {
         }
 
@@ -112,9 +117,33 @@ namespace Google.Protobuf
         /// Creates a new CodedOutputStream which write to the given stream and uses
         /// the specified buffer size.
         /// </summary>
-        public CodedOutputStream(Stream output, int bufferSize) : this(output, new byte[bufferSize])
+        /// <param name="output">The stream to write to. It will be disposed when the returned <c>CodedOutputStream is disposed.</c></param>
+        /// <param name="bufferSize">The size of buffer to use internally.</param>
+        public CodedOutputStream(Stream output, int bufferSize) : this(output, new byte[bufferSize], false)
         {
-        }    
+        }
+
+        /// <summary>
+        /// Creates a new CodedOutputStream which write to the given stream.
+        /// </summary>
+        /// <param name="output">The stream to write to.</param>
+        /// <param name="leaveOpen">If <c>true</c>, <paramref name="output"/> is left open when the returned <c>CodedOutputStream</c> is disposed;
+        /// if <c>false</c>, the provided stream is disposed as well.</param>
+        public CodedOutputStream(Stream output, bool leaveOpen) : this(output, DefaultBufferSize, leaveOpen)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new CodedOutputStream which write to the given stream and uses
+        /// the specified buffer size.
+        /// </summary>
+        /// <param name="output">The stream to write to.</param>
+        /// <param name="bufferSize">The size of buffer to use internally.</param>
+        /// <param name="leaveOpen">If <c>true</c>, <paramref name="output"/> is left open when the returned <c>CodedOutputStream</c> is disposed;
+        /// if <c>false</c>, the provided stream is disposed as well.</param>
+        public CodedOutputStream(Stream output, int bufferSize, bool leaveOpen) : this(output, new byte[bufferSize], leaveOpen)
+        {
+        }
         #endregion
 
         /// <summary>
@@ -656,6 +685,30 @@ namespace Google.Protobuf
             internal OutOfSpaceException()
                 : base("CodedOutputStream was writing to a flat byte array and ran out of space.")
             {
+            }
+        }
+
+        /// <summary>
+        /// Flushes any buffered data and optionally closes the underlying stream, if any.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// By default, any underlying stream is closed by this method. To configure this behaviour,
+        /// use a constructor overload with a <c>leaveOpen</c> parameter. If this instance does not
+        /// have an underlying stream, this method does nothing.
+        /// </para>
+        /// <para>
+        /// For the sake of efficiency, calling this method does not prevent future write calls - but
+        /// if a later write ends up writing to a stream which has been disposed, that is likely to
+        /// fail. It is recommend that you not call any other methods after this.
+        /// </para>
+        /// </remarks>
+        public void Dispose()
+        {
+            Flush();
+            if (!leaveOpen)
+            {
+                output.Dispose();
             }
         }
 

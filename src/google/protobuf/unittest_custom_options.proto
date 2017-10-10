@@ -69,6 +69,10 @@ extend google.protobuf.FieldOptions {
   optional int32 field_opt2 = 7753913 [default=42];
 }
 
+extend google.protobuf.OneofOptions {
+  optional int32 oneof_opt1 = 7740111;
+}
+
 extend google.protobuf.EnumOptions {
   optional sfixed32 enum_opt1 = 7753576;
 }
@@ -99,6 +103,11 @@ message TestMessageWithCustomOptions {
 
   optional string field1 = 1 [ctype=CORD,
                               (field_opt1)=8765432109];
+
+  oneof AnOneof {
+    option (oneof_opt1) = -99;
+    int32 oneof_field = 2;
+  }
 
   enum AnEnum {
     option (enum_opt1) = -789;
@@ -391,4 +400,31 @@ message NestedOptionType {
   extend google.protobuf.FileOptions {
     optional int32 nested_extension = 7912573 [(field_opt2) = 1005];
   }
+}
+
+// Custom message option that has a required enum field.
+// WARNING: this is strongly discouraged!
+message OldOptionType {
+  enum TestEnum {
+    OLD_VALUE = 0;
+  }
+  required TestEnum value = 1;
+}
+
+// Updated version of the custom option above.
+message NewOptionType {
+  enum TestEnum {
+    OLD_VALUE = 0;
+    NEW_VALUE = 1;
+  }
+  required TestEnum value = 1;
+}
+
+extend google.protobuf.MessageOptions {
+  optional OldOptionType required_enum_opt = 106161807;
+}
+
+// Test message using the "required_enum_opt" option defined above.
+message TestMessageWithRequiredEnumOption {
+  option (required_enum_opt) = { value: OLD_VALUE };
 }

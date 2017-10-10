@@ -93,7 +93,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     // If this builder is non-null, it is used and the other fields are
     // ignored.
-    "private com.google.protobuf.SingleFieldBuilder<\n"
+    "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
     "\n");
 
@@ -193,11 +193,11 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "private com.google.protobuf.SingleFieldBuilder<\n"
+    "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> \n"
     "    get$capitalized_name$FieldBuilder() {\n"
     "  if ($name$Builder_ == null) {\n"
-    "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder<\n"
+    "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder$ver$<\n"
     "        $type$, $type$.Builder, $type$OrBuilder>(\n"
     "            $name$_,\n"
     "            getParentForChildren(),\n"
@@ -535,7 +535,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     // If this builder is non-null, it is used and the other fields are
     // ignored.
-    "private com.google.protobuf.RepeatedFieldBuilder<\n"
+    "private com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;\n"
     "\n");
 
@@ -763,11 +763,11 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "     get$capitalized_name$BuilderList() {\n"
     "  return get$capitalized_name$FieldBuilder().getBuilderList();\n"
     "}\n"
-    "private com.google.protobuf.RepeatedFieldBuilder<\n"
+    "private com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> \n"
     "    get$capitalized_name$FieldBuilder() {\n"
     "  if ($name$Builder_ == null) {\n"
-    "    $name$Builder_ = new com.google.protobuf.RepeatedFieldBuilder<\n"
+    "    $name$Builder_ = new com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
     "        $type$, $type$.Builder, $type$OrBuilder>(\n"
     "            $name$_,\n"
     "            $get_mutable_bit_builder$,\n"

@@ -149,6 +149,7 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
@@ -221,14 +222,6 @@ class LIBPROTOBUF_EXPORT StringPiece {
       : ptr_(str.data()), length_(0) {
     length_ = CheckedSsizeTFromSizeT(str.size());
   }
-#if defined(HAS_GLOBAL_STRING)
-  template <class Allocator>
-  StringPiece(  // NOLINT(runtime/explicit)
-      const basic_string<char, std::char_traits<char>, Allocator>& str)
-      : ptr_(str.data()), length_(0) {
-    length_ = CheckedSsizeTFromSizeT(str.size());
-  }
-#endif
 
   StringPiece(const char* offset, stringpiece_ssize_type len)
       : ptr_(offset), length_(len) {
@@ -299,7 +292,7 @@ class LIBPROTOBUF_EXPORT StringPiece {
   int compare(StringPiece x) const {
     const stringpiece_ssize_type min_size =
         length_ < x.length_ ? length_ : x.length_;
-    int r = memcmp(ptr_, x.ptr_, min_size);
+    int r = memcmp(ptr_, x.ptr_, static_cast<size_t>(min_size));
     if (r < 0) return -1;
     if (r > 0) return 1;
     if (length_ < x.length_) return -1;
@@ -317,7 +310,7 @@ class LIBPROTOBUF_EXPORT StringPiece {
   // "as_string()" method defined here for existing code.
   string ToString() const {
     if (ptr_ == NULL) return string();
-    return string(data(), size());
+    return string(data(), static_cast<size_type>(size()));
   }
 
   operator string() const {
@@ -328,12 +321,14 @@ class LIBPROTOBUF_EXPORT StringPiece {
   void AppendToString(string* target) const;
 
   bool starts_with(StringPiece x) const {
-    return (length_ >= x.length_) && (memcmp(ptr_, x.ptr_, x.length_) == 0);
+    return (length_ >= x.length_) &&
+           (memcmp(ptr_, x.ptr_, static_cast<size_t>(x.length_)) == 0);
   }
 
   bool ends_with(StringPiece x) const {
     return ((length_ >= x.length_) &&
-            (memcmp(ptr_ + (length_-x.length_), x.ptr_, x.length_) == 0));
+            (memcmp(ptr_ + (length_-x.length_), x.ptr_,
+                 static_cast<size_t>(x.length_)) == 0));
   }
 
   // Checks whether StringPiece starts with x and if so advances the beginning
@@ -405,7 +400,7 @@ inline bool operator==(StringPiece x, StringPiece y) {
   }
 
   return x.data() == y.data() || len <= 0 ||
-      memcmp(x.data(), y.data(), len) == 0;
+      memcmp(x.data(), y.data(), static_cast<size_t>(len)) == 0;
 }
 
 inline bool operator!=(StringPiece x, StringPiece y) {
@@ -415,7 +410,7 @@ inline bool operator!=(StringPiece x, StringPiece y) {
 inline bool operator<(StringPiece x, StringPiece y) {
   const stringpiece_ssize_type min_size =
       x.size() < y.size() ? x.size() : y.size();
-  const int r = memcmp(x.data(), y.data(), min_size);
+  const int r = memcmp(x.data(), y.data(), static_cast<size_t>(min_size));
   return (r < 0) || (r == 0 && x.size() < y.size());
 }
 
@@ -434,7 +429,59 @@ inline bool operator>=(StringPiece x, StringPiece y) {
 // allow StringPiece to be logged
 extern std::ostream& operator<<(std::ostream& o, StringPiece piece);
 
+namespace internal {
+// StringPiece is not a POD and can not be used in an union (pre C++11). We
+// need a POD version of it.
+struct StringPiecePod {
+  // Create from a StringPiece.
+  static StringPiecePod CreateFromStringPiece(StringPiece str) {
+    StringPiecePod pod;
+    pod.data_ = str.data();
+    pod.size_ = str.size();
+    return pod;
+  }
+
+  // Cast to StringPiece.
+  operator StringPiece() const { return StringPiece(data_, size_); }
+
+  bool operator==(const char* value) const {
+    return StringPiece(data_, size_) == StringPiece(value);
+  }
+
+  char operator[](stringpiece_ssize_type i) const {
+    assert(0 <= i);
+    assert(i < size_);
+    return data_[i];
+  }
+
+  const char* data() const { return data_; }
+
+  stringpiece_ssize_type size() const {
+    return size_;
+  }
+
+  std::string ToString() const {
+    return std::string(data_, static_cast<size_t>(size_));
+  }
+ private:
+  const char* data_;
+  stringpiece_ssize_type size_;
+};
+
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
+template<> struct hash<StringPiece> {
+  size_t operator()(const StringPiece& s) const {
+    size_t result = 0;
+    for (const char *str = s.data(), *end = str + s.size(); str < end; str++) {  
+      result = 5 * result + static_cast<size_t>(*str);
+    }
+    return result;
+  }
+};
+GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
 
 #endif  // STRINGS_STRINGPIECE_H_

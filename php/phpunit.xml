@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="./vendor/autoload.php"
+         colors="true">
+  <testsuites>
+    <testsuite name="protobuf-tests">
+      <file>tests/php_implementation_test.php</file>
+      <file>tests/array_test.php</file>
+      <file>tests/encode_decode_test.php</file>
+      <file>tests/generated_class_test.php</file>
+      <file>tests/generated_phpdoc_test.php</file>
+      <file>tests/map_field_test.php</file>
+      <file>tests/well_known_test.php</file>
+      <file>tests/descriptors_test.php</file>
+      <file>tests/generated_service_test.php</file>
+    </testsuite>
+  </testsuites>
+</phpunit>

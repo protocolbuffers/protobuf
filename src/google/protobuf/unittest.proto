@@ -191,10 +191,15 @@ message TestDeprecatedFields {
   optional int32 deprecated_int32 = 1 [deprecated=true];
 }
 
+message TestDeprecatedMessage {
+  option deprecated = true;
+}
+
 // Define these after TestAllTypes to make sure the compiler can handle
 // that.
 message ForeignMessage {
   optional int32 c = 1;
+  optional int32 d = 2;
 }
 
 enum ForeignEnum {
@@ -392,6 +397,12 @@ message TestRequiredForeign {
   optional int32 dummy = 3;
 }
 
+message TestRequiredMessage {
+  optional TestRequired optional_message = 1;
+  repeated TestRequired repeated_message = 2;
+  required TestRequired required_message = 3;
+}
+
 // Test that we can use NestedMessage from outside TestAllTypes.
 message TestForeignNested {
   optional TestAllTypes.NestedMessage foreign_nested = 1;
@@ -428,12 +439,28 @@ message TestRecursiveMessage {
 
 // Test that mutual recursion works.
 message TestMutualRecursionA {
+  message SubMessage {
+    optional TestMutualRecursionB b = 1;
+  }
   optional TestMutualRecursionB bb = 1;
+  optional group SubGroup = 2 {
+    optional SubMessage sub_message = 3;  // Needed because of bug in javatest
+    optional TestAllTypes not_in_this_scc = 4;
+  }
 }
 
 message TestMutualRecursionB {
   optional TestMutualRecursionA a = 1;
   optional int32 optional_int32 = 2;
+}
+
+message TestIsInitialized {
+  message SubMessage {
+    optional group SubGroup = 1 {
+      required int32 i = 2;
+    }
+  }
+  optional SubMessage sub_message = 1;
 }
 
 // Test that groups have disjoint field numbers from their siblings and
@@ -696,6 +723,7 @@ message TestRequiredOneof {
   }
 }
 
+
 // Test messages for packed fields
 
 message TestPackedTypes {
@@ -876,3 +904,42 @@ service TestService {
 message BarRequest  {}
 message BarResponse {}
 
+message TestJsonName {
+  optional int32 field_name1 = 1;
+  optional int32 fieldName2 = 2;
+  optional int32 FieldName3 = 3;
+  optional int32 _field_name4 = 4;
+  optional int32 FIELD_NAME5 = 5;
+  optional int32 field_name6 = 6 [json_name = "@type"];
+}
+
+message TestHugeFieldNumbers {
+  optional int32 optional_int32 = 536870000;
+  optional int32 fixed_32 = 536870001;
+  repeated int32 repeated_int32 = 536870002 [packed = false];
+  repeated int32 packed_int32 = 536870003 [packed = true];
+
+  optional ForeignEnum optional_enum = 536870004;
+  optional string optional_string = 536870005;
+  optional bytes optional_bytes = 536870006;
+  optional ForeignMessage optional_message = 536870007;
+
+  optional group OptionalGroup = 536870008 {
+    optional int32 group_a = 536870009;
+  }
+
+  map<string, string> string_string_map = 536870010;
+
+  oneof oneof_field {
+    uint32 oneof_uint32 = 536870011;
+    TestAllTypes oneof_test_all_types = 536870012;
+    string oneof_string = 536870013;
+    bytes oneof_bytes = 536870014;
+  }
+
+  extensions  536860000 to 536869999;
+}
+
+extend TestHugeFieldNumbers {
+  optional TestAllTypes test_all_types = 536860000;
+}

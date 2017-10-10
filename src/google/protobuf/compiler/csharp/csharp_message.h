@@ -47,7 +47,7 @@ class FieldGeneratorBase;
 
 class MessageGenerator : public SourceGeneratorBase {
  public:
-  MessageGenerator(const Descriptor* descriptor);
+  MessageGenerator(const Descriptor* descriptor, const Options* options);
   ~MessageGenerator();
 
   void GenerateCloningCode(io::Printer* printer);
@@ -69,6 +69,8 @@ class MessageGenerator : public SourceGeneratorBase {
 
   bool HasNestedGeneratedTypes();
 
+  void AddDeprecatedFlag(io::Printer* printer);
+  
   std::string class_name();
   std::string full_class_name();
 

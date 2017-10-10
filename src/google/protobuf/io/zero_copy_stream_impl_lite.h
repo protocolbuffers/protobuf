@@ -44,9 +44,14 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__
 
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <string>
 #include <iosfwd>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -68,7 +73,6 @@ class LIBPROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
   // useful for testing; in production you would probably never want to set
   // it.
   ArrayInputStream(const void* data, int size, int block_size = -1);
-  ~ArrayInputStream();
 
   // implements ZeroCopyInputStream ----------------------------------
   bool Next(const void** data, int* size);
@@ -102,7 +106,6 @@ class LIBPROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
   // useful for testing; in production you would probably never want to set
   // it.
   ArrayOutputStream(void* data, int size, int block_size = -1);
-  ~ArrayOutputStream();
 
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size);
@@ -136,12 +139,14 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   //   the first call to Next() will return at least n bytes of buffer
   //   space.
   explicit StringOutputStream(string* target);
-  ~StringOutputStream();
 
   // implements ZeroCopyOutputStream ---------------------------------
   bool Next(void** data, int* size);
   void BackUp(int count);
   int64 ByteCount() const;
+
+ protected:
+  void SetString(string* target);
 
  private:
   static const int kMinimumSize = 16;
@@ -149,6 +154,26 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   string* target_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOutputStream);
+};
+
+// LazyStringOutputStream is a StringOutputStream with lazy acquisition of
+// the output string from a callback. The string is owned externally, and not
+// deleted in the stream destructor.
+class LIBPROTOBUF_EXPORT LazyStringOutputStream : public StringOutputStream {
+ public:
+  // Callback should be permanent (non-self-deleting). Ownership is transferred
+  // to the LazyStringOutputStream.
+  explicit LazyStringOutputStream(ResultCallback<string*>* callback);
+
+  // implements ZeroCopyOutputStream, overriding StringOutputStream -----------
+  bool Next(void** data, int* size);
+  int64 ByteCount() const;
+
+ private:
+  const google::protobuf::scoped_ptr<ResultCallback<string*> > callback_;
+  bool string_is_set_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyStringOutputStream);
 };
 
 // Note:  There is no StringInputStream.  Instead, just create an
@@ -170,7 +195,7 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
 // in large blocks.
 class LIBPROTOBUF_EXPORT CopyingInputStream {
  public:
-  virtual ~CopyingInputStream();
+  virtual ~CopyingInputStream() {}
 
   // Reads up to "size" bytes into the given buffer.  Returns the number of
   // bytes read.  Read() waits until at least one byte is available, or
@@ -234,7 +259,7 @@ class LIBPROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream 
 
   // Data is read into this buffer.  It may be NULL if no buffer is currently
   // in use.  Otherwise, it points to an array of size buffer_size_.
-  scoped_array<uint8> buffer_;
+  google::protobuf::scoped_array<uint8> buffer_;
   const int buffer_size_;
 
   // Number of valid bytes currently in the buffer (i.e. the size last
@@ -264,7 +289,7 @@ class LIBPROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream 
 // in large blocks.
 class LIBPROTOBUF_EXPORT CopyingOutputStream {
  public:
-  virtual ~CopyingOutputStream();
+  virtual ~CopyingOutputStream() {}
 
   // Writes "size" bytes from the given buffer to the output.  Returns true
   // if successful, false on a write error.
@@ -323,7 +348,7 @@ class LIBPROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStrea
 
   // Data is written from this buffer.  It may be NULL if no buffer is
   // currently in use.  Otherwise, it points to an array of size buffer_size_.
-  scoped_array<uint8> buffer_;
+  google::protobuf::scoped_array<uint8> buffer_;
   const int buffer_size_;
 
   // Number of valid bytes currently in the buffer (i.e. the size last
@@ -370,7 +395,7 @@ inline std::pair<char*, bool> as_string_data(string* s) {
 #ifdef LANG_CXX11
   return std::make_pair(p, true);
 #else
-  return make_pair(p, p != NULL);
+  return std::make_pair(p, p != NULL);
 #endif
 }
 

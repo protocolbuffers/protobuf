@@ -30,28 +30,42 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require 'conformance'
+require 'conformance_pb'
+require 'google/protobuf/test_messages_proto3_pb'
 
 $test_count = 0
 $verbose = false
 
 def do_test(request)
-  test_message = Conformance::TestAllTypes.new
+  test_message = ProtobufTestMessages::Proto3::TestAllTypesProto3.new
   response = Conformance::ConformanceResponse.new
 
   begin
     case request.payload
     when :protobuf_payload
+      if request.message_type.eql?('protobuf_test_messages.proto3.TestAllTypesProto3')
+        begin
+          test_message = ProtobufTestMessages::Proto3::TestAllTypesProto3.decode(
+              request.protobuf_payload)
+        rescue Google::Protobuf::ParseError => err
+          response.parse_error = err.message.encode('utf-8')
+          return response
+        end
+      elsif request.message_type.eql?('protobuf_test_messages.proto2.TestAllTypesProto2')
+        response.skipped = "Ruby doesn't support proto2"
+        return response
+      else 
+        fail "Protobuf request doesn't have specific payload type"
+      end
+
+    when :json_payload
       begin
-        test_message =
-          Conformance::TestAllTypes.decode(request.protobuf_payload)
+        test_message = ProtobufTestMessages::Proto3::TestAllTypesProto3.decode_json(
+            request.json_payload)
       rescue Google::Protobuf::ParseError => err
         response.parse_error = err.message.encode('utf-8')
         return response
       end
-
-    when :json_payload
-      test_message = Conformance::TestAllTypes.decode_json(request.json_payload)
 
     when nil
       fail "Request didn't have payload"
@@ -66,6 +80,9 @@ def do_test(request)
 
     when :JSON
       response.json_payload = test_message.to_json
+
+    when nil
+      fail "Request didn't have requested output format"
     end
   rescue StandardError => err
     response.runtime_error = err.message.encode('utf-8')
@@ -96,8 +113,8 @@ def do_test_io
   STDOUT.flush
 
   if $verbose
-    STDERR.puts("conformance-cpp: request={request.to_json}, " \
-                                 "response={response.to_json}\n")
+    STDERR.puts("conformance_ruby: request=#{request.to_json}, " \
+                                 "response=#{response.to_json}\n")
   end
 
   $test_count += 1
@@ -107,7 +124,7 @@ end
 
 loop do
   unless do_test_io
-    STDERR.puts('conformance-cpp: received EOF from test runner ' \
+    STDERR.puts('conformance_ruby: received EOF from test runner ' \
                 "after #{$test_count} tests, exiting")
     break
   end

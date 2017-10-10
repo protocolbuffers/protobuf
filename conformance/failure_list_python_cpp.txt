@@ -1,0 +1,55 @@
+# This is the list of conformance tests that are known to fail for the
+# Python/C++ implementation right now.  These should be fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.
+#
+# TODO(haberman): insert links to corresponding bugs tracking the issue.
+# Should we use GitHub issues or the Google-internal bug tracker?
+
+Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
+Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
+Recommended.Proto3.JsonInput.DoubleFieldInfinityNotQuoted
+Recommended.Proto3.JsonInput.DoubleFieldNanNotQuoted
+Recommended.Proto3.JsonInput.DoubleFieldNegativeInfinityNotQuoted
+Recommended.Proto3.JsonInput.FloatFieldInfinityNotQuoted
+Recommended.Proto3.JsonInput.FloatFieldNanNotQuoted
+Recommended.Proto3.JsonInput.FloatFieldNegativeInfinityNotQuoted
+Required.Proto3.JsonInput.DoubleFieldTooSmall
+Required.Proto3.JsonInput.EnumFieldUnknownValue.Validator
+Required.Proto3.JsonInput.FloatFieldTooLarge
+Required.Proto3.JsonInput.FloatFieldTooSmall
+Required.Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingIntegersGotBool
+Required.Proto3.JsonInput.TimestampJsonInputLowercaseT
+Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
+Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.BOOL
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.DOUBLE
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.ENUM
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.FIXED32
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.FIXED64
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.FLOAT
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.INT32
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.INT64
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.SFIXED32
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.SFIXED64
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.SINT32
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.SINT64
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.UINT32
+Required.Proto3.ProtobufInput.PrematureEofInPackedField.UINT64
+Required.Proto2.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
+Required.Proto2.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.BOOL
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.DOUBLE
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.ENUM
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.FIXED32
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.FIXED64
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.FLOAT
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.INT32
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.INT64
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.SFIXED32
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.SFIXED64
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT32
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT64
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT32
+Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT64

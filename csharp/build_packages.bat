@@ -1,10 +1,7 @@
 @rem Builds Google.Protobuf NuGet packages
 
-@rem Adjust the location of nuget.exe
-set NUGET=C:\nuget\nuget.exe
-
-@rem Build src/Google.Protobuf.sln solution in Release configuration first.
-%NUGET% pack src\Google.Protobuf\Google.Protobuf.nuspec -Symbols || goto :error
+dotnet restore src/Google.Protobuf.sln
+dotnet pack -c Release src/Google.Protobuf.sln || goto :error
 
 goto :EOF
 

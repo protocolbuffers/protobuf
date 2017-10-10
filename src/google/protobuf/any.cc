@@ -30,27 +30,40 @@
 
 #include <google/protobuf/any.h>
 
+#include <google/protobuf/generated_message_util.h>
+
 namespace google {
 namespace protobuf {
 namespace internal {
 
 namespace {
-string GetTypeUrl(const Descriptor* message) {
-  return string(kTypeGoogleApisComPrefix) + message->full_name();
+string GetTypeUrl(const Descriptor* message,
+                  const string& type_url_prefix) {
+  if (!type_url_prefix.empty() &&
+      type_url_prefix[type_url_prefix.size() - 1] == '/') {
+    return type_url_prefix + message->full_name();
+  } else {
+    return type_url_prefix + "/" + message->full_name();
+  }
 }
-
 }  // namespace
 
 const char kAnyFullTypeName[] = "google.protobuf.Any";
 const char kTypeGoogleApisComPrefix[] = "type.googleapis.com/";
+const char kTypeGoogleProdComPrefix[] = "type.googleprod.com/";
 
 AnyMetadata::AnyMetadata(UrlType* type_url, ValueType* value)
     : type_url_(type_url), value_(value) {
 }
 
 void AnyMetadata::PackFrom(const Message& message) {
+  PackFrom(message, kTypeGoogleApisComPrefix);
+}
+
+void AnyMetadata::PackFrom(const Message& message,
+                           const string& type_url_prefix) {
   type_url_->SetNoArena(&::google::protobuf::internal::GetEmptyString(),
-      GetTypeUrl(message.GetDescriptor()));
+                        GetTypeUrl(message.GetDescriptor(), type_url_prefix));
   message.SerializeToString(value_->MutableNoArena(
       &::google::protobuf::internal::GetEmptyStringAlreadyInited()));
 }
@@ -59,23 +72,24 @@ bool AnyMetadata::UnpackTo(Message* message) const {
   if (!InternalIs(message->GetDescriptor())) {
     return false;
   }
-  return message->ParseFromString(
-      value_->GetNoArena(&::google::protobuf::internal::GetEmptyString()));
+  return message->ParseFromString(value_->GetNoArena());
 }
 
 bool AnyMetadata::InternalIs(const Descriptor* descriptor) const {
-  return type_url_->GetNoArena(
-             &::google::protobuf::internal::GetEmptyString()) ==
-         GetTypeUrl(descriptor);
+  const string type_url = type_url_->GetNoArena();
+  string full_name;
+  if (!ParseAnyTypeUrl(type_url, &full_name)) {
+    return false;
+  }
+  return full_name == descriptor->full_name();
 }
 
 bool ParseAnyTypeUrl(const string& type_url, string* full_type_name) {
-  const int prefix_len = strlen(kTypeGoogleApisComPrefix);
-  if (strncmp(type_url.c_str(), kTypeGoogleApisComPrefix, prefix_len) == 0) {
-    full_type_name->assign(type_url.data() + prefix_len,
-                           type_url.size() - prefix_len);
-    return true;
+  size_t pos = type_url.find_last_of("/");
+  if (pos == string::npos || pos + 1 == type_url.size()) {
+    return false;
   }
+  *full_type_name = type_url.substr(pos + 1);
   return true;
 }
 

@@ -43,7 +43,7 @@ namespace csharp {
 
 class EnumGenerator : public SourceGeneratorBase {
  public:
-  EnumGenerator(const EnumDescriptor* descriptor);
+  EnumGenerator(const EnumDescriptor* descriptor, const Options* options);
   ~EnumGenerator();
 
   void Generate(io::Printer* printer);

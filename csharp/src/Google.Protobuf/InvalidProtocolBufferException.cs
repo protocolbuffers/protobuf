@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System;
 using System.IO;
 
 namespace Google.Protobuf
@@ -45,6 +46,11 @@ namespace Google.Protobuf
         {
         }
 
+        internal InvalidProtocolBufferException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+
         internal static InvalidProtocolBufferException MoreDataAvailable()
         {
             return new InvalidProtocolBufferException(
@@ -55,7 +61,7 @@ namespace Google.Protobuf
         {
             return new InvalidProtocolBufferException(
                 "While parsing a protocol message, the input ended unexpectedly " +
-                "in the middle of a field.  This could mean either than the " +
+                "in the middle of a field.  This could mean either that the " +
                 "input has been truncated or that an embedded message " +
                 "misreported its own length.");
         }
@@ -82,6 +88,11 @@ namespace Google.Protobuf
                 "Protocol message contained an invalid tag (zero).");
         }
 
+        internal static InvalidProtocolBufferException InvalidBase64(Exception innerException)
+        {
+            return new InvalidProtocolBufferException("Invalid base64 data", innerException);
+        }
+
         internal static InvalidProtocolBufferException InvalidEndTag()
         {
             return new InvalidProtocolBufferException(
@@ -93,6 +104,13 @@ namespace Google.Protobuf
             return new InvalidProtocolBufferException(
                 "Protocol message had too many levels of nesting.  May be malicious.  " +
                 "Use CodedInputStream.SetRecursionLimit() to increase the depth limit.");
+        }
+
+        internal static InvalidProtocolBufferException JsonRecursionLimitExceeded()
+        {
+            return new InvalidProtocolBufferException(
+                "Protocol message had too many levels of nesting.  May be malicious.  " +
+                "Use JsonParser.Settings to increase the depth limit.");
         }
 
         internal static InvalidProtocolBufferException SizeLimitExceeded()

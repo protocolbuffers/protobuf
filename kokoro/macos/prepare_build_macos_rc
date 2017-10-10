@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# This script sets up a Kokoro MacOS worker for running Protobuf tests
+
+##
+# Select Xcode version
+
+export DEVELOPER_DIR=/Applications/Xcode_8.1.app/Contents/Developer
+
+##
+# Select C/C++ compilers
+
+export CC=gcc
+export CXX=g++
+
+##
+# Install Brew and core softwares
+
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+source $HOME/.rvm/scripts/rvm
+brew tap homebrew/homebrew-php
+brew uninstall node icu4c
+brew install gflags gpg gpg2 node pcre php56 ruby
+
+##
+# Install Tox
+
+sudo pip install tox==2.4.1
+
+##
+# Install RVM
+
+gpg2 --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+command curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
+curl -sSL https://get.rvm.io | bash -s stable --ruby

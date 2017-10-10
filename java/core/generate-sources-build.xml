@@ -1,0 +1,20 @@
+<project name="generate-sources">
+    <echo message="Running protoc ..."/>
+    <mkdir dir="${generated.sources.dir}"/>
+    <exec executable="${protoc}">
+        <arg value="--java_out=${generated.sources.dir}"/>
+        <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/any.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/api.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/descriptor.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/duration.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/empty.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/field_mask.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/source_context.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/struct.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/timestamp.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/type.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/wrappers.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/compiler/plugin.proto"/>
+    </exec>
+</project>

@@ -86,10 +86,14 @@ namespace Google.Protobuf.Reflection
         /// in a particular message.
         /// </summary>
         /// <value>
-        /// The accessor used for reflective access, or <c>null</c> if reflection is not
-        /// supported by this descriptor.
+        /// The accessor used for reflective access.
         /// </value>
         public OneofAccessor Accessor { get { return accessor; } }
+
+        /// <summary>
+        /// The (possibly empty) set of custom options for this oneof.
+        /// </summary>
+        public CustomOptions CustomOptions => proto.Options?.CustomOptions ?? CustomOptions.Empty;
 
         internal void CrossLink()
         {
@@ -106,19 +110,15 @@ namespace Google.Protobuf.Reflection
 
         private OneofAccessor CreateAccessor(string clrName)
         {
-            if (containingType.GeneratedType == null || clrName == null)
-            {
-                return null;
-            }
-            var caseProperty = containingType.GeneratedType.GetProperty(clrName + "Case");
+            var caseProperty = containingType.ClrType.GetProperty(clrName + "Case");
             if (caseProperty == null)
             {
-                throw new DescriptorValidationException(this, "Property " + clrName + "Case not found in " + containingType.GeneratedType);
+                throw new DescriptorValidationException(this, $"Property {clrName}Case not found in {containingType.ClrType}");
             }
-            var clearMethod = containingType.GeneratedType.GetMethod("Clear" + clrName);
+            var clearMethod = containingType.ClrType.GetMethod("Clear" + clrName);
             if (clearMethod == null)
             {
-                throw new DescriptorValidationException(this, "Method Clear" + clrName + " not found in " + containingType.GeneratedType);
+                throw new DescriptorValidationException(this, $"Method Clear{clrName} not found in {containingType.ClrType}");
             }
 
             return new OneofAccessor(caseProperty, clearMethod, this);
