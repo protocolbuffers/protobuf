@@ -3,4 +3,4 @@ set(protoc_files
 )
 
 add_executable(protoc ${protoc_files})
-target_link_libraries(protoc libprotobuf libprotoc)
+target_link_libraries(protoc protobuf libprotoc)

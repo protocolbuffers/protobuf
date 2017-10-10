@@ -140,7 +140,7 @@ if(UNIX)
 endif()
 
 # Set the include directory
-get_target_property(Protobuf_INCLUDE_DIRS protobuf::libprotobuf
+get_target_property(Protobuf_INCLUDE_DIRS protobuf
   INTERFACE_INCLUDE_DIRECTORIES)
 
 # Set the protoc Executable

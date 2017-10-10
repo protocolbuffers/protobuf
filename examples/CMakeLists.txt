@@ -41,7 +41,7 @@ foreach(example add_person list_people)
     target_include_directories(${executable_name} PUBLIC ${PROTOBUF_INCLUDE_DIRS})
     target_link_libraries(${executable_name} ${PROTOBUF_LIBRARIES})
   else()
-    target_link_libraries(${executable_name} protobuf::libprotobuf)
+    target_link_libraries(${executable_name} protobuf)
     protobuf_generate(TARGET ${executable_name})
   endif()
 

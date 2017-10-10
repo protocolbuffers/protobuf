@@ -50,14 +50,14 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/wire_format_lite.h
 )
 
-add_library(libprotobuf-lite ${protobuf_SHARED_OR_STATIC}
+add_library(protobuf-lite ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_files} ${libprotobuf_lite_includes})
-target_link_libraries(libprotobuf-lite ${CMAKE_THREAD_LIBS_INIT})
-target_include_directories(libprotobuf-lite PUBLIC ${protobuf_source_dir}/src)
+target_link_libraries(protobuf-lite ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(protobuf-lite PUBLIC ${protobuf_source_dir}/src)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)
-  target_compile_definitions(libprotobuf-lite
+  target_compile_definitions(protobuf-lite
     PUBLIC  PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOBUF_EXPORTS)
 endif()
-set_target_properties(libprotobuf-lite PROPERTIES
+set_target_properties(protobuf-lite PROPERTIES
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")

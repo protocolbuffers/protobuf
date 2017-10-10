@@ -217,7 +217,7 @@ add_custom_command(
 
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
   ${libprotoc_files} ${libprotoc_headers})
-target_link_libraries(libprotoc libprotobuf)
+target_link_libraries(libprotoc protobuf)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
     PUBLIC  PROTOBUF_USE_DLLS
