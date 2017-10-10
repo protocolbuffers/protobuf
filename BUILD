@@ -44,9 +44,11 @@ config_setting(
     },
 )
 
-# Android builds do not need to link in a separate pthread library.
+# Android and Windows builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
+    ":windows": [],
+    ":windows_msvc": [],
     "//conditions:default": ["-lpthread", "-lm"],
 })
 
