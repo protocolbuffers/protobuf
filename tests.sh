@@ -61,9 +61,8 @@ build_cpp_distcheck() {
   make dist
 
   # List all files that should be included in the distribution package.
-  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\)" |\
+  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
     grep -v ".gitignore" | grep -v "java/compatibility_tests" |\
-    grep -v "cmake/protobuf.*\.pc\.cmake" |\
     grep -v "python/compatibility_tests" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
   DIST=`ls *.tar.gz`
@@ -347,15 +346,21 @@ generate_php_test_proto() {
   # Generate test file
   rm -rf generated
   mkdir generated
-  ../../src/protoc --php_out=generated   \
-    proto/test.proto                     \
-    proto/test_include.proto             \
-    proto/test_no_namespace.proto        \
-    proto/test_prefix.proto              \
-    proto/test_php_namespace.proto       \
-    proto/test_empty_php_namespace.proto \
-    proto/test_service.proto             \
-    proto/test_service_namespace.proto   \
+  ../../src/protoc --php_out=generated         \
+    proto/test.proto                           \
+    proto/test_include.proto                   \
+    proto/test_no_namespace.proto              \
+    proto/test_prefix.proto                    \
+    proto/test_php_namespace.proto             \
+    proto/test_empty_php_namespace.proto       \
+    proto/test_reserved_enum_lower.proto       \
+    proto/test_reserved_enum_upper.proto       \
+    proto/test_reserved_enum_value_lower.proto \
+    proto/test_reserved_enum_value_upper.proto \
+    proto/test_reserved_message_lower.proto    \
+    proto/test_reserved_message_upper.proto    \
+    proto/test_service.proto                   \
+    proto/test_service_namespace.proto         \
     proto/test_descriptors.proto
   pushd ../../src
   ./protoc --php_out=../php/tests/generated -I../php/tests -I. ../php/tests/proto/test_import_descriptor_proto.proto

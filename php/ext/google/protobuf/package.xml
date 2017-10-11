@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2017-01-13</date>
- <time>16:06:07</time>
+ <date>2017-09-14</date>
+ <time>11:02:07</time>
  <version>
-  <release>3.4.0</release>
-  <api>3.4.0</api>
+  <release>3.4.1</release>
+  <api>3.4.1</api>
  </version>
  <stability>
   <release>stable</release>
@@ -147,6 +147,22 @@ GA release.
    </stability>
    <date>2017-08-16</date>
    <time>15:33:07</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+GA release.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.4.1</release>
+    <api>3.4.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2017-09-14</date>
+   <time>11:02:07</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
 GA release.
