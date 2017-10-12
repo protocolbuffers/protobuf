@@ -255,14 +255,29 @@ class GPBUtil
             return $prefix;
         }
 
-        $reserved_words = array("Empty", "ECHO", "ARRAY");
-        foreach ($reserved_words as $reserved_word) {
-            if ($classname === $reserved_word) {
-                if ($file_proto->getPackage() === "google.protobuf") {
-                    return "GPB";
-                } else {
-                    return "PB";
-                }
+        $reserved_words = array(
+            "abstract"=>0, "and"=>0, "array"=>0, "as"=>0, "break"=>0,
+            "callable"=>0, "case"=>0, "catch"=>0, "class"=>0, "clone"=>0,
+            "const"=>0, "continue"=>0, "declare"=>0, "default"=>0, "die"=>0,
+            "do"=>0, "echo"=>0, "else"=>0, "elseif"=>0, "empty"=>0,
+            "enddeclare"=>0, "endfor"=>0, "endforeach"=>0, "endif"=>0,
+            "endswitch"=>0, "endwhile"=>0, "eval"=>0, "exit"=>0, "extends"=>0,
+            "final"=>0, "for"=>0, "foreach"=>0, "function"=>0, "global"=>0,
+            "goto"=>0, "if"=>0, "implements"=>0, "include"=>0,
+            "include_once"=>0, "instanceof"=>0, "insteadof"=>0, "interface"=>0,
+            "isset"=>0, "list"=>0, "namespace"=>0, "new"=>0, "or"=>0,
+            "print"=>0, "private"=>0, "protected"=>0, "public"=>0, "require"=>0,
+            "require_once"=>0, "return"=>0, "static"=>0, "switch"=>0,
+            "throw"=>0, "trait"=>0, "try"=>0, "unset"=>0, "use"=>0, "var"=>0,
+            "while"=>0, "xor"=>0, "int"=>0, "float"=>0, "bool"=>0, "string"=>0,
+            "true"=>0, "false"=>0, "null"=>0, "void"=>0, "iterable"=>0
+        );
+
+        if (array_key_exists(strtolower($classname), $reserved_words)) {
+            if ($file_proto->getPackage() === "google.protobuf") {
+                return "GPB";
+            } else {
+                return "PB";
             }
         }
 

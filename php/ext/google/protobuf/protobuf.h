@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.4.0"
+#define PHP_PROTOBUF_VERSION "3.4.1"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -80,6 +80,9 @@
 #define php_proto_zend_hash_update_zval(ht, key, key_len, value) \
   zend_hash_update(ht, key, key_len, value, sizeof(void*), NULL)
 
+#define php_proto_zend_hash_update(ht, key, key_len) \
+  zend_hash_update(ht, key, key_len, 0, 0, NULL)
+
 #define php_proto_zend_hash_index_update_mem(ht, h, pData, nDataSize, pDest) \
   zend_hash_index_update(ht, h, pData, nDataSize, pDest)
 
@@ -89,6 +92,9 @@
 
 #define php_proto_zend_hash_index_find_zval(ht, h, pDest) \
   zend_hash_index_find(ht, h, pDest)
+
+#define php_proto_zend_hash_find(ht, key, key_len, pDest) \
+  zend_hash_find(ht, key, key_len, pDest)
 
 #define php_proto_zend_hash_index_find_mem(ht, h, pDest) \
   zend_hash_index_find(ht, h, pDest)
@@ -270,6 +276,15 @@ static inline int php_proto_zend_hash_index_update_zval(HashTable* ht, ulong h,
   return result != NULL ? SUCCESS : FAILURE;
 }
 
+static inline int php_proto_zend_hash_update(HashTable* ht, const char* key,
+                                             size_t key_len) {
+  void* result = NULL;
+  zval temp;
+  ZVAL_LONG(&temp, 0);
+  result = zend_hash_str_update(ht, key, key_len, &temp);
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
 static inline int php_proto_zend_hash_index_update_mem(HashTable* ht, ulong h,
                                                    void* pData, uint nDataSize,
                                                    void** pDest) {
@@ -300,6 +315,13 @@ static inline int php_proto_zend_hash_index_find_zval(const HashTable* ht,
                                                       ulong h, void** pDest) {
   zval* result = zend_hash_index_find(ht, h);
   if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_find(const HashTable* ht, const char* key,
+                                           size_t key_len, void** pDest) {
+  void* result = NULL;
+  result = zend_hash_str_find(ht, key, key_len);
   return result != NULL ? SUCCESS : FAILURE;
 }
 
@@ -1412,5 +1434,9 @@ static inline zval* php_proto_message_read_property(
                                          NULL PHP_PROTO_TSRMLS_CC);
 #endif
 }
+
+// Reserved name
+bool is_reserved_name(const char* name);
+bool is_valid_constant_name(const char* name);
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PROTOBUF_H__
