@@ -396,9 +396,9 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   //   Message::ParseFromString().  In this case, you will need to change
   //   your code to instead construct some sort of ZeroCopyInputStream
   //   (e.g. an ArrayInputStream), construct a CodedInputStream around
-  //   that, then call Message::ParseFromCodedStream() instead.  Then
-  //   you can adjust the limit.  Yes, it's more work, but you're doing
-  //   something unusual.
+  //   that, then you can adjust the limit. Then call
+  //   Message::ParseFromCodedStream() instead. Yes, it's more work, but
+  //   you're doing something unusual.
   void SetTotalBytesLimit(int total_bytes_limit, int warning_threshold);
 
   // The Total Bytes Limit minus the Current Position, or -1 if there
