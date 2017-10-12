@@ -48,6 +48,7 @@
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
+#include <vector>
 #include <string>
 #include <iosfwd>
 #include <google/protobuf/io/zero_copy_stream.h>
