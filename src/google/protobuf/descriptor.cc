@@ -4309,8 +4309,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     result->dependencies_once_ = tables_->AllocateOnceDynamic();
     result->dependencies_names_ =
         tables_->AllocateArray<const string*>(proto.dependency_size());
-    memset(result->dependencies_names_, 0,
-           sizeof(*result->dependencies_names_) * proto.dependency_size());
+    if (proto.dependency_size() > 0) {
+      memset(result->dependencies_names_, 0,
+             sizeof(*result->dependencies_names_) * proto.dependency_size());
+    }
   } else {
     result->dependencies_once_ = NULL;
     result->dependencies_names_ = NULL;
