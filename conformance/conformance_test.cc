@@ -811,6 +811,15 @@ void ConformanceTestSuite::TestOneofMessage (MessageType &message,
       "OneofZeroEnum", RECOMMENDED, &message, "oneof_enum: FOO", isProto3);
 }
 
+template <class MessageType>
+void ConformanceTestSuite::TestUnknownMessage(MessageType& message,
+                                              bool isProto3) {
+  message.ParseFromString("\xA8\x1F\x00");
+  GOOGLE_LOG(ERROR) << message.SerializeAsString().size();
+  RunValidProtobufTestWithMessage(
+      "UnknownVarint", REQUIRED, &message, "oneof_uint32: 0", isProto3);
+}
+
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     std::string* output) {
   runner_ = runner;
@@ -1846,6 +1855,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "StringFieldSingleQuoteBoth", RECOMMENDED,
       R"({'optionalString': 'Hello world!'})");
+
+  // Unknown fields.
+  {
+    TestAllTypesProto3 messageProto3;
+    TestAllTypesProto2 messageProto2;
+    TestUnknownMessage(messageProto3, true);
+    TestUnknownMessage(messageProto2, false);
+  }
 
   // Wrapper types.
   RunValidJsonTest(

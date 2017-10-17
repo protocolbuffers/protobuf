@@ -52,6 +52,10 @@ class GCTest < Test::Unit::TestCase
     from = get_msg
     data = A::B::C::TestMessage.encode(from)
     to = A::B::C::TestMessage.decode(data)
+
+    m3 = A::B::C::TestMessage.decode(hex_to_bin('A81F00'))
+    serialized = A::B::C::TestMessage.encode(m3)
+
     GC.stress = old_gc
     puts "passed"
   end

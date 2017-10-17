@@ -44,6 +44,65 @@ VALUE noleak_rb_str_cat(VALUE rb_str, const char *str, long len) {
   return rb_str;
 }
 
+// The code below also comes from upb's prototype Ruby binding, developed by
+// haberman@.
+
+/* stringsink *****************************************************************/
+
+// This should probably be factored into a common upb component.
+
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} stringsink;
+
+static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
+  stringsink *sink = _sink;
+  sink->len = 0;
+  return sink;
+}
+
+static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                                size_t len, const upb_bufhandle *handle) {
+  stringsink *sink = _sink;
+  size_t new_size = sink->size;
+
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+
+  while (sink->len + len > new_size) {
+    new_size *= 2;
+  }
+
+  if (new_size != sink->size) {
+    sink->ptr = realloc(sink->ptr, new_size);
+    sink->size = new_size;
+  }
+
+  memcpy(sink->ptr + sink->len, ptr, len);
+  sink->len += len;
+
+  return len;
+}
+
+void stringsink_init(stringsink *sink) {
+  upb_byteshandler_init(&sink->handler);
+  upb_byteshandler_setstartstr(&sink->handler, stringsink_start, NULL);
+  upb_byteshandler_setstring(&sink->handler, stringsink_string, NULL);
+
+  upb_bytessink_reset(&sink->sink, &sink->handler, sink);
+
+  sink->size = 32;
+  sink->ptr = malloc(sink->size);
+  sink->len = 0;
+}
+
+void stringsink_uninit(stringsink *sink) {
+  free(sink->ptr);
+}
+
 // -----------------------------------------------------------------------------
 // Parsing.
 // -----------------------------------------------------------------------------
@@ -56,6 +115,22 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   *hd_ofs = ofs;
   upb_handlers_addcleanup(h, hd_ofs, xfree);
   return hd_ofs;
+}
+
+typedef size_t (*encodeunknown_handlerfunc)(void* _sink, const void* hd,
+                                            const char* ptr, size_t len,
+                                            const upb_bufhandle* handle);
+
+typedef struct {
+  encodeunknown_handlerfunc handler;
+} unknownfields_handlerdata_t;
+
+// Creates a handlerdata for unknown fields.
+static const void *newunknownfieldshandlerdata(upb_handlers* h) {
+  unknownfields_handlerdata_t* hd = ALLOC(unknownfields_handlerdata_t);
+  hd->handler = stringsink_string;
+  upb_handlers_addcleanup(h, hd, xfree);
+  return hd;
 }
 
 typedef struct {
@@ -613,6 +688,23 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   upb_handlerattr_uninit(&attr);
 }
 
+static bool add_unknown_handler(void* closure, const void* hd, const char* buf,
+                         size_t size) {
+  encodeunknown_handlerfunc handler =
+      ((unknownfields_handlerdata_t*)hd)->handler;
+
+  MessageHeader* msg = (MessageHeader*)closure;
+  stringsink* unknown = DEREF(Message_data(msg), 0, stringsink*);
+  if (unknown == NULL) {
+    DEREF(Message_data(msg), 0, stringsink*) = malloc(sizeof(stringsink));
+    unknown = DEREF(Message_data(msg), 0, stringsink*);
+    stringsink_init(unknown);
+  }
+
+  handler(unknown, NULL, buf, size, NULL);
+
+  return true;
+}
 
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
@@ -633,6 +725,10 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc->msgdef);
   }
+
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(&attr, newunknownfieldshandlerdata(h));
+  upb_handlers_setunknown(h, add_unknown_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
        !upb_msg_field_done(&i);
@@ -831,65 +927,6 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
 // -----------------------------------------------------------------------------
 // Serializing.
 // -----------------------------------------------------------------------------
-//
-// The code below also comes from upb's prototype Ruby binding, developed by
-// haberman@.
-
-/* stringsink *****************************************************************/
-
-// This should probably be factored into a common upb component.
-
-typedef struct {
-  upb_byteshandler handler;
-  upb_bytessink sink;
-  char *ptr;
-  size_t len, size;
-} stringsink;
-
-static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
-  stringsink *sink = _sink;
-  sink->len = 0;
-  return sink;
-}
-
-static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
-                                size_t len, const upb_bufhandle *handle) {
-  stringsink *sink = _sink;
-  size_t new_size = sink->size;
-
-  UPB_UNUSED(hd);
-  UPB_UNUSED(handle);
-
-  while (sink->len + len > new_size) {
-    new_size *= 2;
-  }
-
-  if (new_size != sink->size) {
-    sink->ptr = realloc(sink->ptr, new_size);
-    sink->size = new_size;
-  }
-
-  memcpy(sink->ptr + sink->len, ptr, len);
-  sink->len += len;
-
-  return len;
-}
-
-void stringsink_init(stringsink *sink) {
-  upb_byteshandler_init(&sink->handler);
-  upb_byteshandler_setstartstr(&sink->handler, stringsink_start, NULL);
-  upb_byteshandler_setstring(&sink->handler, stringsink_string, NULL);
-
-  upb_bytessink_reset(&sink->sink, &sink->handler, sink);
-
-  sink->size = 32;
-  sink->ptr = malloc(sink->size);
-  sink->len = 0;
-}
-
-void stringsink_uninit(stringsink *sink) {
-  free(sink->ptr);
-}
 
 /* msgvisitor *****************************************************************/
 
@@ -1169,6 +1206,11 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
 #undef T
 
     }
+  }
+
+  stringsink* unknown = DEREF(Message_data(msg), 0, stringsink*);
+  if (unknown != NULL) {
+    upb_sink_putunknown(sink, unknown->ptr, unknown->len);
   }
 
   upb_sink_endmsg(sink, &status);

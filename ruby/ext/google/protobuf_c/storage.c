@@ -445,6 +445,9 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   upb_msg_oneof_iter oit;
   size_t off = 0;
 
+  // Reserve space for unknown fields.
+  off += sizeof(void*);
+
   layout->fields = ALLOC_N(MessageField, nfields);
 
   for (upb_msg_field_begin(&it, msgdef);
@@ -689,6 +692,10 @@ void layout_set(MessageLayout* layout,
 void layout_init(MessageLayout* layout,
                  void* storage) {
   upb_msg_field_iter it;
+
+  // Init unknown fields
+  memset(storage, 0, sizeof(void*));
+
   for (upb_msg_field_begin(&it, layout->msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {

@@ -44,6 +44,10 @@ void Message_mark(void* _self) {
 }
 
 void Message_free(void* self) {
+  void* unknown = *((void**)Message_data(self));
+  if (unknown != NULL) {
+    free(unknown);
+  }
   xfree(self);
 }
 

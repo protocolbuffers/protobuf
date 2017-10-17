@@ -212,6 +212,9 @@ class ConformanceTestSuite {
   template <class MessageType>
   void TestOneofMessage (MessageType &message,
                          bool isProto3);
+  template <class MessageType>
+  void TestUnknownMessage (MessageType &message,
+                           bool isProto3);
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);
