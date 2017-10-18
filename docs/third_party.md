@@ -42,6 +42,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Go: https://github.com/golang/protobuf (Google-official implementation)
 * Go: https://github.com/akunspy/gopbuf
 * Go: https://github.com/gogo/protobuf
+* GopherJS: https://github.com/johanbrandhorst/protobuf
 * Haskell: http://hackage.haskell.org/package/hprotoc
 * Haxe: https://github.com/Atry/protoc-gen-haxe
 * Java: https://github.com/google/protobuf (Google-official implementation)
@@ -119,6 +120,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * https://github.com/madwyn/libpbrpc (C++)
 * https://github.com/SeriousMa/grpc-protobuf-validation (Java)
 * https://github.com/tony612/grpc-elixir (Elixir)
+* https://github.com/johanbrandhorst/protobuf (GopherJS)
 
 ## Other Utilities
 
