@@ -43,6 +43,8 @@ goog.require('goog.crypt.base64');
 goog.require('goog.string');
 goog.require('jspb.BinaryConstants');
 
+goog.forwardDeclare('jspb.ByteSource');
+
 
 /**
  * Javascript can't natively handle 64-bit data types, so to manipulate them we

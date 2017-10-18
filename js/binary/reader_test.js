@@ -47,6 +47,7 @@ goog.require('jspb.BinaryDecoder');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
 
+goog.forwardDeclare('jspb.BinaryMessage');
 
 
 describe('binaryReaderTest', function() {

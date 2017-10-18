@@ -42,6 +42,8 @@ goog.require('goog.crypt');
 goog.require('goog.testing.asserts');
 goog.require('jspb.BinaryWriter');
 
+goog.forwardDeclare('jspb.BinaryMessage');
+
 
 /**
  * @param {function()} func This function should throw an error when run.

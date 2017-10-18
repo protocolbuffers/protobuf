@@ -50,6 +50,8 @@ goog.require('goog.asserts');
 goog.require('goog.crypt');
 goog.require('jspb.utils');
 
+goog.forwardDeclare('jspb.ByteSource');
+
 
 
 /**
