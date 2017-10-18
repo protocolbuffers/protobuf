@@ -95,8 +95,9 @@ void IoWin32Test::SetUp() {
     // Only Bazel defines TEST_TMPDIR, CMake does not, so look for other
     // suitable environment variables.
     if (test_tmpdir.empty()) {
-      for (const char* name : {"TEMP", "TMP"}) {
-        test_tmpdir_env = getenv(name);
+      const char * kNameList[] = {"TEMP", "TMP"};
+      for (int i = 0; i < 2; ++i) {
+        test_tmpdir_env = getenv(kNameList[i]);
         if (test_tmpdir_env != nullptr && *test_tmpdir_env) {
           test_tmpdir = string(test_tmpdir_env);
           break;
