@@ -418,7 +418,7 @@ def _VarintBytes(value):
 def TagBytes(field_number, wire_type):
   """Encode the given tag and return the bytes.  Only called at startup."""
 
-  return _VarintBytes(wire_format.PackTag(field_number, wire_type))
+  return six.binary_type( _VarintBytes(wire_format.PackTag(field_number, wire_type)) )
 
 # --------------------------------------------------------------------
 # As with sizers (see above), we have a number of common encoder
