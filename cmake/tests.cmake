@@ -196,7 +196,7 @@ if(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
 endif()
 
 add_executable(tests ${tests_files} ${common_test_files} ${tests_proto_files} ${lite_test_proto_files})
-target_link_libraries(tests libprotoc libprotobuf gmock_main)
+target_link_libraries(tests libprotoc protobuf gmock_main)
 
 set(test_plugin_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
@@ -206,19 +206,19 @@ set(test_plugin_files
 )
 
 add_executable(test_plugin ${test_plugin_files})
-target_link_libraries(test_plugin libprotoc libprotobuf gmock)
+target_link_libraries(test_plugin libprotoc protobuf gmock)
 
 set(lite_test_files
   ${protobuf_source_dir}/src/google/protobuf/lite_unittest.cc
 )
 add_executable(lite-test ${lite_test_files} ${common_lite_test_files} ${lite_test_proto_files})
-target_link_libraries(lite-test libprotobuf-lite gmock_main)
+target_link_libraries(lite-test protobuf-lite gmock_main)
 
 set(lite_arena_test_files
   ${protobuf_source_dir}/src/google/protobuf/lite_arena_unittest.cc
 )
 add_executable(lite-arena-test ${lite_arena_test_files} ${common_lite_test_files} ${lite_test_proto_files})
-target_link_libraries(lite-arena-test libprotobuf-lite gmock_main)
+target_link_libraries(lite-arena-test protobuf-lite gmock_main)
 
 add_custom_target(check
   COMMAND tests
