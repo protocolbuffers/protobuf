@@ -82,6 +82,14 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
 
   template <typename O>
   explicit ArenaImpl(const O& options) : options_(options) {
+    if (options_.initial_block != NULL && options_.initial_block_size > 0) {
+      GOOGLE_CHECK_GE(options_.initial_block_size, sizeof(Block))
+          << ": Initial block size too small for header.";
+      initial_block_ = reinterpret_cast<Block*>(options_.initial_block);
+    } else {
+      initial_block_ = NULL;
+    }
+
     Init();
   }
 
@@ -122,13 +130,22 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
     CleanupNode nodes[1];  // True length is |size|.
   };
 
+  struct Block;
+
+  // Tracks per-thread info.  ThreadInfos are kept in a linked list.
+  struct ThreadInfo {
+    void *owner;             // &ThreadCache of this thread;
+    Block* head;             // Head of linked list of blocks.
+    CleanupChunk* cleanup;   // Head of cleanup list.
+    ThreadInfo* next;        // Next ThreadInfo in this linked list.
+  };
+
   // Blocks are variable length malloc-ed objects.  The following structure
   // describes the common header for all blocks.
   struct Block {
-    void* owner;            // &ThreadCache of thread that owns this block.
-    Block* next;            // Next block in arena (may have different owner)
-    CleanupChunk* cleanup;  // Head of cleanup list (may point to another block,
-                            // but it must have the same owner).
+    void* owner;              // &ThreadCache of thread that owns this block.
+    ThreadInfo* thread_info;  // ThreadInfo of thread that owns this block.
+    Block* next;              // Next block in arena (may have different owner)
     // ((char*) &block) + pos is next available byte. It is always
     // aligned at a multiple of 8 bytes.
     size_t pos;
@@ -139,18 +156,18 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
   };
 
   struct ThreadCache {
+#if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
+    // If we are using the ThreadLocalStorage class to store the ThreadCache,
+    // then the ThreadCache's default constructor has to be responsible for
+    // initializing it.
+    ThreadCache() : last_lifecycle_id_seen(-1), last_block_used_(NULL) {}
+#endif
+
     // The ThreadCache is considered valid as long as this matches the
     // lifecycle_id of the arena being used.
     int64 last_lifecycle_id_seen;
     Block* last_block_used_;
   };
-
-  // kHeaderSize is sizeof(Block), aligned up to the nearest multiple of 8 to
-  // protect the invariant that pos is always at a multiple of 8.
-  static const size_t kHeaderSize = (sizeof(Block) + 7) & -8;
-#if LANG_CXX11
-  static_assert(kHeaderSize % 8 == 0, "kHeaderSize must be a multiple of 8.");
-#endif
   static google::protobuf::internal::SequenceNumber lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
   // Android ndk does not support GOOGLE_THREAD_LOCAL keyword so we use a custom thread
@@ -170,44 +187,52 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
 
   // Free all blocks and return the total space used which is the sums of sizes
   // of the all the allocated blocks.
-  uint64 FreeBlocks(Block* head);
+  uint64 FreeBlocks();
 
-  void AddCleanupInBlock(Block* b, void* elem, void (*cleanup)(void*));
-  Block* ExpandCleanupList(Block* b);
+  void AddCleanupInBlock(Block* b, void* elem, void (*func)(void*));
+  CleanupChunk* ExpandCleanupList(CleanupChunk* cleanup, Block* b);
   // Delete or Destruct all objects owned by the arena.
-  void CleanupList(Block* head);
-  uint64 ResetInternal();
+  void CleanupList();
 
   inline void CacheBlock(Block* block) {
     thread_cache().last_block_used_ = block;
     thread_cache().last_lifecycle_id_seen = lifecycle_id_;
+    // TODO(haberman): evaluate whether we would gain efficiency by getting rid
+    // of hint_.  It's the only write we do to ArenaImpl in the allocation path,
+    // which will dirty the cache line.
     google::protobuf::internal::Release_Store(&hint_, reinterpret_cast<google::protobuf::internal::AtomicWord>(block));
   }
 
-  google::protobuf::internal::AtomicWord blocks_;       // Head of linked list of all allocated blocks
-  google::protobuf::internal::AtomicWord hint_;         // Fast thread-local block access
-  uint64 space_allocated_;  // Sum of sizes of all allocated blocks.
+  google::protobuf::internal::AtomicWord threads_;          // Pointer to a linked list of ThreadInfo.
+  google::protobuf::internal::AtomicWord hint_;             // Fast thread-local block access
+  google::protobuf::internal::AtomicWord space_allocated_;  // Sum of sizes of all allocated blocks.
 
-  bool owns_first_block_;  // Indicates that arena owns the first block
-  mutable Mutex blocks_lock_;
+  Block *initial_block_;     // If non-NULL, points to the block that came from
+                             // user data.
 
-  void AddBlock(Block* b);
-  // Access must be synchronized, either by blocks_lock_ or by being called from
-  // Init()/Reset().
-  void AddBlockInternal(Block* b);
   // Returns a block owned by this thread.
   Block* GetBlock(size_t n);
   Block* GetBlockSlow(void* me, Block* my_full_block, size_t n);
-  Block* FindBlock(void* me);
-  Block* NewBlock(void* me, Block* my_last_block, size_t min_bytes,
-                  size_t start_block_size, size_t max_block_size);
+  Block* NewBlock(void* me, Block* my_last_block, size_t min_bytes);
+  void InitBlock(Block* b, void *me, size_t size);
   static void* AllocFromBlock(Block* b, size_t n);
+  ThreadInfo* NewThreadInfo(Block* b);
+  ThreadInfo* FindThreadInfo(void* me);
+  ThreadInfo* GetThreadInfo(void* me, size_t n);
 
   int64 lifecycle_id_;  // Unique for each arena. Changes on Reset().
 
   Options options_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArenaImpl);
+
+ public:
+  // kHeaderSize is sizeof(Block), aligned up to the nearest multiple of 8 to
+  // protect the invariant that pos is always at a multiple of 8.
+  static const size_t kHeaderSize = (sizeof(Block) + 7) & -8;
+#if LANG_CXX11
+  static_assert(kHeaderSize % 8 == 0, "kHeaderSize must be a multiple of 8.");
+#endif
 };
 
 }  // namespace internal

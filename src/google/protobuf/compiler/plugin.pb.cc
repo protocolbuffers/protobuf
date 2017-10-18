@@ -14,6 +14,10 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
+// This is a temporary google only hack
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+#include "third_party/protobuf/version.h"
+#endif
 // @@protoc_insertion_point(includes)
 namespace google {
 namespace protobuf {
@@ -45,7 +49,11 @@ namespace protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
 void InitDefaultsVersionImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+  ::google::protobuf::internal::InitProtobufDefaultsForceUnique();
+#else
   ::google::protobuf::internal::InitProtobufDefaults();
+#endif  // GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
   {
     void* ptr = &::google::protobuf::compiler::_Version_default_instance_;
     new (ptr) ::google::protobuf::compiler::Version();
@@ -62,7 +70,11 @@ void InitDefaultsVersion() {
 void InitDefaultsCodeGeneratorRequestImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+  ::google::protobuf::internal::InitProtobufDefaultsForceUnique();
+#else
   ::google::protobuf::internal::InitProtobufDefaults();
+#endif  // GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
   protobuf_google_2fprotobuf_2fdescriptor_2eproto::InitDefaultsFileDescriptorProto();
   protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::InitDefaultsVersion();
   {
@@ -81,7 +93,11 @@ void InitDefaultsCodeGeneratorRequest() {
 void InitDefaultsCodeGeneratorResponse_FileImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+  ::google::protobuf::internal::InitProtobufDefaultsForceUnique();
+#else
   ::google::protobuf::internal::InitProtobufDefaults();
+#endif  // GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
   {
     void* ptr = &::google::protobuf::compiler::_CodeGeneratorResponse_File_default_instance_;
     new (ptr) ::google::protobuf::compiler::CodeGeneratorResponse_File();
@@ -98,7 +114,11 @@ void InitDefaultsCodeGeneratorResponse_File() {
 void InitDefaultsCodeGeneratorResponseImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+  ::google::protobuf::internal::InitProtobufDefaultsForceUnique();
+#else
   ::google::protobuf::internal::InitProtobufDefaults();
+#endif  // GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
   protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::InitDefaultsCodeGeneratorResponse_File();
   {
     void* ptr = &::google::protobuf::compiler::_CodeGeneratorResponse_default_instance_;
@@ -319,11 +339,11 @@ void Version::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  if (has_suffix()) {
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     GOOGLE_DCHECK(!suffix_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
     (*suffix_.UnsafeRawStringPointer())->clear();
   }
-  cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 14u) {
     ::memset(&major_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&patch_) -
@@ -634,6 +654,9 @@ void CodeGeneratorRequest::InitAsDefaultInstance() {
   ::google::protobuf::compiler::_CodeGeneratorRequest_default_instance_._instance.get_mutable()->compiler_version_ = const_cast< ::google::protobuf::compiler::Version*>(
       ::google::protobuf::compiler::Version::internal_default_instance());
 }
+void CodeGeneratorRequest::clear_proto_file() {
+  proto_file_.Clear();
+}
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int CodeGeneratorRequest::kFileToGenerateFieldNumber;
 const int CodeGeneratorRequest::kParameterFieldNumber;
@@ -724,7 +747,7 @@ void CodeGeneratorRequest::Clear() {
     }
     if (cached_has_bits & 0x00000002u) {
       GOOGLE_DCHECK(compiler_version_ != NULL);
-      compiler_version_->::google::protobuf::compiler::Version::Clear();
+      compiler_version_->Clear();
     }
   }
   _has_bits_.Clear();
@@ -778,7 +801,7 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
       case 3: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
                input, mutable_compiler_version()));
         } else {
           goto handle_unusual;
@@ -790,8 +813,7 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
       case 15: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(122u /* 122 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_proto_file()));
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(input, add_proto_file()));
         } else {
           goto handle_unusual;
         }
@@ -897,7 +919,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageNoVirtualToArray(
+      InternalWriteMessageToArray(
         3, *this->compiler_version_, deterministic, target);
   }
 
@@ -905,7 +927,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->proto_file_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageNoVirtualToArray(
+      InternalWriteMessageToArray(
         15, this->proto_file(static_cast<int>(i)), deterministic, target);
   }
 
@@ -940,7 +962,7 @@ size_t CodeGeneratorRequest::ByteSizeLong() const {
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
           this->proto_file(static_cast<int>(i)));
     }
   }
@@ -956,7 +978,7 @@ size_t CodeGeneratorRequest::ByteSizeLong() const {
     // optional .google.protobuf.compiler.Version compiler_version = 3;
     if (has_compiler_version()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
           *this->compiler_version_);
     }
 
@@ -1511,7 +1533,8 @@ void CodeGeneratorResponse::Clear() {
   (void) cached_has_bits;
 
   file_.Clear();
-  if (has_error()) {
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     GOOGLE_DCHECK(!error_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
     (*error_.UnsafeRawStringPointer())->clear();
   }
@@ -1549,8 +1572,7 @@ bool CodeGeneratorResponse::MergePartialFromCodedStream(
       case 15: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(122u /* 122 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-                input, add_file()));
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(input, add_file()));
         } else {
           goto handle_unusual;
         }
@@ -1631,7 +1653,7 @@ void CodeGeneratorResponse::SerializeWithCachedSizes(
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->file_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageNoVirtualToArray(
+      InternalWriteMessageToArray(
         15, this->file(static_cast<int>(i)), deterministic, target);
   }
 
@@ -1658,7 +1680,7 @@ size_t CodeGeneratorResponse::ByteSizeLong() const {
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
           this->file(static_cast<int>(i)));
     }
   }

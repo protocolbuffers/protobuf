@@ -426,7 +426,6 @@ bool WireFormatLite::ReadPackedPrimitiveNoInline(io::CodedInputStream* input,
 }
 
 
-
 inline bool WireFormatLite::ReadGroup(int field_number,
                                       io::CodedInputStream* input,
                                       MessageLite* value) {

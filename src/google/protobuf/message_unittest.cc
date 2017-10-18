@@ -409,6 +409,7 @@ TEST(MessageTest, MessageIsStillValidAfterParseFails) {
   }
 }
 
+
 namespace {
 
 void ExpectMessageMerged(const unittest::TestAllTypes& message) {

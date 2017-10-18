@@ -132,7 +132,7 @@ class TestGenerator : public CodeGenerator {
     // Check field accessors for a message inside oneof{}:
     TryInsert("test.pb.h", "field_get:foo.Bar.oneOfMessage", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.oneOfMessage", context);
-    TryInsert("test.pb.h", "field_set_allocated:foo.Bar.oneOfMessage", context);
+    TryInsert("test.pb.cc", "field_set_allocated:foo.Bar.oneOfMessage", context);
 
     // Check field accessors for an optional enum:
     TryInsert("test.pb.h", "field_get:foo.Bar.optEnum", context);

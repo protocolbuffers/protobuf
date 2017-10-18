@@ -603,7 +603,7 @@ template <>
 struct FromHelper<WireFormatLite::TYPE_STRING> {
   static ArenaStringPtr From(const string& x) {
     ArenaStringPtr res;
-    res.UnsafeArenaSetAllocated(NULL, const_cast<string*>(&x), NULL);
+    *res.UnsafeRawStringPointer() = const_cast<string*>(&x);
     return res;
   }
 };
@@ -611,7 +611,7 @@ template <>
 struct FromHelper<WireFormatLite::TYPE_BYTES> {
   static ArenaStringPtr From(const string& x) {
     ArenaStringPtr res;
-    res.UnsafeArenaSetAllocated(NULL, const_cast<string*>(&x), NULL);
+    *res.UnsafeRawStringPointer() = const_cast<string*>(&x);
     return res;
   }
 };

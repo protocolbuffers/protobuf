@@ -1440,9 +1440,6 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
   match_list1->assign(count1, -1);
   match_list2->assign(count2, -1);
 
-  SpecificField specific_field;
-  specific_field.field = repeated_field;
-
   bool success = true;
   // Find potential match if this is a special repeated field.
   if (key_comparator != NULL || IsTreatedAsSet(repeated_field)) {
@@ -1469,20 +1466,15 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
         // Indicates any matched elements for this repeated field.
         bool match = false;
 
-        specific_field.index = i;
-        specific_field.new_index = i;
-
         for (int j = 0; j < count2; j++) {
           if (match_list2->at(j) != -1) continue;
-          specific_field.index = i;
-          specific_field.new_index = j;
 
           match = IsMatch(repeated_field, key_comparator,
                           &message1, &message2, parent_fields, i, j);
 
           if (match) {
-            match_list1->at(specific_field.index) = specific_field.new_index;
-            match_list2->at(specific_field.new_index) = specific_field.index;
+            match_list1->at(i) = j;
+            match_list2->at(j) = i;
             break;
           }
         }

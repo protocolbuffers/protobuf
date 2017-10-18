@@ -14,6 +14,10 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
+// This is a temporary google only hack
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+#include "third_party/protobuf/version.h"
+#endif
 // @@protoc_insertion_point(includes)
 namespace google {
 namespace protobuf {
@@ -28,7 +32,11 @@ namespace protobuf_google_2fprotobuf_2fempty_2eproto {
 void InitDefaultsEmptyImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+  ::google::protobuf::internal::InitProtobufDefaultsForceUnique();
+#else
   ::google::protobuf::internal::InitProtobufDefaults();
+#endif  // GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
   {
     void* ptr = &::google::protobuf::_Empty_default_instance_;
     new (ptr) ::google::protobuf::Empty();
@@ -148,12 +156,7 @@ Empty::~Empty() {
 }
 
 void Empty::SharedDtor() {
-  ::google::protobuf::Arena* arena = GetArenaNoVirtual();
-  GOOGLE_DCHECK(arena == NULL);
-  if (arena != NULL) {
-    return;
-  }
-
+  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
 }
 
 void Empty::ArenaDtor(void* object) {

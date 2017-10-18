@@ -43,13 +43,16 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
 namespace google {
+
 namespace protobuf {
 namespace internal {
+
 
 double Infinity() {
   return std::numeric_limits<double>::infinity();
@@ -693,6 +696,33 @@ void UnknownFieldSerializerLite(const uint8* ptr, uint32 offset, uint32 tag,
   output->WriteString(
       reinterpret_cast<const InternalMetadataWithArenaLite*>(ptr + offset)
           ->unknown_fields());
+}
+
+MessageLite* DuplicateIfNonNullInternal(MessageLite* message, Arena* arena) {
+  if (message) {
+    MessageLite* ret = message->New(arena);
+    ret->CheckTypeAndMergeFrom(*message);
+    return ret;
+  } else {
+    return NULL;
+  }
+}
+
+// Returns a message owned by this Arena.  This may require Own()ing or
+// duplicating the message.
+MessageLite* GetOwnedMessageInternal(Arena* message_arena,
+                                     MessageLite* submessage,
+                                     Arena* submessage_arena) {
+  GOOGLE_DCHECK(submessage->GetArena() == submessage_arena);
+  GOOGLE_DCHECK(message_arena != submessage_arena);
+  if (message_arena != NULL && submessage_arena == NULL) {
+    message_arena->Own(submessage);
+    return submessage;
+  } else {
+    MessageLite* ret = submessage->New(message_arena);
+    ret->CheckTypeAndMergeFrom(*submessage);
+    return ret;
+  }
 }
 
 }  // namespace internal

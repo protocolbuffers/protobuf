@@ -33,7 +33,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/message_lite.h>
 #include <google/protobuf/stubs/port.h>
 
 namespace google {

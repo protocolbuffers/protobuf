@@ -813,6 +813,8 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/io/printer_unittest.cc                       \
   google/protobuf/io/tokenizer_unittest.cc                     \
   google/protobuf/io/zero_copy_stream_unittest.cc              \
+  google/protobuf/compiler/annotation_test_util.h              \
+  google/protobuf/compiler/annotation_test_util.cc             \
   google/protobuf/compiler/command_line_interface_unittest.cc  \
   google/protobuf/compiler/importer_unittest.cc                \
   google/protobuf/compiler/mock_code_generator.cc              \

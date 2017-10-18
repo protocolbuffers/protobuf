@@ -379,8 +379,8 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   void clear_compiler_version();
   static const int kCompilerVersionFieldNumber = 3;
   const ::google::protobuf::compiler::Version& compiler_version() const;
-  ::google::protobuf::compiler::Version* mutable_compiler_version();
   ::google::protobuf::compiler::Version* release_compiler_version();
+  ::google::protobuf::compiler::Version* mutable_compiler_version();
   void set_allocated_compiler_version(::google::protobuf::compiler::Version* compiler_version);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
@@ -973,9 +973,6 @@ inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* paramet
 inline int CodeGeneratorRequest::proto_file_size() const {
   return proto_file_.size();
 }
-inline void CodeGeneratorRequest::clear_proto_file() {
-  proto_file_.Clear();
-}
 inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return proto_file_.Get(index);
@@ -1010,7 +1007,7 @@ inline void CodeGeneratorRequest::clear_has_compiler_version() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void CodeGeneratorRequest::clear_compiler_version() {
-  if (compiler_version_ != NULL) compiler_version_->::google::protobuf::compiler::Version::Clear();
+  if (compiler_version_ != NULL) compiler_version_->Clear();
   clear_has_compiler_version();
 }
 inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compiler_version() const {
@@ -1018,6 +1015,13 @@ inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compil
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::compiler::Version*>(
       &::google::protobuf::compiler::_Version_default_instance_);
+}
+inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::release_compiler_version() {
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
+  clear_has_compiler_version();
+  ::google::protobuf::compiler::Version* temp = compiler_version_;
+  compiler_version_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
   set_has_compiler_version();
@@ -1027,21 +1031,22 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_comp
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return compiler_version_;
 }
-inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::release_compiler_version() {
-  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
-  clear_has_compiler_version();
-  ::google::protobuf::compiler::Version* temp = compiler_version_;
-  compiler_version_ = NULL;
-  return temp;
-}
 inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::protobuf::compiler::Version* compiler_version) {
-  delete compiler_version_;
-  compiler_version_ = compiler_version;
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete compiler_version_;
+  }
   if (compiler_version) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      compiler_version = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, compiler_version, submessage_arena);
+    }
     set_has_compiler_version();
   } else {
     clear_has_compiler_version();
   }
+  compiler_version_ = compiler_version;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
 }
 

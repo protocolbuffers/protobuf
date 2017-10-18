@@ -33,7 +33,6 @@ package com.google.protobuf.util;
 import protobuf_unittest.UnittestProto.NestedTestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
-
 import junit.framework.TestCase;
 
 public class FieldMaskTreeTest extends TestCase {
@@ -220,6 +219,13 @@ public class FieldMaskTreeTest extends TestCase {
     NestedTestAllTypes clearedSource = source.toBuilder().clearPayload().build();
     builder = NestedTestAllTypes.newBuilder();
     new FieldMaskTree().addFieldPath("payload").merge(clearedSource, builder, options);
+    assertEquals(false, builder.hasPayload());
+
+    // Skip a message field if they are unset in both source and target.
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree()
+        .addFieldPath("payload.optional_int32")
+        .merge(clearedSource, builder, options);
     assertEquals(false, builder.hasPayload());
 
     // Change to replace message fields.

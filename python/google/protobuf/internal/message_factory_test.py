@@ -107,8 +107,17 @@ class MessageFactoryTest(unittest.TestCase):
   def testGetMessages(self):
     # performed twice because multiple calls with the same input must be allowed
     for _ in range(2):
-      messages = message_factory.GetMessages([self.factory_test1_fd,
-                                              self.factory_test2_fd])
+      # GetMessage should work regardless of the order the FileDescriptorProto
+      # are provided. In particular, the function should succeed when the files
+      # are not in the topological order of dependencies.
+
+      # Assuming factory_test2_fd depends on factory_test1_fd.
+      self.assertIn(self.factory_test1_fd.name,
+                    self.factory_test2_fd.dependency)
+      # Get messages should work when a file comes before its dependencies:
+      # factory_test2_fd comes before factory_test1_fd.
+      messages = message_factory.GetMessages([self.factory_test2_fd,
+                                              self.factory_test1_fd])
       self.assertTrue(
           set(['google.protobuf.python.internal.Factory2Message',
                'google.protobuf.python.internal.Factory1Message'],

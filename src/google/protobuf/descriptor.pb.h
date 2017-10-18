@@ -689,7 +689,13 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   ::std::string* mutable_name();
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
@@ -707,7 +713,13 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   ::std::string* mutable_package();
   ::std::string* release_package();
   void set_allocated_package(::std::string* package);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_package();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_package(
       ::std::string* package);
 
@@ -725,7 +737,13 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   ::std::string* mutable_syntax();
   ::std::string* release_syntax();
   void set_allocated_syntax(::std::string* syntax);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_syntax();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_syntax(
       ::std::string* syntax);
 
@@ -735,17 +753,14 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   static const int kOptionsFieldNumber = 8;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::FileOptions** options);
-  ::google::protobuf::FileOptions* _slow_release_options();
   public:
   const ::google::protobuf::FileOptions& options() const;
-  ::google::protobuf::FileOptions* mutable_options();
   ::google::protobuf::FileOptions* release_options();
+  ::google::protobuf::FileOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FileOptions* options);
-  ::google::protobuf::FileOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::FileOptions* options);
+  ::google::protobuf::FileOptions* unsafe_arena_release_options();
 
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
   bool has_source_code_info() const;
@@ -753,17 +768,14 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   static const int kSourceCodeInfoFieldNumber = 9;
   private:
   void _slow_mutable_source_code_info();
-  void _slow_set_allocated_source_code_info(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::SourceCodeInfo** source_code_info);
-  ::google::protobuf::SourceCodeInfo* _slow_release_source_code_info();
   public:
   const ::google::protobuf::SourceCodeInfo& source_code_info() const;
-  ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
   ::google::protobuf::SourceCodeInfo* release_source_code_info();
+  ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
   void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* source_code_info);
-  ::google::protobuf::SourceCodeInfo* unsafe_arena_release_source_code_info();
   void unsafe_arena_set_allocated_source_code_info(
       ::google::protobuf::SourceCodeInfo* source_code_info);
+  ::google::protobuf::SourceCodeInfo* unsafe_arena_release_source_code_info();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
@@ -908,17 +920,14 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   static const int kOptionsFieldNumber = 3;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::ExtensionRangeOptions** options);
-  ::google::protobuf::ExtensionRangeOptions* _slow_release_options();
   public:
   const ::google::protobuf::ExtensionRangeOptions& options() const;
-  ::google::protobuf::ExtensionRangeOptions* mutable_options();
   ::google::protobuf::ExtensionRangeOptions* release_options();
+  ::google::protobuf::ExtensionRangeOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ExtensionRangeOptions* options);
-  ::google::protobuf::ExtensionRangeOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::ExtensionRangeOptions* options);
+  ::google::protobuf::ExtensionRangeOptions* unsafe_arena_release_options();
 
   // optional int32 start = 1;
   bool has_start() const;
@@ -1316,7 +1325,13 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
   ::std::string* mutable_name();
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
@@ -1326,17 +1341,14 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
   static const int kOptionsFieldNumber = 7;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::MessageOptions** options);
-  ::google::protobuf::MessageOptions* _slow_release_options();
   public:
   const ::google::protobuf::MessageOptions& options() const;
-  ::google::protobuf::MessageOptions* mutable_options();
   ::google::protobuf::MessageOptions* release_options();
+  ::google::protobuf::MessageOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MessageOptions* options);
-  ::google::protobuf::MessageOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::MessageOptions* options);
+  ::google::protobuf::MessageOptions* unsafe_arena_release_options();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
  private:
@@ -1698,7 +1710,13 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* mutable_name();
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
@@ -1716,7 +1734,13 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* mutable_extendee();
   ::std::string* release_extendee();
   void set_allocated_extendee(::std::string* extendee);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_extendee();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_extendee(
       ::std::string* extendee);
 
@@ -1734,7 +1758,13 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* mutable_type_name();
   ::std::string* release_type_name();
   void set_allocated_type_name(::std::string* type_name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_type_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_type_name(
       ::std::string* type_name);
 
@@ -1752,7 +1782,13 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* mutable_default_value();
   ::std::string* release_default_value();
   void set_allocated_default_value(::std::string* default_value);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_default_value();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_default_value(
       ::std::string* default_value);
 
@@ -1770,7 +1806,13 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* mutable_json_name();
   ::std::string* release_json_name();
   void set_allocated_json_name(::std::string* json_name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_json_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_json_name(
       ::std::string* json_name);
 
@@ -1780,17 +1822,14 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   static const int kOptionsFieldNumber = 8;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::FieldOptions** options);
-  ::google::protobuf::FieldOptions* _slow_release_options();
   public:
   const ::google::protobuf::FieldOptions& options() const;
-  ::google::protobuf::FieldOptions* mutable_options();
   ::google::protobuf::FieldOptions* release_options();
+  ::google::protobuf::FieldOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FieldOptions* options);
-  ::google::protobuf::FieldOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::FieldOptions* options);
+  ::google::protobuf::FieldOptions* unsafe_arena_release_options();
 
   // optional int32 number = 3;
   bool has_number() const;
@@ -1979,7 +2018,13 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
   ::std::string* mutable_name();
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
@@ -1989,17 +2034,14 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
   static const int kOptionsFieldNumber = 2;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::OneofOptions** options);
-  ::google::protobuf::OneofOptions* _slow_release_options();
   public:
   const ::google::protobuf::OneofOptions& options() const;
-  ::google::protobuf::OneofOptions* mutable_options();
   ::google::protobuf::OneofOptions* release_options();
+  ::google::protobuf::OneofOptions* mutable_options();
   void set_allocated_options(::google::protobuf::OneofOptions* options);
-  ::google::protobuf::OneofOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::OneofOptions* options);
+  ::google::protobuf::OneofOptions* unsafe_arena_release_options();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofDescriptorProto)
  private:
@@ -2319,7 +2361,13 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   ::std::string* mutable_name();
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
@@ -2329,17 +2377,14 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   static const int kOptionsFieldNumber = 3;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::EnumOptions** options);
-  ::google::protobuf::EnumOptions* _slow_release_options();
   public:
   const ::google::protobuf::EnumOptions& options() const;
-  ::google::protobuf::EnumOptions* mutable_options();
   ::google::protobuf::EnumOptions* release_options();
+  ::google::protobuf::EnumOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumOptions* options);
-  ::google::protobuf::EnumOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::EnumOptions* options);
+  ::google::protobuf::EnumOptions* unsafe_arena_release_options();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
  private:
@@ -2479,7 +2524,13 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   ::std::string* mutable_name();
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
@@ -2489,17 +2540,14 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   static const int kOptionsFieldNumber = 3;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::EnumValueOptions** options);
-  ::google::protobuf::EnumValueOptions* _slow_release_options();
   public:
   const ::google::protobuf::EnumValueOptions& options() const;
-  ::google::protobuf::EnumValueOptions* mutable_options();
   ::google::protobuf::EnumValueOptions* release_options();
+  ::google::protobuf::EnumValueOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumValueOptions* options);
-  ::google::protobuf::EnumValueOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::EnumValueOptions* options);
+  ::google::protobuf::EnumValueOptions* unsafe_arena_release_options();
 
   // optional int32 number = 2;
   bool has_number() const;
@@ -2658,7 +2706,13 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   ::std::string* mutable_name();
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
@@ -2668,17 +2722,14 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   static const int kOptionsFieldNumber = 3;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::ServiceOptions** options);
-  ::google::protobuf::ServiceOptions* _slow_release_options();
   public:
   const ::google::protobuf::ServiceOptions& options() const;
-  ::google::protobuf::ServiceOptions* mutable_options();
   ::google::protobuf::ServiceOptions* release_options();
+  ::google::protobuf::ServiceOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ServiceOptions* options);
-  ::google::protobuf::ServiceOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::ServiceOptions* options);
+  ::google::protobuf::ServiceOptions* unsafe_arena_release_options();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceDescriptorProto)
  private:
@@ -2816,7 +2867,13 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   ::std::string* mutable_name();
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
@@ -2834,7 +2891,13 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   ::std::string* mutable_input_type();
   ::std::string* release_input_type();
   void set_allocated_input_type(::std::string* input_type);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_input_type();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_input_type(
       ::std::string* input_type);
 
@@ -2852,7 +2915,13 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   ::std::string* mutable_output_type();
   ::std::string* release_output_type();
   void set_allocated_output_type(::std::string* output_type);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_output_type();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_output_type(
       ::std::string* output_type);
 
@@ -2862,17 +2931,14 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   static const int kOptionsFieldNumber = 4;
   private:
   void _slow_mutable_options();
-  void _slow_set_allocated_options(
-      ::google::protobuf::Arena* message_arena, ::google::protobuf::MethodOptions** options);
-  ::google::protobuf::MethodOptions* _slow_release_options();
   public:
   const ::google::protobuf::MethodOptions& options() const;
-  ::google::protobuf::MethodOptions* mutable_options();
   ::google::protobuf::MethodOptions* release_options();
+  ::google::protobuf::MethodOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MethodOptions* options);
-  ::google::protobuf::MethodOptions* unsafe_arena_release_options();
   void unsafe_arena_set_allocated_options(
       ::google::protobuf::MethodOptions* options);
+  ::google::protobuf::MethodOptions* unsafe_arena_release_options();
 
   // optional bool client_streaming = 5 [default = false];
   bool has_client_streaming() const;
@@ -3075,7 +3141,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* mutable_java_package();
   ::std::string* release_java_package();
   void set_allocated_java_package(::std::string* java_package);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_java_package();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_java_package(
       ::std::string* java_package);
 
@@ -3093,7 +3165,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* mutable_java_outer_classname();
   ::std::string* release_java_outer_classname();
   void set_allocated_java_outer_classname(::std::string* java_outer_classname);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_java_outer_classname();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_java_outer_classname(
       ::std::string* java_outer_classname);
 
@@ -3111,7 +3189,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* mutable_go_package();
   ::std::string* release_go_package();
   void set_allocated_go_package(::std::string* go_package);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_go_package();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_go_package(
       ::std::string* go_package);
 
@@ -3129,7 +3213,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* mutable_objc_class_prefix();
   ::std::string* release_objc_class_prefix();
   void set_allocated_objc_class_prefix(::std::string* objc_class_prefix);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_objc_class_prefix();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_objc_class_prefix(
       ::std::string* objc_class_prefix);
 
@@ -3147,7 +3237,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* mutable_csharp_namespace();
   ::std::string* release_csharp_namespace();
   void set_allocated_csharp_namespace(::std::string* csharp_namespace);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_csharp_namespace();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_csharp_namespace(
       ::std::string* csharp_namespace);
 
@@ -3165,7 +3261,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* mutable_swift_prefix();
   ::std::string* release_swift_prefix();
   void set_allocated_swift_prefix(::std::string* swift_prefix);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_swift_prefix();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_swift_prefix(
       ::std::string* swift_prefix);
 
@@ -3183,7 +3285,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* mutable_php_class_prefix();
   ::std::string* release_php_class_prefix();
   void set_allocated_php_class_prefix(::std::string* php_class_prefix);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_php_class_prefix();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_php_class_prefix(
       ::std::string* php_class_prefix);
 
@@ -3201,7 +3309,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* mutable_php_namespace();
   ::std::string* release_php_namespace();
   void set_allocated_php_namespace(::std::string* php_namespace);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_php_namespace();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_php_namespace(
       ::std::string* php_namespace);
 
@@ -4623,7 +4737,13 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   ::std::string* mutable_name_part();
   ::std::string* release_name_part();
   void set_allocated_name_part(::std::string* name_part);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_name_part();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_name_part(
       ::std::string* name_part);
 
@@ -4786,7 +4906,13 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   ::std::string* mutable_identifier_value();
   ::std::string* release_identifier_value();
   void set_allocated_identifier_value(::std::string* identifier_value);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_identifier_value();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_identifier_value(
       ::std::string* identifier_value);
 
@@ -4804,7 +4930,13 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   ::std::string* mutable_string_value();
   ::std::string* release_string_value();
   void set_allocated_string_value(::std::string* string_value);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_string_value();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_string_value(
       ::std::string* string_value);
 
@@ -4822,7 +4954,13 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   ::std::string* mutable_aggregate_value();
   ::std::string* release_aggregate_value();
   void set_allocated_aggregate_value(::std::string* aggregate_value);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_aggregate_value();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_aggregate_value(
       ::std::string* aggregate_value);
 
@@ -5041,7 +5179,13 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
   ::std::string* mutable_leading_comments();
   ::std::string* release_leading_comments();
   void set_allocated_leading_comments(::std::string* leading_comments);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_leading_comments();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_leading_comments(
       ::std::string* leading_comments);
 
@@ -5059,7 +5203,13 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
   ::std::string* mutable_trailing_comments();
   ::std::string* release_trailing_comments();
   void set_allocated_trailing_comments(::std::string* trailing_comments);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_trailing_comments();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_trailing_comments(
       ::std::string* trailing_comments);
 
@@ -5345,7 +5495,13 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
   ::std::string* mutable_source_file();
   ::std::string* release_source_file();
   void set_allocated_source_file(::std::string* source_file);
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   ::std::string* unsafe_arena_release_source_file();
+  PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
   void unsafe_arena_set_allocated_source_file(
       ::std::string* source_file);
 
@@ -5616,13 +5772,6 @@ inline ::std::string* FileDescriptorProto::release_name() {
   clear_has_name();
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileDescriptorProto::unsafe_arena_release_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name();
-  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileDescriptorProto::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
@@ -5632,6 +5781,13 @@ inline void FileDescriptorProto::set_allocated_name(::std::string* name) {
   name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.name)
+}
+inline ::std::string* FileDescriptorProto::unsafe_arena_release_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
@@ -5701,13 +5857,6 @@ inline ::std::string* FileDescriptorProto::release_package() {
   clear_has_package();
   return package_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileDescriptorProto::unsafe_arena_release_package() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.package)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_package();
-  return package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileDescriptorProto::set_allocated_package(::std::string* package) {
   if (package != NULL) {
     set_has_package();
@@ -5717,6 +5866,13 @@ inline void FileDescriptorProto::set_allocated_package(::std::string* package) {
   package_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), package,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.package)
+}
+inline ::std::string* FileDescriptorProto::unsafe_arena_release_package() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.package)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_package();
+  return package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_package(
     ::std::string* package) {
@@ -5991,7 +6147,7 @@ inline void FileDescriptorProto::clear_has_options() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void FileDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::FileOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() const {
@@ -5999,6 +6155,23 @@ inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() con
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::FileOptions*>(
       &::google::protobuf::_FileOptions_default_instance_);
+}
+inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::FileOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::FileOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
   set_has_options();
@@ -6008,39 +6181,24 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.options)
   return options_;
 }
-inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::FileOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void FileDescriptorProto::set_allocated_options(::google::protobuf::FileOptions* options) {
+inline void FileDescriptorProto::set_allocated_options(::google::protobuf::FileOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.options)
-}
-inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.options)
-  clear_has_options();
-  ::google::protobuf::FileOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
@@ -6054,7 +6212,7 @@ inline void FileDescriptorProto::clear_has_source_code_info() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void FileDescriptorProto::clear_source_code_info() {
-  if (source_code_info_ != NULL) source_code_info_->::google::protobuf::SourceCodeInfo::Clear();
+  if (source_code_info_ != NULL) source_code_info_->Clear();
   clear_has_source_code_info();
 }
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_code_info() const {
@@ -6062,6 +6220,23 @@ inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_cod
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.source_code_info)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceCodeInfo*>(
       &::google::protobuf::_SourceCodeInfo_default_instance_);
+}
+inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_code_info() {
+  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.source_code_info)
+  clear_has_source_code_info();
+  ::google::protobuf::SourceCodeInfo* temp = source_code_info_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  source_code_info_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_release_source_code_info() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.source_code_info)
+  clear_has_source_code_info();
+  ::google::protobuf::SourceCodeInfo* temp = source_code_info_;
+  source_code_info_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_code_info() {
   set_has_source_code_info();
@@ -6071,39 +6246,24 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_c
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.source_code_info)
   return source_code_info_;
 }
-inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_code_info() {
-  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.source_code_info)
-  clear_has_source_code_info();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_source_code_info();
-  } else {
-    ::google::protobuf::SourceCodeInfo* temp = source_code_info_;
-    source_code_info_ = NULL;
-    return temp;
-  }
-}
-inline  void FileDescriptorProto::set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* source_code_info) {
+inline void FileDescriptorProto::set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* source_code_info) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete source_code_info_;
   }
-  if (source_code_info != NULL) {
-    _slow_set_allocated_source_code_info(message_arena, &source_code_info);
-  }
-  source_code_info_ = source_code_info;
   if (source_code_info) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(source_code_info);
+    if (message_arena != submessage_arena) {
+      source_code_info = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, source_code_info, submessage_arena);
+    }
     set_has_source_code_info();
   } else {
     clear_has_source_code_info();
   }
+  source_code_info_ = source_code_info;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
-}
-inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_release_source_code_info() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.source_code_info)
-  clear_has_source_code_info();
-  ::google::protobuf::SourceCodeInfo* temp = source_code_info_;
-  source_code_info_ = NULL;
-  return temp;
 }
 
 // optional string syntax = 12;
@@ -6161,13 +6321,6 @@ inline ::std::string* FileDescriptorProto::release_syntax() {
   clear_has_syntax();
   return syntax_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileDescriptorProto::unsafe_arena_release_syntax() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.syntax)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_syntax();
-  return syntax_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileDescriptorProto::set_allocated_syntax(::std::string* syntax) {
   if (syntax != NULL) {
     set_has_syntax();
@@ -6177,6 +6330,13 @@ inline void FileDescriptorProto::set_allocated_syntax(::std::string* syntax) {
   syntax_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), syntax,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.syntax)
+}
+inline ::std::string* FileDescriptorProto::unsafe_arena_release_syntax() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.syntax)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_syntax();
+  return syntax_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_syntax(
     ::std::string* syntax) {
@@ -6254,7 +6414,7 @@ inline void DescriptorProto_ExtensionRange::clear_has_options() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void DescriptorProto_ExtensionRange::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::ExtensionRangeOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::options() const {
@@ -6262,6 +6422,23 @@ inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_Extensio
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.ExtensionRange.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::ExtensionRangeOptions*>(
       &::google::protobuf::_ExtensionRangeOptions_default_instance_);
+}
+inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.ExtensionRange.options)
+  clear_has_options();
+  ::google::protobuf::ExtensionRangeOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.ExtensionRange.options)
+  clear_has_options();
+  ::google::protobuf::ExtensionRangeOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::mutable_options() {
   set_has_options();
@@ -6271,39 +6448,24 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.ExtensionRange.options)
   return options_;
 }
-inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.ExtensionRange.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::ExtensionRangeOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void DescriptorProto_ExtensionRange::set_allocated_options(::google::protobuf::ExtensionRangeOptions* options) {
+inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::protobuf::ExtensionRangeOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.ExtensionRange.options)
-}
-inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.ExtensionRange.options)
-  clear_has_options();
-  ::google::protobuf::ExtensionRangeOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -6417,13 +6579,6 @@ inline ::std::string* DescriptorProto::release_name() {
   clear_has_name();
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* DescriptorProto::unsafe_arena_release_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name();
-  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void DescriptorProto::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
@@ -6433,6 +6588,13 @@ inline void DescriptorProto::set_allocated_name(::std::string* name) {
   name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.name)
+}
+inline ::std::string* DescriptorProto::unsafe_arena_release_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void DescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
@@ -6638,7 +6800,7 @@ inline void DescriptorProto::clear_has_options() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void DescriptorProto::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::MessageOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::MessageOptions& DescriptorProto::options() const {
@@ -6646,6 +6808,23 @@ inline const ::google::protobuf::MessageOptions& DescriptorProto::options() cons
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::MessageOptions*>(
       &::google::protobuf::_MessageOptions_default_instance_);
+}
+inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::MessageOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::MessageOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
   set_has_options();
@@ -6655,39 +6834,24 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.options)
   return options_;
 }
-inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::MessageOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void DescriptorProto::set_allocated_options(::google::protobuf::MessageOptions* options) {
+inline void DescriptorProto::set_allocated_options(::google::protobuf::MessageOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.options)
-}
-inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.options)
-  clear_has_options();
-  ::google::protobuf::MessageOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
@@ -6882,13 +7046,6 @@ inline ::std::string* FieldDescriptorProto::release_name() {
   clear_has_name();
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FieldDescriptorProto::unsafe_arena_release_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name();
-  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FieldDescriptorProto::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
@@ -6898,6 +7055,13 @@ inline void FieldDescriptorProto::set_allocated_name(::std::string* name) {
   name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.name)
+}
+inline ::std::string* FieldDescriptorProto::unsafe_arena_release_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
@@ -7041,13 +7205,6 @@ inline ::std::string* FieldDescriptorProto::release_type_name() {
   clear_has_type_name();
   return type_name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FieldDescriptorProto::unsafe_arena_release_type_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.type_name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_type_name();
-  return type_name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FieldDescriptorProto::set_allocated_type_name(::std::string* type_name) {
   if (type_name != NULL) {
     set_has_type_name();
@@ -7057,6 +7214,13 @@ inline void FieldDescriptorProto::set_allocated_type_name(::std::string* type_na
   type_name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), type_name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.type_name)
+}
+inline ::std::string* FieldDescriptorProto::unsafe_arena_release_type_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.type_name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_type_name();
+  return type_name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_type_name(
     ::std::string* type_name) {
@@ -7126,13 +7290,6 @@ inline ::std::string* FieldDescriptorProto::release_extendee() {
   clear_has_extendee();
   return extendee_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FieldDescriptorProto::unsafe_arena_release_extendee() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.extendee)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_extendee();
-  return extendee_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FieldDescriptorProto::set_allocated_extendee(::std::string* extendee) {
   if (extendee != NULL) {
     set_has_extendee();
@@ -7142,6 +7299,13 @@ inline void FieldDescriptorProto::set_allocated_extendee(::std::string* extendee
   extendee_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), extendee,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.extendee)
+}
+inline ::std::string* FieldDescriptorProto::unsafe_arena_release_extendee() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.extendee)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_extendee();
+  return extendee_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_extendee(
     ::std::string* extendee) {
@@ -7211,13 +7375,6 @@ inline ::std::string* FieldDescriptorProto::release_default_value() {
   clear_has_default_value();
   return default_value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FieldDescriptorProto::unsafe_arena_release_default_value() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.default_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_default_value();
-  return default_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FieldDescriptorProto::set_allocated_default_value(::std::string* default_value) {
   if (default_value != NULL) {
     set_has_default_value();
@@ -7227,6 +7384,13 @@ inline void FieldDescriptorProto::set_allocated_default_value(::std::string* def
   default_value_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), default_value,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.default_value)
+}
+inline ::std::string* FieldDescriptorProto::unsafe_arena_release_default_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.default_value)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_default_value();
+  return default_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_default_value(
     ::std::string* default_value) {
@@ -7320,13 +7484,6 @@ inline ::std::string* FieldDescriptorProto::release_json_name() {
   clear_has_json_name();
   return json_name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FieldDescriptorProto::unsafe_arena_release_json_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.json_name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_json_name();
-  return json_name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FieldDescriptorProto::set_allocated_json_name(::std::string* json_name) {
   if (json_name != NULL) {
     set_has_json_name();
@@ -7336,6 +7493,13 @@ inline void FieldDescriptorProto::set_allocated_json_name(::std::string* json_na
   json_name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), json_name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.json_name)
+}
+inline ::std::string* FieldDescriptorProto::unsafe_arena_release_json_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.json_name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_json_name();
+  return json_name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_json_name(
     ::std::string* json_name) {
@@ -7361,7 +7525,7 @@ inline void FieldDescriptorProto::clear_has_options() {
   _has_bits_[0] &= ~0x00000020u;
 }
 inline void FieldDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::FieldOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() const {
@@ -7369,6 +7533,23 @@ inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() c
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::FieldOptions*>(
       &::google::protobuf::_FieldOptions_default_instance_);
+}
+inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::FieldOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::FieldOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options() {
   set_has_options();
@@ -7378,39 +7559,24 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options()
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.options)
   return options_;
 }
-inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::FieldOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void FieldDescriptorProto::set_allocated_options(::google::protobuf::FieldOptions* options) {
+inline void FieldDescriptorProto::set_allocated_options(::google::protobuf::FieldOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.options)
-}
-inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.options)
-  clear_has_options();
-  ::google::protobuf::FieldOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -7472,13 +7638,6 @@ inline ::std::string* OneofDescriptorProto::release_name() {
   clear_has_name();
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* OneofDescriptorProto::unsafe_arena_release_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.OneofDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name();
-  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void OneofDescriptorProto::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
@@ -7488,6 +7647,13 @@ inline void OneofDescriptorProto::set_allocated_name(::std::string* name) {
   name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.name)
+}
+inline ::std::string* OneofDescriptorProto::unsafe_arena_release_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.OneofDescriptorProto.name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void OneofDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
@@ -7513,7 +7679,7 @@ inline void OneofDescriptorProto::clear_has_options() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void OneofDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::OneofOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() const {
@@ -7521,6 +7687,23 @@ inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() c
   // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::OneofOptions*>(
       &::google::protobuf::_OneofOptions_default_instance_);
+}
+inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::OneofOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.OneofDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::OneofOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options() {
   set_has_options();
@@ -7530,39 +7713,24 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options()
   // @@protoc_insertion_point(field_mutable:google.protobuf.OneofDescriptorProto.options)
   return options_;
 }
-inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::OneofOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void OneofDescriptorProto::set_allocated_options(::google::protobuf::OneofOptions* options) {
+inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::OneofOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.options)
-}
-inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.OneofDescriptorProto.options)
-  clear_has_options();
-  ::google::protobuf::OneofOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -7676,13 +7844,6 @@ inline ::std::string* EnumDescriptorProto::release_name() {
   clear_has_name();
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* EnumDescriptorProto::unsafe_arena_release_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name();
-  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void EnumDescriptorProto::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
@@ -7692,6 +7853,13 @@ inline void EnumDescriptorProto::set_allocated_name(::std::string* name) {
   name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumDescriptorProto.name)
+}
+inline ::std::string* EnumDescriptorProto::unsafe_arena_release_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumDescriptorProto.name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void EnumDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
@@ -7747,7 +7915,7 @@ inline void EnumDescriptorProto::clear_has_options() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void EnumDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::EnumOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() const {
@@ -7755,6 +7923,23 @@ inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() con
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::EnumOptions*>(
       &::google::protobuf::_EnumOptions_default_instance_);
+}
+inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::EnumOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::EnumOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
   set_has_options();
@@ -7764,39 +7949,24 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.options)
   return options_;
 }
-inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::EnumOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumOptions* options) {
+inline void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumDescriptorProto.options)
-}
-inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumDescriptorProto.options)
-  clear_has_options();
-  ::google::protobuf::EnumOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
@@ -7957,13 +8127,6 @@ inline ::std::string* EnumValueDescriptorProto::release_name() {
   clear_has_name();
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* EnumValueDescriptorProto::unsafe_arena_release_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumValueDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name();
-  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void EnumValueDescriptorProto::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
@@ -7973,6 +8136,13 @@ inline void EnumValueDescriptorProto::set_allocated_name(::std::string* name) {
   name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueDescriptorProto.name)
+}
+inline ::std::string* EnumValueDescriptorProto::unsafe_arena_release_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumValueDescriptorProto.name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void EnumValueDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
@@ -8022,7 +8192,7 @@ inline void EnumValueDescriptorProto::clear_has_options() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void EnumValueDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::EnumValueOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::options() const {
@@ -8030,6 +8200,23 @@ inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::opt
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueDescriptorProto.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::EnumValueOptions*>(
       &::google::protobuf::_EnumValueOptions_default_instance_);
+}
+inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::EnumValueOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumValueDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::EnumValueOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_options() {
   set_has_options();
@@ -8039,39 +8226,24 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_o
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueDescriptorProto.options)
   return options_;
 }
-inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::EnumValueOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::EnumValueOptions* options) {
+inline void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::EnumValueOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueDescriptorProto.options)
-}
-inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumValueDescriptorProto.options)
-  clear_has_options();
-  ::google::protobuf::EnumValueOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -8133,13 +8305,6 @@ inline ::std::string* ServiceDescriptorProto::release_name() {
   clear_has_name();
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* ServiceDescriptorProto::unsafe_arena_release_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.ServiceDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name();
-  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void ServiceDescriptorProto::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
@@ -8149,6 +8314,13 @@ inline void ServiceDescriptorProto::set_allocated_name(::std::string* name) {
   name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceDescriptorProto.name)
+}
+inline ::std::string* ServiceDescriptorProto::unsafe_arena_release_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.ServiceDescriptorProto.name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void ServiceDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
@@ -8204,7 +8376,7 @@ inline void ServiceDescriptorProto::clear_has_options() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void ServiceDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::ServiceOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options() const {
@@ -8212,6 +8384,23 @@ inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::ServiceOptions*>(
       &::google::protobuf::_ServiceOptions_default_instance_);
+}
+inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::ServiceOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.ServiceDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::ServiceOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_options() {
   set_has_options();
@@ -8221,39 +8410,24 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_optio
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceDescriptorProto.options)
   return options_;
 }
-inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::ServiceOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void ServiceDescriptorProto::set_allocated_options(::google::protobuf::ServiceOptions* options) {
+inline void ServiceDescriptorProto::set_allocated_options(::google::protobuf::ServiceOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceDescriptorProto.options)
-}
-inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.ServiceDescriptorProto.options)
-  clear_has_options();
-  ::google::protobuf::ServiceOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // -------------------------------------------------------------------
@@ -8315,13 +8489,6 @@ inline ::std::string* MethodDescriptorProto::release_name() {
   clear_has_name();
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* MethodDescriptorProto::unsafe_arena_release_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name();
-  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void MethodDescriptorProto::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
@@ -8331,6 +8498,13 @@ inline void MethodDescriptorProto::set_allocated_name(::std::string* name) {
   name_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.name)
+}
+inline ::std::string* MethodDescriptorProto::unsafe_arena_release_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.name)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name();
+  return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
@@ -8400,13 +8574,6 @@ inline ::std::string* MethodDescriptorProto::release_input_type() {
   clear_has_input_type();
   return input_type_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* MethodDescriptorProto::unsafe_arena_release_input_type() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.input_type)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_input_type();
-  return input_type_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void MethodDescriptorProto::set_allocated_input_type(::std::string* input_type) {
   if (input_type != NULL) {
     set_has_input_type();
@@ -8416,6 +8583,13 @@ inline void MethodDescriptorProto::set_allocated_input_type(::std::string* input
   input_type_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), input_type,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.input_type)
+}
+inline ::std::string* MethodDescriptorProto::unsafe_arena_release_input_type() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.input_type)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_input_type();
+  return input_type_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_input_type(
     ::std::string* input_type) {
@@ -8485,13 +8659,6 @@ inline ::std::string* MethodDescriptorProto::release_output_type() {
   clear_has_output_type();
   return output_type_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* MethodDescriptorProto::unsafe_arena_release_output_type() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.output_type)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_output_type();
-  return output_type_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void MethodDescriptorProto::set_allocated_output_type(::std::string* output_type) {
   if (output_type != NULL) {
     set_has_output_type();
@@ -8501,6 +8668,13 @@ inline void MethodDescriptorProto::set_allocated_output_type(::std::string* outp
   output_type_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), output_type,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.output_type)
+}
+inline ::std::string* MethodDescriptorProto::unsafe_arena_release_output_type() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.output_type)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_output_type();
+  return output_type_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_output_type(
     ::std::string* output_type) {
@@ -8526,7 +8700,7 @@ inline void MethodDescriptorProto::clear_has_options() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void MethodDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->::google::protobuf::MethodOptions::Clear();
+  if (options_ != NULL) options_->Clear();
   clear_has_options();
 }
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options() const {
@@ -8534,6 +8708,23 @@ inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options()
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.options)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::MethodOptions*>(
       &::google::protobuf::_MethodOptions_default_instance_);
+}
+inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::MethodOptions* temp = options_;
+  if (GetArenaNoVirtual() != NULL) {
+    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);
+  }
+  options_ = NULL;
+  return temp;
+}
+inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_release_options() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::MethodOptions* temp = options_;
+  options_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options() {
   set_has_options();
@@ -8543,39 +8734,24 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.options)
   return options_;
 }
-inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options() {
-  // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.options)
-  clear_has_options();
-  if (GetArenaNoVirtual() != NULL) {
-    return _slow_release_options();
-  } else {
-    ::google::protobuf::MethodOptions* temp = options_;
-    options_ = NULL;
-    return temp;
-  }
-}
-inline  void MethodDescriptorProto::set_allocated_options(::google::protobuf::MethodOptions* options) {
+inline void MethodDescriptorProto::set_allocated_options(::google::protobuf::MethodOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete options_;
   }
-  if (options != NULL) {
-    _slow_set_allocated_options(message_arena, &options);
-  }
-  options_ = options;
   if (options) {
+    ::google::protobuf::Arena* submessage_arena =
+      ::google::protobuf::Arena::GetArena(options);
+    if (message_arena != submessage_arena) {
+      options = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, options, submessage_arena);
+    }
     set_has_options();
   } else {
     clear_has_options();
   }
+  options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.options)
-}
-inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_release_options() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.options)
-  clear_has_options();
-  ::google::protobuf::MethodOptions* temp = options_;
-  options_ = NULL;
-  return temp;
 }
 
 // optional bool client_streaming = 5 [default = false];
@@ -8685,13 +8861,6 @@ inline ::std::string* FileOptions::release_java_package() {
   clear_has_java_package();
   return java_package_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileOptions::unsafe_arena_release_java_package() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.java_package)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_java_package();
-  return java_package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileOptions::set_allocated_java_package(::std::string* java_package) {
   if (java_package != NULL) {
     set_has_java_package();
@@ -8701,6 +8870,13 @@ inline void FileOptions::set_allocated_java_package(::std::string* java_package)
   java_package_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), java_package,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.java_package)
+}
+inline ::std::string* FileOptions::unsafe_arena_release_java_package() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.java_package)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_java_package();
+  return java_package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_java_package(
     ::std::string* java_package) {
@@ -8770,13 +8946,6 @@ inline ::std::string* FileOptions::release_java_outer_classname() {
   clear_has_java_outer_classname();
   return java_outer_classname_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileOptions::unsafe_arena_release_java_outer_classname() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.java_outer_classname)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_java_outer_classname();
-  return java_outer_classname_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileOptions::set_allocated_java_outer_classname(::std::string* java_outer_classname) {
   if (java_outer_classname != NULL) {
     set_has_java_outer_classname();
@@ -8786,6 +8955,13 @@ inline void FileOptions::set_allocated_java_outer_classname(::std::string* java_
   java_outer_classname_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), java_outer_classname,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.java_outer_classname)
+}
+inline ::std::string* FileOptions::unsafe_arena_release_java_outer_classname() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.java_outer_classname)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_java_outer_classname();
+  return java_outer_classname_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_java_outer_classname(
     ::std::string* java_outer_classname) {
@@ -8952,13 +9128,6 @@ inline ::std::string* FileOptions::release_go_package() {
   clear_has_go_package();
   return go_package_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileOptions::unsafe_arena_release_go_package() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.go_package)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_go_package();
-  return go_package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileOptions::set_allocated_go_package(::std::string* go_package) {
   if (go_package != NULL) {
     set_has_go_package();
@@ -8968,6 +9137,13 @@ inline void FileOptions::set_allocated_go_package(::std::string* go_package) {
   go_package_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), go_package,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.go_package)
+}
+inline ::std::string* FileOptions::unsafe_arena_release_go_package() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.go_package)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_go_package();
+  return go_package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_go_package(
     ::std::string* go_package) {
@@ -9181,13 +9357,6 @@ inline ::std::string* FileOptions::release_objc_class_prefix() {
   clear_has_objc_class_prefix();
   return objc_class_prefix_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileOptions::unsafe_arena_release_objc_class_prefix() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.objc_class_prefix)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_objc_class_prefix();
-  return objc_class_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileOptions::set_allocated_objc_class_prefix(::std::string* objc_class_prefix) {
   if (objc_class_prefix != NULL) {
     set_has_objc_class_prefix();
@@ -9197,6 +9366,13 @@ inline void FileOptions::set_allocated_objc_class_prefix(::std::string* objc_cla
   objc_class_prefix_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), objc_class_prefix,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.objc_class_prefix)
+}
+inline ::std::string* FileOptions::unsafe_arena_release_objc_class_prefix() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.objc_class_prefix)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_objc_class_prefix();
+  return objc_class_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_objc_class_prefix(
     ::std::string* objc_class_prefix) {
@@ -9266,13 +9442,6 @@ inline ::std::string* FileOptions::release_csharp_namespace() {
   clear_has_csharp_namespace();
   return csharp_namespace_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileOptions::unsafe_arena_release_csharp_namespace() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.csharp_namespace)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_csharp_namespace();
-  return csharp_namespace_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_namespace) {
   if (csharp_namespace != NULL) {
     set_has_csharp_namespace();
@@ -9282,6 +9451,13 @@ inline void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_na
   csharp_namespace_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), csharp_namespace,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
+}
+inline ::std::string* FileOptions::unsafe_arena_release_csharp_namespace() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.csharp_namespace)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_csharp_namespace();
+  return csharp_namespace_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_csharp_namespace(
     ::std::string* csharp_namespace) {
@@ -9351,13 +9527,6 @@ inline ::std::string* FileOptions::release_swift_prefix() {
   clear_has_swift_prefix();
   return swift_prefix_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileOptions::unsafe_arena_release_swift_prefix() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.swift_prefix)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_swift_prefix();
-  return swift_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileOptions::set_allocated_swift_prefix(::std::string* swift_prefix) {
   if (swift_prefix != NULL) {
     set_has_swift_prefix();
@@ -9367,6 +9536,13 @@ inline void FileOptions::set_allocated_swift_prefix(::std::string* swift_prefix)
   swift_prefix_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), swift_prefix,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.swift_prefix)
+}
+inline ::std::string* FileOptions::unsafe_arena_release_swift_prefix() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.swift_prefix)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_swift_prefix();
+  return swift_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_swift_prefix(
     ::std::string* swift_prefix) {
@@ -9436,13 +9612,6 @@ inline ::std::string* FileOptions::release_php_class_prefix() {
   clear_has_php_class_prefix();
   return php_class_prefix_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileOptions::unsafe_arena_release_php_class_prefix() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.php_class_prefix)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_php_class_prefix();
-  return php_class_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileOptions::set_allocated_php_class_prefix(::std::string* php_class_prefix) {
   if (php_class_prefix != NULL) {
     set_has_php_class_prefix();
@@ -9452,6 +9621,13 @@ inline void FileOptions::set_allocated_php_class_prefix(::std::string* php_class
   php_class_prefix_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), php_class_prefix,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_class_prefix)
+}
+inline ::std::string* FileOptions::unsafe_arena_release_php_class_prefix() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.php_class_prefix)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_php_class_prefix();
+  return php_class_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_php_class_prefix(
     ::std::string* php_class_prefix) {
@@ -9521,13 +9697,6 @@ inline ::std::string* FileOptions::release_php_namespace() {
   clear_has_php_namespace();
   return php_namespace_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* FileOptions::unsafe_arena_release_php_namespace() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.php_namespace)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_php_namespace();
-  return php_namespace_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void FileOptions::set_allocated_php_namespace(::std::string* php_namespace) {
   if (php_namespace != NULL) {
     set_has_php_namespace();
@@ -9537,6 +9706,13 @@ inline void FileOptions::set_allocated_php_namespace(::std::string* php_namespac
   php_namespace_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), php_namespace,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_namespace)
+}
+inline ::std::string* FileOptions::unsafe_arena_release_php_namespace() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.php_namespace)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_php_namespace();
+  return php_namespace_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_php_namespace(
     ::std::string* php_namespace) {
@@ -10265,13 +10441,6 @@ inline ::std::string* UninterpretedOption_NamePart::release_name_part() {
   clear_has_name_part();
   return name_part_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* UninterpretedOption_NamePart::unsafe_arena_release_name_part() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.NamePart.name_part)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_name_part();
-  return name_part_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void UninterpretedOption_NamePart::set_allocated_name_part(::std::string* name_part) {
   if (name_part != NULL) {
     set_has_name_part();
@@ -10281,6 +10450,13 @@ inline void UninterpretedOption_NamePart::set_allocated_name_part(::std::string*
   name_part_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name_part,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.NamePart.name_part)
+}
+inline ::std::string* UninterpretedOption_NamePart::unsafe_arena_release_name_part() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.NamePart.name_part)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_name_part();
+  return name_part_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void UninterpretedOption_NamePart::unsafe_arena_set_allocated_name_part(
     ::std::string* name_part) {
@@ -10408,13 +10584,6 @@ inline ::std::string* UninterpretedOption::release_identifier_value() {
   clear_has_identifier_value();
   return identifier_value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* UninterpretedOption::unsafe_arena_release_identifier_value() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.identifier_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_identifier_value();
-  return identifier_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void UninterpretedOption::set_allocated_identifier_value(::std::string* identifier_value) {
   if (identifier_value != NULL) {
     set_has_identifier_value();
@@ -10424,6 +10593,13 @@ inline void UninterpretedOption::set_allocated_identifier_value(::std::string* i
   identifier_value_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), identifier_value,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.identifier_value)
+}
+inline ::std::string* UninterpretedOption::unsafe_arena_release_identifier_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.identifier_value)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_identifier_value();
+  return identifier_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void UninterpretedOption::unsafe_arena_set_allocated_identifier_value(
     ::std::string* identifier_value) {
@@ -10565,13 +10741,6 @@ inline ::std::string* UninterpretedOption::release_string_value() {
   clear_has_string_value();
   return string_value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* UninterpretedOption::unsafe_arena_release_string_value() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.string_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_string_value();
-  return string_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void UninterpretedOption::set_allocated_string_value(::std::string* string_value) {
   if (string_value != NULL) {
     set_has_string_value();
@@ -10581,6 +10750,13 @@ inline void UninterpretedOption::set_allocated_string_value(::std::string* strin
   string_value_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), string_value,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.string_value)
+}
+inline ::std::string* UninterpretedOption::unsafe_arena_release_string_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.string_value)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_string_value();
+  return string_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void UninterpretedOption::unsafe_arena_set_allocated_string_value(
     ::std::string* string_value) {
@@ -10650,13 +10826,6 @@ inline ::std::string* UninterpretedOption::release_aggregate_value() {
   clear_has_aggregate_value();
   return aggregate_value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* UninterpretedOption::unsafe_arena_release_aggregate_value() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.aggregate_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_aggregate_value();
-  return aggregate_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void UninterpretedOption::set_allocated_aggregate_value(::std::string* aggregate_value) {
   if (aggregate_value != NULL) {
     set_has_aggregate_value();
@@ -10666,6 +10835,13 @@ inline void UninterpretedOption::set_allocated_aggregate_value(::std::string* ag
   aggregate_value_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), aggregate_value,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.aggregate_value)
+}
+inline ::std::string* UninterpretedOption::unsafe_arena_release_aggregate_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.aggregate_value)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_aggregate_value();
+  return aggregate_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void UninterpretedOption::unsafe_arena_set_allocated_aggregate_value(
     ::std::string* aggregate_value) {
@@ -10799,13 +10975,6 @@ inline ::std::string* SourceCodeInfo_Location::release_leading_comments() {
   clear_has_leading_comments();
   return leading_comments_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* SourceCodeInfo_Location::unsafe_arena_release_leading_comments() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_leading_comments();
-  return leading_comments_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void SourceCodeInfo_Location::set_allocated_leading_comments(::std::string* leading_comments) {
   if (leading_comments != NULL) {
     set_has_leading_comments();
@@ -10815,6 +10984,13 @@ inline void SourceCodeInfo_Location::set_allocated_leading_comments(::std::strin
   leading_comments_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), leading_comments,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.leading_comments)
+}
+inline ::std::string* SourceCodeInfo_Location::unsafe_arena_release_leading_comments() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_leading_comments();
+  return leading_comments_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void SourceCodeInfo_Location::unsafe_arena_set_allocated_leading_comments(
     ::std::string* leading_comments) {
@@ -10884,13 +11060,6 @@ inline ::std::string* SourceCodeInfo_Location::release_trailing_comments() {
   clear_has_trailing_comments();
   return trailing_comments_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* SourceCodeInfo_Location::unsafe_arena_release_trailing_comments() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_trailing_comments();
-  return trailing_comments_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::string* trailing_comments) {
   if (trailing_comments != NULL) {
     set_has_trailing_comments();
@@ -10900,6 +11069,13 @@ inline void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::stri
   trailing_comments_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), trailing_comments,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.trailing_comments)
+}
+inline ::std::string* SourceCodeInfo_Location::unsafe_arena_release_trailing_comments() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_trailing_comments();
+  return trailing_comments_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void SourceCodeInfo_Location::unsafe_arena_set_allocated_trailing_comments(
     ::std::string* trailing_comments) {
@@ -11106,13 +11282,6 @@ inline ::std::string* GeneratedCodeInfo_Annotation::release_source_file() {
   clear_has_source_file();
   return source_file_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
-inline ::std::string* GeneratedCodeInfo_Annotation::unsafe_arena_release_source_file() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  clear_has_source_file();
-  return source_file_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
-}
 inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(::std::string* source_file) {
   if (source_file != NULL) {
     set_has_source_file();
@@ -11122,6 +11291,13 @@ inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(::std::strin
   source_file_.SetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), source_file,
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
+}
+inline ::std::string* GeneratedCodeInfo_Annotation::unsafe_arena_release_source_file() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
+  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  clear_has_source_file();
+  return source_file_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      GetArenaNoVirtual());
 }
 inline void GeneratedCodeInfo_Annotation::unsafe_arena_set_allocated_source_file(
     ::std::string* source_file) {
