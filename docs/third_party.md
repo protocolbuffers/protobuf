@@ -44,6 +44,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Go: https://github.com/gogo/protobuf
 * GopherJS: https://github.com/johanbrandhorst/protobuf
 * Haskell: http://hackage.haskell.org/package/hprotoc
+* Haskell: https://github.com/google/proto-lens (Google-unofficial implementation)
 * Haxe: https://github.com/Atry/protoc-gen-haxe
 * Java: https://github.com/google/protobuf (Google-official implementation)
 * Java/Android: https://github.com/square/wire
