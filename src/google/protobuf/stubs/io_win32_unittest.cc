@@ -85,7 +85,7 @@ class IoWin32Test : public ::testing::Test {
 
 namespace {
 void StripTrailingSlashes(string* str) {
-  size_t i = str->size() - 1;
+  int i = str->size() - 1;
   for (; i >= 0 && ((*str)[i] == '/' || (*str)[i] == '\\'); --i) {}
   str->resize(i+1);
 }
