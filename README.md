@@ -31,7 +31,7 @@ download a pre-built binary from our release page:
   [https://github.com/google/protobuf/releases](https://github.com/google/protobuf/releases)
 
 In the downloads section of each release, you can find pre-built binaries in
-zip packages: protoc-$VERSION-$PLATFORM.zip. It contains the protoc binary
+zip packages: protobuf-$VERSION-$PLATFORM.zip. It contains the protoc binary
 as well as a set of standard .proto files distributed along with protobuf.
 
 If you are looking for an old version that is not available in the release
