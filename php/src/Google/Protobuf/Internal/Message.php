@@ -651,7 +651,7 @@ class Message
      *
      * @param string $data Binary protobuf data.
      * @return null.
-     * @throws Exception Invalid data.
+     * @throws \Exception Invalid data.
      */
     public function mergeFromString($data)
     {
@@ -669,7 +669,7 @@ class Message
      *
      * @param string $data Json protobuf data.
      * @return null.
-     * @throws Exception Invalid data.
+     * @throws \Exception Invalid data.
      */
     public function mergeFromJsonString($data)
     {
@@ -928,7 +928,7 @@ class Message
         }
         try {
             $this->mergeFromJsonArray($array);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new GPBDecodeException($e->getMessage());
         }
     }
