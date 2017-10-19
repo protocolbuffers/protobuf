@@ -35,10 +35,8 @@
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
+#include <google/protobuf/compiler/annotation_test_util.h>
 #include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
 
 #include <google/protobuf/testing/file.h>
@@ -47,37 +45,15 @@
 #include <gtest/gtest.h>
 
 namespace google {
+namespace atu = ::google::protobuf::compiler::annotation_test_util;
+
 namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
 
-// A CodeGenerator that captures the FileDescriptor it's passed as a
-// FileDescriptorProto.
-class DescriptorCapturingGenerator : public CodeGenerator {
- public:
-  // Does not own file; file must outlive the Generator.
-  explicit DescriptorCapturingGenerator(FileDescriptorProto* file)
-      : file_(file) {}
-
-  virtual bool Generate(const FileDescriptor* file, const string& parameter,
-                        GeneratorContext* context, string* error) const {
-    file->CopyTo(file_);
-    return true;
-  }
-
- private:
-  FileDescriptorProto* file_;
-};
-
 class CppMetadataTest : public ::testing::Test {
  public:
-  // Adds a file with name `filename` and content `data`.
-  void AddFile(const string& filename, const string& data) {
-    GOOGLE_CHECK_OK(File::SetContents(TestTempDir() + "/" + filename, data,
-                               true));
-  }
-
   // Tries to capture a FileDescriptorProto, GeneratedCodeInfo, and output
   // code from the previously added file with name `filename`. Returns true on
   // success. If pb_h is non-null, expects a .pb.h and a .pb.h.meta (copied to
@@ -87,26 +63,21 @@ class CppMetadataTest : public ::testing::Test {
                        string* proto_h, GeneratedCodeInfo* proto_h_info,
                        string* pb_cc) {
     google::protobuf::compiler::CommandLineInterface cli;
-    cli.SetInputsAreProtoPathRelative(true);
-
     CppGenerator cpp_generator;
-    DescriptorCapturingGenerator capturing_generator(file);
     cli.RegisterGenerator("--cpp_out", &cpp_generator, "");
-    cli.RegisterGenerator("--capture_out", &capturing_generator, "");
-
-    string proto_path = "-I" + TestTempDir();
     string cpp_out =
         "--cpp_out=annotate_headers=true,"
         "annotation_pragma_name=pragma_name,"
         "annotation_guard_name=guard_name:" +
         TestTempDir();
-    string capture_out = "--capture_out=" + TestTempDir();
 
-    const char* argv[] = {"protoc", proto_path.c_str(), cpp_out.c_str(),
-                          capture_out.c_str(), filename.c_str()};
+    const bool result =
+        atu::CaptureMetadata(filename, cpp_out,
+                             /* meta_file_suffix */ "", &cli, file,
+                             /* outputs */ NULL);
 
-    if (cli.Run(5, argv) != 0) {
-      return false;
+    if (!result) {
+      return result;
     }
 
     string output_base = TestTempDir() + "/" + StripProto(filename);
@@ -119,7 +90,7 @@ class CppMetadataTest : public ::testing::Test {
     if (pb_h != NULL && pb_h_info != NULL) {
       GOOGLE_CHECK_OK(
           File::GetContents(output_base + ".pb.h", pb_h, true));
-      if (!DecodeMetadata(output_base + ".pb.h.meta", pb_h_info)) {
+      if (!atu::DecodeMetadata(output_base + ".pb.h.meta", pb_h_info)) {
         return false;
       }
     }
@@ -127,22 +98,12 @@ class CppMetadataTest : public ::testing::Test {
     if (proto_h != NULL && proto_h_info != NULL) {
       GOOGLE_CHECK_OK(File::GetContents(output_base + ".proto.h", proto_h,
                                  true));
-      if (!DecodeMetadata(output_base + ".proto.h.meta", proto_h_info)) {
+      if (!atu::DecodeMetadata(output_base + ".proto.h.meta", proto_h_info)) {
         return false;
       }
     }
 
     return true;
-  }
-
- private:
-  // Decodes GeneratedCodeInfo stored in path and copies it to info.
-  // Returns true on success.
-  bool DecodeMetadata(const string& path, GeneratedCodeInfo* info) {
-    string data;
-    GOOGLE_CHECK_OK(File::GetContents(path, &data, true));
-    io::ArrayInputStream input(data.data(), data.size());
-    return info->ParseFromZeroCopyStream(&input);
   }
 };
 
@@ -152,48 +113,11 @@ const char kSmallTestFile[] =
     "enum Enum { VALUE = 0; }\n"
     "message Message { }\n";
 
-// Finds the Annotation for a given source file and path (or returns null if it
-// couldn't).
-const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
-    const GeneratedCodeInfo& info, const string& source_file,
-    const std::vector<int>& path) {
-  for (int i = 0; i < info.annotation_size(); ++i) {
-    const GeneratedCodeInfo::Annotation* annotation = &info.annotation(i);
-    if (annotation->source_file() != source_file ||
-        annotation->path_size() != path.size()) {
-      continue;
-    }
-    int node = 0;
-    for (; node < path.size(); ++node) {
-      if (annotation->path(node) != path[node]) {
-        break;
-      }
-    }
-    if (node == path.size()) {
-      return annotation;
-    }
-  }
-  return NULL;
-}
-
-// Returns true if the provided annotation covers a given substring in
-// file_content.
-bool AnnotationMatchesSubstring(const string& file_content,
-                                const GeneratedCodeInfo::Annotation* annotation,
-                                const string& expected_text) {
-  uint32 begin = annotation->begin();
-  uint32 end = annotation->end();
-  if (end < begin || end > file_content.size()) {
-    return false;
-  }
-  return file_content.substr(begin, end - begin) == expected_text;
-}
-
 TEST_F(CppMetadataTest, CapturesEnumNames) {
   FileDescriptorProto file;
   GeneratedCodeInfo info;
   string pb_h;
-  AddFile("test.proto", kSmallTestFile);
+  atu::AddFile("test.proto", kSmallTestFile);
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
   EXPECT_EQ("Enum", file.enum_type(0).name());
@@ -201,16 +125,16 @@ TEST_F(CppMetadataTest, CapturesEnumNames) {
   enum_path.push_back(FileDescriptorProto::kEnumTypeFieldNumber);
   enum_path.push_back(0);
   const GeneratedCodeInfo::Annotation* enum_annotation =
-      FindAnnotationOnPath(info, "test.proto", enum_path);
+      atu::FindAnnotationOnPath(info, "test.proto", enum_path);
   EXPECT_TRUE(NULL != enum_annotation);
-  EXPECT_TRUE(AnnotationMatchesSubstring(pb_h, enum_annotation, "Enum"));
+  EXPECT_TRUE(atu::AnnotationMatchesSubstring(pb_h, enum_annotation, "Enum"));
 }
 
 TEST_F(CppMetadataTest, AddsPragma) {
   FileDescriptorProto file;
   GeneratedCodeInfo info;
   string pb_h;
-  AddFile("test.proto", kSmallTestFile);
+  atu::AddFile("test.proto", kSmallTestFile);
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
   EXPECT_TRUE(pb_h.find("#ifdef guard_name") != string::npos);
@@ -222,7 +146,7 @@ TEST_F(CppMetadataTest, CapturesMessageNames) {
   FileDescriptorProto file;
   GeneratedCodeInfo info;
   string pb_h;
-  AddFile("test.proto", kSmallTestFile);
+  atu::AddFile("test.proto", kSmallTestFile);
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
   EXPECT_EQ("Message", file.message_type(0).name());
@@ -230,9 +154,10 @@ TEST_F(CppMetadataTest, CapturesMessageNames) {
   message_path.push_back(FileDescriptorProto::kMessageTypeFieldNumber);
   message_path.push_back(0);
   const GeneratedCodeInfo::Annotation* message_annotation =
-      FindAnnotationOnPath(info, "test.proto", message_path);
+      atu::FindAnnotationOnPath(info, "test.proto", message_path);
   EXPECT_TRUE(NULL != message_annotation);
-  EXPECT_TRUE(AnnotationMatchesSubstring(pb_h, message_annotation, "Message"));
+  EXPECT_TRUE(
+      atu::AnnotationMatchesSubstring(pb_h, message_annotation, "Message"));
 }
 
 }  // namespace

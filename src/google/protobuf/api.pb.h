@@ -225,8 +225,8 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   void clear_source_context();
   static const int kSourceContextFieldNumber = 5;
   const ::google::protobuf::SourceContext& source_context() const;
-  ::google::protobuf::SourceContext* mutable_source_context();
   ::google::protobuf::SourceContext* release_source_context();
+  ::google::protobuf::SourceContext* mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* source_context);
 
   // .google.protobuf.Syntax syntax = 7;
@@ -641,9 +641,6 @@ Api::methods() const {
 inline int Api::options_size() const {
   return options_.size();
 }
-inline void Api::clear_options() {
-  options_.Clear();
-}
 inline const ::google::protobuf::Option& Api::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.options)
   return options_.Get(index);
@@ -724,15 +721,18 @@ inline void Api::set_allocated_version(::std::string* version) {
 inline bool Api::has_source_context() const {
   return this != internal_default_instance() && source_context_ != NULL;
 }
-inline void Api::clear_source_context() {
-  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
-  source_context_ = NULL;
-}
 inline const ::google::protobuf::SourceContext& Api::source_context() const {
   const ::google::protobuf::SourceContext* p = source_context_;
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)
   return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceContext*>(
       &::google::protobuf::_SourceContext_default_instance_);
+}
+inline ::google::protobuf::SourceContext* Api::release_source_context() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
+  
+  ::google::protobuf::SourceContext* temp = source_context_;
+  source_context_ = NULL;
+  return temp;
 }
 inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
   
@@ -742,21 +742,22 @@ inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return source_context_;
 }
-inline ::google::protobuf::SourceContext* Api::release_source_context() {
-  // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
-  
-  ::google::protobuf::SourceContext* temp = source_context_;
-  source_context_ = NULL;
-  return temp;
-}
 inline void Api::set_allocated_source_context(::google::protobuf::SourceContext* source_context) {
-  delete source_context_;
-  source_context_ = source_context;
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(source_context_);
+  }
   if (source_context) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      source_context = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, source_context, submessage_arena);
+    }
     
   } else {
     
   }
+  source_context_ = source_context;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.source_context)
 }
 
@@ -998,9 +999,6 @@ inline void Method::set_response_streaming(bool value) {
 // repeated .google.protobuf.Option options = 6;
 inline int Method::options_size() const {
   return options_.size();
-}
-inline void Method::clear_options() {
-  options_.Clear();
 }
 inline const ::google::protobuf::Option& Method::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.options)

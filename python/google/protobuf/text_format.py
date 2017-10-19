@@ -485,7 +485,10 @@ def Parse(text,
     ParseError: On text parsing problems.
   """
   if not isinstance(text, str):
-    text = text.decode('utf-8')
+    if six.PY3:
+      text = text.decode('utf-8')
+    else:
+      text = text.encode('utf-8')
   return ParseLines(text.split('\n'),
                     message,
                     allow_unknown_extension,
@@ -517,6 +520,11 @@ def Merge(text,
   Raises:
     ParseError: On text parsing problems.
   """
+  if not isinstance(text, str):
+    if six.PY3:
+      text = text.decode('utf-8')
+    else:
+      text = text.encode('utf-8')
   return MergeLines(
       text.split('\n'),
       message,
@@ -1559,6 +1567,11 @@ def ParseEnum(field, value):
                        (enum_descriptor.full_name, value))
   else:
     # Numeric value.
+    if hasattr(field.file, 'syntax'):
+      # Attribute is checked for compatibility.
+      if field.file.syntax == 'proto3':
+        # Proto3 accept numeric unknown enums.
+        return number
     enum_value = enum_descriptor.values_by_number.get(number, None)
     if enum_value is None:
       raise ValueError('Enum type "%s" has no value with number %d.' %

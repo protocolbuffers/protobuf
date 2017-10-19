@@ -348,6 +348,46 @@ TEST(FieldMaskUtilTest, TestIntersect) {
   EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
 }
 
+TEST(FieldMaskUtilTest, TestSubtract) {
+  FieldMask mask1, mask2, out;
+  // Normal case.
+  FieldMaskUtil::FromString(
+      "optional_int32,optional_uint64,optional_nested_message,optional_foreign_"
+      "message,repeated_int32,repeated_foreign_message,repeated_nested_message."
+      "bb",
+      &mask1);
+
+  FieldMaskUtil::FromString(
+      "optional_int32,optional_nested_message.bb,optional_foreign_message.c,"
+      "repeated_int32,repeated_nested_message.bb,repeated_foreign_message.f,"
+      "repeated_foreign_message.d,repeated_nested_message.bb,repeated_uint32",
+      &mask2);
+
+  FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ(
+      "optional_foreign_message.d,optional_uint64,repeated_foreign_message.c",
+      FieldMaskUtil::ToString(out));
+
+  // mask1 is empty.
+  FieldMaskUtil::FromString("", &mask1);
+  FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("", FieldMaskUtil::ToString(out));
+
+  // mask1 is "optional_nested_message" and mask2 is
+  // "optional_nested_message.nonexist_field".
+  FieldMaskUtil::FromString("optional_nested_message", &mask1);
+  FieldMaskUtil::FromString("optional_nested_message.nonexist_field", &mask2);
+  FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("optional_nested_message", FieldMaskUtil::ToString(out));
+
+  // mask1 is "optional_nested_message" and mask2 is
+  // "optional_nested_message".
+  FieldMaskUtil::FromString("optional_nested_message", &mask1);
+  FieldMaskUtil::FromString("optional_nested_message", &mask2);
+  FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("", FieldMaskUtil::ToString(out));
+}
+
 TEST(FieldMaskUtilTest, TestIspathInFieldMask) {
   FieldMask mask;
   FieldMaskUtil::FromString("foo.bar", &mask);

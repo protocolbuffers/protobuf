@@ -113,6 +113,13 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   static void Intersect(const FieldMask& mask1, const FieldMask& mask2,
                         FieldMask* out);
 
+  // Subtracts mask2 from mask1 base of type T.
+  template <typename T>
+  static void Subtract(const FieldMask& mask1, const FieldMask& mask2,
+                       FieldMask* out) {
+    InternalSubtract(T::descriptor(), mask1, mask2, out);
+  }
+
   // Returns true if path is covered by the given FieldMask. Note that path
   // "foo.bar" covers all paths like "foo.bar.baz", "foo.bar.quz.x", etc.
   static bool IsPathInFieldMask(StringPiece path, const FieldMask& mask);
@@ -167,6 +174,10 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
 
   static void InternalGetFieldMaskForAllFields(const Descriptor* descriptor,
                                                FieldMask* out);
+
+  static void InternalSubtract(const Descriptor* descriptor,
+                               const FieldMask& mask1, const FieldMask& mask2,
+                               FieldMask* out);
 };
 
 // Note that for compatibility with the defined behaviour for FieldMask in

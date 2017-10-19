@@ -3478,7 +3478,8 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here.
+    /// See the documentation for the "Options" section above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {

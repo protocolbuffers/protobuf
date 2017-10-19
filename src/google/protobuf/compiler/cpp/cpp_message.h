@@ -85,7 +85,7 @@ class MessageGenerator {
 
   // Generate definitions of inline methods (placed at the end of the header
   // file).
-  void GenerateInlineMethods(io::Printer* printer, bool is_inline);
+  void GenerateInlineMethods(io::Printer* printer);
 
   // Dependent methods are always inline.
   void GenerateDependentInlineMethods(io::Printer* printer);
@@ -112,7 +112,7 @@ class MessageGenerator {
   void GenerateDependentFieldAccessorDeclarations(io::Printer* printer);
   void GenerateFieldAccessorDeclarations(io::Printer* printer);
   void GenerateDependentFieldAccessorDefinitions(io::Printer* printer);
-  void GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline);
+  void GenerateFieldAccessorDefinitions(io::Printer* printer);
 
   // Generate the table-driven parsing array.  Returns the number of entries
   // generated.
@@ -189,7 +189,7 @@ class MessageGenerator {
                                     std::map<string, string> vars,
                                     io::Printer* printer);
   // Generates has_foo() functions and variables for oneof field has-bits.
-  void GenerateOneofHasBits(io::Printer* printer, bool is_inline);
+  void GenerateOneofHasBits(io::Printer* printer);
   // Generates has_foo_bar() functions for oneof members.
   void GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                   const std::map<string, string>& vars,
@@ -197,6 +197,7 @@ class MessageGenerator {
   // Generates the clear_foo() method for a field.
   void GenerateFieldClear(const FieldDescriptor* field,
                           const std::map<string, string>& vars,
+                          bool is_inline,
                           io::Printer* printer);
 
   void GenerateConstructorBody(io::Printer* printer,

@@ -862,11 +862,11 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   bool IsSerializationDeterministic() const {
     return serialization_deterministic_is_overridden_ ?
         serialization_deterministic_override_ :
-        default_serialization_deterministic_;
+        IsDefaultSerializationDeterministic();
   }
 
   static bool IsDefaultSerializationDeterministic() {
-    return google::protobuf::internal::Acquire_Load(&default_serialization_deterministic_);
+    return google::protobuf::internal::NoBarrier_Load(&default_serialization_deterministic_);
   }
 
  private:
@@ -882,6 +882,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   bool serialization_deterministic_is_overridden_;
   bool serialization_deterministic_override_;
   // Conceptually, default_serialization_deterministic_ is an atomic bool.
+  // TODO(haberman): replace with std::atomic<bool> when we move to C++11.
   static google::protobuf::internal::AtomicWord default_serialization_deterministic_;
 
   // Advance the buffer by a given number of bytes.
@@ -909,7 +910,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // thread has done so.
   friend void ::google::protobuf::internal::MapTestForceDeterministic();
   static void SetDefaultSerializationDeterministic() {
-    google::protobuf::internal::Release_Store(&default_serialization_deterministic_, 1);
+    google::protobuf::internal::NoBarrier_Store(&default_serialization_deterministic_, 1);
   }
 };
 

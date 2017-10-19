@@ -121,6 +121,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/any_test.cc
   ${protobuf_source_dir}/src/google/protobuf/arena_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/arenastring_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/annotation_test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_move_unittest.cc

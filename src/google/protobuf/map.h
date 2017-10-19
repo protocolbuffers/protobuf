@@ -142,6 +142,26 @@ class Map {
     insert(other.begin(), other.end());
   }
 
+#if LANG_CXX11
+  Map(Map&& other) noexcept : Map() {
+    if (other.arena_) {
+      *this = other;
+    } else {
+      swap(other);
+    }
+  }
+  Map& operator=(Map&& other) noexcept {
+    if (this != &other) {
+      if (arena_ != other.arena_) {
+        *this = other;
+      } else {
+        swap(other);
+      }
+    }
+    return *this;
+  }
+#endif
+
   template <class InputIt>
   Map(const InputIt& first, const InputIt& last)
       : arena_(NULL), default_enum_value_(0) {
@@ -1036,12 +1056,12 @@ class Map {
   }
   const T& at(const key_type& key) const {
     const_iterator it = find(key);
-    GOOGLE_CHECK(it != end());
+    GOOGLE_CHECK(it != end()) << "key not found: " << key;
     return it->second;
   }
   T& at(const key_type& key) {
     iterator it = find(key);
-    GOOGLE_CHECK(it != end());
+    GOOGLE_CHECK(it != end()) << "key not found: " << key;
     return it->second;
   }
 

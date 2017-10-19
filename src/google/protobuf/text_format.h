@@ -211,7 +211,7 @@ class LIBPROTOBUF_EXPORT TextFormat {
       single_line_mode_ = single_line_mode;
     }
 
-    bool IsInSingleLineMode() {
+    bool IsInSingleLineMode() const {
       return single_line_mode_;
     }
 

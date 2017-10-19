@@ -413,8 +413,7 @@ public abstract class CodedInputStream {
 
   private boolean explicitDiscardUnknownFields = false;
 
-  /** TODO(liujisi): flip the default.*/
-  private static volatile boolean proto3DiscardUnknownFieldsDefault = true;
+  private static volatile boolean proto3DiscardUnknownFieldsDefault = false;
 
   static void setProto3DiscardUnknownsByDefaultForTest() {
     proto3DiscardUnknownFieldsDefault = true;

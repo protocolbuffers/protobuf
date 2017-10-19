@@ -51,6 +51,9 @@ goog.provide('jspb.ScalarFieldType');
 goog.provide('jspb.WriterFunction');
 
 
+goog.forwardDeclare('jspb.BinaryMessage');
+goog.forwardDeclare('jspb.BinaryReader');
+goog.forwardDeclare('jspb.BinaryWriter');
 goog.forwardDeclare('jspb.Message');
 goog.forwardDeclare('jsproto.BinaryExtension');
 

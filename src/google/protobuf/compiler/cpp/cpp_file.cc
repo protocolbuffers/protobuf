@@ -303,6 +303,18 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
     }
   }
 
+  // TODO(gerbens) Remove this when all code in google is using the same
+  // proto library. This is a temporary hack to force build errors if
+  // the proto library is compiled with GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+  // and is also linking internal proto2. This is to prevent regressions while
+  // we work cleaning up the code base. After this is completed and we have
+  // one proto lib all code uses this should be removed.
+  printer->Print(
+    "// This is a temporary google only hack\n"
+    "#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS\n"
+    "#include \"third_party/protobuf/version.h\"\n"
+    "#endif\n");
+
   printer->Print(
     "// @@protoc_insertion_point(includes)\n");
 }
@@ -385,6 +397,10 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* printer) {
 
     // Define default instances
     GenerateSourceDefaultInstance(idx, printer);
+    if (UsingImplicitWeakFields(file_, options_)) {
+      printer->Print("void $classname$_ReferenceStrong() {}\n", "classname",
+                     message_generators_[idx]->classname_);
+    }
 
     // Generate classes.
     printer->Print("\n");
@@ -452,7 +468,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     for (int i = 0; i < message_generators_.size(); i++) {
       GenerateSourceDefaultInstance(i, printer);
       if (UsingImplicitWeakFields(file_, options_)) {
-        printer->Print("void $classname$_Reference() {}\n", "classname",
+        printer->Print("void $classname$_ReferenceStrong() {}\n", "classname",
                        message_generators_[i]->classname_);
       }
     }
@@ -564,7 +580,7 @@ class FileGenerator::ForwardDeclarations {
           "classname",
           it->first);
       if (options.lite_implicit_weak_fields) {
-        printer->Print("void $classname$_Reference();\n",
+        printer->Print("void $classname$_ReferenceStrong();\n",
                        "classname", it->first);
       }
     }
@@ -827,8 +843,12 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc, io::Printer* printer) {
   printer->Print(
       "void InitDefaults$scc_name$Impl() {\n"
       "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n\n"
+      "#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS\n"
+      "  ::google::protobuf::internal::InitProtobufDefaultsForceUnique();\n"
+      "#else\n"
+      "  ::google::protobuf::internal::InitProtobufDefaults();\n"
+      "#endif  // GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS\n",
         // Force initialization of primitive values we depend on.
-      "  ::google::protobuf::internal::InitProtobufDefaults();\n",
       "scc_name", scc_name);
 
   printer->Indent();
@@ -1317,8 +1337,7 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
       printer->Print(kThinSeparator);
       printer->Print("\n");
     }
-    message_generators_[i]->GenerateInlineMethods(printer,
-                                                  /* is_inline = */ true);
+    message_generators_[i]->GenerateInlineMethods(printer);
   }
   printer->Print(
     "#ifdef __GNUC__\n"

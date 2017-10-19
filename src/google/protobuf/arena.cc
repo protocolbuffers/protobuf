@@ -66,90 +66,78 @@ GOOGLE_THREAD_LOCAL ArenaImpl::ThreadCache ArenaImpl::thread_cache_ = {-1, NULL}
 
 void ArenaImpl::Init() {
   lifecycle_id_ = lifecycle_id_generator_.GetNext();
-  blocks_ = 0;
-  hint_ = 0;
-  space_allocated_ = 0;
-  owns_first_block_ = true;
+  google::protobuf::internal::NoBarrier_Store(&hint_, 0);
+  google::protobuf::internal::NoBarrier_Store(&threads_, 0);
 
-  if (options_.initial_block != NULL && options_.initial_block_size > 0) {
-    GOOGLE_CHECK_GE(options_.initial_block_size, sizeof(Block))
-        << ": Initial block size too small for header.";
-
-    // Add first unowned block to list.
-    Block* first_block = reinterpret_cast<Block*>(options_.initial_block);
-    first_block->size = options_.initial_block_size;
-    first_block->pos = kHeaderSize;
-    first_block->next = NULL;
-    first_block->cleanup = NULL;
+  if (initial_block_) {
     // Thread which calls Init() owns the first block. This allows the
-    // single-threaded case to allocate on the first block without taking any
-    // locks.
-    first_block->owner = &thread_cache();
-    AddBlockInternal(first_block);
-    CacheBlock(first_block);
-    owns_first_block_ = false;
+    // single-threaded case to allocate on the first block without having to
+    // perform atomic operations.
+    InitBlock(initial_block_, &thread_cache(), options_.initial_block_size);
+    ThreadInfo* info = NewThreadInfo(initial_block_);
+    info->next = NULL;
+    google::protobuf::internal::NoBarrier_Store(&threads_,
+                                  reinterpret_cast<google::protobuf::internal::AtomicWord>(info));
+    google::protobuf::internal::NoBarrier_Store(&space_allocated_,
+                                  options_.initial_block_size);
+    CacheBlock(initial_block_);
+  } else {
+    google::protobuf::internal::NoBarrier_Store(&space_allocated_, 0);
   }
 }
 
-ArenaImpl::~ArenaImpl() { ResetInternal(); }
-
-uint64 ArenaImpl::Reset() {
-  // Invalidate any ThreadCaches pointing to any blocks we just destroyed.
-  lifecycle_id_ = lifecycle_id_generator_.GetNext();
-  return ResetInternal();
+ArenaImpl::~ArenaImpl() {
+  // Have to do this in a first pass, because some of the destructors might
+  // refer to memory in other blocks.
+  CleanupList();
+  FreeBlocks();
 }
 
-uint64 ArenaImpl::ResetInternal() {
-  Block* head =
-      reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
-  CleanupList(head);
-  uint64 space_allocated = FreeBlocks(head);
+uint64 ArenaImpl::Reset() {
+  // Have to do this in a first pass, because some of the destructors might
+  // refer to memory in other blocks.
+  CleanupList();
+  uint64 space_allocated = FreeBlocks();
+  Init();
 
   return space_allocated;
 }
 
 ArenaImpl::Block* ArenaImpl::NewBlock(void* me, Block* my_last_block,
-                                      size_t min_bytes, size_t start_block_size,
-                                      size_t max_block_size) {
+                                      size_t min_bytes) {
   size_t size;
   if (my_last_block != NULL) {
     // Double the current block size, up to a limit.
-    size = std::min(2 * my_last_block->size, max_block_size);
+    size = std::min(2 * my_last_block->size, options_.max_block_size);
   } else {
-    size = start_block_size;
+    size = options_.start_block_size;
   }
   // Verify that min_bytes + kHeaderSize won't overflow.
   GOOGLE_CHECK_LE(min_bytes, std::numeric_limits<size_t>::max() - kHeaderSize);
   size = std::max(size, kHeaderSize + min_bytes);
 
   Block* b = reinterpret_cast<Block*>(options_.block_alloc(size));
+  InitBlock(b, me, size);
+  google::protobuf::internal::NoBarrier_AtomicIncrement(&space_allocated_, size);
+  return b;
+}
+
+void ArenaImpl::InitBlock(Block* b, void *me, size_t size) {
   b->pos = kHeaderSize;
   b->size = size;
   b->owner = me;
-  b->cleanup = NULL;
+  b->next = NULL;
 #ifdef ADDRESS_SANITIZER
   // Poison the rest of the block for ASAN. It was unpoisoned by the underlying
   // malloc but it's not yet usable until we return it as part of an allocation.
   ASAN_POISON_MEMORY_REGION(
       reinterpret_cast<char*>(b) + b->pos, b->size - b->pos);
 #endif  // ADDRESS_SANITIZER
-  AddBlock(b);
-  return b;
 }
 
-void ArenaImpl::AddBlock(Block* b) {
-  MutexLock l(&blocks_lock_);
-  AddBlockInternal(b);
-}
-
-void ArenaImpl::AddBlockInternal(Block* b) {
-  b->next = reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
-  google::protobuf::internal::Release_Store(&blocks_, reinterpret_cast<google::protobuf::internal::AtomicWord>(b));
-  space_allocated_ += b->size;
-}
-
-ArenaImpl::Block* ArenaImpl::ExpandCleanupList(Block* b) {
-  size_t size = b->cleanup ? b->cleanup->size * 2 : kMinCleanupListElements;
+ArenaImpl::CleanupChunk* ArenaImpl::ExpandCleanupList(CleanupChunk* cleanup,
+                                                      Block* b) {
+  size_t size = cleanup ? cleanup->size * 2 : kMinCleanupListElements;
   size = std::min(size, kMaxCleanupListElements);
   size_t bytes = internal::AlignUpTo8(CleanupChunk::SizeOf(size));
   if (b->avail() < bytes) {
@@ -157,24 +145,25 @@ ArenaImpl::Block* ArenaImpl::ExpandCleanupList(Block* b) {
   }
   CleanupChunk* list =
       reinterpret_cast<CleanupChunk*>(AllocFromBlock(b, bytes));
-  list->next = b->cleanup;
+  list->next = b->thread_info->cleanup;
   list->size = size;
   list->len = 0;
-  b->cleanup = list;
-  return b;
+  b->thread_info->cleanup = list;
+  return list;
 }
 
 inline GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
 void ArenaImpl::AddCleanupInBlock(
-    Block* b, void* elem, void (*cleanup)(void*)) {
-  if (b->cleanup == NULL || b->cleanup->len == b->cleanup->size) {
-    b = ExpandCleanupList(b);
+    Block* b, void* elem, void (*func)(void*)) {
+  CleanupChunk* cleanup = b->thread_info->cleanup;
+  if (cleanup == NULL || cleanup->len == cleanup->size) {
+    cleanup = ExpandCleanupList(cleanup, b);
   }
 
-  CleanupNode* node = &b->cleanup->nodes[b->cleanup->len++];
+  CleanupNode* node = &cleanup->nodes[cleanup->len++];
 
   node->elem = elem;
-  node->cleanup = cleanup;
+  node->cleanup = func;
 }
 
 void ArenaImpl::AddCleanup(void* elem, void (*cleanup)(void*)) {
@@ -240,92 +229,82 @@ void* ArenaImpl::AllocFromBlock(Block* b, size_t n) {
 
 ArenaImpl::Block* ArenaImpl::GetBlockSlow(void* me, Block* my_full_block,
                                           size_t n) {
-  Block* b = FindBlock(me);  // Find block owned by me.
-  if (b == NULL || b->avail() < n) {
-    b = NewBlock(me, b, n, options_.start_block_size, options_.max_block_size);
-
-    // Try to steal the cleanup list from my_full_block.  It's too full for this
-    // allocation, but it might have space left in its cleanup list and there's
-    // no reason to waste that memory.
-    if (my_full_block) {
-      GOOGLE_DCHECK_EQ(my_full_block->owner, me);
-      GOOGLE_DCHECK(b->cleanup == NULL);
-      b->cleanup = my_full_block->cleanup;
-      my_full_block->cleanup = NULL;
-    }
+  ThreadInfo* info =
+      my_full_block ? my_full_block->thread_info : GetThreadInfo(me, n);
+  GOOGLE_DCHECK(info != NULL);
+  Block* b = info->head;
+  if (b->avail() < n) {
+    Block* new_b = NewBlock(me, b, n);
+    new_b->thread_info = info;
+    new_b->next = b;
+    info->head = new_b;
+    b = new_b;
   }
   CacheBlock(b);
   return b;
 }
 
 uint64 ArenaImpl::SpaceAllocated() const {
-  MutexLock l(&blocks_lock_);
-  return space_allocated_;
+  return google::protobuf::internal::NoBarrier_Load(&space_allocated_);
 }
 
 uint64 ArenaImpl::SpaceUsed() const {
+  ThreadInfo* info =
+      reinterpret_cast<ThreadInfo*>(google::protobuf::internal::Acquire_Load(&threads_));
   uint64 space_used = 0;
-  Block* b = reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
-  while (b != NULL) {
-    space_used += (b->pos - kHeaderSize);
-    b = b->next;
+
+  for ( ; info; info = info->next) {
+    // Remove the overhead of the ThreadInfo itself.
+    space_used -= sizeof(ThreadInfo);
+    for (Block* b = info->head; b; b = b->next) {
+      space_used += (b->pos - kHeaderSize);
+    }
   }
+
   return space_used;
 }
 
-uint64 ArenaImpl::FreeBlocks(Block* head) {
+uint64 ArenaImpl::FreeBlocks() {
   uint64 space_allocated = 0;
-  Block* first_block = NULL;
-  Block* b = head;
+  // By omitting an Acquire barrier we ensure that any user code that doesn't
+  // properly synchronize Reset() or the destructor will throw a TSAN warning.
+  ThreadInfo* info =
+      reinterpret_cast<ThreadInfo*>(google::protobuf::internal::NoBarrier_Load(&threads_));
 
-  while (b != NULL) {
-    space_allocated += (b->size);
-    Block* next = b->next;
-    if (next != NULL) {
+  while (info) {
+    // This is inside the block we are freeing, so we need to read it now.
+    ThreadInfo* next_info = info->next;
+    for (Block* b = info->head; b; ) {
+      // This is inside the block we are freeing, so we need to read it now.
+      Block* next_block = b->next;
+      space_allocated += (b->size);
+
 #ifdef ADDRESS_SANITIZER
       // This memory was provided by the underlying allocator as unpoisoned, so
       // return it in an unpoisoned state.
       ASAN_UNPOISON_MEMORY_REGION(reinterpret_cast<char*>(b), b->size);
 #endif  // ADDRESS_SANITIZER
-      options_.block_dealloc(b, b->size);
-    } else {
-      if (owns_first_block_) {
-#ifdef ADDRESS_SANITIZER
-        // This memory was provided by the underlying allocator as unpoisoned,
-        // so return it in an unpoisoned state.
-        ASAN_UNPOISON_MEMORY_REGION(reinterpret_cast<char*>(b), b->size);
-#endif  // ADDRESS_SANITIZER
+
+      if (b != initial_block_) {
         options_.block_dealloc(b, b->size);
-      } else {
-        // User passed in the first block, skip free'ing the memory.
-        first_block = b;
       }
+
+      b = next_block;
     }
-    b = next;
+    info = next_info;
   }
-  blocks_ = 0;
-  hint_ = 0;
-  space_allocated_ = 0;
-  if (!owns_first_block_) {
-    // Make the first block that was passed in through ArenaOptions
-    // available for reuse.
-    first_block->pos = kHeaderSize;
-    first_block->cleanup = NULL;
-    // Thread which calls Reset() owns the first block. This allows the
-    // single-threaded case to allocate on the first block without taking any
-    // locks.
-    first_block->owner = &thread_cache();
-    AddBlockInternal(first_block);
-    CacheBlock(first_block);
-  }
+
   return space_allocated;
 }
 
-void ArenaImpl::CleanupList(Block* head) {
-  // Have to do this in a first pass, because some of the destructors might
-  // refer to memory in other blocks.
-  for (Block* b = head; b; b = b->next) {
-    CleanupChunk* list = b->cleanup;
+void ArenaImpl::CleanupList() {
+  // By omitting an Acquire barrier we ensure that any user code that doesn't
+  // properly synchronize Reset() or the destructor will throw a TSAN warning.
+  ThreadInfo* info =
+      reinterpret_cast<ThreadInfo*>(google::protobuf::internal::NoBarrier_Load(&threads_));
+
+  for ( ; info; info = info->next) {
+    CleanupChunk* list = info->cleanup;
     while (list) {
       size_t n = list->len;
       CleanupNode* node = &list->nodes[list->len - 1];
@@ -334,24 +313,56 @@ void ArenaImpl::CleanupList(Block* head) {
       }
       list = list->next;
     }
-    b->cleanup = NULL;
   }
 }
 
-ArenaImpl::Block* ArenaImpl::FindBlock(void* me) {
-  // TODO(sanjay): We might want to keep a separate list with one
-  // entry per thread.
-  Block* b = reinterpret_cast<Block*>(google::protobuf::internal::Acquire_Load(&blocks_));
-  while (b != NULL && b->owner != me) {
-    b = b->next;
+ArenaImpl::ThreadInfo* ArenaImpl::NewThreadInfo(Block* b) {
+  GOOGLE_DCHECK(FindThreadInfo(b->owner) == NULL);
+  ThreadInfo* info =
+      reinterpret_cast<ThreadInfo*>(AllocFromBlock(b, sizeof(ThreadInfo)));
+  b->thread_info = info;
+  info->owner = b->owner;
+  info->head = b;
+  info->cleanup = NULL;
+  return info;
+}
+
+ArenaImpl::ThreadInfo* ArenaImpl::FindThreadInfo(void* me) {
+  ThreadInfo* info =
+      reinterpret_cast<ThreadInfo*>(google::protobuf::internal::Acquire_Load(&threads_));
+  for ( ; info; info = info->next) {
+    if (info->owner == me) {
+      return info;
+    }
   }
-  return b;
+
+  return NULL;
+}
+
+ArenaImpl::ThreadInfo* ArenaImpl::GetThreadInfo(void* me, size_t n) {
+  ThreadInfo* info = FindThreadInfo(me);
+
+  if (!info) {
+    // This thread doesn't have any ThreadInfo, which also means it doesn't have
+    // any blocks yet.  So we'll allocate its first block now.
+    Block* b = NewBlock(me, NULL, sizeof(ThreadInfo) + n);
+    info = NewThreadInfo(b);
+
+    google::protobuf::internal::AtomicWord head;
+    do {
+      head = google::protobuf::internal::NoBarrier_Load(&threads_);
+      info->next = reinterpret_cast<ThreadInfo*>(head);
+    } while (google::protobuf::internal::Release_CompareAndSwap(
+                 &threads_, head, reinterpret_cast<google::protobuf::internal::AtomicWord>(info)) != head);
+  }
+
+  return info;
 }
 
 }  // namespace internal
 
 void Arena::CallDestructorHooks() {
-  uint64 space_allocated = SpaceAllocated();
+  uint64 space_allocated = impl_.SpaceAllocated();
   // Call the reset hook
   if (on_arena_reset_ != NULL) {
     on_arena_reset_(this, hooks_cookie_, space_allocated);

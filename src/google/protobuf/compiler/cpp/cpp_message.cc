@@ -306,6 +306,25 @@ void SetUnknkownFieldsVariable(const Descriptor* descriptor,
       "_internal_metadata_.mutable_unknown_fields()";
 }
 
+bool IsCrossFileMapField(const FieldDescriptor* field) {
+  if (!field->is_map()) {
+    return false;
+  }
+
+  const Descriptor* d = field->message_type();
+  const FieldDescriptor* value = d->FindFieldByNumber(2);
+
+  return IsCrossFileMessage(value);
+}
+
+bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
+  if (IsCrossFileMapField(field)) {
+    return true;
+  }
+
+  return IsCrossFileMessage(field);
+}
+
 }  // anonymous namespace
 
 // ===================================================================
@@ -426,12 +445,6 @@ GenerateDependentFieldAccessorDeclarations(io::Printer* printer) {
     std::map<string, string> vars;
     SetCommonFieldVariables(field, &vars, options_);
 
-    if (use_dependent_base_ && IsFieldDependent(field)) {
-      // If the message is dependent, the inline clear_*() method will need
-      // to delete the message type, so it must be in the dependent base
-      // class. (See also GenerateFieldAccessorDeclarations.)
-      printer->Print(vars, "$deprecated_attr$void clear_$name$();\n");
-    }
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateDependentAccessorDeclarations(printer);
     printer->Print("\n");
@@ -498,12 +511,8 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
       printer->Annotate("{", "}", field);
     }
 
-    if (!dependent_field) {
-      // If this field is dependent, then its clear_() method is in the
-      // depenent base class. (See also GenerateDependentAccessorDeclarations.)
-      printer->Print(vars, "$deprecated_attr$void ${$clear_$name$$}$();\n");
-      printer->Annotate("{", "}", field);
-    }
+    printer->Print(vars, "$deprecated_attr$void ${$clear_$name$$}$();\n");
+    printer->Annotate("{", "}", field);
     printer->Print(vars,
                    "$deprecated_attr$static const int $constant_name$ = "
                    "$number$;\n");
@@ -545,36 +554,6 @@ GenerateDependentFieldAccessorDefinitions(io::Printer* printer) {
     if (field->options().weak()) continue;
 
     PrintFieldComment(printer, field);
-
-    // These functions are not really dependent: they are part of the
-    // (non-dependent) derived class. However, they need to live outside
-    // any #ifdef guards, so we treat them as if they were dependent.
-    //
-    // See the comment in FileGenerator::GenerateInlineFunctionDefinitions
-    // for a more complete explanation.
-    if (use_dependent_base_ && IsFieldDependent(field)) {
-      std::map<string, string> vars;
-      SetCommonFieldVariables(field, &vars, options_);
-      vars["inline"] = "inline ";
-      if (field->containing_oneof()) {
-        vars["field_name"] = UnderscoresToCamelCase(field->name(), true);
-        vars["oneof_name"] = field->containing_oneof()->name();
-        vars["oneof_index"] = SimpleItoa(field->containing_oneof()->index());
-        GenerateOneofMemberHasBits(field, vars, printer);
-      } else if (!field->is_repeated()) {
-        // There will be no header guard, so this always has to be inline.
-        GenerateSingularFieldHasBits(field, vars, printer);
-      }
-      // vars needed for clear_(), which is in the dependent base:
-      // (See also GenerateDependentFieldAccessorDeclarations.)
-      vars["tmpl"] = "template<class T>\n";
-      vars["dependent_classname"] =
-          DependentBaseClassTemplateName(descriptor_) + "<T>";
-      vars["this_message"] = DependentBaseDownCast();
-      vars["this_const_message"] = DependentBaseConstDownCast();
-      GenerateFieldClear(field, vars, printer);
-    }
-
     // Generate type-specific accessors.
     field_generators_.get(field)
         .GenerateDependentInlineAccessorDefinitions(printer);
@@ -585,7 +564,7 @@ GenerateDependentFieldAccessorDefinitions(io::Printer* printer) {
   // Generate has_$name$() and clear_has_$name$() functions for oneofs
   // Similar to other has-bits, these must always be in the header if we
   // are using a dependent base class.
-  GenerateOneofHasBits(printer, true /* is_inline */);
+  GenerateOneofHasBits(printer);
 }
 
 void MessageGenerator::
@@ -595,8 +574,7 @@ GenerateSingularFieldHasBits(const FieldDescriptor* field,
   if (field->options().weak()) {
     printer->Print(
         vars,
-        "$inline$"
-        "bool $classname$::has_$name$() const {\n"
+        "inline bool $classname$::has_$name$() const {\n"
         "  return _weak_field_map_.Has($number$);\n"
         "}\n");
     return;
@@ -611,16 +589,13 @@ GenerateSingularFieldHasBits(const FieldDescriptor* field,
     vars["has_mask"] = StrCat(strings::Hex(1u << (has_bit_index % 32),
                                            strings::ZERO_PAD_8));
     printer->Print(vars,
-      "$inline$"
-      "bool $classname$::has_$name$() const {\n"
+      "inline bool $classname$::has_$name$() const {\n"
       "  return (_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n"
       "}\n"
-      "$inline$"
-      "void $classname$::set_has_$name$() {\n"
+      "inline void $classname$::set_has_$name$() {\n"
       "  _has_bits_[$has_array_index$] |= 0x$has_mask$u;\n"
       "}\n"
-      "$inline$"
-      "void $classname$::clear_has_$name$() {\n"
+      "inline void $classname$::clear_has_$name$() {\n"
       "  _has_bits_[$has_array_index$] &= ~0x$has_mask$u;\n"
       "}\n");
   } else {
@@ -629,15 +604,13 @@ GenerateSingularFieldHasBits(const FieldDescriptor* field,
       bool is_lazy = false;
       if (is_lazy) {
         printer->Print(vars,
-          "$inline$"
-          "bool $classname$::has_$name$() const {\n"
+          "inline bool $classname$::has_$name$() const {\n"
           "  return !$name$_.IsCleared();\n"
           "}\n");
       } else {
         printer->Print(
             vars,
-            "$inline$"
-            "bool $classname$::has_$name$() const {\n"
+            "inline bool $classname$::has_$name$() const {\n"
             "  return this != internal_default_instance() && $name$_ != NULL;\n"
             "}\n");
       }
@@ -646,7 +619,7 @@ GenerateSingularFieldHasBits(const FieldDescriptor* field,
 }
 
 void MessageGenerator::
-GenerateOneofHasBits(io::Printer* printer, bool is_inline) {
+GenerateOneofHasBits(io::Printer* printer) {
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     std::map<string, string> vars;
     vars["oneof_name"] = descriptor_->oneof_decl(i)->name();
@@ -654,15 +627,12 @@ GenerateOneofHasBits(io::Printer* printer, bool is_inline) {
     vars["cap_oneof_name"] =
         ToUpper(descriptor_->oneof_decl(i)->name());
     vars["classname"] = classname_;
-    vars["inline"] = (is_inline ? "inline " : "");
     printer->Print(
         vars,
-        "$inline$"
-        "bool $classname$::has_$oneof_name$() const {\n"
+        "inline bool $classname$::has_$oneof_name$() const {\n"
         "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
         "}\n"
-        "$inline$"
-        "void $classname$::clear_has_$oneof_name$() {\n"
+        "inline void $classname$::clear_has_$oneof_name$() {\n"
         "  _oneof_case_[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n"
         "}\n");
   }
@@ -679,13 +649,11 @@ GenerateOneofMemberHasBits(const FieldDescriptor* field,
   // method, so that generated code is slightly cleaner (vs.  comparing
   // _oneof_case_[index] against a constant everywhere).
   printer->Print(vars,
-    "$inline$"
-    "bool $classname$::has_$name$() const {\n"
+    "inline bool $classname$::has_$name$() const {\n"
     "  return $oneof_name$_case() == k$field_name$;\n"
     "}\n");
   printer->Print(vars,
-    "$inline$"
-    "void $classname$::set_has_$name$() {\n"
+    "inline void $classname$::set_has_$name$() {\n"
     "  _oneof_case_[$oneof_index$] = k$field_name$;\n"
     "}\n");
 }
@@ -693,14 +661,14 @@ GenerateOneofMemberHasBits(const FieldDescriptor* field,
 void MessageGenerator::
 GenerateFieldClear(const FieldDescriptor* field,
                    const std::map<string, string>& vars,
+                   bool is_inline,
                    io::Printer* printer) {
-  // Generate clear_$name$() (See GenerateFieldAccessorDeclarations and
-  // GenerateDependentFieldAccessorDeclarations, $dependent_classname$ is
-  // set by the Generate*Definitions functions.)
+  // Generate clear_$name$().
+  if (is_inline) {
+    printer->Print("inline ");
+  }
   printer->Print(vars,
-    "$tmpl$"
-    "$inline$"
-    "void $dependent_classname$::clear_$name$() {\n");
+    "void $classname$::clear_$name$() {\n");
 
   printer->Indent();
 
@@ -708,12 +676,12 @@ GenerateFieldClear(const FieldDescriptor* field,
     // Clear this field only if it is the active field in this oneof,
     // otherwise ignore
     printer->Print(vars,
-      "if ($this_message$has_$name$()) {\n");
+      "if (has_$name$()) {\n");
     printer->Indent();
     field_generators_.get(field)
         .GenerateClearingCode(printer);
     printer->Print(vars,
-      "$this_message$clear_has_$oneof_name$();\n");
+      "clear_has_$oneof_name$();\n");
     printer->Outdent();
     printer->Print("}\n");
   } else {
@@ -721,8 +689,7 @@ GenerateFieldClear(const FieldDescriptor* field,
         .GenerateClearingCode(printer);
     if (HasFieldPresence(descriptor_->file())) {
       if (!field->is_repeated() && !field->options().weak()) {
-        printer->Print(vars,
-                       "$this_message$clear_has_$name$();\n");
+        printer->Print(vars, "clear_has_$name$();\n");
       }
     }
   }
@@ -732,7 +699,7 @@ GenerateFieldClear(const FieldDescriptor* field,
 }
 
 void MessageGenerator::
-GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
+GenerateFieldAccessorDefinitions(io::Printer* printer) {
   printer->Print("// $classname$\n\n", "classname", classname_);
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -742,7 +709,6 @@ GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
 
     std::map<string, string> vars;
     SetCommonFieldVariables(field, &vars, options_);
-    vars["inline"] = is_inline ? "inline " : "";
     if (use_dependent_base_ && IsFieldDependent(field)) {
       vars["tmpl"] = "template<class T>\n";
       vars["dependent_classname"] =
@@ -759,31 +725,25 @@ GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
       printer->Print(vars,
-        "$inline$"
-        "int $classname$::$name$_size() const {\n"
+        "inline int $classname$::$name$_size() const {\n"
         "  return $name$_.size();\n"
         "}\n");
     } else if (field->containing_oneof()) {
       vars["field_name"] = UnderscoresToCamelCase(field->name(), true);
       vars["oneof_name"] = field->containing_oneof()->name();
       vars["oneof_index"] = SimpleItoa(field->containing_oneof()->index());
-      if (!use_dependent_base_ || !IsFieldDependent(field)) {
-        GenerateOneofMemberHasBits(field, vars, printer);
-      }
+      GenerateOneofMemberHasBits(field, vars, printer);
     } else {
       // Singular field.
-      if (!use_dependent_base_ || !IsFieldDependent(field)) {
-        GenerateSingularFieldHasBits(field, vars, printer);
-      }
+      GenerateSingularFieldHasBits(field, vars, printer);
     }
 
-    if (!use_dependent_base_ || !IsFieldDependent(field)) {
-      GenerateFieldClear(field, vars, printer);
+    if (!IsCrossFileMaybeMap(field)) {
+      GenerateFieldClear(field, vars, true, printer);
     }
 
     // Generate type-specific accessors.
-    field_generators_.get(field).GenerateInlineAccessorDefinitions(
-        printer, /* is_inline = */ true);
+    field_generators_.get(field).GenerateInlineAccessorDefinitions(printer);
 
     printer->Print("\n");
   }
@@ -792,7 +752,7 @@ GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
     // Generate has_$name$() and clear_has_$name$() functions for oneofs
     // If we aren't using a dependent base, they can be with the other functions
     // that are #ifdef-guarded.
-    GenerateOneofHasBits(printer, is_inline);
+    GenerateOneofHasBits(printer);
   }
 }
 
@@ -1381,9 +1341,9 @@ GenerateDependentInlineMethods(io::Printer* printer) {
 }
 
 void MessageGenerator::
-GenerateInlineMethods(io::Printer* printer, bool is_inline) {
+GenerateInlineMethods(io::Printer* printer) {
   if (IsMapEntryMessage(descriptor_)) return;
-  GenerateFieldAccessorDefinitions(printer,  /* is_inline = */ true);
+  GenerateFieldAccessorDefinitions(printer);
 
   // Generate oneof_case() functions.
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
@@ -1393,11 +1353,9 @@ GenerateInlineMethods(io::Printer* printer, bool is_inline) {
         descriptor_->oneof_decl(i)->name(), true);
     vars["oneof_name"] = descriptor_->oneof_decl(i)->name();
     vars["oneof_index"] = SimpleItoa(descriptor_->oneof_decl(i)->index());
-    vars["inline"] = is_inline ? "inline " : "";
     printer->Print(
         vars,
-        "$inline$"
-        "$class_name$::$camel_oneof_name$Case $class_name$::"
+        "inline $class_name$::$camel_oneof_name$Case $class_name$::"
         "$oneof_name$_case() const {\n"
         "  return $class_name$::$camel_oneof_name$Case("
         "_oneof_case_[$oneof_index$]);\n"
@@ -1852,8 +1810,17 @@ GenerateClassMethods(io::Printer* printer) {
 
   // Generate non-inline field definitions.
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_.get(descriptor_->field(i))
+    const FieldDescriptor* field = descriptor_->field(i);
+    field_generators_.get(field)
                      .GenerateNonInlineAccessorDefinitions(printer);
+    if (IsCrossFileMaybeMap(field)) {
+      std::map<string, string> vars;
+      SetCommonFieldVariables(field, &vars, options_);
+      if (field->containing_oneof()) {
+        SetCommonOneofFieldVariables(field, &vars);
+      }
+      GenerateFieldClear(field, vars, false, printer);
+    }
   }
 
   // Generate field number constants.
@@ -2244,16 +2211,9 @@ GenerateSharedDestructorCode(io::Printer* printer) {
     "classname", classname_);
   printer->Indent();
   if (SupportsArenas(descriptor_)) {
-    // Do nothing when the message is allocated in an arena.
     printer->Print(
-      "::google::protobuf::Arena* arena = GetArenaNoVirtual();\n"
-      "GOOGLE_DCHECK(arena == NULL);\n"
-      "if (arena != NULL) {\n"
-      "  return;\n"
-      "}\n"
-      "\n");
+      "GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);\n");
   }
-
   // Write the destructors for each field except oneof members.
   // optimized_order_ does not contain oneof fields.
   for (int i = 0; i < optimized_order_.size(); i++) {
@@ -2748,11 +2708,7 @@ GenerateClear(io::Printer* printer) {
         break;
       }
 
-      if (use_dependent_base_ && IsFieldDependent(field)) {
-        printer->Print("clear_$name$();\n", "name", FieldName(field));
-      } else {
-        generator.GenerateMessageClearingCode(printer);
-      }
+      generator.GenerateMessageClearingCode(printer);
     }
 
     // Step 3: Greedily seek runs of fields that can be cleared by
@@ -2780,8 +2736,7 @@ GenerateClear(io::Printer* printer) {
       if (last_chunk == -1) {
         last_chunk = chunk;
         last_chunk_start = i;
-      } else if ((memset_run_start == -1 || unconditional_budget < 0) &&
-                 chunk != last_chunk) {
+      } else if (chunk != last_chunk) {
         // Emit the fields for this chunk so far.
         break;
       }
@@ -2900,6 +2855,12 @@ flush:
         if (should_check_bit &&
             // If no field presence, then always clear strings/messages as well.
             HasFieldPresence(descriptor_->file())) {
+          if (!field->options().weak() &&
+              cached_has_bit_index != (has_bit_indices_[field->index()] / 32)) {
+            cached_has_bit_index = (has_bit_indices_[field->index()] / 32);
+            printer->Print("cached_has_bits = _has_bits_[$new_index$];\n",
+                           "new_index", SimpleItoa(cached_has_bit_index));
+          }
           if (!MaybeGenerateOptionalFieldCondition(printer, field,
                                                    cached_has_bit_index)) {
             printer->Print(

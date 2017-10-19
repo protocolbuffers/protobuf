@@ -358,6 +358,10 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       throw e.unwrapIOException();
     }
   }
+  
+  protected static boolean canUseUnsafe() {
+    return UnsafeUtil.hasUnsafeArrayOperations() && UnsafeUtil.hasUnsafeByteBufferOperations();
+  }
 
   @Override
   public void writeTo(final CodedOutputStream output) throws IOException {
@@ -654,6 +658,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
                        .mergeFrom(unknownFields)
                        .build());
     }
+
 
     @Override
     public boolean isInitialized() {
@@ -2853,3 +2858,4 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
   }
 }
+

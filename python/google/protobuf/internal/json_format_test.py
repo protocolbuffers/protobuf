@@ -50,6 +50,7 @@ from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
 from google.protobuf import wrappers_pb2
 from google.protobuf import unittest_mset_pb2
+from google.protobuf import unittest_pb2
 from google.protobuf.internal import well_known_types
 from google.protobuf import json_format
 from google.protobuf.util import json_format_proto3_pb2
@@ -159,15 +160,15 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, parsed_message)
     self.assertEqual(message, parsed_message)
 
-  def testUnknownEnumToJsonError(self):
+  def testUnknownEnumToJsonAndBack(self):
+    text = '{\n  "enumValue": 999\n}'
     message = json_format_proto3_pb2.TestMessage()
     message.enum_value = 999
-    # TODO(jieluo): should accept numeric unknown enum for proto3.
-    with self.assertRaises(json_format.SerializeToJsonError) as e:
-      json_format.MessageToJson(message)
-    self.assertEqual(str(e.exception),
-                     'Enum field contains an integer value which can '
-                     'not mapped to an enum value.')
+    self.assertEqual(json_format.MessageToJson(message),
+                     text)
+    parsed_message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse(text, parsed_message)
+    self.assertEqual(message, parsed_message)
 
   def testExtensionToJsonAndBack(self):
     message = unittest_mset_pb2.TestMessageSetContainer()
@@ -757,11 +758,16 @@ class JsonFormatTest(JsonFormatBase):
         '{"enumValue": "baz"}',
         'Failed to parse enumValue field: Invalid enum value baz '
         'for enum type proto3.EnumType.')
-    # TODO(jieluo): fix json format to accept numeric unknown enum for proto3.
-    self.CheckError(
-        '{"enumValue": 12345}',
-        'Failed to parse enumValue field: Invalid enum value 12345 '
-        'for enum type proto3.EnumType.')
+    # Proto3 accepts numeric unknown enums.
+    text = '{"enumValue": 12345}'
+    json_format.Parse(text, message)
+    # Proto2 does not accept unknown enums.
+    message = unittest_pb2.TestAllTypes()
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        'Failed to parse optionalNestedEnum field: Invalid enum value 12345 '
+        'for enum type protobuf_unittest.TestAllTypes.NestedEnum.',
+        json_format.Parse, '{"optionalNestedEnum": 12345}', message)
 
   def testParseBadIdentifer(self):
     self.CheckError('{int32Value: 1}',

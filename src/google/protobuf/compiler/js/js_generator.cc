@@ -244,22 +244,35 @@ string GetPrefix(const GeneratorOptions& options,
   return prefix;
 }
 
+// Returns the fully normalized JavaScript path prefix for the given
+// message descriptor.
+string GetMessagePathPrefix(const GeneratorOptions& options,
+                            const Descriptor* descriptor) {
+  return GetPrefix(
+      options, descriptor->file(),
+      descriptor->containing_type());
+}
+
 // Returns the fully normalized JavaScript path for the given
 // message descriptor.
 string GetMessagePath(const GeneratorOptions& options,
                       const Descriptor* descriptor) {
-  return GetPrefix(
-      options, descriptor->file(),
-      descriptor->containing_type()) + descriptor->name();
+  return GetMessagePathPrefix(options, descriptor) + descriptor->name();
+}
+
+// Returns the fully normalized JavaScript path prefix for the given
+// enumeration descriptor.
+string GetEnumPathPrefix(const GeneratorOptions& options,
+                   const EnumDescriptor* enum_descriptor) {
+  return GetPrefix(options, enum_descriptor->file(),
+      enum_descriptor->containing_type());
 }
 
 // Returns the fully normalized JavaScript path for the given
 // enumeration descriptor.
 string GetEnumPath(const GeneratorOptions& options,
                    const EnumDescriptor* enum_descriptor) {
-  return GetPrefix(
-      options, enum_descriptor->file(),
-      enum_descriptor->containing_type()) + enum_descriptor->name();
+  return GetEnumPathPrefix(options, enum_descriptor) + enum_descriptor->name();
 }
 
 string MaybeCrossFileRef(const GeneratorOptions& options,
@@ -1930,8 +1943,10 @@ void Generator::GenerateClassConstructor(const GeneratorOptions& options,
       " * @extends {jspb.Message}\n"
       " * @constructor\n"
       " */\n"
-      "$classname$ = function(opt_data) {\n",
-      "classname", GetMessagePath(options, desc));
+      "$classprefix$$classname$ = function(opt_data) {\n",
+      "classprefix", GetMessagePathPrefix(options, desc),
+      "classname", desc->name());
+  printer->Annotate("classname", desc);
   string message_id = GetMessageId(desc);
   printer->Print(
       "  jspb.Message.initialize(this, opt_data, $messageId$, $pivot$, "
@@ -2413,12 +2428,13 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         "keytype", key_type,
         "valuetype", value_type);
     printer->Print(
-        "$class$.prototype.get$name$ = function(opt_noLazyCreate) {\n"
+        "$class$.prototype.$gettername$ = function(opt_noLazyCreate) {\n"
         "  return /** @type {!jspb.Map<$keytype$,$valuetype$>} */ (\n",
         "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
+        "gettername", "get" + JSGetterName(options, field),
         "keytype", key_type,
         "valuetype", value_type);
+    printer->Annotate("gettername", field);
     printer->Print(
         "      jspb.Message.getMapField(this, $index$, opt_noLazyCreate",
         "index", JSFieldIndex(field));
@@ -2457,7 +2473,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
                                       /* force_present = */ false,
                                       /* singular_if_not_packed = */ false));
     printer->Print(
-        "$class$.prototype.get$name$ = function() {\n"
+        "$class$.prototype.$gettername$ = function() {\n"
         "  return /** @type{$type$} */ (\n"
         "    jspb.Message.get$rpt$WrapperField(this, $wrapperclass$, "
         "$index$$required$));\n"
@@ -2465,7 +2481,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         "\n"
         "\n",
         "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
+        "gettername", "get" + JSGetterName(options, field),
         "type", JSFieldTypeAnnotation(options, field,
                                       /* is_setter_argument = */ false,
                                       /* force_present = */ false,
@@ -2475,9 +2491,10 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         "wrapperclass", SubmessageTypeRef(options, field),
         "required", (field->label() == FieldDescriptor::LABEL_REQUIRED ?
                      ", 1" : ""));
+    printer->Annotate("gettername", field);
     printer->Print(
         "/** @param {$optionaltype$} value$returndoc$ */\n"
-        "$class$.prototype.set$name$ = function(value) {\n"
+        "$class$.prototype.$settername$ = function(value) {\n"
         "  jspb.Message.set$oneoftag$$repeatedtag$WrapperField(",
         "optionaltype",
         JSFieldTypeAnnotation(options, field,
@@ -2486,9 +2503,10 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
                               /* singular_if_not_packed = */ false),
         "returndoc", JSReturnDoc(options, field),
         "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
+        "settername", "set" + JSGetterName(options, field),
         "oneoftag", (field->containing_oneof() ? "Oneof" : ""),
         "repeatedtag", (field->is_repeated() ? "Repeated" : ""));
+    printer->Annotate("settername", field);
 
     printer->Print(
         "this, $index$$oneofgroup$, value);$returnvalue$\n"
@@ -2540,9 +2558,10 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
     }
 
     printer->Print(
-        "$class$.prototype.get$name$ = function() {\n",
+        "$class$.prototype.$gettername$ = function() {\n",
         "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field));
+        "gettername", "get" + JSGetterName(options, field));
+    printer->Annotate("gettername", field);
 
     if (untyped) {
       printer->Print(
@@ -2610,24 +2629,27 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
       // Proto3 non-repeated and non-map fields without presence use the
       // setProto3*Field function.
       printer->Print(
-          "$class$.prototype.set$name$ = function(value) {\n"
+          "$class$.prototype.$settername$ = function(value) {\n"
           "  jspb.Message.setProto3$typetag$Field(this, $index$, "
           "value);$returnvalue$\n"
           "};\n"
           "\n"
           "\n",
-          "class", GetMessagePath(options, field->containing_type()), "name",
-          JSGetterName(options, field), "typetag", JSTypeTag(field), "index",
-          JSFieldIndex(field), "returnvalue", JSReturnClause(field));
+          "class", GetMessagePath(options, field->containing_type()),
+          "settername", "set" + JSGetterName(options, field), "typetag",
+          JSTypeTag(field), "index", JSFieldIndex(field), "returnvalue",
+          JSReturnClause(field));
+      printer->Annotate("settername", field);
     } else {
       // Otherwise, use the regular setField function.
       printer->Print(
-          "$class$.prototype.set$name$ = function(value) {\n"
+          "$class$.prototype.$settername$ = function(value) {\n"
           "  jspb.Message.set$oneoftag$Field(this, $index$",
-          "class", GetMessagePath(options, field->containing_type()), "name",
-          JSGetterName(options, field), "oneoftag",
+          "class", GetMessagePath(options, field->containing_type()),
+          "settername", "set" + JSGetterName(options, field), "oneoftag",
           (field->containing_oneof() ? "Oneof" : ""), "index",
           JSFieldIndex(field));
+      printer->Annotate("settername", field);
       printer->Print(
           "$oneofgroup$, $type$value$rptvalueinit$$typeclose$);$returnvalue$\n"
           "};\n"
@@ -2660,41 +2682,46 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
   // fields with presence.
   if (IsMap(options, field)) {
     printer->Print(
-        "$class$.prototype.clear$name$ = function() {\n"
-        "  this.get$name$().clear();$returnvalue$\n"
+        "$class$.prototype.$clearername$ = function() {\n"
+        "  this.$gettername$().clear();$returnvalue$\n"
         "};\n"
         "\n"
         "\n",
         "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
+        "clearername", "clear" + JSGetterName(options, field),
+        "gettername", "get" + JSGetterName(options, field),
         "returnvalue", JSReturnClause(field));
+    printer->Annotate("clearername", field);
   } else if (field->is_repeated() ||
              (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
               !field->is_required())) {
     // Fields where we can delegate to the regular setter.
     printer->Print(
-        "$class$.prototype.clear$name$ = function() {\n"
-        "  this.set$name$($clearedvalue$);$returnvalue$\n"
+        "$class$.prototype.$clearername$ = function() {\n"
+        "  this.$settername$($clearedvalue$);$returnvalue$\n"
         "};\n"
         "\n"
         "\n",
         "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
+        "clearername", "clear" + JSGetterName(options, field),
+        "settername", "set" + JSGetterName(options, field),
         "clearedvalue", (field->is_repeated() ? "[]" : "undefined"),
         "returnvalue", JSReturnClause(field));
+    printer->Annotate("clearername", field);
   } else if (HasFieldPresence(options, field)) {
     // Fields where we can't delegate to the regular setter because it doesn't
     // accept "undefined" as an argument.
     printer->Print(
-        "$class$.prototype.clear$name$ = function() {\n"
+        "$class$.prototype.$clearername$ = function() {\n"
         "  jspb.Message.set$maybeoneof$Field(this, "
         "$index$$maybeoneofgroup$, ",
         "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
+        "clearername", "clear" + JSGetterName(options, field),
         "maybeoneof", (field->containing_oneof() ? "Oneof" : ""),
         "maybeoneofgroup", (field->containing_oneof() ?
                            (", " + JSOneofArray(options, field)) : ""),
         "index", JSFieldIndex(field));
+    printer->Annotate("clearername", field);
     printer->Print(
         "$clearedvalue$);$returnvalue$\n"
         "};\n"
@@ -2710,14 +2737,15 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         " * Returns whether this field is set.\n"
         " * @return {!boolean}\n"
         " */\n"
-        "$class$.prototype.has$name$ = function() {\n"
+        "$class$.prototype.$hasername$ = function() {\n"
         "  return jspb.Message.getField(this, $index$) != null;\n"
         "};\n"
         "\n"
         "\n",
         "class", GetMessagePath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
+        "hasername", "has" + JSGetterName(options, field),
         "index", JSFieldIndex(field));
+    printer->Annotate("hasername", field);
   }
 }
 
@@ -2729,13 +2757,14 @@ void Generator::GenerateRepeatedPrimitiveHelperMethods(
       " * @param {!$optionaltype$} value\n"
       " * @param {number=} opt_index\n"
       " */\n"
-      "$class$.prototype.add$name$ = function(value, opt_index) {\n"
+      "$class$.prototype.$addername$ = function(value, opt_index) {\n"
       "  jspb.Message.addToRepeatedField(this, $index$",
-      "class", GetMessagePath(options, field->containing_type()),
-      "name", JSGetterName(options, field, BYTES_DEFAULT,
-                   /* drop_list = */ true),
+      "class", GetMessagePath(options, field->containing_type()), "addername",
+      "add" + JSGetterName(options, field, BYTES_DEFAULT,
+                           /* drop_list = */ true),
       "optionaltype", JSTypeName(options, field, BYTES_DEFAULT), "index",
       JSFieldIndex(field));
+  printer->Annotate("addername", field);
   printer->Print(
       "$oneofgroup$, $type$value$rptvalueinit$$typeclose$, opt_index);\n"
       "};\n"
@@ -3133,8 +3162,10 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
       "/**\n"
       " * @enum {number}\n"
       " */\n"
-      "$name$ = {\n",
-      "name", GetEnumPath(options, enumdesc));
+      "$enumprefix$$name$ = {\n",
+      "enumprefix", GetEnumPathPrefix(options, enumdesc),
+      "name", enumdesc->name());
+  printer->Annotate("name", enumdesc);
 
   for (int i = 0; i < enumdesc->value_count(); i++) {
     const EnumValueDescriptor* value = enumdesc->value(i);
@@ -3143,6 +3174,7 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
         "name", ToEnumCase(value->name()),
         "value", SimpleItoa(value->number()),
         "comma", (i == enumdesc->value_count() - 1) ? "" : ",");
+    printer->Annotate("name", value);
   }
 
   printer->Print(
@@ -3282,6 +3314,12 @@ bool GeneratorOptions::ParseFromOptions(
         return false;
       }
       one_output_file_per_input_file = true;
+    } else if (options[i].first == "annotate_code") {
+      if (!options[i].second.empty()) {
+        *error = "Unexpected option value for annotate_code";
+        return false;
+      }
+      annotate_code = true;
     } else {
       // Assume any other option is an output directory, as long as it is a bare
       // `key` rather than a `key=value` option.
@@ -3582,16 +3620,27 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
           options.output_dir + "/" + GetJSFilename(options, file->name());
       google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
       GOOGLE_CHECK(output.get());
-      io::Printer printer(output.get(), '$');
+      GeneratedCodeInfo annotations;
+      io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+          &annotations);
+      io::Printer printer(output.get(), '$',
+                          options.annotate_code ? &annotation_collector : NULL);
+
 
       GenerateFile(options, &printer, file);
 
       if (printer.failed()) {
         return false;
       }
+
+      if (options.annotate_code) {
+        const string meta_file = filename + ".meta";
+        google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+          context->Open(meta_file));
+        annotations.SerializeToZeroCopyStream(info_output.get());
+      }
     }
   }
-
   return true;
 }
 

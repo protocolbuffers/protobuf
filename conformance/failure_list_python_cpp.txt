@@ -16,7 +16,6 @@ Recommended.Proto3.JsonInput.FloatFieldInfinityNotQuoted
 Recommended.Proto3.JsonInput.FloatFieldNanNotQuoted
 Recommended.Proto3.JsonInput.FloatFieldNegativeInfinityNotQuoted
 Required.Proto3.JsonInput.DoubleFieldTooSmall
-Required.Proto3.JsonInput.EnumFieldUnknownValue.Validator
 Required.Proto3.JsonInput.FloatFieldTooLarge
 Required.Proto3.JsonInput.FloatFieldTooSmall
 Required.Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingIntegersGotBool

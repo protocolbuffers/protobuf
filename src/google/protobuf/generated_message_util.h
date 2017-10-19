@@ -274,6 +274,45 @@ void MapFieldSerializer(const uint8* base, uint32 offset, uint32 tag,
   }
 }
 
+LIBPROTOBUF_EXPORT MessageLite* DuplicateIfNonNullInternal(MessageLite* message, Arena* arena);
+LIBPROTOBUF_EXPORT MessageLite* GetOwnedMessageInternal(Arena* message_arena,
+                                     MessageLite* submessage,
+                                     Arena* submessage_arena);
+
+template <typename T>
+T* DuplicateIfNonNull(T* message, Arena* arena) {
+  // The casts must be reinterpret_cast<> because T might be a forward-declared
+  // type that the compiler doesn't know is related to MessageLite.
+  return reinterpret_cast<T*>(DuplicateIfNonNullInternal(
+      reinterpret_cast<MessageLite*>(message), arena));
+}
+
+template <typename T>
+T* GetOwnedMessage(Arena* message_arena, T* submessage,
+                   Arena* submessage_arena) {
+  // The casts must be reinterpret_cast<> because T might be a forward-declared
+  // type that the compiler doesn't know is related to MessageLite.
+  return reinterpret_cast<T*>(GetOwnedMessageInternal(
+      message_arena, reinterpret_cast<MessageLite*>(submessage),
+      submessage_arena));
+}
+
+// Returns a message owned by this Arena.  This may require Own()ing or
+// duplicating the message.
+template <typename T>
+T* GetOwnedMessage(T* message, Arena* arena) {
+  GOOGLE_DCHECK(message);
+  Arena* message_arena = google::protobuf::Arena::GetArena(message);
+  if (message_arena == arena) {
+    return message;
+  } else if (arena != NULL && message_arena == NULL) {
+    arena->Own(message);
+    return message;
+  } else {
+    return DuplicateIfNonNull(message, arena);
+  }
+}
+
 }  // namespace internal
 }  // namespace protobuf
 

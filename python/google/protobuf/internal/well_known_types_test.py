@@ -34,6 +34,7 @@
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+import collections
 from datetime import datetime
 
 try:
@@ -667,6 +668,8 @@ class StructTest(unittest.TestCase):
 
   def testStruct(self):
     struct = struct_pb2.Struct()
+    self.assertIsInstance(struct, collections.Mapping)
+    self.assertEqual(0, len(struct))
     struct_class = struct.__class__
 
     struct['key1'] = 5
@@ -674,11 +677,13 @@ class StructTest(unittest.TestCase):
     struct['key3'] = True
     struct.get_or_create_struct('key4')['subkey'] = 11.0
     struct_list = struct.get_or_create_list('key5')
+    self.assertIsInstance(struct_list, collections.Sequence)
     struct_list.extend([6, 'seven', True, False, None])
     struct_list.add_struct()['subkey2'] = 9
     struct['key6'] = {'subkey': {}}
     struct['key7'] = [2, False]
 
+    self.assertEqual(7, len(struct))
     self.assertTrue(isinstance(struct, well_known_types.Struct))
     self.assertEqual(5, struct['key1'])
     self.assertEqual('abc', struct['key2'])
@@ -696,6 +701,20 @@ class StructTest(unittest.TestCase):
     struct2.ParseFromString(serialized)
 
     self.assertEqual(struct, struct2)
+    for key, value in struct.items():
+      self.assertIn(key, struct)
+      self.assertIn(key, struct2)
+      self.assertEqual(value, struct2[key])
+
+    self.assertEqual(7, len(struct.keys()))
+    self.assertEqual(7, len(struct.values()))
+    for key in struct.keys():
+      self.assertIn(key, struct)
+      self.assertIn(key, struct2)
+      self.assertEqual(struct[key], struct2[key])
+
+    item = (next(iter(struct.keys())), next(iter(struct.values())))
+    self.assertEqual(item, next(iter(struct.items())))
 
     self.assertTrue(isinstance(struct2, well_known_types.Struct))
     self.assertEqual(5, struct2['key1'])
@@ -755,6 +774,16 @@ class StructTest(unittest.TestCase):
     list2.add_struct()
     empty_struct = list2[1]
     self.assertEqual({}, dict(empty_struct.fields))
+
+    self.assertEqual(9, len(struct))
+    del struct['key3']
+    del struct['key4']
+    self.assertEqual(7, len(struct))
+    self.assertEqual(6, len(struct['key5']))
+    del struct['key5'][1]
+    self.assertEqual(5, len(struct['key5']))
+    self.assertEqual([6, True, False, None, inner_struct],
+                     list(struct['key5'].items()))
 
   def testMergeFrom(self):
     struct = struct_pb2.Struct()
@@ -862,6 +891,20 @@ class AnyTest(unittest.TestCase):
     unpacked_message = any_test_pb2.TestAny()
     self.assertTrue(msg.Unpack(unpacked_message))
     self.assertEqual(submessage, unpacked_message)
+
+  def testPackDeterministic(self):
+    submessage = any_test_pb2.TestAny()
+    for i in range(10):
+      submessage.map_value[str(i)] = i * 2
+    msg = any_pb2.Any()
+    msg.Pack(submessage, deterministic=True)
+    serialized = msg.SerializeToString(deterministic=True)
+    golden = (b'\n4type.googleapis.com/google.protobuf.internal.TestAny\x12F'
+              b'\x1a\x05\n\x010\x10\x00\x1a\x05\n\x011\x10\x02\x1a\x05\n\x01'
+              b'2\x10\x04\x1a\x05\n\x013\x10\x06\x1a\x05\n\x014\x10\x08\x1a'
+              b'\x05\n\x015\x10\n\x1a\x05\n\x016\x10\x0c\x1a\x05\n\x017\x10'
+              b'\x0e\x1a\x05\n\x018\x10\x10\x1a\x05\n\x019\x10\x12')
+    self.assertEqual(golden, serialized)
 
 
 if __name__ == '__main__':

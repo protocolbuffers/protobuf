@@ -192,6 +192,13 @@ class FieldMaskTree {
   // children removed because the path matches all the node's children.
   void AddPath(const string& path);
 
+  // Remove a path from the tree.
+  // If the path is a sub-path of an existing field path in the tree, it means
+  // we need remove the existing fied path and add all sub-paths except
+  // specified path. If the path matches an existing node in the tree, this node
+  // will be moved.
+  void RemovePath(const string& path, const Descriptor* descriptor);
+
   // Calculate the intersection part of a field path with this tree and add
   // the intersection field path into out.
   void IntersectPath(const string& path, FieldMaskTree* out);
@@ -330,6 +337,59 @@ void FieldMaskTree::AddPath(const string& path) {
   }
   if (!node->children.empty()) {
     node->ClearChildren();
+  }
+}
+
+void FieldMaskTree::RemovePath(const string& path,
+                               const Descriptor* descriptor) {
+  std::vector<string> parts = Split(path, ".");
+  if (parts.empty()) {
+    return;
+  }
+  std::vector<Node*> nodes(parts.size());
+  Node* node = &root_;
+  const Descriptor* current_descriptor = descriptor;
+  Node* new_branch_node = NULL;
+  for (int i = 0; i < parts.size(); ++i) {
+    nodes[i] = node;
+    const FieldDescriptor* field_descriptor =
+        current_descriptor->FindFieldByName(parts[i]);
+    if (field_descriptor == NULL ||
+        (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE &&
+         i != parts.size() - 1)) {
+      // Invalid path.
+      if (new_branch_node != NULL) {
+        // If add any new nodes, cleanup.
+        new_branch_node->ClearChildren();
+      }
+      return;
+    }
+
+    if (node->children.empty()) {
+      if (new_branch_node == NULL) {
+        new_branch_node = node;
+      }
+      for (int i = 0; i < current_descriptor->field_count(); ++i) {
+        node->children[current_descriptor->field(i)->name()] = new Node();
+      }
+    }
+    if (ContainsKey(node->children, parts[i])) {
+      node = node->children.at(parts[i]);
+      if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        current_descriptor = field_descriptor->message_type();
+      }
+    } else {
+      // Path does not exist.
+      return;
+    }
+  }
+  // Remove path.
+  for (int i = parts.size() - 1; i >= 0; i--) {
+    delete nodes[i]->children[parts[i]];
+    nodes[i]->children.erase(parts[i]);
+    if (!nodes[i]->children.empty()) {
+      break;
+    }
   }
 }
 
@@ -558,6 +618,22 @@ void FieldMaskUtil::Intersect(const FieldMask& mask1, const FieldMask& mask2,
   }
   out->Clear();
   intersection.MergeToFieldMask(out);
+}
+
+void FieldMaskUtil::InternalSubtract(const Descriptor* descriptor,
+                                     const FieldMask& mask1,
+                                     const FieldMask& mask2, FieldMask* out) {
+  if (mask1.paths().empty()) {
+    out->Clear();
+    return;
+  }
+  FieldMaskTree tree;
+  tree.MergeFromFieldMask(mask1);
+  for (int i = 0; i < mask2.paths_size(); ++i) {
+    tree.RemovePath(mask2.paths(i), descriptor);
+  }
+  out->Clear();
+  tree.MergeToFieldMask(out);
 }
 
 bool FieldMaskUtil::IsPathInFieldMask(StringPiece path, const FieldMask& mask) {

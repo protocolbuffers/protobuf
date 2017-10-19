@@ -123,8 +123,7 @@ void IoWin32Test::SetUp() {
       // "\\?\" prefix (except on Windows 10 version 1607 and beyond, after
       // opting in to long paths by default [1]).
       //
-      // [1] https://msdn.microsoft.com/en-us/library/windows/ \
-      //   desktop/aa365247(v=vs.85).aspx#maxpath
+      // [1] https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
       DWORD result = ::GetCurrentDirectoryA(MAX_PATH, buffer);
       if (result > 0) {
         test_tmpdir = string(buffer);
@@ -142,8 +141,7 @@ void IoWin32Test::SetUp() {
   test_tmpdir += "\\io_win32_unittest.tmp";
 
   // CreateDirectoryA's limit is 248 chars, see MSDN.
-  // https://msdn.microsoft.com/en-us/library/windows/ \
-  //   desktop/aa363855(v=vs.85).aspx
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
   wtest_tmpdir = testonly_path_to_winpath(test_tmpdir);
   if (!DeleteAllUnder(wtest_tmpdir) || !CreateAllUnder(wtest_tmpdir)) {
     GOOGLE_CHECK_OK(false);

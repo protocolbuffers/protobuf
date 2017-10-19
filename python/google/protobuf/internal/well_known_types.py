@@ -40,6 +40,7 @@ This files defines well known classes which need extra maintenance including:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+import collections
 from datetime import datetime
 from datetime import timedelta
 import six
@@ -67,13 +68,14 @@ class ParseError(Error):
 class Any(object):
   """Class for Any Message type."""
 
-  def Pack(self, msg, type_url_prefix='type.googleapis.com/'):
+  def Pack(self, msg, type_url_prefix='type.googleapis.com/',
+           deterministic=None):
     """Packs the specified message into current Any message."""
     if len(type_url_prefix) < 1 or type_url_prefix[-1] != '/':
       self.type_url = '%s/%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
     else:
       self.type_url = '%s%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
-    self.value = msg.SerializeToString()
+    self.value = msg.SerializeToString(deterministic=deterministic)
 
   def Unpack(self, msg):
     """Unpacks the current Any message into specified message."""
@@ -734,8 +736,29 @@ class Struct(object):
   def __getitem__(self, key):
     return _GetStructValue(self.fields[key])
 
+  def __contains__(self, item):
+    return item in self.fields
+
   def __setitem__(self, key, value):
     _SetStructValue(self.fields[key], value)
+
+  def __delitem__(self, key):
+    del self.fields[key]
+
+  def __len__(self):
+    return len(self.fields)
+
+  def __iter__(self):
+    return iter(self.fields)
+
+  def keys(self):  # pylint: disable=invalid-name
+    return self.fields.keys()
+
+  def values(self):  # pylint: disable=invalid-name
+    return [self[key] for key in self]
+
+  def items(self):  # pylint: disable=invalid-name
+    return [(key, self[key]) for key in self]
 
   def get_or_create_list(self, key):
     """Returns a list for this key, creating if it didn't exist already."""
@@ -754,6 +777,8 @@ class Struct(object):
   def update(self, dictionary):  # pylint: disable=invalid-name
     for key, value in dictionary.items():
       _SetStructValue(self.fields[key], value)
+
+collections.MutableMapping.register(Struct)
 
 
 class ListValue(object):
@@ -776,6 +801,9 @@ class ListValue(object):
   def __setitem__(self, index, value):
     _SetStructValue(self.values.__getitem__(index), value)
 
+  def __delitem__(self, key):
+    del self.values[key]
+
   def items(self):
     for i in range(len(self)):
       yield self[i]
@@ -793,6 +821,8 @@ class ListValue(object):
     # Clear will mark list_value modified which will indeed create a list.
     list_value.Clear()
     return list_value
+
+collections.MutableSequence.register(ListValue)
 
 
 WKTBASES = {

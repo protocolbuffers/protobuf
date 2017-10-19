@@ -92,7 +92,6 @@ class UnknownFieldsTest(BaseTestCase):
     # Verify that proto3 unknown fields behavior.
     default_preserve = (api_implementation
                         .GetPythonProto3PreserveUnknownsDefault())
-    self.assertEqual(False, default_preserve)
     self.expectSerializeProto3(default_preserve)
     api_implementation.SetPythonProto3PreserveUnknownsDefault(
         not default_preserve)

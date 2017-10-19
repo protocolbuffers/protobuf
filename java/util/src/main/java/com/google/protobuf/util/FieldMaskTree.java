@@ -34,7 +34,6 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.Message;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -242,6 +241,11 @@ final class FieldMaskTree {
                   + field.getFullName()
                   + "\" is not a "
                   + "singluar message field and cannot have sub-fields.");
+          continue;
+        }
+        if (!source.hasField(field) && !destination.hasField(field)) {
+          // If the message field is not present in both source and destination, skip recursing
+          // so we don't create unneccessary empty messages.
           continue;
         }
         String childPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();

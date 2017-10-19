@@ -51,6 +51,7 @@ import operator
 import pickle
 import six
 import sys
+import warnings
 
 try:
   import unittest2 as unittest  # PY26
@@ -146,13 +147,22 @@ class MessageTest(BaseTestCase):
     msg = message_module.TestAllTypes()
     self.assertRaises(TypeError, msg.FromString, 0)
     self.assertRaises(Exception, msg.FromString, '0')
-    # TODO(jieluo): Fix cpp extension to check unexpected end-group tag.
+    # TODO(jieluo): Fix cpp extension to raise error instead of warning.
     # b/27494216
+    end_tag = encoder.TagBytes(1, 4)
     if api_implementation.Type() == 'python':
-      end_tag = encoder.TagBytes(1, 4)
       with self.assertRaises(message.DecodeError) as context:
         msg.FromString(end_tag)
       self.assertEqual('Unexpected end-group tag.', str(context.exception))
+    else:
+      with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter('always')
+        msg.FromString(end_tag)
+        assert len(w) == 1
+        assert issubclass(w[-1].category, RuntimeWarning)
+        self.assertEqual('Unexpected end-group tag: Not all data was converted',
+                         str(w[-1].message))
 
   def testDeterminismParameters(self, message_module):
     # This message is always deterministically serialized, even if determinism
