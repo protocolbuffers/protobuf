@@ -290,6 +290,28 @@ void ConformanceTestSuite::RunValidInputTest(
       TextFormat::ParseFromString(equivalent_text_format, reference_message))
           << "Failed to parse data for test case: " << test_name
           << ", data: " << equivalent_text_format;
+  const string equivalent_wire_format = reference_message->SerializeAsString();
+  RunValidBinaryInputTest(test_name, level, input, input_format,
+                          equivalent_wire_format, requested_output, isProto3);
+}
+
+void ConformanceTestSuite::RunValidBinaryInputTest(
+    const string& test_name, ConformanceLevel level, const string& input,
+    WireFormat input_format, const string& equivalent_wire_format,
+    WireFormat requested_output, bool isProto3) {
+  auto newTestMessage = [&isProto3]() {
+    Message* newMessage;
+    if (isProto3) {
+      newMessage = new TestAllTypesProto3;
+    } else {
+      newMessage = new TestAllTypesProto2;
+    }
+    return newMessage;
+  };
+  Message* reference_message = newTestMessage();
+  GOOGLE_CHECK(
+      reference_message->ParseFromString(equivalent_wire_format))
+          << "Failed to parse wire data for test case: " << test_name;
 
   ConformanceRequest request;
   ConformanceResponse response;
@@ -491,6 +513,19 @@ void ConformanceTestSuite::RunValidProtobufTest(
         ".JsonOutput", level, input_protobuf, conformance::PROTOBUF,
         equivalent_text_format, conformance::JSON, isProto3);
   }
+}
+
+void ConformanceTestSuite::RunValidBinaryProtobufTest(
+    const string& test_name, ConformanceLevel level,
+    const string& input_protobuf, bool isProto3) {
+  string rname = ".Proto3";
+  if (!isProto3) {
+    rname = ".Proto2";
+  }
+  RunValidBinaryInputTest(
+      ConformanceLevelToString(level) + rname + ".ProtobufInput." + test_name +
+      ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
+      input_protobuf, conformance::PROTOBUF, isProto3);
 }
 
 void ConformanceTestSuite::RunValidProtobufTestWithMessage(
@@ -814,10 +849,9 @@ void ConformanceTestSuite::TestOneofMessage (MessageType &message,
 template <class MessageType>
 void ConformanceTestSuite::TestUnknownMessage(MessageType& message,
                                               bool isProto3) {
-  message.ParseFromString("\xA8\x1F\x00");
-  GOOGLE_LOG(ERROR) << message.SerializeAsString().size();
-  RunValidProtobufTestWithMessage(
-      "UnknownVarint", REQUIRED, &message, "oneof_uint32: 0", isProto3);
+  message.ParseFromString("\xA8\x1F\x01");
+  RunValidBinaryProtobufTest("UnknownVarint", REQUIRED,
+                             message.SerializeAsString(), isProto3);
 }
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
