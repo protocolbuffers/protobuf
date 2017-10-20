@@ -59,6 +59,19 @@ enum LogLevel {
 #else
   LOGLEVEL_DFATAL = LOGLEVEL_FATAL
 #endif
+
+#ifdef _WIN32
+  // wingdi.h defines ERROR to be 0, so `GOOGLE_LOG(ERROR, ...)` expands
+  // into `GOOGLE_LOG(0, ...)` which then expands into
+  // `someGoogleLogging(LOGLEVEL_0, ...)`. This is not ideal, because the
+  // GOOGLE_LOG macro expects to expand itself into
+  // `someGoogleLogging(LOGLEVEL_ERROR, ...)` instead. The workaround to
+  // get everything building is to simply define LOGLEVEL_0 as
+  // LOGLEVEL_ERROR and also define ERROR the same way that the Windows
+  // SDK does for consistency.
+#define ERROR 0
+  , LOGLEVEL_0 = LOGLEVEL_ERROR
+#endif
 };
 
 class StringPiece;
