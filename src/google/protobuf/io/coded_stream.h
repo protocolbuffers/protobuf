@@ -867,11 +867,11 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   bool IsSerializationDeterministic() const {
     return serialization_deterministic_is_overridden_ ?
         serialization_deterministic_override_ :
-        default_serialization_deterministic_;
+        default_serialization_deterministic_ != 0;
   }
 
   static bool IsDefaultSerializationDeterministic() {
-    return google::protobuf::internal::Acquire_Load(&default_serialization_deterministic_);
+    return google::protobuf::internal::Acquire_Load(&default_serialization_deterministic_) != 0;
   }
 
  private:
