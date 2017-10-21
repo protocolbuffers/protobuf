@@ -44,9 +44,19 @@ config_setting(
     },
 )
 
+# Android build need not always use //external:android/crosstool
+# for example one can use --android_crosstool_top too.
+config_setting(
+    name = "android_platform",
+    values = {
+      "define": "PLATFORM=android",
+    },
+)
+
 # Android and Windows builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
+    ":android_platform": [],
     ":windows": [],
     ":windows_msvc": [],
     "//conditions:default": ["-lpthread", "-lm"],
