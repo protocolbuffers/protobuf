@@ -65,15 +65,15 @@ TEST(Status, CheckOK) {
 TEST(Status, ErrorMessage) {
   util::Status status(util::error::INVALID_ARGUMENT, "");
   EXPECT_FALSE(status.ok());
-  EXPECT_EQ("", status.error_message().ToString());
+  EXPECT_EQ("", status.error_message());
   EXPECT_EQ("INVALID_ARGUMENT", status.ToString());
   status = util::Status(util::error::INVALID_ARGUMENT, "msg");
   EXPECT_FALSE(status.ok());
-  EXPECT_EQ("msg", status.error_message().ToString());
+  EXPECT_EQ("msg", status.error_message());
   EXPECT_EQ("INVALID_ARGUMENT:msg", status.ToString());
   status = util::Status(util::error::OK, "msg");
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ("", status.error_message().ToString());
+  EXPECT_EQ("", status.error_message());
   EXPECT_EQ("OK", status.ToString());
 }
 
