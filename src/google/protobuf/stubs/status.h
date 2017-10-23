@@ -88,7 +88,7 @@ class LIBPROTOBUF_EXPORT Status {
   int error_code() const {
     return error_code_;
   }
-  StringPiece error_message() const {
+  const string& error_message() const {
     return error_message_;
   }
 
