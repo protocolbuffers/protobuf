@@ -171,6 +171,14 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "}\n");
 }
 
+void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(variables_, 
+    "if ($property_name$ == null) {\n"
+    "  $property_name$ = new $type_name$();\n"
+    "}\n"
+    "$property_name$.MergeFrom(other.$property_name$);\n");
+}
+
 void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   // TODO(jonskeet): We may be able to do better than this
   printer->Print(

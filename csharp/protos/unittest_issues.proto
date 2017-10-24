@@ -124,3 +124,18 @@ message TestJsonName {
   string description = 2 [json_name = "desc"];
   string guid = 3 [json_name = "exid"];
 }
+
+// Issue 3200: When merging two messages which use the same
+// oneof case, which is itself a message type, the submessages should
+// be merged.
+message OneofMerging {
+  message Nested {
+    int32 x = 1;
+    int32 y = 2;
+  }
+
+  oneof value {
+    string text = 1;
+    Nested nested = 2;
+  }
+}
