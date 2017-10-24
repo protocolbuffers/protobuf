@@ -463,9 +463,12 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
       vars["field_property_name"] = GetPropertyName(field);
       printer->Print(
         vars,
-        "case $property_name$OneofCase.$field_property_name$:\n"
-        "  $field_property_name$ = other.$field_property_name$;\n"
-        "  break;\n");
+        "case $property_name$OneofCase.$field_property_name$:\n");
+      printer->Indent();
+      scoped_ptr<FieldGeneratorBase> generator(CreateFieldGeneratorInternal(field));
+      generator->GenerateMergingCode(printer);
+      printer->Print("break;\n");
+      printer->Outdent();
     }
     printer->Outdent();
     printer->Print("}\n\n");

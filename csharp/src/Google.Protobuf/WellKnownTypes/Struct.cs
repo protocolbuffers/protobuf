@@ -466,10 +466,16 @@ namespace Google.Protobuf.WellKnownTypes {
           BoolValue = other.BoolValue;
           break;
         case KindOneofCase.StructValue:
-          StructValue = other.StructValue;
+          if (StructValue == null) {
+            StructValue = new global::Google.Protobuf.WellKnownTypes.Struct();
+          }
+          StructValue.MergeFrom(other.StructValue);
           break;
         case KindOneofCase.ListValue:
-          ListValue = other.ListValue;
+          if (ListValue == null) {
+            ListValue = new global::Google.Protobuf.WellKnownTypes.ListValue();
+          }
+          ListValue.MergeFrom(other.ListValue);
           break;
       }
 
