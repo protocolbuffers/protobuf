@@ -477,6 +477,7 @@ VALUE layout_inspect(MessageLayout* layout, void* storage);
 
 struct MessageHeader {
   Descriptor* descriptor;  // kept alive by self.class.descriptor reference.
+  void* unknown_fields;    // store unknown fields in decoding.
   // Data comes after this.
 };
 

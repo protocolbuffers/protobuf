@@ -57,15 +57,11 @@ function doTest($request)
           return $response;
         }
       } elseif ($request->getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2") {
-	$response->setSkipped("PHP doesn't support proto2");
-	return $response;
+        $response->setSkipped("PHP doesn't support proto2");
+        return $response;
       } else {
-	trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
+        trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
       }
-      # if (bin2hex($request->getProtobufPayload()) === "a81f00") {
-      #     fwrite(STDERR, bin2hex($request->getProtobufPayload()) . "\n");
-      #     fwrite(STDERR, bin2hex($test_message->serializeToString()) . "\n");
-      # }
     } elseif ($request->getPayload() == "json_payload") {
       try {
           $test_message->mergeFromJsonString($request->getJsonPayload());

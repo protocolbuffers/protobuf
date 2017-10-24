@@ -688,20 +688,18 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   upb_handlerattr_uninit(&attr);
 }
 
-static bool add_unknown_handler(void* closure, const void* hd, const char* buf,
-                         size_t size) {
+static bool unknown_field_handler(void* closure, const void* hd,
+                                  const char* buf, size_t size) {
   encodeunknown_handlerfunc handler =
       ((unknownfields_handlerdata_t*)hd)->handler;
 
   MessageHeader* msg = (MessageHeader*)closure;
-  stringsink* unknown = DEREF(Message_data(msg), 0, stringsink*);
-  if (unknown == NULL) {
-    DEREF(Message_data(msg), 0, stringsink*) = malloc(sizeof(stringsink));
-    unknown = DEREF(Message_data(msg), 0, stringsink*);
-    stringsink_init(unknown);
+  if (msg->unknown_fields == NULL) {
+    msg->unknown_fields = malloc(sizeof(stringsink));
+    stringsink_init(msg->unknown_fields);
   }
 
-  handler(unknown, NULL, buf, size, NULL);
+  handler(msg->unknown_fields, NULL, buf, size, NULL);
 
   return true;
 }
@@ -728,7 +726,7 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
 
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
   upb_handlerattr_sethandlerdata(&attr, newunknownfieldshandlerdata(h));
-  upb_handlers_setunknown(h, add_unknown_handler, &attr);
+  upb_handlers_setunknown(h, unknown_field_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
        !upb_msg_field_done(&i);
@@ -1208,7 +1206,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
     }
   }
 
-  stringsink* unknown = DEREF(Message_data(msg), 0, stringsink*);
+  stringsink* unknown = msg->unknown_fields;
   if (unknown != NULL) {
     upb_sink_putunknown(sink, unknown->ptr, unknown->len);
   }

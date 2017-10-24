@@ -44,7 +44,7 @@ void Message_mark(void* _self) {
 }
 
 void Message_free(void* self) {
-  void* unknown = *((void**)Message_data(self));
+  void* unknown = ((MessageHeader *)self)->unknown_fields;
   if (unknown != NULL) {
     free(unknown);
   }
@@ -70,6 +70,8 @@ VALUE Message_alloc(VALUE klass) {
   ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
   msg->descriptor = desc;
   rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
+
+  msg->unknown_fields = NULL;
 
   layout_init(desc->layout, Message_data(msg));
 
