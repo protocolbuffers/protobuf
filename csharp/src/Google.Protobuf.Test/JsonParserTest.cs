@@ -926,6 +926,27 @@ namespace Google.Protobuf
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
         }
 
+        [Test]
+        public void UnknownField_NotIgnored()
+        {
+            string json = "{ \"unknownField\": 10, \"singleString\": \"x\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        [TestCase("5")]
+        [TestCase("\"text\"")]
+        [TestCase("[0, 1, 2]")]
+        [TestCase("{ \"a\": { \"b\": 10 } }")]
+        public void UnknownField_Ignored(string value)
+        {
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"unknownField\": " + value + ", \"singleString\": \"x\" }";
+            var actual = parser.Parse<TestAllTypes>(json);
+            var expected = new TestAllTypes { SingleString = "x" };
+            Assert.AreEqual(expected, actual);
+        }
+
         /// <summary>
         /// Various tests use strings which have quotes round them for parsing or as the result
         /// of formatting, but without those quotes being specified in the tests (for the sake of readability).
