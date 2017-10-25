@@ -49,15 +49,6 @@ VALUE noleak_rb_str_cat(VALUE rb_str, const char *str, long len) {
 
 /* stringsink *****************************************************************/
 
-// This should probably be factored into a common upb component.
-
-typedef struct {
-  upb_byteshandler handler;
-  upb_bytessink sink;
-  char *ptr;
-  size_t len, size;
-} stringsink;
-
 static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
   stringsink *sink = _sink;
   sink->len = 0;

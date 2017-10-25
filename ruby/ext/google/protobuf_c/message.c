@@ -44,8 +44,9 @@ void Message_mark(void* _self) {
 }
 
 void Message_free(void* self) {
-  void* unknown = ((MessageHeader *)self)->unknown_fields;
+  stringsink* unknown = ((MessageHeader *)self)->unknown_fields;
   if (unknown != NULL) {
+    stringsink_uninit(unknown);
     free(unknown);
   }
   xfree(self);
