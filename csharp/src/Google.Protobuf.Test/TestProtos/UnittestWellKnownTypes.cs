@@ -470,8 +470,8 @@ namespace Google.Protobuf.TestProtos {
       if (!object.Equals(StructField, other.StructField)) return false;
       if (!object.Equals(TimestampField, other.TimestampField)) return false;
       if (!object.Equals(TypeField, other.TypeField)) return false;
-      if (DoubleField != other.DoubleField) return false;
-      if (FloatField != other.FloatField) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(DoubleField, other.DoubleField)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(FloatField, other.FloatField)) return false;
       if (Int64Field != other.Int64Field) return false;
       if (Uint64Field != other.Uint64Field) return false;
       if (Int32Field != other.Int32Field) return false;
@@ -495,8 +495,8 @@ namespace Google.Protobuf.TestProtos {
       if (structField_ != null) hash ^= StructField.GetHashCode();
       if (timestampField_ != null) hash ^= TimestampField.GetHashCode();
       if (typeField_ != null) hash ^= TypeField.GetHashCode();
-      if (doubleField_ != null) hash ^= DoubleField.GetHashCode();
-      if (floatField_ != null) hash ^= FloatField.GetHashCode();
+      if (doubleField_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(DoubleField);
+      if (floatField_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(FloatField);
       if (int64Field_ != null) hash ^= Int64Field.GetHashCode();
       if (uint64Field_ != null) hash ^= Uint64Field.GetHashCode();
       if (int32Field_ != null) hash ^= Int32Field.GetHashCode();
@@ -1713,8 +1713,8 @@ namespace Google.Protobuf.TestProtos {
       if (!object.Equals(StructField, other.StructField)) return false;
       if (!object.Equals(TimestampField, other.TimestampField)) return false;
       if (!object.Equals(TypeField, other.TypeField)) return false;
-      if (DoubleField != other.DoubleField) return false;
-      if (FloatField != other.FloatField) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(DoubleField, other.DoubleField)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(FloatField, other.FloatField)) return false;
       if (Int64Field != other.Int64Field) return false;
       if (Uint64Field != other.Uint64Field) return false;
       if (Int32Field != other.Int32Field) return false;
@@ -1738,8 +1738,8 @@ namespace Google.Protobuf.TestProtos {
       if (oneofFieldCase_ == OneofFieldOneofCase.StructField) hash ^= StructField.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.TimestampField) hash ^= TimestampField.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.TypeField) hash ^= TypeField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.DoubleField) hash ^= DoubleField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.FloatField) hash ^= FloatField.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.DoubleField) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(DoubleField);
+      if (oneofFieldCase_ == OneofFieldOneofCase.FloatField) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(FloatField);
       if (oneofFieldCase_ == OneofFieldOneofCase.Int64Field) hash ^= Int64Field.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.Uint64Field) hash ^= Uint64Field.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.Int32Field) hash ^= Int32Field.GetHashCode();

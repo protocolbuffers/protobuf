@@ -889,8 +889,8 @@ namespace Google.Protobuf.TestProtos {
       if (SingleFixed64 != other.SingleFixed64) return false;
       if (SingleSfixed32 != other.SingleSfixed32) return false;
       if (SingleSfixed64 != other.SingleSfixed64) return false;
-      if (SingleFloat != other.SingleFloat) return false;
-      if (SingleDouble != other.SingleDouble) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(SingleFloat, other.SingleFloat)) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(SingleDouble, other.SingleDouble)) return false;
       if (SingleBool != other.SingleBool) return false;
       if (SingleString != other.SingleString) return false;
       if (SingleBytes != other.SingleBytes) return false;
@@ -944,8 +944,8 @@ namespace Google.Protobuf.TestProtos {
       if (SingleFixed64 != 0UL) hash ^= SingleFixed64.GetHashCode();
       if (SingleSfixed32 != 0) hash ^= SingleSfixed32.GetHashCode();
       if (SingleSfixed64 != 0L) hash ^= SingleSfixed64.GetHashCode();
-      if (SingleFloat != 0F) hash ^= SingleFloat.GetHashCode();
-      if (SingleDouble != 0D) hash ^= SingleDouble.GetHashCode();
+      if (SingleFloat != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(SingleFloat);
+      if (SingleDouble != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(SingleDouble);
       if (SingleBool != false) hash ^= SingleBool.GetHashCode();
       if (SingleString.Length != 0) hash ^= SingleString.GetHashCode();
       if (SingleBytes.Length != 0) hash ^= SingleBytes.GetHashCode();
@@ -3453,7 +3453,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (MyString != other.MyString) return false;
       if (MyInt != other.MyInt) return false;
-      if (MyFloat != other.MyFloat) return false;
+      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(MyFloat, other.MyFloat)) return false;
       if (!object.Equals(SingleNestedMessage, other.SingleNestedMessage)) return false;
       return true;
     }
@@ -3463,7 +3463,7 @@ namespace Google.Protobuf.TestProtos {
       int hash = 1;
       if (MyString.Length != 0) hash ^= MyString.GetHashCode();
       if (MyInt != 0L) hash ^= MyInt.GetHashCode();
-      if (MyFloat != 0F) hash ^= MyFloat.GetHashCode();
+      if (MyFloat != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(MyFloat);
       if (singleNestedMessage_ != null) hash ^= SingleNestedMessage.GetHashCode();
       return hash;
     }
