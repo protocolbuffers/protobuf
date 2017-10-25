@@ -460,8 +460,6 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
   GPBDataType fieldType = GPBGetFieldDataType(field);
   BOOL isMapOrArray = GPBFieldIsMapOrArray(field);
   BOOL fieldIsMessage = GPBDataTypeIsMessage(fieldType);
-  int32_t hasIndex = GPBFieldHasIndex(field);
-  uint32_t fieldNumber = GPBFieldNumber(field);
 #ifdef DEBUG
   if (value == nil && !isMapOrArray && !fieldIsMessage &&
       field.hasDefaultValue) {
