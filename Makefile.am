@@ -333,6 +333,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/WellKnownTypesTest.java              \
   java/core/src/test/java/com/google/protobuf/WireFormatTest.java                  \
   java/core/src/test/proto/com/google/protobuf/any_test.proto                      \
+  java/core/src/test/proto/com/google/protobuf/deprecated_file.proto               \
   java/core/src/test/proto/com/google/protobuf/field_presence_test.proto           \
   java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto              \
   java/core/src/test/proto/com/google/protobuf/lite_equals_and_hash.proto          \
