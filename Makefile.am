@@ -84,6 +84,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/CodedInputStreamTest.cs                    \
   csharp/src/Google.Protobuf.Test/CodedOutputStreamTest.cs                   \
   csharp/src/Google.Protobuf.Test/Collections/MapFieldTest.cs                \
+  csharp/src/Google.Protobuf.Test/Collections/ProtobufEqualityComparersTest.cs \
   csharp/src/Google.Protobuf.Test/Collections/RepeatedFieldTest.cs           \
   csharp/src/Google.Protobuf.Test/Compatibility/PropertyInfoExtensionsTest.cs \
   csharp/src/Google.Protobuf.Test/Compatibility/StreamExtensionsTest.cs      \
@@ -104,6 +105,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/Reflection/TypeRegistryTest.cs             \
   csharp/src/Google.Protobuf.Test/SampleEnum.cs                              \
   csharp/src/Google.Protobuf.Test/SampleMessages.cs                          \
+  csharp/src/Google.Protobuf.Test/SampleNaNs.cs                              \
   csharp/src/Google.Protobuf.Test/TestCornerCases.cs                         \
   csharp/src/Google.Protobuf.Test/TestProtos/ForeignMessagePartial.cs        \
   csharp/src/Google.Protobuf.Test/TestProtos/MapUnittestProto3.cs            \
@@ -126,6 +128,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/CodedOutputStream.ComputeSize.cs                \
   csharp/src/Google.Protobuf/CodedOutputStream.cs                            \
   csharp/src/Google.Protobuf/Collections/MapField.cs                         \
+  csharp/src/Google.Protobuf/Collections/ProtobufEqualityComparers.cs        \
   csharp/src/Google.Protobuf/Collections/ReadOnlyDictionary.cs               \
   csharp/src/Google.Protobuf/Collections/RepeatedField.cs                    \
   csharp/src/Google.Protobuf/Compatibility/PropertyInfoExtensions.cs         \
