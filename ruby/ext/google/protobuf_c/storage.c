@@ -689,10 +689,6 @@ void layout_set(MessageLayout* layout,
 void layout_init(MessageLayout* layout,
                  void* storage) {
   upb_msg_field_iter it;
-
-  // Init unknown fields
-  memset(storage, 0, sizeof(void*));
-
   for (upb_msg_field_begin(&it, layout->msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
