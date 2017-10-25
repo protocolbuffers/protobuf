@@ -719,5 +719,16 @@ namespace Google.Protobuf
             JsonFormatter.Default.Format(message, writer);
             Assert.AreEqual("{ \"c\": 31 }", writer.ToString());
         }
+
+        [Test]
+        public void NaNComparisons()
+        {
+            var message1 = new TestAllTypes { SingleDouble = SampleNaNs.Regular };
+            var message2 = new TestAllTypes { SingleDouble = SampleNaNs.PayloadFlipped };
+            var message3 = new TestAllTypes { SingleDouble = SampleNaNs.Regular };
+
+            EqualityTester.AssertInequality(message1, message2);
+            EqualityTester.AssertEquality(message1, message3);
+        }
     }
 }

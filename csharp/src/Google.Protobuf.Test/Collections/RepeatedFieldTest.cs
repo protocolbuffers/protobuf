@@ -742,5 +742,18 @@ namespace Google.Protobuf.Collections
             var text = list.ToString();
             Assert.AreEqual(text, "[ { \"foo\": 20 } ]", message.ToString());
         }
+
+        [Test]
+        public void NaNValuesComparedBitwise()
+        {
+            var list1 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
+            var list2 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.PayloadFlipped };
+            var list3 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
+
+            EqualityTester.AssertInequality(list1, list2);
+            EqualityTester.AssertEquality(list1, list3);
+            Assert.True(list1.Contains(SampleNaNs.SignallingFlipped));
+            Assert.False(list2.Contains(SampleNaNs.SignallingFlipped));
+        }
     }
 }
