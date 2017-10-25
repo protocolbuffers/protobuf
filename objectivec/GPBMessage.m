@@ -3036,6 +3036,7 @@ static void ResolveIvarGet(GPBFieldDescriptor *field,
       CASE_GET_OBJECT(Group, id, Object)
       CASE_GET(Enum, int32_t, Enum)
 #undef CASE_GET
+#undef CASE_GET_OBJECT
   }
 }
 
