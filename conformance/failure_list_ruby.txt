@@ -59,8 +59,6 @@ Required.Proto3.JsonInput.FieldMask.ProtobufOutput
 Required.Proto3.JsonInput.FloatFieldInfinity.JsonOutput
 Required.Proto3.JsonInput.FloatFieldNan.JsonOutput
 Required.Proto3.JsonInput.FloatFieldNegativeInfinity.JsonOutput
-Required.Proto3.JsonInput.FloatFieldTooLarge
-Required.Proto3.JsonInput.FloatFieldTooSmall
 Required.Proto3.JsonInput.OneofFieldDuplicate
 Required.Proto3.JsonInput.OptionalBoolWrapper.JsonOutput
 Required.Proto3.JsonInput.OptionalBoolWrapper.ProtobufOutput

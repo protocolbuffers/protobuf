@@ -475,8 +475,20 @@ VALUE layout_inspect(MessageLayout* layout, void* storage);
 // Message class creation.
 // -----------------------------------------------------------------------------
 
+// This should probably be factored into a common upb component.
+
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} stringsink;
+
+void stringsink_uninit(stringsink *sink);
+
 struct MessageHeader {
-  Descriptor* descriptor;  // kept alive by self.class.descriptor reference.
+  Descriptor* descriptor;      // kept alive by self.class.descriptor reference.
+  stringsink* unknown_fields;  // store unknown fields in decoding.
   // Data comes after this.
 };
 
