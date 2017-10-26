@@ -216,7 +216,7 @@ message TestAllTypesProto3 {
   int32 field_name17__ = 417;
   int32 Field_name18__ = 418;
 
-  // Reserved for testing unknonw fields
+  // Reserved for testing unknown fields
   reserved 501 to 510;
 }
 
