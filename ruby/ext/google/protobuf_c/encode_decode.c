@@ -108,10 +108,6 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   return hd_ofs;
 }
 
-typedef size_t (*encodeunknown_handlerfunc)(void* _sink, const void* hd,
-                                            const char* ptr, size_t len,
-                                            const upb_bufhandle* handle);
-
 typedef struct {
   size_t ofs;
   const upb_msgdef *md;
