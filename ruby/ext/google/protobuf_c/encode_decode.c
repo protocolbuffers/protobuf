@@ -113,18 +113,6 @@ typedef size_t (*encodeunknown_handlerfunc)(void* _sink, const void* hd,
                                             const upb_bufhandle* handle);
 
 typedef struct {
-  encodeunknown_handlerfunc handler;
-} unknownfields_handlerdata_t;
-
-// Creates a handlerdata for unknown fields.
-static const void *newunknownfieldshandlerdata(upb_handlers* h) {
-  unknownfields_handlerdata_t* hd = ALLOC(unknownfields_handlerdata_t);
-  hd->handler = stringsink_string;
-  upb_handlers_addcleanup(h, hd, xfree);
-  return hd;
-}
-
-typedef struct {
   size_t ofs;
   const upb_msgdef *md;
 } submsg_handlerdata_t;
@@ -681,16 +669,13 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
 
 static bool unknown_field_handler(void* closure, const void* hd,
                                   const char* buf, size_t size) {
-  encodeunknown_handlerfunc handler =
-      ((unknownfields_handlerdata_t*)hd)->handler;
-
   MessageHeader* msg = (MessageHeader*)closure;
   if (msg->unknown_fields == NULL) {
     msg->unknown_fields = malloc(sizeof(stringsink));
     stringsink_init(msg->unknown_fields);
   }
 
-  handler(msg->unknown_fields, NULL, buf, size, NULL);
+  stringsink_string(msg->unknown_fields, NULL, buf, size, NULL);
 
   return true;
 }
@@ -716,7 +701,6 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   }
 
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-  upb_handlerattr_sethandlerdata(&attr, newunknownfieldshandlerdata(h));
   upb_handlers_setunknown(h, unknown_field_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
