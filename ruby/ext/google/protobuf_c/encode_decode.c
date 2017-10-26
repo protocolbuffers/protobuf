@@ -669,6 +669,8 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
 
 static bool unknown_field_handler(void* closure, const void* hd,
                                   const char* buf, size_t size) {
+  UPB_UNUSED(hd);
+
   MessageHeader* msg = (MessageHeader*)closure;
   if (msg->unknown_fields == NULL) {
     msg->unknown_fields = malloc(sizeof(stringsink));
