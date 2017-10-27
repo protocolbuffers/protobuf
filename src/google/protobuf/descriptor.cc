@@ -3659,7 +3659,7 @@ bool DescriptorBuilder::IsInPackage(const FileDescriptor* file,
 
 void DescriptorBuilder::RecordPublicDependencies(const FileDescriptor* file) {
   if (file == NULL || !dependencies_.insert(file).second) return;
-  for (int i = 0; file != NULL && i < file->public_dependency_count(); i++) {
+  for (int i = 0; i < file->public_dependency_count(); i++) {
     RecordPublicDependencies(file->public_dependency(i));
   }
 }
@@ -6953,7 +6953,6 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
     annotation_extensions.insert("google.protobuf.FileOptions");
     annotation_extensions.insert("google.protobuf.FieldOptions");
     annotation_extensions.insert("google.protobuf.EnumOptions");
-    annotation_extensions.insert("google.protobuf.EnumValueOptions");
     annotation_extensions.insert("google.protobuf.EnumValueOptions");
     annotation_extensions.insert("google.protobuf.ServiceOptions");
     annotation_extensions.insert("google.protobuf.MethodOptions");

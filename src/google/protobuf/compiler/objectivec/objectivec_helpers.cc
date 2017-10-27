@@ -109,7 +109,7 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
         current = "";
       }
       current += c;
-      last_char_was_number = last_char_was_lower = last_char_was_upper = false;
+      last_char_was_lower = last_char_was_upper = false;
       last_char_was_number = true;
     } else if (ascii_islower(c)) {
       // lowercase letter can follow a lowercase or uppercase letter
@@ -118,7 +118,7 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
         current = "";
       }
       current += c;  // already lower
-      last_char_was_number = last_char_was_lower = last_char_was_upper = false;
+      last_char_was_number = last_char_was_upper = false;
       last_char_was_lower = true;
     } else if (ascii_isupper(c)) {
       if (!last_char_was_upper) {
@@ -126,7 +126,7 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
         current = "";
       }
       current += ascii_tolower(c);
-      last_char_was_number = last_char_was_lower = last_char_was_upper = false;
+      last_char_was_number = last_char_was_lower = false;
       last_char_was_upper = true;
     } else {
       last_char_was_number = last_char_was_lower = last_char_was_upper = false;

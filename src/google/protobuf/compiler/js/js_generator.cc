@@ -2523,9 +2523,6 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
     }
 
   } else {
-    bool untyped =
-        false;
-
     // Simple (primitive) field, either singular or repeated.
 
     // TODO(b/26173701): Always use BYTES_DEFAULT for the getter return type;
@@ -2540,22 +2537,15 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         /* force_present = */ false,
         /* singular_if_not_packed = */ false,
         /* bytes_mode = */ bytes_mode);
-    if (untyped) {
-      printer->Print(
-          "/**\n"
-          " * @return {?} Raw field, untyped.\n"
-          " */\n");
-    } else {
-      printer->Print(
-          "/**\n"
-          " * $fielddef$\n"
-          "$comment$"
-          " * @return {$type$}\n"
-          " */\n",
-          "fielddef", FieldDefinition(options, field),
-          "comment", FieldComments(field, bytes_mode),
-          "type", typed_annotation);
-    }
+    printer->Print(
+        "/**\n"
+        " * $fielddef$\n"
+        "$comment$"
+        " * @return {$type$}\n"
+        " */\n",
+        "fielddef", FieldDefinition(options, field),
+        "comment", FieldComments(field, bytes_mode),
+        "type", typed_annotation);
 
     printer->Print(
         "$class$.prototype.$gettername$ = function() {\n",
@@ -2563,65 +2553,33 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         "gettername", "get" + JSGetterName(options, field));
     printer->Annotate("gettername", field);
 
-    if (untyped) {
-      printer->Print(
-          "  return ");
-    } else {
-      printer->Print(
-          "  return /** @type {$type$} */ (",
-          "type", typed_annotation);
-    }
+    printer->Print(
+        "  return /** @type {$type$} */ (",
+        "type", typed_annotation);
 
-    bool use_default = !ReturnsNullWhenUnset(options, field);
-
-    // Raw fields with no default set should just return undefined.
-    if (untyped && !field->has_default_value()) {
-      use_default = false;
-    }
-
-    // Repeated fields get initialized to their default in the constructor
-    // (why?), so we emit a plain getField() call for them.
-    if (field->is_repeated()) {
-      use_default = false;
-    }
+    bool use_default = false;
 
     GenerateFieldValueExpression(printer, "this", field, use_default);
 
-    if (untyped) {
-      printer->Print(
-          ";\n"
-          "};\n"
-          "\n"
-          "\n");
-    } else {
-      printer->Print(
-          ");\n"
-          "};\n"
-          "\n"
-          "\n");
-    }
+    printer->Print(
+        ");\n"
+        "};\n"
+        "\n"
+        "\n");
 
-    if (field->type() == FieldDescriptor::TYPE_BYTES && !untyped) {
+    if (field->type() == FieldDescriptor::TYPE_BYTES) {
       GenerateBytesWrapper(options, printer, field, BYTES_B64);
       GenerateBytesWrapper(options, printer, field, BYTES_U8);
     }
 
-    if (untyped) {
-      printer->Print(
-          "/**\n"
-          " * @param {*} value$returndoc$\n"
-          " */\n",
-          "returndoc", JSReturnDoc(options, field));
-    } else {
-      printer->Print(
-          "/** @param {$optionaltype$} value$returndoc$ */\n", "optionaltype",
-          JSFieldTypeAnnotation(
-              options, field,
-              /* is_setter_argument = */ true,
-              /* force_present = */ false,
-              /* singular_if_not_packed = */ false),
-          "returndoc", JSReturnDoc(options, field));
-    }
+    printer->Print(
+        "/** @param {$optionaltype$} value$returndoc$ */\n", "optionaltype",
+        JSFieldTypeAnnotation(
+            options, field,
+            /* is_setter_argument = */ true,
+            /* force_present = */ false,
+            /* singular_if_not_packed = */ false),
+        "returndoc", JSReturnDoc(options, field));
 
     if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
         !field->is_repeated() && !field->is_map() &&
@@ -2656,25 +2614,16 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "\n"
           "\n",
           "type",
-          untyped ? "/** @type{string|number|boolean|Array|undefined} */(" : "",
-          "typeclose", untyped ? ")" : "", "oneofgroup",
+          "",
+          "typeclose", "", "oneofgroup",
           (field->containing_oneof() ? (", " + JSOneofArray(options, field))
                                      : ""),
           "returnvalue", JSReturnClause(field), "rptvalueinit",
           (field->is_repeated() ? " || []" : ""));
     }
 
-    if (untyped) {
-      printer->Print(
-          "/**\n"
-          " * Clears the value.$returndoc$\n"
-          " */\n",
-          "returndoc", JSReturnDoc(options, field));
-    }
-
-
     if (field->is_repeated()) {
-      GenerateRepeatedPrimitiveHelperMethods(options, printer, field, untyped);
+      GenerateRepeatedPrimitiveHelperMethods(options, printer, field, false);
     }
   }
 

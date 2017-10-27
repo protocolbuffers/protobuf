@@ -205,23 +205,26 @@ void UnknownFieldSet::AddField(const UnknownField& field) {
 }
 
 void UnknownFieldSet::DeleteSubrange(int start, int num) {
-  // Delete the specified fields.
-  for (int i = 0; i < num; ++i) {
-    (*fields_)[i + start].Delete();
+  if (fields_ != NULL) {
+    // Delete the specified fields.
+    for (int i = 0; i < num; ++i) {
+      (*fields_)[i + start].Delete();
+    }
+    // Slide down the remaining fields.
+    for (int i = start + num; i < fields_->size(); ++i) {
+      (*fields_)[i - num] = (*fields_)[i];
+    }
+    // Pop off the # of deleted fields.
+    for (int i = 0; i < num; ++i) {
+      fields_->pop_back();
+    }
+    if (fields_ && fields_->size() == 0) {
+      // maintain invariant: never hold fields_ if empty.
+      delete fields_;
+      fields_ = NULL;
+    }
   }
-  // Slide down the remaining fields.
-  for (int i = start + num; i < fields_->size(); ++i) {
-    (*fields_)[i - num] = (*fields_)[i];
-  }
-  // Pop off the # of deleted fields.
-  for (int i = 0; i < num; ++i) {
-    fields_->pop_back();
-  }
-  if (fields_ && fields_->size() == 0) {
-    // maintain invariant: never hold fields_ if empty.
-    delete fields_;
-    fields_ = NULL;
-  }
+  return;
 }
 
 void UnknownFieldSet::DeleteByNumber(int number) {

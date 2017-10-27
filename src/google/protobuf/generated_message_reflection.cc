@@ -1124,9 +1124,6 @@ string GeneratedMessageReflection::GetString(
         return GetField<ArenaStringPtr>(message, field).Get();
       }
     }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -1144,9 +1141,6 @@ const string& GeneratedMessageReflection::GetStringReference(
         return GetField<ArenaStringPtr>(message, field).Get();
       }
     }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -1188,9 +1182,6 @@ string GeneratedMessageReflection::GetRepeatedString(
       case FieldOptions::STRING:
         return GetRepeatedPtrField<string>(message, field, index);
     }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -1206,9 +1197,6 @@ const string& GeneratedMessageReflection::GetRepeatedStringReference(
       case FieldOptions::STRING:
         return GetRepeatedPtrField<string>(message, field, index);
     }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return GetEmptyString();  // Make compiler happy.
   }
 }
 

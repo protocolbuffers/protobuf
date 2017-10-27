@@ -601,19 +601,11 @@ GenerateSingularFieldHasBits(const FieldDescriptor* field,
   } else {
     // Message fields have a has_$name$() method.
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      bool is_lazy = false;
-      if (is_lazy) {
-        printer->Print(vars,
-          "inline bool $classname$::has_$name$() const {\n"
-          "  return !$name$_.IsCleared();\n"
-          "}\n");
-      } else {
-        printer->Print(
-            vars,
-            "inline bool $classname$::has_$name$() const {\n"
-            "  return this != internal_default_instance() && $name$_ != NULL;\n"
-            "}\n");
-      }
+      printer->Print(
+        vars,
+        "inline bool $classname$::has_$name$() const {\n"
+        "  return this != internal_default_instance() && $name$_ != NULL;\n"
+        "}\n");
     }
   }
 }

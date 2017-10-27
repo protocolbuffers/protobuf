@@ -146,7 +146,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
-    (*variables)["set_has_field_bit_message"] = "";
+    (*variables)["get_has_field_bit_message"] = "";
     (*variables)["set_has_field_bit_message"] = "";
     (*variables)["clear_has_field_bit_message"] = "";
 
