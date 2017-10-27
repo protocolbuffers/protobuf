@@ -129,6 +129,11 @@ namespace Google.Protobuf
             return tokenToReturn;
         }
 
+        internal void IgnoreCurrentObject(JsonToken lastToken)
+        {
+            IgnoreCurrentObjectImpl(lastToken);
+        }
+
         /// <summary>
         /// Returns the next JSON token in the stream, when requested by the base class. (The <see cref="Next"/> method delegates
         /// to this if it doesn't have a buffered token.)
@@ -136,6 +141,15 @@ namespace Google.Protobuf
         /// <exception cref="InvalidOperationException">This method is called after an EndDocument token has been returned</exception>
         /// <exception cref="InvalidJsonException">The input text does not comply with RFC 7159</exception>
         protected abstract JsonToken NextImpl();
+
+
+        /// <summary>
+        /// Returns the next JSON token in the stream, when requested by the base class. (The <see cref="Next"/> method delegates
+        /// to this if it doesn't have a buffered token.)
+        /// </summary>
+        /// <exception cref="InvalidOperationException">This method is called after an EndDocument token has been returned</exception>
+        /// <exception cref="InvalidJsonException">The input text does not comply with RFC 7159</exception>
+        protected abstract void IgnoreCurrentObjectImpl(JsonToken lastToken);
 
         /// <summary>
         /// Tokenizer which first exhausts a list of tokens, then consults another tokenizer.
@@ -160,6 +174,11 @@ namespace Google.Protobuf
                     return nextTokenizer.Next();
                 }
                 return tokens[nextTokenIndex++];
+            }
+
+            protected override void IgnoreCurrentObjectImpl(JsonToken lastToken)
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -287,6 +306,23 @@ namespace Google.Protobuf
                 if ((validStates & state) == 0)
                 {
                     throw reader.CreateException(errorPrefix + state);
+                }
+            }
+
+            protected override void IgnoreCurrentObjectImpl(JsonToken lastToken)
+            {
+                if (lastToken.Type == JsonToken.TokenType.Name)
+                {
+                    lastToken = NextImpl();
+                }
+                if (lastToken.Type != JsonToken.TokenType.StartObject && lastToken.Type != JsonToken.TokenType.StartArray)
+                {
+                    return;
+                }
+                var currentContainerStackSize = containerStack.Count;
+                while (currentContainerStackSize <= containerStack.Count)
+                {
+                    NextImpl();
                 }
             }
 

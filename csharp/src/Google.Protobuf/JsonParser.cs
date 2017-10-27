@@ -203,6 +203,11 @@ namespace Google.Protobuf
                 }
                 else
                 {
+                    if (settings.IgnoreUnknownTypes)
+                    {
+                        tokenizer.IgnoreCurrentObject(token);
+                        continue;
+                    }
                     // TODO: Is this what we want to do? If not, we'll need to skip the value,
                     // which may be an object or array. (We might want to put code in the tokenizer
                     // to do that.)
@@ -992,6 +997,11 @@ namespace Google.Protobuf
             public int RecursionLimit { get; }
 
             /// <summary>
+            /// Should an unknown Type encountered during parsing be ignored. If not set, an exception will be thrown.
+            /// </summary>
+            public bool IgnoreUnknownTypes { get; }
+
+            /// <summary>
             /// The type registry used to parse <see cref="Any"/> messages.
             /// </summary>
             public TypeRegistry TypeRegistry { get; }
@@ -1005,12 +1015,31 @@ namespace Google.Protobuf
             }
 
             /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified unknown type handling.
+            /// </summary>
+            /// <param name="ignoreUnknownTypes">Should an unknown Type be ignored during parsing</param>
+            public Settings(bool ignoreUnknownTypes) : this(ignoreUnknownTypes, CodedInputStream.DefaultRecursionLimit, TypeRegistry.Empty)
+            {
+            }
+
+            /// <summary>
             /// Creates a new <see cref="Settings"/> object with the specified recursion limit and type registry.
             /// </summary>
             /// <param name="recursionLimit">The maximum depth of messages to parse</param>
             /// <param name="typeRegistry">The type registry used to parse <see cref="Any"/> messages</param>
-            public Settings(int recursionLimit, TypeRegistry typeRegistry)
+            public Settings(int recursionLimit, TypeRegistry typeRegistry) : this(false, recursionLimit, typeRegistry)
             {
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified unknown type handling, recursion limit and type registry.
+            /// </summary>
+            /// <param name="ignoreUnknownTypes">Should an unknown Type be ignored during parsing</param>
+            /// <param name="recursionLimit">The maximum depth of messages to parse</param>
+            /// <param name="typeRegistry">The type registry used to parse <see cref="Any"/> messages</param>
+            public Settings(bool ignoreUnknownTypes, int recursionLimit, TypeRegistry typeRegistry)
+            {
+                IgnoreUnknownTypes = ignoreUnknownTypes;
                 RecursionLimit = recursionLimit;
                 TypeRegistry = ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
             }

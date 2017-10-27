@@ -926,6 +926,62 @@ namespace Google.Protobuf
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
         }
 
+        [Test]
+        public void UnknownField_Integer()
+        {
+            string json = "{ \"XXXXUNKNOWNFIELDXXXXX\": 2, \"singleInt32\" : 1 }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void UnknownField_Nested()
+        {
+            string json = "{ \"XXXXUNKNOWNFIELDXXXXX\": { \"bb\": 20 }, \"singleInt32\" : 1 }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void UnknownField_Array()
+        {
+            string json = "{ \"XXXXUNKNOWNFIELDXXXXX\": [ 1, 3, 20 ], \"singleInt32\" : 1 }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+
+        [Test]
+        public void UnknownFieldIgnored_Integer()
+        {
+            var expected = new TestAllTypes { SingleInt32 = 1 };
+            string json = "{ \"XXXXUNKNOWNFIELDXXXXX\": 2, \"singleInt32\" : 1 }";
+            JsonParser parser = new JsonParser(new JsonParser.Settings(ignoreUnknownTypes:true));
+            TestAllTypes result = new TestAllTypes();
+            parser.Merge(result, json);
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        public void UnknownFieldIgnored_Nested()
+        {
+            var expected = new TestAllTypes { SingleInt32 = 1 };
+            string json = "{ \"XXXXUNKNOWNFIELDXXXXX\": { \"bb\": 20 }, \"singleInt32\" : 1 }";
+            JsonParser parser = new JsonParser(new JsonParser.Settings(ignoreUnknownTypes: true));
+            TestAllTypes result = new TestAllTypes();
+            parser.Merge(result, json);
+            Assert.AreEqual(expected, result);
+        }
+
+
+        [Test]
+        public void UnknownFieldIgnored_Array()
+        {
+            var expected = new TestAllTypes { SingleInt32 = 1 };
+            string json = "{ \"XXXXUNKNOWNFIELDXXXXX\": [ 1, 3, 20 ], \"singleInt32\" : 1 }";
+            JsonParser parser = new JsonParser(new JsonParser.Settings(ignoreUnknownTypes: true));
+            TestAllTypes result = new TestAllTypes();
+            parser.Merge(result, json);
+            Assert.AreEqual(expected, result);
+        }
+
         /// <summary>
         /// Various tests use strings which have quotes round them for parsing or as the result
         /// of formatting, but without those quotes being specified in the tests (for the sake of readability).
