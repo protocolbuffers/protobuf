@@ -1037,6 +1037,23 @@ namespace Google.Protobuf
             /// <param name="ignoreUnknownFields"><c>true</c> if unknown fields should be ignored when parsing; <c>false</c> to throw an exception.</param>
             public Settings WithIgnoreUnknownFields(bool ignoreUnknownFields) =>
                 new Settings(RecursionLimit, TypeRegistry, ignoreUnknownFields);
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object based on this one, but with the specified recursion limit.
+            /// </summary>
+            /// <param name="recursionLimit">The new recursion limit.</param>
+            public Settings WithRecursionLimit(int recursionLimit) =>
+                new Settings(recursionLimit, TypeRegistry, IgnoreUnknownFields);
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object based on this one, but with the specified type registry.
+            /// </summary>
+            /// <param name="typeRegistry">The new type registry. Must not be null.</param>
+            public Settings WithTypeRegistry(TypeRegistry typeRegistry) =>
+                new Settings(
+                    RecursionLimit,
+                    ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry)),
+                    IgnoreUnknownFields);
         }
     }
 }
