@@ -601,11 +601,22 @@ GenerateSingularFieldHasBits(const FieldDescriptor* field,
   } else {
     // Message fields have a has_$name$() method.
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      printer->Print(
-        vars,
-        "inline bool $classname$::has_$name$() const {\n"
-        "  return this != internal_default_instance() && $name$_ != NULL;\n"
-        "}\n");
+      // Within Google we have a lazy field feature that we have not
+      // gotten around to open sourcing yet. The way this code is set
+      // up now makes it easy for us to patch in our internal change.
+      bool is_lazy = false;
+      if (is_lazy) {
+        printer->Print(vars,
+          "inline bool $classname$::has_$name$() const {\n"
+          "  return !$name$_.IsCleared();\n"
+          "}\n");
+      } else {
+        printer->Print(
+            vars,
+            "inline bool $classname$::has_$name$() const {\n"
+            "  return this != internal_default_instance() && $name$_ != NULL;\n"
+            "}\n");
+      }
     }
   }
 }
