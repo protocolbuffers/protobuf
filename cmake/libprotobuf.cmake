@@ -112,6 +112,10 @@ set(libprotobuf_includes
   ${protobuf_source_dir}/src/google/protobuf/wrappers.pb.h
 )
 
+if(MSVC)
+  set_source_files_properties(${protobuf_source_dir}/src/google/protobuf/message.cc PROPERTIES COMPILE_FLAGS /Ob0)
+endif()
+
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_files} ${libprotobuf_files} ${libprotobuf_includes})
 target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT})

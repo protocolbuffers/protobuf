@@ -1,4 +1,4 @@
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../gmock/CMakeLists.txt")
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../../googletest/CMakeLists.txt")
   message(FATAL_ERROR "Cannot find gmock directory.")
 endif()
 
@@ -6,20 +6,6 @@ option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
   "Using absolute test_plugin path in tests" ON)
 mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
 
-include_directories(
-  ${protobuf_source_dir}/gmock
-  ${protobuf_source_dir}/gmock/gtest
-  ${protobuf_source_dir}/gmock/gtest/include
-  ${protobuf_source_dir}/gmock/include
-)
-
-add_library(gmock STATIC
-  ${protobuf_source_dir}/gmock/src/gmock-all.cc
-  ${protobuf_source_dir}/gmock/gtest/src/gtest-all.cc
-)
-target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
-add_library(gmock_main STATIC ${protobuf_source_dir}/gmock/src/gmock_main.cc)
-target_link_libraries(gmock_main gmock)
 
 set(lite_test_protos
   google/protobuf/map_lite_unittest.proto
