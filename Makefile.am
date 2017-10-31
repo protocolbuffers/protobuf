@@ -286,6 +286,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/CheckUtf8Test.java                   \
   java/core/src/test/java/com/google/protobuf/CodedInputStreamTest.java            \
   java/core/src/test/java/com/google/protobuf/CodedOutputStreamTest.java           \
+  java/core/src/test/java/com/google/protobuf/DecodeUtf8Test.java                  \
   java/core/src/test/java/com/google/protobuf/DeprecatedFieldTest.java             \
   java/core/src/test/java/com/google/protobuf/DescriptorsTest.java                 \
   java/core/src/test/java/com/google/protobuf/DiscardUnknownFieldsTest.java        \
