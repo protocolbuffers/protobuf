@@ -347,7 +347,6 @@ generate_php_test_proto() {
   rm -rf generated
   mkdir generated
   ../../src/protoc --php_out=generated         \
-    proto/test.proto                           \
     proto/test_include.proto                   \
     proto/test_no_namespace.proto              \
     proto/test_prefix.proto                    \
@@ -363,7 +362,9 @@ generate_php_test_proto() {
     proto/test_service_namespace.proto         \
     proto/test_descriptors.proto
   pushd ../../src
-  ./protoc --php_out=../php/tests/generated -I../php/tests -I. ../php/tests/proto/test_import_descriptor_proto.proto
+  ./protoc --php_out=../php/tests/generated -I../php/tests -I. \
+    ../php/tests/proto/test_import_descriptor_proto.proto      \
+    ../php/tests/proto/test.proto
   popd
   popd
 }
