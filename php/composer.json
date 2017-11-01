@@ -9,13 +9,21 @@
     "php": ">=5.5.0"
   },
   "require-dev": {
-    "phpunit/phpunit": ">=4.8.0"
+    "phpunit/phpunit": "^5|^4.8.0"
   },
   "autoload": {
     "psr-4": {
       "Google\\Protobuf\\": "src/Google/Protobuf",
-      "GPBMetadata\\Google\\Protobuf\\": "src/GPBMetadata/Google/Protobuf",
+      "GPBMetadata\\Google\\Protobuf\\": "src/GPBMetadata/Google/Protobuf"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
       "": "tests/generated"
     }
+  },
+  "scripts": {
+    "protoc": "protoc --proto_path=tests/ --php_out=tests/generated/ tests/proto/*.proto",
+    "protoc-with-grpc": "protoc --proto_path=tests/ --php_out=tests/generated/ --grpc_out=tests/generated/ --plugin=protoc-gen-grpc=`which grpc_php_plugin` tests/proto/*.proto"
   }
 }
