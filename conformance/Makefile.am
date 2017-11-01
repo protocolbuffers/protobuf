@@ -256,7 +256,7 @@ if USE_EXTERNAL_PROTOC
 protoc_middleman: $(conformance_protoc_inputs) $(conformance_proto2_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:. $(conformance_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --objc_out=. --python_out=. --js_out=import_style=commonjs,binary:. $(conformance_proto2_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:google-protobuf $(well_known_type_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. --js_out=import_style=commonjs,binary:google-protobuf $(well_known_type_protoc_inputs)
 	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
 
@@ -268,7 +268,7 @@ else
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(conformance_proto2_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --objc_out=. --python_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_proto2_protoc_inputs) )
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd/google-protobuf $(well_known_type_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd/google-protobuf $(well_known_type_protoc_inputs) )
 	## @mkdir -p lite
 	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
 	touch protoc_middleman
