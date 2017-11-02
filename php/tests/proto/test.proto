@@ -6,10 +6,20 @@ import 'proto/test_php_namespace.proto';
 import 'proto/test_empty_php_namespace.proto';
 import 'proto/test_prefix.proto';
 import 'google/protobuf/any.proto';
-import 'google/protobuf/wrappers.proto';
-import 'google/protobuf/struct.proto';
+import 'google/protobuf/api.proto';
 import 'google/protobuf/duration.proto';
 import 'google/protobuf/field_mask.proto';
+import 'google/protobuf/empty.proto';
+import 'google/protobuf/source_context.proto';
+import 'google/protobuf/struct.proto';
+import 'google/protobuf/timestamp.proto';
+import 'google/protobuf/type.proto';
+import 'google/protobuf/wrappers.proto';
+
+// import 'google/protobuf/wrappers.proto';
+// import 'google/protobuf/struct.proto';
+// import 'google/protobuf/duration.proto';
+// import 'google/protobuf/field_mask.proto';
 
 package foo;
 
@@ -207,15 +217,15 @@ enum testLowerCaseEnum {
   VALUE = 0;
 }
 
-message AnyWrapper {
-  google.protobuf.Any any = 1;
-  google.protobuf.Int32Value int32_wrapper = 2;
-  google.protobuf.BoolValue bool_wrapper = 3;
-  google.protobuf.StringValue string_wrapper = 4;
-  google.protobuf.BytesValue bytes_wrapper = 5;
-  google.protobuf.Value value = 6;
-  google.protobuf.Struct struct = 7;
-  google.protobuf.Duration duration = 8;
-  google.protobuf.FieldMask field_mask = 9;
-  repeated google.protobuf.BytesValue repeated_bytes_wrapper = 10;
-}
+// message AnyWrapper {
+//   google.protobuf.Any any = 1;
+//   google.protobuf.Int32Value int32_wrapper = 2;
+//   google.protobuf.BoolValue bool_wrapper = 3;
+//   google.protobuf.StringValue string_wrapper = 4;
+//   google.protobuf.BytesValue bytes_wrapper = 5;
+//   google.protobuf.Value value = 6;
+//   google.protobuf.Struct struct = 7;
+//   google.protobuf.Duration duration = 8;
+//   google.protobuf.FieldMask field_mask = 9;
+//   repeated google.protobuf.BytesValue repeated_bytes_wrapper = 10;
+// }

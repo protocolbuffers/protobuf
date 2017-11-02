@@ -493,122 +493,122 @@ class EncodeDecodeTest extends TestBase
 
     public function testAnyJsonEncode()
     {
-        $from = new AnyWrapper();
-#         ## Any
-#         $any = new Any();
+#         $from = new AnyWrapper();
+# #         ## Any
+# #         $any = new Any();
+# # 
+# # #         $nested = new Any();
+# # #         $value_msg = new TestMessage();
+# # #         $value_msg->setOptionalInt32(12345);
+# # #         $any_nested->pack($value_msg);
+# # 
+# # #         $value_msg = new Duration();
+# # #         $value_msg->setSeconds(1);
+# # #         $value_msg->setNanos(2);
+# # 
+# # #         $value_msg = new Int32Value();
+# # #         $value_msg->setValue(1);
+# # 
+# # #         $value_msg = new Value();
+# # #         $value_msg->setNumberValue(1);
+# # 
+# # #         $value_msg = new FieldMask();
+# # #         $paths = $value_msg->getPaths();
+# # #         $paths []= "user.display_name";
+# # #         $paths []= "photo";
+# # 
+# #         $any->pack($value_msg);
+# #         $from->setAny($any);
 # 
-# #         $nested = new Any();
-# #         $value_msg = new TestMessage();
-# #         $value_msg->setOptionalInt32(12345);
-# #         $any_nested->pack($value_msg);
+# #         ## Int32Value
+# #         $int32_wrapper = new Int32Value();
+# #         $int32_wrapper->setValue(1);
+# #         $from->setInt32Wrapper($int32_wrapper);
 # 
-# #         $value_msg = new Duration();
-# #         $value_msg->setSeconds(1);
-# #         $value_msg->setNanos(2);
+# #         ## BoolValue
+# #         $bool_wrapper = new BoolValue();
+# #         $bool_wrapper->setValue(true);
+# #         $from->setBoolWrapper($bool_wrapper);
 # 
-# #         $value_msg = new Int32Value();
-# #         $value_msg->setValue(1);
+# #         ## StringValue
+# #         $string_wrapper = new StringValue();
+# #         $string_wrapper->setValue("abc");
+# #         $from->setStringWrapper($string_wrapper);
 # 
-# #         $value_msg = new Value();
-# #         $value_msg->setNumberValue(1);
+# #         ## BytesValue
+# #         $bytes_wrapper = new BytesValue();
+# #         $bytes_wrapper->setValue("abc");
+# #         $from->setBytesWrapper($bytes_wrapper);
 # 
-# #         $value_msg = new FieldMask();
-# #         $paths = $value_msg->getPaths();
-# #         $paths []= "user.display_name";
-# #         $paths []= "photo";
+# #         ## Value
+# #         $value = new Value();
+# # 
+# # #         $value->setBoolValue(true);
+# # 
+# # #         $v1 = new Value();
+# # #         $v1->setNumberValue(1);
+# # #         $v2 = new Value();
+# # #         $v2->setNumberValue(2);
+# # #         $list = new ListValue();
+# # #         $list->setValues([$v1, $v2]);
+# # #         $value->setListValue($list);
+# # 
+# # #         $v1 = new Value();
+# # #         $v1->setNumberValue(1);
+# # #         $v2 = new Value();
+# # #         $v2->setNumberValue(2);
+# # #         $struct = new Struct();
+# # #         $struct->setFields(["a"=>$v1,"b"=>$v2]);
+# # #         $value->setStructValue($struct);
+# # 
+# #         $value->setNullValue(NullValue::NULL_VALUE);
+# # 
+# #         $from->setValue($value);
 # 
-#         $any->pack($value_msg);
-#         $from->setAny($any);
-
-#         ## Int32Value
-#         $int32_wrapper = new Int32Value();
-#         $int32_wrapper->setValue(1);
-#         $from->setInt32Wrapper($int32_wrapper);
-
-#         ## BoolValue
-#         $bool_wrapper = new BoolValue();
-#         $bool_wrapper->setValue(true);
-#         $from->setBoolWrapper($bool_wrapper);
-
-#         ## StringValue
-#         $string_wrapper = new StringValue();
-#         $string_wrapper->setValue("abc");
-#         $from->setStringWrapper($string_wrapper);
-
 #         ## BytesValue
+#         var_dump("SET UP VALUE");
+# 
+# #         $bytes_wrapper = new BytesValue();
+# #         $bytes_wrapper->setValue(hex2bin("0102"));
+# #         $from->setBytesWrapper($bytes_wrapper);
+# #         $from->setBytesWrapper($bytes_wrapper);
+# 
+#         $repeated_bytes_wrapper = $from->getRepeatedBytesWrapper();
 #         $bytes_wrapper = new BytesValue();
-#         $bytes_wrapper->setValue("abc");
-#         $from->setBytesWrapper($bytes_wrapper);
-
-#         ## Value
-#         $value = new Value();
-# 
-# #         $value->setBoolValue(true);
-# 
-# #         $v1 = new Value();
-# #         $v1->setNumberValue(1);
-# #         $v2 = new Value();
-# #         $v2->setNumberValue(2);
-# #         $list = new ListValue();
-# #         $list->setValues([$v1, $v2]);
-# #         $value->setListValue($list);
-# 
-# #         $v1 = new Value();
-# #         $v1->setNumberValue(1);
-# #         $v2 = new Value();
-# #         $v2->setNumberValue(2);
-# #         $struct = new Struct();
-# #         $struct->setFields(["a"=>$v1,"b"=>$v2]);
-# #         $value->setStructValue($struct);
-# 
-#         $value->setNullValue(NullValue::NULL_VALUE);
-# 
-#         $from->setValue($value);
-
-        ## BytesValue
-        var_dump("SET UP VALUE");
-
+#         $bytes_wrapper->setValue(hex2bin(""));
+#         $repeated_bytes_wrapper[] = $bytes_wrapper;
 #         $bytes_wrapper = new BytesValue();
 #         $bytes_wrapper->setValue(hex2bin("0102"));
-#         $from->setBytesWrapper($bytes_wrapper);
-#         $from->setBytesWrapper($bytes_wrapper);
-
-        $repeated_bytes_wrapper = $from->getRepeatedBytesWrapper();
-        $bytes_wrapper = new BytesValue();
-        $bytes_wrapper->setValue(hex2bin(""));
-        $repeated_bytes_wrapper[] = $bytes_wrapper;
-        $bytes_wrapper = new BytesValue();
-        $bytes_wrapper->setValue(hex2bin("0102"));
-        $repeated_bytes_wrapper[] = $bytes_wrapper;
-
-#         ## Struct
-#         $struct = new Struct();
-#         $map = $struct->getFields();
-#         $value = new Value();
-#         $value->setBoolValue(true);
-#         $map["a"] = $value;
-#         $from->setStruct($struct);
-
-#         ## Duration
-#         $duration = new Duration();
-#         $duration->setSeconds(-315576000001);
-#         $duration->setNanos(0);
-#         $from->setDuration($duration);
-
-#         ## FieldMask
-#         $field_mask = new FieldMask();
-#         $paths = $field_mask->getPaths();
-#         $paths []= "user.display_name";
-#         $paths []= "photo";
-#         $from->setFieldMask($field_mask);
-
-        var_dump ("TEST START");
- #        $data = $from->serializeToJsonString();
-        $data = "{\"repeatedBytesWrapper\":[\"\", \"AQI=\"]}";
-        var_dump($data);
-
-        $to = new AnyWrapper();
-        $to->mergeFromJsonString($data);
-        var_dump($to->serializeToJsonString());
+#         $repeated_bytes_wrapper[] = $bytes_wrapper;
+# 
+# #         ## Struct
+# #         $struct = new Struct();
+# #         $map = $struct->getFields();
+# #         $value = new Value();
+# #         $value->setBoolValue(true);
+# #         $map["a"] = $value;
+# #         $from->setStruct($struct);
+# 
+# #         ## Duration
+# #         $duration = new Duration();
+# #         $duration->setSeconds(-315576000001);
+# #         $duration->setNanos(0);
+# #         $from->setDuration($duration);
+# 
+# #         ## FieldMask
+# #         $field_mask = new FieldMask();
+# #         $paths = $field_mask->getPaths();
+# #         $paths []= "user.display_name";
+# #         $paths []= "photo";
+# #         $from->setFieldMask($field_mask);
+# 
+#         var_dump ("TEST START");
+#  #        $data = $from->serializeToJsonString();
+#         $data = "{\"repeatedBytesWrapper\":[\"\", \"AQI=\"]}";
+#         var_dump($data);
+# 
+#         $to = new AnyWrapper();
+#         $to->mergeFromJsonString($data);
+#         var_dump($to->serializeToJsonString());
     }
 }
