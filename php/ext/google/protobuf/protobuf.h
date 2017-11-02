@@ -1179,6 +1179,7 @@ extern zend_class_entry* oneof_descriptor_type;
 // Well Known Type.
 // -----------------------------------------------------------------------------
 
+PHP_METHOD(GPBMetadata_Any, initOnce);
 PHP_METHOD(GPBMetadata_Api, initOnce);
 PHP_METHOD(GPBMetadata_Duration, initOnce);
 PHP_METHOD(GPBMetadata_FieldMask, initOnce);

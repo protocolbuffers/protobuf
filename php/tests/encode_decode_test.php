@@ -477,5 +477,4 @@ class EncodeDecodeTest extends TestBase
         $to->mergeFromJsonString($data);
         $this->expectFields($to);
     }
-
 }
