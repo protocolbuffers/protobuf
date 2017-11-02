@@ -5,16 +5,6 @@ import 'proto/test_no_namespace.proto';
 import 'proto/test_php_namespace.proto';
 import 'proto/test_empty_php_namespace.proto';
 import 'proto/test_prefix.proto';
-import 'google/protobuf/any.proto';
-import 'google/protobuf/api.proto';
-import 'google/protobuf/duration.proto';
-import 'google/protobuf/field_mask.proto';
-import 'google/protobuf/empty.proto';
-import 'google/protobuf/source_context.proto';
-import 'google/protobuf/struct.proto';
-import 'google/protobuf/timestamp.proto';
-import 'google/protobuf/type.proto';
-import 'google/protobuf/wrappers.proto';
 
 package foo;
 

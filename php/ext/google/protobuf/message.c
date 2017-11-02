@@ -2034,8 +2034,6 @@ PHP_PROTO_ONEOF_ACCESSORS(Value, value, Kind, "kind")
 // GPBMetadata files for well known types
 // -----------------------------------------------------------------------------
 
-// These files do nothing, but has to be there for generated code to import.
-
 #define DEFINE_GPBMETADATA_FILE(LOWERNAME, CAMELNAME, CLASSNAME)      \
   zend_class_entry* gpb_metadata_##LOWERNAME##_type;                  \
   static zend_function_entry gpb_metadata_##LOWERNAME##_methods[] = { \
@@ -2071,3 +2069,5 @@ DEFINE_GPBMETADATA_FILE(timestamp, Timestamp,
 DEFINE_GPBMETADATA_FILE(type, Type, "GPBMetadata\\Google\\Protobuf\\Type");
 DEFINE_GPBMETADATA_FILE(wrappers, Wrappers,
                         "GPBMetadata\\Google\\Protobuf\\Wrappers");
+
+#undef DEFINE_GPBMETADATA_FILE

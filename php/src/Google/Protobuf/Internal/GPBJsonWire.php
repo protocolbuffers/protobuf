@@ -224,15 +224,6 @@ class GPBJsonWire
                 $output->writeRaw("\"", 1);
                 $output->writeRaw($bytes_value, strlen($bytes_value));
                 $output->writeRaw("\"", 1);
-                # if (!$is_well_known) {
-                #     $bytes_value = base64_encode($value);
-                #     $output->writeRaw("\"", 1);
-                #     $output->writeRaw($bytes_value, strlen($bytes_value));
-                #     $output->writeRaw("\"", 1);
-                # } else {
-                #     $bytes_value = json_encode($value);
-                #     $output->writeRaw($bytes_value, strlen($bytes_value));
-                # }
                 break;
             case GPBType::STRING:
                 $value = json_encode($value);

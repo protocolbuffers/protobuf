@@ -1179,12 +1179,6 @@ extern zend_class_entry* oneof_descriptor_type;
 // Well Known Type.
 // -----------------------------------------------------------------------------
 
-// struct GPBMetadata_Any;
-// typedef struct GPBMetadata_Any GPBMetadata_Any;
-// PHP_PROTO_WRAP_OBJECT_START(GPBMetadata_Any)
-// PHP_PROTO_WRAP_OBJECT_END
-PHP_METHOD(GPBMetadata_Any, initOnce);
-
 PHP_METHOD(GPBMetadata_Api, initOnce);
 PHP_METHOD(GPBMetadata_Duration, initOnce);
 PHP_METHOD(GPBMetadata_FieldMask, initOnce);

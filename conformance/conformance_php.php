@@ -71,6 +71,7 @@ function doTestIO()
     if (strlen($length_bytes) == 0) {
       return false;   # EOF
     } elseif (strlen($length_bytes) != 4) {
+      fwrite(STDERR, "I/O error\n");
       return false;
     }
 
