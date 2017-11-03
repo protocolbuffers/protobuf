@@ -610,7 +610,6 @@ typedef struct BytesValue BytesValue;
 typedef struct Descriptor Descriptor;
 typedef struct Descriptor Descriptor;
 typedef struct DescriptorPool DescriptorPool;
-typedef struct DescriptorPool DescriptorPool;
 typedef struct DoubleValue DoubleValue;
 typedef struct Duration Duration;
 typedef struct Enum Enum;
@@ -629,7 +628,6 @@ typedef struct FloatValue FloatValue;
 typedef struct GPBEmpty GPBEmpty;
 typedef struct Int32Value Int32Value;
 typedef struct Int64Value Int64Value;
-typedef struct InternalDescriptorPool InternalDescriptorPool;
 typedef struct InternalDescriptorPool InternalDescriptorPool;
 typedef struct ListValue ListValue;
 typedef struct Map Map;
@@ -713,6 +711,17 @@ void uint32_value_init(TSRMLS_D);
 void uint64_value_init(TSRMLS_D);
 void util_init(TSRMLS_D);
 void value_init(TSRMLS_D);
+
+void gpb_metadata_any_init(TSRMLS_D);
+void gpb_metadata_api_init(TSRMLS_D);
+void gpb_metadata_duration_init(TSRMLS_D);
+void gpb_metadata_field_mask_init(TSRMLS_D);
+void gpb_metadata_empty_init(TSRMLS_D);
+void gpb_metadata_source_context_init(TSRMLS_D);
+void gpb_metadata_struct_init(TSRMLS_D);
+void gpb_metadata_timestamp_init(TSRMLS_D);
+void gpb_metadata_type_init(TSRMLS_D);
+void gpb_metadata_wrappers_init(TSRMLS_D);
 
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
@@ -1169,6 +1178,17 @@ extern zend_class_entry* oneof_descriptor_type;
 // -----------------------------------------------------------------------------
 // Well Known Type.
 // -----------------------------------------------------------------------------
+
+PHP_METHOD(GPBMetadata_Any, initOnce);
+PHP_METHOD(GPBMetadata_Api, initOnce);
+PHP_METHOD(GPBMetadata_Duration, initOnce);
+PHP_METHOD(GPBMetadata_FieldMask, initOnce);
+PHP_METHOD(GPBMetadata_Empty, initOnce);
+PHP_METHOD(GPBMetadata_SourceContext, initOnce);
+PHP_METHOD(GPBMetadata_Struct, initOnce);
+PHP_METHOD(GPBMetadata_Timestamp, initOnce);
+PHP_METHOD(GPBMetadata_Type, initOnce);
+PHP_METHOD(GPBMetadata_Wrappers, initOnce);
 
 PHP_METHOD(Any, __construct);
 PHP_METHOD(Any, getTypeUrl);
