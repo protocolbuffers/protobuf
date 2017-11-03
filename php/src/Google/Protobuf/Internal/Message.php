@@ -726,7 +726,7 @@ class Message
                         throw new GPBDecodeException("Expect message.");
                     }
 
-                    $submsg->mergeFromJsonArray($value);
+                    $submsg->mergeFromJsonObject($value);
                 }
                 return $submsg;
             case GPBType::ENUM:
@@ -850,9 +850,9 @@ class Message
         }
     }
 
-    private function mergeFromJsonArray($array)
+    private function mergeFromJsonObject($object)
     {
-        foreach ($array as $key => $value) {
+        foreach ($object as $key => $value) {
             $field = $this->desc->getFieldByJsonName($key);
             if (is_null($field)) {
                 $field = $this->desc->getFieldByName($key);
@@ -921,13 +921,13 @@ class Message
      */
     public function parseFromJsonStream($input)
     {
-        $array = json_decode($input->getData(), JSON_BIGINT_AS_STRING);
-        if (is_null($array)) {
+        $object = json_decode($input->getData(), false, 512, JSON_BIGINT_AS_STRING);
+        if (is_null($object)) {
             throw new GPBDecodeException(
                 "Cannot decode json string.");
         }
         try {
-            $this->mergeFromJsonArray($array);
+            $this->mergeFromJsonObject($object);
         } catch (Exception $e) {
             throw new GPBDecodeException($e->getMessage());
         }

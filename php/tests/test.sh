@@ -12,10 +12,16 @@ tests=( array_test.php encode_decode_test.php generated_class_test.php generated
 
 for t in "${tests[@]}"
 do
-  echo "****************************"
-  echo "* $t"
-  echo "****************************"
+  echo "************************************"
+  echo "* $t - Extension"
+  echo "************************************"
   php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
+  echo ""
+
+  echo "************************************"
+  echo "* $t - PHP"
+  echo "************************************"
+  php `which phpunit` --bootstrap autoload.php $t
   echo ""
 done
 
