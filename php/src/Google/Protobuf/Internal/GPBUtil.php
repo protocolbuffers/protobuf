@@ -547,36 +547,13 @@ class GPBUtil
     public static function hasSpecialJsonMapping($msg)
     {
         return is_a($msg, 'Google\Protobuf\Any')         ||
-               is_a($msg, "Google\Protobuf\DoubleValue") ||
-               is_a($msg, "Google\Protobuf\FloatValue")  ||
-               is_a($msg, "Google\Protobuf\Int64Value")  ||
-               is_a($msg, "Google\Protobuf\UInt64Value") ||
-               is_a($msg, "Google\Protobuf\Int32Value")  ||
-               is_a($msg, "Google\Protobuf\UInt32Value") ||
-               is_a($msg, "Google\Protobuf\BoolValue")   ||
-               is_a($msg, "Google\Protobuf\StringValue") ||
-               is_a($msg, "Google\Protobuf\Struct") ||
-               is_a($msg, "Google\Protobuf\Value") ||
-               is_a($msg, "Google\Protobuf\BytesValue") ||
-               is_a($msg, "Google\Protobuf\Duration") ||
-               is_a($msg, "Google\Protobuf\Timestamp") ||
-               is_a($msg, "Google\Protobuf\FieldMask");
-    }
-
-    public static function hasNoJsonFieldName($msg)
-    {
-        return is_a($msg, "Google\Protobuf\DoubleValue") ||
-               is_a($msg, "Google\Protobuf\FloatValue")  ||
-               is_a($msg, "Google\Protobuf\Int64Value")  ||
-               is_a($msg, "Google\Protobuf\UInt64Value") ||
-               is_a($msg, "Google\Protobuf\Int32Value")  ||
-               is_a($msg, "Google\Protobuf\UInt32Value") ||
-               is_a($msg, "Google\Protobuf\BoolValue")   ||
-               is_a($msg, "Google\Protobuf\StringValue") ||
-               is_a($msg, "Google\Protobuf\Value")       ||
                is_a($msg, "Google\Protobuf\ListValue")   ||
                is_a($msg, "Google\Protobuf\Struct")      ||
-               is_a($msg, "Google\Protobuf\BytesValue");
+               is_a($msg, "Google\Protobuf\Value")       ||
+               is_a($msg, "Google\Protobuf\Duration")    ||
+               is_a($msg, "Google\Protobuf\Timestamp")   ||
+               is_a($msg, "Google\Protobuf\FieldMask")   ||
+               static::hasJsonValue($msg);
     }
 
     public static function hasJsonValue($msg)
@@ -589,7 +566,6 @@ class GPBUtil
                is_a($msg, "Google\Protobuf\UInt32Value") ||
                is_a($msg, "Google\Protobuf\BoolValue")   ||
                is_a($msg, "Google\Protobuf\StringValue") ||
-               is_a($msg, "Google\Protobuf\ListValue")   ||
                is_a($msg, "Google\Protobuf\BytesValue");
     }
 }

@@ -745,7 +745,7 @@ class Message
                         !is_a($submsg, "Google\Protobuf\Value")) {
                         return $this->defaultValue($field);
                     }
-                    if (GPBUtil::hasNoJsonFieldName($submsg)) {
+                    if (GPBUtil::hasSpecialJsonMapping($submsg)) {
                     } elseif (!is_object($value) && !is_array($value)) {
                         throw new GPBDecodeException("Expect message.");
                     }
@@ -1183,7 +1183,7 @@ class Message
         $getter = $field->getGetter();
         $values = $this->$getter();
         return GPBJsonWire::serializeFieldToStream(
-            $values, $field, $output, !GPBUtil::hasNoJsonFieldName($this));
+            $values, $field, $output, !GPBUtil::hasSpecialJsonMapping($this));
     }
 
     /**
@@ -1249,7 +1249,7 @@ class Message
             $timestamp = json_encode($timestamp);
             $output->writeRaw($timestamp, strlen($timestamp));
         } else {
-            if (!GPBUtil::hasNoJsonFieldName($this)) {
+            if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $output->writeRaw("{", 1);
             }
             $fields = $this->desc->getField();
@@ -1267,7 +1267,7 @@ class Message
                     }
                 }
             }
-            if (!GPBUtil::hasNoJsonFieldName($this)) {
+            if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $output->writeRaw("}", 1);
             }
         }
@@ -1574,7 +1574,7 @@ class Message
             $values = $this->$getter();
             $count = count($values);
             if ($count !== 0) {
-                if (!GPBUtil::hasNoJsonFieldName($this)) {
+                if (!GPBUtil::hasSpecialJsonMapping($this)) {
                     $size += 3;                              // size for "\"\":".
                     $size += strlen($field->getJsonName());  // size for field name
                 }
@@ -1610,7 +1610,7 @@ class Message
             $values = $this->$getter();
             $count = count($values);
             if ($count !== 0) {
-                if (!GPBUtil::hasNoJsonFieldName($this)) {
+                if (!GPBUtil::hasSpecialJsonMapping($this)) {
                     $size += 3;                              // size for "\"\":".
                     $size += strlen($field->getJsonName());  // size for field name
                 }
@@ -1622,7 +1622,7 @@ class Message
                 }
             }
         } elseif ($this->existField($field) || GPBUtil::hasJsonValue($this)) {
-            if (!GPBUtil::hasNoJsonFieldName($this)) {
+            if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $size += 3;                              // size for "\"\":".
                 $size += strlen($field->getJsonName());  // size for field name
             }
@@ -1710,7 +1710,7 @@ class Message
             $timestamp = json_encode($timestamp);
             $size += strlen($timestamp);
         } else {
-            if (!GPBUtil::hasNoJsonFieldName($this)) {
+            if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 // Size for "{}".
                 $size += 2;
             }
