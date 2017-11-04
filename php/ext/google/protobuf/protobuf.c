@@ -300,6 +300,17 @@ static PHP_MINIT_FUNCTION(protobuf) {
   repeated_field_iter_init(TSRMLS_C);
   util_init(TSRMLS_C);
 
+  gpb_metadata_any_init(TSRMLS_C);
+  gpb_metadata_api_init(TSRMLS_C);
+  gpb_metadata_duration_init(TSRMLS_C);
+  gpb_metadata_field_mask_init(TSRMLS_C);
+  gpb_metadata_empty_init(TSRMLS_C);
+  gpb_metadata_source_context_init(TSRMLS_C);
+  gpb_metadata_struct_init(TSRMLS_C);
+  gpb_metadata_timestamp_init(TSRMLS_C);
+  gpb_metadata_type_init(TSRMLS_C);
+  gpb_metadata_wrappers_init(TSRMLS_C);
+
   any_init(TSRMLS_C);
   api_init(TSRMLS_C);
   bool_value_init(TSRMLS_C);

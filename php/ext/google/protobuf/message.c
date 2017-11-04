@@ -2029,3 +2029,45 @@ PHP_PROTO_ONEOF_FIELD_ACCESSORS(Value, value, BoolValue, "bool_value")
 PHP_PROTO_ONEOF_FIELD_ACCESSORS(Value, value, StructValue, "struct_value")
 PHP_PROTO_ONEOF_FIELD_ACCESSORS(Value, value, ListValue, "list_value")
 PHP_PROTO_ONEOF_ACCESSORS(Value, value, Kind, "kind")
+
+// -----------------------------------------------------------------------------
+// GPBMetadata files for well known types
+// -----------------------------------------------------------------------------
+
+#define DEFINE_GPBMETADATA_FILE(LOWERNAME, CAMELNAME, CLASSNAME)      \
+  zend_class_entry* gpb_metadata_##LOWERNAME##_type;                  \
+  static zend_function_entry gpb_metadata_##LOWERNAME##_methods[] = { \
+    PHP_ME(GPBMetadata_##CAMELNAME, initOnce, NULL,                   \
+           ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)                         \
+    ZEND_FE_END                                                       \
+  };                                                                  \
+  void gpb_metadata_##LOWERNAME##_init(TSRMLS_D) {                    \
+    zend_class_entry class_type;                                      \
+    INIT_CLASS_ENTRY(class_type, CLASSNAME,                           \
+                     gpb_metadata_##LOWERNAME##_methods);             \
+    gpb_metadata_##LOWERNAME##_type =                                 \
+        zend_register_internal_class(&class_type TSRMLS_CC);          \
+  }                                                                   \
+  PHP_METHOD(GPBMetadata_##CAMELNAME, initOnce) {                     \
+    init_file_##LOWERNAME(TSRMLS_C);                                  \
+  }
+
+DEFINE_GPBMETADATA_FILE(any, Any, "GPBMetadata\\Google\\Protobuf\\Any");
+DEFINE_GPBMETADATA_FILE(api, Api, "GPBMetadata\\Google\\Protobuf\\Api");
+DEFINE_GPBMETADATA_FILE(duration, Duration,
+                        "GPBMetadata\\Google\\Protobuf\\Duration");
+DEFINE_GPBMETADATA_FILE(field_mask, FieldMask,
+                        "GPBMetadata\\Google\\Protobuf\\FieldMask");
+DEFINE_GPBMETADATA_FILE(empty, Empty,
+                        "GPBMetadata\\Google\\Protobuf\\GPBEmpty");
+DEFINE_GPBMETADATA_FILE(source_context, SourceContext,
+                        "GPBMetadata\\Google\\Protobuf\\SourceContext");
+DEFINE_GPBMETADATA_FILE(struct, Struct,
+                        "GPBMetadata\\Google\\Protobuf\\Struct");
+DEFINE_GPBMETADATA_FILE(timestamp, Timestamp,
+                        "GPBMetadata\\Google\\Protobuf\\Timestamp");
+DEFINE_GPBMETADATA_FILE(type, Type, "GPBMetadata\\Google\\Protobuf\\Type");
+DEFINE_GPBMETADATA_FILE(wrappers, Wrappers,
+                        "GPBMetadata\\Google\\Protobuf\\Wrappers");
+
+#undef DEFINE_GPBMETADATA_FILE
