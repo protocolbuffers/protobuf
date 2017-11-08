@@ -6,8 +6,9 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
+use PHPUnit\Framework\TestCase;
 
-class UndefinedTest extends PHPUnit_Framework_TestCase
+class UndefinedTest extends TestCase
 {
 
     /**
