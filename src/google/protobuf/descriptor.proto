@@ -576,6 +576,8 @@ message FieldOptions {
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
 
+  // For defining json flags in generated Go structs, either removing default "omitempty" flag, or adding new flags
+  optional string goJsonFlags = 11 [default=",omitempty"];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
