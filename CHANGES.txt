@@ -27,8 +27,8 @@
   * Proto3 messages are now preserving unknown fields by default. If you’d like
     to drop unknown fields, please use the DiscardUnknownFieldsParser  API. For
     example:
-  * Parser<Foo> parser = DiscardUnknownFieldsParser.wrap(Foo.parser());
-  * Foo foo = parser.parseFrom(input);
+      Parser<Foo> parser = DiscardUnknownFieldsParser.wrap(Foo.parser());
+      Foo foo = parser.parseFrom(input);
   * Added a new CodedInputStream decoder for Iterable<ByteBuffer> with direct
     ByteBuffers.
   * TextFormat now prints unknown length-delimited fields as messages if
