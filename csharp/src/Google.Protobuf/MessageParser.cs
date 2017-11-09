@@ -209,6 +209,20 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Parses a message from a byte array slice.
+        /// </summary>
+        /// <param name="data">The byte array containing the message. Must not be null.</param>
+        /// <param name="offset">The offset of the slice to parse.</param>
+        /// <param name="length">The length of the slice to parse.</param>
+        /// <returns>The newly parsed message.</returns>
+        public new T ParseFrom(byte[] data, int offset, int length)
+        {
+            T message = factory();
+            message.MergeFrom(data, offset, length);
+            return message;
+        }
+
+        /// <summary>
         /// Parses a message from the given byte string.
         /// </summary>
         /// <param name="data">The data to parse.</param>
