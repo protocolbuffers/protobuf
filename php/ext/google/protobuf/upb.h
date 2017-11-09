@@ -76,6 +76,14 @@ template <int N> class InlinedEnvironment;
 #define _upb_snprintf __builtin_snprintf
 #define _upb_vsnprintf __builtin_vsnprintf
 #define _upb_va_copy(a, b) __va_copy(a, b)
+#elif defined(_MSC_VER)
+#if _MSC_VER >= 1900
+#include <stdio.h>
+#include <stdarg.h>
+#define _upb_snprintf snprintf
+#define _upb_vsnprintf vsnprintf
+#define _upb_va_copy(a, b) va_copy(a, b)
+#endif
 #else
 #error Need implementations of [v]snprintf and va_copy
 #endif

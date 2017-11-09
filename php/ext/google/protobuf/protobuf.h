@@ -665,6 +665,7 @@ typedef struct Value Value;
 // -----------------------------------------------------------------------------
 
 ZEND_BEGIN_MODULE_GLOBALS(protobuf)
+  void* placeholder;  // Windows requires struct to have at least one member.
 ZEND_END_MODULE_GLOBALS(protobuf)
 
 // Init module and PHP classes.
