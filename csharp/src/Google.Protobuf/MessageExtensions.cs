@@ -54,6 +54,22 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Merges data from the given byte array slice into an existing message.
+        /// </summary>
+        /// <param name="message">The message to merge the data into.</param>
+        /// <param name="data">The data containing the slice to merge, which must be protobuf-encoded binary data.</param>
+        /// <param name="offset">The offset of the slice to merge.</param>
+        /// <param name="length">The length of the slice to merge.</param>
+        public static void MergeFrom(this IMessage message, byte[] data, int offset, int length)
+        {
+            ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(data, "data");
+            CodedInputStream input = new CodedInputStream(data, offset, length);
+            message.MergeFrom(input);
+            input.CheckReadEndOfStreamTag();
+        }
+
+        /// <summary>
         /// Merges data from the given byte string into an existing message.
         /// </summary>
         /// <param name="message">The message to merge the data into.</param>
