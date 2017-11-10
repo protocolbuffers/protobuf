@@ -48,13 +48,13 @@ namespace Google.Protobuf.Reflection
         {
             FileDescriptor file = UnittestProto3Reflection.Descriptor;
 
-            Assert.AreEqual("google/protobuf/unittest_proto3.proto", file.Name);
-            Assert.AreEqual("protobuf_unittest", file.Package);
+            Assert.AreEqual("unittest_proto3.proto", file.Name);
+            Assert.AreEqual("protobuf_unittest3", file.Package);
 
             Assert.AreEqual("UnittestProto", file.Proto.Options.JavaOuterClassname);
-            Assert.AreEqual("google/protobuf/unittest_proto3.proto", file.Proto.Name);
+            Assert.AreEqual("unittest_proto3.proto", file.Proto.Name);
 
-            // unittest.proto doesn't have any public imports, but unittest_import.proto does.
+            // unittest_proto3.proto doesn't have any public imports, but unittest_import_proto3.proto does.
             Assert.AreEqual(0, file.PublicDependencies.Count);
             Assert.AreEqual(1, UnittestImportProto3Reflection.Descriptor.PublicDependencies.Count);
             Assert.AreEqual(UnittestImportPublicProto3Reflection.Descriptor, UnittestImportProto3Reflection.Descriptor.PublicDependencies[0]);
@@ -68,7 +68,7 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(messageType, file.MessageTypes[0]);
             Assert.AreEqual(messageType, file.FindTypeByName<MessageDescriptor>("TestAllTypes"));
             Assert.Null(file.FindTypeByName<MessageDescriptor>("NoSuchType"));
-            Assert.Null(file.FindTypeByName<MessageDescriptor>("protobuf_unittest.TestAllTypes"));
+            Assert.Null(file.FindTypeByName<MessageDescriptor>("protobuf_unittest3.TestAllTypes"));
             for (int i = 0; i < file.MessageTypes.Count; i++)
             {
                 Assert.AreEqual(i, file.MessageTypes[i].Index);
@@ -76,7 +76,7 @@ namespace Google.Protobuf.Reflection
 
             Assert.AreEqual(file.EnumTypes[0], file.FindTypeByName<EnumDescriptor>("ForeignEnum"));
             Assert.Null(file.FindTypeByName<EnumDescriptor>("NoSuchType"));
-            Assert.Null(file.FindTypeByName<EnumDescriptor>("protobuf_unittest.ForeignEnum"));
+            Assert.Null(file.FindTypeByName<EnumDescriptor>("protobuf_unittest3.ForeignEnum"));
             Assert.AreEqual(1, UnittestImportProto3Reflection.Descriptor.EnumTypes.Count);
             Assert.AreEqual("ImportEnum", UnittestImportProto3Reflection.Descriptor.EnumTypes[0].Name);
             for (int i = 0; i < file.EnumTypes.Count; i++)
@@ -88,13 +88,23 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
+        public void FileDescriptor_NonRootPath()
+        {
+            // unittest_proto3.proto used to be in google/protobuf. Now it's in the C#-specific location,
+            // let's test something that's still in a directory.
+            FileDescriptor file = UnittestWellKnownTypesReflection.Descriptor;
+            Assert.AreEqual("google/protobuf/unittest_well_known_types.proto", file.Name);
+            Assert.AreEqual("protobuf_unittest", file.Package);
+        }
+
+        [Test]
         public void MessageDescriptor()
         {
             MessageDescriptor messageType = TestAllTypes.Descriptor;
             MessageDescriptor nestedType = TestAllTypes.Types.NestedMessage.Descriptor;
 
             Assert.AreEqual("TestAllTypes", messageType.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes", messageType.FullName);
+            Assert.AreEqual("protobuf_unittest3.TestAllTypes", messageType.FullName);
             Assert.AreEqual(UnittestProto3Reflection.Descriptor, messageType.File);
             Assert.IsNull(messageType.ContainingType);
             Assert.IsNull(messageType.Proto.Options);
@@ -102,7 +112,7 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual("TestAllTypes", messageType.Name);
 
             Assert.AreEqual("NestedMessage", nestedType.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes.NestedMessage", nestedType.FullName);
+            Assert.AreEqual("protobuf_unittest3.TestAllTypes.NestedMessage", nestedType.FullName);
             Assert.AreEqual(UnittestProto3Reflection.Descriptor, nestedType.File);
             Assert.AreEqual(messageType, nestedType.ContainingType);
 
@@ -143,7 +153,7 @@ namespace Google.Protobuf.Reflection
             FieldDescriptor messageField = messageType.FindDescriptor<FieldDescriptor>("single_foreign_message");
 
             Assert.AreEqual("single_int32", primitiveField.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes.single_int32",
+            Assert.AreEqual("protobuf_unittest3.TestAllTypes.single_int32",
                             primitiveField.FullName);
             Assert.AreEqual(1, primitiveField.FieldNumber);
             Assert.AreEqual(messageType, primitiveField.ContainingType);
@@ -180,13 +190,13 @@ namespace Google.Protobuf.Reflection
             EnumDescriptor nestedType = TestAllTypes.Descriptor.FindDescriptor<EnumDescriptor>("NestedEnum");
 
             Assert.AreEqual("ForeignEnum", enumType.Name);
-            Assert.AreEqual("protobuf_unittest.ForeignEnum", enumType.FullName);
+            Assert.AreEqual("protobuf_unittest3.ForeignEnum", enumType.FullName);
             Assert.AreEqual(UnittestProto3Reflection.Descriptor, enumType.File);
             Assert.Null(enumType.ContainingType);
             Assert.Null(enumType.Proto.Options);
 
             Assert.AreEqual("NestedEnum", nestedType.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes.NestedEnum",
+            Assert.AreEqual("protobuf_unittest3.TestAllTypes.NestedEnum",
                             nestedType.FullName);
             Assert.AreEqual(UnittestProto3Reflection.Descriptor, nestedType.File);
             Assert.AreEqual(TestAllTypes.Descriptor, nestedType.ContainingType);
@@ -209,7 +219,7 @@ namespace Google.Protobuf.Reflection
         {
             OneofDescriptor descriptor = TestAllTypes.Descriptor.FindDescriptor<OneofDescriptor>("oneof_field");
             Assert.AreEqual("oneof_field", descriptor.Name);
-            Assert.AreEqual("protobuf_unittest.TestAllTypes.oneof_field", descriptor.FullName);
+            Assert.AreEqual("protobuf_unittest3.TestAllTypes.oneof_field", descriptor.FullName);
 
             var expectedFields = new[] {
                 TestAllTypes.OneofBytesFieldNumber,
