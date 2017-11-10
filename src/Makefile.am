@@ -587,11 +587,8 @@ EXTRA_DIST =                                                   \
   $(js_well_known_types_sources)                               \
   solaris/libstdc++.la                                         \
   google/protobuf/unittest_proto3.proto                        \
-  google/protobuf/unittest_import_public_proto3.proto          \
-  google/protobuf/unittest_import_proto3.proto                 \
   google/protobuf/test_messages_proto3.proto                   \
   google/protobuf/test_messages_proto2.proto                   \
-  google/protobuf/map_unittest_proto3.proto                    \
   google/protobuf/io/gzip_stream.h                             \
   google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/testdata/golden_message                      \

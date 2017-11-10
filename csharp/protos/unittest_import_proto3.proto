@@ -53,7 +53,7 @@ option csharp_namespace = "Google.Protobuf.TestProtos";
 // one.
 
 // Test public import
-import public "google/protobuf/unittest_import_public_proto3.proto";
+import public "unittest_import_public_proto3.proto";
 
 message ImportMessage {
   int32 d = 1;

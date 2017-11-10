@@ -61,8 +61,13 @@ csharp_EXTRA_DIST=                                                           \
   csharp/keys/Google.Protobuf.public.snk                                     \
   csharp/keys/Google.Protobuf.snk                                            \
   csharp/keys/README.md                                                      \
+  csharp/protos/README.md                                                    \
+  csharp/protos/map_unittest_proto3.proto                                    \
   csharp/protos/unittest_custom_options_proto3.proto                         \
+  csharp/protos/unittest_import_public_proto3.proto                          \
+  csharp/protos/unittest_import_proto3.proto                                 \
   csharp/protos/unittest_issues.proto                                        \
+  csharp/protos/unittest_proto3.proto                                        \
   csharp/src/AddressBook/AddPerson.cs                                        \
   csharp/src/AddressBook/Addressbook.cs                                      \
   csharp/src/AddressBook/AddressBook.csproj                                  \
