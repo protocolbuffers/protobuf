@@ -50,11 +50,6 @@
 #include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/strutil.h>
 
-#if defined(_MSC_VER)
-// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
-// them like we do below.
-using google::protobuf::internal::win32::open;
-#endif
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -63,6 +58,16 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
+
+// <io.h> is transitively included in this file. Import the functions explicitly
+// in this port namespace to avoid ambiguous definition.
+namespace posix {
+#ifdef _WIN32
+using ::google::protobuf::internal::win32::open;
+#else
+using ::open;
+#endif
+}  // namespace port
 
 Options::Options() {
   // Default is the value of the env for the package prefixes.
@@ -1469,7 +1474,7 @@ bool ParseSimpleFile(
     const string& path, LineConsumer* line_consumer, string* out_error) {
   int fd;
   do {
-    fd = open(path.c_str(), O_RDONLY);
+    fd = posix::open(path.c_str(), O_RDONLY);
   } while (fd < 0 && errno == EINTR);
   if (fd < 0) {
     *out_error =

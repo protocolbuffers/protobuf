@@ -39,7 +39,7 @@
 //
 // This file is only used on Windows, it's empty on other platforms.
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 
 // Comment this out to fall back to using the ANSI versions (open, mkdir, ...)
 // instead of the Unicode ones (_wopen, _wmkdir, ...). Doing so can be useful to
@@ -358,5 +358,5 @@ wstring testonly_path_to_winpath(const string& path) {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // defined(_MSC_VER)
+#endif  // defined(_WIN32)
 
