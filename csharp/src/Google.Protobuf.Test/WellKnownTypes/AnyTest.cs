@@ -42,7 +42,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message);
-            Assert.AreEqual("type.googleapis.com/protobuf_unittest.TestAllTypes", any.TypeUrl);
+            Assert.AreEqual("type.googleapis.com/protobuf_unittest3.TestAllTypes", any.TypeUrl);
             Assert.AreEqual(message.CalculateSize(), any.Value.Length);
         }
 
@@ -51,7 +51,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message, "foo.bar/baz");
-            Assert.AreEqual("foo.bar/baz/protobuf_unittest.TestAllTypes", any.TypeUrl);
+            Assert.AreEqual("foo.bar/baz/protobuf_unittest3.TestAllTypes", any.TypeUrl);
             Assert.AreEqual(message.CalculateSize(), any.Value.Length);
         }
 
@@ -60,7 +60,7 @@ namespace Google.Protobuf.WellKnownTypes
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message, "foo.bar/baz/");
-            Assert.AreEqual("foo.bar/baz/protobuf_unittest.TestAllTypes", any.TypeUrl);
+            Assert.AreEqual("foo.bar/baz/protobuf_unittest3.TestAllTypes", any.TypeUrl);
             Assert.AreEqual(message.CalculateSize(), any.Value.Length);
         }
 
