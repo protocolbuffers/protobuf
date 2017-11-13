@@ -72,6 +72,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.cc
+  ${protobuf_BINARY_DIR}/well_known_types_embed.cc		# This file is generated, therefore is in different directory
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_extension.cc
@@ -91,7 +92,6 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
-  ${protobuf_BINARY_DIR}/well_known_types_embed.cc		# This file is generated, therefore is in different directory
 )
 
 set(libprotoc_headers

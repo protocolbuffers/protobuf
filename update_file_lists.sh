@@ -96,7 +96,12 @@ set_cmake_value() {
       print \$0;
       len = split(values, vlist, \" \");
       for (i = 1; i <= len; ++i) {
-        printf(\"  %s%s\\n\", prefix, vlist[i]);
+	    if (vlist[i] != \"google/protobuf/compiler/js/well_known_types_embed.cc\") {
+           printf(\"  %s%s\\n\", prefix, vlist[i]);
+		} else {
+           printf(\"  \${protobuf_BINARY_DIR}/well_known_types_embed.cc\t\t# This file is generated, therefore is in different directory\\n\");
+	    }
+
       }
       next;
     }
