@@ -26,9 +26,8 @@ namespace Google.Protobuf.TestProtos {
             "dGVzdF9pbXBvcnQaI3VuaXR0ZXN0X2ltcG9ydF9wdWJsaWNfcHJvdG8zLnBy",
             "b3RvIhoKDUltcG9ydE1lc3NhZ2USCQoBZBgBIAEoBSpZCgpJbXBvcnRFbnVt",
             "EhsKF0lNUE9SVF9FTlVNX1VOU1BFQ0lGSUVEEAASDgoKSU1QT1JUX0ZPTxAH",
-            "Eg4KCklNUE9SVF9CQVIQCBIOCgpJTVBPUlRfQkFaEAlCPAoYY29tLmdvb2ds",
-            "ZS5wcm90b2J1Zi50ZXN0SAH4AQGqAhpHb29nbGUuUHJvdG9idWYuVGVzdFBy",
-            "b3Rvc1AAYgZwcm90bzM="));
+            "Eg4KCklNUE9SVF9CQVIQCBIOCgpJTVBPUlRfQkFaEAlCHaoCGkdvb2dsZS5Q",
+            "cm90b2J1Zi5UZXN0UHJvdG9zUABiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportPublicProto3Reflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ImportEnum), }, new pbr::GeneratedClrTypeInfo[] {
