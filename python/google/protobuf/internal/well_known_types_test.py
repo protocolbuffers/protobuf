@@ -101,7 +101,7 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromJsonString('1970-01-01T00:00:00.1Z')
     self.assertEqual(0, message.seconds)
     self.assertEqual(100000000, message.nanos)
-    # Parsing accpets offsets.
+    # Parsing accepts offsets.
     message.FromJsonString('1970-01-01T00:00:00-08:00')
     self.assertEqual(8 * 3600, message.seconds)
     self.assertEqual(0, message.nanos)
