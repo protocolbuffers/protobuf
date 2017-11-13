@@ -62,6 +62,7 @@
   C#
   * Added unknown field support in JsonParser.
   * Fixed oneof message field merge.
+  * Simplify parsing messages from array slices.
 
   Ruby
   * Unknown fields are now preserved by default.
