@@ -1,4 +1,4 @@
-2017-11-09 version 3.5.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2017-11-13 version 3.5.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Planned Future Changes
   * Make C++ implementation C++11 only: we plan to require C++11 to build
     protobuf code starting from 3.6.0 release. Please join this github issue:
@@ -25,7 +25,7 @@
 
   Java
   * Proto3 messages are now preserving unknown fields by default. If you’d like
-    to drop unknown fields, please use the DiscardUnknownFieldsParser  API. For
+    to drop unknown fields, please use the DiscardUnknownFieldsParser API. For
     example:
       Parser<Foo> parser = DiscardUnknownFieldsParser.wrap(Foo.parser());
       Foo foo = parser.parseFrom(input);
@@ -167,7 +167,7 @@
   * Note: AppEngine 2.5 is deprecated on June 2017 that AppEngine 2.5 will
     never update protobuf runtime. Users who depend on AppEngine 2.5 should use
     old protoc.
-  
+
   PHP
   * Support PHP generic services. Specify file option php_generic_service=true
     to enable generating service interface.
