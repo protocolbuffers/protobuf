@@ -34,7 +34,6 @@ syntax = "proto3";
 
 package protobuf_unittest_import;
 
-option java_package = "com.google.protobuf.test";
 option csharp_namespace = "Google.Protobuf.TestProtos";
 
 message PublicImportMessage {

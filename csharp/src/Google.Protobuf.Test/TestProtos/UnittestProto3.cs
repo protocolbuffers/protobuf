@@ -149,8 +149,8 @@ namespace Google.Protobuf.TestProtos {
             "b28SHi5wcm90b2J1Zl91bml0dGVzdDMuRm9vUmVxdWVzdBofLnByb3RvYnVm",
             "X3VuaXR0ZXN0My5Gb29SZXNwb25zZRJGCgNCYXISHi5wcm90b2J1Zl91bml0",
             "dGVzdDMuQmFyUmVxdWVzdBofLnByb3RvYnVmX3VuaXR0ZXN0My5CYXJSZXNw",
-            "b25zZUI6Qg1Vbml0dGVzdFByb3RvSAGAAQGIAQGQAQH4AQGqAhpHb29nbGUu",
-            "UHJvdG9idWYuVGVzdFByb3Rvc2IGcHJvdG8z"));
+            "b25zZUIsQg1Vbml0dGVzdFByb3RvqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQ",
+            "cm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), }, new pbr::GeneratedClrTypeInfo[] {

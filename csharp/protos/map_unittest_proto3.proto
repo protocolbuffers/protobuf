@@ -36,7 +36,6 @@
 // required fields in proto3.
 syntax = "proto3";
 
-option cc_enable_arenas = true;
 option csharp_namespace = "Google.Protobuf.TestProtos";
 
 import "unittest_proto3.proto";
