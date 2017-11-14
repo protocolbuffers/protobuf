@@ -181,6 +181,7 @@ if __name__ == '__main__':
     extra_compile_args = ['-Wno-write-strings',
                           '-Wno-invalid-offsetof',
                           '-Wno-sign-compare']
+    extra_link_args = []
     libraries = ['protobuf']
     extra_objects = None
     if compile_static_ext:
@@ -198,6 +199,14 @@ if __name__ == '__main__':
       if v >= 10.12:
         extra_compile_args.append('-std=c++11')
 
+    if platform.system() == 'Linux':
+      # isolate "local" symbols
+      extra_link_args.append('-Wl,-Bsymbolic')
+      if compile_static_ext:
+        # don't export symbols from .a libraries
+        # (there is no -fvisibility=hidden option during compilation of .a files)
+        extra_link_args.append('-Wl,--exclude-libs=ALL')
+
     if warnings_as_errors in sys.argv:
       extra_compile_args.append('-Werror')
       sys.argv.remove(warnings_as_errors)
@@ -212,11 +221,13 @@ if __name__ == '__main__':
             extra_objects=extra_objects,
             library_dirs=['../src/.libs'],
             extra_compile_args=extra_compile_args,
+            extra_link_args=extra_link_args,
         ),
         Extension(
             "google.protobuf.internal._api_implementation",
             glob.glob('google/protobuf/internal/api_implementation.cc'),
             extra_compile_args=['-DPYTHON_PROTO2_CPP_IMPL_V2'],
+            extra_link_args=extra_link_args,
         ),
     ])
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
