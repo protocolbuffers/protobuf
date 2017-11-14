@@ -50,13 +50,17 @@ static void AppendTextFormatForMessage(GPBMessage *message,
                                        NSString *lineIndent);
 
 // Are two datatypes the same basic type representation (ex Int32 and SInt32).
-static BOOL GPBDataTypesEquivalent(GPBDataType type1, GPBDataType type2);
+// Marked unused because currently only called from asserts/debug.
+static BOOL GPBDataTypesEquivalent(GPBDataType type1,
+                                   GPBDataType type2) __attribute__ ((unused));
 
 // Basic type representation for a type (ex: for SInt32 it is Int32).
-static GPBDataType GPBBaseDataType(GPBDataType type);
+// Marked unused because currently only called from asserts/debug.
+static GPBDataType GPBBaseDataType(GPBDataType type) __attribute__ ((unused));
 
 // String name for a data type.
-static NSString *GBPTypeToString(GPBDataType dataType);
+// Marked unused because currently only called from asserts/debug.
+static NSString *GBPTypeToString(GPBDataType dataType) __attribute__ ((unused));
 
 NSData *GPBEmptyNSData(void) {
   static dispatch_once_t onceToken;
@@ -1312,11 +1316,11 @@ void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id 
   GPBSetObjectIvarWithField(self, field, array);
 }
 
-static BOOL GPBDataTypesEquivalent(GPBDataType type1, GPBDataType type2) {
+BOOL GPBDataTypesEquivalent(GPBDataType type1, GPBDataType type2) {
   return GPBBaseDataType(type1) == GPBBaseDataType(type2);
 }
 
-static GPBDataType GPBBaseDataType(GPBDataType type) {
+GPBDataType GPBBaseDataType(GPBDataType type) {
   switch(type) {
     case GPBDataTypeSFixed32:
     case GPBDataTypeInt32:
@@ -1345,7 +1349,7 @@ static GPBDataType GPBBaseDataType(GPBDataType type) {
    }
 }
 
-static NSString *GBPTypeToString(GPBDataType dataType) {
+NSString *GBPTypeToString(GPBDataType dataType) {
   switch (dataType) {
     case GPBDataTypeBool:
       return @"Bool";
