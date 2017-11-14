@@ -1219,10 +1219,8 @@ const char *GPBMessageEncodingForSelector(SEL selector, BOOL instanceSel) {
   NSCAssert(protocol, @"Missing GPBMessageSignatureProtocol");
   struct objc_method_description description =
       protocol_getMethodDescription(protocol, selector, NO, instanceSel);
-  NSCAssert(description.name != Nil,
-            @"Missing method name for selector %@", NSStringFromSelector(selector));
-  NSCAssert(description.types != nil,
-            @"Missing method types for selector %@", NSStringFromSelector(selector));
+  NSCAssert(description.name != Nil && description.types != nil,
+            @"Missing method for selector %@", NSStringFromSelector(selector));
   return description.types;
 }
 
