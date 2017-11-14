@@ -200,12 +200,15 @@ if __name__ == '__main__':
         extra_compile_args.append('-std=c++11')
 
     if platform.system() == 'Linux':
+      linker_skip_symbols_isolation = get_option_from_sys_argv('--linker_skip_symbols_isolation')
       # isolate "local" symbols
-      extra_link_args.append('-Wl,-Bsymbolic')
+      if not linker_skip_symbols_isolation:
+        extra_link_args.append('-Wl,-Bsymbolic')
       if compile_static_ext:
         # don't export symbols from .a libraries
         # (there is no -fvisibility=hidden option during compilation of .a files)
-        extra_link_args.append('-Wl,--exclude-libs=ALL')
+        if not linker_skip_symbols_isolation:
+          extra_link_args.append('-Wl,--exclude-libs=ALL')
 
     if warnings_as_errors in sys.argv:
       extra_compile_args.append('-Werror')
