@@ -1216,8 +1216,11 @@ void GPBSetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field,
 const char *GPBMessageEncodingForSelector(SEL selector, BOOL instanceSel) {
   Protocol *protocol =
       objc_getProtocol(GPBStringifySymbol(GPBMessageSignatureProtocol));
+  NSCAssert(protocol, @"Missing GPBMessageSignatureProtocol");
   struct objc_method_description description =
       protocol_getMethodDescription(protocol, selector, NO, instanceSel);
+  NSCAssert(description.name != Nil && description.types != nil,
+            @"Missing method for selector %@", NSStringFromSelector(selector));
   return description.types;
 }
 
@@ -1911,13 +1914,3 @@ BOOL GPBClassHasSel(Class aClass, SEL sel) {
   free(methodList);
   return result;
 }
-
-#pragma mark - GPBMessageSignatureProtocol
-
-// A series of selectors that are used solely to get @encoding values
-// for them by the dynamic protobuf runtime code. An object using the protocol
-// needs to be declared for the protocol to be valid at runtime.
-@interface GPBMessageSignatureProtocol : NSObject<GPBMessageSignatureProtocol>
-@end
-@implementation GPBMessageSignatureProtocol
-@end
