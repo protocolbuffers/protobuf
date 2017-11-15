@@ -36,7 +36,9 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A partial implementation of the {@link MessageLite} interface which
@@ -118,8 +120,13 @@ public abstract class AbstractMessageLite<
     }
   }
 
-  protected static <T> void addAll(final Iterable<T> values,
-      final Collection<? super T> list) {
+  // For binary compatibility
+  @Deprecated
+  protected static <T> void addAll(final Iterable<T> values, final Collection<? super T> list) {
+    Builder.addAll(values, (List) list);
+  }
+
+  protected static <T> void addAll(final Iterable<T> values, final List<? super T> list) {
     Builder.addAll(values, list);
   }
 
@@ -334,6 +341,25 @@ public abstract class AbstractMessageLite<
           + " threw an IOException (should never happen).";
     }
 
+    // We check nulls as we iterate to avoid iterating over values twice.
+    private static <T> void addAllCheckingNulls(Iterable<T> values, List<? super T> list) {
+      if (list instanceof ArrayList && values instanceof Collection) {
+        ((ArrayList<T>) list).ensureCapacity(list.size() + ((Collection<T>) values).size());
+      }
+      int begin = list.size();
+      for (T value : values) {
+        if (value == null) {
+          // encountered a null value so we must undo our modifications prior to throwing
+          String message = "Element at index " + (list.size() - begin) + " is null.";
+          for (int i = list.size() - 1; i >= begin; i--) {
+            list.remove(i);
+          }
+          throw new NullPointerException(message);
+        }
+        list.add(value);
+      }
+    }
+
     /**
      * Construct an UninitializedMessageException reporting missing fields in
      * the given message.
@@ -343,16 +369,20 @@ public abstract class AbstractMessageLite<
       return new UninitializedMessageException(message);
     }
 
+    // For binary compatibility.
+    @Deprecated
+    protected static <T> void addAll(final Iterable<T> values, final Collection<? super T> list) {
+      addAll(values, (List<T>) list);
+    }
+
     /**
-     * Adds the {@code values} to the {@code list}.  This is a helper method
-     * used by generated code.  Users should ignore it.
+     * Adds the {@code values} to the {@code list}. This is a helper method used by generated code.
+     * Users should ignore it.
      *
-     * @throws NullPointerException if {@code values} or any of the elements of
-     * {@code values} is null. When that happens, some elements of
-     * {@code values} may have already been added to the result {@code list}.
+     * @throws NullPointerException if {@code values} or any of the elements of {@code values} is
+     *     null.
      */
-    protected static <T> void addAll(final Iterable<T> values,
-                                     final Collection<? super T> list) {
+    protected static <T> void addAll(final Iterable<T> values, final List<? super T> list) {
       checkNotNull(values);
       if (values instanceof LazyStringList) {
         // For StringOrByteStringLists, check the underlying elements to avoid
@@ -360,24 +390,30 @@ public abstract class AbstractMessageLite<
         // TODO(dweis): Could we just prohibit nulls in all protobuf lists and get rid of this? Is
         // if even possible to hit this condition as all protobuf methods check for null first,
         // right?
-        checkForNullValues(((LazyStringList) values).getUnderlyingElements());
-        list.addAll((Collection<T>) values);
-      } else if (values instanceof Collection) {
-        if (!(values instanceof PrimitiveNonBoxingCollection)) {
-          checkForNullValues(values);
+        List<?> lazyValues = ((LazyStringList) values).getUnderlyingElements();
+        LazyStringList lazyList = (LazyStringList) list;
+        int begin = list.size();
+        for (Object value : lazyValues) {
+          if (value == null) {
+            // encountered a null value so we must undo our modifications prior to throwing
+            String message = "Element at index " + (lazyList.size() - begin) + " is null.";
+            for (int i = lazyList.size() - 1; i >= begin; i--) {
+              lazyList.remove(i);
+            }
+            throw new NullPointerException(message);
+          }
+          if (value instanceof ByteString) {
+            lazyList.add((ByteString) value);
+          } else {
+            lazyList.add((String) value);
+          }
         }
-        list.addAll((Collection<T>) values);
       } else {
-        for (final T value : values) {
-          checkNotNull(value);
-          list.add(value);
+        if (values instanceof PrimitiveNonBoxingCollection) {
+          list.addAll((Collection<T>) values);
+        } else {
+          addAllCheckingNulls(values, list);
         }
-      }
-    }
-
-    private static void checkForNullValues(final Iterable<?> values) {
-      for (final Object value : values) {
-        checkNotNull(value);
       }
     }
   }

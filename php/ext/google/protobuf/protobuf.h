@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.3.2"
+#define PHP_PROTOBUF_VERSION "3.4.1"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -77,14 +77,33 @@
 #define php_proto_zend_hash_index_update_zval(ht, h, pData) \
   zend_hash_index_update(ht, h, &(pData), sizeof(void*), NULL)
 
+#define php_proto_zend_hash_update_zval(ht, key, key_len, value) \
+  zend_hash_update(ht, key, key_len, value, sizeof(void*), NULL)
+
+#define php_proto_zend_hash_update(ht, key, key_len) \
+  zend_hash_update(ht, key, key_len, 0, 0, NULL)
+
 #define php_proto_zend_hash_index_update_mem(ht, h, pData, nDataSize, pDest) \
   zend_hash_index_update(ht, h, pData, nDataSize, pDest)
+
+#define php_proto_zend_hash_update_mem(ht, key, key_len, pData, nDataSize, \
+                                       pDest)                              \
+  zend_hash_update(ht, key, key_len, pData, nDataSize, pDest)
 
 #define php_proto_zend_hash_index_find_zval(ht, h, pDest) \
   zend_hash_index_find(ht, h, pDest)
 
+#define php_proto_zend_hash_find(ht, key, key_len, pDest) \
+  zend_hash_find(ht, key, key_len, pDest)
+
 #define php_proto_zend_hash_index_find_mem(ht, h, pDest) \
   zend_hash_index_find(ht, h, pDest)
+
+#define php_proto_zend_hash_find_zval(ht, key, key_len, pDest) \
+  zend_hash_find(ht, key, key_len, pDest)
+
+#define php_proto_zend_hash_find_mem(ht, key, key_len, pDest) \
+  zend_hash_find(ht, key, key_len, pDest)
 
 #define php_proto_zend_hash_next_index_insert_zval(ht, pData) \
   zend_hash_next_index_insert(ht, pData, sizeof(void*), NULL)
@@ -102,6 +121,27 @@
     zend_object std;
 #define PHP_PROTO_WRAP_OBJECT_END \
   };
+
+#define PHP_PROTO_INIT_SUBMSGCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)   \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type->create_object = message_create;
+#define PHP_PROTO_INIT_SUBMSGCLASS_END \
+  }
+
+#define PHP_PROTO_INIT_ENUMCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)     \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC);
+#define PHP_PROTO_INIT_ENUMCLASS_END \
+  }
 
 #define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
@@ -202,6 +242,8 @@
 #define php_proto_zend_lookup_class(name, name_length, ce) \
   zend_lookup_class(name, name_length, ce TSRMLS_CC)
 
+#define PHP_PROTO_RETVAL_ZVAL(value) ZVAL_ZVAL(return_value, value, 1, 0)
+
 #else  // PHP_MAJOR_VERSION >= 7
 
 #define php_proto_zend_literal void**
@@ -234,11 +276,37 @@ static inline int php_proto_zend_hash_index_update_zval(HashTable* ht, ulong h,
   return result != NULL ? SUCCESS : FAILURE;
 }
 
+static inline int php_proto_zend_hash_update(HashTable* ht, const char* key,
+                                             size_t key_len) {
+  void* result = NULL;
+  zval temp;
+  ZVAL_LONG(&temp, 0);
+  result = zend_hash_str_update(ht, key, key_len, &temp);
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
 static inline int php_proto_zend_hash_index_update_mem(HashTable* ht, ulong h,
                                                    void* pData, uint nDataSize,
                                                    void** pDest) {
   void* result = NULL;
   result = zend_hash_index_update_mem(ht, h, pData, nDataSize);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_update_zval(HashTable* ht,
+                                                  const char* key, uint key_len,
+                                                  zval* pData) {
+  zend_string* internal_key = zend_string_init(key, key_len, 0);
+  zend_hash_update(ht, internal_key, pData);
+}
+
+static inline int php_proto_zend_hash_update_mem(HashTable* ht, const char* key,
+                                                 uint key_len, void* pData,
+                                                 uint nDataSize, void** pDest) {
+  zend_string* internal_key = zend_string_init(key, key_len, 0);
+  void* result = zend_hash_update_mem(ht, internal_key, pData, nDataSize);
+  zend_string_release(internal_key);
   if (pDest != NULL) *pDest = result;
   return result != NULL ? SUCCESS : FAILURE;
 }
@@ -250,10 +318,36 @@ static inline int php_proto_zend_hash_index_find_zval(const HashTable* ht,
   return result != NULL ? SUCCESS : FAILURE;
 }
 
+static inline int php_proto_zend_hash_find(const HashTable* ht, const char* key,
+                                           size_t key_len, void** pDest) {
+  void* result = NULL;
+  result = zend_hash_str_find(ht, key, key_len);
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
 static inline int php_proto_zend_hash_index_find_mem(const HashTable* ht,
                                                      ulong h, void** pDest) {
   void* result = NULL;
   result = zend_hash_index_find_ptr(ht, h);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_find_zval(const HashTable* ht,
+                                                const char* key, uint key_len,
+                                                void** pDest) {
+  zend_string* internal_key = zend_string_init(key, key_len, 1);
+  zval* result = zend_hash_find(ht, internal_key);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_find_mem(const HashTable* ht,
+                                                const char* key, uint key_len,
+                                                void** pDest) {
+  zend_string* internal_key = zend_string_init(key, key_len, 1);
+  void* result = zend_hash_find_ptr(ht, internal_key);
+  zend_string_release(internal_key);
   if (pDest != NULL) *pDest = result;
   return result != NULL ? SUCCESS : FAILURE;
 }
@@ -291,6 +385,27 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 #define PHP_PROTO_WRAP_OBJECT_END \
   zend_object std;                \
   };
+
+#define PHP_PROTO_INIT_SUBMSGCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)   \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type->create_object = message_create;
+#define PHP_PROTO_INIT_SUBMSGCLASS_END \
+  }
+
+#define PHP_PROTO_INIT_ENUMCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)     \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC);
+#define PHP_PROTO_INIT_ENUMCLASS_END \
+  }
 
 #define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
@@ -390,41 +505,160 @@ static inline int php_proto_zend_lookup_class(
   return *ce != NULL ? SUCCESS : FAILURE;
 }
 
+#define PHP_PROTO_RETVAL_ZVAL(value) ZVAL_COPY(return_value, value)
+
 #endif  // PHP_MAJOR_VERSION >= 7
+
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
+#define PHP_PROTO_FAKE_SCOPE_BEGIN(klass)  \
+  zend_class_entry* old_scope = EG(scope); \
+  EG(scope) = klass;
+#define PHP_PROTO_FAKE_SCOPE_RESTART(klass) \
+  old_scope = EG(scope);                    \
+  EG(scope) = klass;
+#define PHP_PROTO_FAKE_SCOPE_END EG(scope) = old_scope;
+#else
+#define PHP_PROTO_FAKE_SCOPE_BEGIN(klass)       \
+  zend_class_entry* old_scope = EG(fake_scope); \
+  EG(fake_scope) = klass;
+#define PHP_PROTO_FAKE_SCOPE_RESTART(klass) \
+  old_scope = EG(fake_scope);               \
+  EG(fake_scope) = klass;
+#define PHP_PROTO_FAKE_SCOPE_END EG(fake_scope) = old_scope;
+#endif
+
+// Define PHP class
+#define DEFINE_PROTOBUF_INIT_CLASS(CLASSNAME, CAMELNAME, LOWERNAME) \
+  PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWERNAME)       \
+  PHP_PROTO_INIT_CLASS_END
+
+#define DEFINE_PROTOBUF_CREATE(NAME, LOWERNAME)  \
+  PHP_PROTO_OBJECT_CREATE_START(NAME, LOWERNAME) \
+  LOWERNAME##_init_c_instance(intern TSRMLS_CC); \
+  PHP_PROTO_OBJECT_CREATE_END(NAME, LOWERNAME)
+
+#define DEFINE_PROTOBUF_FREE(CAMELNAME, LOWERNAME)  \
+  PHP_PROTO_OBJECT_FREE_START(CAMELNAME, LOWERNAME) \
+  LOWERNAME##_free_c(intern TSRMLS_CC);             \
+  PHP_PROTO_OBJECT_FREE_END
+
+#define DEFINE_PROTOBUF_DTOR(CAMELNAME, LOWERNAME)  \
+  PHP_PROTO_OBJECT_DTOR_START(CAMELNAME, LOWERNAME) \
+  PHP_PROTO_OBJECT_DTOR_END
+
+#define DEFINE_CLASS(NAME, LOWERNAME, string_name) \
+  zend_class_entry *LOWERNAME##_type;              \
+  zend_object_handlers *LOWERNAME##_handlers;      \
+  DEFINE_PROTOBUF_FREE(NAME, LOWERNAME)            \
+  DEFINE_PROTOBUF_DTOR(NAME, LOWERNAME)            \
+  DEFINE_PROTOBUF_CREATE(NAME, LOWERNAME)          \
+  DEFINE_PROTOBUF_INIT_CLASS(string_name, NAME, LOWERNAME)
 
 // -----------------------------------------------------------------------------
 // Forward Declaration
 // ----------------------------------------------------------------------------
 
-struct DescriptorPool;
+struct Any;
+struct Api;
+struct BoolValue;
+struct BytesValue;
 struct Descriptor;
+struct DescriptorPool;
+struct DoubleValue;
+struct Duration;
+struct Enum;
 struct EnumDescriptor;
+struct EnumValue;
 struct EnumValueDescriptor;
+struct Field;
 struct FieldDescriptor;
+struct FieldMask;
+struct Field_Cardinality;
+struct Field_Kind;
+struct FloatValue;
+struct GPBEmpty;
+struct Int32Value;
+struct Int64Value;
 struct InternalDescriptorPool;
+struct ListValue;
+struct Map;
+struct MapIter;
 struct MessageField;
 struct MessageHeader;
 struct MessageLayout;
+struct Method;
+struct Mixin;
+struct NullValue;
+struct Oneof;
+struct Option;
 struct RepeatedField;
 struct RepeatedFieldIter;
-struct Map;
-struct MapIter;
-struct Oneof;
+struct SourceContext;
+struct StringValue;
+struct Struct;
+struct Syntax;
+struct Timestamp;
+struct Type;
+struct UInt32Value;
+struct UInt64Value;
+struct Value;
 
-typedef struct DescriptorPool DescriptorPool;
+typedef struct Any Any;
+typedef struct Api Api;
+typedef struct BoolValue BoolValue;
+typedef struct BytesValue BytesValue;
 typedef struct Descriptor Descriptor;
+typedef struct Descriptor Descriptor;
+typedef struct DescriptorPool DescriptorPool;
+typedef struct DoubleValue DoubleValue;
+typedef struct Duration Duration;
+typedef struct Enum Enum;
 typedef struct EnumDescriptor EnumDescriptor;
+typedef struct EnumDescriptor EnumDescriptor;
+typedef struct EnumValue EnumValue;
 typedef struct EnumValueDescriptor EnumValueDescriptor;
+typedef struct EnumValueDescriptor EnumValueDescriptor;
+typedef struct Field Field;
 typedef struct FieldDescriptor FieldDescriptor;
+typedef struct FieldDescriptor FieldDescriptor;
+typedef struct FieldMask FieldMask;
+typedef struct Field_Cardinality Field_Cardinality;
+typedef struct Field_Kind Field_Kind;
+typedef struct FloatValue FloatValue;
+typedef struct GPBEmpty GPBEmpty;
+typedef struct Int32Value Int32Value;
+typedef struct Int64Value Int64Value;
 typedef struct InternalDescriptorPool InternalDescriptorPool;
-typedef struct MessageField MessageField;
-typedef struct MessageHeader MessageHeader;
-typedef struct MessageLayout MessageLayout;
-typedef struct RepeatedField RepeatedField;
-typedef struct RepeatedFieldIter RepeatedFieldIter;
+typedef struct ListValue ListValue;
+typedef struct Map Map;
 typedef struct Map Map;
 typedef struct MapIter MapIter;
+typedef struct MapIter MapIter;
+typedef struct MessageField MessageField;
+typedef struct MessageField MessageField;
+typedef struct MessageHeader MessageHeader;
+typedef struct MessageHeader MessageHeader;
+typedef struct MessageLayout MessageLayout;
+typedef struct MessageLayout MessageLayout;
+typedef struct Method Method;
+typedef struct Mixin Mixin;
+typedef struct NullValue NullValue;
 typedef struct Oneof Oneof;
+typedef struct Oneof Oneof;
+typedef struct Option Option;
+typedef struct RepeatedField RepeatedField;
+typedef struct RepeatedField RepeatedField;
+typedef struct RepeatedFieldIter RepeatedFieldIter;
+typedef struct RepeatedFieldIter RepeatedFieldIter;
+typedef struct SourceContext SourceContext;
+typedef struct StringValue StringValue;
+typedef struct Struct Struct;
+typedef struct Syntax Syntax;
+typedef struct Timestamp Timestamp;
+typedef struct Type Type;
+typedef struct UInt32Value UInt32Value;
+typedef struct UInt64Value UInt64Value;
+typedef struct Value Value;
 
 // -----------------------------------------------------------------------------
 // Globals.
@@ -434,19 +668,60 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
 ZEND_END_MODULE_GLOBALS(protobuf)
 
 // Init module and PHP classes.
+void any_init(TSRMLS_D);
+void api_init(TSRMLS_D);
+void bool_value_init(TSRMLS_D);
+void bytes_value_init(TSRMLS_D);
 void descriptor_init(TSRMLS_D);
-void enum_descriptor_init(TSRMLS_D);
 void descriptor_pool_init(TSRMLS_D);
-void internal_descriptor_pool_init(TSRMLS_D);
+void double_value_init(TSRMLS_D);
+void duration_init(TSRMLS_D);
+void empty_init(TSRMLS_D);
+void enum_descriptor_init(TSRMLS_D);
+void enum_init(TSRMLS_D);
+void enum_value_init(TSRMLS_D);
+void field_cardinality_init(TSRMLS_D);
 void field_descriptor_init(TSRMLS_D);
+void field_init(TSRMLS_D);
+void field_kind_init(TSRMLS_D);
+void field_mask_init(TSRMLS_D);
+void float_value_init(TSRMLS_D);
 void gpb_type_init(TSRMLS_D);
+void int32_value_init(TSRMLS_D);
+void int64_value_init(TSRMLS_D);
+void internal_descriptor_pool_init(TSRMLS_D);
+void list_value_init(TSRMLS_D);
 void map_field_init(TSRMLS_D);
 void map_field_iter_init(TSRMLS_D);
+void message_init(TSRMLS_D);
+void method_init(TSRMLS_D);
+void mixin_init(TSRMLS_D);
+void null_value_init(TSRMLS_D);
 void oneof_descriptor_init(TSRMLS_D);
+void option_init(TSRMLS_D);
 void repeated_field_init(TSRMLS_D);
 void repeated_field_iter_init(TSRMLS_D);
+void source_context_init(TSRMLS_D);
+void string_value_init(TSRMLS_D);
+void struct_init(TSRMLS_D);
+void syntax_init(TSRMLS_D);
+void timestamp_init(TSRMLS_D);
+void type_init(TSRMLS_D);
+void uint32_value_init(TSRMLS_D);
+void uint64_value_init(TSRMLS_D);
 void util_init(TSRMLS_D);
-void message_init(TSRMLS_D);
+void value_init(TSRMLS_D);
+
+void gpb_metadata_any_init(TSRMLS_D);
+void gpb_metadata_api_init(TSRMLS_D);
+void gpb_metadata_duration_init(TSRMLS_D);
+void gpb_metadata_field_mask_init(TSRMLS_D);
+void gpb_metadata_empty_init(TSRMLS_D);
+void gpb_metadata_source_context_init(TSRMLS_D);
+void gpb_metadata_struct_init(TSRMLS_D);
+void gpb_metadata_timestamp_init(TSRMLS_D);
+void gpb_metadata_type_init(TSRMLS_D);
+void gpb_metadata_wrappers_init(TSRMLS_D);
 
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
@@ -458,6 +733,11 @@ PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def);
 void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value);
 PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce);
 bool class_added(const void* ce);
+
+// Global map from message/enum's proto fully-qualified name to corresponding
+// wrapper Descriptor/EnumDescriptor instances.
+void add_proto_obj(const char* proto, PHP_PROTO_HASHTABLE_VALUE value);
+PHP_PROTO_HASHTABLE_VALUE get_proto_obj(const char* proto);
 
 extern zend_class_entry* map_field_type;
 extern zend_class_entry* repeated_field_type;
@@ -481,6 +761,10 @@ PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool);
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile);
+
+void internal_add_generated_file(const char* data, PHP_PROTO_SIZE data_len,
+                                 InternalDescriptorPool* pool TSRMLS_DC);
+void init_generated_pool_once(TSRMLS_D);
 
 // wrapper of generated pool
 #if PHP_MAJOR_VERSION < 7
@@ -567,6 +851,7 @@ void custom_data_init(const zend_class_entry* ce,
 void build_class_from_descriptor(
     PHP_PROTO_HASHTABLE_VALUE php_descriptor TSRMLS_DC);
 
+extern zend_class_entry* message_type;
 extern zend_object_handlers* message_handlers;
 
 // -----------------------------------------------------------------------------
@@ -654,6 +939,8 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
 const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
+void* slot_memory(MessageLayout* layout, const void* storage,
+                  const upb_fielddef* field);
 
 PHP_METHOD(Message, clear);
 PHP_METHOD(Message, mergeFrom);
@@ -674,6 +961,9 @@ PHP_METHOD(Message, __construct);
 // This is called from the message class creation code.
 const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
                                                      const void *owner);
+void serialize_to_string(zval* val, zval* return_value TSRMLS_DC);
+void merge_from_string(const char* data, int data_len, const Descriptor* desc,
+                       MessageHeader* msg);
 
 PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFromString);
@@ -692,6 +982,11 @@ bool protobuf_convert_to_float(zval* from, float* to);
 bool protobuf_convert_to_double(zval* from, double* to);
 bool protobuf_convert_to_bool(zval* from, int8_t* to);
 bool protobuf_convert_to_string(zval* from);
+
+void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
+                          zval* val, zval* return_value);
+void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
+                     PHP_PROTO_LONG value_type, zval* val, zval* return_value);
 
 PHP_METHOD(Util, checkInt32);
 PHP_METHOD(Util, checkUint32);
@@ -881,6 +1176,244 @@ extern zend_class_entry* oneof_descriptor_type;
 #define ONEOF_CASE_NONE 0
 
 // -----------------------------------------------------------------------------
+// Well Known Type.
+// -----------------------------------------------------------------------------
+
+PHP_METHOD(GPBMetadata_Any, initOnce);
+PHP_METHOD(GPBMetadata_Api, initOnce);
+PHP_METHOD(GPBMetadata_Duration, initOnce);
+PHP_METHOD(GPBMetadata_FieldMask, initOnce);
+PHP_METHOD(GPBMetadata_Empty, initOnce);
+PHP_METHOD(GPBMetadata_SourceContext, initOnce);
+PHP_METHOD(GPBMetadata_Struct, initOnce);
+PHP_METHOD(GPBMetadata_Timestamp, initOnce);
+PHP_METHOD(GPBMetadata_Type, initOnce);
+PHP_METHOD(GPBMetadata_Wrappers, initOnce);
+
+PHP_METHOD(Any, __construct);
+PHP_METHOD(Any, getTypeUrl);
+PHP_METHOD(Any, setTypeUrl);
+PHP_METHOD(Any, getValue);
+PHP_METHOD(Any, setValue);
+PHP_METHOD(Any, unpack);
+PHP_METHOD(Any, pack);
+PHP_METHOD(Any, is);
+
+PHP_METHOD(Duration, __construct);
+PHP_METHOD(Duration, getSeconds);
+PHP_METHOD(Duration, setSeconds);
+PHP_METHOD(Duration, getNanos);
+PHP_METHOD(Duration, setNanos);
+
+PHP_METHOD(Timestamp, __construct);
+PHP_METHOD(Timestamp, fromDateTime);
+PHP_METHOD(Timestamp, toDateTime);
+PHP_METHOD(Timestamp, getSeconds);
+PHP_METHOD(Timestamp, setSeconds);
+PHP_METHOD(Timestamp, getNanos);
+PHP_METHOD(Timestamp, setNanos);
+
+PHP_METHOD(Api, __construct);
+PHP_METHOD(Api, getName);
+PHP_METHOD(Api, setName);
+PHP_METHOD(Api, getMethods);
+PHP_METHOD(Api, setMethods);
+PHP_METHOD(Api, getOptions);
+PHP_METHOD(Api, setOptions);
+PHP_METHOD(Api, getVersion);
+PHP_METHOD(Api, setVersion);
+PHP_METHOD(Api, getSourceContext);
+PHP_METHOD(Api, setSourceContext);
+PHP_METHOD(Api, getMixins);
+PHP_METHOD(Api, setMixins);
+PHP_METHOD(Api, getSyntax);
+PHP_METHOD(Api, setSyntax);
+
+PHP_METHOD(BoolValue, __construct);
+PHP_METHOD(BoolValue, getValue);
+PHP_METHOD(BoolValue, setValue);
+
+PHP_METHOD(BytesValue, __construct);
+PHP_METHOD(BytesValue, getValue);
+PHP_METHOD(BytesValue, setValue);
+
+PHP_METHOD(DoubleValue, __construct);
+PHP_METHOD(DoubleValue, getValue);
+PHP_METHOD(DoubleValue, setValue);
+
+PHP_METHOD(Enum, __construct);
+PHP_METHOD(Enum, getName);
+PHP_METHOD(Enum, setName);
+PHP_METHOD(Enum, getEnumvalue);
+PHP_METHOD(Enum, setEnumvalue);
+PHP_METHOD(Enum, getOptions);
+PHP_METHOD(Enum, setOptions);
+PHP_METHOD(Enum, getSourceContext);
+PHP_METHOD(Enum, setSourceContext);
+PHP_METHOD(Enum, getSyntax);
+PHP_METHOD(Enum, setSyntax);
+
+PHP_METHOD(EnumValue, __construct);
+PHP_METHOD(EnumValue, getName);
+PHP_METHOD(EnumValue, setName);
+PHP_METHOD(EnumValue, getNumber);
+PHP_METHOD(EnumValue, setNumber);
+PHP_METHOD(EnumValue, getOptions);
+PHP_METHOD(EnumValue, setOptions);
+
+PHP_METHOD(FieldMask, __construct);
+PHP_METHOD(FieldMask, getPaths);
+PHP_METHOD(FieldMask, setPaths);
+
+PHP_METHOD(Field, __construct);
+PHP_METHOD(Field, getKind);
+PHP_METHOD(Field, setKind);
+PHP_METHOD(Field, getCardinality);
+PHP_METHOD(Field, setCardinality);
+PHP_METHOD(Field, getNumber);
+PHP_METHOD(Field, setNumber);
+PHP_METHOD(Field, getName);
+PHP_METHOD(Field, setName);
+PHP_METHOD(Field, getTypeUrl);
+PHP_METHOD(Field, setTypeUrl);
+PHP_METHOD(Field, getOneofIndex);
+PHP_METHOD(Field, setOneofIndex);
+PHP_METHOD(Field, getPacked);
+PHP_METHOD(Field, setPacked);
+PHP_METHOD(Field, getOptions);
+PHP_METHOD(Field, setOptions);
+PHP_METHOD(Field, getJsonName);
+PHP_METHOD(Field, setJsonName);
+PHP_METHOD(Field, getDefaultValue);
+PHP_METHOD(Field, setDefaultValue);
+
+PHP_METHOD(FloatValue, __construct);
+PHP_METHOD(FloatValue, getValue);
+PHP_METHOD(FloatValue, setValue);
+
+PHP_METHOD(GPBEmpty, __construct);
+
+PHP_METHOD(Int32Value, __construct);
+PHP_METHOD(Int32Value, getValue);
+PHP_METHOD(Int32Value, setValue);
+
+PHP_METHOD(Int64Value, __construct);
+PHP_METHOD(Int64Value, getValue);
+PHP_METHOD(Int64Value, setValue);
+
+PHP_METHOD(ListValue, __construct);
+PHP_METHOD(ListValue, getValues);
+PHP_METHOD(ListValue, setValues);
+
+PHP_METHOD(Method, __construct);
+PHP_METHOD(Method, getName);
+PHP_METHOD(Method, setName);
+PHP_METHOD(Method, getRequestTypeUrl);
+PHP_METHOD(Method, setRequestTypeUrl);
+PHP_METHOD(Method, getRequestStreaming);
+PHP_METHOD(Method, setRequestStreaming);
+PHP_METHOD(Method, getResponseTypeUrl);
+PHP_METHOD(Method, setResponseTypeUrl);
+PHP_METHOD(Method, getResponseStreaming);
+PHP_METHOD(Method, setResponseStreaming);
+PHP_METHOD(Method, getOptions);
+PHP_METHOD(Method, setOptions);
+PHP_METHOD(Method, getSyntax);
+PHP_METHOD(Method, setSyntax);
+
+PHP_METHOD(Mixin, __construct);
+PHP_METHOD(Mixin, getName);
+PHP_METHOD(Mixin, setName);
+PHP_METHOD(Mixin, getRoot);
+PHP_METHOD(Mixin, setRoot);
+
+PHP_METHOD(Option, __construct);
+PHP_METHOD(Option, getName);
+PHP_METHOD(Option, setName);
+PHP_METHOD(Option, getValue);
+PHP_METHOD(Option, setValue);
+
+PHP_METHOD(SourceContext, __construct);
+PHP_METHOD(SourceContext, getFileName);
+PHP_METHOD(SourceContext, setFileName);
+
+PHP_METHOD(StringValue, __construct);
+PHP_METHOD(StringValue, getValue);
+PHP_METHOD(StringValue, setValue);
+
+PHP_METHOD(Struct, __construct);
+PHP_METHOD(Struct, getFields);
+PHP_METHOD(Struct, setFields);
+
+PHP_METHOD(Type, __construct);
+PHP_METHOD(Type, getName);
+PHP_METHOD(Type, setName);
+PHP_METHOD(Type, getFields);
+PHP_METHOD(Type, setFields);
+PHP_METHOD(Type, getOneofs);
+PHP_METHOD(Type, setOneofs);
+PHP_METHOD(Type, getOptions);
+PHP_METHOD(Type, setOptions);
+PHP_METHOD(Type, getSourceContext);
+PHP_METHOD(Type, setSourceContext);
+PHP_METHOD(Type, getSyntax);
+PHP_METHOD(Type, setSyntax);
+
+PHP_METHOD(UInt32Value, __construct);
+PHP_METHOD(UInt32Value, getValue);
+PHP_METHOD(UInt32Value, setValue);
+
+PHP_METHOD(UInt64Value, __construct);
+PHP_METHOD(UInt64Value, getValue);
+PHP_METHOD(UInt64Value, setValue);
+
+PHP_METHOD(Value, __construct);
+PHP_METHOD(Value, getNullValue);
+PHP_METHOD(Value, setNullValue);
+PHP_METHOD(Value, getNumberValue);
+PHP_METHOD(Value, setNumberValue);
+PHP_METHOD(Value, getStringValue);
+PHP_METHOD(Value, setStringValue);
+PHP_METHOD(Value, getBoolValue);
+PHP_METHOD(Value, setBoolValue);
+PHP_METHOD(Value, getStructValue);
+PHP_METHOD(Value, setStructValue);
+PHP_METHOD(Value, getListValue);
+PHP_METHOD(Value, setListValue);
+PHP_METHOD(Value, getKind);
+
+extern zend_class_entry* any_type;
+extern zend_class_entry* api_type;
+extern zend_class_entry* bool_value_type;
+extern zend_class_entry* bytes_value_type;
+extern zend_class_entry* double_value_type;
+extern zend_class_entry* duration_type;
+extern zend_class_entry* empty_type;
+extern zend_class_entry* enum_type;
+extern zend_class_entry* enum_value_type;
+extern zend_class_entry* field_cardinality_type;
+extern zend_class_entry* field_kind_type;
+extern zend_class_entry* field_mask_type;
+extern zend_class_entry* field_type;
+extern zend_class_entry* float_value_type;
+extern zend_class_entry* int32_value_type;
+extern zend_class_entry* int64_value_type;
+extern zend_class_entry* list_value_type;
+extern zend_class_entry* method_type;
+extern zend_class_entry* mixin_type;
+extern zend_class_entry* null_value_type;
+extern zend_class_entry* option_type;
+extern zend_class_entry* source_context_type;
+extern zend_class_entry* string_value_type;
+extern zend_class_entry* struct_type;
+extern zend_class_entry* syntax_type;
+extern zend_class_entry* timestamp_type;
+extern zend_class_entry* type_type;
+extern zend_class_entry* uint32_value_type;
+extern zend_class_entry* uint64_value_type;
+extern zend_class_entry* value_type;
+
+// -----------------------------------------------------------------------------
 // Upb.
 // -----------------------------------------------------------------------------
 
@@ -909,5 +1442,21 @@ const zend_class_entry* field_type_class(
                       .object_buckets[Z_OBJ_HANDLE_P(zval_p)] \
                       .bucket.obj.object))
 #endif
+
+// Message handler
+static inline zval* php_proto_message_read_property(
+    zval* msg, zval* member PHP_PROTO_TSRMLS_DC) {
+#if PHP_MAJOR_VERSION < 7
+  return message_handlers->read_property(msg, member, BP_VAR_R,
+                                         NULL PHP_PROTO_TSRMLS_CC);
+#else
+  return message_handlers->read_property(msg, member, BP_VAR_R, NULL,
+                                         NULL PHP_PROTO_TSRMLS_CC);
+#endif
+}
+
+// Reserved name
+bool is_reserved_name(const char* name);
+bool is_valid_constant_name(const char* name);
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PROTOBUF_H__

@@ -45,7 +45,6 @@
 // TODO(jasonh): Remove this once the compiler change to directly include this
 // is released to components.
 #include <google/protobuf/generated_enum_reflection.h>
-#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/metadata.h>
 #include <google/protobuf/unknown_field_set.h>
@@ -716,6 +715,11 @@ LIBPROTOBUF_EXPORT void AssignDescriptors(
     const ServiceDescriptor** file_level_service_descriptors);
 
 LIBPROTOBUF_EXPORT void RegisterAllTypes(const Metadata* file_level_metadata, int size);
+
+// These cannot be in lite so we put them in the reflection.
+LIBPROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset, uint32 tag,
+                               uint32 has_offset,
+                               ::google::protobuf::io::CodedOutputStream* output);
 
 }  // namespace internal
 }  // namespace protobuf

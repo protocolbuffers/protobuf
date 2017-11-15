@@ -196,6 +196,10 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
       "}\n");
 }
 
+void PrimitiveOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(variables_, "$property_name$ = other.$property_name$;\n");
+}
+
 void PrimitiveOneofFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(variables_,
     "PrintField(\"$descriptor_name$\", $has_property_check$, $oneof_name$_, writer);\n");

@@ -39,17 +39,22 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import numbers
 import operator
 import os.path
-import sys
 
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
-from google.protobuf import descriptor_pb2
+
+try:
+  long        # Python 2
+except NameError:
+  long = int  # Python 3
+
 
 # Tests whether the given TestAllTypes message is proto2 or not.
 # This is used to gate several fields/features that only exist
 # for the proto2 version of the message.
 def IsProto2(message):
   return message.DESCRIPTOR.syntax == "proto2"
+
 
 def SetAllNonLazyFields(message):
   """Sets every non-lazy field in the message to a unique value.
@@ -128,22 +133,37 @@ def SetAllNonLazyFields(message):
   message.repeated_string_piece.append(u'224')
   message.repeated_cord.append(u'225')
 
-  # Add a second one of each field.
-  message.repeated_int32.append(301)
-  message.repeated_int64.append(302)
-  message.repeated_uint32.append(303)
-  message.repeated_uint64.append(304)
-  message.repeated_sint32.append(305)
-  message.repeated_sint64.append(306)
-  message.repeated_fixed32.append(307)
-  message.repeated_fixed64.append(308)
-  message.repeated_sfixed32.append(309)
-  message.repeated_sfixed64.append(310)
-  message.repeated_float.append(311)
-  message.repeated_double.append(312)
-  message.repeated_bool.append(False)
-  message.repeated_string.append(u'315')
-  message.repeated_bytes.append(b'316')
+  # Add a second one of each field and set value by index.
+  message.repeated_int32.append(0)
+  message.repeated_int64.append(0)
+  message.repeated_uint32.append(0)
+  message.repeated_uint64.append(0)
+  message.repeated_sint32.append(0)
+  message.repeated_sint64.append(0)
+  message.repeated_fixed32.append(0)
+  message.repeated_fixed64.append(0)
+  message.repeated_sfixed32.append(0)
+  message.repeated_sfixed64.append(0)
+  message.repeated_float.append(0)
+  message.repeated_double.append(0)
+  message.repeated_bool.append(True)
+  message.repeated_string.append(u'0')
+  message.repeated_bytes.append(b'0')
+  message.repeated_int32[1] = 301
+  message.repeated_int64[1] = 302
+  message.repeated_uint32[1] = 303
+  message.repeated_uint64[1] = 304
+  message.repeated_sint32[1] = 305
+  message.repeated_sint64[1] = 306
+  message.repeated_fixed32[1] = 307
+  message.repeated_fixed64[1] = 308
+  message.repeated_sfixed32[1] = 309
+  message.repeated_sfixed64[1] = 310
+  message.repeated_float[1] = 311
+  message.repeated_double[1] = 312
+  message.repeated_bool[1] = False
+  message.repeated_string[1] = u'315'
+  message.repeated_bytes[1] = b'316'
 
   if IsProto2(message):
     message.repeatedgroup.add().a = 317
@@ -152,7 +172,8 @@ def SetAllNonLazyFields(message):
   message.repeated_import_message.add().d = 320
   message.repeated_lazy_message.add().bb = 327
 
-  message.repeated_nested_enum.append(unittest_pb2.TestAllTypes.BAZ)
+  message.repeated_nested_enum.append(unittest_pb2.TestAllTypes.BAR)
+  message.repeated_nested_enum[1] = unittest_pb2.TestAllTypes.BAZ
   message.repeated_foreign_enum.append(unittest_pb2.FOREIGN_BAZ)
   if IsProto2(message):
     message.repeated_import_enum.append(unittest_import_pb2.IMPORT_BAZ)
@@ -707,8 +728,8 @@ class NonStandardInteger(numbers.Integral):
   NonStandardInteger is the minimal legal specification for a custom Integral.
   As such, it does not support 0 < x < 5 and it is not hashable.
 
-  Note: This is added here instead of relying on numpy or a similar library with
-  custom integers to limit dependencies.
+  Note: This is added here instead of relying on numpy or a similar library
+  with custom integers to limit dependencies.
   """
 
   def __init__(self, val, error_string_on_conversion=None):
@@ -845,4 +866,3 @@ class NonStandardInteger(numbers.Integral):
 
   def __repr__(self):
     return 'NonStandardInteger(%s)' % self.val
-

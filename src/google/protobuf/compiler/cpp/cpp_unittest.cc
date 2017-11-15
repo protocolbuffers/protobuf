@@ -576,12 +576,73 @@ TEST(GeneratedMessageTest, SwapWithOther) {
   EXPECT_EQ(unittest::TestAllTypes::BAR, message2.repeated_nested_enum(1));
 }
 
-TEST(GeneratedMessageTest, CopyConstructor) {
-  unittest::TestAllTypes message1;
+TEST(GeneratedMessageTest, ADLSwap) {
+  unittest::TestAllTypes message1, message2;
   TestUtil::SetAllFields(&message1);
 
-  unittest::TestAllTypes message2(message1);
+  // Note the address of one of the repeated fields, to verify it was swapped
+  // rather than copied.
+  const int32* addr = &message1.repeated_int32().Get(0);
+
+  using std::swap;
+  swap(message1, message2);
+
   TestUtil::ExpectAllFieldsSet(message2);
+  TestUtil::ExpectClear(message1);
+
+  EXPECT_EQ(addr, &message2.repeated_int32().Get(0));
+}
+
+TEST(GeneratedMessageTest, CopyConstructor) {
+  // All set.
+  {
+    unittest::TestAllTypes message1;
+    TestUtil::SetAllFields(&message1);
+
+    unittest::TestAllTypes message2(message1);
+    TestUtil::ExpectAllFieldsSet(message2);
+  }
+
+  // None set.
+  {
+    unittest::TestAllTypes message1;
+    unittest::TestAllTypes message2(message1);
+
+    EXPECT_FALSE(message1.has_optional_string());
+    EXPECT_FALSE(message2.has_optional_string());
+    EXPECT_EQ(&message1.optional_string(),
+              &message2.optional_string());
+
+    EXPECT_FALSE(message1.has_optional_bytes());
+    EXPECT_FALSE(message2.has_optional_bytes());
+    EXPECT_EQ(&message1.optional_bytes(),
+              &message2.optional_bytes());
+
+    EXPECT_FALSE(message1.has_optional_nested_message());
+    EXPECT_FALSE(message2.has_optional_nested_message());
+    EXPECT_EQ(&message1.optional_nested_message(),
+              &message2.optional_nested_message());
+
+    EXPECT_FALSE(message1.has_optional_foreign_message());
+    EXPECT_FALSE(message2.has_optional_foreign_message());
+    EXPECT_EQ(&message1.optional_foreign_message(),
+              &message2.optional_foreign_message());
+
+    EXPECT_FALSE(message1.has_optional_import_message());
+    EXPECT_FALSE(message2.has_optional_import_message());
+    EXPECT_EQ(&message1.optional_import_message(),
+              &message2.optional_import_message());
+
+    EXPECT_FALSE(message1.has_optional_public_import_message());
+    EXPECT_FALSE(message2.has_optional_public_import_message());
+    EXPECT_EQ(&message1.optional_public_import_message(),
+              &message2.optional_public_import_message());
+
+    EXPECT_FALSE(message1.has_optional_lazy_message());
+    EXPECT_FALSE(message2.has_optional_lazy_message());
+    EXPECT_EQ(&message1.optional_lazy_message(),
+              &message2.optional_lazy_message());
+  }
 }
 
 TEST(GeneratedMessageTest, CopyConstructorWithArenas) {
@@ -683,21 +744,6 @@ TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
   TestUtil::ExpectAllFieldsSet(message1);
 }
 
-#if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
-    !defined(GOOGLE_PROTOBUF_NO_RTTI)
-#ifdef PROTOBUF_HAS_DEATH_TEST
-#ifndef NDEBUG
-
-TEST(GeneratedMessageTest, MergeFromSelf) {
-  unittest::TestAllTypes message;
-  EXPECT_DEATH(message.MergeFrom(message), "pb[.]cc.*Check failed:");
-  EXPECT_DEATH(message.MergeFrom(implicit_cast<const Message&>(message)),
-               "pb[.]cc.*Check failed:");
-}
-
-#endif  // NDEBUG
-#endif  // PROTOBUF_HAS_DEATH_TEST
-#endif  // !PROTOBUF_TEST_NO_DESCRIPTORS || !GOOGLE_PROTOBUF_NO_RTTI
 
 // Test the generated SerializeWithCachedSizesToArray(),
 TEST(GeneratedMessageTest, SerializationToArray) {
@@ -1340,7 +1386,7 @@ class GeneratedServiceTest : public testing::Test {
       foo_(descriptor_->FindMethodByName("Foo")),
       bar_(descriptor_->FindMethodByName("Bar")),
       stub_(&mock_channel_),
-      done_(NewPermanentCallback(&DoNothing)) {}
+      done_(::google::protobuf::NewPermanentCallback(&DoNothing)) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(foo_ != NULL);

@@ -130,7 +130,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, map_.at(key));
     Map<int32, int32>::iterator it = map_.find(key);
 
-    // interator dereferenceable
+    // iterator dereferenceable
     EXPECT_EQ(key,   (*it).first);
     EXPECT_EQ(value, (*it).second);
     EXPECT_EQ(key,   it->first);
@@ -158,7 +158,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, const_map_.at(key));
     Map<int32, int32>::const_iterator const_it = const_map_.find(key);
 
-    // interator dereferenceable
+    // iterator dereferenceable
     EXPECT_EQ(key, (*const_it).first);
     EXPECT_EQ(value, (*const_it).second);
     EXPECT_EQ(key, const_it->first);
@@ -235,6 +235,13 @@ TEST_F(MapImplTest, UsageErrors) {
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
+
+TEST_F(MapImplTest, MapKeyAssignment) {
+  MapKey from, to;
+  from.SetStringValue("abc");
+  to = from;
+  EXPECT_EQ("abc", to.GetStringValue());
+}
 
 TEST_F(MapImplTest, CountNonExist) {
   EXPECT_EQ(0, map_.count(0));
@@ -551,7 +558,7 @@ TEST_F(MapImplTest, IteratorInvalidation) {
 #endif
   std::set<int> s;
   int n = kMaxSizeToTest;
-  int frog = k1 + n;
+  unsigned int frog = k1 + n;
   while (n > 1 && s.size() < 25) {
     s.insert(n);
     n = static_cast<int>(n * 100 / (101.0 + (frog & 63)));
@@ -952,6 +959,17 @@ TEST_F(MapImplTest, SwapArena) {
       testing::Pair(10244, 10247)));
   EXPECT_THAT(m2, testing::UnorderedElementsAre(
       testing::Pair(9398, 41999)));
+}
+
+TEST_F(MapImplTest, CopyAssignMapIterator) {
+  TestMap message;
+  MapReflectionTester reflection_tester(
+      unittest::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&message);
+  MapIterator it1 = reflection_tester.MapBegin(&message, "map_int32_int32");
+  MapIterator it2 = reflection_tester.MapEnd(&message, "map_int32_int32");
+  it2 = it1;
+  EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }
 
 // Map Field Reflection Test ========================================
@@ -3264,6 +3282,44 @@ TEST(ArenaTest, IsInitialized) {
       Arena::CreateMessage<unittest::TestArenaMap>(&arena);
   EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
 }
+
+#if LANG_CXX11
+TEST(MoveTest, MoveConstructorWorks) {
+  Map<int32, TestAllTypes> original_map;
+  original_map[42].mutable_optional_nested_message()->set_bb(42);
+  original_map[43].mutable_optional_nested_message()->set_bb(43);
+  const auto* nested_msg42_ptr = &original_map[42].optional_nested_message();
+  const auto* nested_msg43_ptr = &original_map[43].optional_nested_message();
+
+  Map<int32, TestAllTypes> moved_to_map(std::move(original_map));
+  EXPECT_TRUE(original_map.empty());
+  EXPECT_EQ(2, moved_to_map.size());
+  EXPECT_EQ(42, moved_to_map[42].optional_nested_message().bb());
+  EXPECT_EQ(43, moved_to_map[43].optional_nested_message().bb());
+  // This test takes advantage of the fact that pointers are swapped, so there
+  // should be pointer stability.
+  EXPECT_EQ(nested_msg42_ptr, &moved_to_map[42].optional_nested_message());
+  EXPECT_EQ(nested_msg43_ptr, &moved_to_map[43].optional_nested_message());
+}
+
+TEST(MoveTest, MoveAssignmentWorks) {
+  Map<int32, TestAllTypes> original_map;
+  original_map[42].mutable_optional_nested_message()->set_bb(42);
+  original_map[43].mutable_optional_nested_message()->set_bb(43);
+  const auto* nested_msg42_ptr = &original_map[42].optional_nested_message();
+  const auto* nested_msg43_ptr = &original_map[43].optional_nested_message();
+
+  Map<int32, TestAllTypes> moved_to_map = std::move(original_map);
+  EXPECT_TRUE(original_map.empty());
+  EXPECT_EQ(2, moved_to_map.size());
+  EXPECT_EQ(42, moved_to_map[42].optional_nested_message().bb());
+  EXPECT_EQ(43, moved_to_map[43].optional_nested_message().bb());
+  // This test takes advantage of the fact that pointers are swapped, so there
+  // should be pointer stability.
+  EXPECT_EQ(nested_msg42_ptr, &moved_to_map[42].optional_nested_message());
+  EXPECT_EQ(nested_msg43_ptr, &moved_to_map[43].optional_nested_message());
+}
+#endif
 
 }  // namespace internal
 }  // namespace protobuf

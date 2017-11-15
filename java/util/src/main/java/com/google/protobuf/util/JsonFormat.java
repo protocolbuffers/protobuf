@@ -1522,7 +1522,8 @@ public class JsonFormat {
       for (int i = 0; i < array.size(); ++i) {
         Object value = parseFieldValue(field, array.get(i), builder);
         if (value == null) {
-          throw new InvalidProtocolBufferException("Repeated field elements cannot be null");
+          throw new InvalidProtocolBufferException(
+              "Repeated field elements cannot be null in field: " + field.getFullName());
         }
         builder.addRepeatedField(field, value);
       }
@@ -1686,7 +1687,11 @@ public class JsonFormat {
     }
 
     private ByteString parseBytes(JsonElement json) throws InvalidProtocolBufferException {
-      return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
+      try {
+        return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
+      } catch (IllegalArgumentException e) {
+        return ByteString.copyFrom(BaseEncoding.base64Url().decode(json.getAsString()));
+      }
     }
 
     private EnumValueDescriptor parseEnum(EnumDescriptor enumDescriptor, JsonElement json)

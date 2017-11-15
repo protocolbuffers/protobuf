@@ -44,6 +44,56 @@ VALUE noleak_rb_str_cat(VALUE rb_str, const char *str, long len) {
   return rb_str;
 }
 
+// The code below also comes from upb's prototype Ruby binding, developed by
+// haberman@.
+
+/* stringsink *****************************************************************/
+
+static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
+  stringsink *sink = _sink;
+  sink->len = 0;
+  return sink;
+}
+
+static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                                size_t len, const upb_bufhandle *handle) {
+  stringsink *sink = _sink;
+  size_t new_size = sink->size;
+
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+
+  while (sink->len + len > new_size) {
+    new_size *= 2;
+  }
+
+  if (new_size != sink->size) {
+    sink->ptr = realloc(sink->ptr, new_size);
+    sink->size = new_size;
+  }
+
+  memcpy(sink->ptr + sink->len, ptr, len);
+  sink->len += len;
+
+  return len;
+}
+
+void stringsink_init(stringsink *sink) {
+  upb_byteshandler_init(&sink->handler);
+  upb_byteshandler_setstartstr(&sink->handler, stringsink_start, NULL);
+  upb_byteshandler_setstring(&sink->handler, stringsink_string, NULL);
+
+  upb_bytessink_reset(&sink->sink, &sink->handler, sink);
+
+  sink->size = 32;
+  sink->ptr = malloc(sink->size);
+  sink->len = 0;
+}
+
+void stringsink_uninit(stringsink *sink) {
+  free(sink->ptr);
+}
+
 // -----------------------------------------------------------------------------
 // Parsing.
 // -----------------------------------------------------------------------------
@@ -280,11 +330,6 @@ rb_data_type_t MapParseFrame_type = {
   { MapParseFrame_mark, MapParseFrame_free, NULL },
 };
 
-// Array of Ruby objects wrapping map_parse_frame_t.
-// We don't allow multiple concurrent decodes, so we assume that this global
-// variable is specific to the "current" decode.
-VALUE map_parse_frames;
-
 static map_parse_frame_t* map_push_frame(VALUE map,
                                          const map_handlerdata_t* handlerdata) {
   map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
@@ -293,14 +338,10 @@ static map_parse_frame_t* map_push_frame(VALUE map,
   native_slot_init(handlerdata->key_field_type, &frame->key_storage);
   native_slot_init(handlerdata->value_field_type, &frame->value_storage);
 
-  rb_ary_push(map_parse_frames,
+  Map_set_frame(map,
               TypedData_Wrap_Struct(rb_cObject, &MapParseFrame_type, frame));
 
   return frame;
-}
-
-static void map_pop_frame() {
-  rb_ary_pop(map_parse_frames);
 }
 
 // Handler to begin a map entry: allocates a temporary frame. This is the
@@ -336,7 +377,7 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);
-  map_pop_frame();
+  Map_set_frame(frame->map, Qnil);
 
   return true;
 }
@@ -622,6 +663,20 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   upb_handlerattr_uninit(&attr);
 }
 
+static bool unknown_field_handler(void* closure, const void* hd,
+                                  const char* buf, size_t size) {
+  UPB_UNUSED(hd);
+
+  MessageHeader* msg = (MessageHeader*)closure;
+  if (msg->unknown_fields == NULL) {
+    msg->unknown_fields = malloc(sizeof(stringsink));
+    stringsink_init(msg->unknown_fields);
+  }
+
+  stringsink_string(msg->unknown_fields, NULL, buf, size, NULL);
+
+  return true;
+}
 
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
@@ -642,6 +697,9 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc->msgdef);
   }
+
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlers_setunknown(h, unknown_field_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
        !upb_msg_field_done(&i);
@@ -775,10 +833,6 @@ VALUE Message_decode(VALUE klass, VALUE data) {
   msg_rb = rb_class_new_instance(0, NULL, msgklass);
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
-  // We generally expect this to be clear already, but clear it in case parsing
-  // previously got interrupted somehow.
-  rb_ary_clear(map_parse_frames);
-
   {
     const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
     const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
@@ -823,10 +877,6 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
   msg_rb = rb_class_new_instance(0, NULL, msgklass);
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
-  // We generally expect this to be clear already, but clear it in case parsing
-  // previously got interrupted somehow.
-  rb_ary_clear(map_parse_frames);
-
   {
     const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);
     stackenv se;
@@ -848,65 +898,6 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
 // -----------------------------------------------------------------------------
 // Serializing.
 // -----------------------------------------------------------------------------
-//
-// The code below also comes from upb's prototype Ruby binding, developed by
-// haberman@.
-
-/* stringsink *****************************************************************/
-
-// This should probably be factored into a common upb component.
-
-typedef struct {
-  upb_byteshandler handler;
-  upb_bytessink sink;
-  char *ptr;
-  size_t len, size;
-} stringsink;
-
-static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
-  stringsink *sink = _sink;
-  sink->len = 0;
-  return sink;
-}
-
-static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
-                                size_t len, const upb_bufhandle *handle) {
-  stringsink *sink = _sink;
-  size_t new_size = sink->size;
-
-  UPB_UNUSED(hd);
-  UPB_UNUSED(handle);
-
-  while (sink->len + len > new_size) {
-    new_size *= 2;
-  }
-
-  if (new_size != sink->size) {
-    sink->ptr = realloc(sink->ptr, new_size);
-    sink->size = new_size;
-  }
-
-  memcpy(sink->ptr + sink->len, ptr, len);
-  sink->len += len;
-
-  return len;
-}
-
-void stringsink_init(stringsink *sink) {
-  upb_byteshandler_init(&sink->handler);
-  upb_byteshandler_setstartstr(&sink->handler, stringsink_start, NULL);
-  upb_byteshandler_setstring(&sink->handler, stringsink_string, NULL);
-
-  upb_bytessink_reset(&sink->sink, &sink->handler, sink);
-
-  sink->size = 32;
-  sink->ptr = malloc(sink->size);
-  sink->len = 0;
-}
-
-void stringsink_uninit(stringsink *sink) {
-  free(sink->ptr);
-}
 
 /* msgvisitor *****************************************************************/
 
@@ -1186,6 +1177,11 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
 #undef T
 
     }
+  }
+
+  stringsink* unknown = msg->unknown_fields;
+  if (unknown != NULL) {
+    upb_sink_putunknown(sink, unknown->ptr, unknown->len);
   }
 
   upb_sink_endmsg(sink, &status);

@@ -109,7 +109,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     private $py_generic_services = false;
     private $has_py_generic_services = false;
     /**
-     * Generated from protobuf field <code>optional bool php_generic_services = 19 [default = false];</code>
+     * Generated from protobuf field <code>optional bool php_generic_services = 42 [default = false];</code>
      */
     private $php_generic_services = false;
     private $has_php_generic_services = false;
@@ -174,7 +174,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     private $php_namespace = '';
     private $has_php_namespace = false;
     /**
-     * The parser stores options it doesn't recognize here. See above.
+     * The parser stores options it doesn't recognize here.
+     * See the documentation for the "Options" section above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
@@ -553,7 +554,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>optional bool php_generic_services = 19 [default = false];</code>
+     * Generated from protobuf field <code>optional bool php_generic_services = 42 [default = false];</code>
      * @return bool
      */
     public function getPhpGenericServices()
@@ -562,7 +563,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>optional bool php_generic_services = 19 [default = false];</code>
+     * Generated from protobuf field <code>optional bool php_generic_services = 42 [default = false];</code>
      * @param bool $var
      * @return $this
      */
@@ -827,7 +828,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * The parser stores options it doesn't recognize here. See above.
+     * The parser stores options it doesn't recognize here.
+     * See the documentation for the "Options" section above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
@@ -838,7 +840,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * The parser stores options it doesn't recognize here. See above.
+     * The parser stores options it doesn't recognize here.
+     * See the documentation for the "Options" section above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var

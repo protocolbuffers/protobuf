@@ -68,9 +68,19 @@ how to install protobuf runtime for that specific language:
 | PHP                                  | [php](php)                                                  |
 | Dart                                 | [dart-lang/protobuf](https://github.com/dart-lang/protobuf) |
 
+Quick Start
+-----------
 
-Usage
------
+The best way to learn how to use protobuf is to follow the tutorials in our
+developer guide:
+
+https://developers.google.com/protocol-buffers/docs/tutorials
+
+If you want to learn from code examples, take a look at the examples in the
+[examples](examples) directory.
+
+Documentation
+-------------
 
 The complete documentation for Protocol Buffers is available via the
 web at:

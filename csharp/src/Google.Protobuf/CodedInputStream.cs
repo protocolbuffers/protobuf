@@ -373,9 +373,9 @@ namespace Google.Protobuf
 
                 lastTag = ReadRawVarint32();
             }
-            if (lastTag == 0)
+            if (WireFormat.GetTagFieldNumber(lastTag) == 0)
             {
-                // If we actually read zero, that's not a valid tag.
+                // If we actually read a tag with a field of 0, that's not a valid tag.
                 throw InvalidProtocolBufferException.InvalidTag();
             }
             return lastTag;

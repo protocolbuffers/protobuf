@@ -290,6 +290,28 @@ void ConformanceTestSuite::RunValidInputTest(
       TextFormat::ParseFromString(equivalent_text_format, reference_message))
           << "Failed to parse data for test case: " << test_name
           << ", data: " << equivalent_text_format;
+  const string equivalent_wire_format = reference_message->SerializeAsString();
+  RunValidBinaryInputTest(test_name, level, input, input_format,
+                          equivalent_wire_format, requested_output, isProto3);
+}
+
+void ConformanceTestSuite::RunValidBinaryInputTest(
+    const string& test_name, ConformanceLevel level, const string& input,
+    WireFormat input_format, const string& equivalent_wire_format,
+    WireFormat requested_output, bool isProto3) {
+  auto newTestMessage = [&isProto3]() {
+    Message* newMessage;
+    if (isProto3) {
+      newMessage = new TestAllTypesProto3;
+    } else {
+      newMessage = new TestAllTypesProto2;
+    }
+    return newMessage;
+  };
+  Message* reference_message = newTestMessage();
+  GOOGLE_CHECK(
+      reference_message->ParseFromString(equivalent_wire_format))
+          << "Failed to parse wire data for test case: " << test_name;
 
   ConformanceRequest request;
   ConformanceResponse response;
@@ -491,6 +513,19 @@ void ConformanceTestSuite::RunValidProtobufTest(
         ".JsonOutput", level, input_protobuf, conformance::PROTOBUF,
         equivalent_text_format, conformance::JSON, isProto3);
   }
+}
+
+void ConformanceTestSuite::RunValidBinaryProtobufTest(
+    const string& test_name, ConformanceLevel level,
+    const string& input_protobuf, bool isProto3) {
+  string rname = ".Proto3";
+  if (!isProto3) {
+    rname = ".Proto2";
+  }
+  RunValidBinaryInputTest(
+      ConformanceLevelToString(level) + rname + ".ProtobufInput." + test_name +
+      ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
+      input_protobuf, conformance::PROTOBUF, isProto3);
 }
 
 void ConformanceTestSuite::RunValidProtobufTestWithMessage(
@@ -809,6 +844,14 @@ void ConformanceTestSuite::TestOneofMessage (MessageType &message,
   message.set_oneof_enum(MessageType::FOO);
   RunValidProtobufTestWithMessage(
       "OneofZeroEnum", RECOMMENDED, &message, "oneof_enum: FOO", isProto3);
+}
+
+template <class MessageType>
+void ConformanceTestSuite::TestUnknownMessage(MessageType& message,
+                                              bool isProto3) {
+  message.ParseFromString("\xA8\x1F\x01");
+  RunValidBinaryProtobufTest("UnknownVarint", REQUIRED,
+                             message.SerializeAsString(), isProto3);
 }
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
@@ -1605,9 +1648,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "BytesField", REQUIRED,
       R"({"optionalBytes": "AQI="})",
       R"(optional_bytes: "\x01\x02")");
-  ExpectParseFailureForJson(
-      "BytesFieldInvalidBase64Characters", REQUIRED,
-      R"({"optionalBytes": "-_=="})");
+  RunValidJsonTest(
+      "BytesFieldBase64Url", RECOMMENDED,
+      R"({"optionalBytes": "-_"})",
+      R"(optional_bytes: "\xfb")");
 
   // Message fields.
   RunValidJsonTest(
@@ -1846,6 +1890,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "StringFieldSingleQuoteBoth", RECOMMENDED,
       R"({'optionalString': 'Hello world!'})");
 
+  // Unknown fields.
+  {
+    TestAllTypesProto3 messageProto3;
+    TestAllTypesProto2 messageProto2;
+    TestUnknownMessage(messageProto3, true);
+    TestUnknownMessage(messageProto2, false);
+  }
+
   // Wrapper types.
   RunValidJsonTest(
       "OptionalBoolWrapper", REQUIRED,
@@ -1994,6 +2046,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       R"({"repeatedDuration": ["1.5s", "-1.5s"]})",
       "repeated_duration: {seconds: 1 nanos: 500000000}"
       "repeated_duration: {seconds: -1 nanos: -500000000}");
+  RunValidJsonTest(
+      "DurationNull", REQUIRED,
+      R"({"optionalDuration": null})",
+      "");
 
   ExpectParseFailureForJson(
       "DurationMissingS", REQUIRED,
@@ -2063,6 +2119,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "TimestampWithNegativeOffset", REQUIRED,
       R"({"optionalTimestamp": "1969-12-31T16:00:00-08:00"})",
       "optional_timestamp: {seconds: 0}");
+  RunValidJsonTest(
+      "TimestampNull", REQUIRED,
+      R"({"optionalTimestamp": null})",
+      "");
 
   ExpectParseFailureForJson(
       "TimestampJsonInputTooSmall", REQUIRED,

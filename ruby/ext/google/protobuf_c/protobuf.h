@@ -116,10 +116,6 @@ struct Descriptor {
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
   const upb_handlers* json_serialize_handlers_preserve;
-  // Handlers hold type class references for sub-message fields directly in some
-  // cases. We need to keep these rooted because they might otherwise be
-  // collected.
-  VALUE typeclass_references;
 };
 
 struct FieldDescriptor {
@@ -165,8 +161,6 @@ extern VALUE cBuilder;
 
 extern VALUE cError;
 extern VALUE cParseError;
-
-extern VALUE map_parse_frames;
 
 // We forward-declare all of the Ruby method implementations here because we
 // sometimes call the methods directly across .c files, rather than going
@@ -282,6 +276,7 @@ void Builder_free(void* _self);
 VALUE Builder_alloc(VALUE klass);
 void Builder_register(VALUE module);
 Builder* ruby_to_Builder(VALUE value);
+VALUE Builder_initialize(VALUE _self);
 VALUE Builder_add_message(VALUE _self, VALUE name);
 VALUE Builder_add_enum(VALUE _self, VALUE name);
 VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
@@ -397,6 +392,7 @@ typedef struct {
   upb_fieldtype_t key_type;
   upb_fieldtype_t value_type;
   VALUE value_type_class;
+  VALUE parse_frame;
   upb_strtable table;
 } Map;
 
@@ -405,6 +401,7 @@ void Map_free(void* self);
 VALUE Map_alloc(VALUE klass);
 VALUE Map_init(int argc, VALUE* argv, VALUE self);
 void Map_register(VALUE module);
+VALUE Map_set_frame(VALUE self, VALUE val);
 
 extern const rb_data_type_t Map_type;
 extern VALUE cMap;
@@ -478,8 +475,20 @@ VALUE layout_inspect(MessageLayout* layout, void* storage);
 // Message class creation.
 // -----------------------------------------------------------------------------
 
+// This should probably be factored into a common upb component.
+
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} stringsink;
+
+void stringsink_uninit(stringsink *sink);
+
 struct MessageHeader {
-  Descriptor* descriptor;  // kept alive by self.class.descriptor reference.
+  Descriptor* descriptor;      // kept alive by self.class.descriptor reference.
+  stringsink* unknown_fields;  // store unknown fields in decoding.
   // Data comes after this.
 };
 

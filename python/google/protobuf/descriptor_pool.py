@@ -127,9 +127,6 @@ class DescriptorPool(object):
     self._service_descriptors = {}
     self._file_descriptors = {}
     self._toplevel_extensions = {}
-    # TODO(jieluo): Remove _file_desc_by_toplevel_extension when
-    # FieldDescriptor.file is added in code gen.
-    self._file_desc_by_toplevel_extension = {}
     # We store extensions in two two-level mappings: The first key is the
     # descriptor of the message being extended, the second key is the extension
     # full name or its tag number.
@@ -255,11 +252,6 @@ class DescriptorPool(object):
     """
 
     self._AddFileDescriptor(file_desc)
-    # TODO(jieluo): This is a temporary solution for FieldDescriptor.file.
-    # Remove it when FieldDescriptor.file is added in code gen.
-    for extension in file_desc.extensions_by_name.values():
-      self._file_desc_by_toplevel_extension[
-          extension.full_name] = file_desc
 
   def _AddFileDescriptor(self, file_desc):
     """Adds a FileDescriptor to the pool, non-recursively.
@@ -329,12 +321,17 @@ class DescriptorPool(object):
       pass
 
     try:
+      return self._service_descriptors[symbol].file
+    except KeyError:
+      pass
+
+    try:
       return self._FindFileContainingSymbolInDb(symbol)
     except KeyError:
       pass
 
     try:
-      return self._file_desc_by_toplevel_extension[symbol]
+      return self._toplevel_extensions[symbol].file
     except KeyError:
       pass
 
@@ -344,7 +341,6 @@ class DescriptorPool(object):
       message = self.FindMessageTypeByName(message_name)
       assert message.extensions_by_name[extension_name]
       return message.file
-
     except KeyError:
       raise KeyError('Cannot find a file containing %s' % symbol)
 
@@ -400,6 +396,23 @@ class DescriptorPool(object):
     message_name, _, field_name = full_name.rpartition('.')
     message_descriptor = self.FindMessageTypeByName(message_name)
     return message_descriptor.fields_by_name[field_name]
+
+  def FindOneofByName(self, full_name):
+    """Loads the named oneof descriptor from the pool.
+
+    Args:
+      full_name: The full name of the oneof descriptor to load.
+
+    Returns:
+      The oneof descriptor for the named oneof.
+
+    Raises:
+      KeyError: if the oneof cannot be found in the pool.
+    """
+    full_name = _NormalizeFullyQualifiedName(full_name)
+    message_name, _, oneof_name = full_name.rpartition('.')
+    message_descriptor = self.FindMessageTypeByName(message_name)
+    return message_descriptor.oneofs_by_name[oneof_name]
 
   def FindExtensionByName(self, full_name):
     """Loads the named extension descriptor from the pool.
@@ -557,7 +570,8 @@ class DescriptorPool(object):
 
       for index, extension_proto in enumerate(file_proto.extension):
         extension_desc = self._MakeFieldDescriptor(
-            extension_proto, file_proto.package, index, is_extension=True)
+            extension_proto, file_proto.package, index, file_descriptor,
+            is_extension=True)
         extension_desc.containing_type = self._GetTypeFromScope(
             file_descriptor.package, extension_proto.extendee, scope)
         self._SetFieldType(extension_proto, extension_desc,
@@ -623,10 +637,10 @@ class DescriptorPool(object):
     enums = [
         self._ConvertEnumDescriptor(enum, desc_name, file_desc, None, scope)
         for enum in desc_proto.enum_type]
-    fields = [self._MakeFieldDescriptor(field, desc_name, index)
+    fields = [self._MakeFieldDescriptor(field, desc_name, index, file_desc)
               for index, field in enumerate(desc_proto.field)]
     extensions = [
-        self._MakeFieldDescriptor(extension, desc_name, index,
+        self._MakeFieldDescriptor(extension, desc_name, index, file_desc,
                                   is_extension=True)
         for index, extension in enumerate(desc_proto.extension)]
     oneofs = [
@@ -708,7 +722,7 @@ class DescriptorPool(object):
     return desc
 
   def _MakeFieldDescriptor(self, field_proto, message_name, index,
-                           is_extension=False):
+                           file_desc, is_extension=False):
     """Creates a field descriptor from a FieldDescriptorProto.
 
     For message and enum type fields, this method will do a look up
@@ -721,6 +735,7 @@ class DescriptorPool(object):
       field_proto: The proto describing the field.
       message_name: The name of the containing message.
       index: Index of the field
+      file_desc: The file containing the field descriptor.
       is_extension: Indication that this field is for an extension.
 
     Returns:
@@ -747,7 +762,8 @@ class DescriptorPool(object):
         default_value=None,
         is_extension=is_extension,
         extension_scope=None,
-        options=_OptionsOrNone(field_proto))
+        options=_OptionsOrNone(field_proto),
+        file=file_desc)
 
   def _SetAllFieldTypes(self, package, desc_proto, scope):
     """Sets all the descriptor's fields's types.

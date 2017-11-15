@@ -261,22 +261,6 @@ static PyObject* Item(RepeatedScalarContainer* self, Py_ssize_t index) {
       result = ToStringObject(field_descriptor, value);
       break;
     }
-    case FieldDescriptor::CPPTYPE_MESSAGE: {
-      PyObject* py_cmsg = PyObject_CallObject(reinterpret_cast<PyObject*>(
-          &CMessage_Type), NULL);
-      if (py_cmsg == NULL) {
-        return NULL;
-      }
-      CMessage* cmsg = reinterpret_cast<CMessage*>(py_cmsg);
-      const Message& msg = reflection->GetRepeatedMessage(
-          *message, field_descriptor, index);
-      cmsg->owner = self->owner;
-      cmsg->parent = self->parent;
-      cmsg->message = const_cast<Message*>(&msg);
-      cmsg->read_only = false;
-      result = reinterpret_cast<PyObject*>(py_cmsg);
-      break;
-    }
     default:
       PyErr_Format(
           PyExc_SystemError,
@@ -659,6 +643,18 @@ static PyObject* Pop(RepeatedScalarContainer* self,
   return item;
 }
 
+static PyObject* ToStr(RepeatedScalarContainer* self) {
+  ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
+  if (full_slice == NULL) {
+    return NULL;
+  }
+  ScopedPyObjectPtr list(Subscript(self, full_slice.get()));
+  if (list == NULL) {
+    return NULL;
+  }
+  return PyObject_Repr(list.get());
+}
+
 // The private constructor of RepeatedScalarContainer objects.
 PyObject *NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor) {
@@ -781,7 +777,7 @@ PyTypeObject RepeatedScalarContainer_Type = {
   0,                                   //  tp_getattr
   0,                                   //  tp_setattr
   0,                                   //  tp_compare
-  0,                                   //  tp_repr
+  (reprfunc)repeated_scalar_container::ToStr,      //  tp_repr
   0,                                   //  tp_as_number
   &repeated_scalar_container::SqMethods,   //  tp_as_sequence
   &repeated_scalar_container::MpMethods,   //  tp_as_mapping

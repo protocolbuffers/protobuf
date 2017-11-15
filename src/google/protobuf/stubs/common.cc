@@ -30,6 +30,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+#include <google/protobuf/message_lite.h>  // TODO(gerbens) ideally remove this.
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status.h>
@@ -416,13 +417,30 @@ uint32 ghtonl(uint32 x) {
 namespace internal {
 
 typedef void OnShutdownFunc();
-vector<void (*)()>* shutdown_functions = NULL;
-Mutex* shutdown_functions_mutex = NULL;
+struct ShutdownData {
+  ~ShutdownData() {
+    for (int i = 0; i < functions.size(); i++) {
+      functions[i]();
+    }
+    for (int i = 0; i < strings.size(); i++) {
+      strings[i]->~string();
+    }
+    for (int i = 0; i < messages.size(); i++) {
+      messages[i]->~MessageLite();
+    }
+  }
+
+  vector<void (*)()> functions;
+  vector<const std::string*> strings;
+  vector<const MessageLite*> messages;
+  Mutex mutex;
+};
+
+ShutdownData* shutdown_data = NULL;
 GOOGLE_PROTOBUF_DECLARE_ONCE(shutdown_functions_init);
 
 void InitShutdownFunctions() {
-  shutdown_functions = new vector<void (*)()>;
-  shutdown_functions_mutex = new Mutex;
+  shutdown_data = new ShutdownData;
 }
 
 inline void InitShutdownFunctionsOnce() {
@@ -431,8 +449,20 @@ inline void InitShutdownFunctionsOnce() {
 
 void OnShutdown(void (*func)()) {
   InitShutdownFunctionsOnce();
-  MutexLock lock(shutdown_functions_mutex);
-  shutdown_functions->push_back(func);
+  MutexLock lock(&shutdown_data->mutex);
+  shutdown_data->functions.push_back(func);
+}
+
+void OnShutdownDestroyString(const std::string* ptr) {
+  InitShutdownFunctionsOnce();
+  MutexLock lock(&shutdown_data->mutex);
+  shutdown_data->strings.push_back(ptr);
+}
+
+void OnShutdownDestroyMessage(const void* ptr) {
+  InitShutdownFunctionsOnce();
+  MutexLock lock(&shutdown_data->mutex);
+  shutdown_data->messages.push_back(static_cast<const MessageLite*>(ptr));
 }
 
 }  // namespace internal
@@ -445,15 +475,10 @@ void ShutdownProtobufLibrary() {
   // called.
 
   // Make it safe to call this multiple times.
-  if (internal::shutdown_functions == NULL) return;
+  if (internal::shutdown_data == NULL) return;
 
-  for (int i = 0; i < internal::shutdown_functions->size(); i++) {
-    internal::shutdown_functions->at(i)();
-  }
-  delete internal::shutdown_functions;
-  internal::shutdown_functions = NULL;
-  delete internal::shutdown_functions_mutex;
-  internal::shutdown_functions_mutex = NULL;
+  delete internal::shutdown_data;
+  internal::shutdown_data = NULL;
 }
 
 #if PROTOBUF_USE_EXCEPTIONS

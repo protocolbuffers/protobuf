@@ -55,6 +55,11 @@ from google.protobuf.internal import api_implementation
 from google.protobuf.internal import test_util
 from google.protobuf import message
 
+try:
+  cmp                                   # Python 2
+except NameError:
+  cmp = lambda x, y: (x > y) - (x < y)  # Python 3
+
 # Python pre-2.6 does not have isinf() or isnan() functions, so we have
 # to provide our own.
 def isnan(val):

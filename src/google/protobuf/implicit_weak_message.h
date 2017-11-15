@@ -28,41 +28,62 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
-//
-// A proto file which is imported by unittest_proto3.proto to test importing.
+#ifndef GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
+#define GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
 
-syntax = "proto3";
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/arena.h>
+#include <google/protobuf/message_lite.h>
 
-// We don't put this in a package within proto2 because we need to make sure
-// that the generated code doesn't depend on being in the proto2 namespace.
-// In test_util.h we do
-// "using namespace unittest_import = protobuf_unittest_import".
-package protobuf_unittest_import;
+namespace google {
+namespace protobuf {
+namespace internal {
 
-option optimize_for = SPEED;
-option cc_enable_arenas = true;
+class LIBPROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
+ public:
+  ImplicitWeakMessage() : arena_(NULL) {}
+  explicit ImplicitWeakMessage(Arena* arena) : arena_(arena) {}
 
-// Exercise the java_package option.
-option java_package = "com.google.protobuf.test";
-option csharp_namespace = "Google.Protobuf.TestProtos";
+  string GetTypeName() const { return ""; }
 
-// Do not set a java_outer_classname here to verify that Proto2 works without
-// one.
+  MessageLite* New() const { return new ImplicitWeakMessage; }
+  MessageLite* New(Arena* arena) const {
+    return Arena::CreateMessage<ImplicitWeakMessage>(arena);
+  }
 
-// Test public import
-import public "google/protobuf/unittest_import_public_proto3.proto";
+  Arena* GetArena() const { return arena_; }
 
-message ImportMessage {
-  int32 d = 1;
-}
+  void Clear() { data_.clear(); }
 
-enum ImportEnum {
-  IMPORT_ENUM_UNSPECIFIED = 0;
-  IMPORT_FOO = 7;
-  IMPORT_BAR = 8;
-  IMPORT_BAZ = 9;
-}
+  bool IsInitialized() const { return true; }
 
+  void CheckTypeAndMergeFrom(const MessageLite& other) {
+    data_.append(static_cast<const ImplicitWeakMessage&>(other).data_);
+  }
+
+  bool MergePartialFromCodedStream(io::CodedInputStream* input);
+
+  size_t ByteSizeLong() const { return data_.size(); }
+
+  void SerializeWithCachedSizes(io::CodedOutputStream* output) const {
+    output->WriteString(data_);
+  }
+
+  int GetCachedSize() const { return data_.size(); }
+
+  typedef void InternalArenaConstructable_;
+
+ private:
+  Arena* const arena_;
+  string data_;
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImplicitWeakMessage);
+};
+
+extern ::google::protobuf::internal::ExplicitlyConstructed<ImplicitWeakMessage>
+    implicit_weak_message_default_instance;
+
+}  // namespace internal
+}  // namespace protobuf
+
+}  // namespace google
+#endif  // GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__

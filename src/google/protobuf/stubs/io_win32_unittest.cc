@@ -34,7 +34,7 @@
 //
 // This file is only used on Windows, it's empty on other platforms.
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 
 #define WIN32_LEAN_AND_MEAN
 #include <errno.h>
@@ -47,6 +47,7 @@
 #include <windows.h>
 
 #include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -61,13 +62,12 @@ namespace win32 {
 namespace {
 
 using std::string;
-using std::unique_ptr;
 using std::wstring;
 
 class IoWin32Test : public ::testing::Test {
  public:
-  void SetUp() override;
-  void TearDown() override;
+  void SetUp();
+  void TearDown();
 
  protected:
   bool CreateAllUnder(wstring path);
@@ -83,21 +83,31 @@ class IoWin32Test : public ::testing::Test {
     EXPECT_FALSE(wtest_tmpdir.empty()); \
   }
 
+namespace {
+void StripTrailingSlashes(string* str) {
+  int i = str->size() - 1;
+  for (; i >= 0 && ((*str)[i] == '/' || (*str)[i] == '\\'); --i) {}
+  str->resize(i+1);
+}
+}  // namespace
+
 void IoWin32Test::SetUp() {
   test_tmpdir = string(TestTempDir());
   wtest_tmpdir.clear();
   if (test_tmpdir.empty()) {
     const char* test_tmpdir_env = getenv("TEST_TMPDIR");
-    if (test_tmpdir_env != nullptr && *test_tmpdir_env) {
+    if (test_tmpdir_env != NULL && *test_tmpdir_env) {
       test_tmpdir = string(test_tmpdir_env);
     }
 
     // Only Bazel defines TEST_TMPDIR, CMake does not, so look for other
     // suitable environment variables.
     if (test_tmpdir.empty()) {
-      for (const char* name : {"TEMP", "TMP"}) {
+      static const char* names[] = {"TEMP", "TMP"};
+      for (int i = 0; i < sizeof(names)/sizeof(names[0]); ++i) {
+        const char* name = names[i];
         test_tmpdir_env = getenv(name);
-        if (test_tmpdir_env != nullptr && *test_tmpdir_env) {
+        if (test_tmpdir_env != NULL && *test_tmpdir_env) {
           test_tmpdir = string(test_tmpdir_env);
           break;
         }
@@ -113,8 +123,7 @@ void IoWin32Test::SetUp() {
       // "\\?\" prefix (except on Windows 10 version 1607 and beyond, after
       // opting in to long paths by default [1]).
       //
-      // [1] https://msdn.microsoft.com/en-us/library/windows/ \
-      //   desktop/aa365247(v=vs.85).aspx#maxpath
+      // [1] https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
       DWORD result = ::GetCurrentDirectoryA(MAX_PATH, buffer);
       if (result > 0) {
         test_tmpdir = string(buffer);
@@ -128,14 +137,11 @@ void IoWin32Test::SetUp() {
     }
   }
 
-  while (test_tmpdir.back() == '/' || test_tmpdir.back() == '\\') {
-    test_tmpdir.pop_back();
-  }
+  StripTrailingSlashes(&test_tmpdir);
   test_tmpdir += "\\io_win32_unittest.tmp";
 
   // CreateDirectoryA's limit is 248 chars, see MSDN.
-  // https://msdn.microsoft.com/en-us/library/windows/ \
-  //   desktop/aa363855(v=vs.85).aspx
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
   wtest_tmpdir = testonly_path_to_winpath(test_tmpdir);
   if (!DeleteAllUnder(wtest_tmpdir) || !CreateAllUnder(wtest_tmpdir)) {
     GOOGLE_CHECK_OK(false);
@@ -185,7 +191,7 @@ bool IoWin32Test::DeleteAllUnder(wstring path) {
     path = wstring(L"\\\\?\\") + path;
   }
   // Append "\" if necessary.
-  if (path.back() != '\\') {
+  if (path[path.size() - 1] != '\\') {
     path.push_back('\\');
   }
 
@@ -326,7 +332,7 @@ TEST_F(IoWin32Test, ChdirTest) {
 
 TEST_F(IoWin32Test, AsWindowsPathTest) {
   DWORD size = GetCurrentDirectoryW(0, NULL);
-  unique_ptr<wchar_t[]> cwd_str(new wchar_t[size]);
+  scoped_array<wchar_t> cwd_str(new wchar_t[size]);
   EXPECT_GT(GetCurrentDirectoryW(size, cwd_str.get()), 0);
   wstring cwd = wstring(L"\\\\?\\") + cwd_str.get();
 
@@ -363,5 +369,5 @@ TEST_F(IoWin32Test, AsWindowsPathTest) {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // defined(_WIN32)
+#endif  // defined(_MSC_VER)
 

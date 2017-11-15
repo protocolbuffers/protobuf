@@ -64,9 +64,22 @@ namespace Google.Protobuf
         /// <returns>The newly parsed message.</returns>
         public IMessage ParseFrom(byte[] data)
         {
-            ProtoPreconditions.CheckNotNull(data, "data");
             IMessage message = factory();
             message.MergeFrom(data);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from a byte array slice.
+        /// </summary>
+        /// <param name="data">The byte array containing the message. Must not be null.</param>
+        /// <param name="offset">The offset of the slice to parse.</param>
+        /// <param name="length">The length of the slice to parse.</param>
+        /// <returns>The newly parsed message.</returns>
+        public IMessage ParseFrom(byte[] data, int offset, int length)
+        {
+            IMessage message = factory();
+            message.MergeFrom(data, offset, length);
             return message;
         }
 
@@ -77,7 +90,6 @@ namespace Google.Protobuf
         /// <returns>The parsed message.</returns>
         public IMessage ParseFrom(ByteString data)
         {
-            ProtoPreconditions.CheckNotNull(data, "data");
             IMessage message = factory();
             message.MergeFrom(data);
             return message;
@@ -191,9 +203,22 @@ namespace Google.Protobuf
         /// <returns>The newly parsed message.</returns>
         public new T ParseFrom(byte[] data)
         {
-            ProtoPreconditions.CheckNotNull(data, "data");
             T message = factory();
             message.MergeFrom(data);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from a byte array slice.
+        /// </summary>
+        /// <param name="data">The byte array containing the message. Must not be null.</param>
+        /// <param name="offset">The offset of the slice to parse.</param>
+        /// <param name="length">The length of the slice to parse.</param>
+        /// <returns>The newly parsed message.</returns>
+        public new T ParseFrom(byte[] data, int offset, int length)
+        {
+            T message = factory();
+            message.MergeFrom(data, offset, length);
             return message;
         }
 
@@ -204,7 +229,6 @@ namespace Google.Protobuf
         /// <returns>The parsed message.</returns>
         public new T ParseFrom(ByteString data)
         {
-            ProtoPreconditions.CheckNotNull(data, "data");
             T message = factory();
             message.MergeFrom(data);
             return message;

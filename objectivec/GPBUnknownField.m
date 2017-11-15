@@ -79,7 +79,7 @@
   result->mutableFixed32List_ = [mutableFixed32List_ copyWithZone:zone];
   result->mutableFixed64List_ = [mutableFixed64List_ copyWithZone:zone];
   result->mutableLengthDelimitedList_ =
-      [mutableLengthDelimitedList_ copyWithZone:zone];
+      [mutableLengthDelimitedList_ mutableCopyWithZone:zone];
   result->mutableVarintList_ = [mutableVarintList_ copyWithZone:zone];
   if (mutableGroupList_.count) {
     result->mutableGroupList_ = [[NSMutableArray allocWithZone:zone]
@@ -97,6 +97,7 @@
   if (self == object) return YES;
   if (![object isKindOfClass:[GPBUnknownField class]]) return NO;
   GPBUnknownField *field = (GPBUnknownField *)object;
+  if (number_ != field->number_) return NO;
   BOOL equalVarint =
       (mutableVarintList_.count == 0 && field->mutableVarintList_.count == 0) ||
       [mutableVarintList_ isEqual:field->mutableVarintList_];
@@ -202,8 +203,9 @@
 }
 
 - (NSString *)description {
-  NSMutableString *description = [NSMutableString
-      stringWithFormat:@"<%@ %p>: Field: %d {\n", [self class], self, number_];
+  NSMutableString *description =
+      [NSMutableString stringWithFormat:@"<%@ %p>: Field: %d {\n",
+       [self class], self, number_];
   [mutableVarintList_
       enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
 #pragma unused(idx, stop)

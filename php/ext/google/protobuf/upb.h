@@ -1,76 +1,5 @@
 // Amalgamated source file
 /*
-** Defs are upb's internal representation of the constructs that can appear
-** in a .proto file:
-**
-** - upb::MessageDef (upb_msgdef): describes a "message" construct.
-** - upb::FieldDef (upb_fielddef): describes a message field.
-** - upb::FileDef (upb_filedef): describes a .proto file and its defs.
-** - upb::EnumDef (upb_enumdef): describes an enum.
-** - upb::OneofDef (upb_oneofdef): describes a oneof.
-** - upb::Def (upb_def): base class of all the others.
-**
-** TODO: definitions of services.
-**
-** Like upb_refcounted objects, defs are mutable only until frozen, and are
-** only thread-safe once frozen.
-**
-** This is a mixed C/C++ interface that offers a full API to both languages.
-** See the top-level README for more information.
-*/
-
-#ifndef UPB_DEF_H_
-#define UPB_DEF_H_
-
-/*
-** upb::RefCounted (upb_refcounted)
-**
-** A refcounting scheme that supports circular refs.  It accomplishes this by
-** partitioning the set of objects into groups such that no cycle spans groups;
-** we can then reference-count the group as a whole and ignore refs within the
-** group.  When objects are mutable, these groups are computed very
-** conservatively; we group any objects that have ever had a link between them.
-** When objects are frozen, we compute strongly-connected components which
-** allows us to be precise and only group objects that are actually cyclic.
-**
-** This is a mixed C/C++ interface that offers a full API to both languages.
-** See the top-level README for more information.
-*/
-
-#ifndef UPB_REFCOUNTED_H_
-#define UPB_REFCOUNTED_H_
-
-/*
-** upb_table
-**
-** This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
-** This file defines very fast int->upb_value (inttable) and string->upb_value
-** (strtable) hash tables.
-**
-** The table uses chained scatter with Brent's variation (inspired by the Lua
-** implementation of hash tables).  The hash function for strings is Austin
-** Appleby's "MurmurHash."
-**
-** The inttable uses uintptr_t as its key, which guarantees it can be used to
-** store pointers or integers of at least 32 bits (upb isn't really useful on
-** systems where sizeof(void*) < 4).
-**
-** The table must be homogenous (all values of the same type).  In debug
-** mode, we check this on insert and lookup.
-*/
-
-#ifndef UPB_TABLE_H_
-#define UPB_TABLE_H_
-
-// php.h intentionally defined NDEBUG. We have to define this macro in order to
-// be used together with php.h
-#ifndef NDEBUG
-#define NDEBUG
-#endif
-
-#include <stdint.h>
-#include <string.h>
-/*
 ** This file contains shared definitions that are widely used across upb.
 **
 ** This is a mixed C/C++ interface that offers a full API to both languages.
@@ -79,6 +8,12 @@
 
 #ifndef UPB_H_
 #define UPB_H_
+
+// php.h intentionally defined NDEBUG. We have to define this macro in order to
+// be used together with php.h
+#ifndef NDEBUG
+#define NDEBUG
+#endif
 
 #include <assert.h>
 #include <stdarg.h>
@@ -105,6 +40,9 @@ template <int N> class InlinedEnvironment;
 #else
 #define UPB_INLINE static
 #endif
+
+/* Hints to the compiler about likely/unlikely branches. */
+#define UPB_LIKELY(x) __builtin_expect((x),1)
 
 /* Define UPB_BIG_ENDIAN manually if you're on big endian and your compiler
  * doesn't provide these preprocessor symbols. */
@@ -366,6 +304,16 @@ class PointerBase2 : public PointerBase<T, Base> {
 }
 
 #endif
+
+/* A list of types as they are encoded on-the-wire. */
+typedef enum {
+  UPB_WIRE_TYPE_VARINT      = 0,
+  UPB_WIRE_TYPE_64BIT       = 1,
+  UPB_WIRE_TYPE_DELIMITED   = 2,
+  UPB_WIRE_TYPE_START_GROUP = 3,
+  UPB_WIRE_TYPE_END_GROUP   = 4,
+  UPB_WIRE_TYPE_32BIT       = 5
+} upb_wiretype_t;
 
 
 /* upb::ErrorSpace ************************************************************/
@@ -695,7 +643,7 @@ void upb_env_uninit(upb_env *e);
 
 void upb_env_initonly(upb_env *e);
 
-upb_arena *upb_env_arena(upb_env *e);
+UPB_INLINE upb_arena *upb_env_arena(upb_env *e) { return (upb_arena*)e; }
 bool upb_env_ok(const upb_env *e);
 void upb_env_seterrorfunc(upb_env *e, upb_error_func *func, void *ud);
 
@@ -795,6 +743,106 @@ template <int N> class upb::InlinedEnvironment : public upb::Environment {
 
 
 #endif  /* UPB_H_ */
+/*
+** upb_decode: parsing into a upb_msg using a upb_msglayout.
+*/
+
+#ifndef UPB_DECODE_H_
+#define UPB_DECODE_H_
+
+/*
+** upb::Message is a representation for protobuf messages.
+**
+** However it differs from other common representations like
+** google::protobuf::Message in one key way: it does not prescribe any
+** ownership between messages and submessages, and it relies on the
+** client to delete each message/submessage/array/map at the appropriate
+** time.
+**
+** A client can access a upb::Message without knowing anything about
+** ownership semantics, but to create or mutate a message a user needs
+** to implement the memory management themselves.
+**
+** Currently all messages, arrays, and maps store a upb_alloc* internally.
+** Mutating operations use this when they require dynamically-allocated
+** memory.  We could potentially eliminate this size overhead later by
+** letting the user flip a bit on the factory that prevents this from
+** being stored.  The user would then need to use separate functions where
+** the upb_alloc* is passed explicitly.  However for handlers to populate
+** such structures, they would need a place to store this upb_alloc* during
+** parsing; upb_handlers don't currently have a good way to accommodate this.
+**
+** TODO: UTF-8 checking?
+**/
+
+#ifndef UPB_MSG_H_
+#define UPB_MSG_H_
+
+/*
+** Defs are upb's internal representation of the constructs that can appear
+** in a .proto file:
+**
+** - upb::MessageDef (upb_msgdef): describes a "message" construct.
+** - upb::FieldDef (upb_fielddef): describes a message field.
+** - upb::FileDef (upb_filedef): describes a .proto file and its defs.
+** - upb::EnumDef (upb_enumdef): describes an enum.
+** - upb::OneofDef (upb_oneofdef): describes a oneof.
+** - upb::Def (upb_def): base class of all the others.
+**
+** TODO: definitions of services.
+**
+** Like upb_refcounted objects, defs are mutable only until frozen, and are
+** only thread-safe once frozen.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
+
+#ifndef UPB_DEF_H_
+#define UPB_DEF_H_
+
+/*
+** upb::RefCounted (upb_refcounted)
+**
+** A refcounting scheme that supports circular refs.  It accomplishes this by
+** partitioning the set of objects into groups such that no cycle spans groups;
+** we can then reference-count the group as a whole and ignore refs within the
+** group.  When objects are mutable, these groups are computed very
+** conservatively; we group any objects that have ever had a link between them.
+** When objects are frozen, we compute strongly-connected components which
+** allows us to be precise and only group objects that are actually cyclic.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
+
+#ifndef UPB_REFCOUNTED_H_
+#define UPB_REFCOUNTED_H_
+
+/*
+** upb_table
+**
+** This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
+** This file defines very fast int->upb_value (inttable) and string->upb_value
+** (strtable) hash tables.
+**
+** The table uses chained scatter with Brent's variation (inspired by the Lua
+** implementation of hash tables).  The hash function for strings is Austin
+** Appleby's "MurmurHash."
+**
+** The inttable uses uintptr_t as its key, which guarantees it can be used to
+** store pointers or integers of at least 32 bits (upb isn't really useful on
+** systems where sizeof(void*) < 4).
+**
+** The table must be homogenous (all values of the same type).  In debug
+** mode, we check this on insert and lookup.
+*/
+
+#ifndef UPB_TABLE_H_
+#define UPB_TABLE_H_
+
+#include <stdint.h>
+#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -3857,196 +3905,6 @@ inline bool FileDef::AddDependency(const FileDef* file) {
 
 #endif /* UPB_DEF_H_ */
 /*
-** This file contains definitions of structs that should be considered private
-** and NOT stable across versions of upb.
-**
-** The only reason they are declared here and not in .c files is to allow upb
-** and the application (if desired) to embed statically-initialized instances
-** of structures like defs.
-**
-** If you include this file, all guarantees of ABI compatibility go out the
-** window!  Any code that includes this file needs to recompile against the
-** exact same version of upb that they are linking against.
-**
-** You also need to recompile if you change the value of the UPB_DEBUG_REFS
-** flag.
-*/
-
-
-#ifndef UPB_STATICINIT_H_
-#define UPB_STATICINIT_H_
-
-#ifdef __cplusplus
-/* Because of how we do our typedefs, this header can't be included from C++. */
-#error This file cannot be included from C++
-#endif
-
-/* upb_refcounted *************************************************************/
-
-
-/* upb_def ********************************************************************/
-
-struct upb_def {
-  upb_refcounted base;
-
-  const char *fullname;
-  const upb_filedef* file;
-  char type;  /* A upb_deftype_t (char to save space) */
-
-  /* Used as a flag during the def's mutable stage.  Must be false unless
-   * it is currently being used by a function on the stack.  This allows
-   * us to easily determine which defs were passed into the function's
-   * current invocation. */
-  bool came_from_user;
-};
-
-#define UPB_DEF_INIT(name, type, vtbl, refs, ref2s) \
-    { UPB_REFCOUNT_INIT(vtbl, refs, ref2s), name, NULL, type, false }
-
-
-/* upb_fielddef ***************************************************************/
-
-struct upb_fielddef {
-  upb_def base;
-
-  union {
-    int64_t sint;
-    uint64_t uint;
-    double dbl;
-    float flt;
-    void *bytes;
-  } defaultval;
-  union {
-    const upb_msgdef *def;  /* If !msg_is_symbolic. */
-    char *name;             /* If msg_is_symbolic. */
-  } msg;
-  union {
-    const upb_def *def;  /* If !subdef_is_symbolic. */
-    char *name;          /* If subdef_is_symbolic. */
-  } sub;  /* The msgdef or enumdef for this field, if upb_hassubdef(f). */
-  bool subdef_is_symbolic;
-  bool msg_is_symbolic;
-  const upb_oneofdef *oneof;
-  bool default_is_string;
-  bool type_is_set_;     /* False until type is explicitly set. */
-  bool is_extension_;
-  bool lazy_;
-  bool packed_;
-  upb_intfmt_t intfmt;
-  bool tagdelim;
-  upb_fieldtype_t type_;
-  upb_label_t label_;
-  uint32_t number_;
-  uint32_t selector_base;  /* Used to index into a upb::Handlers table. */
-  uint32_t index_;
-};
-
-extern const struct upb_refcounted_vtbl upb_fielddef_vtbl;
-
-#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
-                          packed, name, num, msgdef, subdef, selector_base,    \
-                          index, defaultval, refs, ref2s)                      \
-  {                                                                            \
-    UPB_DEF_INIT(name, UPB_DEF_FIELD, &upb_fielddef_vtbl, refs, ref2s),        \
-        defaultval, {msgdef}, {subdef}, NULL, false, false,                    \
-        type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
-        lazy, packed, intfmt, tagdelim, type, label, num, selector_base, index \
-  }
-
-
-/* upb_msgdef *****************************************************************/
-
-struct upb_msgdef {
-  upb_def base;
-
-  size_t selector_count;
-  uint32_t submsg_field_count;
-
-  /* Tables for looking up fields by number and name. */
-  upb_inttable itof;  /* int to field */
-  upb_strtable ntof;  /* name to field/oneof */
-
-  /* Is this a map-entry message? */
-  bool map_entry;
-
-  /* Whether this message has proto2 or proto3 semantics. */
-  upb_syntax_t syntax;
-
-  /* TODO(haberman): proper extension ranges (there can be multiple). */
-};
-
-extern const struct upb_refcounted_vtbl upb_msgdef_vtbl;
-
-/* TODO: also support static initialization of the oneofs table. This will be
- * needed if we compile in descriptors that contain oneofs. */
-#define UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof, \
-                        map_entry, syntax, refs, ref2s)                       \
-  {                                                                           \
-    UPB_DEF_INIT(name, UPB_DEF_MSG, &upb_fielddef_vtbl, refs, ref2s),         \
-        selector_count, submsg_field_count, itof, ntof, map_entry, syntax     \
-  }
-
-
-/* upb_enumdef ****************************************************************/
-
-struct upb_enumdef {
-  upb_def base;
-
-  upb_strtable ntoi;
-  upb_inttable iton;
-  int32_t defaultval;
-};
-
-extern const struct upb_refcounted_vtbl upb_enumdef_vtbl;
-
-#define UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval, refs, ref2s) \
-  { UPB_DEF_INIT(name, UPB_DEF_ENUM, &upb_enumdef_vtbl, refs, ref2s), ntoi,    \
-    iton, defaultval }
-
-
-/* upb_oneofdef ***************************************************************/
-
-struct upb_oneofdef {
-  upb_refcounted base;
-
-  uint32_t index;  /* Index within oneofs. */
-  const char *name;
-  upb_strtable ntof;
-  upb_inttable itof;
-  const upb_msgdef *parent;
-};
-
-extern const struct upb_refcounted_vtbl upb_oneofdef_vtbl;
-
-#define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
-  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), 0, name, ntof, itof }
-
-
-/* upb_symtab *****************************************************************/
-
-struct upb_symtab {
-  upb_refcounted base;
-
-  upb_strtable symtab;
-};
-
-struct upb_filedef {
-  upb_refcounted base;
-
-  const char *name;
-  const char *package;
-  const char *phpprefix;
-  const char *phpnamespace;
-  upb_syntax_t syntax;
-
-  upb_inttable defs;
-  upb_inttable deps;
-};
-
-extern const struct upb_refcounted_vtbl upb_filedef_vtbl;
-
-#endif  /* UPB_STATICINIT_H_ */
-/*
 ** upb::Handlers (upb_handlers)
 **
 ** A upb_handlers is like a virtual table for a upb_msgdef.  Each field of the
@@ -4150,7 +4008,8 @@ UPB_END_EXTERN_C
 /* Static selectors for upb::Handlers. */
 #define UPB_STARTMSG_SELECTOR 0
 #define UPB_ENDMSG_SELECTOR 1
-#define UPB_STATIC_SELECTOR_COUNT 2
+#define UPB_UNKNOWN_SELECTOR 2
+#define UPB_STATIC_SELECTOR_COUNT 3
 
 /* Static selectors for upb::BytesHandler. */
 #define UPB_STARTSTR_SELECTOR 0
@@ -4679,6 +4538,8 @@ UPB_BEGIN_EXTERN_C
 /* Native C API. */
 
 /* Handler function typedefs. */
+typedef bool upb_unknown_handlerfunc(void *c, const void *hd, const char *buf,
+                                     size_t n);
 typedef bool upb_startmsg_handlerfunc(void *c, const void*);
 typedef bool upb_endmsg_handlerfunc(void *c, const void *, upb_status *status);
 typedef void* upb_startfield_handlerfunc(void *c, const void *hd);
@@ -4732,6 +4593,8 @@ const upb_status *upb_handlers_status(upb_handlers *h);
 void upb_handlers_clearerr(upb_handlers *h);
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h);
 bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *hfree);
+bool upb_handlers_setunknown(upb_handlers *h, upb_unknown_handlerfunc *func,
+                             upb_handlerattr *attr);
 
 bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
                               upb_handlerattr *attr);
@@ -6301,6 +6164,18 @@ UPB_INLINE size_t upb_sink_putstring(upb_sink *s, upb_selector_t sel,
   return handler(s->closure, hd, buf, n, handle);
 }
 
+UPB_INLINE bool upb_sink_putunknown(upb_sink *s, const char *buf, size_t n) {
+  typedef upb_unknown_handlerfunc func;
+  func *handler;
+  const void *hd;
+  if (!s->handlers) return true;
+  handler = (func *)upb_handlers_gethandler(s->handlers, UPB_UNKNOWN_SELECTOR);
+
+  if (!handler) return n;
+  hd = upb_handlers_gethandlerdata(s->handlers, UPB_UNKNOWN_SELECTOR);
+  return handler(s->closure, hd, buf, n);
+}
+
 UPB_INLINE bool upb_sink_startmsg(upb_sink *s) {
   typedef upb_startmsg_handlerfunc func;
   func *startmsg;
@@ -6505,34 +6380,6 @@ inline bool BufferSource::PutBuffer(const char *buf, size_t len,
 #endif
 
 #endif
-/*
-** upb::Message is a representation for protobuf messages.
-**
-** However it differs from other common representations like
-** google::protobuf::Message in one key way: it does not prescribe any
-** ownership between messages and submessages, and it relies on the
-** client to delete each message/submessage/array/map at the appropriate
-** time.
-**
-** A client can access a upb::Message without knowing anything about
-** ownership semantics, but to create or mutate a message a user needs
-** to implement the memory management themselves.
-**
-** Currently all messages, arrays, and maps store a upb_alloc* internally.
-** Mutating operations use this when they require dynamically-allocated
-** memory.  We could potentially eliminate this size overhead later by
-** letting the user flip a bit on the factory that prevents this from
-** being stored.  The user would then need to use separate functions where
-** the upb_alloc* is passed explicitly.  However for handlers to populate
-** such structures, they would need a place to store this upb_alloc* during
-** parsing; upb_handlers don't currently have a good way to accommodate this.
-**
-** TODO: UTF-8 checking?
-**/
-
-#ifndef UPB_MSG_H_
-#define UPB_MSG_H_
-
 
 #ifdef __cplusplus
 
@@ -6568,21 +6415,6 @@ typedef void upb_msg;
 /* upb_msglayout represents the memory layout of a given upb_msgdef.  You get
  * instances of this from a upb_msgfactory, and the factory always owns the
  * msglayout. */
-
-/* Gets the factory for this layout */
-upb_msgfactory *upb_msglayout_factory(const upb_msglayout *l);
-
-/* Get the msglayout for a submessage.  This requires that this field is a
- * submessage, ie. upb_fielddef_issubmsg(upb_msglayout_msgdef(l)) == true.
- *
- * Since map entry messages don't have layouts, if upb_fielddef_ismap(f) == true
- * then this function will return the layout for the map's value.  It requires
- * that the value type of the map field is a submessage. */
-const upb_msglayout *upb_msglayout_sublayout(const upb_msglayout *l,
-                                             const upb_fielddef *f);
-
-/* Returns the msgdef for this msglayout. */
-const upb_msgdef *upb_msglayout_msgdef(const upb_msglayout *l);
 
 
 /** upb_visitor ***************************************************************/
@@ -6629,6 +6461,23 @@ const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
                                                      const upb_handlers *h);
 
 
+/** upb_stringview ************************************************************/
+
+typedef struct {
+  const char *data;
+  size_t size;
+} upb_stringview;
+
+UPB_INLINE upb_stringview upb_stringview_make(const char *data, size_t size) {
+  upb_stringview ret;
+  ret.data = data;
+  ret.size = size;
+  return ret;
+}
+
+#define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
+
+
 /** upb_msgval ****************************************************************/
 
 /* A union representing all possible protobuf values.  Used for generic get/set
@@ -6646,10 +6495,7 @@ typedef union {
   const upb_msg* msg;
   const upb_array* arr;
   const void* ptr;
-  struct {
-    const char *ptr;
-    size_t len;
-  } str;
+  upb_stringview str;
 } upb_msgval;
 
 #define ACCESSORS(name, membername, ctype) \
@@ -6676,22 +6522,12 @@ ACCESSORS(map,    map, const upb_map*)
 ACCESSORS(msg,    msg, const upb_msg*)
 ACCESSORS(ptr,    ptr, const void*)
 ACCESSORS(arr,    arr, const upb_array*)
+ACCESSORS(str,    str, upb_stringview)
 
 #undef ACCESSORS
 
-UPB_INLINE upb_msgval upb_msgval_str(const char *ptr, size_t len) {
-  upb_msgval ret;
-  ret.str.ptr = ptr;
-  ret.str.len = len;
-  return ret;
-}
-
-UPB_INLINE const char* upb_msgval_getstr(upb_msgval val) {
-  return val.str.ptr;
-}
-
-UPB_INLINE size_t upb_msgval_getstrlen(upb_msgval val) {
-  return val.str.len;
+UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
+  return upb_msgval_str(upb_stringview_make(data, size));
 }
 
 
@@ -6716,19 +6552,29 @@ size_t upb_msg_sizeof(const upb_msglayout *l);
  * upb_msg_uninit() must be called to release internally-allocated memory
  * unless the allocator is an arena that does not require freeing.
  *
+ * Please note that upb_msg_init() may return a value that is different than
+ * |msg|, so you must assign the return value and not cast your memory block
+ * to upb_msg* directly!
+ *
  * Please note that upb_msg_uninit() does *not* free any submessages, maps,
  * or arrays referred to by this message's fields.  You must free them manually
- * yourself. */
-void upb_msg_init(upb_msg *msg, const upb_msglayout *l, upb_alloc *a);
-void upb_msg_uninit(upb_msg *msg, const upb_msglayout *l);
+ * yourself.
+ *
+ * upb_msg_uninit returns the original memory block, which may be useful if
+ * you dynamically allocated it (though upb_msg_new() would normally be more
+ * appropriate in this case). */
+upb_msg *upb_msg_init(void *msg, const upb_msglayout *l, upb_alloc *a);
+void *upb_msg_uninit(upb_msg *msg, const upb_msglayout *l);
 
 /* Like upb_msg_init() / upb_msg_uninit(), except the message's memory is
  * allocated / freed from the given upb_alloc. */
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_alloc *a);
 void upb_msg_free(upb_msg *msg, const upb_msglayout *l);
 
-/* Returns the upb_alloc for the given message. */
-upb_alloc *upb_msg_alloc(const upb_msg *msg, const upb_msglayout *l);
+/* Returns the upb_alloc for the given message.
+ * TODO(haberman): get rid of this?  Not sure we want to be storing this
+ * for every message. */
+upb_alloc *upb_msg_alloc(const upb_msg *msg);
 
 /* Packs the tree of messages rooted at "msg" into a single hunk of memory,
  * allocated from the given allocator. */
@@ -6748,24 +6594,13 @@ void *upb_msg_pack(const upb_msg *msg, const upb_msglayout *l,
  * arenas).
  */
 upb_msgval upb_msg_get(const upb_msg *msg,
-                       const upb_fielddef *f,
+                       int field_index,
                        const upb_msglayout *l);
 
 /* May only be called for fields where upb_fielddef_haspresence(f) == true. */
 bool upb_msg_has(const upb_msg *msg,
-                 const upb_fielddef *f,
+                 int field_index,
                  const upb_msglayout *l);
-
-/* Returns NULL if no field in the oneof is set. */
-const upb_fielddef *upb_msg_getoneofcase(const upb_msg *msg,
-                                         const upb_oneofdef *o,
-                                         const upb_msglayout *l);
-
-/* Returns true if any field in the oneof is set. */
-bool upb_msg_hasoneof(const upb_msg *msg,
-                      const upb_oneofdef *o,
-                      const upb_msglayout *l);
-
 
 /* Mutable message API.  May only be called by the owner of the message who
  * knows its ownership scheme and how to keep it consistent. */
@@ -6774,8 +6609,8 @@ bool upb_msg_hasoneof(const upb_msg *msg,
  * management: if you overwrite a pointer to a msg/array/map/string without
  * cleaning it up (or using an arena) it will leak.
  */
-bool upb_msg_set(upb_msg *msg,
-                 const upb_fielddef *f,
+void upb_msg_set(upb_msg *msg,
+                 int field_index,
                  upb_msgval val,
                  const upb_msglayout *l);
 
@@ -6786,12 +6621,7 @@ bool upb_msg_set(upb_msg *msg,
  * arrays/maps/strings/msgs that this field may have pointed to.
  */
 bool upb_msg_clearfield(upb_msg *msg,
-                        const upb_fielddef *f,
-                        const upb_msglayout *l);
-
-/* Clears all fields in the oneof such that none of them are set. */
-bool upb_msg_clearoneof(upb_msg *msg,
-                        const upb_oneofdef *o,
+                        int field_index,
                         const upb_msglayout *l);
 
 /* TODO(haberman): copyfrom()/mergefrom()? */
@@ -6904,9 +6734,288 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
                                   size_t *offset,
                                   int32_t *hasbit);
 
+
+/** Interfaces for generated code *********************************************/
+
+#define UPB_NOT_IN_ONEOF UINT16_MAX
+#define UPB_NO_HASBIT UINT16_MAX
+#define UPB_NO_SUBMSG UINT16_MAX
+
+typedef struct {
+  uint32_t number;
+  uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
+  uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
+  uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
+  uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
+  uint8_t type;
+  uint8_t label;
+} upb_msglayout_fieldinit_v1;
+
+typedef struct {
+  uint32_t data_offset;
+  uint32_t case_offset;
+} upb_msglayout_oneofinit_v1;
+
+typedef struct upb_msglayout_msginit_v1 {
+  const struct upb_msglayout_msginit_v1 *const* submsgs;
+  const upb_msglayout_fieldinit_v1 *fields;
+  const upb_msglayout_oneofinit_v1 *oneofs;
+  void *default_msg;
+  /* Must be aligned to sizeof(void*).  Doesn't include internal members like
+   * unknown fields, extension dict, pointer to msglayout, etc. */
+  uint32_t size;
+  uint16_t field_count;
+  uint16_t oneof_count;
+  bool extendable;
+  bool is_proto2;
+} upb_msglayout_msginit_v1;
+
+#define UPB_ALIGN_UP_TO(val, align) ((val + (align - 1)) & -align)
+#define UPB_ALIGNED_SIZEOF(type) UPB_ALIGN_UP_TO(sizeof(type), sizeof(void*))
+
+/* Initialize/uninitialize a msglayout from a msginit.  If upb uses v1
+ * internally, this will not allocate any memory.  Should only be used by
+ * generated code. */
+upb_msglayout *upb_msglayout_frominit_v1(
+    const upb_msglayout_msginit_v1 *init, upb_alloc *a);
+void upb_msglayout_uninit_v1(upb_msglayout *layout, upb_alloc *a);
+
 UPB_END_EXTERN_C
 
 #endif /* UPB_MSG_H_ */
+
+UPB_BEGIN_EXTERN_C
+
+bool upb_decode(upb_stringview buf, void *msg,
+                const upb_msglayout_msginit_v1 *l, upb_env *env);
+
+UPB_END_EXTERN_C
+
+#endif  /* UPB_DECODE_H_ */
+/*
+** structs.int.h: structures definitions that are internal to upb.
+*/
+
+#ifndef UPB_STRUCTS_H_
+#define UPB_STRUCTS_H_
+
+struct upb_array {
+  upb_fieldtype_t type;
+  uint8_t element_size;
+  void *data;   /* Each element is element_size. */
+  size_t len;   /* Measured in elements. */
+  size_t size;  /* Measured in elements. */
+  upb_alloc *alloc;
+};
+
+#endif  /* UPB_STRUCTS_H_ */
+
+/*
+** This file contains definitions of structs that should be considered private
+** and NOT stable across versions of upb.
+**
+** The only reason they are declared here and not in .c files is to allow upb
+** and the application (if desired) to embed statically-initialized instances
+** of structures like defs.
+**
+** If you include this file, all guarantees of ABI compatibility go out the
+** window!  Any code that includes this file needs to recompile against the
+** exact same version of upb that they are linking against.
+**
+** You also need to recompile if you change the value of the UPB_DEBUG_REFS
+** flag.
+*/
+
+
+#ifndef UPB_STATICINIT_H_
+#define UPB_STATICINIT_H_
+
+#ifdef __cplusplus
+/* Because of how we do our typedefs, this header can't be included from C++. */
+#error This file cannot be included from C++
+#endif
+
+/* upb_refcounted *************************************************************/
+
+
+/* upb_def ********************************************************************/
+
+struct upb_def {
+  upb_refcounted base;
+
+  const char *fullname;
+  const upb_filedef* file;
+  char type;  /* A upb_deftype_t (char to save space) */
+
+  /* Used as a flag during the def's mutable stage.  Must be false unless
+   * it is currently being used by a function on the stack.  This allows
+   * us to easily determine which defs were passed into the function's
+   * current invocation. */
+  bool came_from_user;
+};
+
+#define UPB_DEF_INIT(name, type, vtbl, refs, ref2s) \
+    { UPB_REFCOUNT_INIT(vtbl, refs, ref2s), name, NULL, type, false }
+
+
+/* upb_fielddef ***************************************************************/
+
+struct upb_fielddef {
+  upb_def base;
+
+  union {
+    int64_t sint;
+    uint64_t uint;
+    double dbl;
+    float flt;
+    void *bytes;
+  } defaultval;
+  union {
+    const upb_msgdef *def;  /* If !msg_is_symbolic. */
+    char *name;             /* If msg_is_symbolic. */
+  } msg;
+  union {
+    const upb_def *def;  /* If !subdef_is_symbolic. */
+    char *name;          /* If subdef_is_symbolic. */
+  } sub;  /* The msgdef or enumdef for this field, if upb_hassubdef(f). */
+  bool subdef_is_symbolic;
+  bool msg_is_symbolic;
+  const upb_oneofdef *oneof;
+  bool default_is_string;
+  bool type_is_set_;     /* False until type is explicitly set. */
+  bool is_extension_;
+  bool lazy_;
+  bool packed_;
+  upb_intfmt_t intfmt;
+  bool tagdelim;
+  upb_fieldtype_t type_;
+  upb_label_t label_;
+  uint32_t number_;
+  uint32_t selector_base;  /* Used to index into a upb::Handlers table. */
+  uint32_t index_;
+};
+
+extern const struct upb_refcounted_vtbl upb_fielddef_vtbl;
+
+#define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
+                          packed, name, num, msgdef, subdef, selector_base,    \
+                          index, defaultval, refs, ref2s)                      \
+  {                                                                            \
+    UPB_DEF_INIT(name, UPB_DEF_FIELD, &upb_fielddef_vtbl, refs, ref2s),        \
+        defaultval, {msgdef}, {subdef}, NULL, false, false,                    \
+        type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
+        lazy, packed, intfmt, tagdelim, type, label, num, selector_base, index \
+  }
+
+
+/* upb_msgdef *****************************************************************/
+
+struct upb_msgdef {
+  upb_def base;
+
+  size_t selector_count;
+  uint32_t submsg_field_count;
+
+  /* Tables for looking up fields by number and name. */
+  upb_inttable itof;  /* int to field */
+  upb_strtable ntof;  /* name to field/oneof */
+
+  /* Is this a map-entry message? */
+  bool map_entry;
+
+  /* Whether this message has proto2 or proto3 semantics. */
+  upb_syntax_t syntax;
+
+  /* TODO(haberman): proper extension ranges (there can be multiple). */
+};
+
+extern const struct upb_refcounted_vtbl upb_msgdef_vtbl;
+
+/* TODO: also support static initialization of the oneofs table. This will be
+ * needed if we compile in descriptors that contain oneofs. */
+#define UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof, \
+                        map_entry, syntax, refs, ref2s)                       \
+  {                                                                           \
+    UPB_DEF_INIT(name, UPB_DEF_MSG, &upb_fielddef_vtbl, refs, ref2s),         \
+        selector_count, submsg_field_count, itof, ntof, map_entry, syntax     \
+  }
+
+
+/* upb_enumdef ****************************************************************/
+
+struct upb_enumdef {
+  upb_def base;
+
+  upb_strtable ntoi;
+  upb_inttable iton;
+  int32_t defaultval;
+};
+
+extern const struct upb_refcounted_vtbl upb_enumdef_vtbl;
+
+#define UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval, refs, ref2s) \
+  { UPB_DEF_INIT(name, UPB_DEF_ENUM, &upb_enumdef_vtbl, refs, ref2s), ntoi,    \
+    iton, defaultval }
+
+
+/* upb_oneofdef ***************************************************************/
+
+struct upb_oneofdef {
+  upb_refcounted base;
+
+  uint32_t index;  /* Index within oneofs. */
+  const char *name;
+  upb_strtable ntof;
+  upb_inttable itof;
+  const upb_msgdef *parent;
+};
+
+extern const struct upb_refcounted_vtbl upb_oneofdef_vtbl;
+
+#define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
+  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), 0, name, ntof, itof }
+
+
+/* upb_symtab *****************************************************************/
+
+struct upb_symtab {
+  upb_refcounted base;
+
+  upb_strtable symtab;
+};
+
+struct upb_filedef {
+  upb_refcounted base;
+
+  const char *name;
+  const char *package;
+  const char *phpprefix;
+  const char *phpnamespace;
+  upb_syntax_t syntax;
+
+  upb_inttable defs;
+  upb_inttable deps;
+};
+
+extern const struct upb_refcounted_vtbl upb_filedef_vtbl;
+
+#endif  /* UPB_STATICINIT_H_ */
+/*
+** upb_encode: parsing into a upb_msg using a upb_msglayout.
+*/
+
+#ifndef UPB_ENCODE_H_
+#define UPB_ENCODE_H_
+
+
+UPB_BEGIN_EXTERN_C
+
+char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *l,
+                 upb_env *env, size_t *size);
+
+UPB_END_EXTERN_C
+
+#endif  /* UPB_ENCODE_H_ */
 /*
 ** upb::descriptor::Reader (upb_descreader)
 **
@@ -8296,21 +8405,9 @@ UPB_INLINE void upb_pbdecoder_unpackdispatch(uint64_t dispatch, uint64_t *ofs,
 extern "C" {
 #endif
 
-/* A list of types as they are encoded on-the-wire. */
-typedef enum {
-  UPB_WIRE_TYPE_VARINT      = 0,
-  UPB_WIRE_TYPE_64BIT       = 1,
-  UPB_WIRE_TYPE_DELIMITED   = 2,
-  UPB_WIRE_TYPE_START_GROUP = 3,
-  UPB_WIRE_TYPE_END_GROUP   = 4,
-  UPB_WIRE_TYPE_32BIT       = 5
-} upb_wiretype_t;
-
 #define UPB_MAX_WIRE_TYPE 5
 
-/* The maximum number of bytes that it takes to encode a 64-bit varint.
- * Note that with a better encoding this could be 9 (TODO: write up a
- * wiki document about this). */
+/* The maximum number of bytes that it takes to encode a 64-bit varint. */
 #define UPB_PB_VARINT_MAX_LEN 10
 
 /* Array of the "native" (ie. non-packed-repeated) wire type for the given a

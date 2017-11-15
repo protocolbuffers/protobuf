@@ -451,9 +451,7 @@ public final class Internal {
     return Class.forName(className, true, classLoader);
   }
 
-  /**
-   * An empty byte array constant used in generated code.
-   */
+  /** An empty byte array constant used in generated code. */
   public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /**

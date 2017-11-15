@@ -99,6 +99,7 @@ class FieldOptions;
 class OneofOptions;
 class EnumOptions;
 class EnumValueOptions;
+class ExtensionRangeOptions;
 class ServiceOptions;
 class MethodOptions;
 class FileOptions;
@@ -337,8 +338,12 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // A range of field numbers which are designated for third-party
   // extensions.
   struct ExtensionRange {
+    typedef ExtensionRangeOptions OptionsType;
+
     int start;  // inclusive
     int end;    // exclusive
+
+    const ExtensionRangeOptions* options_;
   };
 
   // The number of extension ranges in this message type.
@@ -440,27 +445,30 @@ class LIBPROTOBUF_EXPORT Descriptor {
   const Descriptor* containing_type_;
   const MessageOptions* options_;
 
+  // These arrays are separated from their sizes to minimize padding on 64-bit.
+  FieldDescriptor* fields_;
+  OneofDescriptor* oneof_decls_;
+  Descriptor* nested_types_;
+  EnumDescriptor* enum_types_;
+  ExtensionRange* extension_ranges_;
+  FieldDescriptor* extensions_;
+  ReservedRange* reserved_ranges_;
+  const string** reserved_names_;
+
+  int field_count_;
+  int oneof_decl_count_;
+  int nested_type_count_;
+  int enum_type_count_;
+  int extension_range_count_;
+  int extension_count_;
+  int reserved_range_count_;
+  int reserved_name_count_;
+
   // True if this is a placeholder for an unknown type.
   bool is_placeholder_;
   // True if this is a placeholder and the type name wasn't fully-qualified.
   bool is_unqualified_placeholder_;
 
-  int field_count_;
-  FieldDescriptor* fields_;
-  int oneof_decl_count_;
-  OneofDescriptor* oneof_decls_;
-  int nested_type_count_;
-  Descriptor* nested_types_;
-  int enum_type_count_;
-  EnumDescriptor* enum_types_;
-  int extension_range_count_;
-  ExtensionRange* extension_ranges_;
-  int extension_count_;
-  FieldDescriptor* extensions_;
-  int reserved_range_count_;
-  ReservedRange* reserved_ranges_;
-  int reserved_name_count_;
-  const string** reserved_names_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<Descriptor>() and AllocateArray<Descriptor>() in descriptor.cc
   // and update them to initialize the field.
@@ -476,6 +484,7 @@ class LIBPROTOBUF_EXPORT Descriptor {
   friend class FileDescriptor;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Descriptor);
 };
+
 
 // Describes a single field of a message.  To get the descriptor for a given
 // field, first get the Descriptor for the message in which it is defined,
@@ -732,24 +741,28 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
+  // Returns true if this is a map message type.
+  bool is_map_message_type() const;
+
   const string* name_;
   const string* full_name_;
   const string* lowercase_name_;
   const string* camelcase_name_;
-  // Whether the user has specified the json_name field option in the .proto
-  // file.
-  bool has_json_name_;
   // If has_json_name_ is true, it's the value specified by the user.
   // Otherwise, it has the same value as camelcase_name_.
   const string* json_name_;
   const FileDescriptor* file_;
-  int number_;
   GoogleOnceDynamic* type_once_;
   static void TypeOnceInit(const FieldDescriptor* to_init);
   void InternalTypeOnceInit() const;
   mutable Type type_;
   Label label_;
+  bool has_default_value_;
+  // Whether the user has specified the json_name field option in the .proto
+  // file.
+  bool has_json_name_;
   bool is_extension_;
+  int number_;
   int index_in_oneof_;
   const Descriptor* containing_type_;
   const OneofDescriptor* containing_oneof_;
@@ -763,7 +776,6 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   // of Allocate<FieldDescriptor>() and AllocateArray<FieldDescriptor>() in
   // descriptor.cc and update them to initialize the field.
 
-  bool has_default_value_;
   union {
     int32  default_value_int32_;
     int64  default_value_int64_;
@@ -794,6 +806,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldDescriptor);
 };
 
+
 // Describes a oneof defined in a message type.
 class LIBPROTOBUF_EXPORT OneofDescriptor {
  public:
@@ -803,6 +816,8 @@ class LIBPROTOBUF_EXPORT OneofDescriptor {
   // Index of this oneof within the message's oneof array.
   int index() const;
 
+  // The .proto file in which this oneof was defined.  Never NULL.
+  const FileDescriptor* file() const;
   // The Descriptor for the message containing this oneof.
   const Descriptor* containing_type() const;
 
@@ -912,11 +927,41 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
   // See Descriptor::DebugStringWithOptions().
   string DebugStringWithOptions(const DebugStringOptions& options) const;
 
-
   // Returns true if this is a placeholder for an unknown enum. This will
   // only be the case if this descriptor comes from a DescriptorPool
   // with AllowUnknownDependencies() set.
   bool is_placeholder() const;
+
+  // Reserved fields -------------------------------------------------
+
+  // A range of reserved field numbers.
+  struct ReservedRange {
+    int start;  // inclusive
+    int end;    // inclusive
+  };
+
+  // The number of reserved ranges in this message type.
+  int reserved_range_count() const;
+  // Gets an reserved range by index, where 0 <= index <
+  // reserved_range_count(). These are returned in the order they were defined
+  // in the .proto file.
+  const EnumDescriptor::ReservedRange* reserved_range(int index) const;
+
+  // Returns true if the number is in one of the reserved ranges.
+  bool IsReservedNumber(int number) const;
+
+  // Returns NULL if no reserved range contains the given number.
+  const EnumDescriptor::ReservedRange*
+      FindReservedRangeContainingNumber(int number) const;
+
+  // The number of reserved field names in this message type.
+  int reserved_name_count() const;
+
+  // Gets a reserved name by index, where 0 <= index < reserved_name_count().
+  const string& reserved_name(int index) const;
+
+  // Returns true if the field name is reserved.
+  bool IsReservedName(const string& name) const;
 
   // Source Location ---------------------------------------------------
 
@@ -964,6 +1009,12 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
 
   int value_count_;
   EnumValueDescriptor* values_;
+
+  int reserved_range_count_;
+  int reserved_name_count_;
+  EnumDescriptor::ReservedRange* reserved_ranges_;
+  const string** reserved_names_;
+
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<EnumDescriptor>() and AllocateArray<EnumDescriptor>() in
   // descriptor.cc and update them to initialize the field.
@@ -998,6 +1049,8 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptor {
   // with C++ scoping rules for enums.
   const string& full_name() const;
 
+  // The .proto file in which this value was defined.  Never NULL.
+  const FileDescriptor* file() const;
   // The type of this value.  Never NULL.
   const EnumDescriptor* type() const;
 
@@ -1122,8 +1175,8 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
   const string* full_name_;
   const FileDescriptor* file_;
   const ServiceOptions* options_;
-  int method_count_;
   MethodDescriptor* methods_;
+  int method_count_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<ServiceDescriptor>() and AllocateArray<ServiceDescriptor>() in
   // descriptor.cc and update them to initialize the field.
@@ -1135,6 +1188,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
   friend class MethodDescriptor;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ServiceDescriptor);
 };
+
 
 // Describes an individual service method.  To obtain a MethodDescriptor given
 // a service, first get its ServiceDescriptor, then call
@@ -1149,6 +1203,8 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
   // Index within the service's Descriptor.
   int index() const;
 
+  // The .proto file in which this method was defined.  Never NULL.
+  const FileDescriptor* file() const;
   // Gets the service to which this method belongs.  Never NULL.
   const ServiceDescriptor* service() const;
 
@@ -1360,35 +1416,38 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   const string* name_;
   const string* package_;
   const DescriptorPool* pool_;
-  int dependency_count_;
-  mutable const FileDescriptor** dependencies_;
-  const string** dependencies_names_;
   GoogleOnceDynamic* dependencies_once_;
   static void DependenciesOnceInit(const FileDescriptor* to_init);
   void InternalDependenciesOnceInit() const;
+
+  // These are arranged to minimze padding on 64-bit.
+  int dependency_count_;
   int public_dependency_count_;
-  int* public_dependencies_;
   int weak_dependency_count_;
-  int* weak_dependencies_;
   int message_type_count_;
-  Descriptor* message_types_;
   int enum_type_count_;
-  EnumDescriptor* enum_types_;
   int service_count_;
-  ServiceDescriptor* services_;
   int extension_count_;
   Syntax syntax_;
   bool is_placeholder_;
-  FieldDescriptor* extensions_;
-  const FileOptions* options_;
-
-  const FileDescriptorTables* tables_;
-  const SourceCodeInfo* source_code_info_;
 
   // Indicates the FileDescriptor is completed building. Used to verify
   // that type accessor functions that can possibly build a dependent file
   // aren't called during the process of building the file.
   bool finished_building_;
+
+  mutable const FileDescriptor** dependencies_;
+  const string** dependencies_names_;
+  int* public_dependencies_;
+  int* weak_dependencies_;
+  Descriptor* message_types_;
+  EnumDescriptor* enum_types_;
+  ServiceDescriptor* services_;
+  FieldDescriptor* extensions_;
+  const FileOptions* options_;
+
+  const FileDescriptorTables* tables_;
+  const SourceCodeInfo* source_code_info_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<FileDescriptor>() and AllocateArray<FileDescriptor>() in
@@ -1407,6 +1466,7 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   friend class ServiceDescriptor;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileDescriptor);
 };
+
 
 // ===================================================================
 
@@ -1748,11 +1808,12 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
-  std::set<string> unused_import_track_files_;
   bool disallow_enforce_utf8_;
+  std::set<string> unused_import_track_files_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorPool);
 };
+
 
 // inline methods ====================================================
 
@@ -1842,6 +1903,10 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, value,
                                const EnumValueDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(EnumDescriptor, EnumOptions)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, is_placeholder, bool)
+PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_range_count, int)
+PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
+                               const EnumDescriptor::ReservedRange*)
+PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
 PROTOBUF_DEFINE_STRING_ACCESSOR(EnumValueDescriptor, name)
 PROTOBUF_DEFINE_STRING_ACCESSOR(EnumValueDescriptor, full_name)
@@ -1913,6 +1978,32 @@ inline const string& Descriptor::reserved_name(int index) const {
   return *reserved_names_[index];
 }
 
+inline bool EnumDescriptor::IsReservedNumber(int number) const {
+  return FindReservedRangeContainingNumber(number) != NULL;
+}
+
+inline bool EnumDescriptor::IsReservedName(const string& name) const {
+  for (int i = 0; i < reserved_name_count(); i++) {
+    if (name == reserved_name(i)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
+// an array of pointers rather than the usual array of objects.
+inline const string& EnumDescriptor::reserved_name(int index) const {
+  return *reserved_names_[index];
+}
+
+inline FieldDescriptor::Type FieldDescriptor::type() const {
+  if (type_once_) {
+    type_once_->Init(&FieldDescriptor::TypeOnceInit, this);
+  }
+  return type_;
+}
+
 inline bool FieldDescriptor::is_required() const {
   return label() == LABEL_REQUIRED;
 }
@@ -1927,6 +2018,10 @@ inline bool FieldDescriptor::is_repeated() const {
 
 inline bool FieldDescriptor::is_packable() const {
   return is_repeated() && IsTypePackable(type());
+}
+
+inline bool FieldDescriptor::is_map() const {
+  return type() == TYPE_MESSAGE && is_map_message_type();
 }
 
 // To save space, index() is computed by looking at the descriptor's position
@@ -1949,6 +2044,10 @@ inline int Descriptor::index() const {
   }
 }
 
+inline const FileDescriptor* OneofDescriptor::file() const {
+  return containing_type()->file();
+}
+
 inline int OneofDescriptor::index() const {
   return static_cast<int>(this - containing_type_->oneof_decls_);
 }
@@ -1961,12 +2060,20 @@ inline int EnumDescriptor::index() const {
   }
 }
 
+inline const FileDescriptor* EnumValueDescriptor::file() const {
+  return type()->file();
+}
+
 inline int EnumValueDescriptor::index() const {
   return static_cast<int>(this - type_->values_);
 }
 
 inline int ServiceDescriptor::index() const {
   return static_cast<int>(this - file_->services_);
+}
+
+inline const FileDescriptor* MethodDescriptor::file() const {
+  return service()->file();
 }
 
 inline int MethodDescriptor::index() const {

@@ -114,6 +114,8 @@ TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
 }
 
 using protobuf_unittest::TestAllTypes;
+using protobuf_unittest::TestRequired;
+using protobuf_unittest::TestRequiredMessage;
 using protobuf_unittest::NestedTestAllTypes;
 using google::protobuf::FieldMask;
 
@@ -344,6 +346,46 @@ TEST(FieldMaskUtilTest, TestIntersect) {
   FieldMaskUtil::FromString("foo.bar,bar", &mask2);
   FieldMaskUtil::Intersect(mask1, mask2, &out);
   EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
+}
+
+TEST(FieldMaskUtilTest, TestSubtract) {
+  FieldMask mask1, mask2, out;
+  // Normal case.
+  FieldMaskUtil::FromString(
+      "optional_int32,optional_uint64,optional_nested_message,optional_foreign_"
+      "message,repeated_int32,repeated_foreign_message,repeated_nested_message."
+      "bb",
+      &mask1);
+
+  FieldMaskUtil::FromString(
+      "optional_int32,optional_nested_message.bb,optional_foreign_message.c,"
+      "repeated_int32,repeated_nested_message.bb,repeated_foreign_message.f,"
+      "repeated_foreign_message.d,repeated_nested_message.bb,repeated_uint32",
+      &mask2);
+
+  FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ(
+      "optional_foreign_message.d,optional_uint64,repeated_foreign_message.c",
+      FieldMaskUtil::ToString(out));
+
+  // mask1 is empty.
+  FieldMaskUtil::FromString("", &mask1);
+  FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("", FieldMaskUtil::ToString(out));
+
+  // mask1 is "optional_nested_message" and mask2 is
+  // "optional_nested_message.nonexist_field".
+  FieldMaskUtil::FromString("optional_nested_message", &mask1);
+  FieldMaskUtil::FromString("optional_nested_message.nonexist_field", &mask2);
+  FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("optional_nested_message", FieldMaskUtil::ToString(out));
+
+  // mask1 is "optional_nested_message" and mask2 is
+  // "optional_nested_message".
+  FieldMaskUtil::FromString("optional_nested_message", &mask1);
+  FieldMaskUtil::FromString("optional_nested_message", &mask2);
+  FieldMaskUtil::Subtract<TestAllTypes>(mask1, mask2, &out);
+  EXPECT_EQ("", FieldMaskUtil::ToString(out));
 }
 
 TEST(FieldMaskUtilTest, TestIspathInFieldMask) {
@@ -618,6 +660,84 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   FieldMask empty_mask;
   FieldMaskUtil::TrimMessage(empty_mask, &trimmed_all_types);
   EXPECT_EQ(trimmed_all_types.DebugString(), all_types_msg.DebugString());
+
+  // Test trim required fields with keep_required_fields is set true.
+  FieldMaskUtil::TrimOptions options;
+  TestRequired required_msg_1;
+  required_msg_1.set_a(1234);
+  required_msg_1.set_b(3456);
+  required_msg_1.set_c(5678);
+  TestRequired trimmed_required_msg_1(required_msg_1);
+  FieldMaskUtil::FromString("dummy2", &mask);
+  options.set_keep_required_fields(true);
+  FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_1, options);
+  EXPECT_EQ(trimmed_required_msg_1.DebugString(), required_msg_1.DebugString());
+
+  // Test trim required fields with keep_required_fields is set false.
+  required_msg_1.clear_a();
+  required_msg_1.clear_b();
+  required_msg_1.clear_c();
+  options.set_keep_required_fields(false);
+  FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_1, options);
+  EXPECT_EQ(trimmed_required_msg_1.DebugString(), required_msg_1.DebugString());
+
+  // Test trim required message with keep_required_fields is set true.
+  TestRequiredMessage required_msg_2;
+  required_msg_2.mutable_optional_message()->set_a(1234);
+  required_msg_2.mutable_optional_message()->set_b(3456);
+  required_msg_2.mutable_optional_message()->set_c(5678);
+  required_msg_2.mutable_required_message()->set_a(1234);
+  required_msg_2.mutable_required_message()->set_b(3456);
+  required_msg_2.mutable_required_message()->set_c(5678);
+  required_msg_2.mutable_required_message()->set_dummy2(7890);
+  TestRequired* repeated_msg = required_msg_2.add_repeated_message();
+  repeated_msg->set_a(1234);
+  repeated_msg->set_b(3456);
+  repeated_msg->set_c(5678);
+  TestRequiredMessage trimmed_required_msg_2(required_msg_2);
+  FieldMaskUtil::FromString("optional_message.dummy2", &mask);
+  options.set_keep_required_fields(true);
+  required_msg_2.clear_repeated_message();
+  required_msg_2.mutable_required_message()->clear_dummy2();
+  FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
+            required_msg_2.DebugString());
+
+  FieldMaskUtil::FromString("required_message", &mask);
+  required_msg_2.mutable_required_message()->set_dummy2(7890);
+  trimmed_required_msg_2.mutable_required_message()->set_dummy2(7890);
+  required_msg_2.clear_optional_message();
+  FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
+            required_msg_2.DebugString());
+
+  // Test trim required message with keep_required_fields is set false.
+  FieldMaskUtil::FromString("required_message.dummy2", &mask);
+  required_msg_2.mutable_required_message()->clear_a();
+  required_msg_2.mutable_required_message()->clear_b();
+  required_msg_2.mutable_required_message()->clear_c();
+  options.set_keep_required_fields(false);
+  FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
+  EXPECT_EQ(trimmed_required_msg_2.DebugString(),
+            required_msg_2.DebugString());
+
+  // Verify that trimming an empty message has no effect. In particular, fields
+  // mentioned in the field mask should not be created or changed.
+  TestAllTypes empty_msg;
+  FieldMaskUtil::FromString(
+      "optional_int32,optional_bytes,optional_nested_message.bb", &mask);
+  FieldMaskUtil::TrimMessage(mask, &empty_msg);
+  EXPECT_FALSE(empty_msg.has_optional_int32());
+  EXPECT_FALSE(empty_msg.has_optional_bytes());
+  EXPECT_FALSE(empty_msg.has_optional_nested_message());
+
+  // Verify trimming of oneof fields. This should work as expected even if
+  // multiple elements of the same oneof are included in the FieldMask.
+  TestAllTypes oneof_msg;
+  oneof_msg.set_oneof_uint32(11);
+  FieldMaskUtil::FromString("oneof_uint32,oneof_nested_message.bb", &mask);
+  FieldMaskUtil::TrimMessage(mask, &oneof_msg);
+  EXPECT_EQ(11, oneof_msg.oneof_uint32());
 }
 
 

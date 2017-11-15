@@ -114,72 +114,37 @@ MapFieldGenerator::~MapFieldGenerator() {}
 
 void MapFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    printer->Print(
-        variables_,
-        "public:\n"
-        "class $map_classname$ : public "
-        "::google::protobuf::internal::MapEntry<$map_classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    $key_wire_type$,\n"
-        "    $val_wire_type$,\n"
-        "    $default_enum_value$ > {\n"
-        "public:\n"
-        "  typedef ::google::protobuf::internal::MapEntry<$map_classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    $key_wire_type$,\n"
-        "    $val_wire_type$,\n"
-        "    $default_enum_value$ > SuperType;\n"
-        "  $map_classname$();\n"
-        "  $map_classname$(::google::protobuf::Arena* arena);\n"
-        "  void MergeFrom(const ::google::protobuf::Message& other) PROTOBUF_FINAL;\n"
-        "  void MergeFrom(const $map_classname$& other);\n"
-        "  static const Message* internal_default_instance() { return "
-        "reinterpret_cast<const "
-        "Message*>(&_$map_classname$_default_instance_); }\n"
-        "  ::google::protobuf::Metadata GetMetadata() const;\n"
-        "};\n");
-  } else {
-    printer->Print(variables_,
-                   "public:\n"
-                   "typedef ::google::protobuf::internal::MapEntryLite<\n"
-                   "    $key_cpp$, $val_cpp$,\n"
-                   "    $key_wire_type$,\n"
-                   "    $val_wire_type$,\n"
-                   "    $default_enum_value$ >\n"
-                   "    $map_classname$;\n");
-  }
   printer->Print(variables_,
                  "::google::protobuf::internal::MapField$lite$<\n"
                  "    $map_classname$,\n"
                  "    $key_cpp$, $val_cpp$,\n"
                  "    $key_wire_type$,\n"
                  "    $val_wire_type$,\n"
-                 "    $default_enum_value$ > $name$_;\n"
-                 "private:\n");
+                 "    $default_enum_value$ > $name$_;\n");
 }
 
 void MapFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
-  printer->Print(variables_,
+  printer->Print(
+      variables_,
       "$deprecated_attr$const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
-      "    $name$() const;\n"
-      "$deprecated_attr$::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
-      "    mutable_$name$();\n");
+      "    $name$() const;\n");
+  printer->Annotate("name", descriptor_);
+  printer->Print(variables_,
+                 "$deprecated_attr$::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
+                 "    ${$mutable_$name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void MapFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                  bool is_inline) const {
-  std::map<string, string> variables(variables_);
-  variables["inline"] = is_inline ? "inline" : "";
-  printer->Print(variables,
-      "$inline$ const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+      "inline const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
       "$classname$::$name$() const {\n"
       "  // @@protoc_insertion_point(field_map:$full_name$)\n"
       "  return $name$_.GetMap();\n"
       "}\n"
-      "$inline$ ::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
+      "inline ::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::mutable_$name$() {\n"
       "  // @@protoc_insertion_point(field_mutable_map:$full_name$)\n"
       "  return $name$_.MutableMap();\n"
@@ -188,9 +153,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void MapFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  std::map<string, string> variables(variables_);
-  variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
-  printer->Print(variables, "$this_message$$name$_.Clear();\n");
+  printer->Print(variables_, "$name$_.Clear();\n");
 }
 
 void MapFieldGenerator::
@@ -257,7 +220,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       printer->Print(variables_,
           "    unknown_fields_stream.WriteVarint32($tag$u);\n"
           "    unknown_fields_stream.WriteVarint32(\n"
-          "        static_cast<google::protobuf::uint32>(data.size()));\n"
+          "        static_cast< ::google::protobuf::uint32>(data.size()));\n"
           "    unknown_fields_stream.WriteString(data);\n");
     }
 

@@ -34,7 +34,6 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
@@ -56,14 +55,7 @@ import java.util.regex.Pattern;
 public final class TextFormat {
   private TextFormat() {}
 
-  private static final Logger logger =
-      Logger.getLogger(TextFormat.class.getName());
-
-  private static final Printer DEFAULT_PRINTER = new Printer();
-  private static final Printer SINGLE_LINE_PRINTER =
-      (new Printer()).setSingleLineMode(true);
-  private static final Printer UNICODE_PRINTER =
-      (new Printer()).setEscapeNonAscii(false);
+  private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
 
   /**
    * Outputs a textual representation of the Protocol Message supplied into
@@ -73,14 +65,14 @@ public final class TextFormat {
   public static void print(
       final MessageOrBuilder message, final Appendable output)
       throws IOException {
-    DEFAULT_PRINTER.print(message, new TextGenerator(output));
+    Printer.DEFAULT.print(message, multiLineOutput(output));
   }
 
   /** Outputs a textual representation of {@code fields} to {@code output}. */
   public static void print(final UnknownFieldSet fields,
                            final Appendable output)
                            throws IOException {
-    DEFAULT_PRINTER.printUnknownFields(fields, new TextGenerator(output));
+    Printer.DEFAULT.printUnknownFields(fields, multiLineOutput(output));
   }
 
   /**
@@ -90,7 +82,7 @@ public final class TextFormat {
   public static void printUnicode(
       final MessageOrBuilder message, final Appendable output)
       throws IOException {
-    UNICODE_PRINTER.print(message, new TextGenerator(output));
+    Printer.UNICODE.print(message, multiLineOutput(output));
   }
 
   /**
@@ -100,7 +92,7 @@ public final class TextFormat {
   public static void printUnicode(final UnknownFieldSet fields,
                                   final Appendable output)
                                   throws IOException {
-    UNICODE_PRINTER.printUnknownFields(fields, new TextGenerator(output));
+    Printer.UNICODE.printUnknownFields(fields, multiLineOutput(output));
   }
 
   /**
@@ -109,10 +101,9 @@ public final class TextFormat {
    */
   public static String shortDebugString(final MessageOrBuilder message) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      SINGLE_LINE_PRINTER.print(message, new TextGenerator(sb));
-      // Single line mode currently might have an extra space at the end.
-      return sb.toString().trim();
+      final StringBuilder text = new StringBuilder();
+      Printer.DEFAULT.print(message, singleLineOutput(text));
+      return text.toString();
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -125,11 +116,11 @@ public final class TextFormat {
   public static String shortDebugString(final FieldDescriptor field,
                                         final Object value) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      SINGLE_LINE_PRINTER.printField(field, value, new TextGenerator(sb));
-      return sb.toString().trim();
+      final StringBuilder text = new StringBuilder();
+      Printer.DEFAULT.printField(field, value, singleLineOutput(text));
+      return text.toString();
     } catch (IOException e) {
-        throw new IllegalStateException(e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -139,10 +130,9 @@ public final class TextFormat {
    */
   public static String shortDebugString(final UnknownFieldSet fields) {
     try {
-      final StringBuilder sb = new StringBuilder();
-      SINGLE_LINE_PRINTER.printUnknownFields(fields, new TextGenerator(sb));
-      // Single line mode currently might have an extra space at the end.
-      return sb.toString().trim();
+      final StringBuilder text = new StringBuilder();
+      Printer.DEFAULT.printUnknownFields(fields, singleLineOutput(text));
+      return text.toString();
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -183,7 +173,7 @@ public final class TextFormat {
   public static String printToUnicodeString(final MessageOrBuilder message) {
     try {
       final StringBuilder text = new StringBuilder();
-      UNICODE_PRINTER.print(message, new TextGenerator(text));
+      Printer.UNICODE.print(message, multiLineOutput(text));
       return text.toString();
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -197,7 +187,7 @@ public final class TextFormat {
   public static String printToUnicodeString(final UnknownFieldSet fields) {
     try {
       final StringBuilder text = new StringBuilder();
-      UNICODE_PRINTER.printUnknownFields(fields, new TextGenerator(text));
+      Printer.UNICODE.printUnknownFields(fields, multiLineOutput(text));
       return text.toString();
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -208,7 +198,7 @@ public final class TextFormat {
                                 final Object value,
                                 final Appendable output)
                                 throws IOException {
-    DEFAULT_PRINTER.printField(field, value, new TextGenerator(output));
+    Printer.DEFAULT.printField(field, value, multiLineOutput(output));
   }
 
   public static String printFieldToString(final FieldDescriptor field,
@@ -220,6 +210,23 @@ public final class TextFormat {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  /**
+   * Outputs a unicode textual representation of the value of given field value.
+   *
+   * <p>Same as {@code printFieldValue()}, except that non-ASCII characters in string type fields
+   * are not escaped in backslash+octals.
+   *
+   * @param field the descriptor of the field
+   * @param value the value of the field
+   * @param output the output to which to append the formatted value
+   * @throws ClassCastException if the value is not appropriate for the given field descriptor
+   * @throws IOException if there is an exception writing to the output
+   */
+  public static void printUnicodeFieldValue(
+      final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
+    Printer.UNICODE.printFieldValue(field, value, multiLineOutput(output));
   }
 
   /**
@@ -236,7 +243,7 @@ public final class TextFormat {
                                      final Object value,
                                      final Appendable output)
                                      throws IOException {
-    DEFAULT_PRINTER.printFieldValue(field, value, new TextGenerator(output));
+    Printer.DEFAULT.printFieldValue(field, value, multiLineOutput(output));
   }
 
   /**
@@ -253,7 +260,7 @@ public final class TextFormat {
                                             final Object value,
                                             final Appendable output)
                                             throws IOException {
-    printUnknownFieldValue(tag, value, new TextGenerator(output));
+    printUnknownFieldValue(tag, value, multiLineOutput(output));
   }
 
   private static void printUnknownFieldValue(final int tag,
@@ -272,12 +279,24 @@ public final class TextFormat {
         generator.print(String.format((Locale) null, "0x%016x", (Long) value));
         break;
       case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-        generator.print("\"");
-        generator.print(escapeBytes((ByteString) value));
-        generator.print("\"");
+        try {
+          // Try to parse and print the field as an embedded message
+          UnknownFieldSet message = UnknownFieldSet.parseFrom((ByteString) value);
+          generator.print("{");
+          generator.eol();
+          generator.indent();
+          Printer.DEFAULT.printUnknownFields(message, generator);
+          generator.outdent();
+          generator.print("}");
+        } catch (InvalidProtocolBufferException e) {
+          // If not parseable as a message, print as a String
+          generator.print("\"");
+          generator.print(escapeBytes((ByteString) value));
+          generator.print("\"");
+        }
         break;
       case WireFormat.WIRETYPE_START_GROUP:
-        DEFAULT_PRINTER.printUnknownFields((UnknownFieldSet) value, generator);
+        Printer.DEFAULT.printUnknownFields((UnknownFieldSet) value, generator);
         break;
       default:
         throw new IllegalArgumentException("Bad tag: " + tag);
@@ -286,24 +305,16 @@ public final class TextFormat {
 
   /** Helper class for converting protobufs to text. */
   private static final class Printer {
-    /** Whether to omit newlines from the output. */
-    boolean singleLineMode = false;
+    // Printer instance which escapes non-ASCII characters.
+    static final Printer DEFAULT = new Printer(true);
+    // Printer instance which emits Unicode (it still escapes newlines and quotes in strings).
+    static final Printer UNICODE = new Printer(false);
 
     /** Whether to escape non ASCII characters with backslash and octal. */
-    boolean escapeNonAscii = true;
+    private final boolean escapeNonAscii;
 
-    private Printer() {}
-
-    /** Setter of singleLineMode */
-    private Printer setSingleLineMode(boolean singleLineMode) {
-      this.singleLineMode = singleLineMode;
-      return this;
-    }
-
-    /** Setter of escapeNonAscii */
-    private Printer setEscapeNonAscii(boolean escapeNonAscii) {
+    private Printer(boolean escapeNonAscii) {
       this.escapeNonAscii = escapeNonAscii;
-      return this;
     }
 
     private void print(
@@ -355,12 +366,9 @@ public final class TextFormat {
       }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        if (singleLineMode) {
-          generator.print(" { ");
-        } else {
-          generator.print(" {\n");
-          generator.indent();
-        }
+        generator.print(" {");
+        generator.eol();
+        generator.indent();
       } else {
         generator.print(": ");
       }
@@ -368,19 +376,10 @@ public final class TextFormat {
       printFieldValue(field, value, generator);
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        if (singleLineMode) {
-          generator.print("} ");
-        } else {
-          generator.outdent();
-          generator.print("}\n");
-        }
-      } else {
-        if (singleLineMode) {
-          generator.print(" ");
-        } else {
-          generator.print("\n");
-        }
+        generator.outdent();
+        generator.print("}");
       }
+      generator.eol();
     }
 
     private void printFieldValue(final FieldDescriptor field,
@@ -469,19 +468,13 @@ public final class TextFormat {
             field.getLengthDelimitedList(), generator);
         for (final UnknownFieldSet value : field.getGroupList()) {
           generator.print(entry.getKey().toString());
-          if (singleLineMode) {
-            generator.print(" { ");
-          } else {
-            generator.print(" {\n");
-            generator.indent();
-          }
+          generator.print(" {");
+          generator.eol();
+          generator.indent();
           printUnknownFields(value, generator);
-          if (singleLineMode) {
-            generator.print("} ");
-          } else {
-            generator.outdent();
-            generator.print("}\n");
-          }
+          generator.outdent();
+          generator.print("}");
+          generator.eol();
         }
       }
     }
@@ -495,7 +488,7 @@ public final class TextFormat {
         generator.print(String.valueOf(number));
         generator.print(": ");
         printUnknownFieldValue(wireType, value, generator);
-        generator.print(singleLineMode ? " " : "\n");
+        generator.eol();
       }
     }
   }
@@ -521,16 +514,29 @@ public final class TextFormat {
     }
   }
 
-  /**
+  private static TextGenerator multiLineOutput(Appendable output) {
+    return new TextGenerator(output, false);
+  }
+
+  private static TextGenerator singleLineOutput(Appendable output) {
+    return new TextGenerator(output, true);
+  }
+
+ /**
    * An inner class for writing text to the output stream.
    */
   private static final class TextGenerator {
     private final Appendable output;
     private final StringBuilder indent = new StringBuilder();
-    private boolean atStartOfLine = true;
+    private final boolean singleLineMode;
+    // While technically we are "at the start of a line" at the very beginning of the output, all
+    // we would do in response to this is emit the (zero length) indentation, so it has no effect.
+    // Setting it false here does however suppress an unwanted leading space in single-line mode.
+    private boolean atStartOfLine = false;
 
-    private TextGenerator(final Appendable output) {
+    private TextGenerator(final Appendable output, boolean singleLineMode) {
       this.output = output;
+      this.singleLineMode = singleLineMode;
     }
 
     /**
@@ -552,35 +558,31 @@ public final class TextFormat {
         throw new IllegalArgumentException(
             " Outdent() without matching Indent().");
       }
-      indent.delete(length - 2, length);
+      indent.setLength(length - 2);
     }
 
     /**
-     * Print text to the output stream.
+     * Print text to the output stream. Bare newlines are never expected to be passed to this
+     * method; to indicate the end of a line, call "eol()".
      */
     public void print(final CharSequence text) throws IOException {
-      final int size = text.length();
-      int pos = 0;
-
-      for (int i = 0; i < size; i++) {
-        if (text.charAt(i) == '\n') {
-          write(text.subSequence(pos, i + 1));
-          pos = i + 1;
-          atStartOfLine = true;
-        }
-      }
-      write(text.subSequence(pos, size));
-    }
-
-    private void write(final CharSequence data) throws IOException {
-      if (data.length() == 0) {
-        return;
-      }
       if (atStartOfLine) {
         atStartOfLine = false;
-        output.append(indent);
+        output.append(singleLineMode ? " " : indent);
       }
-      output.append(data);
+      output.append(text);
+    }
+
+    /**
+     * Signifies reaching the "end of the current line" in the output. In single-line mode, this
+     * does not result in a newline being emitted, but ensures that a separating space is written
+     * before the next output.
+     */
+    public void eol() throws IOException {
+      if (!singleLineMode) {
+        output.append("\n");
+      }
+      atStartOfLine = true;
     }
   }
 
@@ -1469,9 +1471,15 @@ public final class TextFormat {
             extensionRegistry, name.toString());
 
         if (extension == null) {
-          unknownFields.add((tokenizer.getPreviousLine() + 1) + ":" +
-              (tokenizer.getPreviousColumn() + 1) + ":\t" +
-              type.getFullName() + ".[" + name + "]");
+          unknownFields.add(
+              (tokenizer.getPreviousLine() + 1)
+                  + ":"
+                  + (tokenizer.getPreviousColumn() + 1)
+                  + ":\t"
+                  + type.getFullName()
+                  + ".["
+                  + name
+                  + "]");
         } else {
           if (extension.descriptor.getContainingType() != type) {
             throw tokenizer.parseExceptionPreviousToken(
@@ -1506,9 +1514,14 @@ public final class TextFormat {
         }
 
         if (field == null) {
-          unknownFields.add((tokenizer.getPreviousLine() + 1) + ":" +
-              (tokenizer.getPreviousColumn() + 1) + ":\t" +
-              type.getFullName() + "." + name);
+          unknownFields.add(
+              (tokenizer.getPreviousLine() + 1)
+                  + ":"
+                  + (tokenizer.getPreviousColumn() + 1)
+                  + ":\t"
+                  + type.getFullName()
+                  + "."
+                  + name);
         }
       }
 

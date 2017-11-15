@@ -185,8 +185,6 @@ elif [[ "$(uname)" == Linux* ]]; then
     fi
   elif [[ "$OS" == windows ]]; then
     # Cross-compilation for Windows
-    # TODO(zhangkun83) MinGW 64 always adds dependency on libwinpthread-1.dll,
-    # which is undesirable for repository deployment.
     CONFIGURE_ARGS="$CONFIGURE_ARGS"
     if [[ "$ARCH" == x86_64 ]]; then
       CONFIGURE_ARGS="$CONFIGURE_ARGS --host=x86_64-w64-mingw32"
@@ -215,8 +213,11 @@ fi
 
 # Statically link libgcc and libstdc++.
 # -s to produce stripped binary.
-# And they don't work under Mac.
-if [[ "$OS" != osx ]]; then
+if [[ "$OS" == windows ]]; then
+  # Also static link libpthread required by mingw64
+  LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -s"
+elif [[ "$OS" != osx ]]; then
+  # And they don't work under Mac.
   LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -s"
 fi
 

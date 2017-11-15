@@ -17,10 +17,11 @@ detailed test results.  It runs as the last step before the Jenkins build
 finishes.
 """
 
-import os;
-import sys;
+import os
+import sys
 from yattag import Doc
 from collections import defaultdict
+
 
 def readtests(basedir):
   tests = defaultdict(dict)
@@ -68,6 +69,7 @@ def readtests(basedir):
 
   return ret
 
+
 def genxml(tests):
   doc, tag, text = Doc().tagtext()
 
@@ -86,6 +88,7 @@ def genxml(tests):
 
   return doc.getvalue()
 
+
 sys.stderr.write("make_test_output.py: writing XML from directory: " +
-                 sys.argv[1] + "\n");
-print genxml(readtests(sys.argv[1]))
+                 sys.argv[1] + "\n")
+print(genxml(readtests(sys.argv[1])))

@@ -1890,31 +1890,58 @@ namespace Google.Protobuf.TestProtos {
       }
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.AnyField:
-          AnyField = other.AnyField;
+          if (AnyField == null) {
+            AnyField = new global::Google.Protobuf.WellKnownTypes.Any();
+          }
+          AnyField.MergeFrom(other.AnyField);
           break;
         case OneofFieldOneofCase.ApiField:
-          ApiField = other.ApiField;
+          if (ApiField == null) {
+            ApiField = new global::Google.Protobuf.WellKnownTypes.Api();
+          }
+          ApiField.MergeFrom(other.ApiField);
           break;
         case OneofFieldOneofCase.DurationField:
-          DurationField = other.DurationField;
+          if (DurationField == null) {
+            DurationField = new global::Google.Protobuf.WellKnownTypes.Duration();
+          }
+          DurationField.MergeFrom(other.DurationField);
           break;
         case OneofFieldOneofCase.EmptyField:
-          EmptyField = other.EmptyField;
+          if (EmptyField == null) {
+            EmptyField = new global::Google.Protobuf.WellKnownTypes.Empty();
+          }
+          EmptyField.MergeFrom(other.EmptyField);
           break;
         case OneofFieldOneofCase.FieldMaskField:
-          FieldMaskField = other.FieldMaskField;
+          if (FieldMaskField == null) {
+            FieldMaskField = new global::Google.Protobuf.WellKnownTypes.FieldMask();
+          }
+          FieldMaskField.MergeFrom(other.FieldMaskField);
           break;
         case OneofFieldOneofCase.SourceContextField:
-          SourceContextField = other.SourceContextField;
+          if (SourceContextField == null) {
+            SourceContextField = new global::Google.Protobuf.WellKnownTypes.SourceContext();
+          }
+          SourceContextField.MergeFrom(other.SourceContextField);
           break;
         case OneofFieldOneofCase.StructField:
-          StructField = other.StructField;
+          if (StructField == null) {
+            StructField = new global::Google.Protobuf.WellKnownTypes.Struct();
+          }
+          StructField.MergeFrom(other.StructField);
           break;
         case OneofFieldOneofCase.TimestampField:
-          TimestampField = other.TimestampField;
+          if (TimestampField == null) {
+            TimestampField = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+          }
+          TimestampField.MergeFrom(other.TimestampField);
           break;
         case OneofFieldOneofCase.TypeField:
-          TypeField = other.TypeField;
+          if (TypeField == null) {
+            TypeField = new global::Google.Protobuf.WellKnownTypes.Type();
+          }
+          TypeField.MergeFrom(other.TypeField);
           break;
         case OneofFieldOneofCase.DoubleField:
           DoubleField = other.DoubleField;

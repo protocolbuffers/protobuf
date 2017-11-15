@@ -107,6 +107,7 @@ class DescriptorDatabase(object):
 
     'some.package.name.Message'
     'some.package.name.Message.NestedEnum'
+    'some.package.name.Message.some_field'
 
     The file descriptor proto containing the specified symbol must be added to
     this database using the Add method or else an error will be raised.
@@ -120,8 +121,16 @@ class DescriptorDatabase(object):
     Raises:
       KeyError if no file contains the specified symbol.
     """
-
-    return self._file_desc_protos_by_symbol[symbol]
+    try:
+      return self._file_desc_protos_by_symbol[symbol]
+    except KeyError:
+      # Fields, enum values, and nested extensions are not in
+      # _file_desc_protos_by_symbol. Try to find the top level
+      # descriptor. Non-existent nested symbol under a valid top level
+      # descriptor can also be found. The behavior is the same with
+      # protobuf C++.
+      top_level, _, _ = symbol.rpartition('.')
+      return self._file_desc_protos_by_symbol[top_level]
 
 
 def _ExtractSymbols(desc_proto, package):
@@ -134,8 +143,7 @@ def _ExtractSymbols(desc_proto, package):
   Yields:
     The fully qualified name found in the descriptor.
   """
-
-  message_name = '.'.join((package, desc_proto.name))
+  message_name = package + '.' + desc_proto.name if package else desc_proto.name
   yield message_name
   for nested_type in desc_proto.nested_type:
     for symbol in _ExtractSymbols(nested_type, message_name):

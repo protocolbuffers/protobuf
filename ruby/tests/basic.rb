@@ -51,6 +51,17 @@ module BasicTest
       optional :foo, :int32, 1
     end
 
+    add_message "TestEmbeddedMessageParent" do
+      optional :child_msg, :message, 1, "TestEmbeddedMessageChild"
+      optional :number, :int32, 2
+
+      repeated :repeated_msg, :message, 3, "TestEmbeddedMessageChild"
+      repeated :repeated_number, :int32, 4
+    end
+    add_message "TestEmbeddedMessageChild" do
+      optional :sub_child, :message, 1, "TestMessage"
+    end
+
     add_message "Recursive1" do
       optional :foo, :message, 1, "Recursive2"
     end
@@ -96,13 +107,25 @@ module BasicTest
         optional :d, :enum, 4, "TestEnum"
       end
     end
+
+    add_message "repro.Outer" do
+      map :items, :int32, :message, 1, "repro.Inner"
+    end
+
+    add_message "repro.Inner" do
+    end
   end
 
+
+  Outer = pool.lookup("repro.Outer").msgclass
+  Inner = pool.lookup("repro.Inner").msgclass
   Foo = pool.lookup("Foo").msgclass
   Bar = pool.lookup("Bar").msgclass
   Baz = pool.lookup("Baz").msgclass
   TestMessage = pool.lookup("TestMessage").msgclass
   TestMessage2 = pool.lookup("TestMessage2").msgclass
+  TestEmbeddedMessageParent = pool.lookup("TestEmbeddedMessageParent").msgclass
+  TestEmbeddedMessageChild = pool.lookup("TestEmbeddedMessageChild").msgclass
   Recursive1 = pool.lookup("Recursive1").msgclass
   Recursive2 = pool.lookup("Recursive2").msgclass
   TestEnum = pool.lookup("TestEnum").enummodule
@@ -151,12 +174,18 @@ module BasicTest
       m.optional_double = 0.5
       m.optional_string = "hello"
       assert m.optional_string == "hello"
+      m.optional_string = :hello
+      assert m.optional_string == "hello"
       m.optional_bytes = "world".encode!('ASCII-8BIT')
       assert m.optional_bytes == "world"
       m.optional_msg = TestMessage2.new(:foo => 42)
       assert m.optional_msg == TestMessage2.new(:foo => 42)
       m.optional_msg = nil
       assert m.optional_msg == nil
+      m.optional_enum = :C
+      assert m.optional_enum == :C
+      m.optional_enum = 'C'
+      assert m.optional_enum == :C
     end
 
     def test_ctor_args
@@ -171,6 +200,34 @@ module BasicTest
       assert m.repeated_string[0] == "hello"
       assert m.repeated_string[1] == "there"
       assert m.repeated_string[2] == "world"
+    end
+
+    def test_ctor_string_symbol_args
+      m = TestMessage.new(:optional_enum => 'C', :repeated_enum => ['A', 'B'])
+      assert_equal :C, m.optional_enum
+      assert_equal [:A, :B], m.repeated_enum
+
+      m = TestMessage.new(:optional_string => :foo, :repeated_string => [:foo, :bar])
+      assert_equal 'foo', m.optional_string
+      assert_equal ['foo', 'bar'], m.repeated_string
+    end
+
+    def test_embeddedmsg_hash_init
+      m = TestEmbeddedMessageParent.new(:child_msg => {sub_child: {optional_int32: 1}},
+                                        :number => 2,
+                                        :repeated_msg => [{sub_child: {optional_int32: 3}}],
+                                        :repeated_number => [10, 20, 30])
+
+      assert_equal 2, m.number
+      assert_equal [10, 20, 30], m.repeated_number
+
+      assert_not_nil m.child_msg
+      assert_not_nil m.child_msg.sub_child
+      assert_equal m.child_msg.sub_child.optional_int32, 1
+
+      assert_not_nil m.repeated_msg
+      assert_equal 1, m.repeated_msg.length
+      assert_equal 3, m.repeated_msg.first.sub_child.optional_int32
     end
 
     def test_inspect
@@ -604,7 +661,7 @@ module BasicTest
       assert_raise RangeError do
         m["z"] = :Z
       end
-      assert_raise TypeError do
+      assert_raise RangeError do
         m["z"] = "z"
       end
     end
@@ -673,6 +730,21 @@ module BasicTest
       m = MapMessage.new(map_string_int32: { "aaa" => 1 })
       m.map_string_int32['podid'] = 2
       m.map_string_int32['aaa'] = 3
+    end
+
+    def test_concurrent_decoding
+      o = Outer.new
+      o.items[0] = Inner.new
+      raw = Outer.encode(o)
+
+      thds = 2.times.map do
+        Thread.new do
+          100000.times do
+            assert_equal o, Outer.decode(raw)
+          end
+        end
+      end
+      thds.map(&:join)
     end
 
     def test_map_encode_decode
@@ -902,7 +974,7 @@ module BasicTest
     end
 
     def test_to_h
-      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
       expected_result = {
         :optional_bool=>true,
         :optional_bytes=>"",
@@ -922,7 +994,7 @@ module BasicTest
         :repeated_float=>[],
         :repeated_int32=>[],
         :repeated_int64=>[],
-        :repeated_msg=>[],
+        :repeated_msg=>[{:foo => 100}],
         :repeated_string=>["bar1", "bar2"],
         :repeated_uint32=>[],
         :repeated_uint64=>[]

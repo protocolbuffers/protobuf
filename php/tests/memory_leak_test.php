@@ -23,6 +23,8 @@ require_once('generated/Foo/TestPhpDoc.php');
 require_once('generated/Foo/TestRandomFieldOrder.php');
 require_once('generated/Foo/TestReverseFieldOrder.php');
 require_once('generated/Foo/TestUnpackedMessage.php');
+require_once('generated/Foo/testLowerCaseMessage.php');
+require_once('generated/Foo/testLowerCaseEnum.php');
 require_once('generated/GPBMetadata/Proto/Test.php');
 require_once('generated/GPBMetadata/Proto/TestEmptyPhpNamespace.php');
 require_once('generated/GPBMetadata/Proto/TestInclude.php');
@@ -98,6 +100,10 @@ $data = $m->serializeToString();
 $n = new TestMessage();
 $n->mergeFromString($data);
 assert(1 === $n->getOneofMessage()->getA());
+
+$m = new TestMessage();
+$m->mergeFromString(hex2bin('F80601'));
+assert('F80601', bin2hex($m->serializeToString()));
 
 # $from = new TestMessage();
 # $to = new TestMessage();

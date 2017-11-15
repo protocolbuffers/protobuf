@@ -34,7 +34,9 @@
 #include <assert.h>
 
 #include <google/protobuf/arena.h>
+#include <google/protobuf/map.h>
 #include <google/protobuf/map_type_handler.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
 namespace google {
@@ -131,14 +133,14 @@ class MapEntryImpl : public Base {
   static const WireFormatLite::FieldType kEntryValueFieldType = kValueFieldType;
   static const int kEntryDefaultEnumValue = default_enum_value;
 
-  MapEntryImpl() : default_instance_(NULL), arena_(NULL) {
+  MapEntryImpl() : arena_(NULL) {
     KeyTypeHandler::Initialize(&key_, NULL);
     ValueTypeHandler::InitializeMaybeByDefaultEnum(&value_, default_enum_value,
                                                    NULL);
     _has_bits_[0] = 0;
   }
 
-  explicit MapEntryImpl(Arena* arena) : default_instance_(NULL), arena_(arena) {
+  explicit MapEntryImpl(Arena* arena) : arena_(arena) {
     KeyTypeHandler::Initialize(&key_, arena);
     ValueTypeHandler::InitializeMaybeByDefaultEnum(&value_, default_enum_value,
                                                    arena);
@@ -146,11 +148,9 @@ class MapEntryImpl : public Base {
   }
 
   ~MapEntryImpl() {
-    if (this != default_instance_) {
-      if (GetArenaNoVirtual() != NULL) return;
-      KeyTypeHandler::DeleteNoArena(key_);
-      ValueTypeHandler::DeleteNoArena(value_);
-    }
+    if (GetArenaNoVirtual() != NULL) return;
+    KeyTypeHandler::DeleteNoArena(key_);
+    ValueTypeHandler::DeleteNoArena(value_);
   }
 
   // accessors ======================================================
@@ -159,9 +159,8 @@ class MapEntryImpl : public Base {
     return KeyTypeHandler::GetExternalReference(key_);
   }
   virtual inline const ValueMapEntryAccessorType& value() const {
-    GOOGLE_CHECK(default_instance_ != NULL);
-    return ValueTypeHandler::DefaultIfNotInitialized(value_,
-                                                    default_instance_->value_);
+    return ValueTypeHandler::DefaultIfNotInitialized(
+        value_, Derived::internal_default_instance()->value_);
   }
   inline KeyMapEntryAccessorType* mutable_key() {
     set_has_key();
@@ -264,13 +263,11 @@ class MapEntryImpl : public Base {
 
   Base* New() const {
     Derived* entry = new Derived;
-    entry->default_instance_ = default_instance_;
     return entry;
   }
 
   Base* New(Arena* arena) const {
     Derived* entry = Arena::CreateMessage<Derived>(arena);
-    entry->default_instance_ = default_instance_;
     return entry;
   }
 
@@ -308,13 +305,10 @@ class MapEntryImpl : public Base {
     clear_has_value();
   }
 
-  void set_default_instance(MapEntryImpl* default_instance) {
-    default_instance_ = default_instance;
-  }
-
-  void InitAsDefaultInstance() {
-    KeyTypeHandler::AssignDefaultValue(&key_);
-    ValueTypeHandler::AssignDefaultValue(&value_);
+  static void InitAsDefaultInstance() {
+    Derived* d = const_cast<Derived*>(Derived::internal_default_instance());
+    KeyTypeHandler::AssignDefaultValue(&d->key_);
+    ValueTypeHandler::AssignDefaultValue(&d->value_);
   }
 
   Arena* GetArena() const {
@@ -392,7 +386,7 @@ class MapEntryImpl : public Base {
     const Value& value() const { return *value_ptr_; }
 
    private:
-    void UseKeyAndValueFromEntry() GOOGLE_ATTRIBUTE_COLD {
+    void UseKeyAndValueFromEntry() GOOGLE_PROTOBUF_ATTRIBUTE_COLD {
       // Update key_ in case we need it later (because key() is called).
       // This is potentially inefficient, especially if the key is
       // expensive to copy (e.g., a long string), but this is a cold
@@ -410,7 +404,7 @@ class MapEntryImpl : public Base {
     // into map_, we are not at the end of the input.  This is unusual, but
     // allowed by the spec.
     bool ReadBeyondKeyValuePair(::google::protobuf::io::CodedInputStream* input)
-        GOOGLE_ATTRIBUTE_COLD {
+        GOOGLE_PROTOBUF_ATTRIBUTE_COLD {
       typedef MoveHelper<KeyTypeHandler::kIsEnum,
                          KeyTypeHandler::kIsMessage,
                          KeyTypeHandler::kWireType ==
@@ -516,13 +510,13 @@ class MapEntryImpl : public Base {
     return arena_;
   }
 
-  MapEntryImpl* default_instance_;
-
+ public:  // Needed for constructing tables
   KeyOnMemory key_;
   ValueOnMemory value_;
   Arena* arena_;
   uint32 _has_bits_[1];
 
+ private:
   friend class ::google::protobuf::Arena;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -536,23 +530,37 @@ class MapEntryImpl : public Base {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryImpl);
 };
 
-template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
+template <typename T, typename Key, typename Value,
+          WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 class MapEntryLite
-    : public MapEntryImpl<MapEntryLite<Key, Value, kKeyFieldType,
-                                       kValueFieldType, default_enum_value>,
-                          MessageLite, Key, Value, kKeyFieldType,
+    : public MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType,
                           kValueFieldType, default_enum_value> {
  public:
-  typedef MapEntryImpl<MapEntryLite, MessageLite, Key, Value, kKeyFieldType,
+  typedef MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType,
                        kValueFieldType, default_enum_value>
       SuperType;
   MapEntryLite() {}
   explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
-  void MergeFrom(const MapEntryLite<Key, Value, kKeyFieldType, kValueFieldType,
-                                    default_enum_value>& other) {
-    MergeFromInternal(other);
-  }
+  void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryLite);
+};
+// The completely unprincipled and unwieldy use of template parameters in
+// the map code necessitates wrappers to make the code a little bit more
+// manageable.
+template <typename Derived>
+struct DeconstructMapEntry;
+
+template <typename T, typename K, typename V, WireFormatLite::FieldType key,
+          WireFormatLite::FieldType value, int default_enum>
+struct DeconstructMapEntry<MapEntryLite<T, K, V, key, value, default_enum> > {
+  typedef K Key;
+  typedef V Value;
+  static const WireFormatLite::FieldType kKeyFieldType = key;
+  static const WireFormatLite::FieldType kValueFieldType = value;
+  static const int default_enum_value = default_enum;
 };
 
 // Helpers for deterministic serialization =============================
@@ -579,6 +587,76 @@ template <typename T> struct CompareByDerefFirst {
   bool operator()(const T& a, const T& b) const {
     return a->first < b->first;
   }
+};
+
+// Helper for table driven serialization
+
+template <WireFormatLite::FieldType FieldType>
+struct FromHelper {
+  template <typename T>
+  static const T& From(const T& x) {
+    return x;
+  }
+};
+
+template <>
+struct FromHelper<WireFormatLite::TYPE_STRING> {
+  static ArenaStringPtr From(const string& x) {
+    ArenaStringPtr res;
+    *res.UnsafeRawStringPointer() = const_cast<string*>(&x);
+    return res;
+  }
+};
+template <>
+struct FromHelper<WireFormatLite::TYPE_BYTES> {
+  static ArenaStringPtr From(const string& x) {
+    ArenaStringPtr res;
+    *res.UnsafeRawStringPointer() = const_cast<string*>(&x);
+    return res;
+  }
+};
+template <>
+struct FromHelper<WireFormatLite::TYPE_MESSAGE> {
+  template <typename T>
+  static T* From(const T& x) {
+    return const_cast<T*>(&x);
+  }
+};
+
+template <typename MapEntryType>
+struct MapEntryHelper;
+
+template <typename T, typename Key, typename Value,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
+struct MapEntryHelper<MapEntryLite<T, Key, Value, kKeyFieldType,
+                                   kValueFieldType, default_enum_value> > {
+  // Provide utilities to parse/serialize key/value.  Provide utilities to
+  // manipulate internal stored type.
+  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
+  typedef MapTypeHandler<kValueFieldType, Value> ValueTypeHandler;
+
+  // Define internal memory layout. Strings and messages are stored as
+  // pointers, while other types are stored as values.
+  typedef typename KeyTypeHandler::TypeOnMemory KeyOnMemory;
+  typedef typename ValueTypeHandler::TypeOnMemory ValueOnMemory;
+
+  explicit MapEntryHelper(const MapPair<Key, Value>& map_pair)
+      : _has_bits_(3),
+        _cached_size_(2 + KeyTypeHandler::GetCachedSize(map_pair.first) +
+                      ValueTypeHandler::GetCachedSize(map_pair.second)),
+        key_(FromHelper<kKeyFieldType>::From(map_pair.first)),
+        value_(FromHelper<kValueFieldType>::From(map_pair.second)) {}
+
+  // Purposely not folowing the style guide naming. These are the names
+  // the proto compiler would generate given the map entry descriptor.
+  // The proto compiler generates the offsets in this struct as if this was
+  // a regular message. This way the table driven code barely notices it's
+  // dealing with a map field.
+  uint32 _has_bits_;     // NOLINT
+  uint32 _cached_size_;  // NOLINT
+  KeyOnMemory key_;      // NOLINT
+  ValueOnMemory value_;  // NOLINT
 };
 
 }  // namespace internal

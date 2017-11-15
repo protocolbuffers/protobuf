@@ -47,18 +47,35 @@ final class UnsafeUtil {
   private static final boolean HAS_UNSAFE_BYTEBUFFER_OPERATIONS =
       supportsUnsafeByteBufferOperations();
   private static final boolean HAS_UNSAFE_ARRAY_OPERATIONS = supportsUnsafeArrayOperations();
-  private static final boolean HAS_UNSAFE_COPY_MEMORY = supportsUnsafeCopyMemory();
-  private static final long ARRAY_BASE_OFFSET = byteArrayBaseOffset();
+
+  private static final long BYTE_ARRAY_BASE_OFFSET = arrayBaseOffset(byte[].class);
+  // Micro-optimization: we can assume a scale of 1 and skip the multiply
+  // private static final long BYTE_ARRAY_INDEX_SCALE = 1;
+
+  private static final long BOOLEAN_ARRAY_BASE_OFFSET = arrayBaseOffset(boolean[].class);
+  private static final long BOOLEAN_ARRAY_INDEX_SCALE = arrayIndexScale(boolean[].class);
+
+  private static final long INT_ARRAY_BASE_OFFSET = arrayBaseOffset(int[].class);
+  private static final long INT_ARRAY_INDEX_SCALE = arrayIndexScale(int[].class);
+
+  private static final long LONG_ARRAY_BASE_OFFSET = arrayBaseOffset(long[].class);
+  private static final long LONG_ARRAY_INDEX_SCALE = arrayIndexScale(long[].class);
+
+  private static final long FLOAT_ARRAY_BASE_OFFSET = arrayBaseOffset(float[].class);
+  private static final long FLOAT_ARRAY_INDEX_SCALE = arrayIndexScale(float[].class);
+
+  private static final long DOUBLE_ARRAY_BASE_OFFSET = arrayBaseOffset(double[].class);
+  private static final long DOUBLE_ARRAY_INDEX_SCALE = arrayIndexScale(double[].class);
+
+  private static final long OBJECT_ARRAY_BASE_OFFSET = arrayBaseOffset(Object[].class);
+  private static final long OBJECT_ARRAY_INDEX_SCALE = arrayIndexScale(Object[].class);
+
   private static final long BUFFER_ADDRESS_OFFSET = fieldOffset(bufferAddressField());
 
   private UnsafeUtil() {}
 
   static boolean hasUnsafeArrayOperations() {
     return HAS_UNSAFE_ARRAY_OPERATIONS;
-  }
-
-  static boolean hasUnsafeCopyMemory() {
-    return HAS_UNSAFE_COPY_MEMORY;
   }
 
   static boolean hasUnsafeByteBufferOperations() {
@@ -69,8 +86,12 @@ final class UnsafeUtil {
     return MEMORY_ACCESSOR.objectFieldOffset(field);
   }
 
-  static long getArrayBaseOffset() {
-    return ARRAY_BASE_OFFSET;
+  private static int arrayBaseOffset(Class<?> clazz) {
+    return HAS_UNSAFE_ARRAY_OPERATIONS ? MEMORY_ACCESSOR.arrayBaseOffset(clazz) : -1;
+  }
+
+  private static int arrayIndexScale(Class<?> clazz) {
+    return HAS_UNSAFE_ARRAY_OPERATIONS ? MEMORY_ACCESSOR.arrayIndexScale(clazz) : -1;
   }
 
   static byte getByte(Object target, long offset) {
@@ -129,9 +150,82 @@ final class UnsafeUtil {
     MEMORY_ACCESSOR.putObject(target, offset, value);
   }
 
-  static void copyMemory(
-      Object src, long srcOffset, Object target, long targetOffset, long length) {
-    MEMORY_ACCESSOR.copyMemory(src, srcOffset, target, targetOffset, length);
+  static byte getByte(byte[] target, long index) {
+    return MEMORY_ACCESSOR.getByte(target, BYTE_ARRAY_BASE_OFFSET + index);
+  }
+
+  static void putByte(byte[] target, long index, byte value) {
+    MEMORY_ACCESSOR.putByte(target, BYTE_ARRAY_BASE_OFFSET + index, value);
+  }
+
+  static int getInt(int[] target, long index) {
+    return MEMORY_ACCESSOR.getInt(target, INT_ARRAY_BASE_OFFSET + (index * INT_ARRAY_INDEX_SCALE));
+  }
+
+  static void putInt(int[] target, long index, int value) {
+    MEMORY_ACCESSOR.putInt(target, INT_ARRAY_BASE_OFFSET + (index * INT_ARRAY_INDEX_SCALE), value);
+  }
+
+  static long getLong(long[] target, long index) {
+    return MEMORY_ACCESSOR.getLong(
+        target, LONG_ARRAY_BASE_OFFSET + (index * LONG_ARRAY_INDEX_SCALE));
+  }
+
+  static void putLong(long[] target, long index, long value) {
+    MEMORY_ACCESSOR.putLong(
+        target, LONG_ARRAY_BASE_OFFSET + (index * LONG_ARRAY_INDEX_SCALE), value);
+  }
+
+  static boolean getBoolean(boolean[] target, long index) {
+    return MEMORY_ACCESSOR.getBoolean(
+        target, BOOLEAN_ARRAY_BASE_OFFSET + (index * BOOLEAN_ARRAY_INDEX_SCALE));
+  }
+
+  static void putBoolean(boolean[] target, long index, boolean value) {
+    MEMORY_ACCESSOR.putBoolean(
+        target, BOOLEAN_ARRAY_BASE_OFFSET + (index * BOOLEAN_ARRAY_INDEX_SCALE), value);
+  }
+
+  static float getFloat(float[] target, long index) {
+    return MEMORY_ACCESSOR.getFloat(
+        target, FLOAT_ARRAY_BASE_OFFSET + (index * FLOAT_ARRAY_INDEX_SCALE));
+  }
+
+  static void putFloat(float[] target, long index, float value) {
+    MEMORY_ACCESSOR.putFloat(
+        target, FLOAT_ARRAY_BASE_OFFSET + (index * FLOAT_ARRAY_INDEX_SCALE), value);
+  }
+
+  static double getDouble(double[] target, long index) {
+    return MEMORY_ACCESSOR.getDouble(
+        target, DOUBLE_ARRAY_BASE_OFFSET + (index * DOUBLE_ARRAY_INDEX_SCALE));
+  }
+
+  static void putDouble(double[] target, long index, double value) {
+    MEMORY_ACCESSOR.putDouble(
+        target, DOUBLE_ARRAY_BASE_OFFSET + (index * DOUBLE_ARRAY_INDEX_SCALE), value);
+  }
+
+  static Object getObject(Object[] target, long index) {
+    return MEMORY_ACCESSOR.getObject(
+        target, OBJECT_ARRAY_BASE_OFFSET + (index * OBJECT_ARRAY_INDEX_SCALE));
+  }
+
+  static void putObject(Object[] target, long index, Object value) {
+    MEMORY_ACCESSOR.putObject(
+        target, OBJECT_ARRAY_BASE_OFFSET + (index * OBJECT_ARRAY_INDEX_SCALE), value);
+  }
+
+  static void copyMemory(byte[] src, long srcIndex, long targetOffset, long length) {
+    MEMORY_ACCESSOR.copyMemory(src, srcIndex, targetOffset, length);
+  }
+
+  static void copyMemory(long srcOffset, byte[] target, long targetIndex, long length) {
+    MEMORY_ACCESSOR.copyMemory(srcOffset, target, targetIndex, length);
+  }
+
+  static void copyMemory(byte[] src, long srcIndex, byte[] target, long targetIndex, long length) {
+    System.arraycopy(src, (int) srcIndex, target, (int) targetIndex, (int) length); 
   }
 
   static byte getByte(long address) {
@@ -156,10 +250,6 @@ final class UnsafeUtil {
 
   static void putLong(long address, long value) {
     MEMORY_ACCESSOR.putLong(address, value);
-  }
-
-  static void copyMemory(long srcAddress, long targetAddress, long length) {
-    MEMORY_ACCESSOR.copyMemory(srcAddress, targetAddress, length);
   }
 
   /**
@@ -221,6 +311,7 @@ final class UnsafeUtil {
       Class<?> clazz = UNSAFE.getClass();
       clazz.getMethod("objectFieldOffset", Field.class);
       clazz.getMethod("arrayBaseOffset", Class.class);
+      clazz.getMethod("arrayIndexScale", Class.class);
       clazz.getMethod("getInt", Object.class, long.class);
       clazz.getMethod("putInt", Object.class, long.class, int.class);
       clazz.getMethod("getLong", Object.class, long.class);
@@ -245,27 +336,6 @@ final class UnsafeUtil {
     return false;
   }
 
-  /**
-   * Indicates whether or not unsafe copyMemory(object, long, object, long, long) operations are
-   * supported on this platform.
-   */
-  private static boolean supportsUnsafeCopyMemory() {
-    if (UNSAFE == null) {
-      return false;
-    }
-    try {
-      Class<?> clazz = UNSAFE.getClass();
-      clazz.getMethod("copyMemory", Object.class, long.class, Object.class, long.class, long.class);
-
-      return true;
-    } catch (Throwable e) {
-      logger.log(
-          Level.WARNING,
-          "copyMemory is missing from platform - proto runtime falling back to safer methods.");
-    }
-    return false;
-  }
-
   private static boolean supportsUnsafeByteBufferOperations() {
     if (UNSAFE == null) {
       return false;
@@ -283,6 +353,7 @@ final class UnsafeUtil {
       clazz.getMethod("getLong", long.class);
       clazz.getMethod("putLong", long.class, long.class);
       clazz.getMethod("copyMemory", long.class, long.class, long.class);
+      clazz.getMethod("copyMemory", Object.class, long.class, Object.class, long.class, long.class);
       return true;
     } catch (Throwable e) {
       logger.log(
@@ -305,13 +376,6 @@ final class UnsafeUtil {
   /** Finds the address field within a direct {@link Buffer}. */
   private static Field bufferAddressField() {
     return field(Buffer.class, "address");
-  }
-
-  /**
-   * Get the base offset for byte arrays, or {@code -1} if {@code sun.misc.Unsafe} is not available.
-   */
-  private static int byteArrayBaseOffset() {
-    return HAS_UNSAFE_ARRAY_OPERATIONS ? MEMORY_ACCESSOR.arrayBaseOffset(byte[].class) : -1;
   }
 
   /**
@@ -394,6 +458,10 @@ final class UnsafeUtil {
       return unsafe.arrayBaseOffset(clazz);
     }
 
+    public final int arrayIndexScale(Class<?> clazz) {
+      return unsafe.arrayIndexScale(clazz);
+    }
+
     public abstract byte getByte(long address);
 
     public abstract void putByte(long address, byte value);
@@ -406,12 +474,11 @@ final class UnsafeUtil {
 
     public abstract void putLong(long address, long value);
 
-    public abstract void copyMemory(long srcAddress, long targetAddress, long length);
-
-    public abstract void copyMemory(
-        Object src, long srcOffset, Object target, long targetOffset, long length);
-
     public abstract Object getStaticObject(Field field);
+    
+    public abstract void copyMemory(long srcOffset, byte[] target, long targetIndex, long length);
+    
+    public abstract void copyMemory(byte[] src, long srcIndex, long targetOffset, long length);
   }
 
   private static final class JvmMemoryAccessor extends MemoryAccessor {
@@ -489,16 +556,15 @@ final class UnsafeUtil {
     public void putDouble(Object target, long offset, double value) {
       unsafe.putDouble(target, offset, value);
     }
-
-    @Override
-    public void copyMemory(
-        Object src, long srcOffset, Object target, long targetOffset, long length) {
-      unsafe.copyMemory(src, srcOffset, target, targetOffset, length);
+    
+    @Override 
+    public void copyMemory(long srcOffset, byte[] target, long targetIndex, long length) {
+      unsafe.copyMemory(null, srcOffset, target, BYTE_ARRAY_BASE_OFFSET + targetIndex, length);
     }
-
+    
     @Override
-    public void copyMemory(long srcAddress, long targetAddress, long length) {
-      unsafe.copyMemory(srcAddress, targetAddress, length);
+    public void copyMemory(byte[] src, long srcIndex, long targetOffset, long length) {
+      unsafe.copyMemory(src, BYTE_ARRAY_BASE_OFFSET + srcIndex, null, targetOffset, length);
     }
 
     @Override

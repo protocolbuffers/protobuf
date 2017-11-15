@@ -31,7 +31,12 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_TABLE_DRIVEN_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TABLE_DRIVEN_H__
 
+#include <google/protobuf/map.h>
+#include <google/protobuf/map_entry_lite.h>
+#include <google/protobuf/map_field_lite.h>
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/wire_format_lite_inl.h>
 
 #if LANG_CXX11
 #define PROTOBUF_CONSTEXPR constexpr
@@ -39,7 +44,8 @@
 // We require C++11 and Clang to use constexpr for variables, as GCC 4.8
 // requires constexpr to be consistent between declarations of variables
 // unnecessarily (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58541).
-#ifdef __clang__
+// VS 2017 Update 3 also supports this usage of constexpr.
+#if defined(__clang__) || (defined(_MSC_VER) && _MSC_VER >= 1911)
 #define PROTOBUF_CONSTEXPR_VAR constexpr
 #else  // !__clang__
 #define PROTOBUF_CONSTEXPR_VAR
@@ -54,10 +60,14 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+// Processing-type masks.
 static PROTOBUF_CONSTEXPR const unsigned char kOneofMask = 0x40;
 static PROTOBUF_CONSTEXPR const unsigned char kRepeatedMask = 0x20;
-// Check this against types.
+// Mask for the raw type: either a WireFormatLite::FieldType or one of the
+// ProcessingTypes below, without the oneof or repeated flag.
+static PROTOBUF_CONSTEXPR const unsigned char kTypeMask = 0x1f;
 
+// Wire type masks.
 static PROTOBUF_CONSTEXPR const unsigned char kNotPackedMask = 0x10;
 static PROTOBUF_CONSTEXPR const unsigned char kInvalidMask = 0x20;
 
@@ -66,10 +76,11 @@ enum ProcessingTypes {
   TYPE_STRING_STRING_PIECE = 20,
   TYPE_BYTES_CORD = 21,
   TYPE_BYTES_STRING_PIECE = 22,
+  TYPE_MAP = 23,
 };
 
 #if LANG_CXX11
-static_assert(TYPE_BYTES_STRING_PIECE < kRepeatedMask, "Invalid enum");
+static_assert(TYPE_MAP < kRepeatedMask, "Invalid enum");
 #endif
 
 // TODO(ckennelly):  Add a static assertion to ensure that these masks do not
@@ -81,7 +92,9 @@ static_assert(TYPE_BYTES_STRING_PIECE < kRepeatedMask, "Invalid enum");
 // AuxillaryParseTableField.
 struct ParseTableField {
   uint32 offset;
-  uint32 has_bit_index;
+  // The presence_index ordinarily represents a has_bit index, but for fields
+  // inside a oneof it represents the index in _oneof_case_.
+  uint32 presence_index;
   unsigned char normal_wiretype;
   unsigned char packed_wiretype;
 
@@ -100,7 +113,6 @@ union AuxillaryParseTableField {
   // Enums
   struct enum_aux {
     EnumValidator validator;
-    const char* name;
   };
   enum_aux enums;
   // Group, messages
@@ -119,10 +131,13 @@ union AuxillaryParseTableField {
   struct string_aux {
     const void* default_ptr;
     const char* field_name;
-    bool strict_utf8;
-    const char* name;
   };
   string_aux strings;
+
+  struct map_aux {
+    bool (*parse_map)(io::CodedInputStream*, void*);
+  };
+  map_aux maps;
 
 #if LANG_CXX11
   AuxillaryParseTableField() = default;
@@ -135,6 +150,9 @@ union AuxillaryParseTableField {
       AuxillaryParseTableField::message_aux m) : messages(m) {}
   PROTOBUF_CONSTEXPR AuxillaryParseTableField(
       AuxillaryParseTableField::string_aux s) : strings(s) {}
+  PROTOBUF_CONSTEXPR AuxillaryParseTableField(
+      AuxillaryParseTableField::map_aux m)
+      : maps(m) {}
 };
 
 struct ParseTable {
@@ -145,8 +163,19 @@ struct ParseTable {
 
   // TODO(ckennelly): Vet these for sign extension.
   int64 has_bits_offset;
+  int64 oneof_case_offset;
+  int64 extension_offset;
   int64 arena_offset;
-  int  unknown_field_set;
+
+  // ExplicitlyInitialized<T> -> T requires a reinterpret_cast, which prevents
+  // the tables from being constructed as a constexpr.  We use void to avoid
+  // the cast.
+  const void* default_instance_void;
+  const MessageLite* default_instance() const {
+    return static_cast<const MessageLite*>(default_instance_void);
+  }
+
+  bool unknown_field_set;
 };
 
 // TODO(jhen): Remove the __NVCC__ check when we get a version of nvcc that
@@ -163,8 +192,25 @@ static_assert(std::is_pod<AuxillaryParseTableField::string_aux>::value, "");
 static_assert(std::is_pod<ParseTable>::value, "");
 #endif
 
+// TODO(ckennelly): Consolidate these implementations into a single one, using
+// dynamic dispatch to the appropriate unknown field handler.
 bool MergePartialFromCodedStream(MessageLite* msg, const ParseTable& table,
                                  io::CodedInputStream* input);
+bool MergePartialFromCodedStreamLite(MessageLite* msg, const ParseTable& table,
+                                 io::CodedInputStream* input);
+
+template <typename Entry>
+bool ParseMap(io::CodedInputStream* input, void* map_field) {
+  typedef typename MapEntryToMapField<Entry>::MapFieldType MapFieldType;
+  typedef google::protobuf::Map<typename Entry::EntryKeyType,
+                      typename Entry::EntryValueType>
+      MapType;
+  typedef typename Entry::template Parser<MapFieldType, MapType> ParserType;
+
+  ParserType parser(static_cast<MapFieldType*>(map_field));
+  return ::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(input,
+                                                                  &parser);
+}
 
 }  // namespace internal
 }  // namespace protobuf

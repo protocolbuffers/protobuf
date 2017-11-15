@@ -52,17 +52,16 @@ namespace protobuf {
 class Descriptor;            // descriptor.h
 class DescriptorPool;        // descriptor.h
 class FileDescriptor;        // descriptor.h
+class FileDescriptorSet;     // descriptor.h
 class FileDescriptorProto;   // descriptor.pb.h
 template<typename T> class RepeatedPtrField;  // repeated_field.h
+class SimpleDescriptorDatabase;               // descriptor_database.h
 
-}  // namespace protobuf
-
-namespace protobuf {
 namespace compiler {
 
-class CodeGenerator;        // code_generator.h
-class GeneratorContext;      // code_generator.h
-class DiskSourceTree;       // importer.h
+class CodeGenerator;     // code_generator.h
+class GeneratorContext;  // code_generator.h
+class DiskSourceTree;    // importer.h
 
 // This class implements the command-line interface to the protocol compiler.
 // It is designed to make it very easy to create a custom protocol compiler
@@ -91,9 +90,21 @@ class DiskSourceTree;       // importer.h
 // The compiler is invoked with syntax like:
 //   protoc --cpp_out=outdir --foo_out=outdir --proto_path=src src/foo.proto
 //
+// The .proto file to compile can be specified on the command line using either
+// its physical file path, or a virtual path relative to a diretory specified
+// in --proto_path. For example, for src/foo.proto, the following two protoc
+// invocations work the same way:
+//   1. protoc --proto_path=src src/foo.proto (physical file path)
+//   2. protoc --proto_path=src foo.proto (virtual path relative to src)
+//
+// If a file path can be interpreted both as a physical file path and as a
+// relative virtual path, the physical file path takes precendence.
+//
 // For a full description of the command-line syntax, invoke it with --help.
 class LIBPROTOC_EXPORT CommandLineInterface {
  public:
+  static const char* const kPathSeparator;
+
   CommandLineInterface();
   ~CommandLineInterface();
 
@@ -175,17 +186,11 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // it calls strerror().  I'm not sure why you'd want to do this anyway.
   int Run(int argc, const char* const argv[]);
 
-  // Call SetInputsAreCwdRelative(true) if the input files given on the command
-  // line should be interpreted relative to the proto import path specified
-  // using --proto_path or -I flags.  Otherwise, input file names will be
-  // interpreted relative to the current working directory (or as absolute
-  // paths if they start with '/'), though they must still reside inside
-  // a directory given by --proto_path or the compiler will fail.  The latter
-  // mode is generally more intuitive and easier to use, especially e.g. when
-  // defining implicit rules in Makefiles.
-  void SetInputsAreProtoPathRelative(bool enable) {
-    inputs_are_proto_path_relative_ = enable;
-  }
+  // DEPRECATED. Calling this method has no effect. Protocol compiler now
+  // always try to find the .proto file relative to the current directory
+  // first and if the file is not found, it will then treat the input path
+  // as a virutal path.
+  void SetInputsAreProtoPathRelative(bool /* enable */) {}
 
   // Provides some text which will be printed when the --version flag is
   // used.  The version of libprotoc will also be printed on the next line
@@ -222,6 +227,9 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Parse all command-line arguments.
   ParseArgumentStatus ParseArguments(int argc, const char* const argv[]);
 
+  // Read an argument file and append the file's content to the list of
+  // arguments. Return false if the file cannot be read.
+  bool ExpandArgumentFile(const string& file, std::vector<string>* arguments);
 
   // Parses a command-line argument into a name/value pair.  Returns
   // true if the next argument in the argv should be used as the value,
@@ -242,6 +250,16 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   // Print the --help text to stderr.
   void PrintHelpText();
+
+  // Loads proto_path_ into the provided source_tree.
+  bool InitializeDiskSourceTree(DiskSourceTree* source_tree);
+
+  // Loads descriptor_set_in into the provided database
+  bool PopulateSimpleDescriptorDatabase(SimpleDescriptorDatabase* database);
+
+  // Parses input_files_ into parsed_files
+  bool ParseInputFiles(DescriptorPool* descriptor_pool,
+                       std::vector<const FileDescriptor*>* parsed_files);
 
   // Generate the given output file from the given input.
   struct OutputDirective;  // see below
@@ -383,9 +401,13 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // decoding.  (Empty string indicates --decode_raw.)
   string codec_type_;
 
+  // If --descriptor_set_in was given, these are filenames containing
+  // parsed FileDescriptorSets to be used for loading protos.  Otherwise, empty.
+  std::vector<string> descriptor_set_in_names_;
+
   // If --descriptor_set_out was given, this is the filename to which the
   // FileDescriptorSet should be written.  Otherwise, empty.
-  string descriptor_set_name_;
+  string descriptor_set_out_name_;
 
   // If --dependency_out was given, this is the path to the file where the
   // dependency file will be written. Otherwise, empty.
@@ -407,9 +429,6 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   // Was the --disallow_services flag used?
   bool disallow_services_;
-
-  // See SetInputsAreProtoPathRelative().
-  bool inputs_are_proto_path_relative_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CommandLineInterface);
 };

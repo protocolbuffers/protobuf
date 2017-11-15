@@ -35,9 +35,10 @@
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
 #include <map>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/stubs/strutil.h>
+
 
 namespace google {
 namespace protobuf {
@@ -164,46 +165,6 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
     "::google::protobuf::internal::ExtensionIdentifier< $extendee$,\n"
     "    ::google::protobuf::internal::$type_traits$, $field_type$, $packed$ >\n"
     "  $name$($constant_name$, $default$);\n");
-}
-
-void ExtensionGenerator::GenerateRegistration(io::Printer* printer) {
-  std::map<string, string> vars;
-  vars["extendee"   ] = ExtendeeClassName(descriptor_);
-  vars["number"     ] = SimpleItoa(descriptor_->number());
-  vars["field_type" ] = SimpleItoa(static_cast<int>(descriptor_->type()));
-  vars["is_repeated"] = descriptor_->is_repeated() ? "true" : "false";
-  vars["is_packed"  ] = (descriptor_->is_repeated() &&
-                         descriptor_->options().packed())
-                        ? "true" : "false";
-
-  switch (descriptor_->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_ENUM:
-      printer->Print(
-          vars,
-          "::google::protobuf::internal::ExtensionSet::RegisterEnumExtension(\n"
-          "  $extendee$::internal_default_instance(),\n"
-          "  $number$, $field_type$, $is_repeated$, $is_packed$,\n");
-      printer->Print(
-        "  &$type$_IsValid);\n",
-        "type", ClassName(descriptor_->enum_type(), true));
-      break;
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      printer->Print(
-          vars,
-          "::google::protobuf::internal::ExtensionSet::RegisterMessageExtension(\n"
-          "  $extendee$::internal_default_instance(),\n"
-          "  $number$, $field_type$, $is_repeated$, $is_packed$,\n");
-      printer->Print("  $type$::internal_default_instance());\n", "type",
-                     ClassName(descriptor_->message_type(), true));
-      break;
-    default:
-      printer->Print(
-          vars,
-          "::google::protobuf::internal::ExtensionSet::RegisterExtension(\n"
-          "  $extendee$::internal_default_instance(),\n"
-          "  $number$, $field_type$, $is_repeated$, $is_packed$);\n");
-      break;
-  }
 }
 
 }  // namespace cpp

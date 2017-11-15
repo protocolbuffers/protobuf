@@ -81,10 +81,10 @@ message TestAllTypesProto2 {
   optional bytes optional_bytes    = 15;
 
   optional NestedMessage                        optional_nested_message  = 18;
-  optional ForeignMessage                       optional_foreign_message = 19;
+  optional ForeignMessageProto2                 optional_foreign_message = 19;
 
   optional NestedEnum                           optional_nested_enum     = 21;
-  optional ForeignEnum                          optional_foreign_enum    = 22;
+  optional ForeignEnumProto2                    optional_foreign_enum    = 22;
 
   optional string optional_string_piece = 24 [ctype=STRING_PIECE];
   optional string optional_cord = 25 [ctype=CORD];
@@ -109,10 +109,10 @@ message TestAllTypesProto2 {
   repeated    bytes repeated_bytes    = 45;
 
   repeated NestedMessage       repeated_nested_message  = 48;
-  repeated ForeignMessage      repeated_foreign_message = 49;
+  repeated ForeignMessageProto2      repeated_foreign_message = 49;
 
   repeated NestedEnum          repeated_nested_enum     = 51;
-  repeated ForeignEnum         repeated_foreign_enum    = 52;
+  repeated ForeignEnumProto2         repeated_foreign_enum    = 52;
 
   repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord = 55 [ctype=CORD];
@@ -134,9 +134,9 @@ message TestAllTypesProto2 {
   map <  string, string>   map_string_string = 69;
   map <  string, bytes>    map_string_bytes = 70;
   map <  string, NestedMessage>  map_string_nested_message = 71;
-  map <  string, ForeignMessage> map_string_foreign_message = 72;
+  map <  string, ForeignMessageProto2> map_string_foreign_message = 72;
   map <  string, NestedEnum>     map_string_nested_enum = 73;
-  map <  string, ForeignEnum>    map_string_foreign_enum = 74;
+  map <  string, ForeignEnumProto2>    map_string_foreign_enum = 74;
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;
@@ -201,11 +201,11 @@ message TestAllTypesProto2 {
   }
 }
 
-message ForeignMessage {
+message ForeignMessageProto2 {
   optional int32 c = 1;
 }
 
-enum ForeignEnum {
+enum ForeignEnumProto2 {
   FOREIGN_FOO = 0;
   FOREIGN_BAR = 1;
   FOREIGN_BAZ = 2;

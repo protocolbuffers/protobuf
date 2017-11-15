@@ -27,7 +27,7 @@ namespace ProtobufTestMessages.Proto3 {
             "dWYvYW55LnByb3RvGh5nb29nbGUvcHJvdG9idWYvZHVyYXRpb24ucHJvdG8a",
             "IGdvb2dsZS9wcm90b2J1Zi9maWVsZF9tYXNrLnByb3RvGhxnb29nbGUvcHJv",
             "dG9idWYvc3RydWN0LnByb3RvGh9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1w",
-            "LnByb3RvGh5nb29nbGUvcHJvdG9idWYvd3JhcHBlcnMucHJvdG8irDsKElRl",
+            "LnByb3RvGh5nb29nbGUvcHJvdG9idWYvd3JhcHBlcnMucHJvdG8itDsKElRl",
             "c3RBbGxUeXBlc1Byb3RvMxIWCg5vcHRpb25hbF9pbnQzMhgBIAEoBRIWCg5v",
             "cHRpb25hbF9pbnQ2NBgCIAEoAxIXCg9vcHRpb25hbF91aW50MzIYAyABKA0S",
             "FwoPb3B0aW9uYWxfdWludDY0GAQgASgEEhcKD29wdGlvbmFsX3NpbnQzMhgF",
@@ -196,11 +196,11 @@ namespace ProtobufTestMessages.Proto3 {
             "Z0ZvcmVpZ25FbnVtRW50cnkSCwoDa2V5GAEgASgJEjkKBXZhbHVlGAIgASgO",
             "MioucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzMuRm9yZWlnbkVudW06",
             "AjgBIjkKCk5lc3RlZEVudW0SBwoDRk9PEAASBwoDQkFSEAESBwoDQkFaEAIS",
-            "EAoDTkVHEP///////////wFCDQoLb25lb2ZfZmllbGQiGwoORm9yZWlnbk1l",
-            "c3NhZ2USCQoBYxgBIAEoBSpACgtGb3JlaWduRW51bRIPCgtGT1JFSUdOX0ZP",
-            "TxAAEg8KC0ZPUkVJR05fQkFSEAESDwoLRk9SRUlHTl9CQVoQAkI4Cihjb20u",
-            "Z29vZ2xlLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8zSAH4AQGiAgZQ",
-            "cm90bzNiBnByb3RvMw=="));
+            "EAoDTkVHEP///////////wFCDQoLb25lb2ZfZmllbGRKBgj1AxD/AyIbCg5G",
+            "b3JlaWduTWVzc2FnZRIJCgFjGAEgASgFKkAKC0ZvcmVpZ25FbnVtEg8KC0ZP",
+            "UkVJR05fRk9PEAASDwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhAC",
+            "QjgKKGNvbS5nb29nbGUucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzNI",
+            "AfgBAaICBlByb3RvM2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Proto3.ForeignEnum), }, new pbr::GeneratedClrTypeInfo[] {
@@ -2808,7 +2808,10 @@ namespace ProtobufTestMessages.Proto3 {
           OneofUint32 = other.OneofUint32;
           break;
         case OneofFieldOneofCase.OneofNestedMessage:
-          OneofNestedMessage = other.OneofNestedMessage;
+          if (OneofNestedMessage == null) {
+            OneofNestedMessage = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage();
+          }
+          OneofNestedMessage.MergeFrom(other.OneofNestedMessage);
           break;
         case OneofFieldOneofCase.OneofString:
           OneofString = other.OneofString;

@@ -809,7 +809,7 @@ namespace Google.Protobuf
             var json = formatter.Format(original); // This is tested in JsonFormatterTest
             var parser = new JsonParser(new JsonParser.Settings(10, registry));
             Assert.AreEqual(original, parser.Parse<Any>(json));
-            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest.TestAllTypes\" }";
+            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest3.TestAllTypes\" }";
             Assert.AreEqual(original, parser.Parse<Any>(valueFirstJson));
         }
 
@@ -820,7 +820,7 @@ namespace Google.Protobuf
             var message = new TestAllTypes { SingleInt32 = 10 };
             var original = Any.Pack(message, "custom.prefix/middle-part");
             var parser = new JsonParser(new JsonParser.Settings(10, registry));
-            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest.TestAllTypes\", \"singleInt32\": 10 }";
+            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest3.TestAllTypes\", \"singleInt32\": 10 }";
             Assert.AreEqual(original, parser.Parse<Any>(json));
         }
 
@@ -924,6 +924,27 @@ namespace Google.Protobuf
         {
             string json = "{ \"oneofString\": \"x\", \"oneofUint32\": 10 }";
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void UnknownField_NotIgnored()
+        {
+            string json = "{ \"unknownField\": 10, \"singleString\": \"x\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        [TestCase("5")]
+        [TestCase("\"text\"")]
+        [TestCase("[0, 1, 2]")]
+        [TestCase("{ \"a\": { \"b\": 10 } }")]
+        public void UnknownField_Ignored(string value)
+        {
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"unknownField\": " + value + ", \"singleString\": \"x\" }";
+            var actual = parser.Parse<TestAllTypes>(json);
+            var expected = new TestAllTypes { SingleString = "x" };
+            Assert.AreEqual(expected, actual);
         }
 
         /// <summary>

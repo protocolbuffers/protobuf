@@ -40,6 +40,7 @@ This files defines well known classes which need extra maintenance including:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+import collections
 from datetime import datetime
 from datetime import timedelta
 import six
@@ -67,13 +68,14 @@ class ParseError(Error):
 class Any(object):
   """Class for Any Message type."""
 
-  def Pack(self, msg, type_url_prefix='type.googleapis.com/'):
+  def Pack(self, msg, type_url_prefix='type.googleapis.com/',
+           deterministic=None):
     """Packs the specified message into current Any message."""
     if len(type_url_prefix) < 1 or type_url_prefix[-1] != '/':
       self.type_url = '%s/%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
     else:
       self.type_url = '%s%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
-    self.value = msg.SerializeToString()
+    self.value = msg.SerializeToString(deterministic=deterministic)
 
   def Unpack(self, msg):
     """Unpacks the current Any message into specified message."""
@@ -350,12 +352,12 @@ class Duration(object):
             self.nanos, _NANOS_PER_MICROSECOND))
 
   def FromTimedelta(self, td):
-    """Convertd timedelta to Duration."""
+    """Converts timedelta to Duration."""
     self._NormalizeDuration(td.seconds + td.days * _SECONDS_PER_DAY,
                             td.microseconds * _NANOS_PER_MICROSECOND)
 
   def _NormalizeDuration(self, seconds, nanos):
-    """Set Duration by seconds and nonas."""
+    """Set Duration by seconds and nanos."""
     # Force nanos to be negative if the duration is negative.
     if seconds < 0 and nanos > 0:
       seconds += 1
@@ -473,7 +475,7 @@ def _IsValidPath(message_descriptor, path):
   parts = path.split('.')
   last = parts.pop()
   for name in parts:
-    field = message_descriptor.fields_by_name[name]
+    field = message_descriptor.fields_by_name.get(name)
     if (field is None or
         field.label == FieldDescriptor.LABEL_REPEATED or
         field.type != FieldDescriptor.TYPE_MESSAGE):
@@ -698,6 +700,12 @@ def _SetStructValue(struct_value, value):
     struct_value.string_value = value
   elif isinstance(value, _INT_OR_FLOAT):
     struct_value.number_value = value
+  elif isinstance(value, dict):
+    struct_value.struct_value.Clear()
+    struct_value.struct_value.update(value)
+  elif isinstance(value, list):
+    struct_value.list_value.Clear()
+    struct_value.list_value.extend(value)
   else:
     raise ValueError('Unexpected type')
 
@@ -728,18 +736,49 @@ class Struct(object):
   def __getitem__(self, key):
     return _GetStructValue(self.fields[key])
 
+  def __contains__(self, item):
+    return item in self.fields
+
   def __setitem__(self, key, value):
     _SetStructValue(self.fields[key], value)
 
+  def __delitem__(self, key):
+    del self.fields[key]
+
+  def __len__(self):
+    return len(self.fields)
+
+  def __iter__(self):
+    return iter(self.fields)
+
+  def keys(self):  # pylint: disable=invalid-name
+    return self.fields.keys()
+
+  def values(self):  # pylint: disable=invalid-name
+    return [self[key] for key in self]
+
+  def items(self):  # pylint: disable=invalid-name
+    return [(key, self[key]) for key in self]
+
   def get_or_create_list(self, key):
     """Returns a list for this key, creating if it didn't exist already."""
+    if not self.fields[key].HasField('list_value'):
+      # Clear will mark list_value modified which will indeed create a list.
+      self.fields[key].list_value.Clear()
     return self.fields[key].list_value
 
   def get_or_create_struct(self, key):
     """Returns a struct for this key, creating if it didn't exist already."""
+    if not self.fields[key].HasField('struct_value'):
+      # Clear will mark struct_value modified which will indeed create a struct.
+      self.fields[key].struct_value.Clear()
     return self.fields[key].struct_value
 
-  # TODO(haberman): allow constructing/merging from dict.
+  def update(self, dictionary):  # pylint: disable=invalid-name
+    for key, value in dictionary.items():
+      _SetStructValue(self.fields[key], value)
+
+collections.MutableMapping.register(Struct)
 
 
 class ListValue(object):
@@ -762,17 +801,28 @@ class ListValue(object):
   def __setitem__(self, index, value):
     _SetStructValue(self.values.__getitem__(index), value)
 
+  def __delitem__(self, key):
+    del self.values[key]
+
   def items(self):
     for i in range(len(self)):
       yield self[i]
 
   def add_struct(self):
     """Appends and returns a struct value as the next value in the list."""
-    return self.values.add().struct_value
+    struct_value = self.values.add().struct_value
+    # Clear will mark struct_value modified which will indeed create a struct.
+    struct_value.Clear()
+    return struct_value
 
   def add_list(self):
     """Appends and returns a list value as the next value in the list."""
-    return self.values.add().list_value
+    list_value = self.values.add().list_value
+    # Clear will mark list_value modified which will indeed create a list.
+    list_value.Clear()
+    return list_value
+
+collections.MutableSequence.register(ListValue)
 
 
 WKTBASES = {

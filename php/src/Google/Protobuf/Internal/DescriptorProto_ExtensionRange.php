@@ -25,6 +25,11 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
      */
     private $end = 0;
     private $has_end = false;
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.ExtensionRangeOptions options = 3;</code>
+     */
+    private $options = null;
+    private $has_options = false;
 
     public function __construct() {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
@@ -85,6 +90,34 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
     public function hasEnd()
     {
         return $this->has_end;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.ExtensionRangeOptions options = 3;</code>
+     * @return \Google\Protobuf\Internal\ExtensionRangeOptions
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional .google.protobuf.ExtensionRangeOptions options = 3;</code>
+     * @param \Google\Protobuf\Internal\ExtensionRangeOptions $var
+     * @return $this
+     */
+    public function setOptions($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\ExtensionRangeOptions::class);
+        $this->options = $var;
+        $this->has_options = true;
+
+        return $this;
+    }
+
+    public function hasOptions()
+    {
+        return $this->has_options;
     }
 
 }

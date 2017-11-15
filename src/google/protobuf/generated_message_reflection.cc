@@ -44,7 +44,7 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/repeated_field.h>
-// #include "google/protobuf/bridge/compatibility_mode_support.h"
+#include <google/protobuf/wire_format.h>
 
 
 #define GOOGLE_PROTOBUF_HAS_ONEOF
@@ -197,32 +197,14 @@ GeneratedMessageReflection::GeneratedMessageReflection(
 
 GeneratedMessageReflection::~GeneratedMessageReflection() {}
 
-namespace {
-UnknownFieldSet* empty_unknown_field_set_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(empty_unknown_field_set_once_);
-
-void DeleteEmptyUnknownFieldSet() {
-  delete empty_unknown_field_set_;
-  empty_unknown_field_set_ = NULL;
-}
-
-void InitEmptyUnknownFieldSet() {
-  empty_unknown_field_set_ = new UnknownFieldSet;
-  internal::OnShutdown(&DeleteEmptyUnknownFieldSet);
-}
-
-const UnknownFieldSet& GetEmptyUnknownFieldSet() {
-  ::google::protobuf::GoogleOnceInit(&empty_unknown_field_set_once_, &InitEmptyUnknownFieldSet);
-  return *empty_unknown_field_set_;
-}
-}  // namespace
-
 const UnknownFieldSet& GeneratedMessageReflection::GetUnknownFields(
     const Message& message) const {
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
+      !GetProto3PreserveUnknownsDefault()) {
     // We have to ensure that any mutations made to the return value of
-    // MutableUnknownFields() are not reflected here.
-    return GetEmptyUnknownFieldSet();
+    // MutableUnknownFields() are not reflected here when Proto3 defaults to
+    // discard unknowns.
+    return *UnknownFieldSet::default_instance();
   } else {
     return GetInternalMetadataWithArena(message).unknown_fields();
   }
@@ -1020,7 +1002,7 @@ void GeneratedMessageReflection::ListFields(
       schema_.HasHasbits() ? GetHasBits(message) : NULL;
   const uint32* const has_bits_indices = schema_.has_bit_indices_;
   const uint32* const oneof_case_array =
-      &GetConstRefAtOffset<uint32>(message, schema_.oneof_case_offset_);
+      GetConstPointerAtOffset<uint32>(&message, schema_.oneof_case_offset_);
   output->reserve(descriptor_->field_count());
   for (int i = 0; i <= last_non_weak_field_index_; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
@@ -2268,17 +2250,15 @@ class AssignDescriptorsHelper {
 
     file_level_metadata_->descriptor = descriptor;
 
-    if (!descriptor->options().map_entry()) {
-      // Only set reflection for non map types.
-      file_level_metadata_->reflection = new GeneratedMessageReflection(
-          descriptor, MigrationToReflectionSchema(default_instance_data_,
-                                                  offsets_, *schemas_),
-          ::google::protobuf::DescriptorPool::generated_pool(), factory_);
-      for (int i = 0; i < descriptor->enum_type_count(); i++) {
-        AssignEnumDescriptor(descriptor->enum_type(i));
-      }
-      schemas_++;
+    file_level_metadata_->reflection = new GeneratedMessageReflection(
+        descriptor,
+        MigrationToReflectionSchema(default_instance_data_, offsets_,
+                                    *schemas_),
+        ::google::protobuf::DescriptorPool::generated_pool(), factory_);
+    for (int i = 0; i < descriptor->enum_type_count(); i++) {
+      AssignEnumDescriptor(descriptor->enum_type(i));
     }
+    schemas_++;
     default_instance_data_++;
     file_level_metadata_++;
   }
@@ -2288,6 +2268,8 @@ class AssignDescriptorsHelper {
     file_level_enum_descriptors_++;
   }
 
+  const Metadata* GetCurrentMetadataPtr() const { return file_level_metadata_; }
+
  private:
   MessageFactory* factory_;
   Metadata* file_level_metadata_;
@@ -2295,6 +2277,41 @@ class AssignDescriptorsHelper {
   const Schema* schemas_;
   const Message* const * default_instance_data_;
   const uint32* offsets_;
+};
+
+// We have the routines that assign descriptors and build reflection
+// automatically delete the allocated reflection. MetadataOwner owns
+// all the allocated reflection instances.
+struct MetadataOwner {
+  void AddArray(const Metadata* begin, const Metadata* end) {
+    MutexLock lock(&mu_);
+    metadata_arrays_.push_back(std::make_pair(begin, end));
+  }
+
+  static MetadataOwner* Instance() {
+    static MetadataOwner* res = new MetadataOwner;
+    return res;
+  }
+
+ private:
+  // Use the constructor to register the shutdown code. Because c++ makes sure
+  // this called only once.
+  MetadataOwner() { OnShutdown(&DeleteMetadata); }
+  ~MetadataOwner() {
+    for (int i = 0; i < metadata_arrays_.size(); i++) {
+      for (const Metadata* m = metadata_arrays_[i].first;
+           m < metadata_arrays_[i].second; m++) {
+        delete m->reflection;
+      }
+    }
+  }
+
+  static void DeleteMetadata() {
+    delete Instance();
+  }
+
+  Mutex mu_;
+  std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
 }  // namespace
@@ -2329,6 +2346,8 @@ void AssignDescriptors(
       file_level_service_descriptors[i] = file->service(i);
     }
   }
+  MetadataOwner::Instance()->AddArray(
+      file_level_metadata, helper.GetCurrentMetadataPtr());
 }
 
 void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
@@ -2347,6 +2366,18 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
 
 void RegisterAllTypes(const Metadata* file_level_metadata, int size) {
   RegisterAllTypesInternal(file_level_metadata, size);
+}
+
+void UnknownFieldSetSerializer(const uint8* base, uint32 offset, uint32 tag,
+                               uint32 has_offset,
+                               ::google::protobuf::io::CodedOutputStream* output) {
+  const void* ptr = base + offset;
+  const InternalMetadataWithArena* metadata =
+      static_cast<const InternalMetadataWithArena*>(ptr);
+  if (metadata->have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        metadata->unknown_fields(), output);
+  }
 }
 
 }  // namespace internal

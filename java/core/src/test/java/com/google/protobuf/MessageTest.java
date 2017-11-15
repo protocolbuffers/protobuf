@@ -74,6 +74,14 @@ public class MessageTest extends TestCase {
       "repeated_string: \"qux\"\n" +
       "repeated_string: \"bar\"\n";
 
+  public void testParsingWithNullExtensionRegistry() throws Exception {
+    try {
+      TestAllTypes.parseFrom(new byte[] {}, null);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+  }
+
   public void testMergeFrom() throws Exception {
     TestAllTypes result =
       TestAllTypes.newBuilder(MERGE_DEST)
@@ -321,8 +329,10 @@ public class MessageTest extends TestCase {
 
     assertTrue(result.getField(result.getDescriptorForType()
         .findFieldByName("repeated_foreign_message")) instanceof List<?>);
-    assertEquals(result.getRepeatedFieldCount(result.getDescriptorForType()
-        .findFieldByName("repeated_foreign_message")), 0);
+    assertEquals(
+        0,
+        result.getRepeatedFieldCount(
+            result.getDescriptorForType().findFieldByName("repeated_foreign_message")));
   }
   
   /** Test reading repeated message from DynamicMessage. */
@@ -345,7 +355,9 @@ public class MessageTest extends TestCase {
 
     assertTrue(result.getField(result.getDescriptorForType()
         .findFieldByName("repeated_foreign_message")) instanceof List<?>);
-    assertEquals(result.getRepeatedFieldCount(result.getDescriptorForType()
-        .findFieldByName("repeated_foreign_message")), 2);
+    assertEquals(
+        2,
+        result.getRepeatedFieldCount(
+            result.getDescriptorForType().findFieldByName("repeated_foreign_message")));
   }
 }

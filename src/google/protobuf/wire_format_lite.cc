@@ -47,8 +47,8 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
-namespace google {
 
+namespace google {
 namespace protobuf {
 namespace internal {
 
@@ -586,7 +586,7 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   }
 }
 
-GOOGLE_ATTRIBUTE_ALWAYS_INLINE static bool ReadBytesToString(
+GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE static bool ReadBytesToString(
     io::CodedInputStream* input, string* value);
 inline static bool ReadBytesToString(io::CodedInputStream* input,
                                      string* value) {

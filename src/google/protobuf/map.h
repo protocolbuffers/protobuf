@@ -142,6 +142,26 @@ class Map {
     insert(other.begin(), other.end());
   }
 
+#if LANG_CXX11
+  Map(Map&& other) noexcept : Map() {
+    if (other.arena_) {
+      *this = other;
+    } else {
+      swap(other);
+    }
+  }
+  Map& operator=(Map&& other) noexcept {
+    if (this != &other) {
+      if (arena_ != other.arena_) {
+        *this = other;
+      } else {
+        swap(other);
+      }
+    }
+    return *this;
+  }
+#endif
+
   template <class InputIt>
   Map(const InputIt& first, const InputIt& last)
       : arena_(NULL), default_enum_value_(0) {
@@ -181,7 +201,7 @@ class Map {
     MapAllocator(const MapAllocator<X>& allocator)
         : arena_(allocator.arena()) {}
 
-    pointer allocate(size_type n, const void* hint = 0) {
+    pointer allocate(size_type n, const void* /* hint */ = 0) {
       // If arena is not given, malloc needs to be called which doesn't
       // construct element object.
       if (arena_ == NULL) {
@@ -197,6 +217,7 @@ class Map {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
         ::operator delete(p, n * sizeof(value_type));
 #else
+        (void)n;
         ::operator delete(p);
 #endif
       }
@@ -932,12 +953,16 @@ class Map {
 
  public:
   // Iterators
-  class const_iterator
-      : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
-                             const value_type*, const value_type&> {
+  class const_iterator {
     typedef typename InnerMap::const_iterator InnerIt;
 
    public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::value_type value_type;
+    typedef ptrdiff_t difference_type;
+    typedef const value_type* pointer;
+    typedef const value_type& reference;
+
     const_iterator() {}
     explicit const_iterator(const InnerIt& it) : it_(it) {}
 
@@ -963,10 +988,16 @@ class Map {
     InnerIt it_;
   };
 
-  class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
+  class iterator {
     typedef typename InnerMap::iterator InnerIt;
 
    public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::value_type value_type;
+    typedef ptrdiff_t difference_type;
+    typedef value_type* pointer;
+    typedef value_type& reference;
+
     iterator() {}
     explicit iterator(const InnerIt& it) : it_(it) {}
 
@@ -1025,12 +1056,12 @@ class Map {
   }
   const T& at(const key_type& key) const {
     const_iterator it = find(key);
-    GOOGLE_CHECK(it != end());
+    GOOGLE_CHECK(it != end()) << "key not found: " << key;
     return it->second;
   }
   T& at(const key_type& key) {
     iterator it = find(key);
-    GOOGLE_CHECK(it != end());
+    GOOGLE_CHECK(it != end()) << "key not found: " << key;
     return it->second;
   }
 
@@ -1131,9 +1162,7 @@ class Map {
 
   // Access to hasher.  Currently this returns a copy, but it may
   // be modified to return a const reference in the future.
-  hasher hash_function() const {
-    return elements_->hash_function();
-  }
+  hasher hash_function() const { return elements_->hash_function(); }
 
  private:
   // Set default enum value only for proto2 map field whose value is enum type.

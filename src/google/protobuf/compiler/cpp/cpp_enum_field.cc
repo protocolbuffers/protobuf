@@ -74,27 +74,26 @@ GeneratePrivateMembers(io::Printer* printer) const {
 
 void EnumFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
+  printer->Print(variables_, "$deprecated_attr$$type$ $name$() const;\n");
+  printer->Annotate("name", descriptor_);
   printer->Print(variables_,
-    "$deprecated_attr$$type$ $name$() const;\n"
-    "$deprecated_attr$void set_$name$($type$ value);\n");
+                 "$deprecated_attr$void ${$set_$name$$}$($type$ value);\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void EnumFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                  bool is_inline) const {
-  std::map<string, string> variables(variables_);
-  variables["inline"] = is_inline ? "inline " : "";
-  printer->Print(variables,
-    "$inline$$type$ $classname$::$name$() const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline $type$ $classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return static_cast< $type$ >($name$_);\n"
     "}\n"
-    "$inline$void $classname$::set_$name$($type$ value) {\n");
+    "inline void $classname$::set_$name$($type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
-    printer->Print(variables,
+    printer->Print(variables_,
     "  assert($type$_IsValid(value));\n");
   }
-  printer->Print(variables,
+  printer->Print(variables_,
     "  $set_hasbit$\n"
     "  $name$_ = value;\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
@@ -113,7 +112,7 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void EnumFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "std::swap($name$_, other->$name$_);\n");
+  printer->Print(variables_, "swap($name$_, other->$name$_);\n");
 }
 
 void EnumFieldGenerator::
@@ -191,24 +190,21 @@ EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
 EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {}
 
 void EnumOneofFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                  bool is_inline) const {
-  std::map<string, string> variables(variables_);
-  variables["inline"] = is_inline ? "inline " : "";
-  printer->Print(variables,
-    "$inline$$type$ $classname$::$name$() const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline $type$ $classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  if (has_$name$()) {\n"
     "    return static_cast< $type$ >($oneof_prefix$$name$_);\n"
     "  }\n"
     "  return static_cast< $type$ >($default$);\n"
     "}\n"
-    "$inline$void $classname$::set_$name$($type$ value) {\n");
+    "inline void $classname$::set_$name$($type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
-    printer->Print(variables,
+    printer->Print(variables_,
     "  assert($type$_IsValid(value));\n");
   }
-  printer->Print(variables,
+  printer->Print(variables_,
     "  if (!has_$name$()) {\n"
     "    clear_$oneof_name$();\n"
     "    set_has_$name$();\n"
@@ -230,9 +226,8 @@ GenerateSwappingCode(io::Printer* printer) const {
 
 void EnumOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "_$classname$_default_instance_.$name$_ = $default$;\n");
+  printer->Print(variables_,
+                 "$ns$::_$classname$_default_instance_.$name$_ = $default$;\n");
 }
 
 // ===================================================================
@@ -259,49 +254,56 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "$deprecated_attr$$type$ $name$(int index) const;\n"
-    "$deprecated_attr$void set_$name$(int index, $type$ value);\n"
-    "$deprecated_attr$void add_$name$($type$ value);\n");
+                 "$deprecated_attr$$type$ $name$(int index) const;\n");
+  printer->Annotate("name", descriptor_);
+  printer->Print(
+      variables_,
+      "$deprecated_attr$void ${$set_$name$$}$(int index, $type$ value);\n");
+  printer->Annotate("{", "}", descriptor_);
   printer->Print(variables_,
-    "$deprecated_attr$const ::google::protobuf::RepeatedField<int>& $name$() const;\n"
-    "$deprecated_attr$::google::protobuf::RepeatedField<int>* mutable_$name$();\n");
+                 "$deprecated_attr$void ${$add_$name$$}$($type$ value);\n");
+  printer->Annotate("{", "}", descriptor_);
+  printer->Print(
+      variables_,
+      "$deprecated_attr$const ::google::protobuf::RepeatedField<int>& $name$() const;\n");
+  printer->Annotate("name", descriptor_);
+  printer->Print(variables_,
+                 "$deprecated_attr$::google::protobuf::RepeatedField<int>* "
+                 "${$mutable_$name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void RepeatedEnumFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                  bool is_inline) const {
-  std::map<string, string> variables(variables_);
-  variables["inline"] = is_inline ? "inline " : "";
-  printer->Print(variables,
-    "$inline$$type$ $classname$::$name$(int index) const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline $type$ $classname$::$name$(int index) const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return static_cast< $type$ >($name$_.Get(index));\n"
     "}\n"
-    "$inline$void $classname$::set_$name$(int index, $type$ value) {\n");
+    "inline void $classname$::set_$name$(int index, $type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
-    printer->Print(variables,
+    printer->Print(variables_,
     "  assert($type$_IsValid(value));\n");
   }
-  printer->Print(variables,
+  printer->Print(variables_,
     "  $name$_.Set(index, value);\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n"
-    "$inline$void $classname$::add_$name$($type$ value) {\n");
+    "inline void $classname$::add_$name$($type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
-    printer->Print(variables,
+    printer->Print(variables_,
     "  assert($type$_IsValid(value));\n");
   }
-  printer->Print(variables,
+  printer->Print(variables_,
     "  $name$_.Add(value);\n"
     "  // @@protoc_insertion_point(field_add:$full_name$)\n"
-    "}\n");
-  printer->Print(variables,
-    "$inline$const ::google::protobuf::RepeatedField<int>&\n"
+    "}\n"
+    "inline const ::google::protobuf::RepeatedField<int>&\n"
     "$classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "$inline$::google::protobuf::RepeatedField<int>*\n"
+    "inline ::google::protobuf::RepeatedField<int>*\n"
     "$classname$::mutable_$name$() {\n"
     "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
     "  return &$name$_;\n"

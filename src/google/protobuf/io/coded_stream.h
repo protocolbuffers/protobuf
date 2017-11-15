@@ -134,6 +134,7 @@
 #include <google/protobuf/stubs/atomicops.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/port.h>
+#include <google/protobuf/stubs/port.h>
 
 namespace google {
 
@@ -184,7 +185,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Skips a number of bytes.  Returns false if an underlying read error
   // occurs.
-  bool Skip(int count);
+  inline bool Skip(int count);
 
   // Sets *data to point directly at the unread part of the CodedInputStream's
   // underlying buffer, and *size to the size of that buffer, but does not
@@ -197,28 +198,23 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Like GetDirectBufferPointer, but this method is inlined, and does not
   // attempt to Refresh() if the buffer is currently empty.
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void GetDirectBufferPointerInline(const void** data,
-                                                            int* size);
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  void GetDirectBufferPointerInline(const void** data, int* size);
 
   // Read raw bytes, copying them into the given buffer.
   bool ReadRaw(void* buffer, int size);
 
   // Like the above, with inlined optimizations. This should only be used
   // by the protobuf implementation.
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InternalReadRawInline(void* buffer, int size);
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  bool InternalReadRawInline(void* buffer, int size);
 
   // Like ReadRaw, but reads into a string.
-  //
-  // Implementation Note:  ReadString() grows the string gradually as it
-  // reads in the data, rather than allocating the entire requested size
-  // upfront.  This prevents denial-of-service attacks in which a client
-  // could claim that a string is going to be MAX_INT bytes long in order to
-  // crash the server because it can't allocate this much space at once.
   bool ReadString(string* buffer, int size);
   // Like the above, with inlined optimizations. This should only be used
   // by the protobuf implementation.
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InternalReadStringInline(string* buffer,
-                                                        int size);
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  bool InternalReadStringInline(string* buffer, int size);
 
 
   // Read a 32-bit little-endian integer.
@@ -261,8 +257,11 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Always inline because this is only called in one place per parse loop
   // but it is called for every iteration of said loop, so it should be fast.
   // GCC doesn't want to inline this by default.
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE uint32 ReadTag();
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE uint32 ReadTagNoLastTag();
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE uint32 ReadTag() {
+    return last_tag_ = ReadTagNoLastTag();
+  }
+
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE uint32 ReadTagNoLastTag();
 
 
   // This usually a faster alternative to ReadTag() when cutoff is a manifest
@@ -273,10 +272,15 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // above cutoff or is 0.  (There's intentional wiggle room when tag is 0,
   // because that can arise in several ways, and for best performance we want
   // to avoid an extra "is tag == 0?" check here.)
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE std::pair<uint32, bool> ReadTagWithCutoff(
-      uint32 cutoff);
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE std::pair<uint32, bool> ReadTagWithCutoffNoLastTag(
-      uint32 cutoff);
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  std::pair<uint32, bool> ReadTagWithCutoff(uint32 cutoff) {
+    std::pair<uint32, bool> result = ReadTagWithCutoffNoLastTag(cutoff);
+    last_tag_ = result.first;
+    return result;
+  }
+
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  std::pair<uint32, bool> ReadTagWithCutoffNoLastTag(uint32 cutoff);
 
   // Usually returns true if calling ReadVarint32() now would produce the given
   // value.  Will always return false if ReadVarint32() would not return the
@@ -285,7 +289,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // parameter.
   // Always inline because this collapses to a small number of instructions
   // when given a constant parameter, but GCC doesn't want to inline by default.
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool ExpectTag(uint32 expected);
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool ExpectTag(uint32 expected);
 
   // Like above, except this reads from the specified buffer. The caller is
   // responsible for ensuring that the buffer is large enough to read a varint
@@ -294,9 +298,8 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   //
   // Returns a pointer beyond the expected tag if it was found, or NULL if it
   // was not.
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE static const uint8* ExpectTagFromArray(
-      const uint8* buffer,
-      uint32 expected);
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  static const uint8* ExpectTagFromArray(const uint8* buffer, uint32 expected);
 
   // Usually returns true if no more bytes can be read.  Always returns false
   // if more bytes can be read.  If ExpectAtEnd() returns true, a subsequent
@@ -316,6 +319,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // tag to make sure it had the right number, so it calls LastTagWas() on
   // return from the embedded parser to check.
   bool LastTagWas(uint32 expected);
+  void SetLastTag(uint32 tag) { last_tag_ = tag; }
 
   // When parsing message (but NOT a group), this method must be called
   // immediately after MergeFromCodedStream() returns (if it returns true)
@@ -392,9 +396,9 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   //   Message::ParseFromString().  In this case, you will need to change
   //   your code to instead construct some sort of ZeroCopyInputStream
   //   (e.g. an ArrayInputStream), construct a CodedInputStream around
-  //   that, then call Message::ParseFromCodedStream() instead.  Then
-  //   you can adjust the limit.  Yes, it's more work, but you're doing
-  //   something unusual.
+  //   that, then you can adjust the limit. Then call
+  //   Message::ParseFromCodedStream() instead. Yes, it's more work, but
+  //   you're doing something unusual.
   void SetTotalBytesLimit(int total_bytes_limit, int warning_threshold);
 
   // The Total Bytes Limit minus the Current Position, or -1 if there
@@ -584,6 +588,9 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Private member functions.
 
+  // Fallback when Skip() goes past the end of the current buffer.
+  bool SkipFallback(int count, int original_buffer_size);
+
   // Advance the buffer by a given number of bytes.
   void Advance(int amount);
 
@@ -620,12 +627,6 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   int ReadVarintSizeAsIntSlow();
   bool ReadLittleEndian32Fallback(uint32* value);
   bool ReadLittleEndian64Fallback(uint64* value);
-
-  template<bool update_last_tag>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE uint32 ReadTagImplementation();
-  template<bool update_last_tag>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  std::pair<uint32, bool> ReadTagWithCutoffImplementation(uint32 cutoff);
 
   // Fallback/slow methods for reading tags. These do not update last_tag_,
   // but will set legitimate_message_end_ if we are at the end of the input
@@ -793,8 +794,8 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // but GCC by default doesn't want to inline this.
   void WriteTag(uint32 value);
   // Like WriteTag()  but writing directly to the target array.
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE static uint8* WriteTagToArray(uint32 value,
-                                                        uint8* target);
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  static uint8* WriteTagToArray(uint32 value, uint8* target);
 
   // Returns the number of bytes needed to encode the given value as a varint.
   static size_t VarintSize32(uint32 value);
@@ -861,11 +862,11 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   bool IsSerializationDeterministic() const {
     return serialization_deterministic_is_overridden_ ?
         serialization_deterministic_override_ :
-        default_serialization_deterministic_;
+        IsDefaultSerializationDeterministic();
   }
 
   static bool IsDefaultSerializationDeterministic() {
-    return google::protobuf::internal::Acquire_Load(&default_serialization_deterministic_);
+    return google::protobuf::internal::NoBarrier_Load(&default_serialization_deterministic_);
   }
 
  private:
@@ -881,6 +882,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   bool serialization_deterministic_is_overridden_;
   bool serialization_deterministic_override_;
   // Conceptually, default_serialization_deterministic_ is an atomic bool.
+  // TODO(haberman): replace with std::atomic<bool> when we move to C++11.
   static google::protobuf::internal::AtomicWord default_serialization_deterministic_;
 
   // Advance the buffer by a given number of bytes.
@@ -908,7 +910,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // thread has done so.
   friend void ::google::protobuf::internal::MapTestForceDeterministic();
   static void SetDefaultSerializationDeterministic() {
-    google::protobuf::internal::Release_Store(&default_serialization_deterministic_, 1);
+    google::protobuf::internal::NoBarrier_Store(&default_serialization_deterministic_, 1);
   }
 };
 
@@ -1018,47 +1020,20 @@ inline bool CodedInputStream::ReadLittleEndian64(uint64* value) {
 #endif
 }
 
-inline uint32 CodedInputStream::ReadTag() {
-  return ReadTagImplementation<true>();
-}
-
 inline uint32 CodedInputStream::ReadTagNoLastTag() {
-  return ReadTagImplementation<false>();
-}
-
-template<bool update_last_tag>
-inline uint32 CodedInputStream::ReadTagImplementation() {
   uint32 v = 0;
   if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
     v = *buffer_;
     if (v < 0x80) {
-      if (update_last_tag) {
-        last_tag_ = v;
-      }
       Advance(1);
       return v;
     }
   }
   v = ReadTagFallback(v);
-  if (update_last_tag) {
-    last_tag_ = v;
-  }
   return v;
 }
 
-inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoff(
-    uint32 cutoff) {
-  return ReadTagWithCutoffImplementation<true>(cutoff);
-}
-
 inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
-    uint32 cutoff) {
-  return ReadTagWithCutoffImplementation<false>(cutoff);
-}
-
-template<bool update_last_tag>
-inline std::pair<uint32, bool>
-CodedInputStream::ReadTagWithCutoffImplementation(
     uint32 cutoff) {
   // In performance-sensitive code we can expect cutoff to be a compile-time
   // constant, and things like "cutoff >= kMax1ByteVarint" to be evaluated at
@@ -1072,9 +1047,6 @@ CodedInputStream::ReadTagWithCutoffImplementation(
     if (static_cast<int8>(buffer_[0]) > 0) {
       const uint32 kMax1ByteVarint = 0x7f;
       uint32 tag = buffer_[0];
-      if (update_last_tag) {
-        last_tag_ = tag;
-      }
       Advance(1);
       return std::make_pair(tag, cutoff >= kMax1ByteVarint || tag <= cutoff);
     }
@@ -1086,9 +1058,6 @@ CodedInputStream::ReadTagWithCutoffImplementation(
         GOOGLE_PREDICT_TRUE((buffer_[0] & ~buffer_[1]) >= 0x80)) {
       const uint32 kMax2ByteVarint = (0x7f << 7) + 0x7f;
       uint32 tag = (1u << 7) * buffer_[1] + (buffer_[0] - 0x80);
-      if (update_last_tag) {
-        last_tag_ = tag;
-      }
       Advance(2);
       // It might make sense to test for tag == 0 now, but it is so rare that
       // that we don't bother.  A varint-encoded 0 should be one byte unless
@@ -1102,9 +1071,6 @@ CodedInputStream::ReadTagWithCutoffImplementation(
   }
   // Slow path
   const uint32 tag = ReadTagFallback(first_byte_or_zero);
-  if (update_last_tag) {
-    last_tag_ = tag;
-  }
   return std::make_pair(tag, static_cast<uint32>(tag - 1) < cutoff);
 }
 
@@ -1428,6 +1394,20 @@ inline CodedInputStream::CodedInputStream(const uint8* buffer, int size)
 
 inline bool CodedInputStream::IsFlat() const {
   return input_ == NULL;
+}
+
+inline bool CodedInputStream::Skip(int count) {
+  if (count < 0) return false;  // security: count is often user-supplied
+
+  const int original_buffer_size = BufferSize();
+
+  if (count <= original_buffer_size) {
+    // Just skipping within the current buffer.  Easy.
+    Advance(count);
+    return true;
+  }
+
+  return SkipFallback(count, original_buffer_size);
 }
 
 }  // namespace io

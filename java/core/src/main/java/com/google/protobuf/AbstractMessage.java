@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor.Syntax;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.Internal.EnumLite;
 import java.io.IOException;
@@ -162,7 +163,7 @@ public abstract class AbstractMessage
     }
     return hash;
   }
-  
+
   private static ByteString toByteString(Object value) {
     if (value instanceof byte[]) {
       return ByteString.copyFrom((byte[]) value);
@@ -170,7 +171,7 @@ public abstract class AbstractMessage
       return (ByteString) value;
     }
   }
- 
+
   /**
    * Compares two bytes fields. The parameters must be either a byte array or a
    * ByteString object. They can be of different type though.
@@ -181,7 +182,7 @@ public abstract class AbstractMessage
     }
     return toByteString(a).equals(toByteString(b));
   }
-  
+
   /**
    * Converts a list of MapEntry messages into a Map used for equals() and
    * hashCode().
@@ -212,7 +213,7 @@ public abstract class AbstractMessage
     }
     return result;
   }
-  
+
   /**
    * Compares two map fields. The parameters must be a list of MapEntry
    * messages.
@@ -223,13 +224,13 @@ public abstract class AbstractMessage
     Map mb = convertMapEntryListToMap((List) b);
     return MapFieldLite.equals(ma, mb);
   }
-  
+
   /**
    * Compares two set of fields.
    * This method is used to implement {@link AbstractMessage#equals(Object)}
    * and {@link AbstractMutableMessage#equals(Object)}. It takes special care
    * of bytes fields because immutable messages and mutable messages use
-   * different Java type to reprensent a bytes field and this method should be
+   * different Java type to represent a bytes field and this method should be
    * able to compare immutable messages, mutable messages and also an immutable
    * message to a mutable message.
    */
@@ -275,7 +276,7 @@ public abstract class AbstractMessage
     }
     return true;
   }
-  
+
   /**
    * Calculates the hash code of a map field. {@code value} must be a list of
    * MapEntry messages.
@@ -371,7 +372,7 @@ public abstract class AbstractMessage
     public String getInitializationErrorString() {
       return MessageReflection.delimitWithCommas(findInitializationErrors());
     }
-    
+
     @Override
     protected BuilderType internalMergeFrom(AbstractMessageLite other) {
       return mergeFrom((Message) other);
@@ -379,6 +380,10 @@ public abstract class AbstractMessage
 
     @Override
     public BuilderType mergeFrom(final Message other) {
+      return mergeFrom(other, other.getAllFields());
+    }
+    
+    BuilderType mergeFrom(final Message other, Map<FieldDescriptor, Object> allFields) {
       if (other.getDescriptorForType() != getDescriptorForType()) {
         throw new IllegalArgumentException(
           "mergeFrom(Message) can only merge messages of the same type.");
@@ -393,8 +398,7 @@ public abstract class AbstractMessage
       // TODO(kenton):  Provide a function somewhere called makeDeepCopy()
       //   which allows people to make secure deep copies of messages.
 
-      for (final Map.Entry<FieldDescriptor, Object> entry :
-           other.getAllFields().entrySet()) {
+      for (final Map.Entry<FieldDescriptor, Object> entry : allFields.entrySet()) {
         final FieldDescriptor field = entry.getKey();
         if (field.isRepeated()) {
           for (final Object element : (List)entry.getValue()) {
@@ -432,8 +436,12 @@ public abstract class AbstractMessage
         final CodedInputStream input,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
+      boolean discardUnknown =
+          getDescriptorForType().getFile().getSyntax() == Syntax.PROTO3
+              ? input.shouldDiscardUnknownFieldsProto3()
+              : input.shouldDiscardUnknownFields();
       final UnknownFieldSet.Builder unknownFields =
-        UnknownFieldSet.newBuilder(getUnknownFields());
+          discardUnknown ? null : UnknownFieldSet.newBuilder(getUnknownFields());
       while (true) {
         final int tag = input.readTag();
         if (tag == 0) {
@@ -451,7 +459,9 @@ public abstract class AbstractMessage
           break;
         }
       }
-      setUnknownFields(unknownFields.build());
+      if (unknownFields != null) {
+        setUnknownFields(unknownFields.build());
+      }
       return (BuilderType) this;
     }
 

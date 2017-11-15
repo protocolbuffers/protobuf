@@ -37,12 +37,15 @@
 #include <limits>
 #include <vector>
 
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+
+
 #include <google/protobuf/stubs/hash.h>  // for hash<T *>
 
 namespace google {
@@ -165,6 +168,14 @@ string UnderscoresToCamelCase(const MethodDescriptor* method) {
 
 string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
   return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
+}
+
+string CamelCaseFieldName(const FieldDescriptor* field) {
+  string fieldName = UnderscoresToCamelCase(field);
+  if ('0' <= fieldName[0] && fieldName[0] <= '9') {
+    return '_' + fieldName;
+  }
+  return fieldName;
 }
 
 string StripProto(const string& filename) {
@@ -773,6 +784,137 @@ bool HasRepeatedFields(const Descriptor* descriptor) {
   return false;
 }
 
+// Encode an unsigned 32-bit value into a sequence of UTF-16 characters.
+//
+// If the value is in [0x0000, 0xD7FF], we encode it with a single character
+// with the same numeric value.
+//
+// If the value is larger than 0xD7FF, we encode its lowest 13 bits into a
+// character in the range [0xE000, 0xFFFF] by combining these 13 bits with
+// 0xE000 using logic-or. Then we shift the value to the right by 13 bits, and
+// encode the remaining value by repeating this same process until we get to
+// a value in [0x0000, 0xD7FF] where we will encode it using a character with
+// the same numeric value.
+//
+// Note that we only use code points in [0x0000, 0xD7FF] and [0xE000, 0xFFFF].
+// There will be no surrogate pairs in the encoded character sequence.
+void WriteUInt32ToUtf16CharSequence(uint32 number,
+                                    std::vector<uint16>* output) {
+  // For values in [0x0000, 0xD7FF], only use one char to encode it.
+  if (number < 0xD800) {
+    output->push_back(static_cast<uint16>(number));
+    return;
+  }
+  // Encode into multiple chars. All except the last char will be in the range
+  // [0xE000, 0xFFFF], and the last char will be in the range [0x0000, 0xD7FF].
+  // Note that we don't use any value in range [0xD800, 0xDFFF] because they
+  // have to come in pairs and the encoding is just more space-efficient w/o
+  // them.
+  while (number >= 0xD800) {
+    // [0xE000, 0xFFFF] can represent 13 bits of info.
+    output->push_back(static_cast<uint16>(0xE000 | (number & 0x1FFF)));
+    number >>= 13;
+  }
+  output->push_back(static_cast<uint16>(number));
+}
+
+int GetExperimentalJavaFieldTypeForSingular(const FieldDescriptor* field) {
+  // j/c/g/protobuf/FieldType.java lists field types in a slightly different
+  // order from FieldDescriptor::Type so we can't do a simple cast.
+  //
+  // TODO(xiaofeng): Make j/c/g/protobuf/FieldType.java follow the same order.
+  int result = field->type();
+  if (result == FieldDescriptor::TYPE_GROUP) {
+    return 17;
+  } else if (result < FieldDescriptor::TYPE_GROUP) {
+    return result - 1;
+  } else {
+    return result - 2;
+  }
+}
+
+int GetExperimentalJavaFieldTypeForRepeated(const FieldDescriptor* field) {
+  if (field->type() == FieldDescriptor::TYPE_GROUP) {
+    return 49;
+  } else {
+    return GetExperimentalJavaFieldTypeForSingular(field) + 18;
+  }
+}
+
+int GetExperimentalJavaFieldTypeForPacked(const FieldDescriptor* field) {
+  int result = field->type();
+  if (result < FieldDescriptor::TYPE_STRING) {
+    return result + 34;
+  } else if (result > FieldDescriptor::TYPE_BYTES) {
+    return result + 30;
+  } else {
+    GOOGLE_LOG(FATAL) << field->full_name() << " can't be packed.";
+    return 0;
+  }
+}
+
+int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
+  static const int kMapFieldType = 50;
+  static const int kOneofFieldTypeOffset = 51;
+  static const int kRequiredBit = 0x100;
+  static const int kUtf8CheckBit = 0x200;
+  static const int kCheckInitialized = 0x400;
+  static const int kMapWithProto2EnumValue = 0x800;
+  int extra_bits = field->is_required() ? kRequiredBit : 0;
+  if (field->type() == FieldDescriptor::TYPE_STRING && CheckUtf8(field)) {
+    extra_bits |= kUtf8CheckBit;
+  }
+  if (field->is_required() || (GetJavaType(field) == JAVATYPE_MESSAGE &&
+                               HasRequiredFields(field->message_type()))) {
+    extra_bits |= kCheckInitialized;
+  }
+
+  if (field->is_map()) {
+    if (SupportFieldPresence(field->file())) {
+      const FieldDescriptor* value =
+          field->message_type()->FindFieldByName("value");
+      if (GetJavaType(value) == JAVATYPE_ENUM) {
+        extra_bits |= kMapWithProto2EnumValue;
+      }
+    }
+    return kMapFieldType | extra_bits;
+  } else if (field->is_packed()) {
+    return GetExperimentalJavaFieldTypeForPacked(field);
+  } else if (field->is_repeated()) {
+    return GetExperimentalJavaFieldTypeForRepeated(field) | extra_bits;
+  } else if (field->containing_oneof() != NULL) {
+    return (GetExperimentalJavaFieldTypeForSingular(field) +
+            kOneofFieldTypeOffset) |
+           extra_bits;
+  } else {
+    return GetExperimentalJavaFieldTypeForSingular(field) | extra_bits;
+  }
+}
+
+// Escape a UTF-16 character to be embedded in a Java string.
+void EscapeUtf16ToString(uint16 code, string* output) {
+  if (code == '\t') {
+    output->append("\\t");
+  } else if (code == '\b') {
+    output->append("\\b");
+  } else if (code == '\n') {
+    output->append("\\n");
+  } else if (code == '\r') {
+    output->append("\\r");
+  } else if (code == '\f') {
+    output->append("\\f");
+  } else if (code == '\'') {
+    output->append("\\'");
+  } else if (code == '\"') {
+    output->append("\\\"");
+  } else if (code == '\\') {
+    output->append("\\\\");
+  } else if (code >= 0x20 && code <= 0x7f) {
+    output->push_back(static_cast<char>(code));
+  } else {
+    output->append(StringPrintf("\\u%04x", code));
+  }
+}
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

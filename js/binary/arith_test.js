@@ -36,7 +36,6 @@
  * @author cfallin@google.com (Chris Fallin)
  */
 
-goog.require('goog.testing.asserts');
 goog.require('jspb.arith.Int64');
 goog.require('jspb.arith.UInt64');
 
@@ -48,30 +47,30 @@ describe('binaryArithTest', function() {
   it('testCompare', function() {
     var a = new jspb.arith.UInt64(1234, 5678);
     var b = new jspb.arith.UInt64(1234, 5678);
-    assertEquals(a.cmp(b), 0);
-    assertEquals(b.cmp(a), 0);
+    expect(a.cmp(b)).toEqual(0);
+    expect(b.cmp(a)).toEqual(0);
     b.lo -= 1;
-    assertEquals(a.cmp(b), 1);
-    assertEquals(b.cmp(a), -1);
+    expect(a.cmp(b)).toEqual(1);
+    expect(b.cmp(a)).toEqual(-1);
     b.lo += 2;
-    assertEquals(a.cmp(b), -1);
-    assertEquals(b.cmp(a), 1);
+    expect(a.cmp(b)).toEqual(-1);
+    expect(b.cmp(a)).toEqual(1);
     b.lo = a.lo;
     b.hi = a.hi - 1;
-    assertEquals(a.cmp(b), 1);
-    assertEquals(b.cmp(a), -1);
+    expect(a.cmp(b)).toEqual(1);
+    expect(b.cmp(a)).toEqual(-1);
 
-    assertEquals(a.zero(), false);
-    assertEquals(a.msb(), false);
-    assertEquals(a.lsb(), false);
+    expect(a.zero()).toEqual(false);
+    expect(a.msb()).toEqual(false);
+    expect(a.lsb()).toEqual(false);
     a.hi = 0;
     a.lo = 0;
-    assertEquals(a.zero(), true);
+    expect(a.zero()).toEqual(true);
     a.hi = 0x80000000;
-    assertEquals(a.zero(), false);
-    assertEquals(a.msb(), true);
+    expect(a.zero()).toEqual(false);
+    expect(a.msb()).toEqual(true);
     a.lo = 0x00000001;
-    assertEquals(a.lsb(), true);
+    expect(a.lsb()).toEqual(true);
   });
 
 
@@ -80,35 +79,35 @@ describe('binaryArithTest', function() {
    */
   it('testShifts', function() {
     var a = new jspb.arith.UInt64(1, 0);
-    assertEquals(a.lo, 1);
-    assertEquals(a.hi, 0);
+    expect(a.lo).toEqual(1);
+    expect(a.hi).toEqual(0);
     var orig = a;
     a = a.leftShift();
-    assertEquals(orig.lo, 1);  // original unmodified.
-    assertEquals(orig.hi, 0);
-    assertEquals(a.lo, 2);
-    assertEquals(a.hi, 0);
+    expect(orig.lo).toEqual(1);  // original unmodified.
+    expect(orig.hi).toEqual(0);
+    expect(a.lo).toEqual(2);
+    expect(a.hi).toEqual(0);
     a = a.leftShift();
-    assertEquals(a.lo, 4);
-    assertEquals(a.hi, 0);
+    expect(a.lo).toEqual(4);
+    expect(a.hi).toEqual(0);
     for (var i = 0; i < 29; i++) {
       a = a.leftShift();
     }
-    assertEquals(a.lo, 0x80000000);
-    assertEquals(a.hi, 0);
+    expect(a.lo).toEqual(0x80000000);
+    expect(a.hi).toEqual(0);
     a = a.leftShift();
-    assertEquals(a.lo, 0);
-    assertEquals(a.hi, 1);
+    expect(a.lo).toEqual(0);
+    expect(a.hi).toEqual(1);
     a = a.leftShift();
-    assertEquals(a.lo, 0);
-    assertEquals(a.hi, 2);
+    expect(a.lo).toEqual(0);
+    expect(a.hi).toEqual(2);
     a = a.rightShift();
     a = a.rightShift();
-    assertEquals(a.lo, 0x80000000);
-    assertEquals(a.hi, 0);
+    expect(a.lo).toEqual(0x80000000);
+    expect(a.hi).toEqual(0);
     a = a.rightShift();
-    assertEquals(a.lo, 0x40000000);
-    assertEquals(a.hi, 0);
+    expect(a.lo).toEqual(0x40000000);
+    expect(a.hi).toEqual(0);
   });
 
 
@@ -122,12 +121,12 @@ describe('binaryArithTest', function() {
                                          /* hi = */ 0x92fa2123);
     // Addition with carry.
     var c = a.add(b);
-    assertEquals(a.lo, 0x89abcdef);  // originals unmodified.
-    assertEquals(a.hi, 0x01234567);
-    assertEquals(b.lo, 0xff52ab91);
-    assertEquals(b.hi, 0x92fa2123);
-    assertEquals(c.lo, 0x88fe7980);
-    assertEquals(c.hi, 0x941d668b);
+    expect(a.lo).toEqual(0x89abcdef);  // originals unmodified.
+    expect(a.hi).toEqual(0x01234567);
+    expect(b.lo).toEqual(0xff52ab91);
+    expect(b.hi).toEqual(0x92fa2123);
+    expect(c.lo).toEqual(0x88fe7980);
+    expect(c.hi).toEqual(0x941d668b);
 
     // Simple addition without carry.
     a.lo = 2;
@@ -135,8 +134,8 @@ describe('binaryArithTest', function() {
     b.lo = 3;
     b.hi = 0;
     c = a.add(b);
-    assertEquals(c.lo, 5);
-    assertEquals(c.hi, 0);
+    expect(c.lo).toEqual(5);
+    expect(c.hi).toEqual(0);
   });
 
 
@@ -170,8 +169,8 @@ describe('binaryArithTest', function() {
         var a = new jspb.arith.UInt64(loValues[i], hiValues[j]);
         var b = new jspb.arith.UInt64(loValues[j], hiValues[i]);
         var c = a.add(b).sub(b);
-        assertEquals(c.hi, a.hi);
-        assertEquals(c.lo, a.lo);
+        expect(c.hi).toEqual(a.hi);
+        expect(c.lo).toEqual(a.lo);
       }
     }
   });
@@ -201,8 +200,8 @@ describe('binaryArithTest', function() {
       var cLow = testData[i][2] >>> 0;
       var cHigh = testData[i][3] >>> 0;
       var c = jspb.arith.UInt64.mul32x32(a, b);
-      assertEquals(c.lo, cLow);
-      assertEquals(c.hi, cHigh);
+      expect(c.lo).toEqual(cLow);
+      expect(c.hi).toEqual(cHigh);
     }
   });
 
@@ -231,8 +230,8 @@ describe('binaryArithTest', function() {
     for (var i = 0; i < testData.length; i++) {
       var a = new jspb.arith.UInt64(testData[i][0], testData[i][1]);
       var prod = a.mul(testData[i][2]);
-      assertEquals(prod.lo, testData[i][3]);
-      assertEquals(prod.hi, testData[i][4]);
+      expect(prod.lo).toEqual(testData[i][3]);
+      expect(prod.hi).toEqual(testData[i][4]);
     }
   });
 
@@ -274,9 +273,9 @@ describe('binaryArithTest', function() {
       var result = a.div(testData[i][2]);
       var quotient = result[0];
       var remainder = result[1];
-      assertEquals(quotient.lo, testData[i][3]);
-      assertEquals(quotient.hi, testData[i][4]);
-      assertEquals(remainder.lo, testData[i][5]);
+      expect(quotient.lo).toEqual(testData[i][3]);
+      expect(quotient.hi).toEqual(testData[i][4]);
+      expect(remainder.lo).toEqual(testData[i][5]);
     }
   });
 
@@ -311,9 +310,9 @@ describe('binaryArithTest', function() {
     for (var i = 0; i < testData.length; i++) {
       var a = new jspb.arith.UInt64(testData[i][0], testData[i][1]);
       var roundtrip = jspb.arith.UInt64.fromString(a.toString());
-      assertEquals(roundtrip.lo, a.lo);
-      assertEquals(roundtrip.hi, a.hi);
-      assertEquals(a.toString(), testData[i][2]);
+      expect(roundtrip.lo).toEqual(a.lo);
+      expect(roundtrip.hi).toEqual(a.hi);
+      expect(a.toString()).toEqual(testData[i][2]);
     }
   });
 
@@ -349,7 +348,7 @@ describe('binaryArithTest', function() {
     for (var i = 0; i < testStrings.length; i++) {
       var roundtrip =
           jspb.arith.Int64.fromString(testStrings[i]).toString();
-      assertEquals(roundtrip, testStrings[i]);
+      expect(roundtrip).toEqual(testStrings[i]);
     }
   });
 });

@@ -42,11 +42,14 @@ namespace UnitTest.Issues.TestProtos {
             "MV9pbnQzMhgFIAEoBUgAEhQKDHBsYWluX3N0cmluZxgBIAEoCRISCghvMl9p",
             "bnQzMhgGIAEoBUgBEhMKCW8yX3N0cmluZxgDIAEoCUgBQgQKAm8xQgQKAm8y",
             "IksKDFRlc3RKc29uTmFtZRIMCgRuYW1lGAEgASgJEhkKC2Rlc2NyaXB0aW9u",
-            "GAIgASgJUgRkZXNjEhIKBGd1aWQYAyABKAlSBGV4aWQqVQoMTmVnYXRpdmVF",
-            "bnVtEhYKEk5FR0FUSVZFX0VOVU1fWkVSTxAAEhYKCUZpdmVCZWxvdxD7////",
-            "//////8BEhUKCE1pbnVzT25lEP///////////wEqLgoORGVwcmVjYXRlZEVu",
-            "dW0SEwoPREVQUkVDQVRFRF9aRVJPEAASBwoDb25lEAFCH0gBqgIaVW5pdFRl",
-            "c3QuSXNzdWVzLlRlc3RQcm90b3NiBnByb3RvMw=="));
+            "GAIgASgJUgRkZXNjEhIKBGd1aWQYAyABKAlSBGV4aWQifwoMT25lb2ZNZXJn",
+            "aW5nEg4KBHRleHQYASABKAlIABI2CgZuZXN0ZWQYAiABKAsyJC51bml0dGVz",
+            "dF9pc3N1ZXMuT25lb2ZNZXJnaW5nLk5lc3RlZEgAGh4KBk5lc3RlZBIJCgF4",
+            "GAEgASgFEgkKAXkYAiABKAVCBwoFdmFsdWUqVQoMTmVnYXRpdmVFbnVtEhYK",
+            "Ek5FR0FUSVZFX0VOVU1fWkVSTxAAEhYKCUZpdmVCZWxvdxD7//////////8B",
+            "EhUKCE1pbnVzT25lEP///////////wEqLgoORGVwcmVjYXRlZEVudW0SEwoP",
+            "REVQUkVDQVRFRF9aRVJPEAASBwoDb25lEAFCHaoCGlVuaXRUZXN0Lklzc3Vl",
+            "cy5UZXN0UHJvdG9zYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedClrTypeInfo[] {
@@ -57,7 +60,8 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ItemField), global::UnitTest.Issues.TestProtos.ItemField.Parser, new[]{ "Item" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), global::UnitTest.Issues.TestProtos.ReservedNames.Parser, new[]{ "Types_", "Descriptor_" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType.Parser, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering), global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering.Parser, new[]{ "PlainInt32", "O1String", "O1Int32", "PlainString", "O2Int32", "O2String" }, new[]{ "O1", "O2" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonName), global::UnitTest.Issues.TestProtos.TestJsonName.Parser, new[]{ "Name", "Description", "Guid" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonName), global::UnitTest.Issues.TestProtos.TestJsonName.Parser, new[]{ "Name", "Description", "Guid" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging), global::UnitTest.Issues.TestProtos.OneofMerging.Parser, new[]{ "Text", "Nested" }, new[]{ "Value" }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested), global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested.Parser, new[]{ "X", "Y" }, null, null, null)})
           }));
     }
     #endregion
@@ -1726,6 +1730,347 @@ namespace UnitTest.Issues.TestProtos {
         }
       }
     }
+
+  }
+
+  /// <summary>
+  /// Issue 3200: When merging two messages which use the same
+  /// oneof case, which is itself a message type, the submessages should
+  /// be merged.
+  /// </summary>
+  public sealed partial class OneofMerging : pb::IMessage<OneofMerging> {
+    private static readonly pb::MessageParser<OneofMerging> _parser = new pb::MessageParser<OneofMerging>(() => new OneofMerging());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<OneofMerging> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[8]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OneofMerging() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OneofMerging(OneofMerging other) : this() {
+      switch (other.ValueCase) {
+        case ValueOneofCase.Text:
+          Text = other.Text;
+          break;
+        case ValueOneofCase.Nested:
+          Nested = other.Nested.Clone();
+          break;
+      }
+
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public OneofMerging Clone() {
+      return new OneofMerging(this);
+    }
+
+    /// <summary>Field number for the "text" field.</summary>
+    public const int TextFieldNumber = 1;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Text {
+      get { return valueCase_ == ValueOneofCase.Text ? (string) value_ : ""; }
+      set {
+        value_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        valueCase_ = ValueOneofCase.Text;
+      }
+    }
+
+    /// <summary>Field number for the "nested" field.</summary>
+    public const int NestedFieldNumber = 2;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested Nested {
+      get { return valueCase_ == ValueOneofCase.Nested ? (global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested) value_ : null; }
+      set {
+        value_ = value;
+        valueCase_ = value == null ? ValueOneofCase.None : ValueOneofCase.Nested;
+      }
+    }
+
+    private object value_;
+    /// <summary>Enum of possible cases for the "value" oneof.</summary>
+    public enum ValueOneofCase {
+      None = 0,
+      Text = 1,
+      Nested = 2,
+    }
+    private ValueOneofCase valueCase_ = ValueOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ValueOneofCase ValueCase {
+      get { return valueCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearValue() {
+      valueCase_ = ValueOneofCase.None;
+      value_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as OneofMerging);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(OneofMerging other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Text != other.Text) return false;
+      if (!object.Equals(Nested, other.Nested)) return false;
+      if (ValueCase != other.ValueCase) return false;
+      return true;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (valueCase_ == ValueOneofCase.Text) hash ^= Text.GetHashCode();
+      if (valueCase_ == ValueOneofCase.Nested) hash ^= Nested.GetHashCode();
+      hash ^= (int) valueCase_;
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (valueCase_ == ValueOneofCase.Text) {
+        output.WriteRawTag(10);
+        output.WriteString(Text);
+      }
+      if (valueCase_ == ValueOneofCase.Nested) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Nested);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (valueCase_ == ValueOneofCase.Text) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Text);
+      }
+      if (valueCase_ == ValueOneofCase.Nested) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Nested);
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(OneofMerging other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.ValueCase) {
+        case ValueOneofCase.Text:
+          Text = other.Text;
+          break;
+        case ValueOneofCase.Nested:
+          if (Nested == null) {
+            Nested = new global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested();
+          }
+          Nested.MergeFrom(other.Nested);
+          break;
+      }
+
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 10: {
+            Text = input.ReadString();
+            break;
+          }
+          case 18: {
+            global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested subBuilder = new global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested();
+            if (valueCase_ == ValueOneofCase.Nested) {
+              subBuilder.MergeFrom(Nested);
+            }
+            input.ReadMessage(subBuilder);
+            Nested = subBuilder;
+            break;
+          }
+        }
+      }
+    }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the OneofMerging message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      public sealed partial class Nested : pb::IMessage<Nested> {
+        private static readonly pb::MessageParser<Nested> _parser = new pb::MessageParser<Nested>(() => new Nested());
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<Nested> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::UnitTest.Issues.TestProtos.OneofMerging.Descriptor.NestedTypes[0]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public Nested() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public Nested(Nested other) : this() {
+          x_ = other.x_;
+          y_ = other.y_;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public Nested Clone() {
+          return new Nested(this);
+        }
+
+        /// <summary>Field number for the "x" field.</summary>
+        public const int XFieldNumber = 1;
+        private int x_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int X {
+          get { return x_; }
+          set {
+            x_ = value;
+          }
+        }
+
+        /// <summary>Field number for the "y" field.</summary>
+        public const int YFieldNumber = 2;
+        private int y_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int Y {
+          get { return y_; }
+          set {
+            y_ = value;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as Nested);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(Nested other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (X != other.X) return false;
+          if (Y != other.Y) return false;
+          return true;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (X != 0) hash ^= X.GetHashCode();
+          if (Y != 0) hash ^= Y.GetHashCode();
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (X != 0) {
+            output.WriteRawTag(8);
+            output.WriteInt32(X);
+          }
+          if (Y != 0) {
+            output.WriteRawTag(16);
+            output.WriteInt32(Y);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (X != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(X);
+          }
+          if (Y != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(Y);
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(Nested other) {
+          if (other == null) {
+            return;
+          }
+          if (other.X != 0) {
+            X = other.X;
+          }
+          if (other.Y != 0) {
+            Y = other.Y;
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                input.SkipLastField();
+                break;
+              case 8: {
+                X = input.ReadInt32();
+                break;
+              }
+              case 16: {
+                Y = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+
+      }
+
+    }
+    #endregion
 
   }
 

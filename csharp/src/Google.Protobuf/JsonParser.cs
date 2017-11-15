@@ -203,10 +203,14 @@ namespace Google.Protobuf
                 }
                 else
                 {
-                    // TODO: Is this what we want to do? If not, we'll need to skip the value,
-                    // which may be an object or array. (We might want to put code in the tokenizer
-                    // to do that.)
-                    throw new InvalidProtocolBufferException("Unknown field: " + name);
+                    if (settings.IgnoreUnknownFields)
+                    {
+                        tokenizer.SkipValue();
+                    }
+                    else
+                    {
+                        throw new InvalidProtocolBufferException("Unknown field: " + name);
+                    }
                 }
             }
         }
@@ -997,6 +1001,19 @@ namespace Google.Protobuf
             public TypeRegistry TypeRegistry { get; }
 
             /// <summary>
+            /// Whether the parser should ignore unknown fields (<c>true</c>) or throw an exception when
+            /// they are encountered (<c>false</c>).
+            /// </summary>
+            public bool IgnoreUnknownFields { get; }
+
+            private Settings(int recursionLimit, TypeRegistry typeRegistry, bool ignoreUnknownFields)
+            {
+                RecursionLimit = recursionLimit;
+                TypeRegistry = ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
+                IgnoreUnknownFields = ignoreUnknownFields;
+            }
+
+            /// <summary>
             /// Creates a new <see cref="Settings"/> object with the specified recursion limit.
             /// </summary>
             /// <param name="recursionLimit">The maximum depth of messages to parse</param>
@@ -1009,11 +1026,34 @@ namespace Google.Protobuf
             /// </summary>
             /// <param name="recursionLimit">The maximum depth of messages to parse</param>
             /// <param name="typeRegistry">The type registry used to parse <see cref="Any"/> messages</param>
-            public Settings(int recursionLimit, TypeRegistry typeRegistry)
+            public Settings(int recursionLimit, TypeRegistry typeRegistry) : this(recursionLimit, typeRegistry, false)
             {
-                RecursionLimit = recursionLimit;
-                TypeRegistry = ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
             }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object set to either ignore unknown fields, or throw an exception
+            /// when unknown fields are encountered.
+            /// </summary>
+            /// <param name="ignoreUnknownFields"><c>true</c> if unknown fields should be ignored when parsing; <c>false</c> to throw an exception.</param>
+            public Settings WithIgnoreUnknownFields(bool ignoreUnknownFields) =>
+                new Settings(RecursionLimit, TypeRegistry, ignoreUnknownFields);
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object based on this one, but with the specified recursion limit.
+            /// </summary>
+            /// <param name="recursionLimit">The new recursion limit.</param>
+            public Settings WithRecursionLimit(int recursionLimit) =>
+                new Settings(recursionLimit, TypeRegistry, IgnoreUnknownFields);
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object based on this one, but with the specified type registry.
+            /// </summary>
+            /// <param name="typeRegistry">The new type registry. Must not be null.</param>
+            public Settings WithTypeRegistry(TypeRegistry typeRegistry) =>
+                new Settings(
+                    RecursionLimit,
+                    ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry)),
+                    IgnoreUnknownFields);
         }
     }
 }

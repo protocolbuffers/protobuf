@@ -70,11 +70,11 @@
 #endif
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <google/protobuf/testing/file.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/io_win32.h>
 
 namespace google {
 namespace protobuf {
@@ -83,6 +83,9 @@ namespace {
 
 #ifdef _WIN32
 #define pipe(fds) _pipe(fds, 4096, O_BINARY)
+#endif
+
+#ifdef _MSC_VER
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::internal::win32::access;

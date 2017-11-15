@@ -32,6 +32,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Delphi: http://sourceforge.net/projects/protobuf-delphi/
 * Delphi: http://fundementals.sourceforge.net/dl.html
 * Elixir: https://github.com/jeremyong/exprotoc
+* Elixir: https://github.com/tony612/protobuf-elixir
 * Elm: https://github.com/tiziano88/elm-protobuf
 * Erlang: http://github.com/ngerakines/erlang_protobuffs/tree/master
 * Erlang: http://piqi.org/
@@ -41,7 +42,9 @@ These are projects we know about implementing Protocol Buffers for other program
 * Go: https://github.com/golang/protobuf (Google-official implementation)
 * Go: https://github.com/akunspy/gopbuf
 * Go: https://github.com/gogo/protobuf
+* GopherJS: https://github.com/johanbrandhorst/protobuf
 * Haskell: http://hackage.haskell.org/package/hprotoc
+* Haskell: https://github.com/google/proto-lens (Google-unofficial implementation)
 * Haxe: https://github.com/Atry/protoc-gen-haxe
 * Java: https://github.com/google/protobuf (Google-official implementation)
 * Java/Android: https://github.com/square/wire
@@ -117,6 +120,8 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * https://github.com/w359405949/libmaid (C++, Python)
 * https://github.com/madwyn/libpbrpc (C++)
 * https://github.com/SeriousMa/grpc-protobuf-validation (Java)
+* https://github.com/tony612/grpc-elixir (Elixir)
+* https://github.com/johanbrandhorst/protobuf (GopherJS)
 
 ## Other Utilities
 
@@ -157,3 +162,4 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Protocol Buffers Dynamic Schema - create protobuf schemas programmatically (Java)] (https://github.com/os72/protobuf-dynamic)
 * [Make protoc plugins in NodeJS](https://github.com/konsumer/node-protoc-plugin)
 * [ProfaneDB - A Protocol Buffers database](https://profanedb.gitlab.io)
+* [Protocol Buffer property-based testing utility and example message generator (Python / Hypothesis)](https://github.com/CurataEng/hypothesis-protobuf)

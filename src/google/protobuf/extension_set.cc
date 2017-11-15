@@ -221,7 +221,7 @@ int ExtensionSet::NumExtensions() const {
 
 int ExtensionSet::ExtensionSize(int number) const {
   ExtensionMap::const_iterator iter = extensions_.find(number);
-  if (iter == extensions_.end()) return false;
+  if (iter == extensions_.end()) return 0;
   return iter->second.GetSize();
 }
 

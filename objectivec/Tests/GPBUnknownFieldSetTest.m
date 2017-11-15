@@ -60,6 +60,95 @@
   unknownFields_ = emptyMessage_.unknownFields;
 }
 
+- (void)testInvalidFieldNumber {
+  GPBUnknownFieldSet *set = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownField* field = [[[GPBUnknownField alloc] initWithNumber:0] autorelease];
+  XCTAssertThrowsSpecificNamed([set addField:field], NSException, NSInvalidArgumentException);
+}
+
+- (void)testEqualityAndHash {
+  // Empty
+
+  GPBUnknownFieldSet *set1 = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  XCTAssertTrue([set1 isEqual:set1]);
+  XCTAssertFalse([set1 isEqual:@"foo"]);
+  GPBUnknownFieldSet *set2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  XCTAssertEqualObjects(set1, set2);
+  XCTAssertEqual([set1 hash], [set2 hash]);
+
+  // Varint
+
+  GPBUnknownField* field1 = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
+  [field1 addVarint:1];
+  [set1 addField:field1];
+  XCTAssertNotEqualObjects(set1, set2);
+  GPBUnknownField* field2 = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
+  [field2 addVarint:1];
+  [set2 addField:field2];
+  XCTAssertEqualObjects(set1, set2);
+  XCTAssertEqual([set1 hash], [set2 hash]);
+
+  // Fixed32
+
+  field1 = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
+  [field1 addFixed32:2];
+  [set1 addField:field1];
+  XCTAssertNotEqualObjects(set1, set2);
+  field2 = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
+  [field2 addFixed32:2];
+  [set2 addField:field2];
+  XCTAssertEqualObjects(set1, set2);
+  XCTAssertEqual([set1 hash], [set2 hash]);
+
+  // Fixed64
+
+  field1 = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
+  [field1 addFixed64:3];
+  [set1 addField:field1];
+  XCTAssertNotEqualObjects(set1, set2);
+  field2 = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
+  [field2 addFixed64:3];
+  [set2 addField:field2];
+  XCTAssertEqualObjects(set1, set2);
+  XCTAssertEqual([set1 hash], [set2 hash]);
+
+  // LengthDelimited
+
+  field1 = [[[GPBUnknownField alloc] initWithNumber:4] autorelease];
+  [field1 addLengthDelimited:DataFromCStr("foo")];
+  [set1 addField:field1];
+  XCTAssertNotEqualObjects(set1, set2);
+  field2 = [[[GPBUnknownField alloc] initWithNumber:4] autorelease];
+  [field2 addLengthDelimited:DataFromCStr("foo")];
+  [set2 addField:field2];
+  XCTAssertEqualObjects(set1, set2);
+  XCTAssertEqual([set1 hash], [set2 hash]);
+
+  // Group
+
+  GPBUnknownFieldSet *group1 = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownField* fieldGroup1 = [[[GPBUnknownField alloc] initWithNumber:10] autorelease];
+  [fieldGroup1 addVarint:1];
+  [group1 addField:fieldGroup1];
+  GPBUnknownFieldSet *group2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownField* fieldGroup2 = [[[GPBUnknownField alloc] initWithNumber:10] autorelease];
+  [fieldGroup2 addVarint:1];
+  [group2 addField:fieldGroup2];
+
+  field1 = [[[GPBUnknownField alloc] initWithNumber:5] autorelease];
+  [field1 addGroup:group1];
+  [set1 addField:field1];
+  XCTAssertNotEqualObjects(set1, set2);
+  field2 = [[[GPBUnknownField alloc] initWithNumber:5] autorelease];
+  [field2 addGroup:group2];
+  [set2 addField:field2];
+  XCTAssertEqualObjects(set1, set2);
+  XCTAssertEqual([set1 hash], [set2 hash]);
+
+  // Exercise description for completeness.
+  XCTAssertTrue(set1.description.length > 10);
+}
+
 // Constructs a protocol buffer which contains fields with all the same
 // numbers as allFieldsData except that each field is some other wire
 // type.
@@ -112,6 +201,24 @@
   field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:4];
   [set1 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:4] autorelease];
+  [field addFixed32:6];
+  [set1 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:5] autorelease];
+  [field addFixed64:20];
+  [set1 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:10] autorelease];
+  [field addLengthDelimited:DataFromCStr("data1")];
+  [set1 addField:field];
+
+  GPBUnknownFieldSet *group1 = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownField* fieldGroup1 = [[[GPBUnknownField alloc] initWithNumber:200] autorelease];
+  [fieldGroup1 addVarint:100];
+  [group1 addField:fieldGroup1];
+
+  field = [[[GPBUnknownField alloc] initWithNumber:11] autorelease];
+  [field addGroup:group1];
+  [set1 addField:field];
 
   GPBUnknownFieldSet* set2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
   field = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
@@ -120,22 +227,63 @@
   field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:3];
   [set2 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:4] autorelease];
+  [field addFixed32:7];
+  [set2 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:5] autorelease];
+  [field addFixed64:30];
+  [set2 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:10] autorelease];
+  [field addLengthDelimited:DataFromCStr("data2")];
+  [set2 addField:field];
+
+  GPBUnknownFieldSet *group2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownField* fieldGroup2 = [[[GPBUnknownField alloc] initWithNumber:201] autorelease];
+  [fieldGroup2 addVarint:99];
+  [group2 addField:fieldGroup2];
+
+  field = [[[GPBUnknownField alloc] initWithNumber:11] autorelease];
+  [field addGroup:group2];
+  [set2 addField:field];
 
   GPBUnknownFieldSet* set3 = [[[GPBUnknownFieldSet alloc] init] autorelease];
   field = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
   [field addVarint:1];
   [set3 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
+  [field addVarint:2];
+  [set3 addField:field];
   field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:4];
   [set3 addField:field];
-
-  GPBUnknownFieldSet* set4 = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  field = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
-  [field addVarint:2];
-  [set4 addField:field];
-  field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:3];
-  [set4 addField:field];
+  [set3 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:4] autorelease];
+  [field addFixed32:6];
+  [field addFixed32:7];
+  [set3 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:5] autorelease];
+  [field addFixed64:20];
+  [field addFixed64:30];
+  [set3 addField:field];
+  field = [[[GPBUnknownField alloc] initWithNumber:10] autorelease];
+  [field addLengthDelimited:DataFromCStr("data1")];
+  [field addLengthDelimited:DataFromCStr("data2")];
+  [set3 addField:field];
+
+  GPBUnknownFieldSet *group3a = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownField* fieldGroup3a1 = [[[GPBUnknownField alloc] initWithNumber:200] autorelease];
+  [fieldGroup3a1 addVarint:100];
+  [group3a addField:fieldGroup3a1];
+  GPBUnknownFieldSet *group3b = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownField* fieldGroup3b2 = [[[GPBUnknownField alloc] initWithNumber:201] autorelease];
+  [fieldGroup3b2 addVarint:99];
+  [group3b addField:fieldGroup3b2];
+
+  field = [[[GPBUnknownField alloc] initWithNumber:11] autorelease];
+  [field addGroup:group1];
+  [field addGroup:group3b];
+  [set3 addField:field];
 
   TestEmptyMessage* source1 = [TestEmptyMessage message];
   [source1 setUnknownFields:set1];
@@ -143,8 +291,6 @@
   [source2 setUnknownFields:set2];
   TestEmptyMessage* source3 = [TestEmptyMessage message];
   [source3 setUnknownFields:set3];
-  TestEmptyMessage* source4 = [TestEmptyMessage message];
-  [source4 setUnknownFields:set4];
 
   TestEmptyMessage* destination1 = [TestEmptyMessage message];
   [destination1 mergeFrom:source1];
@@ -152,9 +298,10 @@
 
   TestEmptyMessage* destination2 = [TestEmptyMessage message];
   [destination2 mergeFrom:source3];
-  [destination2 mergeFrom:source4];
 
   XCTAssertEqualObjects(destination1.data, destination2.data);
+  XCTAssertEqualObjects(destination1.data, source3.data);
+  XCTAssertEqualObjects(destination2.data, source3.data);
 }
 
 - (void)testClearMessage {
@@ -240,6 +387,107 @@
   XCTAssertEqual(0x7FFFFFFFFFFFFFFFULL, [field2.varintList valueAtIndex:0]);
 }
 
+#pragma mark - Field tests
+// Some tests directly on fields since the dictionary in FieldSet can gate
+// testing some of these.
+
+- (void)testFieldEqualityAndHash {
+  GPBUnknownField* field1 = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
+  XCTAssertTrue([field1 isEqual:field1]);
+  XCTAssertFalse([field1 isEqual:@"foo"]);
+  GPBUnknownField* field2 = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
+  XCTAssertNotEqualObjects(field1, field2);
+
+  field2 = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+
+  // Varint
+
+  [field1 addVarint:10];
+  XCTAssertNotEqualObjects(field1, field2);
+  [field2 addVarint:10];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+  [field1 addVarint:11];
+  XCTAssertNotEqualObjects(field1, field2);
+  [field2 addVarint:11];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+
+  // Fixed32
+
+  [field1 addFixed32:20];
+  XCTAssertNotEqualObjects(field1, field2);
+  [field2 addFixed32:20];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+  [field1 addFixed32:21];
+  XCTAssertNotEqualObjects(field1, field2);
+  [field2 addFixed32:21];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+
+  // Fixed64
+
+  [field1 addFixed64:30];
+  XCTAssertNotEqualObjects(field1, field2);
+  [field2 addFixed64:30];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+  [field1 addFixed64:31];
+  XCTAssertNotEqualObjects(field1, field2);
+  [field2 addFixed64:31];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+
+  // LengthDelimited
+
+  [field1 addLengthDelimited:DataFromCStr("foo")];
+  XCTAssertNotEqualObjects(field1, field2);
+  [field2 addLengthDelimited:DataFromCStr("foo")];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+  [field1 addLengthDelimited:DataFromCStr("bar")];
+  XCTAssertNotEqualObjects(field1, field2);
+  [field2 addLengthDelimited:DataFromCStr("bar")];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+
+  // Group
+
+  GPBUnknownFieldSet *group = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownField* fieldGroup = [[[GPBUnknownField alloc] initWithNumber:100] autorelease];
+  [fieldGroup addVarint:100];
+  [group addField:fieldGroup];
+  [field1 addGroup:group];
+  XCTAssertNotEqualObjects(field1, field2);
+  group = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  fieldGroup = [[[GPBUnknownField alloc] initWithNumber:100] autorelease];
+  [fieldGroup addVarint:100];
+  [group addField:fieldGroup];
+  [field2 addGroup:group];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+
+  group = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  fieldGroup = [[[GPBUnknownField alloc] initWithNumber:101] autorelease];
+  [fieldGroup addVarint:101];
+  [group addField:fieldGroup];
+  [field1 addGroup:group];
+  XCTAssertNotEqualObjects(field1, field2);
+  group = [[[GPBUnknownFieldSet alloc] init] autorelease];
+  fieldGroup = [[[GPBUnknownField alloc] initWithNumber:101] autorelease];
+  [fieldGroup addVarint:101];
+  [group addField:fieldGroup];
+  [field2 addGroup:group];
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertEqual([field1 hash], [field2 hash]);
+
+  // Exercise description for completeness.
+  XCTAssertTrue(field1.description.length > 10);
+}
+
 - (void)testMergingFields {
   GPBUnknownField* field1 = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
   [field1 addVarint:1];
@@ -247,9 +495,8 @@
   [field1 addFixed64:3];
   [field1 addLengthDelimited:[NSData dataWithBytes:"hello" length:5]];
   [field1 addGroup:[[unknownFields_ copy] autorelease]];
-  GPBUnknownField* field2 = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
+  GPBUnknownField* field2 = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
   [field2 mergeFromField:field1];
-  XCTAssertEqualObjects(field1, field2);
 }
 
 @end

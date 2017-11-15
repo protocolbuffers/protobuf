@@ -61,6 +61,7 @@ using internal::WireFormat;
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<string, string>* variables,
                              const Options& options) {
+  (*variables)["ns"] = Namespace(descriptor);
   (*variables)["name"] = FieldName(descriptor);
   (*variables)["index"] = SimpleItoa(descriptor->index());
   (*variables)["number"] = SimpleItoa(descriptor->number());
@@ -95,6 +96,13 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   // By default, empty string, so that generic code used for both oneofs and
   // singular fields can be written.
   (*variables)["oneof_prefix"] = "";
+
+  // These variables are placeholders to pick out the beginning and ends of
+  // identifiers for annotations (when doing so with existing variables would
+  // be ambiguous or impossible). They should never be set to anything but the
+  // empty string.
+  (*variables)["{"] = "";
+  (*variables)["}"] = "";
 }
 
 void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
@@ -193,7 +201,6 @@ const FieldGenerator& FieldGeneratorMap::get(
   GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
-
 
 }  // namespace cpp
 }  // namespace compiler

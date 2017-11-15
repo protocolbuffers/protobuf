@@ -712,8 +712,33 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
   }
 
   // Delete key from map.
-  if (reflection->DeleteMapValue(message, self->parent_field_descriptor,
+  if (reflection->ContainsMapKey(*message, self->parent_field_descriptor,
                                  map_key)) {
+    // Delete key from CMessage dict.
+    MapValueRef value;
+    reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
+                                       map_key, &value);
+    ScopedPyObjectPtr key(PyLong_FromVoidPtr(value.MutableMessageValue()));
+
+    PyObject* cmsg_value = PyDict_GetItem(self->message_dict, key.get());
+    if (cmsg_value) {
+      // Need to keep CMessage stay alive if it is still referenced after
+      // deletion. Makes a new message and swaps values into CMessage
+      // instead of just removing.
+      CMessage* cmsg =  reinterpret_cast<CMessage*>(cmsg_value);
+      Message* msg = cmsg->message;
+      cmsg->owner.reset(msg->New());
+      cmsg->message = cmsg->owner.get();
+      cmsg->parent = NULL;
+      msg->GetReflection()->Swap(msg, cmsg->message);
+      if (PyDict_DelItem(self->message_dict, key.get()) < 0) {
+        return -1;
+      }
+    }
+
+    // Delete key from map.
+    reflection->DeleteMapValue(message, self->parent_field_descriptor,
+                               map_key);
     return 0;
   } else {
     PyErr_Format(PyExc_KeyError, "Key not present in map");

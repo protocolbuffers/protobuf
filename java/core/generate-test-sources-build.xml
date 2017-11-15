@@ -5,6 +5,7 @@
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="--proto_path=${test.proto.dir}"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_mset.proto"/>
@@ -18,6 +19,7 @@
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_enormous_descriptor.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_no_generic_services.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_well_known_types.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/deprecated_file.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/lazy_fields_lite.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/lite_equals_and_hash.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_test.proto"/>

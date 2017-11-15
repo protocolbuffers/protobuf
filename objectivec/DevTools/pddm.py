@@ -124,6 +124,7 @@ def _MacroRefRe(macro_names):
   return re.compile(r'\b(?P<macro_ref>(?P<name>(%s))\((?P<args>.*?)\))' %
                     '|'.join(macro_names))
 
+
 def _MacroArgRefRe(macro_arg_names):
   # Takes in a list of macro arg names and makes a regex that will match
   # uses of those args.
@@ -318,25 +319,26 @@ class MacroCollection(object):
       return macro.body
     assert len(arg_values) == len(macro.args)
     args = dict(zip(macro.args, arg_values))
+
     def _lookupArg(match):
       val = args[match.group('name')]
       opt = match.group('option')
       if opt:
-        if opt == 'S': # Spaces for the length
+        if opt == 'S':  # Spaces for the length
           return ' ' * len(val)
-        elif opt == 'l': # Lowercase first character
+        elif opt == 'l':  # Lowercase first character
           if val:
             return val[0].lower() + val[1:]
           else:
             return val
-        elif opt == 'L': # All Lowercase
+        elif opt == 'L':  # All Lowercase
           return val.lower()
-        elif opt == 'u': # Uppercase first character
+        elif opt == 'u':  # Uppercase first character
           if val:
             return val[0].upper() + val[1:]
           else:
             return val
-        elif opt == 'U': # All Uppercase
+        elif opt == 'U':  # All Uppercase
           return val.upper()
         else:
           raise PDDMError('Unknown arg option "%s$%s" while expanding "%s".%s'
@@ -350,6 +352,7 @@ class MacroCollection(object):
 
   def _EvalMacrosRefs(self, text, macro_stack):
     macro_ref_re = _MacroRefRe(self._macros.keys())
+
     def _resolveMacro(match):
       return self._Expand(match, macro_stack)
     return macro_ref_re.sub(_resolveMacro, text)
@@ -496,9 +499,10 @@ class SourceFile(object):
       # Add the ending marker.
       if len(captured_lines) == 1:
         result.append('//%%PDDM-EXPAND-END %s' %
-                       captured_lines[0][directive_len:].strip())
+                      captured_lines[0][directive_len:].strip())
       else:
-        result.append('//%%PDDM-EXPAND-END (%s expansions)' % len(captured_lines))
+        result.append('//%%PDDM-EXPAND-END (%s expansions)' %
+                      len(captured_lines))
 
       return result
 
@@ -669,15 +673,15 @@ def main(args):
 
     if src_file.processed_content != src_file.original_content:
       if not opts.dry_run:
-        print 'Updating for "%s".' % a_path
+        print('Updating for "%s".' % a_path)
         with open(a_path, 'w') as f:
           f.write(src_file.processed_content)
       else:
         # Special result to indicate things need updating.
-        print 'Update needed for "%s".' % a_path
+        print('Update needed for "%s".' % a_path)
         result = 1
     elif opts.verbose:
-      print 'No update for "%s".' % a_path
+      print('No update for "%s".' % a_path)
 
   return result
 

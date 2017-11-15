@@ -33,7 +33,7 @@
 using Google.Protobuf.Reflection;
 using UnitTest.Issues.TestProtos;
 using NUnit.Framework;
-
+using static UnitTest.Issues.TestProtos.OneofMerging.Types;
 
 namespace Google.Protobuf
 {
@@ -77,6 +77,18 @@ namespace Google.Protobuf
             var message = new TestJsonName { Name = "test", Description = "test2", Guid = "test3" };
             Assert.AreEqual("{ \"name\": \"test\", \"desc\": \"test2\", \"exid\": \"test3\" }",
                 JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void OneofMerging()
+        {
+            var message1 = new OneofMerging { Nested = new Nested { X = 10 } };
+            var message2 = new OneofMerging { Nested = new Nested { Y = 20 } };
+            var expected = new OneofMerging { Nested = new Nested { X = 10, Y = 20 } };
+
+            var merged = message1.Clone();
+            merged.MergeFrom(message2);
+            Assert.AreEqual(expected, merged);
         }
     }
 }

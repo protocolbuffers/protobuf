@@ -45,16 +45,18 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/unittest.pb.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
-using protobuf_unittest::TestAllTypes;
-
 namespace protobuf {
 namespace {
+
+using ::protobuf_unittest::TestAllTypes;
+using ::testing::ElementsAre;
 
 // Test operations on a small RepeatedField.
 TEST(RepeatedField, Small) {
@@ -267,15 +269,6 @@ TEST(RepeatedField, MergeFrom) {
   EXPECT_EQ(5, destination.Get(4));
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
-#ifndef NDEBUG
-TEST(RepeatedField, MergeFromSelf) {
-  RepeatedField<int> me;
-  me.Add(3);
-  EXPECT_DEATH(me.MergeFrom(me), "");
-}
-#endif  // NDEBUG
-#endif  // PROTOBUF_HAS_DEATH_TEST
 
 TEST(RepeatedField, CopyFrom) {
   RepeatedField<int> source, destination;
@@ -389,6 +382,142 @@ TEST(RepeatedField, SelfAssign) {
   EXPECT_EQ(7, source.Get(0));
   EXPECT_EQ(8, source.Get(1));
 }
+
+#if LANG_CXX11
+
+TEST(RepeatedField, MoveConstruct) {
+  {
+    RepeatedField<int> source;
+    source.Add(1);
+    source.Add(2);
+    const int* data = source.data();
+    RepeatedField<int> destination = std::move(source);
+    EXPECT_EQ(data, destination.data());
+    EXPECT_THAT(destination, ElementsAre(1, 2));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_TRUE(source.empty());
+  }
+  {
+    Arena arena;
+    RepeatedField<int>* source =
+        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    source->Add(1);
+    source->Add(2);
+    RepeatedField<int> destination = std::move(*source);
+    EXPECT_EQ(NULL, destination.GetArena());
+    EXPECT_THAT(destination, ElementsAre(1, 2));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_THAT(*source, ElementsAre(1, 2));
+  }
+}
+
+TEST(RepeatedField, MoveAssign) {
+  {
+    RepeatedField<int> source;
+    source.Add(1);
+    source.Add(2);
+    RepeatedField<int> destination;
+    destination.Add(3);
+    const int* source_data = source.data();
+    const int* destination_data = destination.data();
+    destination = std::move(source);
+    EXPECT_EQ(source_data, destination.data());
+    EXPECT_THAT(destination, ElementsAre(1, 2));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_EQ(destination_data, source.data());
+    EXPECT_THAT(source, ElementsAre(3));
+  }
+  {
+    Arena arena;
+    RepeatedField<int>* source =
+        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    source->Add(1);
+    source->Add(2);
+    RepeatedField<int>* destination =
+        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    destination->Add(3);
+    const int* source_data = source->data();
+    const int* destination_data = destination->data();
+    *destination = std::move(*source);
+    EXPECT_EQ(source_data, destination->data());
+    EXPECT_THAT(*destination, ElementsAre(1, 2));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_EQ(destination_data, source->data());
+    EXPECT_THAT(*source, ElementsAre(3));
+  }
+  {
+    Arena source_arena;
+    RepeatedField<int>* source =
+        Arena::CreateMessage<RepeatedField<int>>(&source_arena);
+    source->Add(1);
+    source->Add(2);
+    Arena destination_arena;
+    RepeatedField<int>* destination =
+        Arena::CreateMessage<RepeatedField<int>>(&destination_arena);
+    destination->Add(3);
+    *destination = std::move(*source);
+    EXPECT_THAT(*destination, ElementsAre(1, 2));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_THAT(*source, ElementsAre(1, 2));
+  }
+  {
+    Arena arena;
+    RepeatedField<int>* source =
+        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    source->Add(1);
+    source->Add(2);
+    RepeatedField<int> destination;
+    destination.Add(3);
+    destination = std::move(*source);
+    EXPECT_THAT(destination, ElementsAre(1, 2));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_THAT(*source, ElementsAre(1, 2));
+  }
+  {
+    RepeatedField<int> source;
+    source.Add(1);
+    source.Add(2);
+    Arena arena;
+    RepeatedField<int>* destination =
+        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    destination->Add(3);
+    *destination = std::move(source);
+    EXPECT_THAT(*destination, ElementsAre(1, 2));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_THAT(source, ElementsAre(1, 2));
+  }
+  {
+    RepeatedField<int> field;
+    // An alias to defeat -Wself-move.
+    RepeatedField<int>& alias = field;
+    field.Add(1);
+    field.Add(2);
+    const int* data = field.data();
+    field = std::move(alias);
+    EXPECT_EQ(data, field.data());
+    EXPECT_THAT(field, ElementsAre(1, 2));
+  }
+  {
+    Arena arena;
+    RepeatedField<int>* field =
+        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    field->Add(1);
+    field->Add(2);
+    const int* data = field->data();
+    *field = std::move(*field);
+    EXPECT_EQ(data, field->data());
+    EXPECT_THAT(*field, ElementsAre(1, 2));
+  }
+}
+
+#endif  // LANG_CXX11
 
 TEST(RepeatedField, MutableDataIsMutable) {
   RepeatedField<int> field;
@@ -783,13 +912,6 @@ TEST(RepeatedPtrField, MergeFrom) {
   EXPECT_EQ("5", destination.Get(4));
 }
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
-TEST(RepeatedPtrField, MergeFromSelf) {
-  RepeatedPtrField<string> me;
-  me.Add()->assign("1");
-  EXPECT_DEATH(me.MergeFrom(me), "");
-}
-#endif  // PROTOBUF_HAS_DEATH_TEST
 
 TEST(RepeatedPtrField, CopyFrom) {
   RepeatedPtrField<string> source, destination;
@@ -922,6 +1044,142 @@ TEST(RepeatedPtrField, SelfAssign) {
   EXPECT_EQ("7", source.Get(0));
   EXPECT_EQ("8", source.Get(1));
 }
+
+#if LANG_CXX11
+
+TEST(RepeatedPtrField, MoveConstruct) {
+  {
+    RepeatedPtrField<string> source;
+    *source.Add() = "1";
+    *source.Add() = "2";
+    const string* const* data = source.data();
+    RepeatedPtrField<string> destination = std::move(source);
+    EXPECT_EQ(data, destination.data());
+    EXPECT_THAT(destination, ElementsAre("1", "2"));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_TRUE(source.empty());
+  }
+  {
+    Arena arena;
+    RepeatedPtrField<string>* source =
+        Arena::CreateMessage<RepeatedPtrField<string>>(&arena);
+    *source->Add() = "1";
+    *source->Add() = "2";
+    RepeatedPtrField<string> destination = std::move(*source);
+    EXPECT_EQ(NULL, destination.GetArena());
+    EXPECT_THAT(destination, ElementsAre("1", "2"));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_THAT(*source, ElementsAre("1", "2"));
+  }
+}
+
+TEST(RepeatedPtrField, MoveAssign) {
+  {
+    RepeatedPtrField<string> source;
+    *source.Add() = "1";
+    *source.Add() = "2";
+    RepeatedPtrField<string> destination;
+    *destination.Add() = "3";
+    const string* const* source_data = source.data();
+    const string* const* destination_data = destination.data();
+    destination = std::move(source);
+    EXPECT_EQ(source_data, destination.data());
+    EXPECT_THAT(destination, ElementsAre("1", "2"));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_EQ(destination_data, source.data());
+    EXPECT_THAT(source, ElementsAre("3"));
+  }
+  {
+    Arena arena;
+    RepeatedPtrField<string>* source =
+        Arena::CreateMessage<RepeatedPtrField<string>>(&arena);
+    *source->Add() = "1";
+    *source->Add() = "2";
+    RepeatedPtrField<string>* destination =
+        Arena::CreateMessage<RepeatedPtrField<string>>(&arena);
+    *destination->Add() = "3";
+    const string* const* source_data = source->data();
+    const string* const* destination_data = destination->data();
+    *destination = std::move(*source);
+    EXPECT_EQ(source_data, destination->data());
+    EXPECT_THAT(*destination, ElementsAre("1", "2"));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_EQ(destination_data, source->data());
+    EXPECT_THAT(*source, ElementsAre("3"));
+  }
+  {
+    Arena source_arena;
+    RepeatedPtrField<string>* source =
+        Arena::CreateMessage<RepeatedPtrField<string>>(&source_arena);
+    *source->Add() = "1";
+    *source->Add() = "2";
+    Arena destination_arena;
+    RepeatedPtrField<string>* destination =
+        Arena::CreateMessage<RepeatedPtrField<string>>(&destination_arena);
+    *destination->Add() = "3";
+    *destination = std::move(*source);
+    EXPECT_THAT(*destination, ElementsAre("1", "2"));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_THAT(*source, ElementsAre("1", "2"));
+  }
+  {
+    Arena arena;
+    RepeatedPtrField<string>* source =
+        Arena::CreateMessage<RepeatedPtrField<string>>(&arena);
+    *source->Add() = "1";
+    *source->Add() = "2";
+    RepeatedPtrField<string> destination;
+    *destination.Add() = "3";
+    destination = std::move(*source);
+    EXPECT_THAT(destination, ElementsAre("1", "2"));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_THAT(*source, ElementsAre("1", "2"));
+  }
+  {
+    RepeatedPtrField<string> source;
+    *source.Add() = "1";
+    *source.Add() = "2";
+    Arena arena;
+    RepeatedPtrField<string>* destination =
+        Arena::CreateMessage<RepeatedPtrField<string>>(&arena);
+    *destination->Add() = "3";
+    *destination = std::move(source);
+    EXPECT_THAT(*destination, ElementsAre("1", "2"));
+    // This property isn't guaranteed but it's useful to have a test that would
+    // catch changes in this area.
+    EXPECT_THAT(source, ElementsAre("1", "2"));
+  }
+  {
+    RepeatedPtrField<string> field;
+    // An alias to defeat -Wself-move.
+    RepeatedPtrField<string>& alias = field;
+    *field.Add() = "1";
+    *field.Add() = "2";
+    const string* const* data = field.data();
+    field = std::move(alias);
+    EXPECT_EQ(data, field.data());
+    EXPECT_THAT(field, ElementsAre("1", "2"));
+  }
+  {
+    Arena arena;
+    RepeatedPtrField<string>* field =
+        Arena::CreateMessage<RepeatedPtrField<string>>(&arena);
+    *field->Add() = "1";
+    *field->Add() = "2";
+    const string* const* data = field->data();
+    *field = std::move(*field);
+    EXPECT_EQ(data, field->data());
+    EXPECT_THAT(*field, ElementsAre("1", "2"));
+  }
+}
+
+#endif  // LANG_CXX11
 
 TEST(RepeatedPtrField, MutableDataIsMutable) {
   RepeatedPtrField<string> field;
@@ -1585,6 +1843,38 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
                 testproto.mutable_repeated_string()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
+
+#if LANG_CXX11
+TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
+  std::vector<string> src = {"a", "b", "c", "d"};
+  std::vector<string> copy = src;  // copy since move leaves in undefined state
+  TestAllTypes testproto;
+  std::move(copy.begin(), copy.end(),
+            RepeatedFieldBackInserter(testproto.mutable_repeated_string()));
+
+  ASSERT_THAT(testproto.repeated_string(), testing::ElementsAreArray(src));
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
+  auto make_nested = [](int32 x) {
+    Nested ret;
+    ret.set_bb(x);
+    return ret;
+  };
+  std::vector<Nested> src = {make_nested(3), make_nested(5), make_nested(7)};
+  std::vector<Nested> copy = src;  // copy since move leaves in undefined state
+  TestAllTypes testproto;
+  std::move(
+      copy.begin(), copy.end(),
+      RepeatedFieldBackInserter(testproto.mutable_repeated_nested_message()));
+
+  ASSERT_EQ(src.size(), testproto.repeated_nested_message_size());
+  for (int i = 0; i < src.size(); ++i) {
+    EXPECT_EQ(src[i].DebugString(),
+              testproto.repeated_nested_message(i).DebugString());
+  }
+}
+#endif
 
 }  // namespace
 

@@ -50,6 +50,10 @@ public class InvalidProtocolBufferException extends IOException {
     super(e.getMessage(), e);
   }
 
+  public InvalidProtocolBufferException(final String description, IOException e) {
+    super(description, e);
+  }
+
   /**
    * Attaches an unfinished message to the exception to support best-effort
    * parsing in {@code Parser} interface.

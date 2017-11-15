@@ -31,7 +31,6 @@
 package com.google.protobuf;
 
 import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
-import com.google.protobuf.GeneratedMessageLite.EqualsVisitor.NotEqualsException;
 import com.google.protobuf.Internal.BooleanList;
 import com.google.protobuf.Internal.DoubleList;
 import com.google.protobuf.Internal.EnumLiteMap;
@@ -52,6 +51,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Lite version of {@link GeneratedMessage}.
@@ -62,6 +62,12 @@ public abstract class GeneratedMessageLite<
     MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
     BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
         extends AbstractMessageLite<MessageType, BuilderType> {
+  // BEGIN REGULAR
+  static final boolean ENABLE_EXPERIMENTAL_RUNTIME_AT_BUILD_TIME = false;
+  // END REGULAR
+  // BEGIN EXPERIMENTAL
+  // static final boolean ENABLE_EXPERIMENTAL_RUNTIME_AT_BUILD_TIME = true;
+  // END EXPERIMENTAL
 
   /** For use by generated code only. Lazily initialized to reduce allocations. */
   protected UnknownFieldSetLite unknownFields = UnknownFieldSetLite.getDefaultInstance();
@@ -107,14 +113,22 @@ public abstract class GeneratedMessageLite<
   @SuppressWarnings("unchecked") // Guaranteed by runtime
   @Override
   public int hashCode() {
-    if (memoizedHashCode == 0) {
-      HashCodeVisitor visitor = new HashCodeVisitor();
-      visit(visitor, (MessageType) this);
-      memoizedHashCode = visitor.hashCode;
+    if (memoizedHashCode != 0) {
+      return memoizedHashCode;
     }
+    // BEGIN EXPERIMENTAL
+    // memoizedHashCode = Protobuf.getInstance().schemaFor(this).hashCode(this);
+    // return memoizedHashCode;
+    // END EXPERIMENTAL
+    // BEGIN REGULAR
+    HashCodeVisitor visitor = new HashCodeVisitor();
+    visit(visitor, (MessageType) this);
+    memoizedHashCode = visitor.hashCode;
     return memoizedHashCode;
+    // END REGULAR
   }
 
+  // BEGIN REGULAR
   @SuppressWarnings("unchecked") // Guaranteed by runtime
   int hashCode(HashCodeVisitor visitor) {
     if (memoizedHashCode == 0) {
@@ -126,6 +140,7 @@ public abstract class GeneratedMessageLite<
     }
     return memoizedHashCode;
   }
+  // END REGULAR
 
   @SuppressWarnings("unchecked") // Guaranteed by isInstance + runtime
   @Override
@@ -138,18 +153,22 @@ public abstract class GeneratedMessageLite<
       return false;
     }
 
+    // BEGIN EXPERIMENTAL
+    // return Protobuf.getInstance().schemaFor(this).equals(this, (MessageType) other);
+    // END EXPERIMENTAL
+    // BEGIN REGULAR
 
     try {
       visit(EqualsVisitor.INSTANCE, (MessageType) other);
-    } catch (NotEqualsException e) {
+    } catch (EqualsVisitor.NotEqualsException e) {
       return false;
     }
     return true;
+    // END REGULAR
   }
 
-  /**
-   * Same as {@link #equals(Object)} but throws {@code NotEqualsException}.
-   */
+  // BEGIN REGULAR
+  /** Same as {@link #equals(Object)} but throws {@code NotEqualsException}. */
   @SuppressWarnings("unchecked") // Guaranteed by isInstance + runtime
   boolean equals(EqualsVisitor visitor, MessageLite other) {
     if (this == other) {
@@ -163,14 +182,13 @@ public abstract class GeneratedMessageLite<
     visit(visitor, (MessageType) other);
     return true;
   }
+  // END REGULAR
 
   // The general strategy for unknown fields is to use an UnknownFieldSetLite that is treated as
   // mutable during the parsing constructor and immutable after. This allows us to avoid
   // any unnecessary intermediary allocations while reducing the generated code size.
 
-  /**
-   * Lazily initializes unknown fields.
-   */
+  /** Lazily initializes unknown fields. */
   private final void ensureUnknownFieldsInitialized() {
     if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
       unknownFields = UnknownFieldSetLite.newInstance();
@@ -217,9 +235,23 @@ public abstract class GeneratedMessageLite<
     unknownFields.makeImmutable();
   }
 
+  protected final <
+    MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
+    BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
+        BuilderType createBuilder() {
+    return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
+  }
+
+  protected final <
+    MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
+    BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
+        BuilderType createBuilder(MessageType prototype) {
+    return ((BuilderType) createBuilder()).mergeFrom(prototype);
+  }
+
   @Override
   public final boolean isInitialized() {
-    return dynamicMethod(MethodToInvoke.IS_INITIALIZED, Boolean.TRUE) != null;
+    return isInitialized((MessageType) this, Boolean.TRUE);
   }
 
   @Override
@@ -237,9 +269,13 @@ public abstract class GeneratedMessageLite<
    * For use by generated code only.
    */
   public static enum MethodToInvoke {
-    // Rely on/modify instance state
     IS_INITIALIZED,
+    // BEGIN REGULAR
     VISIT,
+    // END REGULAR
+    // Rely on/modify instance state
+    GET_MEMOIZED_IS_INITIALIZED,
+    SET_MEMOIZED_IS_INITIALIZED,
     MERGE_FROM_STREAM,
     MAKE_IMMUTABLE,
 
@@ -255,25 +291,30 @@ public abstract class GeneratedMessageLite<
    * Theses different kinds of operations are required to implement message-level operations for
    * builders in the runtime. This method bundles those operations to reduce the generated methods
    * count.
+   *
    * <ul>
-   * <li>{@code MERGE_FROM_STREAM} is parameterized with an {@link CodedInputStream} and
-   * {@link ExtensionRegistryLite}. It consumes the input stream, parsing the contents into the
-   * returned protocol buffer. If parsing throws an {@link InvalidProtocolBufferException}, the
-   * implementation wraps it in a RuntimeException.
-   * <li>{@code NEW_INSTANCE} returns a new instance of the protocol buffer that has not yet been
-   * made immutable. See {@code MAKE_IMMUTABLE}.
-   * <li>{@code IS_INITIALIZED} is parameterized with a {@code Boolean} detailing whether to
-   * memoize. It returns {@code null} for false and the default instance for true. We optionally
-   * memoize to support the Builder case, where memoization is not desired.
-   * <li>{@code NEW_BUILDER} returns a {@code BuilderType} instance.
-   * <li>{@code VISIT} is parameterized with a {@code Visitor} and a {@code MessageType} and
-   * recursively iterates through the fields side by side between this and the instance.
-   * <li>{@code MAKE_IMMUTABLE} sets all internal fields to an immutable state.
+   *   <li>{@code MERGE_FROM_STREAM} is parameterized with an {@link CodedInputStream} and {@link
+   *       ExtensionRegistryLite}. It consumes the input stream, parsing the contents into the
+   *       returned protocol buffer. If parsing throws an {@link InvalidProtocolBufferException},
+   *       the implementation wraps it in a RuntimeException.
+   *   <li>{@code NEW_INSTANCE} returns a new instance of the protocol buffer that has not yet been
+   *       made immutable. See {@code MAKE_IMMUTABLE}.
+   *   <li>{@code IS_INITIALIZED} returns {@code null} for false and the default instance for true.
+   *       It doesn't use or modify any memoized value.
+   *   <li>{@code GET_MEMOIZED_IS_INITIALIZED} returns the memoized {@code isInitialized} byte
+   *       value.
+   *   <li>{@code SET_MEMOIZED_IS_INITIALIZED} sets the memoized {@code isInitilaized} byte value to
+   *       1 if the first parameter is not null, or to 0 if the first parameter is null.
+   *   <li>{@code NEW_BUILDER} returns a {@code BuilderType} instance.
+   *   <li>{@code VISIT} is parameterized with a {@code Visitor} and a {@code MessageType} and
+   *       recursively iterates through the fields side by side between this and the instance.
+   *   <li>{@code MAKE_IMMUTABLE} sets all internal fields to an immutable state.
    * </ul>
+   *
    * This method, plus the implementation of the Builder, enables the Builder class to be proguarded
    * away entirely on Android.
-   * <p>
-   * For use by generated code only.
+   *
+   * <p>For use by generated code only.
    */
   protected abstract Object dynamicMethod(MethodToInvoke method, Object arg0, Object arg1);
 
@@ -291,14 +332,17 @@ public abstract class GeneratedMessageLite<
     return dynamicMethod(method, null, null);
   }
 
+  // BEGIN REGULAR
   void visit(Visitor visitor, MessageType other) {
     dynamicMethod(MethodToInvoke.VISIT, visitor, other);
     unknownFields = visitor.visitUnknownFields(unknownFields, other.unknownFields);
   }
+  // END REGULAR
+
+
 
   /**
-   * Merge some unknown fields into the {@link UnknownFieldSetLite} for this
-   * message.
+   * Merge some unknown fields into the {@link UnknownFieldSetLite} for this message.
    *
    * <p>For use by generated code only.
    */
@@ -331,7 +375,7 @@ public abstract class GeneratedMessageLite<
       if (isBuilt) {
         MessageType newInstance =
             (MessageType) instance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
-        newInstance.visit(MergeFromVisitor.INSTANCE, instance);
+        mergeFromInstance(newInstance, instance);
         instance = newInstance;
         isBuilt = false;
       }
@@ -386,8 +430,17 @@ public abstract class GeneratedMessageLite<
     /** All subclasses implement this. */
     public BuilderType mergeFrom(MessageType message) {
       copyOnWrite();
-      instance.visit(MergeFromVisitor.INSTANCE, message);
+      mergeFromInstance(instance, message);
       return (BuilderType) this;
+    }
+
+    private void mergeFromInstance(MessageType dest, MessageType src) {
+      // BEGIN EXPERIMENTAL
+      // Protobuf.getInstance().schemaFor(dest).mergeFrom(dest, src);
+      // END EXPERIMENTAL
+      // BEGIN REGULAR
+      dest.visit(MergeFromVisitor.INSTANCE, src);
+      // END REGULAR
     }
 
     @Override
@@ -465,11 +518,13 @@ public abstract class GeneratedMessageLite<
       extensions.mergeFrom(((ExtendableMessage) other).extensions);
     }
 
+    // BEGIN REGULAR
     @Override
     final void visit(Visitor visitor, MessageType other) {
       super.visit(visitor, other);
       extensions = visitor.visitExtensions(extensions, other.extensions);
     }
+    // END REGULAR
 
     /**
      * Parse an unknown field or an extension. For use by generated code only.
@@ -482,7 +537,8 @@ public abstract class GeneratedMessageLite<
         MessageType defaultInstance,
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
-        int tag) throws IOException {
+        int tag)
+        throws IOException {
       int fieldNumber = WireFormat.getTagFieldNumber(tag);
 
       // TODO(dweis): How much bytecode would be saved by not requiring the generated code to
@@ -1398,7 +1454,21 @@ public abstract class GeneratedMessageLite<
    */
   protected static final <T extends GeneratedMessageLite<T, ?>> boolean isInitialized(
       T message, boolean shouldMemoize) {
-    return message.dynamicMethod(MethodToInvoke.IS_INITIALIZED, shouldMemoize) != null;
+    byte memoizedIsInitialized =
+        (Byte) message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED);
+    if (memoizedIsInitialized == 1) {
+      return true;
+    }
+    if (memoizedIsInitialized == 0) {
+      return false;
+    }
+    boolean isInitialized =
+        message.dynamicMethod(MethodToInvoke.IS_INITIALIZED, Boolean.FALSE) != null;
+    if (shouldMemoize) {
+      message.dynamicMethod(
+          MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null);
+    }
+    return isInitialized;
   }
 
   protected static final <T extends GeneratedMessageLite<T, ?>> void makeImmutable(T message) {
@@ -1690,6 +1760,7 @@ public abstract class GeneratedMessageLite<
     return message;
   }
 
+  // BEGIN REGULAR
   /**
    * An abstract visitor that the generated code calls into that we use to implement various
    * features. Fields that are not members of oneofs are always visited. Members of a oneof are only
@@ -1713,7 +1784,6 @@ public abstract class GeneratedMessageLite<
     Object visitOneofLong(boolean minePresent, Object mine, Object other);
     Object visitOneofString(boolean minePresent, Object mine, Object other);
     Object visitOneofByteString(boolean minePresent, Object mine, Object other);
-    Object visitOneofLazyMessage(boolean minePresent, Object mine, Object other);
     Object visitOneofMessage(boolean minePresent, Object mine, Object other);
     void visitOneofNotSet(boolean minePresent);
 
@@ -1721,7 +1791,6 @@ public abstract class GeneratedMessageLite<
      * Message fields use null sentinals.
      */
     <T extends MessageLite> T visitMessage(T mine, T other);
-    LazyFieldLite visitLazyMessage(LazyFieldLite mine, LazyFieldLite other);
 
     <T> ProtobufList<T> visitList(ProtobufList<T> mine, ProtobufList<T> other);
     BooleanList visitBooleanList(BooleanList mine, BooleanList other);
@@ -1865,14 +1934,6 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public Object visitOneofLazyMessage(boolean minePresent, Object mine, Object other) {
-      if (minePresent && mine.equals(other)) {
-        return mine;
-      }
-      throw NOT_EQUALS;
-    }
-
-    @Override
     public Object visitOneofMessage(boolean minePresent, Object mine, Object other) {
       if (minePresent && ((GeneratedMessageLite<?, ?>) mine).equals(this, (MessageLite) other)) {
         return mine;
@@ -1900,21 +1961,6 @@ public abstract class GeneratedMessageLite<
       ((GeneratedMessageLite<?, ?>) mine).equals(this, other);
 
       return mine;
-    }
-
-    @Override
-    public LazyFieldLite visitLazyMessage(
-        LazyFieldLite mine, LazyFieldLite other) {
-      if (mine == null && other == null) {
-        return null;
-      }
-      if (mine == null || other == null) {
-        throw NOT_EQUALS;
-      }
-      if (mine.equals(other)) {
-        return mine;
-      }
-      throw NOT_EQUALS;
     }
 
     @Override
@@ -2094,12 +2140,6 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public Object visitOneofLazyMessage(boolean minePresent, Object mine, Object other) {
-      hashCode = (53 * hashCode) + mine.hashCode();
-      return mine;
-    }
-
-    @Override
     public Object visitOneofMessage(boolean minePresent, Object mine, Object other) {
       return visitMessage((MessageLite) mine, (MessageLite) other);
     }
@@ -2120,18 +2160,6 @@ public abstract class GeneratedMessageLite<
         } else {
           protoHash = mine.hashCode();
         }
-      } else {
-        protoHash = 37;
-      }
-      hashCode = (53 * hashCode) + protoHash;
-      return mine;
-    }
-
-    @Override
-    public LazyFieldLite visitLazyMessage(LazyFieldLite mine, LazyFieldLite other) {
-      final int protoHash;
-      if (mine != null) {
-        protoHash = mine.hashCode();
       } else {
         protoHash = 37;
       }
@@ -2282,13 +2310,6 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public Object visitOneofLazyMessage(boolean minePresent, Object mine, Object other) {
-      LazyFieldLite lazy = minePresent ? (LazyFieldLite) mine : new LazyFieldLite();
-      lazy.merge((LazyFieldLite) other);
-      return lazy;
-    }
-
-    @Override
     public Object visitOneofMessage(boolean minePresent, Object mine, Object other) {
       if (minePresent) {
         return visitMessage((MessageLite) mine, (MessageLite) other);
@@ -2309,17 +2330,6 @@ public abstract class GeneratedMessageLite<
       }
 
       return mine != null ? mine : other;
-    }
-
-    @Override
-    public LazyFieldLite visitLazyMessage(LazyFieldLite mine, LazyFieldLite other) {
-      if (other != null) {
-        if (mine == null) {
-          mine = new LazyFieldLite();
-        }
-        mine.merge(other);
-      }
-      return mine;
     }
 
     @Override
@@ -2436,4 +2446,5 @@ public abstract class GeneratedMessageLite<
       return mine;
     }
   }
+  // END REGULAR
 }

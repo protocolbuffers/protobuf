@@ -370,9 +370,8 @@ class TextFormatTest(unittest.TestCase):
   def testMergeBadExtension(self):
     message = unittest_pb2.TestAllExtensions()
     text = '[unknown_extension]: 8\n'
-    self.assertRaisesWithMessage(
+    self.assertRaises(
         text_format.ParseError,
-        '1:2 : Extension "unknown_extension" not registered.',
         text_format.Merge, text, message)
     message = unittest_pb2.TestAllTypes()
     self.assertRaisesWithMessage(

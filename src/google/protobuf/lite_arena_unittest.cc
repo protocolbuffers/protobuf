@@ -37,13 +37,22 @@ namespace google {
 namespace protobuf {
 namespace {
 
-TEST(LiteArenaTest, MapNoHeapAllocation) {
-  // Allocate a large initial block to avoid mallocs during hooked test.
-  std::vector<char> arena_block(128 * 1024);
-  google::protobuf::ArenaOptions options;
-  options.initial_block = &arena_block[0];
-  options.initial_block_size = arena_block.size();
-  google::protobuf::Arena arena(options);
+class LiteArenaTest : public testing::Test {
+ protected:
+  LiteArenaTest() {
+    ArenaOptions options;
+    options.start_block_size = 128 * 1024;
+    options.max_block_size = 128 * 1024;
+    arena_.reset(new Arena(options));
+    // Trigger the allocation of the first arena block, so that further use of
+    // the arena will not require any heap allocations.
+    google::protobuf::Arena::CreateArray<char>(arena_.get(), 1);
+  }
+
+  google::protobuf::scoped_ptr<Arena> arena_;
+};
+
+TEST_F(LiteArenaTest, MapNoHeapAllocation) {
   string data;
   data.reserve(128 * 1024);
 
@@ -53,22 +62,21 @@ TEST(LiteArenaTest, MapNoHeapAllocation) {
     // google::protobuf::internal::NoHeapChecker no_heap;
 
     protobuf_unittest::TestArenaMapLite* from =
-        google::protobuf::Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(&arena);
+        Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(arena_.get());
     google::protobuf::MapLiteTestUtil::SetArenaMapFields(from);
     from->SerializeToString(&data);
 
     protobuf_unittest::TestArenaMapLite* to =
-        google::protobuf::Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(&arena);
+        Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(arena_.get());
     to->ParseFromString(data);
     google::protobuf::MapLiteTestUtil::ExpectArenaMapFieldsSet(*to);
   }
 }
 
-TEST(LiteArenaTest, UnknownFieldMemLeak) {
-  google::protobuf::Arena arena;
+TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
   protobuf_unittest::ForeignMessageArenaLite* message =
       google::protobuf::Arena::CreateMessage<protobuf_unittest::ForeignMessageArenaLite>(
-          &arena);
+          arena_.get());
   string data = "\012\000";
   int original_capacity = data.capacity();
   while (data.capacity() <= original_capacity) {

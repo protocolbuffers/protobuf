@@ -101,7 +101,7 @@ class MapFieldBaseStub : public MapFieldBase {
 
 class MapFieldBasePrimitiveTest : public ::testing::Test {
  protected:
-  typedef unittest::TestMap::TestMap_MapInt32Int32Entry EntryType;
+  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
   typedef MapField<EntryType, int32, int32, WireFormatLite::TYPE_INT32,
                    WireFormatLite::TYPE_INT32, false>
       MapFieldType;
@@ -206,7 +206,7 @@ class MapFieldStateTest
     : public testing::TestWithParam<State> {
  public:
  protected:
-  typedef unittest::TestMap::TestMap_MapInt32Int32Entry EntryType;
+  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
   typedef MapField<EntryType, int32, int32, WireFormatLite::TYPE_INT32,
                    WireFormatLite::TYPE_INT32, false>
       MapFieldType;
