@@ -24,9 +24,6 @@ env:
   - CONFIG=objectivec_cocoapods_integration
   - CONFIG=python
   - CONFIG=python_cpp
-  - CONFIG=ruby21
-  - CONFIG=ruby22
-  - CONFIG=jruby
   - CONFIG=php5.6_mac
   - CONFIG=php7.0_mac
 matrix:
@@ -53,11 +50,6 @@ matrix:
     - os: linux
       env: CONFIG=python_compatibility
   allow_failures:
-    # These currently do not work on OS X but are being worked on by @haberman.
-    - os: osx
-      env: CONFIG=ruby22
-    - os: osx
-      env: CONFIG=jruby
     # https://github.com/google/protobuf/issues/1253 - Started failing when
     # we moved to an OS X image that is 10.11.
     - os: osx
