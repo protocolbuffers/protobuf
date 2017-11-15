@@ -208,7 +208,12 @@ set(js_well_known_types_sources
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/struct.js
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/timestamp.js
 )
-add_executable(js_embed ${protobuf_source_dir}/src/google/protobuf/compiler/js/embed.cc)
+
+# https://cmake.org/Wiki/CMake_Cross_Compiling#Using_executables_in_the_build_created_during_the_build
+# when crosscompiling import the executable targets from a file
+if(NOT CMAKE_CROSSCOMPILING)
+  add_executable(js_embed ${protobuf_source_dir}/src/google/protobuf/compiler/js/embed.cc)
+endif()
 add_custom_command(
   OUTPUT ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
   DEPENDS js_embed ${js_well_known_types_sources}
