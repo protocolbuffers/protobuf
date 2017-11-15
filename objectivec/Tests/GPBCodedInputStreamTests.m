@@ -261,7 +261,7 @@
     GPBCodedInputStream* input32 = [GPBCodedInputStream streamWithData:data];
     XCTAssertEqual(value32, [input32 readInt32]);
 
-    int64_t value64 = INT64_MIN | (0x01L << 31);
+    int64_t value64 = INT64_MIN | (0x01LL << 31);
     GPBCodedInputStream* input64 = [GPBCodedInputStream streamWithData:data];
     XCTAssertEqual(value64, [input64 readInt64]);
   }
