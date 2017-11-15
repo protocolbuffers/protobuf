@@ -1,24 +1,20 @@
 sudo: required
 dist: trusty
-# Note: travis currently does not support listing more than one language so
-# this cheats and claims to only be cpp.  If they add multiple language
-# support, this should probably get updated to install steps and/or
-# rvm/gemfile/jdk/etc. entries rather than manually doing the work.
+# everything is driven by the test.sh, so the language doesn't really
+# matter, it just controls the default install/script/etc. steps on
+# travis.
 language: cpp
-os:
-  - osx
-# The Objective C build needs Xcode 7.0 or later.
+os: osx
 osx_image: xcode8.3
 script:
   - ./tests.sh $CONFIG
 env:
   - CONFIG=cpp
   - CONFIG=cpp_distcheck
-  - CONFIG=golang
-  - CONFIG=java_jdk7
-  - CONFIG=java_oracle7
-  - CONFIG=javanano_jdk7
-  - CONFIG=javanano_oracle7
+  # Testing go requires installing golang, currently travis.sh is doing that
+  #   with apt-get which doesn't work on OS X.
+  # It's nontrivial to programmatically install a new JDK from the command
+  #   line on OS X, so we rely on testing on Linux for Java code.
   - CONFIG=javascript
   # iOS build log was starting to choke travis UI, so split to cover the
   # Xcode Debug and Release Configurations independently.
@@ -28,27 +24,9 @@ env:
   - CONFIG=objectivec_cocoapods_integration
   - CONFIG=python
   - CONFIG=python_cpp
-  - CONFIG=ruby21
-  - CONFIG=ruby22
-  - CONFIG=jruby
   - CONFIG=php5.6_mac
   - CONFIG=php7.0_mac
 matrix:
-  exclude:
-    # It's nontrivial to programmatically install a new JDK from the command
-    # line on OS X, so we rely on testing on Linux for Java code.
-    - os: osx
-      env: CONFIG=java_jdk7
-    - os: osx
-      env: CONFIG=java_oracle7
-    - os: osx
-      env: CONFIG=javanano_jdk7
-    - os: osx
-      env: CONFIG=javanano_oracle7
-    # Requires installing golang, currently travis.sh is doing that with apt-get
-    # which doesn't work on OS X.
-    - os: osx
-      env: CONFIG=golang
   include:
     # The dotnet environment requires Ubuntu 14.04 or 16.04. This
     # configuration is effectively an "extra" one, outside the
@@ -72,15 +50,6 @@ matrix:
     - os: linux
       env: CONFIG=python_compatibility
   allow_failures:
-    # These currently do not work on OS X but are being worked on by @haberman.
-    - os: osx
-      env: CONFIG=ruby22
-    - os: osx
-      env: CONFIG=jruby
-    # https://github.com/google/protobuf/issues/1253 - Started failing when
-    # we moved to an OS X image that is 10.11.
-    - os: osx
-      env: CONFIG=python_cpp
     # Mark the iOS test as flakey as xcodebuild some times fails to start the
     # iOS Simulator.
     - os: osx
