@@ -1,13 +1,10 @@
 sudo: required
 dist: trusty
-# Note: travis currently does not support listing more than one language so
-# this cheats and claims to only be cpp.  If they add multiple language
-# support, this should probably get updated to install steps and/or
-# rvm/gemfile/jdk/etc. entries rather than manually doing the work.
+# everything is driven by the test.sh, so the language doesn't really
+# matter, it just controls the default install/script/etc. steps on
+# travis.
 language: cpp
-os:
-  - osx
-# The Objective C build needs Xcode 7.0 or later.
+os: osx
 osx_image: xcode8.3
 script:
   - ./tests.sh $CONFIG
