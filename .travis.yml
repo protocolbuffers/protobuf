@@ -50,10 +50,6 @@ matrix:
     - os: linux
       env: CONFIG=python_compatibility
   allow_failures:
-    # https://github.com/google/protobuf/issues/1253 - Started failing when
-    # we moved to an OS X image that is 10.11.
-    - os: osx
-      env: CONFIG=python_cpp
     # Mark the iOS test as flakey as xcodebuild some times fails to start the
     # iOS Simulator.
     - os: osx
