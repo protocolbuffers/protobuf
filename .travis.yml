@@ -14,11 +14,10 @@ script:
 env:
   - CONFIG=cpp
   - CONFIG=cpp_distcheck
-  - CONFIG=golang
-  - CONFIG=java_jdk7
-  - CONFIG=java_oracle7
-  - CONFIG=javanano_jdk7
-  - CONFIG=javanano_oracle7
+  # Testing go requires installing golang, currently travis.sh is doing that
+  #   with apt-get which doesn't work on OS X.
+  # It's nontrivial to programmatically install a new JDK from the command
+  #   line on OS X, so we rely on testing on Linux for Java code.
   - CONFIG=javascript
   # iOS build log was starting to choke travis UI, so split to cover the
   # Xcode Debug and Release Configurations independently.
@@ -34,21 +33,6 @@ env:
   - CONFIG=php5.6_mac
   - CONFIG=php7.0_mac
 matrix:
-  exclude:
-    # It's nontrivial to programmatically install a new JDK from the command
-    # line on OS X, so we rely on testing on Linux for Java code.
-    - os: osx
-      env: CONFIG=java_jdk7
-    - os: osx
-      env: CONFIG=java_oracle7
-    - os: osx
-      env: CONFIG=javanano_jdk7
-    - os: osx
-      env: CONFIG=javanano_oracle7
-    # Requires installing golang, currently travis.sh is doing that with apt-get
-    # which doesn't work on OS X.
-    - os: osx
-      env: CONFIG=golang
   include:
     # The dotnet environment requires Ubuntu 14.04 or 16.04. This
     # configuration is effectively an "extra" one, outside the
