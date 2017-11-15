@@ -1238,7 +1238,7 @@
   // with different objects that are equal).
   TestRecursiveMessageWithRepeatedField *message3 =
       [TestRecursiveMessageWithRepeatedField message];
-  message3.iToI = [[GPBInt32Int32Dictionary alloc] init];
+  message3.iToI = [[[GPBInt32Int32Dictionary alloc] init] autorelease];
   [message3.iToI setInt32:10 forKey:20];
   message3.strToStr =
       [NSMutableDictionary dictionaryWithObject:@"abc" forKey:@"123"];
@@ -1324,7 +1324,7 @@
     XCTAssertFalse([message hasA]);
     GPBInt32Int32Dictionary *iToI = [message.a.iToI retain];
     XCTAssertEqual(iToI->_autocreator, message.a);  // Pointer comparision
-    message.a.iToI = [[GPBInt32Int32Dictionary alloc] init];
+    message.a.iToI = [[[GPBInt32Int32Dictionary alloc] init] autorelease];
     [message.a.iToI setInt32:6 forKey:7];
     XCTAssertTrue([message hasA]);
     XCTAssertNotEqual(message.a.iToI, iToI);  // Pointer comparision
