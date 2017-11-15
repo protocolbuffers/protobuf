@@ -2998,6 +2998,9 @@ typedef struct ResolveIvarAccessorMethodResult {
   SEL encodingSelector;
 } ResolveIvarAccessorMethodResult;
 
+// |field| can be __unsafe_unretained because they are created at startup
+// and are essentially global. No need to pay for retain/release when
+// they are captured in blocks.
 static void ResolveIvarGet(__unsafe_unretained GPBFieldDescriptor *field,
                            ResolveIvarAccessorMethodResult *result) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
@@ -3040,6 +3043,7 @@ static void ResolveIvarGet(__unsafe_unretained GPBFieldDescriptor *field,
   }
 }
 
+// See comment about __unsafe_unretained on ResolveIvarGet.
 static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
                            GPBFileSyntax syntax,
                            ResolveIvarAccessorMethodResult *result) {
@@ -3084,13 +3088,9 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
   // NOTE: hasOrCountSel_/setHasSel_ will be NULL if the field for the given
   // message should not have has support (done in GPBDescriptor.m), so there is
   // no need for checks here to see if has*/setHas* are allowed.
-
   ResolveIvarAccessorMethodResult result = {NULL, NULL};
 
-  
-  // |field| can be __unsafe_unretained because they are created at startup
-  // and are essentially global. No need to pay for retain/release when
-  // they are captured in blocks.
+  // See comment about __unsafe_unretained on ResolveIvarGet.
   for (__unsafe_unretained GPBFieldDescriptor *field in descriptor->fields_) {
     BOOL isMapOrArray = GPBFieldIsMapOrArray(field);
     if (!isMapOrArray) {
