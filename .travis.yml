@@ -49,6 +49,8 @@ matrix:
     # fetch pre-built Linux protoc binaries in the test.
     - os: linux
       env: CONFIG=python_compatibility
+    - os: linux
+      env: CONFIG=hhvm
   allow_failures:
     # Mark the iOS test as flakey as xcodebuild some times fails to start the
     # iOS Simulator.

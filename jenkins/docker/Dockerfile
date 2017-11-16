@@ -7,25 +7,21 @@
 # changes.
 
 # Base Dockerfile for gRPC dev images
-FROM debian:latest
+FROM debian:8
+
+# Apt source for hhvm
+RUN echo deb http://dl.hhvm.com/debian jessie main | tee /etc/apt/sources.list.d/hhvm.list && \
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0x5a16e7281be7a449
+RUN apt-get update && apt-get install -y --force-yes hhvm
+
+# Apt source for Mono
+RUN echo "deb http://download.mono-project.com/repo/debian wheezy/snapshots/3.10.0 main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
+  echo "deb http://download.mono-project.com/repo/debian wheezy-libjpeg62-compat main" | tee -a /etc/apt/sources.list.d/mono-xamarin.list && \
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 
 # Apt source for old Python versions.
 RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main' > /etc/apt/sources.list.d/deadsnakes.list && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DB82666C
-
-# Apt source for Oracle Java.
-RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' > /etc/apt/sources.list.d/webupd8team-java-trusty.list && \
-  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886 && \
-  echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
-
-# Apt source for Mono
-RUN echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
-  echo "deb http://download.mono-project.com/repo/debian wheezy-libjpeg62-compat main" | tee -a /etc/apt/sources.list.d/mono-xamarin.list && \
-  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-
-# Apt source for php
-RUN echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main" | tee /etc/apt/sources.list.d/various-php.list && \
-  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F4FCBB07
 
 # Install dotnet SDK based on https://www.microsoft.com/net/core#debian
 # (Ubuntu instructions need apt to support https)
@@ -54,18 +50,12 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   parallel \
   time \
   wget \
-  # -- For csharp --
-  mono-devel \
-  referenceassemblies-pcl \
-  nunit \
   # -- For all Java builds -- \
   maven \
   # -- For java_jdk6 -- \
   #   oops! not in jessie. too old? openjdk-6-jdk \
   # -- For java_jdk7 -- \
   openjdk-7-jdk \
-  # -- For java_oracle7 -- \
-  oracle-java7-installer \
   # -- For python / python_cpp -- \
   python-setuptools \
   python-pip \
@@ -78,20 +68,20 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   # -- For C++ benchmarks --
   cmake \
   # -- For PHP --
-  php5.6     \
-  php5.6-dev \
-  php5.6-xml \
-  php7.0     \
-  php7.0-dev \
-  php7.0-xml \
-  phpunit    \
   valgrind   \
   libxml2-dev \
+  libgd3 \
+  hhvm \
   && apt-get clean
 
 ##################
 # C# dependencies
 
+RUN apt-get clean && apt-get update && apt-get -f install -y --force-yes \
+  # -- For csharp --
+  mono-devel \
+  referenceassemblies-pcl \
+  nunit
 RUN wget www.nuget.org/NuGet.exe -O /usr/local/bin/nuget.exe
 
 ##################

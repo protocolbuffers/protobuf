@@ -611,6 +611,20 @@ build_php_all_32() {
 build_php_all() {
   build_php_all_32
   build_php_compatibility
+  build_hhvm
+}
+
+build_hhvm() {
+  use_php 7.0
+  pushd php
+  rm -rf vendor
+  cp -r /usr/local/vendor-7.0 vendor
+  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
+  hhvm -d hhvm.jit=false -d max_execution_time=0 phpunit
+  popd
+  pushd conformance
+  make test_hhvm
+  popd
 }
 
 # Note: travis currently does not support testing more than one language so the
@@ -654,6 +668,7 @@ Usage: $0 { cpp |
             php_compatibility |
             php7.1   |
             php7.1_c |
+            hhvm     |
             php_all)
 "
   exit 1
