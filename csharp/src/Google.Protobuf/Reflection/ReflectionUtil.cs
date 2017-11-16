@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Compatibility;
 using System;
 using System.Reflection;
 
@@ -63,10 +64,12 @@ namespace Google.Protobuf.Reflection
 
         /// <summary>
         /// Creates a delegate which will cast the argument to the appropriate method target type,
-        /// call the method on it, then convert the result to the specified type.
+        /// call the method on it, then convert the result to the specified type. The method is expected
+        /// to actually return an enum (because of where we're calling it - for oneof cases). Sometimes that
+        /// means we need some extra work to perform conversions.
         /// </summary>
         internal static Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method) =>
-            GetReflectionHelper(method.DeclaringType, typeof(object)).CreateFuncIMessageInt32(method);
+            GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageInt32(method);
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
@@ -80,7 +83,7 @@ namespace Google.Protobuf.Reflection
         /// the target type of the method.
         /// </summary>
         internal static Action<IMessage> CreateActionIMessage(MethodInfo method) =>
-            GetReflectionHelper(method.DeclaringType, typeof(object)).CreateActionIMessage(method);        
+            GetReflectionHelper(method.DeclaringType, typeof(object)).CreateActionIMessage(method);
 
         /// <summary>
         /// Creates a reflection helper for the given type arguments. Currently these are created on demand
@@ -103,10 +106,24 @@ namespace Google.Protobuf.Reflection
 
         private class ReflectionHelper<T1, T2> : IReflectionHelper
         {
+
             public Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method)
             {
-                var del = (Func<T1, int>) method.CreateDelegate(typeof(Func<T1, int>));
-                return message => del((T1) message);
+                // On pleasant runtimes, we can create a Func<int> from a method returning
+                // an enum based on an int. That's the fast path.
+                if (CanConvertEnumFuncToInt32Func)
+                {
+                    var del = (Func<T1, int>) method.CreateDelegate(typeof(Func<T1, int>));
+                    return message => del((T1) message);
+                }
+                else
+                {
+                    // On some runtimes (e.g. old Mono) the return type has to be exactly correct,
+                    // so we go via boxing. Reflection is already fairly inefficient, and this is
+                    // only used for one-of case checking, fortunately.
+                    var del = (Func<T1, T2>) method.CreateDelegate(typeof(Func<T1, T2>));
+                    return message => (int) (object) del((T1) message);
+                }
             }
 
             public Action<IMessage> CreateActionIMessage(MethodInfo method)
@@ -127,5 +144,34 @@ namespace Google.Protobuf.Reflection
                 return (message, arg) => del((T1) message, (T2) arg);
             }
         }
+
+        // Runtime compatibility checking code - see ReflectionHelper<T1, T2>.CreateFuncIMessageInt32 for
+        // details about why we're doing this.
+
+        // Deliberately not inside the generic type. We only want to check this once.
+        private static bool CanConvertEnumFuncToInt32Func { get; } = CheckCanConvertEnumFuncToInt32Func();
+
+        private static bool CheckCanConvertEnumFuncToInt32Func()
+        {
+            try
+            {
+                MethodInfo method = typeof(ReflectionUtil).GetMethod(nameof(SampleEnumMethod));
+                // If this passes, we're in a reasonable runtime.
+                method.CreateDelegate(typeof(Func<int>));
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+        }
+
+        public enum SampleEnum
+        {
+            X
+        }
+
+        // Public to make the reflection simpler.
+        public static SampleEnum SampleEnumMethod() => SampleEnum.X;
     }
 }
