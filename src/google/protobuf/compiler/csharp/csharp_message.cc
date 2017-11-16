@@ -111,7 +111,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   WriteMessageDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
-  
+
   printer->Print(
     vars,
     "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
@@ -121,6 +121,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print(
 	  vars,
 	  "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n");
+
+  printer->Print(
+      "private pb::UnknownFieldSet unknownFields = pb::UnknownFieldSet.DefaultInstance;\n");
 
   WriteGeneratedCodeAttributes(printer);
 
@@ -163,6 +166,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print(
     vars,
     "public $class_name$() {\n"
+    "  if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {\n"
+    "    unknownFields = new pb::UnknownFieldSet();\n"
+    "  }\n"
     "  OnConstruction();\n"
     "}\n\n"
     "partial void OnConstruction();\n\n");
@@ -365,7 +371,11 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
     }
     printer->Outdent();
     printer->Print(
-        "  return true;\n"
+        "  if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {\n"
+        "    return unknownFields.Equals(other.unknownFields);\n"
+        "  } else {\n"
+        "    return true;\n"
+        "  }\n"
         "}\n\n");
 
     // GetHashCode
@@ -384,7 +394,11 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
         printer->Print("hash ^= (int) $name$Case_;\n",
             "name", UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false));
     }
-    printer->Print("return hash;\n");
+    printer->Print(
+        "if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {\n"
+        "  hash ^= unknownFields.GetHashCode();\n"
+        "}\n"
+        "return hash;\n");
     printer->Outdent();
     printer->Print("}\n\n");
 
@@ -408,6 +422,12 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
     generator->GenerateSerializationCode(printer);
   }
 
+  // Serialize unknown fields
+  printer->Print(
+    "if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {\n"
+    "  unknownFields.WriteTo(output);\n"
+    "}\n");
+
   // TODO(jonskeet): Memoize size of frozen messages?
   printer->Outdent();
   printer->Print(
@@ -423,6 +443,12 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
         CreateFieldGeneratorInternal(descriptor_->field(i)));
     generator->GenerateSerializedSizeCode(printer);
   }
+
+  printer->Print(
+    "if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {\n"
+    "  size += unknownFields.CalculateSize();\n"
+    "}\n");
+
   printer->Print("return size;\n");
   printer->Outdent();
   printer->Print("}\n\n");
@@ -473,8 +499,16 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     printer->Outdent();
     printer->Print("}\n\n");
   }
+  // Merge unknown fields.
+  printer->Print(
+      "if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {\n"
+      "  unknownFields.MergeFrom(other.unknownFields);\n"
+      "}\n");
+
   printer->Outdent();
   printer->Print("}\n\n");
+
+
   WriteGeneratedCodeAttributes(printer);
   printer->Print("public void MergeFrom(pb::CodedInputStream input) {\n");
   printer->Indent();
@@ -493,7 +527,11 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   } else {
     printer->Print(
       "default:\n"
-      "  input.SkipLastField();\n" // We're not storing the data, but we still need to consume it.
+      "  if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {\n"
+      "    unknownFields.MergeFieldFrom(input);\n"
+      "  } else {\n"
+      "    input.SkipLastField();\n" // Still need to consume it.
+      "  }\n"
       "  break;\n");
   }
   for (int i = 0; i < fields_by_number().size(); i++) {

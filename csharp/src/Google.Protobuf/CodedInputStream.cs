@@ -1271,6 +1271,30 @@ namespace Google.Protobuf
             }
         }
 
+        private static volatile bool preserveUnknownFieldsDefault = false;
+        /// <summary>
+        /// Sets the preserveUnknownFieldsDefault true. It is added for
+        /// migration. Will be removed once the migration is done.
+        /// </summary>
+        public static void SetPreserveUnknownsDefaultTrue() {
+    	    preserveUnknownFieldsDefault = true;
+        }
+
+        /// <summary>
+        /// Sets the preserveUnknownFieldsDefault false. It is added for
+        /// migration. Will be removed once the migration is done.
+        /// </summary>
+        public static void SetPreserveUnknownsDefaultFalse() {
+            preserveUnknownFieldsDefault  = false;
+        }
+
+        /// <summary>
+        /// Gets the preserveUnknownFieldsDefault;
+        /// </summary>
+        public static bool GetPreserveUnknownsDefault() {
+            return preserveUnknownFieldsDefault;
+        }
+
         #endregion
     }
 }
