@@ -1618,7 +1618,7 @@ void FileDescriptorSet::ArenaDtor(void* object) {
   FileDescriptorSet* _this = reinterpret_cast< FileDescriptorSet* >(object);
   (void)_this;
 }
-void FileDescriptorSet::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void FileDescriptorSet::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void FileDescriptorSet::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -1987,7 +1987,7 @@ void FileDescriptorProto::ArenaDtor(void* object) {
   FileDescriptorProto* _this = reinterpret_cast< FileDescriptorProto* >(object);
   (void)_this;
 }
-void FileDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void FileDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void FileDescriptorProto::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -2792,7 +2792,7 @@ void DescriptorProto_ExtensionRange::ArenaDtor(void* object) {
   DescriptorProto_ExtensionRange* _this = reinterpret_cast< DescriptorProto_ExtensionRange* >(object);
   (void)_this;
 }
-void DescriptorProto_ExtensionRange::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void DescriptorProto_ExtensionRange::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void DescriptorProto_ExtensionRange::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -3155,7 +3155,7 @@ void DescriptorProto_ReservedRange::ArenaDtor(void* object) {
   DescriptorProto_ReservedRange* _this = reinterpret_cast< DescriptorProto_ReservedRange* >(object);
   (void)_this;
 }
-void DescriptorProto_ReservedRange::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void DescriptorProto_ReservedRange::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void DescriptorProto_ReservedRange::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -3526,7 +3526,7 @@ void DescriptorProto::ArenaDtor(void* object) {
   DescriptorProto* _this = reinterpret_cast< DescriptorProto* >(object);
   (void)_this;
 }
-void DescriptorProto::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void DescriptorProto::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void DescriptorProto::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -4198,7 +4198,7 @@ void ExtensionRangeOptions::ArenaDtor(void* object) {
   ExtensionRangeOptions* _this = reinterpret_cast< ExtensionRangeOptions* >(object);
   (void)_this;
 }
-void ExtensionRangeOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void ExtensionRangeOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void ExtensionRangeOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -4568,7 +4568,7 @@ void FieldDescriptorProto::ArenaDtor(void* object) {
   FieldDescriptorProto* _this = reinterpret_cast< FieldDescriptorProto* >(object);
   (void)_this;
 }
-void FieldDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void FieldDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void FieldDescriptorProto::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -5313,7 +5313,7 @@ void OneofDescriptorProto::ArenaDtor(void* object) {
   OneofDescriptorProto* _this = reinterpret_cast< OneofDescriptorProto* >(object);
   (void)_this;
 }
-void OneofDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void OneofDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void OneofDescriptorProto::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -5654,7 +5654,7 @@ void EnumDescriptorProto_EnumReservedRange::ArenaDtor(void* object) {
   EnumDescriptorProto_EnumReservedRange* _this = reinterpret_cast< EnumDescriptorProto_EnumReservedRange* >(object);
   (void)_this;
 }
-void EnumDescriptorProto_EnumReservedRange::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void EnumDescriptorProto_EnumReservedRange::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void EnumDescriptorProto_EnumReservedRange::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -6010,7 +6010,7 @@ void EnumDescriptorProto::ArenaDtor(void* object) {
   EnumDescriptorProto* _this = reinterpret_cast< EnumDescriptorProto* >(object);
   (void)_this;
 }
-void EnumDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void EnumDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void EnumDescriptorProto::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -6511,7 +6511,7 @@ void EnumValueDescriptorProto::ArenaDtor(void* object) {
   EnumValueDescriptorProto* _this = reinterpret_cast< EnumValueDescriptorProto* >(object);
   (void)_this;
 }
-void EnumValueDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void EnumValueDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void EnumValueDescriptorProto::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -6919,7 +6919,7 @@ void ServiceDescriptorProto::ArenaDtor(void* object) {
   ServiceDescriptorProto* _this = reinterpret_cast< ServiceDescriptorProto* >(object);
   (void)_this;
 }
-void ServiceDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void ServiceDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void ServiceDescriptorProto::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -7351,7 +7351,7 @@ void MethodDescriptorProto::ArenaDtor(void* object) {
   MethodDescriptorProto* _this = reinterpret_cast< MethodDescriptorProto* >(object);
   (void)_this;
 }
-void MethodDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void MethodDescriptorProto::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void MethodDescriptorProto::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -7944,7 +7944,7 @@ void FileOptions::ArenaDtor(void* object) {
   FileOptions* _this = reinterpret_cast< FileOptions* >(object);
   (void)_this;
 }
-void FileOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void FileOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void FileOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -9035,7 +9035,7 @@ void MessageOptions::ArenaDtor(void* object) {
   MessageOptions* _this = reinterpret_cast< MessageOptions* >(object);
   (void)_this;
 }
-void MessageOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void MessageOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void MessageOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -9487,7 +9487,7 @@ void FieldOptions::ArenaDtor(void* object) {
   FieldOptions* _this = reinterpret_cast< FieldOptions* >(object);
   (void)_this;
 }
-void FieldOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void FieldOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void FieldOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -10014,7 +10014,7 @@ void OneofOptions::ArenaDtor(void* object) {
   OneofOptions* _this = reinterpret_cast< OneofOptions* >(object);
   (void)_this;
 }
-void OneofOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void OneofOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void OneofOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -10319,7 +10319,7 @@ void EnumOptions::ArenaDtor(void* object) {
   EnumOptions* _this = reinterpret_cast< EnumOptions* >(object);
   (void)_this;
 }
-void EnumOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void EnumOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void EnumOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -10696,7 +10696,7 @@ void EnumValueOptions::ArenaDtor(void* object) {
   EnumValueOptions* _this = reinterpret_cast< EnumValueOptions* >(object);
   (void)_this;
 }
-void EnumValueOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void EnumValueOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void EnumValueOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -11032,7 +11032,7 @@ void ServiceOptions::ArenaDtor(void* object) {
   ServiceOptions* _this = reinterpret_cast< ServiceOptions* >(object);
   (void)_this;
 }
-void ServiceOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void ServiceOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void ServiceOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -11373,7 +11373,7 @@ void MethodOptions::ArenaDtor(void* object) {
   MethodOptions* _this = reinterpret_cast< MethodOptions* >(object);
   (void)_this;
 }
-void MethodOptions::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void MethodOptions::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void MethodOptions::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -11765,7 +11765,7 @@ void UninterpretedOption_NamePart::ArenaDtor(void* object) {
   UninterpretedOption_NamePart* _this = reinterpret_cast< UninterpretedOption_NamePart* >(object);
   (void)_this;
 }
-void UninterpretedOption_NamePart::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void UninterpretedOption_NamePart::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void UninterpretedOption_NamePart::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -12141,7 +12141,7 @@ void UninterpretedOption::ArenaDtor(void* object) {
   UninterpretedOption* _this = reinterpret_cast< UninterpretedOption* >(object);
   (void)_this;
 }
-void UninterpretedOption::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void UninterpretedOption::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void UninterpretedOption::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -12698,7 +12698,7 @@ void SourceCodeInfo_Location::ArenaDtor(void* object) {
   SourceCodeInfo_Location* _this = reinterpret_cast< SourceCodeInfo_Location* >(object);
   (void)_this;
 }
-void SourceCodeInfo_Location::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void SourceCodeInfo_Location::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void SourceCodeInfo_Location::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -13215,7 +13215,7 @@ void SourceCodeInfo::ArenaDtor(void* object) {
   SourceCodeInfo* _this = reinterpret_cast< SourceCodeInfo* >(object);
   (void)_this;
 }
-void SourceCodeInfo::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void SourceCodeInfo::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void SourceCodeInfo::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -13502,7 +13502,7 @@ void GeneratedCodeInfo_Annotation::ArenaDtor(void* object) {
   GeneratedCodeInfo_Annotation* _this = reinterpret_cast< GeneratedCodeInfo_Annotation* >(object);
   (void)_this;
 }
-void GeneratedCodeInfo_Annotation::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void GeneratedCodeInfo_Annotation::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void GeneratedCodeInfo_Annotation::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -13931,7 +13931,7 @@ void GeneratedCodeInfo::ArenaDtor(void* object) {
   GeneratedCodeInfo* _this = reinterpret_cast< GeneratedCodeInfo* >(object);
   (void)_this;
 }
-void GeneratedCodeInfo::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void GeneratedCodeInfo::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void GeneratedCodeInfo::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
