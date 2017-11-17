@@ -174,10 +174,10 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
                                 data:(NSMutableData *)data {
   if ((self = [super init])) {
     buffer_ = [data retain];
-    [output open];
     state_.bytes = [data mutableBytes];
     state_.size = [data length];
     state_.output = [output retain];
+    [state_.output open];
   }
   return self;
 }
