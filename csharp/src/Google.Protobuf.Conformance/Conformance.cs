@@ -62,6 +62,7 @@ namespace Conformance {
   /// </summary>
   public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
+    private pb::UnknownFieldSet unknownFields = pb::UnknownFieldSet.DefaultInstance;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ConformanceRequest> Parser { get { return _parser; } }
 
@@ -77,6 +78,9 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceRequest() {
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields = new pb::UnknownFieldSet();
+      }
       OnConstruction();
     }
 
@@ -191,7 +195,11 @@ namespace Conformance {
       if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
       if (MessageType != other.MessageType) return false;
       if (PayloadCase != other.PayloadCase) return false;
-      return true;
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        return unknownFields.Equals(other.unknownFields);
+      } else {
+        return true;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -202,6 +210,9 @@ namespace Conformance {
       if (RequestedOutputFormat != 0) hash ^= RequestedOutputFormat.GetHashCode();
       if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
       hash ^= (int) payloadCase_;
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        hash ^= unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -228,6 +239,9 @@ namespace Conformance {
         output.WriteRawTag(34);
         output.WriteString(MessageType);
       }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -244,6 +258,9 @@ namespace Conformance {
       }
       if (MessageType.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(MessageType);
+      }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        size += unknownFields.CalculateSize();
       }
       return size;
     }
@@ -268,6 +285,9 @@ namespace Conformance {
           break;
       }
 
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields.MergeFrom(other.unknownFields);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -276,7 +296,11 @@ namespace Conformance {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+              unknownFields.MergeFieldFrom(input);
+            } else {
+              input.SkipLastField();
+            }
             break;
           case 10: {
             ProtobufPayload = input.ReadBytes();
@@ -305,6 +329,7 @@ namespace Conformance {
   /// </summary>
   public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
+    private pb::UnknownFieldSet unknownFields = pb::UnknownFieldSet.DefaultInstance;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ConformanceResponse> Parser { get { return _parser; } }
 
@@ -320,6 +345,9 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceResponse() {
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields = new pb::UnknownFieldSet();
+      }
       OnConstruction();
     }
 
@@ -493,7 +521,11 @@ namespace Conformance {
       if (JsonPayload != other.JsonPayload) return false;
       if (Skipped != other.Skipped) return false;
       if (ResultCase != other.ResultCase) return false;
-      return true;
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        return unknownFields.Equals(other.unknownFields);
+      } else {
+        return true;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -506,6 +538,9 @@ namespace Conformance {
       if (resultCase_ == ResultOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.Skipped) hash ^= Skipped.GetHashCode();
       hash ^= (int) resultCase_;
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        hash ^= unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -540,6 +575,9 @@ namespace Conformance {
         output.WriteRawTag(50);
         output.WriteString(SerializeError);
       }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -562,6 +600,9 @@ namespace Conformance {
       }
       if (resultCase_ == ResultOneofCase.Skipped) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Skipped);
+      }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        size += unknownFields.CalculateSize();
       }
       return size;
     }
@@ -592,6 +633,9 @@ namespace Conformance {
           break;
       }
 
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields.MergeFrom(other.unknownFields);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -600,7 +644,11 @@ namespace Conformance {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+              unknownFields.MergeFieldFrom(input);
+            } else {
+              input.SkipLastField();
+            }
             break;
           case 10: {
             ParseError = input.ReadString();

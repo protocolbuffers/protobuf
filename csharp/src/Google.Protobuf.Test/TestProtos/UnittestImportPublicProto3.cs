@@ -38,6 +38,7 @@ namespace Google.Protobuf.TestProtos {
   #region Messages
   public sealed partial class PublicImportMessage : pb::IMessage<PublicImportMessage> {
     private static readonly pb::MessageParser<PublicImportMessage> _parser = new pb::MessageParser<PublicImportMessage>(() => new PublicImportMessage());
+    private pb::UnknownFieldSet unknownFields = pb::UnknownFieldSet.DefaultInstance;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<PublicImportMessage> Parser { get { return _parser; } }
 
@@ -53,6 +54,9 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public PublicImportMessage() {
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields = new pb::UnknownFieldSet();
+      }
       OnConstruction();
     }
 
@@ -93,13 +97,20 @@ namespace Google.Protobuf.TestProtos {
         return true;
       }
       if (E != other.E) return false;
-      return true;
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        return unknownFields.Equals(other.unknownFields);
+      } else {
+        return true;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (E != 0) hash ^= E.GetHashCode();
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        hash ^= unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -114,6 +125,9 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(8);
         output.WriteInt32(E);
       }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -121,6 +135,9 @@ namespace Google.Protobuf.TestProtos {
       int size = 0;
       if (E != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(E);
+      }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        size += unknownFields.CalculateSize();
       }
       return size;
     }
@@ -133,6 +150,9 @@ namespace Google.Protobuf.TestProtos {
       if (other.E != 0) {
         E = other.E;
       }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields.MergeFrom(other.unknownFields);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -141,7 +161,11 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+              unknownFields.MergeFieldFrom(input);
+            } else {
+              input.SkipLastField();
+            }
             break;
           case 8: {
             E = input.ReadInt32();

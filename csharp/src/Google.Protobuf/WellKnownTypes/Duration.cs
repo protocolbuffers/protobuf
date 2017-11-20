@@ -100,6 +100,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Duration : pb::IMessage<Duration> {
     private static readonly pb::MessageParser<Duration> _parser = new pb::MessageParser<Duration>(() => new Duration());
+    private pb::UnknownFieldSet unknownFields = pb::UnknownFieldSet.DefaultInstance;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Duration> Parser { get { return _parser; } }
 
@@ -115,6 +116,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Duration() {
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields = new pb::UnknownFieldSet();
+      }
       OnConstruction();
     }
 
@@ -181,7 +185,11 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Seconds != other.Seconds) return false;
       if (Nanos != other.Nanos) return false;
-      return true;
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        return unknownFields.Equals(other.unknownFields);
+      } else {
+        return true;
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -189,6 +197,9 @@ namespace Google.Protobuf.WellKnownTypes {
       int hash = 1;
       if (Seconds != 0L) hash ^= Seconds.GetHashCode();
       if (Nanos != 0) hash ^= Nanos.GetHashCode();
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        hash ^= unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -207,6 +218,9 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(16);
         output.WriteInt32(Nanos);
       }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -217,6 +231,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Nanos != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Nanos);
+      }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        size += unknownFields.CalculateSize();
       }
       return size;
     }
@@ -232,6 +249,9 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Nanos != 0) {
         Nanos = other.Nanos;
       }
+      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+        unknownFields.MergeFrom(other.unknownFields);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -240,7 +260,11 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
+              unknownFields.MergeFieldFrom(input);
+            } else {
+              input.SkipLastField();
+            }
             break;
           case 8: {
             Seconds = input.ReadInt64();
