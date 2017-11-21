@@ -722,8 +722,6 @@ protoc_outputs =                                                  \
   google/protobuf/util/message_differencer_unittest.pb.cc         \
   google/protobuf/util/message_differencer_unittest.pb.h
 
-BUILT_SOURCES = $(protoc_outputs) google/protobuf/compiler/js/well_known_types_embed.cc
-
 if USE_EXTERNAL_PROTOC
 
 unittest_proto_middleman: $(protoc_inputs)
@@ -846,9 +844,8 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/util/time_util_test.cc                       \
   google/protobuf/util/type_resolver_util_test.cc              \
   $(COMMON_TEST_SOURCES)
-
-
 nodist_protobuf_test_SOURCES = $(protoc_outputs)
+$(am_protobuf_test_OBJECTS): unittest_proto_middleman
 
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
@@ -864,6 +861,7 @@ protobuf_lazy_descriptor_test_SOURCES =                        \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
   $(COMMON_TEST_SOURCES)
 nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
+$(am_protobuf_lazy_descriptor_test_OBJECTS): unittest_proto_middleman
 
 COMMON_LITE_TEST_SOURCES =                                             \
   google/protobuf/arena_test_util.cc                                   \
@@ -888,6 +886,7 @@ protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
   $(COMMON_LITE_TEST_SOURCES)
 nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
+$(am_protobuf_lite_test_OBJECTS): unittest_proto_middleman
 
 # lite_arena_unittest depends on gtest because teboring@ found that without
 # gtest when building the test internally our memory sanitizer doesn't detect
@@ -903,6 +902,7 @@ protobuf_lite_arena_test_SOURCES =       \
   google/protobuf/lite_arena_unittest.cc \
   $(COMMON_LITE_TEST_SOURCES)
 nodist_protobuf_lite_arena_test_SOURCES = $(protoc_lite_outputs)
+$(am_protobuf_lite_arena_test_OBJECTS): unittest_proto_middleman
 
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
