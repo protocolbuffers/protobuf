@@ -8,34 +8,6 @@ endif()
 # CMake policies
 cmake_policy(SET CMP0022 NEW)
 
-# Project
-project(protobuf C CXX)
-
-# Options
-option(protobuf_BUILD_TESTS "Build tests" ON)
-option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
-option(protobuf_BUILD_PROTOC_BINARIES "Build libprotoc and protoc compiler" ON)
-if (BUILD_SHARED_LIBS)
-  set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
-else (BUILD_SHARED_LIBS)
-  set(protobuf_BUILD_SHARED_LIBS_DEFAULT OFF)
-endif (BUILD_SHARED_LIBS)
-option(protobuf_BUILD_SHARED_LIBS "Build Shared Libraries" ${protobuf_BUILD_SHARED_LIBS_DEFAULT})
-include(CMakeDependentOption)
-cmake_dependent_option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime libraries" ON
-  "NOT protobuf_BUILD_SHARED_LIBS" OFF)
-if (MSVC)
-  set(protobuf_WITH_ZLIB_DEFAULT OFF)
-else (MSVC)
-  set(protobuf_WITH_ZLIB_DEFAULT ON)
-endif (MSVC)
-option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
-set(protobuf_DEBUG_POSTFIX "d"
-  CACHE STRING "Default debug postfix")
-mark_as_advanced(protobuf_DEBUG_POSTFIX)
-# User options
-include(protobuf-options.cmake)
-
 # Path to main configure script
 set(protobuf_CONFIGURE_SCRIPT "../configure.ac")
 
@@ -79,6 +51,39 @@ if(protobuf_VERBOSE)
   message(STATUS "  Contact     : ${protobuf_CONTACT}")
   message(STATUS "]")
 endif()
+
+# Project
+if (CMAKE_VERSION VERSION_LESS 3.0)
+  project(protobuf C CXX)
+else()
+  cmake_policy(SET CMP0048 NEW)
+  project(protobuf VERSION ${protobuf_VERSION} LANGUAGES C CXX)
+endif()
+
+# Options
+option(protobuf_BUILD_TESTS "Build tests" ON)
+option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
+option(protobuf_BUILD_PROTOC_BINARIES "Build libprotoc and protoc compiler" ON)
+if (BUILD_SHARED_LIBS)
+  set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
+else (BUILD_SHARED_LIBS)
+  set(protobuf_BUILD_SHARED_LIBS_DEFAULT OFF)
+endif (BUILD_SHARED_LIBS)
+option(protobuf_BUILD_SHARED_LIBS "Build Shared Libraries" ${protobuf_BUILD_SHARED_LIBS_DEFAULT})
+include(CMakeDependentOption)
+cmake_dependent_option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime libraries" ON
+  "NOT protobuf_BUILD_SHARED_LIBS" OFF)
+if (MSVC)
+  set(protobuf_WITH_ZLIB_DEFAULT OFF)
+else (MSVC)
+  set(protobuf_WITH_ZLIB_DEFAULT ON)
+endif (MSVC)
+option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
+set(protobuf_DEBUG_POSTFIX "d"
+  CACHE STRING "Default debug postfix")
+mark_as_advanced(protobuf_DEBUG_POSTFIX)
+# User options
+include(protobuf-options.cmake)
 
 add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
 
@@ -158,7 +163,7 @@ if (MSVC)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   configure_file(extract_includes.bat.in extract_includes.bat)
-  
+
   # Suppress linker warnings about files with no symbols defined.
   set(CMAKE_STATIC_LINKER_FLAGS /ignore:4221)
 endif (MSVC)
