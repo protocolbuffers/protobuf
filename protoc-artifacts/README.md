@@ -68,11 +68,11 @@ configure GPG and Sonatype account.
 You need to perform the deployment for every platform that you want to
 support. DO NOT close the staging repository until you have done the
 deployment for all platforms. Currently the following platforms are supported:
-- Linux (x86_32 and x86_64)
+- Linux (x86_32, x86_64 and cross compiled aarch_64)
 - Windows (x86_32 and x86_64) with
- - Cygwin64 with MinGW compilers (x86_64)
- - MSYS with MinGW32 (x86_32)
- - Cross compile in Linux with MinGW-w64 (x86_32, x86_64)
+  * Cygwin64 with MinGW compilers (x86_64)
+  * MSYS with MinGW32 (x86_32)
+  * Cross compile in Linux with MinGW-w64 (x86_32, x86_64)
 - MacOSX (x86_32 and x86_64)
 
 As for MSYS2/MinGW64 for Windows: protoc will build, but it insists on
@@ -98,6 +98,9 @@ $ mvn clean deploy -P release -Dstaging.repository=comgoogle-123
 
 A 32-bit artifact can be deployed from a 64-bit host with
 ``-Dos.detected.arch=x86_32``
+
+An arm64 artifact can be deployed from x86 host with
+``-Dos.detected.arch=aarch_64``
 
 A windows artifact can be deployed from a linux machine with
 ``-Dos.detected.name=windows``

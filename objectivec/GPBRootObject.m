@@ -43,6 +43,14 @@
 - (const char *)singletonNameC;
 @end
 
+// We need some object to conform to the MessageSignatureProtocol to make sure
+// the selectors in it are recorded in our Objective C runtime information.
+// GPBMessage is arguably the more "obvious" choice, but given that all messages
+// inherit from GPBMessage, conflicts seem likely, so we are using GPBRootObject
+// instead.
+@interface GPBRootObject () <GPBMessageSignatureProtocol>
+@end
+
 @implementation GPBRootObject
 
 // Taken from http://www.burtleburtle.net/bob/hash/doobs.html

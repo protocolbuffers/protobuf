@@ -48,8 +48,8 @@ namespace UnitTest.Issues.TestProtos {
             "GAEgASgFEgkKAXkYAiABKAVCBwoFdmFsdWUqVQoMTmVnYXRpdmVFbnVtEhYK",
             "Ek5FR0FUSVZFX0VOVU1fWkVSTxAAEhYKCUZpdmVCZWxvdxD7//////////8B",
             "EhUKCE1pbnVzT25lEP///////////wEqLgoORGVwcmVjYXRlZEVudW0SEwoP",
-            "REVQUkVDQVRFRF9aRVJPEAASBwoDb25lEAFCH0gBqgIaVW5pdFRlc3QuSXNz",
-            "dWVzLlRlc3RQcm90b3NiBnByb3RvMw=="));
+            "REVQUkVDQVRFRF9aRVJPEAASBwoDb25lEAFCHaoCGlVuaXRUZXN0Lklzc3Vl",
+            "cy5UZXN0UHJvdG9zYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedClrTypeInfo[] {

@@ -36,27 +36,15 @@
 
 syntax = "proto3";
 
-// Some generic_services option(s) added automatically.
-// See:  http://go/proto2-generic-services-default
-option cc_generic_services = true;     // auto-added
-option java_generic_services = true;   // auto-added
-option py_generic_services = true;     // auto-added
-option cc_enable_arenas = true;
 option csharp_namespace = "Google.Protobuf.TestProtos";
+
+// Only present so we can test that we can read it (as an example
+// of a non-C# option)
+option java_outer_classname = "UnittestProto";
 
 import "unittest_import_proto3.proto";
 
-// We don't put this in a package within proto2 because we need to make sure
-// that the generated code doesn't depend on being in the proto2 namespace.
-// In test_util.h we do "using namespace unittest = protobuf_unittest".
 package protobuf_unittest3;
-
-// Protos optimized for SPEED use a strict superset of the generated code
-// of equivalent ones optimized for CODE_SIZE, so we should optimize all our
-// tests for speed unless explicitly testing code size optimization.
-option optimize_for = SPEED;
-
-option java_outer_classname = "UnittestProto";
 
 // This proto includes every type of field in both singular and repeated
 // forms.

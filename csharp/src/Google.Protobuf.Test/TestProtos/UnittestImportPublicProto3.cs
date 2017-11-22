@@ -24,8 +24,8 @@ namespace Google.Protobuf.TestProtos {
           string.Concat(
             "CiN1bml0dGVzdF9pbXBvcnRfcHVibGljX3Byb3RvMy5wcm90bxIYcHJvdG9i",
             "dWZfdW5pdHRlc3RfaW1wb3J0IiAKE1B1YmxpY0ltcG9ydE1lc3NhZ2USCQoB",
-            "ZRgBIAEoBUI3Chhjb20uZ29vZ2xlLnByb3RvYnVmLnRlc3SqAhpHb29nbGUu",
-            "UHJvdG9idWYuVGVzdFByb3Rvc2IGcHJvdG8z"));
+            "ZRgBIAEoBUIdqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3Rv",
+            "Mw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
