@@ -152,6 +152,17 @@ php/ext/google/protobuf/config.nice
 php/ext/google/protobuf/configure.in
 php/ext/google/protobuf/mkinstalldirs
 php/ext/google/protobuf/run-tests.php
+php/ext/google/protobuf/hhvm/.libs/
+php/ext/google/protobuf/hhvm/Makefile.fragments
+php/ext/google/protobuf/hhvm/Makefile.global
+php/ext/google/protobuf/hhvm/Makefile.objects
+php/ext/google/protobuf/hhvm/acinclude.m4
+php/ext/google/protobuf/hhvm/build/
+php/ext/google/protobuf/hhvm/config.h
+php/ext/google/protobuf/hhvm/config.nice
+php/ext/google/protobuf/hhvm/configure.in
+php/ext/google/protobuf/hhvm/mkinstalldirs
+php/ext/google/protobuf/hhvm/run-tests.php
 vendor/
 
 # JavaScript artifacts
