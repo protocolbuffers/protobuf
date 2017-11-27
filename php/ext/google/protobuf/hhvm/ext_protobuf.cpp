@@ -1,0 +1,21 @@
+#include "fake_protobuf.h"
+
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+class ProtobufExtension : public Extension {
+ public:
+  ProtobufExtension(): Extension("protobuf", "1.0") {}
+
+  void moduleInit() override {
+    PROTO_INIT_CLASS(internal_descriptor_pool);
+
+    loadSystemlib();
+  }
+} s_protobuf_extension;
+
+HHVM_GET_MODULE(protobuf);
+
+/////////////////////////////////////////////////////////////////////////////
