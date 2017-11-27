@@ -233,7 +233,7 @@ namespace ProtobufTestMessages.Proto3 {
   /// </summary>
   public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3> {
     private static readonly pb::MessageParser<TestAllTypesProto3> _parser = new pb::MessageParser<TestAllTypesProto3>(() => new TestAllTypesProto3());
-    private pb::UnknownFieldSet unknownFields = pb::UnknownFieldSet.DefaultInstance;
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestAllTypesProto3> Parser { get { return _parser; } }
 
@@ -249,9 +249,6 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestAllTypesProto3() {
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        unknownFields = new pb::UnknownFieldSet();
-      }
       OnConstruction();
     }
 
@@ -399,6 +396,7 @@ namespace ProtobufTestMessages.Proto3 {
           break;
       }
 
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1844,11 +1842,7 @@ namespace ProtobufTestMessages.Proto3 {
       if (FieldName17 != other.FieldName17) return false;
       if (FieldName18 != other.FieldName18) return false;
       if (OneofFieldCase != other.OneofFieldCase) return false;
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        return unknownFields.Equals(other.unknownFields);
-      } else {
-        return true;
-      }
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1974,8 +1968,8 @@ namespace ProtobufTestMessages.Proto3 {
       if (FieldName17 != 0) hash ^= FieldName17.GetHashCode();
       if (FieldName18 != 0) hash ^= FieldName18.GetHashCode();
       hash ^= (int) oneofFieldCase_;
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        hash ^= unknownFields.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
       }
       return hash;
     }
@@ -2289,8 +2283,8 @@ namespace ProtobufTestMessages.Proto3 {
         output.WriteRawTag(144, 26);
         output.WriteInt32(FieldName18);
       }
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        unknownFields.WriteTo(output);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
       }
     }
 
@@ -2544,8 +2538,8 @@ namespace ProtobufTestMessages.Proto3 {
       if (FieldName18 != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName18);
       }
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        size += unknownFields.CalculateSize();
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -2853,9 +2847,7 @@ namespace ProtobufTestMessages.Proto3 {
           break;
       }
 
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        unknownFields.MergeFrom(other.unknownFields);
-      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2864,11 +2856,7 @@ namespace ProtobufTestMessages.Proto3 {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-              unknownFields.MergeFieldFrom(input);
-            } else {
-              input.SkipLastField();
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             OptionalInt32 = input.ReadInt32();
@@ -3441,7 +3429,7 @@ namespace ProtobufTestMessages.Proto3 {
 
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
-        private pb::UnknownFieldSet unknownFields = pb::UnknownFieldSet.DefaultInstance;
+        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
@@ -3457,9 +3445,6 @@ namespace ProtobufTestMessages.Proto3 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public NestedMessage() {
-          if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-            unknownFields = new pb::UnknownFieldSet();
-          }
           OnConstruction();
         }
 
@@ -3469,6 +3454,7 @@ namespace ProtobufTestMessages.Proto3 {
         public NestedMessage(NestedMessage other) : this() {
           a_ = other.a_;
           Corecursive = other.corecursive_ != null ? other.Corecursive.Clone() : null;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3513,11 +3499,7 @@ namespace ProtobufTestMessages.Proto3 {
           }
           if (A != other.A) return false;
           if (!object.Equals(Corecursive, other.Corecursive)) return false;
-          if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-            return unknownFields.Equals(other.unknownFields);
-          } else {
-            return true;
-          }
+          return Equals(_unknownFields, other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3525,8 +3507,8 @@ namespace ProtobufTestMessages.Proto3 {
           int hash = 1;
           if (A != 0) hash ^= A.GetHashCode();
           if (corecursive_ != null) hash ^= Corecursive.GetHashCode();
-          if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-            hash ^= unknownFields.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
           }
           return hash;
         }
@@ -3546,8 +3528,8 @@ namespace ProtobufTestMessages.Proto3 {
             output.WriteRawTag(18);
             output.WriteMessage(Corecursive);
           }
-          if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-            unknownFields.WriteTo(output);
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
           }
         }
 
@@ -3560,8 +3542,8 @@ namespace ProtobufTestMessages.Proto3 {
           if (corecursive_ != null) {
             size += 1 + pb::CodedOutputStream.ComputeMessageSize(Corecursive);
           }
-          if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-            size += unknownFields.CalculateSize();
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
           }
           return size;
         }
@@ -3580,9 +3562,7 @@ namespace ProtobufTestMessages.Proto3 {
             }
             Corecursive.MergeFrom(other.Corecursive);
           }
-          if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-            unknownFields.MergeFrom(other.unknownFields);
-          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3591,11 +3571,7 @@ namespace ProtobufTestMessages.Proto3 {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-                  unknownFields.MergeFieldFrom(input);
-                } else {
-                  input.SkipLastField();
-                }
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 8: {
                 A = input.ReadInt32();
@@ -3621,7 +3597,7 @@ namespace ProtobufTestMessages.Proto3 {
 
   public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
-    private pb::UnknownFieldSet unknownFields = pb::UnknownFieldSet.DefaultInstance;
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
@@ -3637,9 +3613,6 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ForeignMessage() {
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        unknownFields = new pb::UnknownFieldSet();
-      }
       OnConstruction();
     }
 
@@ -3648,6 +3621,7 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ForeignMessage(ForeignMessage other) : this() {
       c_ = other.c_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3680,19 +3654,15 @@ namespace ProtobufTestMessages.Proto3 {
         return true;
       }
       if (C != other.C) return false;
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        return unknownFields.Equals(other.unknownFields);
-      } else {
-        return true;
-      }
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (C != 0) hash ^= C.GetHashCode();
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        hash ^= unknownFields.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
       }
       return hash;
     }
@@ -3708,8 +3678,8 @@ namespace ProtobufTestMessages.Proto3 {
         output.WriteRawTag(8);
         output.WriteInt32(C);
       }
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        unknownFields.WriteTo(output);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
       }
     }
 
@@ -3719,8 +3689,8 @@ namespace ProtobufTestMessages.Proto3 {
       if (C != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(C);
       }
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        size += unknownFields.CalculateSize();
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -3733,9 +3703,7 @@ namespace ProtobufTestMessages.Proto3 {
       if (other.C != 0) {
         C = other.C;
       }
-      if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-        unknownFields.MergeFrom(other.unknownFields);
-      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3744,11 +3712,7 @@ namespace ProtobufTestMessages.Proto3 {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::CodedInputStream.GetPreserveUnknownsDefault()) {
-              unknownFields.MergeFieldFrom(input);
-            } else {
-              input.SkipLastField();
-            }
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             C = input.ReadInt32();

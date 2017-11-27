@@ -196,7 +196,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs                      \
   csharp/src/Google.Protobuf/WellKnownTypes/WrappersPartial.cs               \
   csharp/src/Google.Protobuf/WireFormat.cs                                   \
-  csharp/src/Google.Protobuf/UnknownFields.cs                                \
+  csharp/src/Google.Protobuf/UnknownField.cs                                 \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs
 
 java_EXTRA_DIST=                                                                   \

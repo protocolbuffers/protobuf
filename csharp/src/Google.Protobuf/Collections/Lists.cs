@@ -35,50 +35,55 @@ using System.Collections.ObjectModel;
 
 namespace Google.Protobuf.Collections
 {
-	/// <summary>
-	/// Utility non-generic class for calling into Lists{T} using type inference.
-	/// </summary>
-	public static class Lists
-	{
-		/// <summary>
-		/// Checks if two lists are equal.
-		/// </summary>
-		public static bool Equals<T>(List<T> left, List<T> right)
-		{
-			if (left == right)
-			{
-				return true;
-			}
-			if (left == null || right == null)
-			{
-				return false;
-			}
-			if (left.Count != right.Count)
-			{
-				return false;
-			}
-			IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
-			for (int i = 0; i < left.Count; i++)
-			{
-				if (!comparer.Equals(left[i], right[i]))
-				{
-					return false;
-				}
-			}
-			return true;
-		}
+    /// <summary>
+    /// Utility to compare if two Lists are the same, and the hash code
+    /// of a List.
+    /// </summary>
+    public static class Lists
+    {
+        /// <summary>
+        /// Checks if two lists are equal.
+        /// </summary>
+        public static bool Equals<T>(List<T> left, List<T> right)
+        {
+            if (left == right)
+            {
+                return true;
+            }
+            if (left == null || right == null)
+            {
+                return false;
+            }
+            if (left.Count != right.Count)
+            {
+                return false;
+            }
+            IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            for (int i = 0; i < left.Count; i++)
+            {
+                if (!comparer.Equals(left[i], right[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-		/// <summary>
-		/// Gets the list's hash code.
-		/// </summary>
-		public static int GetHashCode<T>(List<T> list)
-		{
-			int hash = 31;
-			foreach (T element in list)
-			{
-				hash = hash*29 + element.GetHashCode();
-			}
-			return hash;
-		}
-	}
+        /// <summary>
+        /// Gets the list's hash code.
+        /// </summary>
+        public static int GetHashCode<T>(List<T> list)
+        {
+            if (list == null)
+            {
+                return 0;
+            }
+            int hash = 31;
+            foreach (T element in list)
+            {
+                hash = hash * 29 + element.GetHashCode();
+            }
+            return hash;
+        }
+    }
 }

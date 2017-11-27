@@ -424,7 +424,10 @@ namespace Google.Protobuf
             }
         }
 
-        private void SkipGroup(uint startGroupTag)
+        /// <summary>
+        /// Skip a group.
+        /// </summary>
+        internal void SkipGroup(uint startGroupTag)
         {
             // Note: Currently we expect this to be the way that groups are read. We could put the recursion
             // depth changes into the ReadTag method instead, potentially...
@@ -1270,31 +1273,6 @@ namespace Google.Protobuf
                 }
             }
         }
-
-        private static volatile bool preserveUnknownFieldsDefault = false;
-        /// <summary>
-        /// Sets the preserveUnknownFieldsDefault true. It is added for
-        /// migration. Will be removed once the migration is done.
-        /// </summary>
-        public static void SetPreserveUnknownsDefaultTrue() {
-    	    preserveUnknownFieldsDefault = true;
-        }
-
-        /// <summary>
-        /// Sets the preserveUnknownFieldsDefault false. It is added for
-        /// migration. Will be removed once the migration is done.
-        /// </summary>
-        public static void SetPreserveUnknownsDefaultFalse() {
-            preserveUnknownFieldsDefault  = false;
-        }
-
-        /// <summary>
-        /// Gets the preserveUnknownFieldsDefault;
-        /// </summary>
-        public static bool GetPreserveUnknownsDefault() {
-            return preserveUnknownFieldsDefault;
-        }
-
         #endregion
     }
 }
