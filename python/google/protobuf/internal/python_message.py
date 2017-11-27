@@ -1078,9 +1078,10 @@ def _AddSerializePartialToStringMethod(message_descriptor, cls):
 def _AddMergeFromStringMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def MergeFromString(self, serialized):
-    length = len(serialized)
+    buffer = six.binary_type(serialized)
+    length = len(buffer)
     try:
-      if self._InternalParse(serialized, 0, length) != length:
+      if self._InternalParse(buffer, 0, length) != length:
         # The only reason _InternalParse would return early is if it
         # encountered an end-group tag.
         raise message_mod.DecodeError('Unexpected end-group tag.')
