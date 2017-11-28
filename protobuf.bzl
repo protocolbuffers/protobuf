@@ -400,3 +400,15 @@ def internal_protobuf_py_tests(
         srcs=[s],
         main=s,
         **kargs)
+
+
+def check_protobuf_required_bazel_version():
+  """For WORKSPACE files, to check the installed version of bazel.
+
+  This ensures bazel supports our approach to proto_library() depending on a
+  copied filegroup. (Fixed in bazel 0.5.4)
+  """
+  expected = apple_common.dotted_version("0.5.4")
+  current = apple_common.dotted_version(native.bazel_version)
+  if current.compare_to(expected) < 0:
+    fail("Bazel must be newer than 0.5.4")
