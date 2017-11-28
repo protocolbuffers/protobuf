@@ -68,7 +68,7 @@ matrix:
       language: csharp
       dist: trusty
       sudo: required
-      dotnet: 1.0.1
+      dotnet: 1.0.4
       mono: none
     # This test is kept on travis because it doesn't play nicely with other
     # tests on jenkins running in parallel.
