@@ -1078,6 +1078,8 @@ def _AddSerializePartialToStringMethod(message_descriptor, cls):
 def _AddMergeFromStringMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def MergeFromString(self, serialized):
+    if not hasattr(serialized, "__getitem__"):
+      raise TypeError('the input is not indexable')
     buffer = six.binary_type(serialized)
     length = len(buffer)
     try:
