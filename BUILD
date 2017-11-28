@@ -246,7 +246,7 @@ internal_copied_filegroup(
 
 [proto_library(
     name = proto[0] + "_proto",
-    srcs = [proto[1][0]],
+    srcs = ["src/" + proto[1][0]],
     deps = [dep + "_proto" for dep in proto[1][1]],
     visibility = ["//visibility:public"],
     ) for proto in WELL_KNOWN_PROTO_MAP.items()]
