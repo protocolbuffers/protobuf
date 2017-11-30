@@ -48,7 +48,6 @@
 
 #include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/scoped_ptr.h>
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -89,62 +88,43 @@ void StripTrailingSlashes(string* str) {
   for (; i >= 0 && ((*str)[i] == '/' || (*str)[i] == '\\'); --i) {}
   str->resize(i+1);
 }
+
+bool GetEnvVar(const char* name, string* result) {
+  DWORD size = ::GetEnvironmentVariableA(name, NULL, 0);
+  if (size > 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) {
+    scoped_array<char> str(new char[size]);
+    ::GetEnvironmentVariableA(name, str.get(), size);
+    result->assign(str.get());
+    return true;
+  } else {
+    return false;
+  }
+}
+
 }  // namespace
 
 void IoWin32Test::SetUp() {
-  test_tmpdir = string(TestTempDir());
-  wtest_tmpdir.clear();
-  if (test_tmpdir.empty()) {
-    const char* test_tmpdir_env = getenv("TEST_TMPDIR");
-    if (test_tmpdir_env != NULL && *test_tmpdir_env) {
-      test_tmpdir = string(test_tmpdir_env);
-    }
-
-    // Only Bazel defines TEST_TMPDIR, CMake does not, so look for other
-    // suitable environment variables.
-    if (test_tmpdir.empty()) {
-      static const char* names[] = {"TEMP", "TMP"};
-      for (int i = 0; i < sizeof(names)/sizeof(names[0]); ++i) {
-        const char* name = names[i];
-        test_tmpdir_env = getenv(name);
-        if (test_tmpdir_env != NULL && *test_tmpdir_env) {
-          test_tmpdir = string(test_tmpdir_env);
-          break;
-        }
-      }
-    }
-
-    // No other temp directory was found. Use the current director
-    if (test_tmpdir.empty()) {
-      char buffer[MAX_PATH];
-      // Use GetCurrentDirectoryA instead of GetCurrentDirectoryW, because the
-      // current working directory must always be shorter than MAX_PATH, even
-      // with
-      // "\\?\" prefix (except on Windows 10 version 1607 and beyond, after
-      // opting in to long paths by default [1]).
-      //
-      // [1] https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
-      DWORD result = ::GetCurrentDirectoryA(MAX_PATH, buffer);
-      if (result > 0) {
-        test_tmpdir = string(buffer);
-      } else {
-        // Using assertions in SetUp/TearDown seems to confuse the test
-        // framework, so just leave the member variables empty in case of
-        // failure.
-        GOOGLE_CHECK_OK(false);
-        return;
-      }
-    }
+  string tmp;
+  bool ok = false;
+  if (!ok) {
+    ok = GetEnvVar("TEST_TMPDIR", &tmp);
+  }
+  if (!ok) {
+    ok = GetEnvVar("TEMP", &tmp);
+  }
+  if (!ok) {
+    ok = GetEnvVar("TMP", &tmp);
+  }
+  if (!ok || tmp.empty()) {
+    FAIL();
   }
 
-  StripTrailingSlashes(&test_tmpdir);
-  test_tmpdir += "\\io_win32_unittest.tmp";
 
-  // CreateDirectoryA's limit is 248 chars, see MSDN.
-  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
+  StripTrailingSlashes(&tmp);
+  test_tmpdir = tmp + "\\io_win32_unittest.tmp";
   wtest_tmpdir = testonly_path_to_winpath(test_tmpdir);
   if (!DeleteAllUnder(wtest_tmpdir) || !CreateAllUnder(wtest_tmpdir)) {
-    GOOGLE_CHECK_OK(false);
+    FAIL();
     test_tmpdir.clear();
     wtest_tmpdir.clear();
   }
