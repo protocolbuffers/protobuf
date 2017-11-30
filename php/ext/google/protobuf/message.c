@@ -42,6 +42,7 @@ static void hex_to_binary(const char* hex, char** binary, int* binary_len);
 
 static  zend_function_entry message_methods[] = {
   PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, discardUnknownFields, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToJsonString, NULL, ZEND_ACC_PUBLIC)
