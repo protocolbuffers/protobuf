@@ -210,16 +210,20 @@ bool as_windows_path(const char* path, wstring* result) {
     result->clear();
     return true;
   }
-  if (is_separator(path[0]) || is_drive_relative(path)) {
-    return false;
-  }
-
   wstring wpath;
   if (!strings::utf8_to_wcs(path, &wpath)) {
     return false;
   }
+  if (has_longpath_prefix(wpath.c_str())) {
+    *result = wpath;
+    return true;
+  }
+  if (is_separator(path[0]) || is_drive_relative(path)) {
+    return false;
+  }
 
-  if (!is_path_absolute(wpath.c_str()) && !has_longpath_prefix(wpath.c_str())) {
+
+  if (!is_path_absolute(wpath.c_str())) {
     int size = ::GetCurrentDirectoryW(0, NULL);
     if (size == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
       return false;
@@ -394,6 +398,10 @@ bool mbs_to_wcs(const char* s, wstring* out, bool inUtf8) {
 
 bool utf8_to_wcs(const char* input, wstring* out) {
   return mbs_to_wcs(input, out, true);
+}
+
+bool wcs_to_utf8(const wchar_t* input, string* out) {
+  return wcs_to_mbs(input, out, true);
 }
 
 }  // namespace strings

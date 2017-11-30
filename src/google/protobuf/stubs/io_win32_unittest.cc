@@ -61,6 +61,27 @@ namespace internal {
 namespace win32 {
 namespace {
 
+const char kUtf8Text[] = {
+    'h', 'i', ' ',
+    // utf-8: 11010000 10011111, utf-16: 100 0001 1111 = 0x041F
+    0xd0, 0x9f,
+    // utf-8: 11010001 10000000, utf-16: 100 0100 0000 = 0x0440
+    0xd1, 0x80,
+    // utf-8: 11010000 10111000, utf-16: 100 0011 1000 = 0x0438
+    0xd0, 0xb8,
+    // utf-8: 11010000 10110010, utf-16: 100 0011 0010 = 0x0432
+    0xd0, 0xb2,
+    // utf-8: 11010000 10110101, utf-16: 100 0011 0101 = 0x0435
+    0xd0, 0xb5,
+    // utf-8: 11010001 10000010, utf-16: 100 0100 0010 = 0x0442
+    0xd1, 0x82, 0
+};
+
+const wchar_t kUtf16Text[] = {
+  L'h', L'i', L' ',
+  L'\x41f', L'\x440', L'\x438', L'\x432', L'\x435', L'\x442', 0
+};
+
 using std::string;
 using std::wstring;
 
@@ -73,6 +94,7 @@ class IoWin32Test : public ::testing::Test {
   bool CreateAllUnder(wstring path);
   bool DeleteAllUnder(wstring path);
 
+  WCHAR working_directory[MAX_PATH];
   string test_tmpdir;
   wstring wtest_tmpdir;
 };
@@ -111,6 +133,7 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
 void IoWin32Test::SetUp() {
   test_tmpdir.clear();
   wtest_tmpdir.clear();
+  EXPECT_GT(::GetCurrentDirectoryW(MAX_PATH, working_directory), 0);
 
   string tmp;
   bool ok = false;
@@ -128,7 +151,14 @@ void IoWin32Test::SetUp() {
   }
 
   StripTrailingSlashes(&tmp);
-  test_tmpdir = tmp + "\\io_win32_unittest.tmp";
+  std::stringstream result;
+  // Deleting files and directories is asynchronous on Windows, and if TearDown
+  // just deleted the previous temp directory, sometimes we cannot recreate the
+  // same directory.
+  // Use a counter so every test method gets its own temp directory.
+  static int counter = 0;
+  result << tmp << "\\io_win32_test" << counter++ << ".tmp";
+  test_tmpdir = result.str();
   wtest_tmpdir = testonly_utf8_to_winpath(test_tmpdir.c_str());
   ASSERT_FALSE(wtest_tmpdir.empty());
   ASSERT_TRUE(DeleteAllUnder(wtest_tmpdir));
@@ -139,6 +169,7 @@ void IoWin32Test::TearDown() {
   if (!wtest_tmpdir.empty()) {
     DeleteAllUnder(wtest_tmpdir);
   }
+  ::SetCurrentDirectoryW(working_directory);
 }
 
 bool IoWin32Test::CreateAllUnder(wstring path) {
@@ -294,13 +325,24 @@ TEST_F(IoWin32Test, MkdirTest) {
   ASSERT_EQ(errno, ENOENT);
 }
 
+TEST_F(IoWin32Test, MkdirTestNonAscii) {
+  ASSERT_INITIALIZED;
+
+  // Create a non-ASCII path.
+  // Ensure that we can create the directory using SetCurrentDirectoryW.
+  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1").c_str(), NULL));
+  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1\\" + kUtf16Text).c_str(), NULL));
+  // Ensure that we can create a very similarly named directory using mkdir.
+  // We don't attemp to delete and recreate the same directory, because on
+  // Windows, deleting files and directories seems to be asynchronous.
+  EXPECT_EQ(mkdir((test_tmpdir + "\\2").c_str(), 0644), 0);
+  EXPECT_EQ(mkdir((test_tmpdir + "\\2\\" + kUtf8Text).c_str(), 0644), 0);
+}
+
 TEST_F(IoWin32Test, ChdirTest) {
-  WCHAR owd[MAX_PATH];
-  EXPECT_GT(::GetCurrentDirectoryW(MAX_PATH, owd), 0);
   string path("C:\\");
   EXPECT_EQ(access(path.c_str(), F_OK), 0);
   ASSERT_EQ(chdir(path.c_str()), 0);
-  EXPECT_TRUE(::SetCurrentDirectoryW(owd));
 
   // Do not try to chdir into the test_tmpdir, it may already contain directory
   // names with trailing dots.
@@ -313,6 +355,26 @@ TEST_F(IoWin32Test, ChdirTest) {
   EXPECT_EQ(mkdir(path.c_str(), 644), 0);
   EXPECT_EQ(access(path.c_str(), F_OK), 0);
   ASSERT_NE(chdir(path.c_str()), 0);
+}
+
+TEST_F(IoWin32Test, ChdirTestNonAscii) {
+  ASSERT_INITIALIZED;
+
+  // Create a directory with a non-ASCII path and ensure we can cd into it.
+  wstring wNonAscii(wtest_tmpdir + L"\\" + kUtf16Text);
+  string nonAscii;
+  EXPECT_TRUE(strings::wcs_to_utf8(wNonAscii.c_str(), &nonAscii));
+  EXPECT_TRUE(CreateDirectoryW(wNonAscii.c_str(), NULL));
+  WCHAR cwd[MAX_PATH];
+  EXPECT_TRUE(GetCurrentDirectoryW(MAX_PATH, cwd));
+  // Ensure that we can cd into the path using SetCurrentDirectoryW.
+  EXPECT_TRUE(SetCurrentDirectoryW(wNonAscii.c_str()));
+  EXPECT_TRUE(SetCurrentDirectoryW(cwd));
+  // Ensure that we can cd into the path using chdir.
+  ASSERT_EQ(chdir(nonAscii.c_str()), 0);
+  // Ensure that the GetCurrentDirectoryW returns the desired path.
+  EXPECT_TRUE(GetCurrentDirectoryW(MAX_PATH, cwd));
+  ASSERT_EQ(wNonAscii, cwd);
 }
 
 TEST_F(IoWin32Test, AsWindowsPathTest) {
@@ -346,31 +408,16 @@ TEST_F(IoWin32Test, AsWindowsPathTest) {
   // Though valid in cmd.exe, drive-relative paths are not supported.
   ASSERT_EQ(testonly_utf8_to_winpath("c:foo"), L"");
   ASSERT_EQ(testonly_utf8_to_winpath("c:/foo"), L"\\\\?\\c:\\foo");
+  ASSERT_EQ(testonly_utf8_to_winpath("\\\\?\\C:\\foo"), L"\\\\?\\C:\\foo");
 }
 
-TEST_F(IoWin32Test, Utf8ToUtf16Test) {
-  const char hi_utf8[] = {
-    'h', 'i', ' ',
-    // utf-8: 11010000 10011111, utf-16: 100 0001 1111 = 0x041F
-    0xd0, 0x9f,
-    // utf-8: 11010001 10000000, utf-16: 100 0100 0000 = 0x0440
-    0xd1, 0x80,
-    // utf-8: 11010000 10111000, utf-16: 100 0011 1000 = 0x0438
-    0xd0, 0xb8,
-    // utf-8: 11010000 10110010, utf-16: 100 0011 0010 = 0x0432
-    0xd0, 0xb2,
-    // utf-8: 11010000 10110101, utf-16: 100 0011 0101 = 0x0435
-    0xd0, 0xb5,
-    // utf-8: 11010001 10000010, utf-16: 100 0100 0010 = 0x0442
-    0xd1, 0x82, 0
-  };
-  const wchar_t hi_utf16[] = {
-    L'h', L'i', L' ', 0x041f, 0x0440, 0x0438, 0x0432, 0x0435, 0x0442, 0
-  };
-
+TEST_F(IoWin32Test, Utf8Utf16ConversionTest) {
+  string mbs;
   wstring wcs;
-  ASSERT_TRUE(strings::utf8_to_wcs(hi_utf8, &wcs));
-  ASSERT_EQ(wcs, hi_utf16);
+  ASSERT_TRUE(strings::utf8_to_wcs(kUtf8Text, &wcs));
+  ASSERT_TRUE(strings::wcs_to_utf8(kUtf16Text, &mbs));
+  ASSERT_EQ(wcs, kUtf16Text);
+  ASSERT_EQ(mbs, kUtf8Text);
 }
 
 }  // namespace

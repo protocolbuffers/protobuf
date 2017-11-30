@@ -84,6 +84,9 @@ LIBPROTOBUF_EXPORT bool mbs_to_wcs(
 // Convert from UTF-8-encoded text to UTF-16.
 LIBPROTOBUF_EXPORT bool utf8_to_wcs(const char* input, std::wstring* out);
 
+// Convert from UTF-16-encoded text to UTF-8.
+LIBPROTOBUF_EXPORT bool wcs_to_utf8(const wchar_t* input, std::string* out);
+
 }  // namespace strings
 
 }  // namespace win32
