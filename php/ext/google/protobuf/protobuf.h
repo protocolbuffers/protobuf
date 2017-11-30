@@ -969,6 +969,7 @@ PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFromString);
 PHP_METHOD(Message, serializeToJsonString);
 PHP_METHOD(Message, mergeFromJsonString);
+PHP_METHOD(Message, discardUnknownFields);
 
 // -----------------------------------------------------------------------------
 // Type check / conversion.
