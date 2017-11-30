@@ -466,6 +466,13 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromString($from);
         $to = $m->serializeToString();
         $this->assertSame(bin2hex($from), bin2hex($to));
+
+        $m = new TestMessage();
+        $from = hex2bin('F80601');
+        $m->mergeFromString($from);
+        $m->discardUnknownFields();
+        $to = $m->serializeToString();
+        $this->assertSame("", bin2hex($to));
     }
 
     public function testJsonEncode()

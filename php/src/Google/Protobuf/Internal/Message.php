@@ -577,6 +577,15 @@ class Message
     }
 
     /**
+     * Clear all unknown fields previously parsed.
+     * @return null.
+     */
+    public function discardUnknownFields()
+    {
+        $this->unknown = "";
+    }
+
+    /**
      * Merges the contents of the specified message into current message.
      *
      * This method merges the contents of the specified message into the
