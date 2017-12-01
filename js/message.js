@@ -205,6 +205,16 @@ goog.define('jspb.Message.GENERATE_TO_STRING', true);
 goog.define('jspb.Message.ASSUME_LOCAL_ARRAYS', false);
 
 
+// TODO(jakubvrana): Turn this off by default.
+/**
+ * @define {boolean} Disabling the serialization of empty trailing fields
+ *     reduces the size of serialized protos. The price is an extra iteration of
+ *     the proto before serialization. This is enabled by default to be
+ *     backwards compatible. Projects are advised to turn this flag always off.
+ */
+goog.define('jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS', true);
+
+
 /**
  * @define {boolean} Turning on this flag does NOT change the behavior of JSPB
  *     and only affects private internal state. It may, however, break some
@@ -212,8 +222,8 @@ goog.define('jspb.Message.ASSUME_LOCAL_ARRAYS', false);
  *     mutates its internal state.
  *     Projects are advised to turn this flag always on.
  */
-goog.define('jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS', COMPILED);
-// TODO(b/19419436) Turn this on by default.
+goog.define('jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS', true);
+// TODO(b/19419436): Delete this flag.
 
 
 /**
@@ -278,6 +288,13 @@ jspb.Message.prototype.convertedFloatingPointFields_;
 
 
 /**
+ * Repeated fields numbers.
+ * @protected {?Array<number>|undefined}
+ */
+jspb.Message.prototype.repeatedFields;
+
+
+/**
  * The xid of this proto type (The same for all instances of a proto). Provides
  * a way to identify a proto by stable obfuscated name.
  * @see {xid}.
@@ -324,6 +341,18 @@ jspb.Message.getIndex_ = function(msg, fieldNumber) {
 
 
 /**
+ * Returns the tag number based on the index in msg.array.
+ * @param {!jspb.Message} msg Message for which we're calculating an index.
+ * @param {number} index The tag number.
+ * @return {number} The field number.
+ * @private
+ */
+jspb.Message.getFieldNumber_ = function(msg, index) {
+  return index - msg.arrayIndexOffset_;
+};
+
+
+/**
  * Initializes a JsPb Message.
  * @param {!jspb.Message} msg The JsPb proto to modify.
  * @param {Array|undefined} data An initial data array.
@@ -353,6 +382,13 @@ jspb.Message.initialize = function(
   jspb.Message.initPivotAndExtensionObject_(msg, suggestedPivot);
   msg.convertedFloatingPointFields_ = {};
 
+  if (!jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS) {
+    // TODO(jakubvrana): This is same for all instances, move to prototype.
+    // TODO(jakubvrana): There are indexOf calls on this in serializtion,
+    // consider switching to a set.
+    msg.repeatedFields = repeatedFields;
+  }
+
   if (repeatedFields) {
     for (var i = 0; i < repeatedFields.length; i++) {
       var fieldNumber = repeatedFields[i];
@@ -376,8 +412,9 @@ jspb.Message.initialize = function(
   if (opt_oneofFields && opt_oneofFields.length) {
     // Compute the oneof case for each union. This ensures only one value is
     // set in the union.
-    goog.array.forEach(
-        opt_oneofFields, goog.partial(jspb.Message.computeOneofCase, msg));
+    for (var i = 0; i < opt_oneofFields.length; i++) {
+      jspb.Message.computeOneofCase(msg, opt_oneofFields[i]);
+    }
   }
 };
 
@@ -428,7 +465,7 @@ jspb.Message.initPivotAndExtensionObject_ = function(msg, suggestedPivot) {
     // in Safari on iOS 8. See the description of CL/86511464 for details.
     if (obj && typeof obj == 'object' && !jspb.Message.isArray_(obj) &&
         !(jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array)) {
-      msg.pivot_ = foundIndex - msg.arrayIndexOffset_;
+      msg.pivot_ = jspb.Message.getFieldNumber_(msg, foundIndex);
       msg.extensionObject_ = obj;
       return;
     }
@@ -1043,14 +1080,15 @@ jspb.Message.computeOneofCase = function(msg, oneof) {
   var oneofField;
   var oneofValue;
 
-  goog.array.forEach(oneof, function(fieldNumber) {
+  for (var i = 0; i < oneof.length; i++) {
+    var fieldNumber = oneof[i];
     var value = jspb.Message.getField(msg, fieldNumber);
-    if (goog.isDefAndNotNull(value)) {
+    if (value != null) {
       oneofField = fieldNumber;
       oneofValue = value;
       jspb.Message.setField(msg, fieldNumber, undefined);
     }
-  });
+  }
 
   if (oneofField) {
     // NB: We know the value is unique, so we can call jspb.Message.setField
@@ -1241,7 +1279,7 @@ jspb.Message.addToRepeatedWrapperField = function(
  *     dead code removal.
  * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
  *     for transitional soy proto support: http://goto/soy-param-migration
- * @return {!Object.<string, Object>} A map of proto or Soy objects.
+ * @return {!Object<string, Object>} A map of proto or Soy objects.
  * @template T
  */
 jspb.Message.toMap = function(
@@ -1318,7 +1356,7 @@ jspb.Message.prototype.toString = function() {
 
 /**
  * Gets the value of the extension field from the extended object.
- * @param {jspb.ExtensionFieldInfo.<T>} fieldInfo Specifies the field to get.
+ * @param {jspb.ExtensionFieldInfo<T>} fieldInfo Specifies the field to get.
  * @return {T} The value of the field.
  * @template T
  */
@@ -1705,7 +1743,11 @@ jspb.Message.registry_ = {};
  * non-MessageSet. We special case MessageSet so that we do not need
  * to goog.require MessageSet from classes that extends MessageSet.
  *
- * @type {!Object.<number, jspb.ExtensionFieldInfo>}
+ * @type {!Object<number, jspb.ExtensionFieldInfo>}
  */
 jspb.Message.messageSetExtensions = {};
+
+/**
+ * @type {!Object<number, jspb.ExtensionFieldBinaryInfo>}
+ */
 jspb.Message.messageSetExtensionsBinary = {};

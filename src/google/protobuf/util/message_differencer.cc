@@ -363,9 +363,6 @@ void MessageDifferencer::TreatAsMapUsingKeyComparator(
     const MapKeyComparator* key_comparator) {
   GOOGLE_CHECK(field->is_repeated()) << "Field must be repeated: "
                                << field->full_name();
-  GOOGLE_CHECK_EQ(FieldDescriptor::CPPTYPE_MESSAGE, field->cpp_type())
-      << "Field has to be message type.  Field name is: "
-      << field->full_name();
   GOOGLE_CHECK(set_fields_.find(field) == set_fields_.end())
       << "Cannot treat this repeated field as both Map and Set for "
       << "comparison.";
@@ -1750,6 +1747,13 @@ void MessageDifferencer::StreamReporter::ReportUnknownFieldIgnored(
   }
   printer_->Print("\n");  // Print for newlines.
 }
+
+MessageDifferencer::MapKeyComparator*
+MessageDifferencer::CreateMultipleFieldsMapKeyComparator(
+    const std::vector<std::vector<const FieldDescriptor*> >& key_field_paths) {
+  return new MultipleFieldsMapKeyComparator(this, key_field_paths);
+}
+
 
 }  // namespace util
 }  // namespace protobuf

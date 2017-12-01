@@ -71,6 +71,13 @@ LIBPROTOBUF_EXPORT extern MixinDefaultTypeInternal _Mixin_default_instance_;
 }  // namespace google
 namespace google {
 namespace protobuf {
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Api* Arena::Create< ::google::protobuf::Api>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Method* Arena::Create< ::google::protobuf::Method>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Mixin* Arena::Create< ::google::protobuf::Mixin>(Arena*);
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
 
 // ===================================================================
 
@@ -118,9 +125,13 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
 
   // implements Message ----------------------------------------------
 
-  inline Api* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Api* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Api>(NULL);
+  }
 
-  Api* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Api* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Api>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Api& from);
@@ -160,11 +171,11 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   int methods_size() const;
   void clear_methods();
   static const int kMethodsFieldNumber = 2;
-  const ::google::protobuf::Method& methods(int index) const;
   ::google::protobuf::Method* mutable_methods(int index);
-  ::google::protobuf::Method* add_methods();
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
       mutable_methods();
+  const ::google::protobuf::Method& methods(int index) const;
+  ::google::protobuf::Method* add_methods();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
       methods() const;
 
@@ -172,11 +183,11 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   int options_size() const;
   void clear_options();
   static const int kOptionsFieldNumber = 3;
-  const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::Option* add_options();
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
       mutable_options();
+  const ::google::protobuf::Option& options(int index) const;
+  ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
       options() const;
 
@@ -184,11 +195,11 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   int mixins_size() const;
   void clear_mixins();
   static const int kMixinsFieldNumber = 6;
-  const ::google::protobuf::Mixin& mixins(int index) const;
   ::google::protobuf::Mixin* mutable_mixins(int index);
-  ::google::protobuf::Mixin* add_mixins();
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
       mutable_mixins();
+  const ::google::protobuf::Mixin& mixins(int index) const;
+  ::google::protobuf::Mixin* add_mixins();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
       mixins() const;
 
@@ -296,9 +307,13 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
 
   // implements Message ----------------------------------------------
 
-  inline Method* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Method* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Method>(NULL);
+  }
 
-  Method* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Method* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Method>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Method& from);
@@ -338,11 +353,11 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   int options_size() const;
   void clear_options();
   static const int kOptionsFieldNumber = 6;
-  const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::Option* add_options();
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
       mutable_options();
+  const ::google::protobuf::Option& options(int index) const;
+  ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
       options() const;
 
@@ -467,9 +482,13 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
 
   // implements Message ----------------------------------------------
 
-  inline Mixin* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Mixin* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Mixin>(NULL);
+  }
 
-  Mixin* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Mixin* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Mixin>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Mixin& from);
@@ -614,22 +633,22 @@ inline int Api::methods_size() const {
 inline void Api::clear_methods() {
   methods_.Clear();
 }
-inline const ::google::protobuf::Method& Api::methods(int index) const {
-  // @@protoc_insertion_point(field_get:google.protobuf.Api.methods)
-  return methods_.Get(index);
-}
 inline ::google::protobuf::Method* Api::mutable_methods(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.methods)
   return methods_.Mutable(index);
-}
-inline ::google::protobuf::Method* Api::add_methods() {
-  // @@protoc_insertion_point(field_add:google.protobuf.Api.methods)
-  return methods_.Add();
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
 Api::mutable_methods() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
   return &methods_;
+}
+inline const ::google::protobuf::Method& Api::methods(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Api.methods)
+  return methods_.Get(index);
+}
+inline ::google::protobuf::Method* Api::add_methods() {
+  // @@protoc_insertion_point(field_add:google.protobuf.Api.methods)
+  return methods_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
 Api::methods() const {
@@ -641,22 +660,22 @@ Api::methods() const {
 inline int Api::options_size() const {
   return options_.size();
 }
-inline const ::google::protobuf::Option& Api::options(int index) const {
-  // @@protoc_insertion_point(field_get:google.protobuf.Api.options)
-  return options_.Get(index);
-}
 inline ::google::protobuf::Option* Api::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.options)
   return options_.Mutable(index);
-}
-inline ::google::protobuf::Option* Api::add_options() {
-  // @@protoc_insertion_point(field_add:google.protobuf.Api.options)
-  return options_.Add();
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Api::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
   return &options_;
+}
+inline const ::google::protobuf::Option& Api::options(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Api.options)
+  return options_.Get(index);
+}
+inline ::google::protobuf::Option* Api::add_options() {
+  // @@protoc_insertion_point(field_add:google.protobuf.Api.options)
+  return options_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
 Api::options() const {
@@ -737,7 +756,8 @@ inline ::google::protobuf::SourceContext* Api::release_source_context() {
 inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
   
   if (source_context_ == NULL) {
-    source_context_ = new ::google::protobuf::SourceContext;
+    source_context_ = ::google::protobuf::Arena::Create< ::google::protobuf::SourceContext >(
+        GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return source_context_;
@@ -768,22 +788,22 @@ inline int Api::mixins_size() const {
 inline void Api::clear_mixins() {
   mixins_.Clear();
 }
-inline const ::google::protobuf::Mixin& Api::mixins(int index) const {
-  // @@protoc_insertion_point(field_get:google.protobuf.Api.mixins)
-  return mixins_.Get(index);
-}
 inline ::google::protobuf::Mixin* Api::mutable_mixins(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.mixins)
   return mixins_.Mutable(index);
-}
-inline ::google::protobuf::Mixin* Api::add_mixins() {
-  // @@protoc_insertion_point(field_add:google.protobuf.Api.mixins)
-  return mixins_.Add();
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
 Api::mutable_mixins() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
   return &mixins_;
+}
+inline const ::google::protobuf::Mixin& Api::mixins(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Api.mixins)
+  return mixins_.Get(index);
+}
+inline ::google::protobuf::Mixin* Api::add_mixins() {
+  // @@protoc_insertion_point(field_add:google.protobuf.Api.mixins)
+  return mixins_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
 Api::mixins() const {
@@ -1000,22 +1020,22 @@ inline void Method::set_response_streaming(bool value) {
 inline int Method::options_size() const {
   return options_.size();
 }
-inline const ::google::protobuf::Option& Method::options(int index) const {
-  // @@protoc_insertion_point(field_get:google.protobuf.Method.options)
-  return options_.Get(index);
-}
 inline ::google::protobuf::Option* Method::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.options)
   return options_.Mutable(index);
-}
-inline ::google::protobuf::Option* Method::add_options() {
-  // @@protoc_insertion_point(field_add:google.protobuf.Method.options)
-  return options_.Add();
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Method::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
   return &options_;
+}
+inline const ::google::protobuf::Option& Method::options(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Method.options)
+  return options_.Get(index);
+}
+inline ::google::protobuf::Option* Method::add_options() {
+  // @@protoc_insertion_point(field_add:google.protobuf.Method.options)
+  return options_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
 Method::options() const {

@@ -28,19 +28,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
-#define GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
+package com.google.protobuf;
 
-#include <google/protobuf/stubs/type_traits.h>
+final class Android {
 
-namespace google {
-namespace protobuf {
+  private static final Class<?> MEMORY_CLASS = getClassForName("libcore.io.Memory");
+  private static final boolean IS_ROBOLECTRIC =
+      getClassForName("org.robolectric.Robolectric") != null;
 
-// This type trait can be used to cause templates to only match proto2 enum
-// types.
-template <typename T> struct is_proto_enum : ::google::protobuf::internal::false_type {};
+  /** Returns {@code true} if running on an Android device. */
+  static boolean isOnAndroidDevice() {
+    return MEMORY_CLASS != null && !IS_ROBOLECTRIC;
+  }
 
-}  // namespace protobuf
+  /** Returns the memory class or {@code null} if not on Android device. */
+  static Class<?> getMemoryClass() {
+    return MEMORY_CLASS;
+  }
 
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
+  @SuppressWarnings("unchecked")
+  private static <T> Class<T> getClassForName(String name) {
+    try {
+      return (Class<T>) Class.forName(name);
+    } catch (Throwable e) {
+      return null;
+    }
+  }
+}

@@ -655,12 +655,9 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL : public Refl
 // dynamic_cast_if_available() implements this logic.  If RTTI is
 // enabled, it does a dynamic_cast.  If RTTI is disabled, it just returns
 // NULL.
-//
-// If you need to compile without RTTI, simply #define GOOGLE_PROTOBUF_NO_RTTI.
-// On MSVC, this should be detected automatically.
 template<typename To, typename From>
 inline To dynamic_cast_if_available(From from) {
-#if defined(GOOGLE_PROTOBUF_NO_RTTI) || (defined(_MSC_VER)&&!defined(_CPPRTTI))
+#ifdef GOOGLE_PROTOBUF_NO_RTTI
   // Avoid the compiler warning about unused variables.
   (void)from;
   return NULL;
@@ -688,8 +685,7 @@ T* DynamicCastToGenerated(const Message* from) {
   const Message* unused = static_cast<T*>(NULL);
   (void)unused;
 
-#if defined(GOOGLE_PROTOBUF_NO_RTTI) || \
-  (defined(_MSC_VER) && !defined(_CPPRTTI))
+#ifdef GOOGLE_PROTOBUF_NO_RTTI
   bool ok = &T::default_instance() ==
             from->GetReflection()->GetMessageFactory()->GetPrototype(
                 from->GetDescriptor());

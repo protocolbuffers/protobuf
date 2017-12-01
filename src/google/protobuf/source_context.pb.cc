@@ -175,13 +175,6 @@ const SourceContext& SourceContext::default_instance() {
   return *internal_default_instance();
 }
 
-SourceContext* SourceContext::New(::google::protobuf::Arena* arena) const {
-  SourceContext* n = new SourceContext;
-  if (arena != NULL) {
-    arena->Own(n);
-  }
-  return n;
-}
 
 void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
@@ -375,6 +368,13 @@ void SourceContext::InternalSwap(SourceContext* other) {
 
 
 // @@protoc_insertion_point(namespace_scope)
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::google::protobuf::SourceContext* Arena::Create< ::google::protobuf::SourceContext >(Arena* arena) {
+  return Arena::CreateInternal< ::google::protobuf::SourceContext >(arena);
+}
 }  // namespace protobuf
 }  // namespace google
 

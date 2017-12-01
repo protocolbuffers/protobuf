@@ -792,11 +792,16 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     message.AddExtension(unittest::repeated_##type##_extension, value);        \
     EXPECT_EQ(empty_repeated_field_size, message.SpaceUsed()) << #type;        \
     message.ClearExtension(unittest::repeated_##type##_extension);             \
+    const int old_capacity =                                                   \
+        message.GetRepeatedExtension(unittest::repeated_##type##_extension)    \
+        .Capacity();                                                           \
+    EXPECT_GE(old_capacity, kMinRepeatedFieldAllocationSize);                  \
     for (int i = 0; i < 16; ++i) {                                             \
       message.AddExtension(unittest::repeated_##type##_extension, value);      \
     }                                                                          \
-    int expected_size = sizeof(cpptype) * (16 -                                \
-        kMinRepeatedFieldAllocationSize) + empty_repeated_field_size;          \
+    int expected_size = sizeof(cpptype) *                                      \
+        (message.GetRepeatedExtension(unittest::repeated_##type##_extension)   \
+         .Capacity() - old_capacity) + empty_repeated_field_size;              \
     EXPECT_LE(expected_size, message.SpaceUsed()) << #type;                    \
   } while (0)
 

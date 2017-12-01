@@ -41,8 +41,8 @@ from google.protobuf.internal import api_implementation
 _USE_C_DESCRIPTORS = False
 if api_implementation.Type() == 'cpp':
   # Used by MakeDescriptor in cpp mode
+  import binascii
   import os
-  import uuid
   from google.protobuf.pyext import _message
   _USE_C_DESCRIPTORS = getattr(_message, '_USE_C_DESCRIPTORS', False)
 
@@ -952,7 +952,7 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
     # imported ones. We need to specify a file name so the descriptor pool
     # accepts our FileDescriptorProto, but it is not important what that file
     # name is actually set to.
-    proto_name = str(uuid.uuid4())
+    proto_name = binascii.hexlify(os.urandom(16)).decode('ascii')
 
     if package:
       file_descriptor_proto.name = os.path.join(package.replace('.', '/'),

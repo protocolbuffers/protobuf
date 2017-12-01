@@ -45,3 +45,6 @@ Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValu
 Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
 Required.Proto2.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
 Required.Proto2.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+# This test will be fixed as soon as we internally make the switch to
+# preserving unknowns in proto3.
+Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput

@@ -1043,33 +1043,6 @@ inline size_t WireFormatLite::LengthDelimitedSize(size_t length) {
       static_cast<uint32>(length));
 }
 
-size_t WireFormatLite::Int64Size (const RepeatedField< int64>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += Int64Size(value.Get(i));
-  }
-  return out;
-}
-
-size_t WireFormatLite::UInt64Size(const RepeatedField<uint64>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += UInt64Size(value.Get(i));
-  }
-  return out;
-}
-
-size_t WireFormatLite::SInt64Size(const RepeatedField< int64>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += SInt64Size(value.Get(i));
-  }
-  return out;
-}
-
 }  // namespace internal
 }  // namespace protobuf
 

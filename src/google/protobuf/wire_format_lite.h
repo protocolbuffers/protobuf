@@ -674,13 +674,13 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static inline size_t SInt64Size  ( int64 value);
   static inline size_t EnumSize    (   int value);
 
-  static        size_t Int32Size (const RepeatedField< int32>& value);
-  static inline size_t Int64Size (const RepeatedField< int64>& value);
-  static        size_t UInt32Size(const RepeatedField<uint32>& value);
-  static inline size_t UInt64Size(const RepeatedField<uint64>& value);
-  static        size_t SInt32Size(const RepeatedField< int32>& value);
-  static inline size_t SInt64Size(const RepeatedField< int64>& value);
-  static        size_t EnumSize  (const RepeatedField<   int>& value);
+  static size_t Int32Size (const RepeatedField< int32>& value);
+  static size_t Int64Size (const RepeatedField< int64>& value);
+  static size_t UInt32Size(const RepeatedField<uint32>& value);
+  static size_t UInt64Size(const RepeatedField<uint64>& value);
+  static size_t SInt32Size(const RepeatedField< int32>& value);
+  static size_t SInt64Size(const RepeatedField< int64>& value);
+  static size_t EnumSize  (const RepeatedField<   int>& value);
 
   // These types always have the same size.
   static const size_t kFixed32Size  = 4;

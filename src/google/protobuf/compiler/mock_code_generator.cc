@@ -70,7 +70,7 @@ namespace compiler {
 
 // Returns the list of the names of files in all_files in the form of a
 // comma-separated string.
-string CommaSeparatedList(const std::vector<const FileDescriptor*> all_files) {
+string CommaSeparatedList(const std::vector<const FileDescriptor*>& all_files) {
   std::vector<string> names;
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());

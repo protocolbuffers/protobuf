@@ -184,6 +184,10 @@ class FieldGenerator {
   // message's MergeFromCodedStream() method.
   virtual void GenerateMergeFromCodedStream(io::Printer* printer) const = 0;
 
+  // Returns true if this field's "MergeFromCodedStream" code needs the arena
+  // to be defined as a variable.
+  virtual bool MergeFromCodedStreamNeedsArena() const { return false; }
+
   // Generate lines to decode this field from a packed value, which will be
   // placed inside the message's MergeFromCodedStream() method.
   virtual void GenerateMergeFromCodedStreamWithPacking(io::Printer* printer)

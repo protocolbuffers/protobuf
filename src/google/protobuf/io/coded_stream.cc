@@ -121,9 +121,9 @@ CodedInputStream::Limit CodedInputStream::PushLimit(int byte_limit) {
   // security: byte_limit is possibly evil, so check for negative values
   // and overflow. Also check that the new requested limit is before the
   // previous limit; otherwise we continue to enforce the previous limit.
-  if GOOGLE_PREDICT_TRUE(byte_limit >= 0 &&
-                  byte_limit <= INT_MAX - current_position &&
-                  byte_limit < current_limit_ - current_position) {
+  if (GOOGLE_PREDICT_TRUE(byte_limit >= 0 &&
+                        byte_limit <= INT_MAX - current_position &&
+                        byte_limit < current_limit_ - current_position)) {
     current_limit_ = current_position + byte_limit;
     RecomputeBufferLimits();
   }
@@ -173,10 +173,7 @@ int CodedInputStream::BytesUntilLimit() const {
   return current_limit_ - current_position;
 }
 
-void CodedInputStream::SetTotalBytesLimit(
-    int total_bytes_limit, int warning_threshold) {
-  (void) warning_threshold;
-
+void CodedInputStream::SetTotalBytesLimit(int total_bytes_limit) {
   // Make sure the limit isn't already past, since this could confuse other
   // code.
   int current_position = CurrentPosition();

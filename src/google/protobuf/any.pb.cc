@@ -196,13 +196,6 @@ const Any& Any::default_instance() {
   return *internal_default_instance();
 }
 
-Any* Any::New(::google::protobuf::Arena* arena) const {
-  Any* n = new Any;
-  if (arena != NULL) {
-    arena->Own(n);
-  }
-  return n;
-}
 
 void Any::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
@@ -434,6 +427,13 @@ void Any::InternalSwap(Any* other) {
 
 
 // @@protoc_insertion_point(namespace_scope)
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::google::protobuf::Any* Arena::Create< ::google::protobuf::Any >(Arena* arena) {
+  return Arena::CreateInternal< ::google::protobuf::Any >(arena);
+}
 }  // namespace protobuf
 }  // namespace google
 

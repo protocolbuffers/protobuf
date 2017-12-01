@@ -119,6 +119,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_message_table_driven.h               \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
+  google/protobuf/implicit_weak_message.h                        \
   google/protobuf/map_entry.h                                    \
   google/protobuf/map_entry_lite.h                               \
   google/protobuf/map_field.h                                    \
@@ -223,6 +224,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/generated_message_util.cc                    \
   google/protobuf/generated_message_table_driven_lite.h        \
   google/protobuf/generated_message_table_driven_lite.cc       \
+  google/protobuf/implicit_weak_message.cc                     \
   google/protobuf/message_lite.cc                              \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \

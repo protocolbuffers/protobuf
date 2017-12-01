@@ -364,15 +364,6 @@ final class UnsafeUtil {
   }
 
 
-  @SuppressWarnings("unchecked")
-  private static <T> Class<T> getClassForName(String name) {
-    try {
-      return (Class<T>) Class.forName(name);
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
   /** Finds the address field within a direct {@link Buffer}. */
   private static Field bufferAddressField() {
     return field(Buffer.class, "address");

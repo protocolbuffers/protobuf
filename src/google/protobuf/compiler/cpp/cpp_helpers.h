@@ -310,6 +310,10 @@ inline bool IsCrossFileMessage(const FieldDescriptor* field) {
          field->message_type()->file() != field->file();
 }
 
+inline string MessageCreateFunction(const Descriptor* d) {
+  return SupportsArenas(d) ? "CreateMessage" : "Create";
+}
+
 bool IsAnyMessage(const FileDescriptor* descriptor);
 bool IsAnyMessage(const Descriptor* descriptor);
 
