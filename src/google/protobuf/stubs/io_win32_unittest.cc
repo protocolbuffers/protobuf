@@ -122,7 +122,7 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
     // to be no API function to do that conversion directly.
     // GetEnvironmentVariableW retrieves an UTF-16-encoded text, which we need
     // to convert to UTF-8.
-    return strings::wcs_to_mbs(wcs.get(), result, true);
+    return strings::wcs_to_utf8(wcs.get(), result);
   } else {
     return false;
   }
@@ -130,7 +130,7 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
 
 bool GetCwdAsUtf8(string* result) {
   DWORD size = ::GetCurrentDirectoryW(0, NULL);
-  if (size > 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+  if (size > 0) {
     scoped_array<WCHAR> wcs(new WCHAR[size]);
     ::GetCurrentDirectoryW(size, wcs.get());
     // GetCurrentDirectoryA retrieves an Active-Code-Page-encoded text which
@@ -138,7 +138,7 @@ bool GetCwdAsUtf8(string* result) {
     // to be no API function to do that conversion directly.
     // GetCurrentDirectoryW retrieves an UTF-16-encoded text, which we need
     // to convert to UTF-8.
-    return strings::wcs_to_mbs(wcs.get(), result, true);
+    return strings::wcs_to_utf8(wcs.get(), result);
   } else {
     return false;
   }
