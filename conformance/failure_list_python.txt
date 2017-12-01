@@ -19,6 +19,3 @@ Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_0
 Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_1
 Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_2
 Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_3
-# This test will be fixed as soon as we internally make the switch to
-# preserving unknowns in proto3.
-Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
