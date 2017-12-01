@@ -128,6 +128,22 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
   }
 }
 
+bool GetCwdAsUtf8(string* result) {
+  DWORD size = ::GetCurrentDirectoryW(0, NULL);
+  if (size == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+    scoped_array<WCHAR> wcs(new WCHAR[size]);
+    ::GetCurrentDirectoryW(size, wcs.get());
+    // GetCurrentDirectoryA retrieves an Active-Code-Page-encoded text which
+    // we'd first need to convert to UTF-16 then to UTF-8, because there seems
+    // to be no API function to do that conversion directly.
+    // GetCurrentDirectoryW retrieves an UTF-16-encoded text, which we need
+    // to convert to UTF-8.
+    return strings::wcs_to_mbs(wcs.get(), result, true);
+  } else {
+    return false;
+  }
+}
+
 }  // namespace
 
 void IoWin32Test::SetUp() {
@@ -138,16 +154,23 @@ void IoWin32Test::SetUp() {
   string tmp;
   bool ok = false;
   if (!ok) {
+    // Bazel sets this environment variable when it runs tests.
     ok = GetEnvVarAsUtf8(L"TEST_TMPDIR", &tmp);
   }
   if (!ok) {
+    // Bazel 0.8.0 sets this environment for every build and test action.
     ok = GetEnvVarAsUtf8(L"TEMP", &tmp);
   }
   if (!ok) {
+    // Bazel 0.8.0 sets this environment for every build and test action.
     ok = GetEnvVarAsUtf8(L"TMP", &tmp);
   }
+  if (!ok) {
+    // Fall back to using the current directory.
+    ok = GetCwdAsUtf8(&tmp);
+  }
   if (!ok || tmp.empty()) {
-    FAIL();
+    FAIL() << "Cannot find a temp directory.";
   }
 
   StripTrailingSlashes(&tmp);
@@ -156,8 +179,8 @@ void IoWin32Test::SetUp() {
   // just deleted the previous temp directory, sometimes we cannot recreate the
   // same directory.
   // Use a counter so every test method gets its own temp directory.
-  static int counter = 0;
-  result << tmp << "\\io_win32_test" << counter++ << ".tmp";
+  static unsigned int counter = 0;
+  result << tmp << "\\w32tst" << counter++ << ".tmp";
   test_tmpdir = result.str();
   wtest_tmpdir = testonly_utf8_to_winpath(test_tmpdir.c_str());
   ASSERT_FALSE(wtest_tmpdir.empty());
