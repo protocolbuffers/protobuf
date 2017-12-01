@@ -130,7 +130,7 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
 
 bool GetCwdAsUtf8(string* result) {
   DWORD size = ::GetCurrentDirectoryW(0, NULL);
-  if (size == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+  if (size > 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
     scoped_array<WCHAR> wcs(new WCHAR[size]);
     ::GetCurrentDirectoryW(size, wcs.get());
     // GetCurrentDirectoryA retrieves an Active-Code-Page-encoded text which
