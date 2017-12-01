@@ -204,6 +204,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java             \
   java/core/src/main/java/com/google/protobuf/AbstractParser.java                  \
   java/core/src/main/java/com/google/protobuf/AbstractProtobufList.java            \
+  java/core/src/main/java/com/google/protobuf/Android.java                         \
   java/core/src/main/java/com/google/protobuf/BlockingRpcChannel.java              \
   java/core/src/main/java/com/google/protobuf/BlockingService.java                 \
   java/core/src/main/java/com/google/protobuf/BooleanArrayList.java                \
