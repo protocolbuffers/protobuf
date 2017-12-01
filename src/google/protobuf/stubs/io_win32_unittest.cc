@@ -34,7 +34,7 @@
 //
 // This file is only used on Windows, it's empty on other platforms.
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 
 #define WIN32_LEAN_AND_MEAN
 #include <errno.h>
@@ -369,5 +369,5 @@ TEST_F(IoWin32Test, AsWindowsPathTest) {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // defined(_MSC_VER)
+#endif  // defined(_WIN32)
 

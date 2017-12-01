@@ -71,7 +71,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/atomicops_internals_arm64_gcc.h          \
   google/protobuf/stubs/atomicops_internals_arm_gcc.h            \
   google/protobuf/stubs/atomicops_internals_arm_qnx.h            \
-  google/protobuf/stubs/atomicops_internals_atomicword_compat.h  \
   google/protobuf/stubs/atomicops_internals_generic_c11_atomic.h \
   google/protobuf/stubs/atomicops_internals_generic_gcc.h        \
   google/protobuf/stubs/atomicops_internals_mips_gcc.h           \
@@ -184,7 +183,7 @@ nobase_include_HEADERS =                                         \
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_lite_la_LDFLAGS = -version-info 14:0:0 -export-dynamic -no-undefined
+libprotobuf_lite_la_LDFLAGS = -version-info 15:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_lite_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf-lite.map
 EXTRA_libprotobuf_lite_la_DEPENDENCIES = libprotobuf-lite.map
@@ -234,7 +233,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 14:0:0 -export-dynamic -no-undefined
+libprotobuf_la_LDFLAGS = -version-info 15:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf.map
 EXTRA_libprotobuf_la_DEPENDENCIES = libprotobuf.map
@@ -325,7 +324,7 @@ libprotobuf_la_SOURCES =                                       \
 nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
-libprotoc_la_LDFLAGS = -version-info 14:0:0 -export-dynamic -no-undefined
+libprotoc_la_LDFLAGS = -version-info 15:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotoc_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotoc.map
 EXTRA_libprotoc_la_DEPENDENCIES = libprotoc.map
@@ -589,11 +588,8 @@ EXTRA_DIST =                                                   \
   $(js_well_known_types_sources)                               \
   solaris/libstdc++.la                                         \
   google/protobuf/unittest_proto3.proto                        \
-  google/protobuf/unittest_import_public_proto3.proto          \
-  google/protobuf/unittest_import_proto3.proto                 \
   google/protobuf/test_messages_proto3.proto                   \
   google/protobuf/test_messages_proto2.proto                   \
-  google/protobuf/map_unittest_proto3.proto                    \
   google/protobuf/io/gzip_stream.h                             \
   google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/testdata/golden_message                      \
