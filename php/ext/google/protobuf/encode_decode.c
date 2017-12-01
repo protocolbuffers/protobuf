@@ -1626,6 +1626,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
 
   // Recursively discard unknown fields of submessages.
   Descriptor* desc = msg->descriptor;
+  TSRMLS_FETCH();
   for (upb_msg_field_begin(&it, desc->msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
