@@ -461,8 +461,7 @@ void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
           CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
     }
 
-    Z_DELREF_P(CACHED_TO_ZVAL_PTR(repeated_field));
-    RETURN_ZVAL(CACHED_TO_ZVAL_PTR(repeated_field), 1, 0);
+    RETURN_ZVAL(CACHED_TO_ZVAL_PTR(repeated_field), 1, 1);
 
   } else if (Z_TYPE_P(val) == IS_OBJECT) {
     if (!instanceof_function(Z_OBJCE_P(val), repeated_field_type TSRMLS_CC)) {

@@ -105,6 +105,11 @@ $m = new TestMessage();
 $m->mergeFromString(hex2bin('F80601'));
 assert('F80601', bin2hex($m->serializeToString()));
 
+// Test create repeated field via array.
+$str_arr = array();
+$m = new TestMessage();
+$m->setRepeatedString($str_arr);
+
 # $from = new TestMessage();
 # $to = new TestMessage();
 # TestUtil::setTestMessage($from);
