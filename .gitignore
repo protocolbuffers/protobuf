@@ -161,8 +161,14 @@ php/ext/google/protobuf/hhvm/build/
 php/ext/google/protobuf/hhvm/config.h
 php/ext/google/protobuf/hhvm/config.nice
 php/ext/google/protobuf/hhvm/configure.in
+php/ext/google/protobuf/hhvm/gdb_test.sh
 php/ext/google/protobuf/hhvm/mkinstalldirs
+php/ext/google/protobuf/hhvm/run-test
 php/ext/google/protobuf/hhvm/run-tests.php
+php/ext/google/protobuf/hhvm/CMakeCache.txt
+php/ext/google/protobuf/hhvm/CMakeFiles/
+php/ext/google/protobuf/hhvm/CMakeLists.txt
+php/ext/google/protobuf/hhvm/cmake_install.cmake
 vendor/
 
 # JavaScript artifacts

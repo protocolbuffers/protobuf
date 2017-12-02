@@ -44,18 +44,20 @@
 //   PHP_ME(InternalDescriptorPool, internalAddGeneratedFile, NULL, ZEND_ACC_PUBLIC)
 //   ZEND_FE_END
 // };
-// 
-// static void internal_descriptor_pool_init_c_instance(
-//     InternalDescriptorPool *pool TSRMLS_DC) {
-//   pool->symtab = upb_symtab_new();
-// }
-// 
-// static void internal_descriptor_pool_free_c(
-//     InternalDescriptorPool *pool TSRMLS_DC) {
-//   upb_symtab_free(pool->symtab);
-// }
+
+static void internal_descriptor_pool_init_c_instance(
+    InternalDescriptorPool *pool TSRMLS_DC) {
+  pool->symtab = upb_symtab_new();
+}
+
+static void internal_descriptor_pool_free_c(
+    InternalDescriptorPool *pool TSRMLS_DC) {
+  upb_symtab_free(pool->symtab);
+}
 
 PROTO_REGISTER_CLASS_METHODS_START(InternalDescriptorPool)
+  PROTO_REGISTER_METHOD(Google\\Protobuf\\Internal\\DescriptorPool,
+                        InternalDescriptorPool, internalAddGeneratedFile)
 PROTO_REGISTER_CLASS_METHODS_END
 
 PROTO_DEFINE_CLASS(InternalDescriptorPool, internal_descriptor_pool,
