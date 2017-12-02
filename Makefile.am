@@ -907,6 +907,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/src/main/java/google/ProtobufJavaService.java                         \
   ruby/src/main/sentinel.proto                                               \
   ruby/tests/basic.rb                                                        \
+  ruby/tests/encode_decode_test.rb                                           \
   ruby/tests/gc_test.rb                                                      \
   ruby/tests/repeated_field_test.rb                                          \
   ruby/tests/stress.rb                                                       \

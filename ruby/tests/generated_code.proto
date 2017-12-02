@@ -57,6 +57,9 @@ message TestMessage {
   }
 
   NestedMessage nested_message = 80;
+
+  // Reserved for non-existing field test.
+  // int32 non_exist = 89;
 }
 
 enum TestEnum {
