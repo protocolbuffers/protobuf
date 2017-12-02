@@ -39,5 +39,12 @@ class EncodeDecodeTest < Test::Unit::TestCase
     A::B::C::TestMessage.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m)
     assert_equal hex2bin('9A04040A001200'), to
+
+    # Test discard unknown for oneof message field.
+    from = hex2bin('9A0303F80601')
+    m = A::B::C::TestMessage.decode(from)
+    A::B::C::TestMessage.discard_unknown(m)
+    to = A::B::C::TestMessage.encode(m)
+    assert_equal hex2bin('9A0300'), to
   end
 end

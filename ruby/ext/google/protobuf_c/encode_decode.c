@@ -1321,7 +1321,6 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     upb_fielddef *f = upb_msg_iter_field(&it);
-    // bool is_matching_oneof = false;
     uint32_t offset =
         desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
@@ -1338,7 +1337,6 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
       }
       // Otherwise, fall through to the appropriate singular-field handler
       // below.
-      // is_matching_oneof = true;
     }
 
     if (!upb_fielddef_issubmsg(f)) {
