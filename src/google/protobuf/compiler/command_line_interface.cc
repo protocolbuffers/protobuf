@@ -189,6 +189,67 @@ bool TryCreateParentDirectory(const string& prefix, const string& filename) {
   return true;
 }
 
+bool WriteSingleFile(const string& prefix, const string& relative_filename,
+    const char* data, int size) {
+
+  if (!TryCreateParentDirectory(prefix, relative_filename)) {
+    return false;
+  }
+  string filename = prefix + relative_filename;
+
+  // Create the output file.
+  int file_descriptor;
+  do {
+    file_descriptor =
+      open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+  } while (file_descriptor < 0 && errno == EINTR);
+
+  if (file_descriptor < 0) {
+    int error = errno;
+    std::cerr << filename << ": " << strerror(error);
+    return false;
+  }
+
+  // Write the file.
+  while (size > 0) {
+    int write_result;
+    do {
+      write_result = write(file_descriptor, data, size);
+    } while (write_result < 0 && errno == EINTR);
+
+    if (write_result <= 0) {
+      // Write error.
+
+      // FIXME(kenton):  According to the man page, if write() returns zero,
+      //   there was no error; write() simply did not write anything.  It's
+      //   unclear under what circumstances this might happen, but presumably
+      //   errno won't be set in this case.  I am confused as to how such an
+      //   event should be handled.  For now I'm treating it as an error,
+      //   since retrying seems like it could lead to an infinite loop.  I
+      //   suspect this never actually happens anyway.
+
+      if (write_result < 0) {
+        int error = errno;
+        std::cerr << filename << ": write: " << strerror(error);
+      } else {
+        std::cerr << filename << ": write() returned zero?" << std::endl;
+      }
+      return false;
+    }
+
+    data += write_result;
+    size -= write_result;
+  }
+
+  if (close(file_descriptor) != 0) {
+    int error = errno;
+    std::cerr << filename << ": close: " << strerror(error);
+    return false;
+  }
+
+  return true;
+}
+
 // Get the absolute path of this protoc binary.
 bool GetProtocAbsolutePath(string* path) {
 #ifdef _WIN32
@@ -470,58 +531,7 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
     const char* data = iter->second->data();
     int size = iter->second->size();
 
-    if (!TryCreateParentDirectory(prefix, relative_filename)) {
-      return false;
-    }
-    string filename = prefix + relative_filename;
-
-    // Create the output file.
-    int file_descriptor;
-    do {
-      file_descriptor =
-        open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
-    } while (file_descriptor < 0 && errno == EINTR);
-
-    if (file_descriptor < 0) {
-      int error = errno;
-      std::cerr << filename << ": " << strerror(error);
-      return false;
-    }
-
-    // Write the file.
-    while (size > 0) {
-      int write_result;
-      do {
-        write_result = write(file_descriptor, data, size);
-      } while (write_result < 0 && errno == EINTR);
-
-      if (write_result <= 0) {
-        // Write error.
-
-        // FIXME(kenton):  According to the man page, if write() returns zero,
-        //   there was no error; write() simply did not write anything.  It's
-        //   unclear under what circumstances this might happen, but presumably
-        //   errno won't be set in this case.  I am confused as to how such an
-        //   event should be handled.  For now I'm treating it as an error,
-        //   since retrying seems like it could lead to an infinite loop.  I
-        //   suspect this never actually happens anyway.
-
-        if (write_result < 0) {
-          int error = errno;
-          std::cerr << filename << ": write: " << strerror(error);
-        } else {
-          std::cerr << filename << ": write() returned zero?" << std::endl;
-        }
-        return false;
-      }
-
-      data += write_result;
-      size -= write_result;
-    }
-
-    if (close(file_descriptor) != 0) {
-      int error = errno;
-      std::cerr << filename << ": close: " << strerror(error);
+    if (!WriteSingleFile(prefix, relative_filename, data, size)) {
       return false;
     }
   }
@@ -858,10 +868,17 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
     SimpleDescriptorDatabase* database = new SimpleDescriptorDatabase();
     descriptor_database.reset(database);
-    if (!PopulateSimpleDescriptorDatabase(database)) {
+    std::vector<std::string> filenames;
+    if (!PopulateSimpleDescriptorDatabase(database, &filenames)) {
       return 1;
     }
     descriptor_pool.reset(new DescriptorPool(database, error_collector.get()));
+
+    if (!schemas_out_path_.empty()) {
+      if (!GenerateSchemaFiles(filenames, descriptor_pool.get())) {
+        return 1;
+      }
+    }
   }
   descriptor_pool->EnforceWeakDependencies(true);
   if (!ParseInputFiles(descriptor_pool.get(), &parsed_files)) {
@@ -995,8 +1012,11 @@ bool CommandLineInterface::InitializeDiskSourceTree(
   return true;
 }
 
+
+
 bool CommandLineInterface::PopulateSimpleDescriptorDatabase(
-    SimpleDescriptorDatabase* database) {
+    SimpleDescriptorDatabase* database,
+    std::vector<string>* filenames) {
   for (int i = 0; i < descriptor_set_in_names_.size(); i++) {
     int fd;
     do {
@@ -1033,6 +1053,8 @@ bool CommandLineInterface::PopulateSimpleDescriptorDatabase(
       if (!database->Add(file_descriptor_set.file(j))) {
         return false;
       }
+
+      filenames->push_back(file_descriptor_set.file(j).name());
     }
   }
   return true;
@@ -1099,6 +1121,7 @@ void CommandLineInterface::Clear() {
   descriptor_set_in_names_.clear();
   descriptor_set_out_name_.clear();
   dependency_out_name_.clear();
+  schemas_out_path_.clear();
 
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
@@ -1273,12 +1296,12 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
     std::cerr << "When using --decode_raw, no input files should be given."
               << std::endl;
     return PARSE_ARGUMENT_FAIL;
-  } else if (!decoding_raw && input_files_.empty()) {
+  } else if (!decoding_raw && descriptor_set_in_names_.empty() && input_files_.empty()) {
     std::cerr << "Missing input file." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
   if (mode_ == MODE_COMPILE && output_directives_.empty() &&
-      descriptor_set_out_name_.empty()) {
+      descriptor_set_out_name_.empty() && schemas_out_path_.empty()) {
     std::cerr << "Missing output directives." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -1300,6 +1323,11 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
   if (source_info_in_descriptor_set_ && descriptor_set_out_name_.empty()) {
     std::cerr << "--include_source_info only makes sense when combined with "
                  "--descriptor_set_out." << std::endl;
+  }
+  if (!schemas_out_path_.empty() && descriptor_set_in_names_.empty()) {
+    std::cerr << "--schemas_out only makes sense when combined with "
+                 "--descriptor_set_in." << std::endl;
+    return PARSE_ARGUMENT_FAIL;
   }
 
   return PARSE_ARGUMENT_DONE_AND_CONTINUE;
@@ -1548,6 +1576,13 @@ CommandLineInterface::InterpretArgument(const string& name,
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
 
+  } else if (name == "--schemas_out") {
+    if (value.empty()) {
+      std::cerr << "Directory is required for " << name << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    schemas_out_path_ = value;
+
   } else if (name == "--encode" || name == "--decode" ||
              name == "--decode_raw") {
     if (mode_ != MODE_COMPILE) {
@@ -1736,6 +1771,9 @@ void CommandLineInterface::PrintHelpText() {
 "  --dependency_out=FILE       Write a dependency output file in the format\n"
 "                              expected by make. This writes the transitive\n"
 "                              set of input file paths to FILE\n"
+"  --schemas_out=PATH          Write .proto files to the given directory. Use\n"
+"                              with --descriptor_set_in to recover .proto files\n"
+"                              from a binary file descriptor set.\n"
 "  --error_format=FORMAT       Set the format in which to print errors.\n"
 "                              FORMAT may be 'gcc' (the default) or 'msvs'\n"
 "                              (Microsoft Visual Studio format).\n"
@@ -2103,6 +2141,33 @@ bool CommandLineInterface::WriteDescriptorSet(
     std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
               << std::endl;
     return false;
+  }
+
+  return true;
+}
+
+bool CommandLineInterface::GenerateSchemaFiles(
+    const std::vector<std::string>& filenames,
+    const DescriptorPool* descriptor_pool) {
+
+  if (!VerifyDirectoryExists(schemas_out_path_)) {
+    return false;
+  }
+
+  std::string prefix = schemas_out_path_ + "/";
+
+  for (int i = 0; i < filenames.size(); i++) {
+    const FileDescriptor* file = descriptor_pool->FindFileByName(
+        filenames[i]);
+    if (file == NULL) {
+      std::cerr << "Failed to find " << filenames[i] << std::endl;
+      return false;
+    }
+
+    std::string schema = file->DebugString();
+    if (!WriteSingleFile(prefix, file->name(), schema.data(), schema.size())) {
+      return false;
+    }
   }
 
   return true;

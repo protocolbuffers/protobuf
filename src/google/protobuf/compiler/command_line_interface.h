@@ -255,7 +255,8 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   bool InitializeDiskSourceTree(DiskSourceTree* source_tree);
 
   // Loads descriptor_set_in into the provided database
-  bool PopulateSimpleDescriptorDatabase(SimpleDescriptorDatabase* database);
+  bool PopulateSimpleDescriptorDatabase(SimpleDescriptorDatabase* database,
+                                        std::vector<std::string>* files);
 
   // Parses input_files_ into parsed_files
   bool ParseInputFiles(DescriptorPool* descriptor_pool,
@@ -277,6 +278,11 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Implements the --descriptor_set_out option.
   bool WriteDescriptorSet(
       const std::vector<const FileDescriptor*>& parsed_files);
+
+  // Implements the --schemas_out option.
+  bool GenerateSchemaFiles(
+      const std::vector<std::string>& filenames,
+      const DescriptorPool* descriptor_pool);
 
   // Implements the --dependency_out option
   bool GenerateDependencyManifestFile(
@@ -412,6 +418,10 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // If --dependency_out was given, this is the path to the file where the
   // dependency file will be written. Otherwise, empty.
   string dependency_out_name_;
+
+  // If --schemas_out was given, this is the path to the directory where
+  // schemas will be written. Ohterwise, empty.
+  string schemas_out_path_;
 
   // Path to a file that contains serialized AccessInfo which provides
   // relative hotness of fields per message. This helps protoc to generate
