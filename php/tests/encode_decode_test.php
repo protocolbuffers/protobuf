@@ -503,6 +503,14 @@ class EncodeDecodeTest extends TestBase
         $m->discardUnknownFields();
         $to = $m->serializeToString();
         $this->assertSame("ba050408011200", bin2hex($to));
+
+        // Test discard unknown for singular message field.
+        $m = new TestMessage();
+        $from = hex2bin('9A0403F80601');
+        $m->mergeFromString($from);
+        $m->discardUnknownFields();
+        $to = $m->serializeToString();
+        $this->assertSame("9a0400", bin2hex($to));
     }
 
     public function testJsonEncode()
