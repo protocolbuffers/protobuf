@@ -445,7 +445,8 @@ class EncodeDecodeTest extends TestBase
     {
         // Test preserve unknown for varint.
         $m = new TestMessage();
-        $from = hex2bin('F80601');
+        $from = hex2bin('F80601');  // TODO(teboring): Add a util to encode
+                                    // varint for better readability
         $m->mergeFromString($from);
         $to = $m->serializeToString();
         $this->assertSame(bin2hex($from), bin2hex($to));
