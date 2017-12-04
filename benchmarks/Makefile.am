@@ -19,16 +19,17 @@ benchmarks_protoc_inputs_proto2 =                                          \
 	datasets/google_message4/benchmark_message4_2.proto                      \
 	datasets/google_message4/benchmark_message4_3.proto
 
-MAINTAINERCLEANFILES =                                                     \
-	Makefile.in
+make_tmp_dir:
+	mkdir -p 'tmp'
+	touch make_tmp_dir
 
 if USE_EXTERNAL_PROTOC
 
-protoc_middleman: $(benchmarks_protoc_inputs)
+protoc_middleman: make_tmp_dir $(benchmarks_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=./tmp $(benchmarks_protoc_inputs)
 	touch protoc_middleman
 
-protoc_middleman2: $(benchmarks_protoc_inputs_proto2)
+protoc_middleman2: make_tmp_dir $(benchmarks_protoc_inputs_proto2)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=./tmp $(benchmarks_protoc_inputs_proto2)
 	touch protoc_middleman2
 
@@ -37,11 +38,11 @@ else
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
-protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs)
+protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs)
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) )
 	touch protoc_middleman
 
-protoc_middleman2: $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs_proto2) $(well_known_type_protoc_inputs)
+protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs_proto2) $(well_known_type_protoc_inputs)
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2) )
 	touch protoc_middleman2
 	
@@ -109,7 +110,7 @@ cpp_benchmark_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir) -I$(top_srcdir)/third_p
 # Explicit deps because BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
 # See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header)
+cpp_benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header)
 nodist_cpp_benchmark_SOURCES =                                             \
 	$(benchmarks_protoc_outputs)                                             \
 	$(benchmarks_protoc_outputs_proto2)                                      \
@@ -142,11 +143,15 @@ java: protoc_middleman protoc_middleman2 java-benchmark
 
 ############# JAVA RULES END ##############
 
+MAINTAINERCLEANFILES =                                                     \
+	Makefile.in
+
 CLEANFILES =                                                               \
 	$(benchmarks_protoc_outputs)                                             \
 	$(benchmarks_protoc_outputs_header)                                      \
 	$(benchmarks_protoc_outputs_proto2)                                      \
 	$(benchmarks_protoc_outputs_proto2_header)                               \
+	make_tmp_dir                                                             \
 	protoc_middleman                                                         \
 	protoc_middleman2                                                        \
 	javac_middleman                                                          \
