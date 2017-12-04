@@ -33,7 +33,6 @@ package com.google.protobuf;
 import java.lang.reflect.Field;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
@@ -71,6 +70,8 @@ final class UnsafeUtil {
   private static final long OBJECT_ARRAY_INDEX_SCALE = arrayIndexScale(Object[].class);
 
   private static final long BUFFER_ADDRESS_OFFSET = fieldOffset(bufferAddressField());
+
+  private static final long STRING_VALUE_OFFSET = fieldOffset(stringValueField());
 
   private UnsafeUtil() {}
 
@@ -259,6 +260,26 @@ final class UnsafeUtil {
     return MEMORY_ACCESSOR.getLong(buffer, BUFFER_ADDRESS_OFFSET);
   }
 
+  /**
+   * Returns a new {@link String} backed by the given {@code chars}. The char array should not
+   * be mutated any more after calling this function.
+   */
+  static String moveToString(char[] chars) {
+    if (STRING_VALUE_OFFSET == -1) {
+      // In the off-chance that this JDK does not implement String as we'd expect, just do a copy.
+      return new String(chars);
+    }
+    final String str;
+    try {
+      str = (String) UNSAFE.allocateInstance(String.class);
+    } catch (InstantiationException e) {
+      // This should never happen, but return a copy as a fallback just in case.
+      return new String(chars);
+    }
+    putObject(str, STRING_VALUE_OFFSET, chars);
+    return str;
+  }
+
   static Object getStaticObject(Field field) {
     return MEMORY_ACCESSOR.getStaticObject(field);
   }
@@ -375,7 +396,12 @@ final class UnsafeUtil {
 
   /** Finds the address field within a direct {@link Buffer}. */
   private static Field bufferAddressField() {
-    return field(Buffer.class, "address");
+    return field(Buffer.class, "address", long.class);
+  }
+
+  /** Finds the value field within a {@link String}. */
+  private static Field stringValueField() {
+    return field(String.class, "value", char[].class);
   }
 
   /**
@@ -390,11 +416,14 @@ final class UnsafeUtil {
    * Gets the field with the given name within the class, or {@code null} if not found. If found,
    * the field is made accessible.
    */
-  private static Field field(Class<?> clazz, String fieldName) {
+  private static Field field(Class<?> clazz, String fieldName, Class<?> expectedType) {
     Field field;
     try {
       field = clazz.getDeclaredField(fieldName);
       field.setAccessible(true);
+      if (!field.getType().equals(expectedType)) {
+        return null;
+      }
     } catch (Throwable t) {
       // Failed to access the fields.
       field = null;

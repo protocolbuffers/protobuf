@@ -215,19 +215,12 @@ std::string NamespacedName(const string& classname,
 
 template <typename DescriptorType>
 std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
-  string classname = desc->name();
-  const Descriptor* containing = desc->containing_type();
-  while (containing != NULL) {
-    classname = containing->name() + '_' + classname;
-    containing = containing->containing_type();
-  }
-  classname = ClassNamePrefix(classname, desc) + classname;
+  string classname = GeneratedClassName(desc);
   return NamespacedName(classname, desc, is_descriptor);
 }
 
 std::string FullClassName(const ServiceDescriptor* desc, bool is_descriptor) {
-  string classname = desc->name();
-  classname = ClassNamePrefix(classname, desc) + classname;
+  string classname = GeneratedClassName(desc);
   return NamespacedName(classname, desc, is_descriptor);
 }
 
@@ -1417,6 +1410,31 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
   GenerateFile(file, is_descriptor, generator_context);
 
   return true;
+}
+
+std::string GeneratedClassName(const Descriptor* desc) {
+  std::string classname = desc->name();
+  const Descriptor* containing = desc->containing_type();
+  while (containing != NULL) {
+    classname = containing->name() + '_' + classname;
+    containing = containing->containing_type();
+  }
+  return ClassNamePrefix(classname, desc) + classname;
+}
+
+std::string GeneratedClassName(const EnumDescriptor* desc) {
+  std::string classname = desc->name();
+  const Descriptor* containing = desc->containing_type();
+  while (containing != NULL) {
+    classname = containing->name() + '_' + classname;
+    containing = containing->containing_type();
+  }
+  return ClassNamePrefix(classname, desc) + classname;
+}
+
+std::string GeneratedClassName(const ServiceDescriptor* desc) {
+  std::string classname = desc->name();
+  return ClassNamePrefix(classname, desc) + classname;
 }
 
 }  // namespace php
