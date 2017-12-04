@@ -110,6 +110,11 @@ $str_arr = array();
 $m = new TestMessage();
 $m->setRepeatedString($str_arr);
 
+// Test create map field via array.
+$str_arr = array();
+$m = new TestMessage();
+$m->setMapStringString($str_arr);
+
 # $from = new TestMessage();
 # $to = new TestMessage();
 # TestUtil::setTestMessage($from);
