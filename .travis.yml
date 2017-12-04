@@ -46,16 +46,8 @@ matrix:
       env: CONFIG=python_cpp
     - os: osx
       env: CONFIG=php5.6_mac
-      # Xcode versions force a host version of macOS:
-      #   https://docs.travis-ci.com/user/reference/osx/#OS-X-Version
-      # Force macOS 10.12, the default travis image is going to be
-      # updated "soon", at which point this came come out:
-      #   https://blog.travis-ci.com/2017-10-16-a-new-default-os-x-image-is-coming
-      osx_image: xcode8.3
     - os: osx
       env: CONFIG=php7.0_mac
-      # Same note about macOS version as on the php5.6_mac config.
-      osx_image: xcode8.3
 
     # -----------------------------------------------------------------
     # Linux hosted tests
