@@ -79,7 +79,7 @@ jspb.debug.dump_ = function(thing) {
       type == 'null' || type == 'undefined') {
     return thing;
   }
-  if (window.Uint8Array) {
+  if (typeof Uint8Array !== 'undefined') {
     // Will fail on IE9, where Uint8Array doesn't exist.
     if (message instanceof Uint8Array) {
       return thing;

@@ -1052,13 +1052,4 @@ describe('Message test suite', function() {
     assertNan(message.getDefaultDoubleField());
   });
 
-  it('testSerializePreservesEmptyNestedField', function() {
-    var message = new proto.jspb.test.OptionalFields();
-    message.setANestedMessage(new proto.jspb.test.OptionalFields.Nested());
-    message.addARepeatedMessage(new proto.jspb.test.OptionalFields.Nested());
-    message = proto.jspb.test.OptionalFields.deserialize(message.serialize());
-    assertNotNullNorUndefined(message.getANestedMessage());
-    assertEquals(1, message.getARepeatedMessageList().length);
-  });
-
 });

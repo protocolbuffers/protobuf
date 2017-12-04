@@ -77,7 +77,7 @@ describe('debugTest', function() {
   });
 
   it('testBytes', function() {
-    if (COMPILED || !window['Uint8Array']) {
+    if (COMPILED || typeof Uint8Array == 'undefined') {
       return;
     }
     var message = new proto.jspb.test.TestAllTypes();
