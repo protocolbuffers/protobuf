@@ -601,6 +601,9 @@ GenerateSingularFieldHasBits(const FieldDescriptor* field,
   } else {
     // Message fields have a has_$name$() method.
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      // Within Google we have a lazy field feature that we have not
+      // gotten around to open sourcing yet. The way this code is set
+      // up now makes it easy for us to patch in our internal change.
       bool is_lazy = false;
       if (is_lazy) {
         printer->Print(vars,

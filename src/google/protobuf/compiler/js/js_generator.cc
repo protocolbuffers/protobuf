@@ -2523,6 +2523,9 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
     }
 
   } else {
+    // Within Google we have a lazy field feature that we have not
+    // gotten around to open sourcing yet. The way this code is set
+    // up now makes it easy for us to patch in our internal change.
     bool untyped =
         false;
 

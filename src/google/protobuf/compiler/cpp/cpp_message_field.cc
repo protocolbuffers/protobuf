@@ -972,9 +972,6 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "  // @@protoc_insertion_point(field_add:$full_name$)\n"
       "  return $name$_.Add();\n"
       "}\n");
-  }
-
-  if (!dependent_field_) {
     printer->Print(variables_,
       "inline ::google::protobuf::RepeatedPtrField< $type$ >*\n"
       "$classname$::mutable_$name$() {\n"

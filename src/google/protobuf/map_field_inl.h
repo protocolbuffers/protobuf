@@ -137,7 +137,6 @@ template <typename Key, typename T>
 void TypeDefinedMapFieldBase<Key, T>::InitializeIterator(
     MapIterator* map_iter) const {
   map_iter->iter_ = new typename Map<Key, T>::const_iterator;
-  GOOGLE_CHECK(map_iter->iter_ != NULL);
 }
 
 template <typename Key, typename T>

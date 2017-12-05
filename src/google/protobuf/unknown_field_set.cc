@@ -222,6 +222,7 @@ void UnknownFieldSet::DeleteSubrange(int start, int num) {
     delete fields_;
     fields_ = NULL;
   }
+  return;
 }
 
 void UnknownFieldSet::DeleteByNumber(int number) {

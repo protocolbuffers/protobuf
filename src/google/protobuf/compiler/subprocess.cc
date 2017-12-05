@@ -335,11 +335,9 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
 
     // Write directly to STDERR_FILENO to avoid stdio code paths that may do
     // stuff that is unsafe here.
-    int ignored;
-    ignored = write(STDERR_FILENO, argv[0], strlen(argv[0]));
+    write(STDERR_FILENO, argv[0], strlen(argv[0]));
     const char* message = ": program not found or is not executable\n";
-    ignored = write(STDERR_FILENO, message, strlen(message));
-    (void) ignored;
+    write(STDERR_FILENO, message, strlen(message));
 
     // Must use _exit() rather than exit() to avoid flushing output buffers
     // that will also be flushed by the parent.
