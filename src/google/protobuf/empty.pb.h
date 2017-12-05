@@ -57,6 +57,11 @@ LIBPROTOBUF_EXPORT extern EmptyDefaultTypeInternal _Empty_default_instance_;
 }  // namespace google
 namespace google {
 namespace protobuf {
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Empty* Arena::CreateMessage< ::google::protobuf::Empty>(Arena*);
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
 
 // ===================================================================
 
@@ -111,9 +116,13 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
 
   // implements Message ----------------------------------------------
 
-  inline Empty* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Empty* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Empty>(NULL);
+  }
 
-  Empty* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Empty* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Empty>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Empty& from);

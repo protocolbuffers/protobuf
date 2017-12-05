@@ -605,18 +605,16 @@ void OutOfRangeError(PyObject* arg) {
 
 template<class RangeType, class ValueType>
 bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
-  if
-    GOOGLE_PREDICT_FALSE(value == -1 && PyErr_Occurred()) {
-      if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
-        // Replace it with the same ValueError as pure python protos instead of
-        // the default one.
-        PyErr_Clear();
-        OutOfRangeError(arg);
-      }  // Otherwise propagate existing error.
-      return false;
+  if (GOOGLE_PREDICT_FALSE(value == -1 && PyErr_Occurred())) {
+    if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
+      // Replace it with the same ValueError as pure python protos instead of
+      // the default one.
+      PyErr_Clear();
+      OutOfRangeError(arg);
+    }  // Otherwise propagate existing error.
+    return false;
     }
-  if
-    GOOGLE_PREDICT_FALSE(!IsValidNumericCast<RangeType>(value)) {
+    if (GOOGLE_PREDICT_FALSE(!IsValidNumericCast<RangeType>(value))) {
       OutOfRangeError(arg);
       return false;
     }
@@ -628,26 +626,22 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
   // The fast path.
 #if PY_MAJOR_VERSION < 3
   // For the typical case, offer a fast path.
-  if
-    GOOGLE_PREDICT_TRUE(PyInt_Check(arg)) {
-      long int_result = PyInt_AsLong(arg);
-      if
-        GOOGLE_PREDICT_TRUE(IsValidNumericCast<T>(int_result)) {
-          *value = static_cast<T>(int_result);
-          return true;
-        }
-      else {
-        OutOfRangeError(arg);
-        return false;
-      }
+  if (GOOGLE_PREDICT_TRUE(PyInt_Check(arg))) {
+    long int_result = PyInt_AsLong(arg);
+    if (GOOGLE_PREDICT_TRUE(IsValidNumericCast<T>(int_result))) {
+      *value = static_cast<T>(int_result);
+      return true;
+    } else {
+      OutOfRangeError(arg);
+      return false;
+    }
     }
 #endif
   // This effectively defines an integer as "an object that can be cast as
   // an integer and can be used as an ordinal number".
   // This definition includes everything that implements numbers.Integral
   // and shouldn't cast the net too wide.
-  if
-    GOOGLE_PREDICT_FALSE(!PyIndex_Check(arg)) {
+    if (GOOGLE_PREDICT_FALSE(!PyIndex_Check(arg))) {
       FormatTypeError(arg, "int, long");
       return false;
     }
@@ -664,10 +658,9 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
       // Unlike PyLong_AsLongLong, PyLong_AsUnsignedLongLong is very
       // picky about the exact type.
       PyObject* casted = PyNumber_Long(arg);
-      if
-        GOOGLE_PREDICT_FALSE(casted == NULL) {
-          // Propagate existing error.
-          return false;
+      if (GOOGLE_PREDICT_FALSE(casted == NULL)) {
+        // Propagate existing error.
+        return false;
         }
       ulong_result = PyLong_AsUnsignedLongLong(casted);
       Py_DECREF(casted);
@@ -690,10 +683,9 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
       // Valid subclasses of numbers.Integral should have a __long__() method
       // so fall back to that.
       PyObject* casted = PyNumber_Long(arg);
-      if
-        GOOGLE_PREDICT_FALSE(casted == NULL) {
-          // Propagate existing error.
-          return false;
+      if (GOOGLE_PREDICT_FALSE(casted == NULL)) {
+        // Propagate existing error.
+        return false;
         }
       long_result = PyLong_AsLongLong(casted);
       Py_DECREF(casted);
@@ -717,10 +709,9 @@ template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
 
 bool CheckAndGetDouble(PyObject* arg, double* value) {
   *value = PyFloat_AsDouble(arg);
-  if
-    GOOGLE_PREDICT_FALSE(*value == -1 && PyErr_Occurred()) {
-      FormatTypeError(arg, "int, long, float");
-      return false;
+  if (GOOGLE_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
+    FormatTypeError(arg, "int, long, float");
+    return false;
     }
   return true;
 }
@@ -1187,7 +1178,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
       continue;
     }
     if (descriptor->is_map()) {
-      ScopedPyObjectPtr map(GetAttr(self, name));
+      ScopedPyObjectPtr map(GetAttr(reinterpret_cast<PyObject*>(self), name));
       const FieldDescriptor* value_descriptor =
           descriptor->message_type()->FindFieldByName("value");
       if (value_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -1215,7 +1206,8 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
         }
       }
     } else if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
-      ScopedPyObjectPtr container(GetAttr(self, name));
+      ScopedPyObjectPtr container(
+          GetAttr(reinterpret_cast<PyObject*>(self), name));
       if (container == NULL) {
         return -1;
       }
@@ -1282,7 +1274,8 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
         }
       }
     } else if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      ScopedPyObjectPtr message(GetAttr(self, name));
+      ScopedPyObjectPtr message(
+          GetAttr(reinterpret_cast<PyObject*>(self), name));
       if (message == NULL) {
         return -1;
       }
@@ -1307,8 +1300,8 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
           return -1;
         }
       }
-      if (SetAttr(self, name, (new_val.get() == NULL) ? value : new_val.get()) <
-          0) {
+      if (SetAttr(reinterpret_cast<PyObject*>(self), name,
+                  (new_val.get() == NULL) ? value : new_val.get()) < 0) {
         return -1;
       }
     }
@@ -2211,7 +2204,8 @@ static PyObject* ListFields(CMessage* self) {
         return NULL;
       }
 
-      PyObject* field_value = GetAttr(self, py_field_name.get());
+      PyObject* field_value =
+          GetAttr(reinterpret_cast<PyObject*>(self), py_field_name.get());
       if (field_value == NULL) {
         PyErr_SetObject(PyExc_ValueError, py_field_name.get());
         return NULL;
@@ -2707,7 +2701,8 @@ static bool SetCompositeField(
   return PyDict_SetItem(self->composite_fields, name, value) == 0;
 }
 
-PyObject* GetAttr(CMessage* self, PyObject* name) {
+PyObject* GetAttr(PyObject* pself, PyObject* name) {
+  CMessage* self = reinterpret_cast<CMessage*>(pself);
   PyObject* value = self->composite_fields ?
       PyDict_GetItem(self->composite_fields, name) : NULL;
   if (value != NULL) {
@@ -2785,7 +2780,8 @@ PyObject* GetAttr(CMessage* self, PyObject* name) {
   return InternalGetScalar(self->message, field_descriptor);
 }
 
-int SetAttr(CMessage* self, PyObject* name, PyObject* value) {
+int SetAttr(PyObject* pself, PyObject* name, PyObject* value) {
+  CMessage* self = reinterpret_cast<CMessage*>(pself);
   if (self->composite_fields && PyDict_Contains(self->composite_fields, name)) {
     PyErr_SetString(PyExc_TypeError, "Can't set composite field");
     return -1;
@@ -2837,8 +2833,8 @@ PyTypeObject CMessage_Type = {
   PyObject_HashNotImplemented,         //  tp_hash
   0,                                   //  tp_call
   (reprfunc)cmessage::ToStr,           //  tp_str
-  (getattrofunc)cmessage::GetAttr,     //  tp_getattro
-  (setattrofunc)cmessage::SetAttr,     //  tp_setattro
+  cmessage::GetAttr,                   //  tp_getattro
+  cmessage::SetAttr,                   //  tp_setattro
   0,                                   //  tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,  //  tp_flags
   "A ProtocolMessage",                 //  tp_doc

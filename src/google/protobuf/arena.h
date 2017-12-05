@@ -56,6 +56,21 @@ using type_info = ::type_info;
 
 namespace google {
 namespace protobuf {
+struct ArenaOptions;
+}  // namespace protobuf
+
+namespace quality_webanswers {
+
+void TempPrivateWorkAround(::google::protobuf::ArenaOptions* arena_options);
+
+}  // namespace quality_webanswers
+
+namespace protobuf {
+namespace arena_metrics {
+
+void EnableArenaMetrics(::google::protobuf::ArenaOptions* options);
+
+}  // namespace arena_metrics
 
 class Arena;       // defined below
 class Message;     // message.h
@@ -117,6 +132,20 @@ struct ArenaOptions {
   // from the arena. By default, it contains a ptr to a wrapper function that
   // calls free.
   void (*block_dealloc)(void*, size_t);
+
+  ArenaOptions()
+      : start_block_size(kDefaultStartBlockSize),
+        max_block_size(kDefaultMaxBlockSize),
+        initial_block(NULL),
+        initial_block_size(0),
+        block_alloc(&::operator new),
+        block_dealloc(&internal::arena_free),
+        on_arena_init(NULL),
+        on_arena_reset(NULL),
+        on_arena_destruction(NULL),
+        on_arena_allocation(NULL) {}
+
+ private:
   // Hooks for adding external functionality such as user-specific metrics
   // collection, specific debugging abilities, etc.
   // Init hook may return a pointer to a cookie to be stored in the arena.
@@ -138,23 +167,15 @@ struct ArenaOptions {
   void (*on_arena_allocation)(const std::type_info* allocated_type,
       uint64 alloc_size, void* cookie);
 
-  ArenaOptions()
-      : start_block_size(kDefaultStartBlockSize),
-        max_block_size(kDefaultMaxBlockSize),
-        initial_block(NULL),
-        initial_block_size(0),
-        block_alloc(&::operator new),
-        block_dealloc(&internal::arena_free),
-        on_arena_init(NULL),
-        on_arena_reset(NULL),
-        on_arena_destruction(NULL),
-        on_arena_allocation(NULL) {}
-
- private:
   // Constants define default starting block size and max block size for
   // arena allocator behavior -- see descriptions above.
   static const size_t kDefaultStartBlockSize = 256;
   static const size_t kDefaultMaxBlockSize   = 8192;
+
+  friend void ::google::protobuf::arena_metrics::EnableArenaMetrics(ArenaOptions*);
+  friend void quality_webanswers::TempPrivateWorkAround(ArenaOptions*);
+  friend class Arena;
+  friend class ArenaOptionsTestFriend;
 };
 
 // Support for non-RTTI environments. (The metrics hooks API uses type
@@ -229,14 +250,15 @@ class LIBPROTOBUF_EXPORT Arena {
   // WARNING: if you allocate multiple objects, it is difficult to guarantee
   // that a series of allocations will fit in the initial block, especially if
   // Arena changes its alignment guarantees in the future!
-  static const size_t kBlockOverhead = internal::ArenaImpl::kHeaderSize;
+  static const size_t kBlockOverhead = internal::ArenaImpl::kBlockHeaderSize +
+                                       internal::ArenaImpl::kSerialArenaSize;
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
   Arena() : impl_(ArenaOptions()) { Init(ArenaOptions()); }
 
   ~Arena() {
-    if (on_arena_reset_ != NULL || on_arena_destruction_ != NULL) {
+    if (hooks_cookie_) {
       CallDestructorHooks();
     }
   }
@@ -277,6 +299,7 @@ class LIBPROTOBUF_EXPORT Arena {
     }
   }
 #endif
+
   template <typename T> GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
   static T* CreateMessage(::google::protobuf::Arena* arena) {
 #if LANG_CXX11
@@ -355,6 +378,7 @@ class LIBPROTOBUF_EXPORT Arena {
     }
   }
 #endif
+
   template <typename T> GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
   static T* Create(::google::protobuf::Arena* arena) {
     if (arena == NULL) {
@@ -522,6 +546,7 @@ class LIBPROTOBUF_EXPORT Arena {
   //
   // Combines SpaceAllocated and SpaceUsed. Returns a pair of
   // <space_allocated, space_used>.
+  PROTOBUF_RUNTIME_DEPRECATED("Please use SpaceAllocated() and SpaceUsed()")
   std::pair<uint64, uint64> SpaceAllocatedAndUsed() const {
     return std::make_pair(SpaceAllocated(), SpaceUsed());
   }
@@ -637,6 +662,29 @@ class LIBPROTOBUF_EXPORT Arena {
   struct is_arena_constructable : InternalHelper<T>::is_arena_constructable {};
 
  private:
+  template <typename T> GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  static T* CreateMessageInternal(::google::protobuf::Arena* arena) {
+#if LANG_CXX11
+    static_assert(
+        InternalHelper<T>::is_arena_constructable::value,
+        "CreateMessage can only construct types that are ArenaConstructable");
+#endif
+    if (arena == NULL) {
+      return new T;
+    } else {
+      return arena->CreateMessageInternal<T>();
+    }
+  }
+
+  template <typename T> GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  static T* CreateInternal(::google::protobuf::Arena* arena) {
+    if (arena == NULL) {
+      return new T();
+    } else {
+      return arena->CreateInternal<T>(google::protobuf::internal::has_trivial_destructor<T>::value);
+    }
+  }
+
   void CallDestructorHooks();
   void OnArenaAllocation(const std::type_info* allocated_type, size_t n) const;
   inline void AllocHook(const std::type_info* allocated_type, size_t n) const {
@@ -668,12 +716,12 @@ class LIBPROTOBUF_EXPORT Arena {
   // fields, since they are designed to work in all mode combinations.
   template <typename Msg> GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
   static Msg* CreateMaybeMessage(Arena* arena, google::protobuf::internal::true_type) {
-    return CreateMessage<Msg>(arena);
+    return CreateMessageInternal<Msg>(arena);
   }
 
   template <typename T> GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
   static T* CreateMaybeMessage(Arena* arena, google::protobuf::internal::false_type) {
-    return Create<T>(arena);
+    return CreateInternal<T>(arena);
   }
 
   template <typename T> GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
@@ -907,7 +955,6 @@ class LIBPROTOBUF_EXPORT Arena {
 
   internal::ArenaImpl impl_;
 
-  void* (*on_arena_init_)(Arena* arena);
   void (*on_arena_allocation_)(const std::type_info* allocated_type,
                                uint64 alloc_size, void* cookie);
   void (*on_arena_reset_)(Arena* arena, void* cookie, uint64 space_used);

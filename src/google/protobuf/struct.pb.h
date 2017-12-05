@@ -70,6 +70,14 @@ LIBPROTOBUF_EXPORT extern ValueDefaultTypeInternal _Value_default_instance_;
 }  // namespace google
 namespace google {
 namespace protobuf {
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::ListValue* Arena::CreateMessage< ::google::protobuf::ListValue>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Struct* Arena::CreateMessage< ::google::protobuf::Struct>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Struct_FieldsEntry_DoNotUse* Arena::CreateMessage< ::google::protobuf::Struct_FieldsEntry_DoNotUse>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Value* Arena::CreateMessage< ::google::protobuf::Value>(Arena*);
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
 
 enum NullValue {
   NULL_VALUE = 0,
@@ -165,9 +173,13 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
 
   // implements Message ----------------------------------------------
 
-  inline Struct* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Struct* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Struct>(NULL);
+  }
 
-  Struct* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Struct* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Struct>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Struct& from);
@@ -298,9 +310,13 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
 
   // implements Message ----------------------------------------------
 
-  inline Value* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Value* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Value>(NULL);
+  }
 
-  Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Value>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Value& from);
@@ -398,9 +414,6 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   bool has_struct_value() const;
   void clear_struct_value();
   static const int kStructValueFieldNumber = 5;
-  private:
-  void _slow_mutable_struct_value();
-  public:
   const ::google::protobuf::Struct& struct_value() const;
   ::google::protobuf::Struct* release_struct_value();
   ::google::protobuf::Struct* mutable_struct_value();
@@ -413,9 +426,6 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   bool has_list_value() const;
   void clear_list_value();
   static const int kListValueFieldNumber = 6;
-  private:
-  void _slow_mutable_list_value();
-  public:
   const ::google::protobuf::ListValue& list_value() const;
   ::google::protobuf::ListValue* release_list_value();
   ::google::protobuf::ListValue* mutable_list_value();
@@ -510,9 +520,13 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
 
   // implements Message ----------------------------------------------
 
-  inline ListValue* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline ListValue* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<ListValue>(NULL);
+  }
 
-  ListValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  ListValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<ListValue>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const ListValue& from);
@@ -557,11 +571,11 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
   int values_size() const;
   void clear_values();
   static const int kValuesFieldNumber = 1;
-  const ::google::protobuf::Value& values(int index) const;
   ::google::protobuf::Value* mutable_values(int index);
-  ::google::protobuf::Value* add_values();
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
       mutable_values();
+  const ::google::protobuf::Value& values(int index) const;
+  ::google::protobuf::Value* add_values();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
       values() const;
 
@@ -881,9 +895,8 @@ inline ::google::protobuf::Struct* Value::mutable_struct_value() {
   if (!has_struct_value()) {
     clear_kind();
     set_has_struct_value();
-    kind_.struct_value_ = 
-      ::google::protobuf::Arena::CreateMessage< ::google::protobuf::Struct >(
-      GetArenaNoVirtual());
+    kind_.struct_value_ = ::google::protobuf::Arena::CreateMessage< ::google::protobuf::Struct >(
+        GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.struct_value)
   return kind_.struct_value_;
@@ -947,9 +960,8 @@ inline ::google::protobuf::ListValue* Value::mutable_list_value() {
   if (!has_list_value()) {
     clear_kind();
     set_has_list_value();
-    kind_.list_value_ = 
-      ::google::protobuf::Arena::CreateMessage< ::google::protobuf::ListValue >(
-      GetArenaNoVirtual());
+    kind_.list_value_ = ::google::protobuf::Arena::CreateMessage< ::google::protobuf::ListValue >(
+        GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.list_value)
   return kind_.list_value_;
@@ -975,22 +987,22 @@ inline int ListValue::values_size() const {
 inline void ListValue::clear_values() {
   values_.Clear();
 }
-inline const ::google::protobuf::Value& ListValue::values(int index) const {
-  // @@protoc_insertion_point(field_get:google.protobuf.ListValue.values)
-  return values_.Get(index);
-}
 inline ::google::protobuf::Value* ListValue::mutable_values(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ListValue.values)
   return values_.Mutable(index);
-}
-inline ::google::protobuf::Value* ListValue::add_values() {
-  // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
-  return values_.Add();
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
 ListValue::mutable_values() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
   return &values_;
+}
+inline const ::google::protobuf::Value& ListValue::values(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ListValue.values)
+  return values_.Get(index);
+}
+inline ::google::protobuf::Value* ListValue::add_values() {
+  // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
+  return values_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
 ListValue::values() const {

@@ -34,6 +34,7 @@ goog.setTestOnly();
 
 goog.require('goog.json');
 goog.require('goog.string');
+goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.userAgent');
 
@@ -85,6 +86,16 @@ goog.require('proto.jspb.test.TestExtensionsMessage');
 
 
 describe('Message test suite', function() {
+  var stubs = new goog.testing.PropertyReplacer();
+
+  beforeEach(function() {
+    stubs.set(jspb.Message, 'SERIALIZE_EMPTY_TRAILING_FIELDS', false);
+  });
+
+  afterEach(function() {
+    stubs.reset();
+  });
+
   it('testEmptyProto', function() {
     var empty1 = new proto.jspb.test.Empty([]);
     var empty2 = new proto.jspb.test.Empty([]);

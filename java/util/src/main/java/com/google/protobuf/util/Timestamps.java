@@ -74,6 +74,11 @@ public final class Timestamps {
   public static final Timestamp MAX_VALUE =
       Timestamp.newBuilder().setSeconds(TIMESTAMP_SECONDS_MAX).setNanos(999999999).build();
 
+  /**
+   * A constant holding the {@link Timestamp} of epoch time, {@code 1970-01-01T00:00:00.000000000Z}.
+   */
+  public static final Timestamp EPOCH = Timestamp.newBuilder().setSeconds(0).setNanos(0).build();
+
   private static final ThreadLocal<SimpleDateFormat> timestampFormat =
       new ThreadLocal<SimpleDateFormat>() {
         @Override
@@ -358,10 +363,12 @@ public final class Timestamps {
   static Timestamp normalizedTimestamp(long seconds, int nanos) {
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
       seconds = checkedAdd(seconds, nanos / NANOS_PER_SECOND);
-      nanos %= NANOS_PER_SECOND;
+      nanos = (int) (nanos % NANOS_PER_SECOND);
     }
     if (nanos < 0) {
-      nanos += NANOS_PER_SECOND; // no overflow since nanos is negative (and we're adding)
+      nanos =
+          (int)
+              (nanos + NANOS_PER_SECOND); // no overflow since nanos is negative (and we're adding)
       seconds = checkedSubtract(seconds, 1);
     }
     Timestamp timestamp = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();

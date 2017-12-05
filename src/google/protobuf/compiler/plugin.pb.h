@@ -84,6 +84,14 @@ LIBPROTOC_EXPORT extern VersionDefaultTypeInternal _Version_default_instance_;
 }  // namespace google
 namespace google {
 namespace protobuf {
+template<> LIBPROTOC_EXPORT ::google::protobuf::compiler::CodeGeneratorRequest* Arena::Create< ::google::protobuf::compiler::CodeGeneratorRequest>(Arena*);
+template<> LIBPROTOC_EXPORT ::google::protobuf::compiler::CodeGeneratorResponse* Arena::Create< ::google::protobuf::compiler::CodeGeneratorResponse>(Arena*);
+template<> LIBPROTOC_EXPORT ::google::protobuf::compiler::CodeGeneratorResponse_File* Arena::Create< ::google::protobuf::compiler::CodeGeneratorResponse_File>(Arena*);
+template<> LIBPROTOC_EXPORT ::google::protobuf::compiler::Version* Arena::Create< ::google::protobuf::compiler::Version>(Arena*);
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
 namespace compiler {
 
 // ===================================================================
@@ -139,9 +147,13 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
 
   // implements Message ----------------------------------------------
 
-  inline Version* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Version* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Version>(NULL);
+  }
 
-  Version* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Version* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Version>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Version& from);
@@ -287,9 +299,13 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorRequest* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline CodeGeneratorRequest* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<CodeGeneratorRequest>(NULL);
+  }
 
-  CodeGeneratorRequest* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  CodeGeneratorRequest* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<CodeGeneratorRequest>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const CodeGeneratorRequest& from);
@@ -351,11 +367,11 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   int proto_file_size() const;
   void clear_proto_file();
   static const int kProtoFileFieldNumber = 15;
-  const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
   ::google::protobuf::FileDescriptorProto* mutable_proto_file(int index);
-  ::google::protobuf::FileDescriptorProto* add_proto_file();
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
       mutable_proto_file();
+  const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
+  ::google::protobuf::FileDescriptorProto* add_proto_file();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
       proto_file() const;
 
@@ -453,9 +469,13 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorResponse_File* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline CodeGeneratorResponse_File* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<CodeGeneratorResponse_File>(NULL);
+  }
 
-  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<CodeGeneratorResponse_File>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const CodeGeneratorResponse_File& from);
@@ -607,9 +627,13 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorResponse* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline CodeGeneratorResponse* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<CodeGeneratorResponse>(NULL);
+  }
 
-  CodeGeneratorResponse* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  CodeGeneratorResponse* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<CodeGeneratorResponse>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const CodeGeneratorResponse& from);
@@ -651,11 +675,11 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   int file_size() const;
   void clear_file();
   static const int kFileFieldNumber = 15;
-  const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
   ::google::protobuf::compiler::CodeGeneratorResponse_File* mutable_file(int index);
-  ::google::protobuf::compiler::CodeGeneratorResponse_File* add_file();
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
       mutable_file();
+  const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
+  ::google::protobuf::compiler::CodeGeneratorResponse_File* add_file();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
       file() const;
 
@@ -973,22 +997,22 @@ inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* paramet
 inline int CodeGeneratorRequest::proto_file_size() const {
   return proto_file_.size();
 }
-inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return proto_file_.Get(index);
-}
 inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_proto_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return proto_file_.Mutable(index);
-}
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() {
-  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return proto_file_.Add();
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
 CodeGeneratorRequest::mutable_proto_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return &proto_file_;
+}
+inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
+  return proto_file_.Get(index);
+}
+inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() {
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
+  return proto_file_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
 CodeGeneratorRequest::proto_file() const {
@@ -1026,7 +1050,8 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::release_comp
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
   set_has_compiler_version();
   if (compiler_version_ == NULL) {
-    compiler_version_ = new ::google::protobuf::compiler::Version;
+    compiler_version_ = ::google::protobuf::Arena::Create< ::google::protobuf::compiler::Version >(
+        GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return compiler_version_;
@@ -1317,22 +1342,22 @@ inline int CodeGeneratorResponse::file_size() const {
 inline void CodeGeneratorResponse::clear_file() {
   file_.Clear();
 }
-inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return file_.Get(index);
-}
 inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
   return file_.Mutable(index);
-}
-inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() {
-  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return file_.Add();
 }
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
 CodeGeneratorResponse::mutable_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   return &file_;
+}
+inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.file)
+  return file_.Get(index);
+}
+inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() {
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
+  return file_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
 CodeGeneratorResponse::file() const {

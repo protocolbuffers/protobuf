@@ -69,6 +69,8 @@ class StringFieldGenerator : public FieldGenerator {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
 
+  bool MergeFromCodedStreamNeedsArena() const;
+
  protected:
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;

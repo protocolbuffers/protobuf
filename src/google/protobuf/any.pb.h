@@ -58,6 +58,11 @@ LIBPROTOBUF_EXPORT extern AnyDefaultTypeInternal _Any_default_instance_;
 }  // namespace google
 namespace google {
 namespace protobuf {
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Any* Arena::Create< ::google::protobuf::Any>(Arena*);
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
 
 // ===================================================================
 
@@ -115,9 +120,13 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
 
   // implements Message ----------------------------------------------
 
-  inline Any* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Any* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Any>(NULL);
+  }
 
-  Any* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Any* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::Create<Any>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Any& from);

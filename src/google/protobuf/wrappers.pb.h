@@ -105,6 +105,19 @@ LIBPROTOBUF_EXPORT extern UInt64ValueDefaultTypeInternal _UInt64Value_default_in
 }  // namespace google
 namespace google {
 namespace protobuf {
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::BoolValue* Arena::CreateMessage< ::google::protobuf::BoolValue>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::BytesValue* Arena::CreateMessage< ::google::protobuf::BytesValue>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::DoubleValue* Arena::CreateMessage< ::google::protobuf::DoubleValue>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::FloatValue* Arena::CreateMessage< ::google::protobuf::FloatValue>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Int32Value* Arena::CreateMessage< ::google::protobuf::Int32Value>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::Int64Value* Arena::CreateMessage< ::google::protobuf::Int64Value>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::StringValue* Arena::CreateMessage< ::google::protobuf::StringValue>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::UInt32Value* Arena::CreateMessage< ::google::protobuf::UInt32Value>(Arena*);
+template<> LIBPROTOBUF_EXPORT ::google::protobuf::UInt64Value* Arena::CreateMessage< ::google::protobuf::UInt64Value>(Arena*);
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
 
 // ===================================================================
 
@@ -159,9 +172,13 @@ class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@p
 
   // implements Message ----------------------------------------------
 
-  inline DoubleValue* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline DoubleValue* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<DoubleValue>(NULL);
+  }
 
-  DoubleValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  DoubleValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<DoubleValue>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const DoubleValue& from);
@@ -273,9 +290,13 @@ class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@pr
 
   // implements Message ----------------------------------------------
 
-  inline FloatValue* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline FloatValue* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<FloatValue>(NULL);
+  }
 
-  FloatValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  FloatValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<FloatValue>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const FloatValue& from);
@@ -387,9 +408,13 @@ class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@pr
 
   // implements Message ----------------------------------------------
 
-  inline Int64Value* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Int64Value* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Int64Value>(NULL);
+  }
 
-  Int64Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Int64Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Int64Value>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Int64Value& from);
@@ -501,9 +526,13 @@ class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@p
 
   // implements Message ----------------------------------------------
 
-  inline UInt64Value* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline UInt64Value* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<UInt64Value>(NULL);
+  }
 
-  UInt64Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  UInt64Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<UInt64Value>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const UInt64Value& from);
@@ -615,9 +644,13 @@ class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@pr
 
   // implements Message ----------------------------------------------
 
-  inline Int32Value* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline Int32Value* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Int32Value>(NULL);
+  }
 
-  Int32Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  Int32Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<Int32Value>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const Int32Value& from);
@@ -729,9 +762,13 @@ class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@p
 
   // implements Message ----------------------------------------------
 
-  inline UInt32Value* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline UInt32Value* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<UInt32Value>(NULL);
+  }
 
-  UInt32Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  UInt32Value* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<UInt32Value>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const UInt32Value& from);
@@ -843,9 +880,13 @@ class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@pro
 
   // implements Message ----------------------------------------------
 
-  inline BoolValue* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline BoolValue* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<BoolValue>(NULL);
+  }
 
-  BoolValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  BoolValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<BoolValue>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const BoolValue& from);
@@ -957,9 +998,13 @@ class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@p
 
   // implements Message ----------------------------------------------
 
-  inline StringValue* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline StringValue* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<StringValue>(NULL);
+  }
 
-  StringValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  StringValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<StringValue>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const StringValue& from);
@@ -1088,9 +1133,13 @@ class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@pr
 
   // implements Message ----------------------------------------------
 
-  inline BytesValue* New() const PROTOBUF_FINAL { return New(NULL); }
+  inline BytesValue* New() const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<BytesValue>(NULL);
+  }
 
-  BytesValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  BytesValue* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL {
+    return ::google::protobuf::Arena::CreateMessage<BytesValue>(arena);
+  }
   void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const BytesValue& from);

@@ -431,7 +431,7 @@ jspb.utils.joinHash64 = function(bitsLow, bitsHigh) {
 
 /**
  * Individual digits for number->string conversion.
- * @const {!Array.<string>}
+ * @const {!Array<string>}
  */
 jspb.utils.DIGITS = [
   '0', '1', '2', '3', '4', '5', '6', '7',
@@ -554,10 +554,10 @@ jspb.utils.hash64ToDecimalString = function(hash, signed) {
 /**
  * Converts an array of 8-character hash strings into their decimal
  * representations.
- * @param {!Array.<string>} hashes The array of hash strings to convert.
+ * @param {!Array<string>} hashes The array of hash strings to convert.
  * @param {boolean} signed True if we should treat the hash string as encoding
  *     a signed integer.
- * @return {!Array.<string>}
+ * @return {!Array<string>}
  */
 jspb.utils.hash64ArrayToDecimalStrings = function(hashes, signed) {
   var result = new Array(hashes.length);
@@ -972,7 +972,7 @@ jspb.utils.byteSourceToUint8Array = function(data) {
   }
 
   if (data.constructor === Array) {
-    data = /** @type {!Array.<number>} */(data);
+    data = /** @type {!Array<number>} */(data);
     return /** @type {!Uint8Array} */(new Uint8Array(data));
   }
 

@@ -103,6 +103,22 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   rep_->allocated_size -= num;
 }
 
+google::protobuf::MessageLite* RepeatedPtrFieldBase::AddWeak(
+    const google::protobuf::MessageLite* prototype) {
+  if (rep_ != NULL && current_size_ < rep_->allocated_size) {
+    return reinterpret_cast<google::protobuf::MessageLite*>(
+        rep_->elements[current_size_++]);
+  }
+  if (!rep_ || rep_->allocated_size == total_size_) {
+    Reserve(total_size_ + 1);
+  }
+  ++rep_->allocated_size;
+  google::protobuf::MessageLite* result = prototype ? prototype->New(arena_) :
+      Arena::CreateMessage<ImplicitWeakMessage>(arena_);
+  rep_->elements[current_size_++] = result;
+  return result;
+}
+
 }  // namespace internal
 
 

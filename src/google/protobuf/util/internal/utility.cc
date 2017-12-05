@@ -353,17 +353,12 @@ bool IsMap(const google::protobuf::Field& field,
              google::protobuf::Field_Cardinality_CARDINALITY_REPEATED &&
          (GetBoolOptionOrDefault(type.options(), "map_entry", false) ||
           GetBoolOptionOrDefault(type.options(),
-                                 "google.protobuf.MessageOptions.map_entry", false) ||
-          GetBoolOptionOrDefault(type.options(),
                                  "google.protobuf.MessageOptions.map_entry",
                                  false));
 }
 
 bool IsMessageSetWireFormat(const google::protobuf::Type& type) {
   return GetBoolOptionOrDefault(type.options(), "message_set_wire_format",
-                                false) ||
-         GetBoolOptionOrDefault(type.options(),
-                                "google.protobuf.MessageOptions.message_set_wire_format",
                                 false) ||
          GetBoolOptionOrDefault(
              type.options(),
