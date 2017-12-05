@@ -27,8 +27,8 @@ class EncodeDecodeTest < Test::Unit::TestCase
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
     A::B::C::TestMessage.discard_unknown(m)
-    to = A::B::C::TestMessage.encode(m)
-    assert_equal hex2bin('5A00'), to
+    to = A::B::C::TestMessage.encode(m.optional_msg)
+    assert_equal '', to
 
     # Test discard unknown for repeated message field.
     unknown_msg = A::B::C::TestUnknown.new(
@@ -37,8 +37,8 @@ class EncodeDecodeTest < Test::Unit::TestCase
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
     A::B::C::TestMessage.discard_unknown(m)
-    to = A::B::C::TestMessage.encode(m)
-    assert_equal hex2bin('FA0100'), to
+    to = A::B::C::TestMessage.encode(m.repeated_msg[0])
+    assert_equal '', to
 
     # Test discard unknown for map value message field.
     unknown_msg = A::B::C::TestUnknown.new(
@@ -47,18 +47,17 @@ class EncodeDecodeTest < Test::Unit::TestCase
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
     A::B::C::TestMessage.discard_unknown(m)
-    to = A::B::C::TestMessage.encode(m)
-    assert_equal hex2bin('9A04040A001200'), to
+    to = A::B::C::TestMessage.encode(m.map_string_msg[''])
+    assert_equal '', to
 
     # Test discard unknown for oneof message field.
-    from = hex2bin('9A0303F80601')
     unknown_msg = A::B::C::TestUnknown.new(
 	    :oneof_unknown =>
 	    A::B::C::TestUnknown.new(:unknown_field => 1))
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
     A::B::C::TestMessage.discard_unknown(m)
-    to = A::B::C::TestMessage.encode(m)
-    assert_equal hex2bin('9A0300'), to
+    to = A::B::C::TestMessage.encode(m.oneof_msg)
+    assert_equal '', to
   end
 end
