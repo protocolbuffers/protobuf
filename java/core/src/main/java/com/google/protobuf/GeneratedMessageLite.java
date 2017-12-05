@@ -1381,7 +1381,7 @@ public abstract class GeneratedMessageLite<
     @SuppressWarnings("unchecked")
     protected Object readResolve() throws ObjectStreamException {
       try {
-        Class<?> messageClass = Class.forName(messageClassName);
+        Class<?> messageClass = Internal.getClassForName(messageClassName);
         java.lang.reflect.Field defaultInstanceField =
             messageClass.getDeclaredField("DEFAULT_INSTANCE");
         defaultInstanceField.setAccessible(true);
@@ -1408,7 +1408,7 @@ public abstract class GeneratedMessageLite<
     @Deprecated
     private Object readResolveFallback() throws ObjectStreamException {
       try {
-        Class<?> messageClass = Class.forName(messageClassName);
+        Class<?> messageClass = Internal.getClassForName(messageClassName);
         java.lang.reflect.Field defaultInstanceField =
             messageClass.getDeclaredField("defaultInstance");
         defaultInstanceField.setAccessible(true);

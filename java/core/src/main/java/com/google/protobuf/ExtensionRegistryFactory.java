@@ -50,7 +50,7 @@ final class ExtensionRegistryFactory {
   /* @Nullable */
   static Class<?> reflectExtensionRegistry() {
     try {
-      return Class.forName(FULL_REGISTRY_CLASS_NAME);
+      return Internal.getClassForName(FULL_REGISTRY_CLASS_NAME);
     } catch (ClassNotFoundException e) {
       // The exception allocation is potentially expensive on Android (where it can be triggered
       // many times at start up). Is there a way to ameliorate this?

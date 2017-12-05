@@ -414,6 +414,42 @@ public final class Internal {
     }
   }
 
+  private static final boolean isAndroid = looksLikeAndroid();
+
+  /**
+   * Copied from grpc-java
+   */
+  private static boolean looksLikeAndroid() {
+    try {
+      Class.forName("android.app.Application", /*initialize=*/ false, null);
+      return true;
+    } catch (Exception e) {
+      // If Application isn't loaded, it might as well not be Android.
+      return false;
+    }
+  }
+
+  static boolean isAndroid() {
+    return isAndroid;
+  }
+
+  public static Class<?> getClassForName(String className) throws ClassNotFoundException {
+    ClassLoader classLoader;
+    if (isAndroid()) {
+      // When android:sharedUserId or android:process is used, Android will setup a dummy
+      // ClassLoader for the thread context (http://stackoverflow.com/questions/13407006),
+      // instead of letting users to manually set context class loader, we choose the
+      // correct class loader here.
+      classLoader = Internal.class.getClassLoader();
+    } else {
+      classLoader = Thread.currentThread().getContextClassLoader();
+      if (classLoader == null) {
+        classLoader = Internal.class.getClassLoader();
+      }
+    }
+
+    return Class.forName(className, true, classLoader);
+  }
 
   /** An empty byte array constant used in generated code. */
   public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
