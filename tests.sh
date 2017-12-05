@@ -47,7 +47,7 @@ build_cpp() {
     git submodule init
     git submodule update
     cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
-    cd benchmarks && make && ./generate-datasets && cd ..
+    cd benchmarks && make cpp-benchmark && cd ..
   else
     echo ""
     echo "WARNING: Skipping validation of the bench marking code, cmake isn't installed."
