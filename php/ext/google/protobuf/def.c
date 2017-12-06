@@ -253,6 +253,7 @@ PHP_METHOD(Descriptor, getField) {
 #else
     field_hashtable_value =
         field_descriptor_type->create_object(field_descriptor_type TSRMLS_CC);
+    --GC_REFCOUNT(field_hashtable_value);
 #endif
     FieldDescriptor *field_php =
         UNBOX_HASHTABLE_VALUE(FieldDescriptor, field_hashtable_value);
