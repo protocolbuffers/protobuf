@@ -532,6 +532,7 @@ void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
       map_field_handlers->write_dimension(
           CACHED_TO_ZVAL_PTR(map_field), &key,
           CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value) TSRMLS_CC);
+      zval_dtor(&key);
     }
 
     RETURN_ZVAL(CACHED_TO_ZVAL_PTR(map_field), 1, 1);
