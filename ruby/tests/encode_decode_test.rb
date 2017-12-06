@@ -16,7 +16,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
     unknown_msg = A::B::C::TestUnknown.new(:unknown_field => 1)
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
-    A::B::C::TestMessage.discard_unknown(m)
+    Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m)
     assert_equal '', to
 
@@ -26,7 +26,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
 	    A::B::C::TestUnknown.new(:unknown_field => 1))
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
-    A::B::C::TestMessage.discard_unknown(m)
+    Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m.optional_msg)
     assert_equal '', to
 
@@ -36,7 +36,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
 	    [A::B::C::TestUnknown.new(:unknown_field => 1)])
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
-    A::B::C::TestMessage.discard_unknown(m)
+    Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m.repeated_msg[0])
     assert_equal '', to
 
@@ -46,7 +46,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
 	    {"" => A::B::C::TestUnknown.new(:unknown_field => 1)})
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
-    A::B::C::TestMessage.discard_unknown(m)
+    Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m.map_string_msg[''])
     assert_equal '', to
 
@@ -56,7 +56,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
 	    A::B::C::TestUnknown.new(:unknown_field => 1))
     from = A::B::C::TestUnknown.encode(unknown_msg)
     m = A::B::C::TestMessage.decode(from)
-    A::B::C::TestMessage.discard_unknown(m)
+    Google::Protobuf.discard_unknown(m)
     to = A::B::C::TestMessage.encode(m.oneof_msg)
     assert_equal '', to
   end

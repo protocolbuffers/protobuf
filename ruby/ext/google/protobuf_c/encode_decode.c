@@ -1377,14 +1377,19 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
 
 /*
  * call-seq:
- *     MessageClass.discard_unknown(msg)
+ *     Google::Protobuf.discard_unknown(msg)
  *
  * Discard unknown fields in the given message object and recursively discard
  * unknown fields in submessages.
  */
-VALUE Message_discard_unknown(VALUE klass, VALUE msg_rb) {
+VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
+  VALUE klass = CLASS_OF(msg_rb);
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
-  discard_unknown(msg_rb, desc);
+  if (klass == cRepeatedField || klass == cMap) {
+    rb_raise(rb_eArgError, "Expected proto msg for discard unknown.");
+  } else {
+    discard_unknown(msg_rb, desc);
+  }
   return Qnil;
 }
