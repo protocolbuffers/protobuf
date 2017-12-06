@@ -374,7 +374,7 @@ PHP_METHOD(Message, whichOneof) {
                                   LOWER_FIELD)                                 \
   PHP_METHOD(UPPER_CLASS, get##UPPER_FIELD) {                                  \
     zval member;                                                               \
-    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 1);                            \
+    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 0);                            \
     PHP_PROTO_FAKE_SCOPE_BEGIN(LOWER_CLASS##_type);                            \
     zval* value = message_get_property_internal(getThis(), &member TSRMLS_CC); \
     PHP_PROTO_FAKE_SCOPE_END;                                                  \
@@ -387,7 +387,7 @@ PHP_METHOD(Message, whichOneof) {
       return;                                                                  \
     }                                                                          \
     zval member;                                                               \
-    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 1);                            \
+    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 0);                            \
     message_set_property_internal(getThis(), &member, value TSRMLS_CC);        \
     PHP_PROTO_RETVAL_ZVAL(getThis());                                          \
   }
@@ -396,7 +396,7 @@ PHP_METHOD(Message, whichOneof) {
                                         LOWER_FIELD)                           \
   PHP_METHOD(UPPER_CLASS, get##UPPER_FIELD) {                                  \
     zval member;                                                               \
-    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 1);                            \
+    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 0);                            \
     PHP_PROTO_FAKE_SCOPE_BEGIN(LOWER_CLASS##_type);                            \
     message_get_oneof_property_internal(getThis(), &member,                    \
                                         return_value TSRMLS_CC);               \
@@ -409,7 +409,7 @@ PHP_METHOD(Message, whichOneof) {
       return;                                                                  \
     }                                                                          \
     zval member;                                                               \
-    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 1);                            \
+    PHP_PROTO_ZVAL_STRING(&member, LOWER_FIELD, 0);                            \
     message_set_property_internal(getThis(), &member, value TSRMLS_CC);        \
     PHP_PROTO_RETVAL_ZVAL(getThis());                                          \
   }
