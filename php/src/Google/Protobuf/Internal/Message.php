@@ -583,6 +583,34 @@ class Message
     public function discardUnknownFields()
     {
         $this->unknown = "";
+        foreach ($this->desc->getField() as $field) {
+            if ($field->getType() != GPBType::MESSAGE) {
+                continue;
+            }
+            if ($field->isMap()) {
+                $value_field = $field->getMessageType()->getFieldByNumber(2);
+                if ($value_field->getType() != GPBType::MESSAGE) {
+                    continue;
+                }
+                $getter = $field->getGetter();
+                $map = $this->$getter();
+                foreach ($map as $key => $value) {
+                    $value->discardUnknownFields();
+                }
+            } else if ($field->getLabel() === GPBLabel::REPEATED) {
+                $getter = $field->getGetter();
+                $arr = $this->$getter();
+                foreach ($arr as $sub) {
+                    $sub->discardUnknownFields();
+                }
+            } else if ($field->getLabel() === GPBLabel::OPTIONAL) {
+                $getter = $field->getGetter();
+                $sub = $this->$getter();
+                if (!is_null($sub)) {
+                    $sub->discardUnknownFields();
+                }
+            }
+        }
     }
 
     /**
