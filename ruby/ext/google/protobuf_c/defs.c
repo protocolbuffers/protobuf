@@ -76,7 +76,7 @@ static upb_enumdef* check_enum_notfrozen(const upb_enumdef* def) {
 // -----------------------------------------------------------------------------
 
 #define DEFINE_CLASS(name, string_name)                             \
-    VALUE c ## name;                                                \
+    VALUE c ## name = Qnil;                                         \
     const rb_data_type_t _ ## name ## _type = {                     \
       string_name,                                                  \
       { name ## _mark, name ## _free, NULL },                       \
