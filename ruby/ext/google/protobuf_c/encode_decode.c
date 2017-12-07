@@ -1305,3 +1305,91 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   }
 }
 
+static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
+  MessageHeader* msg;
+  upb_msg_field_iter it;
+
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+
+  stringsink* unknown = msg->unknown_fields;
+  if (unknown != NULL) {
+    stringsink_uninit(unknown);
+    msg->unknown_fields = NULL;
+  }
+
+  for (upb_msg_field_begin(&it, desc->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    upb_fielddef *f = upb_msg_iter_field(&it);
+    uint32_t offset =
+        desc->layout->fields[upb_fielddef_index(f)].offset +
+        sizeof(MessageHeader);
+
+    if (upb_fielddef_containingoneof(f)) {
+      uint32_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          sizeof(MessageHeader);
+      // For a oneof, check that this field is actually present -- skip all the
+      // below if not.
+      if (DEREF(msg, oneof_case_offset, uint32_t) !=
+          upb_fielddef_number(f)) {
+        continue;
+      }
+      // Otherwise, fall through to the appropriate singular-field handler
+      // below.
+    }
+
+    if (!upb_fielddef_issubmsg(f)) {
+      continue;
+    }
+
+    if (is_map_field(f)) {
+      if (!upb_fielddef_issubmsg(map_field_value(f))) continue;
+      VALUE map = DEREF(msg, offset, VALUE);
+      if (map == Qnil) continue;
+      Map_iter map_it;
+      for (Map_begin(map, &map_it); !Map_done(&map_it); Map_next(&map_it)) {
+        VALUE submsg = Map_iter_value(&map_it);
+        VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
+        const Descriptor* subdesc = ruby_to_Descriptor(descriptor);
+        discard_unknown(submsg, subdesc);
+      }
+    } else if (upb_fielddef_isseq(f)) {
+      VALUE ary = DEREF(msg, offset, VALUE);
+      if (ary == Qnil) continue;
+      int size = NUM2INT(RepeatedField_length(ary));
+      for (int i = 0; i < size; i++) {
+        void* memory = RepeatedField_index_native(ary, i);
+        VALUE submsg = *((VALUE *)memory);
+        VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
+        const Descriptor* subdesc = ruby_to_Descriptor(descriptor);
+        discard_unknown(submsg, subdesc);
+      }
+    } else {
+      VALUE submsg = DEREF(msg, offset, VALUE);
+      if (submsg == Qnil) continue;
+      VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
+      const Descriptor* subdesc = ruby_to_Descriptor(descriptor);
+      discard_unknown(submsg, subdesc);
+    }
+  }
+}
+
+/*
+ * call-seq:
+ *     Google::Protobuf.discard_unknown(msg)
+ *
+ * Discard unknown fields in the given message object and recursively discard
+ * unknown fields in submessages.
+ */
+VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
+  VALUE klass = CLASS_OF(msg_rb);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
+  Descriptor* desc = ruby_to_Descriptor(descriptor);
+  if (klass == cRepeatedField || klass == cMap) {
+    rb_raise(rb_eArgError, "Expected proto msg for discard unknown.");
+  } else {
+    discard_unknown(msg_rb, desc);
+  }
+  return Qnil;
+}
