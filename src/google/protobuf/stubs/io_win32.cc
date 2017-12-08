@@ -155,13 +155,13 @@ string normalize(string path) {
 
   static const string dot(".");
   static const string dotdot("..");
-  const string& cpath = path;
+  const char *p = path.c_str();
 
   std::vector<string> segments;
   int segment_start = -1;
   // Find the path segments in `path` (separated by "/").
   for (int i = 0;; ++i) {
-    if (!is_separator(cpath[i]) && cpath[i] != '\0') {
+    if (!is_separator(p[i]) && p[i] != '\0') {
       // The current character does not end a segment, so start one unless it's
       // already started.
       if (segment_start < 0) {
@@ -170,7 +170,7 @@ string normalize(string path) {
     } else if (segment_start >= 0 && i > segment_start) {
       // The current character is "/" or "\0", so this ends a segment.
       // Add that to `segments` if there's anything to add; handle "." and "..".
-      string segment(cpath, segment_start, i - segment_start);
+      string segment(p, segment_start, i - segment_start);
       segment_start = -1;
       if (segment == dotdot) {
         if (!segments.empty() &&
@@ -181,7 +181,7 @@ string normalize(string path) {
         segments.push_back(segment);
       }
     }
-    if (cpath[i] == '\0') {
+    if (p[i] == '\0') {
       break;
     }
   }
@@ -204,7 +204,7 @@ string normalize(string path) {
     result << segments[i];
   }
   // Preserve trailing separator if the input contained it.
-  if (!cpath.empty() && is_separator(cpath[cpath.size() - 1])) {
+  if (!path.empty() && is_separator(p[path.size() - 1])) {
     result << '\\';
   }
   return result.str();
