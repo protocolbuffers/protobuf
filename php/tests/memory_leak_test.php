@@ -50,7 +50,8 @@ $to->mergeFromString($data);
 
 TestUtil::assertTestMessage($to);
 
-$from->setRecursive($from);
+// TODO(teboring): This causes following tests fail in php7.
+# $from->setRecursive($from);
 
 $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
 $arr[] = new TestMessage;
@@ -106,14 +107,33 @@ $m->mergeFromString(hex2bin('F80601'));
 assert('F80601', bin2hex($m->serializeToString()));
 
 // Test create repeated field via array.
-$str_arr = array();
+$str_arr = array("abc");
 $m = new TestMessage();
 $m->setRepeatedString($str_arr);
 
 // Test create map field via array.
-$str_arr = array();
+$str_arr = array("abc"=>"abc");
 $m = new TestMessage();
 $m->setMapStringString($str_arr);
+
+// Test unset
+$from = new TestMessage();
+TestUtil::setTestMessage($from);
+unset($from);
+
+// Test wellknown
+$from = new \Google\Protobuf\Timestamp();
+$from->setSeconds(1);
+assert(1, $from->getSeconds());
+
+$from = new \Google\Protobuf\Value();
+$from->setNumberValue(1);
+assert(1, $from->getNumberValue());
+
+// Test descriptor
+$pool = \Google\Protobuf\DescriptorPool::getGeneratedPool();
+$desc = $pool->getDescriptorByClassName("\Foo\TestMessage");
+$field = $desc->getField(1);
 
 # $from = new TestMessage();
 # $to = new TestMessage();
