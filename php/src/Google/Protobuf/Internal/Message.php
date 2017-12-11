@@ -1111,7 +1111,7 @@ class Message
         }
         try {
             $this->mergeFromJsonArray($array);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new GPBDecodeException($e->getMessage());
         }
     }
