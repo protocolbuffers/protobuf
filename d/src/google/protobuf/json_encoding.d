@@ -148,7 +148,7 @@ unittest
         void clearMeterOrInchCase() { _meterOrInchCase = MeterOrInchCase.meterOrInchNotSet; }
         @Oneof("_meterOrInchCase") union
         {
-            @Proto(3) int _meter = defaultValue!(int); mixin(oneofAccessors!_meter);
+            @Proto(3) int _meter = defaultValue!int; mixin(oneofAccessors!_meter);
             @Proto(5) int _inch; mixin(oneofAccessors!_inch);
         }
     }

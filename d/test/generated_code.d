@@ -7,26 +7,26 @@ import google.protobuf;
 
 class TestAllTypes
 {
-    @Proto(1) int optionalInt32 = defaultValue!(int);
-    @Proto(2) long optionalInt64 = defaultValue!(long);
-    @Proto(3) uint optionalUint32 = defaultValue!(uint);
-    @Proto(4) ulong optionalUint64 = defaultValue!(ulong);
-    @Proto(5, "zigzag") int optionalSint32 = defaultValue!(int);
-    @Proto(6, "zigzag") long optionalSint64 = defaultValue!(long);
-    @Proto(7, "fixed") uint optionalFixed32 = defaultValue!(uint);
-    @Proto(8, "fixed") ulong optionalFixed64 = defaultValue!(ulong);
-    @Proto(9, "fixed") int optionalSfixed32 = defaultValue!(int);
-    @Proto(10, "fixed") long optionalSfixed64 = defaultValue!(long);
-    @Proto(11) float optionalFloat = defaultValue!(float);
-    @Proto(12) double optionalDouble = defaultValue!(double);
-    @Proto(13) bool optionalBool = defaultValue!(bool);
-    @Proto(14) string optionalString = defaultValue!(string);
-    @Proto(15) bytes optionalBytes = defaultValue!(bytes);
-    @Proto(18) NestedMessage optionalNestedMessage = defaultValue!(NestedMessage);
-    @Proto(19) ForeignMessage optionalForeignMessage = defaultValue!(ForeignMessage);
-    @Proto(21) NestedEnum optionalNestedEnum = defaultValue!(NestedEnum);
-    @Proto(22) ForeignEnum optionalForeignEnum = defaultValue!(ForeignEnum);
-    @Proto(27) TestAllTypes recursiveMessage = defaultValue!(TestAllTypes);
+    @Proto(1) int optionalInt32 = defaultValue!int;
+    @Proto(2) long optionalInt64 = defaultValue!long;
+    @Proto(3) uint optionalUint32 = defaultValue!uint;
+    @Proto(4) ulong optionalUint64 = defaultValue!ulong;
+    @Proto(5, "zigzag") int optionalSint32 = defaultValue!int;
+    @Proto(6, "zigzag") long optionalSint64 = defaultValue!long;
+    @Proto(7, "fixed") uint optionalFixed32 = defaultValue!uint;
+    @Proto(8, "fixed") ulong optionalFixed64 = defaultValue!ulong;
+    @Proto(9, "fixed") int optionalSfixed32 = defaultValue!int;
+    @Proto(10, "fixed") long optionalSfixed64 = defaultValue!long;
+    @Proto(11) float optionalFloat = defaultValue!float;
+    @Proto(12) double optionalDouble = defaultValue!double;
+    @Proto(13) bool optionalBool = defaultValue!bool;
+    @Proto(14) string optionalString = defaultValue!string;
+    @Proto(15) bytes optionalBytes = defaultValue!bytes;
+    @Proto(18) NestedMessage optionalNestedMessage = defaultValue!NestedMessage;
+    @Proto(19) ForeignMessage optionalForeignMessage = defaultValue!ForeignMessage;
+    @Proto(21) NestedEnum optionalNestedEnum = defaultValue!NestedEnum;
+    @Proto(22) ForeignEnum optionalForeignEnum = defaultValue!ForeignEnum;
+    @Proto(27) TestAllTypes recursiveMessage = defaultValue!TestAllTypes;
     @Proto(31) int[] repeatedInt32 = defaultValue!(int[]);
     @Proto(32) long[] repeatedInt64 = defaultValue!(long[]);
     @Proto(33) uint[] repeatedUint32 = defaultValue!(uint[]);
@@ -83,7 +83,7 @@ class TestAllTypes
     void clearOneofField() { _oneofFieldCase = OneofFieldCase.oneofFieldNotSet; }
     @Oneof("_oneofFieldCase") union
     {
-        @Proto(111) uint _oneofUint32 = defaultValue!(uint); mixin(oneofAccessors!_oneofUint32);
+        @Proto(111) uint _oneofUint32 = defaultValue!uint; mixin(oneofAccessors!_oneofUint32);
         @Proto(112) NestedMessage _oneofNestedMessage; mixin(oneofAccessors!_oneofNestedMessage);
         @Proto(113) string _oneofString; mixin(oneofAccessors!_oneofString);
         @Proto(114) bytes _oneofBytes; mixin(oneofAccessors!_oneofBytes);
@@ -93,29 +93,29 @@ class TestAllTypes
         @Proto(118) double _oneofDouble; mixin(oneofAccessors!_oneofDouble);
         @Proto(119) NestedEnum _oneofEnum; mixin(oneofAccessors!_oneofEnum);
     }
-    @Proto(401) int fieldname1 = defaultValue!(int);
-    @Proto(402) int fieldName2 = defaultValue!(int);
-    @Proto(403) int FieldName3 = defaultValue!(int);
-    @Proto(404) int fieldName4 = defaultValue!(int);
-    @Proto(405) int field0name5 = defaultValue!(int);
-    @Proto(406) int field0Name6 = defaultValue!(int);
-    @Proto(407) int fieldName7 = defaultValue!(int);
-    @Proto(408) int FieldName8 = defaultValue!(int);
-    @Proto(409) int fieldName9 = defaultValue!(int);
-    @Proto(410) int FieldName10 = defaultValue!(int);
-    @Proto(411) int FIELDNAME11 = defaultValue!(int);
-    @Proto(412) int FIELDName12 = defaultValue!(int);
-    @Proto(413) int FieldName13 = defaultValue!(int);
-    @Proto(414) int FieldName14 = defaultValue!(int);
-    @Proto(415) int fieldName15 = defaultValue!(int);
-    @Proto(416) int fieldName16 = defaultValue!(int);
-    @Proto(417) int fieldName17 = defaultValue!(int);
-    @Proto(418) int FieldName18 = defaultValue!(int);
+    @Proto(401) int fieldname1 = defaultValue!int;
+    @Proto(402) int fieldName2 = defaultValue!int;
+    @Proto(403) int FieldName3 = defaultValue!int;
+    @Proto(404) int fieldName4 = defaultValue!int;
+    @Proto(405) int field0name5 = defaultValue!int;
+    @Proto(406) int field0Name6 = defaultValue!int;
+    @Proto(407) int fieldName7 = defaultValue!int;
+    @Proto(408) int FieldName8 = defaultValue!int;
+    @Proto(409) int fieldName9 = defaultValue!int;
+    @Proto(410) int FieldName10 = defaultValue!int;
+    @Proto(411) int FIELDNAME11 = defaultValue!int;
+    @Proto(412) int FIELDName12 = defaultValue!int;
+    @Proto(413) int FieldName13 = defaultValue!int;
+    @Proto(414) int FieldName14 = defaultValue!int;
+    @Proto(415) int fieldName15 = defaultValue!int;
+    @Proto(416) int fieldName16 = defaultValue!int;
+    @Proto(417) int fieldName17 = defaultValue!int;
+    @Proto(418) int FieldName18 = defaultValue!int;
 
     static class NestedMessage
     {
-        @Proto(1) int a = defaultValue!(int);
-        @Proto(2) TestAllTypes corecursive = defaultValue!(TestAllTypes);
+        @Proto(1) int a = defaultValue!int;
+        @Proto(2) TestAllTypes corecursive = defaultValue!TestAllTypes;
     }
 
     enum NestedEnum
@@ -129,7 +129,7 @@ class TestAllTypes
 
 class ForeignMessage
 {
-    @Proto(1) int c = defaultValue!(int);
+    @Proto(1) int c = defaultValue!int;
 }
 
 enum ForeignEnum

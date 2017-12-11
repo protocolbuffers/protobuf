@@ -117,6 +117,5 @@ void main()
 {
     while (doTestIo)
     {
-        ;
     }
 }

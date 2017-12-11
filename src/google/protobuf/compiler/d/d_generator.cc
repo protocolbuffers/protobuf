@@ -93,8 +93,10 @@ void GenerateOneofField(const FieldDescriptor* field, io::Printer* printer,
     "name", UnderscoresToCamelCase(field->name(), false),
     "type", TypeName(field));
   if (print_initializer) {
+    auto initializer_expression = (field->is_repeated() || field->is_map()) ?
+      " = defaultValue!($type$)" : " = defaultValue!$type$";
     printer->Print(
-      " = defaultValue!($type$)",
+      initializer_expression,
       "type", TypeName(field));
   }
   printer->Print(
@@ -139,8 +141,10 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
     "name", UnderscoresToCamelCase(field->name(), false),
     "type", TypeName(field));
   if (print_initializer) {
+    auto initializer_expression = (field->is_repeated() || field->is_map()) ?
+      " = defaultValue!($type$)" : " = defaultValue!$type$";
     printer->Print(
-      " = defaultValue!($type$)",
+      initializer_expression,
       "type", TypeName(field));
   }
   printer->Print(";\n");
