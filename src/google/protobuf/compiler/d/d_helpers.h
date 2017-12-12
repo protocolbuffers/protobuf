@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2017 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ namespace d {
 
 string StripDotProto(const std::string& proto_file);
 
-string WireFormat(const FieldDescriptor* field);
+string WireEncoding(const FieldDescriptor* field);
 
 string TypeName(const FieldDescriptor* field);
 

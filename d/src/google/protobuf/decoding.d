@@ -25,12 +25,12 @@ unittest
     assert(buffer.fromProtobuf!bool);
 }
 
-T fromProtobuf(T, string wire = "", R)(ref R inputRange)
+T fromProtobuf(T, Wire wire = Wire.none, R)(ref R inputRange)
 if (isInputRange!R && isIntegral!T)
 {
     static assert(is(ElementType!R : ubyte));
 
-    static if (wire == "fixed")
+    static if (wire == Wire.fixed)
     {
         import std.algorithm : copy;
         import std.bitmanip : littleEndianToNative;
@@ -42,7 +42,7 @@ if (isInputRange!R && isIntegral!T)
 
         return buffer.littleEndianToNative!T;
     }
-    else static if (wire == "zigzag")
+    else static if (wire == Wire.zigzag)
     {
         return cast(T) zagZig(fromVarint(inputRange));
     }
@@ -66,23 +66,23 @@ unittest
     buffer = 0xffffffffffffffffUL.toProtobuf.array;
     assert(buffer.fromProtobuf!long == 0xffffffffffffffffUL);
 
-    buffer = 1.toProtobuf!"fixed".array;
-    assert(buffer.fromProtobuf!(int, "fixed") == 1);
-    buffer = (-1).toProtobuf!"fixed".array;
-    assert(buffer.fromProtobuf!(int, "fixed") == -1);
-    buffer = 0xffffffffU.toProtobuf!"fixed".array;
-    assert(buffer.fromProtobuf!(uint, "fixed") == 0xffffffffU);
-    buffer = 1L.toProtobuf!"fixed".array;
-    assert(buffer.fromProtobuf!(long, "fixed") == 1L);
+    buffer = 1.toProtobuf!(Wire.fixed).array;
+    assert(buffer.fromProtobuf!(int, Wire.fixed) == 1);
+    buffer = (-1).toProtobuf!(Wire.fixed).array;
+    assert(buffer.fromProtobuf!(int, Wire.fixed) == -1);
+    buffer = 0xffffffffU.toProtobuf!(Wire.fixed).array;
+    assert(buffer.fromProtobuf!(uint, Wire.fixed) == 0xffffffffU);
+    buffer = 1L.toProtobuf!(Wire.fixed).array;
+    assert(buffer.fromProtobuf!(long, Wire.fixed) == 1L);
 
-    buffer = 1.toProtobuf!"zigzag".array;
-    assert(buffer.fromProtobuf!(int, "zigzag") == 1);
-    buffer = (-1).toProtobuf!"zigzag".array;
-    assert(buffer.fromProtobuf!(int, "zigzag") == -1);
-    buffer = 1L.toProtobuf!"zigzag".array;
-    assert(buffer.fromProtobuf!(long, "zigzag") == 1L);
-    buffer = (-1L).toProtobuf!"zigzag".array;
-    assert(buffer.fromProtobuf!(long, "zigzag") == -1L);
+    buffer = 1.toProtobuf!(Wire.zigzag).array;
+    assert(buffer.fromProtobuf!(int, Wire.zigzag) == 1);
+    buffer = (-1).toProtobuf!(Wire.zigzag).array;
+    assert(buffer.fromProtobuf!(int, Wire.zigzag) == -1);
+    buffer = 1L.toProtobuf!(Wire.zigzag).array;
+    assert(buffer.fromProtobuf!(long, Wire.zigzag) == 1L);
+    buffer = (-1L).toProtobuf!(Wire.zigzag).array;
+    assert(buffer.fromProtobuf!(long, Wire.zigzag) == -1L);
 }
 
 T fromProtobuf(T, R)(ref R inputRange)
@@ -139,7 +139,7 @@ unittest
     assert(buffer.fromProtobuf!bytes.empty);
 }
 
-T fromProtobuf(T, string wire = "", R)(ref R inputRange)
+T fromProtobuf(T, Wire wire = Wire.none, R)(ref R inputRange)
 if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes))
 {
     import std.array : Appender;
@@ -149,7 +149,7 @@ if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes))
     R fieldRange = inputRange.takeLengthPrefixed;
 
     Appender!T result;
-    static if (wire.empty)
+    static if (wire = Wire.none)
     {
         while (!fieldRange.empty)
             result ~= fieldRange.fromProtobuf!(ElementType!T);
@@ -219,7 +219,7 @@ unittest
     {
         @Proto(1) int bar;
         @Proto(3) bool qux;
-        @Proto(2, "fixed") long baz;
+        @Proto(2, Wire.fixed) long baz;
     }
 
     ubyte[] buff = [0x08, 0x05, 0x11, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x01];
@@ -290,15 +290,13 @@ if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes) && !proto
 private void fromProtobufByProto(Proto proto, T, R)(ref R inputRange, ref T field)
 if (isInputRange!R && isAssociativeArray!T)
 {
-    import std.algorithm : findSplit;
     import std.conv : to;
 
     static assert(is(ElementType!R : ubyte));
     static assert(validateProto!(proto, T));
 
-    enum wires = proto.wire.findSplit(",");
-    enum keyProto = Proto(1, wires[0]);
-    enum valueProto = Proto(2, wires[2]);
+    enum keyProto = Proto(MapFieldTag.key, keyWireToWire(proto.wire));
+    enum valueProto = Proto(MapFieldTag.value, valueWireToWire(proto.wire));
     KeyType!T key;
     ValueType!T value;
     ubyte decodingState;
@@ -310,12 +308,12 @@ if (isInputRange!R && isAssociativeArray!T)
 
         switch (tagWire.tag)
         {
-        case 1:
+        case MapFieldTag.key:
             enforce!ProtobufException((decodingState & 0x01) == 0, "Double map key");
             decodingState |= 0x01;
             enum wireTypeExpected = wireType!(keyProto, KeyType!T);
             enforce!ProtobufException(tagWire.wireType == wireTypeExpected, "Wrong wire format");
-            static if (keyProto.wire.empty)
+            static if (keyProto.wire == Wire.none)
             {
                 key = fieldRange.fromProtobuf!(KeyType!T);
             }
@@ -327,12 +325,12 @@ if (isInputRange!R && isAssociativeArray!T)
                 key = fieldRange.fromProtobuf!(KeyType!T, wire);
             }
             break;
-        case 2:
+        case MapFieldTag.value:
             enforce!ProtobufException((decodingState & 0x02) == 0, "Double map value");
             decodingState |= 0x02;
             enum wireTypeExpected = wireType!(valueProto, KeyType!T);
             enforce!ProtobufException(tagWire.wireType == wireTypeExpected, "Wrong wire format");
-            static if (valueProto.wire.empty)
+            static if (valueProto.wire == Wire.none)
             {
                 value = fieldRange.fromProtobuf!(ValueType!T);
             }

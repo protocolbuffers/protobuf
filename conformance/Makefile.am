@@ -331,7 +331,7 @@ conformance-php-c:
 
 conformance-d: $(other_language_protoc_outputs)
 	@echo '#! /bin/sh' > conformance-d
-	@echo 'rdmd -I../d/src -I.. conformance_d.d conformance.d' >> conformance-d
+	@echo 'rdmd -I../d/src conformance_d.d' >> conformance-d
 	@chmod +x conformance-d
 
 # Targets for actually running tests.

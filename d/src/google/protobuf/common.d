@@ -1,7 +1,5 @@
 module google.protobuf.common;
 
-import std.typecons : Flag;
-
 alias bytes = ubyte[];
 
 auto defaultValue(T)()
@@ -23,10 +21,37 @@ class ProtobufException : Exception
     }
 }
 
+enum Wire: ubyte
+{
+    none,
+    fixed = 1 << 0,
+    zigzag = 1 << 1,
+    fixedKey = 1 << 2,
+    zigzagKey = 1 << 3,
+    fixedValue = fixed,
+    zigzagValue = zigzag,
+    fixedKeyFixedValue = fixedKey | fixedValue,
+    fixedKeyZigzagValue = fixedKey | zigzagValue,
+    zigzagKeyFixedValue = zigzagKey | fixedValue,
+    zigzagKeyZigzagValue = zigzagKey | zigzagValue,
+}
+
+package Wire keyWireToWire(Wire wire)
+{
+    return cast(Wire)((wire >> 2) & 0x03);
+}
+
+package Wire valueWireToWire(Wire wire)
+{
+    return cast(Wire)(wire & 0x03);
+}
+
 struct Proto
 {
+    import std.typecons : Flag;
+
     uint tag;
-    string wire;
+    Wire wire;
     Flag!"packed" packed;
 }
 
@@ -35,6 +60,12 @@ template protoByField(alias field)
     import std.traits : getUDAs;
 
     enum Proto protoByField = getUDAs!(field, Proto)[0];
+}
+
+enum MapFieldTag: uint
+{
+    key = 1,
+    value = 2,
 }
 
 struct Oneof
@@ -119,11 +150,11 @@ unittest
     static class Test
     {
         @Proto(3) int foo;
-        @Proto(2, "fixed") int bar;
+        @Proto(2, Wire.fixed) int bar;
     }
 
     static assert(Message!Test.fieldNames == AliasSeq!("bar", "foo"));
-    static assert(Message!Test.protos == AliasSeq!(Proto(2, "fixed", No.packed), Proto(3, "", No.packed)));
+    static assert(Message!Test.protos == AliasSeq!(Proto(2, Wire.fixed, No.packed), Proto(3, Wire.none, No.packed)));
 }
 
 template validateField(alias field)
@@ -143,28 +174,30 @@ bool validateProto(Proto proto, T)()
 
     static if (isBoolean!T)
     {
+        static assert(proto.wire == Wire.none);
         static assert(!proto.packed);
-        static assert(proto.wire == "");
     }
     else static if (is(T == int) || is(T == uint) || is(T == long) || is(T == ulong))
     {
+        import std.algorithm : canFind;
+
+        static assert([Wire.none, Wire.fixed, Wire.zigzag].canFind(proto.wire));
         static assert(!proto.packed);
-        static assert(proto.wire == "" || proto.wire == "fixed" || proto.wire == "zigzag");
     }
     else static if (is(T == enum) && is(T : int))
     {
+        static assert(proto.wire == Wire.none);
         static assert(!proto.packed);
-        static assert(proto.wire == "");
     }
     else static if (isFloatingPoint!T)
     {
+        static assert(proto.wire == Wire.none);
         static assert(!proto.packed);
-        static assert(proto.wire == "");
     }
     else static if (is(T == string) || is(T == bytes))
     {
+        static assert(proto.wire == Wire.none);
         static assert(!proto.packed);
-        static assert(proto.wire == "");
     }
     else static if (isArray!T)
     {
@@ -176,25 +209,22 @@ bool validateProto(Proto proto, T)()
     }
     else static if (isAssociativeArray!T)
     {
-        import std.algorithm : findSplit;
-
-        static assert(!proto.packed);
         static assert(isBoolean!(KeyType!T) || isIntegral!(KeyType!T) || is(KeyType!T == string));
         static assert(is(ValueType!T == string) || is(ValueType!T == bytes)
             || (!isArray!(ValueType!T) && !isAssociativeArray!(ValueType!T)));
 
-        enum wires = proto.wire.findSplit(",");
-
-        enum keyProto = Proto(1, wires[0]);
+        enum keyProto = Proto(MapFieldTag.key, keyWireToWire(proto.wire));
         static assert(validateProto!(keyProto, KeyType!T));
 
-        enum valueProto = Proto(2, wires[2]);
+        enum valueProto = Proto(MapFieldTag.value, valueWireToWire(proto.wire));
         static assert(validateProto!(valueProto, ValueType!T));
+
+        static assert(!proto.packed);
     }
     else static if (isAggregateType!T)
     {
+        static assert(proto.wire == Wire.none);
         static assert(!proto.packed);
-        static assert(proto.wire == "");
     }
     else
     {

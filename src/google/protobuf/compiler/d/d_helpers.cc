@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2017 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -137,7 +137,56 @@ string StripDotProto(const string& proto_file) {
   return proto_file.substr(0, lastindex);
 }
 
-string WireFormat(const FieldDescriptor* field) {
+enum MapFieldNumber {
+  KEY_FIELD_NUMBER = 1,
+  VALUE_FIELD_NUMBER = 2,
+};
+
+enum Wire {
+  NONE,
+  FIXED = 1 << 0,
+  ZIGZAG = 1 << 1,
+  FIXED_KEY = 1 << 2,
+  ZIGZAG_KEY = 1 << 3,
+  FIXED_VALUE = 1 << 4,
+  ZIGZAG_VALUE = 1 << 5,
+  FIXED_KEY_FIXED_VALUE = FIXED_KEY | FIXED_VALUE,
+  FIXED_KEY_ZIGZAG_VALUE = FIXED_KEY | ZIGZAG_VALUE,
+  ZIGZAG_KEY_FIXED_VALUE = ZIGZAG_KEY | FIXED_VALUE,
+  ZIGZAG_KEY_ZIGZAG_VALUE = ZIGZAG_KEY | ZIGZAG_VALUE,
+};
+
+static string WireToString(Wire wire) {
+  switch (wire) {
+    case NONE:
+      return "";
+    case FIXED:
+      return "Wire.fixed";
+    case ZIGZAG:
+      return "Wire.zigzag";
+    case FIXED_KEY:
+      return "Wire.fixedKey";
+    case ZIGZAG_KEY:
+      return "Wire.zigzagKey";
+    case FIXED_VALUE:
+      return "Wire.fixedValue";
+    case ZIGZAG_VALUE:
+      return "Wire.zigzagValue";
+    case FIXED_KEY_FIXED_VALUE:
+      return "Wire.fixedKeyFixedValue";
+    case FIXED_KEY_ZIGZAG_VALUE:
+      return "Wire.fixedKeyZigzagValue";
+    case ZIGZAG_KEY_FIXED_VALUE:
+      return "Wire.zigzagKeyFixedValue";
+    case ZIGZAG_KEY_ZIGZAG_VALUE:
+      return "Wire.zigzagKeyZigzagValue";
+    default:
+      assert(false);
+      return "";
+  }
+}
+
+static Wire WireByField(const FieldDescriptor* field) {
   switch (field->type()) {
     case FieldDescriptor::TYPE_BOOL:
     case FieldDescriptor::TYPE_INT32:
@@ -149,32 +198,34 @@ string WireFormat(const FieldDescriptor* field) {
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_ENUM:
-      return "";
+      return NONE;
     case FieldDescriptor::TYPE_MESSAGE:
-      if (field->is_map())
-      {
-        const string key_wire_format =
-            WireFormat(field->message_type()->FindFieldByNumber(1));
-        const string value_wire_format =
-            WireFormat(field->message_type()->FindFieldByNumber(2));
+      if (field->is_map()) {
+        Wire key_wire = WireByField(
+            field->message_type()->FindFieldByNumber(KEY_FIELD_NUMBER));
+        Wire value_wire = WireByField(
+            field->message_type()->FindFieldByNumber(VALUE_FIELD_NUMBER));
 
-        if (key_wire_format.length() || value_wire_format.length())
-          return key_wire_format + "," + value_wire_format;
+        return static_cast<Wire>(key_wire << 2 | value_wire << 4);
       }
-      return "";
+      return NONE;
     case FieldDescriptor::TYPE_SINT32:
     case FieldDescriptor::TYPE_SINT64:
-      return "zigzag";
+      return ZIGZAG;
     case FieldDescriptor::TYPE_SFIXED32:
     case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_SFIXED64:
     case FieldDescriptor::TYPE_FIXED64:
-      return "fixed";
+      return FIXED;
     case FieldDescriptor::TYPE_GROUP:
     default:
       assert(false);
-      return "";
+      return NONE;
   }
+}
+
+string WireEncoding(const FieldDescriptor* field) {
+  return WireToString(WireByField(field));
 }
 
 string BaseTypeName(const FieldDescriptor* field) {
@@ -218,9 +269,9 @@ string TypeName(const FieldDescriptor* field) {
   string base_type_name = BaseTypeName(field);
   if (field->is_map()) {
     const FieldDescriptor* key_field =
-        field->message_type()->FindFieldByNumber(1);
+        field->message_type()->FindFieldByNumber(KEY_FIELD_NUMBER);
     const FieldDescriptor* value_field =
-        field->message_type()->FindFieldByNumber(2);
+        field->message_type()->FindFieldByNumber(VALUE_FIELD_NUMBER);
 
     return BaseTypeName(value_field) + "[" + BaseTypeName(key_field) + "]";
   }

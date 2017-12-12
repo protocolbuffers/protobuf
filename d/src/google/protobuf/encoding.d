@@ -20,22 +20,26 @@ unittest
     assert(false.toProtobuf.array == [0x00]);
 }
 
-auto toProtobuf(string wire = "", T)(T value)
+auto toProtobuf(Wire wire = Wire.none, T)(T value)
 if (isIntegral!T)
 {
-    static if (wire == "fixed")
+    static if (wire == Wire.none)
+    {
+        return Varint(value);
+    }
+    else static if (wire == Wire.fixed)
     {
         import std.bitmanip : nativeToLittleEndian;
 
         return nativeToLittleEndian(value).dup;
     }
-    else static if (wire == "zigzag")
+    else static if (wire == Wire.zigzag)
     {
         return Varint(zigZag(value));
     }
     else
     {
-        return Varint(value);
+        assert(0, "Invalid wire encoding");
     }
 }
 
@@ -48,15 +52,15 @@ unittest
     assert((-1L).toProtobuf.array == [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01]);
     assert(0xffffffffffffffffUL.toProtobuf.array == [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01]);
 
-    assert(1L.toProtobuf!"fixed".array == [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
-    assert(1.toProtobuf!"fixed".array == [0x01, 0x00, 0x00, 0x00]);
-    assert((-1).toProtobuf!"fixed".array == [0xff, 0xff, 0xff, 0xff]);
-    assert(0xffffffffU.toProtobuf!"fixed".array == [0xff, 0xff, 0xff, 0xff]);
+    assert(1L.toProtobuf!(Wire.fixed).array == [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
+    assert(1.toProtobuf!(Wire.fixed).array == [0x01, 0x00, 0x00, 0x00]);
+    assert((-1).toProtobuf!(Wire.fixed).array == [0xff, 0xff, 0xff, 0xff]);
+    assert(0xffffffffU.toProtobuf!(Wire.fixed).array == [0xff, 0xff, 0xff, 0xff]);
 
-    assert(1.toProtobuf!"zigzag".array == [0x02]);
-    assert((-1).toProtobuf!"zigzag".array == [0x01]);
-    assert(1L.toProtobuf!"zigzag".array == [0x02]);
-    assert((-1L).toProtobuf!"zigzag".array == [0x01]);
+    assert(1.toProtobuf!(Wire.zigzag).array == [0x02]);
+    assert((-1).toProtobuf!(Wire.zigzag).array == [0x01]);
+    assert(1L.toProtobuf!(Wire.zigzag).array == [0x02]);
+    assert((-1L).toProtobuf!(Wire.zigzag).array == [0x01]);
 }
 
 auto toProtobuf(T)(T value)
@@ -91,14 +95,14 @@ unittest
     assert((cast(bytes) []).toProtobuf.array == [0x00]);
 }
 
-auto toProtobuf(string wire = "", T)(T value)
+auto toProtobuf(Wire wire = Wire.none, T)(T value)
 if (isArray!T && !is(T == string) && !is(T == bytes))
 {
     import std.range : hasLength;
 
     static assert(hasLength!T, "Cannot encode array with unknown length");
 
-    static if (wire.empty)
+    static if (wire == Wire.none)
     {
         auto result = value.map!(a => a.toProtobuf).joiner;
     }
@@ -117,7 +121,7 @@ unittest
     import std.array : array;
 
     assert([false, false, true].toProtobuf.array == [0x03, 0x00, 0x00, 0x01]);
-    assert([1, 2].toProtobuf!"fixed".array == [0x08, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00]);
+    assert([1, 2].toProtobuf!(Wire.fixed).array == [0x08, 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00]);
     assert([1, 2].toProtobuf.array == [0x02, 0x01, 0x02]);
 }
 
@@ -172,7 +176,7 @@ unittest
     {
         @Proto(1) int bar = defaultValue!int;
         @Proto(3) bool qux = defaultValue!bool;
-        @Proto(2, "fixed") long baz = defaultValue!long;
+        @Proto(2, Wire.fixed) long baz = defaultValue!long;
         @Proto(4) string quux = defaultValue!string;
 
         @Proto(5) Foo recursion = defaultValue!Foo;
@@ -245,16 +249,16 @@ unittest
 
         @Proto(20) bool f20 = false;
         @Proto(21) int f21 = 0;
-        @Proto(22, "fixed") int f22 = 0;
-        @Proto(23, "zigzag") int f23 = 0;
+        @Proto(22, Wire.fixed) int f22 = 0;
+        @Proto(23, Wire.zigzag) int f23 = 0;
         @Proto(24) long f24 = 0L;
         @Proto(25) double f25 = 0.0;
         @Proto(26) string f26 = "";
         @Proto(27) bytes f27 = [];
 
         @Proto(30) int[] f30 = [1, 2];
-        @Proto(31, "", Yes.packed) int[] f31 = [1, 2];
-        @Proto(32, "", Yes.packed) int[] f32 = [128, 2];
+        @Proto(31, Wire.none, Yes.packed) int[] f31 = [1, 2];
+        @Proto(32, Wire.none, Yes.packed) int[] f32 = [128, 2];
     }
 
     Foo foo;
@@ -313,13 +317,10 @@ if (isArray!T && !proto.packed && !is(T == string) && !is(T == bytes))
 private auto toProtobufByProto(Proto proto, T)(T value)
 if (isAssociativeArray!T)
 {
-    import std.algorithm : findSplit;
-
     static assert(validateProto!(proto, T));
 
-    enum wires = proto.wire.findSplit(",");
-    enum keyProto = Proto(1, wires[0]);
-    enum valueProto = Proto(2, wires[2]);
+    enum keyProto = Proto(MapFieldTag.key, keyWireToWire(proto.wire));
+    enum valueProto = Proto(MapFieldTag.value, valueWireToWire(proto.wire));
 
     return value
         .byKeyValue
@@ -335,13 +336,13 @@ unittest
 
     assert([1, 2].toProtobufByProto!(Proto(1)).array == [0x08, 0x01, 0x08, 0x02]);
     assert((int[]).init.toProtobufByProto!(Proto(1)).empty);
-    assert([1, 2].toProtobufByProto!(Proto(1, "", Yes.packed)).array == [0x0a, 0x02, 0x01, 0x02]);
-    assert([128, 2].toProtobufByProto!(Proto(1, "", Yes.packed)).array == [0x0a, 0x03, 0x80, 0x01, 0x02]);
-    assert((int[]).init.toProtobufByProto!(Proto(1, "", Yes.packed)).array == [0x0a, 0x00]);
+    assert([1, 2].toProtobufByProto!(Proto(1, Wire.none, Yes.packed)).array == [0x0a, 0x02, 0x01, 0x02]);
+    assert([128, 2].toProtobufByProto!(Proto(1, Wire.none, Yes.packed)).array == [0x0a, 0x03, 0x80, 0x01, 0x02]);
+    assert((int[]).init.toProtobufByProto!(Proto(1, Wire.none, Yes.packed)).array == [0x0a, 0x00]);
 
     assert((int[int]).init.toProtobufByProto!(Proto(1)).empty);
     assert([1: 2].toProtobufByProto!(Proto(1)).array == [0x0a, 0x04, 0x08, 0x01, 0x10, 0x02]);
-    assert([1: 2].toProtobufByProto!(Proto(1, ",fixed")).array ==
+    assert([1: 2].toProtobufByProto!(Proto(1, Wire.fixedValue)).array ==
         [0x0a, 0x07, 0x08, 0x01, 0x15, 0x02, 0x00, 0x00, 0x00]);
 }
 

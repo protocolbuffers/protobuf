@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2017 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -83,10 +83,10 @@ void GenerateOneofField(const FieldDescriptor* field, io::Printer* printer,
   printer->Print(
     "@Proto($number$",
     "number", SimpleItoa(field->number()));
-  if (WireFormat(field).length()) {
+  if (WireEncoding(field).length()) {
     printer->Print(
-      ", \"$format$\"",
-      "format", WireFormat(field));
+      ", $wire$",
+      "wire", WireEncoding(field));
   }
   printer->Print(
     ") $type$ _$name$",
@@ -131,10 +131,10 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
   printer->Print(
     "@Proto($number$",
     "number", SimpleItoa(field->number()));
-  if (WireFormat(field).length()) {
+  if (WireEncoding(field).length()) {
     printer->Print(
-      ", \"$format$\"",
-      "format", WireFormat(field));
+      ", $wire$",
+      "wire", WireEncoding(field));
   }
   printer->Print(
     ") $type$ $name$",

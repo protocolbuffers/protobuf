@@ -215,11 +215,11 @@ WireType wireType(Proto proto, T)()
     {
         return wireType!(proto, ElementType!T);
     }
-    else static if (((is(T == long) || is(T == ulong)) && proto.wire == "fixed") || is(T == double))
+    else static if (((is(T == long) || is(T == ulong)) && proto.wire == Wire.fixed) || is(T == double))
     {
         return WireType.bits64;
     }
-    else static if (((is(T == int) || is(T == uint)) && proto.wire == "fixed") || is(T == float))
+    else static if (((is(T == int) || is(T == uint)) && proto.wire == Wire.fixed) || is(T == float))
     {
         return WireType.bits32;
     }
