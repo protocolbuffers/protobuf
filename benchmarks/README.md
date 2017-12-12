@@ -7,6 +7,18 @@ protobuf language runtime.
 
 The schema for the datasets is described in `benchmarks.proto`.
 
+The benchmark is based on some submodules. To initialize the submodues:
+
+For java:
+```
+$ ./initialize_submodule.sh java
+```
+
+For java:
+```
+$ ./initialize_submodule.sh cpp
+```
+
 To run all the benchmark dataset:
 
 For java:
@@ -26,15 +38,22 @@ To run a specific dataset:
 For java:
 
 ```
-$ make java
+$ make java-benchmark
 $ ./java-benchmark $(specific generated dataset file name)
 ```
 
 For cpp:
 
 ```
-$ make cpp
+$ make cpp-benchmark
 $ ./cpp-benchmark $(specific generated dataset file name)
+```
+
+There's some big testing data not included in the directory initially, you need to 
+run the following command to download the testing data:
+
+```
+$ ./download_data.sh 
 ```
 
 Each data set is in the format of benchmarks.proto:
