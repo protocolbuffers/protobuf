@@ -29,8 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <php.h>
-#include <ext/date/php_date.h>
 #include <stdlib.h>
+
+#ifdef PROTOBUF_ENABLE_TIMESTAMP
+#include <ext/date/php_date.h>
+#endif
 
 #include "protobuf.h"
 #include "utf8.h"
@@ -1121,6 +1124,7 @@ PHP_PROTO_FIELD_ACCESSORS(Timestamp, timestamp, Seconds, "seconds")
 PHP_PROTO_FIELD_ACCESSORS(Timestamp, timestamp, Nanos,   "nanos")
 
 PHP_METHOD(Timestamp, fromDateTime) {
+#ifdef PROTOBUF_ENABLE_TIMESTAMP
   zval* datetime;
   zval member;
 
@@ -1149,9 +1153,13 @@ PHP_METHOD(Timestamp, fromDateTime) {
   storage = message_data(self);
   memory = slot_memory(self->descriptor->layout, storage, field);
   *(int32_t*)memory = 0;
+#else
+  zend_error(E_USER_ERROR, "fromDateTime needs date extension.");
+#endif
 }
 
 PHP_METHOD(Timestamp, toDateTime) {
+#ifdef PROTOBUF_ENABLE_TIMESTAMP
   zval datetime;
   php_date_instantiate(php_date_get_date_ce(), &datetime TSRMLS_CC);
   php_date_obj* dateobj = UNBOX(php_date_obj, &datetime);
@@ -1184,6 +1192,9 @@ PHP_METHOD(Timestamp, toDateTime) {
 
   zval* datetime_ptr = &datetime;
   PHP_PROTO_RETVAL_ZVAL(datetime_ptr);
+#else
+  zend_error(E_USER_ERROR, "toDateTime needs date extension.");
+#endif
 }
 
 // -----------------------------------------------------------------------------
