@@ -112,8 +112,8 @@ namespace Google.Protobuf.WellKnownTypes {
   /// to this format using [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)
   /// with the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one
   /// can use the Joda Time's [`ISODateTimeFormat.dateTime()`](
-  /// http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime--)
-  /// to obtain a formatter capable of generating timestamps in this format.
+  /// http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime--
+  /// ) to obtain a formatter capable of generating timestamps in this format.
   /// </summary>
   public sealed partial class Timestamp : pb::IMessage<Timestamp> {
     private static readonly pb::MessageParser<Timestamp> _parser = new pb::MessageParser<Timestamp>(() => new Timestamp());

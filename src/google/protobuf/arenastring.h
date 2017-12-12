@@ -51,6 +51,18 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+template <typename T>
+class TaggedPtr {
+ public:
+  void Set(T* p) { ptr_ = reinterpret_cast<uintptr_t>(p); }
+  T* Get() const { return reinterpret_cast<T*>(ptr_); }
+
+  bool IsNull() { return ptr_ == 0; }
+
+ private:
+  uintptr_t ptr_;
+};
+
 struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   inline void Set(const ::std::string* default_value,
                   const ::std::string& value, ::google::protobuf::Arena* arena) {
@@ -293,6 +305,15 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   inline bool IsDefault(const ::std::string* default_value) const {
     return ptr_ == default_value;
   }
+
+  // Internal accessors!!!!
+  void UnsafeSetTaggedPointer(TaggedPtr< ::std::string> value) {
+    ptr_ = value.Get();
+  }
+  // Generated code only! An optimization, in certain cases the generated
+  // code is certain we can obtain a string with no default checks and
+  // tag tests.
+  ::std::string* UnsafeMutablePointer() { return ptr_; }
 
  private:
   ::std::string* ptr_;

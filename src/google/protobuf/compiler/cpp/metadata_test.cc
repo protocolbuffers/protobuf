@@ -72,9 +72,7 @@ class CppMetadataTest : public ::testing::Test {
         TestTempDir();
 
     const bool result =
-        atu::CaptureMetadata(filename, cpp_out,
-                             /* meta_file_suffix */ "", &cli, file,
-                             /* outputs */ NULL);
+        atu::RunProtoCompiler(filename, cpp_out, &cli, file);
 
     if (!result) {
       return result;

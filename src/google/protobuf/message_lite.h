@@ -48,6 +48,8 @@
 namespace google {
 namespace protobuf {
 class Arena;
+template <typename T>
+class RepeatedPtrField;
 namespace io {
 class CodedInputStream;
 class CodedOutputStream;
@@ -56,6 +58,7 @@ class ZeroCopyOutputStream;
 }
 namespace internal {
 
+class RepeatedPtrFieldBase;
 class WireFormatLite;
 
 #ifndef SWIG
@@ -379,6 +382,22 @@ class LIBPROTOBUF_EXPORT MessageLite {
 
   virtual uint8* InternalSerializeWithCachedSizesToArray(bool deterministic,
                                                          uint8* target) const;
+
+ protected:
+  // CastToBase allows generated code to cast a RepeatedPtrField<T> to
+  // RepeatedPtrFieldBase. We try to restrict access to RepeatedPtrFieldBase
+  // because it is an implementation detail that user code should not access
+  // directly.
+  template <typename T>
+  static ::google::protobuf::internal::RepeatedPtrFieldBase* CastToBase(
+      ::google::protobuf::RepeatedPtrField<T>* repeated) {
+    return repeated;
+  }
+  template <typename T>
+  static const ::google::protobuf::internal::RepeatedPtrFieldBase& CastToBase(
+      const ::google::protobuf::RepeatedPtrField<T>& repeated) {
+    return repeated;
+  }
 
  private:
   // TODO(gerbens) make this a pure abstract function

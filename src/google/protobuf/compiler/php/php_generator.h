@@ -32,6 +32,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/descriptor.h>
 
 #include <string>
 
@@ -47,7 +48,15 @@ class LIBPROTOC_EXPORT Generator
       const string& parameter,
       GeneratorContext* generator_context,
       string* error) const;
+
 };
+
+// To skip reserved keywords in php, some generated classname are prefixed.
+// Other code generators may need following API to figure out the actual
+// classname.
+std::string GeneratedClassName(const google::protobuf::Descriptor* desc);
+std::string GeneratedClassName(const google::protobuf::EnumDescriptor* desc);
+std::string GeneratedClassName(const google::protobuf::ServiceDescriptor* desc);
 
 }  // namespace php
 }  // namespace compiler

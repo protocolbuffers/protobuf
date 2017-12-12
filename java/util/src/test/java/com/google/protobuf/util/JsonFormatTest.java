@@ -1174,6 +1174,14 @@ public class JsonFormatTest extends TestCase {
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
   }
 
+  public void testParserIntegerEnumValue() throws Exception {
+    TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
+    mergeFromJson("{\n" + "  \"optionalNestedEnum\": 2\n" + "}", actualBuilder);
+
+    TestAllTypes expected = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAZ).build();
+    assertEquals(expected, actualBuilder.build());
+  }
+
   public void testCustomJsonName() throws Exception {
     TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(12345).build();
     assertEquals("{\n" + "  \"@value\": 12345\n" + "}", JsonFormat.printer().print(message));
@@ -1439,6 +1447,13 @@ public class JsonFormatTest extends TestCase {
     builder.clear();
     JsonFormat.parser().merge("{\"optional_int32\": 54321}", builder);
     assertEquals(54321, builder.getOptionalInt32());
+  }
+
+  public void testPrintingEnumsAsInts() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAR).build();
+    assertEquals(
+        "{\n" + "  \"optionalNestedEnum\": 1\n" + "}",
+        JsonFormat.printer().printingEnumsAsInts().print(message));
   }
 
   public void testOmittingInsignificantWhiteSpace() throws Exception {

@@ -30,67 +30,131 @@
 
 package com.google.protocolbuffers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.lang.reflect.Method;
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.Message;
+import com.google.protobuf.benchmarks.Benchmarks.BenchmarkDataset;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProtoBench {
-  
-  private static final long MIN_SAMPLE_TIME_MS = 2 * 1000;
-  private static final long TARGET_TIME_MS = 30 * 1000;
+
+  private static final long MIN_SAMPLE_TIME_MS = 1 * 1000;
+  private static final long TARGET_TIME_MS = 5 * 1000;
 
   private ProtoBench() {
     // Prevent instantiation
   }
   
   public static void main(String[] args) {
-    if (args.length < 2 || (args.length % 2) != 0) {
-      System.err.println("Usage: ProtoBench <descriptor type name> <input data>");
-      System.err.println("The descriptor type name is the fully-qualified message name,");
-      System.err.println("e.g. com.google.protocolbuffers.benchmark.Message1");
-      System.err.println("(You can specify multiple pairs of descriptor type name and input data.)");
+    if (args.length < 1) {
+      System.err.println("Usage: ./java-benchmark <input data>");
+      System.err.println("input data is in the format of \"benchmarks.proto\"");
       System.exit(1);
     }
     boolean success = true;
-    for (int i = 0; i < args.length; i += 2) {
-      success &= runTest(args[i], args[i + 1]);
+    for (int i = 0; i < args.length; i++) {
+      success &= runTest(args[i]);
     }
     System.exit(success ? 0 : 1);
   }
-
-  /**
-   * Runs a single test. Error messages are displayed to stderr, and the return value
-   * indicates general success/failure.
-   */
-  public static boolean runTest(String type, String file) {
-    System.out.println("Benchmarking " + type + " with file " + file);
-    final Message defaultMessage;
-    try {
-      Class<?> clazz = Class.forName(type);
-      Method method = clazz.getDeclaredMethod("getDefaultInstance");
-      defaultMessage = (Message) method.invoke(null);
-    } catch (Exception e) {
-      // We want to do the same thing with all exceptions. Not generally nice,
-      // but this is slightly different.
-      System.err.println("Unable to get default message for " + type);
-      return false;
+  
+  public static ExtensionRegistry getExtensionsRegistry(BenchmarkDataset benchmarkDataset) {
+    ExtensionRegistry extensions = ExtensionRegistry.newInstance();
+    if (benchmarkDataset.getMessageName().equals("benchmarks.google_message3.GoogleMessage3")) {
+      benchmarks.google_message3.BenchmarkMessage38.registerAllExtensions(extensions);
+      benchmarks.google_message3.BenchmarkMessage37.registerAllExtensions(extensions);
+      benchmarks.google_message3.BenchmarkMessage36.registerAllExtensions(extensions);
+      benchmarks.google_message3.BenchmarkMessage35.registerAllExtensions(extensions);
+      benchmarks.google_message3.BenchmarkMessage34.registerAllExtensions(extensions);
+      benchmarks.google_message3.BenchmarkMessage33.registerAllExtensions(extensions);
+      benchmarks.google_message3.BenchmarkMessage32.registerAllExtensions(extensions);
+      benchmarks.google_message3.BenchmarkMessage31.registerAllExtensions(extensions);
+      benchmarks.google_message3.BenchmarkMessage3.registerAllExtensions(extensions);
+    } else if (benchmarkDataset.getMessageName().equals(
+        "benchmarks.google_message4.GoogleMessage4")) {
+      benchmarks.google_message4.BenchmarkMessage43.registerAllExtensions(extensions);
+      benchmarks.google_message4.BenchmarkMessage42.registerAllExtensions(extensions);
+      benchmarks.google_message4.BenchmarkMessage41.registerAllExtensions(extensions);
+      benchmarks.google_message4.BenchmarkMessage4.registerAllExtensions(extensions);      
     }
     
+    return extensions;
+  }
+
+  /**
+   * Return an message instance for one specific dataset, and register the extensions for that 
+   * message. 
+   */
+  public static Message registerBenchmarks(BenchmarkDataset benchmarkDataset) {
+    if (benchmarkDataset.getMessageName().equals("benchmarks.proto3.GoogleMessage1")) {
+      return com.google.protobuf.benchmarks.BenchmarkMessage1Proto3.GoogleMessage1
+          .getDefaultInstance();
+    } else if (benchmarkDataset.getMessageName().equals("benchmarks.proto2.GoogleMessage1")) {
+      return com.google.protobuf.benchmarks.BenchmarkMessage1Proto2.GoogleMessage1
+          .getDefaultInstance();
+    } else if (benchmarkDataset.getMessageName().equals("benchmarks.proto2.GoogleMessage2")) {
+      return com.google.protobuf.benchmarks.BenchmarkMessage2.GoogleMessage2.getDefaultInstance();
+    } else if (benchmarkDataset.getMessageName().
+        equals("benchmarks.google_message3.GoogleMessage3")) {
+      return benchmarks.google_message3.BenchmarkMessage3.GoogleMessage3.getDefaultInstance();
+    } else if (benchmarkDataset.getMessageName().
+        equals("benchmarks.google_message4.GoogleMessage4")) {
+      return benchmarks.google_message4.BenchmarkMessage4.GoogleMessage4.getDefaultInstance();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Runs a single test. Error messages are displayed to stderr, and the return value indicates
+   * general success/failure.
+   */
+  public static boolean runTest(String file) {
+    final Message defaultMessage;
+    BenchmarkDataset benchmarkDataset;
+    ExtensionRegistry extensions;
+    final byte[] inputData;
+
     try {
-      final byte[] inputData = readAllBytes(file);
-      final ByteArrayInputStream inputStream = new ByteArrayInputStream(inputData);
-      final ByteString inputString = ByteString.copyFrom(inputData);
-      final Message sampleMessage = defaultMessage.newBuilderForType().mergeFrom(inputString).build();
+      inputData = readAllBytes(file);
+      benchmarkDataset = BenchmarkDataset.parseFrom(inputData);
+    } catch (IOException e) {
+      System.err.println("Unable to get input data");
+      return false;
+    }
+    defaultMessage = registerBenchmarks(benchmarkDataset);
+    extensions = getExtensionsRegistry(benchmarkDataset);
+    if (defaultMessage == null) {
+      System.err.println("Unable to get default message " + benchmarkDataset.getMessageName());
+      return false;
+    }
+    System.out.println("Benchmarking " + benchmarkDataset.getMessageName() + " with file " + file);
+
+    try {
+      List<byte[]> inputDataList = new ArrayList<byte[]>();
+      List<ByteArrayInputStream> inputStreamList = new ArrayList<ByteArrayInputStream>();
+      List<ByteString> inputStringList = new ArrayList<ByteString>();
+      List<Message> sampleMessageList = new ArrayList<Message>();
+
+      for (int i = 0; i < benchmarkDataset.getPayloadCount(); i++) {
+        byte[] singleInputData = benchmarkDataset.getPayload(i).toByteArray();
+        inputDataList.add(benchmarkDataset.getPayload(i).toByteArray());
+        inputStreamList.add(new ByteArrayInputStream(benchmarkDataset.getPayload(i).toByteArray()));
+        inputStringList.add(benchmarkDataset.getPayload(i));
+        sampleMessageList.add(
+            defaultMessage.newBuilderForType().mergeFrom(singleInputData, extensions).build());
+      }
+
       FileOutputStream devNullTemp = null;
       CodedOutputStream reuseDevNullTemp = null;
       try {
@@ -101,48 +165,100 @@ public class ProtoBench {
       }
       final FileOutputStream devNull = devNullTemp;
       final CodedOutputStream reuseDevNull = reuseDevNullTemp;
-      benchmark("Serialize to byte string", inputData.length, new Action() {
-        public void execute() { sampleMessage.toByteString(); }
-      });      
-      benchmark("Serialize to byte array", inputData.length, new Action() {
-        public void execute() { sampleMessage.toByteArray(); }
-      });
-      benchmark("Serialize to memory stream", inputData.length, new Action() {
-        public void execute() throws IOException { 
-          sampleMessage.writeTo(new ByteArrayOutputStream()); 
-        }
-      });
+      benchmark(
+          "Serialize to byte string",
+          inputData.length,
+          new Action() {
+            public void execute() {
+              for (int i = 0; i < sampleMessageList.size(); i++) {
+                sampleMessageList.get(i).toByteString();
+              }
+            }
+          });
+      benchmark(
+          "Serialize to byte array",
+          inputData.length,
+          new Action() {
+            public void execute() {
+              for (int i = 0; i < sampleMessageList.size(); i++) {
+                sampleMessageList.get(i).toByteString();
+              }
+            }
+          });
+      benchmark(
+          "Serialize to memory stream",
+          inputData.length,
+          new Action() {
+            public void execute() throws IOException {
+              ByteArrayOutputStream output = new ByteArrayOutputStream();
+              for (int i = 0; i < sampleMessageList.size(); i++) {
+                sampleMessageList.get(i).writeTo(output);
+              }
+            }
+          });
       if (devNull != null) {
-        benchmark("Serialize to /dev/null with FileOutputStream", inputData.length, new Action() {
-          public void execute() throws IOException {
-            sampleMessage.writeTo(devNull);
-          }
-        });
-        benchmark("Serialize to /dev/null reusing FileOutputStream", inputData.length, new Action() {
-          public void execute() throws IOException {
-            sampleMessage.writeTo(reuseDevNull);
-            reuseDevNull.flush();  // force the write to the OutputStream
-          }
-        });
+        benchmark(
+            "Serialize to /dev/null with FileOutputStream",
+            inputData.length,
+            new Action() {
+              public void execute() throws IOException {
+                for (int i = 0; i < sampleMessageList.size(); i++) {
+                  sampleMessageList.get(i).writeTo(devNull);
+                }
+              }
+            });
+        benchmark(
+            "Serialize to /dev/null reusing FileOutputStream",
+            inputData.length,
+            new Action() {
+              public void execute() throws IOException {
+                for (int i = 0; i < sampleMessageList.size(); i++) {
+                  sampleMessageList.get(i).writeTo(reuseDevNull);
+                  reuseDevNull.flush(); // force the write to the OutputStream
+                }
+              }
+            });
       }
-      benchmark("Deserialize from byte string", inputData.length, new Action() {
-        public void execute() throws IOException { 
-          defaultMessage.newBuilderForType().mergeFrom(inputString).build();
-        }
-      });
-      benchmark("Deserialize from byte array", inputData.length, new Action() {
-        public void execute() throws IOException { 
-          defaultMessage.newBuilderForType()
-            .mergeFrom(CodedInputStream.newInstance(inputData)).build();
-        }
-      });
-      benchmark("Deserialize from memory stream", inputData.length, new Action() {
-        public void execute() throws IOException { 
-          defaultMessage.newBuilderForType()
-            .mergeFrom(CodedInputStream.newInstance(inputStream)).build();
-          inputStream.reset();
-        }
-      });
+      benchmark(
+          "Deserialize from byte string",
+          inputData.length,
+          new Action() {
+            public void execute() throws IOException {
+              for (int i = 0; i < inputStringList.size(); i++) {
+                defaultMessage
+                    .newBuilderForType()
+                    .mergeFrom(inputStringList.get(i), extensions)
+                    .build();
+              }
+            }
+          });
+      benchmark(
+          "Deserialize from byte array",
+          inputData.length,
+          new Action() {
+            public void execute() throws IOException {
+              for (int i = 0; i < inputDataList.size(); i++) {
+                defaultMessage
+                    .newBuilderForType()
+                    .mergeFrom(CodedInputStream.newInstance(inputDataList.get(i)), extensions)
+                    .build();
+              }
+            }
+          });
+      benchmark(
+          "Deserialize from memory stream",
+          inputData.length,
+          new Action() {
+            public void execute() throws IOException {
+              for (int i = 0; i < inputStreamList.size(); i++) {
+                defaultMessage
+                    .newBuilderForType()
+                    .mergeFrom(CodedInputStream.newInstance(inputStreamList.get(i)), extensions)
+                    .build();
+                inputStreamList.get(i).reset();
+              }
+            }
+          });
       System.out.println();
       return true;
     } catch (Exception e) {

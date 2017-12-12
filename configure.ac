@@ -17,7 +17,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.4.1],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.5.0],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -51,6 +51,16 @@ AC_ARG_WITH([zlib],
   [AS_HELP_STRING([--with-zlib],
     [include classes for streaming compressed data in and out @<:@default=check@:>@])],
   [],[with_zlib=check])
+
+AC_ARG_WITH([zlib-include],
+  [AS_HELP_STRING([--with-zlib-include=PATH],
+    [zlib include directory])],
+  [CPPFLAGS="-I$withval $CPPFLAGS"])
+
+AC_ARG_WITH([zlib-lib],
+  [AS_HELP_STRING([--with-zlib-lib=PATH],
+    [zlib lib directory])],
+  [LDFLAGS="-L$withval $LDFLAGS"])
 
 AC_ARG_WITH([protoc],
   [AS_HELP_STRING([--with-protoc=COMMAND],

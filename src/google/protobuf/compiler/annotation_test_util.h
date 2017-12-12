@@ -59,25 +59,20 @@ struct ExpectedOutput {
 // directory.
 void AddFile(const string& filename, const string& data);
 
-// Tries to capture a FileDescriptorProto, GeneratedCodeInfo, and output
-// code from the previously added file with name `filename`.
+// Runs proto compiler. Captures proto file structrue in FileDescriptorProto.
+// Files will be generated in TestTempDir() folder. Callers of this
+// function must read generated files themselves.
 //
 // filename: source .proto file used to generate code.
 // plugin_specific_args: command line arguments specific to current generator.
 //     For Java, this value might be "--java_out=annotate_code:test_temp_dir"
-// meta_file_suffix: suffix of meta files that contain annotations. For Java
-//     it is ".pb.meta" because for file Foo.java meta file is Foo.java.pb.meta
 // cli: instance of command line interface to run generator. See Java's
 //     annotation_unittest.cc for an example of how to initialize it.
 // file: output parameter, will be set to the descriptor of the proto file
 //     specified in filename.
-// outputs: output parameter. If not NULL, each ExpectedOutput in the vector
-//     should have its file_path set; CaptureMetadata will fill the rest of
-//     the fields appropriately.
-bool CaptureMetadata(const string& filename, const string& plugin_specific_args,
-                     const string& meta_file_suffix, CommandLineInterface* cli,
-                     FileDescriptorProto* file,
-                     std::vector<ExpectedOutput>* outputs);
+bool RunProtoCompiler(const string& filename,
+                      const string& plugin_specific_args,
+                      CommandLineInterface* cli, FileDescriptorProto* file);
 
 bool DecodeMetadata(const string& path, GeneratedCodeInfo* info);
 

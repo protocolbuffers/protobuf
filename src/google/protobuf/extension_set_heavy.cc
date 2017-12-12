@@ -259,8 +259,10 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
 
   // RepeatedPtrField<Message> does not know how to Add() since it cannot
   // allocate an abstract object, so we have to be tricky.
-  MessageLite* result = extension->repeated_message_value
-      ->AddFromCleared<GenericTypeHandler<MessageLite> >();
+  MessageLite* result =
+      reinterpret_cast< ::google::protobuf::internal::RepeatedPtrFieldBase*>(
+          extension->repeated_message_value)
+          ->AddFromCleared<GenericTypeHandler<MessageLite> >();
   if (result == NULL) {
     const MessageLite* prototype;
     if (extension->repeated_message_value->size() == 0) {
@@ -391,7 +393,9 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
         // type handler.
         total_size +=
             sizeof(*repeated_message_value) +
-            RepeatedMessage_SpaceUsedExcludingSelfLong(repeated_message_value);
+            RepeatedMessage_SpaceUsedExcludingSelfLong(
+                reinterpret_cast< ::google::protobuf::internal::RepeatedPtrFieldBase*>(
+                    repeated_message_value));
         break;
     }
   } else {

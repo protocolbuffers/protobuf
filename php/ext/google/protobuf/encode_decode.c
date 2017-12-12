@@ -1614,3 +1614,12 @@ PHP_METHOD(Message, mergeFromJsonString) {
     stackenv_uninit(&se);
   }
 }
+
+PHP_METHOD(Message, discardUnknownFields) {
+  MessageHeader* msg = UNBOX(MessageHeader, getThis());
+  stringsink* unknown = DEREF(message_data(msg), 0, stringsink*);
+  if (unknown != NULL) {
+    stringsink_uninit(unknown);
+    DEREF(message_data(msg), 0, stringsink*) = NULL;
+  }
+}

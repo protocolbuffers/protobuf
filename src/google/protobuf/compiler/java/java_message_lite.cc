@@ -1005,37 +1005,6 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFromStream(
         "  done = true;\n"
         "  break;\n");
 
-    if (descriptor_->extension_range_count() > 0) {
-      if (descriptor_->options().message_set_wire_format()) {
-        printer->Print(
-            "default: {\n"
-            "  if (!parseUnknownFieldAsMessageSet(\n"
-            "      getDefaultInstanceForType(), input, extensionRegistry,\n"
-            "      tag)) {\n"
-            "    done = true;\n"  // it's an endgroup tag
-            "  }\n"
-            "  break;\n"
-            "}\n");
-      } else {
-        printer->Print(
-            "default: {\n"
-            "  if (!parseUnknownField(getDefaultInstanceForType(),\n"
-            "      input, extensionRegistry, tag)) {\n"
-            "    done = true;\n"  // it's an endgroup tag
-            "  }\n"
-            "  break;\n"
-            "}\n");
-      }
-    } else {
-      printer->Print(
-          "default: {\n"
-          "  if (!parseUnknownField(tag, input)) {\n"
-          "    done = true;\n"  // it's an endgroup tag
-          "  }\n"
-          "  break;\n"
-          "}\n");
-    }
-
     google::protobuf::scoped_array<const FieldDescriptor* > sorted_fields(
         SortFieldsByNumber(descriptor_));
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -1071,6 +1040,37 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFromStream(
             "  break;\n"
             "}\n");
       }
+    }
+
+    if (descriptor_->extension_range_count() > 0) {
+      if (descriptor_->options().message_set_wire_format()) {
+        printer->Print(
+            "default: {\n"
+            "  if (!parseUnknownFieldAsMessageSet(\n"
+            "      getDefaultInstanceForType(), input, extensionRegistry,\n"
+            "      tag)) {\n"
+            "    done = true;\n"  // it's an endgroup tag
+            "  }\n"
+            "  break;\n"
+            "}\n");
+      } else {
+        printer->Print(
+            "default: {\n"
+            "  if (!parseUnknownField(getDefaultInstanceForType(),\n"
+            "      input, extensionRegistry, tag)) {\n"
+            "    done = true;\n"  // it's an endgroup tag
+            "  }\n"
+            "  break;\n"
+            "}\n");
+      }
+    } else {
+      printer->Print(
+          "default: {\n"
+          "  if (!parseUnknownField(tag, input)) {\n"
+          "    done = true;\n"  // it's an endgroup tag
+          "  }\n"
+          "  break;\n"
+          "}\n");
     }
 
     printer->Outdent();

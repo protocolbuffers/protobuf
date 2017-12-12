@@ -169,13 +169,6 @@ const FieldMask& FieldMask::default_instance() {
   return *internal_default_instance();
 }
 
-FieldMask* FieldMask::New(::google::protobuf::Arena* arena) const {
-  FieldMask* n = new FieldMask;
-  if (arena != NULL) {
-    arena->Own(n);
-  }
-  return n;
-}
 
 void FieldMask::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
@@ -355,7 +348,7 @@ void FieldMask::Swap(FieldMask* other) {
 }
 void FieldMask::InternalSwap(FieldMask* other) {
   using std::swap;
-  paths_.InternalSwap(&other->paths_);
+  paths_.InternalSwap(CastToBase(&other->paths_));
   _internal_metadata_.Swap(&other->_internal_metadata_);
   swap(_cached_size_, other->_cached_size_);
 }
@@ -367,6 +360,13 @@ void FieldMask::InternalSwap(FieldMask* other) {
 
 
 // @@protoc_insertion_point(namespace_scope)
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::google::protobuf::FieldMask* Arena::Create< ::google::protobuf::FieldMask >(Arena* arena) {
+  return Arena::CreateInternal< ::google::protobuf::FieldMask >(arena);
+}
 }  // namespace protobuf
 }  // namespace google
 

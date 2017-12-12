@@ -67,7 +67,6 @@ using protobuf_unittest::TestOneof2;
 using protobuf_unittest::TestEmptyMessage;
 
 namespace protobuf {
-namespace {
 
 class Notifier {
  public:
@@ -270,7 +269,7 @@ TEST(ArenaTest, InitialBlockTooSmall) {
   // Construct a small (64 byte) initial block of memory to be used by the
   // arena allocator; then, allocate an object which will not fit in the
   // initial block.
-  std::vector<char> arena_block(72);
+  std::vector<char> arena_block(96);
   ArenaOptions options;
   options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
@@ -1299,12 +1298,12 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   options.initial_block_size = 0;
   Arena arena_3(options);
   EXPECT_EQ(0, arena_3.SpaceUsed());
-  ::google::protobuf::Arena::CreateArray<char>(&arena_3, 182);
+  ::google::protobuf::Arena::CreateArray<char>(&arena_3, 160);
   EXPECT_EQ(256, arena_3.SpaceAllocated());
-  EXPECT_EQ(Align8(182), arena_3.SpaceUsed());
+  EXPECT_EQ(Align8(160), arena_3.SpaceUsed());
   ::google::protobuf::Arena::CreateArray<char>(&arena_3, 70);
   EXPECT_EQ(256 + 512, arena_3.SpaceAllocated());
-  EXPECT_EQ(Align8(182) + Align8(70), arena_3.SpaceUsed());
+  EXPECT_EQ(Align8(160) + Align8(70), arena_3.SpaceUsed());
   EXPECT_EQ(256 + 512, arena_3.Reset());
 }
 
@@ -1345,6 +1344,13 @@ TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaAllocatedMessages) {
   const ArenaMessage* const_pointer_to_message = &message;
   EXPECT_EQ(NULL, Arena::GetArena(&message));
   EXPECT_EQ(NULL, Arena::GetArena(const_pointer_to_message));
+}
+
+TEST(ArenaTest, AddCleanup) {
+  ::google::protobuf::Arena arena;
+  for (int i = 0; i < 100; i++) {
+    arena.Own(new int);
+  }
 }
 
 TEST(ArenaTest, UnsafeSetAllocatedOnArena) {
@@ -1405,13 +1411,20 @@ uint32 ArenaHooksTestUtil::num_reset = 0;
 uint32 ArenaHooksTestUtil::num_destruct = 0;
 const int ArenaHooksTestUtil::kCookieValue;
 
+class ArenaOptionsTestFriend {
+ public:
+  static void Set(::google::protobuf::ArenaOptions* options) {
+    options->on_arena_init = ArenaHooksTestUtil::on_init;
+    options->on_arena_allocation = ArenaHooksTestUtil::on_allocation;
+    options->on_arena_reset = ArenaHooksTestUtil::on_reset;
+    options->on_arena_destruction = ArenaHooksTestUtil::on_destruction;
+  }
+};
+
 // Test the hooks are correctly called and that the cookie is passed.
 TEST(ArenaTest, ArenaHooksSanity) {
   ::google::protobuf::ArenaOptions options;
-  options.on_arena_init = ArenaHooksTestUtil::on_init;
-  options.on_arena_allocation = ArenaHooksTestUtil::on_allocation;
-  options.on_arena_reset = ArenaHooksTestUtil::on_reset;
-  options.on_arena_destruction = ArenaHooksTestUtil::on_destruction;
+  ArenaOptionsTestFriend::Set(&options);
 
   // Scope for defining the arena
   {
@@ -1433,6 +1446,5 @@ TEST(ArenaTest, ArenaHooksSanity) {
 }
 
 
-}  // namespace
 }  // namespace protobuf
 }  // namespace google

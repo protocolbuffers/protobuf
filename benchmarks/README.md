@@ -7,19 +7,42 @@ protobuf language runtime.
 
 The schema for the datasets is described in `benchmarks.proto`.
 
-Generate the data sets like so:
+To run all the benchmark dataset:
+
+For java:
 
 ```
-$ make
-$ ./generate-datasets
-Wrote dataset: dataset.google_message1_proto3.pb
-Wrote dataset: dataset.google_message1_proto2.pb
-Wrote dataset: dataset.google_message2.pb
-$
+$ make java
 ```
 
-Each data set will be written to its own file.  Benchmarks will
-likely want to run several benchmarks against each data set (parse,
+For cpp:
+
+```
+$ make cpp
+```
+
+To run a specific dataset:
+
+For java:
+
+```
+$ make java
+$ ./java-benchmark $(specific generated dataset file name)
+```
+
+For cpp:
+
+```
+$ make cpp
+$ ./cpp-benchmark $(specific generated dataset file name)
+```
+
+Each data set is in the format of benchmarks.proto:
+1. name is the benchmark dataset's name.
+2. message_name is the benchmark's message type full name (including package and message name)
+3. payload is the list of raw data.
+
+Benchmark likely want to run several benchmarks against each data set (parse,
 serialize, possibly JSON, possibly using different APIs, etc).
 
 We would like to add more data sets.  In general we will favor data sets

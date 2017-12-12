@@ -32,6 +32,8 @@
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
+import warnings
+
 
 class Error(Exception):
   pass
@@ -64,21 +66,20 @@ class DescriptorDatabase(object):
     elif self._file_desc_protos_by_file[proto_name] != file_desc_proto:
       raise DescriptorDatabaseConflictingDefinitionError(
           '%s already added, but with different descriptor.' % proto_name)
+    else:
+      return
 
     # Add all the top-level descriptors to the index.
     package = file_desc_proto.package
     for message in file_desc_proto.message_type:
-      self._file_desc_protos_by_symbol.update(
-          (name, file_desc_proto) for name in _ExtractSymbols(message, package))
+      for name in _ExtractSymbols(message, package):
+        self._AddSymbol(name, file_desc_proto)
     for enum in file_desc_proto.enum_type:
-      self._file_desc_protos_by_symbol[
-          '.'.join((package, enum.name))] = file_desc_proto
+      self._AddSymbol(('.'.join((package, enum.name))), file_desc_proto)
     for extension in file_desc_proto.extension:
-      self._file_desc_protos_by_symbol[
-          '.'.join((package, extension.name))] = file_desc_proto
+      self._AddSymbol(('.'.join((package, extension.name))), file_desc_proto)
     for service in file_desc_proto.service:
-      self._file_desc_protos_by_symbol[
-          '.'.join((package, service.name))] = file_desc_proto
+      self._AddSymbol(('.'.join((package, service.name))), file_desc_proto)
 
   def FindFileByName(self, name):
     """Finds the file descriptor proto by file name.
@@ -131,6 +132,15 @@ class DescriptorDatabase(object):
       # protobuf C++.
       top_level, _, _ = symbol.rpartition('.')
       return self._file_desc_protos_by_symbol[top_level]
+
+  def _AddSymbol(self, name, file_desc_proto):
+    if name in self._file_desc_protos_by_symbol:
+      warn_msg = ('Conflict register for file "' + file_desc_proto.name +
+                  '": ' + name +
+                  ' is already defined in file "' +
+                  self._file_desc_protos_by_symbol[name].name + '"')
+      warnings.warn(warn_msg, RuntimeWarning)
+    self._file_desc_protos_by_symbol[name] = file_desc_proto
 
 
 def _ExtractSymbols(desc_proto, package):

@@ -206,12 +206,12 @@ TEST(FieldMaskUtilTest, TestIsValidFieldMask) {
 
 TEST(FieldMaskUtilTest, TestGetFieldMaskForAllFields) {
   FieldMask mask;
-  FieldMaskUtil::GetFieldMaskForAllFields<TestAllTypes::NestedMessage>(&mask);
+  mask = FieldMaskUtil::GetFieldMaskForAllFields<TestAllTypes::NestedMessage>();
   EXPECT_EQ(1, mask.paths_size());
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("bb", mask));
 
-  FieldMaskUtil::GetFieldMaskForAllFields<TestAllTypes>(&mask);
-  EXPECT_EQ(76, mask.paths_size());
+  mask = FieldMaskUtil::GetFieldMaskForAllFields<TestAllTypes>();
+  EXPECT_EQ(75, mask.paths_size());
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_int32", mask));
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_int64", mask));
   EXPECT_TRUE(FieldMaskUtil::IsPathInFieldMask("optional_uint32", mask));

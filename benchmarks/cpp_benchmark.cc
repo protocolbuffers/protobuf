@@ -28,13 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <glob.h>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include "benchmark/benchmark_api.h"
 #include "benchmarks.pb.h"
-#include "benchmark_messages_proto2.pb.h"
-#include "benchmark_messages_proto3.pb.h"
+#include "datasets/google_message1/benchmark_message1_proto2.pb.h"
+#include "datasets/google_message1/benchmark_message1_proto3.pb.h"
+#include "datasets/google_message2/benchmark_message2.pb.h"
+#include "datasets/google_message3/benchmark_message3.pb.h"
+#include "datasets/google_message4/benchmark_message4.pb.h"
+
 
 #define PREFIX "dataset."
 #define SUFFIX ".pb"
@@ -219,6 +222,14 @@ void RegisterBenchmarks(const std::string& dataset_bytes) {
     RegisterBenchmarksForType<benchmarks::proto2::GoogleMessage1>(dataset);
   } else if (dataset.message_name() == "benchmarks.proto2.GoogleMessage2") {
     RegisterBenchmarksForType<benchmarks::proto2::GoogleMessage2>(dataset);
+  } else if (dataset.message_name() ==
+      "benchmarks.google_message3.GoogleMessage3") {
+    RegisterBenchmarksForType
+    <benchmarks::google_message3::GoogleMessage3>(dataset);
+  } else if (dataset.message_name() ==
+      "benchmarks.google_message4.GoogleMessage4") {
+    RegisterBenchmarksForType
+    <benchmarks::google_message4::GoogleMessage4>(dataset);
   } else {
     std::cerr << "Unknown message type: " << dataset.message_name();
     exit(1);
@@ -226,15 +237,15 @@ void RegisterBenchmarks(const std::string& dataset_bytes) {
 }
 
 int main(int argc, char *argv[]) {
-  glob_t glob_result;
-  if (glob("dataset.*.pb", 0, NULL, &glob_result) != 0) {
-    fprintf(stderr, "No dataset files found.\n");
+  if (argc == 1) {
+    std::cerr << "Usage: ./cpp-benchmark <input data>" << std::endl;
+    std::cerr << "input data is in the format of \"benchmarks.proto\""
+        << std::endl;
     return 1;
-  }
-
-  for (size_t i = 0; i < glob_result.gl_pathc; i++) {
-    fprintf(stderr, "Found input dataset: %s\n", glob_result.gl_pathv[i]);
-    RegisterBenchmarks(ReadFile(glob_result.gl_pathv[i]));
+  } else {
+    for (int i = 1; i < argc; i++) {
+      RegisterBenchmarks(ReadFile(argv[i]));
+    }
   }
 
   ::benchmark::Initialize(&argc, argv);

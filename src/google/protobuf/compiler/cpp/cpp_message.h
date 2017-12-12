@@ -106,6 +106,9 @@ class MessageGenerator {
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* printer);
 
+  // Generate source file code that should go outside any namespace.
+  void GenerateSourceInProto2Namespace(io::Printer* printer);
+
  private:
   // Generate declarations and definitions of accessors for fields.
   void GenerateDependentBaseClassDefinition(io::Printer* printer);

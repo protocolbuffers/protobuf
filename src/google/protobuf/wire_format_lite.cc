@@ -34,9 +34,6 @@
 
 #include <google/protobuf/wire_format_lite_inl.h>
 
-#ifdef __SSE_4_1__
-#include <immintrin.h>
-#endif
 #include <stack>
 #include <string>
 #include <vector>
@@ -635,12 +632,12 @@ bool WireFormatLite::VerifyUtf8String(const char* data,
   return true;
 }
 
-#ifdef __SSE_4_1__
-template<typename T, bool ZigZag, bool SignExtended>
-static size_t VarintSize(
-    const T* data, const int n,
-    const internal::enable_if<sizeof(T) == 4>::type* = NULL) {
+// this code is deliberately written such that clang makes it into really
+// efficient SSE code.
+template<bool ZigZag, bool SignExtended, typename T>
+static size_t VarintSize(const T* data, const int n) {
 #if __cplusplus >= 201103L
+  static_assert(sizeof(T) == 4, "This routine only works for 32 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert((std::is_unsigned<T>::value ^ ZigZag) ||
                 std::is_signed<T>::value,
@@ -649,101 +646,83 @@ static size_t VarintSize(
   static_assert((std::is_unsigned<T>::value ^ SignExtended) ||
                 std::is_signed<T>::value,
                 "Cannot SignExtended unsigned types");
+  static_assert(!(SignExtended && ZigZag),
+                "Cannot SignExtended and ZigZag on the same type");
 #endif
-
-  union vus32 {
-    uint32  u[4];
-    int32   s[4];
-    __m128i v;
-  };
-
-  static const vus32 ones = {{1, 1, 1, 1}};
-
-  // CodedOutputStream::VarintSize32SignExtended returns 10 for negative
-  // numbers.  We can apply the UInt32Size algorithm, and simultaneously logical
-  // shift the MSB into the LSB to determine if it is negative.
-  static const vus32 fives = {{5, 5, 5, 5}};
-
-  // sum is the vectorized-output of calling CodedOutputStream::VarintSize32 on
-  // the processed elements.
-  //
-  // msb_sum is the count of set most-significant bits.  When computing the
-  // vectorized CodedOutputStream::VarintSize32SignExtended, negative values
-  // have the most significant bit set.  VarintSize32SignExtended returns 10 and
-  // VarintSize32 returns 5.  msb_sum allows us to compute:
-  //   VarintSize32SignExtended = msb_sum * 5 + VarintSize32
-  vus32 sum, v, msb_sum;
-  sum.v = _mm_setzero_si128();
-  msb_sum.v = _mm_setzero_si128();
-
-  int rounded = n & ~(3);
-  int i;
-  for (i = 0; i < rounded; i += 4) {
-    v.v = _mm_loadu_si128(reinterpret_cast<const __m128i*>(&data[i]));
-
+  uint32 sum = n;
+  uint32 msb_sum = 0;
+  for (int i = 0; i < n; i++) {
+    uint32 x = data[i];
     if (ZigZag) {
-      // Note:  the right-shift must be arithmetic
-      v.v = _mm_xor_si128(_mm_slli_epi32(v.v, 1), _mm_srai_epi32(v.v, 31));
-    }
-
-    sum.v = _mm_add_epi32(sum.v, ones.v);
-    if (SignExtended) {
-      msb_sum.v = _mm_add_epi32(msb_sum.v, _mm_srli_epi32(v.v, 31));
-    }
-
-    v.v = _mm_srli_epi32(v.v, 7);
-
-    for (int j = 0; j < 4; j++) {
-      __m128i min = _mm_min_epi32(v.v, ones.v);
-
-      sum.v = _mm_add_epi32(sum.v, min);
-      v.v   = _mm_srli_epi32(v.v, 7);
-    }
-  }
-
-  if (SignExtended) {
-    vus32 extensions;
-    extensions.v = _mm_mullo_epi32(msb_sum.v, fives.v);
-
-    sum.v = _mm_add_epi32(sum.v, extensions.v);
-  }
-
-  // TODO(ckennelly): Can we avoid the sign conversion?
-  size_t out = _mm_cvtsi128_si32(
-      _mm_hadd_epi32(_mm_hadd_epi32(sum.v, ones.v), ones.v));
-
-  // Finish tail.
-  for (; i < n; i++) {
-    if (ZigZag) {
-      out += WireFormatLite::SInt32Size(data[i]);
+      x = WireFormatLite::ZigZagEncode32(x);
     } else if (SignExtended) {
-      out += WireFormatLite::Int32Size(data[i]);
-    } else {
-      out += WireFormatLite::UInt32Size(data[i]);
+      msb_sum += x >> 31;
     }
+    // clang is so smart that it produces optimal SSE sequence unrolling
+    // the loop 8 ints at a time. With a sequence of 4
+    // cmpres = cmpgt x, sizeclass  ( -1 or 0)
+    // sum = sum - cmpres
+    if (x > 0x7F) sum++;
+    if (x > 0x3FFF) sum++;
+    if (x > 0x1FFFFF) sum++;
+    if (x > 0xFFFFFFF) sum++;
   }
-
-  return out;
+  if (SignExtended) sum += msb_sum * 5;
+  return sum;
 }
 
+template<bool ZigZag, typename T>
+static size_t VarintSize64(const T* data, const int n) {
+#if __cplusplus >= 201103L
+  static_assert(sizeof(T) == 8, "This routine only works for 64 bit integers");
+  // is_unsigned<T> => !ZigZag
+  static_assert(!ZigZag || !std::is_unsigned<T>::value,
+                "Cannot ZigZag encode unsigned types");
+#endif
+  uint64 sum = n;
+  for (int i = 0; i < n; i++) {
+    uint64 x = data[i];
+    if (ZigZag) {
+      x = WireFormatLite::ZigZagEncode64(x);
+    }
+    // First step is a binary search, we can't branch in sse so we use the
+    // result of the compare to adjust sum and appropriately. This code is
+    // written to make clang recognize the vectorization.
+    uint64 tmp = x >= (static_cast<uint64>(1) << 35) ? -1 : 0;
+    sum += 5 & tmp;
+    x >>= 35 & tmp;
+    if (x > 0x7F) sum++;
+    if (x > 0x3FFF) sum++;
+    if (x > 0x1FFFFF) sum++;
+    if (x > 0xFFFFFFF) sum++;
+  }
+  return sum;
+}
+
+// GCC does not recognize the vectorization opportunity
+// and other platforms are untested, in those cases using the optimized
+// varint size routine for each element is faster.
+// Hence we enable it only for clang
+#if defined(__SSE__) && defined(__clang__)
 size_t WireFormatLite::Int32Size(const RepeatedField<int32>& value) {
-  return VarintSize<int32, false, true>(value.data(), value.size());
+  return VarintSize<false, true>(value.data(), value.size());
 }
 
 size_t WireFormatLite::UInt32Size(const RepeatedField<uint32>& value) {
-  return VarintSize<uint32, false, false>(value.data(), value.size());
+  return VarintSize<false, false>(value.data(), value.size());
 }
 
 size_t WireFormatLite::SInt32Size(const RepeatedField<int32>& value) {
-  return VarintSize<int32, true, true>(value.data(), value.size());
+  return VarintSize<true, false>(value.data(), value.size());
 }
 
 size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
   // On ILP64, sizeof(int) == 8, which would require a different template.
-  return VarintSize<int, false, true>(value.data(), value.size());
+  return VarintSize<false, true>(value.data(), value.size());
 }
 
-#else  // !__SSE_4_1__
+#else  // !(defined(__SSE4_1__) && defined(__clang__))
+
 size_t WireFormatLite::Int32Size(const RepeatedField<int32>& value) {
   size_t out = 0;
   const int n = value.size();
@@ -779,6 +758,56 @@ size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
   }
   return out;
 }
+
+#endif
+
+// Micro benchmarks show that the SSE improved loop only starts beating
+// the normal loop on Haswell platforms and then only for >32 ints. We
+// disable this for now. Some specialized users might find it worthwhile to
+// enable this.
+#define USE_SSE_FOR_64_BIT_INTEGER_ARRAYS 0
+#if USE_SSE_FOR_64_BIT_INTEGER_ARRAYS
+size_t WireFormatLite::Int64Size (const RepeatedField< int64>& value) {
+  return VarintSize64<false>(value.data(), value.size());
+}
+
+size_t WireFormatLite::UInt64Size(const RepeatedField<uint64>& value) {
+  return VarintSize64<false>(value.data(), value.size());
+}
+
+size_t WireFormatLite::SInt64Size(const RepeatedField< int64>& value) {
+  return VarintSize64<true>(value.data(), value.size());
+}
+
+#else
+
+size_t WireFormatLite::Int64Size (const RepeatedField< int64>& value) {
+  size_t out = 0;
+  const int n = value.size();
+  for (int i = 0; i < n; i++) {
+    out += Int64Size(value.Get(i));
+  }
+  return out;
+}
+
+size_t WireFormatLite::UInt64Size(const RepeatedField<uint64>& value) {
+  size_t out = 0;
+  const int n = value.size();
+  for (int i = 0; i < n; i++) {
+    out += UInt64Size(value.Get(i));
+  }
+  return out;
+}
+
+size_t WireFormatLite::SInt64Size(const RepeatedField< int64>& value) {
+  size_t out = 0;
+  const int n = value.size();
+  for (int i = 0; i < n; i++) {
+    out += SInt64Size(value.Get(i));
+  }
+  return out;
+}
+
 #endif
 
 }  // namespace internal

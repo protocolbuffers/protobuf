@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.TestUtil.TEST_REQUIRED_INITIALIZED;
+import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
@@ -42,6 +45,7 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestOneof2;
+import protobuf_unittest.UnittestProto.TestRequired;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.StringReader;
 import java.util.List;
@@ -326,19 +330,58 @@ public class TextFormatTest extends TestCase {
 
   // =================================================================
 
-  public void testParse() throws Exception {
+  public void testMerge() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(allFieldsSetText, builder);
     TestUtil.assertAllFieldsSet(builder.build());
   }
 
-  public void testParseReader() throws Exception {
+  public void testParse() throws Exception {
+    TestUtil.assertAllFieldsSet(
+        TextFormat.parse(allFieldsSetText, TestAllTypes.class));
+  }
+
+  public void testMergeInitialized() throws Exception {
+    TestRequired.Builder builder = TestRequired.newBuilder();
+    TextFormat.merge(TEST_REQUIRED_INITIALIZED.toString(), builder);
+    assertEquals(TEST_REQUIRED_INITIALIZED.toString(),
+                 builder.buildPartial().toString());
+    assertTrue(builder.isInitialized());
+  }
+
+  public void testParseInitialized() throws Exception {
+    TestRequired parsed =
+        TextFormat.parse(TEST_REQUIRED_INITIALIZED.toString(),
+                         TestRequired.class);
+    assertEquals(TEST_REQUIRED_INITIALIZED.toString(), parsed.toString());
+    assertTrue(parsed.isInitialized());
+  }
+
+  public void testMergeUninitialized() throws Exception {
+    TestRequired.Builder builder = TestRequired.newBuilder();
+    TextFormat.merge(TEST_REQUIRED_UNINITIALIZED.toString(), builder);
+    assertEquals(TEST_REQUIRED_UNINITIALIZED.toString(),
+                 builder.buildPartial().toString());
+    assertFalse(builder.isInitialized());
+  }
+
+  public void testParseUninitialized() throws Exception {
+    try {
+      TextFormat.parse(TEST_REQUIRED_UNINITIALIZED.toString(),
+                       TestRequired.class);
+      fail("Expected UninitializedMessageException.");
+    } catch (UninitializedMessageException e) {
+      assertEquals("Message missing required fields: b, c", e.getMessage());
+    }
+  }
+
+  public void testMergeReader() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(new StringReader(allFieldsSetText), builder);
     TestUtil.assertAllFieldsSet(builder.build());
   }
 
-  public void testParseExtensions() throws Exception {
+  public void testMergeExtensions() throws Exception {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
     TextFormat.merge(allExtensionsSetText,
                      TestUtil.getExtensionRegistry(),
@@ -346,7 +389,14 @@ public class TextFormatTest extends TestCase {
     TestUtil.assertAllExtensionsSet(builder.build());
   }
 
-  public void testParseCompatibility() throws Exception {
+  public void testParseExtensions() throws Exception {
+    TestUtil.assertAllExtensionsSet(
+        TextFormat.parse(allExtensionsSetText,
+                         TestUtil.getExtensionRegistry(),
+                         TestAllExtensions.class));
+  }
+
+  public void testMergeAndParseCompatibility() throws Exception {
     String original = "repeated_float: inf\n" +
                       "repeated_float: -inf\n" +
                       "repeated_float: nan\n" +
@@ -371,21 +421,29 @@ public class TextFormatTest extends TestCase {
                         "repeated_double: Infinity\n" +
                         "repeated_double: -Infinity\n" +
                         "repeated_double: NaN\n";
+
+    // Test merge().
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(original, builder);
     assertEquals(canonical, builder.build().toString());
+
+    // Test parse().
+    assertEquals(canonical,
+                 TextFormat.parse(original, TestAllTypes.class).toString());
   }
 
-  public void testParseExotic() throws Exception {
+  public void testMergeAndParseExotic() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(exoticText, builder);
 
     // Too lazy to check things individually.  Don't try to debug this
     // if testPrintExotic() is failing.
     assertEquals(canonicalExoticText, builder.build().toString());
+    assertEquals(canonicalExoticText,
+                 TextFormat.parse(exoticText, TestAllTypes.class).toString());
   }
 
-  public void testParseMessageSet() throws Exception {
+  public void testMergeMessageSet() throws Exception {
     ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
     extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
     extensionRegistry.add(TestMessageSetExtension2.messageSetExtension);
@@ -411,7 +469,7 @@ public class TextFormatTest extends TestCase {
       TestMessageSetExtension1.messageSetExtension).getI());
   }
 
-  public void testParseMessageSetWithOverwriteForbidden() throws Exception {
+  public void testMergeMessageSetWithOverwriteForbidden() throws Exception {
     ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
     extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
     extensionRegistry.add(TestMessageSetExtension2.messageSetExtension);
@@ -438,20 +496,20 @@ public class TextFormatTest extends TestCase {
     }
   }
 
-  public void testParseNumericEnum() throws Exception {
+  public void testMergeNumericEnum() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge("optional_nested_enum: 2", builder);
     assertEquals(TestAllTypes.NestedEnum.BAR, builder.getOptionalNestedEnum());
   }
 
-  public void testParseAngleBrackets() throws Exception {
+  public void testMergeAngleBrackets() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge("OptionalGroup: < a: 1 >", builder);
     assertTrue(builder.hasOptionalGroup());
     assertEquals(1, builder.getOptionalGroup().getA());
   }
 
-  public void testParseComment() throws Exception {
+  public void testMergeComment() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(
       "# this is a comment\n" +
@@ -463,9 +521,19 @@ public class TextFormatTest extends TestCase {
   }
 
   private void assertParseError(String error, String text) {
+    // Test merge().
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     try {
       TextFormat.merge(text, TestUtil.getExtensionRegistry(), builder);
+      fail("Expected parse exception.");
+    } catch (TextFormat.ParseException e) {
+      assertEquals(error, e.getMessage());
+    }
+
+    // Test parse().
+    try {
+      TextFormat.parse(
+          text, TestUtil.getExtensionRegistry(), TestAllTypes.class);
       fail("Expected parse exception.");
     } catch (TextFormat.ParseException e) {
       assertEquals(error, e.getMessage());
