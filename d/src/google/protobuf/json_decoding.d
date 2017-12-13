@@ -2,7 +2,7 @@ module google.protobuf.json_decoding;
 
 import std.exception : enforce;
 import std.json : JSON_TYPE, JSONValue;
-import std.traits : isAggregateType, isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, isSigned;
+import std.traits : isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, isSigned;
 import std.typecons : Flag, No, Yes;
 import google.protobuf.common;
 
@@ -187,7 +187,7 @@ unittest
 }
 
 T fromJSONValue(T)(JSONValue value, T result = defaultValue!T)
-if (isAggregateType!T)
+if (is(T == class) || is(T == struct))
 {
     import std.traits : hasMember;
 

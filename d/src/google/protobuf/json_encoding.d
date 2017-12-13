@@ -1,7 +1,7 @@
 module google.protobuf.json_encoding;
 
 import std.json : JSONValue;
-import std.traits : isAggregateType, isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, isSigned;
+import std.traits : isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, isSigned;
 import google.protobuf.common;
 
 JSONValue toJSONValue(T)(T value)
@@ -79,7 +79,7 @@ unittest
 }
 
 JSONValue toJSONValue(T)(T value)
-if (isAggregateType!T)
+if (is(T == class) || is(T == struct))
 {
     import std.meta : AliasSeq;
     import std.traits : hasMember;

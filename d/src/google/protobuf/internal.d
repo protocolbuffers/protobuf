@@ -83,7 +83,7 @@ if (isInputRange!R)
     import std.range : empty, front, popFront;
     import std.traits : Unqual, Unsigned;
 
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
     alias E = Unqual!(Unsigned!(ElementType!R));
 
@@ -181,7 +181,7 @@ if (isInputRange!R)
     import std.traits : EnumMembers;
     import std.typecons : tuple;
 
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
     long tagWire = fromVarint(inputRange);
 
@@ -190,6 +190,29 @@ if (isInputRange!R)
     tagWire >>>= 3;
     enforce!ProtobufException(tagWire > 0 && tagWire < (1<<29), "Tag value out of range");
     return tuple!("tag", "wireType")(cast(uint) tagWire, wireType);
+}
+
+auto encodeFixed(T)(T value)
+{
+    import std.bitmanip : nativeToLittleEndian;
+
+    return nativeToLittleEndian(value).dup;
+}
+
+T decodeFixed(T, R)(ref R inputRange)
+if (isInputRange!R)
+{
+    import std.algorithm : copy;
+    import std.bitmanip : littleEndianToNative;
+
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
+
+    enum size = T.sizeof;
+    R fieldRange = inputRange.takeN(size);
+    ubyte[size] buffer;
+    fieldRange.copy(buffer[]);
+
+    return buffer.littleEndianToNative!T;
 }
 
 enum WireType : ubyte
@@ -202,12 +225,12 @@ enum WireType : ubyte
 
 WireType wireType(Proto proto, T)()
 {
-    import std.traits : isAggregateType, isArray, isAssociativeArray, isBoolean, isIntegral;
+    import std.traits : isArray, isAssociativeArray, isBoolean, isIntegral;
 
     static assert(validateProto!(proto, T));
 
-    static if (is(T == string) || is(T == bytes) || (isArray!T && proto.packed) || isAssociativeArray!T ||
-        isAggregateType!T)
+    static if (is(T == string) || is(T == bytes) || (isArray!T && proto.packed) || isAssociativeArray!T
+        || is(T == class) || is(T == struct))
     {
         return WireType.withLength;
     }
@@ -237,9 +260,9 @@ template CollectTypes(M, T...)
 {
     import std.meta : AliasSeq, Filter, NoDuplicates, staticIndexOf, staticMap, Unqual;
     import std.range : ElementType;
-    import std.traits : getSymbolsByUDA, hasMember, isAggregateType, isArray, isAssociativeArray, KeyType, ValueType;
+    import std.traits : getSymbolsByUDA, hasMember, isArray, isAssociativeArray, KeyType, ValueType;
 
-    static if (isAggregateType!M)
+    static if (is(M == class) || is(M == struct))
     {
         static template BaseTypeOf(alias S)
         {
@@ -417,7 +440,7 @@ template isSizedRange(T)
     enum isSizedRange = isInputRange!T && is(typeof(T.init.length));
 }
 
-auto emptyRange(T)()
+auto emptySizedRange(T)()
 {
     static if (is(T == SizedRange!ubyte))
     {
@@ -425,7 +448,7 @@ auto emptyRange(T)()
     }
     else static if (is(T == struct))
     {
-        static assert(isSizedRange!T);
+        static assert(isSizedRange!T, T.stringof ~ " must implement SizedRange protocol");
         return T.init;
     }
     else

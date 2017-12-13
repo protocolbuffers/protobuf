@@ -2,7 +2,7 @@ module google.protobuf.encoding;
 
 import std.algorithm : map;
 import std.range : chain, ElementType, empty;
-import std.traits : isAggregateType, isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, ValueType;
+import std.traits : isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, ValueType;
 import google.protobuf.common;
 import google.protobuf.internal;
 
@@ -29,9 +29,7 @@ if (isIntegral!T)
     }
     else static if (wire == Wire.fixed)
     {
-        import std.bitmanip : nativeToLittleEndian;
-
-        return nativeToLittleEndian(value).dup;
+        return value.encodeFixed;
     }
     else static if (wire == Wire.zigzag)
     {
@@ -66,9 +64,7 @@ unittest
 auto toProtobuf(T)(T value)
 if (isFloatingPoint!T)
 {
-    import std.bitmanip : nativeToLittleEndian;
-
-    return nativeToLittleEndian(value).dup;
+    return value.encodeFixed;
 }
 
 unittest
@@ -126,7 +122,7 @@ unittest
 }
 
 auto toProtobuf(T)(T value)
-if (isAggregateType!T)
+if (is(T == class) || is(T == struct))
 {
     import std.traits : hasMember;
 
@@ -212,7 +208,7 @@ private static auto toProtobufByField(alias field, T)(T message)
 {
     import std.meta : Alias;
 
-    static assert(is(Alias!(__traits(parent, field)) == T));
+    static assert(is(Alias!(__traits(parent, field)) == T), "Field and message are different types");
     static assert(validateProto!(protoByField!field, typeof(field)));
     enum proto = protoByField!field;
     enum fieldName = __traits(identifier, field);
@@ -224,12 +220,12 @@ private static auto toProtobufByField(alias field, T)(T message)
         enum fieldCase = "T." ~ typeof(oneofCase).stringof ~ "." ~ oneofAccessorName!field;
 
         if (oneofCase != mixin(fieldCase))
-            return emptyRange!(typeof(mixin(fieldInstanceName).toProtobufByProto!proto));
+            return emptySizedRange!(typeof(mixin(fieldInstanceName).toProtobufByProto!proto));
     }
     else
     {
         if (mixin(fieldInstanceName) == defaultValue!(typeof(field)))
-            return emptyRange!(typeof(mixin(fieldInstanceName).toProtobufByProto!proto));
+            return emptySizedRange!(typeof(mixin(fieldInstanceName).toProtobufByProto!proto));
     }
 
     return mixin(fieldInstanceName).toProtobufByProto!proto;
@@ -347,7 +343,7 @@ unittest
 }
 
 private auto toProtobufByProto(Proto proto, T)(T value)
-if (isAggregateType!T)
+if (is(T == class) || is(T == struct))
 {
     static assert(validateProto!(proto, T));
 

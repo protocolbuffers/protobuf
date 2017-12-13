@@ -41,13 +41,17 @@ struct Duration
     auto toJSONValue()()
     {
         import std.format : format;
+        import std.math : abs;
         import google.protobuf.json_encoding : toJSONValue;
 
         validateDuration;
 
-        auto splitedDuration = duration.split!("seconds", "nsecs");
-        auto seconds = splitedDuration.seconds >= 0 ? splitedDuration.seconds : -splitedDuration.seconds;
-        auto fractionalDigits = splitedDuration.nsecs >= 0 ? splitedDuration.nsecs : -splitedDuration.nsecs;
+        long seconds;
+        long nsecs;
+
+        duration.split!("seconds", "nsecs")(seconds, nsecs);
+        seconds = abs(seconds);
+        auto fractionalDigits = abs(nsecs);
         auto fractionalLength = 9;
 
         foreach (i; 0 .. 3)

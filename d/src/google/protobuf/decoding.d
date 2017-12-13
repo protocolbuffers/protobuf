@@ -3,15 +3,14 @@ module google.protobuf.decoding;
 import std.algorithm : map;
 import std.exception : enforce;
 import std.range : ElementType, empty, isInputRange;
-import std.traits : isAggregateType, isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, KeyType,
-    ValueType;
+import std.traits : isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, KeyType, ValueType;
 import google.protobuf.common;
 import google.protobuf.internal;
 
 T fromProtobuf(T, R)(ref R inputRange)
 if (isInputRange!R && isBoolean!T)
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
     return cast(T) fromVarint(inputRange);
 }
@@ -28,19 +27,15 @@ unittest
 T fromProtobuf(T, Wire wire = Wire.none, R)(ref R inputRange)
 if (isInputRange!R && isIntegral!T)
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
-    static if (wire == Wire.fixed)
+    static if (wire == Wire.none)
     {
-        import std.algorithm : copy;
-        import std.bitmanip : littleEndianToNative;
-
-        enum size = T.sizeof;
-        R fieldRange = inputRange.takeN(size);
-        ubyte[size] buffer;
-        fieldRange.copy(buffer[]);
-
-        return buffer.littleEndianToNative!T;
+        return cast(T) fromVarint(inputRange);
+    }
+    else static if (wire == Wire.fixed)
+    {
+        return inputRange.decodeFixed!T;
     }
     else static if (wire == Wire.zigzag)
     {
@@ -48,7 +43,7 @@ if (isInputRange!R && isIntegral!T)
     }
     else
     {
-        return cast(T) fromVarint(inputRange);
+        assert(0, "Invalid wire encoding");
     }
 }
 
@@ -88,17 +83,7 @@ unittest
 T fromProtobuf(T, R)(ref R inputRange)
 if (isInputRange!R && isFloatingPoint!T)
 {
-    import std.algorithm : copy;
-    import std.bitmanip : littleEndianToNative;
-
-    static assert(is(ElementType!R : ubyte));
-
-    enum size = T.sizeof;
-    R fieldRange = inputRange.takeN(size);
-    ubyte[size] buffer;
-    fieldRange.copy(buffer[]);
-
-    return buffer.littleEndianToNative!T;
+    return inputRange.decodeFixed!T;
 }
 
 unittest
@@ -117,7 +102,7 @@ if (isInputRange!R && (is(T == string) || is(T == bytes)))
 {
     import std.array : array;
 
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
     R fieldRange = inputRange.takeLengthPrefixed;
 
@@ -144,7 +129,7 @@ if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes))
 {
     import std.array : Appender;
 
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
     R fieldRange = inputRange.takeLengthPrefixed;
 
@@ -166,11 +151,11 @@ if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes))
 }
 
 T fromProtobuf(T, R)(ref R inputRange, T result = defaultValue!T)
-if (isInputRange!R && isAggregateType!T)
+if (isInputRange!R && (is(T == class) || is(T == struct)))
 {
     import std.traits : hasMember;
 
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
     static if (is(T == class))
     {
@@ -233,7 +218,7 @@ unittest
 private static void fromProtobufByField(alias field, T, R)(ref R inputRange, ref T message)
 if (isInputRange!R)
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
     enum proto = protoByField!field;
     static assert(validateProto!(proto, typeof(field)));
@@ -251,7 +236,7 @@ if (isInputRange!R)
 private void fromProtobufByProto(Proto proto, T, R)(ref R inputRange, ref T field)
 if (isInputRange!R && (isBoolean!T || isFloatingPoint!T || is(T == string) || is(T == bytes)))
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
     static assert(validateProto!(proto, T));
 
     field = inputRange.fromProtobuf!T;
@@ -260,7 +245,7 @@ if (isInputRange!R && (isBoolean!T || isFloatingPoint!T || is(T == string) || is
 private void fromProtobufByProto(Proto proto, T, R)(ref R inputRange, ref T field)
 if (isInputRange!R && isIntegral!T)
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
     static assert(validateProto!(proto, T));
 
     enum wire = proto.wire;
@@ -270,7 +255,7 @@ if (isInputRange!R && isIntegral!T)
 private void fromProtobufByProto(Proto proto, T, R)(ref R inputRange, ref T field)
 if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes) && proto.packed)
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
     static assert(validateProto!(proto, T));
 
     field ~= inputRange.fromProtobuf!T;
@@ -279,7 +264,7 @@ if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes) && proto.
 private void fromProtobufByProto(Proto proto, T, R)(ref R inputRange, ref T field)
 if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes) && !proto.packed)
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
     static assert(validateProto!(proto, T));
 
     auto newElement = defaultValue!(ElementType!T);
@@ -292,7 +277,7 @@ if (isInputRange!R && isAssociativeArray!T)
 {
     import std.conv : to;
 
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
     static assert(validateProto!(proto, T));
 
     enum keyProto = Proto(MapFieldTag.key, keyWireToWire(proto.wire));
@@ -319,7 +304,7 @@ if (isInputRange!R && isAssociativeArray!T)
             }
             else
             {
-                static assert(isIntegral!(KeyType!T), "Cannot specify wire format for non-integral key");
+                static assert(isIntegral!(KeyType!T), "Cannot specify wire format for non-integral map key");
 
                 enum wire = keyProto.wire;
                 key = fieldRange.fromProtobuf!(KeyType!T, wire);
@@ -336,15 +321,14 @@ if (isInputRange!R && isAssociativeArray!T)
             }
             else
             {
-                static assert(isIntegral!(ValueType!T), "Cannot specify wire format for non-integral value");
+                static assert(isIntegral!(ValueType!T), "Cannot specify wire format for non-integral map value");
 
                 enum wire = valueProto.wire;
                 value = fieldRange.fromProtobuf!(ValueType!T, wire);
             }
             break;
         default:
-            enforce!ProtobufException(false,
-                "Unexpected field tag " ~ tagWire.tag.to!string ~ " while decoding a map");
+            throw new ProtobufException("Unexpected field tag " ~ tagWire.tag.to!string ~ " while decoding a map");
             break;
         }
     }
@@ -353,9 +337,9 @@ if (isInputRange!R && isAssociativeArray!T)
 }
 
 private void fromProtobufByProto(Proto proto, T, R)(ref R inputRange, ref T field)
-if (isInputRange!R && isAggregateType!T)
+if (isInputRange!R && (is(T == class) || is(T == struct)))
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
     static assert(validateProto!(proto, T));
 
     R fieldRange = inputRange.takeLengthPrefixed;
@@ -366,7 +350,7 @@ if (isInputRange!R && isAggregateType!T)
 void skipUnknown(R)(ref R inputRange, WireType wireType)
 if (isInputRange!R)
 {
-    static assert(is(ElementType!R : ubyte));
+    static assert(is(ElementType!R == ubyte), "Input range should be an ubyte range");
 
     switch (wireType) with (WireType)
     {
