@@ -136,7 +136,7 @@ javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middlem
 java-benchmark: javac_middleman 
 	@echo "Writing shortcut script java-benchmark..."
 	@echo '#! /bin/sh' > java-benchmark
-	@echo 'java -cp '"tmp/java/target/*.jar"' com.google.protocolbuffers.ProtoBench $$@' >> java-benchmark
+	@echo 'java -cp '"tmp/java/target/*.jar"' com.google.protobuf.ProtoBench $$@' >> java-benchmark
 	@chmod +x java-benchmark
 
 java: protoc_middleman protoc_middleman2 java-benchmark

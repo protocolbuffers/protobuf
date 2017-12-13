@@ -1,5 +1,5 @@
 
-package com.google.protocolbuffers;
+package com.google.protobuf;
 
 import com.google.caliper.BeforeExperiment;
 import com.google.caliper.Benchmark;
@@ -26,7 +26,6 @@ public class ProtoBenchCaliper {
         return com.google.protobuf.benchmarks.BenchmarkMessage1Proto3.GoogleMessage1
             .getDefaultInstance();
       }
-      @Override String[] getSpecificCaliperOption() { return null; }
     },
     GOOGLE_MESSAGE1_PROTO2 {
       @Override ExtensionRegistry getExtensionRegistry() { return ExtensionRegistry.newInstance(); }
@@ -35,7 +34,6 @@ public class ProtoBenchCaliper {
         return com.google.protobuf.benchmarks.BenchmarkMessage1Proto2.GoogleMessage1
             .getDefaultInstance();
       }
-      @Override String[] getSpecificCaliperOption() { return null; }
     },
     GOOGLE_MESSAGE2 {
       @Override ExtensionRegistry getExtensionRegistry() { return ExtensionRegistry.newInstance(); }
@@ -43,7 +41,6 @@ public class ProtoBenchCaliper {
       Message getDefaultInstance() {
         return com.google.protobuf.benchmarks.BenchmarkMessage2.GoogleMessage2.getDefaultInstance();
       }
-      @Override String[] getSpecificCaliperOption() { return null; }
     },
     GOOGLE_MESSAGE3 {
       @Override
@@ -64,12 +61,6 @@ public class ProtoBenchCaliper {
       Message getDefaultInstance() {
         return benchmarks.google_message3.BenchmarkMessage3.GoogleMessage3.getDefaultInstance();
       }
-      @Override 
-      String[] getSpecificCaliperOption() { 
-        String[] opt = new String[1];
-        opt[0] = "-Cinstrument.runtime.options.timingInterval=3000ms";
-        return opt;
-      }
     },
     GOOGLE_MESSAGE4 {
       @Override
@@ -85,17 +76,10 @@ public class ProtoBenchCaliper {
       Message getDefaultInstance() {
         return benchmarks.google_message4.BenchmarkMessage4.GoogleMessage4.getDefaultInstance();
       }
-      @Override 
-      String[] getSpecificCaliperOption() { 
-        String[] opt = new String[1];
-        opt[0] = "-Cinstrument.runtime.options.timingInterval=3000ms";
-        return opt;
-      }
     };
     
     abstract ExtensionRegistry getExtensionRegistry();
     abstract Message getDefaultInstance();
-    abstract String[] getSpecificCaliperOption();
   }
   
   @Param 
@@ -112,8 +96,6 @@ public class ProtoBenchCaliper {
   private List<ByteString> inputStringList;
   private List<Message> sampleMessageList;
   private int counter;
-  private FileOutputStream devNull;
-  private CodedOutputStream reuseDevNull;
   
   @BeforeExperiment
   void setUp() throws IOException {
@@ -134,15 +116,6 @@ public class ProtoBenchCaliper {
       inputStringList.add(benchmarkDataset.getPayload(i));
       sampleMessageList.add(
           defaultMessage.newBuilderForType().mergeFrom(singleInputData, extensions).build());
-    }
-    devNull = null;
-    reuseDevNull = null;
-    
-    try {
-      devNull = new FileOutputStream("/dev/null");
-      reuseDevNull = CodedOutputStream.newInstance(devNull);
-    } catch (FileNotFoundException e) {
-      // ignore: this is probably Windows, where /dev/null does not exist
     }
     
     counter = 0;

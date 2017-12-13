@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-package com.google.protocolbuffers;
+package com.google.protobuf;
 
 import com.google.caliper.BeforeExperiment;
 import com.google.caliper.Benchmark;
@@ -93,7 +93,7 @@ public class ProtoBench {
       return false;
     }
     argsList.add("-DdataFile=" + file);
-    argsList.add("com.google.protocolbuffers.ProtoBenchCaliper");
+    argsList.add("com.google.protobuf.ProtoBenchCaliper");
     
     try {
       String args[] = new String[argsList.size()];
@@ -121,17 +121,9 @@ public class ProtoBench {
     } else if (benchmarkDataset.getMessageName().
         equals("benchmarks.google_message3.GoogleMessage3")) {
       temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE3");
-      for (String opt : ProtoBenchCaliper
-                          .BenchmarkMessageType.GOOGLE_MESSAGE3.getSpecificCaliperOption()) {
-        temp.add(opt);
-      }
     } else if (benchmarkDataset.getMessageName().
         equals("benchmarks.google_message4.GoogleMessage4")) {
       temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE4");
-      for (String opt : ProtoBenchCaliper
-                          .BenchmarkMessageType.GOOGLE_MESSAGE4.getSpecificCaliperOption()) {
-        temp.add(opt);
-      }
     } else {
       return null;
     }
@@ -142,6 +134,7 @@ public class ProtoBench {
     String benchmarkNames = "serializeToByteString,serializeToByteArray,serializeToMemoryStream"
        + ",deserializeFromByteString,deserializeFromByteArray,deserializeFromMemoryStream";
     temp.add(benchmarkNames);
+    temp.add("-Cinstrument.runtime.options.timingInterval=3000ms");
     
     return temp;
   }
