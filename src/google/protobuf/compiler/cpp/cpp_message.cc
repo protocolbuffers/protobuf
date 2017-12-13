@@ -113,16 +113,16 @@ struct ExtensionRangeSorter {
 bool IsPOD(const FieldDescriptor* field) {
   if (field->is_repeated() || field->is_extension()) return false;
   switch (field->cpp_type()) {
-    case internal::WireFormatLite::CPPTYPE_ENUM:
-    case internal::WireFormatLite::CPPTYPE_INT32:
-    case internal::WireFormatLite::CPPTYPE_INT64:
-    case internal::WireFormatLite::CPPTYPE_UINT32:
-    case internal::WireFormatLite::CPPTYPE_UINT64:
-    case internal::WireFormatLite::CPPTYPE_FLOAT:
-    case internal::WireFormatLite::CPPTYPE_DOUBLE:
-    case internal::WireFormatLite::CPPTYPE_BOOL:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
       return true;
-    case internal::WireFormatLite::CPPTYPE_STRING:
+    case FieldDescriptor::CPPTYPE_STRING:
       return false;
     default:
       return false;
