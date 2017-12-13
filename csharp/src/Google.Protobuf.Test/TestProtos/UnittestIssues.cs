@@ -88,6 +88,7 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class Issue307 : pb::IMessage<Issue307> {
     private static readonly pb::MessageParser<Issue307> _parser = new pb::MessageParser<Issue307>(() => new Issue307());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Issue307> Parser { get { return _parser; } }
 
@@ -110,6 +111,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Issue307(Issue307 other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -130,12 +132,15 @@ namespace UnitTest.Issues.TestProtos {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -146,11 +151,17 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
       return size;
     }
 
@@ -159,6 +170,7 @@ namespace UnitTest.Issues.TestProtos {
       if (other == null) {
         return;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -167,7 +179,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -179,6 +191,7 @@ namespace UnitTest.Issues.TestProtos {
     public static partial class Types {
       public sealed partial class NestedOnce : pb::IMessage<NestedOnce> {
         private static readonly pb::MessageParser<NestedOnce> _parser = new pb::MessageParser<NestedOnce>(() => new NestedOnce());
+        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NestedOnce> Parser { get { return _parser; } }
 
@@ -201,6 +214,7 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public NestedOnce(NestedOnce other) : this() {
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -221,12 +235,15 @@ namespace UnitTest.Issues.TestProtos {
           if (ReferenceEquals(other, this)) {
             return true;
           }
-          return true;
+          return Equals(_unknownFields, other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override int GetHashCode() {
           int hash = 1;
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
           return hash;
         }
 
@@ -237,11 +254,17 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
           return size;
         }
 
@@ -250,6 +273,7 @@ namespace UnitTest.Issues.TestProtos {
           if (other == null) {
             return;
           }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -258,7 +282,7 @@ namespace UnitTest.Issues.TestProtos {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                input.SkipLastField();
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
             }
           }
@@ -270,6 +294,7 @@ namespace UnitTest.Issues.TestProtos {
         public static partial class Types {
           public sealed partial class NestedTwice : pb::IMessage<NestedTwice> {
             private static readonly pb::MessageParser<NestedTwice> _parser = new pb::MessageParser<NestedTwice>(() => new NestedTwice());
+            private pb::UnknownFieldSet _unknownFields;
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public static pb::MessageParser<NestedTwice> Parser { get { return _parser; } }
 
@@ -292,6 +317,7 @@ namespace UnitTest.Issues.TestProtos {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public NestedTwice(NestedTwice other) : this() {
+              _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -312,12 +338,15 @@ namespace UnitTest.Issues.TestProtos {
               if (ReferenceEquals(other, this)) {
                 return true;
               }
-              return true;
+              return Equals(_unknownFields, other._unknownFields);
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public override int GetHashCode() {
               int hash = 1;
+              if (_unknownFields != null) {
+                hash ^= _unknownFields.GetHashCode();
+              }
               return hash;
             }
 
@@ -328,11 +357,17 @@ namespace UnitTest.Issues.TestProtos {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
+              if (_unknownFields != null) {
+                _unknownFields.WriteTo(output);
+              }
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public int CalculateSize() {
               int size = 0;
+              if (_unknownFields != null) {
+                size += _unknownFields.CalculateSize();
+              }
               return size;
             }
 
@@ -341,6 +376,7 @@ namespace UnitTest.Issues.TestProtos {
               if (other == null) {
                 return;
               }
+              _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -349,7 +385,7 @@ namespace UnitTest.Issues.TestProtos {
               while ((tag = input.ReadTag()) != 0) {
                 switch(tag) {
                   default:
-                    input.SkipLastField();
+                    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                     break;
                 }
               }
@@ -369,6 +405,7 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage> {
     private static readonly pb::MessageParser<NegativeEnumMessage> _parser = new pb::MessageParser<NegativeEnumMessage>(() => new NegativeEnumMessage());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<NegativeEnumMessage> Parser { get { return _parser; } }
 
@@ -394,6 +431,7 @@ namespace UnitTest.Issues.TestProtos {
       value_ = other.value_;
       values_ = other.values_.Clone();
       packedValues_ = other.packedValues_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -448,7 +486,7 @@ namespace UnitTest.Issues.TestProtos {
       if (Value != other.Value) return false;
       if(!values_.Equals(other.values_)) return false;
       if(!packedValues_.Equals(other.packedValues_)) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -457,6 +495,9 @@ namespace UnitTest.Issues.TestProtos {
       if (Value != 0) hash ^= Value.GetHashCode();
       hash ^= values_.GetHashCode();
       hash ^= packedValues_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -473,6 +514,9 @@ namespace UnitTest.Issues.TestProtos {
       }
       values_.WriteTo(output, _repeated_values_codec);
       packedValues_.WriteTo(output, _repeated_packedValues_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -483,6 +527,9 @@ namespace UnitTest.Issues.TestProtos {
       }
       size += values_.CalculateSize(_repeated_values_codec);
       size += packedValues_.CalculateSize(_repeated_packedValues_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
       return size;
     }
 
@@ -496,6 +543,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       values_.Add(other.values_);
       packedValues_.Add(other.packedValues_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -504,7 +552,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             value_ = (global::UnitTest.Issues.TestProtos.NegativeEnum) input.ReadEnum();
@@ -528,6 +576,7 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild> {
     private static readonly pb::MessageParser<DeprecatedChild> _parser = new pb::MessageParser<DeprecatedChild>(() => new DeprecatedChild());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DeprecatedChild> Parser { get { return _parser; } }
 
@@ -550,6 +599,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public DeprecatedChild(DeprecatedChild other) : this() {
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -570,12 +620,15 @@ namespace UnitTest.Issues.TestProtos {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -586,11 +639,17 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
       return size;
     }
 
@@ -599,6 +658,7 @@ namespace UnitTest.Issues.TestProtos {
       if (other == null) {
         return;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -607,7 +667,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
         }
       }
@@ -617,6 +677,7 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage> {
     private static readonly pb::MessageParser<DeprecatedFieldsMessage> _parser = new pb::MessageParser<DeprecatedFieldsMessage>(() => new DeprecatedFieldsMessage());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DeprecatedFieldsMessage> Parser { get { return _parser; } }
 
@@ -645,6 +706,7 @@ namespace UnitTest.Issues.TestProtos {
       messageArray_ = other.messageArray_.Clone();
       enumValue_ = other.enumValue_;
       enumArray_ = other.enumArray_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -740,7 +802,7 @@ namespace UnitTest.Issues.TestProtos {
       if(!messageArray_.Equals(other.messageArray_)) return false;
       if (EnumValue != other.EnumValue) return false;
       if(!enumArray_.Equals(other.enumArray_)) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -752,6 +814,9 @@ namespace UnitTest.Issues.TestProtos {
       hash ^= messageArray_.GetHashCode();
       if (EnumValue != 0) hash ^= EnumValue.GetHashCode();
       hash ^= enumArray_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -777,6 +842,9 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteEnum((int) EnumValue);
       }
       enumArray_.WriteTo(output, _repeated_enumArray_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -794,6 +862,9 @@ namespace UnitTest.Issues.TestProtos {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumValue);
       }
       size += enumArray_.CalculateSize(_repeated_enumArray_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
       return size;
     }
 
@@ -817,6 +888,7 @@ namespace UnitTest.Issues.TestProtos {
         EnumValue = other.EnumValue;
       }
       enumArray_.Add(other.enumArray_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -825,7 +897,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             PrimitiveValue = input.ReadInt32();
@@ -867,6 +939,7 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class ItemField : pb::IMessage<ItemField> {
     private static readonly pb::MessageParser<ItemField> _parser = new pb::MessageParser<ItemField>(() => new ItemField());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ItemField> Parser { get { return _parser; } }
 
@@ -890,6 +963,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ItemField(ItemField other) : this() {
       item_ = other.item_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -922,13 +996,16 @@ namespace UnitTest.Issues.TestProtos {
         return true;
       }
       if (Item != other.Item) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Item != 0) hash ^= Item.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -943,6 +1020,9 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(8);
         output.WriteInt32(Item);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -950,6 +1030,9 @@ namespace UnitTest.Issues.TestProtos {
       int size = 0;
       if (Item != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Item);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -962,6 +1045,7 @@ namespace UnitTest.Issues.TestProtos {
       if (other.Item != 0) {
         Item = other.Item;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -970,7 +1054,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             Item = input.ReadInt32();
@@ -984,6 +1068,7 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class ReservedNames : pb::IMessage<ReservedNames> {
     private static readonly pb::MessageParser<ReservedNames> _parser = new pb::MessageParser<ReservedNames>(() => new ReservedNames());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ReservedNames> Parser { get { return _parser; } }
 
@@ -1008,6 +1093,7 @@ namespace UnitTest.Issues.TestProtos {
     public ReservedNames(ReservedNames other) : this() {
       types_ = other.types_;
       descriptor_ = other.descriptor_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1052,7 +1138,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (Types_ != other.Types_) return false;
       if (Descriptor_ != other.Descriptor_) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1060,6 +1146,9 @@ namespace UnitTest.Issues.TestProtos {
       int hash = 1;
       if (Types_ != 0) hash ^= Types_.GetHashCode();
       if (Descriptor_ != 0) hash ^= Descriptor_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -1078,6 +1167,9 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(16);
         output.WriteInt32(Descriptor_);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1088,6 +1180,9 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (Descriptor_ != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Descriptor_);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -1103,6 +1198,7 @@ namespace UnitTest.Issues.TestProtos {
       if (other.Descriptor_ != 0) {
         Descriptor_ = other.Descriptor_;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1111,7 +1207,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             Types_ = input.ReadInt32();
@@ -1134,6 +1230,7 @@ namespace UnitTest.Issues.TestProtos {
       /// </summary>
       public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType> {
         private static readonly pb::MessageParser<SomeNestedType> _parser = new pb::MessageParser<SomeNestedType>(() => new SomeNestedType());
+        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<SomeNestedType> Parser { get { return _parser; } }
 
@@ -1156,6 +1253,7 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public SomeNestedType(SomeNestedType other) : this() {
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1176,12 +1274,15 @@ namespace UnitTest.Issues.TestProtos {
           if (ReferenceEquals(other, this)) {
             return true;
           }
-          return true;
+          return Equals(_unknownFields, other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override int GetHashCode() {
           int hash = 1;
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
           return hash;
         }
 
@@ -1192,11 +1293,17 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
           return size;
         }
 
@@ -1205,6 +1312,7 @@ namespace UnitTest.Issues.TestProtos {
           if (other == null) {
             return;
           }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1213,7 +1321,7 @@ namespace UnitTest.Issues.TestProtos {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                input.SkipLastField();
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
             }
           }
@@ -1240,6 +1348,7 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class TestJsonFieldOrdering : pb::IMessage<TestJsonFieldOrdering> {
     private static readonly pb::MessageParser<TestJsonFieldOrdering> _parser = new pb::MessageParser<TestJsonFieldOrdering>(() => new TestJsonFieldOrdering());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestJsonFieldOrdering> Parser { get { return _parser; } }
 
@@ -1282,6 +1391,7 @@ namespace UnitTest.Issues.TestProtos {
           break;
       }
 
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1414,7 +1524,7 @@ namespace UnitTest.Issues.TestProtos {
       if (O2String != other.O2String) return false;
       if (O1Case != other.O1Case) return false;
       if (O2Case != other.O2Case) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1428,6 +1538,9 @@ namespace UnitTest.Issues.TestProtos {
       if (o2Case_ == O2OneofCase.O2String) hash ^= O2String.GetHashCode();
       hash ^= (int) o1Case_;
       hash ^= (int) o2Case_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -1462,6 +1575,9 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(48);
         output.WriteInt32(O2Int32);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1484,6 +1600,9 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (o2Case_ == O2OneofCase.O2String) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(O2String);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -1517,6 +1636,7 @@ namespace UnitTest.Issues.TestProtos {
           break;
       }
 
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1525,7 +1645,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             PlainString = input.ReadString();
@@ -1559,6 +1679,7 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class TestJsonName : pb::IMessage<TestJsonName> {
     private static readonly pb::MessageParser<TestJsonName> _parser = new pb::MessageParser<TestJsonName>(() => new TestJsonName());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestJsonName> Parser { get { return _parser; } }
 
@@ -1584,6 +1705,7 @@ namespace UnitTest.Issues.TestProtos {
       name_ = other.name_;
       description_ = other.description_;
       guid_ = other.guid_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1643,7 +1765,7 @@ namespace UnitTest.Issues.TestProtos {
       if (Name != other.Name) return false;
       if (Description != other.Description) return false;
       if (Guid != other.Guid) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1652,6 +1774,9 @@ namespace UnitTest.Issues.TestProtos {
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Description.Length != 0) hash ^= Description.GetHashCode();
       if (Guid.Length != 0) hash ^= Guid.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -1674,6 +1799,9 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(26);
         output.WriteString(Guid);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1687,6 +1815,9 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (Guid.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Guid);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -1705,6 +1836,7 @@ namespace UnitTest.Issues.TestProtos {
       if (other.Guid.Length != 0) {
         Guid = other.Guid;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1713,7 +1845,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Name = input.ReadString();
@@ -1740,6 +1872,7 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class OneofMerging : pb::IMessage<OneofMerging> {
     private static readonly pb::MessageParser<OneofMerging> _parser = new pb::MessageParser<OneofMerging>(() => new OneofMerging());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<OneofMerging> Parser { get { return _parser; } }
 
@@ -1771,6 +1904,7 @@ namespace UnitTest.Issues.TestProtos {
           break;
       }
 
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1835,7 +1969,7 @@ namespace UnitTest.Issues.TestProtos {
       if (Text != other.Text) return false;
       if (!object.Equals(Nested, other.Nested)) return false;
       if (ValueCase != other.ValueCase) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1844,6 +1978,9 @@ namespace UnitTest.Issues.TestProtos {
       if (valueCase_ == ValueOneofCase.Text) hash ^= Text.GetHashCode();
       if (valueCase_ == ValueOneofCase.Nested) hash ^= Nested.GetHashCode();
       hash ^= (int) valueCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -1862,6 +1999,9 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(18);
         output.WriteMessage(Nested);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1872,6 +2012,9 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (valueCase_ == ValueOneofCase.Nested) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Nested);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -1893,6 +2036,7 @@ namespace UnitTest.Issues.TestProtos {
           break;
       }
 
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1901,7 +2045,7 @@ namespace UnitTest.Issues.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Text = input.ReadString();
@@ -1926,6 +2070,7 @@ namespace UnitTest.Issues.TestProtos {
     public static partial class Types {
       public sealed partial class Nested : pb::IMessage<Nested> {
         private static readonly pb::MessageParser<Nested> _parser = new pb::MessageParser<Nested>(() => new Nested());
+        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<Nested> Parser { get { return _parser; } }
 
@@ -1950,6 +2095,7 @@ namespace UnitTest.Issues.TestProtos {
         public Nested(Nested other) : this() {
           x_ = other.x_;
           y_ = other.y_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1994,7 +2140,7 @@ namespace UnitTest.Issues.TestProtos {
           }
           if (X != other.X) return false;
           if (Y != other.Y) return false;
-          return true;
+          return Equals(_unknownFields, other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2002,6 +2148,9 @@ namespace UnitTest.Issues.TestProtos {
           int hash = 1;
           if (X != 0) hash ^= X.GetHashCode();
           if (Y != 0) hash ^= Y.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
           return hash;
         }
 
@@ -2020,6 +2169,9 @@ namespace UnitTest.Issues.TestProtos {
             output.WriteRawTag(16);
             output.WriteInt32(Y);
           }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2030,6 +2182,9 @@ namespace UnitTest.Issues.TestProtos {
           }
           if (Y != 0) {
             size += 1 + pb::CodedOutputStream.ComputeInt32Size(Y);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
           }
           return size;
         }
@@ -2045,6 +2200,7 @@ namespace UnitTest.Issues.TestProtos {
           if (other.Y != 0) {
             Y = other.Y;
           }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2053,7 +2209,7 @@ namespace UnitTest.Issues.TestProtos {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                input.SkipLastField();
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 8: {
                 X = input.ReadInt32();

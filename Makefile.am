@@ -121,12 +121,14 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/FieldMaskTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/TimestampTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/WrappersTest.cs             \
+  csharp/src/Google.Protobuf.Test/UnknownFieldSetTest.cs                     \
   csharp/src/Google.Protobuf.sln                                             \
   csharp/src/Google.Protobuf/ByteArray.cs                                    \
   csharp/src/Google.Protobuf/ByteString.cs                                   \
   csharp/src/Google.Protobuf/CodedInputStream.cs                             \
   csharp/src/Google.Protobuf/CodedOutputStream.ComputeSize.cs                \
   csharp/src/Google.Protobuf/CodedOutputStream.cs                            \
+  csharp/src/Google.Protobuf/Collections/Lists.cs                            \
   csharp/src/Google.Protobuf/Collections/MapField.cs                         \
   csharp/src/Google.Protobuf/Collections/ProtobufEqualityComparers.cs        \
   csharp/src/Google.Protobuf/Collections/ReadOnlyDictionary.cs               \
@@ -196,7 +198,9 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WellKnownTypes/ValuePartial.cs                  \
   csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs                      \
   csharp/src/Google.Protobuf/WellKnownTypes/WrappersPartial.cs               \
-  csharp/src/Google.Protobuf/WireFormat.cs
+  csharp/src/Google.Protobuf/WireFormat.cs                                   \
+  csharp/src/Google.Protobuf/UnknownField.cs                                 \
+  csharp/src/Google.Protobuf/UnknownFieldSet.cs
 
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \

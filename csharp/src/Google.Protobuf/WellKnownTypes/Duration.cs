@@ -100,6 +100,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Duration : pb::IMessage<Duration> {
     private static readonly pb::MessageParser<Duration> _parser = new pb::MessageParser<Duration>(() => new Duration());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Duration> Parser { get { return _parser; } }
 
@@ -124,6 +125,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public Duration(Duration other) : this() {
       seconds_ = other.seconds_;
       nanos_ = other.nanos_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -181,7 +183,7 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Seconds != other.Seconds) return false;
       if (Nanos != other.Nanos) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -189,6 +191,9 @@ namespace Google.Protobuf.WellKnownTypes {
       int hash = 1;
       if (Seconds != 0L) hash ^= Seconds.GetHashCode();
       if (Nanos != 0) hash ^= Nanos.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -207,6 +212,9 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(16);
         output.WriteInt32(Nanos);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -217,6 +225,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Nanos != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Nanos);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -232,6 +243,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Nanos != 0) {
         Nanos = other.Nanos;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -240,7 +252,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             Seconds = input.ReadInt64();

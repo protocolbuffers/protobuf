@@ -94,6 +94,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Type : pb::IMessage<Type> {
     private static readonly pb::MessageParser<Type> _parser = new pb::MessageParser<Type>(() => new Type());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Type> Parser { get { return _parser; } }
 
@@ -122,6 +123,7 @@ namespace Google.Protobuf.WellKnownTypes {
       options_ = other.options_.Clone();
       SourceContext = other.sourceContext_ != null ? other.SourceContext.Clone() : null;
       syntax_ = other.syntax_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -229,7 +231,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if(!options_.Equals(other.options_)) return false;
       if (!object.Equals(SourceContext, other.SourceContext)) return false;
       if (Syntax != other.Syntax) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -241,6 +243,9 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
       if (Syntax != 0) hash ^= Syntax.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -266,6 +271,9 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(48);
         output.WriteEnum((int) Syntax);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -282,6 +290,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Syntax != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -306,6 +317,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Syntax != 0) {
         Syntax = other.Syntax;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -314,7 +326,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Name = input.ReadString();
@@ -354,6 +366,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Field : pb::IMessage<Field> {
     private static readonly pb::MessageParser<Field> _parser = new pb::MessageParser<Field>(() => new Field());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Field> Parser { get { return _parser; } }
 
@@ -386,6 +399,7 @@ namespace Google.Protobuf.WellKnownTypes {
       options_ = other.options_.Clone();
       jsonName_ = other.jsonName_;
       defaultValue_ = other.defaultValue_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -557,7 +571,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if(!options_.Equals(other.options_)) return false;
       if (JsonName != other.JsonName) return false;
       if (DefaultValue != other.DefaultValue) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -573,6 +587,9 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= options_.GetHashCode();
       if (JsonName.Length != 0) hash ^= JsonName.GetHashCode();
       if (DefaultValue.Length != 0) hash ^= DefaultValue.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -620,6 +637,9 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(90);
         output.WriteString(DefaultValue);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -652,6 +672,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (DefaultValue.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(DefaultValue);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -689,6 +712,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.DefaultValue.Length != 0) {
         DefaultValue = other.DefaultValue;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -697,7 +721,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
             kind_ = (global::Google.Protobuf.WellKnownTypes.Field.Types.Kind) input.ReadEnum();
@@ -861,6 +885,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Enum : pb::IMessage<Enum> {
     private static readonly pb::MessageParser<Enum> _parser = new pb::MessageParser<Enum>(() => new Enum());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Enum> Parser { get { return _parser; } }
 
@@ -888,6 +913,7 @@ namespace Google.Protobuf.WellKnownTypes {
       options_ = other.options_.Clone();
       SourceContext = other.sourceContext_ != null ? other.SourceContext.Clone() : null;
       syntax_ = other.syntax_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -981,7 +1007,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if(!options_.Equals(other.options_)) return false;
       if (!object.Equals(SourceContext, other.SourceContext)) return false;
       if (Syntax != other.Syntax) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -992,6 +1018,9 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
       if (Syntax != 0) hash ^= Syntax.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -1016,6 +1045,9 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(40);
         output.WriteEnum((int) Syntax);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1031,6 +1063,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Syntax != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -1054,6 +1089,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other.Syntax != 0) {
         Syntax = other.Syntax;
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1062,7 +1098,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Name = input.ReadString();
@@ -1098,6 +1134,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class EnumValue : pb::IMessage<EnumValue> {
     private static readonly pb::MessageParser<EnumValue> _parser = new pb::MessageParser<EnumValue>(() => new EnumValue());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumValue> Parser { get { return _parser; } }
 
@@ -1123,6 +1160,7 @@ namespace Google.Protobuf.WellKnownTypes {
       name_ = other.name_;
       number_ = other.number_;
       options_ = other.options_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1187,7 +1225,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (Name != other.Name) return false;
       if (Number != other.Number) return false;
       if(!options_.Equals(other.options_)) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1196,6 +1234,9 @@ namespace Google.Protobuf.WellKnownTypes {
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Number != 0) hash ^= Number.GetHashCode();
       hash ^= options_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -1215,6 +1256,9 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteInt32(Number);
       }
       options_.WriteTo(output, _repeated_options_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1227,6 +1271,9 @@ namespace Google.Protobuf.WellKnownTypes {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Number);
       }
       size += options_.CalculateSize(_repeated_options_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
       return size;
     }
 
@@ -1242,6 +1289,7 @@ namespace Google.Protobuf.WellKnownTypes {
         Number = other.Number;
       }
       options_.Add(other.options_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1250,7 +1298,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Name = input.ReadString();
@@ -1276,6 +1324,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Option : pb::IMessage<Option> {
     private static readonly pb::MessageParser<Option> _parser = new pb::MessageParser<Option>(() => new Option());
+    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Option> Parser { get { return _parser; } }
 
@@ -1300,6 +1349,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public Option(Option other) : this() {
       name_ = other.name_;
       Value = other.value_ != null ? other.Value.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1356,7 +1406,7 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (Name != other.Name) return false;
       if (!object.Equals(Value, other.Value)) return false;
-      return true;
+      return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1364,6 +1414,9 @@ namespace Google.Protobuf.WellKnownTypes {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (value_ != null) hash ^= Value.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
       return hash;
     }
 
@@ -1382,6 +1435,9 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(18);
         output.WriteMessage(Value);
       }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1392,6 +1448,9 @@ namespace Google.Protobuf.WellKnownTypes {
       }
       if (value_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Value);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
       }
       return size;
     }
@@ -1410,6 +1469,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
         Value.MergeFrom(other.Value);
       }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1418,7 +1478,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            input.SkipLastField();
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
             Name = input.ReadString();

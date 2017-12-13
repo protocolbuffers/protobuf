@@ -424,7 +424,10 @@ namespace Google.Protobuf
             }
         }
 
-        private void SkipGroup(uint startGroupTag)
+        /// <summary>
+        /// Skip a group.
+        /// </summary>
+        internal void SkipGroup(uint startGroupTag)
         {
             // Note: Currently we expect this to be the way that groups are read. We could put the recursion
             // depth changes into the ReadTag method instead, potentially...
@@ -1270,7 +1273,6 @@ namespace Google.Protobuf
                 }
             }
         }
-
         #endregion
     }
 }
