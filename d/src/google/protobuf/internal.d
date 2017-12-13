@@ -352,22 +352,21 @@ unittest
     static assert(isRecursive!Baz2);
 }
 
-auto joiner(RoR)(RoR ranges)
+auto sizedJoiner(RoR)(RoR ranges)
 if (isInputRange!RoR && isInputRange!(ElementType!RoR) && hasLength!(ElementType!RoR))
 {
-    import std.algorithm : stdJoiner = joiner, map, sum;
-    alias StdJoinerResult = typeof(stdJoiner(ranges));
+    import std.algorithm : joiner, map, sum;
 
     static struct Result
     {
-        StdJoinerResult result;
+        typeof(ranges.joiner) result;
         size_t _length;
 
         alias result this;
 
         this(RoR r)
         {
-            result = StdJoinerResult(r);
+            result = r.joiner;
             _length = r.map!(a => a.length).sum;
         }
 
@@ -390,7 +389,7 @@ unittest
 {
     import std.array : array;
 
-    auto a = [[1, 2, 3], [], [4, 5]].joiner;
+    auto a = [[1, 2, 3], [], [4, 5]].sizedJoiner;
 
     assert(a.length == 5);
     a.popFront;

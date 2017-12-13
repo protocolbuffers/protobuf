@@ -17,7 +17,7 @@ Person promptForAddress()
     readf("%d", &person.id);
     readln!string;
 
-    write("Enter name: ");;
+    write("Enter name: ");
     person.name = readln!string.strip;
 
     write("Enter email address (blank for none): ");
@@ -64,7 +64,7 @@ int main(string[] args)
     {
         auto input = File(args[1], "rb");
         scope(exit) input.close;
-        ubyte[] inputBuffer = input.rawRead(new ubyte[64 * 1024]);
+        ubyte[] inputBuffer = input.rawRead(new ubyte[input.size]);
         inputBuffer.fromProtobuf!AddressBook(addressBook);
     }
     catch (ErrnoException exception)

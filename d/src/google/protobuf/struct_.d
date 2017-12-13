@@ -177,6 +177,11 @@ class Value
     }
 }
 
+enum NullValue
+{
+    NULL_VALUE = 0,
+}
+
 class ListValue
 {
     @Proto(1) Value[] values = defaultValue!(Value[]);
@@ -210,9 +215,4 @@ class ListValue
 
         return this;
     }
-}
-
-enum NullValue
-{
-    NULL_VALUE = 0,
 }

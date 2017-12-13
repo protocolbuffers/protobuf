@@ -62,7 +62,7 @@ template protoByField(alias field)
     enum Proto protoByField = getUDAs!(field, Proto)[0];
 }
 
-enum MapFieldTag: uint
+enum MapFieldTag : uint
 {
     key = 1,
     value = 2,

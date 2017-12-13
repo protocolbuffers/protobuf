@@ -1,6 +1,5 @@
 module google.protobuf.field_mask;
 
-import std.exception : enforce;
 import google.protobuf;
 
 struct FieldMask
@@ -9,7 +8,7 @@ struct FieldMask
 
     auto toJSONValue()()
     {
-        import std.algorithm : map, joiner;
+        import std.algorithm : joiner, map;
         import std.conv : to;
         import google.protobuf.json_encoding;
 
@@ -30,6 +29,7 @@ string toCamelCase(string snakeCase) pure
 {
     import std.array : Appender;
     import std.ascii : isLower, isUpper, toUpper;
+    import std.exception : enforce;
 
     Appender!string result;
     bool capitalizeNext;
@@ -82,6 +82,7 @@ string toSnakeCase(string camelCase) pure
 {
     import std.array : Appender;
     import std.ascii : isUpper, toLower;
+    import std.exception : enforce;
 
     Appender!string result;
 

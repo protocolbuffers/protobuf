@@ -100,13 +100,13 @@ if (isArray!T && !is(T == string) && !is(T == bytes))
 
     static if (wire == Wire.none)
     {
-        auto result = value.map!(a => a.toProtobuf).joiner;
+        auto result = value.map!(a => a.toProtobuf).sizedJoiner;
     }
     else
     {
         static assert(isIntegral!(ElementType!T), "Cannot specify wire format for non-integral arrays");
 
-        auto result = value.map!(a => a.toProtobuf!wire).joiner;
+        auto result = value.map!(a => a.toProtobuf!wire).sizedJoiner;
     }
 
     return chain(Varint(result.length), result);
@@ -132,12 +132,12 @@ if (is(T == class) || is(T == struct))
     }
     else
     {
-        import std.algorithm : stdJoiner = joiner;
+        import std.algorithm : joiner;
         import std.array : array;
 
         enum fieldExpressions = [Message!T.fieldNames]
             .map!(a => "value.toProtobufByField!(T." ~ a ~ ")")
-            .stdJoiner(", ")
+            .joiner(", ")
             .array;
         enum resultExpression = "chain(" ~ fieldExpressions ~ ")";
 
@@ -307,7 +307,7 @@ if (isArray!T && !proto.packed && !is(T == string) && !is(T == bytes))
     enum elementProto = Proto(proto.tag, proto.wire);
     return value
         .map!(a => a.toProtobufByProto!elementProto)
-        .joiner;
+        .sizedJoiner;
 }
 
 private auto toProtobufByProto(Proto proto, T)(T value)
@@ -322,7 +322,7 @@ if (isAssociativeArray!T)
         .byKeyValue
         .map!(a => chain(a.key.toProtobufByProto!keyProto, a.value.toProtobufByProto!valueProto))
         .map!(a => chain(encodeTag!(proto, T), Varint(a.length), a))
-        .joiner;
+        .sizedJoiner;
 }
 
 unittest

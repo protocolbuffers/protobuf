@@ -33,7 +33,7 @@ int main(string[] args)
 
     auto input = File(args[1], "rb");
     scope(exit) input.close;
-    ubyte[] inputBuffer = input.rawRead(new ubyte[64 * 1024]);
+    ubyte[] inputBuffer = input.rawRead(new ubyte[input.size]);
     auto addressBook = inputBuffer.fromProtobuf!AddressBook;
     listPeople(addressBook);
 
