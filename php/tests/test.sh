@@ -5,7 +5,7 @@ pushd ../ext/google/protobuf/
 make clean || true
 set -e
 # Add following in configure for debug: --enable-debug CFLAGS='-g -O0'
-phpize && ./configure CFLAGS='-g -O0 -DPROTOBUF_ENABLE_TIMESTAMP' && make
+phpize && ./configure CFLAGS='-g -O0' && make
 popd
 
 tests=( array_test.php encode_decode_test.php generated_class_test.php generated_phpdoc_test.php map_field_test.php well_known_test.php generated_service_test.php descriptors_test.php )

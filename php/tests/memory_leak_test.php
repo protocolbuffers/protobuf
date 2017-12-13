@@ -131,12 +131,12 @@ $timestamp = new \Google\Protobuf\Timestamp();
 date_default_timezone_set('UTC');
 $from = new DateTime('2011-01-01T15:03:01.012345UTC');
 $timestamp->fromDateTime($from);
-assert($from->format('U'), $timestamp->getSeconds());
-assert(0, $timestamp->getNanos());
+assert($from->format('U') == $timestamp->getSeconds());
+assert(0 == $timestamp->getNanos());
 
 $to = $timestamp->toDateTime();
-assert(\DateTime::class, get_class($to));
-assert($from->format('U'), $to->format('U'));
+assert(\DateTime::class == get_class($to));
+assert($from->format('U') == $to->format('U'));
 
 $from = new \Google\Protobuf\Value();
 $from->setNumberValue(1);
