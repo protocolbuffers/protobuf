@@ -1,5 +1,6 @@
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2017 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,44 +28,62 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#endregion
 
-// Copyright 2008 Google Inc. All Rights Reserved.
-// Author: xpeng@google.com (Peter Peng)
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
-#include <google/protobuf/stubs/common.h>
-#include <gtest/gtest.h>
+namespace Google.Protobuf.Collections
+{
+    /// <summary>
+    /// Utility to compare if two Lists are the same, and the hash code
+    /// of a List.
+    /// </summary>
+    public static class Lists
+    {
+        /// <summary>
+        /// Checks if two lists are equal.
+        /// </summary>
+        public static bool Equals<T>(List<T> left, List<T> right)
+        {
+            if (left == right)
+            {
+                return true;
+            }
+            if (left == null || right == null)
+            {
+                return false;
+            }
+            if (left.Count != right.Count)
+            {
+                return false;
+            }
+            IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            for (int i = 0; i < left.Count; i++)
+            {
+                if (!comparer.Equals(left[i], right[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-namespace google {
-namespace protobuf {
-namespace internal {
-namespace {
-
-TEST(StructurallyValidTest, ValidUTF8String) {
-  // On GCC, this string can be written as:
-  //   "abcd 1234 - \u2014\u2013\u2212"
-  // MSVC seems to interpret \u differently.
-  string valid_str("abcd 1234 - \342\200\224\342\200\223\342\210\222 - xyz789");
-  EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(),
-                                      valid_str.size()));
-  // Additional check for pointer alignment
-  for (int i = 1; i < 8; ++i) {
-    EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data() + i,
-                                        valid_str.size() - i));
-  }
+        /// <summary>
+        /// Gets the list's hash code.
+        /// </summary>
+        public static int GetHashCode<T>(List<T> list)
+        {
+            if (list == null)
+            {
+                return 0;
+            }
+            int hash = 31;
+            foreach (T element in list)
+            {
+                hash = hash * 29 + element.GetHashCode();
+            }
+            return hash;
+        }
+    }
 }
-
-TEST(StructurallyValidTest, InvalidUTF8String) {
-  const string invalid_str("abcd\xA0\xB0\xA0\xB0\xA0\xB0 - xyz789");
-  EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data(),
-                                       invalid_str.size()));
-  // Additional check for pointer alignment
-  for (int i = 1; i < 8; ++i) {
-    EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data() + i,
-                                         invalid_str.size() - i));
-  }
-}
-
-}  // namespace
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
