@@ -549,10 +549,10 @@ class MessageMap(MutableMapping):
     self._values = {}
 
   def __getitem__(self, key):
+    key = self._key_checker.CheckValue(key)
     try:
       return self._values[key]
     except KeyError:
-      key = self._key_checker.CheckValue(key)
       new_element = self._message_descriptor._concrete_class()
       new_element._SetListener(self._message_listener)
       self._values[key] = new_element
@@ -584,12 +584,14 @@ class MessageMap(MutableMapping):
       return default
 
   def __contains__(self, item):
+    item = self._key_checker.CheckValue(item)
     return item in self._values
 
   def __setitem__(self, key, value):
     raise ValueError('May not set values directly, call my_map[key].foo = 5')
 
   def __delitem__(self, key):
+    key = self._key_checker.CheckValue(key)
     del self._values[key]
     self._message_listener.Modified()
 
