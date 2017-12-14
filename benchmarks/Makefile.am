@@ -125,8 +125,8 @@ cpp: protoc_middleman protoc_middleman2 cpp-benchmark
 ############# JAVA RULES ##############
 
 java_benchmark_testing_files = 
-	java/src/main/java/com/google/protocolbuffers/ProtoBench.java            \
-	java/src/main/java/com/google/protocolbuffers/ProtoBenchCaliper.java
+	java/src/main/java/com/google/protobuf/ProtoBench.java            \
+	java/src/main/java/com/google/protobuf/ProtoBenchCaliper.java
 
 javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middleman2
 	cp -r java tmp && cd tmp/java &&  mvn clean compile assembly:single
