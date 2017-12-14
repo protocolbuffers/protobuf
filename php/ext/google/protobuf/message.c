@@ -1131,7 +1131,7 @@ PHP_METHOD(Timestamp, fromDateTime) {
   }
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &datetime,
-                            date_interface_ce) == FAILURE) {
+                            PHP_PROTO_CE_UNREF(date_interface_ce)) == FAILURE) {
     zend_error(E_USER_ERROR, "Expect DatetimeInterface.");
     return;
   }
