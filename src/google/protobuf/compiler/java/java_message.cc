@@ -437,11 +437,10 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print(
-        "$field_name$($field_number$),\n",
-        "field_name",
-        ToUpper(field->name()),
-        "field_number",
-        SimpleItoa(field->number()));
+        "$deprecation$$field_name$($field_number$),\n",
+        "deprecation", field->options().deprecated() ? "@java.lang.Deprecated " : "",
+        "field_name", ToUpper(field->name()),
+        "field_number", SimpleItoa(field->number()));
     }
     printer->Print(
       "$cap_oneof_name$_NOT_SET(0);\n",

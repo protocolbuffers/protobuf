@@ -189,6 +189,9 @@ message NestedTestAllTypes {
 
 message TestDeprecatedFields {
   optional int32 deprecated_int32 = 1 [deprecated=true];
+  oneof oneof_fields {
+    int32 deprecated_int32_in_oneof = 2 [deprecated=true];
+  }
 }
 
 message TestDeprecatedMessage {

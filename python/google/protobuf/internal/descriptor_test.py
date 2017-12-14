@@ -742,6 +742,19 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
           deprecated: true
         >
       >
+      field {
+        name: "deprecated_int32_in_oneof"
+        number: 2
+        label: LABEL_OPTIONAL
+        type: TYPE_INT32
+        options {
+          deprecated: true
+        }
+        oneof_index: 0
+      }
+      oneof_decl {
+        name: "oneof_fields"
+      }
       """
 
     self._InternalTestCopyToProto(
