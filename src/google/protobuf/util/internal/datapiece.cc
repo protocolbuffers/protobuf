@@ -106,8 +106,22 @@ StatusOr<float> DoubleToFloat(double before) {
   } else if (!MathLimits<double>::IsFinite(before)) {
     // Converting a double +inf/-inf to float should just work.
     return static_cast<float>(before);
-  } else if (before > std::numeric_limits<float>::max() ||
-             before < -std::numeric_limits<float>::max()) {
+  } else if (before > std::numeric_limits<float>::max()) {
+    // We accept values that are slightly larger than FLT_MAX or slightly
+    // smaller than FLT_MIN because converting FLT_MAX/FLT_MIN to text may
+    // result in these values due to round-up/down.
+    if (before <= 3.4028235e+38) {
+      return std::numeric_limits<float>::max();
+    }
+    // Double value outside of the range of float.
+    return InvalidArgument(DoubleAsString(before));
+  } else if (before < -std::numeric_limits<float>::max()) {
+    // We accept values that are slightly larger than FLT_MAX or slightly
+    // smaller than FLT_MIN because converting FLT_MAX/FLT_MIN to text may
+    // result in these values due to round-up/down.
+    if (before >= -3.4028235e+38) {
+      return -std::numeric_limits<float>::max();
+    }
     // Double value outside of the range of float.
     return InvalidArgument(DoubleAsString(before));
   } else {

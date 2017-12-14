@@ -332,6 +332,16 @@ TEST_F(JsonUtilTest, TestDynamicMessage) {
   EXPECT_EQ(ToJson(generated, options), ToJson(*message, options));
 }
 
+TEST_F(JsonUtilTest, FloatValueRoundTrip) {
+  TestMessage m;
+  m.add_repeated_float_value(std::numeric_limits<float>::max());
+  m.add_repeated_float_value(-std::numeric_limits<float>::max());
+
+  string json = ToJson(m, JsonPrintOptions());
+  Status status = JsonStringToMessage(json, &m, JsonParseOptions());
+  ASSERT_TRUE(status.ok()) << status.ToString();
+}
+
 typedef std::pair<char*, int> Segment;
 // A ZeroCopyOutputStream that writes to multiple buffers.
 class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
