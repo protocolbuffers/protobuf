@@ -1123,21 +1123,16 @@ PHP_METHOD(Timestamp, fromDateTime) {
   zval* datetime;
   zval member;
 
-  if (zend_parse_parameters(
-          ZEND_NUM_ARGS() TSRMLS_CC, "z", &datetime) == FAILURE) {
-    return;
-  }
-
-  zend_class_entry* ce = Z_OBJCE_P(datetime);
-  PHP_PROTO_CE_DECLARE datetime_ce;
-  if (php_proto_zend_lookup_class("\\Datetime", 9, &datetime_ce) ==
-      FAILURE) {
+  PHP_PROTO_CE_DECLARE date_interface_ce;
+  if (php_proto_zend_lookup_class("\\DatetimeInterface", 18,
+                                  &date_interface_ce) == FAILURE) {
     zend_error(E_ERROR, "Make sure date extension is enabled.");
     return;
   }
 
-  if (!instanceof_function(PHP_PROTO_CE_UNREF(datetime_ce), ce TSRMLS_CC)) {
-    zend_error(E_USER_ERROR, "Expect Datetime.");
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &datetime,
+                            date_interface_ce) == FAILURE) {
+    zend_error(E_USER_ERROR, "Expect DatetimeInterface.");
     return;
   }
 
