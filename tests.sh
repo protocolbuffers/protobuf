@@ -44,9 +44,6 @@ build_cpp() {
   # appears to be missing it: https://github.com/travis-ci/travis-ci/issues/6996
   if [[ $(type cmake 2>/dev/null) ]]; then
     # Verify benchmarking code can build successfully.
-    git submodule init
-    git submodule update
-    cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
     cd benchmarks && make cpp-benchmark && cd ..
   else
     echo ""

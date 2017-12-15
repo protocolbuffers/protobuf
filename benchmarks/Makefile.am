@@ -100,6 +100,17 @@ $(benchmarks_protoc_outputs_header): protoc_middleman
 $(benchmarks_protoc_outputs_proto2): protoc_middleman2
 $(benchmarks_protoc_outputs_proto2_header): protoc_middleman2
 
+initialize_submodule:
+	oldpwd=`pwd`
+	cd $(top_srcdir)/third_party
+	git submodule update --init -r
+	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
+	cd $$oldpwd
+	touch initialize_submodule
+	
+$(top_srcdir)/src/libprotobuf.la: initialize_submodule
+$(top_srcdir)/third_party/benchmark/src/libbenchmark.a: initialize_submodule
+
 AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
 
 bin_PROGRAMS = cpp-benchmark
@@ -110,21 +121,21 @@ cpp_benchmark_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir) -I$(top_srcdir)/third_p
 # Explicit deps because BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
 # See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
-cpp_benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header)
+cpp_benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
 nodist_cpp_benchmark_SOURCES =                                             \
 	$(benchmarks_protoc_outputs)                                             \
 	$(benchmarks_protoc_outputs_proto2)                                      \
 	$(benchmarks_protoc_outputs_proto2_header)                               \
 	$(benchmarks_protoc_outputs_header)
 
-cpp: protoc_middleman protoc_middleman2 cpp-benchmark
+cpp: protoc_middleman protoc_middleman2 cpp-benchmark initialize_submodule
 	./cpp-benchmark $(all_data)
 
 ############ CPP RULES END ############
 
 ############# JAVA RULES ##############
 
-java_benchmark_testing_files = 
+java_benchmark_testing_files =                                      \
 	java/src/main/java/com/google/protobuf/ProtoBench.java            \
 	java/src/main/java/com/google/protobuf/ProtoBenchCaliper.java
 
@@ -152,6 +163,7 @@ CLEANFILES =                                                               \
 	$(benchmarks_protoc_outputs_header)                                      \
 	$(benchmarks_protoc_outputs_proto2)                                      \
 	$(benchmarks_protoc_outputs_proto2_header)                               \
+	initialize_submodule                                                     \
 	make_tmp_dir                                                             \
 	protoc_middleman                                                         \
 	protoc_middleman2                                                        \

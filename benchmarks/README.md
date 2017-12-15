@@ -5,21 +5,17 @@ This directory contains benchmarking schemas and data sets that you
 can use to test a variety of performance scenarios against your
 protobuf language runtime.
 
-## Benchmark tools and build instructions
+## Prerequisite
 
 First, you need to follow the instruction in the root directory's README to 
 build your language's protobuf, then:
 
 ### CPP
-We are using [google/benchmark](https://github.com/google/benchmark) as the 
-benchmark tool for testing cpp. This is included as submodule under third_party
-directory. To init and build this tools, you need to do this under root dirctory:
+You need to install [cmake](https://cmake.org/) before building the benchmark.
 
-```
-$ cd third_party
-$ git submodule update --init -r
-$ cd benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
-```
+We are using [google/benchmark](https://github.com/google/benchmark) as the 
+benchmark tool for testing cpp. This will be automaticly made during build the 
+cpp benchmark.
 
 ### JAVA
 We're using maven to build the java benchmarks, which is the same as to build 
@@ -62,12 +58,14 @@ $ ./cpp-benchmark $(specific generated dataset file name)
 
 ## Benchmark datasets
 
-There's some big testing data not included in the directory initially, you need to 
+There's some optional big testing data which is not included in the directory initially, you need to 
 run the following command to download the testing data:
 
 ```
 $ ./download_data.sh 
 ```
+
+After doing this the big data file will automaticly generated in the benchmark directory.
 
 Each data set is in the format of benchmarks.proto:
 
