@@ -47,6 +47,7 @@ DEV=$2
 # Make sure all files are world-readable.
 find python -type d -exec chmod a+r,a+x {} +
 find python -type f -exec chmod a+r {} +
+umask 0022
 
 # Check that the supplied version number matches what's inside the source code.
 SOURCE_VERSION=`get_source_version`
