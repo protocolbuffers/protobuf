@@ -182,8 +182,15 @@ zend_function_entry protobuf_functions[] = {
   ZEND_FE_END
 };
 
+static const zend_module_dep protobuf_deps[] = {
+  ZEND_MOD_OPTIONAL("date")
+  ZEND_MOD_END
+};
+
 zend_module_entry protobuf_module_entry = {
-  STANDARD_MODULE_HEADER,
+  STANDARD_MODULE_HEADER_EX,
+  NULL,
+  protobuf_deps,
   PHP_PROTOBUF_EXTNAME,     // extension name
   protobuf_functions,       // function list
   PHP_MINIT(protobuf),      // process startup

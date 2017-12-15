@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <php.h>
-#include <ext/date/php_date.h>
 #include <stdlib.h>
 
 #include "protobuf.h"
@@ -1124,17 +1123,41 @@ PHP_METHOD(Timestamp, fromDateTime) {
   zval* datetime;
   zval member;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &datetime,
-                            php_date_get_date_ce()) == FAILURE) {
+  PHP_PROTO_CE_DECLARE date_interface_ce;
+  if (php_proto_zend_lookup_class("\\DatetimeInterface", 18,
+                                  &date_interface_ce) == FAILURE) {
+    zend_error(E_ERROR, "Make sure date extension is enabled.");
     return;
   }
 
-  php_date_obj* dateobj = UNBOX(php_date_obj, datetime);
-  if (!dateobj->time->sse_uptodate) {
-    timelib_update_ts(dateobj->time, NULL);
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &datetime,
+                            PHP_PROTO_CE_UNREF(date_interface_ce)) == FAILURE) {
+    zend_error(E_USER_ERROR, "Expect DatetimeInterface.");
+    return;
   }
 
-  int64_t timestamp = dateobj->time->sse;
+  // Get timestamp from Datetime object.
+  zval retval;
+  zval function_name;
+  int64_t timestamp;
+
+#if PHP_MAJOR_VERSION < 7
+  INIT_ZVAL(retval);
+  INIT_ZVAL(function_name);
+#endif
+
+  PHP_PROTO_ZVAL_STRING(&function_name, "date_timestamp_get", 1);
+
+  if (call_user_function(EG(function_table), NULL, &function_name, &retval, 1,
+          ZVAL_PTR_TO_CACHED_PTR(datetime) TSRMLS_CC) == FAILURE) {
+    zend_error(E_ERROR, "Cannot get timestamp from DateTime.");
+    return;
+  }
+
+  protobuf_convert_to_int64(&retval, &timestamp);
+
+  zval_dtor(&retval);
+  zval_dtor(&function_name);
 
   // Set seconds
   MessageHeader* self = UNBOX(MessageHeader, getThis());
@@ -1142,20 +1165,18 @@ PHP_METHOD(Timestamp, fromDateTime) {
       upb_msgdef_ntofz(self->descriptor->msgdef, "seconds");
   void* storage = message_data(self);
   void* memory = slot_memory(self->descriptor->layout, storage, field);
-  *(int64_t*)memory = dateobj->time->sse;
+  *(int64_t*)memory = timestamp;
 
   // Set nanos
   field = upb_msgdef_ntofz(self->descriptor->msgdef, "nanos");
   storage = message_data(self);
   memory = slot_memory(self->descriptor->layout, storage, field);
   *(int32_t*)memory = 0;
+
+  RETURN_NULL();
 }
 
 PHP_METHOD(Timestamp, toDateTime) {
-  zval datetime;
-  php_date_instantiate(php_date_get_date_ce(), &datetime TSRMLS_CC);
-  php_date_obj* dateobj = UNBOX(php_date_obj, &datetime);
-
   // Get seconds
   MessageHeader* self = UNBOX(MessageHeader, getThis());
   const upb_fielddef* field =
@@ -1176,14 +1197,38 @@ PHP_METHOD(Timestamp, toDateTime) {
   strftime(formated_time, sizeof(formated_time), "%Y-%m-%dT%H:%M:%SUTC",
            utc_time);
 
-  if (!php_date_initialize(dateobj, formated_time, strlen(formated_time), NULL,
-                           NULL, 0 TSRMLS_CC)) {
-    zval_dtor(&datetime);
-    RETURN_NULL();
+  // Create Datetime object.
+  zval datetime;
+  zval formated_time_php;
+  zval function_name;
+  int64_t timestamp = 0;
+
+#if PHP_MAJOR_VERSION < 7
+  INIT_ZVAL(function_name);
+  INIT_ZVAL(formated_time_php);
+#endif
+
+  PHP_PROTO_ZVAL_STRING(&function_name, "date_create", 1);
+  PHP_PROTO_ZVAL_STRING(&formated_time_php, formated_time, 1);
+
+  CACHED_VALUE params[1] = {ZVAL_TO_CACHED_VALUE(formated_time_php)};
+
+  if (call_user_function(EG(function_table), NULL,
+                         &function_name, &datetime, 1,
+                         params TSRMLS_CC) == FAILURE) {
+    zend_error(E_ERROR, "Cannot create DateTime.");
+    return;
   }
 
+  zval_dtor(&formated_time_php);
+  zval_dtor(&function_name);
+
+#if PHP_MAJOR_VERSION < 7
   zval* datetime_ptr = &datetime;
   PHP_PROTO_RETVAL_ZVAL(datetime_ptr);
+#else
+  ZVAL_OBJ(return_value, Z_OBJ(datetime));
+#endif
 }
 
 // -----------------------------------------------------------------------------
