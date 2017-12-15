@@ -525,6 +525,7 @@ js_well_known_types_sources =                                  \
 	google/protobuf/compiler/js/well_known_types/timestamp.js
 # We have to cd to $(srcdir) so that out-of-tree builds work properly.
 google/protobuf/compiler/js/well_known_types_embed.cc: js_embed$(EXEEXT) $(js_well_known_types_sources)
+	mkdir -p `dirname $@` && \
 	oldpwd=`pwd` && cd $(srcdir) && \
 	$$oldpwd/js_embed$(EXEEXT) $(js_well_known_types_sources) > $$oldpwd/$@
 
