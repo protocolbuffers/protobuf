@@ -613,6 +613,11 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class TestMapSubmessage : pb::IMessage<TestMapSubmessage> {
@@ -748,6 +753,11 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class TestMessageMap : pb::IMessage<TestMessageMap> {
@@ -867,6 +877,11 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -1011,6 +1026,11 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -1414,6 +1434,11 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -1537,6 +1562,11 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
     #region Nested types
@@ -1672,6 +1702,11 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }

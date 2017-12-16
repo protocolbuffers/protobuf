@@ -359,6 +359,11 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -767,6 +772,11 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the Field message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1127,6 +1137,11 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -1316,6 +1331,11 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -1493,6 +1513,11 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }

@@ -235,6 +235,15 @@ void MessageGenerator::Generate(io::Printer* printer) {
   GenerateMessageSerializationMethods(printer);
   GenerateMergingMethods(printer);
 
+  // Generate DiscardUnknownFields() method
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print(
+      vars,
+      "public void DiscardUnknownFields() {\n"
+      "  _unknownFields = null;\n"
+      "}\n\n");
+ 
+
   // Nested messages and enums
   if (HasNestedGeneratedTypes()) {
     printer->Print(

@@ -310,6 +310,11 @@ namespace Conformance {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -652,6 +657,11 @@ namespace Conformance {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }

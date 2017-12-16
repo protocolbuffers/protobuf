@@ -364,6 +364,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the TestMessageWithCustomOptions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -482,6 +487,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class CustomOptionFooResponse : pb::IMessage<CustomOptionFooResponse> {
@@ -581,6 +591,11 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -684,6 +699,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class CustomOptionFooServerMessage : pb::IMessage<CustomOptionFooServerMessage> {
@@ -785,6 +805,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class DummyMessageContainingEnum : pb::IMessage<DummyMessageContainingEnum> {
@@ -884,6 +909,11 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
     #region Nested types
@@ -1000,6 +1030,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class CustomOptionMinIntegerValues : pb::IMessage<CustomOptionMinIntegerValues> {
@@ -1099,6 +1134,11 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -1202,6 +1242,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class CustomOptionOtherValues : pb::IMessage<CustomOptionOtherValues> {
@@ -1301,6 +1346,11 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -1404,6 +1454,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class SettingRealsFromNegativeInts : pb::IMessage<SettingRealsFromNegativeInts> {
@@ -1503,6 +1558,11 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -1709,6 +1769,11 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -1928,6 +1993,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the ComplexOptionType2 message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2057,6 +2127,11 @@ namespace UnitTest.Issues.TestProtos {
               }
             }
           }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
         }
 
       }
@@ -2193,6 +2268,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -2295,6 +2375,11 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -2494,6 +2579,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   public sealed partial class AggregateMessage : pb::IMessage<AggregateMessage> {
@@ -2623,6 +2713,11 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -2725,6 +2820,11 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
     #region Nested types
@@ -2861,6 +2961,11 @@ namespace UnitTest.Issues.TestProtos {
               }
             }
           }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
         }
 
       }

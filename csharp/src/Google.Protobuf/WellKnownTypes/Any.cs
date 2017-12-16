@@ -303,6 +303,11 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   #endregion

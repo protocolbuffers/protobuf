@@ -287,6 +287,11 @@ namespace Google.Protobuf.Examples.AddressBook {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the Person message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -452,6 +457,11 @@ namespace Google.Protobuf.Examples.AddressBook {
           }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
+        }
+
       }
 
     }
@@ -579,6 +589,11 @@ namespace Google.Protobuf.Examples.AddressBook {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }

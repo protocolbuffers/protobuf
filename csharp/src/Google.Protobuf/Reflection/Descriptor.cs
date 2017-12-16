@@ -309,6 +309,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -736,6 +741,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -1066,6 +1076,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the DescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1259,6 +1274,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
+        }
+
       }
 
       /// <summary>
@@ -1427,6 +1447,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
+        }
+
       }
 
     }
@@ -1554,6 +1579,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -1978,6 +2008,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the FieldDescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2209,6 +2244,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -2446,6 +2486,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the EnumDescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2617,6 +2662,11 @@ namespace Google.Protobuf.Reflection {
               }
             }
           }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
         }
 
       }
@@ -2818,6 +2868,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   /// <summary>
@@ -3002,6 +3057,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -3290,6 +3350,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -4007,6 +4072,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the FileOptions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4322,6 +4392,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -4682,6 +4757,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the FieldOptions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4837,6 +4917,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -5031,6 +5116,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   internal sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions> {
@@ -5191,6 +5281,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
   }
 
   internal sealed partial class ServiceOptions : pb::IMessage<ServiceOptions> {
@@ -5349,6 +5444,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
@@ -5537,6 +5637,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
     #region Nested types
@@ -5864,6 +5969,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the UninterpretedOption message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6028,6 +6138,11 @@ namespace Google.Protobuf.Reflection {
               }
             }
           }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
         }
 
       }
@@ -6203,6 +6318,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
     #region Nested types
@@ -6507,6 +6627,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
+        }
+
       }
 
     }
@@ -6640,6 +6765,11 @@ namespace Google.Protobuf.Reflection {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
     #region Nested types
@@ -6864,6 +6994,11 @@ namespace Google.Protobuf.Reflection {
               }
             }
           }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
         }
 
       }

@@ -3413,6 +3413,11 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
+    }
+
     #region Nested types
     /// <summary>Container for nested types declared in the TestAllTypesProto3 message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3588,6 +3593,11 @@ namespace ProtobufTestMessages.Proto3 {
           }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void DiscardUnknownFields() {
+          _unknownFields = null;
+        }
+
       }
 
     }
@@ -3720,6 +3730,11 @@ namespace ProtobufTestMessages.Proto3 {
           }
         }
       }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void DiscardUnknownFields() {
+      _unknownFields = null;
     }
 
   }
