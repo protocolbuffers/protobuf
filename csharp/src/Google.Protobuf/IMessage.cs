@@ -67,6 +67,12 @@ namespace Google.Protobuf
         /// same value as the static property declared on the type.
         /// </summary>
         MessageDescriptor Descriptor { get; }
+
+        private pb::UnknownFieldSet _unknownFields;
+        public void DiscardUnknownFields()
+        {
+            _unknownFields = null;
+        }
     }
 
     /// <summary>

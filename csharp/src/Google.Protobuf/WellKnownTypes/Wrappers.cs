@@ -59,7 +59,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class DoubleValue : pb::IMessage<DoubleValue> {
     private static readonly pb::MessageParser<DoubleValue> _parser = new pb::MessageParser<DoubleValue>(() => new DoubleValue());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DoubleValue> Parser { get { return _parser; } }
 
@@ -196,7 +195,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class FloatValue : pb::IMessage<FloatValue> {
     private static readonly pb::MessageParser<FloatValue> _parser = new pb::MessageParser<FloatValue>(() => new FloatValue());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FloatValue> Parser { get { return _parser; } }
 
@@ -333,7 +331,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Int64Value : pb::IMessage<Int64Value> {
     private static readonly pb::MessageParser<Int64Value> _parser = new pb::MessageParser<Int64Value>(() => new Int64Value());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Int64Value> Parser { get { return _parser; } }
 
@@ -470,7 +467,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class UInt64Value : pb::IMessage<UInt64Value> {
     private static readonly pb::MessageParser<UInt64Value> _parser = new pb::MessageParser<UInt64Value>(() => new UInt64Value());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<UInt64Value> Parser { get { return _parser; } }
 
@@ -607,7 +603,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Int32Value : pb::IMessage<Int32Value> {
     private static readonly pb::MessageParser<Int32Value> _parser = new pb::MessageParser<Int32Value>(() => new Int32Value());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Int32Value> Parser { get { return _parser; } }
 
@@ -744,7 +739,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class UInt32Value : pb::IMessage<UInt32Value> {
     private static readonly pb::MessageParser<UInt32Value> _parser = new pb::MessageParser<UInt32Value>(() => new UInt32Value());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<UInt32Value> Parser { get { return _parser; } }
 
@@ -881,7 +875,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class BoolValue : pb::IMessage<BoolValue> {
     private static readonly pb::MessageParser<BoolValue> _parser = new pb::MessageParser<BoolValue>(() => new BoolValue());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BoolValue> Parser { get { return _parser; } }
 
@@ -1018,7 +1011,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class StringValue : pb::IMessage<StringValue> {
     private static readonly pb::MessageParser<StringValue> _parser = new pb::MessageParser<StringValue>(() => new StringValue());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<StringValue> Parser { get { return _parser; } }
 
@@ -1155,7 +1147,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class BytesValue : pb::IMessage<BytesValue> {
     private static readonly pb::MessageParser<BytesValue> _parser = new pb::MessageParser<BytesValue>(() => new BytesValue());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BytesValue> Parser { get { return _parser; } }
 

@@ -40,7 +40,6 @@ namespace Google.Protobuf.TestProtos {
   #region Messages
   public sealed partial class PublicImportMessage : pb::IMessage<PublicImportMessage> {
     private static readonly pb::MessageParser<PublicImportMessage> _parser = new pb::MessageParser<PublicImportMessage>(() => new PublicImportMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<PublicImportMessage> Parser { get { return _parser; } }
 

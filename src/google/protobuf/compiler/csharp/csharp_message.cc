@@ -122,8 +122,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
       vars,
       "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
-  printer->Print(
-      "private pb::UnknownFieldSet _unknownFields;\n");
+  //printer->Print(
+  //    "private pb::UnknownFieldSet _unknownFields;\n");
 
   WriteGeneratedCodeAttributes(printer);
 
@@ -234,6 +234,14 @@ void MessageGenerator::Generate(io::Printer* printer) {
   GenerateFrameworkMethods(printer);
   GenerateMessageSerializationMethods(printer);
   GenerateMergingMethods(printer);
+
+  // Generate DiscardUnknownFields() method
+  //WriteGeneratedCodeAttributes(printer);
+  //printer->Print(
+  //    vars,
+  //    "public void DiscardUnknownFields() {\n"
+  //    "  _unknownFields = null;\n"
+  //    "}\n\n");
 
   // Nested messages and enums
   if (HasNestedGeneratedTypes()) {

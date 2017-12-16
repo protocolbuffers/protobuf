@@ -235,7 +235,6 @@ namespace ProtobufTestMessages.Proto3 {
   /// </summary>
   public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3> {
     private static readonly pb::MessageParser<TestAllTypesProto3> _parser = new pb::MessageParser<TestAllTypesProto3>(() => new TestAllTypesProto3());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestAllTypesProto3> Parser { get { return _parser; } }
 
@@ -3431,7 +3430,6 @@ namespace ProtobufTestMessages.Proto3 {
 
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
-        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
@@ -3599,7 +3597,6 @@ namespace ProtobufTestMessages.Proto3 {
 
   public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 

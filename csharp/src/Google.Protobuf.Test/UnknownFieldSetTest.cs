@@ -124,5 +124,17 @@ namespace Google.Protobuf
             Assert.AreEqual(message.CalculateSize(), otherEmptyMessage.CalculateSize());
             Assert.AreEqual(message.ToByteArray(), otherEmptyMessage.ToByteArray());
         }
+
+        [Test]
+        public void TestDiscardUnknownFields()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var emptyMessage = new TestEmptyMessage();
+            emptyMessage.MergeFrom(message.ToByteArray());
+            Assert.AreEqual(emptyMessage.CalculateSize(),
+                            message.CalculateSize());
+            emptyMessage.DiscardUnknownFields();
+            Assert.AreEqual(emptyMessage.CalculateSize(), 0);            
+        }
     }
 }

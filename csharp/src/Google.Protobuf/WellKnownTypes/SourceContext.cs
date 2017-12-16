@@ -46,7 +46,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class SourceContext : pb::IMessage<SourceContext> {
     private static readonly pb::MessageParser<SourceContext> _parser = new pb::MessageParser<SourceContext>(() => new SourceContext());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<SourceContext> Parser { get { return _parser; } }
 

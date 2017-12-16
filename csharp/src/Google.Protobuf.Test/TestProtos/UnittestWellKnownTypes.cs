@@ -181,7 +181,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes> {
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestWellKnownTypes> Parser { get { return _parser; } }
 
@@ -925,7 +924,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes> {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<RepeatedWellKnownTypes> Parser { get { return _parser; } }
 
@@ -1389,7 +1387,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class OneofWellKnownTypes : pb::IMessage<OneofWellKnownTypes> {
     private static readonly pb::MessageParser<OneofWellKnownTypes> _parser = new pb::MessageParser<OneofWellKnownTypes>(() => new OneofWellKnownTypes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<OneofWellKnownTypes> Parser { get { return _parser; } }
 
@@ -2150,7 +2147,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes> {
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MapWellKnownTypes> Parser { get { return _parser; } }
 

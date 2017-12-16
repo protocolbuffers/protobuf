@@ -242,7 +242,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
@@ -1621,7 +1620,6 @@ namespace Google.Protobuf.TestProtos {
 
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
-        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
@@ -1763,7 +1761,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes> {
     private static readonly pb::MessageParser<NestedTestAllTypes> _parser = new pb::MessageParser<NestedTestAllTypes>(() => new NestedTestAllTypes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<NestedTestAllTypes> Parser { get { return _parser; } }
 
@@ -1952,7 +1949,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields> {
     private static readonly pb::MessageParser<TestDeprecatedFields> _parser = new pb::MessageParser<TestDeprecatedFields>(() => new TestDeprecatedFields());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestDeprecatedFields> Parser { get { return _parser; } }
 
@@ -2086,7 +2082,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
@@ -2215,7 +2210,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields> {
     private static readonly pb::MessageParser<TestReservedFields> _parser = new pb::MessageParser<TestReservedFields>(() => new TestReservedFields());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestReservedFields> Parser { get { return _parser; } }
 
@@ -2319,7 +2313,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested> {
     private static readonly pb::MessageParser<TestForeignNested> _parser = new pb::MessageParser<TestForeignNested>(() => new TestForeignNested());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestForeignNested> Parser { get { return _parser; } }
 
@@ -2457,7 +2450,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber> {
     private static readonly pb::MessageParser<TestReallyLargeTagNumber> _parser = new pb::MessageParser<TestReallyLargeTagNumber>(() => new TestReallyLargeTagNumber());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestReallyLargeTagNumber> Parser { get { return _parser; } }
 
@@ -2618,7 +2610,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage> {
     private static readonly pb::MessageParser<TestRecursiveMessage> _parser = new pb::MessageParser<TestRecursiveMessage>(() => new TestRecursiveMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestRecursiveMessage> Parser { get { return _parser; } }
 
@@ -2784,7 +2775,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA> {
     private static readonly pb::MessageParser<TestMutualRecursionA> _parser = new pb::MessageParser<TestMutualRecursionA>(() => new TestMutualRecursionA());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestMutualRecursionA> Parser { get { return _parser; } }
 
@@ -2919,7 +2909,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB> {
     private static readonly pb::MessageParser<TestMutualRecursionB> _parser = new pb::MessageParser<TestMutualRecursionB>(() => new TestMutualRecursionB());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestMutualRecursionB> Parser { get { return _parser; } }
 
@@ -3082,7 +3071,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestEnumAllowAlias : pb::IMessage<TestEnumAllowAlias> {
     private static readonly pb::MessageParser<TestEnumAllowAlias> _parser = new pb::MessageParser<TestEnumAllowAlias>(() => new TestEnumAllowAlias());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestEnumAllowAlias> Parser { get { return _parser; } }
 
@@ -3215,7 +3203,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames> {
     private static readonly pb::MessageParser<TestCamelCaseFieldNames> _parser = new pb::MessageParser<TestCamelCaseFieldNames>(() => new TestCamelCaseFieldNames());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestCamelCaseFieldNames> Parser { get { return _parser; } }
 
@@ -3520,7 +3507,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestFieldOrderings : pb::IMessage<TestFieldOrderings> {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestFieldOrderings> Parser { get { return _parser; } }
 
@@ -3741,7 +3727,6 @@ namespace Google.Protobuf.TestProtos {
     public static partial class Types {
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
-        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
@@ -3908,7 +3893,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class SparseEnumMessage : pb::IMessage<SparseEnumMessage> {
     private static readonly pb::MessageParser<SparseEnumMessage> _parser = new pb::MessageParser<SparseEnumMessage>(() => new SparseEnumMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<SparseEnumMessage> Parser { get { return _parser; } }
 
@@ -4040,7 +4024,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class OneString : pb::IMessage<OneString> {
     private static readonly pb::MessageParser<OneString> _parser = new pb::MessageParser<OneString>(() => new OneString());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<OneString> Parser { get { return _parser; } }
 
@@ -4169,7 +4152,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class MoreString : pb::IMessage<MoreString> {
     private static readonly pb::MessageParser<MoreString> _parser = new pb::MessageParser<MoreString>(() => new MoreString());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MoreString> Parser { get { return _parser; } }
 
@@ -4290,7 +4272,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class OneBytes : pb::IMessage<OneBytes> {
     private static readonly pb::MessageParser<OneBytes> _parser = new pb::MessageParser<OneBytes>(() => new OneBytes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<OneBytes> Parser { get { return _parser; } }
 
@@ -4419,7 +4400,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class MoreBytes : pb::IMessage<MoreBytes> {
     private static readonly pb::MessageParser<MoreBytes> _parser = new pb::MessageParser<MoreBytes>(() => new MoreBytes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MoreBytes> Parser { get { return _parser; } }
 
@@ -4551,7 +4531,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class Int32Message : pb::IMessage<Int32Message> {
     private static readonly pb::MessageParser<Int32Message> _parser = new pb::MessageParser<Int32Message>(() => new Int32Message());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Int32Message> Parser { get { return _parser; } }
 
@@ -4680,7 +4659,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class Uint32Message : pb::IMessage<Uint32Message> {
     private static readonly pb::MessageParser<Uint32Message> _parser = new pb::MessageParser<Uint32Message>(() => new Uint32Message());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Uint32Message> Parser { get { return _parser; } }
 
@@ -4809,7 +4787,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class Int64Message : pb::IMessage<Int64Message> {
     private static readonly pb::MessageParser<Int64Message> _parser = new pb::MessageParser<Int64Message>(() => new Int64Message());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Int64Message> Parser { get { return _parser; } }
 
@@ -4938,7 +4915,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class Uint64Message : pb::IMessage<Uint64Message> {
     private static readonly pb::MessageParser<Uint64Message> _parser = new pb::MessageParser<Uint64Message>(() => new Uint64Message());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Uint64Message> Parser { get { return _parser; } }
 
@@ -5067,7 +5043,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class BoolMessage : pb::IMessage<BoolMessage> {
     private static readonly pb::MessageParser<BoolMessage> _parser = new pb::MessageParser<BoolMessage>(() => new BoolMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BoolMessage> Parser { get { return _parser; } }
 
@@ -5199,7 +5174,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestOneof : pb::IMessage<TestOneof> {
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestOneof> Parser { get { return _parser; } }
 
@@ -5426,7 +5400,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes> {
     private static readonly pb::MessageParser<TestPackedTypes> _parser = new pb::MessageParser<TestPackedTypes>(() => new TestPackedTypes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestPackedTypes> Parser { get { return _parser; } }
 
@@ -5825,7 +5798,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes> {
     private static readonly pb::MessageParser<TestUnpackedTypes> _parser = new pb::MessageParser<TestUnpackedTypes>(() => new TestUnpackedTypes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestUnpackedTypes> Parser { get { return _parser; } }
 
@@ -6220,7 +6192,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes> {
     private static readonly pb::MessageParser<TestRepeatedScalarDifferentTagSizes> _parser = new pb::MessageParser<TestRepeatedScalarDifferentTagSizes>(() => new TestRepeatedScalarDifferentTagSizes());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestRepeatedScalarDifferentTagSizes> Parser { get { return _parser; } }
 
@@ -6461,7 +6432,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage> {
     private static readonly pb::MessageParser<TestCommentInjectionMessage> _parser = new pb::MessageParser<TestCommentInjectionMessage>(() => new TestCommentInjectionMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestCommentInjectionMessage> Parser { get { return _parser; } }
 
@@ -6596,7 +6566,6 @@ namespace Google.Protobuf.TestProtos {
   /// </summary>
   public sealed partial class FooRequest : pb::IMessage<FooRequest> {
     private static readonly pb::MessageParser<FooRequest> _parser = new pb::MessageParser<FooRequest>(() => new FooRequest());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FooRequest> Parser { get { return _parser; } }
 
@@ -6697,7 +6666,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class FooResponse : pb::IMessage<FooResponse> {
     private static readonly pb::MessageParser<FooResponse> _parser = new pb::MessageParser<FooResponse>(() => new FooResponse());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FooResponse> Parser { get { return _parser; } }
 
@@ -6798,7 +6766,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage> {
     private static readonly pb::MessageParser<FooClientMessage> _parser = new pb::MessageParser<FooClientMessage>(() => new FooClientMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FooClientMessage> Parser { get { return _parser; } }
 
@@ -6899,7 +6866,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage> {
     private static readonly pb::MessageParser<FooServerMessage> _parser = new pb::MessageParser<FooServerMessage>(() => new FooServerMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FooServerMessage> Parser { get { return _parser; } }
 
@@ -7000,7 +6966,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class BarRequest : pb::IMessage<BarRequest> {
     private static readonly pb::MessageParser<BarRequest> _parser = new pb::MessageParser<BarRequest>(() => new BarRequest());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BarRequest> Parser { get { return _parser; } }
 
@@ -7101,7 +7066,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class BarResponse : pb::IMessage<BarResponse> {
     private static readonly pb::MessageParser<BarResponse> _parser = new pb::MessageParser<BarResponse>(() => new BarResponse());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BarResponse> Parser { get { return _parser; } }
 
@@ -7202,7 +7166,6 @@ namespace Google.Protobuf.TestProtos {
 
   public sealed partial class TestEmptyMessage : pb::IMessage<TestEmptyMessage> {
     private static readonly pb::MessageParser<TestEmptyMessage> _parser = new pb::MessageParser<TestEmptyMessage>(() => new TestEmptyMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestEmptyMessage> Parser { get { return _parser; } }
 

@@ -90,7 +90,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class Issue307 : pb::IMessage<Issue307> {
     private static readonly pb::MessageParser<Issue307> _parser = new pb::MessageParser<Issue307>(() => new Issue307());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Issue307> Parser { get { return _parser; } }
 
@@ -193,7 +192,6 @@ namespace UnitTest.Issues.TestProtos {
     public static partial class Types {
       public sealed partial class NestedOnce : pb::IMessage<NestedOnce> {
         private static readonly pb::MessageParser<NestedOnce> _parser = new pb::MessageParser<NestedOnce>(() => new NestedOnce());
-        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NestedOnce> Parser { get { return _parser; } }
 
@@ -296,7 +294,6 @@ namespace UnitTest.Issues.TestProtos {
         public static partial class Types {
           public sealed partial class NestedTwice : pb::IMessage<NestedTwice> {
             private static readonly pb::MessageParser<NestedTwice> _parser = new pb::MessageParser<NestedTwice>(() => new NestedTwice());
-            private pb::UnknownFieldSet _unknownFields;
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public static pb::MessageParser<NestedTwice> Parser { get { return _parser; } }
 
@@ -407,7 +404,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage> {
     private static readonly pb::MessageParser<NegativeEnumMessage> _parser = new pb::MessageParser<NegativeEnumMessage>(() => new NegativeEnumMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<NegativeEnumMessage> Parser { get { return _parser; } }
 
@@ -578,7 +574,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild> {
     private static readonly pb::MessageParser<DeprecatedChild> _parser = new pb::MessageParser<DeprecatedChild>(() => new DeprecatedChild());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DeprecatedChild> Parser { get { return _parser; } }
 
@@ -679,7 +674,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage> {
     private static readonly pb::MessageParser<DeprecatedFieldsMessage> _parser = new pb::MessageParser<DeprecatedFieldsMessage>(() => new DeprecatedFieldsMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DeprecatedFieldsMessage> Parser { get { return _parser; } }
 
@@ -941,7 +935,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class ItemField : pb::IMessage<ItemField> {
     private static readonly pb::MessageParser<ItemField> _parser = new pb::MessageParser<ItemField>(() => new ItemField());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ItemField> Parser { get { return _parser; } }
 
@@ -1070,7 +1063,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class ReservedNames : pb::IMessage<ReservedNames> {
     private static readonly pb::MessageParser<ReservedNames> _parser = new pb::MessageParser<ReservedNames>(() => new ReservedNames());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ReservedNames> Parser { get { return _parser; } }
 
@@ -1232,7 +1224,6 @@ namespace UnitTest.Issues.TestProtos {
       /// </summary>
       public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType> {
         private static readonly pb::MessageParser<SomeNestedType> _parser = new pb::MessageParser<SomeNestedType>(() => new SomeNestedType());
-        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<SomeNestedType> Parser { get { return _parser; } }
 
@@ -1350,7 +1341,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class TestJsonFieldOrdering : pb::IMessage<TestJsonFieldOrdering> {
     private static readonly pb::MessageParser<TestJsonFieldOrdering> _parser = new pb::MessageParser<TestJsonFieldOrdering>(() => new TestJsonFieldOrdering());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestJsonFieldOrdering> Parser { get { return _parser; } }
 
@@ -1681,7 +1671,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class TestJsonName : pb::IMessage<TestJsonName> {
     private static readonly pb::MessageParser<TestJsonName> _parser = new pb::MessageParser<TestJsonName>(() => new TestJsonName());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestJsonName> Parser { get { return _parser; } }
 
@@ -1874,7 +1863,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class OneofMerging : pb::IMessage<OneofMerging> {
     private static readonly pb::MessageParser<OneofMerging> _parser = new pb::MessageParser<OneofMerging>(() => new OneofMerging());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<OneofMerging> Parser { get { return _parser; } }
 
@@ -2072,7 +2060,6 @@ namespace UnitTest.Issues.TestProtos {
     public static partial class Types {
       public sealed partial class Nested : pb::IMessage<Nested> {
         private static readonly pb::MessageParser<Nested> _parser = new pb::MessageParser<Nested>(() => new Nested());
-        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<Nested> Parser { get { return _parser; } }
 
