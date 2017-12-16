@@ -1274,5 +1274,12 @@ namespace Google.Protobuf
             }
         }
         #endregion
+
+        private bool discardUnknownFields = false;
+        internal bool DiscardUnknownFields
+        {
+            get { return discardUnknownFields; }
+            set { discardUnknownFields = value; }
+        }
     }
 }

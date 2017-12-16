@@ -185,6 +185,10 @@ namespace Google.Protobuf
         /// <returns>false if the tag is an "end group" tag, true otherwise</returns>
         private void MergeFieldFrom(CodedInputStream input)
         {
+            if (input.DiscardUnknownFields) {
+               input.SkipLastField();
+               return;
+            }
             uint tag = input.LastTag;
             int number = WireFormat.GetTagFieldNumber(tag);
             switch (WireFormat.GetTagWireType(tag))

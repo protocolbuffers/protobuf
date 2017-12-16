@@ -124,5 +124,36 @@ namespace Google.Protobuf
             Assert.AreEqual(message.CalculateSize(), otherEmptyMessage.CalculateSize());
             Assert.AreEqual(message.ToByteArray(), otherEmptyMessage.ToByteArray());
         }
+
+        [Test]
+        public void TestDiscardUnknownFields()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var emptyMessage = new TestEmptyMessage();
+            byte[] data = message.ToByteArray();
+            int fullSize = message.CalculateSize();
+
+            // Test parse from byte[]
+            emptyMessage.MergeFrom(data);
+            Assert.AreEqual(emptyMessage.CalculateSize(),
+                            fullSize);
+            DiscardUnknownFieldsMessageParser<TestEmptyMessage> parser = new DiscardUnknownFieldsMessageParser<TestEmptyMessage>(TestEmptyMessage.Parser);
+            emptyMessage = parser.ParseFrom(message.ToByteArray());
+            Assert.AreEqual(emptyMessage.CalculateSize(), 0);
+
+            emptyMessage.MergeFrom(data, 0, data.Length);
+            Assert.AreEqual(emptyMessage.CalculateSize(),
+                            fullSize);
+            emptyMessage = parser.ParseFrom(data, 0, data.Length);
+            Assert.AreEqual(emptyMessage.CalculateSize(), 0);
+
+            // Test parse from CodedInputStream
+            CodedInputStream input = new CodedInputStream(data);
+            emptyMessage.MergeFrom(input);
+            Assert.AreEqual(emptyMessage.CalculateSize(),
+                            fullSize);
+            emptyMessage = parser.ParseFrom(input);
+            Assert.AreEqual(emptyMessage.CalculateSize(), 0);
+        }
     }
 }
