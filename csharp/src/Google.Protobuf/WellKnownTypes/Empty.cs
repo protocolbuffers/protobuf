@@ -52,7 +52,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Empty : pb::IMessage<Empty> {
     private static readonly pb::MessageParser<Empty> _parser = new pb::MessageParser<Empty>(() => new Empty());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Empty> Parser { get { return _parser; } }
 

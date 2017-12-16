@@ -79,7 +79,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Struct : pb::IMessage<Struct> {
     private static readonly pb::MessageParser<Struct> _parser = new pb::MessageParser<Struct>(() => new Struct());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Struct> Parser { get { return _parser; } }
 
@@ -211,7 +210,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Value : pb::IMessage<Value> {
     private static readonly pb::MessageParser<Value> _parser = new pb::MessageParser<Value>(() => new Value());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Value> Parser { get { return _parser; } }
 
@@ -563,7 +561,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class ListValue : pb::IMessage<ListValue> {
     private static readonly pb::MessageParser<ListValue> _parser = new pb::MessageParser<ListValue>(() => new ListValue());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ListValue> Parser { get { return _parser; } }
 

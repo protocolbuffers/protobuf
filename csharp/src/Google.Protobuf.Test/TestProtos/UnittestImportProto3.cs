@@ -52,7 +52,6 @@ namespace Google.Protobuf.TestProtos {
   #region Messages
   public sealed partial class ImportMessage : pb::IMessage<ImportMessage> {
     private static readonly pb::MessageParser<ImportMessage> _parser = new pb::MessageParser<ImportMessage>(() => new ImportMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ImportMessage> Parser { get { return _parser; } }
 

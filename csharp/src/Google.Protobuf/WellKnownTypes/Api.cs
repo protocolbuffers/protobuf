@@ -66,7 +66,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Api : pb::IMessage<Api> {
     private static readonly pb::MessageParser<Api> _parser = new pb::MessageParser<Api>(() => new Api());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Api> Parser { get { return _parser; } }
 
@@ -389,7 +388,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Method : pb::IMessage<Method> {
     private static readonly pb::MessageParser<Method> _parser = new pb::MessageParser<Method>(() => new Method());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Method> Parser { get { return _parser; } }
 
@@ -779,7 +777,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Mixin : pb::IMessage<Mixin> {
     private static readonly pb::MessageParser<Mixin> _parser = new pb::MessageParser<Mixin>(() => new Mixin());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Mixin> Parser { get { return _parser; } }
 

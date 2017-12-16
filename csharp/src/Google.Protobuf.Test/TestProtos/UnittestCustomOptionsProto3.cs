@@ -185,7 +185,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class TestMessageWithCustomOptions : pb::IMessage<TestMessageWithCustomOptions> {
     private static readonly pb::MessageParser<TestMessageWithCustomOptions> _parser = new pb::MessageParser<TestMessageWithCustomOptions>(() => new TestMessageWithCustomOptions());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestMessageWithCustomOptions> Parser { get { return _parser; } }
 
@@ -387,7 +386,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class CustomOptionFooRequest : pb::IMessage<CustomOptionFooRequest> {
     private static readonly pb::MessageParser<CustomOptionFooRequest> _parser = new pb::MessageParser<CustomOptionFooRequest>(() => new CustomOptionFooRequest());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<CustomOptionFooRequest> Parser { get { return _parser; } }
 
@@ -488,7 +486,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class CustomOptionFooResponse : pb::IMessage<CustomOptionFooResponse> {
     private static readonly pb::MessageParser<CustomOptionFooResponse> _parser = new pb::MessageParser<CustomOptionFooResponse>(() => new CustomOptionFooResponse());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<CustomOptionFooResponse> Parser { get { return _parser; } }
 
@@ -589,7 +586,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class CustomOptionFooClientMessage : pb::IMessage<CustomOptionFooClientMessage> {
     private static readonly pb::MessageParser<CustomOptionFooClientMessage> _parser = new pb::MessageParser<CustomOptionFooClientMessage>(() => new CustomOptionFooClientMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<CustomOptionFooClientMessage> Parser { get { return _parser; } }
 
@@ -690,7 +686,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class CustomOptionFooServerMessage : pb::IMessage<CustomOptionFooServerMessage> {
     private static readonly pb::MessageParser<CustomOptionFooServerMessage> _parser = new pb::MessageParser<CustomOptionFooServerMessage>(() => new CustomOptionFooServerMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<CustomOptionFooServerMessage> Parser { get { return _parser; } }
 
@@ -791,7 +786,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class DummyMessageContainingEnum : pb::IMessage<DummyMessageContainingEnum> {
     private static readonly pb::MessageParser<DummyMessageContainingEnum> _parser = new pb::MessageParser<DummyMessageContainingEnum>(() => new DummyMessageContainingEnum());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DummyMessageContainingEnum> Parser { get { return _parser; } }
 
@@ -905,7 +899,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class DummyMessageInvalidAsOptionType : pb::IMessage<DummyMessageInvalidAsOptionType> {
     private static readonly pb::MessageParser<DummyMessageInvalidAsOptionType> _parser = new pb::MessageParser<DummyMessageInvalidAsOptionType>(() => new DummyMessageInvalidAsOptionType());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DummyMessageInvalidAsOptionType> Parser { get { return _parser; } }
 
@@ -1006,7 +999,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class CustomOptionMinIntegerValues : pb::IMessage<CustomOptionMinIntegerValues> {
     private static readonly pb::MessageParser<CustomOptionMinIntegerValues> _parser = new pb::MessageParser<CustomOptionMinIntegerValues>(() => new CustomOptionMinIntegerValues());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<CustomOptionMinIntegerValues> Parser { get { return _parser; } }
 
@@ -1107,7 +1099,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class CustomOptionMaxIntegerValues : pb::IMessage<CustomOptionMaxIntegerValues> {
     private static readonly pb::MessageParser<CustomOptionMaxIntegerValues> _parser = new pb::MessageParser<CustomOptionMaxIntegerValues>(() => new CustomOptionMaxIntegerValues());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<CustomOptionMaxIntegerValues> Parser { get { return _parser; } }
 
@@ -1208,7 +1199,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class CustomOptionOtherValues : pb::IMessage<CustomOptionOtherValues> {
     private static readonly pb::MessageParser<CustomOptionOtherValues> _parser = new pb::MessageParser<CustomOptionOtherValues>(() => new CustomOptionOtherValues());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<CustomOptionOtherValues> Parser { get { return _parser; } }
 
@@ -1309,7 +1299,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class SettingRealsFromPositiveInts : pb::IMessage<SettingRealsFromPositiveInts> {
     private static readonly pb::MessageParser<SettingRealsFromPositiveInts> _parser = new pb::MessageParser<SettingRealsFromPositiveInts>(() => new SettingRealsFromPositiveInts());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<SettingRealsFromPositiveInts> Parser { get { return _parser; } }
 
@@ -1410,7 +1399,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class SettingRealsFromNegativeInts : pb::IMessage<SettingRealsFromNegativeInts> {
     private static readonly pb::MessageParser<SettingRealsFromNegativeInts> _parser = new pb::MessageParser<SettingRealsFromNegativeInts>(() => new SettingRealsFromNegativeInts());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<SettingRealsFromNegativeInts> Parser { get { return _parser; } }
 
@@ -1511,7 +1499,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class ComplexOptionType1 : pb::IMessage<ComplexOptionType1> {
     private static readonly pb::MessageParser<ComplexOptionType1> _parser = new pb::MessageParser<ComplexOptionType1>(() => new ComplexOptionType1());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ComplexOptionType1> Parser { get { return _parser; } }
 
@@ -1717,7 +1704,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class ComplexOptionType2 : pb::IMessage<ComplexOptionType2> {
     private static readonly pb::MessageParser<ComplexOptionType2> _parser = new pb::MessageParser<ComplexOptionType2>(() => new ComplexOptionType2());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ComplexOptionType2> Parser { get { return _parser; } }
 
@@ -1936,7 +1922,6 @@ namespace UnitTest.Issues.TestProtos {
     public static partial class Types {
       public sealed partial class ComplexOptionType4 : pb::IMessage<ComplexOptionType4> {
         private static readonly pb::MessageParser<ComplexOptionType4> _parser = new pb::MessageParser<ComplexOptionType4>(() => new ComplexOptionType4());
-        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<ComplexOptionType4> Parser { get { return _parser; } }
 
@@ -2070,7 +2055,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class ComplexOptionType3 : pb::IMessage<ComplexOptionType3> {
     private static readonly pb::MessageParser<ComplexOptionType3> _parser = new pb::MessageParser<ComplexOptionType3>(() => new ComplexOptionType3());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ComplexOptionType3> Parser { get { return _parser; } }
 
@@ -2202,7 +2186,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class VariousComplexOptions : pb::IMessage<VariousComplexOptions> {
     private static readonly pb::MessageParser<VariousComplexOptions> _parser = new pb::MessageParser<VariousComplexOptions>(() => new VariousComplexOptions());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<VariousComplexOptions> Parser { get { return _parser; } }
 
@@ -2306,7 +2289,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class Aggregate : pb::IMessage<Aggregate> {
     private static readonly pb::MessageParser<Aggregate> _parser = new pb::MessageParser<Aggregate>(() => new Aggregate());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Aggregate> Parser { get { return _parser; } }
 
@@ -2500,7 +2482,6 @@ namespace UnitTest.Issues.TestProtos {
 
   public sealed partial class AggregateMessage : pb::IMessage<AggregateMessage> {
     private static readonly pb::MessageParser<AggregateMessage> _parser = new pb::MessageParser<AggregateMessage>(() => new AggregateMessage());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<AggregateMessage> Parser { get { return _parser; } }
 
@@ -2632,7 +2613,6 @@ namespace UnitTest.Issues.TestProtos {
   /// </summary>
   public sealed partial class NestedOptionType : pb::IMessage<NestedOptionType> {
     private static readonly pb::MessageParser<NestedOptionType> _parser = new pb::MessageParser<NestedOptionType>(() => new NestedOptionType());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<NestedOptionType> Parser { get { return _parser; } }
 
@@ -2740,7 +2720,6 @@ namespace UnitTest.Issues.TestProtos {
 
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
-        private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 

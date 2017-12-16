@@ -96,7 +96,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Type : pb::IMessage<Type> {
     private static readonly pb::MessageParser<Type> _parser = new pb::MessageParser<Type>(() => new Type());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Type> Parser { get { return _parser; } }
 
@@ -368,7 +367,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Field : pb::IMessage<Field> {
     private static readonly pb::MessageParser<Field> _parser = new pb::MessageParser<Field>(() => new Field());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Field> Parser { get { return _parser; } }
 
@@ -887,7 +885,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Enum : pb::IMessage<Enum> {
     private static readonly pb::MessageParser<Enum> _parser = new pb::MessageParser<Enum>(() => new Enum());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Enum> Parser { get { return _parser; } }
 
@@ -1136,7 +1133,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class EnumValue : pb::IMessage<EnumValue> {
     private static readonly pb::MessageParser<EnumValue> _parser = new pb::MessageParser<EnumValue>(() => new EnumValue());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumValue> Parser { get { return _parser; } }
 
@@ -1326,7 +1322,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Option : pb::IMessage<Option> {
     private static readonly pb::MessageParser<Option> _parser = new pb::MessageParser<Option>(() => new Option());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Option> Parser { get { return _parser; } }
 

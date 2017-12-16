@@ -250,7 +250,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class FieldMask : pb::IMessage<FieldMask> {
     private static readonly pb::MessageParser<FieldMask> _parser = new pb::MessageParser<FieldMask>(() => new FieldMask());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FieldMask> Parser { get { return _parser; } }
 

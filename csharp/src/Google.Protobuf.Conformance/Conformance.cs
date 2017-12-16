@@ -64,7 +64,6 @@ namespace Conformance {
   /// </summary>
   public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ConformanceRequest> Parser { get { return _parser; } }
 
@@ -319,7 +318,6 @@ namespace Conformance {
   /// </summary>
   public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ConformanceResponse> Parser { get { return _parser; } }
 

@@ -121,7 +121,6 @@ namespace Google.Protobuf.WellKnownTypes {
   /// </summary>
   public sealed partial class Any : pb::IMessage<Any> {
     private static readonly pb::MessageParser<Any> _parser = new pb::MessageParser<Any>(() => new Any());
-    private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Any> Parser { get { return _parser; } }
 
