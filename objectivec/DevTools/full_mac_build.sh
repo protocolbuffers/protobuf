@@ -261,11 +261,11 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
       )
       ;;
-    9.[0-1]* )
+    9.[0-2]* )
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
-          # 9.0/9.1 both seem to often fail running destinations in parallel
+          # 9.0-9.2 all seem to often fail running destinations in parallel
           -disable-concurrent-testing
       )
       ;;
