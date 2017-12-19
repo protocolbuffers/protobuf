@@ -374,7 +374,7 @@ void FieldMaskTree::RemovePath(const string& path,
       }
     }
     if (ContainsKey(node->children, parts[i])) {
-      node = node->children.at(parts[i]);
+      node = node->children[parts[i]];
       if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         current_descriptor = field_descriptor->message_type();
       }
