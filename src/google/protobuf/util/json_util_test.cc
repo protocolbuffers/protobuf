@@ -40,6 +40,7 @@
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -455,6 +456,20 @@ TEST(ZeroCopyStreamByteSinkTest, TestAllInputOutputPatterns) {
                 string(buffer, kOutputBufferLength));
     }
   }
+}
+
+TEST_F(JsonUtilTest, TestWronJsonInput) {
+  const char json[] = "{\"unknown_field\":\"some_value\"}";
+  google::protobuf::io::ArrayInputStream input_stream(json, strlen(json));
+  char protoBuffer[10000];
+  google::protobuf::io::ArrayOutputStream output_stream(protoBuffer, sizeof(protoBuffer));
+  const char *messageType = "type.googleapis.com/proto3.TestMessage";  
+  TypeResolver* resolver = NewTypeResolverForDescriptorPool("type.googleapis.com", DescriptorPool::generated_pool());
+  
+  util::Status resultStatus = util::JsonToBinaryStream(resolver, messageType, &input_stream, &output_stream);
+
+  EXPECT_FALSE(resultStatus.ok());
+  EXPECT_EQ(resultStatus.error_code(), google::protobuf::util::error::INVALID_ARGUMENT);
 }
 
 }  // namespace
