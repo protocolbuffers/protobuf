@@ -540,6 +540,49 @@ namespace Google.Protobuf.Collections
             Assert.Throws<ArgumentException>(() => map.ToString());
         }
 
+        [Test]
+        public void NaNValuesComparedBitwise()
+        {
+            var map1 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.SignallingFlipped }
+            };
+
+            var map2 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.PayloadFlipped }
+            };
+
+            var map3 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.SignallingFlipped }
+            };
+
+            EqualityTester.AssertInequality(map1, map2);
+            EqualityTester.AssertEquality(map1, map3);
+            Assert.True(map1.Values.Contains(SampleNaNs.SignallingFlipped));
+            Assert.False(map2.Values.Contains(SampleNaNs.SignallingFlipped));
+        }
+
+        // This wouldn't usually happen, as protos can't use doubles as map keys,
+        // but let's be consistent.
+        [Test]
+        public void NaNKeysComparedBitwise()
+        {
+            var map = new MapField<double, string>
+            {
+                { SampleNaNs.Regular, "x" },
+                { SampleNaNs.SignallingFlipped, "y" }
+            };
+            Assert.AreEqual("x", map[SampleNaNs.Regular]);
+            Assert.AreEqual("y", map[SampleNaNs.SignallingFlipped]);
+            string ignored;
+            Assert.False(map.TryGetValue(SampleNaNs.PayloadFlipped, out ignored));
+        }
+
 #if !NET35
         [Test]
         public void IDictionaryKeys_Equals_IReadOnlyDictionaryKeys()

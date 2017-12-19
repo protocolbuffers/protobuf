@@ -3,7 +3,7 @@
 # You first need to make sure protoc has been built (see instructions on
 # building protoc in root of this repository)
 
-set -ex
+set -e
 
 # cd to repository root
 pushd $(dirname $0)/..
@@ -40,28 +40,20 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     src/google/protobuf/type.proto \
     src/google/protobuf/wrappers.proto
 
-# Test protos where the namespace matches the target location
-$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test \
-    --csharp_opt=base_namespace=Google.Protobuf \
-    src/google/protobuf/map_unittest_proto3.proto \
-    src/google/protobuf/unittest_proto3.proto \
-    src/google/protobuf/unittest_import_proto3.proto \
-    src/google/protobuf/unittest_import_public_proto3.proto \
-    src/google/protobuf/unittest_well_known_types.proto
-
-# Different base namespace to the protos above
-$PROTOC -Isrc -Icsharp/protos --csharp_out=csharp/src/Google.Protobuf.Test \
-    --csharp_opt=base_namespace=UnitTest.Issues \
+# Test protos
+$PROTOC -Isrc -Icsharp/protos \
+    --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    csharp/protos/map_unittest_proto3.proto \
     csharp/protos/unittest_issues.proto \
-    csharp/protos/unittest_custom_options_proto3.proto
-
-# Don't specify a base namespace at all; we just want to make sure the
-# results end up in TestProtos.
-$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    csharp/protos/unittest_custom_options_proto3.proto \
+    csharp/protos/unittest_proto3.proto \
+    csharp/protos/unittest_import_proto3.proto \
+    csharp/protos/unittest_import_public_proto3.proto \
+    src/google/protobuf/unittest_well_known_types.proto \
     src/google/protobuf/test_messages_proto3.proto
 
 # AddressBook sample protos
-$PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
+$PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
     examples/addressbook.proto
 
 $PROTOC -Iconformance -Isrc --csharp_out=csharp/src/Google.Protobuf.Conformance \
