@@ -514,7 +514,7 @@ namespace Google.Protobuf
             var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithTypeRegistry(TypeRegistry.FromMessages(TestAllTypes.Descriptor)));
             var message = new TestAllTypes { SingleInt32 = 10, SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 } };
             var any = Any.Pack(message);
-            AssertJson("{ '@type': 'type.googleapis.com/protobuf_unittest.TestAllTypes', 'singleInt32': 10, 'singleNestedMessage': { 'bb': 20 } }", formatter.Format(any));
+            AssertJson("{ '@type': 'type.googleapis.com/protobuf_unittest3.TestAllTypes', 'singleInt32': 10, 'singleNestedMessage': { 'bb': 20 } }", formatter.Format(any));
         }
 
         [Test]
@@ -523,7 +523,7 @@ namespace Google.Protobuf
             var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithTypeRegistry(TypeRegistry.FromMessages(TestAllTypes.Descriptor)));
             var message = new TestAllTypes { SingleInt32 = 10 };
             var any = Any.Pack(message, "foo.bar/baz");
-            AssertJson("{ '@type': 'foo.bar/baz/protobuf_unittest.TestAllTypes', 'singleInt32': 10 }", formatter.Format(any));
+            AssertJson("{ '@type': 'foo.bar/baz/protobuf_unittest3.TestAllTypes', 'singleInt32': 10 }", formatter.Format(any));
         }
 
         [Test]
@@ -536,7 +536,7 @@ namespace Google.Protobuf
             var doubleNestedMessage = new TestAllTypes { SingleInt32 = 20 };
             var nestedMessage = Any.Pack(doubleNestedMessage);
             var message = new TestWellKnownTypes { AnyField = Any.Pack(nestedMessage) };
-            AssertJson("{ 'anyField': { '@type': 'type.googleapis.com/google.protobuf.Any', 'value': { '@type': 'type.googleapis.com/protobuf_unittest.TestAllTypes', 'singleInt32': 20 } } }",
+            AssertJson("{ 'anyField': { '@type': 'type.googleapis.com/google.protobuf.Any', 'value': { '@type': 'type.googleapis.com/protobuf_unittest3.TestAllTypes', 'singleInt32': 20 } } }",
                 formatter.Format(message));
         }
 

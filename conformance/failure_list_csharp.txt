@@ -1,3 +1,2 @@
 Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
 Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
-Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput

@@ -245,7 +245,7 @@ namespace Google.Protobuf
                             state = State.ObjectAfterColon;
                             break;
                         case ',':
-                            ValidateState(State.ObjectAfterProperty | State.ArrayAfterValue, "Invalid state to read a colon: ");
+                            ValidateState(State.ObjectAfterProperty | State.ArrayAfterValue, "Invalid state to read a comma: ");
                             state = state == State.ObjectAfterProperty ? State.ObjectAfterComma : State.ArrayAfterComma;
                             break;
                         case '"':
