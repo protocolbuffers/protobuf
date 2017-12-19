@@ -4,9 +4,12 @@
     protobuf code starting from 3.6.0 release. Please join this github issue:
     https://github.com/google/protobuf/issues/2780 to provide your feedback.
 
+  protoc
+  * Fixed a bug introduced in 3.5.0 and protoc in Windows now accepts non-ascii
+    characters in paths again.
+
   C++
-  * protoc in Windows now accepts non-ascii characters in paths again.
-  * Fixed one usage of C++11 feature in field_mask_util.cc
+  * Removed several usages of C++11 features in the code base.
   * Fixed some compiler warnings.
 
   PHP
@@ -22,6 +25,8 @@
 
   C#
   * Unknown fields are now preserved by default.
+  * Floating point values are now bitwise compared, affecting message equality
+    check and Contains() API in map and repeated fields.
 
 
 2017-11-13 version 3.5.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
