@@ -1480,12 +1480,8 @@ class Proto3Test(BaseTestCase):
 
     submsg = msg.map_int32_foreign_message[5]
     self.assertIs(submsg, msg.map_int32_foreign_message.get(5))
-    # TODO(jieluo): Fix python and cpp extension diff.
-    if api_implementation.Type() == 'cpp':
-      with self.assertRaises(TypeError):
-        msg.map_int32_foreign_message.get('')
-    else:
-      self.assertEqual(None, msg.map_int32_foreign_message.get(''))
+    with self.assertRaises(TypeError):
+      msg.map_int32_foreign_message.get('')
 
   def testScalarMap(self):
     msg = map_unittest_pb2.TestMap()
@@ -1695,12 +1691,8 @@ class Proto3Test(BaseTestCase):
 
     del msg2.map_int32_foreign_message[222]
     self.assertFalse(222 in msg2.map_int32_foreign_message)
-    if api_implementation.Type() == 'cpp':
-      with self.assertRaises(TypeError):
-        del msg2.map_int32_foreign_message['']
-    else:
-      with self.assertRaises(KeyError):
-        del msg2.map_int32_foreign_message['']
+    with self.assertRaises(TypeError):
+      del msg2.map_int32_foreign_message['']
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()
