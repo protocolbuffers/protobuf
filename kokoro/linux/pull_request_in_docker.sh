@@ -5,7 +5,7 @@
 
 WORKSPACE_BASE=`pwd`
 MY_DIR="$(dirname "$0")"
-TEST_SCRIPT=$MY_DIR/../tests.sh
+TEST_SCRIPT=$MY_DIR/../../tests.sh
 BUILD_DIR=/tmp/protobuf
 
 set -e  # exit immediately on error
@@ -16,7 +16,7 @@ set -x  # display all commands
 rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR
 cd $BUILD_DIR
-git clone /var/local/jenkins/protobuf
+git clone /var/local/kokoro/protobuf
 cd protobuf
 
 # Set up the directory where our test output is going to go.
@@ -54,7 +54,7 @@ parallel --results $LOG_OUTPUT_DIR --joblog $OUTPUT_DIR/joblog $TEST_SCRIPT ::: 
 
 cat $OUTPUT_DIR/joblog
 
-# The directory that is copied from Docker back into the Jenkins workspace.
+# The directory that is copied from Docker back into the Kokoro workspace.
 COPY_FROM_DOCKER=/var/local/git/protobuf/testoutput
 mkdir -p $COPY_FROM_DOCKER
 TESTOUTPUT_XML_FILE=$COPY_FROM_DOCKER/testresults.xml
