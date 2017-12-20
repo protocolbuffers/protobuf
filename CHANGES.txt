@@ -1,4 +1,4 @@
-2017-12-19 version 3.5.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2017-12-20 version 3.5.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Planned Future Changes
   * Make C++ implementation C++11 only: we plan to require C++11 to build
     protobuf code starting from 3.6.0 release. Please join this github issue:
