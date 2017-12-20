@@ -57,7 +57,7 @@ cat $OUTPUT_DIR/joblog
 # The directory that is copied from Docker back into the Kokoro workspace.
 COPY_FROM_DOCKER=/var/local/git/protobuf/testoutput
 mkdir -p $COPY_FROM_DOCKER
-TESTOUTPUT_XML_FILE=$COPY_FROM_DOCKER/testresults.xml
+TESTOUTPUT_XML_FILE=$COPY_FROM_DOCKER/sponge_log.xml
 
 # Process all the output files from "parallel" and package them into a single
 # .xml file with detailed, broken-down test output.

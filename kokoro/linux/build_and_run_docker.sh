@@ -48,7 +48,7 @@ docker run \
 # Copy output artifacts
 if [ "$OUTPUT_DIR" != "" ]
 then
-  docker cp "$CONTAINER_NAME:/var/local/git/protobuf/$OUTPUT_DIR" "$git_root" || FAILED="true"
+  docker cp "$CONTAINER_NAME:/var/local/git/protobuf/$OUTPUT_DIR" "${git_root}/kokoro" || FAILED="true"
 fi
 
 # remove the container, possibly killing it first
