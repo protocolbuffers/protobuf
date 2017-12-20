@@ -458,18 +458,20 @@ TEST(ZeroCopyStreamByteSinkTest, TestAllInputOutputPatterns) {
   }
 }
 
-TEST_F(JsonUtilTest, TestWronJsonInput) {
+TEST_F(JsonUtilTest, TestWrongJsonInput) {
   const char json[] = "{\"unknown_field\":\"some_value\"}";
   google::protobuf::io::ArrayInputStream input_stream(json, strlen(json));
-  char protoBuffer[10000];
-  google::protobuf::io::ArrayOutputStream output_stream(protoBuffer, sizeof(protoBuffer));
-  const char *messageType = "type.googleapis.com/proto3.TestMessage";  
+  char proto_buffer[10000];
+  google::protobuf::io::ArrayOutputStream output_stream(proto_buffer, sizeof(proto_buffer));
+  std::string message_type = "type.googleapis.com/proto3.TestMessage";  
   TypeResolver* resolver = NewTypeResolverForDescriptorPool("type.googleapis.com", DescriptorPool::generated_pool());
   
-  util::Status resultStatus = util::JsonToBinaryStream(resolver, messageType, &input_stream, &output_stream);
+  util::Status result_status = util::JsonToBinaryStream(resolver, message_type, &input_stream, &output_stream);
+  
+  delete resolver;
 
-  EXPECT_FALSE(resultStatus.ok());
-  EXPECT_EQ(resultStatus.error_code(), google::protobuf::util::error::INVALID_ARGUMENT);
+  EXPECT_FALSE(result_status.ok());
+  EXPECT_EQ(result_status.error_code(), google::protobuf::util::error::INVALID_ARGUMENT);
 }
 
 }  // namespace

@@ -50,8 +50,9 @@ namespace util {
 
 namespace internal {
 ZeroCopyStreamByteSink::~ZeroCopyStreamByteSink() {
-  if (buffer_size_ > 0)
+  if (buffer_size_ > 0) {
     stream_->BackUp(buffer_size_);
+  }
 }
 
 void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
