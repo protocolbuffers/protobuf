@@ -185,7 +185,10 @@ static_assert(sizeof(ParseTableField) <= 16, "ParseTableField is too large");
 // The tables must be composed of POD components to ensure link-time
 // initialization.
 static_assert(std::is_pod<ParseTableField>::value, "");
+// This static_assert() fails at least with Intel 15.0 and 16.0:
+#if !defined(__INTEL_COMPILER)
 static_assert(std::is_pod<AuxillaryParseTableField>::value, "");
+#endif
 static_assert(std::is_pod<AuxillaryParseTableField::enum_aux>::value, "");
 static_assert(std::is_pod<AuxillaryParseTableField::message_aux>::value, "");
 static_assert(std::is_pod<AuxillaryParseTableField::string_aux>::value, "");
