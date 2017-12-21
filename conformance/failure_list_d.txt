@@ -13,8 +13,9 @@ Required.JsonInput.TimestampMaxValue.JsonOutput
 Required.JsonInput.TimestampMaxValue.ProtobufOutput
 Required.JsonInput.TimestampRepeatedValue.JsonOutput
 Required.JsonInput.TimestampRepeatedValue.ProtobufOutput
-# See issue #3093
+# See issue #4079
 Required.JsonInput.TimestampWithNegativeOffset.JsonOutput
 Required.JsonInput.TimestampWithNegativeOffset.ProtobufOutput
 Required.JsonInput.TimestampWithPositiveOffset.JsonOutput
 Required.JsonInput.TimestampWithPositiveOffset.ProtobufOutput
+# End see issue #4079

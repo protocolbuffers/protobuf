@@ -66,12 +66,13 @@ struct Timestamp
         import core.time : dur;
         import std.algorithm : skipOver;
         import std.conv : ConvException, to;
-        import std.datetime : DateTime, DateTimeException, Month, UTC;
+        import std.datetime : DateTime, DateTimeException, Month, SimpleTimeZone, UTC;
         import std.regex : matchAll, regex;
         import std.string : leftJustify;
         import google.protobuf.json_decoding : fromJSONValue;
 
-        auto match = value.fromJSONValue!string.matchAll(`^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.\d*)?Z$`);
+        auto match = value.fromJSONValue!string.matchAll(
+                        `^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.\d*)?((Z)|([+-])(\d{2}):(\d{2}))$`);
         enforce!ProtobufException(match, "Invalid timestamp JSON encoding");
 
         auto yearPart = match.front[1];
@@ -85,10 +86,25 @@ struct Timestamp
 
         try
         {
-            timestamp = SysTime(
-                            DateTime(yearPart.to!short, monthPart.to!ubyte.to!Month, dayPart.to!ubyte,
-                                hourPart.to!ubyte, minutePart.to!ubyte, secondPart.to!ubyte),
-                            dur!"nsecs"(fracSecsPart.leftJustify(9, '0').to!uint), UTC());
+            import std.file: append;
+            if (match.front[8] == "Z")
+            {
+                timestamp = SysTime(
+                                DateTime(yearPart.to!short, monthPart.to!ubyte.to!Month, dayPart.to!ubyte,
+                                    hourPart.to!ubyte, minutePart.to!ubyte, secondPart.to!ubyte),
+                                dur!"nsecs"(fracSecsPart.leftJustify(9, '0').to!uint), UTC());
+            }
+            else
+            {
+                auto tz_offset = dur!"hours"(match.front[11].to!uint) + dur!"minutes"(match.front[12].to!uint);
+                if (match.front[10] == "-")
+                    tz_offset = -tz_offset;
+                timestamp = SysTime(
+                                DateTime(yearPart.to!short, monthPart.to!ubyte.to!Month, dayPart.to!ubyte,
+                                    hourPart.to!ubyte, minutePart.to!ubyte, secondPart.to!ubyte),
+                                dur!"nsecs"(fracSecsPart.leftJustify(9, '0').to!uint),
+                                new immutable SimpleTimeZone(tz_offset));
+            }
 
             validateTimestamp;
             return this;
@@ -145,11 +161,13 @@ unittest
 
 unittest
 {
-    import std.datetime : DateTime, msecs, nsecs, seconds, SimpleTimeZone, UTC;
+    import std.datetime : DateTime, hours, minutes, msecs, nsecs, seconds, SimpleTimeZone, UTC;
     import std.exception : assertThrown;
     import std.json : JSONValue;
 
     static const epoch = SysTime(DateTime(1970, 1, 1), UTC());
+
+    assert(defaultValue!Timestamp == epoch);
 
     assert(Timestamp(epoch).toJSONValue == JSONValue("1970-01-01T00:00:00Z"));
     assert(Timestamp(epoch + 5.seconds).toJSONValue == JSONValue("1970-01-01T00:00:05Z"));
@@ -165,9 +183,19 @@ unittest
     static const tooLarge = SysTime(DateTime(10_000, 1, 1), UTC());
     assertThrown!ProtobufException(Timestamp(tooLarge).toJSONValue);
 
-    assert(Timestamp(epoch) == JSONValue("1970-01-01T00:00:00Z").fromJSONValue!Timestamp);
-    assert(Timestamp(epoch + 5.seconds) == JSONValue("1970-01-01T00:00:05Z").fromJSONValue!Timestamp);
-    assert(Timestamp(epoch + 5.seconds + 50.msecs) == JSONValue("1970-01-01T00:00:05.050Z").fromJSONValue!Timestamp);
-    assert(Timestamp(epoch + 5.seconds + 300.nsecs) ==
-        JSONValue("1970-01-01T00:00:05.000000300Z").fromJSONValue!Timestamp);
+    assert(epoch == JSONValue("1970-01-01T00:00:00Z").fromJSONValue!Timestamp);
+    assert(epoch + 5.seconds == JSONValue("1970-01-01T00:00:05Z").fromJSONValue!Timestamp);
+    assert(epoch + 5.seconds + 50.msecs == JSONValue("1970-01-01T00:00:05.050Z").fromJSONValue!Timestamp);
+    assert(epoch + 5.seconds + 300.nsecs == JSONValue("1970-01-01T00:00:05.000000300Z").fromJSONValue!Timestamp);
+
+    assert(epoch + 2.hours == JSONValue("1970-01-01T00:00:00-02:00").fromJSONValue!Timestamp);
+    assert(epoch - 2.hours - 30.minutes == JSONValue("1970-01-01T00:00:00+02:30").fromJSONValue!Timestamp);
+    assert(epoch + 5.seconds + 50.msecs + 2.hours ==
+        JSONValue("1970-01-01T00:00:05.050-02:00").fromJSONValue!Timestamp);
+    assert(epoch + 5.seconds + 50.msecs - 2.hours - 30.minutes ==
+        JSONValue("1970-01-01T00:00:05.050+02:30").fromJSONValue!Timestamp);
+    assert(epoch + 5.seconds + 300.nsecs + 2.hours ==
+        JSONValue("1970-01-01T00:00:05.000000300-02:00").fromJSONValue!Timestamp);
+    assert(epoch + 5.seconds + 300.nsecs - 2.hours - 30.minutes ==
+        JSONValue("1970-01-01T00:00:05.000000300+02:30").fromJSONValue!Timestamp);
 }
