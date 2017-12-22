@@ -19,7 +19,7 @@ function run_install_test() {
   chmod +x test-venv/bin/protoc
 
   source test-venv/bin/activate
-  pip install -i ${PYPI} protobuf==${VERSION}
+  pip install -i ${PYPI} protobuf==${VERSION} --no-cache-dir
   deactivate
   rm -fr test-venv
 }
@@ -88,6 +88,7 @@ run_install_test ${TESTING_VERSION} python3.4 https://test.pypi.org/simple
 
 # Deploy egg/wheel packages to testing PyPI and test again.
 python setup.py bdist_egg bdist_wheel upload -r https://test.pypi.org/legacy/
+
 run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
 run_install_test ${TESTING_VERSION} python3.4 https://test.pypi.org/simple
 
