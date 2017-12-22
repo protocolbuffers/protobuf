@@ -43,17 +43,21 @@ import com.google.protobuf.Message;
 import com.google.protobuf.benchmarks.Benchmarks.BenchmarkDataset;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 
 public class ProtoBench {
+
 
   private ProtoBench() {
     // Prevent instantiation
@@ -66,17 +70,26 @@ public class ProtoBench {
       System.exit(1);
     }
     boolean success = true;
+    int endIndex = args.length;
     for (int i = 0; i < args.length; i++) {
-      success &= runTest(args[i]);
+      if (args[i].equals("--")) {
+        endIndex = i;
+        break;
+      }
+    }
+    for (int i = 0; i < endIndex; i++) {
+      success &= runTest(args, i, endIndex);
     }
     System.exit(success ? 0 : 1);
   }
+  
  
   /**
    * Runs a single test with specific test data. Error messages are displayed to stderr, 
    * and the return value indicates general success/failure.
    */
-  public static boolean runTest(String file) {
+  public static boolean runTest(String[] args, int currentIndex, int endIndex) {
+    String file = args[currentIndex];
     byte[] inputData;
     BenchmarkDataset benchmarkDataset;
     try {
@@ -94,19 +107,69 @@ public class ProtoBench {
     }
     argsList.add("-DdataFile=" + file);
     argsList.add("com.google.protobuf.ProtoBenchCaliper");
+    String[] caliperArgs = new String[argsList.size() + Math.max(args.length - endIndex - 1, 0)];
+    argsList.toArray(caliperArgs);
+    if (endIndex != args.length) {
+      System.arraycopy(args, endIndex + 1, 
+          caliperArgs, argsList.size(), args.length - endIndex - 1);
+    }
     
     try {
-      String args[] = new String[argsList.size()];
-      argsList.toArray(args);
-      CaliperMain.exitlessMain(args, 
+      CaliperMain.exitlessMain(caliperArgs, 
           new PrintWriter(System.out, true), new PrintWriter(System.err, true));
-      return true;
     } catch (Exception e) {
       System.err.println("Error: " + e.getMessage());
       System.err.println("Detailed exception information:");
       e.printStackTrace(System.err);
       return false;
     }
+    try {
+      double maxTimeIntervalScale = 0;
+      Scanner scanner = new Scanner(new String(readAllBytes("JavaBenchmarkWarning.txt")));
+      while (scanner.hasNext()) {
+        maxTimeIntervalScale = Math.max(maxTimeIntervalScale, scanner.nextDouble());
+      }
+      scanner.close();
+
+      String timingIntervalWithUnit = getFromArgs(caliperArgs, 
+          "instrument.runtime.options.timingInterval");
+      if (timingIntervalWithUnit.equals("")) {
+        timingIntervalWithUnit = "500ms";
+      }
+      int doubleValueEndIndex = timingIntervalWithUnit.length();
+      double timingIntervalValue = 0;
+      for (int i = timingIntervalWithUnit.length(); i >= 0 ; i--) {
+        try {
+          timingIntervalValue = Double.parseDouble(timingIntervalWithUnit.substring(0, i));
+          doubleValueEndIndex = i;
+          break;
+        } catch (NumberFormatException e) {
+          
+        } catch (NullPointerException e) {
+          
+        }
+      } 
+      timingIntervalValue *= maxTimeIntervalScale * 1.2;
+      String measurementsString = getFromArgs(caliperArgs, 
+          "instrument.runtime.options.measurements");
+      if (measurementsString.equals("")) {
+        measurementsString = "9";
+      }
+      int measurements = (int) (Integer.parseInt(measurementsString) * 1.2 * maxTimeIntervalScale);
+      
+      System.out.println(
+         "WARNING: This benchmark's whole iterations are not enough, consider to config caliper to "
+        + "run for more time to make the result more convincing. e.g. try to run \"./java-benchmark"
+        + " " + file + " -- -Cinstrument.runtime.options.timingInterval=" 
+        + (int) Math.ceil(timingIntervalValue) 
+        + timingIntervalWithUnit.substring(doubleValueEndIndex) 
+        + "\" or try to run \"./java-benchmark " + file + " -- -Cinstrument.runtime.options."
+        + "measurements=" + measurements + "\" again.");
+      Files.deleteIfExists(Paths.get("JavaBenchmarkWarning.txt"));
+    } catch (IOException e) {
+      
+    }
+    return true;
   }
   
   
@@ -121,9 +184,13 @@ public class ProtoBench {
     } else if (benchmarkDataset.getMessageName().
         equals("benchmarks.google_message3.GoogleMessage3")) {
       temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE3");
+      temp.add("-Cinstrument.runtime.options.timingInterval=3000ms");
+      temp.add("-Cinstrument.runtime.options.measurements=20");
     } else if (benchmarkDataset.getMessageName().
         equals("benchmarks.google_message4.GoogleMessage4")) {
       temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE4");
+      temp.add("-Cinstrument.runtime.options.timingInterval=1500ms");
+      temp.add("-Cinstrument.runtime.options.measurements=20");
     } else {
       return null;
     }
@@ -132,9 +199,9 @@ public class ProtoBench {
     temp.add("runtime");
     temp.add("-b");
     String benchmarkNames = "serializeToByteString,serializeToByteArray,serializeToMemoryStream"
-       + ",deserializeFromByteString,deserializeFromByteArray,deserializeFromMemoryStream";
+        + ",deserializeFromByteString,deserializeFromByteArray,deserializeFromMemoryStream";
     temp.add(benchmarkNames);
-    temp.add("-Cinstrument.runtime.options.timingInterval=3000ms");
+    temp.add("--print-config");
     
     return temp;
   }
@@ -144,5 +211,16 @@ public class ProtoBench {
     byte[] content = new byte[(int) file.length()];
     file.readFully(content);
     return content;
+  }
+  
+  private static String getFromArgs(String[] args, String argName) {
+    String ans = "";
+    for (String arg : args) {
+      int startIndex = arg.lastIndexOf(argName + "="); 
+      if (startIndex != -1) {
+        ans = arg.substring(startIndex + argName.length() + 1);
+      }
+    }
+    return ans;
   }
 }
