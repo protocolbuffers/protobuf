@@ -1323,40 +1323,40 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldPathsAsKey) {
   // Treat "item.m.rc" as Set
   protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
   // key => value: (1, {2, 3}) => "a"
-  item->mutable_m()->set_a(1);
-  item->mutable_m()->add_rc(2);
-  item->mutable_m()->add_rc(3);
+  item->mutable_m().set_a(1);
+  item->mutable_m().add_rc(2);
+  item->mutable_m().add_rc(3);
   item->set_b("a");
   item = msg1.add_item();
   // key => value: (2, {1, 3}) => "b"
-  item->mutable_m()->set_a(2);
-  item->mutable_m()->add_rc(1);
-  item->mutable_m()->add_rc(3);
+  item->mutable_m().set_a(2);
+  item->mutable_m().add_rc(1);
+  item->mutable_m().add_rc(3);
   item->set_b("b");
   item = msg1.add_item();
   // key => value: (1, {1, 3}) => "c"
-  item->mutable_m()->set_a(1);
-  item->mutable_m()->add_rc(1);
-  item->mutable_m()->add_rc(3);
+  item->mutable_m().set_a(1);
+  item->mutable_m().add_rc(1);
+  item->mutable_m().add_rc(3);
   item->set_b("c");
 
   item = msg2.add_item();
   // key => value: (1, {1, 3}) => "c"
-  item->mutable_m()->set_a(1);
-  item->mutable_m()->add_rc(3);
-  item->mutable_m()->add_rc(1);
+  item->mutable_m().set_a(1);
+  item->mutable_m().add_rc(3);
+  item->mutable_m().add_rc(1);
   item->set_b("c");
   item = msg2.add_item();
   // key => value: (1, {2, 3}) => "a"
-  item->mutable_m()->set_a(1);
-  item->mutable_m()->add_rc(3);
-  item->mutable_m()->add_rc(2);
+  item->mutable_m().set_a(1);
+  item->mutable_m().add_rc(3);
+  item->mutable_m().add_rc(2);
   item->set_b("a");
   item = msg2.add_item();
   // key => value: (2, {1, 3}) => "b"
-  item->mutable_m()->set_a(2);
-  item->mutable_m()->add_rc(3);
-  item->mutable_m()->add_rc(1);
+  item->mutable_m().set_a(2);
+  item->mutable_m().add_rc(3);
+  item->mutable_m().add_rc(1);
   item->set_b("b");
 
   // Compare
@@ -1380,14 +1380,14 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldPathsAsKey) {
   msg1.clear_item();
   msg2.clear_item();
   item = msg1.add_item();
-  item->mutable_m()->set_a(4);
-  item->mutable_m()->add_rc(5);
-  item->mutable_m()->add_rc(6);
+  item->mutable_m().set_a(4);
+  item->mutable_m().add_rc(5);
+  item->mutable_m().add_rc(6);
   item->set_b("hello");
   item = msg2.add_item();
-  item->mutable_m()->set_a(4);
-  item->mutable_m()->add_rc(6);
-  item->mutable_m()->add_rc(5);
+  item->mutable_m().set_a(4);
+  item->mutable_m().add_rc(6);
+  item->mutable_m().add_rc(5);
   item->set_b("world");
   string output;
   differencer.ReportDifferencesToString(&output);
@@ -2159,21 +2159,21 @@ TEST_F(ComparisonTest, EquivalencyDeletionTest) {
 
 // Group tests.
 TEST_F(ComparisonTest, GroupAdditionTest) {
-  proto1_.mutable_optionalgroup()->clear_a();
+  proto1_.mutable_optionalgroup().clear_a();
 
   EXPECT_EQ("added: optionalgroup.a: 117\n",
             Run());
 }
 
 TEST_F(ComparisonTest, GroupDeletionTest) {
-  proto2_.mutable_optionalgroup()->clear_a();
+  proto2_.mutable_optionalgroup().clear_a();
 
   EXPECT_EQ("deleted: optionalgroup.a: 117\n",
             Run());
 }
 
 TEST_F(ComparisonTest, GroupModificationTest) {
-  proto1_.mutable_optionalgroup()->set_a(2);
+  proto1_.mutable_optionalgroup().set_a(2);
 
   EXPECT_EQ("modified: optionalgroup.a: 2 -> 117\n",
             Run());
@@ -2268,26 +2268,26 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_MessageKey) {
 
   // The following code creates one deletion, one addition and two moved fields
   // on the messages.
-  item->mutable_m()->set_c(0);
+  item->mutable_m().set_c(0);
   item->set_b("first");
   item = msg1.add_item();
-  item->mutable_m()->set_c(2);
+  item->mutable_m().set_c(2);
   item->set_b("second");
   item = msg1.add_item(); item->set_b("null");  // empty key moved
   item = msg1.add_item();
-  item->mutable_m()->set_c(3);
+  item->mutable_m().set_c(3);
   item->set_b("third");   // deletion
   item = msg1.add_item();
-  item->mutable_m()->set_c(2);
+  item->mutable_m().set_c(2);
   item->set_b("second");  // duplicated key ( deletion )
   item = msg2.add_item();
-  item->mutable_m()->set_c(2);
+  item->mutable_m().set_c(2);
   item->set_b("second");  // modification
   item = msg2.add_item();
-  item->mutable_m()->set_c(4);
+  item->mutable_m().set_c(4);
   item->set_b("fourth");  // addition
   item = msg2.add_item();
-  item->mutable_m()->set_c(0);
+  item->mutable_m().set_c(0);
   item->set_b("fist");    // move with change
   item = msg2.add_item(); item->set_b("null");
 
@@ -2438,21 +2438,21 @@ TEST_F(ComparisonTest, RepeatedSetFieldTest) {
 
 // Embedded message tests.
 TEST_F(ComparisonTest, EmbeddedAdditionTest) {
-  proto1_.mutable_optional_nested_message()->clear_bb();
+  proto1_.mutable_optional_nested_message().clear_bb();
 
   EXPECT_EQ("added: optional_nested_message.bb: 118\n",
             Run());
 }
 
 TEST_F(ComparisonTest, EmbeddedDeletionTest) {
-  proto2_.mutable_optional_nested_message()->clear_bb();
+  proto2_.mutable_optional_nested_message().clear_bb();
 
   EXPECT_EQ("deleted: optional_nested_message.bb: 118\n",
             Run());
 }
 
 TEST_F(ComparisonTest, EmbeddedModificationTest) {
-  proto1_.mutable_optional_nested_message()->set_bb(2);
+  proto1_.mutable_optional_nested_message().set_bb(2);
 
   EXPECT_EQ("modified: optional_nested_message.bb: 2 -> 118\n",
             Run());
@@ -2467,7 +2467,7 @@ TEST_F(ComparisonTest, EmbeddedFullAdditionTest) {
 
 TEST_F(ComparisonTest, EmbeddedPartialAdditionTest) {
   proto1_.clear_optional_nested_message();
-  proto2_.mutable_optional_nested_message()->clear_bb();
+  proto2_.mutable_optional_nested_message().clear_bb();
 
   EXPECT_EQ("added: optional_nested_message: { }\n",
             Run());
@@ -2693,8 +2693,8 @@ TEST_F(ComparisonTest, IgnoredRepeatedModifyTest) {
 }
 
 TEST_F(ComparisonTest, IgnoredWholeNestedMessage) {
-  proto1diff_.mutable_m()->set_c(3);
-  proto2diff_.mutable_m()->set_c(4);
+  proto1diff_.mutable_m().set_c(3);
+  proto2diff_.mutable_m().set_c(4);
 
   proto2diff_.set_w("foo");
 
@@ -2706,8 +2706,8 @@ TEST_F(ComparisonTest, IgnoredWholeNestedMessage) {
 }
 
 TEST_F(ComparisonTest, IgnoredNestedField) {
-  proto1diff_.mutable_m()->set_c(3);
-  proto2diff_.mutable_m()->set_c(4);
+  proto1diff_.mutable_m().set_c(3);
+  proto2diff_.mutable_m().set_c(4);
 
   proto2diff_.set_w("foo");
 
@@ -2735,9 +2735,9 @@ TEST_F(ComparisonTest, IgnoredRepeatedNested) {
 }
 
 TEST_F(ComparisonTest, IgnoredNestedRepeated) {
-  proto1diff_.mutable_m()->add_rc(23);
-  proto1diff_.mutable_m()->add_rc(24);
-  proto2diff_.mutable_m()->add_rc(25);
+  proto1diff_.mutable_m().add_rc(23);
+  proto1diff_.mutable_m().add_rc(24);
+  proto2diff_.mutable_m().add_rc(25);
 
   proto2diff_.set_w("foo");
 
@@ -2843,11 +2843,11 @@ TEST_F(ComparisonTest, EquivalentIgnoresUnknown) {
 }
 
 TEST_F(ComparisonTest, MapTest) {
-  Map<string, string>& map1 = *map_proto1_.mutable_map_string_string();
+  Map<string, string>& map1 = map_proto1_.map_string_string();
   map1["key1"] = "1";
   map1["key2"] = "2";
   map1["key3"] = "3";
-  Map<string, string>& map2 = *map_proto2_.mutable_map_string_string();
+  Map<string, string>& map2 = map_proto2_.map_string_string();
   map2["key3"] = "0";
   map2["key2"] = "2";
   map2["key1"] = "1";
@@ -2857,11 +2857,11 @@ TEST_F(ComparisonTest, MapTest) {
 }
 
 TEST_F(ComparisonTest, MapIgnoreKeyTest) {
-  Map<string, string>& map1 = *map_proto1_.mutable_map_string_string();
+  Map<string, string>& map1 = map_proto1_.map_string_string();
   map1["key1"] = "1";
   map1["key2"] = "2";
   map1["key3"] = "3";
-  Map<string, string>& map2 = *map_proto2_.mutable_map_string_string();
+  Map<string, string>& map2 = map_proto2_.map_string_string();
   map2["key4"] = "2";
   map2["key5"] = "3";
   map2["key6"] = "1";
@@ -3286,8 +3286,8 @@ TEST(AnyTest, Simple) {
   value2.set_a(21);
 
   protobuf_unittest::TestAny m1, m2;
-  m1.mutable_any_value()->PackFrom(value1);
-  m2.mutable_any_value()->PackFrom(value2);
+  m1.mutable_any_value().PackFrom(value1);
+  m2.mutable_any_value().PackFrom(value2);
   util::MessageDifferencer message_differencer;
   string difference_string;
   message_differencer.ReportDifferencesToString(&difference_string);

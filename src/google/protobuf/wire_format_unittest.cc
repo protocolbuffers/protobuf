@@ -613,7 +613,7 @@ TEST(WireFormatTest, ParseBrokenMessageSet) {
 
 TEST(WireFormatTest, RecursionLimit) {
   unittest::TestRecursiveMessage message;
-  message.mutable_a()->mutable_a()->mutable_a()->mutable_a()->set_i(1);
+  message.mutable_a().mutable_a().mutable_a().mutable_a().set_i(1);
   string data;
   message.SerializeToString(&data);
 

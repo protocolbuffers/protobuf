@@ -115,14 +115,14 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->set_optional_bool(true);
   m->set_optional_string("asdf");
   m->set_optional_bytes("jkl;");
-  m->mutable_optional_nested_message()->set_bb(42);
-  m->mutable_optional_foreign_message()->set_c(43);
-  m->mutable_optional_proto2_message()->set_optional_int32(44);
+  m->mutable_optional_nested_message().set_bb(42);
+  m->mutable_optional_foreign_message().set_c(43);
+  m->mutable_optional_proto2_message().set_optional_int32(44);
   m->set_optional_nested_enum(
       proto2_nofieldpresence_unittest::TestAllTypes_NestedEnum_BAZ);
   m->set_optional_foreign_enum(
       proto2_nofieldpresence_unittest::FOREIGN_BAZ);
-  m->mutable_optional_lazy_message()->set_bb(45);
+  m->mutable_optional_lazy_message().set_bb(45);
   m->add_repeated_int32(100);
   m->add_repeated_int64(101);
   m->add_repeated_uint32(102);
@@ -148,7 +148,7 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->add_repeated_lazy_message()->set_bb(49);
 
   m->set_oneof_uint32(1);
-  m->mutable_oneof_nested_message()->set_bb(50);
+  m->mutable_oneof_nested_message().set_bb(50);
   m->set_oneof_string("test");  // only this one remains set
 }
 
@@ -254,7 +254,7 @@ TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
   // present.
   EXPECT_EQ(0, message.optional_nested_message().bb());
   EXPECT_EQ(false, message.has_optional_nested_message());
-  message.mutable_optional_nested_message()->set_bb(42);
+  message.mutable_optional_nested_message().set_bb(42);
   EXPECT_EQ(true, message.has_optional_nested_message());
   message.clear_optional_nested_message();
   EXPECT_EQ(false, message.has_optional_nested_message());
@@ -265,7 +265,7 @@ TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
   // present.
   EXPECT_EQ(0, message.optional_lazy_message().bb());
   EXPECT_EQ(false, message.has_optional_lazy_message());
-  message.mutable_optional_lazy_message()->set_bb(42);
+  message.mutable_optional_lazy_message().set_bb(42);
   EXPECT_EQ(true, message.has_optional_lazy_message());
   message.clear_optional_lazy_message();
   EXPECT_EQ(false, message.has_optional_lazy_message());
@@ -370,12 +370,12 @@ TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
   r->ClearField(&message, field_string);
   EXPECT_EQ("", message.optional_string());
 
-  message.mutable_optional_nested_message()->set_bb(1234);
+  message.mutable_optional_nested_message().set_bb(1234);
   r->ClearField(&message, field_message);
   EXPECT_FALSE(message.has_optional_nested_message());
   EXPECT_EQ(0, message.optional_nested_message().bb());
 
-  message.mutable_optional_lazy_message()->set_bb(42);
+  message.mutable_optional_lazy_message().set_bb(42);
   r->ClearField(&message, field_lazy);
   EXPECT_FALSE(message.has_optional_lazy_message());
   EXPECT_EQ(0, message.optional_lazy_message().bb());
@@ -405,7 +405,7 @@ TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
   EXPECT_EQ(false, r->HasField(message, desc_oneof_uint32));
   EXPECT_EQ(false, r->HasField(message, desc_oneof_nested_message));
   EXPECT_EQ(true, r->HasField(message, desc_oneof_string));
-  message.mutable_oneof_nested_message()->set_bb(42);
+  message.mutable_oneof_nested_message().set_bb(42);
   EXPECT_EQ(false, r->HasField(message, desc_oneof_uint32));
   EXPECT_EQ(true, r->HasField(message, desc_oneof_nested_message));
   EXPECT_EQ(false, r->HasField(message, desc_oneof_string));
@@ -486,11 +486,11 @@ TEST(NoFieldPresenceTest, IsInitializedTest) {
   proto2_nofieldpresence_unittest::TestProto2Required message;
 
   EXPECT_EQ(true, message.IsInitialized());
-  message.mutable_proto2()->set_a(1);
+  message.mutable_proto2().set_a(1);
   EXPECT_EQ(false, message.IsInitialized());
-  message.mutable_proto2()->set_b(1);
+  message.mutable_proto2().set_b(1);
   EXPECT_EQ(false, message.IsInitialized());
-  message.mutable_proto2()->set_c(1);
+  message.mutable_proto2().set_c(1);
   EXPECT_EQ(true, message.IsInitialized());
 }
 
@@ -507,7 +507,7 @@ TEST(NoFieldPresenceTest, LazyMessageFieldHasBit) {
   EXPECT_EQ(false, message.has_optional_lazy_message());
   EXPECT_EQ(false, r->HasField(message, field));
 
-  message.mutable_optional_lazy_message()->set_bb(42);
+  message.mutable_optional_lazy_message().set_bb(42);
   EXPECT_EQ(true, message.has_optional_lazy_message());
   EXPECT_EQ(true, r->HasField(message, field));
 

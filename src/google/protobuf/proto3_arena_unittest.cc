@@ -53,13 +53,13 @@ void SetAllFields(TestAllTypes* m) {
   m->set_optional_int32(100);
   m->set_optional_string("asdf");
   m->set_optional_bytes("jkl;");
-  m->mutable_optional_nested_message()->set_bb(42);
-  m->mutable_optional_foreign_message()->set_c(43);
+  m->mutable_optional_nested_message().set_bb(42);
+  m->mutable_optional_foreign_message().set_c(43);
   m->set_optional_nested_enum(
       proto3_arena_unittest::TestAllTypes_NestedEnum_BAZ);
   m->set_optional_foreign_enum(
       proto3_arena_unittest::FOREIGN_BAZ);
-  m->mutable_optional_lazy_message()->set_bb(45);
+  m->mutable_optional_lazy_message().set_bb(45);
   m->add_repeated_int32(100);
   m->add_repeated_string("asdf");
   m->add_repeated_bytes("jkl;");
@@ -72,7 +72,7 @@ void SetAllFields(TestAllTypes* m) {
   m->add_repeated_lazy_message()->set_bb(49);
 
   m->set_oneof_uint32(1);
-  m->mutable_oneof_nested_message()->set_bb(50);
+  m->mutable_oneof_nested_message().set_bb(50);
   m->set_oneof_string("test");  // only this one remains set
 }
 
@@ -197,7 +197,7 @@ TEST(Proto3ArenaTest, SetAllocatedMessage) {
 TEST(Proto3ArenaTest, ReleaseMessage) {
   Arena arena;
   TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
-  arena_message->mutable_optional_nested_message()->set_bb(118);
+  arena_message->mutable_optional_nested_message().set_bb(118);
   google::protobuf::scoped_ptr<TestAllTypes::NestedMessage> nested(
       arena_message->release_optional_nested_message());
   EXPECT_EQ(118, nested->bb());
@@ -207,7 +207,7 @@ TEST(Proto3ArenaTest, MessageFieldClear) {
   // GitHub issue #310: https://github.com/google/protobuf/issues/310
   Arena arena;
   TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
-  arena_message->mutable_optional_nested_message()->set_bb(118);
+  arena_message->mutable_optional_nested_message().set_bb(118);
   // This should not crash, but prior to the bugfix, it tried to use `operator
   // delete` the nested message (which is on the arena):
   arena_message->Clear();
@@ -221,7 +221,7 @@ TEST(Proto3ArenaTest, MessageFieldClearViaReflection) {
   const FieldDescriptor* msg_field = d->FindFieldByName(
       "optional_nested_message");
 
-  message->mutable_optional_nested_message()->set_bb(1);
+  message->mutable_optional_nested_message().set_bb(1);
   r->ClearField(message, msg_field);
   EXPECT_FALSE(message->has_optional_nested_message());
   EXPECT_EQ(0, message->optional_nested_message().bb());

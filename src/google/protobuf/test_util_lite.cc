@@ -58,12 +58,12 @@ void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
   message->set_optional_string  ("115");
   message->set_optional_bytes   ("116");
 
-  message->mutable_optionalgroup                 ()->set_a(117);
-  message->mutable_optional_nested_message       ()->set_bb(118);
-  message->mutable_optional_foreign_message      ()->set_c(119);
-  message->mutable_optional_import_message       ()->set_d(120);
-  message->mutable_optional_public_import_message()->set_e(126);
-  message->mutable_optional_lazy_message         ()->set_bb(127);
+  message->mutable_optionalgroup                 ().set_a(117);
+  message->mutable_optional_nested_message       ().set_bb(118);
+  message->mutable_optional_foreign_message      ().set_c(119);
+  message->mutable_optional_import_message       ().set_d(120);
+  message->mutable_optional_public_import_message().set_e(126);
+  message->mutable_optional_lazy_message         ().set_bb(127);
 
   message->set_optional_nested_enum (unittest::TestAllTypesLite::BAZ );
   message->set_optional_foreign_enum(unittest::FOREIGN_LITE_BAZ      );
@@ -151,7 +151,7 @@ void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
 
 
   message->set_oneof_uint32(601);
-  message->mutable_oneof_nested_message()->set_bb(602);
+  message->mutable_oneof_nested_message().set_bb(602);
   message->set_oneof_string("603");
   message->set_oneof_bytes("604");
 }
@@ -175,11 +175,11 @@ void TestUtilLite::ModifyRepeatedFields(unittest::TestAllTypesLite* message) {
   message->set_repeated_string  (1, "515");
   message->set_repeated_bytes   (1, "516");
 
-  message->mutable_repeatedgroup           (1)->set_a(517);
-  message->mutable_repeated_nested_message (1)->set_bb(518);
-  message->mutable_repeated_foreign_message(1)->set_c(519);
-  message->mutable_repeated_import_message (1)->set_d(520);
-  message->mutable_repeated_lazy_message   (1)->set_bb(527);
+  message->repeatedgroup           (1).set_a(517);
+  message->repeated_nested_message (1).set_bb(518);
+  message->repeated_foreign_message(1).set_c(519);
+  message->repeated_import_message (1).set_d(520);
+  message->repeated_lazy_message   (1).set_bb(527);
 
   message->set_repeated_nested_enum (1, unittest::TestAllTypesLite::FOO );
   message->set_repeated_foreign_enum(1, unittest::FOREIGN_LITE_FOO      );

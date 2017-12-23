@@ -108,130 +108,130 @@ template <typename EnumType, EnumType enum_value0,
           EnumType enum_value1, typename MapMessage>
 void MapTestUtilImpl::SetMapFields(MapMessage* message) {
   // Add first element.
-  (*message->mutable_map_int32_int32())[0] = 0;
-  (*message->mutable_map_int64_int64())[0] = 0;
-  (*message->mutable_map_uint32_uint32())[0] = 0;
-  (*message->mutable_map_uint64_uint64())[0] = 0;
-  (*message->mutable_map_sint32_sint32())[0] = 0;
-  (*message->mutable_map_sint64_sint64())[0] = 0;
-  (*message->mutable_map_fixed32_fixed32())[0] = 0;
-  (*message->mutable_map_fixed64_fixed64())[0] = 0;
-  (*message->mutable_map_sfixed32_sfixed32())[0] = 0;
-  (*message->mutable_map_sfixed64_sfixed64())[0] = 0;
-  (*message->mutable_map_int32_float())[0] = 0.0;
-  (*message->mutable_map_int32_double())[0] = 0.0;
-  (*message->mutable_map_bool_bool())[0] = false;
-  (*message->mutable_map_string_string())["0"] = "0";
-  (*message->mutable_map_int32_bytes())[0] = "0";
-  (*message->mutable_map_int32_enum())[0] = enum_value0;
-  (*message->mutable_map_int32_foreign_message())[0].set_c(0);
+  message->map_int32_int32()[0] = 0;
+  message->map_int64_int64()[0] = 0;
+  message->map_uint32_uint32()[0] = 0;
+  message->map_uint64_uint64()[0] = 0;
+  message->map_sint32_sint32()[0] = 0;
+  message->map_sint64_sint64()[0] = 0;
+  message->map_fixed32_fixed32()[0] = 0;
+  message->map_fixed64_fixed64()[0] = 0;
+  message->map_sfixed32_sfixed32()[0] = 0;
+  message->map_sfixed64_sfixed64()[0] = 0;
+  message->map_int32_float()[0] = 0.0;
+  message->map_int32_double()[0] = 0.0;
+  message->map_bool_bool()[0] = false;
+  message->map_string_string()["0"] = "0";
+  message->map_int32_bytes()[0] = "0";
+  message->map_int32_enum()[0] = enum_value0;
+  message->map_int32_foreign_message()[0].set_c(0);
 
   // Add second element
-  (*message->mutable_map_int32_int32())[1] = 1;
-  (*message->mutable_map_int64_int64())[1] = 1;
-  (*message->mutable_map_uint32_uint32())[1] = 1;
-  (*message->mutable_map_uint64_uint64())[1] = 1;
-  (*message->mutable_map_sint32_sint32())[1] = 1;
-  (*message->mutable_map_sint64_sint64())[1] = 1;
-  (*message->mutable_map_fixed32_fixed32())[1] = 1;
-  (*message->mutable_map_fixed64_fixed64())[1] = 1;
-  (*message->mutable_map_sfixed32_sfixed32())[1] = 1;
-  (*message->mutable_map_sfixed64_sfixed64())[1] = 1;
-  (*message->mutable_map_int32_float())[1] = 1.0;
-  (*message->mutable_map_int32_double())[1] = 1.0;
-  (*message->mutable_map_bool_bool())[1] = true;
-  (*message->mutable_map_string_string())["1"] = "1";
-  (*message->mutable_map_int32_bytes())[1] = "1";
-  (*message->mutable_map_int32_enum())[1] = enum_value1;
-  (*message->mutable_map_int32_foreign_message())[1].set_c(1);
+  message->map_int32_int32()[1] = 1;
+  message->map_int64_int64()[1] = 1;
+  message->map_uint32_uint32()[1] = 1;
+  message->map_uint64_uint64()[1] = 1;
+  message->map_sint32_sint32()[1] = 1;
+  message->map_sint64_sint64()[1] = 1;
+  message->map_fixed32_fixed32()[1] = 1;
+  message->map_fixed64_fixed64()[1] = 1;
+  message->map_sfixed32_sfixed32()[1] = 1;
+  message->map_sfixed64_sfixed64()[1] = 1;
+  message->map_int32_float()[1] = 1.0;
+  message->map_int32_double()[1] = 1.0;
+  message->map_bool_bool()[1] = true;
+  message->map_string_string()["1"] = "1";
+  message->map_int32_bytes()[1] = "1";
+  message->map_int32_enum()[1] = enum_value1;
+  message->map_int32_foreign_message()[1].set_c(1);
 }
 
 template <typename EnumType, EnumType enum_value0,
           EnumType enum_value1, typename MapMessage>
 void MapTestUtilImpl::SetArenaMapFields(MapMessage* message) {
   // Add first element.
-  (*message->mutable_map_int32_int32())[0] = 0;
-  (*message->mutable_map_int64_int64())[0] = 0;
-  (*message->mutable_map_uint32_uint32())[0] = 0;
-  (*message->mutable_map_uint64_uint64())[0] = 0;
-  (*message->mutable_map_sint32_sint32())[0] = 0;
-  (*message->mutable_map_sint64_sint64())[0] = 0;
-  (*message->mutable_map_fixed32_fixed32())[0] = 0;
-  (*message->mutable_map_fixed64_fixed64())[0] = 0;
-  (*message->mutable_map_sfixed32_sfixed32())[0] = 0;
-  (*message->mutable_map_sfixed64_sfixed64())[0] = 0;
-  (*message->mutable_map_int32_float())[0] = 0.0;
-  (*message->mutable_map_int32_double())[0] = 0.0;
-  (*message->mutable_map_bool_bool())[0] = false;
-  (*message->mutable_map_string_string())["0"] = "0";
-  (*message->mutable_map_int32_bytes())[0] = "0";
-  (*message->mutable_map_int32_enum())[0] = enum_value0;
-  (*message->mutable_map_int32_foreign_message())[0].set_c(0);
-  (*message->mutable_map_int32_foreign_message_no_arena())[0].set_c(0);
+  message->map_int32_int32()[0] = 0;
+  message->map_int64_int64()[0] = 0;
+  message->map_uint32_uint32()[0] = 0;
+  message->map_uint64_uint64()[0] = 0;
+  message->map_sint32_sint32()[0] = 0;
+  message->map_sint64_sint64()[0] = 0;
+  message->map_fixed32_fixed32()[0] = 0;
+  message->map_fixed64_fixed64()[0] = 0;
+  message->map_sfixed32_sfixed32()[0] = 0;
+  message->map_sfixed64_sfixed64()[0] = 0;
+  message->map_int32_float()[0] = 0.0;
+  message->map_int32_double()[0] = 0.0;
+  message->map_bool_bool()[0] = false;
+  message->map_string_string()["0"] = "0";
+  message->map_int32_bytes()[0] = "0";
+  message->map_int32_enum()[0] = enum_value0;
+  message->map_int32_foreign_message()[0].set_c(0);
+  message->map_int32_foreign_message_no_arena()[0].set_c(0);
 
   // Add second element
-  (*message->mutable_map_int32_int32())[1] = 1;
-  (*message->mutable_map_int64_int64())[1] = 1;
-  (*message->mutable_map_uint32_uint32())[1] = 1;
-  (*message->mutable_map_uint64_uint64())[1] = 1;
-  (*message->mutable_map_sint32_sint32())[1] = 1;
-  (*message->mutable_map_sint64_sint64())[1] = 1;
-  (*message->mutable_map_fixed32_fixed32())[1] = 1;
-  (*message->mutable_map_fixed64_fixed64())[1] = 1;
-  (*message->mutable_map_sfixed32_sfixed32())[1] = 1;
-  (*message->mutable_map_sfixed64_sfixed64())[1] = 1;
-  (*message->mutable_map_int32_float())[1] = 1.0;
-  (*message->mutable_map_int32_double())[1] = 1.0;
-  (*message->mutable_map_bool_bool())[1] = true;
-  (*message->mutable_map_string_string())["1"] = "1";
-  (*message->mutable_map_int32_bytes())[1] = "1";
-  (*message->mutable_map_int32_enum())[1] = enum_value1;
-  (*message->mutable_map_int32_foreign_message())[1].set_c(1);
-  (*message->mutable_map_int32_foreign_message_no_arena())[1].set_c(1);
+  message->map_int32_int32()[1] = 1;
+  message->map_int64_int64()[1] = 1;
+  message->map_uint32_uint32()[1] = 1;
+  message->map_uint64_uint64()[1] = 1;
+  message->map_sint32_sint32()[1] = 1;
+  message->map_sint64_sint64()[1] = 1;
+  message->map_fixed32_fixed32()[1] = 1;
+  message->map_fixed64_fixed64()[1] = 1;
+  message->map_sfixed32_sfixed32()[1] = 1;
+  message->map_sfixed64_sfixed64()[1] = 1;
+  message->map_int32_float()[1] = 1.0;
+  message->map_int32_double()[1] = 1.0;
+  message->map_bool_bool()[1] = true;
+  message->map_string_string()["1"] = "1";
+  message->map_int32_bytes()[1] = "1";
+  message->map_int32_enum()[1] = enum_value1;
+  message->map_int32_foreign_message()[1].set_c(1);
+  message->map_int32_foreign_message_no_arena()[1].set_c(1);
 }
 
 template <typename MapMessage>
 void MapTestUtilImpl::SetMapFieldsInitialized(MapMessage* message) {
   // Add first element using bracket operator, which should assign default
   // value automatically.
-  (*message->mutable_map_int32_int32())[0];
-  (*message->mutable_map_int64_int64())[0];
-  (*message->mutable_map_uint32_uint32())[0];
-  (*message->mutable_map_uint64_uint64())[0];
-  (*message->mutable_map_sint32_sint32())[0];
-  (*message->mutable_map_sint64_sint64())[0];
-  (*message->mutable_map_fixed32_fixed32())[0];
-  (*message->mutable_map_fixed64_fixed64())[0];
-  (*message->mutable_map_sfixed32_sfixed32())[0];
-  (*message->mutable_map_sfixed64_sfixed64())[0];
-  (*message->mutable_map_int32_float())[0];
-  (*message->mutable_map_int32_double())[0];
-  (*message->mutable_map_bool_bool())[0];
-  (*message->mutable_map_string_string())["0"];
-  (*message->mutable_map_int32_bytes())[0];
-  (*message->mutable_map_int32_enum())[0];
-  (*message->mutable_map_int32_foreign_message())[0];
+  message->map_int32_int32()[0];
+  message->map_int64_int64()[0];
+  message->map_uint32_uint32()[0];
+  message->map_uint64_uint64()[0];
+  message->map_sint32_sint32()[0];
+  message->map_sint64_sint64()[0];
+  message->map_fixed32_fixed32()[0];
+  message->map_fixed64_fixed64()[0];
+  message->map_sfixed32_sfixed32()[0];
+  message->map_sfixed64_sfixed64()[0];
+  message->map_int32_float()[0];
+  message->map_int32_double()[0];
+  message->map_bool_bool()[0];
+  message->map_string_string()["0"];
+  message->map_int32_bytes()[0];
+  message->map_int32_enum()[0];
+  message->map_int32_foreign_message()[0];
 }
 
 template <typename EnumType, EnumType enum_value, typename MapMessage>
 void MapTestUtilImpl::ModifyMapFields(MapMessage* message) {
-  (*message->mutable_map_int32_int32())[1] = 2;
-  (*message->mutable_map_int64_int64())[1] = 2;
-  (*message->mutable_map_uint32_uint32())[1] = 2;
-  (*message->mutable_map_uint64_uint64())[1] = 2;
-  (*message->mutable_map_sint32_sint32())[1] = 2;
-  (*message->mutable_map_sint64_sint64())[1] = 2;
-  (*message->mutable_map_fixed32_fixed32())[1] = 2;
-  (*message->mutable_map_fixed64_fixed64())[1] = 2;
-  (*message->mutable_map_sfixed32_sfixed32())[1] = 2;
-  (*message->mutable_map_sfixed64_sfixed64())[1] = 2;
-  (*message->mutable_map_int32_float())[1] = 2.0;
-  (*message->mutable_map_int32_double())[1] = 2.0;
-  (*message->mutable_map_bool_bool())[1] = false;
-  (*message->mutable_map_string_string())["1"] = "2";
-  (*message->mutable_map_int32_bytes())[1] = "2";
-  (*message->mutable_map_int32_enum())[1] = enum_value;
-  (*message->mutable_map_int32_foreign_message())[1].set_c(2);
+  message->map_int32_int32()[1] = 2;
+  message->map_int64_int64()[1] = 2;
+  message->map_uint32_uint32()[1] = 2;
+  message->map_uint64_uint64()[1] = 2;
+  message->map_sint32_sint32()[1] = 2;
+  message->map_sint64_sint64()[1] = 2;
+  message->map_fixed32_fixed32()[1] = 2;
+  message->map_fixed64_fixed64()[1] = 2;
+  message->map_sfixed32_sfixed32()[1] = 2;
+  message->map_sfixed64_sfixed64()[1] = 2;
+  message->map_int32_float()[1] = 2.0;
+  message->map_int32_double()[1] = 2.0;
+  message->map_bool_bool()[1] = false;
+  message->map_string_string()["1"] = "2";
+  message->map_int32_bytes()[1] = "2";
+  message->map_int32_enum()[1] = enum_value;
+  message->map_int32_foreign_message()[1].set_c(2);
 }
 
 template <typename MapMessage>

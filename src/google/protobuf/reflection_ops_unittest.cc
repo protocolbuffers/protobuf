@@ -274,14 +274,11 @@ TEST(ReflectionOpsTest, DiscardUnknownFields) {
   TestUtil::SetAllFields(&message);
 
   // Set some unknown fields in message.
-  message.mutable_unknown_fields()
-        ->AddVarint(123456, 654321);
-  message.mutable_optional_nested_message()
-        ->mutable_unknown_fields()
-        ->AddVarint(123456, 654321);
-  message.mutable_repeated_nested_message(0)
-        ->mutable_unknown_fields()
-        ->AddVarint(123456, 654321);
+  message.mutable_unknown_fields()->AddVarint(123456, 654321);
+  message.mutable_optional_nested_message().mutable_unknown_fields()->AddVarint(
+      123456, 654321);
+  message.repeated_nested_message(0).mutable_unknown_fields()->AddVarint(
+      123456, 654321);
 
   EXPECT_EQ(1, message.unknown_fields().field_count());
   EXPECT_EQ(1, message.optional_nested_message()
@@ -359,9 +356,9 @@ TEST(ReflectionOpsTest, ForeignIsInitialized) {
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
 
   // Initialize it.  Now we're initialized.
-  message.mutable_optional_message()->set_a(1);
-  message.mutable_optional_message()->set_b(2);
-  message.mutable_optional_message()->set_c(3);
+  message.mutable_optional_message().set_a(1);
+  message.mutable_optional_message().set_b(2);
+  message.mutable_optional_message().set_c(3);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 
   // Add a repeated version of the message.  No longer initialized.
@@ -415,7 +412,7 @@ TEST(ReflectionOpsTest, OneofIsInitialized) {
 
   message.mutable_foo_message();
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  message.mutable_foo_message()->set_required_double(0.1);
+  message.mutable_foo_message().set_required_double(0.1);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
 }
 

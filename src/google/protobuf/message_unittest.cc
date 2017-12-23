@@ -452,9 +452,9 @@ TEST(MessageTest, ParsingMerge) {
 
 #undef ASSIGN_REPEATED_FIELD
 #define ASSIGN_REPEATED_GROUP(FIELD)                \
-  msg1 = generator.add_##FIELD()->mutable_field1(); \
-  msg2 = generator.add_##FIELD()->mutable_field1(); \
-  msg3 = generator.add_##FIELD()->mutable_field1(); \
+  msg1 = &generator.add_##FIELD()->mutable_field1(); \
+  msg2 = &generator.add_##FIELD()->mutable_field1(); \
+  msg3 = &generator.add_##FIELD()->mutable_field1(); \
   AssignParsingMergeMessages(msg1, msg2, msg3)
 
   ASSIGN_REPEATED_GROUP(group1);
@@ -540,11 +540,11 @@ TEST(MessageTest, MergeFrom) {
 TEST(MessageTest, IsInitialized) {
   protobuf_unittest::TestIsInitialized msg;
   EXPECT_TRUE(msg.IsInitialized());
-  protobuf_unittest::TestIsInitialized::SubMessage* sub_message = msg.mutable_sub_message();
+  auto& sub_message = msg.mutable_sub_message();
   EXPECT_TRUE(msg.IsInitialized());
-  protobuf_unittest::TestIsInitialized::SubMessage::SubGroup* sub_group = sub_message->mutable_subgroup();
+  auto& sub_group = sub_message.mutable_subgroup();
   EXPECT_FALSE(msg.IsInitialized());
-  sub_group->set_i(1);
+  sub_group.set_i(1);
   EXPECT_TRUE(msg.IsInitialized());
 }
 

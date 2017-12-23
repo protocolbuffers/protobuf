@@ -245,7 +245,7 @@ TEST_F(JsonUtilTest, ParseMessage) {
 
 TEST_F(JsonUtilTest, ParseMap) {
   TestMap message;
-  (*message.mutable_string_map())["hello"] = 1234;
+  message.string_map()["hello"] = 1234;
   JsonPrintOptions print_options;
   JsonParseOptions parse_options;
   EXPECT_EQ("{\"stringMap\":{\"hello\":1234}}", ToJson(message, print_options));

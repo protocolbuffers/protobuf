@@ -217,11 +217,11 @@ TEST(GeneratedMessageReflectionTest, SwapUnknown) {
 TEST(GeneratedMessageReflectionTest, SwapFields) {
   unittest::TestAllTypes message1, message2;
   message1.set_optional_double(12.3);
-  message1.mutable_repeated_int32()->Add(10);
-  message1.mutable_repeated_int32()->Add(20);
+  message1.repeated_int32().Add(10);
+  message1.repeated_int32().Add(20);
 
   message2.set_optional_string("hello");
-  message2.mutable_repeated_int64()->Add(30);
+  message2.repeated_int64().Add(30);
 
   std::vector<const FieldDescriptor*> fields;
   const Descriptor* descriptor = message1.GetDescriptor();
@@ -359,7 +359,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   TestUtil::SetAllFields(&message);
   ASSERT_EQ(2, message.repeated_foreign_message_size());
   const protobuf_unittest::ForeignMessage* expected =
-      message.mutable_repeated_foreign_message(1);
+      &message.repeated_foreign_message(1);
   google::protobuf::scoped_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->FindFieldByName("repeated_foreign_message")));
   EXPECT_EQ(expected, released.get());

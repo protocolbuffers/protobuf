@@ -292,7 +292,7 @@ TEST(GeneratedMessageTest, ReleaseMessage) {
   EXPECT_EQ(NULL, message.release_optional_nested_message());
   EXPECT_FALSE(message.has_optional_nested_message());
 
-  message.mutable_optional_nested_message()->set_bb(1);
+  message.mutable_optional_nested_message().set_bb(1);
   google::protobuf::scoped_ptr<unittest::TestAllTypes::NestedMessage> nest(
       message.release_optional_nested_message());
   EXPECT_FALSE(message.has_optional_nested_message());
@@ -327,7 +327,7 @@ TEST(GeneratedMessageTest, SetAllocatedMessage) {
 
   EXPECT_FALSE(message.has_optional_nested_message());
 
-  message.mutable_optional_nested_message()->set_bb(1);
+  message.mutable_optional_nested_message().set_bb(1);
   EXPECT_TRUE(message.has_optional_nested_message());
 
   message.set_allocated_optional_nested_message(NULL);
@@ -335,7 +335,7 @@ TEST(GeneratedMessageTest, SetAllocatedMessage) {
   EXPECT_EQ(&unittest::TestAllTypes::NestedMessage::default_instance(),
             &message.optional_nested_message());
 
-  message.mutable_optional_nested_message()->set_bb(1);
+  message.mutable_optional_nested_message().set_bb(1);
   unittest::TestAllTypes::NestedMessage* nest =
       message.release_optional_nested_message();
   ASSERT_TRUE(nest != NULL);
@@ -523,7 +523,7 @@ TEST(GeneratedMessageTest, SwapWithOther) {
 
   message1.set_optional_int32(123);
   message1.set_optional_string("abc");
-  message1.mutable_optional_nested_message()->set_bb(1);
+  message1.mutable_optional_nested_message().set_bb(1);
   message1.set_optional_nested_enum(unittest::TestAllTypes::FOO);
   message1.add_repeated_int32(1);
   message1.add_repeated_int32(2);
@@ -536,7 +536,7 @@ TEST(GeneratedMessageTest, SwapWithOther) {
 
   message2.set_optional_int32(456);
   message2.set_optional_string("def");
-  message2.mutable_optional_nested_message()->set_bb(2);
+  message2.mutable_optional_nested_message().set_bb(2);
   message2.set_optional_nested_enum(unittest::TestAllTypes::BAR);
   message2.add_repeated_int32(3);
   message2.add_repeated_string("c");
@@ -836,17 +836,17 @@ TEST(GeneratedMessageTest, RequiredForeign) {
   message.mutable_optional_message();
   EXPECT_FALSE(message.IsInitialized());
 
-  message.mutable_optional_message()->set_a(1);
-  message.mutable_optional_message()->set_b(2);
-  message.mutable_optional_message()->set_c(3);
+  message.mutable_optional_message().set_a(1);
+  message.mutable_optional_message().set_b(2);
+  message.mutable_optional_message().set_c(3);
   EXPECT_TRUE(message.IsInitialized());
 
   message.add_repeated_message();
   EXPECT_FALSE(message.IsInitialized());
 
-  message.mutable_repeated_message(0)->set_a(1);
-  message.mutable_repeated_message(0)->set_b(2);
-  message.mutable_repeated_message(0)->set_c(3);
+  message.repeated_message(0).set_a(1);
+  message.repeated_message(0).set_b(2);
+  message.repeated_message(0).set_c(3);
   EXPECT_TRUE(message.IsInitialized());
 }
 
@@ -857,9 +857,8 @@ TEST(GeneratedMessageTest, ForeignNested) {
 
   // If this compiles and runs without crashing, it must work.  We have
   // nothing more to test.
-  unittest::TestAllTypes::NestedMessage* nested =
-    message.mutable_foreign_nested();
-  nested->set_bb(1);
+  auto& nested = message.mutable_foreign_nested();
+  nested.set_bb(1);
 }
 
 TEST(GeneratedMessageTest, ReallyLargeTagNumber) {
@@ -882,8 +881,8 @@ TEST(GeneratedMessageTest, ReallyLargeTagNumber) {
 TEST(GeneratedMessageTest, MutualRecursion) {
   // Test that mutually-recursive message types work.
   unittest::TestMutualRecursionA message;
-  unittest::TestMutualRecursionA* nested = message.mutable_bb()->mutable_a();
-  unittest::TestMutualRecursionA* nested2 = nested->mutable_bb()->mutable_a();
+  unittest::TestMutualRecursionA* nested = &message.mutable_bb().mutable_a();
+  unittest::TestMutualRecursionA* nested2 = &nested->mutable_bb().mutable_a();
 
   // Again, if the above compiles and runs, that's all we really have to
   // test, but just for run we'll check that the system didn't somehow come
@@ -907,7 +906,7 @@ TEST(GeneratedMessageTest, CamelCaseFieldNames) {
   message.set_primitivefield(2);
   message.set_stringfield("foo");
   message.set_enumfield(unittest::FOREIGN_FOO);
-  message.mutable_messagefield()->set_c(6);
+  message.mutable_messagefield().set_c(6);
 
   message.add_repeatedprimitivefield(8);
   message.add_repeatedstringfield("qux");
@@ -973,7 +972,7 @@ TEST(GeneratedMessageTest, TestOptimizedForSize) {
 
   protobuf_unittest::TestOptimizedForSize message, message2;
   message.set_i(1);
-  message.mutable_msg()->set_c(2);
+  message.mutable_msg().set_c(2);
   message2.CopyFrom(message);
   EXPECT_EQ(1, message2.i());
   EXPECT_EQ(2, message2.msg().c());
@@ -984,8 +983,8 @@ TEST(GeneratedMessageTest, TestEmbedOptimizedForSize) {
   // for size.
 
   protobuf_unittest::TestEmbedOptimizedForSize message, message2;
-  message.mutable_optional_message()->set_i(1);
-  message.add_repeated_message()->mutable_msg()->set_c(2);
+  message.mutable_optional_message().set_i(1);
+  message.add_repeated_message()->mutable_msg().set_c(2);
   string data;
   message.SerializeToString(&data);
   ASSERT_TRUE(message2.ParseFromString(data));
@@ -1610,11 +1609,11 @@ TEST_F(OneofTest, SettingOneFieldClearsOthers) {
   EXPECT_TRUE(message.has_foo_enum());
   TestUtil::ExpectAtMostOneFieldSetInOneof(message);
 
-  message.mutable_foo_message()->set_qux_int(234);
+  message.mutable_foo_message().set_qux_int(234);
   EXPECT_TRUE(message.has_foo_message());
   TestUtil::ExpectAtMostOneFieldSetInOneof(message);
 
-  message.mutable_foogroup()->set_a(345);
+  message.mutable_foogroup().set_a(345);
   EXPECT_TRUE(message.has_foogroup());
   TestUtil::ExpectAtMostOneFieldSetInOneof(message);
 
@@ -1637,9 +1636,9 @@ TEST_F(OneofTest, EnumCases) {
   ExpectEnumCasesWork(message);
   message.set_foo_enum(unittest::TestOneof2::FOO);
   ExpectEnumCasesWork(message);
-  message.mutable_foo_message()->set_qux_int(234);
+  message.mutable_foo_message().set_qux_int(234);
   ExpectEnumCasesWork(message);
-  message.mutable_foogroup()->set_a(345);
+  message.mutable_foogroup().set_a(345);
   ExpectEnumCasesWork(message);
 }
 
@@ -1753,7 +1752,7 @@ TEST_F(OneofTest, SetMessage) {
             &unittest::TestOneof2_NestedMessage::default_instance());
   EXPECT_EQ(message.foo_message().qux_int(), 0);
 
-  message.mutable_foo_message()->set_qux_int(234);
+  message.mutable_foo_message().set_qux_int(234);
   EXPECT_TRUE(message.has_foo_message());
   EXPECT_EQ(message.foo_message().qux_int(), 234);
   message.clear_foo_message();
@@ -1768,7 +1767,7 @@ TEST_F(OneofTest, ReleaseMessage) {
   EXPECT_EQ(NULL, message.release_foo_message());
   EXPECT_FALSE(message.has_foo_message());
 
-  message.mutable_foo_message()->set_qux_int(1);
+  message.mutable_foo_message().set_qux_int(1);
   EXPECT_TRUE(message.has_foo_message());
   google::protobuf::scoped_ptr<unittest::TestOneof2_NestedMessage> mes(
       message.release_foo_message());
@@ -1786,7 +1785,7 @@ TEST_F(OneofTest, SetAllocatedMessage) {
 
   EXPECT_FALSE(message.has_foo_message());
 
-  message.mutable_foo_message()->set_qux_int(1);
+  message.mutable_foo_message().set_qux_int(1);
   EXPECT_TRUE(message.has_foo_message());
 
   message.set_allocated_foo_message(NULL);
@@ -1794,7 +1793,7 @@ TEST_F(OneofTest, SetAllocatedMessage) {
   EXPECT_EQ(&message.foo_message(),
             &unittest::TestOneof2_NestedMessage::default_instance());
 
-  message.mutable_foo_message()->set_qux_int(1);
+  message.mutable_foo_message().set_qux_int(1);
   unittest::TestOneof2_NestedMessage* mes = message.release_foo_message();
   ASSERT_TRUE(mes != NULL);
   EXPECT_FALSE(message.has_foo_message());
@@ -1875,7 +1874,7 @@ TEST_F(OneofTest, SwapBothHasFields) {
 
   message1.set_foo_string("FOO");
   EXPECT_TRUE(message1.has_foo_string());
-  message2.mutable_foo_message()->set_qux_int(1);
+  message2.mutable_foo_message().set_qux_int(1);
   EXPECT_TRUE(message2.has_foo_message());
 
   message1.Swap(&message2);
@@ -1913,7 +1912,7 @@ TEST_F(OneofTest, CopyFrom) {
 
 TEST_F(OneofTest, CopyAssignmentOperator) {
   unittest::TestOneof2 message1;
-  message1.mutable_foo_message()->set_qux_int(123);
+  message1.mutable_foo_message().set_qux_int(123);
   EXPECT_TRUE(message1.has_foo_message());
 
   unittest::TestOneof2 message2;
@@ -1929,7 +1928,7 @@ TEST_F(OneofTest, UpcastCopyFrom) {
   // Test the CopyFrom method that takes in the generic const Message&
   // parameter.
   unittest::TestOneof2 message1, message2;
-  message1.mutable_foogroup()->set_a(123);
+  message1.mutable_foogroup().set_a(123);
   EXPECT_TRUE(message1.has_foogroup());
 
   const Message* source = implicit_cast<const Message*>(&message1);
@@ -2005,7 +2004,7 @@ TEST_F(OneofTest, SerializationToArray) {
   {
     unittest::TestOneof2 message1, message2;
     string data;
-    message1.mutable_foo_message()->set_qux_int(234);
+    message1.mutable_foo_message().set_qux_int(234);
     int size = message1.ByteSize();
     data.resize(size);
     uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
@@ -2019,7 +2018,7 @@ TEST_F(OneofTest, SerializationToArray) {
   {
     unittest::TestOneof2 message1, message2;
     string data;
-    message1.mutable_foogroup()->set_a(345);
+    message1.mutable_foogroup().set_a(345);
     int size = message1.ByteSize();
     data.resize(size);
     uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
@@ -2126,7 +2125,7 @@ TEST_F(OneofTest, SerializationToStream) {
   {
     unittest::TestOneof2 message1, message2;
     string data;
-    message1.mutable_foo_message()->set_qux_int(234);
+    message1.mutable_foo_message().set_qux_int(234);
     int size = message1.ByteSize();
     data.resize(size);
 
@@ -2147,7 +2146,7 @@ TEST_F(OneofTest, SerializationToStream) {
   {
     unittest::TestOneof2 message1, message2;
     string data;
-    message1.mutable_foogroup()->set_a(345);
+    message1.mutable_foogroup().set_a(345);
     int size = message1.ByteSize();
     data.resize(size);
 
@@ -2194,13 +2193,13 @@ TEST_F(OneofTest, MergeFrom) {
   EXPECT_TRUE(message2.has_foo_enum());
   EXPECT_EQ(message2.foo_enum(), unittest::TestOneof2::FOO);
 
-  message1.mutable_foo_message()->set_qux_int(234);
+  message1.mutable_foo_message().set_qux_int(234);
   message2.MergeFrom(message1);
   TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
   EXPECT_TRUE(message2.has_foo_message());
   EXPECT_EQ(message2.foo_message().qux_int(), 234);
 
-  message1.mutable_foogroup()->set_a(345);
+  message1.mutable_foogroup().set_a(345);
   message2.MergeFrom(message1);
   TestUtil::ExpectAtMostOneFieldSetInOneof(message2);
   EXPECT_TRUE(message2.has_foogroup());

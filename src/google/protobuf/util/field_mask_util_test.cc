@@ -440,47 +440,61 @@ TEST(FieldMaskUtilTest, MergeMessage) {
 #define TEST_MERGE_ONE_FIELD(field_name)                     \
   {                                                          \
     TestAllTypes tmp;                                        \
-    *tmp.mutable_##field_name() = src.field_name();          \
+    tmp.mutable_##field_name() = src.field_name();           \
     FieldMask mask;                                          \
     mask.add_paths(#field_name);                             \
     dst.Clear();                                             \
     FieldMaskUtil::MergeMessageTo(src, mask, options, &dst); \
     EXPECT_EQ(tmp.DebugString(), dst.DebugString());         \
   }
+
+#define TEST_MERGE_ONE_REPEATED_FIELD(field_name)            \
+  {                                                          \
+    TestAllTypes tmp;                                        \
+    tmp.field_name() = src.field_name();                     \
+    FieldMask mask;                                          \
+    mask.add_paths(#field_name);                             \
+    dst.Clear();                                             \
+    FieldMaskUtil::MergeMessageTo(src, mask, options, &dst); \
+    EXPECT_EQ(tmp.DebugString(), dst.DebugString());         \
+  }
+
   TEST_MERGE_ONE_FIELD(optional_nested_message)
   TEST_MERGE_ONE_FIELD(optional_foreign_message)
   TEST_MERGE_ONE_FIELD(optional_import_message)
 
-  TEST_MERGE_ONE_FIELD(repeated_int32)
-  TEST_MERGE_ONE_FIELD(repeated_int64)
-  TEST_MERGE_ONE_FIELD(repeated_uint32)
-  TEST_MERGE_ONE_FIELD(repeated_uint64)
-  TEST_MERGE_ONE_FIELD(repeated_sint32)
-  TEST_MERGE_ONE_FIELD(repeated_sint64)
-  TEST_MERGE_ONE_FIELD(repeated_fixed32)
-  TEST_MERGE_ONE_FIELD(repeated_fixed64)
-  TEST_MERGE_ONE_FIELD(repeated_sfixed32)
-  TEST_MERGE_ONE_FIELD(repeated_sfixed64)
-  TEST_MERGE_ONE_FIELD(repeated_float)
-  TEST_MERGE_ONE_FIELD(repeated_double)
-  TEST_MERGE_ONE_FIELD(repeated_bool)
-  TEST_MERGE_ONE_FIELD(repeated_string)
-  TEST_MERGE_ONE_FIELD(repeated_bytes)
-  TEST_MERGE_ONE_FIELD(repeated_nested_message)
-  TEST_MERGE_ONE_FIELD(repeated_foreign_message)
-  TEST_MERGE_ONE_FIELD(repeated_import_message)
-  TEST_MERGE_ONE_FIELD(repeated_nested_enum)
-  TEST_MERGE_ONE_FIELD(repeated_foreign_enum)
-  TEST_MERGE_ONE_FIELD(repeated_import_enum)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_int32)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_int64)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_uint32)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_uint64)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_sint32)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_sint64)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_fixed32)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_fixed64)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_sfixed32)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_sfixed64)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_float)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_double)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_bool)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_string)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_bytes)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_nested_message)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_foreign_message)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_import_message)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_nested_enum)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_foreign_enum)
+  TEST_MERGE_ONE_REPEATED_FIELD(repeated_import_enum)
+
 #undef TEST_MERGE_ONE_FIELD
+#undef TEST_MERGE_ONE_REPEATED_FIELD
 
   // Test merge nested fields.
   NestedTestAllTypes nested_src, nested_dst;
-  nested_src.mutable_child()->mutable_payload()->set_optional_int32(1234);
+  nested_src.mutable_child().mutable_payload().set_optional_int32(1234);
   nested_src.mutable_child()
-      ->mutable_child()
-      ->mutable_payload()
-      ->set_optional_int32(5678);
+      .mutable_child()
+      .mutable_payload()
+      .set_optional_int32(5678);
   FieldMask mask;
   FieldMaskUtil::FromString("child.payload", &mask);
   FieldMaskUtil::MergeMessageTo(nested_src, mask, options, &nested_dst);
@@ -507,7 +521,7 @@ TEST(FieldMaskUtilTest, MergeMessage) {
   // Test MergeOptions.
 
   nested_dst.Clear();
-  nested_dst.mutable_child()->mutable_payload()->set_optional_int64(4321);
+  nested_dst.mutable_child().mutable_payload().set_optional_int64(4321);
   // Message fields will be merged by default.
   FieldMaskUtil::FromString("child.payload", &mask);
   FieldMaskUtil::MergeMessageTo(nested_src, mask, options, &nested_dst);
@@ -535,8 +549,8 @@ TEST(FieldMaskUtilTest, MergeMessage) {
   FieldMaskUtil::MergeMessageTo(nested_src, mask, options, &nested_dst);
   EXPECT_FALSE(nested_dst.has_payload());
 
-  nested_src.mutable_payload()->add_repeated_int32(1234);
-  nested_dst.mutable_payload()->add_repeated_int32(5678);
+  nested_src.mutable_payload().add_repeated_int32(1234);
+  nested_dst.mutable_payload().add_repeated_int32(5678);
   // Repeated fields will be appended by default.
   FieldMaskUtil::FromString("payload.repeated_int32", &mask);
   FieldMaskUtil::MergeMessageTo(nested_src, mask, options, &nested_dst);
@@ -588,46 +602,61 @@ TEST(FieldMaskUtilTest, TrimMessage) {
     TestAllTypes msg;                                \
     TestUtil::SetAllFields(&msg);                    \
     TestAllTypes tmp;                                \
-    *tmp.mutable_##field_name() = msg.field_name();  \
+    tmp.mutable_##field_name() = msg.field_name();   \
     FieldMask mask;                                  \
     mask.add_paths(#field_name);                     \
     FieldMaskUtil::TrimMessage(mask, &msg);          \
     EXPECT_EQ(tmp.DebugString(), msg.DebugString()); \
   }
+
+#define TEST_TRIM_ONE_REPEATED_FIELD(field_name)     \
+  {                                                  \
+    TestAllTypes msg;                                \
+    TestUtil::SetAllFields(&msg);                    \
+    TestAllTypes tmp;                                \
+    tmp.field_name() = msg.field_name();             \
+    FieldMask mask;                                  \
+    mask.add_paths(#field_name);                     \
+    FieldMaskUtil::TrimMessage(mask, &msg);          \
+    EXPECT_EQ(tmp.DebugString(), msg.DebugString()); \
+  }
+
   TEST_TRIM_ONE_FIELD(optional_nested_message)
   TEST_TRIM_ONE_FIELD(optional_foreign_message)
   TEST_TRIM_ONE_FIELD(optional_import_message)
 
-  TEST_TRIM_ONE_FIELD(repeated_int32)
-  TEST_TRIM_ONE_FIELD(repeated_int64)
-  TEST_TRIM_ONE_FIELD(repeated_uint32)
-  TEST_TRIM_ONE_FIELD(repeated_uint64)
-  TEST_TRIM_ONE_FIELD(repeated_sint32)
-  TEST_TRIM_ONE_FIELD(repeated_sint64)
-  TEST_TRIM_ONE_FIELD(repeated_fixed32)
-  TEST_TRIM_ONE_FIELD(repeated_fixed64)
-  TEST_TRIM_ONE_FIELD(repeated_sfixed32)
-  TEST_TRIM_ONE_FIELD(repeated_sfixed64)
-  TEST_TRIM_ONE_FIELD(repeated_float)
-  TEST_TRIM_ONE_FIELD(repeated_double)
-  TEST_TRIM_ONE_FIELD(repeated_bool)
-  TEST_TRIM_ONE_FIELD(repeated_string)
-  TEST_TRIM_ONE_FIELD(repeated_bytes)
-  TEST_TRIM_ONE_FIELD(repeated_nested_message)
-  TEST_TRIM_ONE_FIELD(repeated_foreign_message)
-  TEST_TRIM_ONE_FIELD(repeated_import_message)
-  TEST_TRIM_ONE_FIELD(repeated_nested_enum)
-  TEST_TRIM_ONE_FIELD(repeated_foreign_enum)
-  TEST_TRIM_ONE_FIELD(repeated_import_enum)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_int32)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_int64)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_uint32)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_uint64)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_sint32)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_sint64)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_fixed32)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_fixed64)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_sfixed32)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_sfixed64)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_float)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_double)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_bool)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_string)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_bytes)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_nested_message)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_foreign_message)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_import_message)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_nested_enum)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_foreign_enum)
+  TEST_TRIM_ONE_REPEATED_FIELD(repeated_import_enum)
+
 #undef TEST_TRIM_ONE_FIELD
+#undef TEST_TRIM_ONE_REPEATED_FIELD
 
   // Test trim nested fields.
   NestedTestAllTypes nested_msg;
-  nested_msg.mutable_child()->mutable_payload()->set_optional_int32(1234);
+  nested_msg.mutable_child().mutable_payload().set_optional_int32(1234);
   nested_msg.mutable_child()
-      ->mutable_child()
-      ->mutable_payload()
-      ->set_optional_int32(5678);
+      .mutable_child()
+      .mutable_payload()
+      .set_optional_int32(5678);
   NestedTestAllTypes trimmed_msg(nested_msg);
   FieldMask mask;
   FieldMaskUtil::FromString("child.payload", &mask);
@@ -683,13 +712,13 @@ TEST(FieldMaskUtilTest, TrimMessage) {
 
   // Test trim required message with keep_required_fields is set true.
   TestRequiredMessage required_msg_2;
-  required_msg_2.mutable_optional_message()->set_a(1234);
-  required_msg_2.mutable_optional_message()->set_b(3456);
-  required_msg_2.mutable_optional_message()->set_c(5678);
-  required_msg_2.mutable_required_message()->set_a(1234);
-  required_msg_2.mutable_required_message()->set_b(3456);
-  required_msg_2.mutable_required_message()->set_c(5678);
-  required_msg_2.mutable_required_message()->set_dummy2(7890);
+  required_msg_2.mutable_optional_message().set_a(1234);
+  required_msg_2.mutable_optional_message().set_b(3456);
+  required_msg_2.mutable_optional_message().set_c(5678);
+  required_msg_2.mutable_required_message().set_a(1234);
+  required_msg_2.mutable_required_message().set_b(3456);
+  required_msg_2.mutable_required_message().set_c(5678);
+  required_msg_2.mutable_required_message().set_dummy2(7890);
   TestRequired* repeated_msg = required_msg_2.add_repeated_message();
   repeated_msg->set_a(1234);
   repeated_msg->set_b(3456);
@@ -698,14 +727,14 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   FieldMaskUtil::FromString("optional_message.dummy2", &mask);
   options.set_keep_required_fields(true);
   required_msg_2.clear_repeated_message();
-  required_msg_2.mutable_required_message()->clear_dummy2();
+  required_msg_2.mutable_required_message().clear_dummy2();
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
   EXPECT_EQ(trimmed_required_msg_2.DebugString(),
             required_msg_2.DebugString());
 
   FieldMaskUtil::FromString("required_message", &mask);
-  required_msg_2.mutable_required_message()->set_dummy2(7890);
-  trimmed_required_msg_2.mutable_required_message()->set_dummy2(7890);
+  required_msg_2.mutable_required_message().set_dummy2(7890);
+  trimmed_required_msg_2.mutable_required_message().set_dummy2(7890);
   required_msg_2.clear_optional_message();
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
   EXPECT_EQ(trimmed_required_msg_2.DebugString(),
@@ -713,9 +742,9 @@ TEST(FieldMaskUtilTest, TrimMessage) {
 
   // Test trim required message with keep_required_fields is set false.
   FieldMaskUtil::FromString("required_message.dummy2", &mask);
-  required_msg_2.mutable_required_message()->clear_a();
-  required_msg_2.mutable_required_message()->clear_b();
-  required_msg_2.mutable_required_message()->clear_c();
+  required_msg_2.mutable_required_message().clear_a();
+  required_msg_2.mutable_required_message().clear_b();
+  required_msg_2.mutable_required_message().clear_c();
   options.set_keep_required_fields(false);
   FieldMaskUtil::TrimMessage(mask, &trimmed_required_msg_2, options);
   EXPECT_EQ(trimmed_required_msg_2.DebugString(),

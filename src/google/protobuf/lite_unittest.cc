@@ -192,9 +192,9 @@ TEST(Lite, AllLite5) {
 
 #undef ASSIGN_REPEATED_FIELD
 #define ASSIGN_REPEATED_GROUP(FIELD)                \
-  msg1 = generator.add_##FIELD()->mutable_field1(); \
-  msg2 = generator.add_##FIELD()->mutable_field1(); \
-  msg3 = generator.add_##FIELD()->mutable_field1(); \
+  msg1 = &generator.add_##FIELD()->mutable_field1(); \
+  msg2 = &generator.add_##FIELD()->mutable_field1(); \
+  msg3 = &generator.add_##FIELD()->mutable_field1(); \
   AssignParsingMergeMessages(msg1, msg2, msg3)
 
     ASSIGN_REPEATED_GROUP(group1);
@@ -452,7 +452,7 @@ TEST(Lite, AllLite18) {
 
     // Creates a TestAllTypes with default value
     google::protobuf::TestUtilLite::ExpectClear(
-        (*message.mutable_map_int32_message())[0]);
+        message.map_int32_message()[0]);
   }
 }
 
@@ -480,8 +480,8 @@ TEST(Lite, AllLite20) {
     // CopyFromMessageMap
     protobuf_unittest::TestMessageMapLite message1, message2;
 
-    (*message1.mutable_map_int32_message())[0].add_repeated_int32(100);
-    (*message2.mutable_map_int32_message())[0].add_repeated_int32(101);
+    message1.map_int32_message()[0].add_repeated_int32(100);
+    message2.map_int32_message()[0].add_repeated_int32(101);
 
     message1.CopyFrom(message2);
 
@@ -581,12 +581,12 @@ TEST(Lite, AllLite26) {
     google::protobuf::MapLiteTestUtil::SetMapFields(&message1);
 
     // This field will test merging into an empty spot.
-    (*message2.mutable_map_int32_int32())[1] = 1;
-    message1.mutable_map_int32_int32()->erase(1);
+    message2.map_int32_int32()[1] = 1;
+    message1.map_int32_int32().erase(1);
 
     // This tests overwriting.
-    (*message2.mutable_map_int32_double())[1] = 1;
-    (*message1.mutable_map_int32_double())[1] = 2;
+    message2.map_int32_double()[1] = 1;
+    message1.map_int32_double()[1] = 2;
 
     message1.MergeFrom(message2);
     google::protobuf::MapLiteTestUtil::ExpectMapFieldsSet(message1);
@@ -600,8 +600,8 @@ TEST(Lite, AllLite27) {
     // MergeFromMessageMap
     protobuf_unittest::TestMessageMapLite message1, message2;
 
-    (*message1.mutable_map_int32_message())[0].add_repeated_int32(100);
-    (*message2.mutable_map_int32_message())[0].add_repeated_int32(101);
+    message1.map_int32_message()[0].add_repeated_int32(100);
+    message2.map_int32_message()[0].add_repeated_int32(101);
 
     message1.MergeFrom(message2);
 
@@ -660,9 +660,9 @@ TEST(Lite, AllLite32) {
   {
     // Proto2UnknownEnum
     protobuf_unittest::TestEnumMapPlusExtraLite from;
-    (*from.mutable_known_map_field())[0] =
+    from.known_map_field()[0] =
         protobuf_unittest::E_PROTO2_MAP_ENUM_FOO_LITE;
-    (*from.mutable_unknown_map_field())[0] =
+    from.unknown_map_field()[0] =
         protobuf_unittest::E_PROTO2_MAP_ENUM_EXTRA_LITE;
     string data;
     from.SerializeToString(&data);
@@ -820,13 +820,13 @@ TEST(Lite, AllLite41) {
     protobuf_unittest::TestRequiredMessageMapLite map_message;
 
     // Add an uninitialized message.
-    (*map_message.mutable_map_field())[0];
+    map_message.map_field()[0];
     EXPECT_FALSE(map_message.IsInitialized());
 
     // Initialize uninitialized message
-    (*map_message.mutable_map_field())[0].set_a(0);
-    (*map_message.mutable_map_field())[0].set_b(0);
-    (*map_message.mutable_map_field())[0].set_c(0);
+    map_message.map_field()[0].set_a(0);
+    map_message.map_field()[0].set_b(0);
+    map_message.map_field()[0].set_c(0);
     EXPECT_TRUE(map_message.IsInitialized());
   }
 }
@@ -925,7 +925,7 @@ TEST(Lite, AllLite44) {
   // Submessage
   {
     protobuf_unittest::TestOneofParsingLite original;
-    original.mutable_oneof_submessage()->set_optional_int32(5);
+    original.mutable_oneof_submessage().set_optional_int32(5);
     string serialized;
     EXPECT_TRUE(original.SerializeToString(&serialized));
     protobuf_unittest::TestOneofParsingLite parsed;

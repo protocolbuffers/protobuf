@@ -1174,8 +1174,8 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     message.set_enum_extension(unittest::FOREIGN_BAR);
     message.set_dynamic_enum_extension(
         unittest::TestDynamicExtensions::DYNAMIC_BAZ);
-    message.mutable_message_extension()->set_c(456);
-    message.mutable_dynamic_message_extension()->set_dynamic_field(789);
+    message.mutable_message_extension().set_c(456);
+    message.mutable_dynamic_message_extension().set_dynamic_field(789);
     message.add_repeated_extension("foo");
     message.add_repeated_extension("bar");
     message.add_packed_extension(12);
