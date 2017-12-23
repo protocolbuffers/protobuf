@@ -899,8 +899,8 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
       "const;\n");
   printer->Annotate("name", descriptor_);
   printer->Print(variables_,
-                 "$deprecated_attr$::google::protobuf::RepeatedPtrField< ::std::string>* "
-                 "${$mutable_$name$$}$()"
+                 "$deprecated_attr$::google::protobuf::RepeatedPtrField< ::std::string>& "
+                 "$name$()"
                  ";\n");
   printer->Annotate("{", "}", descriptor_);
 
@@ -983,10 +983,10 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "inline ::google::protobuf::RepeatedPtrField< ::std::string>*\n"
-    "$classname$::mutable_$name$() {\n"
+    "inline ::google::protobuf::RepeatedPtrField< ::std::string>&\n"
+    "$classname$::$name$() {\n"
     "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
-    "  return &$name$_;\n"
+    "  return $name$_;\n"
     "}\n");
 }
 

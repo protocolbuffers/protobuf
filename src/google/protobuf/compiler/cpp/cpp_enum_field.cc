@@ -268,8 +268,8 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
       "$deprecated_attr$const ::google::protobuf::RepeatedField<int>& $name$() const;\n");
   printer->Annotate("name", descriptor_);
   printer->Print(variables_,
-                 "$deprecated_attr$::google::protobuf::RepeatedField<int>* "
-                 "${$mutable_$name$$}$();\n");
+                 "$deprecated_attr$::google::protobuf::RepeatedField<int>& "
+                 "$name$();\n");
   printer->Annotate("{", "}", descriptor_);
 }
 
@@ -303,10 +303,10 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "inline ::google::protobuf::RepeatedField<int>*\n"
-    "$classname$::mutable_$name$() {\n"
+    "inline ::google::protobuf::RepeatedField<int>&\n"
+    "$classname$::$name$() {\n"
     "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
-    "  return &$name$_;\n"
+    "  return $name$_;\n"
     "}\n");
 }
 
@@ -373,7 +373,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
         "       $number$,\n"
         "       NULL,\n"
         "       NULL,\n"
-        "       this->mutable_$name$())));\n");
+        "       &this->$name$())));\n");
     } else if (UseUnknownFieldSet(descriptor_->file(), options_)) {
       printer->Print(variables_,
         "DO_((::google::protobuf::internal::WireFormat::ReadPackedEnumPreserveUnknowns(\n"
@@ -381,7 +381,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
         "       $number$,\n"
         "       $type$_IsValid,\n"
         "       mutable_unknown_fields(),\n"
-        "       this->mutable_$name$())));\n");
+        "       &this->$name$())));\n");
     } else {
       printer->Print(variables_,
         "DO_((::google::protobuf::internal::"
@@ -390,7 +390,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
         "       $number$,\n"
         "       $type$_IsValid,\n"
         "       &unknown_fields_stream,\n"
-        "       this->mutable_$name$())));\n");
+        "       &this->$name$())));\n");
     }
   } else {
     printer->Print(variables_,

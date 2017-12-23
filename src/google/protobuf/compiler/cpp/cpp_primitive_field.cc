@@ -301,8 +301,8 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
                  "    $name$() const;\n");
   printer->Annotate("name", descriptor_);
   printer->Print(variables_,
-                 "$deprecated_attr$::google::protobuf::RepeatedField< $type$ >*\n"
-                 "    ${$mutable_$name$$}$();\n");
+                 "$deprecated_attr$::google::protobuf::RepeatedField< $type$ >&\n"
+                 "    $name$();\n");
   printer->Annotate("{", "}", descriptor_);
 }
 
@@ -326,10 +326,10 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "inline ::google::protobuf::RepeatedField< $type$ >*\n"
-    "$classname$::mutable_$name$() {\n"
+    "inline ::google::protobuf::RepeatedField< $type$ >&\n"
+    "$classname$::$name$() {\n"
     "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
-    "  return &$name$_;\n"
+    "  return $name$_;\n"
     "}\n");
 }
 
@@ -363,7 +363,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   printer->Print(variables_,
     "DO_((::google::protobuf::internal::WireFormatLite::$repeated_reader$<\n"
     "         $type$, $wire_format_field_type$>(\n"
-    "       $tag_size$, $tag$u, input, this->mutable_$name$())));\n");
+    "       $tag_size$, $tag$u, input, &this->$name$())));\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
@@ -371,7 +371,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
   printer->Print(variables_,
     "DO_((::google::protobuf::internal::WireFormatLite::$packed_reader$<\n"
     "         $type$, $wire_format_field_type$>(\n"
-    "       input, this->mutable_$name$())));\n");
+    "       input, &this->$name$())));\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
