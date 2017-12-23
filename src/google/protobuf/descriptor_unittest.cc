@@ -662,7 +662,7 @@ class DescriptorTest : public testing::Test {
     AddField(entry, "value", 2,
              FieldDescriptorProto::LABEL_OPTIONAL,
              FieldDescriptorProto::TYPE_INT32);
-    entry->mutable_options()->set_map_entry(true);
+    entry->mutable_options().set_map_entry(true);
 
     AddField(message3, "map_int32_int32", 1,
              FieldDescriptorProto::LABEL_REPEATED,
@@ -1009,17 +1009,17 @@ class OneofDescriptorTest : public testing::Test {
     AddField(oneof_message, "b", 2,
              FieldDescriptorProto::LABEL_OPTIONAL,
              FieldDescriptorProto::TYPE_STRING);
-    oneof_message->mutable_field(1)->set_oneof_index(0);
+    oneof_message->field(1).set_oneof_index(0);
     AddField(oneof_message, "c", 3,
              FieldDescriptorProto::LABEL_OPTIONAL,
              FieldDescriptorProto::TYPE_MESSAGE);
-    oneof_message->mutable_field(2)->set_oneof_index(0);
-    oneof_message->mutable_field(2)->set_type_name("TestOneof");
+    oneof_message->field(2).set_oneof_index(0);
+    oneof_message->field(2).set_type_name("TestOneof");
 
     AddField(oneof_message, "d", 4,
              FieldDescriptorProto::LABEL_OPTIONAL,
              FieldDescriptorProto::TYPE_FLOAT);
-    oneof_message->mutable_field(3)->set_oneof_index(1);
+    oneof_message->field(3).set_oneof_index(1);
 
     // Build the descriptors and get the pointers.
     baz_file_ = pool_.BuildFile(baz_file);
@@ -2561,7 +2561,7 @@ TEST_F(MiscTest, FieldOptions) {
              FieldDescriptorProto::LABEL_OPTIONAL,
              FieldDescriptorProto::TYPE_INT32);
 
-  FieldOptions* options = bar_proto->mutable_options();
+  FieldOptions* options = &bar_proto->mutable_options();
   options->set_ctype(FieldOptions::CORD);
 
   // Build the descriptors and get the pointers.
@@ -3451,7 +3451,7 @@ TEST(CustomOptions, OptionsWithRequiredEnums) {
       "  } "
       "  aggregate_value: 'value: NEW_VALUE' "
       "}",
-      test_message_type->mutable_options()));
+      &test_message_type->mutable_options()));
 
   // Add the file descriptor to the pool.
   ASSERT_TRUE(pool.BuildFile(file_proto) != NULL);
@@ -5721,7 +5721,7 @@ TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
       "extension_range { "
       "  start: 10 end: 20 "
       "} ",
-      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+      &file_proto.message_type(0).nested_type(0));
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
 
@@ -5732,7 +5732,7 @@ TEST_F(ValidationErrorTest, MapEntryExtension) {
       "extension { "
       "  name: 'foo_ext' extendee: '.Bar' number: 5"
       "} ",
-      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+      &file_proto.message_type(0).nested_type(0));
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
 
@@ -5743,7 +5743,7 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
       "nested_type { "
       "  name: 'Bar' "
       "} ",
-      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+      &file_proto.message_type(0).nested_type(0));
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
 
@@ -5755,7 +5755,7 @@ TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
       "  name: 'BarEnum' "
       "  value { name: 'BAR_BAR' number:0 } "
       "} ",
-      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+      &file_proto.message_type(0).nested_type(0));
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
 
@@ -5769,16 +5769,16 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
       "  type: TYPE_INT32 "
       "  number: 3 "
       "} ",
-      file_proto.mutable_message_type(0)->mutable_nested_type(0));
+      &file_proto.message_type(0).nested_type(0));
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryMessageName) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  file_proto.mutable_message_type(0)->mutable_nested_type(0)->set_name(
+  file_proto.message_type(0).nested_type(0).set_name(
       "OtherMapEntry");
-  file_proto.mutable_message_type(0)->mutable_field(0)->set_type_name(
+  file_proto.message_type(0).field(0).set_type_name(
       "OtherMapEntry");
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
@@ -5786,7 +5786,7 @@ TEST_F(ValidationErrorTest, MapEntryMessageName) {
 TEST_F(ValidationErrorTest, MapEntryNoneRepeatedMapEntry) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  file_proto.mutable_message_type(0)->mutable_field(0)->set_label(
+  file_proto.message_type(0).field(0).set_label(
       FieldDescriptorProto::LABEL_OPTIONAL);
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
@@ -5796,17 +5796,17 @@ TEST_F(ValidationErrorTest, MapEntryDifferentContainingType) {
   FillValidMapEntry(&file_proto);
   // Move the nested MapEntry message into the top level, which should not pass
   // the validation.
-  file_proto.mutable_message_type()->AddAllocated(
-      file_proto.mutable_message_type(0)->mutable_nested_type()->ReleaseLast());
+  file_proto.message_type().AddAllocated(
+      file_proto.message_type(0).nested_type().ReleaseLast());
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
 
 TEST_F(ValidationErrorTest, MapEntryKeyName) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(0);
+  FieldDescriptorProto* key = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(0);
   key->set_name("Key");
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
@@ -5814,9 +5814,9 @@ TEST_F(ValidationErrorTest, MapEntryKeyName) {
 TEST_F(ValidationErrorTest, MapEntryKeyLabel) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(0);
+  FieldDescriptorProto* key = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(0);
   key->set_label(FieldDescriptorProto::LABEL_REQUIRED);
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
@@ -5824,9 +5824,9 @@ TEST_F(ValidationErrorTest, MapEntryKeyLabel) {
 TEST_F(ValidationErrorTest, MapEntryKeyNumber) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(0);
+  FieldDescriptorProto* key = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(0);
   key->set_number(3);
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
@@ -5834,9 +5834,9 @@ TEST_F(ValidationErrorTest, MapEntryKeyNumber) {
 TEST_F(ValidationErrorTest, MapEntryValueName) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* value = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(1);
+  FieldDescriptorProto* value = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(1);
   value->set_name("Value");
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
@@ -5844,9 +5844,9 @@ TEST_F(ValidationErrorTest, MapEntryValueName) {
 TEST_F(ValidationErrorTest, MapEntryValueLabel) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* value = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(1);
+  FieldDescriptorProto* value = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(1);
   value->set_label(FieldDescriptorProto::LABEL_REQUIRED);
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
@@ -5854,9 +5854,9 @@ TEST_F(ValidationErrorTest, MapEntryValueLabel) {
 TEST_F(ValidationErrorTest, MapEntryValueNumber) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* value = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(1);
+  FieldDescriptorProto* value = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(1);
   value->set_number(3);
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryErrorMessage);
 }
@@ -5864,9 +5864,9 @@ TEST_F(ValidationErrorTest, MapEntryValueNumber) {
 TEST_F(ValidationErrorTest, MapEntryKeyTypeFloat) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(0);
+  FieldDescriptorProto* key = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(0);
   key->set_type(FieldDescriptorProto::TYPE_FLOAT);
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
 }
@@ -5874,9 +5874,9 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeFloat) {
 TEST_F(ValidationErrorTest, MapEntryKeyTypeDouble) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(0);
+  FieldDescriptorProto* key = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(0);
   key->set_type(FieldDescriptorProto::TYPE_DOUBLE);
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
 }
@@ -5884,9 +5884,9 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeDouble) {
 TEST_F(ValidationErrorTest, MapEntryKeyTypeBytes) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(0);
+  FieldDescriptorProto* key = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(0);
   key->set_type(FieldDescriptorProto::TYPE_BYTES);
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
 }
@@ -5894,9 +5894,9 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeBytes) {
 TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(0);
+  FieldDescriptorProto* key = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(0);
   key->clear_type();
   key->set_type_name("BarEnum");
   EnumDescriptorProto* enum_proto = file_proto.add_enum_type();
@@ -5909,7 +5909,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
                       "be enum types.\n");
   // Enum keys are not allowed in proto3 as well.
   // Get rid of extensions for proto3 to make it proto3 compatible.
-  file_proto.mutable_message_type()->RemoveLast();
+  file_proto.message_type().RemoveLast();
   file_proto.set_syntax("proto3");
   BuildFileWithErrors(file_proto.DebugString(),
                       "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot "
@@ -5920,9 +5920,9 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeEnum) {
 TEST_F(ValidationErrorTest, MapEntryKeyTypeMessage) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  FieldDescriptorProto* key = file_proto.mutable_message_type(0)
-      ->mutable_nested_type(0)
-      ->mutable_field(0);
+  FieldDescriptorProto* key = &file_proto.message_type(0)
+      .nested_type(0)
+      .field(0);
   key->clear_type();
   key->set_type_name(".Bar");
   BuildFileWithErrors(file_proto.DebugString(), kMapEntryKeyTypeErrorMessage);
@@ -5938,7 +5938,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithField) {
       "  label: LABEL_OPTIONAL "
       "  number: 100 "
       "}",
-      file_proto.mutable_message_type(0));
+      &file_proto.message_type(0));
   BuildFileWithErrors(
       file_proto.DebugString(),
       "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
@@ -5955,7 +5955,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithMessage) {
       "nested_type { "
       "  name: 'FooMapEntry' "
       "}",
-      file_proto.mutable_message_type(0));
+      &file_proto.message_type(0));
   BuildFileWithErrors(
       file_proto.DebugString(),
       "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
@@ -5972,7 +5972,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithEnum) {
       "  name: 'FooMapEntry' "
       "  value { name: 'ENTRY_FOO' number: 0 }"
       "}",
-      file_proto.mutable_message_type(0));
+      &file_proto.message_type(0));
   BuildFileWithErrors(
       file_proto.DebugString(),
       "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
@@ -6058,7 +6058,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {
       "  oneof_index: 0 "
       "  number: 100 "
       "} ",
-      file_proto.mutable_message_type(0));
+      &file_proto.message_type(0));
   BuildFileWithErrors(
       file_proto.DebugString(),
       "foo.proto: Foo.FooMapEntry: NAME: \"FooMapEntry\" is already defined in "
@@ -7030,7 +7030,7 @@ TEST_F(SourceLocationTest, GetSourceLocation_BogusSourceCodeInfo) {
   file_desc->CopyTo(&proto);  // Note, this discards the SourceCodeInfo.
   EXPECT_FALSE(proto.has_source_code_info());
   SourceCodeInfo_Location *loc_msg =
-      proto.mutable_source_code_info()->add_location();
+      proto.mutable_source_code_info().add_location();
   loc_msg->add_path(1);
   loc_msg->add_path(2);
   loc_msg->add_path(3);

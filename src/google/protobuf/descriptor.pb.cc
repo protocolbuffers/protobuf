@@ -2149,7 +2149,7 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(66u /* 66 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -2161,7 +2161,7 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(74u /* 74 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_source_code_info()));
+               input, &mutable_source_code_info()));
         } else {
           goto handle_unusual;
         }
@@ -2174,13 +2174,13 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
             static_cast< ::google::protobuf::uint8>(80u /* 80 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 80u, input, this->mutable_public_dependency())));
+                 1, 80u, input, &this->public_dependency())));
         } else if (
             static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(82u /* 82 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, this->mutable_public_dependency())));
+                 input, &this->public_dependency())));
         } else {
           goto handle_unusual;
         }
@@ -2193,13 +2193,13 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
             static_cast< ::google::protobuf::uint8>(88u /* 88 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 88u, input, this->mutable_weak_dependency())));
+                 1, 88u, input, &this->weak_dependency())));
         } else if (
             static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(90u /* 90 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, this->mutable_weak_dependency())));
+                 input, &this->weak_dependency())));
         } else {
           goto handle_unusual;
         }
@@ -2633,10 +2633,10 @@ void FileDescriptorProto::MergeFrom(const FileDescriptorProto& from) {
       set_syntax(from.syntax());
     }
     if (cached_has_bits & 0x00000008u) {
-      mutable_options()->::google::protobuf::FileOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::FileOptions::MergeFrom(from.options());
     }
     if (cached_has_bits & 0x00000010u) {
-      mutable_source_code_info()->::google::protobuf::SourceCodeInfo::MergeFrom(from.source_code_info());
+      mutable_source_code_info().::google::protobuf::SourceCodeInfo::MergeFrom(from.source_code_info());
     }
   }
 }
@@ -2870,7 +2870,7 @@ bool DescriptorProto_ExtensionRange::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -3024,7 +3024,7 @@ void DescriptorProto_ExtensionRange::MergeFrom(const DescriptorProto_ExtensionRa
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
-      mutable_options()->::google::protobuf::ExtensionRangeOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::ExtensionRangeOptions::MergeFrom(from.options());
     }
     if (cached_has_bits & 0x00000002u) {
       start_ = from.start_;
@@ -3651,7 +3651,7 @@ bool DescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -4075,7 +4075,7 @@ void DescriptorProto::MergeFrom(const DescriptorProto& from) {
       set_name(from.name());
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_options()->::google::protobuf::MessageOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::MessageOptions::MergeFrom(from.options());
     }
   }
 }
@@ -4766,7 +4766,7 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(66u /* 66 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -5143,7 +5143,7 @@ void FieldDescriptorProto::MergeFrom(const FieldDescriptorProto& from) {
       set_json_name(from.json_name());
     }
     if (cached_has_bits & 0x00000020u) {
-      mutable_options()->::google::protobuf::FieldOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::FieldOptions::MergeFrom(from.options());
     }
     if (cached_has_bits & 0x00000040u) {
       number_ = from.number_;
@@ -5377,7 +5377,7 @@ bool OneofDescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -5528,7 +5528,7 @@ void OneofDescriptorProto::MergeFrom(const OneofDescriptorProto& from) {
       set_name(from.name());
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_options()->::google::protobuf::OneofOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::OneofOptions::MergeFrom(from.options());
     }
   }
 }
@@ -6079,7 +6079,7 @@ bool EnumDescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -6346,7 +6346,7 @@ void EnumDescriptorProto::MergeFrom(const EnumDescriptorProto& from) {
       set_name(from.name());
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_options()->::google::protobuf::EnumOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::EnumOptions::MergeFrom(from.options());
     }
   }
 }
@@ -6579,7 +6579,7 @@ bool EnumValueDescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -6747,7 +6747,7 @@ void EnumValueDescriptorProto::MergeFrom(const EnumValueDescriptorProto& from) {
       set_name(from.name());
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_options()->::google::protobuf::EnumValueOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::EnumValueOptions::MergeFrom(from.options());
     }
     if (cached_has_bits & 0x00000004u) {
       number_ = from.number_;
@@ -6978,7 +6978,7 @@ bool ServiceDescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -7158,7 +7158,7 @@ void ServiceDescriptorProto::MergeFrom(const ServiceDescriptorProto& from) {
       set_name(from.name());
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_options()->::google::protobuf::ServiceOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::ServiceOptions::MergeFrom(from.options());
     }
   }
 }
@@ -7436,7 +7436,7 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_options()));
+               input, &mutable_options()));
         } else {
           goto handle_unusual;
         }
@@ -7707,7 +7707,7 @@ void MethodDescriptorProto::MergeFrom(const MethodDescriptorProto& from) {
       set_output_type(from.output_type());
     }
     if (cached_has_bits & 0x00000008u) {
-      mutable_options()->::google::protobuf::MethodOptions::MergeFrom(from.options());
+      mutable_options().::google::protobuf::MethodOptions::MergeFrom(from.options());
     }
     if (cached_has_bits & 0x00000010u) {
       client_streaming_ = from.client_streaming_;
@@ -12722,13 +12722,13 @@ bool SourceCodeInfo_Location::MergePartialFromCodedStream(
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, this->mutable_path())));
+                 input, &this->path())));
         } else if (
             static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 10u, input, this->mutable_path())));
+                 1, 10u, input, &this->path())));
         } else {
           goto handle_unusual;
         }
@@ -12741,13 +12741,13 @@ bool SourceCodeInfo_Location::MergePartialFromCodedStream(
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, this->mutable_span())));
+                 input, &this->span())));
         } else if (
             static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 18u, input, this->mutable_span())));
+                 1, 18u, input, &this->span())));
         } else {
           goto handle_unusual;
         }
@@ -13520,13 +13520,13 @@ bool GeneratedCodeInfo_Annotation::MergePartialFromCodedStream(
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, this->mutable_path())));
+                 input, &this->path())));
         } else if (
             static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 10u, input, this->mutable_path())));
+                 1, 10u, input, &this->path())));
         } else {
           goto handle_unusual;
         }

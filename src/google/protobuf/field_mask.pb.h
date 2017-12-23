@@ -171,7 +171,7 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
   void add_paths(const char* value);
   void add_paths(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& paths() const;
-  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_paths();
+  ::google::protobuf::RepeatedPtrField< ::std::string>& paths();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldMask)
  private:
@@ -256,10 +256,10 @@ FieldMask::paths() const {
   // @@protoc_insertion_point(field_list:google.protobuf.FieldMask.paths)
   return paths_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-FieldMask::mutable_paths() {
+inline ::google::protobuf::RepeatedPtrField< ::std::string>&
+FieldMask::paths() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldMask.paths)
-  return &paths_;
+  return paths_;
 }
 
 #ifdef __GNUC__

@@ -906,8 +906,8 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 TEST_P(ProtostreamObjectSourceStructTest, StructRenderSuccess) {
   StructType out;
   google::protobuf::Struct* s = &out.mutable_object();
-  s->mutable_fields()->operator[]("k1").set_number_value(123);
-  s->mutable_fields()->operator[]("k2").set_bool_value(true);
+  s->fields().operator[]("k1").set_number_value(123);
+  s->fields().operator[]("k2").set_bool_value(true);
 
   ow_.StartObject("")
       ->StartObject("object")
@@ -922,7 +922,7 @@ TEST_P(ProtostreamObjectSourceStructTest, StructRenderSuccess) {
 TEST_P(ProtostreamObjectSourceStructTest, MissingValueSkipsField) {
   StructType out;
   google::protobuf::Struct* s = &out.mutable_object();
-  s->mutable_fields()->operator[]("k1");
+  s->fields().operator[]("k1");
 
   ow_.StartObject("")->StartObject("object")->EndObject()->EndObject();
 

@@ -1507,8 +1507,8 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 TEST_P(ProtoStreamObjectWriterStructTest, StructRenderSuccess) {
   StructType struct_type;
   google::protobuf::Struct* s = &struct_type.mutable_object();
-  s->mutable_fields()->operator[]("k1").set_number_value(123);
-  s->mutable_fields()->operator[]("k2").set_bool_value(true);
+  s->fields().operator[]("k1").set_number_value(123);
+  s->fields().operator[]("k2").set_bool_value(true);
 
   ow_->StartObject("")
       ->StartObject("object")
@@ -1551,7 +1551,7 @@ TEST_P(ProtoStreamObjectWriterStructTest, StructAcceptsNull) {
 
 TEST_P(ProtoStreamObjectWriterStructTest, StructValuePreservesNull) {
   StructType struct_type;
-  (*struct_type.mutable_object().mutable_fields())["key"].set_null_value(
+  struct_type.mutable_object().fields()["key"].set_null_value(
       google::protobuf::NULL_VALUE);
   EXPECT_CALL(listener_, InvalidValue(_, _, _)).Times(0);
 
@@ -1611,10 +1611,10 @@ TEST_P(ProtoStreamObjectWriterStructTest, RepeatedStructMapObjectKeyTest) {
 TEST_P(ProtoStreamObjectWriterStructTest, OptionStructIntAsStringsTest) {
   StructType struct_type;
   google::protobuf::Struct* s = &struct_type.mutable_object();
-  s->mutable_fields()->operator[]("k1").set_string_value("123");
-  s->mutable_fields()->operator[]("k2").set_bool_value(true);
-  s->mutable_fields()->operator[]("k3").set_string_value("-222222222");
-  s->mutable_fields()->operator[]("k4").set_string_value("33333333");
+  s->fields().operator[]("k1").set_string_value("123");
+  s->fields().operator[]("k2").set_bool_value(true);
+  s->fields().operator[]("k3").set_string_value("-222222222");
+  s->fields().operator[]("k4").set_string_value("33333333");
 
   options_.struct_integers_as_strings = true;
   ResetProtoWriter();
@@ -2041,7 +2041,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedObjectValue) {
   ::google::protobuf::Any* any = &out.mutable_any();
 
   ::google::protobuf::Value value;
-  (*value.mutable_struct_value()->mutable_fields())["foo"].set_string_value(
+  value.mutable_struct_value().fields()["foo"].set_string_value(
       "abc");
   any->PackFrom(value);
 
@@ -2069,7 +2069,7 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedArrayValue) {
   ::google::protobuf::Any* any = &out.mutable_any();
 
   ::google::protobuf::Value value;
-  value.mutable_list_value()->add_values()->set_string_value("hello");
+  value.mutable_list_value().add_values()->set_string_value("hello");
   any->PackFrom(value);
 
   ow_->StartObject("")

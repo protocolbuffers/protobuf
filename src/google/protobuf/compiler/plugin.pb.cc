@@ -788,7 +788,7 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_compiler_version()));
+               input, &mutable_compiler_version()));
         } else {
           goto handle_unusual;
         }
@@ -1010,7 +1010,7 @@ void CodeGeneratorRequest::MergeFrom(const CodeGeneratorRequest& from) {
       parameter_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.parameter_);
     }
     if (cached_has_bits & 0x00000002u) {
-      mutable_compiler_version()->::google::protobuf::compiler::Version::MergeFrom(from.compiler_version());
+      mutable_compiler_version().::google::protobuf::compiler::Version::MergeFrom(from.compiler_version());
     }
   }
 }
