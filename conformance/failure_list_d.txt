@@ -19,3 +19,8 @@ Required.JsonInput.TimestampWithNegativeOffset.ProtobufOutput
 Required.JsonInput.TimestampWithPositiveOffset.JsonOutput
 Required.JsonInput.TimestampWithPositiveOffset.ProtobufOutput
 # End see issue #4079
+
+Required.JsonInput.DoubleFieldTooLarge
+Required.JsonInput.DoubleFieldTooSmall
+Required.JsonInput.FloatFieldTooLarge
+Required.JsonInput.FloatFieldTooSmall

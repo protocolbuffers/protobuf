@@ -20,15 +20,14 @@ struct Timestamp
     auto toProtobuf()
     {
         long epochDelta = timestamp.stdTime - unixTimeToStdTime(0);
-        auto protobufMessage = _Message(epochDelta / 1_000_000_0, epochDelta % 1_000_000_0 * 100);
 
-        return protobufMessage.toProtobuf;
+        return _Message(epochDelta / 1_000_000_0, epochDelta % 1_000_000_0 * 100).toProtobuf;
     }
 
     Timestamp fromProtobuf(R)(ref R inputRange)
     {
-        auto protobufMessage = inputRange.fromProtobuf!_Message;
-        long epochDelta = protobufMessage.seconds * 1_000_000_0 + protobufMessage.nanos / 100;
+        auto message = inputRange.fromProtobuf!_Message;
+        long epochDelta = message.seconds * 1_000_000_0 + message.nanos / 100;
         timestamp.stdTime = epochDelta + unixTimeToStdTime(0);
 
         return this;

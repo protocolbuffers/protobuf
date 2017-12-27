@@ -1,15 +1,15 @@
-import std.array;
-import std.base64;
-import std.exception;
-import std.json;
-import std.stdio;
 import google.protobuf;
-import google.protobuf.json_encoding;
-import conformance.conformance;
-import protobuf_test_messages.proto3.test_messages_proto3;
+import conformance.conformance : ConformanceRequest, ConformanceResponse;
 
 void doTest(ConformanceRequest request, ConformanceResponse response)
 {
+    import std.array : array, save;
+    import std.base64 : Base64Exception;
+    import std.json : JSONException, parseJSON, toJSON;
+    import std.typecons : Yes;
+    import conformance.conformance : WireFormat;
+    import protobuf_test_messages.proto3.test_messages_proto3 : TestAllTypes;
+
     TestAllTypes testMessage;
 
     final switch (request.payloadCase)
@@ -78,6 +78,10 @@ void doTest(ConformanceRequest request, ConformanceResponse response)
 
 bool doTestIo()
 {
+    import std.array : array;
+    import std.exception : enforce;
+    import std.stdio : stdin, stdout;
+
     static ubyte[4] lengthBuffer;
     ubyte[] lengthData;
     size_t length;
@@ -115,6 +119,11 @@ bool doTestIo()
 
 void main()
 {
+    import google.protobuf.any : Any;
+    import protobuf_test_messages.proto3.test_messages_proto3 : TestAllTypes;
+
+    Any.registerMessageType!TestAllTypes;
+
     while (doTestIo)
     {
     }

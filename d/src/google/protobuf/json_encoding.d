@@ -84,6 +84,14 @@ if (is(T == class) || is(T == struct))
     import std.meta : AliasSeq;
     import std.traits : hasMember;
 
+    static if (is(T == class))
+    {
+        if (value is null)
+        {
+            return JSONValue(null);
+        }
+    }
+
     static if (hasMember!(T, "toJSONValue"))
     {
         return value.toJSONValue;

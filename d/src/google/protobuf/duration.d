@@ -22,18 +22,20 @@ struct Duration
     {
         validateDuration;
 
-        auto splitedDuration = duration.split!("seconds", "nsecs");
-        auto protobufMessage = _Message(splitedDuration.seconds, cast(int) splitedDuration.nsecs);
+        long seconds;
+        long nsecs;
 
-        return protobufMessage.toProtobuf;
+        duration.split!("seconds", "nsecs")(seconds, nsecs);
+
+        return _Message(seconds, cast(int) nsecs).toProtobuf;
     }
 
     Duration fromProtobuf(R)(ref R inputRange)
     {
         import core.time : dur;
 
-        auto protobufMessage = inputRange.fromProtobuf!_Message;
-        duration = dur!"seconds"(protobufMessage.seconds) + dur!"nsecs"(protobufMessage.nanos);
+        auto message = inputRange.fromProtobuf!_Message;
+        duration = dur!"seconds"(message.seconds) + dur!"nsecs"(message.nanos);
 
         return this;
     }

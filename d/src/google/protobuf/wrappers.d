@@ -1,11 +1,15 @@
 module google.protobuf.wrappers;
 
 import std.json : JSONValue;
-import std.typecons : Nullable;
 import google.protobuf;
 
-struct WrappedValue(T)
+struct WrappedValue(T, string messageTypeFullName_)
 {
+    import std.typecons : Nullable;
+
+    enum messageTypeFullName = messageTypeFullName_;
+    static assert(messageTypeFullName_.length != 0);
+
     private struct _Message
     {
         @Proto(1) T value = defaultValue!T;
@@ -50,15 +54,15 @@ struct WrappedValue(T)
     }
 }
 
-alias DoubleValue = WrappedValue!double;
-alias FloatValue = WrappedValue!float;
-alias Int64Value = WrappedValue!long;
-alias UInt64Value = WrappedValue!ulong;
-alias Int32Value = WrappedValue!int;
-alias UInt32Value = WrappedValue!uint;
-alias BoolValue = WrappedValue!bool;
-alias StringValue = WrappedValue!string;
-alias BytesValue = WrappedValue!bytes;
+alias DoubleValue = WrappedValue!(double, "google.protobuf.DoubleValue");
+alias FloatValue = WrappedValue!(float, "google.protobuf.FloatValue");
+alias Int64Value = WrappedValue!(long, "google.protobuf.Int64Value");
+alias UInt64Value = WrappedValue!(ulong, "google.protobuf.UInt64Value");
+alias Int32Value = WrappedValue!(int, "google.protobuf.Int32Value");
+alias UInt32Value = WrappedValue!(uint, "google.protobuf.UInt32Value");
+alias BoolValue = WrappedValue!(bool, "google.protobuf.BoolValue");
+alias StringValue = WrappedValue!(string, "google.protobuf.StringValue");
+alias BytesValue = WrappedValue!(bytes, "google.protobuf.BytesValue");
 
 unittest
 {

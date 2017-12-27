@@ -41,9 +41,35 @@ package Wire keyWireToWire(Wire wire)
     return cast(Wire)((wire >> 2) & 0x03);
 }
 
+unittest
+{
+    static assert(keyWireToWire(Wire.none) == Wire.none);
+    static assert(keyWireToWire(Wire.fixedKey) == Wire.fixed);
+    static assert(keyWireToWire(Wire.zigzagKey) == Wire.zigzag);
+    static assert(keyWireToWire(Wire.fixedValue) == Wire.none);
+    static assert(keyWireToWire(Wire.zigzagValue) == Wire.none);
+    static assert(keyWireToWire(Wire.fixedKeyFixedValue) == Wire.fixed);
+    static assert(keyWireToWire(Wire.fixedKeyZigzagValue) == Wire.fixed);
+    static assert(keyWireToWire(Wire.zigzagKeyFixedValue) == Wire.zigzag);
+    static assert(keyWireToWire(Wire.zigzagKeyZigzagValue) == Wire.zigzag);
+}
+
 package Wire valueWireToWire(Wire wire)
 {
     return cast(Wire)(wire & 0x03);
+}
+
+unittest
+{
+    static assert(valueWireToWire(Wire.none) == Wire.none);
+    static assert(valueWireToWire(Wire.fixedKey) == Wire.none);
+    static assert(valueWireToWire(Wire.zigzagKey) == Wire.none);
+    static assert(valueWireToWire(Wire.fixedValue) == Wire.fixed);
+    static assert(valueWireToWire(Wire.zigzagValue) == Wire.zigzag);
+    static assert(valueWireToWire(Wire.fixedKeyFixedValue) == Wire.fixed);
+    static assert(valueWireToWire(Wire.fixedKeyZigzagValue) == Wire.zigzag);
+    static assert(valueWireToWire(Wire.zigzagKeyFixedValue) == Wire.fixed);
+    static assert(valueWireToWire(Wire.zigzagKeyZigzagValue) == Wire.zigzag);
 }
 
 struct Proto

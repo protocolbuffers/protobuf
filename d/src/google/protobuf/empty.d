@@ -1,5 +1,6 @@
 module google.protobuf.empty;
 
+import std.json : JSONValue;
 import google.protobuf;
 
 struct Empty
@@ -19,8 +20,6 @@ struct Empty
 
     auto toJSONValue()()
     {
-        import std.json : JSONValue;
-
         return JSONValue(cast(JSONValue[string]) null);
     }
 
@@ -28,9 +27,12 @@ struct Empty
     {
         import std.exception : enforce;
         import std.json : JSON_TYPE;
+        import std.range : empty;
 
-        enforce!ProtobufException(value.TYPE == JSON_TYPE.OBJECT && value.empty,
+        enforce!ProtobufException(value.type == JSON_TYPE.OBJECT && value.object.empty,
             "Invalid google.protobuf.Empty JSON Encoding");
+
+        return this;
     }
 }
 
@@ -46,5 +48,9 @@ unittest
 
 unittest
 {
-    assert(Empty().toJSONValue.object.length == 0);
+    import std.json : JSON_TYPE;
+    import std.range : empty;
+
+    assert(Empty().toJSONValue.type == JSON_TYPE.OBJECT);
+    assert(Empty().toJSONValue.object.empty);
 }
