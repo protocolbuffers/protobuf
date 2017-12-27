@@ -36,7 +36,7 @@ To install the c extension, the following tools are needed:
 
 On Ubuntu, you can install them with:
 ```
-sudo apt-get install php-pear php5-dev autoconf automake libtool make gcc
+sudo apt-get install -y php-pear php5-dev autoconf automake libtool make gcc
 ```
 On other platforms, please use the corresponding package managing tool to
 install them before proceeding.
