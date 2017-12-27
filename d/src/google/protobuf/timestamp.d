@@ -33,7 +33,7 @@ struct Timestamp
         return this;
     }
 
-    auto toJSONValue()()
+    JSONValue toJSONValue()()
     {
         import std.format : format;
         import google.protobuf.json_encoding;

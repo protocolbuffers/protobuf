@@ -40,7 +40,7 @@ struct Duration
         return this;
     }
 
-    auto toJSONValue()()
+    JSONValue toJSONValue()()
     {
         import std.format : format;
         import std.math : abs;

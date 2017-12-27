@@ -98,7 +98,7 @@ struct Any
         return this;
     }
 
-    auto toJSONValue()()
+    JSONValue toJSONValue()()
     {
         import std.format : format;
         import std.exception : enforce;
@@ -174,6 +174,7 @@ static this()
 {
     import google.protobuf.duration : Duration;
     import google.protobuf.empty : Empty;
+    import google.protobuf.field_mask : FieldMask;
     import google.protobuf.struct_ : ListValue, NullValue, Struct, Value;
     import google.protobuf.timestamp : Timestamp;
     import google.protobuf.wrappers : BoolValue, BytesValue, DoubleValue, FloatValue, Int32Value, Int64Value,
@@ -185,6 +186,7 @@ static this()
     Any.registerMessageType!(DoubleValue, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(Duration, Yes.hasSpecialJSONMapping);
     //Any.registerMessageType!(Empty, Yes.hasSpecialJSONMapping); // TODO: Somehow it causes a linkage error
+    Any.registerMessageType!(FieldMask, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(FloatValue, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(Int32Value, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(Int64Value, Yes.hasSpecialJSONMapping);
@@ -240,6 +242,7 @@ unittest
 {
     import google.protobuf.duration : Duration;
     import google.protobuf.empty : Empty;
+    import google.protobuf.field_mask : FieldMask;
     import google.protobuf.struct_ : ListValue, NullValue, Struct, Value;
     import google.protobuf.timestamp : Timestamp;
     import google.protobuf.wrappers : BoolValue, BytesValue, DoubleValue, FloatValue, Int32Value, Int64Value,
@@ -251,6 +254,7 @@ unittest
     static assert(messageTypeFullName!DoubleValue == "google.protobuf.DoubleValue");
     static assert(messageTypeFullName!Duration == "google.protobuf.Duration");
     static assert(messageTypeFullName!Empty == "google.protobuf.Empty");
+    static assert(messageTypeFullName!FieldMask == "google.protobuf.FieldMask");
     static assert(messageTypeFullName!FloatValue == "google.protobuf.FloatValue");
     static assert(messageTypeFullName!Int32Value == "google.protobuf.Int32Value");
     static assert(messageTypeFullName!Int64Value == "google.protobuf.Int64Value");

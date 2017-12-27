@@ -18,7 +18,7 @@ struct Empty
         return this;
     }
 
-    auto toJSONValue()()
+    JSONValue toJSONValue()()
     {
         return JSONValue(cast(JSONValue[string]) null);
     }

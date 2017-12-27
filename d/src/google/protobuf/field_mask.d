@@ -1,28 +1,49 @@
 module google.protobuf.field_mask;
 
+import std.json : JSONValue;
 import google.protobuf;
 
 struct FieldMask
 {
     @Proto(1) string[] paths = defaultValue!(string[]);
 
-    auto toJSONValue()()
+    JSONValue toJSONValue()()
     {
-        import std.algorithm : joiner, map;
-        import std.conv : to;
-        import google.protobuf.json_encoding;
+        import std.algorithm : map;
+        import std.array : join;
+        import google.protobuf.json_encoding : toJSONValue;
 
-        return paths.map!(a => a.toCamelCase).joiner(",").to!string.toJSONValue;
+        return paths.map!(a => a.toCamelCase).join(",").toJSONValue;
+    }
+
+    FieldMask fromJSONValue()(JSONValue value)
+    {
+        import std.algorithm : map, splitter;
+        import std.array : array;
+        import std.exception : enforce;
+        import std.json : JSON_TYPE;
+
+        enforce!ProtobufException(value.type == JSON_TYPE.STRING, "FieldMask JSON encoding must be a string");
+
+        paths = value.str.splitter(",").map!(a => a.toSnakeCase).array;
+
+        return this;
     }
 }
 
 unittest
 {
-    import std.json : JSONValue;
-
     assert(FieldMask(["foo"]).toJSONValue == JSONValue("foo"));
     assert(FieldMask(["foo", "bar_baz"]).toJSONValue == JSONValue("foo,barBaz"));
     assert(FieldMask(["foo", "bar_baz.qux"]).toJSONValue == JSONValue("foo,barBaz.qux"));
+}
+
+unittest
+{
+    FieldMask foo;
+    assert(FieldMask(["foo"]) == foo.fromJSONValue(JSONValue("foo")));
+    assert(FieldMask(["foo", "bar_baz"]) == foo.fromJSONValue(JSONValue("foo,barBaz")));
+    assert(FieldMask(["foo", "bar_baz.qux"]) == foo.fromJSONValue(JSONValue("foo,barBaz.qux")));
 }
 
 string toCamelCase(string snakeCase) pure
