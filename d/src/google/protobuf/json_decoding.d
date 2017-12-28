@@ -1,9 +1,7 @@
 module google.protobuf.json_decoding;
 
-import std.exception : enforce;
-import std.json : JSON_TYPE, JSONValue;
+import std.json : JSONValue, JSON_TYPE;
 import std.traits : isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral, isSigned;
-import std.typecons : Flag, No, Yes;
 import google.protobuf.common;
 
 T fromJSONValue(T)(JSONValue value)
@@ -26,25 +24,38 @@ T fromJSONValue(T)(JSONValue value)
 if (isIntegral!T)
 {
     import std.conv : ConvException, to;
+    import std.exception : enforce;
 
-    switch (value.type)
+    try
     {
-    case JSON_TYPE.NULL:
-        return defaultValue!T;
-    case JSON_TYPE.STRING:
-        try
+        switch (value.type)
         {
+        case JSON_TYPE.NULL:
+            return defaultValue!T;
+        case JSON_TYPE.STRING:
             return value.str.to!T;
-        }
-        catch (ConvException ConvException)
+        case JSON_TYPE.INTEGER:
+            return value.integer.to!T;
+        case JSON_TYPE.UINTEGER:
+            return value.uinteger.to!T;
+        case JSON_TYPE.FLOAT:
         {
+            import core.stdc.math : fabs, modf;
+
+            double integral;
+            double fractional = modf(value.floating, &integral);
+            double epsilon = double.epsilon * fabs(integral);
+
+            enforce!ProtobufException(fabs(fractional) <= epsilon, "JSON integer expected");
+
+            return value.floating.to!T;
+        }
+        default:
             throw new ProtobufException("JSON integer expected");
         }
-    case JSON_TYPE.INTEGER:
-        return cast(T) value.integer;
-    case JSON_TYPE.UINTEGER:
-        return cast(T) value.uinteger;
-    default:
+    }
+    catch (ConvException ConvException)
+    {
         throw new ProtobufException("JSON integer expected");
     }
 }
@@ -55,36 +66,36 @@ if (isFloatingPoint!T)
     import std.conv : ConvException, to;
     import std.math : isInfinity, isNaN;
 
-    switch (value.type)
+    try
     {
-    case JSON_TYPE.NULL:
-        return defaultValue!T;
-    case JSON_TYPE.STRING:
-        switch (value.str)
+        switch (value.type)
         {
-        case "NaN":
-            return T.nan;
-        case "Infinity":
-            return T.infinity;
-        case "-Infinity":
-            return -T.infinity;
-        default:
-            try
+        case JSON_TYPE.NULL:
+            return defaultValue!T;
+        case JSON_TYPE.STRING:
+            switch (value.str)
             {
+            case "NaN":
+                return T.nan;
+            case "Infinity":
+                return T.infinity;
+            case "-Infinity":
+                return -T.infinity;
+            default:
                 return value.str.to!T;
             }
-            catch (ConvException ConvException)
-            {
-                throw new ProtobufException("JSON float expected");
-            }
+        case JSON_TYPE.INTEGER:
+            return value.integer.to!T;
+        case JSON_TYPE.UINTEGER:
+            return value.uinteger.to!T;
+        case JSON_TYPE.FLOAT:
+            return value.floating;
+        default:
+            throw new ProtobufException("JSON float expected");
         }
-    case JSON_TYPE.INTEGER:
-        return cast(T) value.integer;
-    case JSON_TYPE.UINTEGER:
-        return cast(T) value.uinteger;
-    case JSON_TYPE.FLOAT:
-        return value.floating;
-    default:
+    }
+    catch (ConvException ConvException)
+    {
         throw new ProtobufException("JSON float expected");
     }
 }
@@ -92,6 +103,8 @@ if (isFloatingPoint!T)
 T fromJSONValue(T)(JSONValue value)
 if (is(T == string))
 {
+    import std.exception : enforce;
+
     if (value.isNull)
         return defaultValue!T;
 
@@ -103,6 +116,8 @@ T fromJSONValue(T)(JSONValue value)
 if (is(T == bytes))
 {
     import std.base64 : Base64;
+    import std.exception : enforce;
+    import std.json : JSON_TYPE;
 
     if (value.isNull)
         return defaultValue!T;
@@ -116,6 +131,7 @@ if (isArray!T && !is(T == string) && !is(T == bytes))
 {
     import std.algorithm : map;
     import std.array : array;
+    import std.exception : enforce;
     import std.range : ElementType;
 
     if (value.isNull)
@@ -129,6 +145,7 @@ T fromJSONValue(T)(JSONValue value, T result = null)
 if (isAssociativeArray!T)
 {
     import std.conv : ConvException, to;
+    import std.exception : enforce;
     import std.traits : KeyType, ValueType;
 
     if (value.isNull)
@@ -189,6 +206,7 @@ unittest
 T fromJSONValue(T)(JSONValue value, T result = defaultValue!T)
 if (is(T == class) || is(T == struct))
 {
+    import std.exception : enforce;
     import std.traits : hasMember;
 
     static if (is(T == class))
