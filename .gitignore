@@ -58,8 +58,6 @@ python/*.egg
 python/.eggs/
 python/.tox
 python/build/
-python/google/protobuf/compiler/
-python/google/protobuf/util/
 
 src/js_embed
 src/protoc
