@@ -320,7 +320,7 @@ GenerateSerializationConditional(io::Printer* printer) const {
       "!java.util.Arrays.equals(this.$name$, $default$)) {\n");
   } else if (IsReferenceType(java_type)) {
     printer->Print(variables_,
-      "!this.$name$.equals($default$)) {\n");
+      "this.$name$ != null && !this.$name$.equals($default$)) {\n");
   } else if (java_type == JAVATYPE_FLOAT) {
     printer->Print(variables_,
       "java.lang.Float.floatToIntBits(this.$name$)\n"
