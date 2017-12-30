@@ -20,7 +20,12 @@ Required.JsonInput.TimestampWithPositiveOffset.JsonOutput
 Required.JsonInput.TimestampWithPositiveOffset.ProtobufOutput
 # End see issue #4079
 
-Required.JsonInput.DoubleFieldTooLarge
+# The D protobuf library does not implement a JSON parser, but relies on the std.json
+# Following tests are failing because std.json parser implementation is more relaxed
+# regarding some edge cases
+#Required.JsonInput.DoubleFieldTooLarge
 Required.JsonInput.DoubleFieldTooSmall
 Required.JsonInput.FloatFieldTooLarge
 Required.JsonInput.FloatFieldTooSmall
+Required.JsonInput.Int32FieldLeadingZero
+Required.JsonInput.Int32FieldNegativeWithLeadingZero

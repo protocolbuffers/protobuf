@@ -25,6 +25,7 @@ if (isIntegral!T)
 {
     import std.conv : ConvException, to;
     import std.exception : enforce;
+    import std.traits : OriginalType;
 
     try
     {
@@ -35,9 +36,9 @@ if (isIntegral!T)
         case JSON_TYPE.STRING:
             return value.str.to!T;
         case JSON_TYPE.INTEGER:
-            return value.integer.to!T;
+            return cast(T) value.integer.to!(OriginalType!T);
         case JSON_TYPE.UINTEGER:
-            return value.uinteger.to!T;
+            return cast(T) value.uinteger.to!(OriginalType!T);
         case JSON_TYPE.FLOAT:
         {
             import core.stdc.math : fabs, modf;
@@ -206,7 +207,10 @@ unittest
 T fromJSONValue(T)(JSONValue value, T result = defaultValue!T)
 if (is(T == class) || is(T == struct))
 {
+    import std.algorithm : findAmong;
     import std.exception : enforce;
+    import std.meta : staticMap;
+    import std.range : empty;
     import std.traits : hasMember;
 
     static if (is(T == class))
@@ -221,6 +225,20 @@ if (is(T == class) || is(T == struct))
     }
     else
     {
+        enum string jsonName(string fieldName) = {
+            import std.algorithm : skipOver;
+
+            string result = fieldName;
+
+            if (fieldName[$ - 1] == '_')
+                result = fieldName[0 .. $ - 1];
+
+            static if (isOneof!(mixin("T." ~ fieldName)))
+                result.skipOver("_");
+
+            return result;
+        }();
+
         if (value.isNull)
             return defaultValue!T;
 
@@ -228,16 +246,22 @@ if (is(T == class) || is(T == struct))
 
         JSONValue[string] members = value.object;
 
-        foreach (field; Message!T.fieldNames)
+        foreach (fieldName; Message!T.fieldNames)
         {
-            static if (field[$ - 1] == '_')
-                enum jsonName = field[0 .. $ - 1];
-            else
-                enum jsonName = field;
+            enum jsonFieldName = jsonName!fieldName;
 
-            auto fieldValue = (jsonName in members);
+            auto fieldValue = (jsonFieldName in members);
             if (fieldValue !is null)
-                mixin("result." ~ field) = fromJSONValue!(typeof(mixin("T." ~ field)))(*fieldValue);
+            {
+                static if (isOneof!(mixin("T." ~ fieldName)))
+                {
+                    alias otherFields = staticMap!(jsonName, otherOneofFieldNames!(T, mixin("T." ~ fieldName)));
+                    enforce!ProtobufException(members.keys.findAmong([otherFields]).empty,
+                            "More than one oneof field in JSON Message");
+                }
+
+                mixin("result." ~ fieldName) = fromJSONValue!(typeof(mixin("T." ~ fieldName)))(*fieldValue);
+            }
         }
         return result;
     }
@@ -253,6 +277,13 @@ unittest
         @Proto(1) int a;
         @Proto(3) string b;
         @Proto(4) bool c;
+
+        @Oneof("test")
+        union
+        {
+            @Proto(5) int _d;
+            @Proto(6) string _e;
+        }
     }
 
     auto foo = Foo(10, "abc", false);
@@ -260,4 +291,61 @@ unittest
     assert(fromJSONValue!Foo(parseJSON(`{"a":10, "b":"abc"}`)) == Foo(10, "abc", false));
     assert(fromJSONValue!Foo(parseJSON(`{"a": 10, "b": "abc", "c": false}`)) == Foo(10, "abc", false));
     assertThrown!ProtobufException(fromJSONValue!Foo(parseJSON(`{"a":10, "b":100}`)));
+    assertThrown!ProtobufException(fromJSONValue!Foo(parseJSON(`{"d":10, "e":"abc"}`)));
+}
+
+private template oneofs(T)
+{
+    import std.meta : NoDuplicates, staticMap;
+    import std.traits : getSymbolsByUDA;
+
+    private alias oneofs = NoDuplicates!(staticMap!(oneofByField, getSymbolsByUDA!(T, Oneof)));
+}
+
+private template oneofByField(alias field)
+{
+    import std.traits : getUDAs;
+
+    enum Oneof oneofByField = getUDAs!(field, Oneof)[0];
+}
+
+private template otherOneofFieldNames(T, alias field)
+{
+    import std.meta : Erase, Filter, staticMap;
+
+    static assert(is(typeof(__traits(parent, field).init) == T));
+    static assert(isOneof!field);
+
+    static enum hasSameOneofCase(alias field2) = oneofCaseFieldName!field == oneofCaseFieldName!field2;
+    static enum fieldName(alias field) = __traits(identifier, field);
+
+    enum otherOneofFieldNames = staticMap!(fieldName, Erase!(field, Filter!(hasSameOneofCase, Filter!(isOneof,
+            Message!T.fields))));
+}
+
+unittest
+{
+    import std.meta : AliasSeq, staticMap;
+
+    static struct Test
+    {
+        @Oneof("foo")
+        union
+        {
+            @Proto(1) int foo1;
+            @Proto(2) int foo2;
+        }
+        @Oneof("bar")
+        union
+        {
+            @Proto(11) int bar1;
+            @Proto(12) int bar2;
+            @Proto(13) int bar3;
+        }
+
+        @Proto(20) int baz;
+    }
+
+    static assert([otherOneofFieldNames!(Test, Test.foo1)] == ["foo2"]);
+    static assert([otherOneofFieldNames!(Test, Test.bar2)] == ["bar1", "bar3"]);
 }
