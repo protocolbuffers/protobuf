@@ -13,7 +13,8 @@ struct Timestamp
       @Proto(2) int nanos = defaultValue!int;
     }
 
-    SysTime timestamp = SysTime(DateTime(1970, 1, 1, 0, 0, 0), UTC());
+    private static immutable defaultTimestampValue = SysTime(DateTime(1970, 1, 1, 0, 0, 0), UTC());
+    SysTime timestamp = defaultTimestampValue;
 
     alias timestamp this;
 
@@ -66,9 +67,16 @@ struct Timestamp
         import std.algorithm : skipOver;
         import std.conv : ConvException, to;
         import std.datetime : DateTime, DateTimeException, Month, SimpleTimeZone, UTC;
+        import std.json : JSON_TYPE;
         import std.regex : matchAll, regex;
         import std.string : leftJustify;
         import google.protobuf.json_decoding : fromJSONValue;
+
+        if (value.type == JSON_TYPE.NULL)
+        {
+            timestamp = defaultTimestampValue;
+            return this;
+        }
 
         auto match = value.fromJSONValue!string.matchAll(
                         `^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.\d*)?((Z)|([+-])(\d{2}):(\d{2}))$`);

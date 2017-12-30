@@ -81,9 +81,16 @@ struct Duration
         import core.time : dur;
         import std.algorithm : skipOver;
         import std.conv : ConvException, to;
+        import std.json : JSON_TYPE;
         import std.regex : matchAll, regex;
         import std.string : leftJustify;
         import google.protobuf.json_decoding : fromJSONValue;
+
+        if (value.type == JSON_TYPE.NULL)
+        {
+            duration = StdDuration.init;
+            return this;
+        }
 
         auto match = value.fromJSONValue!string.matchAll(`^(-)?(\d+)([.]\d*)?s$`);
         enforce!ProtobufException(match, "Invalid duration JSON encoding");

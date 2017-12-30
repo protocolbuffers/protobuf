@@ -35,6 +35,12 @@ class Struct
         import std.json : JSON_TYPE;
         import std.typecons : tuple;
 
+        if (value.type == JSON_TYPE.NULL)
+        {
+            fields = defaultValue!(Value[string]);
+            return this;
+        }
+
         enforce!ProtobufException(value.type == JSON_TYPE.OBJECT, "JSON object expected");
         fields = value.object.byKeyValue.map!(a => tuple(a.key, new Value(a.value))).assocArray;
 
@@ -209,6 +215,12 @@ class ListValue
         import std.algorithm : map;
         import std.exception : enforce;
         import std.json : JSON_TYPE;
+
+        if (value.type == JSON_TYPE.NULL)
+        {
+            values = defaultValue!(Value[]);
+            return this;
+        }
 
         enforce!ProtobufException(value.type == JSON_TYPE.ARRAY, "JSON array expected");
         values = value.array.map!(a => new Value(a)).array;

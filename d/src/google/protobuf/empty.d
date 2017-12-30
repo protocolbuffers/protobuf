@@ -29,6 +29,11 @@ struct Empty
         import std.json : JSON_TYPE;
         import std.range : empty;
 
+        if (value.type == JSON_TYPE.NULL)
+        {
+            return this;
+        }
+
         enforce!ProtobufException(value.type == JSON_TYPE.OBJECT && value.object.empty,
             "Invalid google.protobuf.Empty JSON Encoding");
 

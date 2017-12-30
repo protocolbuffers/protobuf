@@ -135,6 +135,15 @@ struct Any
         import std.exception : enforce;
         import std.json : JSON_TYPE;
 
+        if (value.type == JSON_TYPE.NULL)
+        {
+            typeUrl = "";
+            protoValue = [];
+            valueIsJSON = false;
+
+            return this;
+        }
+
         enforce!ProtobufException(value.type == JSON_TYPE.OBJECT, "Invalid 'Any' JSON encoding");
         enforce!ProtobufException("@type" in value.object, "No type specified for 'Any' JSON encoding");
         enforce!ProtobufException(value.object["@type"].type == JSON_TYPE.STRING, "Any typeUrl should be a string");
