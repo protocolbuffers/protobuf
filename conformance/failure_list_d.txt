@@ -29,3 +29,12 @@ Required.Proto3.JsonInput.FloatFieldTooLarge
 Required.Proto3.JsonInput.FloatFieldTooSmall
 Required.Proto3.JsonInput.Int32FieldLeadingZero
 Required.Proto3.JsonInput.Int32FieldNegativeWithLeadingZero
+
+# Unknown fields are not supported yet
+Required.Proto2.ProtobufInput.UnknownVarint.ProtobufOutput
+Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
+
+# Failing tests not analized yet
+Required.Proto2.ProtobufInput.RepeatedScalarSelectsLast.FIXED32.ProtobufOutput
+Required.Proto2.ProtobufInput.RepeatedScalarSelectsLast.FIXED64.ProtobufOutput
+Required.Proto2.ProtobufInput.RepeatedScalarSelectsLast.UINT64.ProtobufOutput

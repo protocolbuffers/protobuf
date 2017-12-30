@@ -1,6 +1,6 @@
 {
     "name": "protobuf",
-    "description": "D support for Google Protocol Buffers",
+    "description": "D runtime library for Google Protocol Buffers",
     "authors": ["Dragoş Carp"],
     "homepage": "https://developers.google.com/protocol-buffers/",
     "license": "https://github.com/google/protobuf/blob/master/LICENSE",
