@@ -1,31 +1,31 @@
 # Duration has hnsecs resolution
-Required.JsonInput.DurationMaxValue.JsonOutput
-Required.JsonInput.DurationMaxValue.ProtobufOutput
-Required.JsonInput.DurationMinValue.JsonOutput
-Required.JsonInput.DurationMinValue.ProtobufOutput
+Required.Proto3.JsonInput.DurationMaxValue.JsonOutput
+Required.Proto3.JsonInput.DurationMaxValue.ProtobufOutput
+Required.Proto3.JsonInput.DurationMinValue.JsonOutput
+Required.Proto3.JsonInput.DurationMinValue.ProtobufOutput
 
 # Original fields are not supported (should they work in both directions?)
-Required.JsonInput.OriginalProtoFieldName.JsonOutput
-Required.JsonInput.OriginalProtoFieldName.ProtobufOutput
+Required.Proto3.JsonInput.OriginalProtoFieldName.JsonOutput
+Required.Proto3.JsonInput.OriginalProtoFieldName.ProtobufOutput
 
 # Timestamp has hnsecs resolution
-Required.JsonInput.TimestampMaxValue.JsonOutput
-Required.JsonInput.TimestampMaxValue.ProtobufOutput
-Required.JsonInput.TimestampRepeatedValue.JsonOutput
-Required.JsonInput.TimestampRepeatedValue.ProtobufOutput
+Required.Proto3.JsonInput.TimestampMaxValue.JsonOutput
+Required.Proto3.JsonInput.TimestampMaxValue.ProtobufOutput
+Required.Proto3.JsonInput.TimestampRepeatedValue.JsonOutput
+Required.Proto3.JsonInput.TimestampRepeatedValue.ProtobufOutput
 # See issue #4079
-Required.JsonInput.TimestampWithNegativeOffset.JsonOutput
-Required.JsonInput.TimestampWithNegativeOffset.ProtobufOutput
-Required.JsonInput.TimestampWithPositiveOffset.JsonOutput
-Required.JsonInput.TimestampWithPositiveOffset.ProtobufOutput
+Required.Proto3.JsonInput.TimestampWithNegativeOffset.JsonOutput
+Required.Proto3.JsonInput.TimestampWithNegativeOffset.ProtobufOutput
+Required.Proto3.JsonInput.TimestampWithPositiveOffset.JsonOutput
+Required.Proto3.JsonInput.TimestampWithPositiveOffset.ProtobufOutput
 # End see issue #4079
 
 # The D protobuf library does not implement a JSON parser, but relies on the std.json
 # Following tests are failing because std.json parser implementation is more relaxed
 # regarding some edge cases
-#Required.JsonInput.DoubleFieldTooLarge
-Required.JsonInput.DoubleFieldTooSmall
-Required.JsonInput.FloatFieldTooLarge
-Required.JsonInput.FloatFieldTooSmall
-Required.JsonInput.Int32FieldLeadingZero
-Required.JsonInput.Int32FieldNegativeWithLeadingZero
+#Required.Proto3.JsonInput.DoubleFieldTooLarge
+Required.Proto3.JsonInput.DoubleFieldTooSmall
+Required.Proto3.JsonInput.FloatFieldTooLarge
+Required.Proto3.JsonInput.FloatFieldTooSmall
+Required.Proto3.JsonInput.Int32FieldLeadingZero
+Required.Proto3.JsonInput.Int32FieldNegativeWithLeadingZero

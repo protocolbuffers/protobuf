@@ -8,9 +8,9 @@ void doTest(ConformanceRequest request, ConformanceResponse response)
     import std.json : JSONException, parseJSON, toJSON;
     import std.typecons : Yes;
     import conformance.conformance : WireFormat;
-    import protobuf_test_messages.proto3.test_messages_proto3 : TestAllTypes;
+    import protobuf_test_messages.proto3.test_messages_proto3 : TestAllTypesProto3;
 
-    TestAllTypes testMessage;
+    TestAllTypesProto3 testMessage;
 
     final switch (request.payloadCase)
     {
@@ -18,7 +18,7 @@ void doTest(ConformanceRequest request, ConformanceResponse response)
         try
         {
             auto payload = request.protobufPayload.save;
-            testMessage = payload.fromProtobuf!TestAllTypes;
+            testMessage = payload.fromProtobuf!TestAllTypesProto3;
         }
         catch (ProtobufException decodeException)
         {
@@ -30,7 +30,7 @@ void doTest(ConformanceRequest request, ConformanceResponse response)
         try
         {
             auto payload = request.jsonPayload.save;
-            testMessage = parseJSON(payload).fromJSONValue!TestAllTypes;
+            testMessage = parseJSON(payload).fromJSONValue!TestAllTypesProto3;
         }
         catch (Base64Exception decodeException)
         {
@@ -120,9 +120,9 @@ bool doTestIo()
 void main()
 {
     import google.protobuf.any : Any;
-    import protobuf_test_messages.proto3.test_messages_proto3 : TestAllTypes;
+    import protobuf_test_messages.proto3.test_messages_proto3 : TestAllTypesProto3;
 
-    Any.registerMessageType!TestAllTypes;
+    Any.registerMessageType!TestAllTypesProto3;
 
     while (doTestIo)
     {
