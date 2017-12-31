@@ -244,3 +244,16 @@ bool validateProto(Proto proto, T)()
 
     return true;
 }
+
+enum protocVersion(T) = {
+    import std.traits : moduleName;
+
+    mixin("static import " ~ moduleName!T ~ ";");
+
+    static if (__traits(compiles, moduleName!T ~ ".protocVersion"))
+    {
+        return mixin(moduleName!T ~ ".protocVersion");
+    }
+
+    return 0;
+}();

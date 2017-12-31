@@ -5,6 +5,8 @@ module generated_code;
 
 import google.protobuf;
 
+enum protocVersion = 3005000;
+
 class TestAllTypes
 {
     @Proto(1) int optionalInt32 = defaultValue!int;

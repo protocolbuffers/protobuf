@@ -244,6 +244,10 @@ void GenerateFile(const FileDescriptor* file, io::Printer* printer) {
       "module", ModuleName(file->dependency(i)));
   }
 
+  printer->Print(
+    "\nenum protocVersion = $version$;\n",
+    "version", SimpleItoa(GOOGLE_PROTOBUF_VERSION));
+
   for (int i = 0; i < file->message_type_count(); i++) {
     printer->Print("\n");
     GenerateMessage(file->message_type(i), printer);
@@ -254,11 +258,10 @@ void GenerateFile(const FileDescriptor* file, io::Printer* printer) {
   }
 }
 
-bool Generator::Generate(
-    const FileDescriptor* file,
-    const string& parameter,
-    GeneratorContext* generator_context,
-    string* error) const {
+bool Generator::Generate(const FileDescriptor* file,
+                         const string& parameter,
+                         GeneratorContext* generator_context,
+                         string* error) const {
   if (file->syntax() != FileDescriptor::SYNTAX_PROTO3) {
     *error =
         "Can only generate D code for proto3 .proto files.\n"
