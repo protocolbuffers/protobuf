@@ -22,7 +22,17 @@ We're using maven to build the java benchmarks, which is the same as to build
 the Java protobuf. There're no other tools need to install. We're using 
 [google/caliper](https://github.com/google/caliper) as benchmark tool, which 
 can be automaticly included by maven.
-  
+
+### Big data
+
+There's some optional big testing data which is not included in the directory initially, you need to 
+run the following command to download the testing data:
+
+```
+$ ./download_data.sh 
+```
+
+After doing this the big data file will automaticly generated in the benchmark directory.  
 
 ## Run instructions
 
@@ -46,7 +56,7 @@ For java:
 
 ```
 $ make java-benchmark
-$ ./java-benchmark $(specific generated dataset file name)
+$ ./java-benchmark $(specific generated dataset file name) [-- $(caliper option)]
 ```
 
 For cpp:
@@ -57,15 +67,6 @@ $ ./cpp-benchmark $(specific generated dataset file name)
 ```
 
 ## Benchmark datasets
-
-There's some optional big testing data which is not included in the directory initially, you need to 
-run the following command to download the testing data:
-
-```
-$ ./download_data.sh 
-```
-
-After doing this the big data file will automaticly generated in the benchmark directory.
 
 Each data set is in the format of benchmarks.proto:
 
