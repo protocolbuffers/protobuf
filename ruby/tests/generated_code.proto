@@ -57,6 +57,9 @@ message TestMessage {
   }
 
   NestedMessage nested_message = 80;
+
+  // Reserved for non-existing field test.
+  // int32 non_exist = 89;
 }
 
 enum TestEnum {
@@ -64,4 +67,14 @@ enum TestEnum {
   A = 1;
   B = 2;
   C = 3;
+}
+
+message TestUnknown {
+  TestUnknown optional_unknown = 11;
+  repeated TestUnknown repeated_unknown = 31;
+  oneof my_oneof {
+    TestUnknown oneof_unknown = 51;
+  }
+  map<string, TestUnknown> map_unknown = 67;
+  int32 unknown_field = 89;
 }
