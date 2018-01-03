@@ -969,7 +969,8 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
               newValue = [value copyWithZone:zone];
             }
           } else {
-            if (field.mapKeyDataType == GPBDataTypeString) {
+            if ((field.mapKeyDataType == GPBDataTypeString) &&
+                GPBFieldDataTypeIsObject(field)) {
               // NSDictionary
               newValue = [value mutableCopyWithZone:zone];
             } else {

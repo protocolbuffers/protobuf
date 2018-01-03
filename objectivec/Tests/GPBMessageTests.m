@@ -2052,4 +2052,55 @@
   XCTAssertEqual([msg1 hash], [msg1Prime hash]);
 }
 
+- (void)testCopyingMapFileds {
+  TestMessageOfMaps *msg = [TestMessageOfMaps message];
+
+  msg.strToStr[@"foo"] = @"bar";
+
+  [msg.strToInt setInt32:1 forKey:@"mumble"];
+  [msg.intToStr setObject:@"wee" forKey:42];
+  [msg.intToInt setInt32:123 forKey:321];
+
+  [msg.strToBool setBool:YES forKey:@"one"];
+  [msg.boolToStr setObject:@"something" forKey:YES];
+  [msg.boolToBool setBool:YES forKey:NO];
+
+  [msg.intToBool setBool:YES forKey:13];
+  [msg.boolToInt setInt32:111 forKey:NO];
+
+  TestAllTypes *subMsg1 = [TestAllTypes message];
+  subMsg1.optionalInt32 = 1;
+  TestAllTypes *subMsg2 = [TestAllTypes message];
+  subMsg1.optionalInt32 = 2;
+  TestAllTypes *subMsg3 = [TestAllTypes message];
+  subMsg1.optionalInt32 = 3;
+
+  msg.strToMsg[@"baz"] = subMsg1;
+  [msg.intToMsg setObject:subMsg2 forKey:222];
+  [msg.boolToMsg setObject:subMsg3 forKey:YES];
+
+  TestMessageOfMaps *msg2 = [[msg copy] autorelease];
+  XCTAssertNotNil(msg2);
+  XCTAssertEqualObjects(msg2, msg);
+  XCTAssertTrue(msg2 != msg);  // ptr compare
+  XCTAssertTrue(msg.strToStr != msg2.strToStr);  // ptr compare
+  XCTAssertTrue(msg.intToStr != msg2.intToStr);  // ptr compare
+  XCTAssertTrue(msg.intToInt != msg2.intToInt);  // ptr compare
+  XCTAssertTrue(msg.strToBool != msg2.strToBool);  // ptr compare
+  XCTAssertTrue(msg.boolToStr != msg2.boolToStr);  // ptr compare
+  XCTAssertTrue(msg.boolToBool != msg2.boolToBool);  // ptr compare
+  XCTAssertTrue(msg.intToBool != msg2.intToBool);  // ptr compare
+  XCTAssertTrue(msg.boolToInt != msg2.boolToInt);  // ptr compare
+  XCTAssertTrue(msg.strToMsg != msg2.strToMsg);  // ptr compare
+  XCTAssertTrue(msg.intToMsg != msg2.intToMsg);  // ptr compare
+  XCTAssertTrue(msg.boolToMsg != msg2.boolToMsg);  // ptr compare
+
+  XCTAssertTrue(msg.strToMsg[@"baz"] != msg2.strToMsg[@"baz"]);  // ptr compare
+  XCTAssertEqualObjects(msg.strToMsg[@"baz"], msg2.strToMsg[@"baz"]);
+  XCTAssertTrue([msg.intToMsg objectForKey:222] != [msg2.intToMsg objectForKey:222]);  // ptr compare
+  XCTAssertEqualObjects([msg.intToMsg objectForKey:222], [msg2.intToMsg objectForKey:222]);
+  XCTAssertTrue([msg.boolToMsg objectForKey:YES] != [msg2.boolToMsg objectForKey:YES]);  // ptr compare
+  XCTAssertEqualObjects([msg.boolToMsg objectForKey:YES], [msg2.boolToMsg objectForKey:YES]);
+}
+
 @end
