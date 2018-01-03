@@ -179,22 +179,23 @@ struct Any
     }
 }
 
+// move following imports to static this() when dmd issue 18188 is solved
+import google.protobuf.duration : Duration;
+import google.protobuf.empty : Empty;
+import google.protobuf.field_mask : FieldMask;
+import google.protobuf.struct_ : ListValue, NullValue, Struct, Value;
+import google.protobuf.timestamp : Timestamp;
+import google.protobuf.wrappers : BoolValue, BytesValue, DoubleValue, FloatValue, Int32Value, Int64Value, StringValue,
+    UInt32Value, UInt64Value;
+
 static this()
 {
-    import google.protobuf.duration : Duration;
-    import google.protobuf.empty : Empty;
-    import google.protobuf.field_mask : FieldMask;
-    import google.protobuf.struct_ : ListValue, NullValue, Struct, Value;
-    import google.protobuf.timestamp : Timestamp;
-    import google.protobuf.wrappers : BoolValue, BytesValue, DoubleValue, FloatValue, Int32Value, Int64Value,
-        StringValue, UInt32Value, UInt64Value;
-
     Any.registerMessageType!(Any, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(BoolValue, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(BytesValue, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(DoubleValue, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(Duration, Yes.hasSpecialJSONMapping);
-    //Any.registerMessageType!(Empty, Yes.hasSpecialJSONMapping); // TODO: Somehow it causes a linkage error
+    Any.registerMessageType!(Empty, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(FieldMask, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(FloatValue, Yes.hasSpecialJSONMapping);
     Any.registerMessageType!(Int32Value, Yes.hasSpecialJSONMapping);
