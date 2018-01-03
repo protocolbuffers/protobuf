@@ -268,6 +268,11 @@ namespace Google.Protobuf
         public int RecursionLimit { get { return recursionLimit; } }
 
         /// <summary>
+        /// Internal-only property; when set to true, unknown fields will be discarded while parsing.
+        /// </summary>
+        internal bool DiscardUnknownFields { get; set; }
+
+        /// <summary>
         /// Disposes of this instance, potentially closing any underlying stream.
         /// </summary>
         /// <remarks>
