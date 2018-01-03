@@ -20,7 +20,7 @@ benchmarks_protoc_inputs_proto2 =                                          \
 	datasets/google_message4/benchmark_message4_3.proto
 
 make_tmp_dir:
-	mkdir -p 'tmp'
+	mkdir -p 'tmp/java/src/main/java'
 	touch make_tmp_dir
 
 if USE_EXTERNAL_PROTOC
@@ -39,11 +39,11 @@ else
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
 protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp/java/src/main/java $(benchmarks_protoc_inputs) )
 	touch protoc_middleman
 
 protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs_proto2) $(well_known_type_protoc_inputs)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp/java/src/main/java $(benchmarks_protoc_inputs_proto2) )
 	touch protoc_middleman2
 	
 endif
@@ -100,6 +100,17 @@ $(benchmarks_protoc_outputs_header): protoc_middleman
 $(benchmarks_protoc_outputs_proto2): protoc_middleman2
 $(benchmarks_protoc_outputs_proto2_header): protoc_middleman2
 
+initialize_submodule:
+	oldpwd=`pwd`
+	cd $(top_srcdir)/third_party
+	git submodule update --init -r
+	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
+	cd $$oldpwd
+	touch initialize_submodule
+	
+$(top_srcdir)/src/libprotobuf.la: initialize_submodule
+$(top_srcdir)/third_party/benchmark/src/libbenchmark.a: initialize_submodule
+
 AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
 
 bin_PROGRAMS = cpp-benchmark
@@ -110,32 +121,33 @@ cpp_benchmark_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir) -I$(top_srcdir)/third_p
 # Explicit deps because BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
 # See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
-cpp_benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header)
+cpp_benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
 nodist_cpp_benchmark_SOURCES =                                             \
 	$(benchmarks_protoc_outputs)                                             \
 	$(benchmarks_protoc_outputs_proto2)                                      \
 	$(benchmarks_protoc_outputs_proto2_header)                               \
 	$(benchmarks_protoc_outputs_header)
 
-cpp: protoc_middleman protoc_middleman2 cpp-benchmark
+cpp: protoc_middleman protoc_middleman2 cpp-benchmark initialize_submodule
 	./cpp-benchmark $(all_data)
 
 ############ CPP RULES END ############
 
 ############# JAVA RULES ##############
 
-javac_middleman: ProtoBench.java protoc_middleman protoc_middleman2
-	jar=`ls $(top_srcdir)/java/util/target/*.jar` &&                         \
-	jar1=`ls $(top_srcdir)/java/core/target/*.jar` &&                        \
-	javac -d tmp -classpath ../java/target/classes:$$jar:$$jar1 ProtoBench.java $(benchmark_java_protoc_outputs_proto2) $(benchmarks_java_protoc_outputs) `find tmp -type f -name "*.java"`
+java_benchmark_testing_files =                                      \
+	java/src/main/java/com/google/protobuf/ProtoBench.java            \
+	java/src/main/java/com/google/protobuf/ProtoBenchCaliper.java
+
+javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middleman2
+	cp -r java tmp && cd tmp/java &&  mvn clean compile assembly:single
+	cd ../..
 	@touch javac_middleman
 
 java-benchmark: javac_middleman 
 	@echo "Writing shortcut script java-benchmark..."
 	@echo '#! /bin/sh' > java-benchmark
-	@jar=`ls $(top_srcdir)/java/util/target/*.jar` &&                        \
-	jar1=`ls $(top_srcdir)/java/core/target/*.jar` &&                        \
-	echo java -classpath tmp:../java/target/classes:$$jar:$$jar1 com.google.protocolbuffers.ProtoBench '$$@' >> java-benchmark
+	@echo 'java -cp '"tmp/java/target/*.jar"' com.google.protobuf.ProtoBench $$@' >> java-benchmark
 	@chmod +x java-benchmark
 
 java: protoc_middleman protoc_middleman2 java-benchmark
@@ -151,6 +163,7 @@ CLEANFILES =                                                               \
 	$(benchmarks_protoc_outputs_header)                                      \
 	$(benchmarks_protoc_outputs_proto2)                                      \
 	$(benchmarks_protoc_outputs_proto2_header)                               \
+	initialize_submodule                                                     \
 	make_tmp_dir                                                             \
 	protoc_middleman                                                         \
 	protoc_middleman2                                                        \
