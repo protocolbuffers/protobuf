@@ -120,9 +120,12 @@ std::string RenameEmpty(const std::string& name) {
 
 std::string MessageFullName(const Descriptor* message, bool is_descriptor) {
   if (is_descriptor) {
-    return StringReplace(message->full_name(),
+    std::string full_name = StringReplace(message->full_name(),
                          "google.protobuf",
                          "google.protobuf.internal", false);
+    return StringReplace(full_name,
+                         "internal.compiler",
+                         "internal", false);
   } else {
     return message->full_name();
   }
@@ -130,9 +133,12 @@ std::string MessageFullName(const Descriptor* message, bool is_descriptor) {
 
 std::string EnumFullName(const EnumDescriptor* envm, bool is_descriptor) {
   if (is_descriptor) {
-    return StringReplace(envm->full_name(),
+    std::string full_name = StringReplace(envm->full_name(),
                          "google.protobuf",
                          "google.protobuf.internal", false);
+    return StringReplace(full_name,
+                         "internal.compiler",
+                         "internal", false);
   } else {
     return envm->full_name();
   }
@@ -1411,7 +1417,7 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
   bool is_descriptor = parameter == "internal";
 
   if (is_descriptor
-      && (file->name() != kDescriptorFile || file->name() != kPluginFile)) {
+      && (file->name() != kDescriptorFile && file->name() != kPluginFile)) {
     *error =
         "Can only generate PHP code for google/protobuf/descriptor.proto and google/protobuf/compiler/plugin.proto.\n";
     return false;

@@ -15,26 +15,26 @@ class Plugin
           return;
         }
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        $pool->addMessage('google.protobuf.internal.compiler.Version', \Google\Protobuf\Internal\Version::class)
+        $pool->addMessage('google.protobuf.internal.Version', \Google\Protobuf\Internal\Version::class)
             ->optional('major', \Google\Protobuf\Internal\GPBType::INT32, 1)
             ->optional('minor', \Google\Protobuf\Internal\GPBType::INT32, 2)
             ->optional('patch', \Google\Protobuf\Internal\GPBType::INT32, 3)
             ->optional('suffix', \Google\Protobuf\Internal\GPBType::STRING, 4)
             ->finalizeToPool();
 
-        $pool->addMessage('google.protobuf.internal.compiler.CodeGeneratorRequest', \Google\Protobuf\Internal\CodeGeneratorRequest::class)
+        $pool->addMessage('google.protobuf.internal.CodeGeneratorRequest', \Google\Protobuf\Internal\CodeGeneratorRequest::class)
             ->repeated('file_to_generate', \Google\Protobuf\Internal\GPBType::STRING, 1)
             ->optional('parameter', \Google\Protobuf\Internal\GPBType::STRING, 2)
             ->repeated('proto_file', \Google\Protobuf\Internal\GPBType::MESSAGE, 15, 'google.protobuf.internal.FileDescriptorProto')
-            ->optional('compiler_version', \Google\Protobuf\Internal\GPBType::MESSAGE, 3, 'google.protobuf.internal.compiler.Version')
+            ->optional('compiler_version', \Google\Protobuf\Internal\GPBType::MESSAGE, 3, 'google.protobuf.internal.Version')
             ->finalizeToPool();
 
-        $pool->addMessage('google.protobuf.internal.compiler.CodeGeneratorResponse', \Google\Protobuf\Internal\CodeGeneratorResponse::class)
+        $pool->addMessage('google.protobuf.internal.CodeGeneratorResponse', \Google\Protobuf\Internal\CodeGeneratorResponse::class)
             ->optional('error', \Google\Protobuf\Internal\GPBType::STRING, 1)
-            ->repeated('file', \Google\Protobuf\Internal\GPBType::MESSAGE, 15, 'google.protobuf.internal.compiler.CodeGeneratorResponse.File')
+            ->repeated('file', \Google\Protobuf\Internal\GPBType::MESSAGE, 15, 'google.protobuf.internal.CodeGeneratorResponse.File')
             ->finalizeToPool();
 
-        $pool->addMessage('google.protobuf.internal.compiler.CodeGeneratorResponse.File', \Google\Protobuf\Internal\CodeGeneratorResponse_File::class)
+        $pool->addMessage('google.protobuf.internal.CodeGeneratorResponse.File', \Google\Protobuf\Internal\CodeGeneratorResponse_File::class)
             ->optional('name', \Google\Protobuf\Internal\GPBType::STRING, 1)
             ->optional('insertion_point', \Google\Protobuf\Internal\GPBType::STRING, 2)
             ->optional('content', \Google\Protobuf\Internal\GPBType::STRING, 15)
