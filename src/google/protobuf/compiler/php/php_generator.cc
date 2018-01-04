@@ -43,10 +43,13 @@
 using google::protobuf::internal::scoped_ptr;
 
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
+const std::string kPluginFile = "google/protobuf/compiler/plugin.proto";
 const std::string kEmptyFile = "google/protobuf/empty.proto";
 const std::string kEmptyMetadataFile = "GPBMetadata/Google/Protobuf/GPBEmpty.php";
 const std::string kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
+const std::string kPluginMetadataFile =
+    "GPBMetadata/Google/Protobuf/Internal/Compiler/Plugin.php";
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
@@ -280,6 +283,9 @@ std::string GeneratedMetadataFileName(const std::string& proto_file,
     return kEmptyMetadataFile;
   }
   if (is_descriptor) {
+    if (proto_file == kPluginFile) {
+      return kPluginMetadataFile;
+    }
     return kDescriptorMetadataFile;
   }
 
@@ -834,6 +840,16 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
         "}\n");
 
   if (is_descriptor) {
+    if (file->name() == kPluginFile) {
+      for (int i = 0; i < file->dependency_count(); i++) {
+        const std::string& name = file->dependency(i)->name();
+        std::string dependency_filename =
+          GeneratedMetadataFileName(name, is_descriptor);
+        printer->Print(
+            "\\^name^::initOnce();\n",
+            "name", FilenameToClassname(dependency_filename));
+      }
+    }
     for (int i = 0; i < file->message_type_count(); i++) {
       GenerateMessageToPool("", file->message_type(i), printer);
     }
@@ -1394,9 +1410,10 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
                          string* error) const {
   bool is_descriptor = parameter == "internal";
 
-  if (is_descriptor && file->name() != kDescriptorFile) {
+  if (is_descriptor
+      && (file->name() != kDescriptorFile || file->name() != kPluginFile)) {
     *error =
-        "Can only generate PHP code for google/protobuf/descriptor.proto.\n";
+        "Can only generate PHP code for google/protobuf/descriptor.proto and google/protobuf/compiler/plugin.proto.\n";
     return false;
   }
 
