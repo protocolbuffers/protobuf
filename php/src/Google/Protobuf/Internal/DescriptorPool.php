@@ -46,6 +46,7 @@ class DescriptorPool
     private $class_to_desc = [];
     private $class_to_enum_desc = [];
     private $proto_to_class = [];
+    private $unlinked_desc = [];
 
     public static function getGeneratedPool()
     {
@@ -92,6 +93,7 @@ class DescriptorPool
         $this->proto_to_class[$descriptor->getFullName()] =
             $descriptor->getClass();
         $this->class_to_desc[$descriptor->getClass()] = $descriptor;
+        $this->unlinked_desc[] = $descriptor;
         foreach ($descriptor->getNestedType() as $nested_type) {
             $this->addDescriptor($nested_type);
         }
@@ -169,9 +171,10 @@ class DescriptorPool
 
     public function finish()
     {
-        foreach ($this->class_to_desc as $klass => $desc) {
+        foreach ($this->unlinked_desc as $desc) {
             $this->crossLink($desc);
         }
         unset($desc);
+        $this->unlinked_desc = [];
     }
 }
