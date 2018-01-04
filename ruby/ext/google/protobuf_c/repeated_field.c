@@ -626,8 +626,8 @@ void RepeatedField_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "RepeatedField", rb_cObject);
   rb_define_alloc_func(klass, RepeatedField_alloc);
-  cRepeatedField = klass;
   rb_gc_register_address(&cRepeatedField);
+  cRepeatedField = klass;
 
   rb_define_method(klass, "initialize",
                    RepeatedField_init, -1);
