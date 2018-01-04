@@ -868,10 +868,10 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
   } else {
     for (int i = 0; i < file->dependency_count(); i++) {
       const std::string& name = file->dependency(i)->name();
-      // Currently, descriptor.proto is not ready for external usage. Skip to
+      // Currently, (descriptor|plugin).proto are not ready for external usage. Skip to
       // import it for now, so that its dependencies can still work as long as
       // they don't use protos defined in descriptor.proto.
-      if (name == kDescriptorFile) {
+      if (name == kDescriptorFile || name == kPluginFile) {
         continue;
       }
       std::string dependency_filename =
