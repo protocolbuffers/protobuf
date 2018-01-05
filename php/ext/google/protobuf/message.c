@@ -445,8 +445,7 @@ static void init_file_wrappers(TSRMLS_D);
 
 // Define file init functions
 static void init_file_any(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_any) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0acd010a19676f6f676c652f70726f746f6275662f616e792e70726f746f"
@@ -461,12 +460,11 @@ static void init_file_any(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_any = true;
 }
 
 static void init_file_api(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_api) return;
   init_file_source_context(TSRMLS_C);
   init_file_type(TSRMLS_C);
   init_generated_pool_once(TSRMLS_C);
@@ -502,12 +500,11 @@ static void init_file_api(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_api = true;
 }
 
 static void init_file_duration(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_duration) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0ae3010a1e676f6f676c652f70726f746f6275662f6475726174696f6e2e"
@@ -523,12 +520,11 @@ static void init_file_duration(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_duration = true;
 }
 
 static void init_file_field_mask(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_field_mask) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0ae3010a20676f6f676c652f70726f746f6275662f6669656c645f6d6173"
@@ -544,12 +540,11 @@ static void init_file_field_mask(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_field_mask = true;
 }
 
 static void init_file_empty(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_empty) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0ab7010a1b676f6f676c652f70726f746f6275662f656d7074792e70726f"
@@ -564,12 +559,11 @@ static void init_file_empty(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_empty = true;
 }
 
 static void init_file_source_context(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_source_context) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0afb010a24676f6f676c652f70726f746f6275662f736f757263655f636f"
@@ -586,12 +580,11 @@ static void init_file_source_context(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_source_context = true;
 }
 
 static void init_file_struct(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_struct) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0a81050a1c676f6f676c652f70726f746f6275662f7374727563742e7072"
@@ -621,12 +614,11 @@ static void init_file_struct(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_struct = true;
 }
 
 static void init_file_timestamp(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_timestamp) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0ae7010a1f676f6f676c652f70726f746f6275662f74696d657374616d70"
@@ -642,12 +634,11 @@ static void init_file_timestamp(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_timestamp = true;
 }
 
 static void init_file_type(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_type) return;
   init_file_any(TSRMLS_C);
   init_file_source_context(TSRMLS_C);
   init_generated_pool_once(TSRMLS_C);
@@ -711,12 +702,11 @@ static void init_file_type(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_type = true;
 }
 
 static void init_file_wrappers(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_wrappers) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0abf030a1e676f6f676c652f70726f746f6275662f77726170706572732e"
@@ -739,7 +729,7 @@ static void init_file_wrappers(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_wrappers = true;
 }
 
 // -----------------------------------------------------------------------------

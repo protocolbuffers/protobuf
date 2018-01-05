@@ -1172,6 +1172,17 @@ extern zend_class_entry* oneof_descriptor_type;
 // Well Known Type.
 // -----------------------------------------------------------------------------
 
+extern bool is_inited_file_any;
+extern bool is_inited_file_api;
+extern bool is_inited_file_duration;
+extern bool is_inited_file_field_mask;
+extern bool is_inited_file_empty;
+extern bool is_inited_file_source_context;
+extern bool is_inited_file_struct;
+extern bool is_inited_file_timestamp;
+extern bool is_inited_file_type;
+extern bool is_inited_file_wrappers;
+
 PHP_METHOD(GPBMetadata_Any, initOnce);
 PHP_METHOD(GPBMetadata_Api, initOnce);
 PHP_METHOD(GPBMetadata_Duration, initOnce);
