@@ -502,6 +502,14 @@ class LIBPROTOBUF_EXPORT TextFormat {
       allow_case_insensitive_field_ = allow;
     }
 
+    // Allow unknown fields to be ignored.
+    // This is not advisable if the input is manually created and human errors
+    // (like typos) need to be caught.
+    // This is 'false' by default.
+    void AllowUnknownField(bool allow) {
+      allow_unknown_field_ = allow;
+    }
+
     // Like TextFormat::ParseFieldValueFromString
     bool ParseFieldValueFromString(const string& input,
                                    const FieldDescriptor* field,

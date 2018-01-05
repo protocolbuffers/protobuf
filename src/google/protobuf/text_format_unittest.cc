@@ -1329,6 +1329,18 @@ TEST_F(TextFormatParserTest, InvalidFieldName) {
       1, 14);
 }
 
+TEST_F(TextFormatParserTest, AllowInvalidFieldName) {
+  TextFormat::Parser parser;
+  protobuf_unittest::TestAllTypes proto;
+
+  // This field doesn't exist
+  EXPECT_FALSE(parser.ParseFromString("invalid_field: somevalue\n", &proto));
+
+  // ... but is ignored if we allow unknown fields.
+  parser.AllowUnknownField(true);
+  EXPECT_TRUE(parser.ParseFromString("invalid_field: somevalue\n", &proto));
+}
+
 TEST_F(TextFormatParserTest, InvalidCapitalization) {
   // We require that group names be exactly as they appear in the .proto.
   ExpectFailure(
