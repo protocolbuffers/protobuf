@@ -329,7 +329,6 @@ if (isInputRange!R && isAssociativeArray!T)
             break;
         default:
             throw new ProtobufException("Unexpected field tag " ~ tagWire.tag.to!string ~ " while decoding a map");
-            break;
         }
     }
     enforce!ProtobufException((decodingState & 0x03) == 0x03, "Incomplete map element");

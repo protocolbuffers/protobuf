@@ -242,10 +242,12 @@ enum messageTypeFullName(T) = {
     {
         return T.messageTypeFullName;
     }
+    else
+    {
+        enum splitName = fullyQualifiedName!T.split(".");
 
-    enum splitName = fullyQualifiedName!T.split(".");
-
-    return (splitName[0..$-2] ~ splitName[$-1]).join(".");
+        return (splitName[0..$-2] ~ splitName[$-1]).join(".");
+    }
 }();
 
 unittest
