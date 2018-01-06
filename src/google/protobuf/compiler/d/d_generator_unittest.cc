@@ -34,6 +34,7 @@
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -109,6 +110,14 @@ TEST(DGeneratorTest, GeneratorTest) {
       d_tests + "/generated_code.d",
       &expected_output,
       true));
+
+  // Ignore protocVersion
+  expected_output = StringReplace(
+      expected_output,
+      "enum protocVersion = 3005000;",
+      "enum protocVersion = " + SimpleItoa(GOOGLE_PROTOBUF_VERSION) + ";",
+      false);
+
   EXPECT_EQ(expected_output, output);
 }
 
