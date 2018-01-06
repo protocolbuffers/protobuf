@@ -2,6 +2,7 @@
 package com.google.protobuf;
 
 import com.google.caliper.BeforeExperiment;
+import com.google.caliper.AfterExperiment;
 import com.google.caliper.Benchmark;
 import com.google.caliper.Param;
 import com.google.protobuf.ByteString;
@@ -11,8 +12,10 @@ import com.google.protobuf.Message;
 import com.google.protobuf.benchmarks.Benchmarks.BenchmarkDataset;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +98,7 @@ public class ProtoBenchCaliper {
   private List<ByteArrayInputStream> inputStreamList;
   private List<ByteString> inputStringList;
   private List<Message> sampleMessageList;
-  private int counter;
+  private long counter;
   
   @BeforeExperiment
   void setUp() throws IOException {
@@ -125,7 +128,7 @@ public class ProtoBenchCaliper {
   @Benchmark
   void serializeToByteString(int reps) throws IOException {
     for (int i = 0; i < reps; i++) {
-      sampleMessageList.get(counter % sampleMessageList.size()).toByteString();
+      sampleMessageList.get((int) (counter % sampleMessageList.size())).toByteString();
       counter++;
     }
   }
@@ -133,7 +136,7 @@ public class ProtoBenchCaliper {
   @Benchmark
   void serializeToByteArray(int reps) throws IOException {
     for (int i = 0; i < reps; i++) {
-      sampleMessageList.get(counter % sampleMessageList.size()).toByteArray();
+      sampleMessageList.get((int) (counter % sampleMessageList.size())).toByteArray();
       counter++;
     }
   }
@@ -142,7 +145,7 @@ public class ProtoBenchCaliper {
   void serializeToMemoryStream(int reps) throws IOException {
     for (int i = 0; i < reps; i++) {
       ByteArrayOutputStream output = new ByteArrayOutputStream();
-      sampleMessageList.get(counter % sampleMessageList.size()).writeTo(output);
+      sampleMessageList.get((int) (counter % sampleMessageList.size())).writeTo(output);
       counter++;
     }
   }
@@ -152,7 +155,7 @@ public class ProtoBenchCaliper {
     for (int i = 0; i < reps; i++) {
       defaultMessage
         .newBuilderForType()
-        .mergeFrom(inputStringList.get(counter % inputStringList.size()), extensions)
+        .mergeFrom(inputStringList.get((int) (counter % inputStringList.size())), extensions)
         .build();
       counter++;
     }
@@ -163,7 +166,7 @@ public class ProtoBenchCaliper {
     for (int i = 0; i < reps; i++) {
       defaultMessage
         .newBuilderForType()
-        .mergeFrom(inputDataList.get(counter % inputDataList.size()), extensions)
+        .mergeFrom(inputDataList.get((int) (counter % inputDataList.size())), extensions)
         .build();
       counter++;
     }
@@ -174,10 +177,27 @@ public class ProtoBenchCaliper {
     for (int i = 0; i < reps; i++) {
       defaultMessage
         .newBuilderForType()
-        .mergeFrom(inputStreamList.get(counter % inputStreamList.size()), extensions)
+        .mergeFrom(inputStreamList.get((int) (counter % inputStreamList.size())), extensions)
         .build();
-      inputStreamList.get(counter % inputStreamList.size()).reset();
+      inputStreamList.get((int) (counter % inputStreamList.size())).reset();
       counter++;
+    }
+  }
+  
+  @AfterExperiment
+  void checkCounter() throws IOException {
+    if (counter == 1) {
+      // Dry run
+      return;
+    }
+    if (benchmarkDataset.getPayloadCount() != 1 
+        && counter < benchmarkDataset.getPayloadCount() * 10L) {
+      BufferedWriter writer = new BufferedWriter(new FileWriter("JavaBenchmarkWarning.txt", true));
+      // If the total number of non-warmup reps is smaller than 100 times of the total number of 
+      // datasets, then output the scale that need to multiply to the configuration (either extend
+      // the running time for one timingInterval or run for more measurements). 
+      writer.append(1.0 * benchmarkDataset.getPayloadCount() * 10L / counter + " ");
+      writer.close();
     }
   }
 }
