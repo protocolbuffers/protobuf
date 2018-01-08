@@ -67,12 +67,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
   (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
-
-  // non_null_ptr_to_name is usable only if has_$name$ is true.  It yields a
-  // pointer that will not be NULL.  Subclasses of FieldGenerator may set
-  // (*variables)["non_null_ptr_to_name"] differently.
-  (*variables)["non_null_ptr_to_name"] =
-      StrCat("&this->", FieldName(descriptor), "()");
+  (*variables)["field_member"] = FieldName(descriptor) + "_";
 
   (*variables)["tag_size"] = SimpleItoa(
     WireFormat::TagSize(descriptor->number(), descriptor->type()));
@@ -80,8 +75,6 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
       ? " PROTOBUF_DEPRECATED" : "";
   (*variables)["deprecated_attr"] = descriptor->options().deprecated()
       ? "GOOGLE_PROTOBUF_DEPRECATED_ATTR " : "";
-
-  (*variables)["cppget"] = "Get";
 
   if (HasFieldPresence(descriptor->file())) {
     (*variables)["set_hasbit"] =
@@ -92,10 +85,6 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
     (*variables)["set_hasbit"] = "";
     (*variables)["clear_hasbit"] = "";
   }
-
-  // By default, empty string, so that generic code used for both oneofs and
-  // singular fields can be written.
-  (*variables)["oneof_prefix"] = "";
 
   // These variables are placeholders to pick out the beginning and ends of
   // identifiers for annotations (when doing so with existing variables would
@@ -108,10 +97,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
                                   std::map<string, string>* variables) {
   const string prefix = descriptor->containing_oneof()->name() + "_.";
-  (*variables)["oneof_prefix"] = prefix;
   (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
-  (*variables)["non_null_ptr_to_name"] =
-      StrCat(prefix, (*variables)["name"], "_");
+  (*variables)["field_member"] = StrCat(prefix, (*variables)["name"], "_");
 }
 
 FieldGenerator::~FieldGenerator() {}

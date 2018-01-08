@@ -300,8 +300,6 @@ StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
             return Status(util::error::INTERNAL, "Invalid map entry.");
           }
           ASSIGN_OR_RETURN(map_key, MapKeyDefaultValueAsString(*key_field));
-          // Key is empty, force it to render as empty (for string values).
-          ow->empty_name_ok_for_next_key();
         }
         RETURN_IF_ERROR(RenderField(field, map_key, ow));
       } else {

@@ -431,6 +431,7 @@ TEST_F(FileDescriptorTest, FindExtensionByNumber) {
   EXPECT_TRUE(pool_.FindExtensionByNumber(foo_message_, 2) == NULL);
 }
 
+
 TEST_F(FileDescriptorTest, BuildAgain) {
   // Test that if te call BuildFile again on the same input we get the same
   // FileDescriptor back.
@@ -972,6 +973,7 @@ TEST_F(DescriptorTest, FieldEnumType) {
 
   EXPECT_EQ(enum_, bar_->enum_type());
 }
+
 
 // ===================================================================
 
@@ -1942,6 +1944,7 @@ TEST_F(ExtensionDescriptorTest, FindAllExtensions) {
   EXPECT_EQ(30, extensions[2]->number());
   EXPECT_EQ(39, extensions[3]->number());
 }
+
 
 TEST_F(ExtensionDescriptorTest, DuplicateFieldNumber) {
   DescriptorPool pool;

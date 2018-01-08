@@ -31,7 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
 #define GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
 
-#include <google/protobuf/stubs/template_util.h>
+#include <google/protobuf/stubs/type_traits.h>
 
 namespace google {
 namespace protobuf {

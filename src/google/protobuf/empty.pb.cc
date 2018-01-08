@@ -180,9 +180,6 @@ const Empty& Empty::default_instance() {
   return *internal_default_instance();
 }
 
-Empty* Empty::New(::google::protobuf::Arena* arena) const {
-  return ::google::protobuf::Arena::CreateMessage<Empty>(arena);
-}
 
 void Empty::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Empty)
@@ -336,6 +333,13 @@ void Empty::InternalSwap(Empty* other) {
 
 
 // @@protoc_insertion_point(namespace_scope)
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::google::protobuf::Empty* Arena::CreateMessage< ::google::protobuf::Empty >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::google::protobuf::Empty >(arena);
+}
 }  // namespace protobuf
 }  // namespace google
 

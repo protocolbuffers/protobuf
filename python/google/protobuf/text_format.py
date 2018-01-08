@@ -938,7 +938,7 @@ def _SkipField(tokenizer):
       tokenizer.ConsumeIdentifier()
     tokenizer.Consume(']')
   else:
-    tokenizer.ConsumeIdentifier()
+    tokenizer.ConsumeIdentifierOrNumber()
 
   _SkipFieldContents(tokenizer)
 

@@ -828,6 +828,10 @@ class Proto2Tests(TextFormatBase):
             '    }\n'
             '  }\n'
             '  [unknown_extension]: 5\n'
+            '  [unknown_extension_with_number_field] {\n'
+            '    1: "some_field"\n'
+            '    2: -0.451\n'
+            '  }\n'
             '}\n')
     text_format.Parse(text, message, allow_unknown_extension=True)
     golden = 'message_set {\n}\n'
@@ -894,7 +898,6 @@ class Proto2Tests(TextFormatBase):
     message = unittest_mset_pb2.TestMessageSetContainer()
     malformed = ('message_set {\n'
                  '  unknown_field: true\n'
-                 '  \n'  # Missing '>' here.
                  '}\n')
     six.assertRaisesRegex(self,
                           text_format.ParseError,
@@ -906,7 +909,7 @@ class Proto2Tests(TextFormatBase):
                           message,
                           allow_unknown_extension=True)
 
-    # Parse known extension correcty.
+    # Parse known extension correctly.
     message = unittest_mset_pb2.TestMessageSetContainer()
     text = ('message_set {\n'
             '  [protobuf_unittest.TestMessageSetExtension1] {\n'

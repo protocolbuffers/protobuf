@@ -1,3 +1,34 @@
+2017-12-20 version 3.5.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Planned Future Changes
+  * Make C++ implementation C++11 only: we plan to require C++11 to build
+    protobuf code starting from 3.6.0 release. Please join this github issue:
+    https://github.com/google/protobuf/issues/2780 to provide your feedback.
+
+  protoc
+  * Fixed a bug introduced in 3.5.0 and protoc in Windows now accepts non-ascii
+    characters in paths again.
+
+  C++
+  * Removed several usages of C++11 features in the code base.
+  * Fixed some compiler warnings.
+
+  PHP
+  * Fixed memory leak in C-extension implementation.
+  * Added discardUnknokwnFields API.
+  * Removed duplicatd typedef in C-extension headers.
+  * Avoided calling private php methods (timelib_update_ts).
+  * Fixed Any.php to use fully-qualified name for DescriptorPool.
+
+  Ruby
+  * Added Google_Protobuf_discard_unknown for discarding unknown fields in
+    messages.
+
+  C#
+  * Unknown fields are now preserved by default.
+  * Floating point values are now bitwise compared, affecting message equality
+    check and Contains() API in map and repeated fields.
+
+
 2017-11-13 version 3.5.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Planned Future Changes
   * Make C++ implementation C++11 only: we plan to require C++11 to build

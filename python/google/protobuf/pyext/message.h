@@ -240,15 +240,15 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg);
 // has been registered with the same field number on this class.
 PyObject* RegisterExtension(PyObject* cls, PyObject* extension_handle);
 
-// Retrieves an attribute named 'name' from CMessage 'self'. Returns
-// the attribute value on success, or NULL on failure.
+// Retrieves an attribute named 'name' from 'self', which is interpreted as a
+// CMessage. Returns the attribute value on success, or null on failure.
 //
 // Returns a new reference.
-PyObject* GetAttr(CMessage* self, PyObject* name);
+PyObject* GetAttr(PyObject* self, PyObject* name);
 
-// Set the value of the attribute named 'name', for CMessage 'self',
-// to the value 'value'. Returns -1 on failure.
-int SetAttr(CMessage* self, PyObject* name, PyObject* value);
+// Set the value of the attribute named 'name', for 'self', which is interpreted
+// as a CMessage, to the value 'value'. Returns -1 on failure.
+int SetAttr(PyObject* self, PyObject* name, PyObject* value);
 
 PyObject* FindInitializationErrors(CMessage* self);
 

@@ -195,9 +195,9 @@ string ModuleAlias(const string& filename) {
   // We'll worry about this problem if/when we actually see it.  This name isn't
   // exposed to users so we can change it later if we need to.
   string basename = StripProto(filename);
-  StripString(&basename, "-", '$');
-  StripString(&basename, "/", '_');
-  StripString(&basename, ".", '_');
+  ReplaceCharacters(&basename, "-", '$');
+  ReplaceCharacters(&basename, "/", '_');
+  ReplaceCharacters(&basename, ".", '_');
   return basename + "_pb";
 }
 
@@ -1028,7 +1028,7 @@ string JSFieldTypeAnnotation(const GeneratorOptions& options,
       if (!IsPrimitive(jstype)) {
         jstype = "!" + jstype;
       }
-      jstype = "Array.<" + jstype + ">";
+      jstype = "Array<" + jstype + ">";
     }
   }
 
@@ -1556,6 +1556,22 @@ bool GenerateJspbAllowedSet(const GeneratorOptions& options,
   dedup.GetAllowedSet(allowed_set);
 
   return true;
+}
+
+// Embeds base64 encoded GeneratedCodeInfo proto in a comment at the end of
+// file.
+void EmbedCodeAnnotations(const GeneratedCodeInfo& annotations,
+                          io::Printer* printer) {
+  // Serialize annotations proto into base64 string.
+  string meta_content;
+  annotations.SerializeToString(&meta_content);
+  string meta_64;
+  Base64Escape(meta_content, &meta_64);
+
+  // Print base64 encoded annotations at the end of output file in
+  // a comment.
+  printer->Print("\n// Below is base64 encoded GeneratedCodeInfo proto");
+  printer->Print("\n// $encoded_proto$\n", "encoded_proto", meta_64);
 }
 
 }  // anonymous namespace
@@ -2822,7 +2838,7 @@ void Generator::GenerateClassExtensionFieldInfo(const GeneratorOptions& options,
         "so that it\n"
         " * works in OPTIMIZED mode.\n"
         " *\n"
-        " * @type {!Object.<number, jspb.ExtensionFieldInfo>}\n"
+        " * @type {!Object<number, jspb.ExtensionFieldInfo>}\n"
         " */\n"
         "$class$.extensions = {};\n"
         "\n",
@@ -2843,7 +2859,7 @@ void Generator::GenerateClassExtensionFieldInfo(const GeneratorOptions& options,
         "so that it\n"
         " * works in OPTIMIZED mode.\n"
         " *\n"
-        " * @type {!Object.<number, jspb.ExtensionFieldBinaryInfo>}\n"
+        " * @type {!Object<number, jspb.ExtensionFieldBinaryInfo>}\n"
         " */\n"
         "$class$.extensionsBinary = {};\n"
         "\n",
@@ -3195,7 +3211,7 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "/**\n"
       " * A tuple of {field number, class constructor} for the extension\n"
       " * field named `$name$`.\n"
-      " * @type {!jspb.ExtensionFieldInfo.<$extensionType$>}\n"
+      " * @type {!jspb.ExtensionFieldInfo<$extensionType$>}\n"
       " */\n"
       "$class$.$name$ = new jspb.ExtensionFieldInfo(\n",
       "name", JSObjectFieldName(options, field),
@@ -3634,10 +3650,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       }
 
       if (options.annotate_code) {
-        const string meta_file = filename + ".meta";
-        google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
-          context->Open(meta_file));
-        annotations.SerializeToZeroCopyStream(info_output.get());
+        EmbedCodeAnnotations(annotations, &printer);
       }
     }
   }

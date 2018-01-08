@@ -1436,6 +1436,7 @@ TEST(RepeatedVarint, Enum) {
   EXPECT_EQ(expected, WireFormatLite::EnumSize(v));
 }
 
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

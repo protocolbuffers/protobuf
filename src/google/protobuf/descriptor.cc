@@ -32,7 +32,10 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <algorithm>
+#include <functional>
 #include <google/protobuf/stubs/hash.h>
+#include <limits>
 #include <map>
 #include <memory>
 #ifndef _SHARED_PTR_H
@@ -41,8 +44,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <limits>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
@@ -375,15 +376,13 @@ class PrefixRemover {
   string prefix_;
 };
 
-// A DescriptorPool contains a bunch of hash_maps to implement the
+// A DescriptorPool contains a bunch of hash-maps to implement the
 // various Find*By*() methods.  Since hashtable lookups are O(1), it's
-// most efficient to construct a fixed set of large hash_maps used by
+// most efficient to construct a fixed set of large hash-maps used by
 // all objects in the pool rather than construct one or more small
-// hash_maps for each object.
+// hash-maps for each object.
 //
-// The keys to these hash_maps are (parent, name) or (parent, number)
-// pairs.  Unfortunately STL doesn't provide hash functions for pair<>,
-// so we must invent our own.
+// The keys to these hash-maps are (parent, name) or (parent, number) pairs.
 //
 // TODO(kenton):  Use StringPiece rather than const char* in keys?  It would
 //   be a lot cleaner but we'd just have to convert it back to const char*
@@ -397,6 +396,13 @@ struct PointerStringPairEqual {
     return a.first == b.first && strcmp(a.second, b.second) == 0;
   }
 };
+
+typedef std::pair<const Descriptor*, int> DescriptorIntPair;
+typedef std::pair<const EnumDescriptor*, int> EnumIntPair;
+
+#define HASH_MAP hash_map
+#define HASH_SET hash_set
+#define HASH_FXN hash
 
 template<typename PairType>
 struct PointerIntegerPairHash {
@@ -416,9 +422,6 @@ struct PointerIntegerPairHash {
           (a.first == b.first && a.second < b.second);
   }
 };
-
-typedef std::pair<const Descriptor*, int> DescriptorIntPair;
-typedef std::pair<const EnumDescriptor*, int> EnumIntPair;
 
 struct PointerStringPairHash {
   size_t operator()(const PointerStringPair& p) const {
@@ -445,31 +448,37 @@ struct PointerStringPairHash {
 
 const Symbol kNullSymbol;
 
-typedef hash_map<const char*, Symbol,
-                 hash<const char*>, streq>
-  SymbolsByNameMap;
-typedef hash_map<PointerStringPair, Symbol,
+typedef HASH_MAP<const char*, Symbol, HASH_FXN<const char*>, streq>
+    SymbolsByNameMap;
+
+typedef HASH_MAP<PointerStringPair, Symbol, PointerStringPairHash,
+                 PointerStringPairEqual>
+    SymbolsByParentMap;
+
+typedef HASH_MAP<const char*, const FileDescriptor*, HASH_FXN<const char*>,
+                 streq>
+    FilesByNameMap;
+
+typedef HASH_MAP<PointerStringPair, const FieldDescriptor*,
                  PointerStringPairHash, PointerStringPairEqual>
-  SymbolsByParentMap;
-typedef hash_map<const char*, const FileDescriptor*,
-                 hash<const char*>, streq>
-  FilesByNameMap;
-typedef hash_map<PointerStringPair, const FieldDescriptor*,
-                 PointerStringPairHash, PointerStringPairEqual>
-  FieldsByNameMap;
-typedef hash_map<DescriptorIntPair, const FieldDescriptor*,
-                 PointerIntegerPairHash<DescriptorIntPair> >
-  FieldsByNumberMap;
-typedef hash_map<EnumIntPair, const EnumValueDescriptor*,
-                 PointerIntegerPairHash<EnumIntPair> >
-  EnumValuesByNumberMap;
-// This is a map rather than a hash_map, since we use it to iterate
+    FieldsByNameMap;
+
+typedef HASH_MAP<DescriptorIntPair, const FieldDescriptor*,
+                 PointerIntegerPairHash<DescriptorIntPair>,
+                 std::equal_to<DescriptorIntPair> >
+    FieldsByNumberMap;
+
+typedef HASH_MAP<EnumIntPair, const EnumValueDescriptor*,
+                 PointerIntegerPairHash<EnumIntPair>,
+                 std::equal_to<EnumIntPair> >
+    EnumValuesByNumberMap;
+// This is a map rather than a hash-map, since we use it to iterate
 // through all the extensions that extend a given Descriptor, and an
 // ordered data structure that implements lower_bound is convenient
 // for that.
 typedef std::map<DescriptorIntPair, const FieldDescriptor*>
   ExtensionsGroupedByDescriptorMap;
-typedef hash_map<string, const SourceCodeInfo_Location*> LocationsByPathMap;
+typedef HASH_MAP<string, const SourceCodeInfo_Location*> LocationsByPathMap;
 
 std::set<string>* allowed_proto3_extendees_ = NULL;
 GOOGLE_PROTOBUF_DECLARE_ONCE(allowed_proto3_extendees_init_);
@@ -564,17 +573,17 @@ class DescriptorPool::Tables {
   // execution of the current public API call, but for compatibility with
   // legacy clients, this is cleared at the beginning of each public API call.
   // Not used when fallback_database_ == NULL.
-  hash_set<string> known_bad_files_;
+  HASH_SET<string> known_bad_files_;
 
   // A set of symbols which we have tried to load from the fallback database
   // and encountered errors. We will not attempt to load them again during
   // execution of the current public API call, but for compatibility with
   // legacy clients, this is cleared at the beginning of each public API call.
-  hash_set<string> known_bad_symbols_;
+  HASH_SET<string> known_bad_symbols_;
 
   // The set of descriptors for which we've already loaded the full
   // set of extensions numbers from fallback_database_.
-  hash_set<const Descriptor*> extensions_loaded_from_db_;
+  HASH_SET<const Descriptor*> extensions_loaded_from_db_;
 
   // -----------------------------------------------------------------
   // Finding items.
@@ -787,13 +796,12 @@ class FileDescriptorTables {
 };
 
 DescriptorPool::Tables::Tables()
-    // Start some hash_map and hash_set objects with a small # of buckets
+    // Start some hash-map and hash-set objects with a small # of buckets
     : known_bad_files_(3),
       known_bad_symbols_(3),
       extensions_loaded_from_db_(3),
       symbols_by_name_(3),
       files_by_name_(3) {}
-
 
 DescriptorPool::Tables::~Tables() {
   GOOGLE_DCHECK(checkpoints_.empty());
@@ -948,8 +956,10 @@ inline Symbol FileDescriptorTables::FindNestedSymbolOfType(
 Symbol DescriptorPool::Tables::FindByNameHelper(
     const DescriptorPool* pool, const string& name) {
   MutexLockMaybe lock(pool->mutex_);
-  known_bad_symbols_.clear();
-  known_bad_files_.clear();
+  if (pool->fallback_database_ != NULL) {
+    known_bad_symbols_.clear();
+    known_bad_files_.clear();
+  }
   Symbol result = FindSymbol(name);
 
   if (result.IsNull() && pool->underlay_ != NULL) {
@@ -1403,8 +1413,10 @@ void DescriptorPool::InternalAddGeneratedFile(
 
 const FileDescriptor* DescriptorPool::FindFileByName(const string& name) const {
   MutexLockMaybe lock(mutex_);
-  tables_->known_bad_symbols_.clear();
-  tables_->known_bad_files_.clear();
+  if (fallback_database_ != NULL) {
+    tables_->known_bad_symbols_.clear();
+    tables_->known_bad_files_.clear();
+  }
   const FileDescriptor* result = tables_->FindFile(name);
   if (result != NULL) return result;
   if (underlay_ != NULL) {
@@ -1421,8 +1433,10 @@ const FileDescriptor* DescriptorPool::FindFileByName(const string& name) const {
 const FileDescriptor* DescriptorPool::FindFileContainingSymbol(
     const string& symbol_name) const {
   MutexLockMaybe lock(mutex_);
-  tables_->known_bad_symbols_.clear();
-  tables_->known_bad_files_.clear();
+  if (fallback_database_ != NULL) {
+    tables_->known_bad_symbols_.clear();
+    tables_->known_bad_files_.clear();
+  }
   Symbol result = tables_->FindSymbol(symbol_name);
   if (!result.IsNull()) return result.GetFile();
   if (underlay_ != NULL) {
@@ -1508,8 +1522,10 @@ const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
     }
   }
   MutexLockMaybe lock(mutex_);
-  tables_->known_bad_symbols_.clear();
-  tables_->known_bad_files_.clear();
+  if (fallback_database_ != NULL) {
+    tables_->known_bad_symbols_.clear();
+    tables_->known_bad_files_.clear();
+  }
   const FieldDescriptor* result = tables_->FindExtension(extendee, number);
   if (result != NULL) {
     return result;
@@ -1531,8 +1547,10 @@ void DescriptorPool::FindAllExtensions(
     const Descriptor* extendee,
     std::vector<const FieldDescriptor*>* out) const {
   MutexLockMaybe lock(mutex_);
-  tables_->known_bad_symbols_.clear();
-  tables_->known_bad_files_.clear();
+  if (fallback_database_ != NULL) {
+    tables_->known_bad_symbols_.clear();
+    tables_->known_bad_files_.clear();
+  }
 
   // Initialize tables_->extensions_ from the fallback database first
   // (but do this only once per descriptor).
@@ -4539,7 +4557,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     }
   }
 
-  hash_set<string> reserved_name_set;
+  HASH_SET<string> reserved_name_set;
   for (int i = 0; i < proto.reserved_name_size(); i++) {
     const string& name = proto.reserved_name(i);
     if (reserved_name_set.find(name) == reserved_name_set.end()) {
@@ -5125,7 +5143,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
     }
   }
 
-  hash_set<string> reserved_name_set;
+  HASH_SET<string> reserved_name_set;
   for (int i = 0; i < proto.reserved_name_size(); i++) {
     const string& name = proto.reserved_name(i);
     if (reserved_name_set.find(name) == reserved_name_set.end()) {

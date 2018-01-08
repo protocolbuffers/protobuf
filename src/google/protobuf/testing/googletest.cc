@@ -132,7 +132,7 @@ string GetTemporaryDirectoryName() {
   // with "\\?\") but these will be degenerate in the sense that you cannot
   // chdir into such directories (or navigate into them with Windows Explorer)
   // nor can you open such files with some programs (e.g. Notepad).
-  if (result.back() == '.') {
+  if (result[result.size() - 1] == '.') {
     result[result.size() - 1] = '_';
   }
   // On Win32, tmpnam() returns a file prefixed with '\', but which is supposed

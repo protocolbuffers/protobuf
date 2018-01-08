@@ -674,13 +674,13 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static inline size_t SInt64Size  ( int64 value);
   static inline size_t EnumSize    (   int value);
 
-  static        size_t Int32Size (const RepeatedField< int32>& value);
-  static inline size_t Int64Size (const RepeatedField< int64>& value);
-  static        size_t UInt32Size(const RepeatedField<uint32>& value);
-  static inline size_t UInt64Size(const RepeatedField<uint64>& value);
-  static        size_t SInt32Size(const RepeatedField< int32>& value);
-  static inline size_t SInt64Size(const RepeatedField< int64>& value);
-  static        size_t EnumSize  (const RepeatedField<   int>& value);
+  static size_t Int32Size (const RepeatedField< int32>& value);
+  static size_t Int64Size (const RepeatedField< int64>& value);
+  static size_t UInt32Size(const RepeatedField<uint32>& value);
+  static size_t UInt64Size(const RepeatedField<uint64>& value);
+  static size_t SInt32Size(const RepeatedField< int32>& value);
+  static size_t SInt64Size(const RepeatedField< int64>& value);
+  static size_t EnumSize  (const RepeatedField<   int>& value);
 
   // These types always have the same size.
   static const size_t kFixed32Size  = 4;
@@ -860,7 +860,7 @@ inline uint32 WireFormatLite::ZigZagEncode32(int32 n) {
 
 inline int32 WireFormatLite::ZigZagDecode32(uint32 n) {
   // Note:  Using unsigned types prevent undefined behavior
-  return static_cast<int32>((n >> 1) ^ -(n & 1));
+  return static_cast<int32>((n >> 1) ^ (~(n & 1) + 1));
 }
 
 inline uint64 WireFormatLite::ZigZagEncode64(int64 n) {
@@ -871,7 +871,7 @@ inline uint64 WireFormatLite::ZigZagEncode64(int64 n) {
 
 inline int64 WireFormatLite::ZigZagDecode64(uint64 n) {
   // Note:  Using unsigned types prevent undefined behavior
-  return static_cast<int64>((n >> 1) ^ -(n & 1));
+  return static_cast<int64>((n >> 1) ^ (~(n & 1) + 1));
 }
 
 // String is for UTF-8 text only, but, even so, ReadString() can simply

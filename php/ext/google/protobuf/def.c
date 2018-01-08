@@ -249,9 +249,11 @@ PHP_METHOD(Descriptor, getField) {
     MAKE_STD_ZVAL(field_hashtable_value);
     ZVAL_OBJ(field_hashtable_value, field_descriptor_type->create_object(
                                         field_descriptor_type TSRMLS_CC));
+    Z_DELREF_P(field_hashtable_value);
 #else
     field_hashtable_value =
         field_descriptor_type->create_object(field_descriptor_type TSRMLS_CC);
+    --GC_REFCOUNT(field_hashtable_value);
 #endif
     FieldDescriptor *field_php =
         UNBOX_HASHTABLE_VALUE(FieldDescriptor, field_hashtable_value);

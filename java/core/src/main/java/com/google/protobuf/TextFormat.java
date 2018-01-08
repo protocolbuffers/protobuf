@@ -1224,6 +1224,22 @@ public final class TextFormat {
   }
 
   /**
+   * Parse a text-format message from {@code input}.
+   *
+   * @return the parsed message, guaranteed initialized
+   */
+  public static <T extends Message> T parse(final CharSequence input,
+                                            final Class<T> protoClass)
+                                            throws ParseException {
+    Message.Builder builder =
+        Internal.getDefaultInstance(protoClass).newBuilderForType();
+    merge(input, builder);
+    @SuppressWarnings("unchecked")
+    T output = (T) builder.build();
+    return output;
+  }
+
+  /**
    * Parse a text-format message from {@code input} and merge the contents
    * into {@code builder}.  Extensions will be recognized if they are
    * registered in {@code extensionRegistry}.
@@ -1246,6 +1262,25 @@ public final class TextFormat {
                            final Message.Builder builder)
                            throws ParseException {
     PARSER.merge(input, extensionRegistry, builder);
+  }
+
+  /**
+   * Parse a text-format message from {@code input}.  Extensions will be
+   * recognized if they are registered in {@code extensionRegistry}.
+   *
+   * @return the parsed message, guaranteed initialized
+   */
+  public static <T extends Message> T parse(
+      final CharSequence input,
+      final ExtensionRegistry extensionRegistry,
+      final Class<T> protoClass)
+      throws ParseException {
+    Message.Builder builder =
+        Internal.getDefaultInstance(protoClass).newBuilderForType();
+    merge(input, extensionRegistry, builder);
+    @SuppressWarnings("unchecked")
+    T output = (T) builder.build();
+    return output;
   }
 
 

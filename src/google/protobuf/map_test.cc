@@ -676,6 +676,16 @@ TEST_F(MapImplTest, InsertByIterator) {
   ExpectElements(map1);
 }
 
+#if LANG_CXX11
+TEST_F(MapImplTest, InsertByInitializerList) {
+  map_.insert({{1, 100}, {2, 200}});
+  ExpectElements({{1, 100}, {2, 200}});
+
+  map_.insert({{2, 201}, {3, 301}});
+  ExpectElements({{1, 100}, {2, 200}, {3, 301}});
+}
+#endif
+
 TEST_F(MapImplTest, EraseSingleByKey) {
   int32 key = 0;
   int32 value = 100;

@@ -36,6 +36,7 @@
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/mathlimits.h>
 #include <google/protobuf/stubs/mathutil.h>
@@ -128,6 +129,15 @@ FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
                  << " of CppType = " << field->cpp_type();
       return DIFFERENT;
   }
+}
+
+bool DefaultFieldComparator::Compare(
+    MessageDifferencer* differencer,
+    const Message& message1,
+    const Message& message2,
+    const google::protobuf::util::FieldContext* field_context) {
+  return differencer->Compare(
+      message1, message2, field_context->parent_fields());
 }
 
 void DefaultFieldComparator::SetDefaultFractionAndMargin(double fraction,

@@ -47,6 +47,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/has_bits.h>
+#include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -116,6 +117,21 @@ LIBPROTOBUF_EXPORT double NaN();
 template <class Type> bool AllAreInitialized(const Type& t) {
   for (int i = t.size(); --i >= 0; ) {
     if (!t.Get(i).IsInitialized()) return false;
+  }
+  return true;
+}
+
+// "Weak" variant of AllAreInitialized, used to implement implicit weak fields.
+// This version operates on MessageLite to avoid introducing a dependency on the
+// concrete message type.
+template <class T>
+bool AllAreInitializedWeak(const ::google::protobuf::RepeatedPtrField<T>& t) {
+  for (int i = t.size(); --i >= 0;) {
+    if (!reinterpret_cast<const ::google::protobuf::internal::RepeatedPtrFieldBase&>(t)
+             .Get< ::google::protobuf::internal::ImplicitWeakTypeHandler<T> >(i)
+             .IsInitialized()) {
+      return false;
+    }
   }
   return true;
 }

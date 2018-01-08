@@ -58,6 +58,27 @@ message TestRecursiveMessageWithRepeatedField {
   map<string, string> str_to_str = 5;
 }
 
+// Message with a few types of maps to cover the different custom flows
+// in the runtime.
+message TestMessageOfMaps {
+  map<string, string> str_to_str = 1;
+
+  map<string, int32> str_to_int = 2;
+  map<int32, string> int_to_str = 3;
+  map<int32, int32> int_to_int = 4;
+
+  map<string, bool> str_to_bool = 5;
+  map<bool, string> bool_to_str = 6;
+  map<bool, bool> bool_to_bool = 7;
+
+  map<int32, bool> int_to_bool = 8;
+  map<bool, int32> bool_to_int = 9;
+
+  map<string, TestAllTypes> str_to_msg = 10;
+  map<int32, TestAllTypes> int_to_msg = 11;
+  map<bool, TestAllTypes> bool_to_msg = 12;
+}
+
 // Recursive message and extension to for testing autocreators at different
 // depths.
 message TestRecursiveExtension {
