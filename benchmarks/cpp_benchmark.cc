@@ -121,9 +121,10 @@ class ParseNewArenaFixture : public Fixture {
   virtual void BenchmarkCase(benchmark::State& state) {
     WrappingCounter i(payloads_.size());
     size_t total = 0;
+    Arena arena;
 
     while (state.KeepRunning()) {
-      Arena arena;
+      arena.Reset();
       Message* m = Arena::CreateMessage<T>(&arena);
       const std::string& payload = payloads_[i.Next()];
       total += payload.size();

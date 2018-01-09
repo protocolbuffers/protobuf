@@ -45,7 +45,7 @@ protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_pr
 protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs_proto2) $(well_known_type_protoc_inputs)
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2) )
 	touch protoc_middleman2
-	
+
 endif
 
 all_data = `find . -type f -name "dataset.*.pb"`
@@ -75,7 +75,7 @@ benchmarks_protoc_outputs_proto2_header =                                  \
 	datasets/google_message4/benchmark_message4.pb.h                         \
 	datasets/google_message4/benchmark_message4_1.pb.h                       \
 	datasets/google_message4/benchmark_message4_2.pb.h                       \
-	datasets/google_message4/benchmark_message4_3.pb.h	
+	datasets/google_message4/benchmark_message4_3.pb.h
 
 benchmarks_protoc_outputs_proto2 =                                         \
 	datasets/google_message1/benchmark_message1_proto2.pb.cc                 \
@@ -144,7 +144,7 @@ javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middlem
 	cd ../..
 	@touch javac_middleman
 
-java-benchmark: javac_middleman 
+java-benchmark: javac_middleman
 	@echo "Writing shortcut script java-benchmark..."
 	@echo '#! /bin/sh' > java-benchmark
 	@echo 'java -cp '"tmp/java/target/*.jar"' com.google.protobuf.ProtoBench $$@' >> java-benchmark
@@ -173,7 +173,7 @@ python_cpp_pkg_flags = `pkg-config --cflags --libs python`
 
 lib_LTLIBRARIES = libbenchmark_messages.la
 libbenchmark_messages_la_SOURCES = python_benchmark_messages.cc
-libbenchmark_messages_la_LIBADD = $(top_srcdir)/src/.libs/libprotobuf.la 
+libbenchmark_messages_la_LIBADD = $(top_srcdir)/src/.libs/libprotobuf.la
 libbenchmark_messages_la_LDFLAGS = -version-info 1:0:0 -export-dynamic
 libbenchmark_messages_la_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir) $(python_cpp_pkg_flags)
 libbenchmark_messages_la-libbenchmark_messages_la.$(OBJEXT): $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2)
