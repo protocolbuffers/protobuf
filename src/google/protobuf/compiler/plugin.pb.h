@@ -716,7 +716,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
 
 // ===================================================================
 
-#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
@@ -1365,7 +1365,7 @@ CodeGeneratorResponse::file() const {
   return file_;
 }
 
-#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
 // -------------------------------------------------------------------

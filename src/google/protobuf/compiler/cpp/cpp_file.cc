@@ -1394,7 +1394,7 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
   // TODO(gerbens) remove pragmas when gcc is no longer used. Current version
   // of gcc fires a bogus error when compiled with strict-aliasing.
   printer->Print(
-    "#ifdef __GNUC__\n"
+    "#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)\n"
     "  #pragma GCC diagnostic push\n"
     "  #pragma GCC diagnostic ignored \"-Wstrict-aliasing\"\n"
     "#endif  // __GNUC__\n");
@@ -1407,7 +1407,7 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
     message_generators_[i]->GenerateInlineMethods(printer);
   }
   printer->Print(
-    "#ifdef __GNUC__\n"
+    "#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)\n"
     "  #pragma GCC diagnostic pop\n"
     "#endif  // __GNUC__\n");
 
