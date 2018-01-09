@@ -181,7 +181,7 @@ class LIBPROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@prot
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
-#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
@@ -215,7 +215,7 @@ inline void Duration::set_nanos(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.nanos)
 }
 
-#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
