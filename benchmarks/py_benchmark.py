@@ -22,7 +22,7 @@ import datasets.google_message1.benchmark_message1_proto3_pb2 as benchmark_messa
 import datasets.google_message2.benchmark_message2_pb2 as benchmark_message2_pb2
 import datasets.google_message3.benchmark_message3_pb2 as benchmark_message3_pb2
 import datasets.google_message4.benchmark_message4_pb2 as benchmark_message4_pb2
-import benchmarks_pb2
+import benchmarks_pb2 as benchmarks_pb2
 
 
 def run_one_test(filename):
