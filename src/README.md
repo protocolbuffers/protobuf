@@ -15,7 +15,6 @@ To build protobuf from source, the following tools are needed:
   * autoconf
   * automake
   * libtool
-  * curl (used to download gmock)
   * make
   * g++
   * unzip
@@ -30,6 +29,7 @@ install them before proceeding.
 If you get the source from github, you need to generate the configure script
 first:
 
+    $ git submodule update --init --recursive
     $ ./autogen.sh
 
 This will download gmock source (which is used for C++ Protocol Buffer

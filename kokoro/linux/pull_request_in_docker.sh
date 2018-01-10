@@ -19,6 +19,9 @@ cd $BUILD_DIR
 git clone /var/local/kokoro/protobuf
 cd protobuf
 
+# Initialize any submodules:
+git submodule update --init --recursive
+
 # Set up the directory where our test output is going to go.
 OUTPUT_DIR=`mktemp -d`
 LOG_OUTPUT_DIR=$OUTPUT_DIR/logs

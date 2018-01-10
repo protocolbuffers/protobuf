@@ -19,7 +19,7 @@ m4/lt~obsolete.m4
 autom4te.cache
 
 # downloaded files
-gmock
+./gmock
 
 # in-tree configure-generated files
 Makefile
@@ -180,3 +180,11 @@ ruby/Gemfile.lock
 ruby/compatibility_tests/v3.0.0/protoc
 ruby/compatibility_tests/v3.0.0/tests/generated_code_pb.rb
 ruby/compatibility_tests/v3.0.0/tests/test_import_pb.rb
+
+# IntelliJ CLion Config files and build output
+cmake/.idea
+cmake/cmake-build-debug/
+
+# Common build subdirectories.
+./.build/
+./_build/

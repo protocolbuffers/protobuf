@@ -27,6 +27,9 @@ internal_build_cpp() {
     export CXX="g++-4.8" CC="gcc-4.8"
   fi
 
+  # Initialize any submodules.
+  git submodule update --init --recursive
+
   ./autogen.sh
   ./configure CXXFLAGS="-fPIC"  # -fPIC is needed for python cpp test.
                                 # See python/setup.py for more details
@@ -53,6 +56,8 @@ build_cpp() {
 }
 
 build_cpp_distcheck() {
+  # Initialize any submodules.
+  git submodule update --init --recursive
   ./autogen.sh
   ./configure
   make dist

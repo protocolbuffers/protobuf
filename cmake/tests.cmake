@@ -1,24 +1,26 @@
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../gmock/CMakeLists.txt")
-  message(FATAL_ERROR "Cannot find gmock directory.")
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../third_party/googletest/CMakeLists.txt")
+  message(FATAL_ERROR "Cannot find third_party/googletest directory.")
 endif()
 
 option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
   "Using absolute test_plugin path in tests" ON)
 mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
 
+set(googlemock_source_dir "${protobuf_source_dir}/third_party/googletest/googlemock")
+set(googletest_source_dir "${protobuf_source_dir}/third_party/googletest/googletest")
 include_directories(
-  ${protobuf_source_dir}/gmock
-  ${protobuf_source_dir}/gmock/gtest
-  ${protobuf_source_dir}/gmock/gtest/include
-  ${protobuf_source_dir}/gmock/include
+  ${googlemock_source_dir}
+  ${googletest_source_dir}
+  ${googletest_source_dir}/include
+  ${googlemock_source_dir}/include
 )
 
 add_library(gmock STATIC
-  ${protobuf_source_dir}/gmock/src/gmock-all.cc
-  ${protobuf_source_dir}/gmock/gtest/src/gtest-all.cc
+  "${googlemock_source_dir}/src/gmock-all.cc"
+  "${googletest_source_dir}/src/gtest-all.cc"
 )
 target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
-add_library(gmock_main STATIC ${protobuf_source_dir}/gmock/src/gmock_main.cc)
+add_library(gmock_main STATIC "${googlemock_source_dir}/src/gmock_main.cc")
 target_link_libraries(gmock_main gmock)
 
 set(lite_test_protos
