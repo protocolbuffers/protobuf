@@ -1012,6 +1012,9 @@ class Message
                     throw new GPBDecodeException(
                         "Int64 too small");
                 }
+                if (PHP_INT_SIZE == 4) {
+                    return (string) $value;
+                }
                 return $value;
             case GPBType::UINT64:
             case GPBType::FIXED64:
@@ -1028,6 +1031,9 @@ class Message
                 }
                 if (bccomp($value, "9223372036854775807") > 0) {
                     $value = bcsub($value, "18446744073709551616");
+                }
+                if (PHP_INT_SIZE == 4) {
+                    return (string) $value;
                 }
                 return $value;
             default:
