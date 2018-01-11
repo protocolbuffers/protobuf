@@ -646,6 +646,7 @@ py_library(
     ),
     imports = ["python"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
 )
 
 cc_binary(
