@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  
+
   <modelVersion>4.0.0</modelVersion>
   <artifactId>protobuf-java-benchmark</artifactId>
   <groupId>com.google.protobuf</groupId>
   <version>1.0.0</version>
   <name>Protocol Buffers [Benchmark]</name>
   <description>The benchmark tools for Protobuf Java.</description>
-  
+
   <dependencies>
     <dependency>
       <groupId>com.google.protobuf</groupId>
@@ -22,7 +22,7 @@
       <version>1.0-beta-2</version>
     </dependency>
   </dependencies>
-  
+
   <build>
     <pluginManagement>
       <plugins>

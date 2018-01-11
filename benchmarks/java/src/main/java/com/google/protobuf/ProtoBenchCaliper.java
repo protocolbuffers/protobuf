@@ -153,10 +153,8 @@ public class ProtoBenchCaliper {
   @Benchmark
   void deserializeFromByteString(int reps) throws IOException {
     for (int i = 0; i < reps; i++) {
-      defaultMessage
-        .newBuilderForType()
-        .mergeFrom(inputStringList.get((int) (counter % inputStringList.size())), extensions)
-        .build();
+      benchmarkMessageType.getDefaultInstance().getParserForType().parseFrom(
+          inputStringList.get((int) (counter % inputStringList.size())), extensions);
       counter++;
     }
   }
@@ -164,10 +162,8 @@ public class ProtoBenchCaliper {
   @Benchmark
   void deserializeFromByteArray(int reps) throws IOException {
     for (int i = 0; i < reps; i++) {
-      defaultMessage
-        .newBuilderForType()
-        .mergeFrom(inputDataList.get((int) (counter % inputDataList.size())), extensions)
-        .build();
+      benchmarkMessageType.getDefaultInstance().getParserForType().parseFrom(
+          inputDataList.get((int) (counter % inputDataList.size())), extensions);
       counter++;
     }
   }
@@ -175,10 +171,8 @@ public class ProtoBenchCaliper {
   @Benchmark
   void deserializeFromMemoryStream(int reps) throws IOException {
     for (int i = 0; i < reps; i++) {
-      defaultMessage
-        .newBuilderForType()
-        .mergeFrom(inputStreamList.get((int) (counter % inputStreamList.size())), extensions)
-        .build();
+      benchmarkMessageType.getDefaultInstance().getParserForType().parseFrom(
+          inputStreamList.get((int) (counter % inputStreamList.size())), extensions);
       inputStreamList.get((int) (counter % inputStreamList.size())).reset();
       counter++;
     }
