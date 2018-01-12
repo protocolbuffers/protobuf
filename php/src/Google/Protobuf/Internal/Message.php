@@ -831,6 +831,9 @@ class Message
                 }
                 return $submsg;
             case GPBType::BYTES:
+                if (is_null($value)) {
+                    return $this->defaultValue($field);
+                }
                 if (!is_string($value)) {
                     throw new GPBDecodeException("Expect string");
                 }
@@ -841,6 +844,9 @@ class Message
                 }
                 return $proto_value;
             case GPBType::BOOL:
+                if (is_null($value)) {
+                    return $this->defaultValue($field);
+                }
                 if ($is_map_key) {
                     if ($value === "true") {
                         return true;

@@ -602,4 +602,39 @@ class ImplementationTest extends TestBase
         $this->assertEquals(34, $m->getRepeatedMessage()[0]->getA());
         $this->assertEquals(35, $m->getRepeatedMessage()[1]->getA());
     }
+
+    public function testMergeFromArrayWithNullValuesDoesNotThrowException()
+    {
+        $requestData = [
+            'optional_int32' => null,
+            'optional_int64' => null,
+            'optional_uint32' => null,
+            'optional_uint64' => null,
+            'optional_sint32' => null,
+            'optional_sint64' => null,
+            'optional_fixed32' => null,
+            'optional_fixed64' => null,
+            'optional_sfixed32' => null,
+            'optional_sfixed64' => null,
+            'optional_float' => null,
+            'optional_double' => null,
+            'optional_bool' => null,
+            'optional_string' => null,
+            'optional_bytes' => null,
+            'optional_enum' => null,
+            'optional_message' => null,
+        ];
+
+        $messageFromArray = new TestMessage($requestData);
+        $messageFromJson = new TestMessage();
+        $messageFromJson->mergeFromJsonString(json_encode($requestData));
+
+        foreach ($requestData as $key => $value) {
+            $getter = 'get' . str_replace(' ', '', ucwords(
+                str_replace('_', ' ', $key)
+            ));
+            $this->assertTrue(empty($messageFromArray->$getter()));
+            $this->assertTrue(empty($messageFromJson->$getter()));
+        }
+    }
 }
