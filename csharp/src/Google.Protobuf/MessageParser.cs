@@ -166,7 +166,7 @@ namespace Google.Protobuf
     /// </p>
     /// </remarks>
     /// <typeparam name="T">The type of message to be parsed.</typeparam>
-    public sealed class MessageParser<T> : MessageParser where T : IMessage<T>
+    public class MessageParser<T> : MessageParser where T : IMessage<T>
     {
         // Implementation note: all the methods here *could* just delegate up to the base class and cast the result.
         // The current implementation avoids a virtual method call and a cast, which *may* be significant in some cases.
@@ -187,6 +187,11 @@ namespace Google.Protobuf
             this.factory = factory;
         }
 
+        internal MessageParser(MessageParser<T> parser) : base(() => parser.factory())
+        {
+            this.factory = parser.factory;
+        }
+
         /// <summary>
         /// Creates a template instance ready for population.
         /// </summary>
@@ -204,7 +209,10 @@ namespace Google.Protobuf
         public new T ParseFrom(byte[] data)
         {
             T message = factory();
-            message.MergeFrom(data);
+            ProtoPreconditions.CheckNotNull(data, "data");
+            CodedInputStream input = new CodedInputStream(data);
+            MergeFrom(message, input);
+            input.CheckReadEndOfStreamTag();
             return message;
         }
 
@@ -218,7 +226,10 @@ namespace Google.Protobuf
         public new T ParseFrom(byte[] data, int offset, int length)
         {
             T message = factory();
-            message.MergeFrom(data, offset, length);
+            ProtoPreconditions.CheckNotNull(data, "data");
+            CodedInputStream input = new CodedInputStream(data, offset, length);
+            MergeFrom(message, input);
+            input.CheckReadEndOfStreamTag();
             return message;
         }
 
@@ -230,7 +241,10 @@ namespace Google.Protobuf
         public new T ParseFrom(ByteString data)
         {
             T message = factory();
-            message.MergeFrom(data);
+            ProtoPreconditions.CheckNotNull(data, "data");
+            CodedInputStream input = data.CreateCodedInput();
+            MergeFrom(message, input);
+            input.CheckReadEndOfStreamTag();            
             return message;
         }
 
@@ -242,7 +256,10 @@ namespace Google.Protobuf
         public new T ParseFrom(Stream input)
         {
             T message = factory();
-            message.MergeFrom(input);
+            ProtoPreconditions.CheckNotNull(input, "input");
+            CodedInputStream codedInput = new CodedInputStream(input);
+            MergeFrom(message, codedInput);
+            codedInput.CheckReadEndOfStreamTag();
             return message;
         }
 
@@ -257,9 +274,10 @@ namespace Google.Protobuf
         /// <returns>The parsed message.</returns>
         public new T ParseDelimitedFrom(Stream input)
         {
-            T message = factory();
-            message.MergeDelimitedFrom(input);
-            return message;
+            ProtoPreconditions.CheckNotNull(input, "input");
+            int size = (int) CodedInputStream.ReadRawVarint32(input);
+            Stream limitedStream = new LimitedInputStream(input, size);
+            return ParseFrom(limitedStream);
         }
 
         /// <summary>
@@ -270,7 +288,7 @@ namespace Google.Protobuf
         public new T ParseFrom(CodedInputStream input)
         {
             T message = factory();
-            message.MergeFrom(input);
+            MergeFrom(message, input);
             return message;
         }
 
@@ -286,6 +304,11 @@ namespace Google.Protobuf
             T message = factory();
             JsonParser.Default.Merge(message, json);
             return message;
+        }
+
+        internal virtual void MergeFrom(T message, CodedInputStream input)
+        {
+            message.MergeFrom(input);
         }
     }
 }
