@@ -47,10 +47,6 @@ namespace d {
 
 namespace {
 
-static const char kAnyMessageName[] = "Any";
-static const char kAnyProtoFile[] = "google/protobuf/any.proto";
-static const char kGoogleProtobufPrefix[] = "google/protobuf/";
-
 const char* const kKeywordList[] = {
   "abstract", "alias", "align", "asm", "assert", "auto", "body", "bool",
   "break", "byte", "case", "cast", "catch", "cdouble", "cent", "cfloat",
@@ -305,19 +301,6 @@ string EnumValueName(const EnumValueDescriptor* enum_value) {
     result.append("_");
   }
   return result;
-}
-
-bool IsAnyMessage(const FileDescriptor* descriptor) {
-  return descriptor->name() == kAnyProtoFile;
-}
-
-bool IsAnyMessage(const Descriptor* descriptor) {
-  return descriptor->name() == kAnyMessageName &&
-         descriptor->file()->name() == kAnyProtoFile;
-}
-
-bool IsWellKnownMessage(const FileDescriptor* descriptor) {
-  return !descriptor->name().compare(0, 16, kGoogleProtobufPrefix);
 }
 
 }  // namespace cpp

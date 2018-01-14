@@ -134,7 +134,7 @@ if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes))
     R fieldRange = inputRange.takeLengthPrefixed;
 
     Appender!T result;
-    static if (wire = Wire.none)
+    static if (wire == Wire.none)
     {
         while (!fieldRange.empty)
             result ~= fieldRange.fromProtobuf!(ElementType!T);

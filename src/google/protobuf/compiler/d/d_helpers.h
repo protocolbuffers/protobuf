@@ -54,11 +54,6 @@ string OutputFileName(const FileDescriptor* file);
 string UnderscoresToCamelCase(const string& input, bool cap_next_letter);
 string EscapeKeywords(const string& input, char delim = '\0');
 
-bool IsAnyMessage(const FileDescriptor* descriptor);
-bool IsAnyMessage(const Descriptor* descriptor);
-
-bool IsWellKnownMessage(const FileDescriptor* descriptor);
-
 }  // namespace d
 }  // namespace compiler
 }  // namespace protobuf
