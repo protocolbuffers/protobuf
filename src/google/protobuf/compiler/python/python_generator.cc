@@ -375,11 +375,12 @@ bool Generator::Generate(const FileDescriptor* file,
 
 // Prints Python imports for all modules imported by |file|.
 void Generator::PrintImports() const {
+  vector<string> modules_list;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const string& filename = file_->dependency(i)->name();
 
-    string module_name = ModuleName(filename);
-    string module_alias = ModuleAlias(filename);
+    const string module_name = ModuleName(filename);
+    const string module_alias = ModuleAlias(filename);
     if (ContainsPythonKeyword(module_name)) {
       // If the module path contains a Python keyword, we have to quote the
       // module name and import it using importlib. Otherwise the usual kind of
@@ -396,8 +397,17 @@ void Generator::PrintImports() const {
         // outside of any package, and I don't think that is easily achievable.
         import_statement = "import " + module_name;
       } else {
-        import_statement = "from " + module_name.substr(0, last_dot_pos) +
-                           " import " + module_name.substr(last_dot_pos + 1);
+        // self module is the nearest top level module
+        // e.g module 'google.protobuf.module_name' will get 'protobuf' for file_ 'module_name'
+        string self_module_name = module_name.substr(0, last_dot_pos);
+        int first_dot_pos = self_module_name.rfind('.');
+        first_dot_pos = (first_dot_pos == string::npos) ? 0 : (first_dot_pos + 1);
+        self_module_name = self_module_name.substr(first_dot_pos);
+        if (find(modules_list.begin(), modules_list.end(), self_module_name) == modules_list.end())
+        {
+          modules_list.push_back(self_module_name);
+        }
+        import_statement = "from . import " + module_name.substr(last_dot_pos + 1);
       }
       printer_->Print("$statement$ as $alias$\n", "statement", import_statement,
                       "alias", module_alias);
@@ -405,6 +415,14 @@ void Generator::PrintImports() const {
 
     CopyPublicDependenciesAliases(module_alias, file_->dependency(i));
   }
+
+  // In order to avoid modules names conflict with ones in the PYTHON paths
+  // tell package explicitely where to find self module name.
+  for (int m = 0; m < modules_list.size(); ++m)
+  {
+    printer_->Print("from .. import $module$\n", "module", modules_list[m]);
+  }
+
   printer_->Print("\n");
 
   // Print public imports.
