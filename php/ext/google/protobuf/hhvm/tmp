@@ -1,0 +1,17 @@
+
+    CREATE_HASHTABLE_VALUE(desc, desc_php, desc_type, desc_type_lower##_type); \
+    desc->def_type_lower = def_type_lower;                                     \
+    add_def_obj(desc->def_type_lower, desc_php);                               \
+
+    PHP_PROTO_CE_DECLARE pce;                                                  \
+    if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==     \
+        FAILURE) {                                                             \
+      zend_error(E_ERROR, "Generated message class %s hasn't been defined",    \
+                 classname);                                                   \
+      return;                                                                  \
+    } else {                                                                   \
+      desc->klass = PHP_PROTO_CE_UNREF(pce);                                   \
+    }                                                                          \
+    add_ce_obj(desc->klass, desc_php);                                         \
+    add_proto_obj(upb_##def_type_lower##_fullname(desc->def_type_lower),       \
+                  desc_php);                                                   \

@@ -1,0 +1,316 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#include "protobuf_php.h"
+
+// -----------------------------------------------------------------------------
+// Define static methods
+// -----------------------------------------------------------------------------
+
+upb_msgval tomsgval(zval* value, upb_fieldtype_t type) {
+  switch (type) {
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_ENUM:
+      return upb_msgval_int32(Z_LVAL_P(value));
+    case UPB_TYPE_INT64:
+      return upb_msgval_int64(Z_LVAL_P(value));
+    case UPB_TYPE_UINT32:
+      return upb_msgval_uint32(Z_LVAL_P(value));
+    case UPB_TYPE_UINT64:
+      return upb_msgval_uint64(Z_LVAL_P(value));
+    case UPB_TYPE_DOUBLE:
+      return upb_msgval_double(Z_DVAL_P(value));
+    case UPB_TYPE_FLOAT:
+      return upb_msgval_float(Z_DVAL_P(value));
+    case UPB_TYPE_BOOL:
+      return upb_msgval_bool(PROTO_Z_BVAL_P(value));
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      return upb_msgval_makestr(Z_STRVAL_P(value), Z_STRLEN_P(value));
+    }
+    case UPB_TYPE_MESSAGE: {
+      TSRMLS_FETCH();
+      Message* intern = UNBOX(Message, value);
+      return upb_msgval_msg(intern->msg);
+    }
+    default:
+      break;
+  }
+  UPB_UNREACHABLE();
+}
+
+void tophpval(const upb_msgval &msgval,
+              upb_fieldtype_t type,
+              zend_class_entry *subklass,
+              zval *retval) {
+  switch (type) {
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_ENUM:
+      ZVAL_LONG(retval, upb_msgval_getint32(msgval));
+      break;
+    case UPB_TYPE_INT64:
+      ZVAL_LONG(retval, upb_msgval_getint64(msgval));
+      break;
+    case UPB_TYPE_UINT32:
+      ZVAL_LONG(retval, upb_msgval_getuint32(msgval));
+      break;
+    case UPB_TYPE_UINT64:
+      ZVAL_LONG(retval, upb_msgval_getuint64(msgval));
+      break;
+    case UPB_TYPE_DOUBLE:
+      ZVAL_DOUBLE(retval, upb_msgval_getdouble(msgval));
+      break;
+    case UPB_TYPE_FLOAT:
+      ZVAL_DOUBLE(retval, upb_msgval_getfloat(msgval));
+      break;
+    case UPB_TYPE_BOOL:
+      ZVAL_BOOL(retval, upb_msgval_getbool(msgval));
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      upb_stringview str = upb_msgval_getstr(msgval);
+      PROTO_ZVAL_STRING(retval, str.data, str.size);
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      const upb_msg *msg = upb_msgval_getmsg(msgval);
+      if (msg == NULL) {
+        ZVAL_NULL(retval);
+        return;
+      }
+      if (Z_TYPE_P(retval) != IS_OBJECT) {
+        const upb_msgdef *subdef = class2msgdef(subklass);
+        TSRMLS_FETCH();
+        ZVAL_OBJ(retval, subklass->create_object(subklass TSRMLS_CC));
+        Message* intern = UNBOX(Message, retval);
+        Message_wrap(intern, const_cast<upb_msg*>(msg), subdef);
+      }
+      return;
+    }
+    default:
+      break;
+  }
+}
+
+static void message_set_property_internal(zval* object, zval* member,
+                                          zval* value TSRMLS_DC) {
+  Message* self = UNBOX(Message, object);
+  const upb_fielddef* f = upb_msgdef_ntofz(self->msgdef, Z_STRVAL_P(member));
+  assert(f != NULL);
+  int field_index = upb_fielddef_index(f);
+  upb_fieldtype_t type = upb_fielddef_type(f);
+
+  if (upb_fielddef_isseq(f)) {
+    RepeatedField *arr = UNBOX(RepeatedField, object);
+    upb_msgval msgval;
+    upb_msgval_setarr(&msgval, arr->array);
+    upb_msg_set(self->msg, field_index, msgval, self->layout);
+  } else if (upb_fielddef_ismap(f)) {
+    MapField *map = UNBOX(MapField, object);
+    upb_msgval msgval;
+    upb_msgval_setmap(&msgval, map->map);
+    upb_msg_set(self->msg, field_index, msgval, self->layout);
+  } else {
+    upb_msgval msgval = tomsgval(value, type);
+    upb_msg_set(self->msg, field_index, msgval, self->layout);
+  }
+}
+
+static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC) {
+  Message* self = UNBOX(Message, object);
+  const upb_fielddef* f = upb_msgdef_ntofz(self->msgdef, Z_STRVAL_P(member));
+  assert(f != NULL);
+  int field_index = upb_fielddef_index(f);
+  upb_fieldtype_t type = upb_fielddef_type(f);
+
+  // Find cached zval.
+  zend_property_info* property_info;
+#if PHP_MAJOR_VERSION < 7
+  property_info =
+      zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
+#else
+  property_info =
+      zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
+#endif
+
+#if PHP_MAJOR_VERSION < 7
+  if (!upb_fielddef_isseq(f) && !upb_fielddef_ismap(f)) {
+    SEPARATE_ZVAL_IF_NOT_REF(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+  }
+#endif
+
+  zval* retval = CACHED_VALUE_PTR_TO_ZVAL_PTR(
+    OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+
+//   // Find return value
+//   zend_op_array* op_array = CG(active_op_array);
+//   zval* retval = (op_array->opcodes[op_array->last]).result.var;
+
+  upb_msgval msgval = upb_msg_get(self->msg, field_index, self->layout);
+
+  // Update returned value
+  if (upb_fielddef_isseq(f)) {
+    const upb_array *arr = upb_msgval_getarr(msgval);
+    if (arr == NULL) {
+      ZVAL_NULL(retval);
+    } else {
+      if (Z_TYPE_P(retval) == IS_NULL) {
+        ZVAL_OBJ(retval, RepeatedField_type->create_object(
+            RepeatedField_type TSRMLS_CC));
+        RepeatedField* intern = UNBOX(RepeatedField, retval);
+
+        zend_class_entry* klass = NULL;
+        if (upb_fielddef_issubmsg(f)) {
+          const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+          klass = const_cast<zend_class_entry*>(msgdef2class(subdef));
+        }
+
+        RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
+      }
+    }
+  } else if (upb_fielddef_ismap(f)) {
+  } else {
+    zend_class_entry *subklass = NULL;
+    if (upb_fielddef_issubmsg(f)) {
+      const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+      subklass = const_cast<zend_class_entry*>(msgdef2class(subdef));
+    }
+    tophpval(msgval, type, subklass, retval);
+  }
+
+  return retval;
+}
+
+#if PHP_MAJOR_VERSION < 7
+static void message_set_property(zval* object, zval* member, zval* value,
+                                 const zend_literal* key TSRMLS_DC) {
+#else
+static void message_set_property(zval* object, zval* member, zval* value,
+                                 void** cache_slot) {
+#endif
+  if (Z_TYPE_P(member) != IS_STRING) {
+    zend_error(E_USER_ERROR, "Unexpected type for field name");
+    return;
+  }
+
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
+  if (Z_OBJCE_P(object) != EG(scope)) {
+#else
+  if (Z_OBJCE_P(object) != zend_get_executed_scope()) {
+#endif
+    // User cannot set property directly (e.g., $m->a = 1)
+    zend_error(E_USER_ERROR, "Cannot access private property.");
+    return;
+  }
+
+  message_set_property_internal(object, member, value TSRMLS_CC);
+}
+
+#if PHP_MAJOR_VERSION < 7
+static zval* message_get_property(zval* object, zval* member, int type,
+                                  const zend_literal* key TSRMLS_DC) {
+#else
+static zval* message_get_property(zval* object, zval* member, int type,
+                                  void** cache_slot, zval* rv) {
+#endif
+  if (Z_TYPE_P(member) != IS_STRING) {
+    zend_error(E_USER_ERROR, "Property name has to be a string.");
+    return PROTO_GLOBAL_UNINITIALIZED_ZVAL;
+  }
+
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
+  if (Z_OBJCE_P(object) != EG(scope)) {
+#else
+  if (Z_OBJCE_P(object) != zend_get_executed_scope()) {
+#endif
+    // User cannot get property directly (e.g., $a = $m->a)
+    zend_error(E_USER_ERROR, "Cannot access private property.");
+    return PROTO_GLOBAL_UNINITIALIZED_ZVAL;
+  }
+
+  return message_get_property_internal(object, member TSRMLS_CC);
+}
+
+static void Message_init_handlers(zend_object_handlers* handlers) {
+  handlers->write_property = message_set_property;
+  handlers->read_property = message_get_property;
+//   handlers->get_property_ptr_ptr = message_get_property_ptr_ptr;
+//   handlers->get_properties = message_get_properties;
+//   handlers->get_gc = message_get_gc;
+}
+
+static void Message_init_type(zend_class_entry* klass) {}
+
+// -----------------------------------------------------------------------------
+// Define PHP class
+// -----------------------------------------------------------------------------
+
+PHP_METHOD(Message, __construct);
+PHP_METHOD(Message, serializeToString);
+PHP_METHOD(Message, mergeFromString);
+
+static zend_function_entry Message_methods[] = {
+  PHP_ME(Message, __construct, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
+};
+
+PROTO_DEFINE_CLASS(Message,
+             "Google\\Protobuf\\Internal\\Message");
+
+// -----------------------------------------------------------------------------
+// Define PHP methods
+// -----------------------------------------------------------------------------
+
+PHP_METHOD(Message, __construct) {
+  Message* intern = UNBOX(Message, getThis());
+  zend_class_entry* ce = Z_OBJCE_P(getThis());
+  const upb_msgdef* msgdef = class2msgdef(ce);
+  Message___construct(intern, msgdef);
+}
+
+PHP_METHOD(Message, serializeToString) {
+  Message* intern = UNBOX(Message, getThis());
+  size_t size;
+  const char* data = Message_serializeToString(intern, &size);
+  PROTO_RETURN_STRINGL(data, size, 1);
+}
+
+PHP_METHOD(Message, mergeFromString) {
+  Message* intern = UNBOX(Message, getThis());
+  char *data = NULL;
+  PROTO_SIZE size;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &data, &size) ==
+      FAILURE) {
+    return;
+  }
+  Message_mergeFromString(intern, data, size);
+}

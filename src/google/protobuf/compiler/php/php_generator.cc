@@ -1040,7 +1040,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
 }
 
 void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
-                         bool is_descriptor,
+                         bool is_descriptor, bool is_hhvm,
                          GeneratorContext* generator_context) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
@@ -1088,15 +1088,17 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   Indent(&printer);
 
   // Field and oneof definitions.
-  for (int i = 0; i < message->field_count(); i++) {
-    const FieldDescriptor* field = message->field(i);
-    GenerateField(field, &printer, is_descriptor);
+  if (!is_hhvm) {
+    for (int i = 0; i < message->field_count(); i++) {
+      const FieldDescriptor* field = message->field(i);
+      GenerateField(field, &printer, is_descriptor);
+    }
+    for (int i = 0; i < message->oneof_decl_count(); i++) {
+      const OneofDescriptor* oneof = message->oneof_decl(i);
+      GenerateOneofField(oneof, &printer);
+    }
+    printer.Print("\n");
   }
-  for (int i = 0; i < message->oneof_decl_count(); i++) {
-    const OneofDescriptor* oneof = message->oneof_decl(i);
-    GenerateOneofField(oneof, &printer);
-  }
-  printer.Print("\n");
 
   printer.Print(
       "public function __construct() {\n");
@@ -1138,7 +1140,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Nested messages and enums.
   for (int i = 0; i < message->nested_type_count(); i++) {
     GenerateMessageFile(file, message->nested_type(i), is_descriptor,
-                        generator_context);
+                        is_hhvm, generator_context);
   }
   for (int i = 0; i < message->enum_type_count(); i++) {
     GenerateEnumFile(file, message->enum_type(i), is_descriptor,
@@ -1199,11 +1201,11 @@ void GenerateServiceFile(const FileDescriptor* file,
 }
 
 void GenerateFile(const FileDescriptor* file, bool is_descriptor,
-                  GeneratorContext* generator_context) {
+                  bool is_hhvm, GeneratorContext* generator_context) {
   GenerateMetadataFile(file, is_descriptor, generator_context);
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessageFile(file, file->message_type(i), is_descriptor,
-                        generator_context);
+                        is_hhvm, generator_context);
   }
   for (int i = 0; i < file->enum_type_count(); i++) {
     GenerateEnumFile(file, file->enum_type(i), is_descriptor,
@@ -1400,6 +1402,7 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
                          GeneratorContext* generator_context,
                          string* error) const {
   bool is_descriptor = parameter == "internal";
+  bool is_hhvm = parameter == "hhvm";
 
   if (is_descriptor && file->name() != kDescriptorFile) {
     *error =
@@ -1414,7 +1417,7 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
     return false;
   }
 
-  GenerateFile(file, is_descriptor, generator_context);
+  GenerateFile(file, is_descriptor, is_hhvm, generator_context);
 
   return true;
 }

@@ -17,5 +17,8 @@
       "GPBMetadata\\Google\\Protobuf\\": "src/GPBMetadata/Google/Protobuf",
       "": "tests/generated"
     }
+  },
+  "config": {
+    "secure-http": false
   }
 }

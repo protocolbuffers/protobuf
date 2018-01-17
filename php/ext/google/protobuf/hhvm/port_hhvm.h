@@ -2,23 +2,38 @@
 #include "hphp/runtime/vm/native-data.h"
 using namespace HPHP;
 
+// Define types.
+#define PROTO_SIZE size_t
+#define PROTO_OBJECT Object
+
 // Define class.
-#define PROTO_WRAP_OBJECT_START(name) \
-  class name { \
-   public:
+#define PROTO_CLASS Class 
+
+#define PROTO_FORWARD_DECLARE_CLASS(CLASSNAME) \
+  class CLASSNAME
+
+#define PROTO_WRAP_OBJECT_START(CLASSNAME) \
+  class CLASSNAME {                        \
+   public:                                 \
+    CLASSNAME() {                          \
+      CLASSNAME##_init_c_instance(this);   \
+    }                                      \
+    ~CLASSNAME() {                         \
+      CLASSNAME##_free_c(this);            \
+    }
 #define PROTO_WRAP_OBJECT_END \
   }; 
-#define PROTO_INIT_CLASS_START(STRINGNAME, CLASSNAME, LOWWERNAME) \
-  const StaticString s_##CLASSNAME(STRINGNAME);                   \
-  void LOWWERNAME##_init() {                                      \
-    CLASSNAME##_register_methods();                               \
+#define PROTO_INIT_CLASS_START(STRINGNAME, CLASSNAME) \
+  const StaticString s_##CLASSNAME(STRINGNAME);       \
+  void CLASSNAME##_init() {                           \
+    CLASSNAME##_register_methods();                   \
     Native::registerNativeDataInfo<CLASSNAME>(s_##CLASSNAME.get()); 
 #define PROTO_INIT_CLASS_END \
   }
-#define PROTO_INIT_CLASS(LOWWERNAME) LOWWERNAME##_init()
+#define PROTO_INIT_CLASS(CLASSNAME) CLASSNAME##_init()
 
-#define PROTO_DEFINE_INIT_CLASS(STRINGNAME, CLASSNAME, LOWERNAME) \
-  PROTO_INIT_CLASS_START(STRINGNAME, CLASSNAME, LOWERNAME)        \
+#define PROTO_DEFINE_INIT_CLASS(STRINGNAME, CLASSNAME) \
+  PROTO_INIT_CLASS_START(STRINGNAME, CLASSNAME)        \
   PROTO_INIT_CLASS_END
 
 #define PROTO_REGISTER_CLASS_METHODS_START(CLASSNAME) \
@@ -26,8 +41,8 @@ using namespace HPHP;
 #define PROTO_REGISTER_CLASS_METHODS_END \
   }
 
-#define PROTO_DEFINE_CLASS(CLASSNAME, LOWERNAME, STRINGNAME) \
-  PROTO_DEFINE_INIT_CLASS(STRINGNAME, CLASSNAME, LOWERNAME)
+#define PROTO_DEFINE_CLASS(CLASSNAME, STRINGNAME) \
+  PROTO_DEFINE_INIT_CLASS(STRINGNAME, CLASSNAME)
 
 
 // Utilities for defining method.
@@ -44,3 +59,22 @@ using namespace HPHP;
 #define TSRMLS_D
 #define TSRMLS_CC
 #define TSRMLS_C
+
+// -----------------------------------------------------------------------------
+// Utilities.
+// -----------------------------------------------------------------------------
+
+// Memory management
+#define ALLOC(class_name) (class_name*) malloc(sizeof(class_name))
+#define ALLOC_N(class_name, n) (class_name*) malloc(sizeof(class_name) * n)
+#define FREE(object) free(object)
+
+// Error report
+#define CHECK_UPB(code, msg)        \
+  do {                              \
+    upb_status status;              \
+    code;                           \
+    if (!upb_ok(&status)) {         \
+    }                               \
+  } while (0)
+

@@ -28,7 +28,42 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "protobuf.h"
+#include <map>
+
+#include "protobuf_php.h"
+
+// -----------------------------------------------------------------------------
+// Globals.
+// -----------------------------------------------------------------------------
+
+static std::map<const zend_class_entry*, const upb_def*>* class2def;
+static std::map<const upb_def*, const zend_class_entry*>* def2class;
+
+void register_upbdef(const char* classname, const upb_def* def) {
+  PROTO_CE_DECLARE pce;
+  TSRMLS_FETCH();
+  if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==
+      FAILURE) {
+    return;
+  }
+  (*class2def)[PROTO_CE_UNREF(pce)] = def;
+  (*def2class)[def] = PROTO_CE_UNREF(pce);
+}
+
+const upb_msgdef* class2msgdef(const zend_class_entry* klass) {
+  const upb_def* def = (*class2def)[klass];
+  assert(def->type == UPB_DEF_MSG);
+  return upb_downcast_msgdef(def);
+}
+
+const zend_class_entry* msgdef2class(const upb_msgdef* msgdef) {
+  const zend_class_entry* klass = (*def2class)[upb_msgdef_upcast(msgdef)];
+  assert(klass != NULL);
+  return klass;
+}
+
+ZEND_BEGIN_MODULE_GLOBALS(protobuf)
+ZEND_END_MODULE_GLOBALS(protobuf)
 
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 static PHP_GINIT_FUNCTION(protobuf);
@@ -70,14 +105,38 @@ static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 }
 
 static PHP_RINIT_FUNCTION(protobuf) {
+  class2def = new std::map<const zend_class_entry*, const upb_def*>();
+  def2class = new std::map<const upb_def*, const zend_class_entry*>();
+  internal_generated_pool = NULL;
   return 0;
 }
 
 static PHP_RSHUTDOWN_FUNCTION(protobuf) {
+  delete class2def;
+  delete def2class;
+#if PHP_MAJOR_VERSION < 7
+  if (internal_generated_pool != NULL) {
+    zval_dtor(internal_generated_pool);
+    FREE_ZVAL(internal_generated_pool);
+    upb_msgfactory_free(message_factory);
+  }
+#else
+  if (internal_generated_pool != NULL) {
+    zval tmp;
+    ZVAL_OBJ(&tmp, internal_generated_pool);
+    zval_dtor(&tmp);
+    upb_msgfactory_free(message_factory);
+  }
+#endif
 }
 
 static PHP_MINIT_FUNCTION(protobuf) {
-  internal_descriptor_pool_init(TSRMLS_C);
+  InternalDescriptorPool_init(TSRMLS_C);
+  MapField_init(TSRMLS_C);
+  Message_init(TSRMLS_C);
+  RepeatedField_init(TSRMLS_C);
+  Type_init(TSRMLS_C);
+  Util_init(TSRMLS_C);
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
