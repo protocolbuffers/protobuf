@@ -3266,3 +3266,4 @@ id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
   return GetOrCreateMapIvarWithField(self, field, syntax);
 }
 
+#pragma clang diagnostic pop
