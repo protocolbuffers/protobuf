@@ -22,6 +22,9 @@
 
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 CF_EXTERN_C_BEGIN
 
 @class GPBMethod;
@@ -298,5 +301,7 @@ typedef GPB_ENUM(GPBMixin_FieldNumber) {
 NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)
