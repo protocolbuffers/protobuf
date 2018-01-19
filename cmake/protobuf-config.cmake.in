@@ -110,7 +110,7 @@ function(protobuf_generate)
     set(${protobuf_generate_OUT_VAR} ${_generated_srcs_all} PARENT_SCOPE)
   endif()
   if(protobuf_generate_TARGET)
-    target_sources(${protobuf_generate_TARGET} PUBLIC ${_generated_srcs_all})
+    target_sources(${protobuf_generate_TARGET} PRIVATE ${_generated_srcs_all})
   endif()
 
 endfunction()
