@@ -272,7 +272,8 @@ StatusOr<string> DataPiece::ToBytes() const {
 }
 
 StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
-                                bool use_lower_camel_for_enums) const {
+                                bool use_lower_camel_for_enums,
+                                bool ignore_unknown_enum_values) const {
   if (type_ == TYPE_NULL) return google::protobuf::NULL_VALUE;
 
   if (type_ == TYPE_STRING) {
@@ -305,6 +306,10 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
       value = FindEnumValueByNameWithoutUnderscoreOrNull(enum_type, enum_name);
       if (value != NULL) return value->number();
     }
+
+    // If ignore_unknown_enum_values is true an unknown enum value is treated
+    // as the default
+    if (ignore_unknown_enum_values) return enum_type->enumvalue(0).number();
   } else {
     // We don't need to check whether the value is actually declared in the
     // enum because we preserve unknown enum values as well.
