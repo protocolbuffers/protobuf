@@ -429,6 +429,39 @@ std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
   return type;
 }
 
+std::string PhpSetterTypeDeclaration(const FieldDescriptor* field, bool is_descriptor) {
+  if (field->is_map() || field->is_repeated()) {
+    return "";
+  }
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_ENUM:
+      return "int ";
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT:
+      return "float ";
+    case FieldDescriptor::TYPE_BOOL:
+      return "bool ";
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      return "string ";
+    case FieldDescriptor::TYPE_MESSAGE:
+      return "?\\" + FullClassName(field->message_type(), is_descriptor) + " ";
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+    case FieldDescriptor::TYPE_GROUP:
+      return "";
+    default: assert(false); return "";
+  }
+}
+
 std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
   if (field->is_map()) {
     return "\\Google\\Protobuf\\Internal\\MapField";
@@ -456,6 +489,37 @@ std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
     case FieldDescriptor::TYPE_MESSAGE:
       return "\\" + FullClassName(field->message_type(), is_descriptor);
     case FieldDescriptor::TYPE_GROUP: return "null";
+    default: assert(false); return "";
+  }
+}
+
+std::string PhpGetterReturnTypeDeclaration(const FieldDescriptor* field, bool is_descriptor) {
+  if (field->is_map()) {
+    return ": \\Google\\Protobuf\\Internal\\MapField";
+  }
+  if (field->is_repeated()) {
+    return ": \\Google\\Protobuf\\Internal\\RepeatedField";
+  }
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_ENUM: return ": int";
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT: return ": float";
+    case FieldDescriptor::TYPE_BOOL: return ": bool";
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES: return ": string";
+    case FieldDescriptor::TYPE_MESSAGE:
+      return ": \\" + FullClassName(field->message_type(), is_descriptor);
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+    case FieldDescriptor::TYPE_GROUP: return "";
     default: assert(false); return "";
   }
 }
@@ -582,29 +646,32 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   if (oneof != NULL) {
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
     printer->Print(
-        "public function get^camel_name^()\n"
+        "public function get^camel_name^()^type^\n"
         "{\n"
         "    return $this->readOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "number", IntToString(field->number()));
+        "number", IntToString(field->number()),
+        "type", PhpGetterReturnTypeDeclaration(field, is_descriptor));
   } else {
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
     printer->Print(
-        "public function get^camel_name^()\n"
+        "public function get^camel_name^()^type^\n"
         "{\n"
         "    return $this->^name^;\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name());
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "type", PhpGetterReturnTypeDeclaration(field, is_descriptor));
   }
 
   // Generate setter.
   GenerateFieldDocComment(printer, field, is_descriptor, kFieldSetter);
   printer->Print(
-      "public function set^camel_name^($var)\n"
+      "public function set^camel_name^(^type^$var)\n"
       "{\n",
-      "camel_name", UnderscoresToCamelCase(field->name(), true));
+      "camel_name", UnderscoresToCamelCase(field->name(), true),
+      "type", PhpSetterTypeDeclaration(field, is_descriptor));
 
   Indent(printer);
 
