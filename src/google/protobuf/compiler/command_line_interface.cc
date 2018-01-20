@@ -226,7 +226,7 @@ bool IsInstalledProtoPath(const string& path) {
 
 // Add the paths where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
-void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
+void AddDefaultProtoPaths(std::vector<std::pair<string, string> >* paths) {
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
@@ -242,12 +242,12 @@ void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
   path = path.substr(0, pos);
   // Check the binary's directory.
   if (IsInstalledProtoPath(path)) {
-    paths->push_back(pair<string, string>("", path));
+    paths->push_back(std::pair<string, string>("", path));
     return;
   }
   // Check if there is an include subdirectory.
   if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(pair<string, string>("", path + "/include"));
+    paths->push_back(std::pair<string, string>("", path + "/include"));
     return;
   }
   // Check if the upper level directory has an "include" subdirectory.
@@ -257,7 +257,7 @@ void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
   }
   path = path.substr(0, pos);
   if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(pair<string, string>("", path + "/include"));
+    paths->push_back(std::pair<string, string>("", path + "/include"));
     return;
   }
 }

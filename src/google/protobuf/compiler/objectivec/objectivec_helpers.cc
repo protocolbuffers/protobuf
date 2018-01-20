@@ -100,7 +100,7 @@ bool ascii_isnewline(char c) {
 // Do not expose this outside of helpers, stick to having functions for specific
 // cases (ClassName(), FieldName()), so there is always consistent suffix rules.
 string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
-  vector<string> values;
+  std::vector<string> values;
   string current;
 
   bool last_char_was_number = false;
@@ -141,7 +141,7 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
 
   string result;
   bool first_segment_forces_upper = false;
-  for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
+  for (std::vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
     string value = *i;
     bool all_upper = (kUpperSegments.count(value) > 0);
     if (all_upper && (result.length() == 0)) {
@@ -864,7 +864,7 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
 }
 
 string BuildFlagsString(const FlagType flag_type,
-                        const vector<string>& strings) {
+                        const std::vector<string>& strings) {
   if (strings.size() == 0) {
     return GetZeroEnumNameForFlagType(flag_type);
   } else if (strings.size() == 1) {
@@ -886,7 +886,7 @@ string BuildCommentsString(const SourceLocation& location,
   const string& comments = location.leading_comments.empty()
                                ? location.trailing_comments
                                : location.leading_comments;
-  vector<string> lines;
+  std::vector<string> lines;
   SplitStringAllowEmpty(comments, "\n", &lines);
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
@@ -1156,7 +1156,7 @@ bool ValidateObjCClassPrefix(
 
 }  // namespace
 
-bool ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
+bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                string* out_error) {
   // Load the expected package prefixes, if available, to validate against.
@@ -1187,7 +1187,7 @@ TextFormatDecodeData::~TextFormatDecodeData() { }
 void TextFormatDecodeData::AddString(int32 key,
                                      const string& input_for_decode,
                                      const string& desired_output) {
-  for (vector<DataEntry>::const_iterator i = entries_.begin();
+  for (std::vector<DataEntry>::const_iterator i = entries_.begin();
        i != entries_.end(); ++i) {
     if (i->first == key) {
       std::cerr << "error: duplicate key (" << key
@@ -1211,7 +1211,7 @@ string TextFormatDecodeData::Data() const {
     io::CodedOutputStream output_stream(&data_outputstream);
 
     output_stream.WriteVarint32(num_entries());
-    for (vector<DataEntry>::const_iterator i = entries_.begin();
+    for (std::vector<DataEntry>::const_iterator i = entries_.begin();
          i != entries_.end(); ++i) {
       output_stream.WriteVarint32(i->first);
       output_stream.WriteString(i->second);
@@ -1561,7 +1561,7 @@ void ImportWriter::Print(io::Printer* printer) const {
     printer->Print(
         "#if $cpp_symbol$\n",
         "cpp_symbol", cpp_symbol);
-    for (vector<string>::const_iterator iter = protobuf_framework_imports_.begin();
+    for (std::vector<string>::const_iterator iter = protobuf_framework_imports_.begin();
          iter != protobuf_framework_imports_.end(); ++iter) {
       printer->Print(
           " #import <$framework_name$/$header$>\n",
@@ -1570,7 +1570,7 @@ void ImportWriter::Print(io::Printer* printer) const {
     }
     printer->Print(
         "#else\n");
-    for (vector<string>::const_iterator iter = protobuf_non_framework_imports_.begin();
+    for (std::vector<string>::const_iterator iter = protobuf_non_framework_imports_.begin();
          iter != protobuf_non_framework_imports_.end(); ++iter) {
       printer->Print(
           " #import \"$header$\"\n",
@@ -1587,7 +1587,7 @@ void ImportWriter::Print(io::Printer* printer) const {
       printer->Print("\n");
     }
 
-    for (vector<string>::const_iterator iter = other_framework_imports_.begin();
+    for (std::vector<string>::const_iterator iter = other_framework_imports_.begin();
          iter != other_framework_imports_.end(); ++iter) {
       printer->Print(
           " #import <$header$>\n",
@@ -1602,7 +1602,7 @@ void ImportWriter::Print(io::Printer* printer) const {
       printer->Print("\n");
     }
 
-    for (vector<string>::const_iterator iter = other_imports_.begin();
+    for (std::vector<string>::const_iterator iter = other_imports_.begin();
          iter != other_imports_.end(); ++iter) {
       printer->Print(
           " #import \"$header$\"\n",

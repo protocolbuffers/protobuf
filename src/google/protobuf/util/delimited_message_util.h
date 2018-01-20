@@ -32,7 +32,7 @@ namespace util {
 // underlying source, so instead you must keep using the same stream object.
 bool LIBPROTOBUF_EXPORT SerializeDelimitedToFileDescriptor(const MessageLite& message, int file_descriptor);
 
-bool LIBPROTOBUF_EXPORT SerializeDelimitedToOstream(const MessageLite& message, ostream* output);
+bool LIBPROTOBUF_EXPORT SerializeDelimitedToOstream(const MessageLite& message, std::ostream* output);
 
 // Read a single size-delimited message from the given stream. Delimited
 // format allows a single file or stream to contain multiple messages,

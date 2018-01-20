@@ -430,9 +430,9 @@ struct ShutdownData {
     }
   }
 
-  vector<void (*)()> functions;
-  vector<const std::string*> strings;
-  vector<const MessageLite*> messages;
+  std::vector<void (*)()> functions;
+  std::vector<const std::string*> strings;
+  std::vector<const MessageLite*> messages;
   Mutex mutex;
 };
 

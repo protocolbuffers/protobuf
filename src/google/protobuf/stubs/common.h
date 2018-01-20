@@ -229,12 +229,7 @@ class FatalException : public std::exception {
 
 // This is at the end of the file instead of the beginning to work around a bug
 // in some versions of MSVC.
-// TODO(acozzette): remove these using statements
-using std::istream;
-using std::ostream;
-using std::pair;
 using std::string;
-using std::vector;
 
 }  // namespace protobuf
 }  // namespace google

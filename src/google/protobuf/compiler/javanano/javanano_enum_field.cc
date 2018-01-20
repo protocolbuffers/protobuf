@@ -83,7 +83,7 @@ void SetEnumVariables(const Params& params,
 }
 
 void LoadEnumValues(const Params& params,
-    const EnumDescriptor* enum_descriptor, vector<string>* canonical_values) {
+    const EnumDescriptor* enum_descriptor, std::vector<string>* canonical_values) {
   string enum_class_name = ClassName(params, enum_descriptor);
   for (int i = 0; i < enum_descriptor->value_count(); i++) {
     const EnumValueDescriptor* value = enum_descriptor->value(i);
@@ -97,7 +97,7 @@ void LoadEnumValues(const Params& params,
 }
 
 void PrintCaseLabels(
-    io::Printer* printer, const vector<string>& canonical_values) {
+    io::Printer* printer, const std::vector<string>& canonical_values) {
   for (int i = 0; i < canonical_values.size(); i++) {
     printer->Print(
       "  case $value$:\n",

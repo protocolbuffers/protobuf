@@ -754,7 +754,7 @@ void ConformanceTestSuite::TestValidDataForType(
 }
 
 void ConformanceTestSuite::SetFailureList(const string& filename,
-                                          const vector<string>& failure_list) {
+                                          const std::vector<string>& failure_list) {
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
   std::copy(failure_list.begin(), failure_list.end(),

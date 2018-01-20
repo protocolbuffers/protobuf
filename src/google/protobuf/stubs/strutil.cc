@@ -226,8 +226,8 @@ void SplitStringToIteratorUsing(const string& full,
 
 void SplitStringUsing(const string& full,
                       const char* delim,
-                      vector<string>* result) {
-  std::back_insert_iterator< vector<string> > it(*result);
+                      std::vector<string>* result) {
+  std::back_insert_iterator< std::vector<string> > it(*result);
   SplitStringToIteratorUsing(full, delim, it);
 }
 
@@ -264,8 +264,8 @@ void SplitStringToIteratorAllowEmpty(const StringType& full,
 }
 
 void SplitStringAllowEmpty(const string& full, const char* delim,
-                           vector<string>* result) {
-  std::back_insert_iterator<vector<string> > it(*result);
+                           std::vector<string>* result) {
+  std::back_insert_iterator<std::vector<string> > it(*result);
   SplitStringToIteratorAllowEmpty(full, delim, 0, it);
 }
 
@@ -303,7 +303,7 @@ static void JoinStringsIterator(const ITERATOR& start,
   }
 }
 
-void JoinStrings(const vector<string>& components,
+void JoinStrings(const std::vector<string>& components,
                  const char* delim,
                  string * result) {
   JoinStringsIterator(components.begin(), components.end(), delim, result);
@@ -332,7 +332,7 @@ int UnescapeCEscapeSequences(const char* source, char* dest) {
 }
 
 int UnescapeCEscapeSequences(const char* source, char* dest,
-                             vector<string> *errors) {
+                             std::vector<string> *errors) {
   GOOGLE_DCHECK(errors == NULL) << "Error reporting not implemented.";
 
   char* d = dest;
@@ -468,7 +468,7 @@ int UnescapeCEscapeString(const string& src, string* dest) {
 }
 
 int UnescapeCEscapeString(const string& src, string* dest,
-                          vector<string> *errors) {
+                          std::vector<string> *errors) {
   scoped_array<char> unescaped(new char[src.size() + 1]);
   int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), errors);
   GOOGLE_CHECK(dest);
