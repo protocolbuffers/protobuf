@@ -791,9 +791,6 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, parsed_message, ignore_unknown_fields=True)
 
   def testDuplicateField(self):
-    # Duplicate key check is not supported for python2.6
-    if sys.version_info < (2, 7):
-      return
     self.CheckError('{"int32Value": 1,\n"int32Value":2}',
                     'Failed to load JSON: duplicate key int32Value.')
 
