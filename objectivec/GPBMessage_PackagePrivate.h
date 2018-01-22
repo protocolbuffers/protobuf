@@ -34,7 +34,7 @@
 
 #import "GPBMessage.h"
 
-#import <libkern/OSAtomic.h>
+#import <stdatomic.h>
 
 #import "GPBBootstrap.h"
 
@@ -70,7 +70,7 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
   // Use of readOnlySemaphore_ must be prefaced by a call to
   // GPBPrepareReadOnlySemaphore to ensure it has been created. This allows
   // readOnlySemaphore_ to be only created when actually needed.
-  dispatch_semaphore_t readOnlySemaphore_;
+  _Atomic(dispatch_semaphore_t) readOnlySemaphore_;
 }
 
 // Gets an extension value without autocreating the result if not found. (i.e.

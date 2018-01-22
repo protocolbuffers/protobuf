@@ -32,6 +32,7 @@
 
 #import <objc/runtime.h>
 #import <objc/message.h>
+#import <stdatomic.h>
 
 #import "GPBArray_PackagePrivate.h"
 #import "GPBCodedInputStream_PackagePrivate.h"
@@ -742,14 +743,14 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 void GPBPrepareReadOnlySemaphore(GPBMessage *self) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
   // Create the semaphore on demand (rather than init) as developers might not cause them
   // to be needed, and the heap usage can add up.  The atomic swap is used to avoid needing
   // another lock around creating it.
   if (self->readOnlySemaphore_ == nil) {
     dispatch_semaphore_t worker = dispatch_semaphore_create(1);
-    if (!OSAtomicCompareAndSwapPtrBarrier(NULL, worker, (void * volatile *)&(self->readOnlySemaphore_))) {
+    dispatch_semaphore_t expected = nil;
+    if (!atomic_compare_exchange_strong(&self->readOnlySemaphore_, &expected, worker)) {
       dispatch_release(worker);
     }
   }
