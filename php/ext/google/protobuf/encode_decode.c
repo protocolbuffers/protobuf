@@ -1621,6 +1621,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
   stringsink* unknown = DEREF(message_data(msg), 0, stringsink*);
   if (unknown != NULL) {
     stringsink_uninit(unknown);
+    FREE(unknown);
     DEREF(message_data(msg), 0, stringsink*) = NULL;
   }
 

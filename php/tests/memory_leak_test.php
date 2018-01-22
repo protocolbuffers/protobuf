@@ -50,6 +50,13 @@ $to->mergeFromString($data);
 
 TestUtil::assertTestMessage($to);
 
+$from = new TestMessage();
+TestUtil::setTestMessage2($from);
+
+$data = $from->serializeToString();
+
+$to->mergeFromString($data);
+
 // TODO(teboring): This causes following tests fail in php7.
 # $from->setRecursive($from);
 
@@ -104,7 +111,7 @@ assert(1 === $n->getOneofMessage()->getA());
 
 $m = new TestMessage();
 $m->mergeFromString(hex2bin('F80601'));
-assert('F80601', bin2hex($m->serializeToString()));
+assert('f80601' === bin2hex($m->serializeToString()));
 
 // Test create repeated field via array.
 $str_arr = array("abc");
@@ -142,13 +149,32 @@ $from = new \Google\Protobuf\Value();
 $from->setNumberValue(1);
 assert(1, $from->getNumberValue());
 
+// Test discard unknown in message.
+$m = new TestMessage();
+$from = hex2bin('F80601');
+$m->mergeFromString($from);
+$m->discardUnknownFields();
+$to = $m->serializeToString();
+assert("" === bin2hex($to));
+
+// Test clear
+$m = new TestMessage();
+TestUtil::setTestMessage($m);
+$m->clear();
+
+// Test unset map element
+$m = new TestMessage();
+$map = $m->getMapStringString();
+$map[1] = 1;
+unset($map[1]);
+
 // Test descriptor
 $pool = \Google\Protobuf\DescriptorPool::getGeneratedPool();
 $desc = $pool->getDescriptorByClassName("\Foo\TestMessage");
 $field = $desc->getField(1);
 
-# $from = new TestMessage();
-# $to = new TestMessage();
-# TestUtil::setTestMessage($from);
-# $to->mergeFrom($from);
-# TestUtil::assertTestMessage($to);
+$from = new TestMessage();
+$to = new TestMessage();
+TestUtil::setTestMessage($from);
+$to->mergeFrom($from);
+TestUtil::assertTestMessage($to);
