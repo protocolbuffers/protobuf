@@ -56,6 +56,20 @@ const int32 GOOGLE_PROTOBUF_OBJC_VERSION = 30002;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
+// Checks if a message contains any enums definitions (on the message or
+// a nested message under it).
+bool MessageContainsEnums(const Descriptor* message) {
+  if (message->enum_type_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    if (MessageContainsEnums(message->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Checks if a message contains any extension definitions (on the message or
 // a nested message under it).
 bool MessageContainsExtensions(const Descriptor* message) {
@@ -64,6 +78,20 @@ bool MessageContainsExtensions(const Descriptor* message) {
   }
   for (int i = 0; i < message->nested_type_count(); i++) {
     if (MessageContainsExtensions(message->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Checks if the file contains any enum definitions (at the root or
+// nested under a message).
+bool FileContainsEnums(const FileDescriptor* file) {
+  if (file->enum_type_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < file->message_type_count(); i++) {
+    if (MessageContainsEnums(file->message_type(i))) {
       return true;
     }
   }
@@ -310,6 +338,13 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
 void FileGenerator::GenerateSource(io::Printer *printer) {
   // #import the runtime support.
   PrintFileRuntimePreamble(printer, "GPBProtocolBuffers_RuntimeSupport.h");
+
+  // Enums use atomic in the generated code, so add the system import as needed.
+  if (FileContainsEnums(file_)) {
+    printer->Print(
+        "#import <stdatomic.h>\n"
+        "\n");
+  }
 
   vector<const FileDescriptor*> deps_with_extensions;
   CollectMinimalFileDepsContainingExtensions(file_, &deps_with_extensions);
