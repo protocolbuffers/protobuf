@@ -1,5 +1,11 @@
 #!/bin/bash
 
+VERSION=$1
+
+export PATH=/usr/local/php-$VERSION/bin:$PATH
+export C_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$C_INCLUDE_PATH
+export CPLUS_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$CPLUS_INCLUDE_PATH
+
 # Compile c extension
 pushd ../ext/google/protobuf/
 make clean || true
@@ -15,7 +21,7 @@ do
   echo "****************************"
   echo "* $t"
   echo "****************************"
-  php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
+  # php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
   echo ""
 done
 
