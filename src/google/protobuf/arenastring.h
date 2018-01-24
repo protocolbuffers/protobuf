@@ -322,10 +322,8 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   void CreateInstance(::google::protobuf::Arena* arena,
                       const ::std::string* initial_value) {
     GOOGLE_DCHECK(initial_value != NULL);
-    ptr_ = new ::std::string(*initial_value);
-    if (arena != NULL) {
-      arena->Own(ptr_);
-    }
+    // uses "new ::std::string" when arena is nullptr
+    ptr_ = Arena::Create<::std::string>(arena, *initial_value);
   }
   GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
   void CreateInstanceNoArena(const ::std::string* initial_value) {
