@@ -399,14 +399,14 @@ class GeneratedClassTest extends TestBase
 
         $arr = array();
         $m->setRepeatedInt32($arr);
-        $this->assertSame(0, count($m->getRepeatedInt32()));
+        $this->assertCount(0, $m->getRepeatedInt32());
 
         $arr = array(1, 2.1, "3");
         $m->setRepeatedInt32($arr);
         $this->assertTrue($m->getRepeatedInt32() instanceof RepeatedField);
         $this->assertSame("Google\Protobuf\Internal\RepeatedField",
                           get_class($m->getRepeatedInt32()));
-        $this->assertSame(3, count($m->getRepeatedInt32()));
+        $this->assertCount(3, $m->getRepeatedInt32());
         $this->assertSame(1, $m->getRepeatedInt32()[0]);
         $this->assertSame(2, $m->getRepeatedInt32()[1]);
         $this->assertSame(3, $m->getRepeatedInt32()[2]);
@@ -432,12 +432,12 @@ class GeneratedClassTest extends TestBase
 
         $dict = array();
         $m->setMapInt32Int32($dict);
-        $this->assertSame(0, count($m->getMapInt32Int32()));
+        $this->assertCount(0, $m->getMapInt32Int32());
 
         $dict = array(5 => 5, 6.1 => 6.1, "7" => "7");
         $m->setMapInt32Int32($dict);
         $this->assertTrue($m->getMapInt32Int32() instanceof MapField);
-        $this->assertSame(3, count($m->getMapInt32Int32()));
+        $this->assertCount(3, $m->getMapInt32Int32());
         $this->assertSame(5, $m->getMapInt32Int32()[5]);
         $this->assertSame(6, $m->getMapInt32Int32()[6]);
         $this->assertSame(7, $m->getMapInt32Int32()[7]);
@@ -559,26 +559,26 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(100, $m->getOptionalInt32());
         $this->assertSame(42, $m->getOptionalUint32());
         $this->assertSame(101, $m->getOptionalMessage()->getA());
-        $this->assertSame(2, count($m->getOptionalMessage()->getB()));
+        $this->assertCount(2, $m->getOptionalMessage()->getB());
         $this->assertSame(1, $m->getOptionalMessage()->getB()[0]);
         $this->assertSame(102, $m->getOptionalMessage()->getB()[1]);
 
-        $this->assertSame(3, count($m->getRepeatedInt32()));
+        $this->assertCount(3, $m->getRepeatedInt32());
         $this->assertSame(200, $m->getRepeatedInt32()[2]);
-        $this->assertSame(2, count($m->getRepeatedUint32()));
-        $this->assertSame(3, count($m->getRepeatedString()));
+        $this->assertCount(2, $m->getRepeatedUint32());
+        $this->assertCount(3, $m->getRepeatedString());
         $this->assertSame('abc', $m->getRepeatedString()[2]);
-        $this->assertSame(3, count($m->getRepeatedMessage()));
+        $this->assertCount(3, $m->getRepeatedMessage());
         $this->assertSame(201, $m->getRepeatedMessage()[2]->getA());
 
-        $this->assertSame(2, count($m->getMapInt32Int32()));
+        $this->assertCount(2, $m->getMapInt32Int32());
         $this->assertSame(300, $m->getMapInt32Int32()[1]);
         $this->assertSame(301, $m->getMapInt32Int32()[-62]);
-        $this->assertSame(1, count($m->getMapUint32Uint32()));
-        $this->assertSame(2, count($m->getMapStringString()));
+        $this->assertCount(1, $m->getMapUint32Uint32());
+        $this->assertCount(2, $m->getMapStringString());
         $this->assertSame('def', $m->getMapStringString()['def']);
 
-        $this->assertSame(2, count($m->getMapInt32Message()));
+        $this->assertCount(2, $m->getMapInt32Message());
         $this->assertSame(302, $m->getMapInt32Message()[1]->getA());
         $this->assertSame(303, $m->getMapInt32Message()[2]->getA());
 

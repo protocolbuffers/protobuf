@@ -38,7 +38,7 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $arr[] = MAX_INT32_STRING;
         $this->assertSame(MAX_INT32, $arr[7]);
 
-        $this->assertEquals(8, count($arr));
+        $this->assertCount(8, $arr);
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
@@ -113,7 +113,7 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $arr[] = MIN_UINT32_STRING;
         $this->assertSame(MIN_UINT32, $arr[11]);
 
-        $this->assertEquals(12, count($arr));
+        $this->assertCount(12, $arr);
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
@@ -184,7 +184,7 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         }
 
 
-        $this->assertEquals(7, count($arr));
+        $this->assertCount(7, $arr);
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
@@ -250,10 +250,10 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
             $this->assertSame(2, $arr[2]);
             $this->assertSame(3, $arr[3]);
             $this->assertSame(MAX_UINT64, $arr[4]);
-            $this->assertSame(5, count($arr));
+            $this->assertCount(5, $arr);
         }
 
-        $this->assertSame(5, count($arr));
+        $this->assertCount(5, $arr);
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
@@ -306,7 +306,7 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $arr[] = '3.1';
         $this->assertEquals(3.1, $arr[3], '', MAX_FLOAT_DIFF);
 
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
@@ -346,7 +346,7 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $arr[] = '3.1';
         $this->assertEquals(3.1, $arr[3], '', MAX_FLOAT_DIFF);
 
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
@@ -376,36 +376,36 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
 
         // Test append.
         $arr[] = true;
-        $this->assertSame(true, $arr[0]);
+        $this->assertTrue($arr[0]);
 
         $arr[] = -1;
-        $this->assertSame(true, $arr[1]);
+        $this->assertTrue($arr[1]);
 
         $arr[] = 1.1;
-        $this->assertSame(true, $arr[2]);
+        $this->assertTrue($arr[2]);
 
         $arr[] = '';
-        $this->assertSame(false, $arr[3]);
+        $this->assertFalse($arr[3]);
 
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
-            $this->assertSame(false, $arr[$i]);
+            $this->assertFalse($arr[$i]);
         }
 
         // Test set.
         $arr[0] = true;
-        $this->assertSame(true, $arr[0]);
+        $this->assertTrue($arr[0]);
 
         $arr[1] = -1;
-        $this->assertSame(true, $arr[1]);
+        $this->assertTrue($arr[1]);
 
         $arr[2] = 1.1;
-        $this->assertSame(true, $arr[2]);
+        $this->assertTrue($arr[2]);
 
         $arr[3] = '';
-        $this->assertSame(false, $arr[3]);
+        $this->assertFalse($arr[3]);
     }
 
     #########################################################
@@ -429,7 +429,7 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $arr[] = true;
         $this->assertSame('1', $arr[3]);
 
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = '';
@@ -464,7 +464,7 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $arr[] = $sub_m;
         $this->assertSame(1, $arr[0]->getA());
 
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
 
         // Test set.
         $sub_m = new TestMessage_Sub();
@@ -496,16 +496,16 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
 
         $arr[0] = 1;
         $this->assertSame(1, $arr[0]);
-        $this->assertSame(1, count($arr));
+        $this->assertCount(1, $arr);
 
         $arr['0'] = 2;
         $this->assertSame(2, $arr['0']);
         $this->assertSame(2, $arr[0]);
-        $this->assertSame(1, count($arr));
+        $this->assertCount(1, $arr);
 
         $arr[0.0] = 3;
         $this->assertSame(3, $arr[0.0]);
-        $this->assertSame(1, count($arr));
+        $this->assertCount(1, $arr);
     }
 
     public function testInsertRemoval()
@@ -515,15 +515,15 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $arr[] = 0;
         $arr[] = 1;
         $arr[] = 2;
-        $this->assertSame(3, count($arr));
+        $this->assertCount(3, $arr);
 
         unset($arr[2]);
-        $this->assertSame(2, count($arr));
+        $this->assertCount(2, $arr);
         $this->assertSame(0, $arr[0]);
         $this->assertSame(1, $arr[1]);
 
         $arr[] = 3;
-        $this->assertSame(3, count($arr));
+        $this->assertCount(3, $arr);
         $this->assertSame(0, $arr[0]);
         $this->assertSame(1, $arr[1]);
         $this->assertSame(3, $arr[2]);

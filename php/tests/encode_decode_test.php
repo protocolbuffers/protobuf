@@ -111,7 +111,7 @@ class EncodeDecodeTest extends TestBase
         $n = new TestMessage();
         $n->mergeFromString($data);
         $this->assertSame("oneof_message", $n->getMyOneof());
-        $this->assertFalse(is_null($n->getOneofMessage()));
+        $this->assertNotNull($n->getOneofMessage());
 
     }
 

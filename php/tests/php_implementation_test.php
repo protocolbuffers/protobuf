@@ -172,11 +172,11 @@ class ImplementationTest extends TestBase
 
         $input = new CodedInputStream(hex2bin("00"));
         GPBWire::readBool($input, $value);
-        $this->assertSame(false, $value);
+        $this->assertFalse($value);
 
         $input = new CodedInputStream(hex2bin("01"));
         GPBWire::readBool($input, $value);
-        $this->assertSame(true, $value);
+        $this->assertTrue($value);
     }
 
     public function testReadDouble()
@@ -304,22 +304,22 @@ class ImplementationTest extends TestBase
             "0a3b0a12746573745f696e636c7564652e70726f746f120362617222180a" .
             "0b54657374496e636c75646512090a0161180120012805620670726f746f33"));
 
-        $this->assertSame(1, sizeof($file_desc_set->getFile()));
+        $this->assertCount(1, $file_desc_set->getFile());
 
         $file_desc = $file_desc_set->getFile()[0];
         $this->assertSame("test_include.proto", $file_desc->getName());
         $this->assertSame("bar", $file_desc->getPackage());
-        $this->assertSame(0, sizeof($file_desc->getDependency()));
-        $this->assertSame(1, sizeof($file_desc->getMessageType()));
-        $this->assertSame(0, sizeof($file_desc->getEnumType()));
+        $this->assertCount(0, $file_desc->getDependency());
+        $this->assertCount(1, $file_desc->getMessageType());
+        $this->assertCount(0, $file_desc->getEnumType());
         $this->assertSame("proto3", $file_desc->getSyntax());
 
         $desc = $file_desc->getMessageType()[0];
         $this->assertSame("TestInclude", $desc->getName());
-        $this->assertSame(1, sizeof($desc->getField()));
-        $this->assertSame(0, sizeof($desc->getNestedType()));
-        $this->assertSame(0, sizeof($desc->getEnumType()));
-        $this->assertSame(0, sizeof($desc->getOneofDecl()));
+        $this->assertCount(1, $desc->getField());
+        $this->assertCount(0, $desc->getNestedType());
+        $this->assertCount(0, $desc->getEnumType());
+        $this->assertCount(0, $desc->getOneofDecl());
 
         $field = $desc->getField()[0];
         $this->assertSame("a", $field->getName());
