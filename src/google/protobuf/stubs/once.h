@@ -99,8 +99,8 @@ inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)()) {
 }
 
 template <typename Arg>
-inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)(Arg),
-    Arg arg) {
+inline void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)(Arg*),
+    Arg* arg) {
   if (!*once) {
     *once = true;
     init_func(arg);
