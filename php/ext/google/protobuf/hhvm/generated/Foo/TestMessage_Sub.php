@@ -13,6 +13,11 @@ use Google\Protobuf\Internal\GPBUtil;
  */
 class TestMessage_Sub extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * Generated from protobuf field <code>int32 a = 1;</code>
+     */
+    private $a = 0;
+
     public function __construct() {
         \GPBMetadata\Test::initOnce();
         parent::__construct();

@@ -13,6 +13,141 @@ use Google\Protobuf\Internal\GPBUtil;
  */
 class TestMessage extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * Singular
+     *
+     * Generated from protobuf field <code>int32 optional_int32 = 1;</code>
+     */
+    private $optional_int32 = 0;
+    /**
+     * Generated from protobuf field <code>int64 optional_int64 = 2;</code>
+     */
+    private $optional_int64 = 0;
+    /**
+     * Generated from protobuf field <code>uint32 optional_uint32 = 3;</code>
+     */
+    private $optional_uint32 = 0;
+    /**
+     * Generated from protobuf field <code>uint64 optional_uint64 = 4;</code>
+     */
+    private $optional_uint64 = 0;
+    /**
+     * Generated from protobuf field <code>sint32 optional_sint32 = 5;</code>
+     */
+    private $optional_sint32 = 0;
+    /**
+     * Generated from protobuf field <code>sint64 optional_sint64 = 6;</code>
+     */
+    private $optional_sint64 = 0;
+    /**
+     * Generated from protobuf field <code>fixed32 optional_fixed32 = 7;</code>
+     */
+    private $optional_fixed32 = 0;
+    /**
+     * Generated from protobuf field <code>fixed64 optional_fixed64 = 8;</code>
+     */
+    private $optional_fixed64 = 0;
+    /**
+     * Generated from protobuf field <code>sfixed32 optional_sfixed32 = 9;</code>
+     */
+    private $optional_sfixed32 = 0;
+    /**
+     * Generated from protobuf field <code>sfixed64 optional_sfixed64 = 10;</code>
+     */
+    private $optional_sfixed64 = 0;
+    /**
+     * Generated from protobuf field <code>float optional_float = 11;</code>
+     */
+    private $optional_float = 0.0;
+    /**
+     * Generated from protobuf field <code>double optional_double = 12;</code>
+     */
+    private $optional_double = 0.0;
+    /**
+     * Generated from protobuf field <code>bool optional_bool = 13;</code>
+     */
+    private $optional_bool = false;
+    /**
+     * Generated from protobuf field <code>string optional_string = 14;</code>
+     */
+    private $optional_string = '';
+    /**
+     * Generated from protobuf field <code>bytes optional_bytes = 15;</code>
+     */
+    private $optional_bytes = '';
+    /**
+     * Generated from protobuf field <code>.foo.TestMessage.Sub optional_message = 17;</code>
+     */
+    private $optional_message = null;
+    /**
+     * Repeated
+     *
+     * Generated from protobuf field <code>repeated int32 repeated_int32 = 31;</code>
+     */
+    private $repeated_int32;
+    /**
+     * Generated from protobuf field <code>repeated int64 repeated_int64 = 32;</code>
+     */
+    private $repeated_int64;
+    /**
+     * Generated from protobuf field <code>repeated uint32 repeated_uint32 = 33;</code>
+     */
+    private $repeated_uint32;
+    /**
+     * Generated from protobuf field <code>repeated uint64 repeated_uint64 = 34;</code>
+     */
+    private $repeated_uint64;
+    /**
+     * Generated from protobuf field <code>repeated sint32 repeated_sint32 = 35;</code>
+     */
+    private $repeated_sint32;
+    /**
+     * Generated from protobuf field <code>repeated sint64 repeated_sint64 = 36;</code>
+     */
+    private $repeated_sint64;
+    /**
+     * Generated from protobuf field <code>repeated fixed32 repeated_fixed32 = 37;</code>
+     */
+    private $repeated_fixed32;
+    /**
+     * Generated from protobuf field <code>repeated fixed64 repeated_fixed64 = 38;</code>
+     */
+    private $repeated_fixed64;
+    /**
+     * Generated from protobuf field <code>repeated sfixed32 repeated_sfixed32 = 39;</code>
+     */
+    private $repeated_sfixed32;
+    /**
+     * Generated from protobuf field <code>repeated sfixed64 repeated_sfixed64 = 40;</code>
+     */
+    private $repeated_sfixed64;
+    /**
+     * Generated from protobuf field <code>repeated float repeated_float = 41;</code>
+     */
+    private $repeated_float;
+    /**
+     * Generated from protobuf field <code>repeated double repeated_double = 42;</code>
+     */
+    private $repeated_double;
+    /**
+     * Generated from protobuf field <code>repeated bool repeated_bool = 43;</code>
+     */
+    private $repeated_bool;
+    /**
+     * Generated from protobuf field <code>repeated string repeated_string = 44;</code>
+     */
+    private $repeated_string;
+    /**
+     * Generated from protobuf field <code>repeated bytes repeated_bytes = 45;</code>
+     */
+    private $repeated_bytes;
+    /**
+     *   repeated TestEnum repeated_enum = 46;
+     *
+     * Generated from protobuf field <code>repeated .foo.TestMessage.Sub repeated_message = 47;</code>
+     */
+    private $repeated_message;
+
     public function __construct() {
         \GPBMetadata\Test::initOnce();
         parent::__construct();

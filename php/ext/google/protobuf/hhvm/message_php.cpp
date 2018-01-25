@@ -96,7 +96,7 @@ void tophpval(const upb_msgval &msgval,
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
       upb_stringview str = upb_msgval_getstr(msgval);
-      PROTO_ZVAL_STRING(retval, str.data, str.size);
+      PROTO_ZVAL_STRINGL(retval, str.data, str.size, 1);
       break;
     }
     case UPB_TYPE_MESSAGE: {
@@ -126,14 +126,40 @@ static void message_set_property_internal(zval* object, zval* member,
   assert(f != NULL);
   int field_index = upb_fielddef_index(f);
   upb_fieldtype_t type = upb_fielddef_type(f);
+  zval* cached_value = NULL;
+
+  if (upb_fielddef_isseq(f) || upb_fielddef_ismap(f)) {
+    // Find cached zval.
+    zend_property_info* property_info;
+#if PHP_MAJOR_VERSION < 7
+    property_info =
+        zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
+#else
+    property_info =
+        zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
+#endif
+
+#if PHP_MAJOR_VERSION < 7
+    SEPARATE_ZVAL_IF_NOT_REF(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+#endif
+
+#if PHP_MAJOR_VERSION < 7
+    REPLACE_ZVAL_VALUE(OBJ_PROP(Z_OBJ_P(object), property_info->offset),
+                       value, 1);
+#else
+    zval_ptr_dtor(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+    ZVAL_ZVAL(OBJ_PROP(Z_OBJ_P(object), property_info->offset),
+                       value, 1, 0);
+#endif
+  }
 
   if (upb_fielddef_isseq(f)) {
-    RepeatedField *arr = UNBOX(RepeatedField, object);
+    RepeatedField *arr = UNBOX(RepeatedField, value);
     upb_msgval msgval;
     upb_msgval_setarr(&msgval, arr->array);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   } else if (upb_fielddef_ismap(f)) {
-    MapField *map = UNBOX(MapField, object);
+    MapField *map = UNBOX(MapField, value);
     upb_msgval msgval;
     upb_msgval_setmap(&msgval, map->map);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
@@ -161,9 +187,7 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
 #endif
 
 #if PHP_MAJOR_VERSION < 7
-  if (!upb_fielddef_isseq(f) && !upb_fielddef_ismap(f)) {
-    SEPARATE_ZVAL_IF_NOT_REF(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
-  }
+  SEPARATE_ZVAL_IF_NOT_REF(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
 #endif
 
   zval* retval = CACHED_VALUE_PTR_TO_ZVAL_PTR(
@@ -177,24 +201,48 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
 
   // Update returned value
   if (upb_fielddef_isseq(f)) {
+    if (Z_TYPE_P(retval) == IS_NULL) {
+      ZVAL_OBJ(retval, RepeatedField_type->create_object(
+          RepeatedField_type TSRMLS_CC));
+#if PHP_MAJOR_VERSION < 7
+       Z_SET_ISREF_P(retval);
+#endif
+    }
+    RepeatedField* intern = UNBOX(RepeatedField, retval);
+
+    zend_class_entry* klass = NULL;
+    if (upb_fielddef_issubmsg(f)) {
+      const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+      klass = const_cast<zend_class_entry*>(msgdef2class(subdef));
+    }
+
     const upb_array *arr = upb_msgval_getarr(msgval);
     if (arr == NULL) {
-      ZVAL_NULL(retval);
+      RepeatedField___construct(intern, upb_fielddef_descriptortype(f), klass);
+      upb_msg_set(self->msg, field_index,
+                  upb_msgval_arr(intern->array), self->layout);
     } else {
-      if (Z_TYPE_P(retval) == IS_NULL) {
-        ZVAL_OBJ(retval, RepeatedField_type->create_object(
-            RepeatedField_type TSRMLS_CC));
-        RepeatedField* intern = UNBOX(RepeatedField, retval);
-
-        zend_class_entry* klass = NULL;
-        if (upb_fielddef_issubmsg(f)) {
-          const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
-          klass = const_cast<zend_class_entry*>(msgdef2class(subdef));
-        }
-
-        RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
-      }
+      RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
     }
+
+
+//     if (arr == NULL) {
+//       ZVAL_NULL(retval);
+//     } else {
+//       if (Z_TYPE_P(retval) == IS_NULL) {
+//         ZVAL_OBJ(retval, RepeatedField_type->create_object(
+//             RepeatedField_type TSRMLS_CC));
+//         RepeatedField* intern = UNBOX(RepeatedField, retval);
+// 
+//         zend_class_entry* klass = NULL;
+//         if (upb_fielddef_issubmsg(f)) {
+//           const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+//           klass = const_cast<zend_class_entry*>(msgdef2class(subdef));
+//         }
+// 
+//         RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
+//       }
+//     }
   } else if (upb_fielddef_ismap(f)) {
   } else {
     zend_class_entry *subklass = NULL;

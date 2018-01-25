@@ -4360,7 +4360,6 @@ static bool upb_msglayout_init(upb_msglayout *l,
 
     if (upb_fielddef_issubmsg(f)) {
       field->submsg_index = submsg_count++;
-      upb_value v;
       const upb_msglayout *sub_layout =
           upb_msgfactory_getlayout(factory, upb_fielddef_msgsubdef(f));
       submsgs[field->submsg_index] = &sub_layout->data;

@@ -42,6 +42,11 @@ class EncodeDecodeTest extends TestBase
     public function testEncodeDecode()
     {
         $loops = 10000;
+        $encode_time = 0;
+        $decode_time = 0;
+        $get_time = 0;
+        $set_time = 0;
+        $create_time = 0;
         for ($i = 0; $i < $loops; $i++) {
             // Create Message
             $create_start = microtime_float();
