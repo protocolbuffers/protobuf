@@ -314,6 +314,12 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   vector<const FileDescriptor*> deps_with_extensions;
   CollectMinimalFileDepsContainingExtensions(file_, &deps_with_extensions);
 
+  printer->Print(
+    "#if __has_feature(objc_arc)\n"
+    " #error This file should not be compiled with ARC. Use the -fno-objc-arc Compiler Flag to disable ARC for this file.\n"
+    "#endif\n"
+    "\n");
+
   {
     ImportWriter import_writer(
         options_.generate_for_named_framework,

@@ -13,6 +13,10 @@
  #import "GPBProtocolBuffers_RuntimeSupport.h"
 #endif
 
+#if __has_feature(objc_arc)
+ #error This file should not be compiled with ARC. Use the -fno-objc-arc Compiler Flag to disable ARC for this file.
+#endif
+
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
  #import <Protobuf/Wrappers.pbobjc.h>
 #else
