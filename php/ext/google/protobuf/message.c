@@ -292,7 +292,9 @@ PHP_METHOD(Message, clear) {
   Descriptor* desc = msg->descriptor;
   zend_class_entry* ce = desc->klass;
 
+  zend_object_std_dtor(&msg->std TSRMLS_CC);
   object_properties_init(&msg->std, ce);
+
   layout_init(desc->layout, message_data(msg), &msg->std TSRMLS_CC);
 }
 
@@ -918,6 +920,7 @@ PHP_METHOD(Any, unpack) {
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   zval* type_url_php = php_proto_message_read_property(
       getThis(), &type_url_member PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&type_url_member);
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Get fully-qualified name from type url.
@@ -953,6 +956,7 @@ PHP_METHOD(Any, unpack) {
   PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
   zval* value = php_proto_message_read_property(
       getThis(), &value_member PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&value_member);
   PHP_PROTO_FAKE_SCOPE_END;
 
   merge_from_string(Z_STRVAL_P(value), Z_STRLEN_P(value), desc, msg);
@@ -981,6 +985,8 @@ PHP_METHOD(Any, pack) {
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   message_handlers->write_property(getThis(), &member, &data,
                                    NULL PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&data);
+  zval_dtor(&member);
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Set type url.
@@ -998,6 +1004,8 @@ PHP_METHOD(Any, pack) {
   PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
   message_handlers->write_property(getThis(), &member, &type_url_php,
                                    NULL PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&type_url_php);
+  zval_dtor(&member);
   PHP_PROTO_FAKE_SCOPE_END;
   FREE(type_url);
 }
@@ -1030,6 +1038,7 @@ PHP_METHOD(Any, is) {
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   zval* value =
       php_proto_message_read_property(getThis(), &member PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&member);
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Compare two type url.
