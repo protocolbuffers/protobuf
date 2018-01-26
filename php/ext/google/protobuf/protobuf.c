@@ -145,6 +145,21 @@ PHP_PROTO_HASHTABLE_VALUE get_proto_obj(const char* proto) {
 }
 
 // -----------------------------------------------------------------------------
+// Well Known Types.
+// -----------------------------------------------------------------------------
+
+bool is_inited_file_any;
+bool is_inited_file_api;
+bool is_inited_file_duration;
+bool is_inited_file_field_mask;
+bool is_inited_file_empty;
+bool is_inited_file_source_context;
+bool is_inited_file_struct;
+bool is_inited_file_timestamp;
+bool is_inited_file_type;
+bool is_inited_file_wrappers;
+
+// -----------------------------------------------------------------------------
 // Reserved Name.
 // -----------------------------------------------------------------------------
 
@@ -250,6 +265,17 @@ static PHP_RINIT_FUNCTION(protobuf) {
   generated_pool_php = NULL;
   internal_generated_pool_php = NULL;
 
+  is_inited_file_any = false;
+  is_inited_file_api = false;
+  is_inited_file_duration = false;
+  is_inited_file_field_mask = false;
+  is_inited_file_empty = false;
+  is_inited_file_source_context = false;
+  is_inited_file_struct = false;
+  is_inited_file_timestamp = false;
+  is_inited_file_type = false;
+  is_inited_file_wrappers = false;
+
   return 0;
 }
 
@@ -287,6 +313,17 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
     zval_dtor(&tmp);
   }
 #endif
+
+  is_inited_file_any = true;
+  is_inited_file_api = true;
+  is_inited_file_duration = true;
+  is_inited_file_field_mask = true;
+  is_inited_file_empty = true;
+  is_inited_file_source_context = true;
+  is_inited_file_struct = true;
+  is_inited_file_timestamp = true;
+  is_inited_file_type = true;
+  is_inited_file_wrappers = true;
 
   return 0;
 }
