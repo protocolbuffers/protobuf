@@ -110,7 +110,6 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * http://code.google.com/p/cxf-protobuf/ (Java)
 * http://code.google.com/p/protobuf-remote/ (C++/C#)
 * http://code.google.com/p/protobuf-rpc-pro/ (Java)
-* https://code.google.com/p/protorpc/ (Go/C++)
 * https://code.google.com/p/eneter-protobuf-serializer/ (Java/.NET)
 * http://www.deltavsoft.com/RCFProto.html (C++/Java/Python/C#)
 * https://github.com/robbinfan/claire-protorpc (C++)
