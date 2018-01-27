@@ -180,11 +180,13 @@ Generate(io::Printer* printer) {
     // to subclass a different GeneratedMessage class (e.g., in v3.0.0 release
     // we changed all generated code to subclass GeneratedMessageV3).
   printer->Print(
+    "@java.lang.Override\n"
     "public final Builder setUnknownFields(\n"
     "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
     "  return super.setUnknownFields$suffix$(unknownFields);\n"
     "}\n"
     "\n"
+    "@java.lang.Override\n"
     "public final Builder mergeUnknownFields(\n"
     "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
     "  return super.mergeUnknownFields(unknownFields);\n"
@@ -277,6 +279,7 @@ GenerateDescriptorMethods(io::Printer* printer) {
         "}\n");
   }
   printer->Print(
+    "@java.lang.Override\n"
     "protected com.google.protobuf.GeneratedMessage$ver$.FieldAccessorTable\n"
     "    internalGetFieldAccessorTable() {\n"
     "  return $fileclass$.internal_$identifier$_fieldAccessorTable\n"
@@ -333,6 +336,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "}\n");
 
   printer->Print(
+    "@java.lang.Override\n"
     "public Builder clear() {\n"
     "  super.clear();\n");
 
@@ -361,6 +365,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "\n");
 
   printer->Print(
+    "@java.lang.Override\n"
     "public com.google.protobuf.Descriptors.Descriptor\n"
     "    getDescriptorForType() {\n"
     "  return $fileclass$.internal_$identifier$_descriptor;\n"
@@ -371,6 +376,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
 
   // LITE runtime implements this in GeneratedMessageLite.
   printer->Print(
+    "@java.lang.Override\n"
     "public $classname$ getDefaultInstanceForType() {\n"
     "  return $classname$.getDefaultInstance();\n"
     "}\n"
@@ -378,6 +384,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   printer->Print(
+    "@java.lang.Override\n"
     "public $classname$ build() {\n"
     "  $classname$ result = buildPartial();\n"
     "  if (!result.isInitialized()) {\n"
@@ -389,6 +396,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   printer->Print(
+    "@java.lang.Override\n"
     "public $classname$ buildPartial() {\n"
     "  $classname$ result = new $classname$(this);\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
@@ -457,27 +465,33 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
   // to subclass a different GeneratedMessage class (e.g., in v3.0.0 release
   // we changed all generated code to subclass GeneratedMessageV3).
   printer->Print(
+    "@java.lang.Override\n"
     "public Builder clone() {\n"
     "  return (Builder) super.clone();\n"
     "}\n"
+    "@java.lang.Override\n"
     "public Builder setField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
     "    java.lang.Object value) {\n"
     "  return (Builder) super.setField(field, value);\n"
     "}\n"
+    "@java.lang.Override\n"
     "public Builder clearField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field) {\n"
     "  return (Builder) super.clearField(field);\n"
     "}\n"
+    "@java.lang.Override\n"
     "public Builder clearOneof(\n"
     "    com.google.protobuf.Descriptors.OneofDescriptor oneof) {\n"
     "  return (Builder) super.clearOneof(oneof);\n"
     "}\n"
+    "@java.lang.Override\n"
     "public Builder setRepeatedField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
     "    int index, java.lang.Object value) {\n"
     "  return (Builder) super.setRepeatedField(field, index, value);\n"
     "}\n"
+    "@java.lang.Override\n"
     "public Builder addRepeatedField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
     "    java.lang.Object value) {\n"
@@ -486,24 +500,28 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
+      "@java.lang.Override\n"
       "public <Type> Builder setExtension(\n"
       "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
       "        $classname$, Type> extension,\n"
       "    Type value) {\n"
       "  return (Builder) super.setExtension(extension, value);\n"
       "}\n"
+      "@java.lang.Override\n"
       "public <Type> Builder setExtension(\n"
       "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
       "        $classname$, java.util.List<Type>> extension,\n"
       "    int index, Type value) {\n"
       "  return (Builder) super.setExtension(extension, index, value);\n"
       "}\n"
+      "@java.lang.Override\n"
       "public <Type> Builder addExtension(\n"
       "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
       "        $classname$, java.util.List<Type>> extension,\n"
       "    Type value) {\n"
       "  return (Builder) super.addExtension(extension, value);\n"
       "}\n"
+      "@java.lang.Override\n"
       "public <Type> Builder clearExtension(\n"
       "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
       "        $classname$, ?> extension) {\n"
@@ -516,6 +534,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
 
   if (context_->HasGeneratedMethods(descriptor_)) {
     printer->Print(
+      "@java.lang.Override\n"
       "public Builder mergeFrom(com.google.protobuf.Message other) {\n"
       "  if (other instanceof $classname$) {\n"
       "    return mergeFrom(($classname$)other);\n"
@@ -602,6 +621,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
 void MessageBuilderGenerator::
 GenerateBuilderParsingMethods(io::Printer* printer) {
   printer->Print(
+    "@java.lang.Override\n"
     "public Builder mergeFrom(\n"
     "    com.google.protobuf.CodedInputStream input,\n"
     "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
@@ -627,6 +647,7 @@ GenerateBuilderParsingMethods(io::Printer* printer) {
 void MessageBuilderGenerator::GenerateIsInitialized(
     io::Printer* printer) {
   printer->Print(
+    "@java.lang.Override\n"
     "public final boolean isInitialized() {\n");
   printer->Indent();
 
