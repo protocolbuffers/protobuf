@@ -67,9 +67,9 @@ class FileGenerator {
   const FileDescriptor* file_;
   string root_class_name_;
 
-  vector<EnumGenerator*> enum_generators_;
-  vector<MessageGenerator*> message_generators_;
-  vector<ExtensionGenerator*> extension_generators_;
+  std::vector<EnumGenerator*> enum_generators_;
+  std::vector<MessageGenerator*> message_generators_;
+  std::vector<ExtensionGenerator*> extension_generators_;
 
   const Options options_;
 

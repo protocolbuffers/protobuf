@@ -94,7 +94,7 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
                              const string& parameter,
                              GeneratorContext* output_directory,
                              string* error) const {
-  vector<pair<string, string> > options;
+  std::vector<std::pair<string, string> > options;
 
   ParseGeneratorParameter(parameter, &options);
 
@@ -116,24 +116,24 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
     if (option_name == "output_list_file") {
       output_list_file = option_value;
     } else if (option_name == "java_package") {
-        vector<string> parts;
-        SplitStringUsing(option_value, "|", &parts);
-        if (parts.size() != 2) {
-          *error = "Bad java_package, expecting filename|PackageName found '"
-            + option_value + "'";
-          return false;
-        }
-        params.set_java_package(parts[0], parts[1]);
+      std::vector<string> parts;
+      SplitStringUsing(option_value, "|", &parts);
+      if (parts.size() != 2) {
+        *error = "Bad java_package, expecting filename|PackageName found '"
+          + option_value + "'";
+        return false;
+      }
+      params.set_java_package(parts[0], parts[1]);
     } else if (option_name == "java_outer_classname") {
-        vector<string> parts;
-        SplitStringUsing(option_value, "|", &parts);
-        if (parts.size() != 2) {
-          *error = "Bad java_outer_classname, "
-                   "expecting filename|ClassName found '"
-                   + option_value + "'";
-          return false;
-        }
-        params.set_java_outer_classname(parts[0], parts[1]);
+      std::vector<string> parts;
+      SplitStringUsing(option_value, "|", &parts);
+      if (parts.size() != 2) {
+        *error = "Bad java_outer_classname, "
+                 "expecting filename|ClassName found '"
+                 + option_value + "'";
+        return false;
+      }
+      params.set_java_outer_classname(parts[0], parts[1]);
     } else if (option_name == "store_unknown_fields") {
       params.set_store_unknown_fields(option_value == "true");
     } else if (option_name == "java_multiple_files") {
@@ -191,7 +191,7 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
     StringReplace(file_generator.java_package(), ".", "/", true);
   if (!package_dir.empty()) package_dir += "/";
 
-  vector<string> all_files;
+  std::vector<string> all_files;
 
   if (IsOuterClassNeeded(params, file)) {
     string java_filename = package_dir;

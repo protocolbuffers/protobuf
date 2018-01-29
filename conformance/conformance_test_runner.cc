@@ -264,7 +264,7 @@ void UsageError() {
   exit(1);
 }
 
-void ParseFailureList(const char *filename, vector<string>* failure_list) {
+void ParseFailureList(const char *filename, std::vector<string>* failure_list) {
   std::ifstream infile(filename);
 
   if (!infile.is_open()) {
@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
   google::protobuf::ConformanceTestSuite suite;
 
   string failure_list_filename;
-  vector<string> failure_list;
+  std::vector<string> failure_list;
 
   for (int arg = 1; arg < argc; ++arg) {
     if (strcmp(argv[arg], "--failure_list") == 0) {

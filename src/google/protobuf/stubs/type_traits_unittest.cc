@@ -253,7 +253,7 @@ TEST(TypeTraitsTest, TestIsPointer) {
   EXPECT_TRUE(is_pointer<const void* volatile>::value);
   EXPECT_TRUE(is_pointer<char** const volatile>::value);
   EXPECT_FALSE(is_pointer<const int>::value);
-  EXPECT_FALSE(is_pointer<volatile vector<int*> >::value);
+  EXPECT_FALSE(is_pointer<volatile std::vector<int*> >::value);
   EXPECT_FALSE(is_pointer<const volatile double>::value);
 }
 

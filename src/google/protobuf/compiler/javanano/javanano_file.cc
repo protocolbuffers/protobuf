@@ -59,7 +59,7 @@ bool UsesExtensions(const Message& message) {
   // We conservatively assume that unknown fields are extensions.
   if (reflection->GetUnknownFields(message).field_count() > 0) return true;
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
 
   for (int i = 0; i < fields.size(); i++) {
@@ -216,7 +216,7 @@ static void GenerateSibling(const string& package_dir,
                             const string& java_package,
                             const DescriptorClass* descriptor,
                             GeneratorContext* output_directory,
-                            vector<string>* file_list,
+                            std::vector<string>* file_list,
                             const Params& params) {
   string filename = package_dir + descriptor->name() + ".java";
   file_list->push_back(filename);
@@ -239,7 +239,7 @@ static void GenerateSibling(const string& package_dir,
 
 void FileGenerator::GenerateSiblings(const string& package_dir,
                                      GeneratorContext* output_directory,
-                                     vector<string>* file_list) {
+                                     std::vector<string>* file_list) {
   if (params_.java_multiple_files(file_->name())) {
     for (int i = 0; i < file_->message_type_count(); i++) {
       GenerateSibling<MessageGenerator>(package_dir, java_package_,

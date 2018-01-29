@@ -63,7 +63,7 @@ class EnumFieldGenerator : public FieldGenerator {
  private:
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;
-  vector<string> canonical_values_;
+  std::vector<string> canonical_values_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
 };
@@ -86,7 +86,7 @@ class AccessorEnumFieldGenerator : public FieldGenerator {
  private:
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;
-  vector<string> canonical_values_;
+  std::vector<string> canonical_values_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(AccessorEnumFieldGenerator);
 };
@@ -113,7 +113,7 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
 
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;
-  vector<string> canonical_values_;
+  std::vector<string> canonical_values_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedEnumFieldGenerator);
 };

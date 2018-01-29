@@ -64,7 +64,7 @@ bool Generator::Generate(
     GeneratorContext* generator_context,
     string* error) const {
 
-  vector<pair<string, string> > options;
+  std::vector<std::pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
 
   // We only support proto3 - but we make an exception for descriptor.proto.
