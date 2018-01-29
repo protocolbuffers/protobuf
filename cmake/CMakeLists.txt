@@ -24,11 +24,7 @@ option(protobuf_BUILD_SHARED_LIBS "Build Shared Libraries" ${protobuf_BUILD_SHAR
 include(CMakeDependentOption)
 cmake_dependent_option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime libraries" ON
   "NOT protobuf_BUILD_SHARED_LIBS" OFF)
-if (MSVC)
-  set(protobuf_WITH_ZLIB_DEFAULT OFF)
-else (MSVC)
-  set(protobuf_WITH_ZLIB_DEFAULT ON)
-endif (MSVC)
+set(protobuf_WITH_ZLIB_DEFAULT ON)
 option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
 set(protobuf_DEBUG_POSTFIX "d"
   CACHE STRING "Default debug postfix")
