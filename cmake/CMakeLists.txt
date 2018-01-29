@@ -8,6 +8,10 @@ endif()
 # CMake policies
 cmake_policy(SET CMP0022 NEW)
 
+if(POLICY CMP0048)
+  cmake_policy(SET CMP0048 NEW)
+endif()
+
 # Project
 project(protobuf C CXX)
 
