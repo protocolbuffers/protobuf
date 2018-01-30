@@ -261,6 +261,7 @@ module BasicTest
       e = assert_raise NoMethodError do
         TestMessage.new.hello = "world"
       end
+
       assert_match(/hello/, e.message)
     end
 
@@ -283,33 +284,45 @@ module BasicTest
 
     def test_type_errors
       m = TestMessage.new
-      assert_raise TypeError do
+      e = assert_raise TypeError do
         m.optional_int32 = "hello"
       end
-      assert_raise TypeError do
+      assert_equal e.message, "Expected number type for integral field: optional_int32"
+
+      e = assert_raise TypeError do
         m.optional_string = 42
       end
-      assert_raise TypeError do
+      assert_equal e.message, "Invalid argument for string field: optional_string"
+
+      e = assert_raise TypeError do
         m.optional_string = nil
       end
-      assert_raise TypeError do
+      assert_equal e.message, "Invalid argument for string field: optional_string"
+
+      e = assert_raise TypeError do
         m.optional_bool = 42
       end
-      assert_raise TypeError do
+      assert_equal e.message, "Invalid argument for boolean field: optional_bool"
+
+      e = assert_raise TypeError do
         m.optional_msg = TestMessage.new  # expects TestMessage2
       end
+      assert_equal e.message, "Invalid type BasicTest::TestMessage to assign to submessage field: optional_msg"
 
-      assert_raise TypeError do
+      e = assert_raise TypeError do
         m.repeated_int32 = []  # needs RepeatedField
       end
+      assert_equal e.message, "Expected repeated field array"
 
-      assert_raise TypeError do
+      e = assert_raise TypeError do
         m.repeated_int32.push "hello"
       end
+      assert_equal e.message, "Expected number type for integral field: foo" # TODO
 
-      assert_raise TypeError do
+      e = assert_raise TypeError do
         m.repeated_msg.push TestMessage.new
       end
+      assert_equal e.message, "Invalid type BasicTest::TestMessage to assign to submessage field: foo" # TODO
     end
 
     def test_string_encoding
