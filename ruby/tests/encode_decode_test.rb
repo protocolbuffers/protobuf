@@ -60,4 +60,28 @@ class EncodeDecodeTest < Test::Unit::TestCase
     to = A::B::C::TestMessage.encode(m.oneof_msg)
     assert_equal '', to
   end
+
+  def test_encode_json
+    msg = A::B::C::TestMessage.new({ optional_int32: 22 })
+    json = msg.to_json
+
+    to = A::B::C::TestMessage.decode_json(json)
+    assert_equal to.optional_int32, 22
+
+    msg = A::B::C::TestMessage.new({ optional_int32: 22 })
+    json = msg.to_json({ preserve_proto_fieldnames: true })
+
+    assert_match 'optional_int32', json
+
+    to = A::B::C::TestMessage.decode_json(json)
+    assert_equal 22, to.optional_int32
+
+    msg = A::B::C::TestMessage.new({ optional_int32: 22 })
+    json = A::B::C::TestMessage.encode_json(
+      msg,
+      { preserve_proto_fieldnames: true, emit_defaults: true }
+    )
+
+    assert_match 'optional_int32', json
+  end
 end
