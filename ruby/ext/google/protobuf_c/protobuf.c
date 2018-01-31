@@ -41,6 +41,7 @@ VALUE upb_def_to_ruby_obj_map;
 
 VALUE cError;
 VALUE cParseError;
+VALUE cTypeError;
 
 void add_def_obj(const void* def, VALUE value) {
   rb_hash_aset(upb_def_to_ruby_obj_map, ULL2NUM((intptr_t)def), value);
@@ -102,6 +103,7 @@ void Init_protobuf_c() {
 
   cError = rb_const_get(protobuf, rb_intern("Error"));
   cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
+  cTypeError = rb_const_get(protobuf, rb_intern("TypeError"));
 
   rb_define_singleton_method(protobuf, "discard_unknown",
                              Google_Protobuf_discard_unknown, 1);

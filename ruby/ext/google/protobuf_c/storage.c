@@ -96,7 +96,7 @@ static bool is_ruby_num(VALUE value) {
 
 void native_slot_check_int_range_precision(upb_fieldtype_t type, VALUE val) {
   if (!is_ruby_num(val)) {
-    rb_raise(rb_eTypeError, "Expected number type for integral field.");
+    rb_raise(cTypeError, "Expected number type for integral field.");
   }
 
   // NUM2{INT,UINT,LL,ULL} macros do the appropriate range checks on upper
@@ -153,13 +153,13 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
   switch (type) {
     case UPB_TYPE_FLOAT:
       if (!is_ruby_num(value)) {
-        rb_raise(rb_eTypeError, "Expected number type for float field.");
+        rb_raise(cTypeError, "Expected number type for float field.");
       }
       DEREF(memory, float) = NUM2DBL(value);
       break;
     case UPB_TYPE_DOUBLE:
       if (!is_ruby_num(value)) {
-        rb_raise(rb_eTypeError, "Expected number type for double field.");
+        rb_raise(cTypeError, "Expected number type for double field.");
       }
       DEREF(memory, double) = NUM2DBL(value);
       break;
@@ -170,7 +170,7 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
       } else if (value == Qfalse) {
         val = 0;
       } else {
-        rb_raise(rb_eTypeError, "Invalid argument for boolean field.");
+        rb_raise(cTypeError, "Invalid argument for boolean field.");
       }
       DEREF(memory, int8_t) = val;
       break;
@@ -179,7 +179,7 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
       if (CLASS_OF(value) == rb_cSymbol) {
         value = rb_funcall(value, rb_intern("to_s"), 0, NULL);
       } else if (CLASS_OF(value) != rb_cString) {
-        rb_raise(rb_eTypeError, "Invalid argument for string field.");
+        rb_raise(cTypeError, "Invalid argument for string field.");
       }
 
       DEREF(memory, VALUE) = native_slot_encode_and_freeze_string(type, value);
@@ -187,7 +187,7 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
 
     case UPB_TYPE_BYTES: {
       if (CLASS_OF(value) != rb_cString) {
-        rb_raise(rb_eTypeError, "Invalid argument for string field.");
+        rb_raise(cTypeError, "Invalid argument for string field.");
       }
 
       DEREF(memory, VALUE) = native_slot_encode_and_freeze_string(type, value);
@@ -197,7 +197,7 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
       if (CLASS_OF(value) == CLASS_OF(Qnil)) {
         value = Qnil;
       } else if (CLASS_OF(value) != type_class) {
-        rb_raise(rb_eTypeError,
+        rb_raise(cTypeError,
                  "Invalid type %s to assign to submessage field.",
                  rb_class2name(CLASS_OF(value)));
       }
@@ -209,7 +209,7 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
       if (TYPE(value) == T_STRING) {
         value = rb_funcall(value, rb_intern("to_sym"), 0, NULL);
       } else if (!is_ruby_num(value) && TYPE(value) != T_SYMBOL) {
-        rb_raise(rb_eTypeError,
+        rb_raise(cTypeError,
                  "Expected number or symbol type for enum field.");
       }
       if (TYPE(value) == T_SYMBOL) {
@@ -598,18 +598,18 @@ static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
 
   if (!RB_TYPE_P(val, T_DATA) || !RTYPEDDATA_P(val) ||
       RTYPEDDATA_TYPE(val) != &RepeatedField_type) {
-    rb_raise(rb_eTypeError, "Expected repeated field array");
+    rb_raise(cTypeError, "Expected repeated field array");
   }
 
   self = ruby_to_RepeatedField(val);
   if (self->field_type != upb_fielddef_type(field)) {
-    rb_raise(rb_eTypeError, "Repeated field array has wrong element type");
+    rb_raise(cTypeError, "Repeated field array has wrong element type");
   }
 
-  if (self->field_type == UPB_TYPE_MESSAGE) { 
+  if (self->field_type == UPB_TYPE_MESSAGE) {
     if (self->field_type_class !=
         Descriptor_msgclass(get_def_obj(upb_fielddef_subdef(field)))) {
-      rb_raise(rb_eTypeError,
+      rb_raise(cTypeError,
                "Repeated field array has wrong message class");
     }
   }
@@ -618,7 +618,7 @@ static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
   if (self->field_type == UPB_TYPE_ENUM) {
     if (self->field_type_class !=
         EnumDescriptor_enummodule(get_def_obj(upb_fielddef_subdef(field)))) {
-      rb_raise(rb_eTypeError,
+      rb_raise(cTypeError,
                "Repeated field array has wrong enum class");
     }
   }
@@ -631,21 +631,21 @@ static void check_map_field_type(VALUE val, const upb_fielddef* field) {
 
   if (!RB_TYPE_P(val, T_DATA) || !RTYPEDDATA_P(val) ||
       RTYPEDDATA_TYPE(val) != &Map_type) {
-    rb_raise(rb_eTypeError, "Expected Map instance");
+    rb_raise(cTypeError, "Expected Map instance");
   }
 
   self = ruby_to_Map(val);
   if (self->key_type != upb_fielddef_type(key_field)) {
-    rb_raise(rb_eTypeError, "Map key type does not match field's key type");
+    rb_raise(cTypeError, "Map key type does not match field's key type");
   }
   if (self->value_type != upb_fielddef_type(value_field)) {
-    rb_raise(rb_eTypeError, "Map value type does not match field's value type");
+    rb_raise(cTypeError, "Map value type does not match field's value type");
   }
   if (upb_fielddef_type(value_field) == UPB_TYPE_MESSAGE ||
       upb_fielddef_type(value_field) == UPB_TYPE_ENUM) {
     if (self->value_type_class !=
         get_def_obj(upb_fielddef_subdef(value_field))) {
-      rb_raise(rb_eTypeError,
+      rb_raise(cTypeError,
                "Map value type has wrong message/enum class");
     }
   }
