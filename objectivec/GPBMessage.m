@@ -78,6 +78,20 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
   GPBMessage *autocreator_;
   GPBFieldDescriptor *autocreatorField_;
   GPBExtensionDescriptor *autocreatorExtension_;
+
+  // A lock to provide mutual exclusion from internal data that can be modified
+  // by *read* operations such as getters (autocreation of message fields and
+  // message extensions, not setting of values). Used to guarantee thread safety
+  // for concurrent reads on the message.
+  // NOTE: OSSpinLock may seem like a good fit here but Apple engineers have
+  // pointed out that they are vulnerable to live locking on iOS in cases of
+  // priority inversion:
+  //   http://mjtsai.com/blog/2015/12/16/osspinlock-is-unsafe/
+  //   https://lists.swift.org/pipermail/swift-dev/Week-of-Mon-20151214/000372.html
+  // Use of readOnlySemaphore_ must be prefaced by a call to
+  // GPBPrepareReadOnlySemaphore to ensure it has been created. This allows
+  // readOnlySemaphore_ to be only created when actually needed.
+  _Atomic(dispatch_semaphore_t) readOnlySemaphore_;
 }
 @end
 
@@ -3270,6 +3284,34 @@ id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBDescriptor *descriptor = [[self class] descriptor];
   GPBFileSyntax syntax = descriptor.file.syntax;
   return GetOrCreateMapIvarWithField(self, field, syntax);
+}
+
+id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
+  NSCAssert(!GPBFieldIsMapOrArray(field), @"Shouldn't get here");
+  if (GPBGetHasIvarField(self, field)) {
+    uint8_t *storage = (uint8_t *)self->messageStorage_;
+    id *typePtr = (id *)&storage[field->description_->offset];
+    return *typePtr;
+  }
+  // Not set...
+
+  // Non messages (string/data), get their default.
+  if (!GPBFieldDataTypeIsMessage(field)) {
+    return field.defaultValue.valueMessage;
+  }
+
+  GPBPrepareReadOnlySemaphore(self);
+  dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
+  GPBMessage *result = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+  if (!result) {
+    // For non repeated messages, create the object, set it and return it.
+    // This object will not initially be visible via GPBGetHasIvar, so
+    // we save its creator so it can become visible if it's mutated later.
+    result = GPBCreateMessageWithAutocreator(field.msgClass, self, field);
+    GPBSetAutocreatedRetainedObjectIvarWithField(self, field, result);
+  }
+  dispatch_semaphore_signal(self->readOnlySemaphore_);
+  return result;
 }
 
 #pragma clang diagnostic pop
