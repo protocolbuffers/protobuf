@@ -53,7 +53,7 @@ static GPBFileDescriptor *GPBStructRoot_FileDescriptor(void) {
 #pragma mark - Enum GPBNullValue
 
 GPBEnumDescriptor *GPBNullValue_EnumDescriptor(void) {
-  static _Atomic(GPBEnumDescriptor*) descriptor = NULL;
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
   if (!descriptor) {
     static const char *valueNames =
         "NullValue\000";

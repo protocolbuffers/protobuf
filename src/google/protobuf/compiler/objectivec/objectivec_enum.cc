@@ -149,7 +149,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
 
   printer->Print(
       "GPBEnumDescriptor *$name$_EnumDescriptor(void) {\n"
-      "  static _Atomic(GPBEnumDescriptor*) descriptor = NULL;\n"
+      "  static _Atomic(GPBEnumDescriptor*) descriptor = nil;\n"
       "  if (!descriptor) {\n",
       "name", name_);
 
