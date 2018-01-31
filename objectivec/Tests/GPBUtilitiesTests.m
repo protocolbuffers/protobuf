@@ -52,12 +52,12 @@
 
 - (void)testRightShiftFunctions {
   XCTAssertEqual((1UL << 31) >> 31, 1UL);
-  XCTAssertEqual((1 << 31) >> 31, -1);
+  XCTAssertEqual((int32_t)(1U << 31) >> 31, -1);
   XCTAssertEqual((1ULL << 63) >> 63, 1ULL);
-  XCTAssertEqual((1LL << 63) >> 63, -1LL);
+  XCTAssertEqual((int64_t)(1ULL << 63) >> 63, -1LL);
 
-  XCTAssertEqual(GPBLogicalRightShift32((1 << 31), 31), 1);
-  XCTAssertEqual(GPBLogicalRightShift64((1LL << 63), 63), 1LL);
+  XCTAssertEqual(GPBLogicalRightShift32((1U << 31), 31), 1);
+  XCTAssertEqual(GPBLogicalRightShift64((1ULL << 63), 63), 1LL);
 }
 
 - (void)testGPBDecodeTextFormatName {

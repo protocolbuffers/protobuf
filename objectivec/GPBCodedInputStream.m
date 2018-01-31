@@ -110,7 +110,7 @@ static int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
   int64_t result = 0;
   while (shift < 64) {
     int8_t b = ReadRawByte(state);
-    result |= (int64_t)(b & 0x7F) << shift;
+    result |= (int64_t)((uint64_t)(b & 0x7F) << shift);
     if ((b & 0x80) == 0) {
       return result;
     }
