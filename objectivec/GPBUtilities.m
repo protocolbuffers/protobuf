@@ -628,34 +628,6 @@ id GPBGetObjectIvarWithFieldNoAutocreate(GPBMessage *self,
   return *typePtr;
 }
 
-id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
-  NSCAssert(!GPBFieldIsMapOrArray(field), @"Shouldn't get here");
-  if (GPBGetHasIvarField(self, field)) {
-    uint8_t *storage = (uint8_t *)self->messageStorage_;
-    id *typePtr = (id *)&storage[field->description_->offset];
-    return *typePtr;
-  }
-  // Not set...
-
-  // Non messages (string/data), get their default.
-  if (!GPBFieldDataTypeIsMessage(field)) {
-    return field.defaultValue.valueMessage;
-  }
-
-  GPBPrepareReadOnlySemaphore(self);
-  dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
-  GPBMessage *result = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-  if (!result) {
-    // For non repeated messages, create the object, set it and return it.
-    // This object will not initially be visible via GPBGetHasIvar, so
-    // we save its creator so it can become visible if it's mutated later.
-    result = GPBCreateMessageWithAutocreator(field.msgClass, self, field);
-    GPBSetAutocreatedRetainedObjectIvarWithField(self, field, result);
-  }
-  dispatch_semaphore_signal(self->readOnlySemaphore_);
-  return result;
-}
-
 // Only exists for public api, no core code should use this.
 int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBFileSyntax syntax = [self descriptor].file.syntax;
