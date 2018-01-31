@@ -548,7 +548,8 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
         // descriptor structure.
         const uint8_t *bytes = (const uint8_t *)defaultValue_.valueData;
         if (bytes) {
-          uint32_t length = *((uint32_t *)bytes);
+          uint32_t length;
+          memcpy(&length, bytes, sizeof(length));
           length = ntohl(length);
           bytes += sizeof(length);
           defaultValue_.valueData =
@@ -963,7 +964,8 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       const uint8_t *bytes =
           (const uint8_t *)description->defaultValue.valueData;
       if (bytes) {
-        uint32_t length = *((uint32_t *)bytes);
+        uint32_t length;
+        memcpy(&length, bytes, sizeof(length));
         // The length is stored in network byte order.
         length = ntohl(length);
         bytes += sizeof(length);
