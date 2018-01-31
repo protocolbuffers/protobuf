@@ -127,9 +127,12 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // filename is too short.
     return false;
   }
-  if (strcmp(&filename[filename_size - 7], "_pb2.py") != 0) {
-    // Filename is not ending with _pb2.
-    return false;
+  // Cython is not using .py file. Only check filenames when end with .py
+  if (strcmp(&filename[filename_size - 3], ".py") == 0) {
+    if (strcmp(&filename[filename_size - 7], "_pb2.py") != 0) {
+      // Filename is not ending with _pb2.
+      return false;
+    }
   }
 #endif
   return true;
