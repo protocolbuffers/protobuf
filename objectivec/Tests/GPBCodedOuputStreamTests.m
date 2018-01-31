@@ -266,7 +266,7 @@
                     value:(0x1b << 0) | (0x28 << 7) | (0x79 << 14) |
                           (0x42 << 21) | (0x3bLL << 28) | (0x56LL << 35) |
                           (0x00LL << 42) | (0x05LL << 49) | (0x26LL << 56) |
-                          (0x01LL << 63)];
+                          (0x01ULL << 63)];
 }
 
 - (void)testWriteLittleEndian {

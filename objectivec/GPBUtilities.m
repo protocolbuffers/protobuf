@@ -291,7 +291,7 @@ BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber) {
   } else {
     NSCAssert(idx != GPBNoHasBit, @"Invalid has bit.");
     uint32_t byteIndex = idx / 32;
-    uint32_t bitMask = (1 << (idx % 32));
+    uint32_t bitMask = (1U << (idx % 32));
     BOOL hasIvar =
         (self->messageStorage_->_has_storage_[byteIndex] & bitMask) ? YES : NO;
     return hasIvar;
@@ -315,7 +315,7 @@ void GPBSetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber,
     NSCAssert(idx != GPBNoHasBit, @"Invalid has bit.");
     uint32_t *has_storage = self->messageStorage_->_has_storage_;
     uint32_t byte = idx / 32;
-    uint32_t bitMask = (1 << (idx % 32));
+    uint32_t bitMask = (1U << (idx % 32));
     if (value) {
       has_storage[byte] |= bitMask;
     } else {
