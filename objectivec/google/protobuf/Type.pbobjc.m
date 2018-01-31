@@ -56,7 +56,7 @@ static GPBFileDescriptor *GPBTypeRoot_FileDescriptor(void) {
 #pragma mark - Enum GPBSyntax
 
 GPBEnumDescriptor *GPBSyntax_EnumDescriptor(void) {
-  static _Atomic(GPBEnumDescriptor*) descriptor = NULL;
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
   if (!descriptor) {
     static const char *valueNames =
         "SyntaxProto2\000SyntaxProto3\000";
@@ -371,7 +371,7 @@ void SetGPBField_Cardinality_RawValue(GPBField *message, int32_t value) {
 #pragma mark - Enum GPBField_Kind
 
 GPBEnumDescriptor *GPBField_Kind_EnumDescriptor(void) {
-  static _Atomic(GPBEnumDescriptor*) descriptor = NULL;
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
   if (!descriptor) {
     static const char *valueNames =
         "TypeUnknown\000TypeDouble\000TypeFloat\000TypeInt"
@@ -445,7 +445,7 @@ BOOL GPBField_Kind_IsValidValue(int32_t value__) {
 #pragma mark - Enum GPBField_Cardinality
 
 GPBEnumDescriptor *GPBField_Cardinality_EnumDescriptor(void) {
-  static _Atomic(GPBEnumDescriptor*) descriptor = NULL;
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
   if (!descriptor) {
     static const char *valueNames =
         "CardinalityUnknown\000CardinalityOptional\000C"
