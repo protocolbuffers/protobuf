@@ -104,7 +104,7 @@ initialize_submodule:
 	oldpwd=`pwd`
 	cd $(top_srcdir)/third_party
 	git submodule update --init -r
-	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
+	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release -DBENCHMARK_ENABLE_GTEST_TESTS=OFF && make
 	cd $$oldpwd
 	touch initialize_submodule
 	
