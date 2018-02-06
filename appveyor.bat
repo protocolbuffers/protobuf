@@ -26,8 +26,8 @@ dotnet restore
 dotnet build -c %configuration% || goto error
 
 echo Testing C#
-dotnet run -c %configuration% -f netcoreapp1.0 -p Google.Protobuf.Test\Google.Protobuf.Test.csproj || goto error
-dotnet run -c %configuration% -f net451 -p Google.Protobuf.Test\Google.Protobuf.Test.csproj || goto error
+dotnet test -c %configuration% -f netcoreapp1.0 Google.Protobuf.Test\Google.Protobuf.Test.csproj || goto error
+dotnet test -c %configuration% -f net451 Google.Protobuf.Test\Google.Protobuf.Test.csproj || goto error
 
 goto :EOF
 
