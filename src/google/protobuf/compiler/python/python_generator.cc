@@ -78,9 +78,6 @@ namespace {
 
 // Reimplemented here because we can't bring in
 // absl/strings/string_view_utils.h because it needs C++11.
-bool StrStartsWith(StringPiece sp, StringPiece x) {
-  return sp.size() >= x.size() && sp.substr(0, x.size()) == x;
-}
 bool StrEndsWith(StringPiece sp, StringPiece x) {
   return sp.size() >= x.size() && sp.substr(sp.size() - x.size()) == x;
 }
