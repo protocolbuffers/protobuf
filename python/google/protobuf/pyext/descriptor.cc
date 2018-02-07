@@ -101,6 +101,35 @@ bool _CalledFromGeneratedFile(int stacklevel) {
   if (frame == NULL) {
     return false;
   }
+  
+  if (frame->f_code->co_filename == NULL) {
+    return false;
+  }
+  
+  char* filename;
+  Py_ssize_t filename_size;
+  if (PyString_AsStringAndSize(frame->f_code->co_filename,
+                               &filename, &filename_size) < 0) {
+    // filename is not a string.
+    PyErr_Clear();
+    return false;
+  }
+  
+  if (filename_size < 3 or strcmp(&filename[filename_size - 3], ".py") != 0) {
+    // Cython is not using .py file and not at global module scope.
+    return true;
+  }
+  
+  if (filename_size < 7) {
+    // filename is too short.
+    return false;
+  }
+
+  if (strcmp(&filename[filename_size - 7], "_pb2.py") != 0) {
+    // Filename is not ending with _pb2.
+    return false;
+  }
+  
   while (stacklevel-- > 0) {
     frame = frame->f_back;
     if (frame == NULL) {
@@ -110,29 +139,6 @@ bool _CalledFromGeneratedFile(int stacklevel) {
   if (frame->f_globals != frame->f_locals) {
     // Not at global module scope
     return false;
-  }
-
-  if (frame->f_code->co_filename == NULL) {
-    return false;
-  }
-  char* filename;
-  Py_ssize_t filename_size;
-  if (PyString_AsStringAndSize(frame->f_code->co_filename,
-                               &filename, &filename_size) < 0) {
-    // filename is not a string.
-    PyErr_Clear();
-    return false;
-  }
-  if (filename_size < 7) {
-    // filename is too short.
-    return false;
-  }
-  // Cython is not using .py file. Only check filenames when end with .py
-  if (strcmp(&filename[filename_size - 3], ".py") == 0) {
-    if (strcmp(&filename[filename_size - 7], "_pb2.py") != 0) {
-      // Filename is not ending with _pb2.
-      return false;
-    }
   }
 #endif
   return true;
