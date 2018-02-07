@@ -115,7 +115,7 @@ bool _CalledFromGeneratedFile(int stacklevel) {
   }
   
   if ((filename_size < 3) || (strcmp(&filename[filename_size - 3], ".py") != 0)) {
-    // Cython is not using .py file and not at global module scope.
+    // Cython's stack does not have .py file name and is not at global module scope.
     return true;
   }
   
@@ -123,7 +123,6 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // filename is too short.
     return false;
   }
-
   if (strcmp(&filename[filename_size - 7], "_pb2.py") != 0) {
     // Filename is not ending with _pb2.
     return false;
