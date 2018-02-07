@@ -201,8 +201,7 @@ class MapEntryImpl : public Base {
             return false;
           }
           set_has_key();
-          if (!input->ExpectTag(kValueTag)) break;
-          GOOGLE_FALLTHROUGH_INTENDED;
+          break;
 
         case kValueTag:
           if (!ValueTypeHandler::Read(input, mutable_value())) {
