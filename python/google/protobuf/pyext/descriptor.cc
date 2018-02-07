@@ -105,7 +105,6 @@ bool _CalledFromGeneratedFile(int stacklevel) {
   if (frame->f_code->co_filename == NULL) {
     return false;
   }
-  
   char* filename;
   Py_ssize_t filename_size;
   if (PyString_AsStringAndSize(frame->f_code->co_filename,
@@ -115,7 +114,7 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     return false;
   }
   
-  if (filename_size < 3 or strcmp(&filename[filename_size - 3], ".py") != 0) {
+  if ((filename_size < 3) || (strcmp(&filename[filename_size - 3], ".py") != 0)) {
     // Cython is not using .py file and not at global module scope.
     return true;
   }
