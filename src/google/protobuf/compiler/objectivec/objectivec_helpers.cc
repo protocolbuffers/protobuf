@@ -1590,7 +1590,7 @@ void ImportWriter::Print(io::Printer* printer) const {
     for (std::vector<string>::const_iterator iter = other_framework_imports_.begin();
          iter != other_framework_imports_.end(); ++iter) {
       printer->Print(
-          " #import <$header$>\n",
+          "#import <$header$>\n",
           "header", *iter);
     }
 
@@ -1605,7 +1605,7 @@ void ImportWriter::Print(io::Printer* printer) const {
     for (std::vector<string>::const_iterator iter = other_imports_.begin();
          iter != other_imports_.end(); ++iter) {
       printer->Print(
-          " #import \"$header$\"\n",
+          "#import \"$header$\"\n",
           "header", *iter);
     }
   }
