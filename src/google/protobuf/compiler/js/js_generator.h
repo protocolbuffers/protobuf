@@ -63,10 +63,11 @@ struct GeneratorOptions {
   bool binary;
   // What style of imports should be used.
   enum ImportStyle {
-    kImportClosure,   // goog.require()
-    kImportCommonJs,  // require()
-    kImportBrowser,   // no import statements
-    kImportEs6,       // import { member } from ''
+    kImportClosure,         // goog.require()
+    kImportCommonJs,        // require()
+    kImportCommonJsStrict,  // require() with no global export
+    kImportBrowser,         // no import statements
+    kImportEs6,             // import { member } from ''
   } import_style;
 
   GeneratorOptions()
