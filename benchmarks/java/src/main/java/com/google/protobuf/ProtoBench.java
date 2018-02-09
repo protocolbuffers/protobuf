@@ -97,7 +97,7 @@ public class ProtoBench {
       return false;
     }
     argsList.add("-DdataFile=" + file);
-    argsList.add("com.google.protobuf.ProtoBenchCaliper");
+    argsList.add("com.google.protobuf.ProtoCaliperBenchmark");
     
     try {
       String args[] = new String[argsList.size()];
@@ -142,19 +142,14 @@ public class ProtoBench {
   private static List<String> getCaliperOption(final BenchmarkDataset benchmarkDataset) {
     List<String> temp = new ArrayList<String>();
     if (benchmarkDataset.getMessageName().equals("benchmarks.proto3.GoogleMessage1")) {
-      temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE1_PROTO3");
     } else if (benchmarkDataset.getMessageName().equals("benchmarks.proto2.GoogleMessage1")) {
-      temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE1_PROTO2");
     } else if (benchmarkDataset.getMessageName().equals("benchmarks.proto2.GoogleMessage2")) {
-      temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE2");
     } else if (benchmarkDataset.getMessageName().
         equals("benchmarks.google_message3.GoogleMessage3")) {
-      temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE3");
       temp.add("-Cinstrument.runtime.options.timingInterval=3000ms");
       temp.add("-Cinstrument.runtime.options.measurements=20");
     } else if (benchmarkDataset.getMessageName().
         equals("benchmarks.google_message4.GoogleMessage4")) {
-      temp.add("-DbenchmarkMessageType=GOOGLE_MESSAGE4");
       temp.add("-Cinstrument.runtime.options.timingInterval=1500ms");
       temp.add("-Cinstrument.runtime.options.measurements=20");
     } else {
@@ -172,6 +167,9 @@ public class ProtoBench {
   }
   
   public static byte[] readAllBytes(String filename) throws IOException {
+    if (filename.equals("")) {
+      return new byte[0];
+    }
     RandomAccessFile file = new RandomAccessFile(new File(filename), "r");
     byte[] content = new byte[(int) file.length()];
     file.readFully(content);

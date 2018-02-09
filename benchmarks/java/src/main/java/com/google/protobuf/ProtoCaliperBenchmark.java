@@ -13,14 +13,16 @@ import com.google.protobuf.benchmarks.Benchmarks.BenchmarkDataset;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProtoBenchCaliper {
+public class ProtoCaliperBenchmark {
   public enum BenchmarkMessageType {
     GOOGLE_MESSAGE1_PROTO3 {
       @Override ExtensionRegistry getExtensionRegistry() { return ExtensionRegistry.newInstance(); }
@@ -49,45 +51,44 @@ public class ProtoBenchCaliper {
       @Override
       ExtensionRegistry getExtensionRegistry() {
         ExtensionRegistry extensions = ExtensionRegistry.newInstance();
-        benchmarks.google_message3.BenchmarkMessage38.registerAllExtensions(extensions);
-        benchmarks.google_message3.BenchmarkMessage37.registerAllExtensions(extensions);
-        benchmarks.google_message3.BenchmarkMessage36.registerAllExtensions(extensions);
-        benchmarks.google_message3.BenchmarkMessage35.registerAllExtensions(extensions);
-        benchmarks.google_message3.BenchmarkMessage34.registerAllExtensions(extensions);
-        benchmarks.google_message3.BenchmarkMessage33.registerAllExtensions(extensions);
-        benchmarks.google_message3.BenchmarkMessage32.registerAllExtensions(extensions);
-        benchmarks.google_message3.BenchmarkMessage31.registerAllExtensions(extensions);
-        benchmarks.google_message3.BenchmarkMessage3.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage38.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage37.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage36.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage35.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage34.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage33.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage32.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage31.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage3.registerAllExtensions(extensions);
         return extensions;
       }
       @Override
       Message getDefaultInstance() {
-        return benchmarks.google_message3.BenchmarkMessage3.GoogleMessage3.getDefaultInstance();
+        return com.google.protobuf.benchmarks.BenchmarkMessage3.GoogleMessage3.getDefaultInstance();
       }
     },
     GOOGLE_MESSAGE4 {
       @Override
       ExtensionRegistry getExtensionRegistry() {
         ExtensionRegistry extensions = ExtensionRegistry.newInstance();
-        benchmarks.google_message4.BenchmarkMessage43.registerAllExtensions(extensions);
-        benchmarks.google_message4.BenchmarkMessage42.registerAllExtensions(extensions);
-        benchmarks.google_message4.BenchmarkMessage41.registerAllExtensions(extensions);
-        benchmarks.google_message4.BenchmarkMessage4.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage43.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage42.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage41.registerAllExtensions(extensions);
+        com.google.protobuf.benchmarks.BenchmarkMessage4.registerAllExtensions(extensions);
         return extensions;
       }
       @Override
       Message getDefaultInstance() {
-        return benchmarks.google_message4.BenchmarkMessage4.GoogleMessage4.getDefaultInstance();
+        return com.google.protobuf.benchmarks.BenchmarkMessage4.GoogleMessage4.getDefaultInstance();
       }
     };
     
     abstract ExtensionRegistry getExtensionRegistry();
     abstract Message getDefaultInstance();
   }
-  
-  @Param 
+
   private BenchmarkMessageType benchmarkMessageType;
-  @Param
+  @Param("")
   private String dataFile;
   
   private byte[] inputData;
@@ -99,11 +100,39 @@ public class ProtoBenchCaliper {
   private List<ByteString> inputStringList;
   private List<Message> sampleMessageList;
   private long counter;
+
+  private BenchmarkMessageType getMessageType() throws IOException {
+    if (benchmarkDataset.getMessageName().equals("benchmarks.proto3.GoogleMessage1")) {
+      return BenchmarkMessageType.GOOGLE_MESSAGE1_PROTO3;
+    } else if (benchmarkDataset.getMessageName().equals("benchmarks.proto2.GoogleMessage1")) {
+      return BenchmarkMessageType.GOOGLE_MESSAGE1_PROTO2;
+    } else if (benchmarkDataset.getMessageName().equals("benchmarks.proto2.GoogleMessage2")) {
+      return BenchmarkMessageType.GOOGLE_MESSAGE2;
+    } else if (benchmarkDataset.getMessageName().
+        equals("benchmarks.google_message3.GoogleMessage3")) {
+      return BenchmarkMessageType.GOOGLE_MESSAGE3;
+    } else if (benchmarkDataset.getMessageName().
+        equals("benchmarks.google_message4.GoogleMessage4")) {
+      return BenchmarkMessageType.GOOGLE_MESSAGE4;
+    } else {
+      throw new IllegalStateException("Invalid DataFile! There's no testing message named "
+          + benchmarkDataset.getMessageName());
+    }
+  }
   
   @BeforeExperiment
   void setUp() throws IOException {
-    inputData = ProtoBench.readAllBytes(dataFile);
-    benchmarkDataset = BenchmarkDataset.parseFrom(inputData);
+    if (!dataFile.equals("")) {
+      RandomAccessFile file = new RandomAccessFile(new File(dataFile), "r");
+      inputData = new byte[(int) file.length()];
+      file.readFully(inputData);
+      benchmarkDataset = BenchmarkDataset.parseFrom(inputData);
+      benchmarkMessageType = getMessageType();
+    } else {
+      inputData = new byte[0];
+      benchmarkDataset = BenchmarkDataset.parseFrom(inputData);
+      benchmarkMessageType = BenchmarkMessageType.GOOGLE_MESSAGE2;
+    }
     defaultMessage = benchmarkMessageType.getDefaultInstance();
     extensions = benchmarkMessageType.getExtensionRegistry();
     inputDataList = new ArrayList<byte[]>();
@@ -127,6 +156,9 @@ public class ProtoBenchCaliper {
   
   @Benchmark
   void serializeToByteString(int reps) throws IOException {
+    if (sampleMessageList.size() == 0) {
+      return;
+    }
     for (int i = 0; i < reps; i++) {
       sampleMessageList.get((int) (counter % sampleMessageList.size())).toByteString();
       counter++;
@@ -135,6 +167,9 @@ public class ProtoBenchCaliper {
   
   @Benchmark
   void serializeToByteArray(int reps) throws IOException {
+    if (sampleMessageList.size() == 0) {
+      return;
+    }
     for (int i = 0; i < reps; i++) {
       sampleMessageList.get((int) (counter % sampleMessageList.size())).toByteArray();
       counter++;
@@ -143,6 +178,9 @@ public class ProtoBenchCaliper {
   
   @Benchmark
   void serializeToMemoryStream(int reps) throws IOException {
+    if (sampleMessageList.size() == 0) {
+      return;
+    }
     for (int i = 0; i < reps; i++) {
       ByteArrayOutputStream output = new ByteArrayOutputStream();
       sampleMessageList.get((int) (counter % sampleMessageList.size())).writeTo(output);
@@ -152,6 +190,9 @@ public class ProtoBenchCaliper {
   
   @Benchmark
   void deserializeFromByteString(int reps) throws IOException {
+    if (inputStringList.size() == 0) {
+      return;
+    }
     for (int i = 0; i < reps; i++) {
       benchmarkMessageType.getDefaultInstance().getParserForType().parseFrom(
           inputStringList.get((int) (counter % inputStringList.size())), extensions);
@@ -161,6 +202,9 @@ public class ProtoBenchCaliper {
   
   @Benchmark
   void deserializeFromByteArray(int reps) throws IOException {
+    if (inputDataList.size() == 0) {
+      return;
+    }
     for (int i = 0; i < reps; i++) {
       benchmarkMessageType.getDefaultInstance().getParserForType().parseFrom(
           inputDataList.get((int) (counter % inputDataList.size())), extensions);
@@ -170,6 +214,9 @@ public class ProtoBenchCaliper {
   
   @Benchmark
   void deserializeFromMemoryStream(int reps) throws IOException {
+    if (inputStreamList.size() == 0) {
+      return;
+    }
     for (int i = 0; i < reps; i++) {
       benchmarkMessageType.getDefaultInstance().getParserForType().parseFrom(
           inputStreamList.get((int) (counter % inputStreamList.size())), extensions);
@@ -195,3 +242,4 @@ public class ProtoBenchCaliper {
     }
   }
 }
+

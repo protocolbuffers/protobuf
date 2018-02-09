@@ -5,6 +5,7 @@ import "datasets/google_message4/benchmark_message4_3.proto";
 package benchmarks.google_message4;
 
 option cc_enable_arenas = true;
+option java_package = "com.google.protobuf.benchmarks";
 
 message Message2463 {
   repeated .benchmarks.google_message4.Message2462 field2498 = 1;
