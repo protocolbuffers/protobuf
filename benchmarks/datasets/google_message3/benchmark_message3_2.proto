@@ -8,6 +8,7 @@ import "datasets/google_message3/benchmark_message3_8.proto";
 package benchmarks.google_message3;
 
 option cc_enable_arenas = true;
+option java_package = "com.google.protobuf.benchmarks";
 
 message Message22853 {
   optional .benchmarks.google_message3.Enum22854 field22869 = 1;

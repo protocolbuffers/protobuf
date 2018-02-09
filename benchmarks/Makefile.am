@@ -104,7 +104,7 @@ initialize_submodule:
 	oldpwd=`pwd`
 	cd $(top_srcdir)/third_party
 	git submodule update --init -r
-	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release -DBENCHMARK_ENABLE_GTEST_TESTS=OFF && make
+	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
 	cd $$oldpwd
 	touch initialize_submodule
 	
@@ -137,7 +137,7 @@ cpp: protoc_middleman protoc_middleman2 cpp-benchmark initialize_submodule
 
 java_benchmark_testing_files =                                      \
 	java/src/main/java/com/google/protobuf/ProtoBench.java            \
-	java/src/main/java/com/google/protobuf/ProtoBenchCaliper.java
+	java/src/main/java/com/google/protobuf/ProtoCaliperBenchmark.java
 
 javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middleman2
 	cp -r java tmp && cd tmp/java &&  mvn clean compile assembly:single

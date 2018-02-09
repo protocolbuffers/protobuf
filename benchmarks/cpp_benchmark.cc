@@ -238,6 +238,7 @@ void RegisterBenchmarks(const std::string& dataset_bytes) {
 }
 
 int main(int argc, char *argv[]) {
+  ::benchmark::Initialize(&argc, argv);
   if (argc == 1) {
     std::cerr << "Usage: ./cpp-benchmark <input data>" << std::endl;
     std::cerr << "input data is in the format of \"benchmarks.proto\""
@@ -249,6 +250,5 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
 }

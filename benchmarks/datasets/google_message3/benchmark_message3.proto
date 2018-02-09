@@ -10,6 +10,7 @@ import "datasets/google_message3/benchmark_message3_8.proto";
 package benchmarks.google_message3;
 
 option cc_enable_arenas = true;
+option java_package = "com.google.protobuf.benchmarks";
 
 message GoogleMessage3 {
   optional .benchmarks.google_message3.Message37487 field37519 = 2;

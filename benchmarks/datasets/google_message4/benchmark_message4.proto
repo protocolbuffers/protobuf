@@ -6,6 +6,7 @@ import "datasets/google_message4/benchmark_message4_3.proto";
 package benchmarks.google_message4;
 
 option cc_enable_arenas = true;
+option java_package = "com.google.protobuf.benchmarks";
 
 message GoogleMessage4 {
   optional int32 field37503 = 1;
