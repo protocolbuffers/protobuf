@@ -41,7 +41,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testEncodeDecode()
     {
-        $loops = 10000;
+        $loops = 1;
         $encode_time = 0;
         $decode_time = 0;
         $get_time = 0;
@@ -58,6 +58,7 @@ class EncodeDecodeTest extends TestBase
             $set_start = microtime_float();
             $this->setFields($from);
             $set_end = microtime_float();
+            $this->expectFields($from);
             $set_time += $set_end - $set_start;
     
             // Encode Message
@@ -66,7 +67,7 @@ class EncodeDecodeTest extends TestBase
             $encode_end = microtime_float();
             $encode_time += $encode_end - $encode_start;
     
-            # var_dump(bin2hex($data));
+            var_dump(bin2hex($data));
             $size = strlen($data);
     
             // Decode Message
@@ -78,7 +79,7 @@ class EncodeDecodeTest extends TestBase
 
             // Get Message
             $get_start = microtime_float();
-            $this->expectFields($to);
+            # $this->expectFields($to);
             $get_end = microtime_float();
             $get_time += $get_end - $get_start;
         }

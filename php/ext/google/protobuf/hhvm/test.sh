@@ -31,26 +31,26 @@ run_tests()
 
 PROTOC=../../../../../src/protoc
 
-# # Test HHVM
-# $PROTOC --php_out=hhvm:generated test.proto
-# # make clean; hphpize; cmake . && make && hhvm -d extension_dir=. -d hhvm.extensions[]=protobuf.so test_hhvm.php
-# phpunit --version
-# make clean; hphpize; cmake . && make
-# run_tests hhvm
+# Test HHVM
+$PROTOC --php_out=hhvm:generated test.proto
+# make clean; hphpize; cmake . && make && hhvm -d extension_dir=. -d hhvm.extensions[]=protobuf.so test_hhvm.php
+phpunit --version
+make clean; hphpize; cmake . && make
+run_tests hhvm
 
-# Test PHP
-$PROTOC --php_out=generated test.proto
-OLD_PATH=$PATH
-OLD_CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
-OLD_C_INCLUDE_PATH=$C_INCLUDE_PATH
-
-# php-5.5
-export PATH=/usr/local/php-5.5/bin:$OLD_PATH
-export CPLUS_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/include/php/:$OLD_CPLUS_INCLUDE_PATH
-export C_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/include/php/:$OLD_C_INCLUDE_PATH
-
-# make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && php -dextension=./modules/protobuf.so test_php.php
-make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
+# # Test PHP
+# $PROTOC --php_out=generated test.proto
+# OLD_PATH=$PATH
+# OLD_CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
+# OLD_C_INCLUDE_PATH=$C_INCLUDE_PATH
+# 
+# # php-5.5
+# export PATH=/usr/local/php-5.5/bin:$OLD_PATH
+# export CPLUS_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/include/php/:$OLD_CPLUS_INCLUDE_PATH
+# export C_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/include/php/:$OLD_C_INCLUDE_PATH
+# 
+# # make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && php -dextension=./modules/protobuf.so test_php.php
+# make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
 
 # # php-5.5-zts
 # export PATH=/usr/local/php-5.5-zts/bin:$OLD_PATH

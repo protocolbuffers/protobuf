@@ -200,7 +200,35 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
   upb_msgval msgval = upb_msg_get(self->msg, field_index, self->layout);
 
   // Update returned value
-  if (upb_fielddef_isseq(f)) {
+  if (upb_fielddef_ismap(f)) {
+    if (Z_TYPE_P(retval) == IS_NULL) {
+      ZVAL_OBJ(retval, MapField_type->create_object(
+          MapField_type TSRMLS_CC));
+#if PHP_MAJOR_VERSION < 7
+       Z_SET_ISREF_P(retval);
+#endif
+    }
+    MapField* intern = UNBOX(MapField, retval);
+
+    zend_class_entry* klass = NULL;
+    const upb_msgdef *mapentry_msgdef = upb_fielddef_msgsubdef(f);
+    const upb_fielddef *value_fielddef =
+        upb_msgdef_ntof(mapentry_msgdef, "value", 5);
+
+    if (upb_fielddef_issubmsg(value_fielddef)) {
+      const upb_msgdef *subdef = upb_fielddef_msgsubdef(value_fielddef);
+      klass = const_cast<zend_class_entry*>(msgdef2class(subdef));
+    }
+
+    const upb_map *map = upb_msgval_getmap(msgval);
+    if (map == NULL) {
+      MapField___construct(intern, upb_fielddef_descriptortype(f), klass);
+      upb_msg_set(self->msg, field_index,
+                  upb_msgval_map(intern->map), self->layout);
+    } else {
+      MapField_wrap(intern, const_cast<upb_map*>(map), klass);
+    }
+  } else if (upb_fielddef_isseq(f)) {
     if (Z_TYPE_P(retval) == IS_NULL) {
       ZVAL_OBJ(retval, RepeatedField_type->create_object(
           RepeatedField_type TSRMLS_CC));
@@ -224,26 +252,6 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
     } else {
       RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
     }
-
-
-//     if (arr == NULL) {
-//       ZVAL_NULL(retval);
-//     } else {
-//       if (Z_TYPE_P(retval) == IS_NULL) {
-//         ZVAL_OBJ(retval, RepeatedField_type->create_object(
-//             RepeatedField_type TSRMLS_CC));
-//         RepeatedField* intern = UNBOX(RepeatedField, retval);
-// 
-//         zend_class_entry* klass = NULL;
-//         if (upb_fielddef_issubmsg(f)) {
-//           const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
-//           klass = const_cast<zend_class_entry*>(msgdef2class(subdef));
-//         }
-// 
-//         RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
-//       }
-//     }
-  } else if (upb_fielddef_ismap(f)) {
   } else {
     zend_class_entry *subklass = NULL;
     if (upb_fielddef_issubmsg(f)) {

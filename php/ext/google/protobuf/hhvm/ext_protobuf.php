@@ -108,7 +108,8 @@ class GPBUtil {
   public static function checkRepeatedField(mixed $val, int $type,
       ?classname<Message> $klass = null): Variant;
   <<__Native>>
-  public static function checkMapField(mixed $val): void;
+  public static function checkMapField(mixed $val, int $key_type,
+      int $value_type, ?classname<Message> $klass = null): Variant;
 }
 
 }

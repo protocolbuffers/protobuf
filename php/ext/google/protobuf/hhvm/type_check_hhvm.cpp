@@ -11,7 +11,8 @@ void HHVM_METHOD(Util, checkBool, const Variant& val);
 void HHVM_METHOD(Util, checkString, const Variant& val, bool utf8);
 void HHVM_METHOD(Util, checkBytes, const Variant& val);
 void HHVM_METHOD(Util, checkMessage, const Variant& val, const String& klass);
-void HHVM_METHOD(Util, checkMapField, const Variant& val);
+Variant HHVM_METHOD(Util, checkMapField, const Variant& val,
+                    int64_t key_type, int64_t value_type, const Variant& klass);
 Variant HHVM_METHOD(Util, checkRepeatedField, const Variant& val,
                     int64_t type, const Variant& klass);
 
@@ -82,7 +83,10 @@ void HHVM_METHOD(Util, checkString, const Variant& val, bool utf8) {
 void HHVM_METHOD(Util, checkBytes, const Variant& val) {
 }
 
-void HHVM_METHOD(Util, checkMapField, const Variant& val) {
+Variant HHVM_METHOD(Util, checkMapField, const Variant& val,
+                    int64_t key_type, int64_t value_type,
+                    const Variant& klass) {
+  return val;
 }
 
 Variant HHVM_METHOD(Util, checkRepeatedField, const Variant& val,

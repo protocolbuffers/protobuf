@@ -6677,6 +6677,7 @@ size_t upb_map_size(const upb_map *map);
 upb_fieldtype_t upb_map_keytype(const upb_map *map);
 upb_fieldtype_t upb_map_valuetype(const upb_map *map);
 bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val);
+upb_alloc *upb_map_getalloc(upb_map *map);
 
 /* Write interface.  May only be called by the message's owner who can enforce
  * its memory management invariants. */
@@ -6753,7 +6754,7 @@ typedef struct {
   uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
   uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
   uint8_t descriptortype;
-  uint8_t label;
+  uint8_t label;  /* is_map | UPB_LABEL */
 } upb_msglayout_fieldinit_v1;
 
 typedef struct {

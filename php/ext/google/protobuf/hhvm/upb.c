@@ -3289,6 +3289,70 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
   UPB_UNREACHABLE();
 }
 
+static bool upb_encode_map(upb_encstate *e, const char *field_mem,
+                           const upb_msglayout_msginit_v1 *m,
+                           const upb_msglayout_fieldinit_v1 *f) {
+  const upb_map *map = *(const upb_map**)field_mem;
+
+  if (map == NULL || upb_map_size(map) == 0) {
+    return true;
+  }
+
+  const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
+  const upb_msglayout_fieldinit_v1 *k = &subm->fields[0];
+  const upb_msglayout_fieldinit_v1 *v = &subm->fields[1];
+
+  upb_mapiter *it = NULL;
+  for (it = upb_mapiter_new(map, upb_map_getalloc(map));
+       !upb_mapiter_done(it); upb_mapiter_next(it)) {
+    char *buf_end = e->ptr;
+
+#define T(upper, ctype, accesstype, msgval, field)              \
+  case UPB_TYPE_##upper: {                                      \
+    ctype value = upb_msgval_get##accesstype(msgval);           \
+    CHK(upb_encode_scalarfield(e, (const char*)&value, subm, field, false)); \
+    break;                                                      \
+  }
+    upb_msgval value_msgval = upb_mapiter_value(it);
+    switch (upb_desctype_to_fieldtype[v->descriptortype]) {
+      T(INT32,  int32_t,  int32,  value_msgval, v);
+      T(ENUM,   int32_t,  int32,  value_msgval, v);
+      T(INT64,  int64_t,  int64,  value_msgval, v);
+      T(UINT32, uint32_t, uint32, value_msgval, v);
+      T(UINT64, uint64_t, uint64, value_msgval, v);
+      T(DOUBLE, double,   double, value_msgval, v);
+      T(FLOAT,  float,    float,  value_msgval, v);
+      T(BOOL,   bool,     bool,   value_msgval, v);
+      T(STRING, upb_stringview, str, value_msgval, v);
+      T(BYTES,  upb_stringview, str, value_msgval, v);
+      case UPB_TYPE_MESSAGE: {
+        upb_msg *msg = upb_msgval_getmsg(value_msgval);
+        CHK(upb_encode_scalarfield(e, msg, subm, v, false));
+        break;
+      }
+    }
+
+    upb_msgval key_msgval = upb_mapiter_key(it);
+    switch (upb_desctype_to_fieldtype[k->descriptortype]) {
+      T(INT32,  int32_t,  int32,  key_msgval, k);
+      T(INT64,  int64_t,  int64,  key_msgval, k);
+      T(UINT32, uint32_t, uint32, key_msgval, k);
+      T(UINT64, uint64_t, uint64, key_msgval, k);
+      T(BOOL,   bool,     bool,   key_msgval, k);
+      T(STRING, upb_stringview, str, key_msgval, k);
+      default:
+        return false;
+    }
+#undef T
+
+    size_t size = buf_end - e->ptr;
+    CHK(upb_put_varint(e, size) &&
+        upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
+  }
+  
+  return true;
+}
+
 bool upb_encode_hasscalarfield(const char *msg,
                                const upb_msglayout_msginit_v1 *m,
                                const upb_msglayout_fieldinit_v1 *f) {
@@ -3317,6 +3381,8 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
 
     if (f->label == UPB_LABEL_REPEATED) {
       CHK(upb_encode_array(e, msg + f->offset, m, f));
+    } else if (f->label == 0x4 | UPB_LABEL_REPEATED) {
+      CHK(upb_encode_map(e, msg + f->offset, m, f));
     } else {
       if (upb_encode_hasscalarfield(msg, m, f)) {
         CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
@@ -4157,10 +4223,7 @@ static upb_value upb_toval(upb_msgval val) {
 }
 
 static upb_msgval upb_msgval_fromval(upb_value val) {
-  upb_msgval ret;
-  UPB_UNUSED(val);
-  memset(&ret, 0, sizeof(upb_msgval));  /* XXX */
-  return ret;
+  return val.val;
 }
 
 static upb_ctype_t upb_fieldtotabtype(upb_fieldtype_t type) {
@@ -4350,7 +4413,9 @@ static bool upb_msglayout_init(upb_msglayout *l,
 
     field->number = upb_fielddef_number(f);
     field->descriptortype = upb_fielddef_descriptortype(f);
-    field->label = upb_fielddef_label(f);
+    field->label = upb_fielddef_ismap(f) ?
+                   0x4 | upb_fielddef_label(f) :
+                   upb_fielddef_label(f);
 
     if (upb_fielddef_containingoneof(f)) {
       field->oneof_index = upb_oneofdef_index(upb_fielddef_containingoneof(f));
@@ -5069,6 +5134,10 @@ upb_fieldtype_t upb_map_keytype(const upb_map *map) {
 
 upb_fieldtype_t upb_map_valuetype(const upb_map *map) {
   return map->val_type;
+}
+
+upb_alloc *upb_map_getalloc(upb_map *map) {
+  return map->alloc;
 }
 
 bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val) {

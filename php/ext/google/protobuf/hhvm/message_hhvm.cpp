@@ -124,7 +124,36 @@ static Variant Message_get(const Object& obj, const String& name) {
 
   upb_msgval msgval = upb_msg_get(self->msg, field_index, self->layout);
 
-  if (upb_fielddef_isseq(f)) {
+  if (upb_fielddef_ismap(f)) {
+    Object map_object = Object(Unit::loadClass(s_MapField.get()));
+    MapField *intern = Native::data<MapField>(map_object);
+
+    Class* klass = NULL;
+    const upb_msgdef *mapentry_msgdef = upb_fielddef_msgsubdef(f);
+    const upb_fielddef *key_fielddef =
+        upb_msgdef_ntof(mapentry_msgdef, "key", 3);
+    const upb_fielddef *value_fielddef =
+        upb_msgdef_ntof(mapentry_msgdef, "value", 5);
+
+    if (upb_fielddef_issubmsg(value_fielddef)) {
+      const upb_msgdef *subdef = upb_fielddef_msgsubdef(value_fielddef);
+      klass = const_cast<Class*>(msgdef2class(subdef));
+    }
+
+    const upb_map *map = upb_msgval_getmap(msgval);
+    if (map == NULL) {
+      MapField___construct(intern, 
+                           upb_fielddef_descriptortype(key_fielddef),
+                           upb_fielddef_descriptortype(value_fielddef),
+                           klass);
+      upb_msg_set(self->msg, field_index,
+                  upb_msgval_map(intern->map), self->layout);
+    } else {
+      MapField_wrap(intern, const_cast<upb_map*>(map), klass);
+    }
+
+    return map_object;
+  } else if (upb_fielddef_isseq(f)) {
     Object array = Object(Unit::loadClass(s_RepeatedField.get()));
     RepeatedField *intern = Native::data<RepeatedField>(array);
 
@@ -144,7 +173,6 @@ static Variant Message_get(const Object& obj, const String& name) {
     }
 
     return array;
-  } else if (upb_fielddef_ismap(f)) {
   } else {
     Class* klass = NULL;
     if (upb_fielddef_issubmsg(f)) {
