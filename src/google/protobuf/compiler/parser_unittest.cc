@@ -1105,13 +1105,6 @@ TEST_F(ParseMiscTest, ParsePackage) {
     "package: \"foo.bar.baz\"");
 }
 
-TEST_F(ParseMiscTest, ParsePackageWithSpaces) {
-  ExpectParsesTo(
-    "package foo   .   bar.  \n"
-    "  baz;\n",
-    "package: \"foo.bar.baz\"");
-}
-
 // ===================================================================
 // options
 
@@ -1675,6 +1668,15 @@ TEST_F(ParseErrorTest, MultiplePackagesInFile) {
     "package foo;\n"
     "package bar;\n",
     "1:0: Multiple package definitions.\n");
+}
+
+TEST_F(ParseErrorTest, ParsePackageWithSpaces) {
+  ExpectHasErrors(
+    "package foo   .   bar.  \n"
+    "  baz;\n",
+    "0:12: Unexpected whitespace.\n"
+    "0:16: Unexpected whitespace.\n"
+    "0:23: Unexpected whitespace.\n");
 }
 
 // ===================================================================

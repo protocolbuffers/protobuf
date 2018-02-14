@@ -563,6 +563,8 @@ bool Tokenizer::Next() {
   previous_ = current_;
 
   while (!read_error_) {
+    // Keep track of whether or not there was whitespace before this token.
+    current_.follows_whitespace = LookingAt<Whitespace>();
     ConsumeZeroOrMore<Whitespace>();
 
     switch (TryConsumeCommentStart()) {

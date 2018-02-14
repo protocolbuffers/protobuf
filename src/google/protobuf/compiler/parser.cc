@@ -319,6 +319,21 @@ bool Parser::ConsumeEndOfDeclaration(
   }
 }
 
+bool Parser::HasNoPrecedingWhitespace(const char *error) {
+  if(input_ == NULL) {
+    return false;
+  }
+  if(input_->current().follows_whitespace) {
+    // Report the error at the end of the last token.
+    int errcol = input_->previous().column +
+                 input_->previous().text.length() + 1;
+    AddError(input_->previous().line, errcol, error);
+    return false;
+  }
+
+  return true;
+}
+
 // -------------------------------------------------------------------
 
 void Parser::AddError(int line, int column, const string& error) {
@@ -2158,12 +2173,18 @@ bool Parser::ParsePackage(FileDescriptorProto* file,
                               FileDescriptorProto::kPackageFieldNumber);
     location.RecordLegacyLocation(file, DescriptorPool::ErrorCollector::NAME);
 
-    while (true) {
-      string identifier;
+    string identifier;
+    DO(ConsumeIdentifier(&identifier, "Expected identifier."));
+    file->mutable_package()->append(identifier);
+
+    while (LookingAt(".")) {
+      HasNoPrecedingWhitespace("Unexpected whitespace.");
+      TryConsume(".");
+      file->mutable_package()->append(".");
+
+      HasNoPrecedingWhitespace("Unexpected whitespace.");
       DO(ConsumeIdentifier(&identifier, "Expected identifier."));
       file->mutable_package()->append(identifier);
-      if (!TryConsume(".")) break;
-      file->mutable_package()->append(".");
     }
 
     location.EndAt(input_->previous());

@@ -85,9 +85,9 @@ class LIBPROTOBUF_EXPORT ErrorCollector {
 // This class converts a stream of raw text into a stream of tokens for
 // the protocol definition parser to parse.  The tokens recognized are
 // similar to those that make up the C language; see the TokenType enum for
-// precise descriptions.  Whitespace and comments are skipped.  By default,
-// C- and C++-style comments are recognized, but other styles can be used by
-// calling set_comment_style().
+// precise descriptions.  Comments are skipped. By default, C- and C++-style
+// comments are recognized, but other styles can be used by calling
+// set_comment_style().
 class LIBPROTOBUF_EXPORT Tokenizer {
  public:
   // Construct a Tokenizer that reads and tokenizes text from the given
@@ -133,6 +133,20 @@ class LIBPROTOBUF_EXPORT Tokenizer {
     int line;
     ColumnNumber column;
     ColumnNumber end_column;
+
+    // Record the presence of whitespace before this token. The parser can use
+    // this to reject tokens that contain whitespace between them. This is
+    // recorded on the token because the whitespace is parsed before the symbol
+    // itself, but we may need to know what the symbol is to know if whitespace
+    // was allowed!
+    //
+    // For example, consider the statement "package com.google.protobuf ;".
+    // Whitespace should be allowed between the "protobuf" and ";" tokens, but
+    // when Next() is called after "protobuf", we can't just report an error as
+    // soon as we see the following whitespace.  That's because we don't yet
+    // know if the next token is part of the identifier (a dot) or the end of
+    // the fullIdent (a semicolon).
+    bool follows_whitespace;
   };
 
   // Get the current token.  This is updated when Next() is called.  Before
