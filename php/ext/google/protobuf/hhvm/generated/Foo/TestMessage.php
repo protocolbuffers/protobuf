@@ -45,7 +45,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *   repeated   string repeated_string   = 44;
  *   repeated    bytes repeated_bytes    = 45;
  * 
- *   repeated TestEnum repeated_enum = 46;
+ *   // repeated TestEnum repeated_enum = 46;
  *   repeated Sub repeated_message = 47;
  *
  * Generated from protobuf message <code>foo.TestMessage</code>
@@ -79,6 +79,340 @@ class TestMessage extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::INT32, \Google\Protobuf\Internal\GPBType::INT32);
         $this->map_int32_int32 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<int64, int64> map_int64_int64 = 72;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapInt64Int64()
+    {
+        return $this->map_int64_int64;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<int64, int64> map_int64_int64 = 72;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapInt64Int64($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::INT64, \Google\Protobuf\Internal\GPBType::INT64);
+        $this->map_int64_int64 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<uint32, uint32> map_uint32_uint32 = 73;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapUint32Uint32()
+    {
+        return $this->map_uint32_uint32;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<uint32, uint32> map_uint32_uint32 = 73;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapUint32Uint32($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::UINT32, \Google\Protobuf\Internal\GPBType::UINT32);
+        $this->map_uint32_uint32 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<uint64, uint64> map_uint64_uint64 = 74;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapUint64Uint64()
+    {
+        return $this->map_uint64_uint64;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<uint64, uint64> map_uint64_uint64 = 74;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapUint64Uint64($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::UINT64, \Google\Protobuf\Internal\GPBType::UINT64);
+        $this->map_uint64_uint64 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<sint32, sint32> map_sint32_sint32 = 75;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapSint32Sint32()
+    {
+        return $this->map_sint32_sint32;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<sint32, sint32> map_sint32_sint32 = 75;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapSint32Sint32($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::SINT32, \Google\Protobuf\Internal\GPBType::SINT32);
+        $this->map_sint32_sint32 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<sint64, sint64> map_sint64_sint64 = 76;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapSint64Sint64()
+    {
+        return $this->map_sint64_sint64;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<sint64, sint64> map_sint64_sint64 = 76;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapSint64Sint64($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::SINT64, \Google\Protobuf\Internal\GPBType::SINT64);
+        $this->map_sint64_sint64 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<fixed32, fixed32> map_fixed32_fixed32 = 77;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapFixed32Fixed32()
+    {
+        return $this->map_fixed32_fixed32;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<fixed32, fixed32> map_fixed32_fixed32 = 77;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapFixed32Fixed32($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::FIXED32, \Google\Protobuf\Internal\GPBType::FIXED32);
+        $this->map_fixed32_fixed32 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<fixed64, fixed64> map_fixed64_fixed64 = 78;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapFixed64Fixed64()
+    {
+        return $this->map_fixed64_fixed64;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<fixed64, fixed64> map_fixed64_fixed64 = 78;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapFixed64Fixed64($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::FIXED64, \Google\Protobuf\Internal\GPBType::FIXED64);
+        $this->map_fixed64_fixed64 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 79;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapSfixed32Sfixed32()
+    {
+        return $this->map_sfixed32_sfixed32;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 79;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapSfixed32Sfixed32($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::SFIXED32, \Google\Protobuf\Internal\GPBType::SFIXED32);
+        $this->map_sfixed32_sfixed32 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 80;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapSfixed64Sfixed64()
+    {
+        return $this->map_sfixed64_sfixed64;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 80;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapSfixed64Sfixed64($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::SFIXED64, \Google\Protobuf\Internal\GPBType::SFIXED64);
+        $this->map_sfixed64_sfixed64 = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<int32, float> map_int32_float = 81;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapInt32Float()
+    {
+        return $this->map_int32_float;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<int32, float> map_int32_float = 81;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapInt32Float($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::INT32, \Google\Protobuf\Internal\GPBType::FLOAT);
+        $this->map_int32_float = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<int32, double> map_int32_double = 82;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapInt32Double()
+    {
+        return $this->map_int32_double;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<int32, double> map_int32_double = 82;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapInt32Double($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::INT32, \Google\Protobuf\Internal\GPBType::DOUBLE);
+        $this->map_int32_double = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<bool, bool> map_bool_bool = 83;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapBoolBool()
+    {
+        return $this->map_bool_bool;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<bool, bool> map_bool_bool = 83;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapBoolBool($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::BOOL, \Google\Protobuf\Internal\GPBType::BOOL);
+        $this->map_bool_bool = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<string, string> map_string_string = 84;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapStringString()
+    {
+        return $this->map_string_string;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<string, string> map_string_string = 84;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapStringString($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::STRING, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->map_string_string = $arr;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<int32, bytes> map_int32_bytes = 85;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapInt32Bytes()
+    {
+        return $this->map_int32_bytes;
+    }
+
+    /**
+     * Generated from protobuf field <code>map<int32, bytes> map_int32_bytes = 85;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapInt32Bytes($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::INT32, \Google\Protobuf\Internal\GPBType::BYTES);
+        $this->map_int32_bytes = $arr;
+
+        return $this;
+    }
+
+    /**
+     * map<int32,    TestEnum> map_int32_enum        = 86;
+     *
+     * Generated from protobuf field <code>map<int32, .foo.TestMessage.Sub> map_int32_message = 87;</code>
+     * @return \Google\Protobuf\Internal\MapField
+     */
+    public function getMapInt32Message()
+    {
+        return $this->map_int32_message;
+    }
+
+    /**
+     * map<int32,    TestEnum> map_int32_enum        = 86;
+     *
+     * Generated from protobuf field <code>map<int32, .foo.TestMessage.Sub> map_int32_message = 87;</code>
+     * @param array|\Google\Protobuf\Internal\MapField $var
+     * @return $this
+     */
+    public function setMapInt32Message($var)
+    {
+        $arr = GPBUtil::checkMapField($var, \Google\Protobuf\Internal\GPBType::INT32, \Google\Protobuf\Internal\GPBType::MESSAGE, \Foo\TestMessage_Sub::class);
+        $this->map_int32_message = $arr;
 
         return $this;
     }

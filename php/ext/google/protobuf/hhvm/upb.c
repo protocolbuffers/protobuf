@@ -223,6 +223,40 @@ static upb_array *upb_getorcreatearr(upb_decstate *d,
   return arr;
 }
 
+static upb_map *upb_getmap(upb_decframe *frame,
+                           const upb_msglayout_fieldinit_v1 *field) {
+  UPB_ASSERT(field->label == UPB_LABEL_REPEATED | 0x4);
+  return *(upb_map**)&frame->msg[field->offset];
+}
+
+static upb_array *upb_getorcreatemap(upb_decstate *d,
+                                     upb_decframe *frame,
+                                     const upb_msglayout_fieldinit_v1 *field) {
+  upb_map *map = upb_getmap(frame, field);
+
+  UPB_ASSERT(field->submsg_index != UPB_NO_SUBMSG);
+  const upb_msglayout_msginit_v1 *subm = frame->m->submsgs[field->submsg_index];
+  const upb_msglayout_fieldinit_v1 *k = &subm->fields[0];
+  const upb_msglayout_fieldinit_v1 *v = &subm->fields[1];
+  UPB_ASSERT(subm);
+
+  if (!map) {
+    map = upb_map_new(
+              upb_desctype_to_fieldtype[k->descriptortype],
+              upb_desctype_to_fieldtype[v->descriptortype],
+              &d->env->arena_.alloc);
+    if (!map) {
+      return NULL;
+    }
+    upb_map_init(map, upb_desctype_to_fieldtype[k->descriptortype],
+                 upb_desctype_to_fieldtype[v->descriptortype],
+                 upb_arena_alloc(upb_env_arena(d->env)));
+    *(upb_map**)&frame->msg[field->offset] = map;
+  }
+
+  return map;
+}
+
 static void upb_sethasbit(upb_decframe *frame,
                           const upb_msglayout_fieldinit_v1 *field) {
   UPB_ASSERT(field->hasbit != UPB_NO_HASBIT);
@@ -475,6 +509,42 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
   UPB_UNREACHABLE();
 }
 
+static bool upb_decode_tomap(upb_decstate *d, upb_decframe *frame,
+                             const char *field_start,
+                             const upb_msglayout_fieldinit_v1 *field,
+                             upb_stringview val) {
+  upb_map *map = upb_getorcreatemap(d, frame, field);
+
+  CHK(val.size <= (size_t)(frame->limit - val.data));
+  d->ptr -= val.size;
+
+  // Create elemente message.
+  UPB_ASSERT(field->submsg_index != UPB_NO_SUBMSG);
+  const upb_msglayout_msginit_v1 *subm =
+      frame->m->submsgs[field->submsg_index];
+  UPB_ASSERT(subm);
+
+  char *submsg =
+      upb_env_malloc(d->env, upb_msg_sizeof((upb_msglayout *)subm));
+  CHK(submsg);
+  submsg = upb_msg_init(
+      submsg, (upb_msglayout*)subm, upb_arena_alloc(upb_env_arena(d->env)));
+
+  if (!upb_decode_message(
+           d, val.data + val.size, frame->group_number, submsg, subm)) {
+    // TODO(teboring): Free temporary submsg.
+    return false;
+  }
+
+  upb_msglayout *sublayout = upb_msglayout_frominit_v1(
+                                 subm, &d->env->arena_.alloc);
+  upb_msgval key = upb_msg_get(submsg, 0, sublayout);
+  upb_msgval value = upb_msg_get(submsg, 1, sublayout);
+  upb_map_set(map, key, value, NULL);
+
+  return true;
+}
+
 static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
                                       const char *field_start,
                                       const upb_msglayout_fieldinit_v1 *field) {
@@ -482,7 +552,9 @@ static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
 
   CHK(upb_decode_string(&d->ptr, frame->limit, &val));
 
-  if (field->label == UPB_LABEL_REPEATED) {
+  if (field->label == (UPB_LABEL_REPEATED | 0x4)) {
+    return upb_decode_tomap(d, frame, field_start, field, val);
+  } else if (field->label == UPB_LABEL_REPEATED) {
     return upb_decode_toarray(d, frame, field_start, field, val);
   } else {
     switch ((upb_descriptortype_t)field->descriptortype) {
@@ -3298,6 +3370,7 @@ static bool upb_encode_map(upb_encstate *e, const char *field_mem,
     return true;
   }
 
+  UPB_ASSERT(f->submsg_index != UPB_NO_SUBMSG);
   const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
   const upb_msglayout_fieldinit_v1 *k = &subm->fields[0];
   const upb_msglayout_fieldinit_v1 *v = &subm->fields[1];
@@ -3305,7 +3378,7 @@ static bool upb_encode_map(upb_encstate *e, const char *field_mem,
   upb_mapiter *it = NULL;
   for (it = upb_mapiter_new(map, upb_map_getalloc(map));
        !upb_mapiter_done(it); upb_mapiter_next(it)) {
-    char *buf_end = e->ptr;
+    size_t pre_len = e->limit - e->ptr;
 
 #define T(upper, ctype, accesstype, msgval, field)              \
   case UPB_TYPE_##upper: {                                      \
@@ -3345,7 +3418,7 @@ static bool upb_encode_map(upb_encstate *e, const char *field_mem,
     }
 #undef T
 
-    size_t size = buf_end - e->ptr;
+    size_t size = (e->limit - e->ptr) - pre_len;
     CHK(upb_put_varint(e, size) &&
         upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
   }
@@ -3370,7 +3443,7 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
                         const upb_msglayout_msginit_v1 *m,
                         size_t *size) {
   int i;
-  char *buf_end = e->ptr;
+  size_t pre_len = e->limit - e->ptr;
 
   if (msg == NULL) {
     return true;
@@ -3381,7 +3454,7 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
 
     if (f->label == UPB_LABEL_REPEATED) {
       CHK(upb_encode_array(e, msg + f->offset, m, f));
-    } else if (f->label == 0x4 | UPB_LABEL_REPEATED) {
+    } else if (f->label == (0x4 | UPB_LABEL_REPEATED)) {
       CHK(upb_encode_map(e, msg + f->offset, m, f));
     } else {
       if (upb_encode_hasscalarfield(msg, m, f)) {
@@ -3390,7 +3463,7 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
     }
   }
 
-  *size = buf_end - e->ptr;
+  *size = (e->limit - e->ptr) - pre_len;
   return true;
 }
 
@@ -4491,6 +4564,11 @@ static bool upb_msglayout_init(upb_msglayout *l,
     upb_msglayout_free(l);
     return false;
   }
+}
+
+upb_msglayout *upb_msglayout_frominit_v1(
+    const upb_msglayout_msginit_v1 *init, upb_alloc *a) {
+  return (upb_msglayout*)init;
 }
 
 

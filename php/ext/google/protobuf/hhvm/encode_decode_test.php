@@ -79,7 +79,7 @@ class EncodeDecodeTest extends TestBase
 
             // Get Message
             $get_start = microtime_float();
-            # $this->expectFields($to);
+            $this->expectFields($to);
             $get_end = microtime_float();
             $get_time += $get_end - $get_start;
         }

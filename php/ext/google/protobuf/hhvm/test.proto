@@ -39,27 +39,27 @@ message TestMessage {
 //   repeated   string repeated_string   = 44;
 //   repeated    bytes repeated_bytes    = 45;
 // 
-//   repeated TestEnum repeated_enum = 46;
+//   // repeated TestEnum repeated_enum = 46;
 //   repeated Sub repeated_message = 47;
 
   // Map
   map<int32,       int32> map_int32_int32       = 71;
-//   map<int64,       int64> map_int64_int64       = 72;
-//   map<uint32,     uint32> map_uint32_uint32     = 73;
-//   map<uint64,     uint64> map_uint64_uint64     = 74;
-//   map<sint32,     sint32> map_sint32_sint32     = 75;
-//   map<sint64,     sint64> map_sint64_sint64     = 76;
-//   map<fixed32,   fixed32> map_fixed32_fixed32   = 77;
-//   map<fixed64,   fixed64> map_fixed64_fixed64   = 78;
-//   map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 79;
-//   map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 80;
-//   map<int32,       float> map_int32_float       = 81;
-//   map<int32,      double> map_int32_double      = 82;
-//   map<bool,         bool> map_bool_bool         = 83;
-//   map<string,     string> map_string_string     = 84;
-//   map<int32,       bytes> map_int32_bytes       = 85;
-//   // map<int32,    TestEnum> map_int32_enum        = 86;
-//   map<int32,         Sub> map_int32_message     = 87;
+  map<int64,       int64> map_int64_int64       = 72;
+  map<uint32,     uint32> map_uint32_uint32     = 73;
+  map<uint64,     uint64> map_uint64_uint64     = 74;
+  map<sint32,     sint32> map_sint32_sint32     = 75;
+  map<sint64,     sint64> map_sint64_sint64     = 76;
+  map<fixed32,   fixed32> map_fixed32_fixed32   = 77;
+  map<fixed64,   fixed64> map_fixed64_fixed64   = 78;
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 79;
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 80;
+  map<int32,       float> map_int32_float       = 81;
+  map<int32,      double> map_int32_double      = 82;
+  map<bool,         bool> map_bool_bool         = 83;
+  map<string,     string> map_string_string     = 84;
+  map<int32,       bytes> map_int32_bytes       = 85;
+  // map<int32,    TestEnum> map_int32_enum        = 86;
+  map<int32,         Sub> map_int32_message     = 87;
 
   message Sub {
     int32 a = 1;
