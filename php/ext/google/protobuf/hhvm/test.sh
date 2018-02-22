@@ -56,26 +56,26 @@ export C_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/inc
 # make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && php -dextension=./modules/protobuf.so test_php.php
 make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
 
-# # php-5.5-zts
-# export PATH=/usr/local/php-5.5-zts/bin:$OLD_PATH
-# export CPLUS_INCLUDE_PATH=/usr/local/php-5.5-zts/include/php/main:/usr/local/php-5.5-zts/include/php/:$OLD_CPLUS_INCLUDE_PATH
-# export C_INCLUDE_PATH=/usr/local/php-5.5-zts/include/php/main:/usr/local/php-5.5-zts/include/php/:$OLD_C_INCLUDE_PATH
-# 
-# make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
-# 
-# # php-7.1
-# export PATH=/usr/local/php-7.1/bin:$OLD_PATH
-# export CPLUS_INCLUDE_PATH=/usr/local/php-7.1/include/php/main:/usr/local/php-7.1/include/php/:$OLD_CPLUS_INCLUDE_PATH
-# export C_INCLUDE_PATH=/usr/local/php-7.1/include/php/main:/usr/local/php-7.1/include/php/:$OLD_C_INCLUDE_PATH
-# 
-# make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
-# 
-# # php-7.1-zts
-# export PATH=/usr/local/php-7.1-zts/bin:$OLD_PATH
-# export CPLUS_INCLUDE_PATH=/usr/local/php-7.1-zts/include/php/main:/usr/local/php-7.1-zts/include/php/:$OLD_CPLUS_INCLUDE_PATH
-# export C_INCLUDE_PATH=/usr/local/php-7.1-zts/include/php/main:/usr/local/php-7.1-zts/include/php/:$OLD_C_INCLUDE_PATH
-# 
-# make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && php -dextension=./modules/protobuf.so test_php.php
+# php-5.5-zts
+export PATH=/usr/local/php-5.5-zts/bin:$OLD_PATH
+export CPLUS_INCLUDE_PATH=/usr/local/php-5.5-zts/include/php/main:/usr/local/php-5.5-zts/include/php/:$OLD_CPLUS_INCLUDE_PATH
+export C_INCLUDE_PATH=/usr/local/php-5.5-zts/include/php/main:/usr/local/php-5.5-zts/include/php/:$OLD_C_INCLUDE_PATH
+
+make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
+
+# php-7.1
+export PATH=/usr/local/php-7.1/bin:$OLD_PATH
+export CPLUS_INCLUDE_PATH=/usr/local/php-7.1/include/php/main:/usr/local/php-7.1/include/php/:$OLD_CPLUS_INCLUDE_PATH
+export C_INCLUDE_PATH=/usr/local/php-7.1/include/php/main:/usr/local/php-7.1/include/php/:$OLD_C_INCLUDE_PATH
+
+make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
+
+# php-7.1-zts
+export PATH=/usr/local/php-7.1-zts/bin:$OLD_PATH
+export CPLUS_INCLUDE_PATH=/usr/local/php-7.1-zts/include/php/main:/usr/local/php-7.1-zts/include/php/:$OLD_CPLUS_INCLUDE_PATH
+export C_INCLUDE_PATH=/usr/local/php-7.1-zts/include/php/main:/usr/local/php-7.1-zts/include/php/:$OLD_C_INCLUDE_PATH
+
+make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
 
 echo "All Tests Passed"
 

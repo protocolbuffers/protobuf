@@ -53,7 +53,9 @@ upb_msgval tomsgval(zval* value, upb_fieldtype_t type) {
       return upb_msgval_bool(PROTO_Z_BVAL_P(value));
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-      return upb_msgval_makestr(Z_STRVAL_P(value), Z_STRLEN_P(value));
+      char *mem = ALLOC_N(char, Z_STRLEN_P(value) + 1);
+      memcpy(mem, Z_STRVAL_P(value), Z_STRLEN_P(value) + 1);
+      return upb_msgval_makestr(mem, Z_STRLEN_P(value));
     }
     case UPB_TYPE_MESSAGE: {
       TSRMLS_FETCH();
