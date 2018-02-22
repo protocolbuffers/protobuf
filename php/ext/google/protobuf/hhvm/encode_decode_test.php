@@ -84,11 +84,11 @@ class EncodeDecodeTest extends TestBase
             $get_time += $get_end - $get_start;
         }
 
-        echo "Encode: " . strval($size * $loops / $encode_time / 1000000) . "MB/s\n";
-        echo "Decode: " . strval($size * $loops / $decode_time / 1000000) . "MB/s\n";
-        echo "Set $set_time s\n";
-        echo "Get: $get_time s\n";
-        echo "Create: $create_time s\n";
+#         echo "Encode: " . strval($size * $loops / $encode_time / 1000000) . "MB/s\n";
+#         echo "Decode: " . strval($size * $loops / $decode_time / 1000000) . "MB/s\n";
+#         echo "Set $set_time s\n";
+#         echo "Get: $get_time s\n";
+#         echo "Create: $create_time s\n";
     }
 
 #     public function testEncodeDecodeEmpty()

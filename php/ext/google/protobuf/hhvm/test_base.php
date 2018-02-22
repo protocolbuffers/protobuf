@@ -29,7 +29,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertSame(true, $m->getOptionalBool());
         $this->assertSame('a',  $m->getOptionalString());
         $this->assertSame('b',  $m->getOptionalBytes());
-        # $this->assertSame(TestEnum::ONE, $m->getOptionalEnum());
+        $this->assertSame(TestEnum::ONE, $m->getOptionalEnum());
         $this->assertSame(33,   $m->getOptionalMessage()->getA());
         if (PHP_INT_SIZE == 4) {
             $this->assertSame('-43',  $m->getOptionalInt64());
@@ -60,6 +60,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, $m->getRepeatedBool()[0]);
         $this->assertEquals('a',  $m->getRepeatedString()[0]);
         $this->assertEquals('b',  $m->getRepeatedBytes()[0]);
+        $this->assertEquals(TestEnum::ZERO, $m->getRepeatedEnum()[0]);
         $this->assertEquals(34,   $m->getRepeatedMessage()[0]->GetA());
 
         $this->assertEquals(-52,   $m->getRepeatedInt32()[1]);
@@ -77,6 +78,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals(false, $m->getRepeatedBool()[1]);
         $this->assertEquals('c',   $m->getRepeatedString()[1]);
         $this->assertEquals('d',   $m->getRepeatedBytes()[1]);
+        $this->assertEquals(TestEnum::ONE, $m->getRepeatedEnum()[1]);
         $this->assertEquals(35,    $m->getRepeatedMessage()[1]->GetA());
 
         if (PHP_INT_SIZE == 4) {
@@ -102,7 +104,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertEquals(true , $m->getMapBoolBool()[true]);
         $this->assertEquals('e', $m->getMapStringString()['e']);
         $this->assertEquals('f', $m->getMapInt32Bytes()[1]);
-        # $this->assertEquals(TestEnum::ONE, $m->getMapInt32Enum()[1]);
+        $this->assertEquals(TestEnum::ONE, $m->getMapInt32Enum()[1]);
         $this->assertEquals(36, $m->getMapInt32Message()[1]->GetA());
     }
 

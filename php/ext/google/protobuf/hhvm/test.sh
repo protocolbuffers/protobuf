@@ -32,6 +32,8 @@ run_tests()
 PROTOC=../../../../../src/protoc
 
 # Test HHVM
+rm -rf generated
+mkdir generated
 $PROTOC --php_out=hhvm:generated test.proto
 # make clean; hphpize; cmake . && make && hhvm -d extension_dir=. -d hhvm.extensions[]=protobuf.so test_hhvm.php
 phpunit --version

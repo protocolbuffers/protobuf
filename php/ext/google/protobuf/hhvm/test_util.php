@@ -66,7 +66,7 @@ class TestUtil
         $m->setOptionalBool(true);
         $m->setOptionalString('a');
         $m->setOptionalBytes('b');
-        # $m->setOptionalEnum(TestEnum::ONE);
+        $m->setOptionalEnum(TestEnum::ONE);
         $sub = new TestMessage_Sub();
         $m->setOptionalMessage($sub);
         $m->getOptionalMessage()->SetA(33);
@@ -86,7 +86,7 @@ class TestUtil
         self::appendHelper($m, 'RepeatedBool',     true);
         self::appendHelper($m, 'RepeatedString',   'a');
         self::appendHelper($m, 'RepeatedBytes',    'b');
-        # self::appendHelper($m, 'RepeatedEnum',     TestEnum::ZERO);
+        self::appendHelper($m, 'RepeatedEnum',     TestEnum::ZERO);
         self::appendHelper($m, 'RepeatedMessage',  new TestMessage_Sub());
         $m->getRepeatedMessage()[0]->setA(34);
 
@@ -105,7 +105,7 @@ class TestUtil
         self::appendHelper($m, 'RepeatedBool',     false);
         self::appendHelper($m, 'RepeatedString',   'c');
         self::appendHelper($m, 'RepeatedBytes',    'd');
-        # self::appendHelper($m, 'RepeatedEnum',     TestEnum::ONE);
+        self::appendHelper($m, 'RepeatedEnum',     TestEnum::ONE);
         self::appendHelper($m, 'RepeatedMessage',  new TestMessage_Sub());
         $m->getRepeatedMessage()[1]->SetA(35);
 
@@ -124,7 +124,7 @@ class TestUtil
         self::kvUpdateHelper($m, 'MapBoolBool', true, true);
         self::kvUpdateHelper($m, 'MapStringString', 'e', 'e');
         self::kvUpdateHelper($m, 'MapInt32Bytes', 1, 'f');
-        # self::kvUpdateHelper($m, 'MapInt32Enum', 1, TestEnum::ONE);
+        self::kvUpdateHelper($m, 'MapInt32Enum', 1, TestEnum::ONE);
         self::kvUpdateHelper($m, 'MapInt32Message', 1, new TestMessage_Sub());
         $m->getMapInt32Message()[1]->SetA(36);
     }

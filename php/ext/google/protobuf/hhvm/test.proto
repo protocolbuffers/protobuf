@@ -20,6 +20,7 @@ message TestMessage {
   string optional_string = 14;
   bytes optional_bytes = 15;
 
+  TestEnum optional_enum = 16;
   Sub optional_message = 17;
 
   // Repeated
@@ -39,7 +40,7 @@ message TestMessage {
   repeated   string repeated_string   = 44;
   repeated    bytes repeated_bytes    = 45;
 
-  // repeated TestEnum repeated_enum = 46;
+  repeated TestEnum repeated_enum = 46;
   repeated Sub repeated_message = 47;
 
   // Map
@@ -58,10 +59,17 @@ message TestMessage {
   map<bool,         bool> map_bool_bool         = 83;
   map<string,     string> map_string_string     = 84;
   map<int32,       bytes> map_int32_bytes       = 85;
-  // map<int32,    TestEnum> map_int32_enum        = 86;
+  map<int32,    TestEnum> map_int32_enum        = 86;
   map<int32,         Sub> map_int32_message     = 87;
 
   message Sub {
     int32 a = 1;
   }
+}
+
+enum TestEnum {
+  ZERO = 0;
+  ONE  = 1;
+  TWO  = 2;
+  ECHO = 3;  // Test reserved name.
 }

@@ -91,7 +91,7 @@ class GPBUtil {
   <<__Native>>
   public static function checkUint64(mixed $val): void;
   <<__Native>>
-  public static function checkEnum(mixed $val): void;
+  public static function checkEnum(mixed $val, string $klass): void;
   <<__Native>>
   public static function checkFloat(mixed $val): void;
   <<__Native>>

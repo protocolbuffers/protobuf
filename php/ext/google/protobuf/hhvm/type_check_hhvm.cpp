@@ -4,7 +4,7 @@ void HHVM_METHOD(Util, checkInt32, const Variant& val);
 void HHVM_METHOD(Util, checkUint32, const Variant& val);
 void HHVM_METHOD(Util, checkInt64, const Variant& val);
 void HHVM_METHOD(Util, checkUint64, const Variant& val);
-void HHVM_METHOD(Util, checkEnum, const Variant& val);
+void HHVM_METHOD(Util, checkEnum, const Variant& val, const String& klass);
 void HHVM_METHOD(Util, checkFloat, const Variant& val);
 void HHVM_METHOD(Util, checkDouble, const Variant& val);
 void HHVM_METHOD(Util, checkBool, const Variant& val);
@@ -65,7 +65,7 @@ void HHVM_METHOD(Util, checkInt64, const Variant& val) {
 void HHVM_METHOD(Util, checkUint64, const Variant& val) {
 }
 
-void HHVM_METHOD(Util, checkEnum, const Variant& val) {
+void HHVM_METHOD(Util, checkEnum, const Variant& val, const String& klass) {
 }
 
 void HHVM_METHOD(Util, checkFloat, const Variant& val) {
