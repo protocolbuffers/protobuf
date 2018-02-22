@@ -153,15 +153,15 @@ static void message_set_property_internal(zval* object, zval* member,
 #endif
   }
 
-  if (upb_fielddef_isseq(f)) {
-    RepeatedField *arr = UNBOX(RepeatedField, value);
-    upb_msgval msgval;
-    upb_msgval_setarr(&msgval, arr->array);
-    upb_msg_set(self->msg, field_index, msgval, self->layout);
-  } else if (upb_fielddef_ismap(f)) {
+  if (upb_fielddef_ismap(f)) {
     MapField *map = UNBOX(MapField, value);
     upb_msgval msgval;
     upb_msgval_setmap(&msgval, map->map);
+    upb_msg_set(self->msg, field_index, msgval, self->layout);
+  } else if (upb_fielddef_isseq(f)) {
+    RepeatedField *arr = UNBOX(RepeatedField, value);
+    upb_msgval msgval;
+    upb_msgval_setarr(&msgval, arr->array);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   } else {
     upb_msgval msgval = tomsgval(value, type);
@@ -212,6 +212,8 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
 
     zend_class_entry* klass = NULL;
     const upb_msgdef *mapentry_msgdef = upb_fielddef_msgsubdef(f);
+    const upb_fielddef *key_fielddef =
+        upb_msgdef_ntof(mapentry_msgdef, "key", 3);
     const upb_fielddef *value_fielddef =
         upb_msgdef_ntof(mapentry_msgdef, "value", 5);
 
@@ -222,7 +224,10 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
 
     const upb_map *map = upb_msgval_getmap(msgval);
     if (map == NULL) {
-      MapField___construct(intern, upb_fielddef_descriptortype(f), klass);
+      MapField___construct(intern, 
+                           upb_fielddef_descriptortype(key_fielddef),
+                           upb_fielddef_descriptortype(value_fielddef),
+                           klass);
       upb_msg_set(self->msg, field_index,
                   upb_msgval_map(intern->map), self->layout);
     } else {

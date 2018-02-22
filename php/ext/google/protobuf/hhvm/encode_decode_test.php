@@ -39,6 +39,21 @@ class EncodeDecodeTest extends TestBase
 #         $this->expectFields($to);
 #     }
 
+#     public  function testEncodeDecodeOneof()
+#     {
+#         $m = new TestMessage();
+#         
+#         $m->setOneofInt32(1);
+#         assert(1 === $m->getOneofInt32());
+#         assert(0.0 === $m->getOneofFloat());
+#         assert('' === $m->getOneofString());
+#         assert(NULL === $m->getOneofMessage());
+#         $data = $m->serializeToString();
+#         $n = new TestMessage();
+#         $n->mergeFromString($data);
+#         assert(1 === $n->getOneofInt32());
+#     }
+
     public function testEncodeDecode()
     {
         $loops = 1;

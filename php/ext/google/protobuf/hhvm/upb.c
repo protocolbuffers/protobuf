@@ -225,13 +225,13 @@ static upb_array *upb_getorcreatearr(upb_decstate *d,
 
 static upb_map *upb_getmap(upb_decframe *frame,
                            const upb_msglayout_fieldinit_v1 *field) {
-  UPB_ASSERT(field->label == UPB_LABEL_REPEATED | 0x4);
+  UPB_ASSERT(field->label == (UPB_LABEL_REPEATED | 0x4));
   return *(upb_map**)&frame->msg[field->offset];
 }
 
-static upb_array *upb_getorcreatemap(upb_decstate *d,
-                                     upb_decframe *frame,
-                                     const upb_msglayout_fieldinit_v1 *field) {
+static upb_map *upb_getorcreatemap(upb_decstate *d,
+                                   upb_decframe *frame,
+                                   const upb_msglayout_fieldinit_v1 *field) {
   upb_map *map = upb_getmap(frame, field);
 
   UPB_ASSERT(field->submsg_index != UPB_NO_SUBMSG);
@@ -541,7 +541,7 @@ static bool upb_decode_tomap(upb_decstate *d, upb_decframe *frame,
   upb_msglayout *sublayout = upb_msglayout_frominit_v1(
                                  subm, &d->env->arena_.alloc);
 
-  upb_msglayout_fieldinit_v1 *f = &subm->fields[0];
+  const upb_msglayout_fieldinit_v1 *f = &subm->fields[0];
   int key_field_index = f->number == 1 ? 0 : 1;
   int value_field_index = f->number == 1 ? 1 : 0;
 
@@ -3372,7 +3372,7 @@ static bool upb_encode_map(upb_encstate *e, const char *field_mem,
                            const upb_msglayout_msginit_v1 *m,
                            const upb_msglayout_fieldinit_v1 *f) {
   int i;
-  const upb_map *map = *(const upb_map**)field_mem;
+  upb_map *map = *(upb_map**)field_mem;
 
   if (map == NULL || upb_map_size(map) == 0) {
     return true;
@@ -3409,45 +3409,14 @@ static bool upb_encode_map(upb_encstate *e, const char *field_mem,
         T(STRING, upb_stringview, str, msgval);
         T(BYTES,  upb_stringview, str, msgval);
         case UPB_TYPE_MESSAGE: {
-          upb_msg *msg = upb_msgval_getmsg(msgval);
-          CHK(upb_encode_scalarfield(e, &msg, subm, f, false));
+          const upb_msg *msg = upb_msgval_getmsg(msgval);
+          CHK(upb_encode_scalarfield(e, (const char*)&msg, subm, f, false));
           break;
         }
       }
 
 #undef T
     }
-
-//     upb_msgval value_msgval = upb_mapiter_value(it);
-//     switch (upb_desctype_to_fieldtype[v->descriptortype]) {
-//       T(INT32,  int32_t,  int32,  value_msgval, v);
-//       T(ENUM,   int32_t,  int32,  value_msgval, v);
-//       T(INT64,  int64_t,  int64,  value_msgval, v);
-//       T(UINT32, uint32_t, uint32, value_msgval, v);
-//       T(UINT64, uint64_t, uint64, value_msgval, v);
-//       T(DOUBLE, double,   double, value_msgval, v);
-//       T(FLOAT,  float,    float,  value_msgval, v);
-//       T(BOOL,   bool,     bool,   value_msgval, v);
-//       T(STRING, upb_stringview, str, value_msgval, v);
-//       T(BYTES,  upb_stringview, str, value_msgval, v);
-//       case UPB_TYPE_MESSAGE: {
-//         upb_msg *msg = upb_msgval_getmsg(value_msgval);
-//         CHK(upb_encode_scalarfield(e, msg, subm, v, false));
-//         break;
-//       }
-//     }
-// 
-//     upb_msgval key_msgval = upb_mapiter_key(it);
-//     switch (upb_desctype_to_fieldtype[k->descriptortype]) {
-//       T(INT32,  int32_t,  int32,  key_msgval, k);
-//       T(INT64,  int64_t,  int64,  key_msgval, k);
-//       T(UINT32, uint32_t, uint32, key_msgval, k);
-//       T(UINT64, uint64_t, uint64, key_msgval, k);
-//       T(BOOL,   bool,     bool,   key_msgval, k);
-//       T(STRING, upb_stringview, str, key_msgval, k);
-//       default:
-//         return false;
-//     }
 
     size_t size = (e->limit - e->ptr) - pre_len;
     CHK(upb_put_varint(e, size) &&

@@ -250,12 +250,12 @@ PHP_METHOD(Util, checkRepeatedField) {
 //  }
  
 PHP_METHOD(Util, checkMapField) {
-//    zval* val;
-//    PHP_PROTO_LONG key_type, value_type;
-//    const zend_class_entry* klass = NULL;
-//    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zll|C", &val, &key_type,
-//                              &value_type, &klass) == FAILURE) {
-//      return;
-//    }
-//    RETURN_ZVAL(val, 1, 0);
+  zval* val;
+  PROTO_SIZE key_type, value_type;
+  const zend_class_entry* klass = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zll|C", &val, &key_type,
+                            &value_type, &klass) == FAILURE) {
+    return;
+  }
+  RETURN_ZVAL(val, 1, 0);
 }
