@@ -23,25 +23,25 @@ message TestMessage {
   TestEnum optional_enum = 16;
   Sub optional_message = 17;
 
-//   oneof my_oneof {
-//     int32  oneof_int32    = 51;
-//     int64  oneof_int64    = 52;
-//     uint32 oneof_uint32   = 53;
-//     uint64 oneof_uint64   = 54;
-//     uint32 oneof_sint32   = 55;
-//     uint64 oneof_sint64   = 56;
-//     uint32 oneof_fixed32  = 57;
-//     uint64 oneof_fixed64  = 58;
-//     uint32 oneof_sfixed32 = 59;
-//     uint64 oneof_sfixed64 = 60;
-//     double oneof_double   = 61;
-//     float  oneof_float    = 62;
-//     bool   oneof_bool     = 63;
-//     string oneof_string   = 64;
-//     bytes  oneof_bytes    = 65;
-//     TestEnum oneof_enum   = 66;
-//     Sub    oneof_message  = 67;
-//   }
+  oneof my_oneof {
+    int32  oneof_int32    = 51;
+    int64  oneof_int64    = 52;
+    uint32 oneof_uint32   = 53;
+    uint64 oneof_uint64   = 54;
+    uint32 oneof_sint32   = 55;
+    uint64 oneof_sint64   = 56;
+    uint32 oneof_fixed32  = 57;
+    uint64 oneof_fixed64  = 58;
+    uint32 oneof_sfixed32 = 59;
+    uint64 oneof_sfixed64 = 60;
+    double oneof_double   = 61;
+    float  oneof_float    = 62;
+    bool   oneof_bool     = 63;
+    string oneof_string   = 64;
+    bytes  oneof_bytes    = 65;
+    TestEnum oneof_enum   = 66;
+    Sub    oneof_message  = 67;
+  }
 
   // Repeated
   repeated    int32 repeated_int32    = 31;

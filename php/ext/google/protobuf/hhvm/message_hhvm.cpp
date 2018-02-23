@@ -114,11 +114,7 @@ Variant tophpval(const upb_msgval& msgval,
   return uninit_null();;
 }
 
-static Variant Message_get(const Object& obj, const String& name) {
-  Message* self = Native::data<Message>(obj);
-  const upb_fielddef* f = upb_msgdef_ntof(
-      self->msgdef, name.data(), name.size());
-  assert(f != NULL);
+static Variant Message_get_impl(Message *self, const upb_fielddef *f) {
   int field_index = upb_fielddef_index(f);
   upb_fieldtype_t type = upb_fielddef_type(f);
 
@@ -182,12 +178,17 @@ static Variant Message_get(const Object& obj, const String& name) {
     return tophpval(msgval, type, klass);
   }
 }
-static Variant Message_set(const Object& obj, const String& name,
-                           const Variant& value) {
+
+static Variant Message_get(const Object& obj, const String& name) {
   Message* self = Native::data<Message>(obj);
   const upb_fielddef* f = upb_msgdef_ntof(
       self->msgdef, name.data(), name.size());
   assert(f != NULL);
+  return Message_get_impl(self, f);
+}
+
+static void Message_set_impl(Message *self, const upb_fielddef *f,
+                             const Variant& value) {
   int field_index = upb_fielddef_index(f);
   upb_fieldtype_t type = upb_fielddef_type(f);
 
@@ -205,6 +206,15 @@ static Variant Message_set(const Object& obj, const String& name,
     upb_msgval msgval = tomsgval(value, type);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   }
+}
+
+static Variant Message_set(const Object& obj, const String& name,
+                           const Variant& value) {
+  Message* self = Native::data<Message>(obj);
+  const upb_fielddef* f = upb_msgdef_ntof(
+      self->msgdef, name.data(), name.size());
+  assert(f != NULL);
+  Message_set_impl(self, f, value);
 
   return uninit_null();;
 }
@@ -222,6 +232,8 @@ static Variant Message_unset(const Object& obj, const String& name) {
 void HHVM_METHOD(Message, __construct);
 String HHVM_METHOD(Message, serializeToString);
 void HHVM_METHOD(Message, mergeFromString, const String& data);
+void HHVM_METHOD(Message, writeOneof, int64_t number, const Variant& value);
+Variant HHVM_METHOD(Message, readOneof, int64_t number);
 
 const StaticString s_Message("Google\\Protobuf\\Internal\\Message");
 
@@ -233,6 +245,10 @@ void Message_init() {
                 serializeToString, HHVM_MN(Message, serializeToString));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
                 mergeFromString, HHVM_MN(Message, mergeFromString));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
+                writeOneof, HHVM_MN(Message, writeOneof));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
+                readOneof, HHVM_MN(Message, readOneof));
 
   // Register class
   Native::registerNativeDataInfo<Message>(s_Message.get()); 
@@ -262,4 +278,18 @@ String HHVM_METHOD(Message, serializeToString) {
 void HHVM_METHOD(Message, mergeFromString, const String& data) {
   Message* intern = Native::data<Message>(this_);
   Message_mergeFromString(intern, data.c_str(), data.length());
+}
+
+void HHVM_METHOD(Message, writeOneof, int64_t number, const Variant& value) {
+  Message* intern = Native::data<Message>(this_);
+  const upb_fielddef* f = upb_msgdef_itof(intern->msgdef, number);
+  assert(f != NULL);
+  Message_set_impl(intern, f, value);
+}
+
+Variant HHVM_METHOD(Message, readOneof, int64_t number) {
+  Message* intern = Native::data<Message>(this_);
+  const upb_fielddef* f = upb_msgdef_itof(intern->msgdef, number);
+  assert(f != NULL);
+  return Message_get_impl(intern, f);
 }

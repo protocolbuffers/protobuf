@@ -6755,6 +6755,7 @@ typedef struct {
   uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
   uint8_t descriptortype;
   uint8_t label;  /* is_map | UPB_LABEL */
+  upb_msgval default_value;
 } upb_msglayout_fieldinit_v1;
 
 typedef struct {

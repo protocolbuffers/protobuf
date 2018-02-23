@@ -338,11 +338,15 @@ static void Message_init_type(zend_class_entry* klass) {}
 PHP_METHOD(Message, __construct);
 PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFromString);
+PHP_METHOD(Message, writeOneof);
+PHP_METHOD(Message, readOneof);
 
 static zend_function_entry Message_methods[] = {
   PHP_ME(Message, __construct, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, readOneof, NULL, ZEND_ACC_PUBLIC)
 };
 
 PROTO_DEFINE_CLASS(Message,
@@ -376,4 +380,43 @@ PHP_METHOD(Message, mergeFromString) {
     return;
   }
   Message_mergeFromString(intern, data, size);
+}
+
+PHP_METHOD(Message, readOneof) {
+  PROTO_LONG index;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
+      FAILURE) {
+    return;
+  }
+
+  Message* self = UNBOX(Message, getThis());
+
+  const upb_fielddef* f = upb_msgdef_itof(self->msgdef, index);
+
+  zend_class_entry *subklass = NULL;
+  if (upb_fielddef_issubmsg(f)) {
+    const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+    subklass = const_cast<zend_class_entry*>(msgdef2class(subdef));
+  }
+
+  upb_msgval msgval = upb_msg_get(self->msg, upb_fielddef_index(f),
+                                  self->layout);
+  tophpval(msgval, upb_fielddef_type(f), subklass, return_value);
+}
+
+PHP_METHOD(Message, writeOneof) {
+  PROTO_LONG index;
+  zval* value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lz", &index, &value) ==
+      FAILURE) {
+    return;
+  }
+
+  Message* self = UNBOX(Message, getThis());
+
+  const upb_fielddef* f = upb_msgdef_itof(self->msgdef, index);
+
+  upb_msgval msgval = tomsgval(value, upb_fielddef_type(f));
+  upb_msg_set(self->msg, upb_fielddef_index(f), msgval, self->layout);
 }

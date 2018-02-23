@@ -10,6 +10,10 @@ class Message {
   public function serializeToString(): string;
   <<__Native>>
   public function mergeFromString(string $data): void;
+  <<__Native>>
+  public function writeOneof(int $number, mixed $value): void;
+  <<__Native>>
+  public function readOneof(int $number): mixed;
 }
 
 <<__NativeData("Google\\Protobuf\\Internal\\MapField")>>

@@ -275,7 +275,13 @@ static void upb_setoneofcase(upb_decframe *frame,
 static char *upb_decode_prepareslot(upb_decstate *d,
                                     upb_decframe *frame,
                                     const upb_msglayout_fieldinit_v1 *field) {
-  char *field_mem = frame->msg + field->offset;
+  char *field_mem = NULL;
+  if (field->oneof_index != UPB_NOT_IN_ONEOF) {
+    const upb_msglayout_oneofinit_v1 *o = &frame->m->oneofs[field->oneof_index];
+    field_mem = frame->msg + o->data_offset;
+  } else {
+    field_mem = frame->msg + field->offset;
+  }
   upb_array *arr;
 
   if (field->label == UPB_LABEL_REPEATED) {
@@ -304,22 +310,21 @@ static bool upb_decode_submsg(upb_decstate *d,
                               const char *limit,
                               const upb_msglayout_fieldinit_v1 *field,
                               int group_number) {
-  char *submsg = *(void**)&frame->msg[field->offset];
+  char *submsg = upb_decode_prepareslot(d, frame, field);
   const upb_msglayout_msginit_v1 *subm;
 
   UPB_ASSERT(field->submsg_index != UPB_NO_SUBMSG);
   subm = frame->m->submsgs[field->submsg_index];
   UPB_ASSERT(subm);
 
-  if (!submsg) {
-    submsg = upb_env_malloc(d->env, upb_msg_sizeof((upb_msglayout *)subm));
-    CHK(submsg);
-    submsg = upb_msg_init(
-        submsg, (upb_msglayout*)subm, upb_arena_alloc(upb_env_arena(d->env)));
-    *(void**)&frame->msg[field->offset] = submsg;
+  if (!*(void**)submsg) {
+    *(void**)submsg = upb_env_malloc(d->env, upb_msg_sizeof((upb_msglayout *)subm));
+    CHK(*(void**)submsg);
+    *(void**)submsg = upb_msg_init(
+        *(void**)submsg, (upb_msglayout*)subm, upb_arena_alloc(upb_env_arena(d->env)));
   }
 
-  upb_decode_message(d, limit, group_number, submsg, subm);
+  upb_decode_message(d, limit, group_number, *(void**)submsg, subm);
 
   return true;
 }
@@ -3458,7 +3463,13 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
       CHK(upb_encode_map(e, msg + f->offset, m, f));
     } else {
       if (upb_encode_hasscalarfield(msg, m, f)) {
-        CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
+        if (f->oneof_index != UPB_NOT_IN_ONEOF) {
+          const upb_msglayout_oneofinit_v1 *o = &m->oneofs[f->oneof_index];
+          CHK(upb_encode_scalarfield(e, msg + o->data_offset,
+                                     m, f, !m->is_proto2));
+        } else {
+          CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
+        }
       }
     }
   }
@@ -4510,6 +4521,8 @@ static bool upb_msglayout_init(upb_msglayout *l,
     } else {
       field->hasbit = UPB_NO_HASBIT;
     }
+
+    field->default_value = upb_msgval_fromdefault(f);
   }
 
   /* Account for space used by hasbits. */
@@ -4995,7 +5008,7 @@ upb_msgval upb_msg_get(const upb_msg *msg, int field_index,
       return upb_msgval_read(msg, ofs, size);
     } else {
       /* Return default. */
-      return upb_msgval_read(l->data.default_msg, field->offset, size);
+      return field->default_value;
     }
   } else {
     return upb_msgval_read(msg, field->offset, size);
