@@ -88,7 +88,6 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/php/php_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
