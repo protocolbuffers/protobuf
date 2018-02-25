@@ -132,6 +132,9 @@ class CommandLineInterfaceTest : public testing::Test {
   // -----------------------------------------------------------------
   // Methods to check the test results (called after Run()).
 
+  // Checks that Run() returned code r.
+  void ExpectReturnCode(int r);
+
   // Checks that no text was written to stderr during Run(), and Run()
   // returned 0.
   void ExpectNoErrors();
@@ -395,6 +398,10 @@ void CommandLineInterfaceTest::CreateTempDir(const string& name) {
 }
 
 // -------------------------------------------------------------------
+
+void CommandLineInterfaceTest::ExpectReturnCode(int r) {
+  EXPECT_EQ(r, return_code_);
+}
 
 void CommandLineInterfaceTest::ExpectNoErrors() {
   EXPECT_EQ(0, return_code_);
@@ -2087,11 +2094,31 @@ TEST_F(CommandLineInterfaceTest, InvalidErrorFormat) {
     "syntax = \"proto2\";\n"
     "badsyntax\n");
 
-  Run("protocol_compiler --test_out=$tmpdir "
-      "--proto_path=$tmpdir --error_format=invalid foo.proto");
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
 
   ExpectErrorText(
     "Unknown error format: invalid\n");
+}
+
+TEST_F(CommandLineInterfaceTest, Warnings) {
+  // Test --fatal_warnings.
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "import \"bar.proto\";\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+    "--proto_path=$tmpdir foo.proto");
+  ExpectReturnCode(0);
+  ExpectErrorSubstringWithZeroReturnCode(
+    "foo.proto: warning: Import bar.proto but not used.");
+
+  Run("protocol_compiler --test_out=$tmpdir --fatal_warnings "
+    "--proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+    "foo.proto: warning: Import bar.proto but not used.");
 }
 
 // -------------------------------------------------------------------

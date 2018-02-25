@@ -277,7 +277,7 @@ class CommandLineInterface::ErrorPrinter
       public DescriptorPool::ErrorCollector {
  public:
   ErrorPrinter(ErrorFormat format, DiskSourceTree *tree = NULL)
-    : format_(format), tree_(tree), found_errors_(false) {}
+    : format_(format), tree_(tree), found_errors_(false), found_warnings_(false) {}
   ~ErrorPrinter() {}
 
   // implements MultiFileErrorCollector ------------------------------
@@ -289,6 +289,7 @@ class CommandLineInterface::ErrorPrinter
 
   void AddWarning(const string& filename, int line, int column,
                   const string& message) {
+    found_warnings_ = true;
     AddErrorOrWarning(filename, line, column, message, "warning", std::clog);
   }
 
@@ -321,6 +322,8 @@ class CommandLineInterface::ErrorPrinter
   }
 
   bool FoundErrors() const { return found_errors_; }
+
+  bool FoundWarnings() const { return found_warnings_; }
 
  private:
   void AddErrorOrWarning(const string& filename, int line, int column,
@@ -361,6 +364,7 @@ class CommandLineInterface::ErrorPrinter
   const ErrorFormat format_;
   DiskSourceTree *tree_;
   bool found_errors_;
+  bool found_warnings_;
 };
 
 // -------------------------------------------------------------------
@@ -787,6 +791,7 @@ CommandLineInterface::CommandLineInterface()
     : mode_(MODE_COMPILE),
       print_mode_(PRINT_NONE),
       error_format_(ERROR_FORMAT_GCC),
+      fatal_warnings_(false),
       direct_dependencies_explicitly_set_(false),
       direct_dependencies_violation_msg_(
           kDefaultDirectDependenciesViolationMsg),
@@ -953,7 +958,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  if (error_collector->FoundErrors()) {
+  if (error_collector->FoundErrors() ||
+      (fatal_warnings_ && error_collector->FoundWarnings())) {
     return 1;
   }
 
@@ -1355,7 +1361,8 @@ bool CommandLineInterface::ParseArgument(const char* arg,
       *name == "--include_source_info" ||
       *name == "--version" ||
       *name == "--decode_raw" ||
-      *name == "--print_free_field_numbers") {
+      *name == "--print_free_field_numbers" ||
+      *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1588,6 +1595,12 @@ CommandLineInterface::InterpretArgument(const string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
+  } else if (name == "--fatal_warnings") {
+    if (fatal_warnings_) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    fatal_warnings_ = true;
   } else if (name == "--plugin") {
     if (plugin_prefix_.empty()) {
       std::cerr << "This compiler does not support plugins." << std::endl;
