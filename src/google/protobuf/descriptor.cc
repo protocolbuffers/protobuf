@@ -3116,15 +3116,18 @@ namespace {
 struct OptionsToInterpret {
   OptionsToInterpret(const string& ns,
                      const string& el,
+                     std::vector<int>& path,
                      const Message* orig_opt,
                      Message* opt)
       : name_scope(ns),
         element_name(el),
+        element_path(path),
         original_options(orig_opt),
         options(opt) {
   }
   string name_scope;
   string element_name;
+  std::vector<int> element_path;
   const Message* original_options;
   Message* options;
 };
@@ -3154,6 +3157,14 @@ class DescriptorBuilder {
   // them. We put pointers to those copies in this vector, as we build, so we
   // can later (after cross-linking) interpret those options.
   std::vector<OptionsToInterpret> options_to_interpret_;
+
+  // As we build descriptors and descend the tree of descriptor protos,
+  // we accumulate the path to the currently-being-built element. This is so
+  // we can attribute uninterpreted options to source code locations. When
+  // an option is interpreted, we can then also update the corresponding
+  // source code info to refer to the resolved option's location instead of
+  // the original uninterpreted option location.
+  std::vector<int> element_path_;
 
   bool had_errors_;
   string filename_;
@@ -3470,6 +3481,11 @@ class DescriptorBuilder {
     // submessage of the original option, not the mutable copy. Therefore we
     // can use it to find locations recorded by the parser.
     const UninterpretedOption* uninterpreted_option_;
+
+    // This maps the element path of uninterpreted options to the element path
+    // of the resulting interpreted option. This is used to modify a file's
+    // source code info to account for option interpretation.
+    std::map<std::vector<int>, std::vector<int>> interpreted_paths_;
 
     // Factory used to create the dynamic messages we need to parse
     // any aggregate option values we encounter.
@@ -4128,19 +4144,23 @@ template<class DescriptorT> void DescriptorBuilder::AllocateOptionsImpl(
   // we're still trying to build it.
   if (options->uninterpreted_option_size() > 0) {
     options_to_interpret_.push_back(
-        OptionsToInterpret(name_scope, element_name, &orig_options, options));
+        OptionsToInterpret(name_scope, element_name, element_path_, &orig_options, options));
   }
 }
 
 
 // A common pattern:  We want to convert a repeated field in the descriptor
 // to an array of values, calling some method to build each value.
-#define BUILD_ARRAY(INPUT, OUTPUT, NAME, METHOD, PARENT)             \
+#define BUILD_ARRAY(INPUT, OUTPUT, NAME, TAG, METHOD, PARENT)        \
   OUTPUT->NAME##_count_ = INPUT.NAME##_size();                       \
   AllocateArray(INPUT.NAME##_size(), &OUTPUT->NAME##s_);             \
+  element_path_.push_back(TAG);                                      \
   for (int i = 0; i < INPUT.NAME##_size(); i++) {                    \
+    element_path_.push_back(i);                                      \
     METHOD(INPUT.NAME(i), PARENT, OUTPUT->NAME##s_ + i);             \
-  }
+    element_path_.pop_back();                                        \
+  }                                                                  \
+  element_path_.pop_back();
 
 void DescriptorBuilder::AddRecursiveImportError(
     const FileDescriptorProto& proto, int from_here) {
@@ -4437,16 +4457,18 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   result->weak_dependency_count_ = weak_dependency_count;
 
   // Convert children.
-  BUILD_ARRAY(proto, result, message_type, BuildMessage  , NULL);
-  BUILD_ARRAY(proto, result, enum_type   , BuildEnum     , NULL);
-  BUILD_ARRAY(proto, result, service     , BuildService  , NULL);
-  BUILD_ARRAY(proto, result, extension   , BuildExtension, NULL);
+  BUILD_ARRAY(proto, result, message_type, FileDescriptorProto::kMessageTypeFieldNumber, BuildMessage  , NULL);
+  BUILD_ARRAY(proto, result, enum_type   , FileDescriptorProto::kEnumTypeFieldNumber,    BuildEnum     , NULL);
+  BUILD_ARRAY(proto, result, service     , FileDescriptorProto::kServiceFieldNumber,     BuildService  , NULL);
+  BUILD_ARRAY(proto, result, extension   , FileDescriptorProto::kExtensionFieldNumber,   BuildExtension, NULL);
 
   // Copy options.
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(FileDescriptorProto::kOptionsFieldNumber);
     AllocateOptions(proto.options(), result);
+    element_path_.pop_back();
   }
 
   // Note that the following steps must occur in exactly the specified order.
@@ -4514,13 +4536,13 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->is_unqualified_placeholder_ = false;
 
   // Build oneofs first so that fields and extension ranges can refer to them.
-  BUILD_ARRAY(proto, result, oneof_decl     , BuildOneof         , result);
-  BUILD_ARRAY(proto, result, field          , BuildField         , result);
-  BUILD_ARRAY(proto, result, nested_type    , BuildMessage       , result);
-  BUILD_ARRAY(proto, result, enum_type      , BuildEnum          , result);
-  BUILD_ARRAY(proto, result, extension_range, BuildExtensionRange, result);
-  BUILD_ARRAY(proto, result, extension      , BuildExtension     , result);
-  BUILD_ARRAY(proto, result, reserved_range , BuildReservedRange , result);
+  BUILD_ARRAY(proto, result, oneof_decl     , DescriptorProto::kOneofDeclFieldNumber,       BuildOneof         , result);
+  BUILD_ARRAY(proto, result, field          , DescriptorProto::kFieldFieldNumber,           BuildField         , result);
+  BUILD_ARRAY(proto, result, nested_type    , DescriptorProto::kNestedTypeFieldNumber,      BuildMessage       , result);
+  BUILD_ARRAY(proto, result, enum_type      , DescriptorProto::kEnumTypeFieldNumber,        BuildEnum          , result);
+  BUILD_ARRAY(proto, result, extension_range, DescriptorProto::kExtensionRangeFieldNumber,  BuildExtensionRange, result);
+  BUILD_ARRAY(proto, result, extension      , DescriptorProto::kExtensionFieldNumber,       BuildExtension     , result);
+  BUILD_ARRAY(proto, result, reserved_range , DescriptorProto::kReservedRangeFieldNumber,   BuildReservedRange , result);
 
   // Copy reserved names.
   int reserved_name_count = proto.reserved_name_size();
@@ -4536,7 +4558,9 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(DescriptorProto::kOptionsFieldNumber);
     AllocateOptions(proto.options(), result);
+    element_path_.pop_back();
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -4916,7 +4940,9 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(FieldDescriptorProto::kOptionsFieldNumber);
     AllocateOptions(proto.options(), result);
+    element_path_.pop_back();
   }
 
 
@@ -4950,8 +4976,10 @@ void DescriptorBuilder::BuildExtensionRange(
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(DescriptorProto_ExtensionRange::kOptionsFieldNumber);
     AllocateOptionsImpl(parent->full_name(), parent->full_name(),
                         proto.options(), result);
+    element_path_.pop_back();
   }
 }
 
@@ -5003,7 +5031,9 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(OneofDescriptorProto::kOptionsFieldNumber);
     AllocateOptions(proto.options(), result);
+    element_path_.pop_back();
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -5101,8 +5131,8 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
              "Enums must contain at least one value.");
   }
 
-  BUILD_ARRAY(proto, result, value, BuildEnumValue, result);
-  BUILD_ARRAY(proto, result, reserved_range, BuildReservedRange, result);
+  BUILD_ARRAY(proto, result, value,          EnumDescriptorProto::kValueFieldNumber,         BuildEnumValue,     result);
+  BUILD_ARRAY(proto, result, reserved_range, EnumDescriptorProto::kReservedRangeFieldNumber, BuildReservedRange, result);
 
   // Copy reserved names.
   int reserved_name_count = proto.reserved_name_size();
@@ -5120,7 +5150,9 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(EnumDescriptorProto::kOptionsFieldNumber);
     AllocateOptions(proto.options(), result);
+    element_path_.pop_back();
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -5197,7 +5229,9 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(EnumValueDescriptorProto::kOptionsFieldNumber);
     AllocateOptions(proto.options(), result);
+    element_path_.pop_back();
   }
 
   // Again, enum values are weird because we makes them appear as siblings
@@ -5258,13 +5292,15 @@ void DescriptorBuilder::BuildService(const ServiceDescriptorProto& proto,
   result->full_name_ = full_name;
   result->file_      = file_;
 
-  BUILD_ARRAY(proto, result, method, BuildMethod, result);
+  BUILD_ARRAY(proto, result, method, ServiceDescriptorProto::kMethodFieldNumber, BuildMethod, result);
 
   // Copy options.
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(ServiceDescriptorProto::kOptionsFieldNumber);
     AllocateOptions(proto.options(), result);
+    element_path_.pop_back();
   }
 
   AddSymbol(result->full_name(), NULL, result->name(),
@@ -5292,7 +5328,9 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    element_path_.push_back(MethodDescriptorProto::kOptionsFieldNumber);
     AllocateOptions(proto.options(), result);
+    element_path_.pop_back();
   }
 
   result->client_streaming_ = proto.client_streaming();
