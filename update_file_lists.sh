@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script copies source file lists from src/Makefile.am to cmake files.
 
