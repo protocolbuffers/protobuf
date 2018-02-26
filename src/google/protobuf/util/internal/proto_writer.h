@@ -309,7 +309,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   // Indicates whether we finished writing root message completely.
   bool done_;
 
-  // If true, don't report unknown field names to the listener.
+  // If true, don't report unknown field names and enum values to the listener.
   bool ignore_unknown_fields_;
 
   // If true, check if enum name in camel case or without underscore matches the
