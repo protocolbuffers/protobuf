@@ -3407,7 +3407,8 @@ class DescriptorBuilder {
     // Interprets uninterpreted_option_ on the specified message, which
     // must be the mutable copy of the original options message to which
     // uninterpreted_option_ belongs.
-    bool InterpretSingleOption(Message* options);
+    bool InterpretSingleOption(Message* options, std::vector<int>& src_path,
+                               std::vector<int>& options_path);
 
     // Adds the uninterpreted_option to the given options message verbatim.
     // Used when AllowUnknownDependencies() is in effect and we can't find
@@ -3486,6 +3487,11 @@ class DescriptorBuilder {
     // of the resulting interpreted option. This is used to modify a file's
     // source code info to account for option interpretation.
     std::map<std::vector<int>, std::vector<int>> interpreted_paths_;
+
+    // This maps the path to a repeated option field to the known number of
+    // elements the field contains. This is used to track the compute the
+    // index portion of the element path when interpreting a single option.
+    std::map<std::vector<int>, int> repeated_option_counts_;
 
     // Factory used to create the dynamic messages we need to parse
     // any aggregate option values we encounter.
@@ -6300,6 +6306,9 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
       << "No field named \"uninterpreted_option\" in the Options proto.";
   options->GetReflection()->ClearField(options, uninterpreted_options_field);
 
+  std::vector<int> src_path = options_to_interpret->element_path;
+  src_path.push_back(uninterpreted_options_field->number());
+
   // Find the uninterpreted_option field in the original options.
   const FieldDescriptor* original_uninterpreted_options_field =
       original_options->GetDescriptor()->
@@ -6310,14 +6319,17 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
   const int num_uninterpreted_options = original_options->GetReflection()->
       FieldSize(*original_options, original_uninterpreted_options_field);
   for (int i = 0; i < num_uninterpreted_options; ++i) {
+    src_path.push_back(i);
     uninterpreted_option_ = down_cast<const UninterpretedOption*>(
         &original_options->GetReflection()->GetRepeatedMessage(
             *original_options, original_uninterpreted_options_field, i));
-    if (!InterpretSingleOption(options)) {
+    if (!InterpretSingleOption(options, src_path,
+                               options_to_interpret->element_path)) {
       // Error already added by InterpretSingleOption().
       failed = true;
       break;
     }
+    src_path.pop_back();
   }
   // Reset these, so we don't have any dangling pointers.
   uninterpreted_option_ = NULL;
@@ -6350,7 +6362,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
 }
 
 bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
-    Message* options) {
+    Message* options, std::vector<int>& src_path, std::vector<int>& opts_path) {
   // First do some basic validation.
   if (uninterpreted_option_->name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
@@ -6395,6 +6407,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   const FieldDescriptor* field = NULL;
   std::vector<const FieldDescriptor*> intermediate_fields;
   string debug_msg_name = "";
+
+  std::vector<int> dest_path = opts_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
     const string& name_part = uninterpreted_option_->name(i).name_part();
@@ -6458,19 +6472,24 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
                             "\" is not a field or extension of message \"" +
                             descriptor->name() + "\".");
       }
-    } else if (i < uninterpreted_option_->name_size() - 1) {
-      if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-        return AddNameError("Option \"" +  debug_msg_name +
-                            "\" is an atomic type, not a message.");
-      } else if (field->is_repeated()) {
-        return AddNameError("Option field \"" + debug_msg_name +
-                            "\" is a repeated message. Repeated message "
-                            "options must be initialized using an "
-                            "aggregate value.");
-      } else {
-        // Drill down into the submessage.
-        intermediate_fields.push_back(field);
-        descriptor = field->message_type();
+    } else {
+      // accumulate field numbers to form path to interpreted option
+      dest_path.push_back(field->number());
+
+      if (i < uninterpreted_option_->name_size() - 1) {
+        if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+          return AddNameError("Option \"" +  debug_msg_name +
+                              "\" is an atomic type, not a message.");
+        } else if (field->is_repeated()) {
+          return AddNameError("Option field \"" + debug_msg_name +
+                              "\" is a repeated message. Repeated message "
+                              "options must be initialized using an "
+                              "aggregate value.");
+        } else {
+          // Drill down into the submessage.
+          intermediate_fields.push_back(field);
+          descriptor = field->message_type();
+        }
       }
     }
   }
@@ -6490,7 +6509,6 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
           options->GetReflection()->GetUnknownFields(*options))) {
     return false;  // ExamineIfOptionIsSet() already added the error.
   }
-
 
   // First set the value on the UnknownFieldSet corresponding to the
   // innermost message.
@@ -6536,6 +6554,13 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   // the options message.
   options->GetReflection()->MutableUnknownFields(options)->MergeFrom(
       *unknown_fields);
+
+  // record the element path of the interpreted option
+  if (field->is_repeated()) {
+    int index = repeated_option_counts_[dest_path]++;
+    dest_path.push_back(index);
+  }
+  interpreted_paths_[src_path] = dest_path;
 
   return true;
 }
