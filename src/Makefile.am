@@ -278,6 +278,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/io/zero_copy_stream_impl.cc                  \
   google/protobuf/compiler/importer.cc                         \
   google/protobuf/compiler/parser.cc                           \
+  google/protobuf/compiler/plugin.pb.cc                        \
   google/protobuf/util/delimited_message_util.cc               \
   google/protobuf/util/field_comparator.cc                     \
   google/protobuf/util/field_mask_util.cc                      \
@@ -333,7 +334,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/code_generator.cc                   \
   google/protobuf/compiler/command_line_interface.cc           \
   google/protobuf/compiler/plugin.cc                           \
-  google/protobuf/compiler/plugin.pb.cc                        \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \
   google/protobuf/compiler/zip_writer.cc                       \
