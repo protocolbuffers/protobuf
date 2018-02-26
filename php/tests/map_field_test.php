@@ -6,8 +6,9 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
+use PHPUnit\Framework\TestCase;
 
-class MapFieldTest extends PHPUnit_Framework_TestCase {
+class MapFieldTest extends TestCase {
 
     #########################################################
     # Test int32 field.

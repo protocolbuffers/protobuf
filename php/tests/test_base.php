@@ -3,8 +3,9 @@
 use Foo\TestMessage;
 use Foo\TestEnum;
 use Foo\TestMessage_Sub;
+use PHPUnit\Framework\TestCase;
 
-class TestBase extends PHPUnit_Framework_TestCase
+class TestBase extends TestCase
 {
 
     public function setFields(TestMessage $m)
