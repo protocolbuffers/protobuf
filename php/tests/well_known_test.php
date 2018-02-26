@@ -69,7 +69,7 @@ class WellKnownTest extends TestBase {
 
         // Test unpack.
         $msg = $any->unpack();
-        $this->assertTrue($msg instanceof TestMessage);
+        $this->assertInstanceOf('Foo\TestMessage', $msg);
         $this->expectFields($msg);
 
         // Test pack.
@@ -122,19 +122,19 @@ class WellKnownTest extends TestBase {
         $this->assertSame("a", $m->getName());
 
         $m->setMethods([new Method()]);
-        $this->assertSame(1, count($m->getMethods()));
+        $this->assertCount(1, $m->getMethods());
 
         $m->setOptions([new Option()]);
-        $this->assertSame(1, count($m->getOptions()));
+        $this->assertCount(1, $m->getOptions());
 
         $m->setVersion("a");
         $this->assertSame("a", $m->getVersion());
 
         $m->setSourceContext(new SourceContext());
-        $this->assertFalse(is_null($m->getSourceContext()));
+        $this->assertNotNull($m->getSourceContext());
 
         $m->setMixins([new Mixin()]);
-        $this->assertSame(1, count($m->getMixins()));
+        $this->assertCount(1, $m->getMixins());
 
         $m->setSyntax(Syntax::SYNTAX_PROTO2);
         $this->assertSame(Syntax::SYNTAX_PROTO2, $m->getSyntax());
@@ -148,16 +148,16 @@ class WellKnownTest extends TestBase {
         $this->assertSame("a", $m->getRequestTypeUrl());
 
         $m->setRequestStreaming(true);
-        $this->assertSame(true, $m->getRequestStreaming());
+        $this->assertTrue($m->getRequestStreaming());
 
         $m->setResponseTypeUrl("a");
         $this->assertSame("a", $m->getResponseTypeUrl());
 
         $m->setResponseStreaming(true);
-        $this->assertSame(true, $m->getResponseStreaming());
+        $this->assertTrue($m->getResponseStreaming());
 
         $m->setOptions([new Option()]);
-        $this->assertSame(1, count($m->getOptions()));
+        $this->assertCount(1, $m->getOptions());
 
         $m = new Mixin();
 
@@ -176,13 +176,13 @@ class WellKnownTest extends TestBase {
         $this->assertSame("a", $m->getName());
 
         $m->setEnumvalue([new EnumValue()]);
-        $this->assertSame(1, count($m->getEnumvalue()));
+        $this->assertCount(1, $m->getEnumvalue());
 
         $m->setOptions([new Option()]);
-        $this->assertSame(1, count($m->getOptions()));
+        $this->assertCount(1, $m->getOptions());
 
         $m->setSourceContext(new SourceContext());
-        $this->assertFalse(is_null($m->getSourceContext()));
+        $this->assertNotNull($m->getSourceContext());
 
         $m->setSyntax(Syntax::SYNTAX_PROTO2);
         $this->assertSame(Syntax::SYNTAX_PROTO2, $m->getSyntax());
@@ -199,7 +199,7 @@ class WellKnownTest extends TestBase {
         $this->assertSame(1, $m->getNumber());
 
         $m->setOptions([new Option()]);
-        $this->assertSame(1, count($m->getOptions()));
+        $this->assertCount(1, $m->getOptions());
     }
 
     public function testField()
@@ -225,10 +225,10 @@ class WellKnownTest extends TestBase {
         $this->assertSame(1, $m->getOneofIndex());
 
         $m->setPacked(true);
-        $this->assertSame(true, $m->getPacked());
+        $this->assertTrue($m->getPacked());
 
         $m->setOptions([new Option()]);
-        $this->assertSame(1, count($m->getOptions()));
+        $this->assertCount(1, $m->getOptions());
 
         $m->setJsonName("a");
         $this->assertSame("a", $m->getJsonName());
@@ -241,7 +241,7 @@ class WellKnownTest extends TestBase {
     {
         $m = new FieldMask();
         $m->setPaths(["a"]);
-        $this->assertSame(1, count($m->getPaths()));
+        $this->assertCount(1, $m->getPaths());
     }
 
     public function testOption()
@@ -252,7 +252,7 @@ class WellKnownTest extends TestBase {
         $this->assertSame("a", $m->getName());
 
         $m->setValue(new Any());
-        $this->assertFalse(is_null($m->getValue()));
+        $this->assertNotNull($m->getValue());
     }
 
     public function testSourceContext()
@@ -266,7 +266,7 @@ class WellKnownTest extends TestBase {
     {
         $m = new ListValue();
         $m->setValues([new Value()]);
-        $this->assertSame(1, count($m->getValues()));
+        $this->assertCount(1, $m->getValues());
 
         $m = new Value();
 
@@ -283,20 +283,20 @@ class WellKnownTest extends TestBase {
         $this->assertSame("string_value", $m->getKind());
 
         $m->setBoolValue(true);
-        $this->assertSame(true, $m->getBoolValue());
+        $this->assertTrue($m->getBoolValue());
         $this->assertSame("bool_value", $m->getKind());
 
         $m->setStructValue(new Struct());
-        $this->assertFalse(is_null($m->getStructValue()));
+        $this->assertNotNull($m->getStructValue());
         $this->assertSame("struct_value", $m->getKind());
 
         $m->setListValue(new ListValue());
-        $this->assertFalse(is_null($m->getListValue()));
+        $this->assertNotNull($m->getListValue());
         $this->assertSame("list_value", $m->getKind());
 
         $m = new Struct();
         $m->setFields(array("a"=>new Value()));
-        $this->assertSame(1, count($m->getFields()));
+        $this->assertCount(1, $m->getFields());
     }
 
     public function testTimestamp()
@@ -327,16 +327,16 @@ class WellKnownTest extends TestBase {
         $this->assertSame("a", $m->getName());
 
         $m->setFields([new Field()]);
-        $this->assertSame(1, count($m->getFields()));
+        $this->assertCount(1, $m->getFields());
 
         $m->setOneofs(["a"]);
-        $this->assertSame(1, count($m->getOneofs()));
+        $this->assertCount(1, $m->getOneofs());
 
         $m->setOptions([new Option()]);
-        $this->assertSame(1, count($m->getOptions()));
+        $this->assertCount(1, $m->getOptions());
 
         $m->setSourceContext(new SourceContext());
-        $this->assertFalse(is_null($m->getSourceContext()));
+        $this->assertNotNull($m->getSourceContext());
 
         $m->setSyntax(Syntax::SYNTAX_PROTO2);
         $this->assertSame(Syntax::SYNTAX_PROTO2, $m->getSyntax());
@@ -380,7 +380,7 @@ class WellKnownTest extends TestBase {
 
         $m = new BoolValue();
         $m->setValue(true);
-        $this->assertSame(true, $m->getValue());
+        $this->assertTrue($m->getValue());
 
         $m = new StringValue();
         $m->setValue("a");

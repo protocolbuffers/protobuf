@@ -375,7 +375,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
         $arr[] = 0;
         $arr[] = 1;
         $arr[] = 2;
-        $this->assertSame(3, count($arr));
+        $this->assertCount(3, $arr);
 
         unset($arr[1]);
     }

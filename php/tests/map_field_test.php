@@ -21,12 +21,12 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(MAX_INT32, $arr[MAX_INT32]);
         $arr[MIN_INT32] = MIN_INT32;
         $this->assertSame(MIN_INT32, $arr[MIN_INT32]);
-        $this->assertEquals(2, count($arr));
-        $this->assertTrue(isset($arr[MAX_INT32]));
-        $this->assertTrue(isset($arr[MIN_INT32]));
+        $this->assertCount(2, $arr);
+        $this->assertArrayHasKey(MAX_INT32, $arr);
+        $this->assertArrayHasKey(MIN_INT32, $arr);
         unset($arr[MAX_INT32]);
         unset($arr[MIN_INT32]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test float argument.
         $arr[1.9] = 1.9;
@@ -37,12 +37,12 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(MAX_INT32, $arr[MAX_INT32]);
         $arr[MIN_INT32_FLOAT] = MIN_INT32_FLOAT;
         $this->assertSame(MIN_INT32, $arr[MIN_INT32]);
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
         unset($arr[1.9]);
         unset($arr[2.9]);
         unset($arr[MAX_INT32_FLOAT]);
         unset($arr[MIN_INT32_FLOAT]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test string argument.
         $arr['2'] = '2';
@@ -51,11 +51,11 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(3, $arr[3]);
         $arr[MAX_INT32_STRING] = MAX_INT32_STRING;
         $this->assertSame(MAX_INT32, $arr[MAX_INT32]);
-        $this->assertEquals(3, count($arr));
+        $this->assertCount(3, $arr);
         unset($arr['2']);
         unset($arr['3.1']);
         unset($arr[MAX_INT32_STRING]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test foreach.
         $arr = new MapField(GPBType::INT32, GPBType::INT32);
@@ -69,9 +69,9 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
           $arr_test[] = $key;
           $i++;
         }
-        $this->assertTrue(isset($arr_test[0]));
-        $this->assertTrue(isset($arr_test[1]));
-        $this->assertTrue(isset($arr_test[2]));
+        $this->assertArrayHasKey(0, $arr_test);
+        $this->assertArrayHasKey(1, $arr_test);
+        $this->assertArrayHasKey(2, $arr_test);
         $this->assertSame(3, $i);
     }
 
@@ -85,25 +85,25 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         // Test integer argument.
         $arr[MAX_UINT32] = MAX_UINT32;
         $this->assertSame(-1, $arr[-1]);
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[MAX_UINT32]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[-1] = -1;
         $this->assertSame(-1, $arr[-1]);
         $arr[MIN_UINT32] = MIN_UINT32;
         $this->assertSame(MIN_UINT32, $arr[MIN_UINT32]);
-        $this->assertEquals(2, count($arr));
+        $this->assertCount(2, $arr);
         unset($arr[-1]);
         unset($arr[MIN_UINT32]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test float argument.
         $arr[MAX_UINT32_FLOAT] = MAX_UINT32_FLOAT;
         $this->assertSame(-1, $arr[-1]);
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[MAX_UINT32_FLOAT]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[3.1] = 3.1;
         $this->assertSame(3, $arr[3]);
@@ -111,18 +111,18 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(-1, $arr[-1]);
         $arr[MIN_UINT32_FLOAT] = MIN_UINT32_FLOAT;
         $this->assertSame(MIN_UINT32, $arr[MIN_UINT32]);
-        $this->assertEquals(3, count($arr));
+        $this->assertCount(3, $arr);
         unset($arr[3.1]);
         unset($arr[-1.0]);
         unset($arr[MIN_UINT32_FLOAT]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test string argument.
         $arr[MAX_UINT32_STRING] = MAX_UINT32_STRING;
         $this->assertSame(-1, $arr[-1]);
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[MAX_UINT32_STRING]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr['7'] = '7';
         $this->assertSame(7, $arr[7]);
@@ -132,12 +132,12 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $this->assertSame(-1, $arr[-1]);
         $arr[MIN_UINT32_STRING] = MIN_UINT32_STRING;
         $this->assertSame(MIN_UINT32, $arr[MIN_UINT32]);
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
         unset($arr['7']);
         unset($arr['3.1']);
         unset($arr['-1.0']);
         unset($arr[MIN_UINT32_STRING]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
     }
 
     #########################################################
@@ -157,10 +157,10 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
             $this->assertSame(MAX_INT64, $arr[MAX_INT64]);
             $this->assertSame(MIN_INT64, $arr[MIN_INT64]);
         }
-        $this->assertEquals(2, count($arr));
+        $this->assertCount(2, $arr);
         unset($arr[MAX_INT64]);
         unset($arr[MIN_INT64]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test float argument.
         $arr[1.1] = 1.1;
@@ -169,9 +169,9 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         } else {
             $this->assertSame(1, $arr[1]);
         }
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[1.1]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test string argument.
         $arr['2'] = '2';
@@ -189,12 +189,12 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
             $this->assertSame(MAX_INT64, $arr[MAX_INT64]);
             $this->assertSame(MIN_INT64, $arr[MIN_INT64]);
         }
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
         unset($arr['2']);
         unset($arr['3.1']);
         unset($arr[MAX_INT64_STRING]);
         unset($arr[MIN_INT64_STRING]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
     }
 
     #########################################################
@@ -211,9 +211,9 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         } else {
             $this->assertSame(MAX_UINT64, $arr[MAX_UINT64]);
         }
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[MAX_UINT64]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test float argument.
         $arr[1.1] = 1.1;
@@ -222,9 +222,9 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         } else {
             $this->assertSame(1, $arr[1]);
         }
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[1.1]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test string argument.
         $arr['2'] = '2';
@@ -241,11 +241,11 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
             $this->assertSame(MAX_UINT64, $arr[MAX_UINT64]);
         }
 
-        $this->assertEquals(3, count($arr));
+        $this->assertCount(3, $arr);
         unset($arr['2']);
         unset($arr['3.1']);
         unset($arr[MAX_UINT64_STRING]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
     }
 
     #########################################################
@@ -267,7 +267,7 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $arr[3] = '3.1';
         $this->assertEquals(3.1, $arr[3], '', MAX_FLOAT_DIFF);
 
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
     }
 
     #########################################################
@@ -289,7 +289,7 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $arr[3] = '3.1';
         $this->assertEquals(3.1, $arr[3], '', MAX_FLOAT_DIFF);
 
-        $this->assertEquals(4, count($arr));
+        $this->assertCount(4, $arr);
     }
 
     #########################################################
@@ -301,55 +301,55 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
 
         // Test boolean.
         $arr[True] = True;
-        $this->assertSame(True, $arr[True]);
-        $this->assertEquals(1, count($arr));
+        $this->assertTrue($arr[True]);
+        $this->assertCount(1, $arr);
         unset($arr[True]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[False] = False;
-        $this->assertSame(False, $arr[False]);
-        $this->assertEquals(1, count($arr));
+        $this->assertFalse($arr[False]);
+        $this->assertCount(1, $arr);
         unset($arr[False]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test integer.
         $arr[-1] = -1;
-        $this->assertSame(True, $arr[True]);
-        $this->assertEquals(1, count($arr));
+        $this->assertTrue($arr[True]);
+        $this->assertCount(1, $arr);
         unset($arr[-1]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[0] = 0;
-        $this->assertSame(False, $arr[False]);
-        $this->assertEquals(1, count($arr));
+        $this->assertFalse($arr[False]);
+        $this->assertCount(1, $arr);
         unset($arr[0]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test float.
         $arr[1.1] = 1.1;
-        $this->assertSame(True, $arr[True]);
-        $this->assertEquals(1, count($arr));
+        $this->assertTrue($arr[True]);
+        $this->assertCount(1, $arr);
         unset($arr[1.1]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[0.0] = 0.0;
-        $this->assertSame(False, $arr[False]);
-        $this->assertEquals(1, count($arr));
+        $this->assertFalse($arr[False]);
+        $this->assertCount(1, $arr);
         unset($arr[0.0]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test string.
         $arr['a'] = 'a';
-        $this->assertSame(True, $arr[True]);
-        $this->assertEquals(1, count($arr));
+        $this->assertTrue($arr[True]);
+        $this->assertCount(1, $arr);
         unset($arr['a']);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[''] = '';
-        $this->assertSame(False, $arr[False]);
-        $this->assertEquals(1, count($arr));
+        $this->assertFalse($arr[False]);
+        $this->assertCount(1, $arr);
         unset($arr['']);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
     }
 
     #########################################################
@@ -362,27 +362,27 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         // Test set.
         $arr['abc'] = 'abc';
         $this->assertSame('abc', $arr['abc']);
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr['abc']);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[1] = 1;
         $this->assertSame('1', $arr['1']);
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[1]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[1.1] = 1.1;
         $this->assertSame('1.1', $arr['1.1']);
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[1.1]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         $arr[True] = True;
         $this->assertSame('1', $arr['1']);
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
         unset($arr[True]);
-        $this->assertEquals(0, count($arr));
+        $this->assertCount(0, $arr);
 
         // Test foreach.
         $arr = new MapField(GPBType::STRING, GPBType::STRING);
@@ -396,9 +396,9 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
           $arr_test[] = $key;
           $i++;
         }
-        $this->assertTrue(isset($arr_test['0']));
-        $this->assertTrue(isset($arr_test['1']));
-        $this->assertTrue(isset($arr_test['2']));
+        $this->assertArrayHasKey('0', $arr_test);
+        $this->assertArrayHasKey('1', $arr_test);
+        $this->assertArrayHasKey('2', $arr_test);
         $this->assertSame(3, $i);
     }
 
@@ -416,7 +416,7 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $arr[0] = $sub_m;
         $this->assertSame(1, $arr[0]->getA());
 
-        $this->assertEquals(1, count($arr));
+        $this->assertCount(1, $arr);
 
         // Test foreach.
         $arr = new MapField(GPBType::INT32,
@@ -433,12 +433,12 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
           $value_test[] = $val->getA();
           $i++;
         }
-        $this->assertTrue(isset($key_test['0']));
-        $this->assertTrue(isset($key_test['1']));
-        $this->assertTrue(isset($key_test['2']));
-        $this->assertTrue(isset($value_test['0']));
-        $this->assertTrue(isset($value_test['1']));
-        $this->assertTrue(isset($value_test['2']));
+        $this->assertArrayHasKey('0', $key_test);
+        $this->assertArrayHasKey('1', $key_test);
+        $this->assertArrayHasKey('2', $key_test);
+        $this->assertArrayHasKey('0', $value_test);
+        $this->assertArrayHasKey('1', $value_test);
+        $this->assertArrayHasKey('2', $value_test);
         $this->assertSame(3, $i);
     }
 
