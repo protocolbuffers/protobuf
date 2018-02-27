@@ -3401,6 +3401,10 @@ class DescriptorBuilder {
     // Otherwise returns true.
     bool InterpretOptions(OptionsToInterpret* options_to_interpret);
 
+    // Updates the given source code info by re-writing uninterpreted option
+    // locations to refer to the corresponding interpreted option.
+    void UpdateSourceCodeInfo(SourceCodeInfo* info);
+
     class AggregateOptionFinder;
 
    private:
@@ -4292,8 +4296,9 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
   result->is_placeholder_ = false;
   result->finished_building_ = false;
+  SourceCodeInfo *info = NULL;
   if (proto.has_source_code_info()) {
-    SourceCodeInfo *info = tables_->AllocateMessage<SourceCodeInfo>();
+    info = tables_->AllocateMessage<SourceCodeInfo>();
     info->CopyFrom(proto.source_code_info());
     result->source_code_info_ = info;
   } else {
@@ -4493,6 +4498,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.InterpretOptions(&(*iter));
     }
     options_to_interpret_.clear();
+
+    if (info != NULL) {
+      option_interpreter.UpdateSourceCodeInfo(info);
+    }
   }
 
   // Validate options. See comments at InternalSetLazilyBuildDependencies about
@@ -6563,6 +6572,100 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   interpreted_paths_[src_path] = dest_path;
 
   return true;
+}
+
+void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
+    SourceCodeInfo* info) {
+
+  if (interpreted_paths_.empty()) {
+    // nothing to do!
+    return;
+  }
+
+  // We find locations that match keys in interpreted_paths_ and
+  // 1) replace the path with the corresponding value in interpreted_paths_
+  // 2) remove any subsequent sub-locations (sub-location is one whose path
+  //    has the parent path as a prefix)
+  //
+  // To avoid quadratic behavior of removing interior rows as we go,
+  // we keep a copy. But we don't actually copy anything until we've
+  // found the first match (so if the source code info has no locations
+  // that need to be changed, there is zero copy overhead).
+
+  RepeatedPtrField<SourceCodeInfo_Location>* locs = info->mutable_location();
+  RepeatedPtrField<SourceCodeInfo_Location> new_locs;
+  bool copying = false;
+
+  std::vector<int> pathv;
+  bool matched = false;
+
+  for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
+       loc != locs->end(); loc++) {
+
+    if (matched) {
+      // see if this location is in the range to remove
+      bool loc_matches = true;
+      if (loc->path_size() < pathv.size()) {
+        loc_matches = false;
+      } else {
+        for (int j = 0; j < pathv.size(); j++) {
+          if (loc->path(j) != pathv[j]) {
+            loc_matches = false;
+            break;
+          }
+        }
+      }
+
+      if (loc_matches) {
+        // don't copy this row since it is a sub-location that we're removing
+        continue;
+      }
+
+      matched = false;
+    }
+
+    pathv.clear();
+    for (int j = 0; j < loc->path_size(); j++) {
+      pathv.push_back(loc->path(j));
+    }
+
+    std::map<std::vector<int>, std::vector<int>>::iterator entry =
+        interpreted_paths_.find(pathv);
+
+    if (entry == interpreted_paths_.end()) {
+      // not a match
+      if (copying) {
+        new_locs.Add()->CopyFrom(*loc);
+      }
+      continue;
+    }
+
+    matched = true;
+
+    if (!copying) {
+      // initialize the copy we are building
+      copying = true;
+      new_locs.Reserve(locs->size());
+      for (RepeatedPtrField<SourceCodeInfo_Location>::iterator it =
+           locs->begin(); it != loc; it++) {
+        new_locs.Add()->CopyFrom(*it);
+      }
+    }
+
+    // add replacement and update its path
+    SourceCodeInfo_Location* replacement = new_locs.Add();
+    replacement->CopyFrom(*loc);
+    replacement->clear_path();
+    for (std::vector<int>::iterator rit = entry->second.begin();
+         rit != entry->second.end(); rit++) {
+      replacement->add_path(*rit);
+    }
+  }
+
+  // if we made a changed copy, put it in place
+  if (copying) {
+    *locs = new_locs;
+  }
 }
 
 void DescriptorBuilder::OptionInterpreter::AddWithoutInterpreting(
