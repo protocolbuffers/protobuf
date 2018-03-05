@@ -178,9 +178,6 @@ if __name__ == '__main__':
     # extension. Note that those libraries have to be compiled with
     # -fPIC for this to work.
     compile_static_ext = get_option_from_sys_argv('--compile_static_extension')
-    extra_compile_args = ['-Wno-write-strings',
-                          '-Wno-invalid-offsetof',
-                          '-Wno-sign-compare']
     libraries = ['protobuf']
     extra_objects = None
     if compile_static_ext:
@@ -188,6 +185,27 @@ if __name__ == '__main__':
       extra_objects = ['../src/.libs/libprotobuf.a',
                        '../src/.libs/libprotobuf-lite.a']
     test_conformance.target = 'test_python_cpp'
+
+    extra_compile_args = []
+
+    if sys.platform != 'win32':
+        extra_compile_args.append('-Wno-write-strings')
+        extra_compile_args.append('-Wno-invalid-offsetof')
+        extra_compile_args.append('-Wno-sign-compare')
+
+    # https://github.com/Theano/Theano/issues/4926
+    if sys.platform == 'win32':
+      extra_compile_args.append('-D_hypot=hypot')
+
+    # https://github.com/tpaviot/pythonocc-core/issues/48
+    if sys.platform == 'win32' and  '64 bit' in sys.version:
+      extra_compile_args.append('-DMS_WIN64')
+
+    # MSVS default is dymanic
+    if (sys.platform == 'win32' and
+        ((sys.version_info[0] == 3 and sys.version_info[1] == 5) or
+         (sys.version_info[0] == 3 and sys.version_info[1] == 6))):
+      extra_compile_args.append('/MT')
 
     if "clang" in os.popen('$CC --version 2> /dev/null').read():
       extra_compile_args.append('-Wno-shorten-64-to-32')
@@ -216,7 +234,7 @@ if __name__ == '__main__':
         Extension(
             "google.protobuf.internal._api_implementation",
             glob.glob('google/protobuf/internal/api_implementation.cc'),
-            extra_compile_args=['-DPYTHON_PROTO2_CPP_IMPL_V2'],
+            extra_compile_args=extra_compile_args + ['-DPYTHON_PROTO2_CPP_IMPL_V2'],
         ),
     ])
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
