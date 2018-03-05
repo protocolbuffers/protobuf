@@ -931,7 +931,7 @@ PHP_METHOD(Any, unpack) {
   if (url_prefix_len > type_url_len ||
       strncmp(TYPE_URL_PREFIX, type_url, url_prefix_len) != 0) {
     zend_throw_exception(
-        NULL, "Type url needs to be type.googleapis.com/fully-qulified",
+        NULL, "Type url needs to be type.googleapis.com/fully-qualified",
         0 TSRMLS_CC);
     return;
   }
