@@ -6747,7 +6747,7 @@ typedef struct {
   uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
   uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
   uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
-  uint8_t type;
+  uint8_t descriptortype;
   uint8_t label;
 } upb_msglayout_fieldinit_v1;
 
