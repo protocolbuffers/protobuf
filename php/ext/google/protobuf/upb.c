@@ -3134,9 +3134,10 @@ do { ; } while(0)
     case UPB_DESCRIPTOR_TYPE_UINT64:
       VARINT_CASE(uint64_t, *ptr);
     case UPB_DESCRIPTOR_TYPE_UINT32:
+      VARINT_CASE(uint32_t, *ptr);
     case UPB_DESCRIPTOR_TYPE_INT32:
     case UPB_DESCRIPTOR_TYPE_ENUM:
-      VARINT_CASE(uint32_t, *ptr);
+      VARINT_CASE(int32_t, (int64_t)*ptr);
     case UPB_DESCRIPTOR_TYPE_BOOL:
       VARINT_CASE(bool, *ptr);
     case UPB_DESCRIPTOR_TYPE_SINT32:
@@ -3214,9 +3215,10 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
     case UPB_DESCRIPTOR_TYPE_UINT64:
       CASE(uint64_t, varint, UPB_WIRE_TYPE_VARINT, val);
     case UPB_DESCRIPTOR_TYPE_UINT32:
+      CASE(uint32_t, varint, UPB_WIRE_TYPE_VARINT, val);
     case UPB_DESCRIPTOR_TYPE_INT32:
     case UPB_DESCRIPTOR_TYPE_ENUM:
-      CASE(uint32_t, varint, UPB_WIRE_TYPE_VARINT, val);
+      CASE(int32_t, varint, UPB_WIRE_TYPE_VARINT, (int64_t)val);
     case UPB_DESCRIPTOR_TYPE_SFIXED64:
     case UPB_DESCRIPTOR_TYPE_FIXED64:
       CASE(uint64_t, fixed64, UPB_WIRE_TYPE_64BIT, val);
