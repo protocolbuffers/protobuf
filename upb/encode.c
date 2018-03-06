@@ -162,7 +162,7 @@ static bool upb_encode_array(upb_encstate *e, const char *field_mem,
     return true;
   }
 
-  UPB_ASSERT(arr->type == upb_desctype_to_fieldtype2[f->type]);
+  UPB_ASSERT(arr->type == upb_desctype_to_fieldtype2[f->descriptortype]);
 
 #define VARINT_CASE(ctype, encode) { \
   ctype *start = arr->data; \
@@ -177,7 +177,7 @@ static bool upb_encode_array(upb_encstate *e, const char *field_mem,
 break; \
 do { ; } while(0)
 
-  switch (f->type) {
+  switch (f->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
       CHK(upb_put_fixedarray(e, arr, sizeof(double)));
       break;
@@ -267,7 +267,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
       upb_put_tag(e, f->number, wire_type); \
 } while(0)
 
-  switch (f->type) {
+  switch (f->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
       CASE(double, double, UPB_WIRE_TYPE_64BIT, val);
     case UPB_DESCRIPTOR_TYPE_FLOAT:
