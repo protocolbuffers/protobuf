@@ -221,7 +221,8 @@ static bool upb_msglayout_initdefault(upb_msglayout *l, const upb_msgdef *m) {
   return true;
 }
 
-static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
+static upb_msglayout *upb_msglayout_new(const upb_msgdef *m,
+                                        upb_msgfactory *factory) {
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   upb_msglayout *l;
@@ -277,6 +278,7 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
    */
 
   /* Allocate hasbits and set basic field attributes. */
+  submsg_count = 0;
   for (upb_msg_field_begin(&it, m), hasbit = 0;
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
@@ -293,8 +295,19 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
       field->oneof_index = UPB_NOT_IN_ONEOF;
     }
 
+    if (upb_fielddef_issubmsg(f)) {
+      const upb_msglayout *sub_layout =
+          upb_msgfactory_getlayout(factory, upb_fielddef_msgsubdef(f));
+      field->submsg_index = submsg_count++;
+      submsgs[field->submsg_index] = &sub_layout->data;
+    } else {
+      field->submsg_index = UPB_NO_SUBMSG;
+    }
+
     if (upb_fielddef_haspresence(f) && !upb_fielddef_containingoneof(f)) {
       field->hasbit = hasbit++;
+    } else {
+      field->hasbit = UPB_NO_HASBIT;
     }
   }
 
@@ -405,7 +418,7 @@ const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
     return upb_value_getptr(v);
   } else {
     upb_msgfactory *mutable_f = (void*)f;
-    upb_msglayout *l = upb_msglayout_new(m);
+    upb_msglayout *l = upb_msglayout_new(m, mutable_f);
     upb_inttable_insertptr(&mutable_f->layouts, m, upb_value_ptr(l));
     UPB_ASSERT(l);
     return l;
