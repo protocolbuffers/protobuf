@@ -269,7 +269,8 @@ static bool upb_decode_submsg(upb_decstate *d,
                               const char *limit,
                               const upb_msglayout_fieldinit_v1 *field,
                               int group_number) {
-  char *submsg = *(void**)&frame->msg[field->offset];
+  char *submsg_slot = upb_decode_prepareslot(d, frame, field);
+  char *submsg = *(void**)submsg_slot;
   const upb_msglayout_msginit_v1 *subm;
 
   UPB_ASSERT(field->submsg_index != UPB_NO_SUBMSG);
@@ -281,7 +282,7 @@ static bool upb_decode_submsg(upb_decstate *d,
     CHK(submsg);
     submsg = upb_msg_init(
         submsg, (upb_msglayout*)subm, upb_arena_alloc(upb_env_arena(d->env)));
-    *(void**)&frame->msg[field->offset] = submsg;
+    *(void**)submsg_slot = submsg;
   }
 
   upb_decode_message(d, limit, group_number, submsg, subm);
