@@ -279,6 +279,9 @@ typedef enum {
   UPB_SYNTAX_PROTO3 = 3
 } upb_syntax_t;
 
+/* Maps descriptor type -> upb field type.  */
+extern const uint8_t upb_desctype_to_fieldtype[];
+
 /* Maximum field number allowed for FieldDefs.  This is an inherent limit of the
  * protobuf wire format. */
 #define UPB_MAX_FIELDNUMBER ((1 << 29) - 1)

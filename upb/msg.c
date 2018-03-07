@@ -77,7 +77,7 @@ static uint8_t upb_msg_fieldsize(const upb_msglayout_fieldinit_v1 *field) {
   if (field->label == UPB_LABEL_REPEATED) {
     return sizeof(void*);
   } else {
-    return upb_msgval_sizeof(field->type);
+    return upb_msgval_sizeof(upb_desctype_to_fieldtype[field->descriptortype]);
   }
 }
 
@@ -284,7 +284,7 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
     upb_msglayout_fieldinit_v1 *field = &fields[upb_fielddef_index(f)];
 
     field->number = upb_fielddef_number(f);
-    field->type = upb_fielddef_type(f);
+    field->descriptortype = upb_fielddef_descriptortype(f);
     field->label = upb_fielddef_label(f);
 
     if (upb_fielddef_containingoneof(f)) {
