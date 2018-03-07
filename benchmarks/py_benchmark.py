@@ -17,8 +17,8 @@ elif sys.argv[1] != "false":
   raise IOError("Need string argument \"true\" or \"false\" for whether to use cpp generated code")
 # END CPP GENERATED MESSAGE
 
-import datasets.google_message1.benchmark_message1_proto2_pb2 as benchmark_message1_proto2_pb2
-import datasets.google_message1.benchmark_message1_proto3_pb2 as benchmark_message1_proto3_pb2
+import datasets.google_message1.proto2.benchmark_message1_proto2_pb2 as benchmark_message1_proto2_pb2
+import datasets.google_message1.proto3.benchmark_message1_proto3_pb2 as benchmark_message1_proto3_pb2
 import datasets.google_message2.benchmark_message2_pb2 as benchmark_message2_pb2
 import datasets.google_message3.benchmark_message3_pb2 as benchmark_message3_pb2
 import datasets.google_message4.benchmark_message4_pb2 as benchmark_message4_pb2

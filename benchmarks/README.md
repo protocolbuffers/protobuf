@@ -36,6 +36,18 @@ $ sudo apt-get install python3-dev
 ```
 And you also need to make sure `pkg-config` is installed.
 
+### Go
+Golang protobuf is under [golang repo](https://github.com/golang/protobuf), you
+need to install golang and golang protobuf's proto and protoc-gen-go before
+running the benchmark. And we're using [testing package](https://golang.org/pkg/testing/)
+to test benchmark. 
+
+To install golang protobuf proto and protoc-gen-go, you can 
+```
+$ go get -u github.com/golang/protobuf/protoc-gen-go
+$ go get -u github.com/golang/protobuf/proto
+```
+
 ### Big data
 
 There's some optional big testing data which is not included in the directory
@@ -87,6 +99,11 @@ $ make python-cpp-reflection
 $ make python-cpp-generated-code
 ```
 
+### Go
+```
+$ make go
+```
+
 To run a specific dataset:
 
 ### Java:
@@ -125,6 +142,13 @@ $ ./python-cpp-reflection-benchmark $(specific generated dataset file name)
 $ make python-cpp-generated-code-benchmark
 $ ./python-cpp-generated-code-benchmark $(specific generated dataset file name)
 ```
+
+### Go:
+```
+$ make go-benchmark
+$ ./go-benchmark $(specific generated dataset file name)
+```
+
 
 ## Benchmark datasets
 
