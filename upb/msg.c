@@ -221,11 +221,11 @@ static bool upb_msglayout_initdefault(upb_msglayout *l, const upb_msgdef *m) {
   return true;
 }
 
-static upb_msglayout *upb_msglayout_new(const upb_msgdef *m,
-                                        upb_msgfactory *factory) {
+static bool upb_msglayout_init(const upb_msgdef *m,
+                               upb_msglayout *l,
+                               upb_msgfactory *factory) {
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
-  upb_msglayout *l;
   size_t hasbit;
   size_t submsg_count = 0;
   const upb_msglayout_msginit_v1 **submsgs;
@@ -241,9 +241,6 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m,
     }
   }
 
-  l = upb_gmalloc(sizeof(*l));
-  if (!l) return NULL;
-
   memset(l, 0, sizeof(*l));
 
   fields = upb_gmalloc(upb_msgdef_numfields(m) * sizeof(*fields));
@@ -254,11 +251,10 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m,
       (!submsgs && submsg_count) ||
       (!oneofs && upb_msgdef_numoneofs(m))) {
     /* OOM. */
-    upb_gfree(l);
     upb_gfree(fields);
     upb_gfree(submsgs);
     upb_gfree(oneofs);
-    return NULL;
+    return false;
   }
 
   l->data.field_count = upb_msgdef_numfields(m);
@@ -357,12 +353,7 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m,
    * alignment.  TODO: track overall alignment for real? */
   l->data.size = align_up(l->data.size, 8);
 
-  if (upb_msglayout_initdefault(l, m)) {
-    return l;
-  } else {
-    upb_msglayout_free(l);
-    return NULL;
-  }
+  return upb_msglayout_initdefault(l, m);
 }
 
 
@@ -417,10 +408,14 @@ const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
     UPB_ASSERT(upb_value_getptr(v));
     return upb_value_getptr(v);
   } else {
+    /* In case of circular dependency, layout has to be inserted first. */
+    upb_msglayout *l = upb_gmalloc(sizeof(*l));
     upb_msgfactory *mutable_f = (void*)f;
-    upb_msglayout *l = upb_msglayout_new(m, mutable_f);
     upb_inttable_insertptr(&mutable_f->layouts, m, upb_value_ptr(l));
     UPB_ASSERT(l);
+    if (!upb_msglayout_init(m, l, f)) {
+      upb_msglayout_free(l);
+    }
     return l;
   }
 }
