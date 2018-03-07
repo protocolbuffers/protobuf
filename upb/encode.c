@@ -360,12 +360,12 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
       CHK(upb_encode_array(e, msg + f->offset, m, f));
     } else {
       if (upb_encode_hasscalarfield(msg, m, f)) {
-        if (f->oneof_index != UPB_NOT_IN_ONEOF) {
+        if (f->oneof_index == UPB_NOT_IN_ONEOF) {
+          CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
+        } else {
           const upb_msglayout_oneofinit_v1 *o = &m->oneofs[f->oneof_index];
           CHK(upb_encode_scalarfield(e, msg + o->data_offset,
                                      m, f, !m->is_proto2));
-        } else {
-          CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
         }
       }
     }
