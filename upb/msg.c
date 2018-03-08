@@ -64,9 +64,9 @@ static size_t upb_msgval_sizeof(upb_fieldtype_t type) {
       return 4;
     case UPB_TYPE_BOOL:
       return 1;
-    case UPB_TYPE_BYTES:
     case UPB_TYPE_MESSAGE:
       return sizeof(void*);
+    case UPB_TYPE_BYTES:
     case UPB_TYPE_STRING:
       return sizeof(upb_stringview);
   }
