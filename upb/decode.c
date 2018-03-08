@@ -477,6 +477,7 @@ static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
       }
       case UPB_DESCRIPTOR_TYPE_MESSAGE:
         CHK(val.size <= (size_t)(frame->limit - val.data));
+        d->ptr -= val.size;
         CHK(upb_decode_submsg(d, frame, val.data + val.size, field, 0));
         break;
       default:
