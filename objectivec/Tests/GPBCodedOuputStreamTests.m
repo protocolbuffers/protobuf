@@ -423,4 +423,14 @@
   }
 }
 
+- (void)testThatItThrowsWhenWriteRawPtrFails {
+  NSOutputStream *output = [NSOutputStream outputStreamToMemory];
+  GPBCodedOutputStream *codedOutput =
+      [GPBCodedOutputStream streamWithOutputStream:output bufferSize:0];  // Skip buffering.
+  [output close];  // Close the output stream to force failure on write.
+  const char *cString = "raw";
+  XCTAssertThrowsSpecificNamed([codedOutput writeRawPtr:cString offset:0 length:strlen(cString)],
+                               NSException, GPBCodedOutputStreamException_WriteFailed);
+}
+
 @end
