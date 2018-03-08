@@ -19,14 +19,6 @@
 
 UPB_BEGIN_EXTERN_C
 
-/* Enums */
-
-typedef enum {
-  upb_test_json_A = 0,
-  upb_test_json_B = 1,
-  upb_test_json_C = 2
-} upb_test_json_MyEnum;
-
 /* MessageDefs: call these functions to get a ref to a msgdef. */
 const upb_msgdef *upbdefs_upb_test_json_SubMessage_get(const void *owner);
 const upb_msgdef *upbdefs_upb_test_json_TestMessage_get(const void *owner);

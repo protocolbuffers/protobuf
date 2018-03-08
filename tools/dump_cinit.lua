@@ -583,51 +583,6 @@ local function make_children_map(file)
   return map
 end
 
-local function dump_enum_vals(enumdef, append)
-  local enum_vals = {}
-
-  for k, v in enumdef:values() do
-    enum_vals[#enum_vals + 1] = {k, v}
-  end
-
-  table.sort(enum_vals, function(a, b) return a[2] < b[2] end)
-
-  -- protobuf convention is that enum values are scoped at the level of the
-  -- enum itself, to follow C++.  Ie, if you have the enum:
-  -- message Foo {
-  --   enum E {
-  --     VAL1 = 1;
-  --     VAL2 = 2;
-  --   }
-  -- }
-  --
-  -- The name of VAL1 is Foo.VAL1, not Foo.E.VAL1.
-  --
-  -- This seems a bit sketchy, but people often name their enum values
-  -- accordingly, ie:
-  --
-  -- enum Foo {
-  --   FOO_VAL1 = 1;
-  --   FOO_VAL2 = 2;
-  -- }
-  --
-  -- So if we don't respect this also, we end up with constants that look like:
-  --
-  --   GOOGLE_PROTOBUF_FIELDDESCRIPTORPROTO_TYPE_TYPE_DOUBLE = 1
-  --
-  -- (notice the duplicated "TYPE").
-  local cident = to_cident(remove_name(enumdef:full_name()))
-  for i, pair in ipairs(enum_vals) do
-    k, v = pair[1], pair[2]
-    append('  %s = %d', cident .. "_" .. k, v)
-    if i == #enum_vals then
-      append('\n')
-    else
-      append(',\n')
-    end
-  end
-end
-
 local print_classes
 
 local function print_message(def, map, indent, append)
@@ -698,14 +653,6 @@ local function dump_defs_h(file, append, linktab)
   append('UPB_BEGIN_EXTERN_C\n\n')
 
   -- Dump C enums for proto enums.
-
-  append("/* Enums */\n\n")
-  for _, def in ipairs(sorted_defs(file:defs(upb.DEF_ENUM))) do
-    local cident = to_cident(def:full_name())
-    append('typedef enum {\n')
-    dump_enum_vals(def, append)
-    append('} %s;\n\n', cident)
-  end
 
   append("/* MessageDefs: call these functions to get a ref to a msgdef. */\n")
   dump_defs_for_type(

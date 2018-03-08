@@ -77,28 +77,28 @@ for _, file in ipairs(files) do
 
     hfile:close()
     cfile:close()
+  else
+    -- Write C API.
+    hfilename = outbase .. ".upb.h"
+    cfilename = outbase .. ".upb.c"
+
+    if os.getenv("UPBC_VERBOSE") then
+      print("upbc:")
+      print(string.format("  source file=%s", src))
+      print(string.format("  output file base=%s", outbase))
+      print(string.format("  hfilename=%s", hfilename))
+      print(string.format("  cfilename=%s", cfilename))
+    end
+
+    local hfile = assert(io.open(hfilename, "w"), "couldn't open " .. hfilename)
+    local cfile = assert(io.open(cfilename, "w"), "couldn't open " .. cfilename)
+
+    local happend = dump_cinit.file_appender(hfile)
+    local cappend = dump_cinit.file_appender(cfile)
+
+    make_c_api.write_gencode(file, hfilename, happend, cappend)
+
+    hfile:close()
+    cfile:close()
   end
-
-  -- Write C API.
-  hfilename = outbase .. ".upb.h"
-  cfilename = outbase .. ".upb.c"
-
-  if os.getenv("UPBC_VERBOSE") then
-    print("upbc:")
-    print(string.format("  source file=%s", src))
-    print(string.format("  output file base=%s", outbase))
-    print(string.format("  hfilename=%s", hfilename))
-    print(string.format("  cfilename=%s", cfilename))
-  end
-
-  local hfile = assert(io.open(hfilename, "w"), "couldn't open " .. hfilename)
-  local cfile = assert(io.open(cfilename, "w"), "couldn't open " .. cfilename)
-
-  local happend = dump_cinit.file_appender(hfile)
-  local cappend = dump_cinit.file_appender(cfile)
-
-  make_c_api.write_gencode(file, hfilename, happend, cappend)
-
-  hfile:close()
-  cfile:close()
 end

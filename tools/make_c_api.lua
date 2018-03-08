@@ -117,14 +117,20 @@ local function field_default(field)
   end
 end
 
-local function ctype(field)
+local function ctype(field, const)
+  if const then
+    const = "const "
+  else
+    const = ""
+  end
+
   if field:label() == upb.LABEL_REPEATED then
-    return "upb_array*"
+    return const .. "upb_array*"
   elseif field:type() == upb.TYPE_MESSAGE then
     if field:containing_type():file() == field:subdef():file() then
-      return to_cident(field:subdef():full_name()) .. "*"
+      return const .. to_cident(field:subdef():full_name()) .. "*"
     else
-      return "struct " .. to_cident(field:subdef():full_name()) .. "*"
+      return const .. "struct " .. to_cident(field:subdef():full_name()) .. "*"
     end
   elseif field:type() == upb.TYPE_ENUM then
     return to_cident(field:subdef():full_name())
@@ -216,7 +222,7 @@ local function write_h_file(filedef, append)
 
   for msg in filedef:defs(upb.DEF_MSG) do
     local msgname = to_cident(msg:full_name())
-    append('/* %s message definition. */\n', msgname)
+    append('/* %s */\n', msgname)
     append('extern const upb_msglayout_msginit_v1 %s_msginit;\n', msgname)
     append('%s *%s_new(upb_env *env);\n', msgname, msgname)
     append('%s *%s_parsenew(upb_stringview buf, upb_env *env);\n',
@@ -226,7 +232,7 @@ local function write_h_file(filedef, append)
     append('void %s_free(%s *msg, upb_env *env);\n', msgname, msgname)
     append('\n')
 
-    append('/* %s getters. */\n', msgname)
+    append('/* getters. */\n')
     local setters, get_setters = dump_cinit.str_appender()
     for field in msg:fields() do
       local fieldname = to_cident(field:name())
@@ -235,14 +241,10 @@ local function write_h_file(filedef, append)
         -- Forward declaration for message type declared in another file.
         append('struct %s;\n', to_cident(field:subdef():full_name()))
       end
-      if field:label() == upb.LABEL_REPEATED then
-      else
-        local typename = ctype(field)
-        append('%s %s_%s(const %s *msg);\n',
-               typename, msgname, fieldname, msgname)
-        setters('void %s_set_%s(%s *msg, %s value);\n',
-                msgname, fieldname, msgname, typename)
-      end
+      append('%s %s_%s(const %s *msg);\n',
+             ctype(field, true), msgname, fieldname, msgname)
+      setters('void %s_set_%s(%s *msg, %s value);\n',
+              msgname, fieldname, msgname, ctype(field))
     end
 
     for oneof in msg:oneofs() do
@@ -257,7 +259,7 @@ local function write_h_file(filedef, append)
     end
 
     append('\n')
-    append('/* %s setters. */\n', msgname)
+    append('/* setters. */\n')
     append(get_setters())
 
     append('\n')
@@ -473,9 +475,8 @@ local function write_c_file(filedef, hfilename, append)
     append('}\n')
 
     for field in msg:fields() do
-      local typename = ctype(field)
       append('%s %s_%s(const %s *msg) {\n',
-             typename, msgname, field:name(), msgname);
+             ctype(field, true), msgname, field:name(), msgname);
       if field:containing_oneof() then
         local oneof = field:containing_oneof()
         append('  return msg->%s_case == %s ? msg->%s.%s : %s;\n',
@@ -486,7 +487,7 @@ local function write_c_file(filedef, hfilename, append)
       end
       append('}\n')
       append('void %s_set_%s(%s *msg, %s value) {\n',
-             msgname, field:name(), msgname, typename);
+             msgname, field:name(), msgname, ctype(field));
       if field:containing_oneof() then
         local oneof = field:containing_oneof()
         append('  msg->%s.%s = value;\n', oneof:name(), field:name())
