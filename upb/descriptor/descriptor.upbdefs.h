@@ -19,53 +19,6 @@
 
 UPB_BEGIN_EXTERN_C
 
-/* Enums */
-
-typedef enum {
-  google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL = 1,
-  google_protobuf_FieldDescriptorProto_LABEL_REQUIRED = 2,
-  google_protobuf_FieldDescriptorProto_LABEL_REPEATED = 3
-} google_protobuf_FieldDescriptorProto_Label;
-
-typedef enum {
-  google_protobuf_FieldDescriptorProto_TYPE_DOUBLE = 1,
-  google_protobuf_FieldDescriptorProto_TYPE_FLOAT = 2,
-  google_protobuf_FieldDescriptorProto_TYPE_INT64 = 3,
-  google_protobuf_FieldDescriptorProto_TYPE_UINT64 = 4,
-  google_protobuf_FieldDescriptorProto_TYPE_INT32 = 5,
-  google_protobuf_FieldDescriptorProto_TYPE_FIXED64 = 6,
-  google_protobuf_FieldDescriptorProto_TYPE_FIXED32 = 7,
-  google_protobuf_FieldDescriptorProto_TYPE_BOOL = 8,
-  google_protobuf_FieldDescriptorProto_TYPE_STRING = 9,
-  google_protobuf_FieldDescriptorProto_TYPE_GROUP = 10,
-  google_protobuf_FieldDescriptorProto_TYPE_MESSAGE = 11,
-  google_protobuf_FieldDescriptorProto_TYPE_BYTES = 12,
-  google_protobuf_FieldDescriptorProto_TYPE_UINT32 = 13,
-  google_protobuf_FieldDescriptorProto_TYPE_ENUM = 14,
-  google_protobuf_FieldDescriptorProto_TYPE_SFIXED32 = 15,
-  google_protobuf_FieldDescriptorProto_TYPE_SFIXED64 = 16,
-  google_protobuf_FieldDescriptorProto_TYPE_SINT32 = 17,
-  google_protobuf_FieldDescriptorProto_TYPE_SINT64 = 18
-} google_protobuf_FieldDescriptorProto_Type;
-
-typedef enum {
-  google_protobuf_FieldOptions_STRING = 0,
-  google_protobuf_FieldOptions_CORD = 1,
-  google_protobuf_FieldOptions_STRING_PIECE = 2
-} google_protobuf_FieldOptions_CType;
-
-typedef enum {
-  google_protobuf_FieldOptions_JS_NORMAL = 0,
-  google_protobuf_FieldOptions_JS_STRING = 1,
-  google_protobuf_FieldOptions_JS_NUMBER = 2
-} google_protobuf_FieldOptions_JSType;
-
-typedef enum {
-  google_protobuf_FileOptions_SPEED = 1,
-  google_protobuf_FileOptions_CODE_SIZE = 2,
-  google_protobuf_FileOptions_LITE_RUNTIME = 3
-} google_protobuf_FileOptions_OptimizeMode;
-
 /* MessageDefs: call these functions to get a ref to a msgdef. */
 const upb_msgdef *upbdefs_google_protobuf_DescriptorProto_get(const void *owner);
 const upb_msgdef *upbdefs_google_protobuf_DescriptorProto_ExtensionRange_get(const void *owner);

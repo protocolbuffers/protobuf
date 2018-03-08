@@ -141,13 +141,14 @@ clean: clean_leave_profile clean_lua
 .SECONDEXPANSION:
 to_srcs = $(subst .,_,$(1)_SRCS)
 pc = %
-make_objs = $$(patsubst upb/$$(pc).c,obj/upb/$$(pc).$(1),$$($$(call to_srcs,$$*)))
-make_objs_cc = $$(patsubst upb/$$(pc).cc,obj/upb/$$(pc).$(1),$$($$(call to_srcs,$$*)))
+make_objs = $$(patsubst $$(pc).c,obj/$$(pc).$(1),$$($$(call to_srcs,$$*)))
+make_objs_cc = $$(patsubst $$(pc).cc,obj/$$(pc).$(1),$$($$(call to_srcs,$$*)))
 
 
 # Core libraries (ie. not bindings). ###############################################################
 
 upb_SRCS = \
+  google/protobuf/descriptor.upb.c \
   upb/decode.c \
   upb/def.c \
   upb/encode.c \
@@ -230,19 +231,19 @@ $(UPB_LIBS): lib/lib%.a: $(call make_objs,o)
 	$(Q) mkdir -p lib && $(AR) rcs $@ $^
 
 
-obj/upb/%.o: upb/%.c | $$(@D)/.
+obj/%.o: %.c | $$(@D)/.
 	$(E) CC $<
 	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
-obj/upb/%.o: upb/%.cc | $$(@D)/.
+obj/%.o: %.cc | $$(@D)/.
 	$(E) CXX $<
 	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
-obj/upb/%.lo: upb/%.c | $$(@D)/.
+obj/%.lo: %.c | $$(@D)/.
 	$(E) 'CC -fPIC' $<
 	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
 
-obj/upb/%.lo: upb/%.cc | $$(@D)/.
+obj/%.lo: %.cc | $$(@D)/.
 	$(E) CXX -fPIC $<
 	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
 
@@ -263,8 +264,12 @@ genfiles: tools/upbc
 	@# TODO: replace protoc with upbc when upb can parse .proto files
 	$(E) PROTOC upb/descriptor/descriptor.proto
 	$(Q) protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
+	$(E) PROTOC google/protobuf/descriptor.proto
+	$(Q) protoc google/protobuf/descriptor.proto -ogoogle/protobuf/descriptor.pb
 	$(E) UPBC upb/descriptor/descriptor.pb
 	$(Q) ./tools/upbc --generate-upbdefs upb/descriptor/descriptor.pb
+	$(E) UPBC google/protobuf/descriptor.pb
+	$(Q) ./tools/upbc google/protobuf/descriptor.pb
 	$(E) PROTOC tests/json/test.proto
 	$(Q) protoc tests/json/test.proto -otests/json/test.proto.pb
 	$(E) UPBC tests/json/test.proto.pb

@@ -24,7 +24,8 @@ class Amalgamator:
   def _process_file(self, infile_name, outfile):
     for line in open(infile_name):
       include = parse_include(line)
-      if include is not None and include.startswith("upb"):
+      if include is not None and (include.startswith("upb") or
+                                  include.startswith("google")):
         if include not in self.included:
           self.included.add(include)
           self._add_header(self.include_path + include)
