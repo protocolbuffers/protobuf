@@ -447,9 +447,31 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
       VARINT_CASE(int32_t, upb_zzdecode_32);
     case UPB_DESCRIPTOR_TYPE_SINT64:
       VARINT_CASE(int64_t, upb_zzdecode_64);
-    case UPB_DESCRIPTOR_TYPE_MESSAGE:
+    case UPB_DESCRIPTOR_TYPE_MESSAGE: {
+      const upb_msglayout_msginit_v1 *subm;
+      char *submsg;
+      void *field_mem;
+
       CHK(val.size <= (size_t)(frame->limit - val.data));
-      return upb_decode_submsg(d, frame, val.data + val.size, field, 0);
+      d->ptr -= val.size;
+
+      /* Create elemente message. */
+      UPB_ASSERT(field->submsg_index != UPB_NO_SUBMSG);
+      subm = frame->m->submsgs[field->submsg_index];
+      UPB_ASSERT(subm);
+
+      submsg = upb_env_malloc(d->env, upb_msg_sizeof((upb_msglayout *)subm));
+      CHK(submsg);
+      submsg = upb_msg_init(submsg, (upb_msglayout*)subm,
+                            upb_arena_alloc(upb_env_arena(d->env)));
+
+      field_mem = upb_array_add(arr, 1);
+      CHK(field_mem);
+      *(void**)field_mem = submsg;
+
+      return upb_decode_message(
+          d, val.data + val.size, frame->group_number, submsg, subm);
+    }
     case UPB_DESCRIPTOR_TYPE_GROUP:
       return upb_append_unknown(d, frame, field_start);
   }
