@@ -201,10 +201,10 @@ DefaultValueObjectWriter::Node* DefaultValueObjectWriter::CreateNewNode(
 DefaultValueObjectWriter::Node* DefaultValueObjectWriter::CreateNewNode(
     const string& name, const google::protobuf::Type* type, NodeKind kind,
     const DataPiece& data, bool is_placeholder, const std::vector<string>& path,
-    bool suppress_empty_list, bool preserve_proto_field_names,bool use_ints_for_enums,
+    bool suppress_empty_list, bool preserve_proto_field_names, bool use_ints_for_enums,
     FieldScrubCallBack* field_scrub_callback) {
   return new Node(name, type, kind, data, is_placeholder, path,
-                  suppress_empty_list, preserve_proto_field_names,use_ints_for_enums,
+                  suppress_empty_list, preserve_proto_field_names, use_ints_for_enums,
                   field_scrub_callback);
 }
 
@@ -227,7 +227,7 @@ DefaultValueObjectWriter::Node::Node(
 DefaultValueObjectWriter::Node::Node(
     const string& name, const google::protobuf::Type* type, NodeKind kind,
     const DataPiece& data, bool is_placeholder, const std::vector<string>& path,
-    bool suppress_empty_list, bool preserve_proto_field_names,bool use_ints_for_enums,
+    bool suppress_empty_list, bool preserve_proto_field_names, bool use_ints_for_enums,
     FieldScrubCallBack* field_scrub_callback)
     : name_(name),
       type_(type),
@@ -499,7 +499,7 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
           field.default_value(), &DataPiece::ToUint32, static_cast<uint32>(0)));
     }
     case google::protobuf::Field_Kind_TYPE_ENUM: {
-      return FindEnumDefault(field, typeinfo,use_ints_for_enums);
+      return FindEnumDefault(field, typeinfo, use_ints_for_enums);
     }
     default: { return DataPiece::NullData(); }
   }
