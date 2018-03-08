@@ -66,7 +66,7 @@ static bool upb_encode_growbuffer(upb_encstate *e, size_t bytes) {
   CHK(new_buf);
 
   /* We want previous data at the end, realloc() put it at the beginning. */
-  memmove(e->limit - old_size, e->buf, old_size);
+  memmove(new_buf + new_size - old_size, e->buf, old_size);
 
   e->ptr = new_buf + new_size - (e->limit - e->ptr);
   e->limit = new_buf + new_size;
@@ -347,7 +347,7 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
                         const upb_msglayout_msginit_v1 *m,
                         size_t *size) {
   int i;
-  char *buf_end = e->ptr;
+  size_t pre_len = e->limit - e->ptr;
 
   if (msg == NULL) {
     return true;
@@ -371,7 +371,7 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
     }
   }
 
-  *size = buf_end - e->ptr;
+  *size = (e->limit - e->ptr) - pre_len;
   return true;
 }
 
