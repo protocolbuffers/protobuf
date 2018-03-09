@@ -30,33 +30,10 @@
 #include "upb/handlers.h"
 #include "upb/sink.h"
 
-#ifdef __cplusplus
-
-namespace upb {
-class Array;
-class Map;
-class MapIterator;
-class MessageFactory;
-class MessageLayout;
-class Visitor;
-class VisitorPlan;
-}
-
-#endif
-
-UPB_DECLARE_TYPE(upb::MessageFactory, upb_msgfactory)
-UPB_DECLARE_TYPE(upb::MessageLayout, upb_msglayout)
-UPB_DECLARE_TYPE(upb::Array, upb_array)
-UPB_DECLARE_TYPE(upb::Map, upb_map)
-UPB_DECLARE_TYPE(upb::MapIterator, upb_mapiter)
-UPB_DECLARE_TYPE(upb::Visitor, upb_visitor)
-UPB_DECLARE_TYPE(upb::VisitorPlan, upb_visitorplan)
 
 /* TODO(haberman): C++ accessors */
 
 UPB_BEGIN_EXTERN_C
-
-typedef void upb_msg;
 
 
 /** upb_msglayout *************************************************************/
@@ -108,76 +85,6 @@ const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
                                                     const upb_msgdef *m);
 const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
                                                      const upb_handlers *h);
-
-
-/** upb_stringview ************************************************************/
-
-typedef struct {
-  const char *data;
-  size_t size;
-} upb_stringview;
-
-UPB_INLINE upb_stringview upb_stringview_make(const char *data, size_t size) {
-  upb_stringview ret;
-  ret.data = data;
-  ret.size = size;
-  return ret;
-}
-
-#define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
-
-
-/** upb_msgval ****************************************************************/
-
-/* A union representing all possible protobuf values.  Used for generic get/set
- * operations. */
-
-typedef union {
-  bool b;
-  float flt;
-  double dbl;
-  int32_t i32;
-  int64_t i64;
-  uint32_t u32;
-  uint64_t u64;
-  const upb_map* map;
-  const upb_msg* msg;
-  const upb_array* arr;
-  const void* ptr;
-  upb_stringview str;
-} upb_msgval;
-
-#define ACCESSORS(name, membername, ctype) \
-  UPB_INLINE ctype upb_msgval_get ## name(upb_msgval v) { \
-    return v.membername; \
-  } \
-  UPB_INLINE void upb_msgval_set ## name(upb_msgval *v, ctype cval) { \
-    v->membername = cval; \
-  } \
-  UPB_INLINE upb_msgval upb_msgval_ ## name(ctype v) { \
-    upb_msgval ret; \
-    ret.membername = v; \
-    return ret; \
-  }
-
-ACCESSORS(bool,   b,   bool)
-ACCESSORS(float,  flt, float)
-ACCESSORS(double, dbl, double)
-ACCESSORS(int32,  i32, int32_t)
-ACCESSORS(int64,  i64, int64_t)
-ACCESSORS(uint32, u32, uint32_t)
-ACCESSORS(uint64, u64, uint64_t)
-ACCESSORS(map,    map, const upb_map*)
-ACCESSORS(msg,    msg, const upb_msg*)
-ACCESSORS(ptr,    ptr, const void*)
-ACCESSORS(arr,    arr, const upb_array*)
-ACCESSORS(str,    str, upb_stringview)
-
-#undef ACCESSORS
-
-UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
-  return upb_msgval_str(upb_stringview_make(data, size));
-}
 
 
 /** upb_msg *******************************************************************/
