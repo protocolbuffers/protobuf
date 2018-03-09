@@ -18,6 +18,11 @@
   ZVAL_STRINGL(zval_ptr, s, len, copy)
 #define PROTO_RETURN_STRING(s, copy) RETURN_STRING(s, copy)
 #define PROTO_RETURN_STRINGL(s, len, copy) RETURN_STRINGL(s, len, copy)
+#define php_proto_zend_make_printable_zval(from, to) \
+  {                                                  \
+    int use_copy;                                    \
+    zend_make_printable_zval(from, to, &use_copy);   \
+  }
 
 #define PROTO_Z_BVAL_P(VALUE) Z_BVAL_P(VALUE)
 #define PROTO_RETURN_BOOL(VALUE) RETURN_BOOL(VALUE);

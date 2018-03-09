@@ -30,6 +30,8 @@
 
 #include "protobuf_php.h"
 
+static const char int64_min_digits[] = "9223372036854775808";
+
 PHP_METHOD(Util, checkInt32);
 PHP_METHOD(Util, checkUint32);
 PHP_METHOD(Util, checkInt64);
@@ -258,4 +260,306 @@ PHP_METHOD(Util, checkMapField) {
     return;
   }
   RETURN_ZVAL(val, 1, 0);
+}
+
+// -----------------------------------------------------------------------------
+// Type Conversion.
+// -----------------------------------------------------------------------------
+
+// This is modified from is_numeric_string in zend_operators.h. The behavior of 
+// this function is the same as is_numeric_string, except that this takes
+// int64_t as input instead of long.
+static zend_uchar convert_numeric_string(
+    const char *str, int length, int64_t *lval, double *dval) {
+  const char *ptr;
+  int base = 10, digits = 0, dp_or_e = 0;
+  double local_dval = 0.0;
+  zend_uchar type;
+
+  if (length == 0) {
+    return IS_NULL;
+  }
+
+  while (*str == ' ' || *str == '\t' || *str == '\n' || 
+         *str == '\r' || *str == '\v' || *str == '\f') {
+    str++;
+    length--;
+  }
+  ptr = str;
+
+  if (*ptr == '-' || *ptr == '+') {
+    ptr++;
+  }
+
+  if (ZEND_IS_DIGIT(*ptr)) {
+    // Handle hex numbers
+    // str is used instead of ptr to disallow signs and keep old behavior.
+    if (length > 2 && *str == '0' && (str[1] == 'x' || str[1] == 'X')) {
+      base = 16;
+      ptr += 2;
+    }
+
+    // Skip any leading 0s.
+    while (*ptr == '0') {
+      ptr++;
+    }
+
+    // Count the number of digits. If a decimal point/exponent is found,
+    // it's a double. Otherwise, if there's a dval or no need to check for
+    // a full match, stop when there are too many digits for a int64 */
+    for (type = IS_LONG;
+        !(digits >= MAX_LENGTH_OF_INT64 && dval);
+        digits++, ptr++) {
+check_digits:
+      if (ZEND_IS_DIGIT(*ptr) || (base == 16 && ZEND_IS_XDIGIT(*ptr))) {
+        continue;
+      } else if (base == 10) {
+        if (*ptr == '.' && dp_or_e < 1) {
+          goto process_double;
+        } else if ((*ptr == 'e' || *ptr == 'E') && dp_or_e < 2) {
+          const char *e = ptr + 1;
+
+          if (*e == '-' || *e == '+') {
+            ptr = e++;
+          }
+          if (ZEND_IS_DIGIT(*e)) {
+            goto process_double;
+          }
+        }
+      }
+      break;
+    }
+
+    if (base == 10) {
+      if (digits >= MAX_LENGTH_OF_INT64) {
+        dp_or_e = -1;
+        goto process_double;
+      }
+    } else if (!(digits < SIZEOF_INT64 * 2 ||
+               (digits == SIZEOF_INT64 * 2 && ptr[-digits] <= '7'))) {
+      if (dval) {
+        local_dval = zend_hex_strtod(str, &ptr);
+      }
+      type = IS_DOUBLE;
+    }
+  } else if (*ptr == '.' && ZEND_IS_DIGIT(ptr[1])) {
+process_double:
+    type = IS_DOUBLE;
+
+    // If there's a dval, do the conversion; else continue checking
+    // the digits if we need to check for a full match.
+    if (dval) {
+      local_dval = zend_strtod(str, &ptr);
+    } else if (dp_or_e != -1) {
+      dp_or_e = (*ptr++ == '.') ? 1 : 2;
+      goto check_digits;
+    }
+  } else {
+    return IS_NULL;
+  }
+  if (ptr != str + length) {
+    zend_error(E_NOTICE, "A non well formed numeric value encountered");
+    return 0;
+  }
+
+  if (type == IS_LONG) {
+    if (digits == MAX_LENGTH_OF_INT64 - 1) {
+      int cmp = strcmp(&ptr[-digits], int64_min_digits);
+
+      if (!(cmp < 0 || (cmp == 0 && *str == '-'))) {
+        if (dval) {
+          *dval = zend_strtod(str, NULL);
+        }
+
+	return IS_DOUBLE;
+      }
+    }
+    if (lval) {
+      *lval = strtoll(str, NULL, base);
+    }
+    return IS_LONG;
+  } else {
+    if (dval) {
+      *dval = local_dval;
+    }
+    return IS_DOUBLE;
+  }
+}
+
+#define CONVERT_TO_INTEGER(type)                                             \
+  static bool convert_int64_to_##type(int64_t val, type##_t* type##_value) { \
+    *type##_value = (type##_t)val;                                           \
+    return true;                                                             \
+  }                                                                          \
+                                                                             \
+  static bool convert_double_to_##type(double val, type##_t* type##_value) { \
+    *type##_value = (type##_t)zend_dval_to_lval(val);                        \
+    return true;                                                             \
+  }                                                                          \
+                                                                             \
+  static bool convert_string_to_##type(const char* val, int len,             \
+                                       type##_t* type##_value) {             \
+    int64_t lval;                                                            \
+    double dval;                                                             \
+                                                                             \
+    switch (convert_numeric_string(val, len, &lval, &dval)) {                \
+      case IS_DOUBLE: {                                                      \
+        return convert_double_to_##type(dval, type##_value);                 \
+      }                                                                      \
+      case IS_LONG: {                                                        \
+        return convert_int64_to_##type(lval, type##_value);                  \
+      }                                                                      \
+      default:                                                               \
+        zend_error(E_USER_ERROR,                                             \
+                   "Given string value cannot be converted to integer.");    \
+        return false;                                                        \
+    }                                                                        \
+  }                                                                          \
+                                                                             \
+  bool protobuf_convert_to_##type(zval* from, type##_t* to) {                \
+    switch (Z_TYPE_P(from)) {                                                \
+      case IS_LONG: {                                                        \
+        return convert_int64_to_##type(Z_LVAL_P(from), to);                  \
+      }                                                                      \
+      case IS_DOUBLE: {                                                      \
+        return convert_double_to_##type(Z_DVAL_P(from), to);                 \
+      }                                                                      \
+      case IS_STRING: {                                                      \
+        return convert_string_to_##type(Z_STRVAL_P(from), Z_STRLEN_P(from),  \
+                                        to);                                 \
+      }                                                                      \
+      default: {                                                             \
+        zend_error(E_USER_ERROR,                                             \
+                   "Given value cannot be converted to integer.");           \
+        return false;                                                        \
+      }                                                                      \
+    }                                                                        \
+    return false;                                                            \
+  }
+
+CONVERT_TO_INTEGER(int32);
+CONVERT_TO_INTEGER(uint32);
+CONVERT_TO_INTEGER(int64);
+CONVERT_TO_INTEGER(uint64);
+
+#undef CONVERT_TO_INTEGER
+
+#define CONVERT_TO_FLOAT(type)                                              \
+  static bool convert_int64_to_##type(int64_t val, type* type##_value) {    \
+    *type##_value = (type)val;                                              \
+    return true;                                                            \
+  }                                                                         \
+                                                                            \
+  static bool convert_double_to_##type(double val, type* type##_value) {    \
+    *type##_value = (type)val;                                              \
+    return true;                                                            \
+  }                                                                         \
+                                                                            \
+  static bool convert_string_to_##type(const char* val, int len,            \
+                                       type* type##_value) {                \
+    int64_t lval;                                                           \
+    double dval;                                                            \
+                                                                            \
+    switch (convert_numeric_string(val, len, &lval, &dval)) {               \
+      case IS_DOUBLE: {                                                     \
+        *type##_value = (type)dval;                                         \
+        return true;                                                        \
+      }                                                                     \
+      case IS_LONG: {                                                       \
+        *type##_value = (type)lval;                                         \
+        return true;                                                        \
+      }                                                                     \
+      default:                                                              \
+        zend_error(E_USER_ERROR,                                            \
+                   "Given string value cannot be converted to integer.");   \
+        return false;                                                       \
+    }                                                                       \
+  }                                                                         \
+                                                                            \
+  bool protobuf_convert_to_##type(zval* from, type* to) {                   \
+    switch (Z_TYPE_P(from)) {                                               \
+      case IS_LONG: {                                                       \
+        return convert_int64_to_##type(Z_LVAL_P(from), to);                 \
+      }                                                                     \
+      case IS_DOUBLE: {                                                     \
+        return convert_double_to_##type(Z_DVAL_P(from), to);                \
+      }                                                                     \
+      case IS_STRING: {                                                     \
+        return convert_string_to_##type(Z_STRVAL_P(from), Z_STRLEN_P(from), \
+                                        to);                                \
+      }                                                                     \
+      default: {                                                            \
+        zend_error(E_USER_ERROR,                                            \
+                   "Given value cannot be converted to integer.");          \
+        return false;                                                       \
+      }                                                                     \
+    }                                                                       \
+    return false;                                                           \
+  }
+
+CONVERT_TO_FLOAT(float);
+CONVERT_TO_FLOAT(double);
+
+#undef CONVERT_TO_FLOAT
+
+bool protobuf_convert_to_bool(zval* from, int8_t* to) {
+  switch (Z_TYPE_P(from)) {
+#if PHP_MAJOR_VERSION < 7
+    case IS_BOOL:
+      *to = (int8_t)Z_BVAL_P(from);
+      break;
+#else
+    case IS_TRUE:
+      *to = 1;
+      break;
+    case IS_FALSE:
+      *to = 0;
+      break;
+#endif
+    case IS_LONG:
+      *to = (int8_t)(Z_LVAL_P(from) != 0);
+      break;
+    case IS_DOUBLE:
+      *to = (int8_t)(Z_LVAL_P(from) != 0);
+      break;
+    case IS_STRING: {
+      char* strval = Z_STRVAL_P(from);
+
+      if (Z_STRLEN_P(from) == 0 ||
+          (Z_STRLEN_P(from) == 1 && Z_STRVAL_P(from)[0] == '0')) {
+        *to = 0;
+      } else {
+        *to = 1;
+      }
+    } break;
+    default: {
+      zend_error(E_USER_ERROR, "Given value cannot be converted to bool.");
+      return false;
+    }
+  }
+  return true;
+}
+
+bool protobuf_convert_to_string(zval* from) {
+  switch (Z_TYPE_P(from)) {
+    case IS_STRING: {
+      return true;
+    }
+#if PHP_MAJOR_VERSION < 7
+    case IS_BOOL:
+#else
+    case IS_TRUE:
+    case IS_FALSE:
+#endif
+    case IS_LONG:
+    case IS_DOUBLE: {
+      zval tmp;
+      php_proto_zend_make_printable_zval(from, &tmp);
+      ZVAL_COPY_VALUE(from, &tmp);
+      return true;
+    }
+    default:
+      zend_error(E_USER_ERROR, "Given value cannot be converted to string.");
+      return false;
+  }
 }

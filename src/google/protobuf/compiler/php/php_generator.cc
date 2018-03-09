@@ -582,7 +582,7 @@ void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
 }
 
 void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
-                           io::Printer* printer) {
+                           bool is_hhvm, io::Printer* printer) {
   const OneofDescriptor* oneof = field->containing_oneof();
 
   // Generate getter.
@@ -597,13 +597,23 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "number", IntToString(field->number()));
   } else {
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
-    printer->Print(
-        "public function get^camel_name^()\n"
-        "{\n"
-        "    return $this->^name^;\n"
-        "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name());
+    if (is_hhvm) {
+      printer->Print(
+          "public function get^camel_name^()\n"
+          "{\n"
+          "    return $this->readProperty(\"^name^\");\n"
+          "}\n\n",
+          "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
+          field->name());
+    } else {
+      printer->Print(
+          "public function get^camel_name^()\n"
+          "{\n"
+          "    return $this->^name^;\n"
+          "}\n\n",
+          "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
+          field->name());
+    }
   }
 
   // Generate setter.
@@ -681,13 +691,25 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "$this->writeOneof(^number^, $var);\n",
         "number", IntToString(field->number()));
   } else if (field->is_repeated()) {
-    printer->Print(
-        "$this->^name^ = $arr;\n",
-        "name", field->name());
+    if (is_hhvm) {
+      printer->Print(
+          "$this->writeProperty(\"^name^\", $arr);\n",
+          "name", field->name());
+    } else {
+      printer->Print(
+          "$this->^name^ = $arr;\n",
+          "name", field->name());
+    }
   } else {
-    printer->Print(
-        "$this->^name^ = $var;\n",
-        "name", field->name());
+    if (is_hhvm) {
+      printer->Print(
+          "$this->writeProperty(\"^name^\", $var);\n",
+          "name", field->name());
+    } else {
+      printer->Print(
+          "$this->^name^ = $var;\n",
+          "name", field->name());
+    }
   }
 
   // Set has bit for proto2 only.
@@ -1118,7 +1140,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Field and oneof accessors.
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
-    GenerateFieldAccessor(field, is_descriptor, &printer);
+    GenerateFieldAccessor(field, is_descriptor, is_hhvm, &printer);
   }
   for (int i = 0; i < message->oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);

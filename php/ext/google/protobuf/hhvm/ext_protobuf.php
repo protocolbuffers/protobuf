@@ -11,6 +11,10 @@ class Message {
   <<__Native>>
   public function mergeFromString(string $data): void;
   <<__Native>>
+  public function writeProperty(string $name, mixed $value): void;
+  <<__Native>>
+  public function readProperty(string $name): mixed;
+  <<__Native>>
   public function writeOneof(int $number, mixed $value): void;
   <<__Native>>
   public function readOneof(int $number): mixed;

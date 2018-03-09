@@ -123,7 +123,7 @@ PHP_METHOD(RepeatedField, append) {
   }
 
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
-  upb_msgval val = tomsgval(value, upb_array_type(intern->array));
+  upb_msgval val = tomsgval(value, upb_array_type(intern->array), NULL);
   size_t size = upb_array_size(intern->array);
   upb_array_set(intern->array, size, val);
 }
@@ -185,7 +185,7 @@ PHP_METHOD(RepeatedField, offsetSet) {
   }
 
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
-  upb_msgval val = tomsgval(value, upb_array_type(intern->array));
+  upb_msgval val = tomsgval(value, upb_array_type(intern->array), NULL);
   if (!index || Z_TYPE_P(index) == IS_NULL) {
     size_t size = upb_array_size(intern->array);
     upb_array_set(intern->array, size, val);

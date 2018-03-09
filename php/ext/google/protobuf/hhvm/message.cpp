@@ -56,6 +56,15 @@ void Message_init_c_instance(
 
 void Message_free_c(
     Message *intern TSRMLS_DC) {
+  // void *msg = upb_msg_uninit(intern->msg, intern->layout);
+  // upb_gfree(msg);
+  // if (intern->arena) {
+  //   upb_alloc *alloc = upb_arena_alloc(intern->arena);
+  //   upb_arena_uninit(intern->arena);
+  //   FREE(intern->arena);
+  // } else {
+  //   // FREE(msg);
+  // }
 }
 
 void Message___construct(Message* intern, const upb_msgdef* msgdef) {
@@ -66,11 +75,11 @@ void Message___construct(Message* intern, const upb_msgdef* msgdef) {
   // Alloc message
   intern->msgdef = msgdef;
   intern->layout = layout;
-  intern->msg = 
-      reinterpret_cast<upb_msg*>(ALLOC_N(char, upb_msg_sizeof(layout)));
-  upb_arena* arena = reinterpret_cast<upb_arena*>(ALLOC(upb_arena));
-  upb_arena_init(arena);
-  intern->msg = upb_msg_init(intern->msg, layout, upb_arena_alloc(arena));
+  // intern->arena = reinterpret_cast<upb_arena*>(ALLOC(upb_arena));
+  // upb_arena_init(intern->arena);
+  // upb_alloc *alloc = upb_arena_alloc(intern->arena);
+  intern->msg = (upb_msg*)upb_gmalloc(upb_msg_sizeof(layout));
+  intern->msg = upb_msg_init(intern->msg, layout, &upb_alloc_global);
 }
 
 void Message_wrap(Message* intern, upb_msg *msg, const upb_msgdef *msgdef) {

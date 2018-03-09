@@ -78,6 +78,7 @@ PROTO_WRAP_OBJECT_START(Message)
   const upb_msgdef *msgdef;
   const upb_msglayout *layout;
   upb_msg *msg;
+  upb_arena *arena;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------

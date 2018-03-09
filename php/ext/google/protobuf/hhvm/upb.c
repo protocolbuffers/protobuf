@@ -3486,8 +3486,6 @@ char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *m,
   e.limit = NULL;
   e.ptr = NULL;
 
-  CHK(upb_encode_growbuffer(&e, UPB_PB_VARINT_MAX_LEN));
-
   if (!upb_encode_message(&e, msg, m, size)) {
     *size = 0;
     return NULL;
@@ -4376,6 +4374,9 @@ bool upb_decode2(upb_stringview buf, void *msg,
 }
 
 static void upb_msglayout_free(upb_msglayout *l) {
+  upb_gfree((void*)l->data.fields);
+  upb_gfree((void*)l->data.submsgs);
+  upb_gfree((void*)l->data.oneofs);
   upb_gfree(l->data.default_msg);
   upb_gfree(l);
 }

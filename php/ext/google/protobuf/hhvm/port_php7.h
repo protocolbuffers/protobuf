@@ -17,6 +17,8 @@
 #define PROTO_ZVAL_STRINGL(zval_ptr, s, len, copy) \
   ZVAL_STRINGL(zval_ptr, s, len)
 #define PROTO_RETURN_STRINGL(s, len, copy) RETURN_STRINGL(s, len)
+#define php_proto_zend_make_printable_zval(from, to) \
+  zend_make_printable_zval(from, to)
 
 #define PROTO_Z_BVAL_P(VALUE) (Z_TYPE_INFO_P(VALUE) == IS_TRUE ? true : false)
 #define PROTO_RETURN_BOOL(VALUE) RETURN_BOOL(VALUE);

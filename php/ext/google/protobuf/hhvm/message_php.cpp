@@ -34,26 +34,31 @@
 // Define static methods
 // -----------------------------------------------------------------------------
 
-upb_msgval tomsgval(zval* value, upb_fieldtype_t type) {
+upb_msgval tomsgval(zval* value, upb_fieldtype_t type, upb_alloc* alloc) {
   switch (type) {
-    case UPB_TYPE_INT32:
-    case UPB_TYPE_ENUM:
-      return upb_msgval_int32(Z_LVAL_P(value));
-    case UPB_TYPE_INT64:
-      return upb_msgval_int64(Z_LVAL_P(value));
-    case UPB_TYPE_UINT32:
-      return upb_msgval_uint32(Z_LVAL_P(value));
-    case UPB_TYPE_UINT64:
-      return upb_msgval_uint64(Z_LVAL_P(value));
-    case UPB_TYPE_DOUBLE:
-      return upb_msgval_double(Z_DVAL_P(value));
-    case UPB_TYPE_FLOAT:
-      return upb_msgval_float(Z_DVAL_P(value));
-    case UPB_TYPE_BOOL:
-      return upb_msgval_bool(PROTO_Z_BVAL_P(value));
+
+ #define CASE_TYPE(UPBTYPE, TYPE, CTYPE, PHPTYPE)    \
+    case UPB_TYPE_##UPBTYPE: {                       \
+      CTYPE raw_value;                               \
+      protobuf_convert_to_##TYPE(value, &raw_value); \
+      return upb_msgval_##TYPE(raw_value);           \
+    }
+
+    CASE_TYPE(INT32,  int32,  int32_t,  LONG)
+    CASE_TYPE(UINT32, uint32, uint32_t, LONG)
+    CASE_TYPE(ENUM,   int32,  int32_t,  LONG)
+    CASE_TYPE(INT64,  int64,  int64_t,  LONG)
+    CASE_TYPE(UINT64, uint64, uint64_t, LONG)
+    CASE_TYPE(FLOAT,  float,  float,    DOUBLE)
+    CASE_TYPE(DOUBLE, double, double,   DOUBLE)
+    CASE_TYPE(BOOL,   bool,   int8_t,   BOOL)
+
+#undef CASE_TYPE
+
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-      char *mem = ALLOC_N(char, Z_STRLEN_P(value) + 1);
+      protobuf_convert_to_string(value);
+      char *mem = (char*)upb_gmalloc(Z_STRLEN_P(value) + 1);
       memcpy(mem, Z_STRVAL_P(value), Z_STRLEN_P(value) + 1);
       return upb_msgval_makestr(mem, Z_STRLEN_P(value));
     }
@@ -81,7 +86,7 @@ void tophpval(const upb_msgval &msgval,
       ZVAL_LONG(retval, upb_msgval_getint64(msgval));
       break;
     case UPB_TYPE_UINT32:
-      ZVAL_LONG(retval, upb_msgval_getuint32(msgval));
+      ZVAL_LONG(retval, (int32_t)upb_msgval_getuint32(msgval));
       break;
     case UPB_TYPE_UINT64:
       ZVAL_LONG(retval, upb_msgval_getuint64(msgval));
@@ -166,7 +171,7 @@ static void message_set_property_internal(zval* object, zval* member,
     upb_msgval_setarr(&msgval, arr->array);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   } else {
-    upb_msgval msgval = tomsgval(value, type);
+    upb_msgval msgval = tomsgval(value, type, upb_msg_alloc(self->msg));
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   }
 }
@@ -417,6 +422,7 @@ PHP_METHOD(Message, writeOneof) {
 
   const upb_fielddef* f = upb_msgdef_itof(self->msgdef, index);
 
-  upb_msgval msgval = tomsgval(value, upb_fielddef_type(f));
+  upb_msgval msgval = tomsgval(value, upb_fielddef_type(f),
+                               upb_msg_alloc(self->msg));
   upb_msg_set(self->msg, upb_fielddef_index(f), msgval, self->layout);
 }

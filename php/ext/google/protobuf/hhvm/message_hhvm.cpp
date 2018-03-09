@@ -56,7 +56,7 @@ upb_msgval tomsgval(const Variant& value, upb_fieldtype_t type) {
       return upb_msgval_bool(value.toBoolean());
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-      const String& str = value.toCStrRef();
+      String str = value.toString();
       return upb_msgval_makestr(str.data(), str.size());
     }
     case UPB_TYPE_MESSAGE: {
@@ -232,6 +232,9 @@ static Variant Message_unset(const Object& obj, const String& name) {
 void HHVM_METHOD(Message, __construct);
 String HHVM_METHOD(Message, serializeToString);
 void HHVM_METHOD(Message, mergeFromString, const String& data);
+void HHVM_METHOD(Message, writeProperty, const String& name,
+                 const Variant& value);
+Variant HHVM_METHOD(Message, readProperty, const String& name);
 void HHVM_METHOD(Message, writeOneof, int64_t number, const Variant& value);
 Variant HHVM_METHOD(Message, readOneof, int64_t number);
 
@@ -245,6 +248,10 @@ void Message_init() {
                 serializeToString, HHVM_MN(Message, serializeToString));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
                 mergeFromString, HHVM_MN(Message, mergeFromString));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
+                writeProperty, HHVM_MN(Message, writeProperty));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
+                readProperty, HHVM_MN(Message, readProperty));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
                 writeOneof, HHVM_MN(Message, writeOneof));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
@@ -278,6 +285,23 @@ String HHVM_METHOD(Message, serializeToString) {
 void HHVM_METHOD(Message, mergeFromString, const String& data) {
   Message* intern = Native::data<Message>(this_);
   Message_mergeFromString(intern, data.c_str(), data.length());
+}
+
+void HHVM_METHOD(Message, writeProperty, const String& name,
+                 const Variant& value) {
+  Message* intern = Native::data<Message>(this_);
+  const upb_fielddef* f = upb_msgdef_ntof(
+      intern->msgdef, name.data(), name.size());
+  assert(f != NULL);
+  Message_set_impl(intern, f, value);
+}
+
+Variant HHVM_METHOD(Message, readProperty, const String& name) {
+  Message* intern = Native::data<Message>(this_);
+  const upb_fielddef* f = upb_msgdef_ntof(
+      intern->msgdef, name.data(), name.size());
+  assert(f != NULL);
+  return Message_get_impl(intern, f);
 }
 
 void HHVM_METHOD(Message, writeOneof, int64_t number, const Variant& value) {

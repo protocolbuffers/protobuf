@@ -11,13 +11,13 @@
 # require_once('generated/Bar/TestInclude.php');
 # require_once('generated/Foo/PBARRAY.php');
 # require_once('generated/Foo/PBEmpty.php');
-# require_once('generated/Foo/TestEnum.php');
+require_once('generated/Foo/TestEnum.php');
 # require_once('generated/Foo/TestIncludeNamespaceMessage.php');
 # require_once('generated/Foo/TestIncludePrefixMessage.php');
-# require_once('generated/Foo/TestMessage.php');
+require_once('generated/Foo/TestMessage.php');
 # require_once('generated/Foo/TestMessage_Empty.php');
 # require_once('generated/Foo/TestMessage_NestedEnum.php');
-# require_once('generated/Foo/TestMessage_Sub.php');
+require_once('generated/Foo/TestMessage_Sub.php');
 # require_once('generated/Foo/TestPackedMessage.php');
 # require_once('generated/Foo/TestPhpDoc.php');
 # require_once('generated/Foo/TestRandomFieldOrder.php');
@@ -25,22 +25,22 @@
 # require_once('generated/Foo/TestUnpackedMessage.php');
 # require_once('generated/Foo/testLowerCaseMessage.php');
 # require_once('generated/Foo/testLowerCaseEnum.php');
-# require_once('generated/GPBMetadata/Proto/Test.php');
+require_once('generated/GPBMetadata/Proto/Test.php');
 # require_once('generated/GPBMetadata/Proto/TestEmptyPhpNamespace.php');
 # require_once('generated/GPBMetadata/Proto/TestInclude.php');
 # require_once('generated/GPBMetadata/Proto/TestNoNamespace.php');
 # require_once('generated/GPBMetadata/Proto/TestPhpNamespace.php');
 # require_once('generated/GPBMetadata/Proto/TestPrefix.php');
 # require_once('generated/Php/Test/TestNamespace.php');
-# require_once('test_util.php');
+require_once('test_util.php');
 
 # use Google\Protobuf\Internal\RepeatedField;
 # use Google\Protobuf\Internal\GPBType;
-# use Foo\TestMessage;
+use Foo\TestMessage;
 # use Foo\TestMessage_Sub;
-# 
-# $from = new TestMessage();
-# TestUtil::setTestMessage($from);
+
+$from = new TestMessage();
+TestUtil::setTestMessage($from);
 # TestUtil::assertTestMessage($from);
 # 
 # $data = $from->serializeToString();

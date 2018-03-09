@@ -139,7 +139,7 @@ PHP_METHOD(MapField, offsetExists) {
   }
 
   MapField *intern = UNBOX(MapField, getThis());
-  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map));
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), NULL);
   upb_msgval v;
   RETURN_BOOL(upb_map_get(intern->map, k, &v));
 }
@@ -160,7 +160,7 @@ PHP_METHOD(MapField, offsetGet) {
   }
 
   MapField *intern = UNBOX(MapField, getThis());
-  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map));
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), NULL);
   upb_msgval v;
   if(!upb_map_get(intern->map, k, &v)) {
     RETURN_NULL();
@@ -188,8 +188,8 @@ PHP_METHOD(MapField, offsetSet) {
   }
 
   MapField *intern = UNBOX(MapField, getThis());
-  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map));
-  upb_msgval v = tomsgval(value, upb_map_valuetype(intern->map));
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), NULL);
+  upb_msgval v = tomsgval(value, upb_map_valuetype(intern->map), NULL);
   upb_map_set(intern->map, k, v, NULL);
 }
 

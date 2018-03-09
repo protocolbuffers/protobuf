@@ -270,5 +270,6 @@ void InternalDescriptorPool_add_generated_file(
 // 
 //   upb_msgfactory_free(factory);
 //   upb_filedef_unref(files[0], &pool);
-//   upb_gfree(files);
+  upb_filedef_unref(files[0], &pool);
+  upb_gfree(files);
 }

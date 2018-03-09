@@ -88,7 +88,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testEncodeDecode()
     {
-        $loops = 1;
+        $loops = 10000;
         $encode_time = 0;
         $decode_time = 0;
         $get_time = 0;
@@ -114,7 +114,7 @@ class EncodeDecodeTest extends TestBase
             $encode_end = microtime_float();
             $encode_time += $encode_end - $encode_start;
     
-            var_dump(bin2hex($data));
+            # var_dump(bin2hex($data));
             $size = strlen($data);
     
             // Decode Message
