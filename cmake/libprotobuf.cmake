@@ -4,7 +4,6 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/api.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/importer.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/descriptor.cc
   ${protobuf_source_dir}/src/google/protobuf/descriptor.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/descriptor_database.cc
