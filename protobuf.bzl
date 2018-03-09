@@ -171,10 +171,10 @@ def cc_proto_library(
         deps=[],
         cc_libs=[],
         include=None,
-        protoc="//:protoc",
+        protoc="@com_google_protobuf//:protoc",
         internal_bootstrap_hack=False,
         use_grpc_plugin=False,
-        default_runtime="//:protobuf",
+        default_runtime="@com_google_protobuf//:protobuf",
         **kargs):
   """Bazel rule to create a C++ protobuf library from proto source files
 
@@ -317,8 +317,8 @@ def py_proto_library(
         py_libs=[],
         py_extra_srcs=[],
         include=None,
-        default_runtime="//:protobuf_python",
-        protoc="//:protoc",
+        default_runtime="@com_google_protobuf//:protobuf_python",
+        protoc="@com_google_protobuf//:protoc",
         use_grpc_plugin=False,
         **kargs):
   """Bazel rule to create a Python protobuf library from proto source files

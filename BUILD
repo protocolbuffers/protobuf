@@ -254,7 +254,7 @@ internal_copied_filegroup(
     srcs = WELL_KNOWN_PROTOS,
     dest = "",
     strip_prefix = "src",
-    visibility = ["//visibility:hidden"],
+    visibility = ["//visibility:private"],
 )
 
 [proto_library(
