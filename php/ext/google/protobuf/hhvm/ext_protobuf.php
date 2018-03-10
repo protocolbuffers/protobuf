@@ -18,6 +18,8 @@ class Message {
   public function writeOneof(int $number, mixed $value): void;
   <<__Native>>
   public function readOneof(int $number): mixed;
+  <<__Native>>
+  public function whichOneof(string $name): string;
 }
 
 <<__NativeData("Google\\Protobuf\\Internal\\MapField")>>

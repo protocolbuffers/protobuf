@@ -345,6 +345,7 @@ PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFromString);
 PHP_METHOD(Message, writeOneof);
 PHP_METHOD(Message, readOneof);
+PHP_METHOD(Message, whichOneof);
 
 static zend_function_entry Message_methods[] = {
   PHP_ME(Message, __construct, NULL, ZEND_ACC_PUBLIC)
@@ -352,6 +353,7 @@ static zend_function_entry Message_methods[] = {
   PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PUBLIC)
 };
 
 PROTO_DEFINE_CLASS(Message,
@@ -425,4 +427,40 @@ PHP_METHOD(Message, writeOneof) {
   upb_msgval msgval = tomsgval(value, upb_fielddef_type(f),
                                upb_msg_alloc(self->msg));
   upb_msg_set(self->msg, upb_fielddef_index(f), msgval, self->layout);
+}
+
+PHP_METHOD(Message, whichOneof) {
+  char* oneof_name;
+  PROTO_SIZE length;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &oneof_name,
+                            &length) == FAILURE) {
+    return;
+  }
+
+  Message* self = UNBOX(Message, getThis());
+
+  const upb_oneofdef* oneof =
+      upb_msgdef_ntoo(self->msgdef, oneof_name, length);
+
+  // Get oneof case
+  upb_oneof_iter i;
+  const upb_fielddef* first_field;
+
+  // Oneof is guaranteed to have at least one field. Get the first field.
+  for(upb_oneof_begin(&i, oneof); !upb_oneof_done(&i); upb_oneof_next(&i)) {
+    first_field = upb_oneof_iter_field(&i);
+    break;
+  }
+  int field_index = upb_fielddef_index(first_field);
+  uint32_t oneof_case = *upb_msg_oneofcase(
+      self->msg, field_index, self->layout);
+
+  if (oneof_case == 0) {
+    PROTO_RETURN_STRINGL("", 0, 1);
+  }
+
+  const upb_fielddef* field = upb_oneofdef_itof(oneof, oneof_case);
+  const char* field_name = upb_fielddef_name(field);
+  PROTO_RETURN_STRINGL(field_name, strlen(field_name), 1);
 }

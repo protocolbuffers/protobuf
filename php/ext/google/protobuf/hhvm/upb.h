@@ -2814,6 +2814,8 @@ void upb_msg_oneof_next(upb_msg_oneof_iter *iter);
 bool upb_msg_oneof_done(const upb_msg_oneof_iter *iter);
 upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter);
 void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter *iter);
+uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
+                            const upb_msglayout *l);
 
 UPB_END_EXTERN_C
 

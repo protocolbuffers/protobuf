@@ -88,7 +88,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testEncodeDecode()
     {
-        $loops = 10000;
+        $loops = 1;
         $encode_time = 0;
         $decode_time = 0;
         $get_time = 0;

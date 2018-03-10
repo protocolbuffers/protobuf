@@ -4925,8 +4925,8 @@ static bool upb_msg_inoneof(const upb_msglayout_fieldinit_v1 *field) {
   return field->oneof_index != UPB_NOT_IN_ONEOF;
 }
 
-static uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
-                                   const upb_msglayout *l) {
+uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
+                            const upb_msglayout *l) {
   const upb_msglayout_fieldinit_v1 *field = upb_msg_checkfield(field_index, l);
   UPB_ASSERT(upb_msg_inoneof(field));
   return PTR_AT(msg, l->data.oneofs[field->oneof_index].case_offset, uint32_t);

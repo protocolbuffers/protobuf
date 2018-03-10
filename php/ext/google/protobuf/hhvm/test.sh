@@ -4,6 +4,7 @@ set -e
 
 run_tests()
 {
+  # tests=( encode_decode_test.php )
   tests=( generated_class_test.php encode_decode_test.php )
   # tests=( encode_decode_test.php )
   # tests=( array_test.php generated_class_test.php map_field_test.php )
@@ -32,17 +33,17 @@ run_tests()
 
 PROTOC=../../../../../src/protoc
 
-# # Test HHVM
-# echo "****************************"
-# echo "* Test HHVM"
-# echo "****************************"
-# rm -rf generated
-# mkdir generated
-# $PROTOC --php_out=hhvm:generated proto/test.proto proto/test_no_namespace.proto proto/test_include.proto
-# # make clean; hphpize; cmake . && make && hhvm -d extension_dir=. -d hhvm.extensions[]=protobuf.so test_hhvm.php
-# phpunit --version
-# make clean; hphpize; cmake . && make
-# run_tests hhvm
+# Test HHVM
+echo "****************************"
+echo "* Test HHVM"
+echo "****************************"
+rm -rf generated
+mkdir generated
+$PROTOC --php_out=hhvm:generated proto/test.proto proto/test_no_namespace.proto proto/test_include.proto
+# make clean; hphpize; cmake . && make && hhvm -d extension_dir=. -d hhvm.extensions[]=protobuf.so test_hhvm.php
+phpunit --version
+make clean; hphpize; cmake . && make
+run_tests hhvm
 
 # Test PHP
 rm -rf generated

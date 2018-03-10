@@ -237,6 +237,7 @@ void HHVM_METHOD(Message, writeProperty, const String& name,
 Variant HHVM_METHOD(Message, readProperty, const String& name);
 void HHVM_METHOD(Message, writeOneof, int64_t number, const Variant& value);
 Variant HHVM_METHOD(Message, readOneof, int64_t number);
+String HHVM_METHOD(Message, whichOneof, const String& name);
 
 const StaticString s_Message("Google\\Protobuf\\Internal\\Message");
 
@@ -256,6 +257,8 @@ void Message_init() {
                 writeOneof, HHVM_MN(Message, writeOneof));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
                 readOneof, HHVM_MN(Message, readOneof));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
+                whichOneof, HHVM_MN(Message, whichOneof));
 
   // Register class
   Native::registerNativeDataInfo<Message>(s_Message.get()); 
@@ -316,4 +319,32 @@ Variant HHVM_METHOD(Message, readOneof, int64_t number) {
   const upb_fielddef* f = upb_msgdef_itof(intern->msgdef, number);
   assert(f != NULL);
   return Message_get_impl(intern, f);
+}
+
+String HHVM_METHOD(Message, whichOneof, const String& name) {
+  Message* intern = Native::data<Message>(this_);
+
+  const upb_oneofdef* oneof =
+      upb_msgdef_ntoo(intern->msgdef, name.data(), name.size());
+
+  // Get oneof case
+  upb_oneof_iter i;
+  const upb_fielddef* first_field;
+
+  // Oneof is guaranteed to have at least one field. Get the first field.
+  for(upb_oneof_begin(&i, oneof); !upb_oneof_done(&i); upb_oneof_next(&i)) {
+    first_field = upb_oneof_iter_field(&i);
+    break;
+  }
+  int field_index = upb_fielddef_index(first_field);
+  uint32_t oneof_case = *upb_msg_oneofcase(
+      intern->msg, field_index, intern->layout);
+
+  if (oneof_case == 0) {
+    return String("", 0, CopyString);
+  }
+
+  const upb_fielddef* field = upb_oneofdef_itof(oneof, oneof_case);
+  const char* field_name = upb_fielddef_name(field);
+  return String(field_name, strlen(field_name), CopyString);
 }
