@@ -45,8 +45,11 @@ def _CcSrcs(srcs, use_grpc_plugin=False):
 def _CcOuts(srcs, use_grpc_plugin=False):
   return _CcHdrs(srcs, use_grpc_plugin) + _CcSrcs(srcs, use_grpc_plugin)
 
-def _PyOuts(srcs):
-  return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
+def _PyOuts(srcs, use_grpc_plugin=False):
+  ret = [s[:-len(".proto")] + "_pb2.py" for s in srcs]
+  if use_grpc_plugin:
+    ret += [s[:-len(".proto")] + "_pb2_grpc.py" for s in srcs]
+  return ret
 
 def _RelativeOutputPath(path, include, dest=""):
   if include == None:
@@ -344,7 +347,7 @@ def py_proto_library(
     **kargs: other keyword arguments that are passed to cc_library.
 
   """
-  outs = _PyOuts(srcs)
+  outs = _PyOuts(srcs, use_grpc_plugin)
 
   includes = []
   if include != None:
