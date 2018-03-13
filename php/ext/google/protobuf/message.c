@@ -292,7 +292,9 @@ PHP_METHOD(Message, clear) {
   Descriptor* desc = msg->descriptor;
   zend_class_entry* ce = desc->klass;
 
+  zend_object_std_dtor(&msg->std TSRMLS_CC);
   object_properties_init(&msg->std, ce);
+
   layout_init(desc->layout, message_data(msg), &msg->std TSRMLS_CC);
 }
 
@@ -445,8 +447,7 @@ static void init_file_wrappers(TSRMLS_D);
 
 // Define file init functions
 static void init_file_any(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_any) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0acd010a19676f6f676c652f70726f746f6275662f616e792e70726f746f"
@@ -461,12 +462,11 @@ static void init_file_any(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_any = true;
 }
 
 static void init_file_api(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_api) return;
   init_file_source_context(TSRMLS_C);
   init_file_type(TSRMLS_C);
   init_generated_pool_once(TSRMLS_C);
@@ -502,12 +502,11 @@ static void init_file_api(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_api = true;
 }
 
 static void init_file_duration(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_duration) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0ae3010a1e676f6f676c652f70726f746f6275662f6475726174696f6e2e"
@@ -523,12 +522,11 @@ static void init_file_duration(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_duration = true;
 }
 
 static void init_file_field_mask(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_field_mask) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0ae3010a20676f6f676c652f70726f746f6275662f6669656c645f6d6173"
@@ -544,12 +542,11 @@ static void init_file_field_mask(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_field_mask = true;
 }
 
 static void init_file_empty(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_empty) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0ab7010a1b676f6f676c652f70726f746f6275662f656d7074792e70726f"
@@ -564,12 +561,11 @@ static void init_file_empty(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_empty = true;
 }
 
 static void init_file_source_context(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_source_context) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0afb010a24676f6f676c652f70726f746f6275662f736f757263655f636f"
@@ -586,12 +582,11 @@ static void init_file_source_context(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_source_context = true;
 }
 
 static void init_file_struct(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_struct) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0a81050a1c676f6f676c652f70726f746f6275662f7374727563742e7072"
@@ -621,12 +616,11 @@ static void init_file_struct(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_struct = true;
 }
 
 static void init_file_timestamp(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_timestamp) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0ae7010a1f676f6f676c652f70726f746f6275662f74696d657374616d70"
@@ -642,12 +636,11 @@ static void init_file_timestamp(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_timestamp = true;
 }
 
 static void init_file_type(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_type) return;
   init_file_any(TSRMLS_C);
   init_file_source_context(TSRMLS_C);
   init_generated_pool_once(TSRMLS_C);
@@ -711,12 +704,11 @@ static void init_file_type(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_type = true;
 }
 
 static void init_file_wrappers(TSRMLS_D) {
-  static bool is_initialized = false;
-  if (is_initialized) return;
+  if (is_inited_file_wrappers) return;
   init_generated_pool_once(TSRMLS_C);
   const char* generated_file =
       "0abf030a1e676f6f676c652f70726f746f6275662f77726170706572732e"
@@ -739,7 +731,7 @@ static void init_file_wrappers(TSRMLS_D) {
   hex_to_binary(generated_file, &binary, &binary_len);
   internal_add_generated_file(binary, binary_len, generated_pool TSRMLS_CC);
   FREE(binary);
-  is_initialized = true;
+  is_inited_file_wrappers = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -928,6 +920,7 @@ PHP_METHOD(Any, unpack) {
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   zval* type_url_php = php_proto_message_read_property(
       getThis(), &type_url_member PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&type_url_member);
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Get fully-qualified name from type url.
@@ -938,7 +931,7 @@ PHP_METHOD(Any, unpack) {
   if (url_prefix_len > type_url_len ||
       strncmp(TYPE_URL_PREFIX, type_url, url_prefix_len) != 0) {
     zend_throw_exception(
-        NULL, "Type url needs to be type.googleapis.com/fully-qulified",
+        NULL, "Type url needs to be type.googleapis.com/fully-qualified",
         0 TSRMLS_CC);
     return;
   }
@@ -963,6 +956,7 @@ PHP_METHOD(Any, unpack) {
   PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
   zval* value = php_proto_message_read_property(
       getThis(), &value_member PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&value_member);
   PHP_PROTO_FAKE_SCOPE_END;
 
   merge_from_string(Z_STRVAL_P(value), Z_STRLEN_P(value), desc, msg);
@@ -991,6 +985,8 @@ PHP_METHOD(Any, pack) {
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   message_handlers->write_property(getThis(), &member, &data,
                                    NULL PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&data);
+  zval_dtor(&member);
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Set type url.
@@ -1008,6 +1004,8 @@ PHP_METHOD(Any, pack) {
   PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
   message_handlers->write_property(getThis(), &member, &type_url_php,
                                    NULL PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&type_url_php);
+  zval_dtor(&member);
   PHP_PROTO_FAKE_SCOPE_END;
   FREE(type_url);
 }
@@ -1040,6 +1038,7 @@ PHP_METHOD(Any, is) {
   PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
   zval* value =
       php_proto_message_read_property(getThis(), &member PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&member);
   PHP_PROTO_FAKE_SCOPE_END;
 
   // Compare two type url.

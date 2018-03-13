@@ -107,10 +107,6 @@ bool _CalledFromGeneratedFile(int stacklevel) {
       return false;
     }
   }
-  if (frame->f_globals != frame->f_locals) {
-    // Not at global module scope
-    return false;
-  }
 
   if (frame->f_code->co_filename == NULL) {
     return false;
@@ -123,12 +119,21 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     PyErr_Clear();
     return false;
   }
+  if ((filename_size < 3) || (strcmp(&filename[filename_size - 3], ".py") != 0)) {
+    // Cython's stack does not have .py file name and is not at global module scope.
+    return true;
+  }
   if (filename_size < 7) {
     // filename is too short.
     return false;
   }
   if (strcmp(&filename[filename_size - 7], "_pb2.py") != 0) {
     // Filename is not ending with _pb2.
+    return false;
+  }
+  
+  if (frame->f_globals != frame->f_locals) {
+    // Not at global module scope
     return false;
   }
 #endif

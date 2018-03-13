@@ -302,6 +302,11 @@ further disable the option `-Dprotobuf_MSVC_STATIC_RUNTIME=OFF`.
 If it reports NOTFOUND for zlib_include or zlib_lib, you might haven't put
 the headers or the .lib file in the right directory.
 
+If you already have ZLIB library and headers at some other location on your system then alternatively you can define following configuration flags to locate them:
+
+	-DZLIB_INCLUDE_DIR=<path to dir containing zlib headers>
+	-DZLIB_LIB=<path to dir containing zlib>
+	
 Build and testing protobuf as usual.
 
 Notes on Compiler Warnings

@@ -355,9 +355,9 @@ class MapEntryImpl : public Base {
         // We could use memcmp here, but we don't bother. The tag is one byte.
         GOOGLE_COMPILE_ASSERT(kTagSize == 1, tag_size_error);
         if (size > 0 && *reinterpret_cast<const char*>(data) == kValueTag) {
-          typename Map::size_type size = map_->size();
+          typename Map::size_type map_size = map_->size();
           value_ptr_ = &(*map_)[key_];
-          if (GOOGLE_PREDICT_TRUE(size != map_->size())) {
+          if (GOOGLE_PREDICT_TRUE(map_size != map_->size())) {
             // We created a new key-value pair.  Fill in the value.
             typedef
                 typename MapIf<ValueTypeHandler::kIsEnum, int*, Value*>::type T;

@@ -164,7 +164,8 @@ class LIBPROTOBUF_EXPORT DataPiece {
   // If the value is not a string, attempts to convert to a 32-bit integer.
   // If none of these succeeds, returns a conversion error status.
   util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
-                               bool use_lower_camel_for_enums) const;
+                               bool use_lower_camel_for_enums,
+                               bool ignore_unknown_enum_values) const;
 
  private:
   // Disallow implicit constructor.

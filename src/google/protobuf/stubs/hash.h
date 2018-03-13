@@ -235,7 +235,8 @@ class hash_set : public std::set<Key, HashFcn> {
   HashFcn hash_function() const { return HashFcn(); }
 };
 
-#elif defined(_MSC_VER) && !defined(_STLPORT_VERSION)
+#elif defined(_MSC_VER) && !defined(_STLPORT_VERSION) && \
+    !(defined(_LIBCPP_STD_VER) && _LIBCPP_STD_VER >= 11)
 
 template <typename Key>
 struct hash : public GOOGLE_PROTOBUF_HASH_COMPARE<Key> {

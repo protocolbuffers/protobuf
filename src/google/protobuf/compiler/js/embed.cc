@@ -34,8 +34,6 @@
 #include <iostream>
 #include <string>
 
-const char output_file[] = "well_known_types_embed.cc";
-
 static bool AsciiIsPrint(unsigned char c) {
   return c >= 32 && c < 127;
 }
