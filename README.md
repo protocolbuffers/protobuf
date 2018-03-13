@@ -51,7 +51,7 @@ Other useful targets:
 
 Unleaded tries to stay very small, but also aims to support
 lots of different formats.  We reconcile these goals by
-being *aggresively modular*.  The source tree and the build
+being *aggressively modular*.  The source tree and the build
 artifacts both reflect this organization:
 
 * **upb**: the core library of handlers and defs (schemas)
