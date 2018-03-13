@@ -228,11 +228,11 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(TestEnum::ONE, $m->getOptionalEnum());
     }
 
-#     public function testNestedEnum()
-#     {
-#         $m = new TestMessage();
-#         $m->setOptionalNestedEnum(\Foo\TestMessage_NestedEnum::ZERO);
-#     }
+    public function testNestedEnum()
+    {
+        $m = new TestMessage();
+        $m->setOptionalNestedEnum(\Foo\TestMessage_NestedEnum::ZERO);
+    }
 
     #########################################################
     # Test float field.
@@ -362,23 +362,23 @@ class GeneratedClassTest extends TestBase
 #           $m->setOptionalBytes($hex);
 #       }
 
-#     #########################################################
-#     # Test message field.
-#     #########################################################
-# 
-#     public function testMessageField()
-#     {
-#         $m = new TestMessage();
-# 
-#         $sub_m = new TestMessage_Sub();
-#         $sub_m->setA(1);
-#         $m->setOptionalMessage($sub_m);
-#         $this->assertSame(1, $m->getOptionalMessage()->getA());
-# 
-#         $null = null;
-#         $m->setOptionalMessage($null);
-#         $this->assertNull($m->getOptionalMessage());
-#     }
+    #########################################################
+    # Test message field.
+    #########################################################
+
+    public function testMessageField()
+    {
+        $m = new TestMessage();
+
+        $sub_m = new TestMessage_Sub();
+        $sub_m->setA(1);
+        $m->setOptionalMessage($sub_m);
+        $this->assertSame(1, $m->getOptionalMessage()->getA());
+
+        $null = null;
+        $m->setOptionalMessage($null);
+        $this->assertNull($m->getOptionalMessage());
+    }
 
     #########################################################
     # Test repeated field.
@@ -1136,39 +1136,39 @@ class GeneratedClassTest extends TestBase
 #         $m = \Upper_enum_value\NotAllowed::VOID;
 #         $m = \Upper_enum_value\NotAllowed::ITERABLE;
 #     }
-# 
-#     #########################################################
-#     # Test fluent setters.
-#     #########################################################
-# 
-#     public function testFluentSetters()
-#     {
-#         $m = (new TestMessage())
-#             ->setOptionalInt32(1)
-#             ->setOptionalUInt32(2);
-#         $this->assertSame(1, $m->getOptionalInt32());
-#         $this->assertSame(2, $m->getOptionalUInt32());
-#     }
-# 
-#     #########################################################
-#     # Test Reverse Field Order.
-#     #########################################################
-# 
-#     public function testReverseFieldOrder()
-#     {
-#         $m = new TestReverseFieldOrder();
-#         $m->setB("abc");
-#         $this->assertSame("abc", $m->getB());
-#         $this->assertNotSame("abc", $m->getA());
-#     }
-# 
-#     #########################################################
-#     # Test Reverse Field Order.
-#     #########################################################
-# 
-#     public function testLowerCase()
-#     {
-#         $m = new testLowerCaseMessage();
-#         $n = testLowerCaseEnum::VALUE;
-#     }
+
+    #########################################################
+    # Test fluent setters.
+    #########################################################
+
+    public function testFluentSetters()
+    {
+        $m = (new TestMessage())
+            ->setOptionalInt32(1)
+            ->setOptionalUInt32(2);
+        $this->assertSame(1, $m->getOptionalInt32());
+        $this->assertSame(2, $m->getOptionalUInt32());
+    }
+
+    #########################################################
+    # Test Reverse Field Order.
+    #########################################################
+
+    public function testReverseFieldOrder()
+    {
+        $m = new TestReverseFieldOrder();
+        $m->setB("abc");
+        $this->assertSame("abc", $m->getB());
+        $this->assertNotSame("abc", $m->getA());
+    }
+
+    #########################################################
+    # Test Reverse Field Order.
+    #########################################################
+
+    public function testLowerCase()
+    {
+        $m = new testLowerCaseMessage();
+        $n = testLowerCaseEnum::VALUE;
+    }
 }

@@ -60,9 +60,13 @@ upb_msgval tomsgval(const Variant& value, upb_fieldtype_t type) {
       return upb_msgval_makestr(str.data(), str.size());
     }
     case UPB_TYPE_MESSAGE: {
-      Object obj = value.toObject();
-      const Message* message = Native::data<Message>(obj);
-      return upb_msgval_msg(message->msg);
+      if (value.isNull()) {
+        return upb_msgval_msg(NULL);
+      } else {
+        Object obj = value.toObject();
+        const Message* message = Native::data<Message>(obj);
+        return upb_msgval_msg(message->msg);
+      }
     }
     default:
       break;

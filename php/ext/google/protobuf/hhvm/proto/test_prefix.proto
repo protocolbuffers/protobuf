@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option php_class_prefix = "Prefix";
+
+message TestPrefix {
+  int32 a = 1;
+}
+
+// Test prefix for reserved words.
+message Empty {
+  int32 a = 1;
+}

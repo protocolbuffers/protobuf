@@ -111,6 +111,7 @@ void HHVM_METHOD(RepeatedField, offsetUnset, const Variant& index) {
 
 int64_t HHVM_METHOD(RepeatedField, count) {
   RepeatedField *intern = Native::data<RepeatedField>(this_);
+  return upb_array_size(intern->array);
 }
 
 // Variant HHVM_METHOD(RepeatedField, getIterator);

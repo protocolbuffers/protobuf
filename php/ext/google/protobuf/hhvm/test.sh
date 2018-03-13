@@ -5,7 +5,7 @@ set -e
 run_tests()
 {
   # tests=( encode_decode_test.php )
-  tests=( generated_class_test.php encode_decode_test.php )
+  tests=( array_test.php generated_class_test.php encode_decode_test.php )
   # tests=( encode_decode_test.php )
   # tests=( array_test.php generated_class_test.php map_field_test.php )
   
@@ -39,7 +39,24 @@ echo "* Test HHVM"
 echo "****************************"
 rm -rf generated
 mkdir generated
-$PROTOC --php_out=hhvm:generated proto/test.proto proto/test_no_namespace.proto proto/test_include.proto
+
+$PROTOC --php_out=hhvm:generated             \
+  proto/test.proto                           \
+  proto/test_include.proto                   \
+  proto/test_no_namespace.proto              \
+  proto/test_prefix.proto                    \
+  proto/test_php_namespace.proto             \
+  proto/test_empty_php_namespace.proto       \
+  proto/test_reserved_enum_lower.proto       \
+  proto/test_reserved_enum_upper.proto       \
+  proto/test_reserved_enum_value_lower.proto \
+  proto/test_reserved_enum_value_upper.proto \
+  proto/test_reserved_message_lower.proto    \
+  proto/test_reserved_message_upper.proto    \
+  proto/test_service.proto                   \
+  proto/test_service_namespace.proto         \
+  proto/test_descriptors.proto
+
 # make clean; hphpize; cmake . && make && hhvm -d extension_dir=. -d hhvm.extensions[]=protobuf.so test_hhvm.php
 phpunit --version
 make clean; hphpize; cmake . && make
@@ -48,7 +65,24 @@ run_tests hhvm
 # Test PHP
 rm -rf generated
 mkdir generated
-$PROTOC --php_out=generated proto/test.proto proto/test_no_namespace.proto proto/test_include.proto
+
+$PROTOC --php_out=generated                  \
+  proto/test.proto                           \
+  proto/test_include.proto                   \
+  proto/test_no_namespace.proto              \
+  proto/test_prefix.proto                    \
+  proto/test_php_namespace.proto             \
+  proto/test_empty_php_namespace.proto       \
+  proto/test_reserved_enum_lower.proto       \
+  proto/test_reserved_enum_upper.proto       \
+  proto/test_reserved_enum_value_lower.proto \
+  proto/test_reserved_enum_value_upper.proto \
+  proto/test_reserved_message_lower.proto    \
+  proto/test_reserved_message_upper.proto    \
+  proto/test_service.proto                   \
+  proto/test_service_namespace.proto         \
+  proto/test_descriptors.proto
+
 OLD_PATH=$PATH
 OLD_CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
 OLD_C_INCLUDE_PATH=$C_INCLUDE_PATH

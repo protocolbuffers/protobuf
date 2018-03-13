@@ -63,9 +63,13 @@ upb_msgval tomsgval(zval* value, upb_fieldtype_t type, upb_alloc* alloc) {
       return upb_msgval_makestr(mem, Z_STRLEN_P(value));
     }
     case UPB_TYPE_MESSAGE: {
-      TSRMLS_FETCH();
-      Message* intern = UNBOX(Message, value);
-      return upb_msgval_msg(intern->msg);
+      if (Z_TYPE_P(value) == IS_NULL) {
+        return upb_msgval_msg(NULL);
+      } else {
+        TSRMLS_FETCH();
+        Message* intern = UNBOX(Message, value);
+        return upb_msgval_msg(intern->msg);
+      }
     }
     default:
       break;

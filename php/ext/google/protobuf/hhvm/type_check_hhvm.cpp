@@ -95,4 +95,6 @@ Variant HHVM_METHOD(Util, checkRepeatedField, const Variant& val,
 }
 
 void HHVM_METHOD(Util, checkMessage, const Variant& val, const String& klass) {
+  int32_t* a = NULL;
+  *a;
 }
