@@ -95,11 +95,6 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     type->Clear();
     type->set_name(descriptor->full_name());
     for (int i = 0; i < descriptor->field_count(); ++i) {
-      const FieldDescriptor* field = descriptor->field(i);
-      if (field->type() == FieldDescriptor::TYPE_GROUP) {
-        // Group fields cannot be represented with Type. We discard them.
-        continue;
-      }
       ConvertFieldDescriptor(descriptor->field(i), type->add_fields());
     }
     for (int i = 0; i < descriptor->oneof_decl_count(); ++i) {
@@ -141,7 +136,8 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     if (descriptor->has_default_value()) {
       field->set_default_value(DefaultValueAsString(descriptor));
     }
-    if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
+    if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE ||
+        descriptor->type() == FieldDescriptor::TYPE_GROUP) {
       field->set_type_url(GetTypeUrl(descriptor->message_type()));
     } else if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
       field->set_type_url(GetTypeUrl(descriptor->enum_type()));

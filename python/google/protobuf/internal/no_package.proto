@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+option py_api_version = 2;
+
+enum NoPackageEnum {
+  NO_PACKAGE_VALUE_0 = 0;
+  NO_PACKAGE_VALUE_1 = 1;
+}
+
+message NoPackageMessage {
+  optional NoPackageEnum no_package_enum = 1;
+}

@@ -983,6 +983,18 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual('{\n"int32Value": 12345\n}',
                      json_format.MessageToJson(message, indent=0))
 
+  def testFormatEnumsAsInts(self):
+    message = json_format_proto3_pb2.TestMessage()
+    message.enum_value = json_format_proto3_pb2.BAR
+    message.repeated_enum_value.append(json_format_proto3_pb2.FOO)
+    message.repeated_enum_value.append(json_format_proto3_pb2.BAR)
+    self.assertEqual(json.loads('{\n'
+                                '  "enumValue": 1,\n'
+                                '  "repeatedEnumValue": [0, 1]\n'
+                                '}\n'),
+                     json.loads(json_format.MessageToJson(
+                         message, use_integers_for_enums=True)))
+
   def testParseDict(self):
     expected = 12345
     js_dict = {'int32Value': expected}

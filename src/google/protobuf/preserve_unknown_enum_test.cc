@@ -120,7 +120,7 @@ TEST(PreserveUnknownEnumTest, PreserveParseAndSerializeDynamicMessage) {
   string serialized = orig_message.SerializeAsString();
 
   google::protobuf::DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<google::protobuf::Message> message(factory.GetPrototype(
+  std::unique_ptr<google::protobuf::Message> message(factory.GetPrototype(
       proto3_preserve_unknown_enum_unittest::MyMessage::descriptor())->New());
   EXPECT_EQ(true, message->ParseFromString(serialized));
   message->DiscardUnknownFields();
@@ -161,7 +161,7 @@ TEST(PreserveUnknownEnumTest, DynamicProto2HidesUnknownValues) {
   orig_message.SerializeToString(&serialized);
 
   google::protobuf::DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<google::protobuf::Message> message(factory.GetPrototype(
+  std::unique_ptr<google::protobuf::Message> message(factory.GetPrototype(
       proto2_preserve_unknown_enum_unittest::MyMessage::descriptor())->New());
   EXPECT_EQ(true, message->ParseFromString(serialized));
   // The intermediate message has everything in its "unknown fields".

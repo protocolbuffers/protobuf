@@ -66,10 +66,13 @@ if _api_version < 0:  # Still unspecified?
       from google.protobuf.internal import use_pure_python
       del use_pure_python  # Avoids a pylint error and namespace pollution.
     except ImportError:
-      if _proto_extension_modules_exist_in_build:
-        if sys.version_info[0] >= 3:  # Python 3 defaults to C++ impl v2.
-          _api_version = 2
-          # TODO(b/17427486): Make Python 2 default to C++ impl v2.
+      # TODO(b/74017912): It's unsafe to enable :use_fast_cpp_protos by default;
+      # it can cause data loss if you have any Python-only extensions to any
+      # message passed back and forth with C++ code.
+      #
+      # TODO(b/17427486): Once that bug is fixed, we want to make both Python 2
+      # and Python 3 default to `_api_version = 2` (C++ implementation V2).
+      pass
 
 _default_implementation_type = (
     'python' if _api_version <= 0 else 'cpp')

@@ -42,20 +42,27 @@ Simple usage example:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+# pylint: disable=g-statement-before-imports,g-import-not-at-top
 try:
   from collections import OrderedDict
 except ImportError:
-  from ordereddict import OrderedDict  #PY26
+  from ordereddict import OrderedDict  # PY26
+# pylint: enable=g-statement-before-imports,g-import-not-at-top
+
 import base64
 import json
 import math
-import re
-import six
-import sys
 
 from operator import methodcaller
+
+import re
+import sys
+
+import six
+
 from google.protobuf import descriptor
 from google.protobuf import symbol_database
+
 
 _TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
 _INT_TYPES = frozenset([descriptor.FieldDescriptor.CPPTYPE_INT32,
@@ -93,7 +100,8 @@ def MessageToJson(message,
                   including_default_value_fields=False,
                   preserving_proto_field_name=False,
                   indent=2,
-                  sort_keys=False):
+                  sort_keys=False,
+                  use_integers_for_enums=False):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -108,18 +116,21 @@ def MessageToJson(message,
     indent: The JSON object will be pretty-printed with this indent level.
         An indent level of 0 or negative will only insert newlines.
     sort_keys: If True, then the output will be sorted by field names.
+    use_integers_for_enums: If true, print integers instead of enum names.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
   """
   printer = _Printer(including_default_value_fields,
-                     preserving_proto_field_name)
+                     preserving_proto_field_name,
+                     use_integers_for_enums)
   return printer.ToJsonString(message, indent, sort_keys)
 
 
 def MessageToDict(message,
                   including_default_value_fields=False,
-                  preserving_proto_field_name=False):
+                  preserving_proto_field_name=False,
+                  use_integers_for_enums=False):
   """Converts protobuf message to a dictionary.
 
   When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
@@ -133,12 +144,14 @@ def MessageToDict(message,
     preserving_proto_field_name: If True, use the original proto field
         names as defined in the .proto file. If False, convert the field
         names to lowerCamelCase.
+    use_integers_for_enums: If true, print integers instead of enum names.
 
   Returns:
     A dict representation of the protocol buffer message.
   """
   printer = _Printer(including_default_value_fields,
-                     preserving_proto_field_name)
+                     preserving_proto_field_name,
+                     use_integers_for_enums)
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
 
@@ -154,9 +167,11 @@ class _Printer(object):
 
   def __init__(self,
                including_default_value_fields=False,
-               preserving_proto_field_name=False):
+               preserving_proto_field_name=False,
+               use_integers_for_enums=False):
     self.including_default_value_fields = including_default_value_fields
     self.preserving_proto_field_name = preserving_proto_field_name
+    self.use_integers_for_enums = use_integers_for_enums
 
   def ToJsonString(self, message, indent, sort_keys):
     js = self._MessageToJsonObject(message)
@@ -247,6 +262,8 @@ class _Printer(object):
     if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
       return self._MessageToJsonObject(value)
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
+      if self.use_integers_for_enums:
+        return value
       enum_value = field.enum_type.values_by_number.get(value, None)
       if enum_value is not None:
         return enum_value.name

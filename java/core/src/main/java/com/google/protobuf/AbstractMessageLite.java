@@ -99,6 +99,16 @@ public abstract class AbstractMessageLite<
     codedOutput.flush();
   }
 
+  // We'd like these to be abstract but some folks are extending this class directly. They shouldn't
+  // be doing that and they should feel bad.
+  int getMemoizedSerializedSize() {
+    throw new UnsupportedOperationException();
+  }
+
+  void setMemoizedSerializedSize(int size) {
+    throw new UnsupportedOperationException();
+  }
+
 
   /**
    * Package private helper method for AbstractParser to create

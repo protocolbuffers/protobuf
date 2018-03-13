@@ -36,9 +36,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
@@ -101,10 +98,10 @@ class FileGenerator {
   string java_package_;
   string classname_;
 
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<MessageGenerator> > message_generators_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<ExtensionGenerator> > extension_generators_;
-  google::protobuf::scoped_ptr<GeneratorFactory> generator_factory_;
-  google::protobuf::scoped_ptr<Context> context_;
+  std::unique_ptr<std::unique_ptr<MessageGenerator> []> message_generators_;
+  std::unique_ptr<std::unique_ptr<ExtensionGenerator> []> extension_generators_;
+  std::unique_ptr<GeneratorFactory> generator_factory_;
+  std::unique_ptr<Context> context_;
   ClassNameResolver* name_resolver_;
   const Options options_;
   bool immutable_api_;

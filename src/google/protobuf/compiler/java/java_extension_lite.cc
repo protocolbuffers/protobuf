@@ -96,6 +96,7 @@ void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
         "      com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
         "      $singular_type$.class);\n");
   }
+  printer->Annotate("name", descriptor_);
 }
 
 int ImmutableExtensionLiteGenerator::GenerateNonNestedInitializationCode(

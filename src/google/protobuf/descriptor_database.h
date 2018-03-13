@@ -214,7 +214,7 @@ class LIBPROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
     // will find it.  Proof:
     // 1) Define the "search key" to be the key we are looking for, the "found
     //    key" to be the key found in step (1), and the "match key" to be the
-    //    key which actually matches the serach key (i.e. the key we're trying
+    //    key which actually matches the search key (i.e. the key we're trying
     //    to find).
     // 2) The found key must be less than or equal to the search key by
     //    definition.

@@ -65,9 +65,6 @@
 #include <algorithm>
 #include <google/protobuf/stubs/hash.h>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/stubs/common.h>
 
@@ -232,9 +229,9 @@ class DynamicMessage : public Message {
 
     // Warning:  The order in which the following pointers are defined is
     //   important (the prototype must be deleted *before* the offsets).
-    google::protobuf::scoped_array<uint32> offsets;
-    google::protobuf::scoped_array<uint32> has_bits_indices;
-    google::protobuf::scoped_ptr<const GeneratedMessageReflection> reflection;
+    std::unique_ptr<uint32[]> offsets;
+    std::unique_ptr<uint32[]> has_bits_indices;
+    std::unique_ptr<const GeneratedMessageReflection> reflection;
     // Don't use a scoped_ptr to hold the prototype: the destructor for
     // DynamicMessage needs to know whether it is the prototype, and does so by
     // looking back at this field. This would assume details about the

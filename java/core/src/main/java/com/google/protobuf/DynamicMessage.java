@@ -339,6 +339,20 @@ public final class DynamicMessage extends AbstractMessage {
       this.fields = FieldSet.newFieldSet();
       this.unknownFields = UnknownFieldSet.getDefaultInstance();
       this.oneofCases = new FieldDescriptor[type.toProto().getOneofDeclCount()];
+      // A MapEntry has all of its fields present at all times.
+      if (type.getOptions().getMapEntry()) {
+        populateMapEntry();
+      }
+    }
+
+    private void populateMapEntry() {
+      for (FieldDescriptor field : type.getFields()) {
+        if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+          fields.setField(field, getDefaultInstance(field.getMessageType()));
+        } else {
+          fields.setField(field, field.getDefaultValue());
+        }
+      }
     }
 
     // ---------------------------------------------------------------
@@ -350,6 +364,10 @@ public final class DynamicMessage extends AbstractMessage {
         fields = FieldSet.newFieldSet();
       } else {
         fields.clear();
+      }
+      // A MapEntry has all of its fields present at all times.
+      if (type.getOptions().getMapEntry()) {
+        populateMapEntry();
       }
       unknownFields = UnknownFieldSet.getDefaultInstance();
       return this;

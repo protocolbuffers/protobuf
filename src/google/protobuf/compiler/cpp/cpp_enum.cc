@@ -179,7 +179,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
 void EnumGenerator::
 GenerateGetEnumDescriptorSpecializations(io::Printer* printer) {
   printer->Print(
-      "template <> struct is_proto_enum< $classname$> : ::google::protobuf::internal::true_type "
+      "template <> struct is_proto_enum< $classname$> : ::std::true_type "
       "{};\n",
       "classname", ClassName(descriptor_, true));
   if (HasDescriptorMethods(descriptor_->file(), options_)) {

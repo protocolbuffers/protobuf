@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -48,7 +49,6 @@
 
 // TODO(liujisi): Remove the following includes after the include clean-up.
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/callback.h>
 
@@ -230,6 +230,18 @@ class FatalException : public std::exception {
 // This is at the end of the file instead of the beginning to work around a bug
 // in some versions of MSVC.
 using std::string;
+
+// TODO(gerbens) remove once an extraction cycle has removed all references
+namespace internal {
+template <typename T>
+using scoped_ptr = std::unique_ptr<T>;
+template <typename T>
+using scoped_array = std::unique_ptr<T[]>;
+}  // namespace internal
+template <typename T>
+using scoped_ptr = std::unique_ptr<T>;
+template <typename T>
+using scoped_array = std::unique_ptr<T[]>;
 
 }  // namespace protobuf
 }  // namespace google

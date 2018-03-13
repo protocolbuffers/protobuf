@@ -37,8 +37,8 @@
 
 #include <string>
 #include <google/protobuf/compiler/java/java_context.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -414,6 +414,11 @@ void EscapeUtf16ToString(uint16 code, string* output);
 //    bit 3: whether the field is a map field with proto2 enum value.
 //    bits 4-7: unused
 int GetExperimentalJavaFieldType(const FieldDescriptor* field);
+
+// To get the total number of entries need to be built for experimental runtime
+// and the first field number that are not in the table part
+std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
+    const FieldDescriptor** fields, int count);
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

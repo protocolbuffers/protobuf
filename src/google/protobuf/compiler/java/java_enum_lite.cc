@@ -36,12 +36,12 @@
 #include <string>
 
 #include <google/protobuf/compiler/java/java_context.h>
-#include <google/protobuf/compiler/java/java_enum_lite.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
+#include <google/protobuf/compiler/java/java_enum_lite.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -135,6 +135,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
       "\n"
+      "@java.lang.Override\n"
       "public final int getNumber() {\n");
   if (SupportUnknownEnumValue(descriptor_->file())) {
     printer->Print(
@@ -182,6 +183,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
     "private static final com.google.protobuf.Internal.EnumLiteMap<\n"
     "    $classname$> internalValueMap =\n"
     "      new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {\n"
+    "        @java.lang.Override\n"
     "        public $classname$ findValueByNumber(int number) {\n"
     "          return $classname$.forNumber(number);\n"
     "        }\n"

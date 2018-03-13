@@ -893,6 +893,24 @@ public class MapTest extends TestCase {
     assertEquals(message.hashCode(), dynamicMessage.hashCode());
   }
 
+  // Check that DynamicMessage handles map field serialization the same way as generated code
+  // regarding unset key and value field in a map entry.
+  public void testDynamicMessageUnsetKeyAndValue() throws Exception {
+    FieldDescriptor field = f("int32_to_int32_field");
+
+    Message dynamicDefaultInstance =
+        DynamicMessage.getDefaultInstance(TestMap.getDescriptor());
+    Message.Builder builder = dynamicDefaultInstance.newBuilderForType();
+    // Add an entry without key and value.
+    builder.addRepeatedField(field, builder.newBuilderForField(field).build());
+    Message message = builder.build();
+    ByteString bytes = message.toByteString();
+    // Parse it back to the same generated type.
+    Message generatedMessage = TestMap.parseFrom(bytes);
+    // Assert the serialized bytes are equivalent.
+    assertEquals(generatedMessage.toByteString(), bytes);
+  }
+
   public void testReflectionEqualsAndHashCode() throws Exception {
     // Test that generated equals() and hashCode() will disregard the order
     // of map entries when comparing/hashing map fields.

@@ -38,9 +38,6 @@
 #include <google/protobuf/stubs/hash.h>
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <utility>
 #include <vector>
 
@@ -49,15 +46,16 @@
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_padding_optimizer.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+
 
 
 namespace google {
@@ -440,13 +438,12 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       index_in_file_messages_(index_in_file_messages),
       classname_(ClassName(descriptor, false)),
       options_(options),
-      field_generators_(descriptor, options),
+      field_generators_(descriptor, options, scc_analyzer),
       max_has_bit_index_(0),
       enum_generators_(
-          new google::protobuf::scoped_ptr<EnumGenerator>[descriptor->enum_type_count()]),
-      extension_generators_(new google::protobuf::scoped_ptr<
+          new std::unique_ptr<EnumGenerator>[descriptor->enum_type_count()]),
+      extension_generators_(new std::unique_ptr<
                             ExtensionGenerator>[descriptor->extension_count()]),
-      use_dependent_base_(false),
       num_weak_fields_(0),
       message_layout_helper_(new PaddingOptimizer()),
       scc_analyzer_(scc_analyzer) {
@@ -492,13 +489,6 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
     if (descriptor->field(i)->is_required()) {
       ++num_required_fields_;
     }
-    if (options.proto_h && IsFieldDependent(descriptor->field(i))) {
-      use_dependent_base_ = true;
-    }
-  }
-  if (options.proto_h && descriptor->oneof_decl_count() > 0) {
-    // Always make oneofs dependent.
-    use_dependent_base_ = true;
   }
 
   table_driven_ = TableDrivenParsingEnabled(descriptor_, options_);
@@ -539,22 +529,6 @@ void MessageGenerator::FillMessageForwardDeclarations(
 }
 
 void MessageGenerator::
-GenerateDependentFieldAccessorDeclarations(io::Printer* printer) {
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-
-    PrintFieldComment(printer, field);
-
-    std::map<string, string> vars;
-    SetCommonFieldVariables(field, &vars, options_);
-
-    // Generate type-specific accessor declarations.
-    field_generators_.get(field).GenerateDependentAccessorDeclarations(printer);
-    printer->Print("\n");
-  }
-}
-
-void MessageGenerator::
 GenerateFieldAccessorDeclarations(io::Printer* printer) {
   // optimized_fields_ does not contain fields where
   //    field->containing_oneof() != NULL
@@ -584,21 +558,6 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
     std::map<string, string> vars;
     SetCommonFieldVariables(field, &vars, options_);
     vars["constant_name"] = FieldConstantName(field);
-
-    bool dependent_field = use_dependent_base_ && IsFieldDependent(field);
-    if (dependent_field &&
-        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !field->is_map()) {
-      // If this field is dependent, the dependent base class determines
-      // the message type from the derived class (which is a template
-      // parameter). This typedef is for that:
-      printer->Print(
-          "private:\n"
-          "typedef $field_type$ $dependent_type$;\n"
-          "public:\n",
-          "field_type", FieldMessageTypeName(field),
-          "dependent_type", DependentTypeName(field));
-    }
 
     if (field->is_repeated()) {
       printer->Print(vars, "$deprecated_attr$int ${$$name$_size$}$() const;\n");
@@ -637,37 +596,12 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     printer->Print(
+        "void clear_$oneof_name$();\n"
         "$camel_oneof_name$Case $oneof_name$_case() const;\n",
         "camel_oneof_name",
         UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true),
         "oneof_name", descriptor_->oneof_decl(i)->name());
   }
-}
-
-void MessageGenerator::
-GenerateDependentFieldAccessorDefinitions(io::Printer* printer) {
-  if (!use_dependent_base_) return;
-
-  printer->Print("// $classname$\n\n", "classname",
-                 DependentBaseClassTemplateName(descriptor_));
-
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-
-    if (field->options().weak()) continue;
-
-    PrintFieldComment(printer, field);
-    // Generate type-specific accessors.
-    field_generators_.get(field)
-        .GenerateDependentInlineAccessorDefinitions(printer);
-
-    printer->Print("\n");
-  }
-
-  // Generate has_$name$() and clear_has_$name$() functions for oneofs
-  // Similar to other has-bits, these must always be in the header if we
-  // are using a dependent base class.
-  GenerateOneofHasBits(printer);
 }
 
 void MessageGenerator::
@@ -812,18 +746,6 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
     std::map<string, string> vars;
     SetCommonFieldVariables(field, &vars, options_);
-    if (use_dependent_base_ && IsFieldDependent(field)) {
-      vars["tmpl"] = "template<class T>\n";
-      vars["dependent_classname"] =
-          DependentBaseClassTemplateName(descriptor_) + "<T>";
-      vars["this_message"] = "reinterpret_cast<T*>(this)->";
-      vars["this_const_message"] = "reinterpret_cast<const T*>(this)->";
-    } else {
-      vars["tmpl"] = "";
-      vars["dependent_classname"] = vars["classname"];
-      vars["this_message"] = "";
-      vars["this_const_message"] = "";
-    }
 
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
@@ -851,42 +773,8 @@ GenerateFieldAccessorDefinitions(io::Printer* printer) {
     printer->Print("\n");
   }
 
-  if (!use_dependent_base_) {
-    // Generate has_$name$() and clear_has_$name$() functions for oneofs
-    // If we aren't using a dependent base, they can be with the other functions
-    // that are #ifdef-guarded.
-    GenerateOneofHasBits(printer);
-  }
-}
-
-void MessageGenerator::
-GenerateDependentBaseClassDefinition(io::Printer* printer) {
-  if (!use_dependent_base_) {
-    return;
-  }
-
-  std::map<string, string> vars;
-  vars["classname"] = DependentBaseClassTemplateName(descriptor_);
-  vars["full_name"] = descriptor_->full_name();
-  vars["superclass"] = SuperClassName(descriptor_, options_);
-
-  printer->Print(vars,
-    "template <class T>\n"
-    "class $classname$ : public $superclass$ "
-    "/* @@protoc_insertion_point(dep_base_class_definition:$full_name$) */ {\n"
-    " public:\n");
-  printer->Indent();
-
-  printer->Print(vars,
-    "$classname$() {}\n"
-    "virtual ~$classname$() {}\n"
-    "\n");
-
-  // Generate dependent accessor methods for all fields.
-  GenerateDependentFieldAccessorDeclarations(printer);
-
-  printer->Outdent();
-  printer->Print("};\n");
+  // Generate has_$name$() and clear_has_$name$() functions for oneofs.
+  GenerateOneofHasBits(printer);
 }
 
 void MessageGenerator::
@@ -919,17 +807,13 @@ GenerateClassDefinition(io::Printer* printer) {
         "$classname$*>(&_$classname$_default_instance_); }\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       printer->Print(
-          "  void MergeFrom(const ::google::protobuf::Message& other) PROTOBUF_FINAL;\n"
+          "  void MergeFrom(const ::google::protobuf::Message& other) final;\n"
           "  ::google::protobuf::Metadata GetMetadata() const;\n"
           "};\n");
     } else {
       printer->Print("};\n");
     }
     return;
-  }
-  if (use_dependent_base_) {
-    GenerateDependentBaseClassDefinition(printer);
-      printer->Print("\n");
   }
 
   std::map<string, string> vars;
@@ -942,20 +826,12 @@ GenerateClassDefinition(io::Printer* printer) {
   } else {
     vars["dllexport"] = options_.dllexport_decl + " ";
   }
-  if (use_dependent_base_) {
-    vars["superclass"] =
-        DependentBaseClassTemplateName(descriptor_) + "<" + classname_ + ">";
-  } else {
-    vars["superclass"] = SuperClassName(descriptor_, options_);
-  }
+  vars["superclass"] = SuperClassName(descriptor_, options_);
   printer->Print(vars,
     "class $dllexport$$classname$ : public $superclass$ "
     "/* @@protoc_insertion_point(class_definition:$full_name$) */ "
     "{\n");
   printer->Annotate("classname", descriptor_);
-  if (use_dependent_base_) {
-    printer->Print(vars, "  friend class $superclass$;\n");
-  }
   printer->Print(" public:\n");
   printer->Indent();
 
@@ -1016,10 +892,10 @@ GenerateClassDefinition(io::Printer* printer) {
     // virtual method version of GetArenaNoVirtual(), required for generic dispatch given a
     // MessageLite* (e.g., in RepeatedField::AddAllocated()).
     printer->Print(
-        "inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {\n"
+        "inline ::google::protobuf::Arena* GetArena() const final {\n"
         "  return GetArenaNoVirtual();\n"
         "}\n"
-        "inline void* GetMaybeArenaPointer() const PROTOBUF_FINAL {\n"
+        "inline void* GetMaybeArenaPointer() const final {\n"
         "  return MaybeArenaPtr();\n"
         "}\n");
   }
@@ -1071,7 +947,7 @@ GenerateClassDefinition(io::Printer* printer) {
       "  return reinterpret_cast<const $classname$*>(\n"
       "             &_$classname$_default_instance_);\n"
       "}\n"
-      "static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =\n"
+      "static constexpr int kIndexInFileMessages =\n"
       "  $message_index$;\n"
       "\n");
 
@@ -1091,12 +967,13 @@ GenerateClassDefinition(io::Printer* printer) {
       "template<typename T> bool Is() const {\n"
       "  return _any_metadata_.Is<T>();\n"
       "}\n"
+      "static bool ParseAnyTypeUrl(const string& type_url,\n"
+      "                            string* full_type_name);\n"
       "\n");
   }
 
-  vars["new_final"] = " PROTOBUF_FINAL";
+  vars["new_final"] = " final";
 
-  vars["create_func"] = MessageCreateFunction(descriptor_);
   printer->Print(vars,
     "void Swap($classname$* other);\n"
     "friend void swap($classname$& a, $classname$& b) {\n"
@@ -1106,32 +983,32 @@ GenerateClassDefinition(io::Printer* printer) {
     "// implements Message ----------------------------------------------\n"
     "\n"
     "inline $classname$* New() const$new_final$ {\n"
-    "  return ::google::protobuf::Arena::$create_func$<$classname$>(NULL);\n"
+    "  return CreateMaybeMessage<$classname$>(NULL);\n"
     "}\n"
     "\n"
     "$classname$* New(::google::protobuf::Arena* arena) const$new_final$ {\n"
-    "  return ::google::protobuf::Arena::$create_func$<$classname$>(arena);\n"
+    "  return CreateMaybeMessage<$classname$>(arena);\n"
     "}\n");
 
   // For instances that derive from Message (rather than MessageLite), some
   // methods are virtual and should be marked as final.
   string use_final = HasDescriptorMethods(descriptor_->file(), options_) ?
-      " PROTOBUF_FINAL" : "";
+      " final" : "";
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       printer->Print(vars,
-        "void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;\n"
-        "void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;\n");
+        "void CopyFrom(const ::google::protobuf::Message& from) final;\n"
+        "void MergeFrom(const ::google::protobuf::Message& from) final;\n");
     } else {
       printer->Print(vars,
         "void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from)\n"
-        "  PROTOBUF_FINAL;\n");
+        "  final;\n");
     }
 
-    vars["clear_final"] = " PROTOBUF_FINAL";
-    vars["is_initialized_final"] = " PROTOBUF_FINAL";
-    vars["merge_partial_final"] = " PROTOBUF_FINAL";
+    vars["clear_final"] = " final";
+    vars["is_initialized_final"] = " final";
+    vars["merge_partial_final"] = " final";
 
     printer->Print(
         vars,
@@ -1140,7 +1017,7 @@ GenerateClassDefinition(io::Printer* printer) {
         "void Clear()$clear_final$;\n"
         "bool IsInitialized() const$is_initialized_final$;\n"
         "\n"
-        "size_t ByteSizeLong() const PROTOBUF_FINAL;\n"
+        "size_t ByteSizeLong() const final;\n"
         "bool MergePartialFromCodedStream(\n"
         "    ::google::protobuf::io::CodedInputStream* input)$merge_partial_final$;\n");
     if (!options_.table_driven_serialization ||
@@ -1148,7 +1025,7 @@ GenerateClassDefinition(io::Printer* printer) {
       printer->Print(
           "void SerializeWithCachedSizes(\n"
           "    ::google::protobuf::io::CodedOutputStream* output) const "
-          "PROTOBUF_FINAL;\n");
+          "final;\n");
     }
     // DiscardUnknownFields() is implemented in message.cc using reflections. We
     // need to implement this function in generated code for messages.
@@ -1160,19 +1037,18 @@ GenerateClassDefinition(io::Printer* printer) {
     if (HasFastArraySerialization(descriptor_->file(), options_)) {
       printer->Print(
         "::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(\n"
-        "    bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;\n");
+        "    bool deterministic, ::google::protobuf::uint8* target) const final;\n");
     }
   }
 
   printer->Print(
-    "int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }\n"
-    "private:\n"
-    "void SharedCtor();\n"
-    "void SharedDtor();\n"
-    "void SetCachedSize(int size) const$final$;\n"
-    "void InternalSwap($classname$* other);\n",
-    "classname", classname_,
-    "final", use_final);
+      "int GetCachedSize() const final { return _cached_size_.Get(); }"
+      "\n\nprivate:\n"
+      "void SharedCtor();\n"
+      "void SharedDtor();\n"
+      "void SetCachedSize(int size) const$final$;\n"
+      "void InternalSwap($classname$* other);\n",
+      "classname", classname_, "final", use_final);
   if (SupportsArenas(descriptor_)) {
     printer->Print(
       // TODO(gerbens) Make this private! Currently people are deriving from
@@ -1212,11 +1088,11 @@ GenerateClassDefinition(io::Printer* printer) {
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(
-      "::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;\n"
+      "::google::protobuf::Metadata GetMetadata() const final;\n"
       "\n");
   } else {
     printer->Print(
-      "::std::string GetTypeName() const PROTOBUF_FINAL;\n"
+      "::std::string GetTypeName() const final;\n"
       "\n");
   }
 
@@ -1295,7 +1171,6 @@ GenerateClassDefinition(io::Printer* printer) {
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     printer->Print(
         "inline bool has_$oneof_name$() const;\n"
-        "void clear_$oneof_name$();\n"
         "inline void clear_has_$oneof_name$();\n\n",
         "oneof_name", descriptor_->oneof_decl(i)->name());
   }
@@ -1313,7 +1188,8 @@ GenerateClassDefinition(io::Printer* printer) {
 
   bool need_to_emit_cached_size = true;
   // TODO(kenton):  Make _cached_size_ an atomic<int> when C++ supports it.
-  const string cached_size_decl = "mutable int _cached_size_;\n";
+  const string cached_size_decl =
+      "mutable ::google::protobuf::internal::CachedSize _cached_size_;\n";
 
   const size_t sizeof_has_bits = HasBitsSize();
   const string has_bits_decl = sizeof_has_bits == 0 ? "" :
@@ -1423,29 +1299,14 @@ GenerateClassDefinition(io::Printer* printer) {
 
   // The TableStruct struct needs access to the private parts, in order to
   // construct the offsets of all members.
-  // TODO(gerbens) Remove the friend for InitDefaults.
-  printer->Print(
-      "friend struct ::$file_namespace$::TableStruct;\n"
-      "friend void ::$file_namespace$::InitDefaults$scc_name$Impl();\n",
-      // Vars.
-      "scc_name", scc_name_, "file_namespace",
-      FileLevelNamespace(descriptor_));
+  printer->Print("friend struct ::$file_namespace$::TableStruct;\n",
+                 // Vars.
+                 "scc_name", scc_name_, "file_namespace",
+                 FileLevelNamespace(descriptor_));
 
   printer->Outdent();
   printer->Print("};");
   GOOGLE_DCHECK(!need_to_emit_cached_size);
-}
-
-void MessageGenerator::
-GenerateDependentInlineMethods(io::Printer* printer) {
-  if (IsMapEntryMessage(descriptor_)) return;
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (descriptor_->field(i)->options().weak()) {
-      field_generators_.get(descriptor_->field(i))
-          .GenerateDependentInlineAccessorDefinitions(printer);
-    }
-  }
-  GenerateDependentFieldAccessorDefinitions(printer);
 }
 
 void MessageGenerator::
@@ -1603,7 +1464,8 @@ uint32 CalculateType(uint32 type, uint32 type_class) {
   return (type - 1) + type_class * 20;
 }
 
-uint32 CalcFieldNum(const FieldDescriptor* field, const Options& options) {
+uint32 CalcFieldNum(const FieldGenerator&, const FieldDescriptor* field,
+                    const Options& options) {
   bool is_a_map = IsMapEntryMessage(field->containing_type());
   int type = field->type();
   if (field->containing_oneof()) {
@@ -1624,9 +1486,16 @@ uint32 CalcFieldNum(const FieldDescriptor* field, const Options& options) {
 #else
 // We need to calculate for each field what function the table driven code
 // should use to serialize it. This returns the index in a lookup table.
-uint32 CalcFieldNum(const FieldDescriptor* field, const Options& options) {
+uint32 CalcFieldNum(const FieldGenerator& generator,
+                    const FieldDescriptor* field, const Options& options) {
   bool is_a_map = IsMapEntryMessage(field->containing_type());
   int type = field->type();
+  if (type == FieldDescriptor::TYPE_STRING ||
+      type == FieldDescriptor::TYPE_BYTES) {
+    if (generator.IsInlined()) {
+      type = internal::FieldMetadata::kInlinedType;
+    }
+  }
   if (field->containing_oneof()) {
     return internal::FieldMetadata::CalculateType(
         type, internal::FieldMetadata::kOneOf);
@@ -1668,6 +1537,8 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
   if (IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < 2; i++) {
       const FieldDescriptor* field = sorted[i];
+      const FieldGenerator& generator = field_generators_.get(field);
+
       uint32 tag = internal::WireFormatLite::MakeTag(
           field->number(), WireFormat::WireTypeForFieldType(field->type()));
 
@@ -1676,7 +1547,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       vars["field_name"] = FieldName(field);
       vars["tag"] = SimpleItoa(tag);
       vars["hasbit"] = SimpleItoa(i);
-      vars["type"] = SimpleItoa(CalcFieldNum(field, options_));
+      vars["type"] = SimpleItoa(CalcFieldNum(generator, field, options_));
       vars["ptr"] = "NULL";
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         GOOGLE_CHECK(!IsMapEntryMessage(field->message_type()));
@@ -1765,7 +1636,9 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
             SimpleItoa(FindMessageIndexInFile(field->message_type()));
       }
     }
-    vars["type"] = SimpleItoa(CalcFieldNum(field, options_));
+
+    const FieldGenerator& generator = field_generators_.get(field);
+    vars["type"] = SimpleItoa(CalcFieldNum(generator, field, options_));
 
 
     if (field->options().weak()) {
@@ -1912,6 +1785,11 @@ GenerateClassMethods(io::Printer* printer) {
       "bool $classname$::UnpackTo(::google::protobuf::Message* message) const {\n"
       "  return _any_metadata_.UnpackTo(message);\n"
       "}\n"
+      "bool $classname$::ParseAnyTypeUrl(const string& type_url,\n"
+      "                                  string* full_type_name) {\n"
+      "  return ::google::protobuf::internal::ParseAnyTypeUrl(type_url,\n"
+      "                                             full_type_name);\n"
+      "}\n"
       "\n",
       "classname", classname_);
   }
@@ -2049,16 +1927,26 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
     }
 
     processing_type = static_cast<unsigned>(field->type());
+    const FieldGenerator& generator = field_generators_.get(field);
     if (field->type() == FieldDescriptor::TYPE_STRING) {
       switch (EffectiveStringCType(field)) {
         case FieldOptions::STRING:
-        default:
+        default: {
+          if (generator.IsInlined()) {
+            processing_type = internal::TYPE_STRING_INLINED;
+            break;
+          }
           break;
+        }
       }
     } else if (field->type() == FieldDescriptor::TYPE_BYTES) {
       switch (EffectiveStringCType(field)) {
         case FieldOptions::STRING:
         default:
+          if (generator.IsInlined()) {
+            processing_type = internal::TYPE_BYTES_INLINED;
+            break;
+          }
           break;
       }
     }
@@ -2093,7 +1981,7 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
       "{\n"
       "  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(\n"
       "    $classname$, $name$_),\n"
-      "  static_cast< ::google::protobuf::uint32>($presence$),\n"
+      "  static_cast<::google::protobuf::uint32>($presence$),\n"
       "  $nwtype$, $pwtype$, $ptype$, $tag_size$\n"
       "},\n");
   }
@@ -2150,20 +2038,7 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
         printer->Print(
             vars,
             "{::google::protobuf::internal::AuxillaryParseTableField::message_aux{\n"
-            "  &$ns$::_$classname$_default_instance_,\n");
-
-        bool dont_emit_table =
-            !TableDrivenParsingEnabled(field->message_type(), options_);
-
-        if (dont_emit_table) {
-          printer->Print("  NULL,\n");
-        } else {
-          printer->Print(vars,
-                         "  ::$file_namespace$::TableStruct::schema +\n"
-                         "    $ns$::$classname$::kIndexInFileMessages,\n");
-        }
-
-        printer->Print("}},\n");
+            "  &$ns$::_$classname$_default_instance_}},\n");
         last_field_number++;
         break;
       }
@@ -2174,7 +2049,7 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
                 field->default_value_string().empty()
                     ? "&::google::protobuf::internal::fixed_address_empty_string"
                     : "&" + Namespace(field) + " ::" + classname_ +
-                          "::_default_" + FieldName(field) + "_";
+                          "::" + MakeDefaultName(field);
             break;
           case FieldOptions::CORD:
           case FieldOptions::STRING_PIECE:
@@ -2245,14 +2120,20 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->containing_oneof() || field->options().weak()) {
-      printer->Print("offsetof($classname$DefaultTypeInternal, $name$_),\n",
+      printer->Print("offsetof($classname$DefaultTypeInternal, $name$_)",
                      "classname", full_classname, "name", FieldName(field));
     } else {
       printer->Print(
-          "GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, "
-          "$name$_),\n",
+          "GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, $name$_)",
           "classname", full_classname, "name", FieldName(field));
     }
+
+    uint32 tag = field_generators_.get(field).CalculateFieldTag();
+    if (tag != 0) {
+      printer->Print(" | $tag$", "tag", SimpleItoa(tag));
+    }
+
+    printer->Print(",\n");
   }
 
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
@@ -2286,15 +2167,6 @@ GenerateSharedConstructorCode(io::Printer* printer) {
     "classname", classname_);
   printer->Indent();
 
-  bool need_to_clear_cached_size = true;
-  // We reproduce the logic used for laying out _cached_sized_ in the class
-  // definition, as to initialize it in-order.
-  if (HasFieldPresence(descriptor_->file()) &&
-      (HasBitsSize() % 8) != 0) {
-    printer->Print("_cached_size_ = 0;\n");
-    need_to_clear_cached_size = false;
-  }
-
   std::vector<bool> processed(optimized_order_.size(), false);
   GenerateConstructorBody(printer, processed, false);
 
@@ -2302,10 +2174,6 @@ GenerateSharedConstructorCode(io::Printer* printer) {
     printer->Print(
         "clear_has_$oneof_name$();\n",
         "oneof_name", descriptor_->oneof_decl(i)->name());
-  }
-
-  if (need_to_clear_cached_size) {
-    printer->Print("_cached_size_ = 0;\n");
   }
 
   printer->Outdent();
@@ -2491,12 +2359,7 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
 void MessageGenerator::
 GenerateStructors(io::Printer* printer) {
   string superclass;
-  if (use_dependent_base_) {
-    superclass =
-        DependentBaseClassTemplateName(descriptor_) + "<" + classname_ + ">";
-  } else {
-    superclass = SuperClassName(descriptor_, options_);
-  }
+  superclass = SuperClassName(descriptor_, options_);
   string initializer_with_arena = superclass + "()";
 
   if (descriptor_->extension_range_count() > 0) {
@@ -2528,15 +2391,14 @@ GenerateStructors(io::Printer* printer) {
     initializer_null += ", _any_metadata_(&type_url_, &value_)";
   }
   if (num_weak_fields_ > 0) {
-    initializer_null += ", _weak_field_map_(NULL)";
+    initializer_null += ", _weak_field_map_(nullptr)";
   }
 
   printer->Print(
       "$classname$::$classname$()\n"
       "  : $initializer$ {\n"
-      "  if (GOOGLE_PREDICT_TRUE(this != internal_default_instance())) {\n"
-      "    ::$file_namespace$::InitDefaults$scc_name$();\n"
-      "  }\n"
+      "  ::google::protobuf::internal::InitSCC(\n"
+      "      &$file_namespace$::scc_info_$scc_name$.base);\n"
       "  SharedCtor();\n"
       "  // @@protoc_insertion_point(constructor:$full_name$)\n"
       "}\n",
@@ -2548,7 +2410,9 @@ GenerateStructors(io::Printer* printer) {
     printer->Print(
         "$classname$::$classname$(::google::protobuf::Arena* arena)\n"
         "  : $initializer$ {\n"
-        "  ::$file_namespace$::InitDefaults$scc_name$();\n"
+        "  "
+        "::google::protobuf::internal::InitSCC(&$file_namespace$::scc_info_$scc_name$."
+        "base);\n"
         "  SharedCtor();\n"
         "  RegisterArenaDtor(arena);\n"
         "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
@@ -2589,16 +2453,6 @@ GenerateStructors(io::Printer* printer) {
         printer->Print(",\n_has_bits_(from._has_bits_)");
     }
 
-    bool need_to_emit_cached_size = true;
-    const string cached_size_decl = ",\n_cached_size_(0)";
-    // We reproduce the logic used for laying out _cached_sized_ in the class
-    // definition, as to initialize it in-order.
-    if (HasFieldPresence(descriptor_->file()) &&
-        (HasBitsSize() % 8) != 0) {
-      printer->Print(cached_size_decl.c_str());
-      need_to_emit_cached_size = false;
-    }
-
     std::vector<bool> processed(optimized_order_.size(), false);
     for (int i = 0; i < optimized_order_.size(); ++i) {
       const FieldDescriptor* field = optimized_order_[i];
@@ -2611,11 +2465,6 @@ GenerateStructors(io::Printer* printer) {
       processed[i] = true;
       printer->Print(",\n$name$_(from.$name$_)",
                      "name", FieldName(field));
-    }
-
-    if (need_to_emit_cached_size) {
-      printer->Print(cached_size_decl.c_str());
-      need_to_emit_cached_size = false;
     }
 
     if (IsAnyMessage(descriptor_)) {
@@ -2702,12 +2551,10 @@ GenerateStructors(io::Printer* printer) {
 
   // Generate SetCachedSize.
   printer->Print(
-    "void $classname$::SetCachedSize(int size) const {\n"
-    "  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();\n"
-    "  _cached_size_ = size;\n"
-    "  GOOGLE_SAFE_CONCURRENT_WRITES_END();\n"
-    "}\n",
-    "classname", classname_);
+      "void $classname$::SetCachedSize(int size) const {\n"
+      "  _cached_size_.Set(size);\n"
+      "}\n",
+      "classname", classname_);
 
   // Only generate this member if it's not disabled.
   if (HasDescriptorMethods(descriptor_->file(), options_) &&
@@ -2726,7 +2573,9 @@ GenerateStructors(io::Printer* printer) {
 
   printer->Print(
       "const $classname$& $classname$::default_instance() {\n"
-      "  ::$file_namespace$::InitDefaults$scc_name$();\n"
+      "  "
+      "::google::protobuf::internal::InitSCC(&$file_namespace$::scc_info_$scc_name$.base)"
+      ";\n"
       "  return *internal_default_instance();\n"
       "}\n\n",
       "classname", classname_, "scc_name", scc_name_, "file_namespace",
@@ -2737,7 +2586,7 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* printer) {
   printer->Print(
       "template<> "
       "GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE "
-      "$classname$* Arena::$create_func$< $classname$ >(Arena* arena) {\n"
+      "$classname$* Arena::CreateMaybeMessage< $classname$ >(Arena* arena) {\n"
       "  return Arena::$create_func$Internal< $classname$ >(arena);\n"
       "}\n",
       "classname", QualifiedClassName(descriptor_),
@@ -2823,10 +2672,10 @@ GenerateClear(io::Printer* printer) {
       chunks.push_back(chunks_frag[i]);
       const FieldDescriptor* field = chunks_frag[i].front();
       const FieldDescriptor* next_field =
-          (i + 1) < chunks_frag.size() ? chunks_frag[i + 1].front() : NULL;
+          (i + 1) < chunks_frag.size() ? chunks_frag[i + 1].front() : nullptr;
       if (CanInitializeByZeroing(field) &&
           (chunks_frag[i].size() == 1 || unconditional_budget < 0) &&
-          next_field != NULL &&
+          next_field != nullptr &&
           has_bit_indices_[field->index()] / 8 ==
               has_bit_indices_[next_field->index()] / 8) {
         GOOGLE_CHECK(!CanInitializeByZeroing(next_field));
@@ -3111,7 +2960,6 @@ GenerateSwap(io::Printer* printer) {
 
     printer->Print("_internal_metadata_.Swap(&other->_internal_metadata_);\n");
 
-    printer->Print("swap(_cached_size_, other->_cached_size_);\n");
     if (descriptor_->extension_range_count() > 0) {
       printer->Print("_extensions_.Swap(&other->_extensions_);\n");
     }
@@ -3492,8 +3340,12 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
   printer->Print("for (;;) {\n");
   printer->Indent();
 
-  uint32 maxtag = descriptor_->field_count() == 0 ? 0 :
-      WireFormat::MakeTag(ordered_fields[descriptor_->field_count() - 1]);
+  // To calculate the maximum tag to expect, we look at the highest-numbered
+  // field. We need to be prepared to handle more than one wire type if that
+  // field is a packable repeated field, so to simplify things we assume the
+  // highest possible wire type of 5.
+  uint32 maxtag =
+      ordered_fields.empty() ? 0 : ordered_fields.back()->number() * 8 + 5;
   const int kCutoff0 = 127;               // fits in 1-byte varint
   const int kCutoff1 = (127 << 7) + 127;  // fits in 2-byte varint
 
@@ -3511,6 +3363,15 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
         break;
       }
     }
+
+    for (int i = 0; i < parent->extension_count(); i++) {
+      const FieldDescriptor* field = parent->extension(i);
+      if (field->type() == FieldDescriptor::TYPE_GROUP &&
+          field->message_type() == descriptor_) {
+        capture_last_tag = true;
+        break;
+      }
+    }
   }
 
   for (int i = 0; i < descriptor_->file()->extension_count(); i++) {
@@ -3522,7 +3383,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     }
   }
 
-  printer->Print("::std::pair< ::google::protobuf::uint32, bool> p = "
+  printer->Print("::std::pair<::google::protobuf::uint32, bool> p = "
                  "input->ReadTagWithCutoffNoLastTag($max$u);\n"
                  "tag = p.first;\n"
                  "if (!p.second) goto handle_unusual;\n",
@@ -3621,7 +3482,6 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       printer->Outdent();
       printer->Print("}\n\n");
     }
-
     printer->Print("default: {\n");
     printer->Indent();
   }
@@ -4012,7 +3872,7 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
   // Merge the fields and the extension ranges, both sorted by field number.
   {
     LazySerializerEmitter e(this, printer, to_array);
-    const FieldDescriptor* last_weak_field = NULL;
+    const FieldDescriptor* last_weak_field = nullptr;
     int i, j;
     for (i = 0, j = 0;
          i < ordered_fields.size() || j < sorted_extensions.size();) {
@@ -4024,16 +3884,16 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
           last_weak_field = field;
           PrintFieldComment(printer, field);
         } else {
-          if (last_weak_field != NULL) {
+          if (last_weak_field != nullptr) {
             e.Emit(last_weak_field);
-            last_weak_field = NULL;
+            last_weak_field = nullptr;
           }
           e.Emit(field);
         }
       } else  {
-        if (last_weak_field != NULL) {
+        if (last_weak_field != nullptr) {
           e.Emit(last_weak_field);
-          last_weak_field = NULL;
+          last_weak_field = nullptr;
         }
         e.Flush();
         GenerateSerializeOneExtensionRange(printer,
@@ -4041,7 +3901,7 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
                                            to_array);
       }
     }
-    if (last_weak_field != NULL) {
+    if (last_weak_field != nullptr) {
       e.Emit(last_weak_field);
     }
   }
@@ -4103,8 +3963,9 @@ static string ConditionalToCheckBitmasks(const std::vector<uint32>& masks) {
   }
   GOOGLE_CHECK(!parts.empty());
   // If we have multiple parts, each expected to be 0, then bitwise-or them.
-  string result = parts.size() == 1 ? parts[0] :
-      StrCat("(", Join(parts, "\n       | "), ")");
+  string result = parts.size() == 1
+                      ? parts[0]
+                      : StrCat("(", Join(parts, "\n       | "), ")");
   return result + " == 0";
 }
 
@@ -4117,20 +3978,19 @@ GenerateByteSize(io::Printer* printer) {
     SetUnknkownFieldsVariable(descriptor_, options_, &vars);
     vars["classname"] = classname_;
     vars["full_name"] = descriptor_->full_name();
-    printer->Print(vars,
-      "size_t $classname$::ByteSizeLong() const {\n"
-      "// @@protoc_insertion_point(message_set_byte_size_start:$full_name$)\n"
-      "  size_t total_size = _extensions_.MessageSetByteSize();\n"
-      "  if ($have_unknown_fields$) {\n"
-      "    total_size += ::google::protobuf::internal::WireFormat::\n"
-      "        ComputeUnknownMessageSetItemsSize($unknown_fields$);\n"
-      "  }\n"
-      "  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);\n"
-      "  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();\n"
-      "  _cached_size_ = cached_size;\n"
-      "  GOOGLE_SAFE_CONCURRENT_WRITES_END();\n"
-      "  return total_size;\n"
-      "}\n");
+    printer->Print(
+        vars,
+        "size_t $classname$::ByteSizeLong() const {\n"
+        "// @@protoc_insertion_point(message_set_byte_size_start:$full_name$)\n"
+        "  size_t total_size = _extensions_.MessageSetByteSize();\n"
+        "  if ($have_unknown_fields$) {\n"
+        "    total_size += ::google::protobuf::internal::WireFormat::\n"
+        "        ComputeUnknownMessageSetItemsSize($unknown_fields$);\n"
+        "  }\n"
+        "  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);\n"
+        "  SetCachedSize(cached_size);\n"
+        "  return total_size;\n"
+        "}\n");
     return;
   }
 
@@ -4362,17 +4222,18 @@ GenerateByteSize(io::Printer* printer) {
     printer->Print("total_size += _weak_field_map_.ByteSizeLong();\n");
   }
 
-  // We update _cached_size_ even though this is a const method.  In theory,
-  // this is not thread-compatible, because concurrent writes have undefined
-  // results.  In practice, since any concurrent writes will be writing the
-  // exact same value, it works on all common processors.  In a future version
-  // of C++, _cached_size_ should be made into an atomic<int>.
+  // We update _cached_size_ even though this is a const method.  Because
+  // const methods might be called concurrently this needs to be atomic
+  // operations or the program is undefined.  In practice, since any concurrent
+  // writes will be writing the exact same value, normal writes will work on
+  // all common processors. We use a dedicated wrapper class to abstract away
+  // the underlying atomic. This makes it easier on platforms where even relaxed
+  // memory order might have perf impact to replace it with ordinary loads and
+  // stores.
   printer->Print(
-    "int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);\n"
-    "GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();\n"
-    "_cached_size_ = cached_size;\n"
-    "GOOGLE_SAFE_CONCURRENT_WRITES_END();\n"
-    "return total_size;\n");
+      "int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);\n"
+      "SetCachedSize(cached_size);\n"
+      "return total_size;\n");
 
   printer->Outdent();
   printer->Print("}\n");
@@ -4421,7 +4282,7 @@ GenerateIsInitialized(io::Printer* printer) {
         !ShouldIgnoreRequiredFieldCheck(field, options_) &&
         scc_analyzer_->HasRequiredFields(field->message_type())) {
       if (field->is_repeated()) {
-        if (IsImplicitWeakField(field, options_)) {
+        if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
           printer->Print(
             "if (!::google::protobuf::internal::AllAreInitializedWeak(this->$name$_))"
             " return false;\n",

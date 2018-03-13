@@ -75,6 +75,8 @@ const char* kForbiddenWordList[] = {
   "class",
 };
 
+const int kDefaultLookUpStartFieldNumber = 40;
+
 bool IsForbidden(const string& field_name) {
   for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
     if (field_name == kForbiddenWordList[i]) {
@@ -102,6 +104,20 @@ string FieldName(const FieldDescriptor* field) {
   return field_name;
 }
 
+
+// Judge whether should use table or use look up.
+// Copied from com.google.protobuf.SchemaUtil.shouldUseTableSwitch
+bool ShouldUseTable(int lo, int hi, int number_of_fields) {
+  if (hi < kDefaultLookUpStartFieldNumber) {
+    return true;
+  }
+  int64 table_space_cost = (static_cast<int64>(hi) - lo + 1);  // words
+  int64 table_time_cost = 3;           // comparisons
+  int64 lookup_space_cost = 3 + 2 * static_cast<int64>(number_of_fields);
+  int64 lookup_time_cost = 3 + number_of_fields;
+  return table_space_cost + 3 * table_time_cost <=
+         lookup_space_cost + 3 * lookup_time_cost;
+}
 
 }  // namespace
 
@@ -914,6 +930,23 @@ void EscapeUtf16ToString(uint16 code, string* output) {
   } else {
     output->append(StringPrintf("\\u%04x", code));
   }
+}
+
+std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
+    const FieldDescriptor** fields, int count) {
+  GOOGLE_CHECK_GT(count, 0);
+  int table_driven_number_of_entries = count;
+  int look_up_start_field_number = 0;
+  for (int i = 0; i < count; i++) {
+    const int field_number = fields[i]->number();
+    if (ShouldUseTable(fields[0]->number(), field_number, i + 1)) {
+      table_driven_number_of_entries =
+          field_number - fields[0]->number() + 1 + count - i - 1;
+      look_up_start_field_number = field_number + 1;
+    }
+  }
+  return std::make_pair(
+      table_driven_number_of_entries, look_up_start_field_number);
 }
 }  // namespace java
 }  // namespace compiler

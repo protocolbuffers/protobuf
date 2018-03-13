@@ -38,9 +38,6 @@
 #include <google/protobuf/stubs/hash.h>
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <vector>
 
 #include <google/protobuf/compiler/java/java_context.h>
@@ -52,9 +49,9 @@
 #include <google/protobuf/compiler/java/java_message_builder.h>
 #include <google/protobuf/compiler/java/java_message_builder_lite.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -438,7 +435,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print(
         "$deprecation$$field_name$($field_number$),\n",
-        "deprecation", field->options().deprecated() ? "@java.lang.Deprecated " : "",
+        "deprecation",
+        field->options().deprecated() ? "@java.lang.Deprecated " : "",
         "field_name", ToUpper(field->name()),
         "field_number", SimpleItoa(field->number()));
     }
@@ -578,7 +576,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
 void ImmutableMessageGenerator::
 GenerateMessageSerializationMethods(io::Printer* printer) {
-  google::protobuf::scoped_array<const FieldDescriptor * > sorted_fields(
+  std::unique_ptr<const FieldDescriptor * []> sorted_fields(
       SortFieldsByNumber(descriptor_));
 
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
@@ -1216,7 +1214,7 @@ GenerateExtensionRegistrationCode(io::Printer* printer) {
 // ===================================================================
 void ImmutableMessageGenerator::
 GenerateParsingConstructor(io::Printer* printer) {
-  google::protobuf::scoped_array<const FieldDescriptor * > sorted_fields(
+  std::unique_ptr<const FieldDescriptor * []> sorted_fields(
       SortFieldsByNumber(descriptor_));
 
   printer->Print(

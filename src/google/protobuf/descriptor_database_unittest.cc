@@ -36,13 +36,10 @@
 
 #include <algorithm>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/text_format.h>
 
 #include <google/protobuf/stubs/logging.h>
@@ -179,7 +176,7 @@ class DescriptorDatabaseTest
     EXPECT_FALSE(test_case_->AddToDatabase(file_proto));
   }
 
-  google::protobuf::scoped_ptr<DescriptorDatabaseTestCase> test_case_;
+  std::unique_ptr<DescriptorDatabaseTestCase> test_case_;
   DescriptorDatabase* database_;
 };
 

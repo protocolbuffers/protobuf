@@ -30,7 +30,6 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_SINGLETON_H__
 #define GOOGLE_PROTOBUF_STUBS_SINGLETON_H__
 
-#include <google/protobuf/stubs/atomicops.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
 

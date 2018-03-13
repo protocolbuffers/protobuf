@@ -37,13 +37,11 @@
 
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/descriptor.h>
 
 namespace google {
 namespace protobuf {
@@ -82,38 +80,12 @@ class FieldGenerator {
   // implementation is empty.
   virtual void GenerateStaticMembers(io::Printer* /*printer*/) const {}
 
-  // Generate prototypes for accessors that will manipulate imported
-  // messages inline.  These are for .proto.h headers.
-  //
-  // In .proto.h mode, the headers of imports are not #included. However,
-  // functions that manipulate the imported message types need access to
-  // the class definition of the imported message, meaning that the headers
-  // must be #included. To get around this, functions that manipulate
-  // imported message objects are defined as dependent functions in a base
-  // template class. By making them dependent template functions, the
-  // function templates will not be instantiated until they are called, so
-  // we can defer to those translation units to #include the necessary
-  // generated headers.
-  //
-  // See:
-  // http://en.cppreference.com/w/cpp/language/class_template#Implicit_instantiation
-  //
-  // Most field types don't need this, so the default implementation is empty.
-  virtual void GenerateDependentAccessorDeclarations(
-      io::Printer* printer) const {}
-
   // Generate prototypes for all of the accessor functions related to this
   // field.  These are placed inside the class definition.
   virtual void GenerateAccessorDeclarations(io::Printer* printer) const = 0;
 
-  // Generate inline definitions of depenent accessor functions for this field.
-  // These are placed inside the header after all class definitions.
-  virtual void GenerateDependentInlineAccessorDefinitions(
-      io::Printer* printer) const {}
-
   // Generate inline definitions of accessor functions for this field.
   // These are placed inside the header after all class definitions.
-  // In non-.proto.h mode, this generates dependent accessor functions as well.
   virtual void GenerateInlineAccessorDefinitions(
       io::Printer* printer) const = 0;
 
@@ -207,6 +179,11 @@ class FieldGenerator {
   // are placed in the message's ByteSize() method.
   virtual void GenerateByteSize(io::Printer* printer) const = 0;
 
+  // Any tags about field layout decisions (such as inlining) to embed in the
+  // offset.
+  virtual uint32 CalculateFieldTag() const { return 0; }
+  virtual bool IsInlined() const { return false; }
+
  protected:
   const Options& options_;
 
@@ -217,7 +194,8 @@ class FieldGenerator {
 // Convenience class which constructs FieldGenerators for a Descriptor.
 class FieldGeneratorMap {
  public:
-  FieldGeneratorMap(const Descriptor* descriptor, const Options& options);
+  FieldGeneratorMap(const Descriptor* descriptor, const Options& options,
+                    SCCAnalyzer* scc_analyzer);
   ~FieldGeneratorMap();
 
   const FieldGenerator& get(const FieldDescriptor* field) const;
@@ -225,10 +203,11 @@ class FieldGeneratorMap {
  private:
   const Descriptor* descriptor_;
   const Options& options_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<FieldGenerator> > field_generators_;
+  std::unique_ptr<std::unique_ptr<FieldGenerator> []> field_generators_;
 
   static FieldGenerator* MakeGenerator(const FieldDescriptor* field,
-                                       const Options& options);
+                                       const Options& options,
+                                       SCCAnalyzer* scc_analyzer);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };
