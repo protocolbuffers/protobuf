@@ -1,31 +1,29 @@
 package main
 
 import (
-	"errors"
-	"io/ioutil"
-	"flag"
-	"testing"
-	"os"
-
 	benchmarkWrapper "./tmp"
-	proto "github.com/golang/protobuf/proto"
-	googleMessage1Proto3 "./tmp/datasets/google_message1/proto3"
 	googleMessage1Proto2 "./tmp/datasets/google_message1/proto2"
+	googleMessage1Proto3 "./tmp/datasets/google_message1/proto3"
 	googleMessage2 "./tmp/datasets/google_message2"
 	googleMessage3 "./tmp/datasets/google_message3"
 	googleMessage4 "./tmp/datasets/google_message4"
-
+	"errors"
+	"flag"
+	"github.com/golang/protobuf/proto"
+	"io/ioutil"
+	"os"
+	"testing"
 )
 
 // Data is returned by the Load function.
 type Data struct {
-	// Marshalled is a slice of marshalled protocol
-	// buffers. 1:1 with Unmarshalled.
-	Marshalled [][]byte
+	// marshaled is a slice of marshaled protocol
+	// buffers. 1:1 with unmarshaled.
+	marshaled [][]byte
 
-	// Unmarshalled is a slice of unmarshalled protocol
-	// buffers. 1:1 with Marshalled.
-	Unmarshalled []proto.Message
+	// Unmarshaled is a slice of unmarshaled protocol
+	// buffers. 1:1 with marshaled.
+	unmarshaled []proto.Message
 
 	count int
 }
@@ -34,6 +32,7 @@ var data *Data
 var counter int
 
 type GetDefaultInstanceFunction func() proto.Message
+
 var getDefaultInstance GetDefaultInstanceFunction
 
 // This is used to getDefaultInstance for a message type.
@@ -62,25 +61,25 @@ func generateGetDefaltInstanceFunction(dataset benchmarkWrapper.BenchmarkDataset
 func TestMain(m *testing.M) {
 	flag.Parse()
 	data = new(Data)
-	rawData, error := ioutil.ReadFile(flag.Arg(0))
-	if error != nil {
+	rawData, err := ioutil.ReadFile(flag.Arg(0))
+	if err != nil {
 		panic("Couldn't find file" + flag.Arg(0))
 	}
 	var dataset benchmarkWrapper.BenchmarkDataset
 
-	if err1 := proto.Unmarshal(rawData, &dataset); err1 != nil {
+	if err = proto.Unmarshal(rawData, &dataset); err != nil {
 		panic("The raw input data can't be parse into BenchmarkDataset message.")
 	}
 
 	generateGetDefaltInstanceFunction(dataset)
 
 	for _, payload := range dataset.Payload {
-		data.Marshalled = append(data.Marshalled, payload)
+		data.marshaled = append(data.marshaled, payload)
 		m := getDefaultInstance()
 		proto.Unmarshal(payload, m)
-		data.Unmarshalled = append(data.Unmarshalled, m)
+		data.unmarshaled = append(data.unmarshaled, m)
 	}
-	data.count = len(data.Unmarshalled)
+	data.count = len(data.unmarshaled)
 
 	os.Exit(m.Run())
 }
@@ -88,10 +87,10 @@ func TestMain(m *testing.M) {
 func BenchmarkUnmarshal(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		payload := data.Marshalled[counter % data.count]
+		payload := data.marshaled[counter%data.count]
 		out := getDefaultInstance()
 		if err := proto.Unmarshal(payload, out); err != nil {
-			b.Fatalf("can't unmarshal message %d %v", counter % data.count, err)
+			b.Fatalf("can't unmarshal message %d %v", counter%data.count, err)
 		}
 		counter++
 	}
@@ -100,9 +99,9 @@ func BenchmarkUnmarshal(b *testing.B) {
 func BenchmarkMarshal(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		m := data.Unmarshalled[counter % data.count]
+		m := data.unmarshaled[counter%data.count]
 		if _, err := proto.Marshal(m); err != nil {
-			b.Fatalf("can't marshal message %d %+v: %v", counter % data.count, m, err)
+			b.Fatalf("can't marshal message %d %+v: %v", counter%data.count, m, err)
 		}
 		counter++
 	}
@@ -111,7 +110,7 @@ func BenchmarkMarshal(b *testing.B) {
 func BenchmarkSize(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		proto.Size(data.Unmarshalled[counter % data.count])
+		proto.Size(data.unmarshaled[counter%data.count])
 		counter++
 	}
 }
@@ -119,7 +118,7 @@ func BenchmarkSize(b *testing.B) {
 func BenchmarkClone(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		proto.Clone(data.Unmarshalled[counter % data.count])
+		proto.Clone(data.unmarshaled[counter%data.count])
 		counter++
 	}
 }
@@ -128,8 +127,7 @@ func BenchmarkMerge(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		out := getDefaultInstance()
-		proto.Merge(out, data.Unmarshalled[counter % data.count])
+		proto.Merge(out, data.unmarshaled[counter%data.count])
 		counter++
 	}
 }
-

@@ -37,16 +37,19 @@ $ sudo apt-get install python3-dev
 And you also need to make sure `pkg-config` is installed.
 
 ### Go
-Golang protobuf is under [golang repo](https://github.com/golang/protobuf), you
-need to install golang and golang protobuf's proto and protoc-gen-go before
-running the benchmark. And we're using [testing package](https://golang.org/pkg/testing/)
-to test benchmark. 
+Go protobufs are maintained at [github.com/golang/protobuf](
+http://github.com/golang/protobuf). If not done already, you need to install the 
+toolchain and the Go protoc-gen-go plugin for protoc. 
 
-To install golang protobuf proto and protoc-gen-go, you can 
+To install protoc-gen-go, run:
+
 ```
 $ go get -u github.com/golang/protobuf/protoc-gen-go
-$ go get -u github.com/golang/protobuf/proto
+$ export PATH=$PATH:$(go env GOPATH)/bin
 ```
+
+The first command installs `protoc-gen-go` into the `bin` directory in your local `GOPATH`.
+The second command adds the `bin` directory to your `PATH` so that `protoc` can locate the plugin later.
 
 ### Big data
 
