@@ -94,7 +94,7 @@ def _proto_gen_impl(ctx):
   for src, out in zip(srcs, ctx.outputs.outs):
     args = []
 
-    in_gen_dir = src.root.path == gen_dir
+    in_gen_dir = src.root.path == gen_dir.rstrip('/')
     if in_gen_dir:
       import_flags_real = []
       for f in depset(import_flags):
