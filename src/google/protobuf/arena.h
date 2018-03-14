@@ -333,7 +333,7 @@ class LIBPROTOBUF_EXPORT Arena {
   template <typename T>
   GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE static T* CreateArray(
       Arena* arena, size_t num_elements) {
-    static_assert(std::is_trivially_default_constructible<T>::value,
+    static_assert(std::is_pod<T>::value,
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
