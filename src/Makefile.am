@@ -103,6 +103,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
+  google/protobuf/inlined_string_field.h                         \
   google/protobuf/map_entry.h                                    \
   google/protobuf/map_entry_lite.h                               \
   google/protobuf/map_field.h                                    \
@@ -729,6 +730,7 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/map_test_util_impl.h                         \
   google/protobuf/test_util.cc                                 \
   google/protobuf/test_util.h                                  \
+  google/protobuf/test_util.inc                                \
   google/protobuf/testing/googletest.cc                        \
   google/protobuf/testing/googletest.h                         \
   google/protobuf/testing/file.cc                              \
@@ -773,6 +775,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/map_field_test.cc                            \
   google/protobuf/map_test.cc                                  \
   google/protobuf/message_unittest.cc                          \
+  google/protobuf/message_unittest.inc                         \
   google/protobuf/no_field_presence_test.cc                    \
   google/protobuf/preserve_unknown_enum_test.cc                \
   google/protobuf/proto3_arena_lite_unittest.cc                \
@@ -800,6 +803,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/cpp/cpp_move_unittest.cc            \
   google/protobuf/compiler/cpp/cpp_unittest.h                  \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
+  google/protobuf/compiler/cpp/cpp_unittest.inc                \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
   google/protobuf/compiler/cpp/metadata_test.cc                \
   google/protobuf/compiler/java/java_plugin_unittest.cc        \
