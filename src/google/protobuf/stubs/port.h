@@ -91,6 +91,7 @@
 // These #includes are for the byte swap functions declared later on.
 #ifdef _MSC_VER
 #include <stdlib.h>  // NOLINT(build/include)
+#include <intrin.h>
 #elif defined(__APPLE__)
 #include <libkern/OSByteOrder.h>
 #elif defined(__GLIBC__) || defined(__CYGWIN__)
@@ -394,12 +395,10 @@ class Bits {
   static uint32 Log2FloorNonZero(uint32 n) {
 #if defined(__GNUC__)
   return 31 ^ static_cast<uint32>(__builtin_clz(n));
-#elif defined(COMPILER_MSVC) && defined(_M_IX86)
-  _asm {
-    bsr ebx, n
-    mov n, ebx
-  }
-  return n;
+#elif defined(_MSC_VER)
+  unsigned long where;
+  _BitScanReverse(&where, n);
+  return where;
 #else
   return Log2FloorNonZero_Portable(n);
 #endif
@@ -414,6 +413,10 @@ class Bits {
     // implementation instead.
 #if defined(__GNUC__) && !defined(GOOGLE_PROTOBUF_USE_PORTABLE_LOG2)
   return 63 ^ static_cast<uint32>(__builtin_clzll(n));
+#elif defined(_MSC_VER) && defined(_M_X64)
+  unsigned long where;
+  _BitScanReverse64(&where, n);
+  return where;
 #else
   return Log2FloorNonZero64_Portable(n);
 #endif
