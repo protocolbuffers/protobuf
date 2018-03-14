@@ -300,10 +300,6 @@ module BasicTest
       end
 
       assert_raise TypeError do
-        m.repeated_int32 = []  # needs RepeatedField
-      end
-
-      assert_raise TypeError do
         m.repeated_int32.push "hello"
       end
 

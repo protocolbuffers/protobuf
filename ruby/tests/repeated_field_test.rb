@@ -178,25 +178,51 @@ class RepeatedFieldTest < Test::Unit::TestCase
     m.repeated_string[5] = 'spacious'
     assert_equal ["foo", "snappy", "baz", "", "", "spacious"], m.repeated_string
 
+    m.repeated_string = ["foo", "bar"]
+    assert_equal ["foo", "bar"], m.repeated_string
+
+    m.repeated_string = []
+    assert_equal [], m.repeated_string
+
     #make sure it sests the default types for other fields besides strings
     %w(repeated_int32 repeated_int64 repeated_uint32 repeated_uint64).each do |field_name|
       m.send(field_name)[3] = 10
       assert_equal [0,0,0,10], m.send(field_name)
+
+      m.send("#{field_name}=", [10, 20])
+      assert_equal [10,20], m.send(field_name)
     end
     m.repeated_float[3] = 10.1
     #wonky mri float handling
     assert_equal [0,0,0], m.repeated_float.to_a[0..2]
     assert_equal 10.1, m.repeated_float[3].round(1)
+    m.repeated_float = [10.1, 10.2]
+    assert_equal [10.1, 10.2], m.repeated_float.map{|v| v.round(1)}
+
     m.repeated_double[3] = 10.1
     assert_equal [0,0,0,10.1], m.repeated_double
+    m.repeated_double = [0.0, 0,10.2]
+    assert_equal [0.0, 0, 10.2], m.repeated_double
+
     m.repeated_bool[3] = true
     assert_equal [false, false, false, true], m.repeated_bool
+    m.repeated_bool = [true, false, true]
+    assert_equal [true, false, true], m.repeated_bool
+
     m.repeated_bytes[3] = "bar".encode!('ASCII-8BIT')
     assert_equal ['', '', '', "bar".encode!('ASCII-8BIT')], m.repeated_bytes
+    m.repeated_bytes = ["foo".encode!('ASCII-8BIT'), "bar".encode!('ASCII-8BIT')]
+    assert_equal ["foo".encode!('ASCII-8BIT'), "bar".encode!('ASCII-8BIT')], m.repeated_bytes
+
     m.repeated_msg[3] = TestMessage2.new(:foo => 1)
     assert_equal [nil, nil, nil, TestMessage2.new(:foo => 1)], m.repeated_msg
+    m.repeated_msg = [TestMessage2.new(:foo =>1), TestMessage2.new(:foo =>2)]
+    assert_equal [TestMessage2.new(:foo =>1), TestMessage2.new(:foo =>2)], m.repeated_msg
+
     m.repeated_enum[3] = :A
     assert_equal [:Default, :Default, :Default, :A], m.repeated_enum
+    m.repeated_enum = [:A, :B, :C]
+    assert_equal [:A, :B, :C], m.repeated_enum
 
     # check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
     #   arr[20] = 'spacious'

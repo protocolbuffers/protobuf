@@ -606,7 +606,7 @@ static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
     rb_raise(rb_eTypeError, "Repeated field array has wrong element type");
   }
 
-  if (self->field_type == UPB_TYPE_MESSAGE) { 
+  if (self->field_type == UPB_TYPE_MESSAGE) {
     if (self->field_type_class !=
         Descriptor_msgclass(get_def_obj(upb_fielddef_subdef(field)))) {
       rb_raise(rb_eTypeError,
@@ -686,8 +686,15 @@ void layout_set(MessageLayout* layout,
     check_map_field_type(val, field);
     DEREF(memory, VALUE) = val;
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-    check_repeated_field_type(val, field);
-    DEREF(memory, VALUE) = val;
+    if (RB_TYPE_P(val, T_ARRAY)) {
+      RepeatedField_replace(
+        DEREF(memory, VALUE),
+        val
+      );
+    } else {
+      check_repeated_field_type(val, field);
+      DEREF(memory, VALUE) = val;
+    }
   } else {
     native_slot_set(upb_fielddef_type(field), field_type_class(field),
                     memory, val);
