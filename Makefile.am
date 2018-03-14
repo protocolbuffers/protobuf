@@ -808,6 +808,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_extensions_dynamic.proto              \
   python/google/protobuf/internal/more_messages.proto                        \
+  python/google/protobuf/internal/no_package.proto                           \
   python/google/protobuf/internal/packed_field_test.proto                    \
   python/google/protobuf/internal/proto_builder_test.py                      \
   python/google/protobuf/internal/python_message.py                          \
