@@ -7,127 +7,117 @@ import (
 	googleMessage2 "./tmp/datasets/google_message2"
 	googleMessage3 "./tmp/datasets/google_message3"
 	googleMessage4 "./tmp/datasets/google_message4"
-	"errors"
 	"flag"
 	"github.com/golang/protobuf/proto"
 	"io/ioutil"
-	"os"
 	"testing"
 )
 
 // Data is returned by the Load function.
-type Data struct {
-	// marshaled is a slice of marshaled protocol
-	// buffers. 1:1 with unmarshaled.
-	marshaled [][]byte
-
-	// Unmarshaled is a slice of unmarshaled protocol
-	// buffers. 1:1 with marshaled.
+type Dataset struct {
+	name        string
+	newMessage  func() proto.Message
+	marshaled   [][]byte
 	unmarshaled []proto.Message
-
-	count int
 }
 
-var data *Data
-var counter int
-
-type GetDefaultInstanceFunction func() proto.Message
-
-var getDefaultInstance GetDefaultInstanceFunction
+var datasets []Dataset
 
 // This is used to getDefaultInstance for a message type.
-func generateGetDefaltInstanceFunction(dataset benchmarkWrapper.BenchmarkDataset) error {
+func generateNewMessageFunction(dataset benchmarkWrapper.BenchmarkDataset) func() proto.Message {
 	switch dataset.MessageName {
 	case "benchmarks.proto3.GoogleMessage1":
-		getDefaultInstance = func() proto.Message { return &googleMessage1Proto3.GoogleMessage1{} }
-		return nil
+		return func() proto.Message { return new(googleMessage1Proto3.GoogleMessage1) }
 	case "benchmarks.proto2.GoogleMessage1":
-		getDefaultInstance = func() proto.Message { return &googleMessage1Proto2.GoogleMessage1{} }
-		return nil
+		return func() proto.Message { return new(googleMessage1Proto2.GoogleMessage1) }
 	case "benchmarks.proto2.GoogleMessage2":
-		getDefaultInstance = func() proto.Message { return &googleMessage2.GoogleMessage2{} }
-		return nil
+		return func() proto.Message { return new(googleMessage2.GoogleMessage2) }
 	case "benchmarks.google_message3.GoogleMessage3":
-		getDefaultInstance = func() proto.Message { return &googleMessage3.GoogleMessage3{} }
-		return nil
+		return func() proto.Message { return new(googleMessage3.GoogleMessage3) }
 	case "benchmarks.google_message4.GoogleMessage4":
-		getDefaultInstance = func() proto.Message { return &googleMessage4.GoogleMessage4{} }
-		return nil
+		return func() proto.Message { return new(googleMessage4.GoogleMessage4) }
 	default:
-		return errors.New("Unknown message type: " + dataset.MessageName)
+		panic("Unknown message type: " + dataset.MessageName)
 	}
 }
 
-func TestMain(m *testing.M) {
+func init() {
 	flag.Parse()
-	data = new(Data)
-	rawData, err := ioutil.ReadFile(flag.Arg(0))
-	if err != nil {
-		panic("Couldn't find file" + flag.Arg(0))
-	}
-	var dataset benchmarkWrapper.BenchmarkDataset
-
-	if err = proto.Unmarshal(rawData, &dataset); err != nil {
-		panic("The raw input data can't be parse into BenchmarkDataset message.")
-	}
-
-	generateGetDefaltInstanceFunction(dataset)
-
-	for _, payload := range dataset.Payload {
-		data.marshaled = append(data.marshaled, payload)
-		m := getDefaultInstance()
-		proto.Unmarshal(payload, m)
-		data.unmarshaled = append(data.unmarshaled, m)
-	}
-	data.count = len(data.unmarshaled)
-
-	os.Exit(m.Run())
-}
-
-func BenchmarkUnmarshal(b *testing.B) {
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		payload := data.marshaled[counter%data.count]
-		out := getDefaultInstance()
-		if err := proto.Unmarshal(payload, out); err != nil {
-			b.Fatalf("can't unmarshal message %d %v", counter%data.count, err)
+	for _, f := range flag.Args() {
+		// Load the benchmark.
+		b, err := ioutil.ReadFile(f)
+		if err != nil {
+			panic(err)
 		}
-		counter++
-	}
-}
 
-func BenchmarkMarshal(b *testing.B) {
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		m := data.unmarshaled[counter%data.count]
-		if _, err := proto.Marshal(m); err != nil {
-			b.Fatalf("can't marshal message %d %+v: %v", counter%data.count, m, err)
+		// Parse the benchmark.
+		var dm benchmarkWrapper.BenchmarkDataset
+		if err := proto.Unmarshal(b, &dm); err != nil {
+			panic(err)
 		}
-		counter++
+
+		// Determine the concrete protobuf message type to use.
+		var ds Dataset
+		ds.newMessage = generateNewMessageFunction(dm)
+
+		// Unmarshal each test message.
+		for _, payload := range dm.Payload {
+			ds.marshaled = append(ds.marshaled, payload)
+			m := ds.newMessage()
+			if err := proto.Unmarshal(payload, m); err != nil {
+				panic(err)
+			}
+			ds.unmarshaled = append(ds.unmarshaled, m)
+		}
+		ds.name = f
+
+		datasets = append(datasets, ds)
 	}
 }
 
-func BenchmarkSize(b *testing.B) {
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		proto.Size(data.unmarshaled[counter%data.count])
-		counter++
-	}
-}
-
-func BenchmarkClone(b *testing.B) {
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		proto.Clone(data.unmarshaled[counter%data.count])
-		counter++
-	}
-}
-
-func BenchmarkMerge(b *testing.B) {
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		out := getDefaultInstance()
-		proto.Merge(out, data.unmarshaled[counter%data.count])
-		counter++
+func Benchmark(b *testing.B) {
+	for _, ds := range datasets {
+		b.Run(ds.name, func(b *testing.B) {
+			counter := 0
+			count := len(ds.marshaled)
+			b.Run("Unmarshal", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					payload := ds.marshaled[counter%count]
+					out := ds.newMessage()
+					if err := proto.Unmarshal(payload, out); err != nil {
+						b.Fatalf("can't unmarshal message %d %v", counter%count, err)
+					}
+					counter++
+				}
+			})
+			b.Run("Marshal", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					m := ds.unmarshaled[counter%count]
+					if _, err := proto.Marshal(m); err != nil {
+						b.Fatalf("can't marshal message %d %+v: %v", counter%count, m, err)
+					}
+					counter++
+				}
+			})
+			b.Run("Size", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					proto.Size(ds.unmarshaled[counter%count])
+					counter++
+				}
+			})
+			b.Run("Clone", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					proto.Clone(ds.unmarshaled[counter%count])
+					counter++
+				}
+			})
+			b.Run("Merge", func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					out := ds.newMessage()
+					proto.Merge(out, ds.unmarshaled[counter%count])
+					counter++
+				}
+			})
+		})
 	}
 }

@@ -288,10 +288,7 @@ go-benchmark: go_protoc_middleman go_protoc_middleman2
 	@echo "Writing shortcut script go-benchmark..."
 	@echo '#! /bin/sh' > go-benchmark
 	@echo 'mkdir tmp_cc && mv *.cc tmp_cc' >> go-benchmark
-	@echo 'for file in $$@; do' >> go-benchmark
-	@echo '  echo "Testing go benchmark for data file: $$file";' >> go-benchmark
-	@echo '  go test -bench=. -- $$file;' >> go-benchmark
-	@echo 'done' >> go-benchmark
+	@echo 'go test -bench=. -- $$@' >> go-benchmark
 	@echo 'mv tmp_cc/* . && rm -rf tmp_cc' >> go-benchmark
 	@chmod +x go-benchmark
 
