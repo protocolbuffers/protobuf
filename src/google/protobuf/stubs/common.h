@@ -231,18 +231,6 @@ class FatalException : public std::exception {
 // in some versions of MSVC.
 using std::string;
 
-// TODO(gerbens) remove once an extraction cycle has removed all references
-namespace internal {
-template <typename T>
-using scoped_ptr = std::unique_ptr<T>;
-template <typename T>
-using scoped_array = std::unique_ptr<T[]>;
-}  // namespace internal
-template <typename T>
-using scoped_ptr = std::unique_ptr<T>;
-template <typename T>
-using scoped_array = std::unique_ptr<T[]>;
-
 }  // namespace protobuf
 }  // namespace google
 

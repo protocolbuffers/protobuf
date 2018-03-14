@@ -207,7 +207,7 @@ GOOGLE_PROTOBUF_DECLARE_ONCE(multiple_threads_once);
 TEST_F(OnceInitTest, MultipleThreads) {
   SetOnces(&multiple_threads_once, NULL);
 
-  scoped_ptr<TestThread> threads[4];
+  std::unique_ptr<TestThread> threads[4];
   EXPECT_EQ(INIT_NOT_STARTED, CurrentState());
   for (int i = 0; i < 4; i++) {
     threads[i].reset(RunInitOnceInNewThread());
@@ -224,7 +224,7 @@ GOOGLE_PROTOBUF_DECLARE_ONCE(multiple_threads_blocked_once2);
 TEST_F(OnceInitTest, MultipleThreadsBlocked) {
   SetOnces(&multiple_threads_blocked_once1, &multiple_threads_blocked_once2);
 
-  scoped_ptr<TestThread> threads[8];
+  std::unique_ptr<TestThread> threads[8];
   EXPECT_EQ(INIT_NOT_STARTED, CurrentState());
 
   BlockInit();

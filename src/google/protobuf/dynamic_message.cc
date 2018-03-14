@@ -232,10 +232,10 @@ class DynamicMessage : public Message {
     std::unique_ptr<uint32[]> offsets;
     std::unique_ptr<uint32[]> has_bits_indices;
     std::unique_ptr<const GeneratedMessageReflection> reflection;
-    // Don't use a scoped_ptr to hold the prototype: the destructor for
+    // Don't use a unique_ptr to hold the prototype: the destructor for
     // DynamicMessage needs to know whether it is the prototype, and does so by
     // looking back at this field. This would assume details about the
-    // implementation of scoped_ptr.
+    // implementation of unique_ptr.
     const DynamicMessage* prototype;
     int weak_field_map_offset;  // The offset for the weak_field_map;
 
