@@ -91,8 +91,10 @@ def _proto_gen_impl(ctx):
         ),  
     )   
 
-  for src, out in zip(srcs, ctx.outputs.outs):
+  for src in srcs:
     args = []
+    src_name = src.basename[:-len(".proto")]
+    outs = [out for out in ctx.outputs.outs if src_name in out.basename]
 
     in_gen_dir = src.root.path == gen_dir.rstrip('/')
     if in_gen_dir:
@@ -126,27 +128,28 @@ def _proto_gen_impl(ctx):
       args += ["--%s_out=%s" % (lang, outdir)]
       inputs += [plugin]
 
-    if in_gen_dir:
-      orig_command = " ".join(
-          ["$(realpath %s)" % ctx.executable.protoc.path] + args +
-          import_flags_real + ["-I.", src.basename])
-      command = ";".join([
-          'CMD="%s"' % orig_command,
-          "cd %s" % src.dirname,
-          "${CMD}",
-          "cd -",
-          "mv %s/%s %s" % (gen_dir, out.basename, out.path)
-      ])
-    else:
-      command = " ".join(
-          [ctx.executable.protoc.path] + args + import_flags + [src.path])
-    ctx.action(
-        inputs=inputs + [ctx.executable.protoc],
-        outputs=[out],
-        command=command,
-        mnemonic="ProtoCompile",
-        use_default_shell_env=True,
-    )   
+    for out in outs:
+      if in_gen_dir:
+        orig_command = " ".join(
+            ["$(realpath %s)" % ctx.executable.protoc.path] + args +
+            import_flags_real + ["-I.", src.basename])
+        command = ";".join([
+            'CMD="%s"' % orig_command,
+            "cd %s" % src.dirname,
+            "${CMD}",
+            "cd -",
+            "mv %s/%s %s" % (gen_dir, out.basename, out.path)
+        ])
+      else:
+        command = " ".join(
+            [ctx.executable.protoc.path] + args + import_flags + [src.path])
+      ctx.action(
+          inputs=inputs + [ctx.executable.protoc],
+          outputs=[out],
+          command=command,
+          mnemonic="ProtoCompile",
+          use_default_shell_env=True,
+      )
 
   return struct(
       proto=struct(
