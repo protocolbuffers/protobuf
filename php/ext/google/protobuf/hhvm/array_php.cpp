@@ -213,11 +213,24 @@ PHP_METHOD(RepeatedField, offsetSet) {
 
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
   upb_msgval val = tomsgval(value, upb_array_type(intern->array), NULL);
+  size_t size = upb_array_size(intern->array);
   if (!index || Z_TYPE_P(index) == IS_NULL) {
-    size_t size = upb_array_size(intern->array);
     upb_array_set(intern->array, size, val);
   } else {
-    upb_array_set(intern->array, Z_LVAL_P(index), val);
+    uint64_t indexint;
+    if (protobuf_convert_to_uint64(index, &indexint)) {
+      if (indexint > size) {
+        zend_error(E_USER_ERROR, "Element at %llu doesn't exist.\n",
+                   (long long unsigned int)indexint);
+        return;
+      } else {
+        upb_array_set(intern->array, indexint, val);
+      }
+    } else {
+      zend_error(E_USER_ERROR, "Offset type has to be numeric.\n");
+      return;
+    }
+
   }
 }
 

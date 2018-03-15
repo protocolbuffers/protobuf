@@ -89,7 +89,7 @@ bool HHVM_METHOD(RepeatedField, offsetExists, const Variant& index) {
 
 Variant HHVM_METHOD(RepeatedField, offsetGet, const Variant& index) {
   RepeatedField *intern = Native::data<RepeatedField>(this_);
-  int64_t idx = index.toInt64Val();
+  int64_t idx = index.toInt64();
   upb_msgval value = upb_array_get(intern->array, idx);
   return tophpval(value, upb_array_type(intern->array),
                   static_cast<Class*>(intern->klass));
@@ -103,7 +103,7 @@ void HHVM_METHOD(RepeatedField, offsetSet, const Variant& index,
     size_t size = upb_array_size(intern->array);
     upb_array_set(intern->array, size, val);
   } else {
-    int64_t idx = index.toInt64Val();
+    int64_t idx = index.toInt64();
     upb_array_set(intern->array, idx, val);
   }
 }

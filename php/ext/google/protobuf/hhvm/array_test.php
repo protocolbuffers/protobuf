@@ -486,28 +486,28 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(3, $i);
     }
 
-#     #########################################################
-#     # Test offset type
-#     #########################################################
-# 
-#     public function testOffset()
-#     {
-#         $arr = new RepeatedField(GPBType::INT32);
-#         $arr[] = 0;
-# 
-#         $arr[0] = 1;
-#         $this->assertSame(1, $arr[0]);
-#         $this->assertSame(1, count($arr));
-# 
-#         $arr['0'] = 2;
-#         $this->assertSame(2, $arr['0']);
-#         $this->assertSame(2, $arr[0]);
-#         $this->assertSame(1, count($arr));
-# 
-#         $arr[0.0] = 3;
-#         $this->assertSame(3, $arr[0.0]);
-#         $this->assertSame(1, count($arr));
-#     }
+    #########################################################
+    # Test offset type
+    #########################################################
+
+    public function testOffset()
+    {
+        $arr = new RepeatedField(GPBType::INT32);
+        $arr[] = 0;
+
+        $arr[0] = 1;
+        $this->assertSame(1, $arr[0]);
+        $this->assertSame(1, count($arr));
+
+        $arr['0'] = 2;
+        $this->assertSame(2, $arr['0']);
+        $this->assertSame(2, $arr[0]);
+        $this->assertSame(1, count($arr));
+
+        $arr[0.0] = 3;
+        $this->assertSame(3, $arr[0.0]);
+        $this->assertSame(1, count($arr));
+    }
 
 #     public function testInsertRemoval()
 #     {
@@ -529,7 +529,7 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
 #         $this->assertSame(1, $arr[1]);
 #         $this->assertSame(3, $arr[2]);
 #     }
-# 
+
 #     #########################################################
 #     # Test memory leak
 #     #########################################################

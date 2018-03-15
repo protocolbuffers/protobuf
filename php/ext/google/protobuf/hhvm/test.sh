@@ -4,8 +4,8 @@ set -e
 
 run_tests()
 {
-  tests=( map_field_test.php )
-  # tests=( array_test.php generated_class_test.php encode_decode_test.php )
+  # tests=( map_field_test.php )
+  tests=( array_test.php map_field_test.php generated_class_test.php encode_decode_test.php )
   # tests=( encode_decode_test.php )
   # tests=( array_test.php generated_class_test.php map_field_test.php )
   
