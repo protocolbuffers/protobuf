@@ -93,8 +93,6 @@ def _proto_gen_impl(ctx):
 
   for src in srcs:
     args = []
-    src_name = src.basename[:-len(".proto")]
-    outs = [out for out in ctx.outputs.outs if src_name in out.basename]
 
     in_gen_dir = src.root.path == gen_dir.rstrip('/')
     if in_gen_dir:
@@ -103,11 +101,16 @@ def _proto_gen_impl(ctx):
         path = f.replace('-I', '') 
         import_flags_real.append('-I$(realpath -s %s)' % path)
 
+    outs = []
+    use_grpc_plugin = (ctx.attr.plugin_language == "grpc")
     if ctx.attr.gen_cc:
       args += ["--cpp_out=$(realpath %s)" % gen_dir]
+      outs.extend(_CcOuts([src.basename], use_grpc_plugin=use_grpc_plugin))
     if ctx.attr.gen_py:
       args += ["--python_out=$(realpath %s)" % gen_dir]
+      outs.extend(_PyOuts([src.basename], use_grpc_plugin=use_grpc_plugin))
 
+    outs = [ctx.actions.declare_file(out, sibling=src) for out in outs]
     inputs = [src] + deps
     if ctx.executable.plugin:
       plugin = ctx.executable.plugin
