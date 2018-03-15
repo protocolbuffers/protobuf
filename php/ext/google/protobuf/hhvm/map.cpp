@@ -30,3 +30,17 @@ void MapField___construct(MapField *intern,
       to_fieldtype(key_type), to_fieldtype(value_type), upb_arena_alloc(arena));
   intern->klass = klass;
 }
+
+// -----------------------------------------------------------------------------
+// MapFieldIter
+// -----------------------------------------------------------------------------
+
+void MapFieldIter_init_c_instance(
+    MapFieldIter *intern TSRMLS_DC) {
+  intern->map_field = NULL;
+  intern->iter = NULL;
+}
+
+void MapFieldIter_free_c(
+    MapFieldIter *intern TSRMLS_DC) {
+}

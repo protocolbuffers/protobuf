@@ -4,8 +4,8 @@ set -e
 
 run_tests()
 {
-  # tests=( encode_decode_test.php )
-  tests=( array_test.php generated_class_test.php encode_decode_test.php )
+  tests=( map_field_test.php )
+  # tests=( array_test.php generated_class_test.php encode_decode_test.php )
   # tests=( encode_decode_test.php )
   # tests=( array_test.php generated_class_test.php map_field_test.php )
   
@@ -97,7 +97,7 @@ export C_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/inc
 
 # make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && php -dextension=./modules/protobuf.so test_php.php
 make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
-# 
+
 # # php-5.5-zts
 # echo "****************************"
 # echo "* Test PHP5.5ZTS"

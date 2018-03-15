@@ -48,8 +48,10 @@ class ProtobufExtension : public Extension {
 
     PROTO_INIT_CLASS(InternalDescriptorPool);
     PROTO_INIT_CLASS(MapField);
+    PROTO_INIT_CLASS(MapFieldIter);
     PROTO_INIT_CLASS(Message);
     PROTO_INIT_CLASS(RepeatedField);
+    PROTO_INIT_CLASS(RepeatedFieldIter);
     PROTO_INIT_CLASS(Util);
 
     loadSystemlib();

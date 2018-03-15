@@ -41,10 +41,12 @@ void HHVM_METHOD(RepeatedField, offsetSet, const Variant& index,
                  const Variant& newvalue);
 void HHVM_METHOD(RepeatedField, offsetUnset, const Variant& index);
 int64_t HHVM_METHOD(RepeatedField, count);
-Variant HHVM_METHOD(RepeatedField, getIterator);
+Object HHVM_METHOD(RepeatedField, getIterator);
 void HHVM_METHOD(RepeatedField, append, const Variant& newvalue);
 
 const StaticString s_RepeatedField("Google\\Protobuf\\Internal\\RepeatedField");
+const StaticString s_RepeatedFieldIter(
+    "Google\\Protobuf\\Internal\\RepeatedFieldIter");
 
 void RepeatedField_init() {
   // Register methods
@@ -62,8 +64,8 @@ void RepeatedField_init() {
                 count, HHVM_MN(RepeatedField, count));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\RepeatedField,
                 append, HHVM_MN(RepeatedField, append));
-//   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\RepeatedField,
-//                 getIterator, HHVM_MN(RepeatedField, getIterator));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\RepeatedField,
+                getIterator, HHVM_MN(RepeatedField, getIterator));
 
   // Register class
   Native::registerNativeDataInfo<RepeatedField>(s_RepeatedField.get()); 
@@ -114,7 +116,14 @@ int64_t HHVM_METHOD(RepeatedField, count) {
   return upb_array_size(intern->array);
 }
 
-// Variant HHVM_METHOD(RepeatedField, getIterator);
+Object HHVM_METHOD(RepeatedField, getIterator) {
+  RepeatedField *intern = Native::data<RepeatedField>(this_);
+  Object iterobj = Object(Unit::loadClass(s_RepeatedFieldIter.get()));
+  RepeatedFieldIter *iter = Native::data<RepeatedFieldIter>(iterobj);
+  iter->repeated_field = intern;
+  iter->position = 0;
+  return iterobj;
+}
 
 void HHVM_METHOD(RepeatedField, append, const Variant& newvalue) {
   RepeatedField *intern = Native::data<RepeatedField>(this_);
@@ -122,3 +131,59 @@ void HHVM_METHOD(RepeatedField, append, const Variant& newvalue) {
   size_t size = upb_array_size(intern->array);
   upb_array_set(intern->array, size, val);
 }
+
+// -----------------------------------------------------------------------------
+// RepeatedFieldIter
+// -----------------------------------------------------------------------------
+
+void HHVM_METHOD(RepeatedFieldIter, rewind);
+void HHVM_METHOD(RepeatedFieldIter, next);
+bool HHVM_METHOD(RepeatedFieldIter, valid);
+Variant HHVM_METHOD(RepeatedFieldIter, current);
+Variant HHVM_METHOD(RepeatedFieldIter, key);
+
+void RepeatedFieldIter_init() {
+  // Register methods
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\RepeatedFieldIter,
+                rewind, HHVM_MN(RepeatedFieldIter, rewind));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\RepeatedFieldIter,
+                current, HHVM_MN(RepeatedFieldIter, current));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\RepeatedFieldIter,
+                key, HHVM_MN(RepeatedFieldIter, key));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\RepeatedFieldIter,
+                next, HHVM_MN(RepeatedFieldIter, next));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\RepeatedFieldIter,
+                valid, HHVM_MN(RepeatedFieldIter, valid));
+
+  // Register class
+  Native::registerNativeDataInfo<RepeatedFieldIter>(s_RepeatedFieldIter.get()); 
+}
+
+void  HHVM_METHOD(RepeatedFieldIter, rewind) {
+  RepeatedFieldIter *intern = Native::data<RepeatedFieldIter>(this_);
+  intern->position = 0;
+}
+
+Variant HHVM_METHOD(RepeatedFieldIter, current) {
+  RepeatedFieldIter *intern = Native::data<RepeatedFieldIter>(this_);
+  upb_msgval value = upb_array_get(
+      intern->repeated_field->array, intern->position);
+  return tophpval(value, upb_array_type(intern->repeated_field->array),
+                  static_cast<Class*>(intern->repeated_field->klass));
+}
+
+Variant HHVM_METHOD(RepeatedFieldIter, key) {
+  RepeatedFieldIter *intern = Native::data<RepeatedFieldIter>(this_);
+  return Variant(intern->position);
+}
+
+void  HHVM_METHOD(RepeatedFieldIter, next) {
+  RepeatedFieldIter *intern = Native::data<RepeatedFieldIter>(this_);
+  ++intern->position;
+}
+
+bool  HHVM_METHOD(RepeatedFieldIter, valid) {
+  RepeatedFieldIter *intern = Native::data<RepeatedFieldIter>(this_);
+  return upb_array_size(intern->repeated_field->array) > intern->position;
+}
+

@@ -42,9 +42,11 @@ void HHVM_METHOD(MapField, offsetSet, const Variant& key,
                  const Variant& newvalue);
 void HHVM_METHOD(MapField, offsetUnset, const Variant& key);
 int64_t HHVM_METHOD(MapField, count);
-Variant HHVM_METHOD(MapField, getIterator);
+Object HHVM_METHOD(MapField, getIterator);
 
 const StaticString s_MapField("Google\\Protobuf\\Internal\\MapField");
+const StaticString s_MapFieldIter(
+    "Google\\Protobuf\\Internal\\MapFieldIter");
 
 void MapField_init() {
   // Register methods
@@ -60,8 +62,8 @@ void MapField_init() {
                 offsetUnset, HHVM_MN(MapField, offsetUnset));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\MapField,
                 count, HHVM_MN(MapField, count));
-  // HHVM_NAMED_ME(Google\\Protobuf\\Internal\\MapField,
-  //               getIterator, HHVM_MN(MapField, getIterator));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\MapField,
+                getIterator, HHVM_MN(MapField, getIterator));
 
   // Register class
   Native::registerNativeDataInfo<MapField>(s_MapField.get()); 
@@ -105,7 +107,10 @@ void HHVM_METHOD(MapField, offsetSet, const Variant& key,
   upb_map_set(intern->map, k, v, NULL);
 }
 
-void HHVM_METHOD(MapField, offsetUnset, const Variant& index) {
+void HHVM_METHOD(MapField, offsetUnset, const Variant& key) {
+  MapField *intern = Native::data<MapField>(this_);
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map));
+  upb_map_del(intern->map, k);
 }
 
 int64_t HHVM_METHOD(MapField, count) {
@@ -113,4 +118,69 @@ int64_t HHVM_METHOD(MapField, count) {
   return upb_map_size(intern->map);
 }
 
-// Variant HHVM_METHOD(RepeatedField, getIterator);
+Object HHVM_METHOD(MapField, getIterator) {
+  MapField *intern = Native::data<MapField>(this_);
+  Object iterobj = Object(Unit::loadClass(s_MapFieldIter.get()));
+  MapFieldIter *iter = Native::data<MapFieldIter>(iterobj);
+  iter->map_field = intern;
+  iter->iter = upb_mapiter_new(intern->map, upb_map_getalloc(intern->map));
+  return iterobj;
+}
+
+// -----------------------------------------------------------------------------
+// MapFieldIter
+// -----------------------------------------------------------------------------
+
+void HHVM_METHOD(MapFieldIter, rewind);
+void HHVM_METHOD(MapFieldIter, next);
+bool HHVM_METHOD(MapFieldIter, valid);
+Variant HHVM_METHOD(MapFieldIter, current);
+Variant HHVM_METHOD(MapFieldIter, key);
+
+void MapFieldIter_init() {
+  // Register methods
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\MapFieldIter,
+                rewind, HHVM_MN(MapFieldIter, rewind));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\MapFieldIter,
+                current, HHVM_MN(MapFieldIter, current));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\MapFieldIter,
+                key, HHVM_MN(MapFieldIter, key));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\MapFieldIter,
+                next, HHVM_MN(MapFieldIter, next));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\MapFieldIter,
+                valid, HHVM_MN(MapFieldIter, valid));
+
+  // Register class
+  Native::registerNativeDataInfo<MapFieldIter>(s_MapFieldIter.get()); 
+}
+
+void  HHVM_METHOD(MapFieldIter, rewind) {
+  MapFieldIter *intern = Native::data<MapFieldIter>(this_);
+  upb_alloc *a = upb_map_getalloc(intern->map_field->map);
+  upb_mapiter_free(intern->iter, a);
+  intern->iter = upb_mapiter_new(intern->map_field->map, a);
+}
+
+Variant HHVM_METHOD(MapFieldIter, current) {
+  MapFieldIter *intern = Native::data<MapFieldIter>(this_);
+  upb_msgval value = upb_mapiter_value(intern->iter);
+  return tophpval(value, upb_map_valuetype(intern->map_field->map),
+                  static_cast<Class*>(intern->map_field->klass));
+}
+
+Variant HHVM_METHOD(MapFieldIter, key) {
+  MapFieldIter *intern = Native::data<MapFieldIter>(this_);
+  upb_msgval key = upb_mapiter_key(intern->iter);
+  return tophpval(key, upb_map_keytype(intern->map_field->map),
+                  static_cast<Class*>(intern->map_field->klass));
+}
+
+void  HHVM_METHOD(MapFieldIter, next) {
+  MapFieldIter *intern = Native::data<MapFieldIter>(this_);
+  upb_mapiter_next(intern->iter);
+}
+
+bool  HHVM_METHOD(MapFieldIter, valid) {
+  MapFieldIter *intern = Native::data<MapFieldIter>(this_);
+  return !upb_mapiter_done(intern->iter);
+}

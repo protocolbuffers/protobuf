@@ -87,6 +87,33 @@ static zend_function_entry RepeatedField_methods[] = {
 PROTO_DEFINE_CLASS(RepeatedField,
                    "Google\\Protobuf\\Internal\\RepeatedField");
 
+static void RepeatedFieldIter_init_handlers(zend_object_handlers* handlers) {
+}
+
+static void RepeatedFieldIter_init_type(zend_class_entry* klass) {
+  TSRMLS_FETCH();
+  zend_class_implements(klass TSRMLS_CC, 1, zend_ce_iterator);
+}
+
+PHP_METHOD(RepeatedFieldIter, rewind);
+PHP_METHOD(RepeatedFieldIter, current);
+PHP_METHOD(RepeatedFieldIter, key);
+PHP_METHOD(RepeatedFieldIter, next);
+PHP_METHOD(RepeatedFieldIter, valid);
+
+static zend_function_entry RepeatedFieldIter_methods[] = {
+  PHP_ME(RepeatedFieldIter, rewind,      arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, current,     arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, key,         arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, next,        arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, valid,       arginfo_void, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+
+PROTO_DEFINE_CLASS(RepeatedFieldIter,
+                   "Google\\Protobuf\\Internal\\RepeatedFieldIter");
+
+
 // -----------------------------------------------------------------------------
 // Define PHP methods
 // -----------------------------------------------------------------------------
@@ -239,13 +266,46 @@ PHP_METHOD(RepeatedField, count) {
  * @return object Beginning iterator.
  */
 PHP_METHOD(RepeatedField, getIterator) {
-//   CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(return_value,
-//                                    repeated_field_iter_type);
-// 
-//   RepeatedField *intern = UNBOX(RepeatedField, getThis());
-//   RepeatedFieldIter *iter = UNBOX(RepeatedFieldIter, return_value);
-//   iter->repeated_field = intern;
-//   iter->position = 0;
+  ZVAL_OBJ(return_value, RepeatedFieldIter_type->create_object(
+      RepeatedFieldIter_type TSRMLS_CC));
+  RepeatedField *intern = UNBOX(RepeatedField, getThis());
+  RepeatedFieldIter *iter = UNBOX(RepeatedFieldIter, return_value);
+  iter->repeated_field = intern;
+  iter->position = 0;
+}
+
+// -----------------------------------------------------------------------------
+// RepeatedFieldIter
+// -----------------------------------------------------------------------------
+
+PHP_METHOD(RepeatedFieldIter, rewind) {
+  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
+  intern->position = 0;
+}
+
+PHP_METHOD(RepeatedFieldIter, current) {
+  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
+
+  upb_msgval value = upb_array_get(
+      intern->repeated_field->array, intern->position);
+  tophpval(value, upb_array_type(intern->repeated_field->array),
+           static_cast<zend_class_entry*>(intern->repeated_field->klass),
+           return_value);
+}
+
+PHP_METHOD(RepeatedFieldIter, key) {
+  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
+  RETURN_LONG(intern->position);
+}
+
+PHP_METHOD(RepeatedFieldIter, next) {
+  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
+  ++intern->position;
+}
+
+PHP_METHOD(RepeatedFieldIter, valid) {
+  RepeatedFieldIter *intern = UNBOX(RepeatedFieldIter, getThis());
+  RETURN_BOOL(upb_array_size(intern->repeated_field->array) > intern->position);
 }
 
 // -----------------------------------------------------------------------------

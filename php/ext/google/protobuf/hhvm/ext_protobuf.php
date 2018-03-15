@@ -23,7 +23,7 @@ class Message {
 }
 
 <<__NativeData("Google\\Protobuf\\Internal\\MapField")>>
-class MapField implements \ArrayAccess, \Countable {
+class MapField implements \ArrayAccess, \IteratorAggregate, \Countable {
   <<__Native>>
   public function __construct(
       int $key_type, int $value_type, ?classname<Message> $klass = null): void;
@@ -40,10 +40,26 @@ class MapField implements \ArrayAccess, \Countable {
   public function count(): int;
   <<__Native>>
   public function append(mixed $newvalue): void;
+  <<__Native>>
+  public function getIterator(): MapFieldIter;
+}
+
+<<__NativeData("Google\\Protobuf\\Internal\\MapFieldIter")>>
+class MapFieldIter implements \HH\KeyedIterator {
+  <<__Native>>
+  public function rewind(): void;
+  <<__Native>>
+  public function current(): mixed;
+  <<__Native>>
+  public function key(): mixed;
+  <<__Native>>
+  public function next(): void;
+  <<__Native>>
+  public function valid(): bool;
 }
 
 <<__NativeData("Google\\Protobuf\\Internal\\RepeatedField")>>
-class RepeatedField implements \ArrayAccess, \Countable {
+class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable {
   <<__Native>>
   public function __construct(int $type, ?classname<Message> $klass = null ): void;
   <<__Native>>
@@ -59,6 +75,22 @@ class RepeatedField implements \ArrayAccess, \Countable {
   public function count(): int;
   <<__Native>>
   public function append(mixed $newvalue): void;
+  <<__Native>>
+  public function getIterator(): RepeatedFieldIter;
+}
+
+<<__NativeData("Google\\Protobuf\\Internal\\RepeatedFieldIter")>>
+class RepeatedFieldIter implements \HH\KeyedIterator {
+  <<__Native>>
+  public function rewind(): void;
+  <<__Native>>
+  public function current(): mixed;
+  <<__Native>>
+  public function key(): mixed;
+  <<__Native>>
+  public function next(): void;
+  <<__Native>>
+  public function valid(): bool;
 }
 
 <<__NativeData("Google\\Protobuf\\Internal\\DescriptorPool")>>

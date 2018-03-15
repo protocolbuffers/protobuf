@@ -64,3 +64,17 @@ void RepeatedField___construct(RepeatedField *intern,
   intern->array = upb_array_new(to_fieldtype(type), upb_arena_alloc(arena));
   intern->klass = klass;
 }
+
+// -----------------------------------------------------------------------------
+// RepeatedFieldIter
+// -----------------------------------------------------------------------------
+
+void RepeatedFieldIter_init_c_instance(
+    RepeatedFieldIter *intern TSRMLS_DC) {
+  intern->repeated_field = NULL;
+  intern->position = 0;
+}
+
+void RepeatedFieldIter_free_c(
+    RepeatedFieldIter *intern TSRMLS_DC) {
+}

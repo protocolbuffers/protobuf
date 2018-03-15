@@ -133,8 +133,10 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 static PHP_MINIT_FUNCTION(protobuf) {
   InternalDescriptorPool_init(TSRMLS_C);
   MapField_init(TSRMLS_C);
+  MapFieldIter_init(TSRMLS_C);
   Message_init(TSRMLS_C);
   RepeatedField_init(TSRMLS_C);
+  RepeatedFieldIter_init(TSRMLS_C);
   Type_init(TSRMLS_C);
   Util_init(TSRMLS_C);
 }

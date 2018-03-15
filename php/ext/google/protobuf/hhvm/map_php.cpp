@@ -85,12 +85,38 @@ static zend_function_entry MapField_methods[] = {
 PROTO_DEFINE_CLASS(MapField,
                    "Google\\Protobuf\\Internal\\MapField");
 
+static void MapFieldIter_init_handlers(zend_object_handlers* handlers) {
+}
+
+static void MapFieldIter_init_type(zend_class_entry* klass) {
+  TSRMLS_FETCH();
+  zend_class_implements(klass TSRMLS_CC, 1, zend_ce_iterator);
+}
+
+PHP_METHOD(MapFieldIter, rewind);
+PHP_METHOD(MapFieldIter, current);
+PHP_METHOD(MapFieldIter, key);
+PHP_METHOD(MapFieldIter, next);
+PHP_METHOD(MapFieldIter, valid);
+
+static zend_function_entry MapFieldIter_methods[] = {
+  PHP_ME(MapFieldIter, rewind,      arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, current,     arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, key,         arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, next,        arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(MapFieldIter, valid,       arginfo_void, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+
+PROTO_DEFINE_CLASS(MapFieldIter,
+                   "Google\\Protobuf\\Internal\\MapFieldIter");
+
 // -----------------------------------------------------------------------------
 // Define PHP methods
 // -----------------------------------------------------------------------------
 
 /**
- * Constructs an instance of RepeatedField.
+ * Constructs an instance of MapField.
  * @param long Type of the stored key.
  * @param long Type of the stored value.
  * @param string Message/Enum class name (message/enum fields only).
@@ -206,6 +232,10 @@ PHP_METHOD(MapField, offsetUnset) {
       FAILURE) {
     return;
   }
+
+  MapField *intern = UNBOX(MapField, getThis());
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), NULL);
+  upb_map_del(intern->map, k);
 }
 
 /**
@@ -229,11 +259,48 @@ PHP_METHOD(MapField, count) {
  * @return object Beginning iterator.
  */
 PHP_METHOD(MapField, getIterator) {
-//   CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(return_value,
-//                                    repeated_field_iter_type);
-// 
-//   RepeatedField *intern = UNBOX(RepeatedField, getThis());
-//   RepeatedFieldIter *iter = UNBOX(RepeatedFieldIter, return_value);
-//   iter->repeated_field = intern;
-//   iter->position = 0;
+  ZVAL_OBJ(return_value, MapFieldIter_type->create_object(
+      MapFieldIter_type TSRMLS_CC));
+  MapField *intern = UNBOX(MapField, getThis());
+  MapFieldIter *iter = UNBOX(MapFieldIter, return_value);
+  iter->map_field = intern;
+  iter->iter = upb_mapiter_new(intern->map, upb_map_getalloc(intern->map));
+}
+
+// -----------------------------------------------------------------------------
+// MapFieldIter
+// -----------------------------------------------------------------------------
+
+PHP_METHOD(MapFieldIter, rewind) {
+  MapFieldIter *intern = UNBOX(MapFieldIter, getThis());
+  upb_alloc *a = upb_map_getalloc(intern->map_field->map);
+  upb_mapiter_free(intern->iter, a);
+  intern->iter = upb_mapiter_new(intern->map_field->map, a);
+}
+
+PHP_METHOD(MapFieldIter, current) {
+  MapFieldIter *intern = UNBOX(MapFieldIter, getThis());
+
+  upb_msgval value = upb_mapiter_value(intern->iter);
+  tophpval(value, upb_map_valuetype(intern->map_field->map),
+           static_cast<zend_class_entry*>(intern->map_field->klass),
+           return_value);
+}
+
+PHP_METHOD(MapFieldIter, key) {
+  MapFieldIter *intern = UNBOX(MapFieldIter, getThis());
+  upb_msgval key = upb_mapiter_key(intern->iter);
+  return tophpval(key, upb_map_keytype(intern->map_field->map),
+                  static_cast<zend_class_entry*>(intern->map_field->klass),
+                  return_value);
+}
+
+PHP_METHOD(MapFieldIter, next) {
+  MapFieldIter *intern = UNBOX(MapFieldIter, getThis());
+  upb_mapiter_next(intern->iter);
+}
+
+PHP_METHOD(MapFieldIter, valid) {
+  MapFieldIter *intern = UNBOX(MapFieldIter, getThis());
+  RETURN_BOOL(!upb_mapiter_done(intern->iter));
 }

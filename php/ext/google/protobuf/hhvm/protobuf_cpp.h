@@ -105,6 +105,22 @@ PROTO_WRAP_OBJECT_START(MapField)
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
+// MapFieldIter
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(MapFieldIter);
+
+void MapFieldIter_init(TSRMLS_D);
+
+void MapFieldIter_free_c(MapFieldIter *intern TSRMLS_DC);
+void MapFieldIter_init_c_instance(MapFieldIter *intern TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(MapFieldIter)
+  MapField* map_field;
+  upb_mapiter* iter;
+PROTO_WRAP_OBJECT_END
+
+// -----------------------------------------------------------------------------
 // RepeatedField
 // -----------------------------------------------------------------------------
 
@@ -124,6 +140,22 @@ void RepeatedField_wrap(RepeatedField *intern, upb_array *arr, void *klass);
 PROTO_WRAP_OBJECT_START(RepeatedField)
   upb_array *array;
   void *klass;
+PROTO_WRAP_OBJECT_END
+
+// -----------------------------------------------------------------------------
+// RepeatedFieldIter
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(RepeatedFieldIter);
+
+void RepeatedFieldIter_init(TSRMLS_D);
+
+void RepeatedFieldIter_free_c(RepeatedFieldIter *intern TSRMLS_DC);
+void RepeatedFieldIter_init_c_instance(RepeatedFieldIter *intern TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(RepeatedFieldIter)
+  RepeatedField* repeated_field;
+  int position;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
