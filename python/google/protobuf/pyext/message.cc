@@ -402,12 +402,6 @@ static PyObject* GetExtensionsByNumber(CMessageClass *self, void *closure) {
   return result.release();
 }
 
-static PyGetSetDef Getters[] = {
-  {"_extensions_by_name", (getter)GetExtensionsByName, NULL},
-  {"_extensions_by_number", (getter)GetExtensionsByNumber, NULL},
-  {NULL}
-};
-
 }  // namespace message_meta
 
 PyTypeObject CMessageClass_Type = {
@@ -440,7 +434,7 @@ PyTypeObject CMessageClass_Type = {
   0,                                   // tp_iternext
   0,                                   // tp_methods
   0,                                   // tp_members
-  message_meta::Getters,               // tp_getset
+  0,                                   // tp_getset
   0,                                   // tp_base
   0,                                   // tp_dict
   0,                                   // tp_descr_get
