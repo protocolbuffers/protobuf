@@ -33,6 +33,21 @@ class ProtobufModule {
 extern ProtobufModule* protobuf_module;
 
 // -----------------------------------------------------------------------------
+// Arena
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(Arena);
+
+void Arena_init(TSRMLS_D);
+
+void Arena_free_c(Arena *object TSRMLS_DC);
+void Arena_init_c_instance(Arena *object TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(Arena)
+  upb_arena *arena;
+PROTO_WRAP_OBJECT_END
+
+// -----------------------------------------------------------------------------
 // InternalDescriptorPool
 // -----------------------------------------------------------------------------
 
@@ -78,7 +93,7 @@ PROTO_WRAP_OBJECT_START(Message)
   const upb_msgdef *msgdef;
   const upb_msglayout *layout;
   upb_msg *msg;
-  upb_arena *arena;
+  PHP_OBJECT arena;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------

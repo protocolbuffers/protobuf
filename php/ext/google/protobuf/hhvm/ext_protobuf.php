@@ -2,6 +2,10 @@
 
 namespace Google\Protobuf\Internal {
 
+<<__NativeData("Google\\Protobuf\\Internal\\Arena")>>
+class Arena {
+}
+
 <<__NativeData("Google\\Protobuf\\Internal\\Message")>>
 class Message {
   <<__Native>>

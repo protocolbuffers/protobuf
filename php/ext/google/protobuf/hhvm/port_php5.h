@@ -108,4 +108,16 @@
 #define UNBOX(class_name, val) \
   (class_name*)zend_object_store_get_object(val TSRMLS_CC);
 
+#define PHP_OBJECT zval*
+
+#define PHP_OBJECT_NEW(DEST, WRAPPER, TYPE) \
+  {                                         \
+    MAKE_STD_ZVAL(WRAPPER);                 \
+    ZVAL_OBJ(WRAPPER, TYPE ## _type->create_object(TYPE ## _type TSRMLS_CC)) \
+    DEST = UNBOX(TYPE, WRAPPER);            \
+  }
+
+#define PHP_OBJECT_FREE(DEST) \
+  zval_ptr_dtor(&DEST);
+
 #endif  // __GOOGLE_PROTOBUF_PHP_PORT_PHP5_H__

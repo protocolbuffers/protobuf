@@ -5,6 +5,7 @@ using namespace HPHP;
 // Define types.
 #define PROTO_SIZE size_t
 #define PROTO_OBJECT Object
+#define PHP_OBJECT Object*
 
 // Define class.
 #define PROTO_CLASS Class 
@@ -78,3 +79,16 @@ using namespace HPHP;
     }                               \
   } while (0)
 
+// Create and Delete Object
+#define PHP_OBJECT_NEW(DEST, WRAPPER, TYPE) \
+  {                                         \
+    WRAPPER = new Object(Unit::loadClass(s_ ## TYPE.get())); \
+    DEST = Native::data<TYPE>(*WRAPPER);    \
+  }
+
+// -----------------------------------------------------------------------------
+// Forward Declare
+// -----------------------------------------------------------------------------
+extern const StaticString s_Arena;
+
+#define PHP_OBJECT_FREE(OBJ)

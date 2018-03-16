@@ -6,6 +6,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -O0")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -ggdb -O0")
 
 HHVM_EXTENSION(protobuf ext_protobuf.cpp
+               arena_hhvm.cpp arena.cpp
                def_hhvm.cpp def.cpp
                message_hhvm.cpp message.cpp
                type_check_hhvm.cpp

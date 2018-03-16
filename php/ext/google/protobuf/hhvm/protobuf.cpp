@@ -131,6 +131,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 }
 
 static PHP_MINIT_FUNCTION(protobuf) {
+  Arena_init(TSRMLS_C);
   InternalDescriptorPool_init(TSRMLS_C);
   MapField_init(TSRMLS_C);
   MapFieldIter_init(TSRMLS_C);

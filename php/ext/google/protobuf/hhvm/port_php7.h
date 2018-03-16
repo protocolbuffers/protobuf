@@ -100,4 +100,19 @@ static inline int php_proto_zend_lookup_class(
   intern->std.handlers = handler;                                         \
   return &intern->std;
 
+#define PHP_OBJECT zend_object*
+
+#define PHP_OBJECT_NEW(DEST, WRAPPER, TYPE) \
+  {                                         \
+    WRAPPER = TYPE ## _type->create_object(TYPE ## _type); \
+    DEST = (TYPE*)((char*)WRAPPER - XtOffsetOf(TYPE, std)); \
+  }
+
+#define PHP_OBJECT_FREE(OBJ)       \
+  {                                \
+    if(--GC_REFCOUNT(OBJ) == 0) {  \
+      zend_objects_store_del(OBJ); \
+    }                              \
+  }
+
 #endif  // __GOOGLE_PROTOBUF_PHP_PORT_PHP7_H__

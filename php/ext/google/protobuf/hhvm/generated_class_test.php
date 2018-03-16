@@ -355,12 +355,12 @@ class GeneratedClassTest extends TestBase
         $this->assertSame('1', $m->getOptionalBytes());
     }
 
-#       public function testBytesFieldInvalidUTF8Success()
-#       {
-#           $m = new TestMessage();
-#           $hex = hex2bin("ff");
-#           $m->setOptionalBytes($hex);
-#       }
+    public function testBytesFieldInvalidUTF8Success()
+    {
+        $m = new TestMessage();
+        $hex = hex2bin("ff");
+        $m->setOptionalBytes($hex);
+    }
 
     #########################################################
     # Test message field.

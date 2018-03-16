@@ -9,6 +9,6 @@ if test "$PHP_PROTOBUF" != "no"; then
   PHP_SUBST(PROTOBUF_SHARED_LIBADD)
   PHP_NEW_EXTENSION(
     protobuf,
-    protobuf.cpp upb.c array_php.cpp array.cpp def_php.cpp def.cpp map_php.cpp map.cpp message_php.cpp message.cpp type_check_php.cpp,
+    protobuf.cpp upb.c arena_php.cpp arena.cpp array_php.cpp array.cpp def_php.cpp def.cpp map_php.cpp map.cpp message_php.cpp message.cpp type_check_php.cpp,
     $ext_shared)
 fi
