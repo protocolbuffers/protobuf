@@ -102,12 +102,13 @@ def _proto_gen_impl(ctx):
         import_flags_real.append('-I$(realpath -s %s)' % path)
 
     outs = []
-    use_grpc_plugin = (ctx.attr.plugin_language == "grpc")
+    use_grpc_plugin = (ctx.attr.plugin_language == "grpc" and ctx.attr.plugin)
+    path_tpl = "$(realpath %s)" if in_gen_dir else "%s"
     if ctx.attr.gen_cc:
-      args += ["--cpp_out=$(realpath %s)" % gen_dir]
+      args += [("--cpp_out=" + path_tpl) % gen_dir]
       outs.extend(_CcOuts([src.basename], use_grpc_plugin=use_grpc_plugin))
     if ctx.attr.gen_py:
-      args += ["--python_out=$(realpath %s)" % gen_dir]
+      args += [("--python_out=" + path_tpl) % gen_dir]
       outs.extend(_PyOuts([src.basename], use_grpc_plugin=use_grpc_plugin))
 
     outs = [ctx.actions.declare_file(out, sibling=src) for out in outs]
@@ -120,19 +121,25 @@ def _proto_gen_impl(ctx):
       if not lang:
         fail("cannot infer the target language of plugin", "plugin_language")
 
-      if in_gen_dir:
-        outdir = "." 
-      else:
-        outdir = gen_dir
+      outdir = "." if in_gen_dir else gen_dir
 
       if ctx.attr.plugin_options:
         outdir = ",".join(ctx.attr.plugin_options) + ":" + outdir
-      args += ["--plugin=protoc-gen-%s=$(realpath %s)" % (lang, plugin.path)]
+      args += [("--plugin=protoc-gen-%s=" + path_tpl) % (lang, plugin.path)]
       args += ["--%s_out=%s" % (lang, outdir)]
       inputs += [plugin]
 
-    for out in outs:
-      if in_gen_dir:
+    if not in_gen_dir:
+      ctx.action(
+          inputs=inputs,
+          outputs=outs,
+          arguments=args + import_flags + [src.path],
+          executable=ctx.executable.protoc,
+          mnemonic="ProtoCompile",
+          use_default_shell_env=True,
+      )
+    else:
+      for out in outs:
         orig_command = " ".join(
             ["$(realpath %s)" % ctx.executable.protoc.path] + args +
             import_flags_real + ["-I.", src.basename])
@@ -143,16 +150,13 @@ def _proto_gen_impl(ctx):
             "cd -",
             "mv %s/%s %s" % (gen_dir, out.basename, out.path)
         ])
-      else:
-        command = " ".join(
-            [ctx.executable.protoc.path] + args + import_flags + [src.path])
-      ctx.action(
-          inputs=inputs + [ctx.executable.protoc],
-          outputs=[out],
-          command=command,
-          mnemonic="ProtoCompile",
-          use_default_shell_env=True,
-      )
+        ctx.action(
+            inputs=inputs + [ctx.executable.protoc],
+            outputs=[out],
+            command=command,
+            mnemonic="ProtoCompile",
+            use_default_shell_env=True,
+        )
 
   return struct(
       proto=struct(
