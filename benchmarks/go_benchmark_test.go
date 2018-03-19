@@ -78,44 +78,45 @@ func init() {
 func Benchmark(b *testing.B) {
 	for _, ds := range datasets {
 		b.Run(ds.name, func(b *testing.B) {
-			counter := 0
-			count := len(ds.marshaled)
 			b.Run("Unmarshal", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					payload := ds.marshaled[counter%count]
-					out := ds.newMessage()
-					if err := proto.Unmarshal(payload, out); err != nil {
-						b.Fatalf("can't unmarshal message %d %v", counter%count, err)
+					for j, payload := range ds.marshaled {
+						out := ds.newMessage()
+						if err := proto.Unmarshal(payload, out); err != nil {
+							b.Fatalf("can't unmarshal message %d %v", j, err)
+						}
 					}
-					counter++
 				}
 			})
 			b.Run("Marshal", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					m := ds.unmarshaled[counter%count]
-					if _, err := proto.Marshal(m); err != nil {
-						b.Fatalf("can't marshal message %d %+v: %v", counter%count, m, err)
+					for j, m := range ds.unmarshaled {
+						if _, err := proto.Marshal(m); err != nil {
+							b.Fatalf("can't marshal message %d %+v: %v", j, m, err)
+						}
 					}
-					counter++
 				}
 			})
 			b.Run("Size", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					proto.Size(ds.unmarshaled[counter%count])
-					counter++
+					for _, m := range ds.unmarshaled {
+						proto.Size(m)
+					}
 				}
 			})
 			b.Run("Clone", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					proto.Clone(ds.unmarshaled[counter%count])
-					counter++
+					for _, m := range ds.unmarshaled {
+						proto.Clone(m)
+					}
 				}
 			})
 			b.Run("Merge", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					out := ds.newMessage()
-					proto.Merge(out, ds.unmarshaled[counter%count])
-					counter++
+					for _, m := range ds.unmarshaled {
+						out := ds.newMessage()
+						proto.Merge(out, m)
+					}
 				}
 			})
 		})
