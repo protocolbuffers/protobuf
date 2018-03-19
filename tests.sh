@@ -35,7 +35,7 @@ internal_build_cpp() {
 
 build_cpp() {
   internal_build_cpp
-  make check -j2
+  make check -j2 || (cat src/test-suite.log; false)
   cd conformance && make test_cpp && cd ..
 
   # The benchmark code depends on cmake, so test if it is installed before
