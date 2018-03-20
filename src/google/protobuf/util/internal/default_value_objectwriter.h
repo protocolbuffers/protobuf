@@ -32,9 +32,6 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <stack>
 #include <vector>
 
@@ -77,7 +74,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
       FieldScrubCallBack;
 
   // A unique pointer to a DefaultValueObjectWriter::FieldScrubCallBack.
-  typedef google::protobuf::scoped_ptr<FieldScrubCallBack> FieldScrubCallBackPtr;
+  typedef std::unique_ptr<FieldScrubCallBack> FieldScrubCallBackPtr;
 
   DefaultValueObjectWriter(TypeResolver* type_resolver,
                            const google::protobuf::Type& type,
@@ -272,7 +269,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   void MaybePopulateChildrenOfAny(Node* node);
 
   // Writes the root_ node to ow_ and resets the root_ and current_ pointer to
-  // NULL.
+  // nullptr.
   void WriteRoot();
 
   // Adds or replaces the data_ of a primitive child node.
@@ -297,7 +294,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // The current Node. Owned by its parents.
   Node* current_;
   // The root Node.
-  google::protobuf::scoped_ptr<Node> root_;
+  std::unique_ptr<Node> root_;
   // The stack to hold the path of Nodes from current_ to root_;
   std::stack<Node*> stack_;
 

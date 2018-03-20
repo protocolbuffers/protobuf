@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,20 +39,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-/**
- * Helps generate {@link String} representations of {@link MessageLite} protos.
- */
-// TODO(dweis): Fix map fields.
+/** Helps generate {@link String} representations of {@link MessageLite} protos. */
 final class MessageLiteToString {
 
   private static final String LIST_SUFFIX = "List";
   private static final String BUILDER_LIST_SUFFIX = "OrBuilderList";
+  private static final String MAP_SUFFIX = "Map";
   private static final String BYTES_SUFFIX = "Bytes";
-  
+
   /**
-   * Returns a {@link String} representation of the {@link MessageLite} object.  The first line of
+   * Returns a {@link String} representation of the {@link MessageLite} object. The first line of
    * the {@code String} representation representation includes a comment string to uniquely identify
-   * the objcet instance. This acts as an indicator that this should not be relied on for
+   * the object instance. This acts as an indicator that this should not be relied on for
    * comparisons.
    *
    * <p>For use by generated code only.
@@ -71,8 +70,9 @@ final class MessageLiteToString {
    */
   private static void reflectivePrintWithIndent(
       MessageLite messageLite, StringBuilder buffer, int indent) {
-    // Build a map of method name to method. We're looking for methods like getFoo(), hasFoo(), and
-    // getFooList() which might be useful for building an object's string representation.
+    // Build a map of method name to method. We're looking for methods like getFoo(), hasFoo(),
+    // getFooList() and getFooMap() which might be useful for building an object's string
+    // representation.
     Map<String, Method> nameToNoArgMethod = new HashMap<String, Method>();
     Map<String, Method> nameToMethod = new HashMap<String, Method>();
     Set<String> getters = new TreeSet<String>();
@@ -89,18 +89,46 @@ final class MessageLiteToString {
 
     for (String getter : getters) {
       String suffix = getter.replaceFirst("get", "");
-      if (suffix.endsWith(LIST_SUFFIX) && !suffix.endsWith(BUILDER_LIST_SUFFIX)) {
-        String camelCase = suffix.substring(0, 1).toLowerCase()
-            + suffix.substring(1, suffix.length() - LIST_SUFFIX.length());
+      if (suffix.endsWith(LIST_SUFFIX)
+          && !suffix.endsWith(BUILDER_LIST_SUFFIX)
+          // Sometimes people have fields named 'list' that aren't repeated.
+          && !suffix.equals(LIST_SUFFIX)) {
+        String camelCase =
+            suffix.substring(0, 1).toLowerCase()
+                + suffix.substring(1, suffix.length() - LIST_SUFFIX.length());
         // Try to reflectively get the value and toString() the field as if it were repeated. This
-        // only works if the method names have not be proguarded out or renamed.
-        Method listMethod = nameToNoArgMethod.get("get" + suffix);
+        // only works if the method names have not been proguarded out or renamed.
+        Method listMethod = nameToNoArgMethod.get(getter);
         if (listMethod != null && listMethod.getReturnType().equals(List.class)) {
           printField(
               buffer,
               indent,
               camelCaseToSnakeCase(camelCase),
               GeneratedMessageLite.invokeOrDie(listMethod, messageLite));
+          continue;
+        }
+      }
+      if (suffix.endsWith(MAP_SUFFIX)
+          // Sometimes people have fields named 'map' that aren't maps.
+          && !suffix.equals(MAP_SUFFIX)) {
+        String camelCase =
+            suffix.substring(0, 1).toLowerCase()
+                + suffix.substring(1, suffix.length() - MAP_SUFFIX.length());
+        // Try to reflectively get the value and toString() the field as if it were a map. This only
+        // works if the method names have not been proguarded out or renamed.
+        Method mapMethod = nameToNoArgMethod.get(getter);
+        if (mapMethod != null
+            && mapMethod.getReturnType().equals(Map.class)
+            // Skip the deprecated getter method with no prefix "Map" when the field name ends with
+            // "map".
+            && !mapMethod.isAnnotationPresent(Deprecated.class)
+            // Skip the internal mutable getter method.
+            && Modifier.isPublic(mapMethod.getModifiers())) {
+          printField(
+              buffer,
+              indent,
+              camelCaseToSnakeCase(camelCase),
+              GeneratedMessageLite.invokeOrDie(mapMethod, messageLite));
           continue;
         }
       }
@@ -119,22 +147,19 @@ final class MessageLiteToString {
       String camelCase = suffix.substring(0, 1).toLowerCase() + suffix.substring(1);
 
       // Try to reflectively get the value and toString() the field as if it were optional. This
-      // only works if the method names have not be proguarded out or renamed.
+      // only works if the method names have not been proguarded out or renamed.
       Method getMethod = nameToNoArgMethod.get("get" + suffix);
       Method hasMethod = nameToNoArgMethod.get("has" + suffix);
       // TODO(dweis): Fix proto3 semantics.
       if (getMethod != null) {
         Object value = GeneratedMessageLite.invokeOrDie(getMethod, messageLite);
-        final boolean hasValue = hasMethod == null
-            ? !isDefaultValue(value)
-            : (Boolean) GeneratedMessageLite.invokeOrDie(hasMethod, messageLite);
-         // TODO(dweis): This doesn't stop printing oneof case twice: value and enum style.
+        final boolean hasValue =
+            hasMethod == null
+                ? !isDefaultValue(value)
+                : (Boolean) GeneratedMessageLite.invokeOrDie(hasMethod, messageLite);
+        // TODO(dweis): This doesn't stop printing oneof case twice: value and enum style.
         if (hasValue) {
-          printField(
-              buffer,
-              indent,
-              camelCaseToSnakeCase(camelCase),
-              value);
+          printField(buffer, indent, camelCaseToSnakeCase(camelCase), value);
         }
         continue;
       }
@@ -153,7 +178,7 @@ final class MessageLiteToString {
       ((GeneratedMessageLite<?, ?>) messageLite).unknownFields.printWithIndent(buffer, indent);
     }
   }
-  
+
   private static boolean isDefaultValue(Object o) {
     if (o instanceof Boolean) {
       return !((Boolean) o);
@@ -179,7 +204,7 @@ final class MessageLiteToString {
     if (o instanceof java.lang.Enum<?>) { // Catches oneof enums.
       return ((java.lang.Enum<?>) o).ordinal() == 0;
     }
-    
+
     return false;
   }
 
@@ -197,6 +222,13 @@ final class MessageLiteToString {
     if (object instanceof List<?>) {
       List<?> list = (List<?>) object;
       for (Object entry : list) {
+        printField(buffer, indent, name, entry);
+      }
+      return;
+    }
+    if (object instanceof Map<?, ?>) {
+      Map<?, ?> map = (Map<?, ?>) object;
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
         printField(buffer, indent, name, entry);
       }
       return;
@@ -220,11 +252,21 @@ final class MessageLiteToString {
         buffer.append(' ');
       }
       buffer.append("}");
+    } else if (object instanceof Map.Entry<?, ?>) {
+      buffer.append(" {");
+      Map.Entry<?, ?> entry = (Map.Entry<?, ?>) object;
+      printField(buffer, indent + 2, "key", entry.getKey());
+      printField(buffer, indent + 2, "value", entry.getValue());
+      buffer.append("\n");
+      for (int i = 0; i < indent; i++) {
+        buffer.append(' ');
+      }
+      buffer.append("}");
     } else {
       buffer.append(": ").append(object.toString());
     }
   }
-  
+
   private static final String camelCaseToSnakeCase(String camelCase) {
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < camelCase.length(); i++) {

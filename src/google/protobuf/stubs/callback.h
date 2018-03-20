@@ -1,8 +1,9 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_CALLBACK_H_
 #define GOOGLE_PROTOBUF_STUBS_CALLBACK_H_
 
+#include <type_traits>
+
 #include <google/protobuf/stubs/macros.h>
-#include <google/protobuf/stubs/type_traits.h>
 
 // ===================================================================
 // emulates google3/base/callback.h
@@ -342,7 +343,7 @@ class FunctionResultCallback_1_1 : public ResultCallback1<R, A1> {
 
 template <typename T>
 struct InternalConstRef {
-  typedef typename remove_reference<T>::type base_type;
+  typedef typename std::remove_reference<T>::type base_type;
   typedef const base_type& type;
 };
 
@@ -397,11 +398,11 @@ class MethodResultCallback_5_2 : public ResultCallback2<R, A1, A2> {
   T* object_;
   MethodType method_;
   bool self_deleting_;
-  typename remove_reference<P1>::type p1_;
-  typename remove_reference<P2>::type p2_;
-  typename remove_reference<P3>::type p3_;
-  typename remove_reference<P4>::type p4_;
-  typename remove_reference<P5>::type p5_;
+  typename std::remove_reference<P1>::type p1_;
+  typename std::remove_reference<P2>::type p2_;
+  typename std::remove_reference<P3>::type p3_;
+  typename std::remove_reference<P4>::type p4_;
+  typename std::remove_reference<P5>::type p5_;
 };
 
 }  // namespace internal

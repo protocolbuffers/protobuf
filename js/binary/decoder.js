@@ -986,7 +986,7 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       codeUnits.push(high, low);
     }
 
-    // Avoid exceeding the maximum stack size when calling {@code apply}.
+    // Avoid exceeding the maximum stack size when calling `apply`.
     if (codeUnits.length >= 8192) {
       result += String.fromCharCode.apply(null, codeUnits);
       codeUnits.length = 0;

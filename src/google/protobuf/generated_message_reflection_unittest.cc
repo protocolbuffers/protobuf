@@ -44,9 +44,6 @@
 
 #include <google/protobuf/generated_message_reflection.h>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
@@ -360,7 +357,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   ASSERT_EQ(2, message.repeated_foreign_message_size());
   const protobuf_unittest::ForeignMessage* expected =
       message.mutable_repeated_foreign_message(1);
-  google::protobuf::scoped_ptr<Message> released(message.GetReflection()->ReleaseLast(
+  std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->FindFieldByName("repeated_foreign_message")));
   EXPECT_EQ(expected, released.get());
 }
@@ -383,7 +380,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseLastExtensions) {
       unittest::repeated_foreign_message_extension));
   const protobuf_unittest::ForeignMessage* expected = message.MutableExtension(
       unittest::repeated_foreign_message_extension, 1);
-  google::protobuf::scoped_ptr<Message> released(message.GetReflection()->ReleaseLast(
+  std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->file()->FindExtensionByName(
                     "repeated_foreign_message_extension")));
   EXPECT_EQ(expected, released.get());
@@ -746,6 +743,10 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
       "change_spiece");
   EXPECT_EQ("change_spiece", reflection->GetString(
       message, descriptor->FindFieldByName("bar_string_piece")));
+
+  message.clear_foo();
+  message.clear_bar();
+  TestUtil::ExpectOneofClear(message);
 }
 
 TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {

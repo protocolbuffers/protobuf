@@ -33,13 +33,11 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_IMPL_H__
 #define GOOGLE_PROTOBUF_ARENA_IMPL_H__
 
+#include <atomic>
 #include <limits>
 
-#include <google/protobuf/stubs/atomic_sequence_num.h>
-#include <google/protobuf/stubs/atomicops.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/mutex.h>
 
 #include <google/protobuf/stubs/port.h>
 
@@ -248,7 +246,7 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
     int64 last_lifecycle_id_seen;
     SerialArena* last_serial_arena;
   };
-  static google::protobuf::internal::SequenceNumber lifecycle_id_generator_;
+  static std::atomic<int64> lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
   // Android ndk does not support GOOGLE_THREAD_LOCAL keyword so we use a custom thread
   // local storage class we implemented.
@@ -277,12 +275,15 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
     // TODO(haberman): evaluate whether we would gain efficiency by getting rid
     // of hint_.  It's the only write we do to ArenaImpl in the allocation path,
     // which will dirty the cache line.
-    google::protobuf::internal::Release_Store(&hint_, reinterpret_cast<google::protobuf::internal::AtomicWord>(serial));
+
+    hint_.store(serial, std::memory_order_release);
   }
 
-  google::protobuf::internal::AtomicWord threads_;          // Pointer to a linked list of SerialArena.
-  google::protobuf::internal::AtomicWord hint_;             // Fast thread-local block access
-  google::protobuf::internal::AtomicWord space_allocated_;  // Sum of sizes of all allocated blocks.
+
+  std::atomic<SerialArena*>
+      threads_;                     // Pointer to a linked list of SerialArena.
+  std::atomic<SerialArena*> hint_;  // Fast thread-local block access
+  std::atomic<size_t> space_allocated_;  // Total size of all allocated blocks.
 
   Block *initial_block_;     // If non-NULL, points to the block that came from
                              // user data.
@@ -297,18 +298,20 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
   Options options_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArenaImpl);
+  // All protos have pointers back to the arena hence Arena must have
+  // pointer stability.
+  ArenaImpl(ArenaImpl&&) = delete;
+  ArenaImpl& operator=(ArenaImpl&&) = delete;
 
  public:
   // kBlockHeaderSize is sizeof(Block), aligned up to the nearest multiple of 8
   // to protect the invariant that pos is always at a multiple of 8.
   static const size_t kBlockHeaderSize = (sizeof(Block) + 7) & -8;
   static const size_t kSerialArenaSize = (sizeof(SerialArena) + 7) & -8;
-#if LANG_CXX11
   static_assert(kBlockHeaderSize % 8 == 0,
                 "kBlockHeaderSize must be a multiple of 8.");
   static_assert(kSerialArenaSize % 8 == 0,
                 "kSerialArenaSize must be a multiple of 8.");
-#endif
 };
 
 }  // namespace internal

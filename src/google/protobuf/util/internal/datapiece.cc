@@ -64,9 +64,9 @@ StatusOr<To> ValidateNumberConversion(To after, From before) {
       MathUtil::Sign<From>(before) == MathUtil::Sign<To>(after)) {
     return after;
   } else {
-    return InvalidArgument(::google::protobuf::internal::is_integral<From>::value
+    return InvalidArgument(std::is_integral<From>::value
                                ? ValueAsString(before)
-                               : ::google::protobuf::internal::is_same<From, double>::value
+                               : std::is_same<From, double>::value
                                      ? DoubleAsString(before)
                                      : FloatAsString(before));
   }
@@ -77,7 +77,7 @@ StatusOr<To> ValidateNumberConversion(To after, From before) {
 // except conversion between double and float.
 template <typename To, typename From>
 StatusOr<To> NumberConvertAndCheck(From before) {
-  if (::google::protobuf::internal::is_same<From, To>::value) return before;
+  if (std::is_same<From, To>::value) return before;
 
   To after = static_cast<To>(before);
   return ValidateNumberConversion(after, before);
@@ -87,7 +87,7 @@ StatusOr<To> NumberConvertAndCheck(From before) {
 // point types (double, float) only.
 template <typename To, typename From>
 StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
-  if (::google::protobuf::internal::is_same<From, To>::value) return before;
+  if (std::is_same<From, To>::value) return before;
 
   To after = static_cast<To>(before);
   return ValidateNumberConversion(after, before);
@@ -281,7 +281,7 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     string enum_name = str_.ToString();
     const google::protobuf::EnumValue* value =
         FindEnumValueByNameOrNull(enum_type, enum_name);
-    if (value != NULL) return value->number();
+    if (value != nullptr) return value->number();
 
     // Check if int version of enum is sent as string.
     StatusOr<int32> int_value = ToInt32();
@@ -297,14 +297,14 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
       *it = *it == '-' ? '_' : ascii_toupper(*it);
     }
     value = FindEnumValueByNameOrNull(enum_type, enum_name);
-    if (value != NULL) return value->number();
+    if (value != nullptr) return value->number();
 
     // If use_lower_camel_for_enums is true try with enum name without
     // underscore. This will also accept camel case names as the enum_name has
     // been normalized before.
     if (use_lower_camel_for_enums) {
       value = FindEnumValueByNameWithoutUnderscoreOrNull(enum_type, enum_name);
-      if (value != NULL) return value->number();
+      if (value != nullptr) return value->number();
     }
 
     // If ignore_unknown_enum_values is true an unknown enum value is treated
@@ -362,7 +362,8 @@ bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
       WebSafeBase64Escape(*dest, &encoded);
       // Remove trailing padding '=' characters before comparison.
       StringPiece src_no_padding = StringPiece(src).substr(
-          0, src.ends_with("=") ? src.find_last_not_of('=') + 1 : src.length());
+          0, StringEndsWith(src, "=") ? src.find_last_not_of('=') + 1
+                                      : src.length());
       return encoded == src_no_padding;
     }
     return true;
@@ -375,7 +376,8 @@ bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
           reinterpret_cast<const unsigned char*>(dest->data()), dest->length(),
           &encoded, false);
       StringPiece src_no_padding = StringPiece(src).substr(
-          0, src.ends_with("=") ? src.find_last_not_of('=') + 1 : src.length());
+          0, StringEndsWith(src, "=") ? src.find_last_not_of('=') + 1
+                                      : src.length());
       return encoded == src_no_padding;
     }
     return true;

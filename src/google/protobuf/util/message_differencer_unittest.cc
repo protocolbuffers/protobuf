@@ -127,6 +127,27 @@ TEST(MessageDifferencerTest, RepeatedFieldInequalityTest) {
   EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
 }
 
+TEST(MessageDifferencerTest, RepeatedFieldSetOptimizationTest) {
+  util::MessageDifferencer differencer;
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+  protobuf_unittest::TestDiffMessage::Item* item1 = msg1.add_item();
+  protobuf_unittest::TestDiffMessage::Item* item2 = msg2.add_item();
+  differencer.TreatAsSet(item1->GetDescriptor()->FindFieldByName("ra"));
+  differencer.TreatAsSet(item2->GetDescriptor()->FindFieldByName("ra"));
+  for (int i = 0; i < 1000; i++) {
+    item1->add_ra(i);
+    item2->add_ra(i);
+  }
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  item2->add_ra(1001);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  item1->add_ra(1001);
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  item1->add_ra(1002);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+}
+
 TEST(MessageDifferencerTest, MapFieldEqualityTest) {
   // Create the testing protos
   unittest::TestMap msg1;

@@ -354,6 +354,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/map_for_proto2_lite_test.proto      \
   java/core/src/test/proto/com/google/protobuf/map_for_proto2_test.proto           \
   java/core/src/test/proto/com/google/protobuf/map_initialization_order_test.proto \
+  java/core/src/test/proto/com/google/protobuf/map_lite_test.proto                 \
   java/core/src/test/proto/com/google/protobuf/map_test.proto                      \
   java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto           \
   java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto          \
@@ -808,6 +809,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_extensions_dynamic.proto              \
   python/google/protobuf/internal/more_messages.proto                        \
+  python/google/protobuf/internal/no_package.proto                           \
   python/google/protobuf/internal/packed_field_test.proto                    \
   python/google/protobuf/internal/proto_builder_test.py                      \
   python/google/protobuf/internal/python_message.py                          \
@@ -861,6 +863,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
   python/google/protobuf/pyext/safe_numerics.h                               \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
+  python/google/protobuf/pyext/thread_unsafe_shared_ptr.h                    \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
   python/google/protobuf/service_reflection.py                               \

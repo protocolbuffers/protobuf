@@ -36,9 +36,6 @@
 
 #include <limits>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <vector>
 
 #include <google/protobuf/compiler/importer.h>
@@ -2252,7 +2249,7 @@ class MiscTest : public testing::Test {
     return field != NULL ? field->enum_type() : NULL;
   }
 
-  google::protobuf::scoped_ptr<DescriptorPool> pool_;
+  std::unique_ptr<DescriptorPool> pool_;
 };
 
 TEST_F(MiscTest, TypeNames) {
@@ -2682,7 +2679,7 @@ class AllowUnknownDependenciesTest
   const FieldDescriptor* qux_field_;
 
   SimpleDescriptorDatabase db_;        // used if in FALLBACK_DATABASE mode.
-  google::protobuf::scoped_ptr<DescriptorPool> pool_;
+  std::unique_ptr<DescriptorPool> pool_;
 };
 
 TEST_P(AllowUnknownDependenciesTest, PlaceholderFile) {
@@ -3952,8 +3949,22 @@ TEST_F(ValidationErrorTest, EnumReservedRangeOverlap) {
     "  reserved_range { start: 5 end: 15 }"
     "}",
 
-    "foo.proto: Foo: NUMBER: Reserved range 5 to 14"
-    " overlaps with already-defined range 10 to 19.\n");
+    "foo.proto: Foo: NUMBER: Reserved range 5 to 15"
+    " overlaps with already-defined range 10 to 20.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumReservedRangeOverlapByOne) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"BAR\" number:0 }"
+    "  reserved_range { start: 10 end: 20 }"
+    "  reserved_range { start: 5 end: 10 }"
+    "}",
+
+    "foo.proto: Foo: NUMBER: Reserved range 5 to 10"
+    " overlaps with already-defined range 10 to 20.\n");
 }
 
 TEST_F(ValidationErrorTest, EnumNegativeReservedRangeOverlap) {
@@ -3966,8 +3977,8 @@ TEST_F(ValidationErrorTest, EnumNegativeReservedRangeOverlap) {
     "  reserved_range { start: -15 end: -5 }"
     "}",
 
-    "foo.proto: Foo: NUMBER: Reserved range -15 to -6"
-    " overlaps with already-defined range -20 to -11.\n");
+    "foo.proto: Foo: NUMBER: Reserved range -15 to -5"
+    " overlaps with already-defined range -20 to -10.\n");
 }
 
 TEST_F(ValidationErrorTest, EnumMixedReservedRangeOverlap) {
@@ -3980,8 +3991,22 @@ TEST_F(ValidationErrorTest, EnumMixedReservedRangeOverlap) {
     "  reserved_range { start: -15 end: 5 }"
     "}",
 
-    "foo.proto: Foo: NUMBER: Reserved range -15 to 4"
-    " overlaps with already-defined range -20 to 9.\n");
+    "foo.proto: Foo: NUMBER: Reserved range -15 to 5"
+    " overlaps with already-defined range -20 to 10.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumMixedReservedRangeOverlap2) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Foo\""
+    "  value { name:\"BAR\" number:20 }"
+    "  reserved_range { start: -20 end: 10 }"
+    "  reserved_range { start: 10 end: 10 }"
+    "}",
+
+    "foo.proto: Foo: NUMBER: Reserved range 10 to 10"
+    " overlaps with already-defined range -20 to 10.\n");
 }
 
 TEST_F(ValidationErrorTest, EnumReservedRangeStartGreaterThanEnd) {

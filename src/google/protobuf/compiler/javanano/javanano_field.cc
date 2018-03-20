@@ -76,7 +76,7 @@ FieldGeneratorMap::FieldGeneratorMap(
     const Descriptor* descriptor, const Params &params)
   : descriptor_(descriptor),
     field_generators_(
-      new scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
+      new std::unique_ptr<FieldGenerator>[descriptor->field_count()]) {
 
   int next_has_bit_index = 0;
   bool saved_defaults_needed = false;

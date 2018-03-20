@@ -69,7 +69,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     // cached_types_ map.
     const string& string_type_url =
         *string_storage_.insert(type_url.ToString()).first;
-    google::protobuf::scoped_ptr<google::protobuf::Type> type(new google::protobuf::Type());
+    std::unique_ptr<google::protobuf::Type> type(new google::protobuf::Type());
     util::Status status =
         type_resolver_->ResolveMessageType(string_type_url, type.get());
     StatusOrType result =
@@ -95,7 +95,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     // cached_enums_ map.
     const string& string_type_url =
         *string_storage_.insert(type_url.ToString()).first;
-    google::protobuf::scoped_ptr<google::protobuf::Enum> enum_type(
+    std::unique_ptr<google::protobuf::Enum> enum_type(
         new google::protobuf::Enum());
     util::Status status =
         type_resolver_->ResolveEnumType(string_type_url, enum_type.get());

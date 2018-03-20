@@ -36,6 +36,7 @@ import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestExtensionInsideTable;
 import protobuf_unittest.UnittestProto.TestFieldOrderings;
 import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestOneofBackwardsCompatible;
@@ -233,6 +234,26 @@ public class WireFormatTest extends TestCase {
     TestFieldOrderings dest =
       TestFieldOrderings.parseFrom(source.toByteString(),
                                    getTestFieldOrderingsRegistry());
+    assertEquals(source, dest);
+  }
+  
+  private static ExtensionRegistry getTestExtensionInsideTableRegistry() {
+    ExtensionRegistry result = ExtensionRegistry.newInstance();
+    result.add(UnittestProto.testExtensionInsideTableExtension);
+    return result;
+  }
+  
+  public void testExtensionInsideTable() throws Exception {
+    // Make sure the extension within the range of table is parsed correctly in experimental
+    // runtime.
+    TestExtensionInsideTable source =
+        TestExtensionInsideTable.newBuilder()
+        .setField1(1)
+        .setExtension(UnittestProto.testExtensionInsideTableExtension, 23)
+        .build();
+    TestExtensionInsideTable dest =
+        TestExtensionInsideTable.parseFrom(source.toByteString(),
+            getTestExtensionInsideTableRegistry());
     assertEquals(source, dest);
   }
 

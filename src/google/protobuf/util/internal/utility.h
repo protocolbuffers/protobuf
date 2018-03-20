@@ -32,9 +32,6 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_UTILITY_H__
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 #include <utility>
 
@@ -121,13 +118,13 @@ LIBPROTOBUF_EXPORT const StringPiece GetTypeWithoutUrl(StringPiece type_url);
 LIBPROTOBUF_EXPORT const string GetFullTypeWithUrl(StringPiece simple_type);
 
 // Finds and returns option identified by name and option_name within the
-// provided map. Returns NULL if none found.
+// provided map. Returns nullptr if none found.
 const google::protobuf::Option* FindOptionOrNull(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name);
 
 // Finds and returns the field identified by field_name in the passed tech Type
-// object. Returns NULL if none found.
+// object. Returns nullptr if none found.
 const google::protobuf::Field* FindFieldInTypeOrNull(
     const google::protobuf::Type* type, StringPiece field_name);
 
@@ -141,17 +138,17 @@ const google::protobuf::Field* FindFieldInTypeByNumberOrNull(
     const google::protobuf::Type* type, int32 number);
 
 // Finds and returns the EnumValue identified by enum_name in the passed tech
-// Enum object. Returns NULL if none found.
+// Enum object. Returns nullptr if none found.
 const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
     const google::protobuf::Enum* enum_type, StringPiece enum_name);
 
 // Finds and returns the EnumValue identified by value in the passed tech
-// Enum object. Returns NULL if none found.
+// Enum object. Returns nullptr if none found.
 const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
     const google::protobuf::Enum* enum_type, int32 value);
 
 // Finds and returns the EnumValue identified by enum_name without underscore in
-// the passed tech Enum object. Returns NULL if none found.
+// the passed tech Enum object. Returns nullptr if none found.
 // For Ex. if enum_name is ACTIONANDADVENTURE it can get accepted if
 // EnumValue's name is action_and_adventure or ACTION_AND_ADVENTURE.
 const google::protobuf::EnumValue* FindEnumValueByNameWithoutUnderscoreOrNull(
@@ -159,6 +156,9 @@ const google::protobuf::EnumValue* FindEnumValueByNameWithoutUnderscoreOrNull(
 
 // Converts input to camel-case and returns it.
 LIBPROTOBUF_EXPORT string ToCamelCase(const StringPiece input);
+
+// Converts enum name string to camel-case and returns it.
+string EnumValueNameToLowerCamelCase(const StringPiece input);
 
 // Converts input to snake_case and returns it.
 LIBPROTOBUF_EXPORT string ToSnakeCase(StringPiece input);
@@ -200,6 +200,12 @@ inline string ValueAsString(double value) {
 // Converts a string to float. Unlike safe_strtof, conversion will fail if the
 // value fits into double but not float (e.g., DBL_MAX).
 LIBPROTOBUF_EXPORT bool SafeStrToFloat(StringPiece str, float* value);
+
+// Returns whether a StringPiece begins with the provided prefix.
+bool StringStartsWith(StringPiece text, StringPiece prefix);
+
+// Returns whether a StringPiece ends with the provided suffix.
+bool StringEndsWith(StringPiece text, StringPiece suffix);
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf

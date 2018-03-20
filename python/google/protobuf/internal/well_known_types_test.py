@@ -345,6 +345,12 @@ class TimeUtilTest(TimeUtilTestBase):
         r'Duration is not valid\: Nanos 1000000000 must be in range'
         r' \[-999999999\, 999999999\].',
         message.ToJsonString)
+    message.seconds = -1
+    message.nanos = 1
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        r'Duration is not valid\: Sign mismatch.',
+        message.ToJsonString)
 
 
 class FieldMaskTest(unittest.TestCase):
@@ -598,6 +604,16 @@ class FieldMaskTest(unittest.TestCase):
     mask.MergeMessage(nested_src, nested_dst, False, True)
     self.assertEqual(1, len(nested_dst.payload.repeated_int32))
     self.assertEqual(1234, nested_dst.payload.repeated_int32[0])
+
+    # Test Merge oneof field.
+    new_msg = unittest_pb2.TestOneof2()
+    dst = unittest_pb2.TestOneof2()
+    dst.foo_message.qux_int = 1
+    mask = field_mask_pb2.FieldMask()
+    mask.FromJsonString('fooMessage,fooLazyMessage.quxInt')
+    mask.MergeMessage(new_msg, dst)
+    self.assertTrue(dst.HasField('foo_message'))
+    self.assertFalse(dst.HasField('foo_lazy_message'))
 
   def testMergeErrors(self):
     src = unittest_pb2.TestAllTypes()

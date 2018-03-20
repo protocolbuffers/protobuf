@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import static java.util.Arrays.asList;
 
+import com.google.protobuf.Internal.FloatList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
@@ -295,6 +296,20 @@ public class FloatArrayListTest extends TestCase {
     } catch (IndexOutOfBoundsException e) {
       // expected
     }
+  }
+
+  public void testRemoveEndOfCapacity() {
+    FloatList toRemove = FloatArrayList.emptyList().mutableCopyWithCapacity(1);
+    toRemove.addFloat(3);
+    toRemove.remove(0);
+    assertEquals(0, toRemove.size());
+  }
+
+  public void testSublistRemoveEndOfCapacity() {
+    FloatList toRemove = FloatArrayList.emptyList().mutableCopyWithCapacity(1);
+    toRemove.addFloat(3);
+    toRemove.subList(0, 1).clear();
+    assertEquals(0, toRemove.size());
   }
 
   private void assertImmutable(FloatArrayList list) {

@@ -33,10 +33,8 @@
 #include <algorithm>
 #include <cstring>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 #include <vector>
 
@@ -153,7 +151,17 @@ class MustBeConstructedWithOneThroughEight {
 TEST(ArenaTest, ArenaConstructable) {
   EXPECT_TRUE(Arena::is_arena_constructable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_arena_constructable<const TestAllTypes>::type::value);
+  EXPECT_FALSE(Arena::is_arena_constructable<
+               protobuf_unittest_no_arena::TestNoArenaMessage>::type::value);
   EXPECT_FALSE(Arena::is_arena_constructable<Arena>::type::value);
+}
+
+TEST(ArenaTest, DestructorSkippable) {
+  EXPECT_TRUE(Arena::is_destructor_skippable<TestAllTypes>::type::value);
+  EXPECT_TRUE(Arena::is_destructor_skippable<const TestAllTypes>::type::value);
+  EXPECT_FALSE(Arena::is_destructor_skippable<
+               protobuf_unittest_no_arena::TestNoArenaMessage>::type::value);
+  EXPECT_FALSE(Arena::is_destructor_skippable<Arena>::type::value);
 }
 
 TEST(ArenaTest, BasicCreate) {
@@ -197,7 +205,6 @@ TEST(ArenaTest, CreateAndNonConstCopy) {
   EXPECT_EQ("foo", *s_copy);
 }
 
-#if LANG_CXX11
 TEST(ArenaTest, CreateAndMove) {
   Arena arena;
   string s("foo");
@@ -206,7 +213,6 @@ TEST(ArenaTest, CreateAndMove) {
   EXPECT_TRUE(s.empty());  // NOLINT
   EXPECT_EQ("foo", *s_move);
 }
-#endif
 
 TEST(ArenaTest, CreateWithFourConstructorArguments) {
   Arena arena;
@@ -242,7 +248,6 @@ TEST(ArenaTest, CreateWithEightConstructorArguments) {
   ASSERT_EQ("8", new_object->eight_);
 }
 
-#if LANG_CXX11
 class PleaseMoveMe {
  public:
   explicit PleaseMoveMe(const string& value) : value_(value) {}
@@ -263,7 +268,6 @@ TEST(ArenaTest, CreateWithMoveArguments) {
   EXPECT_TRUE(new_object);
   ASSERT_EQ("1", new_object->value());
 }
-#endif
 
 TEST(ArenaTest, InitialBlockTooSmall) {
   // Construct a small (64 byte) initial block of memory to be used by the
@@ -442,7 +446,7 @@ TEST(ArenaTest, ReflectionSwapFields) {
   TestUtil::SetAllFields(arena1_message);
   reflection->SwapFields(arena1_message, &message, fields);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
-  EXPECT_EQ(NULL, message.GetArena());
+  EXPECT_EQ(nullptr, message.GetArena());
   arena1_message->SerializeToString(&output);
   EXPECT_EQ(0, output.size());
   TestUtil::ExpectAllFieldsSet(message);
@@ -468,7 +472,7 @@ TEST(ArenaTest, ReleaseMessage) {
   Arena arena;
   TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
-  google::protobuf::scoped_ptr<TestAllTypes::NestedMessage> nested(
+  std::unique_ptr<TestAllTypes::NestedMessage> nested(
       arena_message->release_optional_nested_message());
   EXPECT_EQ(118, nested->bb());
 
@@ -489,7 +493,7 @@ TEST(ArenaTest, ReleaseString) {
   Arena arena;
   TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
   arena_message->set_optional_string("hello");
-  google::protobuf::scoped_ptr<string> released_str(
+  std::unique_ptr<string> released_str(
       arena_message->release_optional_string());
   EXPECT_EQ("hello", *released_str);
 
@@ -599,25 +603,6 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
   delete nested_msg;
 }
 #endif  // !GOOGLE_PROTOBUF_NO_RTTI
-
-TEST(ArenaTest, UnsafeArenaReleaseDoesNotMakeCopy) {
-  Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
-  TestAllTypes::NestedMessage* nested_msg = NULL;
-  TestAllTypes::NestedMessage* orig_nested_msg = NULL;
-  string* nested_string = NULL;
-  string* orig_nested_string = NULL;
-  arena_message->mutable_optional_nested_message()->set_bb(42);
-  *arena_message->mutable_optional_string() = "Hello";
-  orig_nested_msg = arena_message->mutable_optional_nested_message();
-  orig_nested_string = arena_message->mutable_optional_string();
-  nested_msg = arena_message->unsafe_arena_release_optional_nested_message();
-  nested_string = arena_message->unsafe_arena_release_optional_string();
-
-  EXPECT_EQ(orig_nested_msg, nested_msg);
-  EXPECT_EQ(orig_nested_string, nested_string);
-  // Released pointers still on arena; no 'delete' calls needed here.
-}
 
 TEST(ArenaTest, SetAllocatedAcrossArenas) {
   Arena arena1;
@@ -898,17 +883,18 @@ TEST(ArenaTest, ReleaseLastRepeatedField) {
 TEST(ArenaTest, UnsafeArenaReleaseAdd) {
   // Use unsafe_arena_release() and unsafe_arena_set_allocated() to transfer an
   // arena-allocated string from one message to another.
+  const char kContent[] = "Test content";
+
   Arena arena;
   TestAllTypes* message1 = Arena::CreateMessage<TestAllTypes>(&arena);
   TestAllTypes* message2 = Arena::CreateMessage<TestAllTypes>(&arena);
   string* arena_string = Arena::Create<string>(&arena);
-  *arena_string = "Test content";
+  *arena_string = kContent;
 
   message1->unsafe_arena_set_allocated_optional_string(arena_string);
-  EXPECT_EQ(arena_string, message1->mutable_optional_string());
   message2->unsafe_arena_set_allocated_optional_string(
       message1->unsafe_arena_release_optional_string());
-  EXPECT_EQ(arena_string, message2->mutable_optional_string());
+  EXPECT_EQ(kContent, message2->optional_string());
 }
 
 TEST(ArenaTest, UnsafeArenaAddAllocated) {
@@ -1432,7 +1418,7 @@ TEST(ArenaTest, ArenaHooksSanity) {
     EXPECT_EQ(1, ArenaHooksTestUtil::num_init);
     EXPECT_EQ(0, ArenaHooksTestUtil::num_allocations);
     ::google::protobuf::Arena::Create<uint64>(&arena);
-    if (google::protobuf::internal::has_trivial_destructor<uint64>::value) {
+    if (std::is_trivially_destructible<uint64>::value) {
       EXPECT_EQ(1, ArenaHooksTestUtil::num_allocations);
     } else {
       EXPECT_EQ(2, ArenaHooksTestUtil::num_allocations);
