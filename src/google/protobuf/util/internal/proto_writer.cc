@@ -730,7 +730,7 @@ const google::protobuf::Field* ProtoWriter::Lookup(
   const google::protobuf::Field* field =
       typeinfo_->FindField(&e->type(), unnormalized_name);
   if (field == NULL && !ignore_unknown_fields_) {
-    InvalidName(unnormalized_name, "Cannot find field.");
+    InvalidName(unnormalized_name, "Cannot find field=" + unnormalized_name.ToString() + ".");
   }
   return field;
 }

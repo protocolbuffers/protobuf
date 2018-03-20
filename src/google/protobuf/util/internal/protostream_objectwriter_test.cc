@@ -711,7 +711,7 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownFieldAtRoot) {
   Book empty;
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("unknown"),
-                                     StringPiece("Cannot find field.")))
+                                     StringPiece("Cannot find field=unknown.")))
       .With(Args<0>(HasObjectLocation("")));
   ow_->StartObject("")->RenderString("unknown", "Nope!")->EndObject();
   CheckOutput(empty, 0);
@@ -729,7 +729,7 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownFieldAtAuthorFriend) {
   luke->set_name("Luke");
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("address"),
-                                     StringPiece("Cannot find field.")))
+                                     StringPiece("Cannot find field=address.")))
       .With(Args<0>(HasObjectLocation("author.friend[1]")));
   ow_->StartObject("")
       ->StartObject("author")
@@ -755,7 +755,7 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownObjectAtRoot) {
   Book empty;
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("unknown"),
-                                     StringPiece("Cannot find field.")))
+                                     StringPiece("Cannot find field=unknown.")))
       .With(Args<0>(HasObjectLocation("")));
   ow_->StartObject("")->StartObject("unknown")->EndObject()->EndObject();
   CheckOutput(empty, 0);
@@ -768,7 +768,7 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownObjectAtAuthor) {
   author->add_pseudonym("Bill");
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("wife"),
-                                     StringPiece("Cannot find field.")))
+                                     StringPiece("Cannot find field=wife.")))
       .With(Args<0>(HasObjectLocation("author")));
   ow_->StartObject("")
       ->StartObject("author")
@@ -786,7 +786,7 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownListAtRoot) {
   Book empty;
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("unknown"),
-                                     StringPiece("Cannot find field.")))
+                                     StringPiece("Cannot find field=unknown.")))
       .With(Args<0>(HasObjectLocation("")));
   ow_->StartObject("")->StartList("unknown")->EndList()->EndObject();
   CheckOutput(empty, 0);
@@ -799,7 +799,7 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownListAtPublisher) {
   publisher->set_name("propaganda");
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("alliance"),
-                                     StringPiece("Cannot find field.")))
+                                     StringPiece("Cannot find field=alliance.")))
       .With(Args<0>(HasObjectLocation("publisher")));
   ow_->StartObject("")
       ->StartObject("publisher")
@@ -865,7 +865,7 @@ TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownObjectAtRoot) {
   ResetProtoWriter();
 
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("unknown"),
-                                     StringPiece("Cannot find field.")))
+                                     StringPiece("Cannot find field=unknown.")))
       .Times(0);
   ow_->StartObject("")->StartObject("unknown")->EndObject()->EndObject();
   CheckOutput(empty, 0);
