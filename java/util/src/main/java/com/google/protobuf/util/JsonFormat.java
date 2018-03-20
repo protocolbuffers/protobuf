@@ -390,6 +390,21 @@ public class JsonFormat {
   }
 
   /**
+   * A TypeResolver is used by a {@link TypeRegistry} to resolve Any messages
+   * that cannot be resolved directly from its supplied list of types.
+   * This extension mechanism allows the dynamic discovery of Any message types
+   * at runtime.
+   */
+  public static interface TypeResolver {
+    /**
+     * Find a type by typeUrl. Returns null if it cannot be found.
+     * 
+     * @throws InvalidProtocolBufferException if the typeUrl is invalid
+     */
+    public Descriptor resolve(String typeUrl) throws InvalidProtocolBufferException;
+  }
+  
+  /**
    * A TypeRegistry is used to resolve Any messages in the JSON conversion.
    * You must provide a TypeRegistry containing all message types used in
    * Any message fields, or the JSON conversion will fail because data
@@ -397,13 +412,17 @@ public class JsonFormat {
    * TypeRegistry if you don't use Any message fields.
    */
   public static class TypeRegistry {
-    private static class EmptyTypeRegistryHolder {
-      private static final TypeRegistry EMPTY =
-          new TypeRegistry(Collections.<String, Descriptor>emptyMap());
-    }
+    private static final TypeResolver NO_RESOLVER = new TypeResolver() {
+      public Descriptor resolve(String typeUrl) {
+        return null;
+      }
+    };
+    
+    private static final TypeRegistry EMPTY =
+          new TypeRegistry(NO_RESOLVER, Collections.<String, Descriptor>emptyMap());
 
     public static TypeRegistry getEmptyTypeRegistry() {
-      return EmptyTypeRegistryHolder.EMPTY;
+      return EMPTY;
     }
 
     public static Builder newBuilder() {
@@ -411,16 +430,24 @@ public class JsonFormat {
     }
 
     /**
-     * Find a type by its full name. Returns null if it cannot be found in
+     * Find a type by typeUrl. Returns null if it cannot be found in
      * this {@link TypeRegistry}.
+     * @throws InvalidProtocolBufferException if the typeUrl is invalid
      */
-    public Descriptor find(String name) {
-      return types.get(name);
+    public Descriptor find(String typeUrl) throws InvalidProtocolBufferException {
+      String name = getTypeName(typeUrl);
+      Descriptor result = types.get(name);
+      if(result == null) {
+        result = resolver.resolve(typeUrl);
+      }
+      return result;
     }
 
+    private final TypeResolver resolver;
     private final Map<String, Descriptor> types;
 
-    private TypeRegistry(Map<String, Descriptor> types) {
+    private TypeRegistry(TypeResolver resolver, Map<String, Descriptor> types) {
+      this.resolver = resolver;
       this.types = types;
     }
 
@@ -430,6 +457,17 @@ public class JsonFormat {
     public static class Builder {
       private Builder() {}
 
+      /**
+       * Sets the {@link TypeResolver} for the TypeRegistry
+       */
+      public Builder setResolver(TypeResolver resolver) {
+        if (resolver == null) {
+          throw new NullPointerException("TypeResolver cannot be null");
+        }
+        this.resolver = resolver;
+        return this;
+      }
+      
       /**
        * Adds a message type and all types defined in the same .proto file as
        * well as all transitively imported .proto files to this {@link Builder}.
@@ -461,7 +499,7 @@ public class JsonFormat {
        * one Builder.
        */
       public TypeRegistry build() {
-        TypeRegistry result = new TypeRegistry(types);
+        TypeRegistry result = new TypeRegistry(resolver, types);
         // Make sure the built {@link TypeRegistry} is immutable.
         types = null;
         return result;
@@ -494,6 +532,7 @@ public class JsonFormat {
       }
 
       private final Set<String> files = new HashSet<String>();
+      private TypeResolver resolver = NO_RESOLVER;
       private Map<String, Descriptor> types = new HashMap<String, Descriptor>();
     }
   }
@@ -759,15 +798,14 @@ public class JsonFormat {
         throw new InvalidProtocolBufferException("Invalid Any type.");
       }
       String typeUrl = (String) message.getField(typeUrlField);
-      String typeName = getTypeName(typeUrl);
-      Descriptor type = registry.find(typeName);
+      Descriptor type = registry.find(typeUrl);
       if (type == null) {
         throw new InvalidProtocolBufferException("Cannot find type for url: " + typeUrl);
       }
       ByteString content = (ByteString) message.getField(valueField);
       Message contentMessage =
           DynamicMessage.getDefaultInstance(type).getParserForType().parseFrom(content);
-      WellKnownTypePrinter printer = wellKnownTypePrinters.get(typeName);
+      WellKnownTypePrinter printer = wellKnownTypePrinters.get(type.getFullName());
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
         // formatting.
@@ -1377,7 +1415,7 @@ public class JsonFormat {
         throw new InvalidProtocolBufferException("Missing type url when parsing: " + json);
       }
       String typeUrl = typeUrlElement.getAsString();
-      Descriptor contentType = registry.find(getTypeName(typeUrl));
+      Descriptor contentType = registry.find(typeUrl);
       if (contentType == null) {
         throw new InvalidProtocolBufferException("Cannot resolve type: " + typeUrl);
       }
