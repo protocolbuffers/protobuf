@@ -50,6 +50,7 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/util/internal/utility.cc
   ${protobuf_source_dir}/src/google/protobuf/util/json_util.cc
   ${protobuf_source_dir}/src/google/protobuf/util/message_differencer.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/message_hasher.cc
   ${protobuf_source_dir}/src/google/protobuf/util/time_util.cc
   ${protobuf_source_dir}/src/google/protobuf/util/type_resolver_util.cc
   ${protobuf_source_dir}/src/google/protobuf/wire_format.cc

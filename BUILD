@@ -167,6 +167,7 @@ cc_library(
         "src/google/protobuf/util/internal/utility.cc",
         "src/google/protobuf/util/json_util.cc",
         "src/google/protobuf/util/message_differencer.cc",
+        "src/google/protobuf/util/message_hasher.cc",
         "src/google/protobuf/util/time_util.cc",
         "src/google/protobuf/util/type_resolver_util.cc",
         "src/google/protobuf/wire_format.cc",
