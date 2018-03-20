@@ -280,9 +280,9 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   int fields_size() const;
   void clear_fields();
   static const int kFieldsFieldNumber = 2;
-  ::google::protobuf::Field* mutable_fields(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >*
-      mutable_fields();
+  ::google::protobuf::Field& fields(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >&
+      fields();
   const ::google::protobuf::Field& fields(int index) const;
   ::google::protobuf::Field* add_fields();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >&
@@ -308,15 +308,15 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   void add_oneofs(const char* value);
   void add_oneofs(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& oneofs() const;
-  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_oneofs();
+  ::google::protobuf::RepeatedPtrField< ::std::string>& oneofs();
 
   // repeated .google.protobuf.Option options = 4;
   int options_size() const;
   void clear_options();
   static const int kOptionsFieldNumber = 4;
-  ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+  ::google::protobuf::Option& options(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+      options();
   const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
@@ -351,7 +351,7 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   static const int kSourceContextFieldNumber = 5;
   const ::google::protobuf::SourceContext& source_context() const;
   ::google::protobuf::SourceContext* release_source_context();
-  ::google::protobuf::SourceContext* mutable_source_context();
+  ::google::protobuf::SourceContext& mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* source_context);
   void unsafe_arena_set_allocated_source_context(
       ::google::protobuf::SourceContext* source_context);
@@ -574,9 +574,9 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   int options_size() const;
   void clear_options();
   static const int kOptionsFieldNumber = 9;
-  ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+  ::google::protobuf::Option& options(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+      options();
   const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
@@ -829,9 +829,9 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   int enumvalue_size() const;
   void clear_enumvalue();
   static const int kEnumvalueFieldNumber = 2;
-  ::google::protobuf::EnumValue* mutable_enumvalue(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >*
-      mutable_enumvalue();
+  ::google::protobuf::EnumValue& enumvalue(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >&
+      enumvalue();
   const ::google::protobuf::EnumValue& enumvalue(int index) const;
   ::google::protobuf::EnumValue* add_enumvalue();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >&
@@ -841,9 +841,9 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   int options_size() const;
   void clear_options();
   static const int kOptionsFieldNumber = 3;
-  ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+  ::google::protobuf::Option& options(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+      options();
   const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
@@ -878,7 +878,7 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   static const int kSourceContextFieldNumber = 4;
   const ::google::protobuf::SourceContext& source_context() const;
   ::google::protobuf::SourceContext* release_source_context();
-  ::google::protobuf::SourceContext* mutable_source_context();
+  ::google::protobuf::SourceContext& mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* source_context);
   void unsafe_arena_set_allocated_source_context(
       ::google::protobuf::SourceContext* source_context);
@@ -1010,9 +1010,9 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   int options_size() const;
   void clear_options();
   static const int kOptionsFieldNumber = 3;
-  ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+  ::google::protobuf::Option& options(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+      options();
   const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
@@ -1190,7 +1190,7 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   static const int kValueFieldNumber = 2;
   const ::google::protobuf::Any& value() const;
   ::google::protobuf::Any* release_value();
-  ::google::protobuf::Any* mutable_value();
+  ::google::protobuf::Any& mutable_value();
   void set_allocated_value(::google::protobuf::Any* value);
   void unsafe_arena_set_allocated_value(
       ::google::protobuf::Any* value);
@@ -1302,14 +1302,14 @@ inline int Type::fields_size() const {
 inline void Type::clear_fields() {
   fields_.Clear();
 }
-inline ::google::protobuf::Field* Type::mutable_fields(int index) {
+inline ::google::protobuf::Field& Type::fields(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.fields)
-  return fields_.Mutable(index);
+  return *fields_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >*
-Type::mutable_fields() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field >&
+Type::fields() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.fields)
-  return &fields_;
+  return fields_;
 }
 inline const ::google::protobuf::Field& Type::fields(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.fields)
@@ -1388,10 +1388,10 @@ Type::oneofs() const {
   // @@protoc_insertion_point(field_list:google.protobuf.Type.oneofs)
   return oneofs_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-Type::mutable_oneofs() {
+inline ::google::protobuf::RepeatedPtrField< ::std::string>&
+Type::oneofs() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.oneofs)
-  return &oneofs_;
+  return oneofs_;
 }
 
 // repeated .google.protobuf.Option options = 4;
@@ -1401,14 +1401,14 @@ inline int Type::options_size() const {
 inline void Type::clear_options() {
   options_.Clear();
 }
-inline ::google::protobuf::Option* Type::mutable_options(int index) {
+inline ::google::protobuf::Option& Type::options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.options)
-  return options_.Mutable(index);
+  return *options_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Type::mutable_options() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+Type::options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Type.options)
-  return &options_;
+  return options_;
 }
 inline const ::google::protobuf::Option& Type::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.options)
@@ -1451,14 +1451,14 @@ inline ::google::protobuf::SourceContext* Type::unsafe_arena_release_source_cont
   source_context_ = NULL;
   return temp;
 }
-inline ::google::protobuf::SourceContext* Type::mutable_source_context() {
+inline ::google::protobuf::SourceContext& Type::mutable_source_context() {
   
   if (source_context_ == NULL) {
     source_context_ = ::google::protobuf::Arena::Create< ::google::protobuf::SourceContext >(
         GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Type.source_context)
-  return source_context_;
+  return *source_context_;
 }
 inline void Type::set_allocated_source_context(::google::protobuf::SourceContext* source_context) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
@@ -1724,14 +1724,14 @@ inline int Field::options_size() const {
 inline void Field::clear_options() {
   options_.Clear();
 }
-inline ::google::protobuf::Option* Field::mutable_options(int index) {
+inline ::google::protobuf::Option& Field::options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Field.options)
-  return options_.Mutable(index);
+  return *options_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Field::mutable_options() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+Field::options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Field.options)
-  return &options_;
+  return options_;
 }
 inline const ::google::protobuf::Option& Field::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.options)
@@ -1983,14 +1983,14 @@ inline int Enum::enumvalue_size() const {
 inline void Enum::clear_enumvalue() {
   enumvalue_.Clear();
 }
-inline ::google::protobuf::EnumValue* Enum::mutable_enumvalue(int index) {
+inline ::google::protobuf::EnumValue& Enum::enumvalue(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.enumvalue)
-  return enumvalue_.Mutable(index);
+  return *enumvalue_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >*
-Enum::mutable_enumvalue() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue >&
+Enum::enumvalue() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.enumvalue)
-  return &enumvalue_;
+  return enumvalue_;
 }
 inline const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.enumvalue)
@@ -2013,14 +2013,14 @@ inline int Enum::options_size() const {
 inline void Enum::clear_options() {
   options_.Clear();
 }
-inline ::google::protobuf::Option* Enum::mutable_options(int index) {
+inline ::google::protobuf::Option& Enum::options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.options)
-  return options_.Mutable(index);
+  return *options_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Enum::mutable_options() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+Enum::options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Enum.options)
-  return &options_;
+  return options_;
 }
 inline const ::google::protobuf::Option& Enum::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.options)
@@ -2063,14 +2063,14 @@ inline ::google::protobuf::SourceContext* Enum::unsafe_arena_release_source_cont
   source_context_ = NULL;
   return temp;
 }
-inline ::google::protobuf::SourceContext* Enum::mutable_source_context() {
+inline ::google::protobuf::SourceContext& Enum::mutable_source_context() {
   
   if (source_context_ == NULL) {
     source_context_ = ::google::protobuf::Arena::Create< ::google::protobuf::SourceContext >(
         GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Enum.source_context)
-  return source_context_;
+  return *source_context_;
 }
 inline void Enum::set_allocated_source_context(::google::protobuf::SourceContext* source_context) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
@@ -2205,14 +2205,14 @@ inline int EnumValue::options_size() const {
 inline void EnumValue::clear_options() {
   options_.Clear();
 }
-inline ::google::protobuf::Option* EnumValue::mutable_options(int index) {
+inline ::google::protobuf::Option& EnumValue::options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValue.options)
-  return options_.Mutable(index);
+  return *options_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-EnumValue::mutable_options() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+EnumValue::options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValue.options)
-  return &options_;
+  return options_;
 }
 inline const ::google::protobuf::Option& EnumValue::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.options)
@@ -2334,14 +2334,14 @@ inline ::google::protobuf::Any* Option::unsafe_arena_release_value() {
   value_ = NULL;
   return temp;
 }
-inline ::google::protobuf::Any* Option::mutable_value() {
+inline ::google::protobuf::Any& Option::mutable_value() {
   
   if (value_ == NULL) {
     value_ = ::google::protobuf::Arena::Create< ::google::protobuf::Any >(
         GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Option.value)
-  return value_;
+  return *value_;
 }
 inline void Option::set_allocated_value(::google::protobuf::Any* value) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();

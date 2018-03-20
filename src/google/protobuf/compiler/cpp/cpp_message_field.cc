@@ -139,7 +139,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_, "$deprecated_attr$$type$* $release_name$();\n");
   printer->Annotate("release_name", descriptor_);
   printer->Print(variables_,
-                 "$deprecated_attr$$type$* ${$mutable_$name$$}$();\n");
+                 "$deprecated_attr$$type$& mutable_$name$();\n");
   printer->Annotate("{", "}", descriptor_);
   printer->Print(variables_,
                  "$deprecated_attr$void ${$set_allocated_$name$$}$"
@@ -268,7 +268,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "inline $type$* $classname$::mutable_$name$() {\n"
+    "inline $type$& $classname$::mutable_$name$() {\n"
     "$type_reference_function$"
     "  $set_hasbit$\n"
     "  if ($name$_ == NULL) {\n");
@@ -283,7 +283,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
     "  }\n"
     "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
-    "  return $casted_member$;\n"
+    "  return *$casted_member$;\n"
     "}\n");
 
   // We handle the most common case inline, and delegate less common cases to
@@ -380,7 +380,7 @@ GenerateMergingCode(io::Printer* printer) const {
       "    from._internal_$name$());\n");
   } else {
     printer->Print(variables_,
-      "mutable_$name$()->$type$::MergeFrom(from.$name$());\n");
+      "mutable_$name$().$type$::MergeFrom(from.$name$());\n");
   }
 }
 
@@ -424,11 +424,11 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   } else if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(variables_,
       "DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(\n"
-      "     input, mutable_$name$()));\n");
+      "     input, &mutable_$name$()));\n");
   } else {
     printer->Print(variables_,
       "DO_(::google::protobuf::internal::WireFormatLite::ReadGroup(\n"
-      "      $number$, input, mutable_$name$()));\n");
+      "      $number$, input, &mutable_$name$()));\n");
   }
 }
 
@@ -561,7 +561,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "inline $type$* $classname$::mutable_$name$() {\n"
+    "inline $type$& $classname$::mutable_$name$() {\n"
     "  if (!has_$name$()) {\n"
     "    clear_$oneof_name$();\n"
     "    set_has_$name$();\n"
@@ -569,7 +569,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "        GetArenaNoVirtual());\n"
     "  }\n"
     "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
-    "  return $field_member$;\n"
+    "  return *$field_member$;\n"
     "}\n");
 }
 
@@ -643,11 +643,11 @@ GenerateDependentAccessorDeclarations(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-                 "$deprecated_attr$$type$* ${$mutable_$name$$}$(int index);\n");
+                 "$deprecated_attr$$type$& $name$(int index);\n");
   printer->Annotate("{", "}", descriptor_);
   printer->Print(variables_,
-                 "$deprecated_attr$::google::protobuf::RepeatedPtrField< $type$ >*\n"
-                 "    ${$mutable_$name$$}$();\n");
+                 "$deprecated_attr$::google::protobuf::RepeatedPtrField< $type$ >&\n"
+                 "    $name$();\n");
   printer->Annotate("{", "}", descriptor_);
 
   printer->Print(variables_,
@@ -688,17 +688,17 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   printer->Print(variables_,
-    "inline $type$* $classname$::mutable_$name$(int index) {\n"
+    "inline $type$& $classname$::$name$(int index) {\n"
     // TODO(dlj): move insertion points
     "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
     "$type_reference_function$"
-    "  return $name$_.Mutable(index);\n"
+    "  return *$name$_.Mutable(index);\n"
     "}\n"
-    "inline ::google::protobuf::RepeatedPtrField< $type$ >*\n"
-    "$classname$::mutable_$name$() {\n"
+    "inline ::google::protobuf::RepeatedPtrField< $type$ >&\n"
+    "$classname$::$name$() {\n"
     "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
     "$type_reference_function$"
-    "  return &$name$_;\n"
+    "  return $name$_;\n"
     "}\n");
 
   if (options_.safe_boundary_check) {

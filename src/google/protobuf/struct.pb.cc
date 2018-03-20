@@ -707,11 +707,11 @@ Value::Value(const Value& from)
       break;
     }
     case kStructValue: {
-      mutable_struct_value()->::google::protobuf::Struct::MergeFrom(from.struct_value());
+      mutable_struct_value().::google::protobuf::Struct::MergeFrom(from.struct_value());
       break;
     }
     case kListValue: {
-      mutable_list_value()->::google::protobuf::ListValue::MergeFrom(from.list_value());
+      mutable_list_value().::google::protobuf::ListValue::MergeFrom(from.list_value());
       break;
     }
     case KIND_NOT_SET: {
@@ -886,7 +886,7 @@ bool Value::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_struct_value()));
+               input, &mutable_struct_value()));
         } else {
           goto handle_unusual;
         }
@@ -898,7 +898,7 @@ bool Value::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(50u /* 50 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_list_value()));
+               input, &mutable_list_value()));
         } else {
           goto handle_unusual;
         }
@@ -1130,11 +1130,11 @@ void Value::MergeFrom(const Value& from) {
       break;
     }
     case kStructValue: {
-      mutable_struct_value()->::google::protobuf::Struct::MergeFrom(from.struct_value());
+      mutable_struct_value().::google::protobuf::Struct::MergeFrom(from.struct_value());
       break;
     }
     case kListValue: {
-      mutable_list_value()->::google::protobuf::ListValue::MergeFrom(from.list_value());
+      mutable_list_value().::google::protobuf::ListValue::MergeFrom(from.list_value());
       break;
     }
     case KIND_NOT_SET: {

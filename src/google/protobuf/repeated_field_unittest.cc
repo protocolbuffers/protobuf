@@ -1681,7 +1681,7 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
     fibonacci.push_back(5);
     fibonacci.push_back(8);
     std::copy(fibonacci.begin(), fibonacci.end(),
-              RepeatedFieldBackInserter(protobuffer.mutable_repeated_int32()));
+              RepeatedFieldBackInserter(&protobuffer.repeated_int32()));
 
     halves.push_back(1.0);
     halves.push_back(0.5);
@@ -1689,7 +1689,7 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
     halves.push_back(0.125);
     halves.push_back(0.0625);
     std::copy(halves.begin(), halves.end(),
-              RepeatedFieldBackInserter(protobuffer.mutable_repeated_double()));
+              RepeatedFieldBackInserter(&protobuffer.repeated_double()));
 
     words.push_back("Able");
     words.push_back("was");
@@ -1699,13 +1699,13 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
     words.push_back("saw");
     words.push_back("Elba");
     std::copy(words.begin(), words.end(),
-              RepeatedFieldBackInserter(protobuffer.mutable_repeated_string()));
+              RepeatedFieldBackInserter(&protobuffer.repeated_string()));
 
     nesteds[0].set_bb(17);
     nesteds[1].set_bb(4711);
     std::copy(&nesteds[0], &nesteds[2],
               RepeatedFieldBackInserter(
-                  protobuffer.mutable_repeated_nested_message()));
+                  &protobuffer.repeated_nested_message()));
 
     nested_ptrs.push_back(new Nested);
     nested_ptrs.back()->set_bb(170);
@@ -1713,7 +1713,7 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
     nested_ptrs.back()->set_bb(47110);
     std::copy(nested_ptrs.begin(), nested_ptrs.end(),
               RepeatedFieldBackInserter(
-                  protobuffer.mutable_repeated_nested_message()));
+                  &protobuffer.repeated_nested_message()));
   }
 
   virtual void TearDown() {
@@ -1753,9 +1753,9 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, Words2) {
   words.push_back("of");
   words.push_back("six");
   words.push_back("pence");
-  protobuffer.mutable_repeated_string()->Clear();
+  protobuffer.repeated_string().Clear();
   std::copy(words.begin(), words.end(), RepeatedPtrFieldBackInserter(
-      protobuffer.mutable_repeated_string()));
+      &protobuffer.repeated_string()));
   ASSERT_EQ(words.size(), protobuffer.repeated_string_size());
   for (int i = 0; i < words.size(); ++i)
     EXPECT_EQ(words.at(i), protobuffer.repeated_string(i));
@@ -1784,7 +1784,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   TestAllTypes testproto;
   std::copy(data.begin(), data.end(),
             AllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_nested_message()));
+                &testproto.repeated_nested_message()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 
@@ -1801,8 +1801,9 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
     *new_data = "name-" + SimpleItoa(i);
   }
   TestAllTypes testproto;
-  std::copy(data.begin(), data.end(), AllocatedRepeatedPtrFieldBackInserter(
-                                          testproto.mutable_repeated_string()));
+  std::copy(
+      data.begin(), data.end(),
+      AllocatedRepeatedPtrFieldBackInserter(&testproto.repeated_string()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 
@@ -1821,7 +1822,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   TestAllTypes testproto;
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_nested_message()));
+                &testproto.repeated_nested_message()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 
@@ -1840,7 +1841,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   TestAllTypes testproto;
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_string()));
+                &testproto.repeated_string()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 
@@ -1850,7 +1851,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
   std::vector<string> copy = src;  // copy since move leaves in undefined state
   TestAllTypes testproto;
   std::move(copy.begin(), copy.end(),
-            RepeatedFieldBackInserter(testproto.mutable_repeated_string()));
+            RepeatedFieldBackInserter(&testproto.repeated_string()));
 
   ASSERT_THAT(testproto.repeated_string(), testing::ElementsAreArray(src));
 }
@@ -1866,7 +1867,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
   TestAllTypes testproto;
   std::move(
       copy.begin(), copy.end(),
-      RepeatedFieldBackInserter(testproto.mutable_repeated_nested_message()));
+      RepeatedFieldBackInserter(&testproto.repeated_nested_message()));
 
   ASSERT_EQ(src.size(), testproto.repeated_nested_message_size());
   for (int i = 0; i < src.size(); ++i) {

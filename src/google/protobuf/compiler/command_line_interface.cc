@@ -649,7 +649,7 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
     is_text_format = true;
   }
   for (int i = 0; i < metadata.annotation_size(); ++i) {
-    GeneratedCodeInfo::Annotation* annotation = metadata.mutable_annotation(i);
+    GeneratedCodeInfo::Annotation* annotation = &metadata.annotation(i);
     if (annotation->begin() >= insertion_offset) {
       annotation->set_begin(annotation->begin() + insertion_length);
       annotation->set_end(annotation->end() + insertion_length);
@@ -1840,7 +1840,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
                               false,
                               false,
                               &already_seen,
-                              file_set.mutable_file());
+                              &file_set.file());
   }
 
   std::vector<string> output_filenames;
@@ -1921,11 +1921,11 @@ bool CommandLineInterface::GeneratePluginOutput(
     GetTransitiveDependencies(parsed_files[i],
                               true,  // Include json_name for plugins.
                               true,  // Include source code info.
-                              &already_seen, request.mutable_proto_file());
+                              &already_seen, &request.proto_file());
   }
 
   google::protobuf::compiler::Version* version =
-      request.mutable_compiler_version();
+      &request.mutable_compiler_version();
   version->set_major(GOOGLE_PROTOBUF_VERSION / 1000000);
   version->set_minor(GOOGLE_PROTOBUF_VERSION / 1000 % 1000);
   version->set_patch(GOOGLE_PROTOBUF_VERSION % 1000);
@@ -2078,7 +2078,7 @@ bool CommandLineInterface::WriteDescriptorSet(
     GetTransitiveDependencies(parsed_files[i],
                               true,  // Include json_name
                               source_info_in_descriptor_set_,
-                              &already_seen, file_set.mutable_file());
+                              &already_seen, &file_set.file());
   }
 
   int fd;

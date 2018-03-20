@@ -105,8 +105,8 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     for (int i = 0; i < descriptor->oneof_decl_count(); ++i) {
       type->add_oneofs(descriptor->oneof_decl(i)->name());
     }
-    type->mutable_source_context()->set_file_name(descriptor->file()->name());
-    ConvertMessageOptions(descriptor->options(), type->mutable_options());
+    type->mutable_source_context().set_file_name(descriptor->file()->name());
+    ConvertMessageOptions(descriptor->options(), &type->options());
   }
 
   void ConvertMessageOptions(const MessageOptions& options,
@@ -116,7 +116,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
       option->set_name("map_entry");
       BoolValue value;
       value.set_value(true);
-      option->mutable_value()->PackFrom(value);
+      option->mutable_value().PackFrom(value);
     }
 
     // TODO(xiaofeng): Set other "options"?
@@ -160,11 +160,11 @@ class DescriptorPoolTypeResolver : public TypeResolver {
                              Enum* enum_type) {
     enum_type->Clear();
     enum_type->set_name(descriptor->full_name());
-    enum_type->mutable_source_context()->set_file_name(
+    enum_type->mutable_source_context().set_file_name(
         descriptor->file()->name());
     for (int i = 0; i < descriptor->value_count(); ++i) {
       const EnumValueDescriptor* value_descriptor = descriptor->value(i);
-      EnumValue* value = enum_type->mutable_enumvalue()->Add();
+      EnumValue* value = enum_type->enumvalue().Add();
       value->set_name(value_descriptor->name());
       value->set_number(value_descriptor->number());
 

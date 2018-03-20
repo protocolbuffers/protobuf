@@ -135,7 +135,7 @@ TEST_F(TextFormatExtensionsTest, Extensions) {
 TEST_F(TextFormatTest, ShortDebugString) {
   proto_.set_optional_int32(1);
   proto_.set_optional_string("hello");
-  proto_.mutable_optional_nested_message()->set_bb(2);
+  proto_.mutable_optional_nested_message().set_bb(2);
   proto_.mutable_optional_foreign_message();
 
   EXPECT_EQ("optional_int32: 1 optional_string: \"hello\" "
@@ -505,7 +505,7 @@ class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
 TEST_F(TextFormatTest, CustomPrinterForComments) {
   protobuf_unittest::TestAllTypes message;
   message.mutable_optional_nested_message();
-  message.mutable_optional_import_message()->set_d(42);
+  message.mutable_optional_import_message().set_d(42);
   message.add_repeated_nested_message();
   message.add_repeated_nested_message();
   message.add_repeated_import_message()->set_d(43);
@@ -547,7 +547,7 @@ class CustomMultilineCommentPrinter : public TextFormat::FieldValuePrinter {
 TEST_F(TextFormatTest, CustomPrinterForMultilineComments) {
   protobuf_unittest::TestAllTypes message;
   message.mutable_optional_nested_message();
-  message.mutable_optional_import_message()->set_d(42);
+  message.mutable_optional_import_message().set_d(42);
   TextFormat::Printer printer;
   CustomMessageFieldValuePrinter my_field_printer;
   printer.SetDefaultFieldValuePrinter(new CustomMultilineCommentPrinter());
@@ -1578,11 +1578,11 @@ const char TextFormatMessageSetTest::proto_debug_string_[] =
 TEST_F(TextFormatMessageSetTest, Serialize) {
   protobuf_unittest::TestMessageSetContainer proto;
   protobuf_unittest::TestMessageSetExtension1* item_a =
-    proto.mutable_message_set()->MutableExtension(
+    proto.mutable_message_set().MutableExtension(
       protobuf_unittest::TestMessageSetExtension1::message_set_extension);
   item_a->set_i(23);
   protobuf_unittest::TestMessageSetExtension2* item_b =
-    proto.mutable_message_set()->MutableExtension(
+    proto.mutable_message_set().MutableExtension(
       protobuf_unittest::TestMessageSetExtension2::message_set_extension);
   item_b->set_str("foo");
   EXPECT_EQ(proto_debug_string_, proto.DebugString());

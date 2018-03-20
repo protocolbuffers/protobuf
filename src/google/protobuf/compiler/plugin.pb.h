@@ -361,15 +361,15 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   void add_file_to_generate(const char* value);
   void add_file_to_generate(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& file_to_generate() const;
-  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_file_to_generate();
+  ::google::protobuf::RepeatedPtrField< ::std::string>& file_to_generate();
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   int proto_file_size() const;
   void clear_proto_file();
   static const int kProtoFileFieldNumber = 15;
-  ::google::protobuf::FileDescriptorProto* mutable_proto_file(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
-      mutable_proto_file();
+  ::google::protobuf::FileDescriptorProto& proto_file(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+      proto_file();
   const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
   ::google::protobuf::FileDescriptorProto* add_proto_file();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
@@ -396,7 +396,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   static const int kCompilerVersionFieldNumber = 3;
   const ::google::protobuf::compiler::Version& compiler_version() const;
   ::google::protobuf::compiler::Version* release_compiler_version();
-  ::google::protobuf::compiler::Version* mutable_compiler_version();
+  ::google::protobuf::compiler::Version& mutable_compiler_version();
   void set_allocated_compiler_version(::google::protobuf::compiler::Version* compiler_version);
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
@@ -675,9 +675,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   int file_size() const;
   void clear_file();
   static const int kFileFieldNumber = 15;
-  ::google::protobuf::compiler::CodeGeneratorResponse_File* mutable_file(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
-      mutable_file();
+  ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
+      file();
   const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
   ::google::protobuf::compiler::CodeGeneratorResponse_File* add_file();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
@@ -924,10 +924,10 @@ CodeGeneratorRequest::file_to_generate() const {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return file_to_generate_;
 }
-inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-CodeGeneratorRequest::mutable_file_to_generate() {
+inline ::google::protobuf::RepeatedPtrField< ::std::string>&
+CodeGeneratorRequest::file_to_generate() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-  return &file_to_generate_;
+  return file_to_generate_;
 }
 
 // optional string parameter = 2;
@@ -997,14 +997,14 @@ inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* paramet
 inline int CodeGeneratorRequest::proto_file_size() const {
   return proto_file_.size();
 }
-inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_proto_file(int index) {
+inline ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return proto_file_.Mutable(index);
+  return *proto_file_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
-CodeGeneratorRequest::mutable_proto_file() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+CodeGeneratorRequest::proto_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return &proto_file_;
+  return proto_file_;
 }
 inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
@@ -1047,14 +1047,14 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::release_comp
   compiler_version_ = NULL;
   return temp;
 }
-inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
+inline ::google::protobuf::compiler::Version& CodeGeneratorRequest::mutable_compiler_version() {
   set_has_compiler_version();
   if (compiler_version_ == NULL) {
     compiler_version_ = ::google::protobuf::Arena::Create< ::google::protobuf::compiler::Version >(
         GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
-  return compiler_version_;
+  return *compiler_version_;
 }
 inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::protobuf::compiler::Version* compiler_version) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
@@ -1342,14 +1342,14 @@ inline int CodeGeneratorResponse::file_size() const {
 inline void CodeGeneratorResponse::clear_file() {
   file_.Clear();
 }
-inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index) {
+inline ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return file_.Mutable(index);
+  return *file_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
-CodeGeneratorResponse::mutable_file() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
+CodeGeneratorResponse::file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return &file_;
+  return file_;
 }
 inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.file)

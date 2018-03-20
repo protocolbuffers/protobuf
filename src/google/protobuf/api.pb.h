@@ -171,9 +171,9 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   int methods_size() const;
   void clear_methods();
   static const int kMethodsFieldNumber = 2;
-  ::google::protobuf::Method* mutable_methods(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
-      mutable_methods();
+  ::google::protobuf::Method& methods(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
+      methods();
   const ::google::protobuf::Method& methods(int index) const;
   ::google::protobuf::Method* add_methods();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
@@ -183,9 +183,9 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   int options_size() const;
   void clear_options();
   static const int kOptionsFieldNumber = 3;
-  ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+  ::google::protobuf::Option& options(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+      options();
   const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
@@ -195,9 +195,9 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   int mixins_size() const;
   void clear_mixins();
   static const int kMixinsFieldNumber = 6;
-  ::google::protobuf::Mixin* mutable_mixins(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
-      mutable_mixins();
+  ::google::protobuf::Mixin& mixins(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
+      mixins();
   const ::google::protobuf::Mixin& mixins(int index) const;
   ::google::protobuf::Mixin* add_mixins();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
@@ -237,7 +237,7 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   static const int kSourceContextFieldNumber = 5;
   const ::google::protobuf::SourceContext& source_context() const;
   ::google::protobuf::SourceContext* release_source_context();
-  ::google::protobuf::SourceContext* mutable_source_context();
+  ::google::protobuf::SourceContext& mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* source_context);
 
   // .google.protobuf.Syntax syntax = 7;
@@ -353,9 +353,9 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   int options_size() const;
   void clear_options();
   static const int kOptionsFieldNumber = 6;
-  ::google::protobuf::Option* mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-      mutable_options();
+  ::google::protobuf::Option& options(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+      options();
   const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* add_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
@@ -633,14 +633,14 @@ inline int Api::methods_size() const {
 inline void Api::clear_methods() {
   methods_.Clear();
 }
-inline ::google::protobuf::Method* Api::mutable_methods(int index) {
+inline ::google::protobuf::Method& Api::methods(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.methods)
-  return methods_.Mutable(index);
+  return *methods_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
-Api::mutable_methods() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
+Api::methods() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
-  return &methods_;
+  return methods_;
 }
 inline const ::google::protobuf::Method& Api::methods(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.methods)
@@ -660,14 +660,14 @@ Api::methods() const {
 inline int Api::options_size() const {
   return options_.size();
 }
-inline ::google::protobuf::Option* Api::mutable_options(int index) {
+inline ::google::protobuf::Option& Api::options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.options)
-  return options_.Mutable(index);
+  return *options_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Api::mutable_options() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+Api::options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
-  return &options_;
+  return options_;
 }
 inline const ::google::protobuf::Option& Api::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.options)
@@ -753,14 +753,14 @@ inline ::google::protobuf::SourceContext* Api::release_source_context() {
   source_context_ = NULL;
   return temp;
 }
-inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
+inline ::google::protobuf::SourceContext& Api::mutable_source_context() {
   
   if (source_context_ == NULL) {
     source_context_ = ::google::protobuf::Arena::Create< ::google::protobuf::SourceContext >(
         GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
-  return source_context_;
+  return *source_context_;
 }
 inline void Api::set_allocated_source_context(::google::protobuf::SourceContext* source_context) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
@@ -788,14 +788,14 @@ inline int Api::mixins_size() const {
 inline void Api::clear_mixins() {
   mixins_.Clear();
 }
-inline ::google::protobuf::Mixin* Api::mutable_mixins(int index) {
+inline ::google::protobuf::Mixin& Api::mixins(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.mixins)
-  return mixins_.Mutable(index);
+  return *mixins_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
-Api::mutable_mixins() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
+Api::mixins() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
-  return &mixins_;
+  return mixins_;
 }
 inline const ::google::protobuf::Mixin& Api::mixins(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.mixins)
@@ -1020,14 +1020,14 @@ inline void Method::set_response_streaming(bool value) {
 inline int Method::options_size() const {
   return options_.size();
 }
-inline ::google::protobuf::Option* Method::mutable_options(int index) {
+inline ::google::protobuf::Option& Method::options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.options)
-  return options_.Mutable(index);
+  return *options_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
-Method::mutable_options() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+Method::options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
-  return &options_;
+  return options_;
 }
 inline const ::google::protobuf::Option& Method::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.options)

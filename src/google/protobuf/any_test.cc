@@ -39,7 +39,7 @@ TEST(AnyTest, TestPackAndUnpack) {
   protobuf_unittest::TestAny submessage;
   submessage.set_int32_value(12345);
   protobuf_unittest::TestAny message;
-  message.mutable_any_value()->PackFrom(submessage);
+  message.mutable_any_value().PackFrom(submessage);
 
   string data = message.SerializeAsString();
 
@@ -56,7 +56,7 @@ TEST(AnyTest, TestPackAndUnpackAny) {
   google::protobuf::Any any;
   any.PackFrom(submessage);
   protobuf_unittest::TestAny message;
-  message.mutable_any_value()->PackFrom(any);
+  message.mutable_any_value().PackFrom(any);
 
   string data = message.SerializeAsString();
 
@@ -77,7 +77,7 @@ TEST(AnyTest, TestIs) {
   EXPECT_FALSE(any.Is<google::protobuf::Any>());
 
   protobuf_unittest::TestAny message;
-  message.mutable_any_value()->PackFrom(any);
+  message.mutable_any_value().PackFrom(any);
   ASSERT_TRUE(message.ParseFromString(message.SerializeAsString()));
   EXPECT_FALSE(message.any_value().Is<protobuf_unittest::TestAny>());
   EXPECT_TRUE(message.any_value().Is<google::protobuf::Any>());

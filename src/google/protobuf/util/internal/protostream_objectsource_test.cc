@@ -547,9 +547,9 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
   Cyclic cyclic;
   cyclic.set_m_int(123);
 
-  Book* book = cyclic.mutable_m_book();
+  Book* book = &cyclic.mutable_m_book();
   book->set_title("book title");
-  Cyclic* current = cyclic.mutable_m_cyclic();
+  Cyclic* current = &cyclic.mutable_m_cyclic();
   Author* current_author = cyclic.add_m_author();
   for (int i = 0; i < 63; ++i) {
     Author* next = current_author->add_friend_();
@@ -561,7 +561,7 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
 
   // Recursive message with depth (65) > max (max is 64).
   for (int i = 0; i < 64; ++i) {
-    Cyclic* next = current->mutable_m_cyclic();
+    Cyclic* next = &current->mutable_m_cyclic();
     next->set_m_str(StrCat("count_", i));
     current = next;
   }
@@ -611,14 +611,14 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 // }
 TEST_P(ProtostreamObjectSourceMapsTest, MapsTest) {
   MapOut out;
-  (*out.mutable_map1())["key1"].set_foo("foovalue");
-  (*out.mutable_map1())["key2"].set_foo("barvalue");
+  out.map1()["key1"].set_foo("foovalue");
+  out.map1()["key2"].set_foo("barvalue");
 
-  MapOut* nested_value = &(*out.mutable_map2())["nestedself"];
-  (*nested_value->mutable_map1())["nested_key1"].set_foo("nested_foo");
+  MapOut* nested_value = &out.map2()["nestedself"];
+  nested_value->map1()["nested_key1"].set_foo("nested_foo");
   nested_value->set_bar("nested_bar_string");
 
-  (*out.mutable_map3())[111] = "one one one";
+  out.map3()[111] = "one one one";
 
   out.set_bar("top bar");
 
@@ -679,9 +679,9 @@ TEST_P(ProtostreamObjectSourceMapsTest, MissingKeysTest) {
   //     "false": "bool"
   //   }
   // }
-  out.add_map1()->mutable_value()->set_foo("foovalue");
-  MapOut* nested = out.add_map2()->mutable_value();
-  (*nested->mutable_map1())["nested_key1"].set_foo("nested_foo");
+  out.add_map1()->mutable_value().set_foo("foovalue");
+  MapOut* nested = &out.add_map2()->mutable_value();
+  nested->map1()["nested_key1"].set_foo("nested_foo");
   out.add_map3()->set_value("one one one");
   out.add_map4()->set_value("bool");
 
@@ -735,7 +735,7 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 // }
 TEST_P(ProtostreamObjectSourceAnysTest, BasicAny) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any* any = &out.mutable_any();
 
   AnyM m;
   m.set_foo("foovalue");
@@ -754,7 +754,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, BasicAny) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, RecursiveAny) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any* any = &out.mutable_any();
   any->set_type_url("type.googleapis.com/google.protobuf.Any");
 
   ::google::protobuf::Any nested_any;
@@ -782,7 +782,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, RecursiveAny) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, DoubleRecursiveAny) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any* any = &out.mutable_any();
   any->set_type_url("type.googleapis.com/google.protobuf.Any");
 
   ::google::protobuf::Any nested_any;
@@ -826,7 +826,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, EmptyAnyOutputsEmptyObject) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, EmptyWithTypeAndNoValueOutputsType) {
   AnyOut out;
-  out.mutable_any()->set_type_url("foo.googleapis.com/my.Type");
+  out.mutable_any().set_type_url("foo.googleapis.com/my.Type");
 
   ow_.StartObject("")
       ->StartObject("any")
@@ -839,7 +839,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, EmptyWithTypeAndNoValueOutputsType) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, MissingTypeUrlError) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any* any = &out.mutable_any();
 
   AnyM m;
   m.set_foo("foovalue");
@@ -854,7 +854,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, MissingTypeUrlError) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any* any = &out.mutable_any();
   any->set_type_url("foo.googleapis.com/my.own.Type");
 
   AnyM m;
@@ -870,7 +870,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
   AnyOut out;
-  ::google::protobuf::Any* any = out.mutable_any();
+  ::google::protobuf::Any* any = &out.mutable_any();
   any->set_type_url("type.googleapis.com/unknown.Type");
 
   AnyM m;
@@ -905,9 +905,9 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 //  }
 TEST_P(ProtostreamObjectSourceStructTest, StructRenderSuccess) {
   StructType out;
-  google::protobuf::Struct* s = out.mutable_object();
-  s->mutable_fields()->operator[]("k1").set_number_value(123);
-  s->mutable_fields()->operator[]("k2").set_bool_value(true);
+  google::protobuf::Struct* s = &out.mutable_object();
+  s->fields().operator[]("k1").set_number_value(123);
+  s->fields().operator[]("k2").set_bool_value(true);
 
   ow_.StartObject("")
       ->StartObject("object")
@@ -921,8 +921,8 @@ TEST_P(ProtostreamObjectSourceStructTest, StructRenderSuccess) {
 
 TEST_P(ProtostreamObjectSourceStructTest, MissingValueSkipsField) {
   StructType out;
-  google::protobuf::Struct* s = out.mutable_object();
-  s->mutable_fields()->operator[]("k1");
+  google::protobuf::Struct* s = &out.mutable_object();
+  s->fields().operator[]("k1");
 
   ow_.StartObject("")->StartObject("object")->EndObject()->EndObject();
 
@@ -946,8 +946,8 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 TEST_P(ProtostreamObjectSourceFieldMaskTest, FieldMaskRenderSuccess) {
   FieldMaskTest out;
   out.set_id("1");
-  out.mutable_single_mask()->add_paths("path1");
-  out.mutable_single_mask()->add_paths("snake_case_path2");
+  out.mutable_single_mask().add_paths("path1");
+  out.mutable_single_mask().add_paths("snake_case_path2");
   ::google::protobuf::FieldMask* mask = out.add_repeated_mask();
   mask->add_paths("path3");
   mask = out.add_repeated_mask();
@@ -955,8 +955,8 @@ TEST_P(ProtostreamObjectSourceFieldMaskTest, FieldMaskRenderSuccess) {
   mask->add_paths("path5");
   NestedFieldMask* nested = out.add_nested_mask();
   nested->set_data("data");
-  nested->mutable_single_mask()->add_paths("nested.path1");
-  nested->mutable_single_mask()->add_paths("nested_field.snake_case_path2");
+  nested->mutable_single_mask().add_paths("nested.path1");
+  nested->mutable_single_mask().add_paths("nested_field.snake_case_path2");
   mask = nested->add_repeated_mask();
   mask->add_paths("nested_field.path3");
   mask->add_paths("nested.snake_case_path4");
@@ -1008,7 +1008,7 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
   TimestampDuration out;
-  google::protobuf::Timestamp* ts = out.mutable_ts();
+  google::protobuf::Timestamp* ts = &out.mutable_ts();
   // Min allowed seconds - 1
   ts->set_seconds(kTimestampMinSeconds - 1);
   ow_.StartObject("");
@@ -1019,7 +1019,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
   TimestampDuration out;
-  google::protobuf::Timestamp* ts = out.mutable_ts();
+  google::protobuf::Timestamp* ts = &out.mutable_ts();
   // Max allowed seconds + 1
   ts->set_seconds(kTimestampMaxSeconds + 1);
   ow_.StartObject("");
@@ -1030,7 +1030,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
   TimestampDuration out;
-  google::protobuf::Duration* dur = out.mutable_dur();
+  google::protobuf::Duration* dur = &out.mutable_dur();
   // Min allowed seconds - 1
   dur->set_seconds(kDurationMinSeconds - 1);
   ow_.StartObject("");
@@ -1041,7 +1041,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
   TimestampDuration out;
-  google::protobuf::Duration* dur = out.mutable_dur();
+  google::protobuf::Duration* dur = &out.mutable_dur();
   // Min allowed seconds + 1
   dur->set_seconds(kDurationMaxSeconds + 1);
   ow_.StartObject("");
@@ -1052,8 +1052,8 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
 
 TEST_P(ProtostreamObjectSourceTimestampTest, TimestampDurationDefaultValue) {
   TimestampDuration out;
-  out.mutable_ts()->set_seconds(0);
-  out.mutable_dur()->set_seconds(0);
+  out.mutable_ts().set_seconds(0);
+  out.mutable_dur().set_seconds(0);
 
   ow_.StartObject("")
       ->RenderString("ts", "1970-01-01T00:00:00Z")

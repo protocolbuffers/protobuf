@@ -620,7 +620,7 @@ bool Type::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_source_context()));
+               input, &mutable_source_context()));
         } else {
           goto handle_unusual;
         }
@@ -885,7 +885,7 @@ void Type::MergeFrom(const Type& from) {
     set_name(from.name());
   }
   if (from.has_source_context()) {
-    mutable_source_context()->::google::protobuf::SourceContext::MergeFrom(from.source_context());
+    mutable_source_context().::google::protobuf::SourceContext::MergeFrom(from.source_context());
   }
   if (from.syntax() != 0) {
     set_syntax(from.syntax());
@@ -1819,7 +1819,7 @@ bool Enum::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_source_context()));
+               input, &mutable_source_context()));
         } else {
           goto handle_unusual;
         }
@@ -2055,7 +2055,7 @@ void Enum::MergeFrom(const Enum& from) {
     set_name(from.name());
   }
   if (from.has_source_context()) {
-    mutable_source_context()->::google::protobuf::SourceContext::MergeFrom(from.source_context());
+    mutable_source_context().::google::protobuf::SourceContext::MergeFrom(from.source_context());
   }
   if (from.syntax() != 0) {
     set_syntax(from.syntax());
@@ -2628,7 +2628,7 @@ bool Option::MergePartialFromCodedStream(
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_value()));
+               input, &mutable_value()));
         } else {
           goto handle_unusual;
         }
@@ -2773,7 +2773,7 @@ void Option::MergeFrom(const Option& from) {
     set_name(from.name());
   }
   if (from.has_value()) {
-    mutable_value()->::google::protobuf::Any::MergeFrom(from.value());
+    mutable_value().::google::protobuf::Any::MergeFrom(from.value());
   }
 }
 

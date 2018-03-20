@@ -1015,17 +1015,16 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   const Reflection* refl = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
-  Map<int32, int32>* map_int32_int32 = message.mutable_map_int32_int32();
-  Map<int32, double>* map_int32_double = message.mutable_map_int32_double();
-  Map<string, string>* map_string_string = message.mutable_map_string_string();
-  Map<int32, ForeignMessage>* map_int32_foreign_message =
-      message.mutable_map_int32_foreign_message();
+  auto& map_int32_int32 = message.map_int32_int32();
+  auto& map_int32_double = message.map_int32_double();
+  auto& map_string_string = message.map_string_string();
+  auto& map_int32_foreign_message = message.map_int32_foreign_message();
 
   for (int i = 0; i < 10; ++i) {
-    (*map_int32_int32)[i] = Func(i, 1);
-    (*map_int32_double)[i] = Func(i, 2);
-    (*map_string_string)[StrFunc(i, 1)] = StrFunc(i, 5);
-    (*map_int32_foreign_message)[i].set_c(Func(i, 6));
+    map_int32_int32[i] = Func(i, 1);
+    map_int32_double[i] = Func(i, 2);
+    map_string_string[StrFunc(i, 1)] = StrFunc(i, 5);
+    map_int32_foreign_message[i].set_c(Func(i, 6));
   }
 
   // Get FieldDescriptors for all the fields of interest.
@@ -1206,11 +1205,10 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   const Reflection* refl = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
-  Map<int32, int32>* map_int32_int32 = message.mutable_map_int32_int32();
-  Map<int32, double>* map_int32_double = message.mutable_map_int32_double();
-  Map<string, string>* map_string_string = message.mutable_map_string_string();
-  Map<int32, ForeignMessage>* map_int32_foreign_message =
-      message.mutable_map_int32_foreign_message();
+  auto map_int32_int32 = &message.map_int32_int32();
+  auto map_int32_double = &message.map_int32_double();
+  auto map_string_string = &message.map_string_string();
+  auto map_int32_foreign_message = &message.map_int32_foreign_message();
 
   for (int i = 0; i < 10; ++i) {
     (*map_int32_int32)[i] = Func(i, 1);
@@ -1697,18 +1695,18 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
   // Set-up message content.
   TestMap m0, m1, m2;
   for (int i = 0; i < 10; ++i) {
-    (*m0.mutable_map_int32_int32())[i] = Func(i, 1);
-    (*m0.mutable_map_int32_double())[i] = Func(i, 2);
-    (*m0.mutable_map_string_string())[StrFunc(i, 1)] = StrFunc(i, 5);
-    (*m0.mutable_map_int32_foreign_message())[i].set_c(Func(i, 6));
-    (*m1.mutable_map_int32_int32())[i + 10] = Func(i, 11);
-    (*m1.mutable_map_int32_double())[i + 10] = Func(i, 12);
-    (*m1.mutable_map_string_string())[StrFunc(i + 10, 1)] = StrFunc(i, 15);
-    (*m1.mutable_map_int32_foreign_message())[i + 10].set_c(Func(i, 16));
-    (*m2.mutable_map_int32_int32())[i + 20] = Func(i, 21);
-    (*m2.mutable_map_int32_double())[i + 20] = Func(i, 22);
-    (*m2.mutable_map_string_string())[StrFunc(i + 20, 1)] = StrFunc(i, 25);
-    (*m2.mutable_map_int32_foreign_message())[i + 20].set_c(Func(i, 26));
+    m0.map_int32_int32()[i] = Func(i, 1);
+    m0.map_int32_double()[i] = Func(i, 2);
+    m0.map_string_string()[StrFunc(i, 1)] = StrFunc(i, 5);
+    m0.map_int32_foreign_message()[i].set_c(Func(i, 6));
+    m1.map_int32_int32()[i + 10] = Func(i, 11);
+    m1.map_int32_double()[i + 10] = Func(i, 12);
+    m1.map_string_string()[StrFunc(i + 10, 1)] = StrFunc(i, 15);
+    m1.map_int32_foreign_message()[i + 10].set_c(Func(i, 16));
+    m2.map_int32_int32()[i + 20] = Func(i, 21);
+    m2.map_int32_double()[i + 20] = Func(i, 22);
+    m2.map_string_string()[StrFunc(i + 20, 1)] = StrFunc(i, 25);
+    m2.map_int32_foreign_message()[i + 20].set_c(Func(i, 26));
   }
 
   const Reflection* refl = m0.GetReflection();
@@ -1881,7 +1879,7 @@ TEST(GeneratedMapFieldTest, SetMapFieldsInitialized) {
 TEST(GeneratedMapFieldTest, Proto2SetMapFieldsInitialized) {
   unittest::TestEnumMap message;
   EXPECT_EQ(unittest::PROTO2_MAP_ENUM_FOO,
-            (*message.mutable_known_map_field())[0]);
+            message.known_map_field()[0]);
 }
 
 TEST(GeneratedMapFieldTest, Clear) {
@@ -1896,7 +1894,7 @@ TEST(GeneratedMapFieldTest, ClearMessageMap) {
   unittest::TestMessageMap message;
 
   // Creates a TestAllTypes with default value
-  TestUtil::ExpectClear((*message.mutable_map_int32_message())[0]);
+  TestUtil::ExpectClear(message.map_int32_message()[0]);
 }
 
 TEST(GeneratedMapFieldTest, CopyFrom) {
@@ -1914,8 +1912,8 @@ TEST(GeneratedMapFieldTest, CopyFrom) {
 TEST(GeneratedMapFieldTest, CopyFromMessageMap) {
   unittest::TestMessageMap message1, message2;
 
-  (*message1.mutable_map_int32_message())[0].add_repeated_int32(100);
-  (*message2.mutable_map_int32_message())[0].add_repeated_int32(101);
+  message1.map_int32_message()[0].add_repeated_int32(100);
+  message2.map_int32_message()[0].add_repeated_int32(101);
 
   message1.CopyFrom(message2);
 
@@ -2089,12 +2087,12 @@ TEST(GeneratedMapFieldTest, NonEmptyMergeFrom) {
   MapTestUtil::SetMapFields(&message1);
 
   // This field will test merging into an empty spot.
-  (*message2.mutable_map_int32_int32())[1] = 1;
-  message1.mutable_map_int32_int32()->erase(1);
+  message2.map_int32_int32()[1] = 1;
+  message1.map_int32_int32().erase(1);
 
   // This tests overwriting.
-  (*message2.mutable_map_int32_double())[1] = 1;
-  (*message1.mutable_map_int32_double())[1] = 2;
+  message2.map_int32_double()[1] = 1;
+  message1.map_int32_double()[1] = 2;
 
   message1.MergeFrom(message2);
   MapTestUtil::ExpectMapFieldsSet(message1);
@@ -2103,8 +2101,8 @@ TEST(GeneratedMapFieldTest, NonEmptyMergeFrom) {
 TEST(GeneratedMapFieldTest, MergeFromMessageMap) {
   unittest::TestMessageMap message1, message2;
 
-  (*message1.mutable_map_int32_message())[0].add_repeated_int32(100);
-  (*message2.mutable_map_int32_message())[0].add_repeated_int32(101);
+  message1.map_int32_message()[0].add_repeated_int32(100);
+  message2.map_int32_message()[0].add_repeated_int32(101);
 
   message1.MergeFrom(message2);
 
@@ -2166,8 +2164,8 @@ TEST(GeneratedMapFieldTest, SameTypeMaps) {
 
 TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   unittest::TestEnumMapPlusExtra from;
-  (*from.mutable_known_map_field())[0] = unittest::E_PROTO2_MAP_ENUM_FOO;
-  (*from.mutable_unknown_map_field())[0] = unittest::E_PROTO2_MAP_ENUM_EXTRA;
+  from.known_map_field()[0] = unittest::E_PROTO2_MAP_ENUM_FOO;
+  from.unknown_map_field()[0] = unittest::E_PROTO2_MAP_ENUM_EXTRA;
   string data;
   from.SerializeToString(&data);
 
@@ -2231,14 +2229,14 @@ TEST(GeneratedMapFieldTest, DuplicatedKeyWireFormat) {
   with_dummy4.set_b(0);
   with_dummy4.set_c(0);
   with_dummy4.set_dummy4(11);
-  (*map_message.mutable_map_field())[key] = with_dummy4;
+  map_message.map_field()[key] = with_dummy4;
   string s = map_message.SerializeAsString();
   unittest::TestRequired with_dummy5;
   with_dummy5.set_a(0);
   with_dummy5.set_b(0);
   with_dummy5.set_c(0);
   with_dummy5.set_dummy5(12);
-  (*map_message.mutable_map_field())[key] = with_dummy5;
+  map_message.map_field()[key] = with_dummy5;
   string both = s + map_message.SerializeAsString();
   // We don't expect a merge now.  The "second one wins."
   ASSERT_TRUE(map_message.ParseFromString(both));
@@ -2363,13 +2361,13 @@ TEST(GeneratedMapFieldTest, IsInitialized) {
   unittest::TestRequiredMessageMap map_message;
 
   // Add an uninitialized message.
-  (*map_message.mutable_map_field())[0];
+  map_message.map_field()[0];
   EXPECT_FALSE(map_message.IsInitialized());
 
   // Initialize uninitialized message
-  (*map_message.mutable_map_field())[0].set_a(0);
-  (*map_message.mutable_map_field())[0].set_b(0);
-  (*map_message.mutable_map_field())[0].set_c(0);
+  map_message.map_field()[0].set_a(0);
+  map_message.map_field()[0].set_b(0);
+  map_message.map_field()[0].set_c(0);
   EXPECT_TRUE(map_message.IsInitialized());
 }
 
@@ -2382,7 +2380,7 @@ TEST(GeneratedMapFieldTest, MessagesMustMerge) {
   with_dummy4.set_dummy4(98);
 
   EXPECT_TRUE(with_dummy4.IsInitialized());
-  (*map_message.mutable_map_field())[0] = with_dummy4;
+  map_message.map_field()[0] = with_dummy4;
   EXPECT_TRUE(map_message.IsInitialized());
   string s = map_message.SerializeAsString();
 
@@ -2759,7 +2757,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapSpaceUsed) {
 
 TEST_F(MapFieldInDynamicMessageTest, RecursiveMap) {
   TestRecursiveMapMessage from;
-  (*from.mutable_a())[""];
+  from.a()[""];
   string data = from.SerializeAsString();
   google::protobuf::scoped_ptr<Message> to(
       factory_.GetPrototype(recursive_map_descriptor_)->New());
@@ -2895,13 +2893,13 @@ TEST(ReflectionOpsForMapFieldTest, IsInitialized) {
   unittest::TestRequiredMessageMap map_message;
 
   // Add an uninitialized message.
-  (*map_message.mutable_map_field())[0];
+  map_message.map_field()[0];
   EXPECT_FALSE(ReflectionOps::IsInitialized(map_message));
 
   // Initialize uninitialized message
-  (*map_message.mutable_map_field())[0].set_a(0);
-  (*map_message.mutable_map_field())[0].set_b(0);
-  (*map_message.mutable_map_field())[0].set_c(0);
+  map_message.map_field()[0].set_a(0);
+  map_message.map_field()[0].set_b(0);
+  map_message.map_field()[0].set_c(0);
   EXPECT_TRUE(ReflectionOps::IsInitialized(map_message));
 }
 
@@ -3115,8 +3113,7 @@ TEST(MapSerializationTest, Deterministic) {
   const int kIters = 25;
   protobuf_unittest::TestMaps t;
   protobuf_unittest::TestIntIntMap inner;
-  (*inner.mutable_m())[0] = (*inner.mutable_m())[10] =
-      (*inner.mutable_m())[-200] = 0;
+  inner.m()[0] = inner.m()[10] = inner.m()[-200] = 0;
   uint64 frog = 9;
   const uint64 multiplier = 0xa29cd16f;
   for (int i = 0; i < kIters; i++) {
@@ -3126,18 +3123,18 @@ TEST(MapSerializationTest, Deterministic) {
     const uint64 u64 = frog * static_cast<uint64>(187321);
     const bool b = i32 > 0;
     const string s = ConstructKey(frog);
-    (*inner.mutable_m())[i] = i32;
-    (*t.mutable_m_int32())[i32] = (*t.mutable_m_sint32())[i32] =
-        (*t.mutable_m_sfixed32())[i32] = inner;
-    (*t.mutable_m_uint32())[u32] = (*t.mutable_m_fixed32())[u32] = inner;
-    (*t.mutable_m_int64())[i64] = (*t.mutable_m_sint64())[i64] =
-        (*t.mutable_m_sfixed64())[i64] = inner;
-    (*t.mutable_m_uint64())[u64] = (*t.mutable_m_fixed64())[u64] = inner;
-    (*t.mutable_m_bool())[b] = inner;
-    (*t.mutable_m_string())[s] = inner;
-    (*t.mutable_m_string())[s + string(1 << (u32 % static_cast<uint32>(9)),
+    inner.m()[i] = i32;
+    t.m_int32()[i32] = t.m_sint32()[i32] =
+        t.m_sfixed32()[i32] = inner;
+    t.m_uint32()[u32] = t.m_fixed32()[u32] = inner;
+    t.m_int64()[i64] = t.m_sint64()[i64] =
+        t.m_sfixed64()[i64] = inner;
+    t.m_uint64()[u64] = t.m_fixed64()[u64] = inner;
+    t.m_bool()[b] = inner;
+    t.m_string()[s] = inner;
+    t.m_string()[s + string(1 << (u32 % static_cast<uint32>(9)),
                                        b)] = inner;
-    inner.mutable_m()->erase(i);
+    inner.m().erase(i);
     frog = frog * multiplier + i;
     frog ^= (frog >> 41);
   }
@@ -3153,7 +3150,7 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
       TestSourceDir() + "/google/protobuf/testdata/" + filename,
       &golden, true));
   t.ParseFromString(golden);
-  *(p.mutable_m()) = t;
+  p.mutable_m() = t;
   std::vector<string> v;
   // Use multiple attempts to increase the chance of a failure if something is
   // buggy.  For example, each separate copy of a map might use a different
@@ -3273,7 +3270,7 @@ TEST(ArenaTest, StringMapNoLeak) {
   while (data.capacity() <= original_capacity) {
     data.append("a");
   }
-  (*message->mutable_map_string_string())[data] = data;
+  message->map_string_string()[data] = data;
   // We rely on heap checkers to detect memory leak for us.
   ASSERT_FALSE(message == NULL);
 }
@@ -3290,14 +3287,14 @@ TEST(ArenaTest, IsInitialized) {
 
   unittest::TestArenaMap* message =
       Arena::CreateMessage<unittest::TestArenaMap>(&arena);
-  EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
+  EXPECT_EQ(0, message->map_int32_int32()[0]);
 }
 
 #if LANG_CXX11
 TEST(MoveTest, MoveConstructorWorks) {
   Map<int32, TestAllTypes> original_map;
-  original_map[42].mutable_optional_nested_message()->set_bb(42);
-  original_map[43].mutable_optional_nested_message()->set_bb(43);
+  original_map[42].mutable_optional_nested_message().set_bb(42);
+  original_map[43].mutable_optional_nested_message().set_bb(43);
   const auto* nested_msg42_ptr = &original_map[42].optional_nested_message();
   const auto* nested_msg43_ptr = &original_map[43].optional_nested_message();
 
@@ -3314,8 +3311,8 @@ TEST(MoveTest, MoveConstructorWorks) {
 
 TEST(MoveTest, MoveAssignmentWorks) {
   Map<int32, TestAllTypes> original_map;
-  original_map[42].mutable_optional_nested_message()->set_bb(42);
-  original_map[43].mutable_optional_nested_message()->set_bb(43);
+  original_map[42].mutable_optional_nested_message().set_bb(42);
+  original_map[43].mutable_optional_nested_message().set_bb(43);
   const auto* nested_msg42_ptr = &original_map[42].optional_nested_message();
   const auto* nested_msg43_ptr = &original_map[43].optional_nested_message();
 

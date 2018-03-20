@@ -865,21 +865,18 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
     file->CopyTo(file_proto);
 
     // Filter out descriptor.proto as it cannot be depended on for now.
-    RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
-    for (RepeatedPtrField<string>::iterator it = dependency->begin();
-         it != dependency->end(); ++it) {
+    for (auto it = file_proto->dependency().begin();
+         it != file_proto->dependency().end(); ++it) {
       if (*it != kDescriptorFile) {
-        dependency->erase(it);
+        file_proto->dependency().erase(it);
         break;
       }
     }
 
     // Filter out all extensions, since we do not support extension yet.
     file_proto->clear_extension();
-    RepeatedPtrField<DescriptorProto>* message_type =
-        file_proto->mutable_message_type();
-    for (RepeatedPtrField<DescriptorProto>::iterator it = message_type->begin();
-         it != message_type->end(); ++it) {
+    for (auto it = file_proto->message_type().begin();
+         it != file_proto->message_type().end(); ++it) {
       it->clear_extension();
     }
 

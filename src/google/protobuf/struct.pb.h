@@ -227,8 +227,8 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
   static const int kFieldsFieldNumber = 1;
   const ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >&
       fields() const;
-  ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >*
-      mutable_fields();
+  ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >&
+      fields();
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Struct)
  private:
@@ -416,7 +416,7 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   static const int kStructValueFieldNumber = 5;
   const ::google::protobuf::Struct& struct_value() const;
   ::google::protobuf::Struct* release_struct_value();
-  ::google::protobuf::Struct* mutable_struct_value();
+  ::google::protobuf::Struct& mutable_struct_value();
   void set_allocated_struct_value(::google::protobuf::Struct* struct_value);
   void unsafe_arena_set_allocated_struct_value(
       ::google::protobuf::Struct* struct_value);
@@ -428,7 +428,7 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   static const int kListValueFieldNumber = 6;
   const ::google::protobuf::ListValue& list_value() const;
   ::google::protobuf::ListValue* release_list_value();
-  ::google::protobuf::ListValue* mutable_list_value();
+  ::google::protobuf::ListValue& mutable_list_value();
   void set_allocated_list_value(::google::protobuf::ListValue* list_value);
   void unsafe_arena_set_allocated_list_value(
       ::google::protobuf::ListValue* list_value);
@@ -571,9 +571,9 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
   int values_size() const;
   void clear_values();
   static const int kValuesFieldNumber = 1;
-  ::google::protobuf::Value* mutable_values(int index);
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
-      mutable_values();
+  ::google::protobuf::Value& values(int index);
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
+      values();
   const ::google::protobuf::Value& values(int index) const;
   ::google::protobuf::Value* add_values();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
@@ -616,10 +616,10 @@ Struct::fields() const {
   // @@protoc_insertion_point(field_map:google.protobuf.Struct.fields)
   return fields_.GetMap();
 }
-inline ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >*
-Struct::mutable_fields() {
+inline ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >&
+Struct::fields() {
   // @@protoc_insertion_point(field_mutable_map:google.protobuf.Struct.fields)
-  return fields_.MutableMap();
+  return *fields_.MutableMap();
 }
 
 // -------------------------------------------------------------------
@@ -891,7 +891,7 @@ inline void Value::unsafe_arena_set_allocated_struct_value(::google::protobuf::S
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.struct_value)
 }
-inline ::google::protobuf::Struct* Value::mutable_struct_value() {
+inline ::google::protobuf::Struct& Value::mutable_struct_value() {
   if (!has_struct_value()) {
     clear_kind();
     set_has_struct_value();
@@ -899,7 +899,7 @@ inline ::google::protobuf::Struct* Value::mutable_struct_value() {
         GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.struct_value)
-  return kind_.struct_value_;
+  return *kind_.struct_value_;
 }
 
 // .google.protobuf.ListValue list_value = 6;
@@ -956,7 +956,7 @@ inline void Value::unsafe_arena_set_allocated_list_value(::google::protobuf::Lis
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.list_value)
 }
-inline ::google::protobuf::ListValue* Value::mutable_list_value() {
+inline ::google::protobuf::ListValue& Value::mutable_list_value() {
   if (!has_list_value()) {
     clear_kind();
     set_has_list_value();
@@ -964,7 +964,7 @@ inline ::google::protobuf::ListValue* Value::mutable_list_value() {
         GetArenaNoVirtual());
   }
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.list_value)
-  return kind_.list_value_;
+  return *kind_.list_value_;
 }
 
 inline bool Value::has_kind() const {
@@ -987,14 +987,14 @@ inline int ListValue::values_size() const {
 inline void ListValue::clear_values() {
   values_.Clear();
 }
-inline ::google::protobuf::Value* ListValue::mutable_values(int index) {
+inline ::google::protobuf::Value& ListValue::values(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.ListValue.values)
-  return values_.Mutable(index);
+  return *values_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >*
-ListValue::mutable_values() {
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value >&
+ListValue::values() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
-  return &values_;
+  return values_;
 }
 inline const ::google::protobuf::Value& ListValue::values(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.ListValue.values)

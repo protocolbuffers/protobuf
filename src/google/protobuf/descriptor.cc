@@ -2028,7 +2028,7 @@ void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   }
 
   if (&options() != &FileOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    proto->mutable_options() = options();
   }
 }
 
@@ -2039,17 +2039,17 @@ void FileDescriptor::CopyJsonNameTo(FileDescriptorProto* proto) const {
     return;
   }
   for (int i = 0; i < message_type_count(); i++) {
-    message_type(i)->CopyJsonNameTo(proto->mutable_message_type(i));
+    message_type(i)->CopyJsonNameTo(&proto->message_type(i));
   }
   for (int i = 0; i < extension_count(); i++) {
-    extension(i)->CopyJsonNameTo(proto->mutable_extension(i));
+    extension(i)->CopyJsonNameTo(&proto->extension(i));
   }
 }
 
 void FileDescriptor::CopySourceCodeInfoTo(FileDescriptorProto* proto) const {
   if (source_code_info_ &&
       source_code_info_ != &SourceCodeInfo::default_instance()) {
-    proto->mutable_source_code_info()->CopyFrom(*source_code_info_);
+    proto->mutable_source_code_info() = *source_code_info_;
   }
 }
 
@@ -2074,7 +2074,7 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
     range->set_end(extension_range(i)->end);
     const ExtensionRangeOptions* options = extension_range(i)->options_;
     if (options != &ExtensionRangeOptions::default_instance()) {
-      range->mutable_options()->CopyFrom(*options);
+      range->mutable_options() = *options;
     }
   }
   for (int i = 0; i < extension_count(); i++) {
@@ -2090,7 +2090,7 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
   }
 
   if (&options() != &MessageOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    proto->mutable_options() = options();
   }
 }
 
@@ -2102,13 +2102,13 @@ void Descriptor::CopyJsonNameTo(DescriptorProto* proto) const {
     return;
   }
   for (int i = 0; i < field_count(); i++) {
-    field(i)->CopyJsonNameTo(proto->mutable_field(i));
+    field(i)->CopyJsonNameTo(&proto->field(i));
   }
   for (int i = 0; i < nested_type_count(); i++) {
-    nested_type(i)->CopyJsonNameTo(proto->mutable_nested_type(i));
+    nested_type(i)->CopyJsonNameTo(&proto->nested_type(i));
   }
   for (int i = 0; i < extension_count(); i++) {
-    extension(i)->CopyJsonNameTo(proto->mutable_extension(i));
+    extension(i)->CopyJsonNameTo(&proto->extension(i));
   }
 }
 
@@ -2160,7 +2160,7 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
   }
 
   if (&options() != &FieldOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    proto->mutable_options() = options();
   }
 }
 
@@ -2171,7 +2171,7 @@ void FieldDescriptor::CopyJsonNameTo(FieldDescriptorProto* proto) const {
 void OneofDescriptor::CopyTo(OneofDescriptorProto* proto) const {
   proto->set_name(name());
   if (&options() != &OneofOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    proto->mutable_options() = options();
   }
 }
 
@@ -2191,7 +2191,7 @@ void EnumDescriptor::CopyTo(EnumDescriptorProto* proto) const {
   }
 
   if (&options() != &EnumOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    proto->mutable_options() = options();
   }
 }
 
@@ -2200,7 +2200,7 @@ void EnumValueDescriptor::CopyTo(EnumValueDescriptorProto* proto) const {
   proto->set_number(number());
 
   if (&options() != &EnumValueOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    proto->mutable_options() = options();
   }
 }
 
@@ -2212,7 +2212,7 @@ void ServiceDescriptor::CopyTo(ServiceDescriptorProto* proto) const {
   }
 
   if (&options() != &ServiceOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    proto->mutable_options() = options();
   }
 }
 
@@ -2230,7 +2230,7 @@ void MethodDescriptor::CopyTo(MethodDescriptorProto* proto) const {
   proto->mutable_output_type()->append(output_type()->full_name());
 
   if (&options() != &MethodOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
+    proto->mutable_options() = options();
   }
 
   if (client_streaming_) {

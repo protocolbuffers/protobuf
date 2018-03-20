@@ -1933,10 +1933,10 @@ void SortMessages(DescriptorProto *descriptor_proto) {
   int size = descriptor_proto->nested_type_size();
   // recursively sort; we can't guarantee the order of nested messages either
   for (int i = 0; i < size; ++i) {
-    SortMessages(descriptor_proto->mutable_nested_type(i));
+    SortMessages(&descriptor_proto->nested_type(i));
   }
   DescriptorProto **data =
-    descriptor_proto->mutable_nested_type()->mutable_data();
+    descriptor_proto->nested_type().mutable_data();
   std::sort(data, data + size, CompareDescriptorNames());
 }
 
@@ -1945,10 +1945,10 @@ void SortMessages(FileDescriptorProto *file_descriptor_proto) {
   int size = file_descriptor_proto->message_type_size();
   // recursively sort; we can't guarantee the order of nested messages either
   for (int i = 0; i < size; ++i) {
-    SortMessages(file_descriptor_proto->mutable_message_type(i));
+    SortMessages(&file_descriptor_proto->message_type(i));
   }
   DescriptorProto **data =
-    file_descriptor_proto->mutable_message_type()->mutable_data();
+    file_descriptor_proto->message_type().mutable_data();
   std::sort(data, data + size, CompareDescriptorNames());
 }
 
@@ -1958,18 +1958,18 @@ void StripFieldTypeName(DescriptorProto* proto) {
     string type_name = proto->field(i).type_name();
     string::size_type pos = type_name.find_last_of(".");
     if (pos != string::npos) {
-      proto->mutable_field(i)->mutable_type_name()->assign(
+      proto->field(i).mutable_type_name()->assign(
           type_name.begin() + pos + 1, type_name.end());
     }
   }
   for (int i = 0; i < proto->nested_type_size(); ++i) {
-    StripFieldTypeName(proto->mutable_nested_type(i));
+    StripFieldTypeName(&proto->nested_type(i));
   }
 }
 
 void StripFieldTypeName(FileDescriptorProto* file_proto) {
   for (int i = 0; i < file_proto->message_type_size(); ++i) {
-    StripFieldTypeName(file_proto->mutable_message_type(i));
+    StripFieldTypeName(&file_proto->message_type(i));
   }
 }
 

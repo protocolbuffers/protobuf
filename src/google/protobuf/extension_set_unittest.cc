@@ -1132,17 +1132,17 @@ TEST(ExtensionSetTest, DynamicExtensions) {
       unittest::TestDynamicExtensions::descriptor();
   DescriptorProto template_descriptor_proto;
   template_descriptor->CopyTo(&template_descriptor_proto);
-  dynamic_proto.mutable_message_type()->MergeFrom(
+  dynamic_proto.message_type().MergeFrom(
       template_descriptor_proto.nested_type());
-  dynamic_proto.mutable_enum_type()->MergeFrom(
+  dynamic_proto.enum_type().MergeFrom(
       template_descriptor_proto.enum_type());
-  dynamic_proto.mutable_extension()->MergeFrom(
+  dynamic_proto.extension().MergeFrom(
       template_descriptor_proto.field());
 
   // For each extension that we added...
   for (int i = 0; i < dynamic_proto.extension_size(); i++) {
     // Set its extendee to TestAllExtensions.
-    FieldDescriptorProto* extension = dynamic_proto.mutable_extension(i);
+    FieldDescriptorProto* extension = &dynamic_proto.extension(i);
     extension->set_extendee(
         unittest::TestAllExtensions::descriptor()->full_name());
 
@@ -1174,8 +1174,8 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     message.set_enum_extension(unittest::FOREIGN_BAR);
     message.set_dynamic_enum_extension(
         unittest::TestDynamicExtensions::DYNAMIC_BAZ);
-    message.mutable_message_extension()->set_c(456);
-    message.mutable_dynamic_message_extension()->set_dynamic_field(789);
+    message.mutable_message_extension().set_c(456);
+    message.mutable_dynamic_message_extension().set_dynamic_field(789);
     message.add_repeated_extension("foo");
     message.add_repeated_extension("bar");
     message.add_packed_extension(12);

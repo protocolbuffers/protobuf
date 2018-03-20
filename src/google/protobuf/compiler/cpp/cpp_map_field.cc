@@ -130,9 +130,10 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
       "$deprecated_attr$const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
       "    $name$() const;\n");
   printer->Annotate("name", descriptor_);
-  printer->Print(variables_,
-                 "$deprecated_attr$::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
-                 "    ${$mutable_$name$$}$();\n");
+  printer->Print(
+      variables_,
+      "$deprecated_attr$::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
+      "    $name$();\n");
   printer->Annotate("{", "}", descriptor_);
 }
 
@@ -144,10 +145,10 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "  // @@protoc_insertion_point(field_map:$full_name$)\n"
       "  return $name$_.GetMap();\n"
       "}\n"
-      "inline ::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
-      "$classname$::mutable_$name$() {\n"
+      "inline ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
+      "$classname$::$name$() {\n"
       "  // @@protoc_insertion_point(field_mutable_map:$full_name$)\n"
-      "  return $name$_.MutableMap();\n"
+      "  return *$name$_.MutableMap();\n"
       "}\n");
 }
 
@@ -209,7 +210,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
         "  DO_(::google::protobuf::internal::WireFormatLite::ReadString(input, &data));\n"
         "  DO_(entry->ParseFromString(data));\n"
         "  if ($val_cpp$_IsValid(*entry->mutable_value())) {\n"
-        "    (*mutable_$name$())[entry->key()] =\n"
+        "    $name$()[entry->key()] =\n"
         "        static_cast< $val_cpp$ >(*entry->mutable_value());\n"
         "  } else {\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
