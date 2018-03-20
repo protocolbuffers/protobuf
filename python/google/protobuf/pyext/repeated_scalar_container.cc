@@ -276,9 +276,6 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
 }
 
 static PyObject* Subscript(PyObject* pself, PyObject* slice) {
-  RepeatedScalarContainer* self =
-      reinterpret_cast<RepeatedScalarContainer*>(pself);
-
   Py_ssize_t from;
   Py_ssize_t to;
   Py_ssize_t step;
@@ -542,9 +539,6 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
 }
 
 static PyObject* Remove(PyObject* pself, PyObject* value) {
-  RepeatedScalarContainer* self =
-      reinterpret_cast<RepeatedScalarContainer*>(pself);
-
   Py_ssize_t match_index = -1;
   for (Py_ssize_t i = 0; i < Len(pself); ++i) {
     ScopedPyObjectPtr elem(Item(pself, i));
@@ -568,9 +562,6 @@ static PyObject* ExtendMethod(PyObject* self, PyObject* value) {
 }
 
 static PyObject* RichCompare(PyObject* pself, PyObject* other, int opid) {
-  RepeatedScalarContainer* self =
-      reinterpret_cast<RepeatedScalarContainer*>(pself);
-
   if (opid != Py_EQ && opid != Py_NE) {
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
@@ -661,9 +652,6 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
 }
 
 static PyObject* ToStr(PyObject* pself) {
-  RepeatedScalarContainer* self =
-      reinterpret_cast<RepeatedScalarContainer*>(pself);
-
   ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
   if (full_slice == NULL) {
     return NULL;
