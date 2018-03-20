@@ -210,6 +210,11 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 
 #define GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE GOOGLE_ATTRIBUTE_NOINLINE
 
+// Intel compiler warns otherwise "routine is both inline and noinline"
+#if defined __INTEL_COMPILER
+#pragma warning disable 2196
+#endif
+
 #ifndef GOOGLE_PREDICT_TRUE
 #ifdef __GNUC__
 // Provided at least since GCC 3.0.
