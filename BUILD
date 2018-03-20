@@ -121,7 +121,6 @@ cc_library(
         "src/google/protobuf/api.pb.cc",
         "src/google/protobuf/compiler/importer.cc",
         "src/google/protobuf/compiler/parser.cc",
-        "src/google/protobuf/compiler/plugin.pb.cc",
         "src/google/protobuf/descriptor.cc",
         "src/google/protobuf/descriptor.pb.cc",
         "src/google/protobuf/descriptor_database.cc",
@@ -254,7 +253,7 @@ internal_copied_filegroup(
     srcs = WELL_KNOWN_PROTOS,
     dest = "",
     strip_prefix = "src",
-    visibility = ["//visibility:hidden"],
+    visibility = ["//visibility:private"],
 )
 
 [proto_library(
@@ -379,6 +378,7 @@ cc_library(
         "src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
         "src/google/protobuf/compiler/php/php_generator.cc",
         "src/google/protobuf/compiler/plugin.cc",
+        "src/google/protobuf/compiler/plugin.pb.cc",
         "src/google/protobuf/compiler/python/python_generator.cc",
         "src/google/protobuf/compiler/ruby/ruby_generator.cc",
         "src/google/protobuf/compiler/subprocess.cc",

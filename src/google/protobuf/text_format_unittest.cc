@@ -38,9 +38,6 @@
 #include <stdlib.h>
 #include <limits>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -474,14 +471,14 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
   // NULL printer.
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
       message.GetDescriptor()->FindFieldByName("optional_int32"),
-      static_cast<const TextFormat::FieldValuePrinter*>(NULL)));
+      static_cast<const TextFormat::FieldValuePrinter*>(nullptr)));
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
       message.GetDescriptor()->FindFieldByName("optional_int32"),
-      static_cast<const TextFormat::FastFieldValuePrinter*>(NULL)));
+      static_cast<const TextFormat::FastFieldValuePrinter*>(nullptr)));
   // Because registration fails, the ownership of this printer is never taken.
   TextFormat::FieldValuePrinter my_field_printer;
   // NULL field
-  EXPECT_FALSE(printer.RegisterFieldValuePrinter(NULL, &my_field_printer));
+  EXPECT_FALSE(printer.RegisterFieldValuePrinter(nullptr, &my_field_printer));
 }
 
 class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
@@ -562,6 +559,143 @@ TEST_F(TextFormatTest, CustomPrinterForMultilineComments) {
       "  d: 42\n"
       "}\n",
       text);
+}
+
+// Achieve effects similar to SetUseShortRepeatedPrimitives for messages, using
+// RegisterFieldValuePrinter. Use this to test the version of PrintFieldName
+// that accepts repeated field index and count.
+class CompactRepeatedFieldPrinter : public TextFormat::FastFieldValuePrinter {
+ public:
+  void PrintFieldName(const Message& message, int field_index, int field_count,
+                      const Reflection* reflection,
+                      const FieldDescriptor* field,
+                      TextFormat::BaseTextGenerator* generator) const override {
+    if (field_index == 0 || field_index == -1) {
+      generator->PrintString(field->name());
+    }
+  }
+  void PrintMessageStart(
+      const Message& message, int field_index, int field_count,
+      bool single_line_mode,
+      TextFormat::BaseTextGenerator* generator) const override {
+    if (field_index == 0 || field_index == -1) {
+      if (single_line_mode) {
+        generator->PrintLiteral(" { ");
+      } else {
+        generator->PrintLiteral(" {\n");
+      }
+    }
+  }
+  void PrintMessageEnd(
+      const Message& message, int field_index, int field_count,
+      bool single_line_mode,
+      TextFormat::BaseTextGenerator* generator) const override {
+    if (field_index == field_count - 1 || field_index == -1) {
+      if (single_line_mode) {
+        generator->PrintLiteral("} ");
+      } else {
+        generator->PrintLiteral("}\n");
+      }
+    }
+  }
+};
+
+TEST_F(TextFormatTest, CompactRepeatedFieldPrinter) {
+  TextFormat::Printer printer;
+  ASSERT_TRUE(printer.RegisterFieldValuePrinter(
+      unittest::TestAllTypes::default_instance()
+          .descriptor()
+          ->FindFieldByNumber(
+              unittest::TestAllTypes::kRepeatedNestedMessageFieldNumber),
+      new CompactRepeatedFieldPrinter));
+
+  protobuf_unittest::TestAllTypes message;
+  message.add_repeated_nested_message()->set_bb(1);
+  message.add_repeated_nested_message()->set_bb(2);
+  message.add_repeated_nested_message()->set_bb(3);
+
+  string text;
+  ASSERT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ(
+      "repeated_nested_message {\n"
+      "  bb: 1\n"
+      "  bb: 2\n"
+      "  bb: 3\n"
+      "}\n",
+      text);
+}
+
+// Print strings into multiple line, with indention. Use this to test
+// BaseTextGenerator::Indent and BaseTextGenerator::Outdent.
+class MultilineStringPrinter : public TextFormat::FastFieldValuePrinter {
+ public:
+  void PrintString(const string& val,
+                   TextFormat::BaseTextGenerator* generator) const override {
+    generator->Indent();
+    int last_pos = 0;
+    int newline_pos = val.find('\n');
+    while (newline_pos != string::npos) {
+      generator->PrintLiteral("\n");
+      TextFormat::FastFieldValuePrinter::PrintString(
+          val.substr(last_pos, newline_pos + 1 - last_pos), generator);
+      last_pos = newline_pos + 1;
+      newline_pos = val.find('\n', last_pos);
+    }
+    if (last_pos < val.size()) {
+      generator->PrintLiteral("\n");
+      TextFormat::FastFieldValuePrinter::PrintString(val.substr(last_pos),
+                                                     generator);
+    }
+    generator->Outdent();
+  }
+};
+
+TEST_F(TextFormatTest, MultilineStringPrinter) {
+  TextFormat::Printer printer;
+  ASSERT_TRUE(printer.RegisterFieldValuePrinter(
+      unittest::TestAllTypes::default_instance()
+          .descriptor()
+          ->FindFieldByNumber(
+              unittest::TestAllTypes::kOptionalStringFieldNumber),
+      new MultilineStringPrinter));
+
+  protobuf_unittest::TestAllTypes message;
+  message.set_optional_string("first line\nsecond line\nthird line");
+
+  string text;
+  ASSERT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ(
+      "optional_string: \n"
+      "  \"first line\\n\"\n"
+      "  \"second line\\n\"\n"
+      "  \"third line\"\n",
+      text);
+}
+
+class CustomNestedMessagePrinter : public TextFormat::MessagePrinter {
+ public:
+  CustomNestedMessagePrinter() {}
+  ~CustomNestedMessagePrinter() override {}
+  void Print(const Message& message, bool single_line_mode,
+             TextFormat::BaseTextGenerator* generator) const override {
+    generator->PrintLiteral("custom");
+  }
+};
+
+TEST_F(TextFormatTest, CustomMessagePrinter) {
+  TextFormat::Printer printer;
+  printer.RegisterMessagePrinter(
+      unittest::TestAllTypes::NestedMessage::default_instance().descriptor(),
+      new CustomNestedMessagePrinter);
+
+  unittest::TestAllTypes message;
+  string text;
+  EXPECT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ("", text);
+
+  message.mutable_optional_nested_message()->set_bb(1);
+  EXPECT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ("optional_nested_message {\n  custom}\n", text);
 }
 
 TEST_F(TextFormatTest, ParseBasic) {
@@ -1031,29 +1165,93 @@ TEST_F(TextFormatTest, ParseExotic) {
 TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   protobuf_unittest::TestFieldOrderings message;
   // Fields are listed in index order instead of field number.
-  message.set_my_string("Test String");   // Field number 11
+  message.set_my_string("str");           // Field number 11
   message.set_my_int(12345);              // Field number 1
   message.set_my_float(0.999);            // Field number 101
+  // Extensions are listed based on the order of extension number.
+  // Extension number 12.
+  message
+      .MutableExtension(
+          protobuf_unittest::TestExtensionOrderings2::test_ext_orderings2)
+      ->set_my_string("ext_str2");
+  // Extension number 13.
+  message
+      .MutableExtension(
+          protobuf_unittest::TestExtensionOrderings1::test_ext_orderings1)
+      ->set_my_string("ext_str1");
+  // Extension number 14.
+  message
+      .MutableExtension(protobuf_unittest::TestExtensionOrderings2::
+                            TestExtensionOrderings3::test_ext_orderings3)
+      ->set_my_string("ext_str3");
+  // Extension number 50.
+  *message.MutableExtension(protobuf_unittest::my_extension_string) = "ext_str0";
+
   TextFormat::Printer printer;
   string text;
 
   // By default, print in field number order.
+  // my_int: 12345
+  // my_string: "str"
+  // [protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {
+  //   my_string: "ext_str2"
+  // }
+  // [protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {
+  //   my_string: "ext_str1"
+  // }
+  // [protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
+  // {
+  //   my_string: "ext_str3"
+  // }
+  // [protobuf_unittest.my_extension_string]: "ext_str0"
+  // my_float: 0.999
   printer.PrintToString(message, &text);
-  EXPECT_EQ("my_int: 12345\nmy_string: \"Test String\"\nmy_float: 0.999\n",
-            text);
+  EXPECT_EQ(
+      "my_int: 12345\nmy_string: "
+      "\"str\"\n[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] "
+      "{\n  my_string: "
+      "\"ext_str2\"\n}\n[protobuf_unittest.TestExtensionOrderings1.test_ext_"
+      "orderings1] {\n  my_string: "
+      "\"ext_str1\"\n}\n[protobuf_unittest.TestExtensionOrderings2."
+      "TestExtensionOrderings3.test_ext_orderings3] {\n  my_string: "
+      "\"ext_str3\"\n}\n[protobuf_unittest.my_extension_string]: "
+      "\"ext_str0\"\nmy_float: 0.999\n",
+      text);
 
   // Print in index order.
+  // my_string: "str"
+  // my_int: 12345
+  // my_float: 0.999
+  // [protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {
+  //   my_string: "ext_str2"
+  // }
+  // [protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {
+  //   my_string: "ext_str1"
+  // }
+  // [protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
+  // {
+  //   my_string: "ext_str3"
+  // }
+  // [protobuf_unittest.my_extension_string]: "ext_str0"
   printer.SetPrintMessageFieldsInIndexOrder(true);
   printer.PrintToString(message, &text);
-  EXPECT_EQ("my_string: \"Test String\"\nmy_int: 12345\nmy_float: 0.999\n",
-            text);
+  EXPECT_EQ(
+      "my_string: \"str\"\nmy_int: 12345\nmy_float: "
+      "0.999\n[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] "
+      "{\n  my_string: "
+      "\"ext_str2\"\n}\n[protobuf_unittest.TestExtensionOrderings1.test_ext_"
+      "orderings1] {\n  my_string: "
+      "\"ext_str1\"\n}\n[protobuf_unittest.TestExtensionOrderings2."
+      "TestExtensionOrderings3.test_ext_orderings3] {\n  my_string: "
+      "\"ext_str3\"\n}\n[protobuf_unittest.my_extension_string]: \"ext_str0\"\n",
+      text);
 }
 
 class TextFormatParserTest : public testing::Test {
  protected:
   void ExpectFailure(const string& input, const string& message, int line,
                      int col) {
-    google::protobuf::scoped_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
+    std::unique_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
     ExpectFailure(input, message, line, col, proto.get());
   }
 
@@ -1114,7 +1312,7 @@ class TextFormatParserTest : public testing::Test {
 };
 
 TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
-  google::protobuf::scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  std::unique_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
   const Descriptor* d = message->GetDescriptor();
 
   string stringData =
@@ -1179,7 +1377,7 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
-  google::protobuf::scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  std::unique_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
   const Descriptor* d = message->GetDescriptor();
 
 #define EXPECT_FIELD(name, value, valuestring) \

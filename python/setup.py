@@ -107,6 +107,7 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/more_extensions.proto", False)
   generate_proto("google/protobuf/internal/more_extensions_dynamic.proto", False)
   generate_proto("google/protobuf/internal/more_messages.proto", False)
+  generate_proto("google/protobuf/internal/no_package.proto", False)
   generate_proto("google/protobuf/internal/packed_field_test.proto", False)
   generate_proto("google/protobuf/internal/test_bad_identifiers.proto", False)
   generate_proto("google/protobuf/pyext/python.proto", False)

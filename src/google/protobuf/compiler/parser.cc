@@ -39,13 +39,14 @@
 #include <limits>
 
 
-#include <google/protobuf/compiler/parser.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/parser.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 
@@ -1650,10 +1651,6 @@ bool Parser::ParseReservedNumbers(EnumDescriptorProto* message,
       if (TryConsume("max")) {
         // This is in the enum descriptor path, which doesn't have the message
         // set duality to fix up, so it doesn't integrate with the sentinel.
-
-        // Evaluate 'max' to INT_MAX - 1 so that incrementing to create the
-        // exclusive range end doesn't cause an overflow.
-        // Note, this prevents reserving the actual INT_MAX enum value.
         end = INT_MAX;
       } else {
         DO(ConsumeSignedInteger(&end, "Expected integer."));

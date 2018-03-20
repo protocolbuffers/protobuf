@@ -68,7 +68,6 @@
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
-using google::protobuf::internal::scoped_array;
 using google::protobuf::StringAppendF;
 using std::string;
 using std::vector;
@@ -183,7 +182,7 @@ class ForkPipeRunner : public google::protobuf::ConformanceTestRunner {
       CHECK_SYSCALL(close(toproc_pipe_fd[1]));
       CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
 
-      scoped_array<char> executable(new char[executable_.size() + 1]);
+      std::unique_ptr<char[]> executable(new char[executable_.size() + 1]);
       memcpy(executable.get(), executable_.c_str(), executable_.size());
       executable[executable_.size()] = '\0';
 

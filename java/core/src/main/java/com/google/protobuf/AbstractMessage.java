@@ -125,6 +125,16 @@ public abstract class AbstractMessage
   protected int memoizedSize = -1;
 
   @Override
+  int getMemoizedSerializedSize() {
+    return memoizedSize;
+  }
+
+  @Override
+  void setMemoizedSerializedSize(int size) {
+    memoizedSize = size;
+  }
+
+  @Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) {

@@ -50,10 +50,10 @@ namespace internal {
 
 static const Reflection* GetReflectionOrDie(const Message& m) {
   const Reflection* r = m.GetReflection();
-  if (r == NULL) {
+  if (r == nullptr) {
     const Descriptor* d = m.GetDescriptor();
     const string& mtype = d ? d->name() : "unknown";
-    // RawMessage is one known type for which GetReflection() returns NULL.
+    // RawMessage is one known type for which GetReflection() returns nullptr.
     GOOGLE_LOG(FATAL) << "Message does not support reflection (type " << mtype << ").";
   }
   return r;

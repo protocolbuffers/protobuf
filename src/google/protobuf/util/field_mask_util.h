@@ -70,14 +70,14 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   // Checks whether the given path is valid for type T.
   template <typename T>
   static bool IsValidPath(StringPiece path) {
-    return GetFieldDescriptors(T::descriptor(), path, NULL);
+    return GetFieldDescriptors(T::descriptor(), path, nullptr);
   }
 
   // Checks whether the given FieldMask is valid for type T.
   template <typename T>
   static bool IsValidFieldMask(const FieldMask& mask) {
     for (int i = 0; i < mask.paths_size(); ++i) {
-      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i), NULL))
+      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i), nullptr))
         return false;
     }
     return true;

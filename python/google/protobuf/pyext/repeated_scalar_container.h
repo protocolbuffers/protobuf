@@ -37,26 +37,13 @@
 #include <Python.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/pyext/message.h>
 
 namespace google {
 namespace protobuf {
-
-class Message;
-
-#ifdef _SHARED_PTR_H
-using std::shared_ptr;
-#else
-using internal::shared_ptr;
-#endif
-
 namespace python {
-
-struct CMessage;
 
 typedef struct RepeatedScalarContainer {
   PyObject_HEAD;
@@ -65,7 +52,7 @@ typedef struct RepeatedScalarContainer {
   // proto tree.  Every Python RepeatedScalarContainer holds a
   // reference to it in order to keep it alive as long as there's a
   // Python object that references any part of the tree.
-  shared_ptr<Message> owner;
+  CMessage::OwnerRef owner;
 
   // Pointer to the C++ Message that contains this container.  The
   // RepeatedScalarContainer does not own this pointer.
@@ -112,7 +99,7 @@ PyObject* Extend(RepeatedScalarContainer* self, PyObject* value);
 
 // Set the owner field of self and any children of self.
 void SetOwner(RepeatedScalarContainer* self,
-              const shared_ptr<Message>& new_owner);
+              const CMessage::OwnerRef& new_owner);
 
 }  // namespace repeated_scalar_container
 }  // namespace python

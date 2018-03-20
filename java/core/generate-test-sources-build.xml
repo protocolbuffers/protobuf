@@ -39,6 +39,7 @@
         <arg value="${test.proto.dir}/com/google/protobuf/field_presence_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_for_proto2_lite_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_for_proto2_test.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/map_lite_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/map_initialization_order_test.proto"/>
     </exec>

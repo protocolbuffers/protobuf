@@ -69,14 +69,14 @@ bool IsConflicting(const FieldDescriptor* field1, const string& name1,
       // field1 is repeated, and field2 is not.
       if (name1 + "Count" == name2) {
         *info = "both repeated field \"" + field1->name() + "\" and singular " +
-            "field \"" + field2->name() + "\" generates the method \"" +
-            "get" + name1 + "Count()\"";
+                "field \"" + field2->name() + "\" generate the method \"" +
+                "get" + name1 + "Count()\"";
         return true;
       }
       if (name1 + "List" == name2) {
         *info = "both repeated field \"" + field1->name() + "\" and singular " +
-            "field \"" + field2->name() + "\" generates the method \"" +
-            "get" + name1 + "List()\"";
+                "field \"" + field2->name() + "\" generate the method \"" +
+                "get" + name1 + "List()\"";
         return true;
       }
       // Well, there are obviously many more conflicting cases, but it probably

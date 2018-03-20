@@ -1,9 +1,11 @@
+benchmarks_protoc_inputs_benchmark_wrapper =                               \
+	benchmarks.proto
+
 benchmarks_protoc_inputs =                                                 \
-	benchmarks.proto                                                         \
-	datasets/google_message1/benchmark_message1_proto3.proto
+	datasets/google_message1/proto3/benchmark_message1_proto3.proto
 
 benchmarks_protoc_inputs_proto2 =                                          \
-	datasets/google_message1/benchmark_message1_proto2.proto                 \
+	datasets/google_message1/proto2/benchmark_message1_proto2.proto          \
 	datasets/google_message2/benchmark_message2.proto                        \
 	datasets/google_message3/benchmark_message3.proto                        \
 	datasets/google_message3/benchmark_message3_1.proto                      \
@@ -26,7 +28,7 @@ make_tmp_dir:
 if USE_EXTERNAL_PROTOC
 
 protoc_middleman: make_tmp_dir $(benchmarks_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=./tmp $(benchmarks_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=./tmp $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper)
 	touch protoc_middleman
 
 protoc_middleman2: make_tmp_dir $(benchmarks_protoc_inputs_proto2)
@@ -38,8 +40,8 @@ else
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
-protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) )
+protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper)
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) )
 	touch protoc_middleman
 
 protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs_proto2) $(well_known_type_protoc_inputs)
@@ -54,14 +56,14 @@ all_data = `find . -type f -name "dataset.*.pb"`
 
 benchmarks_protoc_outputs =                                                \
 	benchmarks.pb.cc                                                         \
-	datasets/google_message1/benchmark_message1_proto3.pb.cc
+	datasets/google_message1/proto3/benchmark_message1_proto3.pb.cc
   
 benchmarks_protoc_outputs_header =                                         \
 	benchmarks.pb.h                                                          \
-	datasets/google_message1/benchmark_message1_proto3.pb.h
+	datasets/google_message1/proto3/benchmark_message1_proto3.pb.h
 
 benchmarks_protoc_outputs_proto2_header =                                  \
-	datasets/google_message1/benchmark_message1_proto2.pb.h                  \
+	datasets/google_message1/proto2/benchmark_message1_proto2.pb.h           \
 	datasets/google_message2/benchmark_message2.pb.h                         \
 	datasets/google_message3/benchmark_message3.pb.h                         \
 	datasets/google_message3/benchmark_message3_1.pb.h                       \
@@ -78,7 +80,7 @@ benchmarks_protoc_outputs_proto2_header =                                  \
 	datasets/google_message4/benchmark_message4_3.pb.h
 
 benchmarks_protoc_outputs_proto2 =                                         \
-	datasets/google_message1/benchmark_message1_proto2.pb.cc                 \
+	datasets/google_message1/proto2/benchmark_message1_proto2.pb.cc          \
 	datasets/google_message2/benchmark_message2.pb.cc                        \
 	datasets/google_message3/benchmark_message3.pb.cc                        \
 	datasets/google_message3/benchmark_message3_1.pb.cc                      \
@@ -224,6 +226,78 @@ python-cpp-generated-code: python-cpp-generated-code-benchmark
 
 ############# PYTHON RULES END ##############
 
+############# GO RULES BEGIN ##############
+
+benchmarks_protoc_inputs_proto2_message1 =                                 \
+	datasets/google_message1/proto2/benchmark_message1_proto2.proto
+
+benchmarks_protoc_inputs_proto2_message2 =                                 \
+	datasets/google_message2/benchmark_message2.proto
+
+benchmarks_protoc_inputs_proto2_message3 =                                 \
+	datasets/google_message3/benchmark_message3.proto                        \
+	datasets/google_message3/benchmark_message3_1.proto                      \
+	datasets/google_message3/benchmark_message3_2.proto                      \
+	datasets/google_message3/benchmark_message3_3.proto                      \
+	datasets/google_message3/benchmark_message3_4.proto                      \
+	datasets/google_message3/benchmark_message3_5.proto                      \
+	datasets/google_message3/benchmark_message3_6.proto                      \
+	datasets/google_message3/benchmark_message3_7.proto                      \
+	datasets/google_message3/benchmark_message3_8.proto
+
+benchmarks_protoc_inputs_proto2_message4 =                                 \
+	datasets/google_message4/benchmark_message4.proto                        \
+	datasets/google_message4/benchmark_message4_1.proto                      \
+	datasets/google_message4/benchmark_message4_2.proto                      \
+	datasets/google_message4/benchmark_message4_3.proto
+
+if USE_EXTERNAL_PROTOC
+
+go_protoc_middleman: make_tmp_dir $(benchmarks_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) 
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_benchmark_wrapper)
+	touch protoc_middleman
+
+go_protoc_middleman2: make_tmp_dir $(benchmarks_protoc_inputs_proto2_message1) $(benchmarks_protoc_inputs_proto2_message2) $(benchmarks_protoc_inputs_proto2_message3) $(benchmarks_protoc_inputs_proto2_message4)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message1)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message2)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message3)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message4)
+	touch protoc_middleman2
+
+else
+
+# We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
+# relative to srcdir, which may not be the same as the current directory when
+# building out-of-tree.
+go_protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_benchmark_wrapper) )
+	touch protoc_middleman
+
+go_protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs_proto2_message1) $(benchmarks_protoc_inputs_proto2_message2) $(benchmarks_protoc_inputs_proto2_message3) $(benchmarks_protoc_inputs_proto2_message4) $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message1) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message2) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message3) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message4) )
+	touch protoc_middleman2
+
+endif
+
+go-benchmark: go_protoc_middleman go_protoc_middleman2 
+	@echo "Writing shortcut script go-benchmark..."
+	@echo '#! /bin/sh' > go-benchmark
+	@echo 'mkdir tmp_cc && mv *.cc tmp_cc' >> go-benchmark
+	@echo 'go test -bench=. -- $$@' >> go-benchmark
+	@echo 'mv tmp_cc/* . && rm -rf tmp_cc' >> go-benchmark
+	@chmod +x go-benchmark
+
+go: go_protoc_middleman go_protoc_middleman2 go-benchmark
+	./go-benchmark $(all_data)
+
+############# GO RULES END ##############
+
+
 MAINTAINERCLEANFILES =                                                     \
 	Makefile.in
 
@@ -241,7 +315,10 @@ CLEANFILES =                                                               \
 	python_cpp_proto_library                                                 \
 	python-pure-python-benchmark                                             \
 	python-cpp-reflection-benchmark                                          \
-	python-cpp-generated-code-benchmark
+	python-cpp-generated-code-benchmark                                      \
+	go-benchmark                                                             \
+	go_protoc_middleman                                                      \
+	go_protoc_middleman2
 
 clean-local:
 	-rm -rf tmp/*

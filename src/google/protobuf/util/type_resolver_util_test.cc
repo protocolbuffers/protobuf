@@ -32,9 +32,6 @@
 
 #include <limits>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 #include <vector>
 
@@ -153,7 +150,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
   }
 
  protected:
-  google::protobuf::scoped_ptr<TypeResolver> resolver_;
+  std::unique_ptr<TypeResolver> resolver_;
 };
 
 TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
@@ -191,6 +188,13 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
                        Field::TYPE_STRING, "optional_string", 14));
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL,
                        Field::TYPE_BYTES, "optional_bytes", 15));
+
+  EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL,
+                       Field::TYPE_GROUP, "optionalgroup", 16));
+
+  EXPECT_TRUE(CheckFieldTypeUrl(
+      type, "optionalgroup",
+      GetTypeUrl<protobuf_unittest::TestAllTypes::OptionalGroup>()));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_OPTIONAL,
                        Field::TYPE_MESSAGE, "optional_nested_message", 18));
@@ -249,6 +253,13 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
                        Field::TYPE_BYTES, "repeated_bytes", 45));
 
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED,
+                       Field::TYPE_GROUP, "repeatedgroup", 46));
+
+  EXPECT_TRUE(CheckFieldTypeUrl(
+      type, "repeatedgroup",
+      GetTypeUrl<protobuf_unittest::TestAllTypes::RepeatedGroup>()));
+
+  EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED,
                        Field::TYPE_MESSAGE, "repeated_nested_message", 48));
   EXPECT_TRUE(HasField(type, Field::CARDINALITY_REPEATED,
                        Field::TYPE_MESSAGE, "repeated_foreign_message", 49));
@@ -271,13 +282,6 @@ TEST_F(DescriptorPoolTypeResolverTest, TestAllTypes) {
   EXPECT_TRUE(CheckFieldTypeUrl(
       type, "repeated_foreign_enum",
       GetTypeUrl("protobuf_unittest.ForeignEnum")));
-
-  // Groups are discarded when converting to Type.
-  const Descriptor* descriptor = protobuf_unittest::TestAllTypes::descriptor();
-  EXPECT_TRUE(descriptor->FindFieldByName("optionalgroup") != NULL);
-  EXPECT_TRUE(descriptor->FindFieldByName("repeatedgroup") != NULL);
-  ASSERT_FALSE(HasField(type, "optionalgroup"));
-  ASSERT_FALSE(HasField(type, "repeatedgroup"));
 }
 
 TEST_F(DescriptorPoolTypeResolverTest, TestPackedField) {

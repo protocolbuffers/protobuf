@@ -35,9 +35,6 @@
 
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 #include <vector>
 #include <structmember.h>  // A Python header file.
@@ -658,7 +655,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
       // Unlike PyLong_AsLongLong, PyLong_AsUnsignedLongLong is very
       // picky about the exact type.
       PyObject* casted = PyNumber_Long(arg);
-      if (GOOGLE_PREDICT_FALSE(casted == NULL)) {
+      if (GOOGLE_PREDICT_FALSE(casted == nullptr)) {
         // Propagate existing error.
         return false;
         }
@@ -683,7 +680,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
       // Valid subclasses of numbers.Integral should have a __long__() method
       // so fall back to that.
       PyObject* casted = PyNumber_Long(arg);
-      if (GOOGLE_PREDICT_FALSE(casted == NULL)) {
+      if (GOOGLE_PREDICT_FALSE(casted == nullptr)) {
         // Propagate existing error.
         return false;
         }
@@ -830,7 +827,8 @@ bool CheckAndSetString(
   return true;
 }
 
-PyObject* ToStringObject(const FieldDescriptor* descriptor, string value) {
+PyObject* ToStringObject(const FieldDescriptor* descriptor,
+                         const string& value) {
   if (descriptor->type() != FieldDescriptor::TYPE_STRING) {
     return PyBytes_FromStringAndSize(value.c_str(), value.length());
   }
@@ -1318,6 +1316,8 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
     return NULL;
   }
 
+  // Use "placement new" syntax to initialize the C++ object.
+  new (&self->owner) CMessage::OwnerRef(NULL);
   self->message = NULL;
   self->parent = NULL;
   self->parent_field_descriptor = NULL;
@@ -1414,7 +1414,7 @@ static void Dealloc(CMessage* self) {
 
   Py_CLEAR(self->extensions);
   Py_CLEAR(self->composite_fields);
-  self->owner.reset();
+  self->owner.~ThreadUnsafeSharedPtr<Message>();
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
@@ -1616,9 +1616,10 @@ PyObject* HasExtension(CMessage* self, PyObject* extension) {
 // * Clear the weak references from the released container to the
 //   parent.
 
-struct SetOwnerVisitor : public ChildVisitor {
+class SetOwnerVisitor : public ChildVisitor {
+ public:
   // new_owner must outlive this object.
-  explicit SetOwnerVisitor(const shared_ptr<Message>& new_owner)
+  explicit SetOwnerVisitor(const CMessage::OwnerRef& new_owner)
       : new_owner_(new_owner) {}
 
   int VisitRepeatedCompositeContainer(RepeatedCompositeContainer* container) {
@@ -1642,11 +1643,11 @@ struct SetOwnerVisitor : public ChildVisitor {
   }
 
  private:
-  const shared_ptr<Message>& new_owner_;
+  const CMessage::OwnerRef& new_owner_;
 };
 
 // Change the owner of this CMessage and all its children, recursively.
-int SetOwner(CMessage* self, const shared_ptr<Message>& new_owner) {
+int SetOwner(CMessage* self, const CMessage::OwnerRef& new_owner) {
   self->owner = new_owner;
   if (ForEachCompositeField(self, SetOwnerVisitor(new_owner)) == -1)
     return -1;
@@ -1679,7 +1680,7 @@ int ReleaseSubMessage(CMessage* self,
                       const FieldDescriptor* field_descriptor,
                       CMessage* child_cmessage) {
   // Release the Message
-  shared_ptr<Message> released_message(ReleaseMessage(
+  CMessage::OwnerRef released_message(ReleaseMessage(
       self, child_cmessage->message->GetDescriptor(), field_descriptor));
   child_cmessage->message = released_message.get();
   child_cmessage->owner.swap(released_message);
@@ -2329,7 +2330,9 @@ PyObject* InternalGetScalar(const Message* message,
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      string value = reflection->GetString(*message, field_descriptor);
+      string scratch;
+      const string& value =
+          reflection->GetStringReference(*message, field_descriptor, &scratch);
       result = ToStringObject(field_descriptor, value);
       break;
     }

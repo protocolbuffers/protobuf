@@ -38,9 +38,6 @@
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
-#if LANG_CXX11
-#define PROTOBUF_CONSTEXPR constexpr
-
 // We require C++11 and Clang to use constexpr for variables, as GCC 4.8
 // requires constexpr to be consistent between declarations of variables
 // unnecessarily (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58541).
@@ -51,37 +48,28 @@
 #define PROTOBUF_CONSTEXPR_VAR
 #endif  // !_clang
 
-#else
-#define PROTOBUF_CONSTEXPR
-#define PROTOBUF_CONSTEXPR_VAR
-#endif
-
 namespace google {
 namespace protobuf {
 namespace internal {
 
 // Processing-type masks.
-static PROTOBUF_CONSTEXPR const unsigned char kOneofMask = 0x40;
-static PROTOBUF_CONSTEXPR const unsigned char kRepeatedMask = 0x20;
+static constexpr const unsigned char kOneofMask = 0x40;
+static constexpr const unsigned char kRepeatedMask = 0x20;
 // Mask for the raw type: either a WireFormatLite::FieldType or one of the
 // ProcessingTypes below, without the oneof or repeated flag.
-static PROTOBUF_CONSTEXPR const unsigned char kTypeMask = 0x1f;
+static constexpr const unsigned char kTypeMask = 0x1f;
 
 // Wire type masks.
-static PROTOBUF_CONSTEXPR const unsigned char kNotPackedMask = 0x10;
-static PROTOBUF_CONSTEXPR const unsigned char kInvalidMask = 0x20;
+static constexpr const unsigned char kNotPackedMask = 0x10;
+static constexpr const unsigned char kInvalidMask = 0x20;
 
 enum ProcessingTypes {
-  TYPE_STRING_CORD = 19,
-  TYPE_STRING_STRING_PIECE = 20,
-  TYPE_BYTES_CORD = 21,
-  TYPE_BYTES_STRING_PIECE = 22,
-  TYPE_MAP = 23,
+  TYPE_STRING_INLINED = 23,
+  TYPE_BYTES_INLINED = 24,
+  TYPE_MAP = 25,
 };
 
-#if LANG_CXX11
 static_assert(TYPE_MAP < kRepeatedMask, "Invalid enum");
-#endif
 
 // TODO(ckennelly):  Add a static assertion to ensure that these masks do not
 // conflict with wiretypes.
@@ -124,7 +112,6 @@ union AuxillaryParseTableField {
     const MessageLite* default_message() const {
       return static_cast<const MessageLite*>(default_message_void);
     }
-    const ParseTable* parse_table;
   };
   message_aux messages;
   // Strings
@@ -139,19 +126,14 @@ union AuxillaryParseTableField {
   };
   map_aux maps;
 
-#if LANG_CXX11
   AuxillaryParseTableField() = default;
-#else
-  AuxillaryParseTableField() { }
-#endif
-  PROTOBUF_CONSTEXPR AuxillaryParseTableField(
-      AuxillaryParseTableField::enum_aux e) : enums(e) {}
-  PROTOBUF_CONSTEXPR AuxillaryParseTableField(
-      AuxillaryParseTableField::message_aux m) : messages(m) {}
-  PROTOBUF_CONSTEXPR AuxillaryParseTableField(
-      AuxillaryParseTableField::string_aux s) : strings(s) {}
-  PROTOBUF_CONSTEXPR AuxillaryParseTableField(
-      AuxillaryParseTableField::map_aux m)
+  constexpr AuxillaryParseTableField(AuxillaryParseTableField::enum_aux e)
+      : enums(e) {}
+  constexpr AuxillaryParseTableField(AuxillaryParseTableField::message_aux m)
+      : messages(m) {}
+  constexpr AuxillaryParseTableField(AuxillaryParseTableField::string_aux s)
+      : strings(s) {}
+  constexpr AuxillaryParseTableField(AuxillaryParseTableField::map_aux m)
       : maps(m) {}
 };
 
@@ -178,18 +160,17 @@ struct ParseTable {
   bool unknown_field_set;
 };
 
-// TODO(jhen): Remove the __NVCC__ check when we get a version of nvcc that
-// supports these checks.
-#if LANG_CXX11 && !defined(__NVCC__)
 static_assert(sizeof(ParseTableField) <= 16, "ParseTableField is too large");
 // The tables must be composed of POD components to ensure link-time
 // initialization.
 static_assert(std::is_pod<ParseTableField>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField>::value, "");
 static_assert(std::is_pod<AuxillaryParseTableField::enum_aux>::value, "");
 static_assert(std::is_pod<AuxillaryParseTableField::message_aux>::value, "");
 static_assert(std::is_pod<AuxillaryParseTableField::string_aux>::value, "");
 static_assert(std::is_pod<ParseTable>::value, "");
+
+#ifndef __NVCC__  // This assertion currently fails under NVCC.
+static_assert(std::is_pod<AuxillaryParseTableField>::value, "");
 #endif
 
 // TODO(ckennelly): Consolidate these implementations into a single one, using

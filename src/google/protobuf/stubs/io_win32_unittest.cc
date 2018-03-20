@@ -48,7 +48,6 @@
 #include <windows.h>
 
 #include <google/protobuf/stubs/io_win32.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -115,7 +114,7 @@ void StripTrailingSlashes(string* str) {
 bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
   DWORD size = ::GetEnvironmentVariableW(name, NULL, 0);
   if (size > 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) {
-    scoped_array<WCHAR> wcs(new WCHAR[size]);
+    std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
     ::GetEnvironmentVariableW(name, wcs.get(), size);
     // GetEnvironmentVariableA retrieves an Active-Code-Page-encoded text which
     // we'd first need to convert to UTF-16 then to UTF-8, because there seems
@@ -131,7 +130,7 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
 bool GetCwdAsUtf8(string* result) {
   DWORD size = ::GetCurrentDirectoryW(0, NULL);
   if (size > 0) {
-    scoped_array<WCHAR> wcs(new WCHAR[size]);
+    std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
     ::GetCurrentDirectoryW(size, wcs.get());
     // GetCurrentDirectoryA retrieves an Active-Code-Page-encoded text which
     // we'd first need to convert to UTF-16 then to UTF-8, because there seems
@@ -402,7 +401,7 @@ TEST_F(IoWin32Test, ChdirTestNonAscii) {
 
 TEST_F(IoWin32Test, AsWindowsPathTest) {
   DWORD size = GetCurrentDirectoryW(0, NULL);
-  scoped_array<wchar_t> cwd_str(new wchar_t[size]);
+  std::unique_ptr<wchar_t[]> cwd_str(new wchar_t[size]);
   EXPECT_GT(GetCurrentDirectoryW(size, cwd_str.get()), 0);
   wstring cwd = wstring(L"\\\\?\\") + cwd_str.get();
 

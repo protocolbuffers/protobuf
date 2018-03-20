@@ -44,8 +44,6 @@
 #include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_reflection_class.h>
 
-using google::protobuf::internal::scoped_ptr;
-
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -100,7 +98,7 @@ bool Generator::Generate(
     *error = filename_error;
     return false;
   }
-  scoped_ptr<io::ZeroCopyOutputStream> output(
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '$');
 

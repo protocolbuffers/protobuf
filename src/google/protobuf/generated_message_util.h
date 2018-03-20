@@ -39,13 +39,14 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__
 
 #include <assert.h>
+#include <atomic>
 #include <climits>
 #include <string>
 #include <vector>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>
+#include <google/protobuf/stubs/once.h>  // Add direct dep on port for pb.cc
 #include <google/protobuf/has_bits.h>
 #include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/map_entry_lite.h>
@@ -128,7 +129,7 @@ template <class T>
 bool AllAreInitializedWeak(const ::google::protobuf::RepeatedPtrField<T>& t) {
   for (int i = t.size(); --i >= 0;) {
     if (!reinterpret_cast<const ::google::protobuf::internal::RepeatedPtrFieldBase&>(t)
-             .Get< ::google::protobuf::internal::ImplicitWeakTypeHandler<T> >(i)
+             .Get<::google::protobuf::internal::ImplicitWeakTypeHandler<T> >(i)
              .IsInitialized()) {
       return false;
     }
@@ -164,7 +165,8 @@ struct LIBPROTOBUF_EXPORT FieldMetadata {
   enum {
     kCordType = 19,
     kStringPieceType = 20,
-    kNumTypes = 20,
+    kInlinedType = 21,
+    kNumTypes = 21,
     kSpecial = kNumTypes * kNumTypeClasses,
   };
 
@@ -290,17 +292,17 @@ void MapFieldSerializer(const uint8* base, uint32 offset, uint32 tag,
   }
 }
 
-LIBPROTOBUF_EXPORT MessageLite* DuplicateIfNonNullInternal(MessageLite* message, Arena* arena);
+LIBPROTOBUF_EXPORT MessageLite* DuplicateIfNonNullInternal(MessageLite* message);
 LIBPROTOBUF_EXPORT MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                      MessageLite* submessage,
                                      Arena* submessage_arena);
 
 template <typename T>
-T* DuplicateIfNonNull(T* message, Arena* arena) {
+T* DuplicateIfNonNull(T* message) {
   // The casts must be reinterpret_cast<> because T might be a forward-declared
   // type that the compiler doesn't know is related to MessageLite.
-  return reinterpret_cast<T*>(DuplicateIfNonNullInternal(
-      reinterpret_cast<MessageLite*>(message), arena));
+  return reinterpret_cast<T*>(
+      DuplicateIfNonNullInternal(reinterpret_cast<MessageLite*>(message)));
 }
 
 template <typename T>
@@ -313,20 +315,48 @@ T* GetOwnedMessage(Arena* message_arena, T* submessage,
       submessage_arena));
 }
 
-// Returns a message owned by this Arena.  This may require Own()ing or
-// duplicating the message.
-template <typename T>
-T* GetOwnedMessage(T* message, Arena* arena) {
-  GOOGLE_DCHECK(message);
-  Arena* message_arena = google::protobuf::Arena::GetArena(message);
-  if (message_arena == arena) {
-    return message;
-  } else if (arena != NULL && message_arena == NULL) {
-    arena->Own(message);
-    return message;
-  } else {
-    return DuplicateIfNonNull(message, arena);
-  }
+// Hide atomic from the public header and allow easy change to regular int
+// on platforms where the atomic might have a perf impact.
+class LIBPROTOBUF_EXPORT CachedSize {
+ public:
+  int Get() const { return size_.load(std::memory_order_relaxed); }
+  void Set(int size) { size_.store(size, std::memory_order_relaxed); }
+ private:
+  std::atomic<int> size_{0};
+};
+
+// SCCInfo represents information of a strongly connected component of
+// mutual dependent messages.
+struct LIBPROTOBUF_EXPORT SCCInfoBase {
+  // We use 0 for the Initialized state, because test eax,eax, jnz is smaller
+  // and is subject to macro fusion.
+  enum {
+    kInitialized = 0,  // final state
+    kRunning = 1,
+    kUninitialized = -1,  // initial state
+  };
+  std::atomic<int> visit_status;
+  int num_deps;
+  void (*init_func)();
+  // This is followed by an array  of num_deps
+  // const SCCInfoBase* deps[];
+};
+
+template <int N>
+struct SCCInfo {
+  SCCInfoBase base;
+  // Semantically this is const SCCInfo<T>* which is is a templated type.
+  // The obvious inheriting from SCCInfoBase mucks with struct initialization.
+  // Attempts showed the compiler was generating dynamic initialization code.
+  // Zero length arrays produce warnings with MSVC.
+  SCCInfoBase* deps[N ? N : 1];
+};
+
+LIBPROTOBUF_EXPORT void InitSCCImpl(SCCInfoBase* scc);
+
+inline void InitSCC(SCCInfoBase* scc) {
+  auto status = scc->visit_status.load(std::memory_order_acquire);
+  if (GOOGLE_PREDICT_FALSE(status != SCCInfoBase::kInitialized)) InitSCCImpl(scc);
 }
 
 }  // namespace internal

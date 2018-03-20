@@ -255,8 +255,8 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
  *
  * ## Field Mask Verification
  *
- * The implementation of the all the API methods, which have any FieldMask type
- * field in the request, should verify the included field paths, and return
+ * The implementation of any API method which has a FieldMask type field in the
+ * request should verify the included field paths, and return an
  * `INVALID_ARGUMENT` error if any path is duplicated or unmappable.
  **/
 @interface GPBFieldMask : GPBMessage

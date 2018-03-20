@@ -37,9 +37,6 @@
 
 #include <algorithm>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <set>
 #include <string>
 #include <vector>
@@ -97,7 +94,7 @@ class FileGenerator {
   void GenerateSourceDefaultInstance(int idx, io::Printer* printer);
 
   void GenerateInitForSCC(const SCC* scc, io::Printer* printer);
-  void GenerateInitializationCode(io::Printer* printer);
+  void GenerateTables(io::Printer* printer);
   void GenerateReflectionInitializationCode(io::Printer* printer);
 
   // For other imports, generates their forward-declarations.
@@ -176,10 +173,10 @@ class FileGenerator {
 
   // These members are just for owning (and thus proper deleting).
   // Nested (enum/extension)_generators are owned by child messages.
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<EnumGenerator> > enum_generators_owner_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<ServiceGenerator> >
+  std::unique_ptr<std::unique_ptr<EnumGenerator> []> enum_generators_owner_;
+  std::unique_ptr<std::unique_ptr<ServiceGenerator> []>
       service_generators_owner_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<ExtensionGenerator> >
+  std::unique_ptr<std::unique_ptr<ExtensionGenerator> []>
       extension_generators_owner_;
 
   // E.g. if the package is foo.bar, package_parts_ is {"foo", "bar"}.

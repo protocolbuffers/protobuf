@@ -112,7 +112,7 @@
 
 #include <iosfwd>
 #include <string>
-#include <google/protobuf/stubs/type_traits.h>
+#include <type_traits>
 #include <vector>
 
 #include <google/protobuf/arena.h>
@@ -342,7 +342,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   //
   // This method remains virtual in case a subclass does not implement
   // reflection and wants to override the default behavior.
-  virtual const Reflection* GetReflection() const PROTOBUF_FINAL {
+  virtual const Reflection* GetReflection() const final {
     return GetMetadata().reflection;
   }
 

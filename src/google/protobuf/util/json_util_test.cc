@@ -34,13 +34,13 @@
 #include <string>
 
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/util/internal/testdata/maps.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -48,12 +48,12 @@ namespace protobuf {
 namespace util {
 namespace {
 
+using google::protobuf::testing::MapIn;
 using proto3::FOO;
 using proto3::BAR;
 using proto3::TestMessage;
 using proto3::TestMap;
 using proto3::TestOneof;
-using google::protobuf::testing::MapIn;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -82,7 +82,7 @@ class JsonUtilTest : public ::testing::Test {
     return FromJson(json, message, JsonParseOptions());
   }
 
-  google::protobuf::scoped_ptr<TypeResolver> resolver_;
+  std::unique_ptr<TypeResolver> resolver_;
 };
 
 TEST_F(JsonUtilTest, TestWhitespaces) {
@@ -313,7 +313,7 @@ TEST_F(JsonUtilTest, TestDynamicMessage) {
   DescriptorPool pool(&database);
   // A dynamic version of the test proto.
   DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<Message> message(factory.GetPrototype(
+  std::unique_ptr<Message> message(factory.GetPrototype(
       pool.FindMessageTypeByName("proto3.TestMessage"))->New());
   EXPECT_TRUE(FromJson(input, message.get()));
 
@@ -517,26 +517,22 @@ TEST(ZeroCopyStreamByteSinkTest, TestAllInputOutputPatterns) {
 }
 
 TEST_F(JsonUtilTest, TestWrongJsonInput) {
-  using namespace google::protobuf;
   const char json[] = "{\"unknown_field\":\"some_value\"}";
   io::ArrayInputStream input_stream(json, strlen(json));
   char proto_buffer[10000];
   io::ArrayOutputStream output_stream(proto_buffer, sizeof(proto_buffer));
-  std::string message_type = "type.googleapis.com/proto3.TestMessage";  
+  std::string message_type = "type.googleapis.com/proto3.TestMessage";
   TypeResolver* resolver = NewTypeResolverForDescriptorPool(
-  				"type.googleapis.com", 
-				DescriptorPool::generated_pool());
-  
-  util::Status result_status = util::JsonToBinaryStream(resolver, 
-  							message_type, 
-							&input_stream, 
-							&output_stream);
-  
+      "type.googleapis.com", DescriptorPool::generated_pool());
+
+  auto result_status = util::JsonToBinaryStream(
+      resolver, message_type, &input_stream, &output_stream);
+
   delete resolver;
 
   EXPECT_FALSE(result_status.ok());
-  EXPECT_EQ(result_status.error_code(), 
-  	    google::protobuf::util::error::INVALID_ARGUMENT);
+  EXPECT_EQ(result_status.error_code(),
+            util::error::INVALID_ARGUMENT);
 }
 
 }  // namespace

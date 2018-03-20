@@ -469,7 +469,7 @@ int UnescapeCEscapeString(const string& src, string* dest) {
 
 int UnescapeCEscapeString(const string& src, string* dest,
                           std::vector<string> *errors) {
-  scoped_array<char> unescaped(new char[src.size() + 1]);
+  std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
   int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), errors);
   GOOGLE_CHECK(dest);
   dest->assign(unescaped.get(), len);
@@ -477,7 +477,7 @@ int UnescapeCEscapeString(const string& src, string* dest,
 }
 
 string UnescapeCEscapeString(const string& src) {
-  scoped_array<char> unescaped(new char[src.size() + 1]);
+  std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
   int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), NULL);
   return string(unescaped.get(), len);
 }
@@ -620,7 +620,7 @@ namespace strings {
 
 string Utf8SafeCEscape(const string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
-  scoped_array<char> dest(new char[dest_length]);
+  std::unique_ptr<char[]> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, false, true);
   GOOGLE_DCHECK_GE(len, 0);
@@ -629,7 +629,7 @@ string Utf8SafeCEscape(const string& src) {
 
 string CHexEscape(const string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
-  scoped_array<char> dest(new char[dest_length]);
+  std::unique_ptr<char[]> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, true, false);
   GOOGLE_DCHECK_GE(len, 0);

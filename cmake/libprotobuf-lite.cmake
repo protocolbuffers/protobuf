@@ -10,13 +10,10 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_impl_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/message_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/once.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/status.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/statusor.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/stringpiece.cc
@@ -38,7 +35,6 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_impl_lite.h
   ${protobuf_source_dir}/src/google/protobuf/message_lite.h
   ${protobuf_source_dir}/src/google/protobuf/repeated_field.h
-  ${protobuf_source_dir}/src/google/protobuf/stubs/atomicops_internals_x86_msvc.h
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream.h
   ${protobuf_source_dir}/src/google/protobuf/stubs/common.h
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128.h

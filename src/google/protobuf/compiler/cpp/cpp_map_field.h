@@ -66,7 +66,6 @@ class MapFieldGenerator : public FieldGenerator {
       io::Printer* printer, const std::map<string, string>& variables) const;
 
   const FieldDescriptor* descriptor_;
-  const bool dependent_field_;
   std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);

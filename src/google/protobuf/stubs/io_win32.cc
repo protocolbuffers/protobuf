@@ -52,13 +52,13 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <io.h>
+#include <memory>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <wctype.h>
 #include <windows.h>
 
 #include <google/protobuf/stubs/io_win32.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 
 #include <memory>
 #include <sstream>
@@ -229,7 +229,7 @@ bool as_windows_path(const char* path, wstring* result) {
     if (size == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
       return false;
     }
-    scoped_array<WCHAR> wcwd(new WCHAR[size]);
+    std::unique_ptr<WCHAR[]> wcwd(new WCHAR[size]);
     ::GetCurrentDirectoryW(size, wcwd.get());
     wpath = join_paths(wcwd.get(), wpath);
   }
@@ -371,7 +371,7 @@ bool wcs_to_mbs(const WCHAR* s, string* out, bool outUtf8) {
       || usedDefaultChar) {
     return false;
   }
-  scoped_array<CHAR> astr(new CHAR[size]);
+  std::unique_ptr<CHAR[]> astr(new CHAR[size]);
   WideCharToMultiByte(
       outUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, astr.get(), size, NULL, NULL);
   out->assign(astr.get());
@@ -390,7 +390,7 @@ bool mbs_to_wcs(const char* s, wstring* out, bool inUtf8) {
   if (size == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
     return false;
   }
-  scoped_array<WCHAR> wstr(new WCHAR[size]);
+  std::unique_ptr<WCHAR[]> wstr(new WCHAR[size]);
   MultiByteToWideChar(
       inUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, wstr.get(), size + 1);
   out->assign(wstr.get());
