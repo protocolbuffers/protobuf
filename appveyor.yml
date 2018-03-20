@@ -10,6 +10,7 @@ configuration:
 environment:
   matrix:
     - language: cpp
+      image: Visual Studio 2015
       BUILD_DLL: ON
       UNICODE: ON
 
@@ -32,8 +33,8 @@ install:
   - move gtest gmock
 
 before_build:
-  - if %platform%==Win32 set generator=Visual Studio 12
-  - if %platform%==Win64 set generator=Visual Studio 12 Win64
+  - if %platform%==Win32 set generator=Visual Studio 14
+  - if %platform%==Win64 set generator=Visual Studio 14 Win64
   - if %platform%==Win32 set vcplatform=Win32
   - if %platform%==Win64 set vcplatform=x64
 
