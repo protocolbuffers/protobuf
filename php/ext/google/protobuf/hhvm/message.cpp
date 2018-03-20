@@ -52,14 +52,52 @@ static void stackenv_uninit(stackenv* se) {
 
 void Message_init_c_instance(
     Message *intern TSRMLS_DC) {
+  intern->msgdef = NULL;
+  intern->layout = NULL;
+  intern->msg = NULL;
+}
+
+void Message_deepclean(upb_msg *msg, const upb_msgdef *m) {
+  if (msg != NULL) {
+    upb_msg_field_iter i;
+    const upb_msglayout* l =
+        upb_msgfactory_getlayout(message_factory, m);
+    for(upb_msg_field_begin(&i, m);
+        !upb_msg_field_done(&i);
+        upb_msg_field_next(&i)) {
+      const upb_fielddef *f = upb_msg_iter_field(&i);
+      if (upb_fielddef_ismap(f)) {
+        int field_index = upb_fielddef_index(f);
+        upb_msgval msgval = upb_msg_get(msg, field_index, l);
+        upb_map *map = (upb_map*)upb_msgval_getmap(msgval);
+        // MapField_deepclean(map, f);
+      } else if (upb_fielddef_isseq(f)) {
+        int field_index = upb_fielddef_index(f);
+        upb_msgval msgval = upb_msg_get(msg, field_index, l);
+        upb_array *array = (upb_array*)upb_msgval_getarr(msgval);
+        const upb_msgdef *subm = upb_fielddef_type(f) == UPB_TYPE_MESSAGE ?
+            upb_fielddef_msgsubdef(f) : NULL;
+        RepeatedField_deepclean(array, subm);
+      } else {
+        if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+          int field_index = upb_fielddef_index(f);
+          upb_msgval msgval = upb_msg_get(msg, field_index, l);
+          upb_msg *submsg = (upb_msg*)upb_msgval_getmsg(msgval);
+          Message_deepclean(submsg, upb_fielddef_msgsubdef(f));
+        }
+      }
+    }
+    PHP_OBJECT_FREE(upb_msg_alloc(msg));
+  }
 }
 
 void Message_free_c(
     Message *intern TSRMLS_DC) {
-  PHP_OBJECT_FREE(intern->arena);
+  Message_deepclean(intern->msg, intern->msgdef);
 }
 
-void Message___construct(Message* intern, const upb_msgdef* msgdef) {
+void Message___construct(Message* intern, const upb_msgdef* msgdef,
+                         upb_arena* arena_parent) {
   // Create layout
   const upb_msglayout* layout =
       upb_msgfactory_getlayout(message_factory, msgdef);
@@ -68,16 +106,21 @@ void Message___construct(Message* intern, const upb_msgdef* msgdef) {
   intern->msgdef = msgdef;
   intern->layout = layout;
 
-  Arena* arena_wrapper;
-  PHP_OBJECT_NEW(arena_wrapper, intern->arena, Arena);
-  upb_arena* arena = arena_wrapper->arena;
+  upb_arena* arena;
+  if (arena_parent == NULL) {
+    PHP_OBJECT_NEW(arena, Arena);
+  } else {
+    arena = arena_parent;
+    PHP_OBJECT_ADDREF(arena_parent);
+  }
 
   upb_alloc *alloc = upb_arena_alloc(arena);
   intern->msg = (upb_msg*)upb_malloc(alloc, upb_msg_sizeof(layout));
   intern->msg = upb_msg_init(intern->msg, layout, alloc);
 }
 
-void Message_wrap(Message* intern, upb_msg *msg, const upb_msgdef *msgdef) {
+void Message_wrap(Message* intern, upb_msg *msg,
+                  const upb_msgdef *msgdef) {
   // Create layout
   const upb_msglayout* layout =
       upb_msgfactory_getlayout(message_factory, msgdef);
@@ -86,6 +129,8 @@ void Message_wrap(Message* intern, upb_msg *msg, const upb_msgdef *msgdef) {
   intern->msgdef = msgdef;
   intern->layout = layout;
   intern->msg = msg;
+
+  PHP_OBJECT_ADDREF(upb_msg_alloc(msg));
 }
 
 const char* Message_serializeToString(Message* intern, size_t* size) {

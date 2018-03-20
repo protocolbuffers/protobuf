@@ -115,4 +115,7 @@ static inline int php_proto_zend_lookup_class(
     }                              \
   }
 
+#define PHP_OBJECT_ADDREF(DEST) \
+  ++GC_REFCOUNT(DEST)
+
 #endif  // __GOOGLE_PROTOBUF_PHP_PORT_PHP7_H__

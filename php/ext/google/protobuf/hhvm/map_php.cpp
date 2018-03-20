@@ -192,7 +192,8 @@ PHP_METHOD(MapField, offsetGet) {
     RETURN_NULL();
   } else {
     tophpval(v, upb_map_valuetype(intern->map),
-             static_cast<zend_class_entry*>(intern->klass), return_value);
+             static_cast<zend_class_entry*>(intern->klass),
+             return_value);
     return;
   }
 }

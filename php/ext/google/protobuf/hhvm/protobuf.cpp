@@ -36,8 +36,8 @@
 // Globals.
 // -----------------------------------------------------------------------------
 
-static std::map<const zend_class_entry*, const upb_def*>* class2def;
-static std::map<const upb_def*, const zend_class_entry*>* def2class;
+static std::map<const void*, const upb_def*>* class2def;
+static std::map<const upb_def*, const void*>* def2class;
 
 void register_upbdef(const char* classname, const upb_def* def) {
   PROTO_CE_DECLARE pce;
@@ -50,14 +50,15 @@ void register_upbdef(const char* classname, const upb_def* def) {
   (*def2class)[def] = PROTO_CE_UNREF(pce);
 }
 
-const upb_msgdef* class2msgdef(const zend_class_entry* klass) {
+const upb_msgdef* class2msgdef(const void* klass) {
   const upb_def* def = (*class2def)[klass];
   assert(def->type == UPB_DEF_MSG);
   return upb_downcast_msgdef(def);
 }
 
-const zend_class_entry* msgdef2class(const upb_msgdef* msgdef) {
-  const zend_class_entry* klass = (*def2class)[upb_msgdef_upcast(msgdef)];
+const void* msgdef2class(const upb_msgdef* msgdef) {
+  const zend_class_entry* klass = (const zend_class_entry*)
+      (*def2class)[upb_msgdef_upcast(msgdef)];
   assert(klass != NULL);
   return klass;
 }
@@ -105,8 +106,8 @@ static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 }
 
 static PHP_RINIT_FUNCTION(protobuf) {
-  class2def = new std::map<const zend_class_entry*, const upb_def*>();
-  def2class = new std::map<const upb_def*, const zend_class_entry*>();
+  class2def = new std::map<const void*, const upb_def*>();
+  def2class = new std::map<const upb_def*, const void*>();
   internal_generated_pool = NULL;
   return 0;
 }

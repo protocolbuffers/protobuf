@@ -12,9 +12,6 @@ extern zval* internal_generated_pool;
 extern zend_object *internal_generated_pool;
 #endif
 
-const upb_msgdef* class2msgdef(const zend_class_entry* klass);
-const zend_class_entry* msgdef2class(const upb_msgdef* msgdef);
-
 upb_msgval tomsgval(zval* value, upb_fieldtype_t type, upb_alloc* alloc);
 void tophpval(const upb_msgval &msgval,
               upb_fieldtype_t type,

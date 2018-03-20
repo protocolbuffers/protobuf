@@ -134,7 +134,7 @@ PHP_METHOD(RepeatedField, __construct) {
 
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
   RepeatedField___construct(
-      intern, static_cast<upb_descriptortype_t>(type), klass);
+      intern, static_cast<upb_descriptortype_t>(type), NULL, klass);
 }
 
 /**
@@ -192,7 +192,8 @@ PHP_METHOD(RepeatedField, offsetGet) {
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
   upb_msgval value = upb_array_get(intern->array, index);
   tophpval(value, upb_array_type(intern->array),
-           static_cast<zend_class_entry*>(intern->klass), return_value);
+           static_cast<zend_class_entry*>(intern->klass),
+           return_value);
 }
 
 /**
@@ -212,7 +213,8 @@ PHP_METHOD(RepeatedField, offsetSet) {
   }
 
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
-  upb_msgval val = tomsgval(value, upb_array_type(intern->array), NULL);
+  upb_msgval val = tomsgval(value, upb_array_type(intern->array),
+                            upb_array_getalloc(intern->array));
   size_t size = upb_array_size(intern->array);
   if (!index || Z_TYPE_P(index) == IS_NULL) {
     upb_array_set(intern->array, size, val);
@@ -224,6 +226,13 @@ PHP_METHOD(RepeatedField, offsetSet) {
                    (long long unsigned int)indexint);
         return;
       } else {
+        if (indexint == size &&
+            upb_array_type(intern->array) == UPB_TYPE_MESSAGE) {
+          // Remove reference to old element.
+          upb_msgval msgval = upb_array_get(intern->array, indexint);
+          const upb_msg *old_msg = upb_msgval_getmsg(msgval);
+          PHP_OBJECT_DELREF(upb_msg_alloc(old_msg));
+        }
         upb_array_set(intern->array, indexint, val);
       }
     } else {

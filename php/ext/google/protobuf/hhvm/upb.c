@@ -5076,6 +5076,10 @@ upb_fieldtype_t upb_array_type(const upb_array *arr) {
   return arr->type;
 }
 
+upb_alloc *upb_array_getalloc(upb_array *array) {
+  return array->alloc;
+}
+
 upb_msgval upb_array_get(const upb_array *arr, size_t i) {
   UPB_ASSERT(i < arr->len);
   return upb_msgval_read(arr->data, i * arr->element_size, arr->element_size);

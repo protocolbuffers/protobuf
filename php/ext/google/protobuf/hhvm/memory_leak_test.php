@@ -41,8 +41,8 @@ use Foo\TestMessage;
 
 $from = new TestMessage();
 TestUtil::setTestMessage($from);
-# TestUtil::assertTestMessage($from);
-# 
+TestUtil::assertTestMessage($from);
+
 # $data = $from->serializeToString();
 # 
 # $to = new TestMessage();

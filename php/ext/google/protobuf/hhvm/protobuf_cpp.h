@@ -16,6 +16,8 @@
 // -----------------------------------------------------------------------------
 
 void register_upbdef(const char* classname, const upb_def* def);
+const upb_msgdef* class2msgdef(const void* klass);
+const void* msgdef2class(const upb_msgdef* msgdef);
 
 // -----------------------------------------------------------------------------
 // Protobuf Module
@@ -36,6 +38,16 @@ extern ProtobufModule* protobuf_module;
 // Arena
 // -----------------------------------------------------------------------------
 
+struct proto_arena {
+  upb_arena arena;
+  PHP_OBJECT wrapper;
+};
+
+typedef proto_arena proto_arena;
+
+void proto_arena_init(proto_arena *arena);
+void proto_arena_uninit(proto_arena *arena);
+
 PROTO_FORWARD_DECLARE_CLASS(Arena);
 
 void Arena_init(TSRMLS_D);
@@ -44,7 +56,7 @@ void Arena_free_c(Arena *object TSRMLS_DC);
 void Arena_init_c_instance(Arena *object TSRMLS_DC);
 
 PROTO_WRAP_OBJECT_START(Arena)
-  upb_arena *arena;
+  proto_arena *arena;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
@@ -80,10 +92,12 @@ void Message_init(TSRMLS_D);
 
 void Message_free_c(Message *intern TSRMLS_DC);
 void Message_init_c_instance(Message *intern TSRMLS_DC);
+void Message_deepclean(upb_msg *msg, const upb_msgdef *m);
 
-void Message_wrap(Message *intern, upb_msg *msg, const upb_msgdef *msgdef);
+void Message_wrap(Message *intern, upb_msg *msg, const upb_msgdef *msgde);
 
-void Message___construct(Message *intern, const upb_msgdef *msgdef);
+void Message___construct(Message *intern, const upb_msgdef *msgdef,
+                         upb_arena *arena_parent);
 const char *Message_serializeToString(Message *intern, size_t *size);
 void Message_mergeFromString(
     Message *intern, const char *data, size_t size);
@@ -93,7 +107,6 @@ PROTO_WRAP_OBJECT_START(Message)
   const upb_msgdef *msgdef;
   const upb_msglayout *layout;
   upb_msg *msg;
-  PHP_OBJECT arena;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
@@ -106,6 +119,7 @@ void MapField_init(TSRMLS_D);
 
 void MapField_free_c(MapField *intern TSRMLS_DC);
 void MapField_init_c_instance(MapField *intern TSRMLS_DC);
+void MapField_deepclean(upb_map *map, const upb_msgdef *m);
 
 void MapField_wrap(MapField *intern, upb_map *map, void *klass);
 
@@ -145,9 +159,11 @@ void RepeatedField_init(TSRMLS_D);
 
 void RepeatedField_free_c(RepeatedField *intern TSRMLS_DC);
 void RepeatedField_init_c_instance(RepeatedField *intern TSRMLS_DC);
+void RepeatedField_deepclean(upb_array *array, const upb_msgdef *m);
 
 void RepeatedField___construct(RepeatedField *intern,
                                upb_descriptortype_t type,
+                               upb_arena *arena,
                                void *klass);
 
 void RepeatedField_wrap(RepeatedField *intern, upb_array *arr, void *klass);

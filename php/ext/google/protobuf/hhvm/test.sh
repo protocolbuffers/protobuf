@@ -33,34 +33,34 @@ run_tests()
 
 PROTOC=../../../../../src/protoc
 
-# Test HHVM
-echo "****************************"
-echo "* Test HHVM"
-echo "****************************"
-rm -rf generated
-mkdir generated
-
-$PROTOC --php_out=hhvm:generated             \
-  proto/test.proto                           \
-  proto/test_include.proto                   \
-  proto/test_no_namespace.proto              \
-  proto/test_prefix.proto                    \
-  proto/test_php_namespace.proto             \
-  proto/test_empty_php_namespace.proto       \
-  proto/test_reserved_enum_lower.proto       \
-  proto/test_reserved_enum_upper.proto       \
-  proto/test_reserved_enum_value_lower.proto \
-  proto/test_reserved_enum_value_upper.proto \
-  proto/test_reserved_message_lower.proto    \
-  proto/test_reserved_message_upper.proto    \
-  proto/test_service.proto                   \
-  proto/test_service_namespace.proto         \
-  proto/test_descriptors.proto
-
-# make clean; hphpize; cmake . && make && hhvm -d extension_dir=. -d hhvm.extensions[]=protobuf.so test_hhvm.php
-phpunit --version
-make clean; hphpize; cmake . && make
-run_tests hhvm
+# # Test HHVM
+# echo "****************************"
+# echo "* Test HHVM"
+# echo "****************************"
+# rm -rf generated
+# mkdir generated
+# 
+# $PROTOC --php_out=hhvm:generated             \
+#   proto/test.proto                           \
+#   proto/test_include.proto                   \
+#   proto/test_no_namespace.proto              \
+#   proto/test_prefix.proto                    \
+#   proto/test_php_namespace.proto             \
+#   proto/test_empty_php_namespace.proto       \
+#   proto/test_reserved_enum_lower.proto       \
+#   proto/test_reserved_enum_upper.proto       \
+#   proto/test_reserved_enum_value_lower.proto \
+#   proto/test_reserved_enum_value_upper.proto \
+#   proto/test_reserved_message_lower.proto    \
+#   proto/test_reserved_message_upper.proto    \
+#   proto/test_service.proto                   \
+#   proto/test_service_namespace.proto         \
+#   proto/test_descriptors.proto
+# 
+# # make clean; hphpize; cmake . && make && hhvm -d extension_dir=. -d hhvm.extensions[]=protobuf.so test_hhvm.php
+# phpunit --version
+# make clean; hphpize; cmake . && TMPDIR=~/tmp make
+# run_tests hhvm
 
 # Test PHP
 rm -rf generated
@@ -87,15 +87,15 @@ OLD_PATH=$PATH
 OLD_CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
 OLD_C_INCLUDE_PATH=$C_INCLUDE_PATH
 
-# # php-5.5
-# echo "****************************"
-# echo "* Test PHP5.5"
-# echo "****************************"
-# export PATH=/usr/local/php-5.5/bin:$OLD_PATH
-# export CPLUS_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/include/php/:$OLD_CPLUS_INCLUDE_PATH
-# export C_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/include/php/:$OLD_C_INCLUDE_PATH
-# 
-# make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
+# php-5.5
+echo "****************************"
+echo "* Test PHP5.5"
+echo "****************************"
+export PATH=/usr/local/php-5.5/bin:$OLD_PATH
+export CPLUS_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/include/php/:$OLD_CPLUS_INCLUDE_PATH
+export C_INCLUDE_PATH=/usr/local/php-5.5/include/php/main:/usr/local/php-5.5/include/php/:$OLD_C_INCLUDE_PATH
+
+make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
 
 # # php-5.5-zts
 # echo "****************************"

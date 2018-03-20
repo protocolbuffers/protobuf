@@ -110,14 +110,38 @@
 
 #define PHP_OBJECT zval*
 
-#define PHP_OBJECT_NEW(DEST, WRAPPER, TYPE) \
-  {                                         \
-    MAKE_STD_ZVAL(WRAPPER);                 \
-    ZVAL_OBJ(WRAPPER, TYPE ## _type->create_object(TYPE ## _type TSRMLS_CC)) \
-    DEST = UNBOX(TYPE, WRAPPER);            \
+#define PHP_OBJECT_NEW(DEST, TYPE)      \
+  {                                     \
+    PHP_OBJECT php_wrapper;             \
+    TYPE *wrapper;                      \
+    MAKE_STD_ZVAL(php_wrapper);         \
+    ZVAL_OBJ(php_wrapper, TYPE ## _type->create_object( \
+        TYPE ## _type TSRMLS_CC));      \
+    wrapper = UNBOX(TYPE, php_wrapper); \
+    wrapper->arena->wrapper = php_wrapper; \
+    DEST = (upb_arena*)wrapper->arena;  \
   }
 
-#define PHP_OBJECT_FREE(DEST) \
-  zval_ptr_dtor(&DEST);
+#define PHP_OBJECT_FREE(DEST)       \
+  {                                 \
+    proto_arena *arena = (proto_arena*)DEST;      \
+    zval_ptr_dtor(&arena->wrapper); \
+  }
+
+#define PHP_OBJECT_ADDREF(DEST) \
+  {                             \
+    proto_arena *arena = (proto_arena*)DEST;  \
+    Z_ADDREF_P(arena->wrapper); \
+  }
+
+#define PHP_OBJECT_DELREF(DEST) \
+  {                             \
+    proto_arena *arena = (proto_arena*)(DEST);  \
+    Z_DELREF_P(arena->wrapper); \
+  }
+
+#define PHP_OBJECT_ISDEAD(DEST) \
+  (Z_REFCOUNT_P(((proto_arena*)DEST)->wrapper) == 1)
+
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PORT_PHP5_H__

@@ -6651,6 +6651,7 @@ void upb_array_free(upb_array *arr);
 size_t upb_array_size(const upb_array *arr);
 upb_fieldtype_t upb_array_type(const upb_array *arr);
 upb_msgval upb_array_get(const upb_array *arr, size_t i);
+upb_alloc *upb_array_getalloc(upb_array *array);
 
 /* Write interface.  May only be called by the message's owner who can enforce
  * its memory management invariants. */

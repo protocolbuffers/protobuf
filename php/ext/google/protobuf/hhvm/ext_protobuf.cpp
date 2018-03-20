@@ -46,6 +46,7 @@ class ProtobufExtension : public Extension {
   void moduleInit() override {
     protobuf_module = new ProtobufModule();
 
+    PROTO_INIT_CLASS(Arena);
     PROTO_INIT_CLASS(InternalDescriptorPool);
     PROTO_INIT_CLASS(MapField);
     PROTO_INIT_CLASS(MapFieldIter);
