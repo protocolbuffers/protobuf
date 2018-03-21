@@ -451,7 +451,7 @@ DataPiece DefaultValueObjectWriter::FindEnumDefault(
   }
   // We treat the first value as the default if none is specified.
   return enum_type->enumvalue_size() > 0
-             ? (use_ints_for_enums ? DataPiece(0) : DataPiece(enum_type->enumvalue(0).name(), true))
+             ? (use_ints_for_enums ? DataPiece(enum_type->enumvalue(0).number()) : DataPiece(enum_type->enumvalue(0).name(), true))
              : DataPiece::NullData();
 }
 
