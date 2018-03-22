@@ -155,8 +155,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/preserve_unknown_enum_test.cc
   ${protobuf_source_dir}/src/google/protobuf/proto3_arena_lite_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/proto3_arena_unittest.cc
-# TODO(b/74491957) Make this unittest work
-#  ${protobuf_source_dir}/src/google/protobuf/proto3_lite_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/proto3_lite_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/reflection_ops_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field_reflection_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field_unittest.cc
