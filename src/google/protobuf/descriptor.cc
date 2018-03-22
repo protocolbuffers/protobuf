@@ -3403,7 +3403,10 @@ class DescriptorBuilder {
    private:
     // Interprets uninterpreted_option_ on the specified message, which
     // must be the mutable copy of the original options message to which
-    // uninterpreted_option_ belongs.
+    // uninterpreted_option_ belongs. The given src_path is the source
+    // location path to the uninterpreted option, and options_path is the
+    // source location path to the options message. The location paths are
+    // recorded and then used in UpdateSourceCodeInfo.
     bool InterpretSingleOption(Message* options, std::vector<int>& src_path,
                                std::vector<int>& options_path);
 
