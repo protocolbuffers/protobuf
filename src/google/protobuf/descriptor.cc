@@ -38,24 +38,22 @@
 #include <limits>
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <set>
 #include <string>
 #include <vector>
 
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
@@ -64,6 +62,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/substitute.h>
+
 
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -347,14 +346,14 @@ class PrefixRemover {
       }
 
       if (ascii_tolower(str[i]) != prefix_[j++]) {
-        return str.as_string();
+        return string(str);
       }
     }
 
     // If we didn't make it through the prefix, we've failed to strip the
     // prefix.
     if (j < prefix_.size()) {
-      return str.as_string();
+      return string(str);
     }
 
     // Skip underscores between prefix and further characters.
@@ -364,12 +363,12 @@ class PrefixRemover {
 
     // Enum label can't be the empty string.
     if (i == str.size()) {
-      return str.as_string();
+      return string(str);
     }
 
     // We successfully stripped the prefix.
     str.remove_prefix(i);
-    return str.as_string();
+    return string(str);
   }
 
  private:
@@ -1802,6 +1801,15 @@ FileDescriptor::FindExtensionByCamelcaseName(const string& key) const {
   }
 }
 
+void Descriptor::ExtensionRange::CopyTo(
+    DescriptorProto_ExtensionRange* proto) const {
+  proto->set_start(this->start);
+  proto->set_end(this->end);
+  if (options_ != &google::protobuf::ExtensionRangeOptions::default_instance()) {
+    *proto->mutable_options() = *options_;
+  }
+}
+
 const Descriptor::ExtensionRange*
 Descriptor::FindExtensionRangeContainingNumber(int number) const {
   // Linear search should be fine because we don't expect a message to have
@@ -2069,13 +2077,7 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
     enum_type(i)->CopyTo(proto->add_enum_type());
   }
   for (int i = 0; i < extension_range_count(); i++) {
-    DescriptorProto::ExtensionRange* range = proto->add_extension_range();
-    range->set_start(extension_range(i)->start);
-    range->set_end(extension_range(i)->end);
-    const ExtensionRangeOptions* options = extension_range(i)->options_;
-    if (options != &ExtensionRangeOptions::default_instance()) {
-      range->mutable_options()->CopyFrom(*options);
-    }
+    extension_range(i)->CopyTo(proto->add_extension_range());
   }
   for (int i = 0; i < extension_count(); i++) {
     extension(i)->CopyTo(proto->add_extension());
@@ -2306,7 +2308,7 @@ bool RetrieveOptions(int depth, const Message& options,
       return RetrieveOptionsAssumingRightPool(depth, options, option_entries);
     }
     DynamicMessageFactory factory;
-    google::protobuf::scoped_ptr<Message> dynamic_options(
+    std::unique_ptr<Message> dynamic_options(
         factory.GetPrototype(option_descriptor)->New());
     if (dynamic_options->ParseFromString(options.SerializeAsString())) {
       return RetrieveOptionsAssumingRightPool(depth, *dynamic_options,
@@ -5132,13 +5134,13 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
     for (int j = i + 1; j < proto.reserved_range_size(); j++) {
       const EnumDescriptorProto_EnumReservedRange& range2 =
           proto.reserved_range(j);
-      if (range1.end() > range2.start() && range2.end() > range1.start()) {
+      if (range1.end() >= range2.start() && range2.end() >= range1.start()) {
         AddError(result->full_name(), proto.reserved_range(i),
                  DescriptorPool::ErrorCollector::NUMBER,
                  strings::Substitute("Reserved range $0 to $1 overlaps with "
                                      "already-defined range $2 to $3.",
-                                     range2.start(), range2.end() - 1,
-                                     range1.start(), range1.end() - 1));
+                                     range2.start(), range2.end(),
+                                     range1.start(), range1.end()));
       }
     }
   }
@@ -5661,13 +5663,15 @@ void DescriptorBuilder::CrossLinkField(
       if (!tables_->AddExtension(field)) {
         const FieldDescriptor* conflicting_field =
             tables_->FindExtension(field->containing_type(), field->number());
+        string containing_type_name =
+            field->containing_type() == NULL
+                ? "unknown"
+                : field->containing_type()->full_name();
         string error_msg = strings::Substitute(
             "Extension number $0 has already been used in \"$1\" by extension "
             "\"$2\" defined in $3.",
-            field->number(),
-            field->containing_type()->full_name(),
-            conflicting_field->full_name(),
-            conflicting_field->file()->name());
+            field->number(), containing_type_name,
+            conflicting_field->full_name(), conflicting_field->file()->name());
         // Conflicting extension numbers should be an error. However, before
         // turning this into an error we need to fix all existing broken
         // protos first.
@@ -6456,7 +6460,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
   // First set the value on the UnknownFieldSet corresponding to the
   // innermost message.
-  google::protobuf::scoped_ptr<UnknownFieldSet> unknown_fields(new UnknownFieldSet());
+  std::unique_ptr<UnknownFieldSet> unknown_fields(new UnknownFieldSet());
   if (!SetOptionValue(field, unknown_fields.get())) {
     return false;  // SetOptionValue() already added the error.
   }
@@ -6466,7 +6470,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   for (std::vector<const FieldDescriptor*>::reverse_iterator iter =
            intermediate_fields.rbegin();
        iter != intermediate_fields.rend(); ++iter) {
-    google::protobuf::scoped_ptr<UnknownFieldSet> parent_unknown_fields(
+    std::unique_ptr<UnknownFieldSet> parent_unknown_fields(
         new UnknownFieldSet());
     switch ((*iter)->type()) {
       case FieldDescriptor::TYPE_MESSAGE: {
@@ -6854,7 +6858,7 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
   }
 
   const Descriptor* type = option_field->message_type();
-  google::protobuf::scoped_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
+  std::unique_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
   GOOGLE_CHECK(dynamic.get() != NULL)
       << "Could not create an instance of " << option_field->DebugString();
 

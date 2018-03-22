@@ -93,7 +93,7 @@
 # endif
 
 // GCC <= 4.1 does not define std::tr1::hash for `long long int` or `long long unsigned int`
-# if __GNUC__ == 4 && defined(__GNUC__MINOR__) && __GNUC__MINOR__ <= 1
+# if __GNUC__ == 4 && defined(__GNUC_MINOR__) && __GNUC_MINOR__ <= 1
 #  undef GOOGLE_PROTOBUF_HAS_TR1
 #  undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
 #  undef GOOGLE_PROTOBUF_HAVE_HASH_SET

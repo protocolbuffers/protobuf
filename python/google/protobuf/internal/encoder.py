@@ -372,7 +372,7 @@ def MapSizer(field_descriptor, is_message_map):
 def _VarintEncoder():
   """Return an encoder for a basic varint value (does not include tag)."""
 
-  def EncodeVarint(write, value, unused_deterministic):
+  def EncodeVarint(write, value, unused_deterministic=None):
     bits = value & 0x7f
     value >>= 7
     while value:
@@ -388,7 +388,7 @@ def _SignedVarintEncoder():
   """Return an encoder for a basic signed varint value (does not include
   tag)."""
 
-  def EncodeSignedVarint(write, value, unused_deterministic):
+  def EncodeSignedVarint(write, value, unused_deterministic=None):
     if value < 0:
       value += (1 << 64)
     bits = value & 0x7f
@@ -524,14 +524,14 @@ def _StructPackEncoder(wire_type, format):
       return EncodePackedField
     elif is_repeated:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeRepeatedField(write, value, unused_deterministic):
+      def EncodeRepeatedField(write, value, unused_deterministic=None):
         for element in value:
           write(tag_bytes)
           write(local_struct_pack(format, element))
       return EncodeRepeatedField
     else:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeField(write, value, unused_deterministic):
+      def EncodeField(write, value, unused_deterministic=None):
         write(tag_bytes)
         return write(local_struct_pack(format, value))
       return EncodeField
@@ -595,7 +595,7 @@ def _FloatingPointEncoder(wire_type, format):
       return EncodePackedField
     elif is_repeated:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeRepeatedField(write, value, unused_deterministic):
+      def EncodeRepeatedField(write, value, unused_deterministic=None):
         for element in value:
           write(tag_bytes)
           try:
@@ -605,7 +605,7 @@ def _FloatingPointEncoder(wire_type, format):
       return EncodeRepeatedField
     else:
       tag_bytes = TagBytes(field_number, wire_type)
-      def EncodeField(write, value, unused_deterministic):
+      def EncodeField(write, value, unused_deterministic=None):
         write(tag_bytes)
         try:
           write(local_struct_pack(format, value))
@@ -662,7 +662,7 @@ def BoolEncoder(field_number, is_repeated, is_packed):
     return EncodePackedField
   elif is_repeated:
     tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_VARINT)
-    def EncodeRepeatedField(write, value, unused_deterministic):
+    def EncodeRepeatedField(write, value, unused_deterministic=None):
       for element in value:
         write(tag_bytes)
         if element:
@@ -672,7 +672,7 @@ def BoolEncoder(field_number, is_repeated, is_packed):
     return EncodeRepeatedField
   else:
     tag_bytes = TagBytes(field_number, wire_format.WIRETYPE_VARINT)
-    def EncodeField(write, value, unused_deterministic):
+    def EncodeField(write, value, unused_deterministic=None):
       write(tag_bytes)
       if value:
         return write(true_byte)

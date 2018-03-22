@@ -221,7 +221,7 @@ static void GenerateSibling(const string& package_dir,
   string filename = package_dir + descriptor->name() + ".java";
   file_list->push_back(filename);
 
-  scoped_ptr<io::ZeroCopyOutputStream> output(
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
     output_directory->Open(filename));
   io::Printer printer(output.get(), '$');
 

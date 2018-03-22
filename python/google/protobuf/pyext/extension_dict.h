@@ -37,9 +37,8 @@
 #include <Python.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
+
+#include <google/protobuf/pyext/message.h>
 
 namespace google {
 namespace protobuf {
@@ -47,15 +46,7 @@ namespace protobuf {
 class Message;
 class FieldDescriptor;
 
-#ifdef _SHARED_PTR_H
-using std::shared_ptr;
-#else
-using internal::shared_ptr;
-#endif
-
 namespace python {
-
-struct CMessage;
 
 typedef struct ExtensionDict {
   PyObject_HEAD;
@@ -64,7 +55,7 @@ typedef struct ExtensionDict {
   // proto tree.  Every Python container class holds a
   // reference to it in order to keep it alive as long as there's a
   // Python object that references any part of the tree.
-  shared_ptr<Message> owner;
+  CMessage::OwnerRef owner;
 
   // Weak reference to parent message. Used to make sure
   // the parent is writable when an extension field is modified.

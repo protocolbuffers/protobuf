@@ -30,7 +30,6 @@
 
 #include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/map_lite_test_util.h>
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -49,7 +48,7 @@ class LiteArenaTest : public testing::Test {
     google::protobuf::Arena::CreateArray<char>(arena_.get(), 1);
   }
 
-  google::protobuf::scoped_ptr<Arena> arena_;
+  std::unique_ptr<Arena> arena_;
 };
 
 TEST_F(LiteArenaTest, MapNoHeapAllocation) {

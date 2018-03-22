@@ -91,9 +91,10 @@
 // These #includes are for the byte swap functions declared later on.
 #ifdef _MSC_VER
 #include <stdlib.h>  // NOLINT(build/include)
+#include <intrin.h>
 #elif defined(__APPLE__)
 #include <libkern/OSByteOrder.h>
-#elif defined(__GLIBC__) || defined(__CYGWIN__)
+#elif defined(__GLIBC__) || defined(__BIONIC__) || defined(__CYGWIN__)
 #include <byteswap.h>  // IWYU pragma: export
 #endif
 
@@ -209,6 +210,19 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 
 #define GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE GOOGLE_ATTRIBUTE_NOINLINE
 
+#ifndef GOOGLE_ATTRIBUTE_FUNC_ALIGN
+#if defined(__clang__) || \
+    defined(__GNUC__) && (__GNUC__ > 4 ||(__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+// Function alignment attribute introduced in gcc 4.3
+#define GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes) __attribute__ ((aligned(bytes)))
+#else
+#define GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes)
+#endif
+#endif
+
+#define GOOGLE_PROTOBUF_ATTRIBUTE_FUNC_ALIGN(bytes) \
+        GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes)
+
 #ifndef GOOGLE_PREDICT_TRUE
 #ifdef __GNUC__
 // Provided at least since GCC 3.0.
@@ -224,6 +238,13 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #define GOOGLE_PREDICT_FALSE(x) (__builtin_expect(x, 0))
 #else
 #define GOOGLE_PREDICT_FALSE(x) (x)
+#endif
+#endif
+
+#ifndef GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
+#ifdef __GNUC__
+#define GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL \
+    __attribute__((returns_nonnull))
 #endif
 #endif
 
@@ -359,7 +380,7 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #define bswap_32(x) OSSwapInt32(x)
 #define bswap_64(x) OSSwapInt64(x)
 
-#elif !defined(__GLIBC__) && !defined(__CYGWIN__)
+#elif !defined(__GLIBC__) && !defined(__BIONIC__) && !defined(__CYGWIN__)
 
 static inline uint16 bswap_16(uint16 x) {
   return static_cast<uint16>(((x & 0xFF) << 8) | ((x & 0xFF00) >> 8));
@@ -394,12 +415,10 @@ class Bits {
   static uint32 Log2FloorNonZero(uint32 n) {
 #if defined(__GNUC__)
   return 31 ^ static_cast<uint32>(__builtin_clz(n));
-#elif defined(COMPILER_MSVC) && defined(_M_IX86)
-  _asm {
-    bsr ebx, n
-    mov n, ebx
-  }
-  return n;
+#elif defined(_MSC_VER)
+  unsigned long where;
+  _BitScanReverse(&where, n);
+  return where;
 #else
   return Log2FloorNonZero_Portable(n);
 #endif
@@ -414,6 +433,10 @@ class Bits {
     // implementation instead.
 #if defined(__GNUC__) && !defined(GOOGLE_PROTOBUF_USE_PORTABLE_LOG2)
   return 63 ^ static_cast<uint32>(__builtin_clzll(n));
+#elif defined(_MSC_VER) && defined(_M_X64)
+  unsigned long where;
+  _BitScanReverse64(&where, n);
+  return where;
 #else
   return Log2FloorNonZero64_Portable(n);
 #endif

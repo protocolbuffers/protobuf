@@ -216,17 +216,6 @@ goog.define('jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS', true);
 
 
 /**
- * @define {boolean} Turning on this flag does NOT change the behavior of JSPB
- *     and only affects private internal state. It may, however, break some
- *     tests that use naive deeply-equals algorithms, because using a proto
- *     mutates its internal state.
- *     Projects are advised to turn this flag always on.
- */
-goog.define('jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS', true);
-// TODO(b/19419436): Delete this flag.
-
-
-/**
  * Does this JavaScript environment support Uint8Aray typed arrays?
  * @type {boolean}
  * @private
@@ -369,7 +358,7 @@ jspb.Message.getFieldNumber_ = function(msg, index) {
  */
 jspb.Message.initialize = function(
     msg, data, messageId, suggestedPivot, repeatedFields, opt_oneofFields) {
-  msg.wrappers_ = jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS ? null : {};
+  msg.wrappers_ = null;
   if (!data) {
     data = messageId ? [messageId] : [];
   }
@@ -394,17 +383,12 @@ jspb.Message.initialize = function(
       var fieldNumber = repeatedFields[i];
       if (fieldNumber < msg.pivot_) {
         var index = jspb.Message.getIndex_(msg, fieldNumber);
-        msg.array[index] = msg.array[index] ||
-            (jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS ?
-                jspb.Message.EMPTY_LIST_SENTINEL_ :
-                []);
+        msg.array[index] =
+            msg.array[index] || jspb.Message.EMPTY_LIST_SENTINEL_;
       } else {
         jspb.Message.maybeInitEmptyExtensionObject_(msg);
-        msg.extensionObject_[fieldNumber] =
-            msg.extensionObject_[fieldNumber] ||
-            (jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS ?
-                jspb.Message.EMPTY_LIST_SENTINEL_ :
-                []);
+        msg.extensionObject_[fieldNumber] = msg.extensionObject_[fieldNumber] ||
+            jspb.Message.EMPTY_LIST_SENTINEL_;
       }
     }
   }
@@ -517,8 +501,7 @@ jspb.Message.toObjectList = function(field, toObjectFn, opt_includeInstance) {
   // And not using it here to avoid a function call.
   var result = [];
   for (var i = 0; i < field.length; i++) {
-    result[i] = toObjectFn.call(field[i], opt_includeInstance,
-      /** @type {!jspb.Message} */ (field[i]));
+    result[i] = toObjectFn.call(field[i], opt_includeInstance, field[i]);
   }
   return result;
 };
@@ -551,10 +534,11 @@ jspb.Message.toObjectExtension = function(proto, obj, extensions,
       } else {
         if (fieldInfo.isRepeated) {
           obj[name] = jspb.Message.toObjectList(
-              /** @type {!Array<jspb.Message>} */ (value),
+              /** @type {!Array<!jspb.Message>} */ (value),
               fieldInfo.toObjectFn, opt_includeInstance);
         } else {
-          obj[name] = fieldInfo.toObjectFn(opt_includeInstance, value);
+          obj[name] = fieldInfo.toObjectFn(
+              opt_includeInstance, /** @type {!jspb.Message} */ (value));
         }
       }
     }
@@ -1419,7 +1403,7 @@ jspb.Message.prototype.setExtension = function(fieldInfo, value) {
     if (fieldInfo.isMessageType()) {
       self.wrappers_[fieldNumber] = value;
       self.extensionObject_[fieldNumber] = goog.array.map(
-          /** @type {Array<jspb.Message>} */ (value), function(msg) {
+          /** @type {!Array<!jspb.Message>} */ (value), function(msg) {
         return msg.toArray();
       });
     } else {
@@ -1428,7 +1412,8 @@ jspb.Message.prototype.setExtension = function(fieldInfo, value) {
   } else {
     if (fieldInfo.isMessageType()) {
       self.wrappers_[fieldNumber] = value;
-      self.extensionObject_[fieldNumber] = value ? value.toArray() : value;
+      self.extensionObject_[fieldNumber] =
+          value ? /** @type {!jspb.Message} */ (value).toArray() : value;
     } else {
       self.extensionObject_[fieldNumber] = value;
     }
@@ -1530,9 +1515,15 @@ jspb.Message.compareFields = function(field1, field2) {
   // If the fields are trivially equal, they're equal.
   if (field1 == field2) return true;
 
-  // If the fields aren't trivially equal and one of them isn't an object,
-  // they can't possibly be equal.
   if (!goog.isObject(field1) || !goog.isObject(field2)) {
+    // NaN != NaN so we cover this case.
+    if ((goog.isNumber(field1) && isNaN(field1)) ||
+        (goog.isNumber(field2) && isNaN(field2))) {
+      // One of the fields might be a string 'NaN'.
+      return String(field1) == String(field2);
+    }
+    // If the fields aren't trivially equal and one of them isn't an object,
+    // they can't possibly be equal.
     return false;
   }
 
@@ -1555,24 +1546,26 @@ jspb.Message.compareFields = function(field1, field2) {
   // If they're both Arrays, compare them element by element except for the
   // optional extension objects at the end, which we compare separately.
   if (field1.constructor === Array) {
+    var typedField1 = /** @type {!Array<?>} */ (field1);
+    var typedField2 = /** @type {!Array<?>} */ (field2);
     var extension1 = undefined;
     var extension2 = undefined;
 
-    var length = Math.max(field1.length, field2.length);
+    var length = Math.max(typedField1.length, typedField2.length);
     for (var i = 0; i < length; i++) {
-      var val1 = field1[i];
-      var val2 = field2[i];
+      var val1 = typedField1[i];
+      var val2 = typedField2[i];
 
       if (val1 && (val1.constructor == Object)) {
         goog.asserts.assert(extension1 === undefined);
-        goog.asserts.assert(i === field1.length - 1);
+        goog.asserts.assert(i === typedField1.length - 1);
         extension1 = val1;
         val1 = undefined;
       }
 
       if (val2 && (val2.constructor == Object)) {
         goog.asserts.assert(extension2 === undefined);
-        goog.asserts.assert(i === field2.length - 1);
+        goog.asserts.assert(i === typedField2.length - 1);
         extension2 = val2;
         val2 = undefined;
       }
@@ -1695,8 +1688,13 @@ jspb.Message.clone_ = function(obj) {
     var clonedArray = new Array(obj.length);
     // Use array iteration where possible because it is faster than for-in.
     for (var i = 0; i < obj.length; i++) {
-      if ((o = obj[i]) != null) {
-        clonedArray[i] = typeof o == 'object' ? jspb.Message.clone_(o) : o;
+      o = obj[i];
+      if (o != null) {
+        // NOTE:redundant null check existing for NTI compatibility.
+        // see b/70515949
+        clonedArray[i] = (typeof o == 'object') ?
+            jspb.Message.clone_(goog.asserts.assert(o)) :
+            o;
       }
     }
     return clonedArray;
@@ -1706,8 +1704,13 @@ jspb.Message.clone_ = function(obj) {
   }
   var clone = {};
   for (var key in obj) {
-    if ((o = obj[key]) != null) {
-      clone[key] = typeof o == 'object' ? jspb.Message.clone_(o) : o;
+    o = obj[key];
+    if (o != null) {
+      // NOTE:redundant null check existing for NTI compatibility.
+      // see b/70515949
+      clone[key] = (typeof o == 'object') ?
+          jspb.Message.clone_(goog.asserts.assert(o)) :
+          o;
     }
   }
   return clone;
@@ -1723,6 +1726,9 @@ jspb.Message.registerMessageType = function(id, constructor) {
   jspb.Message.registry_[id] = constructor;
   // This is needed so we can later access messageId directly on the contructor,
   // otherwise it is not available due to 'property collapsing' by the compiler.
+  /**
+   * @suppress {strictMissingProperties} messageId is not defined on Function
+   */
   constructor.messageId = id;
 };
 

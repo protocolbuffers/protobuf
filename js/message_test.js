@@ -418,6 +418,18 @@ describe('Message test suite', function() {
         ['hi',,, {100: [{200: 'a'}]}], ['hi', {100: [{200: 'a'}]}]));
   });
 
+  it('testEqualsNonFinite', function() {
+    assertTrue(jspb.Message.compareFields(NaN, NaN));
+    assertTrue(jspb.Message.compareFields(NaN, 'NaN'));
+    assertTrue(jspb.Message.compareFields('NaN', NaN));
+    assertTrue(jspb.Message.compareFields(Infinity, Infinity));
+    assertTrue(jspb.Message.compareFields(Infinity, 'Infinity'));
+    assertTrue(jspb.Message.compareFields('-Infinity', -Infinity));
+    assertTrue(jspb.Message.compareFields([NaN], ['NaN']));
+    assertFalse(jspb.Message.compareFields(undefined, NaN));
+    assertFalse(jspb.Message.compareFields(NaN, undefined));
+  });
+
   it('testToMap', function() {
     var p1 = new proto.jspb.test.Simple1(['k', ['v']]);
     var p2 = new proto.jspb.test.Simple1(['k1', ['v1', 'v2']]);

@@ -32,9 +32,6 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 
 #include <google/protobuf/io/coded_stream.h>
@@ -89,7 +86,7 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
  public:
   JsonObjectWriter(StringPiece indent_string,
                    google::protobuf::io::CodedOutputStream* out)
-      : element_(new Element(/*parent=*/NULL, /*is_json_object=*/false)),
+      : element_(new Element(/*parent=*/nullptr, /*is_json_object=*/false)),
         stream_(out),
         sink_(out),
         indent_string_(indent_string.ToString()),
@@ -211,7 +208,7 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Writes an individual character to the output.
   void WriteChar(const char c) { stream_->WriteRaw(&c, sizeof(c)); }
 
-  google::protobuf::scoped_ptr<Element> element_;
+  std::unique_ptr<Element> element_;
   google::protobuf::io::CodedOutputStream* stream_;
   ByteSinkWrapper sink_;
   const string indent_string_;

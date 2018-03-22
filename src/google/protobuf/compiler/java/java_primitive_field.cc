@@ -633,8 +633,7 @@ GenerateMembers(io::Printer* printer) const {
     "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  if (descriptor_->is_packed() &&
-      context_->HasGeneratedMethods(descriptor_->containing_type())) {
+  if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize = -1;\n");
   }

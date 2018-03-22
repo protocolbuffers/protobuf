@@ -35,9 +35,6 @@
 #include <limits>
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 #include <utility>
 #include <vector>
@@ -51,6 +48,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
+
 
 namespace google {
 namespace protobuf {
@@ -2062,6 +2060,7 @@ void Generator::GenerateOneofCaseDefinition(
         "  $upcase$: $number$",
         "upcase", ToEnumCase(oneof->field(i)->name()),
         "number", JSFieldIndex(oneof->field(i)));
+    printer->Annotate("upcase", oneof->field(i));
   }
 
   printer->Print(
@@ -2768,28 +2767,33 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
 void Generator::GenerateRepeatedPrimitiveHelperMethods(
     const GeneratorOptions& options, io::Printer* printer,
     const FieldDescriptor* field, bool untyped) const {
+  // clang-format off
   printer->Print(
       "/**\n"
       " * @param {!$optionaltype$} value\n"
-      " * @param {number=} opt_index\n"
+      " * @param {number=} opt_index$returndoc$\n"
       " */\n"
       "$class$.prototype.$addername$ = function(value, opt_index) {\n"
       "  jspb.Message.addToRepeatedField(this, $index$",
       "class", GetMessagePath(options, field->containing_type()), "addername",
       "add" + JSGetterName(options, field, BYTES_DEFAULT,
                            /* drop_list = */ true),
-      "optionaltype", JSTypeName(options, field, BYTES_DEFAULT), "index",
-      JSFieldIndex(field));
+      "optionaltype", JSTypeName(options, field, BYTES_DEFAULT),
+      "index", JSFieldIndex(field),
+      "returndoc", JSReturnDoc(options, field));
   printer->Annotate("addername", field);
   printer->Print(
-      "$oneofgroup$, $type$value$rptvalueinit$$typeclose$, opt_index);\n"
+      "$oneofgroup$, $type$value$rptvalueinit$$typeclose$, "
+      "opt_index);$returnvalue$\n"
       "};\n"
       "\n"
       "\n",
       "type", untyped ? "/** @type{string|number|boolean|!Uint8Array} */(" : "",
       "typeclose", untyped ? ")" : "", "oneofgroup",
       (field->containing_oneof() ? (", " + JSOneofArray(options, field)) : ""),
-      "rptvalueinit", "");
+      "rptvalueinit", "",
+      "returnvalue", JSReturnClause(field));
+  // clang-format on
 }
 
 void Generator::GenerateRepeatedMessageHelperMethods(
@@ -3206,21 +3210,24 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
            ? GetMessagePath(options, field->extension_scope())
            : GetFilePath(options, field->file()));
 
+  const string extension_object_name = JSObjectFieldName(options, field);
   printer->Print(
       "\n"
       "/**\n"
       " * A tuple of {field number, class constructor} for the extension\n"
-      " * field named `$name$`.\n"
+      " * field named `$nameInComment$`.\n"
       " * @type {!jspb.ExtensionFieldInfo<$extensionType$>}\n"
       " */\n"
       "$class$.$name$ = new jspb.ExtensionFieldInfo(\n",
-      "name", JSObjectFieldName(options, field),
+      "nameInComment", extension_object_name,
+      "name", extension_object_name,
       "class", extension_scope,
       "extensionType", JSFieldTypeAnnotation(
           options, field,
           /* is_setter_argument = */ false,
           /* force_present = */ true,
           /* singular_if_not_packed = */ false));
+  printer->Annotate("name", field);
   printer->Print(
       "    $index$,\n"
       "    {$name$: 0},\n"
@@ -3230,7 +3237,7 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "         $toObject$),\n"
       "    $repeated$);\n",
       "index", SimpleItoa(field->number()),
-      "name", JSObjectFieldName(options, field),
+      "name", extension_object_name,
       "ctor", (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ?
                SubmessageTypeRef(options, field) : string("null")),
       "toObject", (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ?
@@ -3249,7 +3256,7 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "extendName",
       JSExtensionsObjectName(options, field->file(), field->containing_type()),
       "index", SimpleItoa(field->number()), "class", extension_scope, "name",
-      JSObjectFieldName(options, field), "binaryReaderFn",
+      extension_object_name, "binaryReaderFn",
       JSBinaryReaderMethodName(options, field), "binaryWriterFn",
       JSBinaryWriterMethodName(options, field), "binaryMessageSerializeFn",
       (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE)
@@ -3272,7 +3279,7 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
                                            field->containing_type()),
       "index", SimpleItoa(field->number()),
       "class", extension_scope,
-      "name", JSObjectFieldName(options, field));
+      "name", extension_object_name);
 }
 
 bool GeneratorOptions::ParseFromOptions(
@@ -3500,7 +3507,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     // All output should go in a single file.
     string filename = options.output_dir + "/" + options.library +
                       options.GetFileNameExtension();
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
+    std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
     GOOGLE_CHECK(output.get());
     io::Printer printer(output.get(), '$');
 
@@ -3549,7 +3556,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
         }
 
         string filename = GetMessageFileName(options, desc);
-        google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+        std::unique_ptr<io::ZeroCopyOutputStream> output(
             context->Open(filename));
         GOOGLE_CHECK(output.get());
         io::Printer printer(output.get(), '$');
@@ -3575,7 +3582,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
         }
 
         string filename = GetEnumFileName(options, enumdesc);
-        google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+        std::unique_ptr<io::ZeroCopyOutputStream> output(
             context->Open(filename));
         GOOGLE_CHECK(output.get());
         io::Printer printer(output.get(), '$');
@@ -3598,7 +3605,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       if (allowed_set.count(file) == 1) {
         string filename = GetExtensionFileName(options, file);
 
-        google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+        std::unique_ptr<io::ZeroCopyOutputStream> output(
             context->Open(filename));
         GOOGLE_CHECK(output.get());
         io::Printer printer(output.get(), '$');
@@ -3634,7 +3641,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
       string filename =
           options.output_dir + "/" + GetJSFilename(options, file->name());
-      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
+      std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
       GOOGLE_CHECK(output.get());
       GeneratedCodeInfo annotations;
       io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(

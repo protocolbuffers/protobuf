@@ -349,7 +349,7 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
     return;
   }
 
-  scoped_array<const FieldDescriptor*> sorted_fields(
+  std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
     SortFieldsByNumber(descriptor_));
 
   printer->Print(
@@ -391,7 +391,7 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
-  scoped_array<const FieldDescriptor*> sorted_fields(
+  std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
     SortFieldsByNumber(descriptor_));
 
   printer->Print(
