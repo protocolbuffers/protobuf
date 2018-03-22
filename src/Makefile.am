@@ -81,7 +81,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/stl_util.h                               \
   google/protobuf/stubs/stringpiece.h                            \
   google/protobuf/stubs/template_util.h                          \
-  google/protobuf/stubs/type_traits.h                            \
   google/protobuf/any.pb.h                                       \
   google/protobuf/api.pb.h                                       \
   google/protobuf/any.h                                          \
@@ -762,7 +761,6 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/strutil_unittest.cc                    \
   google/protobuf/stubs/template_util_unittest.cc              \
   google/protobuf/stubs/time_test.cc                           \
-  google/protobuf/stubs/type_traits_unittest.cc                \
   google/protobuf/any_test.cc                                  \
   google/protobuf/arenastring_unittest.cc                      \
   google/protobuf/arena_unittest.cc                            \
