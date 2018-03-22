@@ -192,6 +192,7 @@ python-pure-python-benchmark: python_add_init
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-pure-python-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'python\' >> python-pure-python-benchmark
 	@echo cp py_benchmark.py tmp >> python-pure-python-benchmark
+	@echo echo \"./python-pure-python-benchmark\" >> python-pure-python-benchmark
 	@echo python tmp/py_benchmark.py false '$$@' >> python-pure-python-benchmark
 	@chmod +x python-pure-python-benchmark
 
@@ -202,6 +203,7 @@ python-cpp-reflection-benchmark: python_add_init
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-reflection-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-reflection-benchmark
 	@echo cp py_benchmark.py tmp >> python-cpp-reflection-benchmark
+	@echo echo \"./python-cpp-reflection-benchmark\" >> python-cpp-reflection-benchmark
 	@echo python tmp/py_benchmark.py false '$$@' >> python-cpp-reflection-benchmark
 	@chmod +x python-cpp-reflection-benchmark
 
@@ -212,6 +214,7 @@ python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-generated-code-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-generated-code-benchmark
 	@echo cp py_benchmark.py tmp >> python-cpp-generated-code-benchmark
+	@echo echo \"./python-cpp-generated-code-benchmark\" >> python-cpp-generated-code-benchmark
 	@echo python tmp/py_benchmark.py true '$$@' >> python-cpp-generated-code-benchmark
 	@chmod +x python-cpp-generated-code-benchmark
 
