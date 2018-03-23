@@ -3,7 +3,9 @@
 
 This directory contains benchmarking schemas and data sets that you
 can use to test a variety of performance scenarios against your
-protobuf language runtime.
+protobuf language runtime. If you are looking for performance 
+numbers of officially support languages, see [here](
+https://github.com/google/protobuf/blob/master/docs/Performance.md)
 
 ## Prerequisite
 
@@ -16,6 +18,11 @@ You need to install [cmake](https://cmake.org/) before building the benchmark.
 We are using [google/benchmark](https://github.com/google/benchmark) as the
 benchmark tool for testing cpp. This will be automaticly made during build the
 cpp benchmark.
+
+The cpp protobuf performance can be improved by linking with [tcmalloc library](
+https://gperftools.github.io/gperftools/tcmalloc.html). For using tcmalloc, you
+need to build [gpertools](https://github.com/gperftools/gperftools) to generate
+libtcmallc.so library.
 
 ### Java
 We're using maven to build the java benchmarks, which is the same as to build
@@ -62,6 +69,12 @@ $ make java
 
 ```
 $ make cpp
+```
+
+For linking with tcmalloc:
+
+```
+$ env LD_PRELOAD={directory to libtcmalloc.so} make cpp
 ```
 
 ### Python:
