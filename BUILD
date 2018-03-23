@@ -475,6 +475,7 @@ COMMON_TEST_SRCS = [
     "src/google/protobuf/arena_test_util.cc",
     "src/google/protobuf/map_test_util.cc",
     "src/google/protobuf/test_util.cc",
+    "src/google/protobuf/test_util.inc",
     "src/google/protobuf/testing/file.cc",
     "src/google/protobuf/testing/googletest.cc",
 ]
@@ -517,6 +518,7 @@ cc_test(
         "src/google/protobuf/compiler/cpp/cpp_move_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_unittest.cc",
+        "src/google/protobuf/compiler/cpp/cpp_unittest.inc",
         "src/google/protobuf/compiler/cpp/metadata_test.cc",
         "src/google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc",
         "src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc",
@@ -541,6 +543,7 @@ cc_test(
         "src/google/protobuf/map_field_test.cc",
         "src/google/protobuf/map_test.cc",
         "src/google/protobuf/message_unittest.cc",
+        "src/google/protobuf/message_unittest.inc",
         "src/google/protobuf/no_field_presence_test.cc",
         "src/google/protobuf/preserve_unknown_enum_test.cc",
         "src/google/protobuf/proto3_arena_lite_unittest.cc",
