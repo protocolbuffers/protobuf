@@ -107,15 +107,15 @@ make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && r
 # 
 # make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
 
-# # php-7.1
-# echo "****************************"
-# echo "* Test PHP7.1"
-# echo "****************************"
-# export PATH=/usr/local/php-7.1/bin:$OLD_PATH
-# export CPLUS_INCLUDE_PATH=/usr/local/php-7.1/include/php/main:/usr/local/php-7.1/include/php/:$OLD_CPLUS_INCLUDE_PATH
-# export C_INCLUDE_PATH=/usr/local/php-7.1/include/php/main:/usr/local/php-7.1/include/php/:$OLD_C_INCLUDE_PATH
-# 
-# make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
+# php-7.1
+echo "****************************"
+echo "* Test PHP7.1"
+echo "****************************"
+export PATH=/usr/local/php-7.1/bin:$OLD_PATH
+export CPLUS_INCLUDE_PATH=/usr/local/php-7.1/include/php/main:/usr/local/php-7.1/include/php/:$OLD_CPLUS_INCLUDE_PATH
+export C_INCLUDE_PATH=/usr/local/php-7.1/include/php/main:/usr/local/php-7.1/include/php/:$OLD_C_INCLUDE_PATH
+
+make clean; phpize && ./configure CFLAGS='-g -O0' CXXFLAGS='-g -O0' && make && run_tests php
 
 # # php-7.1-zts
 # echo "****************************"

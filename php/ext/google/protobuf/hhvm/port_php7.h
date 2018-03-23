@@ -17,6 +17,7 @@
 #define PROTO_ZVAL_STRINGL(zval_ptr, s, len, copy) \
   ZVAL_STRINGL(zval_ptr, s, len)
 #define PROTO_RETURN_STRINGL(s, len, copy) RETURN_STRINGL(s, len)
+#define PROTO_RETVAL_STRINGL(s, len, copy) RETVAL_STRINGL(s, len)
 #define php_proto_zend_make_printable_zval(from, to) \
   zend_make_printable_zval(from, to)
 
@@ -100,7 +101,37 @@ static inline int php_proto_zend_lookup_class(
   intern->std.handlers = handler;                                         \
   return &intern->std;
 
+/////////////////////////////////////
+
+#define ARENA zend_object*
+
+#define UNBOX_ARENA(WRAPPER) \
+  (Arena*)((char*)WRAPPER - XtOffsetOf(Arena, std))
+
+#define ARENA_INIT(WRAPPER, INTERN)                \
+{                                                  \
+  ARENA phparena;                                  \
+  WRAPPER = Arena_type->create_object(Arena_type); \
+  Arena *cpparena = UNBOX_ARENA(WRAPPER); \
+  INTERN = cpparena->arena;                        \
+}
+
+#define ARENA_ADDREF(WRAPPER) \
+  ++GC_REFCOUNT(WRAPPER)
+
+#define ARENA_DTOR(WRAPPER)            \
+  {                                    \
+    if(--GC_REFCOUNT(WRAPPER) == 0) {  \
+      zend_objects_store_del(WRAPPER); \
+    }                                  \
+  }
+
+/////////////////////////////////////
+
 #define PHP_OBJECT zend_object*
+
+#define ZVAL_PTR_TO_PHP_OBJECT(ZPTR) \
+  Z_OBJ_P(ZPTR)
 
 #define PHP_OBJECT_NEW(DEST, WRAPPER, TYPE) \
   {                                         \
@@ -117,5 +148,15 @@ static inline int php_proto_zend_lookup_class(
 
 #define PHP_OBJECT_ADDREF(DEST) \
   ++GC_REFCOUNT(DEST)
+
+#define PHP_OBJECT_DELREF(DEST) \
+  --GC_REFCOUNT(DEST)
+
+#define RETURN_PHP_OBJECT(OBJ)   \
+  {                              \
+    ++GC_REFCOUNT(OBJ);          \
+    ZVAL_OBJ(return_value, OBJ); \
+  }
+
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PORT_PHP7_H__

@@ -149,7 +149,7 @@ PHP_METHOD(MapField, __construct) {
   intern->klass = klass;
   MapField___construct(
       intern, static_cast<upb_descriptortype_t>(key_type),
-      static_cast<upb_descriptortype_t>(value_type), klass);
+      static_cast<upb_descriptortype_t>(value_type), intern->arena, klass);
 }
 
 /**
@@ -186,15 +186,20 @@ PHP_METHOD(MapField, offsetGet) {
   }
 
   MapField *intern = UNBOX(MapField, getThis());
-  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), NULL);
+  Arena *cpparena = UNBOX_ARENA(intern->arena);
+  upb_alloc *alloc = upb_arena_alloc(cpparena->arena);
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), alloc);
   upb_msgval v;
   if(!upb_map_get(intern->map, k, &v)) {
     RETURN_NULL();
   } else {
-    tophpval(v, upb_map_valuetype(intern->map),
-             static_cast<zend_class_entry*>(intern->klass),
-             return_value);
-    return;
+    if (upb_map_valuetype(intern->map) == UPB_TYPE_MESSAGE) {
+      RETURN_PHP_OBJECT((*(intern->wrappers))[(void*)upb_msgval_getmsg(v)]);
+    } else {
+      tophpval(v, upb_map_valuetype(intern->map),
+               static_cast<zend_class_entry*>(intern->klass),
+               return_value);
+    }
   }
 }
 
@@ -215,9 +220,24 @@ PHP_METHOD(MapField, offsetSet) {
   }
 
   MapField *intern = UNBOX(MapField, getThis());
-  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), NULL);
-  upb_msgval v = tomsgval(value, upb_map_valuetype(intern->map), NULL);
-  upb_map_set(intern->map, k, v, NULL);
+  Arena *cpparena = UNBOX_ARENA(intern->arena);
+  upb_alloc *alloc = upb_arena_alloc(cpparena->arena);
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), alloc);
+  upb_msgval v = tomsgval(value, upb_map_valuetype(intern->map), alloc);
+
+
+  upb_msgval oldv = {0};
+  upb_map_set(intern->map, k, v, &oldv);
+
+  if (upb_map_valuetype(intern->map) == UPB_TYPE_MESSAGE) {
+    const upb_msg *old_msg = upb_msgval_getmsg(oldv);
+    if (old_msg != NULL) {
+      PHP_OBJECT_DELREF((*(intern->wrappers))[(void*)old_msg]);
+    }
+    PHP_OBJECT cached = ZVAL_PTR_TO_PHP_OBJECT(value);
+    PHP_OBJECT_ADDREF(cached);
+    (*(intern->wrappers))[(void*)upb_msgval_getmsg(v)] = cached;
+  }
 }
 
 /**

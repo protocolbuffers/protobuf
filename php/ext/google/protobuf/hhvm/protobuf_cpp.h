@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 #include <set>
+#include <vector>
+#include <unordered_map>
 
 #include "port.h"
 #include "upb.h"
@@ -56,7 +58,7 @@ void Arena_free_c(Arena *object TSRMLS_DC);
 void Arena_init_c_instance(Arena *object TSRMLS_DC);
 
 PROTO_WRAP_OBJECT_START(Arena)
-  proto_arena *arena;
+  upb_arena *arena;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
@@ -98,7 +100,6 @@ void Message_wrap(Message *intern, upb_msg *msg, const upb_msgdef *msgde);
 
 void Message___construct(Message *intern, const upb_msgdef *msgdef,
                          upb_arena *arena_parent);
-const char *Message_serializeToString(Message *intern, size_t *size);
 void Message_mergeFromString(
     Message *intern, const char *data, size_t size);
 
@@ -107,6 +108,7 @@ PROTO_WRAP_OBJECT_START(Message)
   const upb_msgdef *msgdef;
   const upb_msglayout *layout;
   upb_msg *msg;
+  ARENA arena;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
@@ -126,11 +128,14 @@ void MapField_wrap(MapField *intern, upb_map *map, void *klass);
 void MapField___construct(MapField *intern,
                           upb_descriptortype_t key_type,
                           upb_descriptortype_t value_type,
+                          ARENA arena,
                           void *klass);
 
 PROTO_WRAP_OBJECT_START(MapField)
   upb_map *map;
   void *klass;
+  ARENA arena;
+  std::unordered_map<void*, PHP_OBJECT>* wrappers;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
@@ -163,7 +168,7 @@ void RepeatedField_deepclean(upb_array *array, const upb_msgdef *m);
 
 void RepeatedField___construct(RepeatedField *intern,
                                upb_descriptortype_t type,
-                               upb_arena *arena,
+                               ARENA arena,
                                void *klass);
 
 void RepeatedField_wrap(RepeatedField *intern, upb_array *arr, void *klass);
@@ -171,6 +176,8 @@ void RepeatedField_wrap(RepeatedField *intern, upb_array *arr, void *klass);
 PROTO_WRAP_OBJECT_START(RepeatedField)
   upb_array *array;
   void *klass;
+  ARENA arena;
+  std::unordered_map<void*, PHP_OBJECT>* wrappers;
 PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
@@ -206,5 +213,19 @@ void Util_init(TSRMLS_D);
 // -----------------------------------------------------------------------------
 
 upb_fieldtype_t to_fieldtype(upb_descriptortype_t type);
+
+// Stack-allocated context during an encode/decode operation. Contains the upb
+// environment and its stack-based allocator, an initial buffer for allocations
+// to avoid malloc() when possible, and a template for PHP exception messages
+// if any error occurs.
+#define STACK_ENV_STACKBYTES 4096
+typedef struct {
+  upb_env env;
+  const char *php_error_template;
+  char allocbuf[STACK_ENV_STACKBYTES];
+} stackenv;
+
+void stackenv_init(stackenv* se, const char* errmsg);
+void stackenv_uninit(stackenv* se);
 
 #endif // __GOOGLE_PROTOBUF_PHP_PROTOBUF_CPP_H__

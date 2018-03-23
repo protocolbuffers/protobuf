@@ -37,14 +37,15 @@ require_once('test_util.php');
 # use Google\Protobuf\Internal\RepeatedField;
 # use Google\Protobuf\Internal\GPBType;
 use Foo\TestMessage;
-# use Foo\TestMessage_Sub;
+use Foo\TestMessage_Sub;
 
 $from = new TestMessage();
 TestUtil::setTestMessage($from);
 TestUtil::assertTestMessage($from);
 
-# $data = $from->serializeToString();
-# 
+$data = $from->serializeToString();
+var_dump(bin2hex($data));
+
 # $to = new TestMessage();
 # $to->mergeFromString($data);
 # 

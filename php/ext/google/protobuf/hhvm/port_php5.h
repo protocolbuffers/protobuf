@@ -18,6 +18,7 @@
   ZVAL_STRINGL(zval_ptr, s, len, copy)
 #define PROTO_RETURN_STRING(s, copy) RETURN_STRING(s, copy)
 #define PROTO_RETURN_STRINGL(s, len, copy) RETURN_STRINGL(s, len, copy)
+#define PROTO_RETVAL_STRINGL(s, len, copy) RETVAL_STRINGL(s, len, copy)
 #define php_proto_zend_make_printable_zval(from, to) \
   {                                                  \
     int use_copy;                                    \
@@ -108,7 +109,35 @@
 #define UNBOX(class_name, val) \
   (class_name*)zend_object_store_get_object(val TSRMLS_CC);
 
+/////////////////////////////////////
+
+#define ARENA zval*
+
+#define UNBOX_ARENA(WRAPPER) UNBOX(Arena, WRAPPER)
+
+#define ARENA_INIT(WRAPPER, INTERN)              \
+{                                                \
+  ARENA phparena;                                \
+  MAKE_STD_ZVAL(phparena);                       \
+  ZVAL_OBJ(phparena, Arena_type->create_object(  \
+      Arena_type TSRMLS_CC));                    \
+  Arena *cpparena = UNBOX(Arena, phparena);      \
+  WRAPPER = phparena;                            \
+  INTERN = cpparena->arena;                      \
+}
+
+#define ARENA_ADDREF(WRAPPER) \
+  Z_ADDREF_P(WRAPPER)
+
+#define ARENA_DTOR(WRAPPER) \
+  zval_ptr_dtor(&WRAPPER);
+
+/////////////////////////////////////
+
 #define PHP_OBJECT zval*
+
+#define ZVAL_PTR_TO_PHP_OBJECT(ZPTR) \
+  (ZPTR)
 
 #define PHP_OBJECT_NEW(DEST, TYPE)      \
   {                                     \
@@ -122,26 +151,18 @@
     DEST = (upb_arena*)wrapper->arena;  \
   }
 
-#define PHP_OBJECT_FREE(DEST)       \
-  {                                 \
-    proto_arena *arena = (proto_arena*)DEST;      \
-    zval_ptr_dtor(&arena->wrapper); \
-  }
+#define PHP_OBJECT_FREE(DEST) \
+  zval_ptr_dtor(&DEST)
 
 #define PHP_OBJECT_ADDREF(DEST) \
-  {                             \
-    proto_arena *arena = (proto_arena*)DEST;  \
-    Z_ADDREF_P(arena->wrapper); \
-  }
+  Z_ADDREF_P(DEST)
 
 #define PHP_OBJECT_DELREF(DEST) \
-  {                             \
-    proto_arena *arena = (proto_arena*)(DEST);  \
-    Z_DELREF_P(arena->wrapper); \
-  }
+  Z_DELREF_P(DEST)
 
 #define PHP_OBJECT_ISDEAD(DEST) \
   (Z_REFCOUNT_P(((proto_arena*)DEST)->wrapper) == 1)
 
+#define RETURN_PHP_OBJECT(OBJ) ZVAL_ZVAL(return_value, OBJ, 1, 0)
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PORT_PHP5_H__

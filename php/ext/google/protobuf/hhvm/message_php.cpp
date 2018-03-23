@@ -68,7 +68,6 @@ upb_msgval tomsgval(zval* value, upb_fieldtype_t type, upb_alloc* alloc) {
       } else {
         TSRMLS_FETCH();
         Message* intern = UNBOX(Message, value);
-        PHP_OBJECT_ADDREF(upb_msg_alloc(intern->msg));
         return upb_msgval_msg(intern->msg);
       }
     }
@@ -140,7 +139,8 @@ static void message_set_property_internal(zval* object, zval* member,
   upb_fieldtype_t type = upb_fielddef_type(f);
   zval* cached_value = NULL;
 
-  if (upb_fielddef_isseq(f) || upb_fielddef_ismap(f)) {
+  if (upb_fielddef_isseq(f) || upb_fielddef_ismap(f) ||
+      (upb_fielddef_type(f) == UPB_TYPE_MESSAGE)) {
     // Find cached zval.
     zend_property_info* property_info;
 #if PHP_MAJOR_VERSION < 7
@@ -166,38 +166,16 @@ static void message_set_property_internal(zval* object, zval* member,
   }
 
   if (upb_fielddef_ismap(f)) {
-    upb_msgval msgval = upb_msg_get(self->msg, field_index, self->layout);
-    upb_map *old_map = (upb_map*)upb_msgval_getmap(msgval);
-    if (old_map != NULL) {
-      PHP_OBJECT_DELREF(upb_map_getalloc(old_map));
-    }
-
+    upb_msgval msgval;
     MapField *map = UNBOX(MapField, value);
-    PHP_OBJECT_ADDREF(upb_map_getalloc(map->map));
     upb_msgval_setmap(&msgval, map->map);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   } else if (upb_fielddef_isseq(f)) {
-    upb_msgval msgval = upb_msg_get(self->msg, field_index, self->layout);
-    upb_array *old_array = (upb_array*)upb_msgval_getarr(msgval);
-    if (old_array != NULL) {
-      const upb_msgdef *subm = upb_fielddef_type(f) == UPB_TYPE_MESSAGE ?
-          upb_fielddef_msgsubdef(f) : NULL;
-      RepeatedField_deepclean(old_array, subm);
-    }
-
+    upb_msgval msgval;
     RepeatedField *arr = UNBOX(RepeatedField, value);
-    PHP_OBJECT_ADDREF(upb_array_getalloc(arr->array));
     upb_msgval_setarr(&msgval, arr->array);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   } else {
-    if (type == UPB_TYPE_MESSAGE) {
-      upb_msgval msgval = upb_msg_get(self->msg, field_index, self->layout);
-      const upb_msg *old_msg = upb_msgval_getmsg(msgval);
-      if (old_msg != NULL) {
-        PHP_OBJECT_DELREF(upb_msg_alloc(old_msg));
-      }
-    }
-
     upb_msgval msgval = tomsgval(value, type, upb_msg_alloc(self->msg));
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   }
@@ -230,16 +208,55 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
   } else {
     SEPARATE_ZVAL_IF_NOT_REF(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
   }
+#else
+  if ((type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES) &&
+      !upb_fielddef_isseq(f)) {
+    zval_ptr_dtor(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+  }
 #endif
 
   zval* retval = CACHED_VALUE_PTR_TO_ZVAL_PTR(
     OBJ_PROP(Z_OBJ_P(object), property_info->offset));
 
-//   // Find return value
-//   zend_op_array* op_array = CG(active_op_array);
-//   zval* retval = (op_array->opcodes[op_array->last]).result.var;
-
   upb_msgval msgval = upb_msg_get(self->msg, field_index, self->layout);
+
+  // TODO(teboring): Add test for corner cases.
+  if (upb_fielddef_ismap(f)) {
+    const upb_map *map = upb_msgval_getmap(msgval);
+    if (map != NULL) {
+      if (upb_map_valuetype(map) == UPB_TYPE_MESSAGE) {
+        MapField* cppmap = UNBOX(MapField, retval);
+        if (cppmap->map == map) {
+          return retval;
+        }
+      }
+    }
+  } else if (upb_fielddef_isseq(f)) {
+    const upb_array *array = upb_msgval_getarr(msgval);
+    if (array != NULL) {
+      if (upb_array_type(array) == UPB_TYPE_MESSAGE) {
+        RepeatedField* cpparray = UNBOX(RepeatedField, retval);
+        if (cpparray->array == array) {
+          return retval;
+        }
+      }
+    }
+  } else if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+    const upb_msg *msg = upb_msgval_getmsg(msgval);
+    if (msg == NULL) {
+      if (Z_TYPE_P(retval) == IS_NULL) {
+        return retval;
+      }
+      UPB_UNREACHABLE();
+    } else {
+      if (Z_TYPE_P(retval) == IS_OBJECT) {
+        Message* cppmsg = UNBOX(Message, retval);
+        if (cppmsg->msg == msg) {
+          return retval;
+        }
+      }
+    }
+  }
 
   // Update returned value
   if (upb_fielddef_ismap(f)) {
@@ -269,13 +286,10 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
       MapField___construct(intern, 
                            upb_fielddef_descriptortype(key_fielddef),
                            upb_fielddef_descriptortype(value_fielddef),
-                           klass);
+                           self->arena, klass);
       upb_msg_set(self->msg, field_index,
                   upb_msgval_map(intern->map), self->layout);
     } else {
-      if (intern->map != NULL) {
-        PHP_OBJECT_FREE(upb_map_getalloc(intern->map));
-      }
       MapField_wrap(intern, const_cast<upb_map*>(map), klass);
     }
   } else if (upb_fielddef_isseq(f)) {
@@ -297,14 +311,10 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
     const upb_array *arr = upb_msgval_getarr(msgval);
     if (arr == NULL) {
       RepeatedField___construct(intern, upb_fielddef_descriptortype(f), 
-                                (upb_arena*)upb_msg_alloc(self->msg), klass);
-      PHP_OBJECT_ADDREF(upb_array_getalloc(intern->array));
+                                self->arena, klass);
       upb_msg_set(self->msg, field_index,
                   upb_msgval_arr(intern->array), self->layout);
     } else {
-      if (intern->array != NULL) {
-        PHP_OBJECT_FREE(upb_array_getalloc(intern->array));
-      }
       RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
     }
   } else {
@@ -415,9 +425,12 @@ PHP_METHOD(Message, __construct) {
 
 PHP_METHOD(Message, serializeToString) {
   Message* intern = UNBOX(Message, getThis());
+  stackenv se;
+  stackenv_init(&se, "Error occurred during encoding: %s");
   size_t size;
-  const char* data = Message_serializeToString(intern, &size);
-  PROTO_RETURN_STRINGL(data, size, 1);
+  const char* data = upb_encode2(intern->msg, intern->layout, &se.env, &size);
+  PROTO_RETVAL_STRINGL(data, size, 1);
+  stackenv_uninit(&se);
 }
 
 PHP_METHOD(Message, mergeFromString) {
@@ -477,7 +490,7 @@ PHP_METHOD(Message, writeOneof) {
       upb_msgval msgval = upb_msg_get(self->msg, upb_fielddef_index(old_field),
                                       self->layout);
       const upb_msg *old_msg = upb_msgval_getmsg(msgval);
-      PHP_OBJECT_DELREF(upb_msg_alloc(old_msg));
+      // PHP_OBJECT_DELREF(upb_msg_alloc(old_msg));
     }
   }
 

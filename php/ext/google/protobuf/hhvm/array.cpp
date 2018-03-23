@@ -45,48 +45,52 @@ void RepeatedField_init_c_instance(
     RepeatedField *intern TSRMLS_DC) {
   intern->array = NULL;
   intern->klass = NULL;
+  intern->arena = NULL;
+  intern->wrappers = NULL;
 }
 
 void RepeatedField_deepclean(upb_array *array, const upb_msgdef *m) {
-  if (array != NULL) {
-    if (upb_array_type(array) == UPB_TYPE_MESSAGE) {
-      for (int i = 0; i < upb_array_size(array); i++) {
-        upb_msgval msgval = upb_array_get(array, i);
-        upb_msg *msg = (upb_msg*)upb_msgval_getmsg(msgval);
-        Message_deepclean(msg, m);
-      }
-    }
-    PHP_OBJECT_FREE(upb_array_getalloc(array));
-  }
 }
 
 void RepeatedField_free_c(
     RepeatedField *intern TSRMLS_DC) {
-  RepeatedField_deepclean(intern->array, class2msgdef(intern->klass));
+  if (upb_array_type(intern->array) == UPB_TYPE_MESSAGE) {
+    for (std::unordered_map<void*, PHP_OBJECT>::iterator i =
+             intern->wrappers->begin();
+         i != intern->wrappers->end(); ++i) {
+      PHP_OBJECT_FREE(i->second);
+    }
+    delete intern->wrappers;
+  }
+  ARENA_DTOR(intern->arena);
 }
 
 void RepeatedField_wrap(RepeatedField *intern, upb_array *arr,
                         void *klass) {
   intern->array = arr;
   intern->klass = klass;
-
-  PHP_OBJECT_ADDREF(upb_array_getalloc(arr));
 }
 
 void RepeatedField___construct(RepeatedField *intern,
                                upb_descriptortype_t type,
-                               upb_arena *arena_parent,
+                               ARENA arena_parent,
                                void *klass) {
   upb_arena* arena;
   if (arena_parent == NULL) {
-    PHP_OBJECT_NEW(arena, Arena);
+    ARENA_INIT(intern->arena, arena);
   } else {
-    arena = arena_parent;
-    PHP_OBJECT_ADDREF(arena_parent);
+    intern->arena = arena_parent;
+    ARENA_ADDREF(intern->arena);
+    Arena* cpparena = UNBOX_ARENA(intern->arena);
+    arena = cpparena->arena;
   }
 
   intern->array = upb_array_new(to_fieldtype(type), upb_arena_alloc(arena));
   intern->klass = klass;
+
+  if (upb_array_type(intern->array) == UPB_TYPE_MESSAGE) {
+    intern->wrappers = new std::unordered_map<void*, PHP_OBJECT>;
+  }
 }
 
 // -----------------------------------------------------------------------------
