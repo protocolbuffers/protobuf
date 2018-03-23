@@ -622,6 +622,14 @@ build_benchmark() {
   build_python_cpp py27-cpp
   build_golang
 
+  if [ ! -f gperftools/.libs/libtcmalloc.so ]; then
+    git clone https://github.com/gperftools/gperftools.git
+    cd gperftools
+    ./autogen.sh
+    ./configure
+    make -j2
+    cd ..
+  fi
 
   oldpwd=`pwd`
   cd benchmarks
@@ -637,15 +645,15 @@ build_benchmark() {
   ./download_data.sh
   datasets=`find . -type f -name "dataset.*.pb"`
   echo "benchmarking cpp..."
-  ./cpp-benchmark $datasets > tmp/cpp_result.txt
+  env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./cpp-benchmark $datasets > tmp/cpp_result.txt
   echo "benchmarking java..."
   ./java-benchmark $datasets > tmp/java_result.txt
   echo "benchmarking pure python..."
   sudo ./python-pure-python-benchmark $datasets > tmp/python_result.txt
   echo "benchmarking python cpp reflection..."
-  sudo ./python-cpp-reflection-benchmark $datasets >> tmp/python_result.txt
+  sudo env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-reflection-benchmark $datasets >> tmp/python_result.txt
   echo "benchmarking python cpp generated code..."
-  sudo ./python-cpp-generated-code-benchmark $datasets >> tmp/python_result.txt
+  sudo env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-generated-code-benchmark $datasets >> tmp/python_result.txt
   echo "benchmarking go..."
   ./go-benchmark $datasets > tmp/go_result.txt
 
