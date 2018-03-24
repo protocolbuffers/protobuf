@@ -1521,15 +1521,13 @@ bool Parser::ParseExtensions(DescriptorProto* message,
         message->mutable_extension_range(old_range_size)->mutable_options();
 
     {
-      DO(Consume("["));
-
       LocationRecorder index_location(
-        extensions_location, 0 /* we fill this in w/ actual index below */,
-        &info);
-
+          extensions_location, 0 /* we fill this in w/ actual index below */,
+          &info);
       LocationRecorder location(
           index_location,
           DescriptorProto::ExtensionRange::kOptionsFieldNumber);
+      DO(Consume("["));
 
       do {
         DO(ParseOption(options, location, containing_file, OPTION_ASSIGNMENT));

@@ -7110,11 +7110,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    FileOptions::kUninterpretedOptionFieldNumber,
                    0};
 
-    std::vector<int> vpath(path, path+2);
+    std::vector<int> vpath(path, path + 2);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("2:1-2:37", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+3);
+    std::vector<int> vunint(unint, unint + 3);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
   {
@@ -7123,11 +7123,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
     int unint[] = {FileDescriptorProto::kOptionsFieldNumber,
                    FileOptions::kUninterpretedOptionFieldNumber,
                    1};
-    std::vector<int> vpath(path, path+2);
+    std::vector<int> vpath(path, path + 2);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("3:1-3:35", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+3);
+    std::vector<int> vunint(unint, unint + 3);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7142,11 +7142,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    DescriptorProto::kOptionsFieldNumber,
                    MessageOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+4);
+    std::vector<int> vpath(path, path + 4);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("5:3-5:36", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+5);
+    std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7165,11 +7165,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    FieldDescriptorProto::kOptionsFieldNumber,
                    FieldOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+6);
+    std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("6:25-6:42", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+7);
+    std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7192,11 +7192,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    FieldDescriptorProto::kOptionsFieldNumber,
                    FieldOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+8);
+    std::vector<int> vpath(path, path + 8);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("8:28-8:55", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+9);
+    std::vector<int> vunint(unint, unint + 9);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7215,11 +7215,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    OneofDescriptorProto::kOptionsFieldNumber,
                    OneofOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+6);
+    std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("11:5-11:40", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+7);
+    std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7235,11 +7235,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    EnumDescriptorProto::kOptionsFieldNumber,
                    EnumOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+5);
+    std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("18:3-18:31", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+5);
+    std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
   {
@@ -7253,11 +7253,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    EnumDescriptorProto::kOptionsFieldNumber,
                    EnumOptions::kUninterpretedOptionFieldNumber,
                    1};
-    std::vector<int> vpath(path, path+5);
+    std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("19:3-19:31", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+5);
+    std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
   {
@@ -7271,11 +7271,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    EnumDescriptorProto::kOptionsFieldNumber,
                    OneofOptions::kUninterpretedOptionFieldNumber,
                    2};
-    std::vector<int> vpath(path, path+5);
+    std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("20:3-20:31", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+5);
+    std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7296,11 +7296,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    EnumValueDescriptorProto::kOptionsFieldNumber,
                    EnumValueOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+7);
+    std::vector<int> vpath(path, path + 7);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("21:14-21:40", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+7);
+    std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
   {
@@ -7317,11 +7317,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    EnumValueDescriptorProto::kOptionsFieldNumber,
                    EnumValueOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+6);
+    std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("22:14-22:42", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+7);
+    std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7337,11 +7337,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    ServiceDescriptorProto::kOptionsFieldNumber,
                    ServiceOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+5);
+    std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("26:3-26:35", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+5);
+    std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
   {
@@ -7355,11 +7355,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    ServiceDescriptorProto::kOptionsFieldNumber,
                    ServiceOptions::kUninterpretedOptionFieldNumber,
                    1};
-    std::vector<int> vpath(path, path+5);
+    std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("27:3-27:35", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+5);
+    std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
   {
@@ -7373,11 +7373,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    ServiceDescriptorProto::kOptionsFieldNumber,
                    ServiceOptions::kUninterpretedOptionFieldNumber,
                    2};
-    std::vector<int> vpath(path, path+5);
+    std::vector<int> vpath(path, path + 5);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("28:3-28:35", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+5);
+    std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7396,11 +7396,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    MethodDescriptorProto::kOptionsFieldNumber,
                    MethodOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+6);
+    std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("32:5-32:30", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+7);
+    std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
   {
@@ -7417,11 +7417,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    MethodDescriptorProto::kOptionsFieldNumber,
                    MethodOptions::kUninterpretedOptionFieldNumber,
                    1};
-    std::vector<int> vpath(path, path+6);
+    std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("33:5-33:41", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+7);
+    std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7431,6 +7431,16 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    1,
                    DescriptorProto::kExtensionRangeFieldNumber,
                    0,
+                   DescriptorProto_ExtensionRange::kOptionsFieldNumber};
+    std::vector<int> vpath(path, path + 5);
+    EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
+    EXPECT_EQ("37:40-37:67", PrintSourceLocation(loc));
+  }
+  {
+    int path[]  = {FileDescriptorProto::kMessageTypeFieldNumber,
+                   1,
+                   DescriptorProto::kExtensionRangeFieldNumber,
+                   0,
                    DescriptorProto_ExtensionRange::kOptionsFieldNumber,
                    kCustomOptionFieldNumber};
     int unint[] = {FileDescriptorProto::kMessageTypeFieldNumber,
@@ -7440,11 +7450,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    DescriptorProto_ExtensionRange::kOptionsFieldNumber,
                    ExtensionRangeOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+6);
+    std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("37:41-37:66", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+7);
+    std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
   {
@@ -7461,11 +7471,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    DescriptorProto_ExtensionRange::kOptionsFieldNumber,
                    ExtensionRangeOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+6);
+    std::vector<int> vpath(path, path + 6);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("37:41-37:66", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+7);
+    std::vector<int> vunint(unint, unint + 7);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 
@@ -7480,11 +7490,11 @@ TEST_F(SourceLocationTest, InterpretedOptionSourceLocation) {
                    FieldDescriptorProto::kOptionsFieldNumber,
                    FieldOptions::kUninterpretedOptionFieldNumber,
                    0};
-    std::vector<int> vpath(path, path+4);
+    std::vector<int> vpath(path, path + 4);
     EXPECT_TRUE(file_desc->GetSourceLocation(vpath, &loc));
     EXPECT_EQ("40:42-40:53", PrintSourceLocation(loc));
 
-    std::vector<int> vunint(unint, unint+5);
+    std::vector<int> vunint(unint, unint + 5);
     EXPECT_FALSE(file_desc->GetSourceLocation(vunint, &loc));
   }
 }
