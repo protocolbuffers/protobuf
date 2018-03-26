@@ -147,7 +147,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/csharp/csharp_names.h                 \
   google/protobuf/compiler/java/java_generator.h                 \
   google/protobuf/compiler/java/java_names.h                     \
-  google/protobuf/compiler/javanano/javanano_generator.h         \
   google/protobuf/compiler/js/js_generator.h                     \
   google/protobuf/compiler/js/well_known_types_embed.h           \
   google/protobuf/compiler/objectivec/objectivec_generator.h     \
@@ -409,29 +408,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_doc_comment.h             \
   google/protobuf/compiler/js/js_generator.cc                  \
   google/protobuf/compiler/js/well_known_types_embed.cc        \
-  google/protobuf/compiler/javanano/javanano_enum.cc           \
-  google/protobuf/compiler/javanano/javanano_enum.h            \
-  google/protobuf/compiler/javanano/javanano_enum_field.cc     \
-  google/protobuf/compiler/javanano/javanano_enum_field.h      \
-  google/protobuf/compiler/javanano/javanano_extension.cc      \
-  google/protobuf/compiler/javanano/javanano_extension.h       \
-  google/protobuf/compiler/javanano/javanano_field.cc          \
-  google/protobuf/compiler/javanano/javanano_field.h           \
-  google/protobuf/compiler/javanano/javanano_file.cc           \
-  google/protobuf/compiler/javanano/javanano_file.h            \
-  google/protobuf/compiler/javanano/javanano_generator.cc      \
-  google/protobuf/compiler/javanano/javanano_generator.h       \
-  google/protobuf/compiler/javanano/javanano_helpers.cc        \
-  google/protobuf/compiler/javanano/javanano_helpers.h         \
-  google/protobuf/compiler/javanano/javanano_map_field.cc      \
-  google/protobuf/compiler/javanano/javanano_map_field.h       \
-  google/protobuf/compiler/javanano/javanano_message.cc        \
-  google/protobuf/compiler/javanano/javanano_message.h         \
-  google/protobuf/compiler/javanano/javanano_message_field.cc  \
-  google/protobuf/compiler/javanano/javanano_message_field.h   \
-  google/protobuf/compiler/javanano/javanano_params.h          \
-  google/protobuf/compiler/javanano/javanano_primitive_field.cc \
-  google/protobuf/compiler/javanano/javanano_primitive_field.h \
   google/protobuf/compiler/objectivec/objectivec_enum.cc       \
   google/protobuf/compiler/objectivec/objectivec_enum.h        \
   google/protobuf/compiler/objectivec/objectivec_enum_field.cc \
