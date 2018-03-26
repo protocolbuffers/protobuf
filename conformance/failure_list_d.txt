@@ -1,0 +1,40 @@
+# Duration has hnsecs resolution
+Required.Proto3.JsonInput.DurationMaxValue.JsonOutput
+Required.Proto3.JsonInput.DurationMaxValue.ProtobufOutput
+Required.Proto3.JsonInput.DurationMinValue.JsonOutput
+Required.Proto3.JsonInput.DurationMinValue.ProtobufOutput
+
+# Original fields are not supported (should they work in both directions?)
+Required.Proto3.JsonInput.OriginalProtoFieldName.JsonOutput
+Required.Proto3.JsonInput.OriginalProtoFieldName.ProtobufOutput
+
+# Timestamp has hnsecs resolution
+Required.Proto3.JsonInput.TimestampMaxValue.JsonOutput
+Required.Proto3.JsonInput.TimestampMaxValue.ProtobufOutput
+Required.Proto3.JsonInput.TimestampRepeatedValue.JsonOutput
+Required.Proto3.JsonInput.TimestampRepeatedValue.ProtobufOutput
+# See issue #4079
+Required.Proto3.JsonInput.TimestampWithNegativeOffset.JsonOutput
+Required.Proto3.JsonInput.TimestampWithNegativeOffset.ProtobufOutput
+Required.Proto3.JsonInput.TimestampWithPositiveOffset.JsonOutput
+Required.Proto3.JsonInput.TimestampWithPositiveOffset.ProtobufOutput
+# End see issue #4079
+
+# The D protobuf library does not implement a JSON parser, but relies on the std.json
+# Following tests are failing because std.json parser implementation is more relaxed
+# regarding some edge cases
+#Required.Proto3.JsonInput.DoubleFieldTooLarge
+Required.Proto3.JsonInput.DoubleFieldTooSmall
+Required.Proto3.JsonInput.FloatFieldTooLarge
+Required.Proto3.JsonInput.FloatFieldTooSmall
+Required.Proto3.JsonInput.Int32FieldLeadingZero
+Required.Proto3.JsonInput.Int32FieldNegativeWithLeadingZero
+
+# Unknown fields are not supported yet
+Required.Proto2.ProtobufInput.UnknownVarint.ProtobufOutput
+Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
+
+# Failing tests not analized yet
+Required.Proto2.ProtobufInput.RepeatedScalarSelectsLast.FIXED32.ProtobufOutput
+Required.Proto2.ProtobufInput.RepeatedScalarSelectsLast.FIXED64.ProtobufOutput
+Required.Proto2.ProtobufInput.RepeatedScalarSelectsLast.UINT64.ProtobufOutput

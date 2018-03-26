@@ -202,6 +202,27 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/UnknownField.cs                                 \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs
 
+d_EXTRA_DIST=                           \
+  d/README.md                           \
+  d/dub.json                            \
+  d/test/basic.d                        \
+  d/test/generated_code.d               \
+  d/test/generated_code.proto           \
+  d/src/google/protobuf/any.d           \
+  d/src/google/protobuf/common.d        \
+  d/src/google/protobuf/decoding.d      \
+  d/src/google/protobuf/duration.d      \
+  d/src/google/protobuf/empty.d         \
+  d/src/google/protobuf/encoding.d      \
+  d/src/google/protobuf/field_mask.d    \
+  d/src/google/protobuf/internal.d      \
+  d/src/google/protobuf/json_decoding.d \
+  d/src/google/protobuf/json_encoding.d \
+  d/src/google/protobuf/package.d       \
+  d/src/google/protobuf/struct_.d       \
+  d/src/google/protobuf/timestamp.d     \
+  d/src/google/protobuf/wrappers.d
+
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \
   java/core/generate-sources-build.xml                                             \
@@ -1036,7 +1057,7 @@ js_EXTRA_DIST=                                                         \
   js/testbinary.proto                                                  \
   js/testempty.proto
 
-all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
+all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(d_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
 
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   autogen.sh                             \
@@ -1076,11 +1097,13 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/README.md                     \
   examples/WORKSPACE                     \
   examples/add_person.cc                 \
+  examples/add_person.d                  \
   examples/add_person.go                 \
   examples/add_person.py                 \
   examples/add_person_test.go            \
   examples/addressbook.proto             \
   examples/list_people.cc                \
+  examples/list_people.d                 \
   examples/list_people.go                \
   examples/list_people.py                \
   examples/list_people_test.go           \

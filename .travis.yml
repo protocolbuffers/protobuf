@@ -39,6 +39,8 @@ matrix:
     - os: osx
       env: CONFIG=cpp_distcheck
     - os: osx
+      env: CONFIG=d
+    - os: osx
       env: CONFIG=javascript
     - os: osx
       env: CONFIG=python
@@ -73,6 +75,8 @@ matrix:
     # tests on jenkins running in parallel.
     - os: linux
       env: CONFIG=cpp_distcheck
+    - os: linux
+      env: CONFIG=d
     # The Java compatibility test currently only runs on Linux because it will
     # fetch pre-built Linux protoc binaries in the test.
     - os: linux

@@ -58,7 +58,7 @@ build_cpp_distcheck() {
   make dist
 
   # List all files that should be included in the distribution package.
-  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
+  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|d/\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
     grep -v ".gitignore" | grep -v "java/compatibility_tests" |\
     grep -v "python/compatibility_tests" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
@@ -108,6 +108,25 @@ build_csharp() {
 
   # Run csharp compatibility test between 3.0.0 and the current version.
   csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
+}
+
+build_d() {
+  internal_build_cpp
+
+  mkdir -p ~/dlang
+  wget https://dlang.org/install.sh -O ~/dlang/install.sh
+  chmod +x ~/dlang/install.sh
+  source $(~/dlang/install.sh install dmd -a)
+
+  pushd d
+  dub test
+  popd
+
+  pushd conformance
+  make test_d
+  popd
+
+  deactivate
 }
 
 build_golang() {
@@ -625,6 +644,7 @@ if [ "$#" -ne 1 ]; then
 Usage: $0 { cpp |
             cpp_distcheck |
             csharp |
+            d |
             java_jdk7 |
             java_oracle7 |
             java_compatibility |

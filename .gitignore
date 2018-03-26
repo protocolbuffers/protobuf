@@ -109,11 +109,14 @@ Pods/
 # Comformance test output
 conformance/.libs/
 conformance/com/
+conformance/conformance/
 conformance/conformance-cpp
 conformance/conformance-csharp
+conformance/conformance-d
 conformance/conformance-java
 conformance/conformance-objc
 conformance/conformance-test-runner
+conformance/conformance.d
 conformance/conformance.pb.cc
 conformance/conformance.pb.h
 conformance/Conformance.pbobjc.h
@@ -126,6 +129,7 @@ conformance/google-protobuf/
 conformance/javac_middleman
 conformance/lite/
 conformance/nonexistent_tests.txt
+conformance/protobuf_test_messages
 conformance/protoc_middleman
 conformance/succeeding_tests.txt
 conformance/Conformance/

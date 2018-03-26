@@ -122,3 +122,17 @@ is created if it does not exist.  To view the data, run:
 Observe that the C++, Python, and Java examples in this directory run in a
 similar way and can view/modify files created by the Go example and vice
 versa.
+
+### D
+
+Follow instructions in [../README.md](../README.md) to install protoc and then
+follow [../d/README.md](../d/README.md) to install protobuf d runtime from
+source. You can also install D runtime using dub:
+
+    $ dub fetch protobuf
+
+Make sure the runtime version is the same as protoc binary, or it may not work.
+
+After you have install both protoc and D runtime, run "make d" to build two
+executables (shell scripts actually): add_person_d and list_people_d. They work
+the same way as the C++ executables.
