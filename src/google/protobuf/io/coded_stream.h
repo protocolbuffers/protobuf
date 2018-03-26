@@ -851,7 +851,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   }
 
   static bool IsDefaultSerializationDeterministic() {
-    return default_serialization_deterministic_.load(std::memory_order_relaxed);
+    return default_serialization_deterministic_.load(std::memory_order_relaxed) != 0;
   }
 
  private:
