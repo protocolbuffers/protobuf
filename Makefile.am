@@ -1003,6 +1003,7 @@ js_EXTRA_DIST=                                                         \
   js/test5.proto                                                       \
   js/test8.proto                                                       \
   js/test9.proto                                                       \
+  js/test10.proto                                                      \
   js/test_bootstrap.js                                                 \
   js/testbinary.proto                                                  \
   js/testempty.proto

@@ -30,8 +30,7 @@
 
 syntax = "proto2";
 
-option java_package = "com.google.apps.jspb.proto";
-option java_multiple_files = true;
+package jspb.exttest.strict.nine;
 
 message Simple9 {
   required string a_string = 1;

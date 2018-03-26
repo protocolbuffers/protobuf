@@ -3458,7 +3458,8 @@ void Generator::GenerateFile(const GeneratorOptions& options,
     for (int i = 0; i < file->dependency_count(); i++) {
       const string& name = file->dependency(i)->name();
       printer->Print(
-          "var $alias$ = require('$file$');\n",
+          "var $alias$ = require('$file$');\n"
+          "goog.object.extend(proto, $alias$);\n",
           "alias", ModuleAlias(name),
           "file",
           GetRootPath(file->name(), name) + GetJSFilename(options, name));
@@ -3497,9 +3498,11 @@ void Generator::GenerateFile(const GeneratorOptions& options,
     GenerateExtension(options, printer, *it);
   }
 
-  if ((options.import_style == GeneratorOptions::kImportCommonJs ||
-       options.import_style == GeneratorOptions::kImportCommonJsStrict)) {
+  if (options.import_style == GeneratorOptions::kImportCommonJs) {
     printer->Print("goog.object.extend(exports, $package$);\n",
+                   "package", GetFilePath(options, file));
+  } else if(options.import_style == GeneratorOptions::kImportCommonJsStrict) {
+    printer->Print("goog.object.extend(exports, proto);\n",
                    "package", GetFilePath(options, file));
   }
 

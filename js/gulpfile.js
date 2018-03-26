@@ -42,7 +42,8 @@ var group2Protos = [
 ];
 
 var group3Protos = [
-  'test9.proto'
+  'test9.proto',
+  'test10.proto'
 ];
 
 

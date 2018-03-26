@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2016 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,40 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Test suite is written using Jasmine -- see http://jasmine.github.io/
+syntax = "proto3";
 
+package jspb.exttest.strict.ten;
 
+import "test9.proto";
 
-var googleProtobuf = require('google-protobuf');
-var asserts = require('closure_asserts_commonjs');
-var global = Function('return this')();
-
-// Bring asserts into the global namespace.
-googleProtobuf.object.extend(global, asserts);
-
-var test9_pb = require('./test9_pb');
-var test10_pb = require('./test10_pb');
-
-describe('Strict test suite', function() {
-  it('testImportedMessage', function() {
-    var simple1 = new test9_pb.jspb.exttest.strict.nine.Simple9()
-    var simple2 = new test9_pb.jspb.exttest.strict.nine.Simple9()
-    assertObjectEquals(simple1.toObject(), simple2.toObject());
-  });
-
-  it('testGlobalScopePollution', function() {
-    assertObjectEquals(global.jspb.exttest, undefined);
-  });
-
-  describe('with imports', function() {
-    it('testImportedMessage', function() {
-      var simple1 = new test10_pb.jspb.exttest.strict.ten.Simple10()
-      var simple2 = new test10_pb.jspb.exttest.strict.ten.Simple10()
-      assertObjectEquals(simple1.toObject(), simple2.toObject());
-    });
-
-    it('testGlobalScopePollution', function() {
-      assertObjectEquals(global.jspb.exttest, undefined);
-    });
-  });
-});
+message Simple10 {
+    jspb.exttest.strict.nine.Simple9 a = 1;
+}
