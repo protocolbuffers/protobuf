@@ -76,6 +76,7 @@ upb_msgval tomsgval(const Variant& value, upb_fieldtype_t type) {
 
 Variant tophpval(const upb_msgval& msgval,
                  upb_fieldtype_t type,
+                 ARENA arena,
                  Class* klass) {
   switch (type) {
     case UPB_TYPE_INT32:
@@ -108,7 +109,7 @@ Variant tophpval(const upb_msgval& msgval,
       Object message = Object(klass);
       Message* intern = Native::data<Message>(message);
       const upb_msgdef* subdef = class2msgdef(klass);
-      Message_wrap(intern, const_cast<upb_msg*>(msg), subdef);
+      Message_wrap(intern, const_cast<upb_msg*>(msg), subdef, arena);
       return message;
     }
     default:
@@ -137,7 +138,7 @@ static Variant Message_get_impl(Message *self, const upb_fielddef *f) {
 
     if (upb_fielddef_issubmsg(value_fielddef)) {
       const upb_msgdef *subdef = upb_fielddef_msgsubdef(value_fielddef);
-      klass = const_cast<Class*>(msgdef2class(subdef));
+      klass = (Class*)(msgdef2class(subdef));
     }
 
     const upb_map *map = upb_msgval_getmap(msgval);
@@ -145,11 +146,12 @@ static Variant Message_get_impl(Message *self, const upb_fielddef *f) {
       MapField___construct(intern, 
                            upb_fielddef_descriptortype(key_fielddef),
                            upb_fielddef_descriptortype(value_fielddef),
+                           self->arena,
                            klass);
       upb_msg_set(self->msg, field_index,
                   upb_msgval_map(intern->map), self->layout);
     } else {
-      MapField_wrap(intern, const_cast<upb_map*>(map), klass);
+      MapField_wrap(intern, const_cast<upb_map*>(map), klass, self->arena);
     }
 
     return map_object;
@@ -160,16 +162,18 @@ static Variant Message_get_impl(Message *self, const upb_fielddef *f) {
     Class* klass = NULL;
     if (upb_fielddef_issubmsg(f)) {
       const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
-      klass = const_cast<Class*>(msgdef2class(subdef));
+      klass = (Class*)(msgdef2class(subdef));
     }
 
     const upb_array *arr = upb_msgval_getarr(msgval);
     if (arr == NULL) {
-      RepeatedField___construct(intern, upb_fielddef_descriptortype(f), klass);
+      RepeatedField___construct(intern, upb_fielddef_descriptortype(f),
+                                self->arena, klass);
       upb_msg_set(self->msg, field_index,
                   upb_msgval_arr(intern->array), self->layout);
     } else {
-      RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
+      RepeatedField_wrap(intern, const_cast<upb_array*>(arr),
+                         klass, self->arena);
     }
 
     return array;
@@ -177,9 +181,9 @@ static Variant Message_get_impl(Message *self, const upb_fielddef *f) {
     Class* klass = NULL;
     if (upb_fielddef_issubmsg(f)) {
       const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
-      klass = const_cast<Class*>(msgdef2class(subdef));
+      klass = (Class*)(msgdef2class(subdef));
     }
-    return tophpval(msgval, type, klass);
+    return tophpval(msgval, type, self->arena, klass);
   }
 }
 
@@ -284,9 +288,13 @@ void HHVM_METHOD(Message, __construct) {
 
 String HHVM_METHOD(Message, serializeToString) {
   Message* intern = Native::data<Message>(this_);
+  stackenv se;
+  stackenv_init(&se, "Error occurred during encoding: %s");
   size_t size;
-  const char* data = Message_serializeToString(intern, &size);
-  return String(data, size, CopyString);
+  const char* data = upb_encode2(intern->msg, intern->layout, &se.env, &size);
+  String return_value = String(data, size, CopyString);
+  stackenv_uninit(&se);
+  return return_value;
 }
 
 void HHVM_METHOD(Message, mergeFromString, const String& data) {

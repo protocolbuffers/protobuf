@@ -133,10 +133,9 @@ static inline int php_proto_zend_lookup_class(
 #define ZVAL_PTR_TO_PHP_OBJECT(ZPTR) \
   Z_OBJ_P(ZPTR)
 
-#define PHP_OBJECT_NEW(DEST, WRAPPER, TYPE) \
-  {                                         \
-    WRAPPER = TYPE ## _type->create_object(TYPE ## _type); \
-    DEST = (TYPE*)((char*)WRAPPER - XtOffsetOf(TYPE, std)); \
+#define PHP_OBJECT_NEW(DEST, TYPE)        \
+  {                                       \
+    DEST = (TYPE)->create_object((TYPE)); \
   }
 
 #define PHP_OBJECT_FREE(OBJ)       \
@@ -151,6 +150,9 @@ static inline int php_proto_zend_lookup_class(
 
 #define PHP_OBJECT_DELREF(DEST) \
   --GC_REFCOUNT(DEST)
+
+#define PHP_OBJECT_UNBOX(TYPE, DEST) \
+  (TYPE*)((char*)DEST - XtOffsetOf(TYPE, std))
 
 #define RETURN_PHP_OBJECT(OBJ)   \
   {                              \

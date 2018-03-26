@@ -66,9 +66,14 @@ void RepeatedField_free_c(
 }
 
 void RepeatedField_wrap(RepeatedField *intern, upb_array *arr,
-                        void *klass) {
+                        void *klass, ARENA arena) {
   intern->array = arr;
   intern->klass = klass;
+  intern->arena = arena;
+  ARENA_ADDREF(arena);
+  if (upb_array_type(intern->array) == UPB_TYPE_MESSAGE) {
+    intern->wrappers = new std::unordered_map<void*, PHP_OBJECT>;
+  }
 }
 
 void RepeatedField___construct(RepeatedField *intern,

@@ -198,11 +198,26 @@ PHP_METHOD(RepeatedField, offsetGet) {
 
   if (upb_array_type(intern->array) == UPB_TYPE_MESSAGE) {
     upb_msgval value = upb_array_get(intern->array, index);
-    RETURN_PHP_OBJECT((*(intern->wrappers))[(void*)upb_msgval_getmsg(value)]);
+    const upb_msg *msg = upb_msgval_getmsg(value);
+    std::unordered_map<void*, PHP_OBJECT>::iterator it =
+        intern->wrappers->find((void*)msg);
+    if (it != intern->wrappers->end()) {
+      RETURN_PHP_OBJECT(it->second);
+    } else {
+      const upb_msgdef *msgdef = class2msgdef(intern->klass);
+      TSRMLS_FETCH();
+      PHP_OBJECT wrapper;
+      PHP_OBJECT_NEW(wrapper, (zend_class_entry*)intern->klass);
+      (*(intern->wrappers))[(void*)msg] = wrapper;
+      Message *cppmsg = PHP_OBJECT_UNBOX(Message, wrapper);
+      Message_wrap(cppmsg, (upb_msg*)(msg), msgdef, intern->arena);
+      RETURN_PHP_OBJECT(wrapper);
+    }
   } else {
     upb_msgval value = upb_array_get(intern->array, index);
     tophpval(value, upb_array_type(intern->array),
              static_cast<zend_class_entry*>(intern->klass),
+             intern->arena,
              return_value);
   }
 }
@@ -330,8 +345,10 @@ PHP_METHOD(RepeatedFieldIter, current) {
 
   upb_msgval value = upb_array_get(
       intern->repeated_field->array, intern->position);
+  // TODO(teboring): This may have some memory issue.
   tophpval(value, upb_array_type(intern->repeated_field->array),
            static_cast<zend_class_entry*>(intern->repeated_field->klass),
+           intern->repeated_field->arena,
            return_value);
 }
 

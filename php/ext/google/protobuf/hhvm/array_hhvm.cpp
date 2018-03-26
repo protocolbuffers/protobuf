@@ -78,6 +78,7 @@ void HHVM_METHOD(RepeatedField, __construct,
       NULL : Unit::loadClass(classname.toCStrRef().get());
   RepeatedField___construct(
       intern, static_cast<upb_descriptortype_t>(type),
+      NULL,
       subklass);
 }
 
@@ -91,7 +92,7 @@ Variant HHVM_METHOD(RepeatedField, offsetGet, const Variant& index) {
   RepeatedField *intern = Native::data<RepeatedField>(this_);
   int64_t idx = index.toInt64();
   upb_msgval value = upb_array_get(intern->array, idx);
-  return tophpval(value, upb_array_type(intern->array),
+  return tophpval(value, upb_array_type(intern->array), intern->arena,
                   static_cast<Class*>(intern->klass));
 }
 
@@ -169,6 +170,7 @@ Variant HHVM_METHOD(RepeatedFieldIter, current) {
   upb_msgval value = upb_array_get(
       intern->repeated_field->array, intern->position);
   return tophpval(value, upb_array_type(intern->repeated_field->array),
+                  intern->repeated_field->arena,
                   static_cast<Class*>(intern->repeated_field->klass));
 }
 

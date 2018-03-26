@@ -41,6 +41,7 @@ void Message_init_c_instance(
   intern->msgdef = NULL;
   intern->layout = NULL;
   intern->msg = NULL;
+  intern->arena = NULL;
 }
 
 void Message_deepclean(upb_msg *msg, const upb_msgdef *m) {
@@ -51,8 +52,7 @@ void Message_free_c(
   ARENA_DTOR(intern->arena);
 }
 
-void Message___construct(Message* intern, const upb_msgdef* msgdef,
-                         upb_arena* arena_parent) {
+void Message___construct(Message* intern, const upb_msgdef* msgdef) {
   // Create layout
   const upb_msglayout* layout =
       upb_msgfactory_getlayout(message_factory, msgdef);
@@ -70,24 +70,24 @@ void Message___construct(Message* intern, const upb_msgdef* msgdef,
 }
 
 void Message_wrap(Message* intern, upb_msg *msg,
-                  const upb_msgdef *msgdef) {
+                  const upb_msgdef *msgdef, ARENA arena) {
   // Create layout
   const upb_msglayout* layout =
       upb_msgfactory_getlayout(message_factory, msgdef);
 
-  // Alloc message
   intern->msgdef = msgdef;
   intern->layout = layout;
   intern->msg = msg;
+
+  intern->arena = arena;
+  ARENA_ADDREF(arena);
 }
 
 void Message_mergeFromString(
     Message* intern, const char* data, size_t size) {
   upb_env env;
-  void *allocbuf = malloc(STACK_ENV_STACKBYTES);
   upb_alloc *alloc = upb_msg_alloc(intern->msg);
-  upb_env_init2(&env, allocbuf, sizeof(allocbuf), alloc);
-
+  upb_env_init2(&env, NULL, 0, alloc);
   upb_decode2(upb_stringview_make(data, size),
               intern->msg, intern->layout, &env);
 }

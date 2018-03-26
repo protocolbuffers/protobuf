@@ -16,6 +16,7 @@ upb_msgval tomsgval(zval* value, upb_fieldtype_t type, upb_alloc* alloc);
 void tophpval(const upb_msgval &msgval,
               upb_fieldtype_t type,
               zend_class_entry *subklass,
+              ARENA arena,
               zval *retval);
 
 extern zend_class_entry* RepeatedField_type;

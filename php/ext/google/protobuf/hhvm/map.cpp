@@ -29,9 +29,14 @@ void MapField_free_c(
   ARENA_DTOR(intern->arena);
 }
 
-void MapField_wrap(MapField *intern, upb_map *map, void *klass) {
+void MapField_wrap(MapField *intern, upb_map *map, void *klass, ARENA arena) {
   intern->map = map;
   intern->klass = klass;
+  intern->arena = arena;
+  ARENA_ADDREF(arena);
+  if (upb_map_valuetype(intern->map) == UPB_TYPE_MESSAGE) {
+    intern->wrappers = new std::unordered_map<void*, PHP_OBJECT>;
+  }
 }
 
 void MapField___construct(MapField *intern,

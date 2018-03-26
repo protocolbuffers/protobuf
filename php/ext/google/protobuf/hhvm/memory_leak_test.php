@@ -34,23 +34,73 @@ require_once('generated/GPBMetadata/Proto/TestPrefix.php');
 require_once('generated/Php/Test/TestNamespace.php');
 require_once('test_util.php');
 
-# use Google\Protobuf\Internal\RepeatedField;
-# use Google\Protobuf\Internal\GPBType;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
+use Google\Protobuf\Internal\GPBType;
+use Google\Protobuf\Internal\MapField;
+use Google\Protobuf\Internal\RepeatedField;
+
+#########################################################
+# Test Round Trip.
+#########################################################
 
 $from = new TestMessage();
 TestUtil::setTestMessage($from);
 TestUtil::assertTestMessage($from);
 
 $data = $from->serializeToString();
-var_dump(bin2hex($data));
 
-# $to = new TestMessage();
-# $to->mergeFromString($data);
+$to = new TestMessage();
+$to->mergeFromString($data);
+
+TestUtil::assertTestMessage($to);
+
+#########################################################
+# Test Unset.
+#########################################################
+
+$map = new MapField(GPBType::STRING, GPBType::STRING);
+$map['abc'] = 'abc';
+unset($map['abc']);
+
+$map = new MapField(GPBType::INT32,
+    GPBType::MESSAGE, TestMessage_Sub::class);
+$sub_m = new TestMessage_Sub();
+$arr[0] = $sub_m;
+unset($arr[0]);
+
+# TODO(teboring): Add these back when upb array support unset.
+# $arr = new RepeatedField(GPBType::STRING);
+# $arr[] = 'abc';
+# unset($arr[0]);
 # 
-# TestUtil::assertTestMessage($to);
-# 
+# $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
+# $arr[] = new TestMessage_Sub();
+# unset($arr[0]);
+
+#########################################################
+# Test Iterator.
+#########################################################
+
+$map = new MapField(GPBType::INT32,
+    GPBType::MESSAGE, TestMessage_Sub::class);
+$map[0] = new TestMessage_Sub();
+$map[1] = new TestMessage_Sub();
+$map[2] = new TestMessage_Sub();
+
+foreach ($map as $key => $val) {
+  $val->setA($key);
+}
+
+$arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
+$arr[0] = new TestMessage_Sub();
+$arr[1] = new TestMessage_Sub();
+$arr[2] = new TestMessage_Sub();
+
+foreach ($arr as $val) {
+  $val->setA(0);
+}
+
 # $from->setRecursive($from);
 # 
 # $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);

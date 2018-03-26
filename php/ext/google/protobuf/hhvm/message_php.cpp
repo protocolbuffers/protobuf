@@ -80,6 +80,7 @@ upb_msgval tomsgval(zval* value, upb_fieldtype_t type, upb_alloc* alloc) {
 void tophpval(const upb_msgval &msgval,
               upb_fieldtype_t type,
               zend_class_entry *subklass,
+              ARENA arena,
               zval *retval) {
   switch (type) {
     case UPB_TYPE_INT32:
@@ -121,7 +122,7 @@ void tophpval(const upb_msgval &msgval,
         TSRMLS_FETCH();
         ZVAL_OBJ(retval, subklass->create_object(subklass TSRMLS_CC));
         Message* intern = UNBOX(Message, retval);
-        Message_wrap(intern, const_cast<upb_msg*>(msg), subdef);
+        Message_wrap(intern, const_cast<upb_msg*>(msg), subdef, arena);
       }
       return;
     }
@@ -224,7 +225,7 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
   if (upb_fielddef_ismap(f)) {
     const upb_map *map = upb_msgval_getmap(msgval);
     if (map != NULL) {
-      if (upb_map_valuetype(map) == UPB_TYPE_MESSAGE) {
+      if (Z_TYPE_P(retval) == IS_OBJECT) {
         MapField* cppmap = UNBOX(MapField, retval);
         if (cppmap->map == map) {
           return retval;
@@ -234,7 +235,7 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
   } else if (upb_fielddef_isseq(f)) {
     const upb_array *array = upb_msgval_getarr(msgval);
     if (array != NULL) {
-      if (upb_array_type(array) == UPB_TYPE_MESSAGE) {
+      if (Z_TYPE_P(retval) == IS_OBJECT) {
         RepeatedField* cpparray = UNBOX(RepeatedField, retval);
         if (cpparray->array == array) {
           return retval;
@@ -290,7 +291,7 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
       upb_msg_set(self->msg, field_index,
                   upb_msgval_map(intern->map), self->layout);
     } else {
-      MapField_wrap(intern, const_cast<upb_map*>(map), klass);
+      MapField_wrap(intern, const_cast<upb_map*>(map), klass, self->arena);
     }
   } else if (upb_fielddef_isseq(f)) {
     if (Z_TYPE_P(retval) == IS_NULL) {
@@ -315,7 +316,8 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
       upb_msg_set(self->msg, field_index,
                   upb_msgval_arr(intern->array), self->layout);
     } else {
-      RepeatedField_wrap(intern, const_cast<upb_array*>(arr), klass);
+      RepeatedField_wrap(intern, const_cast<upb_array*>(arr),
+                         klass, self->arena);
     }
   } else {
     zend_class_entry *subklass = NULL;
@@ -323,7 +325,7 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
       const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
       subklass = (zend_class_entry*)msgdef2class(subdef);
     }
-    tophpval(msgval, type, subklass, retval);
+    tophpval(msgval, type, subklass, self->arena, retval);
   }
 
   return retval;
@@ -420,7 +422,7 @@ PHP_METHOD(Message, __construct) {
   Message* intern = UNBOX(Message, getThis());
   zend_class_entry* ce = Z_OBJCE_P(getThis());
   const upb_msgdef* msgdef = class2msgdef(ce);
-  Message___construct(intern, msgdef, NULL);
+  Message___construct(intern, msgdef);
 }
 
 PHP_METHOD(Message, serializeToString) {
@@ -465,7 +467,7 @@ PHP_METHOD(Message, readOneof) {
 
   upb_msgval msgval = upb_msg_get(self->msg, upb_fielddef_index(f),
                                   self->layout);
-  tophpval(msgval, upb_fielddef_type(f), subklass, return_value);
+  tophpval(msgval, upb_fielddef_type(f), subklass, self->arena, return_value);
 }
 
 PHP_METHOD(Message, writeOneof) {

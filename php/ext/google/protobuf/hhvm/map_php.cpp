@@ -194,10 +194,25 @@ PHP_METHOD(MapField, offsetGet) {
     RETURN_NULL();
   } else {
     if (upb_map_valuetype(intern->map) == UPB_TYPE_MESSAGE) {
-      RETURN_PHP_OBJECT((*(intern->wrappers))[(void*)upb_msgval_getmsg(v)]);
+      const upb_msg *msg = upb_msgval_getmsg(v);
+      std::unordered_map<void*, PHP_OBJECT>::iterator it =
+          intern->wrappers->find((void*)msg);
+      if (it != intern->wrappers->end()) {
+        RETURN_PHP_OBJECT(it->second);
+      } else {
+        const upb_msgdef *msgdef = class2msgdef(intern->klass);
+        TSRMLS_FETCH();
+        PHP_OBJECT wrapper;
+        PHP_OBJECT_NEW(wrapper, (zend_class_entry*)intern->klass);
+        (*(intern->wrappers))[(void*)msg] = wrapper;
+        Message *cppmsg = PHP_OBJECT_UNBOX(Message, wrapper);
+        Message_wrap(cppmsg, (upb_msg*)(msg), msgdef, intern->arena);
+        RETURN_PHP_OBJECT(wrapper);
+      }
     } else {
       tophpval(v, upb_map_valuetype(intern->map),
                static_cast<zend_class_entry*>(intern->klass),
+               intern->arena,
                return_value);
     }
   }
@@ -255,8 +270,15 @@ PHP_METHOD(MapField, offsetUnset) {
   }
 
   MapField *intern = UNBOX(MapField, getThis());
-  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), NULL);
-  upb_map_del(intern->map, k);
+  Arena *cpparena = UNBOX_ARENA(intern->arena);
+  upb_alloc *alloc = upb_arena_alloc(cpparena->arena);
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), alloc);
+  if (upb_map_del(intern->map, k)) {
+    if (upb_map_valuetype(intern->map) == UPB_TYPE_MESSAGE) {
+      intern->wrappers->erase(intern->map);
+    }
+  } else {
+  }
 }
 
 /**
@@ -305,6 +327,7 @@ PHP_METHOD(MapFieldIter, current) {
   upb_msgval value = upb_mapiter_value(intern->iter);
   tophpval(value, upb_map_valuetype(intern->map_field->map),
            static_cast<zend_class_entry*>(intern->map_field->klass),
+           intern->map_field->arena,
            return_value);
 }
 
@@ -313,6 +336,7 @@ PHP_METHOD(MapFieldIter, key) {
   upb_msgval key = upb_mapiter_key(intern->iter);
   return tophpval(key, upb_map_keytype(intern->map_field->map),
                   static_cast<zend_class_entry*>(intern->map_field->klass),
+                  intern->map_field->arena,
                   return_value);
 }
 

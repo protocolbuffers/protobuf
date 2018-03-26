@@ -96,10 +96,10 @@ void Message_free_c(Message *intern TSRMLS_DC);
 void Message_init_c_instance(Message *intern TSRMLS_DC);
 void Message_deepclean(upb_msg *msg, const upb_msgdef *m);
 
-void Message_wrap(Message *intern, upb_msg *msg, const upb_msgdef *msgde);
+void Message_wrap(Message *intern, upb_msg *msg,
+                  const upb_msgdef *msgde, ARENA arena);
 
-void Message___construct(Message *intern, const upb_msgdef *msgdef,
-                         upb_arena *arena_parent);
+void Message___construct(Message *intern, const upb_msgdef *msgdef);
 void Message_mergeFromString(
     Message *intern, const char *data, size_t size);
 
@@ -123,7 +123,7 @@ void MapField_free_c(MapField *intern TSRMLS_DC);
 void MapField_init_c_instance(MapField *intern TSRMLS_DC);
 void MapField_deepclean(upb_map *map, const upb_msgdef *m);
 
-void MapField_wrap(MapField *intern, upb_map *map, void *klass);
+void MapField_wrap(MapField *intern, upb_map *map, void *klass, ARENA arena);
 
 void MapField___construct(MapField *intern,
                           upb_descriptortype_t key_type,
@@ -171,7 +171,8 @@ void RepeatedField___construct(RepeatedField *intern,
                                ARENA arena,
                                void *klass);
 
-void RepeatedField_wrap(RepeatedField *intern, upb_array *arr, void *klass);
+void RepeatedField_wrap(RepeatedField *intern, upb_array *arr,
+                        void *klass, ARENA arena);
 
 PROTO_WRAP_OBJECT_START(RepeatedField)
   upb_array *array;

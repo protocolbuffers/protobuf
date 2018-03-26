@@ -70,5 +70,8 @@
 // Forward Declare
 // -----------------------------------------------------------------------------
 extern zend_class_entry *Arena_type;
+extern zend_class_entry *MapField_type;
+extern zend_class_entry *Message_type;
+extern zend_class_entry *RepeatedField_type;
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PORT_PHP_H__

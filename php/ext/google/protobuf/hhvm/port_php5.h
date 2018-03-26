@@ -142,13 +142,11 @@
 #define PHP_OBJECT_NEW(DEST, TYPE)      \
   {                                     \
     PHP_OBJECT php_wrapper;             \
-    TYPE *wrapper;                      \
     MAKE_STD_ZVAL(php_wrapper);         \
-    ZVAL_OBJ(php_wrapper, TYPE ## _type->create_object( \
-        TYPE ## _type TSRMLS_CC));      \
-    wrapper = UNBOX(TYPE, php_wrapper); \
-    wrapper->arena->wrapper = php_wrapper; \
-    DEST = (upb_arena*)wrapper->arena;  \
+    ZVAL_OBJ(php_wrapper, (TYPE)->create_object( \
+        (TYPE) TSRMLS_CC));               \
+    Z_TYPE_P(php_wrapper) = IS_OBJECT;  \
+    DEST = php_wrapper;                 \
   }
 
 #define PHP_OBJECT_FREE(DEST) \
@@ -160,8 +158,8 @@
 #define PHP_OBJECT_DELREF(DEST) \
   Z_DELREF_P(DEST)
 
-#define PHP_OBJECT_ISDEAD(DEST) \
-  (Z_REFCOUNT_P(((proto_arena*)DEST)->wrapper) == 1)
+#define PHP_OBJECT_UNBOX(TYPE, DEST) \
+  UNBOX(TYPE, DEST)
 
 #define RETURN_PHP_OBJECT(OBJ) ZVAL_ZVAL(return_value, OBJ, 1, 0)
 

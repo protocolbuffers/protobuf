@@ -6,8 +6,8 @@
 // Class lookup util
 // -----------------------------------------------------------------------------
 
-static std::map<const Class*, const upb_def*>* class2def;
-static std::map<const upb_def*, const Class*>* def2class;
+static std::map<const void*, const upb_def*>* class2def;
+static std::map<const upb_def*, const void*>* def2class;
 
 static Class* lookup_class(const char* name) {
   StringData* name_php = StringData::Make(name, CopyStringMode::CopyString);
@@ -23,14 +23,14 @@ void register_upbdef(const char* classname, const upb_def* def) {
   (*def2class)[def] = klass;
 }
 
-const upb_msgdef* class2msgdef(const Class* klass) {
+const upb_msgdef* class2msgdef(const void* klass) {
   const upb_def* def = (*class2def)[klass];
   assert(def->type == UPB_DEF_MSG);
   return upb_downcast_msgdef(def);
 }
 
-const Class* msgdef2class(const upb_msgdef* msgdef) {
-  const Class* klass = (*def2class)[upb_msgdef_upcast(msgdef)];
+const void* msgdef2class(const upb_msgdef* msgdef) {
+  const void* klass = (*def2class)[upb_msgdef_upcast(msgdef)];
   assert(klass != NULL);
   return klass;
 }
@@ -59,8 +59,8 @@ class ProtobufExtension : public Extension {
   }
 
   void requestInit() override {
-    class2def = new std::map<const Class*, const upb_def*>();
-    def2class = new std::map<const upb_def*, const Class*>();
+    class2def = new std::map<const void*, const upb_def*>();
+    def2class = new std::map<const upb_def*, const void*>();
     Class* internal_descriptor_pool_class =
         lookup_class("Google\\Protobuf\\Internal\\DescriptorPool");
     internal_generated_pool = Object(internal_descriptor_pool_class);

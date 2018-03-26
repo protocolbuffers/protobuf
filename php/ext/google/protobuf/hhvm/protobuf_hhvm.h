@@ -5,12 +5,13 @@
 
 extern Object internal_generated_pool;
 
-const upb_msgdef *class2msgdef(const Class *klass);
-const Class *msgdef2class(const upb_msgdef *msgdef);
+// const upb_msgdef *class2msgdef(const Class *klass);
+// const Class *msgdef2class(const upb_msgdef *msgdef);
 
 upb_msgval tomsgval(const Variant& value, upb_fieldtype_t type);
 Variant tophpval(const upb_msgval& msgval,
                  upb_fieldtype_t type,
+                 ARENA arena,
                  Class* klass);
 
 extern const StaticString s_RepeatedField;

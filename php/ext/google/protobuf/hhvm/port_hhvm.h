@@ -86,6 +86,27 @@ using namespace HPHP;
     DEST = Native::data<TYPE>(*WRAPPER);    \
   }
 
+#define UNBOX(TYPE, WRAPPER) Native::data<TYPE>(*WRAPPER)
+
+// -----------------------------------------------------------------------------
+// Arena
+// -----------------------------------------------------------------------------
+
+#define ARENA Object*
+
+#define ARENA_INIT(WRAPPER, INTERN)                     \
+{                                                       \
+  WRAPPER = new Object(Unit::loadClass(s_Arena.get())); \
+  Arena *cpparena = UNBOX(Arena, WRAPPER);              \
+  INTERN = cpparena->arena;                             \
+}
+
+#define ARENA_ADDREF(WRAPPER)
+
+#define ARENA_DTOR(WRAPPER)
+
+#define UNBOX_ARENA(WRAPPER) UNBOX(Arena, WRAPPER)
+
 // -----------------------------------------------------------------------------
 // Forward Declare
 // -----------------------------------------------------------------------------

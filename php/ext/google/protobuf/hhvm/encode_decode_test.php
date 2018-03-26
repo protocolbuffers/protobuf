@@ -88,7 +88,7 @@ class EncodeDecodeTest extends TestBase
 
     public function testEncodeDecode()
     {
-        $loops = 1;
+        $loops = 10000;
         $encode_time = 0;
         $decode_time = 0;
         $get_time = 0;
@@ -118,8 +118,8 @@ class EncodeDecodeTest extends TestBase
             $size = strlen($data);
     
             // Decode Message
-            $decode_start = microtime_float();
             $to = new TestMessage();
+            $decode_start = microtime_float();
             $to->mergeFromString($data);
             $decode_end = microtime_float();
             $decode_time += $decode_end - $decode_start;

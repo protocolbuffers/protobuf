@@ -77,7 +77,7 @@ void HHVM_METHOD(MapField, __construct, int64_t key_type, int64_t value_type,
   MapField___construct(
       intern, static_cast<upb_descriptortype_t>(key_type),
       static_cast<upb_descriptortype_t>(value_type),
-      subklass);
+      NULL, subklass);
 }
 
 bool HHVM_METHOD(MapField, offsetExists, const Variant& key) {
@@ -94,7 +94,7 @@ Variant HHVM_METHOD(MapField, offsetGet, const Variant& key) {
   if(!upb_map_get(intern->map, k, &v)) {
     return uninit_null();
   } else {
-    return tophpval(v, upb_map_valuetype(intern->map),
+    return tophpval(v, upb_map_valuetype(intern->map), intern->arena,
                     static_cast<Class*>(intern->klass));
   }
 }
@@ -165,6 +165,7 @@ Variant HHVM_METHOD(MapFieldIter, current) {
   MapFieldIter *intern = Native::data<MapFieldIter>(this_);
   upb_msgval value = upb_mapiter_value(intern->iter);
   return tophpval(value, upb_map_valuetype(intern->map_field->map),
+                  intern->map_field->arena,
                   static_cast<Class*>(intern->map_field->klass));
 }
 
@@ -172,6 +173,7 @@ Variant HHVM_METHOD(MapFieldIter, key) {
   MapFieldIter *intern = Native::data<MapFieldIter>(this_);
   upb_msgval key = upb_mapiter_key(intern->iter);
   return tophpval(key, upb_map_keytype(intern->map_field->map),
+                  intern->map_field->arena,
                   static_cast<Class*>(intern->map_field->klass));
 }
 
