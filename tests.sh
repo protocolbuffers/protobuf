@@ -616,53 +616,6 @@ build_php_all() {
   build_php_compatibility
 }
 
-build_benchmark() {
-  internal_build_cpp
-  build_python py27-python
-  build_python_cpp py27-cpp
-  build_golang
-
-  if [ ! -f gperftools/.libs/libtcmalloc.so ]; then
-    git clone https://github.com/gperftools/gperftools.git
-    cd gperftools
-    ./autogen.sh
-    ./configure
-    make -j2
-    cd ..
-  fi
-
-  oldpwd=`pwd`
-  cd benchmarks
-  if [[ $(type cmake 2>/dev/null) ]]; then
-    make -j2 cpp-benchmark
-  fi
-  make java-benchmark
-  make python-pure-python-benchmark
-  make python-cpp-reflection-benchmark
-  make -j2 python-cpp-generated-code-benchmark
-  make go-benchmark
-  
-  ./download_data.sh
-  datasets=`find . -type f -name "dataset.*.pb"`
-  echo "benchmarking cpp..."
-  env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./cpp-benchmark $datasets > tmp/cpp_result.txt
-  echo "benchmarking java..."
-  ./java-benchmark $datasets > tmp/java_result.txt
-  echo "benchmarking pure python..."
-  sudo ./python-pure-python-benchmark $datasets > tmp/python_result.txt
-  echo "benchmarking python cpp reflection..."
-  sudo env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-reflection-benchmark $datasets >> tmp/python_result.txt
-  echo "benchmarking python cpp generated code..."
-  sudo env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-generated-code-benchmark $datasets >> tmp/python_result.txt
-  echo "benchmarking go..."
-  ./go-benchmark $datasets > tmp/go_result.txt
-
-  cd run_and_upload_result
-  python run_and_upload.py -cpp="../tmp/cpp_result.txt" -java="../tmp/java_result.txt" \
-	  -python="../tmp/python_result.txt" -go="../tmp/go_result.txt"
-
-  cd $oldpwd
-}
 
 # Note: travis currently does not support testing more than one language so the
 # .travis.yml cheats and claims to only be cpp.  If they add multiple language
@@ -674,7 +627,7 @@ build_benchmark() {
 
 # -------- main --------
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -lt 1 ]; then
   echo "
 Usage: $0 { cpp |
             cpp_distcheck |
@@ -705,12 +658,11 @@ Usage: $0 { cpp |
             php_compatibility |
             php7.1   |
             php7.1_c |
-            php_all  |
-            benchmark)
+            php_all)
 "
   exit 1
 fi
 
 set -e  # exit immediately on error
 set -x  # display all commands
-eval "build_$1"
+eval "build_$1" ${@:2}
