@@ -54,9 +54,12 @@ class LIBPROTOC_EXPORT Generator
 // To skip reserved keywords in php, some generated classname are prefixed.
 // Other code generators may need following API to figure out the actual
 // classname.
-std::string GeneratedClassName(const google::protobuf::Descriptor* desc);
-std::string GeneratedClassName(const google::protobuf::EnumDescriptor* desc);
-std::string GeneratedClassName(const google::protobuf::ServiceDescriptor* desc);
+LIBPROTOC_EXPORT std::string GeneratedClassName(
+    const google::protobuf::Descriptor* desc);
+LIBPROTOC_EXPORT std::string GeneratedClassName(
+    const google::protobuf::EnumDescriptor* desc);
+LIBPROTOC_EXPORT std::string GeneratedClassName(
+    const google::protobuf::ServiceDescriptor* desc);
 
 }  // namespace php
 }  // namespace compiler
