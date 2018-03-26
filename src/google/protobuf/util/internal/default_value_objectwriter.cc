@@ -66,6 +66,7 @@ DefaultValueObjectWriter::DefaultValueObjectWriter(
       root_(nullptr),
       suppress_empty_list_(false),
       preserve_proto_field_names_(false),
+      use_ints_for_enums_(false),
       field_scrub_callback_(nullptr),
       ow_(ow) {}
 
@@ -200,10 +201,10 @@ DefaultValueObjectWriter::Node* DefaultValueObjectWriter::CreateNewNode(
 DefaultValueObjectWriter::Node* DefaultValueObjectWriter::CreateNewNode(
     const string& name, const google::protobuf::Type* type, NodeKind kind,
     const DataPiece& data, bool is_placeholder, const std::vector<string>& path,
-    bool suppress_empty_list, bool preserve_proto_field_names,
+    bool suppress_empty_list, bool preserve_proto_field_names, bool use_ints_for_enums,
     FieldScrubCallBack* field_scrub_callback) {
   return new Node(name, type, kind, data, is_placeholder, path,
-                  suppress_empty_list, preserve_proto_field_names,
+                  suppress_empty_list, preserve_proto_field_names, use_ints_for_enums,
                   field_scrub_callback);
 }
 
@@ -220,12 +221,13 @@ DefaultValueObjectWriter::Node::Node(
       path_(path),
       suppress_empty_list_(suppress_empty_list),
       preserve_proto_field_names_(false),
+      use_ints_for_enums_(false),
       field_scrub_callback_(field_scrub_callback) {}
 
 DefaultValueObjectWriter::Node::Node(
     const string& name, const google::protobuf::Type* type, NodeKind kind,
     const DataPiece& data, bool is_placeholder, const std::vector<string>& path,
-    bool suppress_empty_list, bool preserve_proto_field_names,
+    bool suppress_empty_list, bool preserve_proto_field_names, bool use_ints_for_enums,
     FieldScrubCallBack* field_scrub_callback)
     : name_(name),
       type_(type),
@@ -236,6 +238,7 @@ DefaultValueObjectWriter::Node::Node(
       path_(path),
       suppress_empty_list_(suppress_empty_list),
       preserve_proto_field_names_(preserve_proto_field_names),
+      use_ints_for_enums_(use_ints_for_enums),
       field_scrub_callback_(field_scrub_callback) {}
 
 DefaultValueObjectWriter::Node* DefaultValueObjectWriter::Node::FindChild(
@@ -408,9 +411,9 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
     std::unique_ptr<Node> child(new Node(
         preserve_proto_field_names_ ? field.name() : field.json_name(),
         field_type, kind,
-        kind == PRIMITIVE ? CreateDefaultDataPieceForField(field, typeinfo)
+        kind == PRIMITIVE ? CreateDefaultDataPieceForField(field, typeinfo, use_ints_for_enums_)
                           : DataPiece::NullData(),
-        true, path, suppress_empty_list_, preserve_proto_field_names_,
+        true, path, suppress_empty_list_, preserve_proto_field_names_, use_ints_for_enums_,
         field_scrub_callback_));
     new_children.push_back(child.release());
   }
@@ -435,7 +438,7 @@ void DefaultValueObjectWriter::MaybePopulateChildrenOfAny(Node* node) {
 }
 
 DataPiece DefaultValueObjectWriter::FindEnumDefault(
-    const google::protobuf::Field& field, const TypeInfo* typeinfo) {
+    const google::protobuf::Field& field, const TypeInfo* typeinfo, bool use_ints_for_enums) {
   if (!field.default_value().empty())
     return DataPiece(field.default_value(), true);
 
@@ -448,12 +451,12 @@ DataPiece DefaultValueObjectWriter::FindEnumDefault(
   }
   // We treat the first value as the default if none is specified.
   return enum_type->enumvalue_size() > 0
-             ? DataPiece(enum_type->enumvalue(0).name(), true)
+             ? (use_ints_for_enums ? DataPiece(enum_type->enumvalue(0).number()) : DataPiece(enum_type->enumvalue(0).name(), true))
              : DataPiece::NullData();
 }
 
 DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
-    const google::protobuf::Field& field, const TypeInfo* typeinfo) {
+    const google::protobuf::Field& field, const TypeInfo* typeinfo, bool use_ints_for_enums) {
   switch (field.kind()) {
     case google::protobuf::Field_Kind_TYPE_DOUBLE: {
       return DataPiece(ConvertTo<double>(
@@ -496,7 +499,7 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
           field.default_value(), &DataPiece::ToUint32, static_cast<uint32>(0)));
     }
     case google::protobuf::Field_Kind_TYPE_ENUM: {
-      return FindEnumDefault(field, typeinfo);
+      return FindEnumDefault(field, typeinfo, use_ints_for_enums);
     }
     default: { return DataPiece::NullData(); }
   }
@@ -508,7 +511,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
     std::vector<string> path;
     root_.reset(CreateNewNode(string(name), &type_, OBJECT,
                               DataPiece::NullData(), false, path,
-                              suppress_empty_list_, preserve_proto_field_names_,
+                              suppress_empty_list_, preserve_proto_field_names_, use_ints_for_enums_,
                               field_scrub_callback_.get()));
     root_->PopulateChildren(typeinfo_);
     current_ = root_.get();
@@ -526,7 +529,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
                            : nullptr),
                       OBJECT, DataPiece::NullData(), false,
                       child == nullptr ? current_->path() : child->path(),
-                      suppress_empty_list_, preserve_proto_field_names_,
+                      suppress_empty_list_, preserve_proto_field_names_, use_ints_for_enums_,
                       field_scrub_callback_.get()));
     child = node.get();
     current_->AddChild(node.release());
@@ -559,7 +562,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartList(
     std::vector<string> path;
     root_.reset(CreateNewNode(string(name), &type_, LIST, DataPiece::NullData(),
                               false, path, suppress_empty_list_,
-                              preserve_proto_field_names_,
+                              preserve_proto_field_names_, use_ints_for_enums_,
                               field_scrub_callback_.get()));
     current_ = root_.get();
     return this;
@@ -570,7 +573,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartList(
     std::unique_ptr<Node> node(
         CreateNewNode(string(name), nullptr, LIST, DataPiece::NullData(), false,
                       child == nullptr ? current_->path() : child->path(),
-                      suppress_empty_list_, preserve_proto_field_names_,
+                      suppress_empty_list_, preserve_proto_field_names_, use_ints_for_enums_,
                       field_scrub_callback_.get()));
     child = node.get();
     current_->AddChild(node.release());
@@ -632,7 +635,7 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
     std::unique_ptr<Node> node(
         CreateNewNode(string(name), nullptr, PRIMITIVE, data, false,
                       child == nullptr ? current_->path() : child->path(),
-                      suppress_empty_list_, preserve_proto_field_names_,
+                      suppress_empty_list_, preserve_proto_field_names_, use_ints_for_enums_,
                       field_scrub_callback_.get()));
     current_->AddChild(node.release());
   } else {

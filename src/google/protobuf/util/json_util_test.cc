@@ -54,6 +54,7 @@ using proto3::BAR;
 using proto3::TestMessage;
 using proto3::TestMap;
 using proto3::TestOneof;
+using proto3::TestEnumValue;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -215,6 +216,29 @@ TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
   EXPECT_EQ(2, parsed.repeated_enum_value_size());
   EXPECT_EQ(proto3::FOO, parsed.repeated_enum_value(0));
   EXPECT_EQ(proto3::BAR, parsed.repeated_enum_value(1));
+}
+
+TEST_F(JsonUtilTest, TestPrintEnumsAsIntsWithDefaultValue) {
+  TestEnumValue orig;
+  //orig.set_enum_value1(proto3::FOO)
+  orig.set_enum_value2(proto3::FOO);
+  orig.set_enum_value3(proto3::BAR);
+
+  JsonPrintOptions print_options;
+  print_options.always_print_enums_as_ints = true;
+  print_options.always_print_primitive_fields = true;
+
+  string expected_json = "{\"enumValue1\":0,\"enumValue2\":0,\"enumValue3\":1}";
+  EXPECT_EQ(expected_json, ToJson(orig, print_options));
+
+  TestEnumValue parsed;
+  JsonParseOptions parse_options;
+  ASSERT_TRUE(FromJson(expected_json, &parsed, parse_options));
+
+  EXPECT_EQ(proto3::FOO, parsed.enum_value1());
+  EXPECT_EQ(proto3::FOO, parsed.enum_value2());
+  EXPECT_EQ(proto3::BAR, parsed.enum_value3());
+
 }
 
 TEST_F(JsonUtilTest, ParseMessage) {
