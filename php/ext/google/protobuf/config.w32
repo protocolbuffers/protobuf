@@ -1,0 +1,8 @@
+ARG_ENABLE("protobuf", "protobuf", "yes");
+
+if (PHP_PROTOBUF == "yes") {
+  EXTENSION(
+    "protobuf",
+    "array.c def.c encode_decode.c map.c message.c protobuf.c storage.c type_check.c upb.c utf8.c"
+  )
+}
