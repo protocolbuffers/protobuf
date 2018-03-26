@@ -1562,6 +1562,58 @@ TEST_F(TextFormatParserTest, AllowIgnoreCapitalizationError) {
   EXPECT_EQ(15, proto.optionalgroup().a());
 }
 
+TEST_F(TextFormatParserTest, AllowUnkownField) {
+  TextFormat::Parser parser;
+  protobuf_unittest::TestAllTypes proto;
+
+  // These fields are unknown.
+  EXPECT_FALSE(parser.ParseFromString("some_unknown_field: 10.0", &proto));
+
+  // ... but are parsed correctly if we set allow unknown field
+  parser.AllowUnknownField(true);
+  EXPECT_TRUE(parser.ParseFromString("some_unknown_field: 10.0", &proto));
+}
+
+TEST_F(TextFormatParserTest, AllowUnkownEnum) {
+  TextFormat::Parser parser;
+  protobuf_unittest::TestAllTypes proto;
+
+  // This enum value is unknown
+  EXPECT_FALSE(parser.ParseFromString("optional_nested_enum: 5", &proto));
+
+  // ... but are parsed correctly if we set allow unknown enum
+  parser.AllowUnknownEnum(true);
+  EXPECT_TRUE(parser.ParseFromString("optional_nested_enum: 5", &proto));
+}
+
+TEST_F(TextFormatParserTest, AllowFieldNumber) {
+  TextFormat::Parser parser;
+  protobuf_unittest::TestAllTypes proto;
+
+  // Use field number rather than field name
+  EXPECT_FALSE(parser.ParseFromString("1: 5", &proto));
+
+  // ... but is parsed correctly if we set allow field number
+  parser.AllowFieldNumber(true);
+  EXPECT_TRUE(parser.ParseFromString("1: 5", &proto));
+}
+
+TEST_F(TextFormatParserTest, AllowSingularOverwrites) {
+  TextFormat::Parser parser;
+  protobuf_unittest::TestAllTypes proto;
+
+  //repeated value for singular field
+  EXPECT_FALSE(parser.ParseFromString("optional_int32: 5\n"
+                                      "optional_int32: 4"  , &proto));
+
+  // ... but is parsed correctly if we set allow singular overwrites
+  parser.AllowSingularOverwrites(true);
+  EXPECT_TRUE(parser.ParseFromString("optional_int32: 5\n"
+                                     "optional_int32: 4"  , &proto));
+  EXPECT_EQ(4,proto.optional_int32());
+}
+
+
 TEST_F(TextFormatParserTest, InvalidFieldValues) {
   // Invalid values for a double/float field.
   ExpectFailure("optional_double: \"hello\"\n",
