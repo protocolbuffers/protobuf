@@ -55,22 +55,11 @@ Go to the project folder:
      C:\Path\to>cd protobuf
      C:\Path\to\protobuf>
 
-Protobuf unit-tests require gmock to build. If you download protobuf source code
-from the *releases* page, the *gmock* directory should already be there. If you checkout
-the code via `git clone`, this *gmock* directory won't exist and you will have to
-download it manually or skip building protobuf unit-tests.
+Remember to update any submodules:
 
-You can download gmock as follows:
-
-     C:\Path\to\protobuf>git clone -b release-1.7.0 https://github.com/google/googlemock.git gmock
-
-Then go to *gmock* folder and download gtest:
-
-     C:\Path\to\protobuf>cd gmock
-     C:\Path\to\protobuf\gmock>git clone -b release-1.7.0 https://github.com/google/googletest.git gtest
-
-If you absolutely don't want to build and run protobuf unit-tests, skip
-this steps and use protobuf at your own risk.
+```console
+C:\Path\to> git submodule update --init --recursive
+```
 
 Now go to *cmake* folder in protobuf sources:
 

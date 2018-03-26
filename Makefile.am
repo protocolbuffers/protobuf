@@ -8,8 +8,8 @@ AUTOMAKE_OPTIONS = foreign
 # the right time.
 SUBDIRS = . src
 
-# Always include gmock in distributions.
-DIST_SUBDIRS = $(subdirs) src conformance benchmarks
+# Always include third_party directories in distributions.
+DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 
 # Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
 # because then "make check" would also build and run all of gmock's own tests,
@@ -18,8 +18,8 @@ DIST_SUBDIRS = $(subdirs) src conformance benchmarks
 # the installed version of gmock if there is one.
 check-local:
 	@echo "Making lib/libgmock.a lib/libgmock_main.a in gmock"
-	@cd gmock && $(MAKE) $(AM_MAKEFLAGS) lib/libgmock.la lib/libgmock_main.la
-	@cd gmock/gtest && $(MAKE) $(AM_MAKEFLAGS) lib/libgtest.la lib/libgtest_main.la
+	@cd third_party/googletest/googletest && $(MAKE) $(AM_MAKEFLAGS) lib/libgtest.la lib/libgtest_main.la
+	@cd third_party/googletest/googlemock && $(MAKE) $(AM_MAKEFLAGS) lib/libgmock.la lib/libgmock_main.la
 
 # We would like to clean gmock when "make clean" is invoked.  But we have to
 # be careful because clean-local is also invoked during "make distclean", but
@@ -28,9 +28,9 @@ check-local:
 # cd to the directory again and "make clean" it will fail.  So, check that the
 # Makefile exists before recursing.
 clean-local:
-	@if test -e gmock/Makefile; then \
-	  echo "Making clean in gmock"; \
-	  cd gmock && $(MAKE) $(AM_MAKEFLAGS) clean; \
+	@if test -e third_party/googletest/Makefile; then \
+	  echo "Making clean in googletest"; \
+	  cd third_party/googletest && $(MAKE) $(AM_MAKEFLAGS) clean; \
 	fi; \
 	if test -e conformance/Makefile; then \
 	  echo "Making clean in conformance"; \
@@ -1008,7 +1008,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   CHANGES.txt                            \
   update_file_lists.sh                   \
   BUILD                                  \
-  gmock.BUILD                            \
   WORKSPACE                              \
   cmake/CMakeLists.txt                   \
   cmake/README.md                        \

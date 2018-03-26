@@ -711,15 +711,19 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/testing/file.cc                              \
   google/protobuf/testing/file.h
 
+GOOGLETEST_BUILD_DIR=../third_party/googletest/googletest
+GOOGLEMOCK_BUILD_DIR=../third_party/googletest/googlemock
+GOOGLETEST_SRC_DIR=$(srcdir)/../third_party/googletest/googletest
+GOOGLEMOCK_SRC_DIR=$(srcdir)/../third_party/googletest/googlemock
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin protobuf-lite-arena-test \
                  no-warning-test $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                      ../gmock/gtest/lib/libgtest.la              \
-                      ../gmock/lib/libgmock.la                    \
-                      ../gmock/lib/libgmock_main.la
-protobuf_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include \
-                         -I$(srcdir)/../gmock/include
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la     \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la     \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_test_CPPFLAGS = -I$(GOOGLETEST_SRC_DIR)/include \
+                         -I$(GOOGLEMOCK_SRC_DIR)/include
 # Disable optimization for tests unless the user explicitly asked for it,
 # since test_util.cc takes forever to compile with optimization (with GCC).
 # See configure.ac for more info.
@@ -807,11 +811,11 @@ $(am_protobuf_test_OBJECTS): unittest_proto_middleman
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
                       libprotoc.la                                   \
-                      ../gmock/gtest/lib/libgtest.la                 \
-                      ../gmock/lib/libgmock.la                       \
-                      ../gmock/lib/libgmock_main.la
-protobuf_lazy_descriptor_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
-                                         -I$(srcdir)/../gmock/gtest/include \
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lazy_descriptor_test_CPPFLAGS = -I$(GOOGLEMOCK_SRC_DIR)/include \
+                                         -I$(GOOGLETEST_SRC_DIR)/include \
                                          -DPROTOBUF_TEST_NO_DESCRIPTORS
 protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
@@ -832,12 +836,12 @@ COMMON_LITE_TEST_SOURCES =                                             \
 # depend on gtest because our internal version of gtest depend on proto
 # full runtime and we want to make sure this test builds without full
 # runtime.
-protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la \
-                           ../gmock/gtest/lib/libgtest.la      \
-                           ../gmock/lib/libgmock.la            \
-                           ../gmock/lib/libgmock_main.la
-protobuf_lite_test_CPPFLAGS= -I$(srcdir)/../gmock/include \
-                             -I$(srcdir)/../gmock/gtest/include
+protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la     \
+                           $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la \
+                           $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la \
+                           $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lite_test_CPPFLAGS= -I$(GOOGLEMOCK_SRC_DIR)/include \
+                             -I$(GOOGLETEST_SRC_DIR)/include
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
@@ -849,11 +853,11 @@ $(am_protobuf_lite_test_OBJECTS): unittest_proto_middleman
 # gtest when building the test internally our memory sanitizer doesn't detect
 # memory leaks (don't know why).
 protobuf_lite_arena_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la \
-                      ../gmock/gtest/lib/libgtest.la                 \
-                      ../gmock/lib/libgmock.la                       \
-                      ../gmock/lib/libgmock_main.la
-protobuf_lite_arena_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
-                                    -I$(srcdir)/../gmock/gtest/include
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lite_arena_test_CPPFLAGS = -I$(GOOGLEMOCK_SRC_DIR)/include  \
+                                    -I$(GOOGLETEST_SRC_DIR)/include
 protobuf_lite_arena_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_arena_test_SOURCES =       \
   google/protobuf/lite_arena_unittest.cc \
@@ -863,8 +867,8 @@ $(am_protobuf_lite_arena_test_OBJECTS): unittest_proto_middleman
 
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                    ../gmock/gtest/lib/libgtest.la
-test_plugin_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
+                    $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la
+test_plugin_CPPFLAGS = -I$(GOOGLETEST_SRC_DIR)/include
 test_plugin_SOURCES =                                          \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/testing/file.cc                              \
