@@ -5,7 +5,6 @@ mkdir include\google\protobuf\compiler
 mkdir include\google\protobuf\compiler\cpp
 mkdir include\google\protobuf\compiler\csharp
 mkdir include\google\protobuf\compiler\java
-mkdir include\google\protobuf\compiler\javanano
 mkdir include\google\protobuf\compiler\js
 mkdir include\google\protobuf\compiler\objectivec
 mkdir include\google\protobuf\compiler\php
@@ -28,7 +27,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\cshar
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\importer.h" include\google\protobuf\compiler\importer.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_generator.h" include\google\protobuf\compiler\java\java_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_names.h" include\google\protobuf\compiler\java\java_names.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\javanano\javanano_generator.h" include\google\protobuf\compiler\javanano\javanano_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\js_generator.h" include\google\protobuf\compiler\js\js_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\well_known_types_embed.h" include\google\protobuf\compiler\js\well_known_types_embed.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\objectivec\objectivec_generator.h" include\google\protobuf\compiler\objectivec\objectivec_generator.h

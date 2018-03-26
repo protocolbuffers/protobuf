@@ -61,7 +61,6 @@ how to install protobuf runtime for that specific language:
 | Python                               | [python](python)                                            |
 | Objective-C                          | [objectivec](objectivec)                                    |
 | C#                                   | [csharp](csharp)                                            |
-| JavaNano                             | [javanano](javanano)                                        |
 | JavaScript                           | [js](js)                                                    |
 | Ruby                                 | [ruby](ruby)                                                |
 | Go                                   | [golang/protobuf](https://github.com/golang/protobuf)       |

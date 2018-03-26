@@ -107,6 +107,7 @@ set(common_test_files
   ${protobuf_source_dir}/src/google/protobuf/arena_test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/map_test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/test_util.cc
+  ${protobuf_source_dir}/src/google/protobuf/test_util.inc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/googletest.cc
 )
@@ -127,6 +128,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_move_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_unittest.inc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/metadata_test.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc
@@ -151,6 +153,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/map_field_test.cc
   ${protobuf_source_dir}/src/google/protobuf/map_test.cc
   ${protobuf_source_dir}/src/google/protobuf/message_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/message_unittest.inc
   ${protobuf_source_dir}/src/google/protobuf/no_field_presence_test.cc
   ${protobuf_source_dir}/src/google/protobuf/preserve_unknown_enum_test.cc
   ${protobuf_source_dir}/src/google/protobuf/proto3_arena_lite_unittest.cc
