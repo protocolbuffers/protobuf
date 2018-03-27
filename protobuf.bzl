@@ -72,7 +72,7 @@ def _proto_gen_impl(ctx):
   deps = []
   deps += ctx.files.srcs
   source_dir = _SourceDir(ctx)
-  gen_dir = _GenDir(ctx)
+  gen_dir = _GenDir(ctx).rstrip('/')
   if source_dir:
     import_flags = ["-I" + source_dir, "-I" + gen_dir]
   else:
@@ -94,7 +94,7 @@ def _proto_gen_impl(ctx):
   for src in srcs:
     args = []
 
-    in_gen_dir = src.root.path == gen_dir.rstrip('/')
+    in_gen_dir = src.root.path == gen_dir
     if in_gen_dir:
       import_flags_real = []
       for f in depset(import_flags):
@@ -148,8 +148,10 @@ def _proto_gen_impl(ctx):
             "cd %s" % src.dirname,
             "${CMD}",
             "cd -",
-            "mv %s/%s %s" % (gen_dir, out.basename, out.path)
         ])
+        generated_out = '/'.join([gen_dir,  out.basename])
+        if generated_out != out.path:
+            command += ";mv %s %s" % (generated_out, out.path)
         ctx.action(
             inputs=inputs + [ctx.executable.protoc],
             outputs=[out],
