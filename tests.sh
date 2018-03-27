@@ -27,6 +27,9 @@ internal_build_cpp() {
     export CXX="g++-4.8" CC="gcc-4.8"
   fi
 
+  # Initialize any submodules.
+  git submodule update --init --recursive
+
   ./autogen.sh
   ./configure CXXFLAGS="-fPIC"  # -fPIC is needed for python cpp test.
                                 # See python/setup.py for more details
@@ -53,6 +56,8 @@ build_cpp() {
 }
 
 build_cpp_distcheck() {
+  # Initialize any submodules.
+  git submodule update --init --recursive
   ./autogen.sh
   ./configure
   make dist
@@ -281,9 +286,6 @@ build_python() {
   else
     envlist=py27-python
   fi
-  if [[ $# -gt 0 ]]; then
-	envlist=$@
-  fi
   tox -e $envlist
   cd ..
 }
@@ -299,9 +301,6 @@ build_python_cpp() {
     envlist=py\{27,33,34,35,36\}-cpp
   else
     envlist=py27-cpp
-  fi
-  if [[ $# -gt 0 ]]; then
-	envlist=$@
   fi
   tox -e $envlist
   cd ..
@@ -616,7 +615,6 @@ build_php_all() {
   build_php_compatibility
 }
 
-
 # Note: travis currently does not support testing more than one language so the
 # .travis.yml cheats and claims to only be cpp.  If they add multiple language
 # support, this should probably get updated to install steps and/or
@@ -627,7 +625,7 @@ build_php_all() {
 
 # -------- main --------
 
-if [ "$#" -lt 1 ]; then
+if [ "$#" -ne 1 ]; then
   echo "
 Usage: $0 { cpp |
             cpp_distcheck |
@@ -665,4 +663,4 @@ fi
 
 set -e  # exit immediately on error
 set -x  # display all commands
-eval "build_$1" ${@:2}
+eval "build_$1"
