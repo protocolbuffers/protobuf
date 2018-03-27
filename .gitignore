@@ -19,7 +19,7 @@ m4/lt~obsolete.m4
 autom4te.cache
 
 # downloaded files
-./gmock
+/gmock
 
 # in-tree configure-generated files
 Makefile
