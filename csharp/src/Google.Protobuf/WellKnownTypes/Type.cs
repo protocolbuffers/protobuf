@@ -123,7 +123,7 @@ namespace Google.Protobuf.WellKnownTypes {
       fields_ = other.fields_.Clone();
       oneofs_ = other.oneofs_.Clone();
       options_ = other.options_.Clone();
-      SourceContext = other.sourceContext_ != null ? other.SourceContext.Clone() : null;
+      sourceContext_ = other.sourceContext_ != null ? other.sourceContext_.Clone() : null;
       syntax_ = other.syntax_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -913,7 +913,7 @@ namespace Google.Protobuf.WellKnownTypes {
       name_ = other.name_;
       enumvalue_ = other.enumvalue_.Clone();
       options_ = other.options_.Clone();
-      SourceContext = other.sourceContext_ != null ? other.SourceContext.Clone() : null;
+      sourceContext_ = other.sourceContext_ != null ? other.sourceContext_.Clone() : null;
       syntax_ = other.syntax_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1350,7 +1350,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Option(Option other) : this() {
       name_ = other.name_;
-      Value = other.value_ != null ? other.Value.Clone() : null;
+      value_ = other.value_ != null ? other.value_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
