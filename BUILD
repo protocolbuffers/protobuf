@@ -913,3 +913,30 @@ objc_library(
     non_arc_srcs = OBJC_SRCS,
     visibility = ["//visibility:public"],
 )
+
+################################################################################
+# Test generated proto support
+################################################################################
+
+genrule(
+    name = "generated_protos",
+    srcs = ["src/google/protobuf/unittest_import.proto"],
+    outs = ["unittest_gen.proto"],
+    cmd = "cat $(SRCS) | sed 's|google/|src/google/|' >  $(OUTS)"
+)
+
+proto_library(
+    name = "generated_protos_proto",
+    srcs = ["unittest_gen.proto"],
+)
+
+
+py_proto_library(
+    name = "generated_protos_py",
+    srcs = [
+        "unittest_gen.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
+    default_runtime = "",
+    protoc = ":protoc",
+)
