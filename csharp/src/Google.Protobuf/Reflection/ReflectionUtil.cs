@@ -56,32 +56,40 @@ namespace Google.Protobuf.Reflection
         internal static readonly Type[] EmptyTypes = new Type[0];
 
         /// <summary>
-        /// Creates a delegate which will cast the argument to the appropriate method target type,
+        /// Creates a delegate which will cast the argument to the type that declares the method,
         /// call the method on it, then convert the result to object.
         /// </summary>
+        /// <param name="method">The method to create a delegate for, which must be declared in an IMessage
+        /// implementation.</param>
         internal static Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method) =>
             GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageObject(method);
 
         /// <summary>
-        /// Creates a delegate which will cast the argument to the appropriate method target type,
+        /// Creates a delegate which will cast the argument to the type that declares the method,
         /// call the method on it, then convert the result to the specified type. The method is expected
         /// to actually return an enum (because of where we're calling it - for oneof cases). Sometimes that
         /// means we need some extra work to perform conversions.
         /// </summary>
+        /// <param name="method">The method to create a delegate for, which must be declared in an IMessage
+        /// implementation.</param>
         internal static Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method) =>
             GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageInt32(method);
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
-        /// the target type of the method, and the second argument to the first parameter type of the method.
+        /// the type that declares the method, and the second argument to the first parameter type of the method.
         /// </summary>
+        /// <param name="method">The method to create a delegate for, which must be declared in an IMessage
+        /// implementation.</param>
         internal static Action<IMessage, object> CreateActionIMessageObject(MethodInfo method) =>
             GetReflectionHelper(method.DeclaringType, method.GetParameters()[0].ParameterType).CreateActionIMessageObject(method);
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
-        /// the target type of the method.
+        /// type that declares the method.
         /// </summary>
+        /// <param name="method">The method to create a delegate for, which must be declared in an IMessage
+        /// implementation.</param>
         internal static Action<IMessage> CreateActionIMessage(MethodInfo method) =>
             GetReflectionHelper(method.DeclaringType, typeof(object)).CreateActionIMessage(method);
 
