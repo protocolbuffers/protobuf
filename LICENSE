@@ -8,7 +8,7 @@ This license applies to all parts of Protocol Buffers except the following:
     src/google/protobuf/stubs/atomicops_internals_power.h.
     This file is copyrighted by Bloomberg Finance LP.
 
-Copyright 2014, Google Inc.  All rights reserved.
+Copyright 2017, Google Inc.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
