@@ -74,7 +74,7 @@ class FileGenerator {
   const Options options_;
 
   void PrintFileRuntimePreamble(
-      io::Printer* printer, const string& header_to_import) const;
+      io::Printer* printer, const std::set<string>& headers_to_import) const;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };
