@@ -30,6 +30,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBBootstrap.h"
+
 #import "GPBRuntimeTypes.h"
 #import "GPBWireFormat.h"
 
