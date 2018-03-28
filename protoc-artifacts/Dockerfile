@@ -35,7 +35,5 @@ RUN rpm --rebuilddb && yum install -y devtoolset-1.1 \
                    devtoolset-1.1-libstdc++-devel \
                    devtoolset-1.1-libstdc++-devel.i686
 
-RUN git clone --depth 1 https://github.com/google/protobuf.git
-
 # Start in devtoolset environment that uses GCC 4.7
 CMD ["scl", "enable", "devtoolset-1.1", "bash"]

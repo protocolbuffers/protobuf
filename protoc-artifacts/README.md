@@ -143,7 +143,11 @@ To run the image:
 $ docker run -it --rm=true protoc-artifacts
 ```
 
-The Protobuf repository has been cloned into ``/protobuf``.
+To checkout protobuf (run within the container):
+```
+$ # Replace v3.5.1 with the version you want
+$ wget -O - https://github.com/google/protobuf/archive/v3.5.1.tar.gz | tar xvzp
+```
 
 ### Tips for deploying on Windows
 Under Windows the following error may occur: ``gpg: cannot open tty `no tty':
