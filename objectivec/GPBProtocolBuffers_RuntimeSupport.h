@@ -31,8 +31,9 @@
 // This header is meant to only be used by the generated source, it should not
 // be included in code using protocol buffers.
 
-#import "GPBProtocolBuffers.h"
+#import <Foundation/Foundation.h>
 
+#import "GPBBootstrap.h"
 #import "GPBDescriptor_PackagePrivate.h"
 #import "GPBExtensionInternals.h"
 #import "GPBMessage_PackagePrivate.h"
