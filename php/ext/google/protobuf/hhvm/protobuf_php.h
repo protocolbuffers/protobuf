@@ -19,6 +19,9 @@ void tophpval(const upb_msgval &msgval,
               ARENA arena,
               zval *retval);
 
+void MapField_offsetSet(MapField* intern, zval* key, zval* value);
+void RepeatedField_append(RepeatedField *intern, zval *value);
+
 extern zend_class_entry* RepeatedField_type;
 extern zend_class_entry* MapField_type;
 

@@ -131,31 +131,83 @@ void tophpval(const upb_msgval &msgval,
   }
 }
 
-static void message_set_property_internal(zval* object, zval* member,
-                                          zval* value TSRMLS_DC) {
-  Message* self = UNBOX(Message, object);
-  const upb_fielddef* f = upb_msgdef_ntofz(self->msgdef, Z_STRVAL_P(member));
-  assert(f != NULL);
+static zend_property_info *get_property_info(zval* object,
+                                             zval* member TSRMLS_DC) {
+#if PHP_MAJOR_VERSION < 7
+  return zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
+#else
+  return zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
+#endif
+}
+
+static void message_set_message_internal(
+    zval* object, zval* member, zval* value, const upb_fielddef* f TSRMLS_DC) {
+  zend_property_info* property_info =
+    get_property_info(object, member TSRMLS_CC);
+
+#if PHP_MAJOR_VERSION < 7
+  REPLACE_ZVAL_VALUE(OBJ_PROP(Z_OBJ_P(object), property_info->offset),
+                     value, 1);
+#else
+  zval_ptr_dtor(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+  ZVAL_ZVAL(OBJ_PROP(Z_OBJ_P(object), property_info->offset),
+                     value, 1, 0);
+#endif
+  zval* cached_value = CACHED_VALUE_PTR_TO_ZVAL_PTR(
+      OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+
+  // Set to upb msg.
   int field_index = upb_fielddef_index(f);
   upb_fieldtype_t type = upb_fielddef_type(f);
+  Message* self = UNBOX(Message, object);
+  upb_msgval msgval = tomsgval(cached_value, type, upb_msg_alloc(self->msg));
+  upb_msg_set(self->msg, field_index, msgval, self->layout);
+}
+
+static void message_set_array_internal(
+    zval* object, zval* member, zval* value, const upb_fielddef* f TSRMLS_DC) {
   zval* cached_value = NULL;
 
-  if (upb_fielddef_isseq(f) || upb_fielddef_ismap(f) ||
-      (upb_fielddef_type(f) == UPB_TYPE_MESSAGE)) {
-    // Find cached zval.
-    zend_property_info* property_info;
-#if PHP_MAJOR_VERSION < 7
-    property_info =
-        zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
-#else
-    property_info =
-        zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
-#endif
+  zend_property_info* property_info =
+    get_property_info(object, member TSRMLS_CC);
 
+  if (Z_TYPE_P(value) == IS_ARRAY) {
+    // Create new php repeated field.
 #if PHP_MAJOR_VERSION < 7
     SEPARATE_ZVAL_IF_NOT_REF(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
 #endif
+    cached_value = CACHED_VALUE_PTR_TO_ZVAL_PTR(
+        OBJ_PROP(Z_OBJ_P(object), property_info->offset));
 
+    ZVAL_OBJ(cached_value, RepeatedField_type->create_object(
+        RepeatedField_type TSRMLS_CC));
+#if PHP_MAJOR_VERSION < 7
+    Z_SET_ISREF_P(cached_value);
+#endif
+
+    // Initialize php repeated field.
+    zend_class_entry* klass = NULL;
+    if (upb_fielddef_issubmsg(f)) {
+      const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+      klass = (zend_class_entry*)msgdef2class(subdef);
+    }
+
+    Message* self = UNBOX(Message, object);
+    RepeatedField* intern = UNBOX(RepeatedField, cached_value);
+    RepeatedField___construct(intern, upb_fielddef_descriptortype(f), 
+                              self->arena, klass);
+    //  Add elements
+    HashTable* table = HASH_OF(value);
+    HashPosition pointer;
+    void* memory;
+    for (zend_hash_internal_pointer_reset_ex(table, &pointer);
+         proto_zend_hash_get_current_data_ex(table, (void**)&memory,
+                                                 &pointer) == SUCCESS;
+         zend_hash_move_forward_ex(table, &pointer)) {
+      RepeatedField_append(intern, CACHED_VALUE_PTR_TO_ZVAL_PTR(
+                           (CACHED_VALUE*)memory));
+    }
+  } else {
 #if PHP_MAJOR_VERSION < 7
     REPLACE_ZVAL_VALUE(OBJ_PROP(Z_OBJ_P(object), property_info->offset),
                        value, 1);
@@ -164,22 +216,116 @@ static void message_set_property_internal(zval* object, zval* member,
     ZVAL_ZVAL(OBJ_PROP(Z_OBJ_P(object), property_info->offset),
                        value, 1, 0);
 #endif
+    cached_value = CACHED_VALUE_PTR_TO_ZVAL_PTR(
+        OBJ_PROP(Z_OBJ_P(object), property_info->offset));
   }
 
-  if (upb_fielddef_ismap(f)) {
-    upb_msgval msgval;
-    MapField *map = UNBOX(MapField, value);
-    upb_msgval_setmap(&msgval, map->map);
-    upb_msg_set(self->msg, field_index, msgval, self->layout);
-  } else if (upb_fielddef_isseq(f)) {
-    upb_msgval msgval;
-    RepeatedField *arr = UNBOX(RepeatedField, value);
-    upb_msgval_setarr(&msgval, arr->array);
-    upb_msg_set(self->msg, field_index, msgval, self->layout);
+  // Set to upb msg.
+  upb_msgval msgval;
+  RepeatedField *arr = UNBOX(RepeatedField, cached_value);
+  Message* self = UNBOX(Message, object);
+  int field_index = upb_fielddef_index(f);
+  upb_msgval_setarr(&msgval, arr->array);
+  upb_msg_set(self->msg, field_index, msgval, self->layout);
+}
+
+static void message_set_map_internal(
+    zval* object, zval* member, zval* value, const upb_fielddef* f TSRMLS_DC) {
+  zval* cached_value = NULL;
+
+  zend_property_info* property_info =
+    get_property_info(object, member TSRMLS_CC);
+
+  if (Z_TYPE_P(value) == IS_ARRAY) {
+    // Create new php repeated field.
+#if PHP_MAJOR_VERSION < 7
+    SEPARATE_ZVAL_IF_NOT_REF(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+#endif
+    cached_value = CACHED_VALUE_PTR_TO_ZVAL_PTR(
+        OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+
+    ZVAL_OBJ(cached_value, MapField_type->create_object(
+        MapField_type TSRMLS_CC));
+#if PHP_MAJOR_VERSION < 7
+    Z_SET_ISREF_P(cached_value);
+#endif
+
+    // Initialize php repeated field.
+    const upb_msgdef *mapentry_msgdef = upb_fielddef_msgsubdef(f);
+    const upb_fielddef *key_fielddef =
+        upb_msgdef_ntof(mapentry_msgdef, "key", 3);
+    const upb_fielddef *value_fielddef =
+        upb_msgdef_ntof(mapentry_msgdef, "value", 5);
+    zend_class_entry* klass = NULL;
+    if (upb_fielddef_issubmsg(value_fielddef)) {
+      const upb_msgdef *subdef = upb_fielddef_msgsubdef(value_fielddef);
+      klass = (zend_class_entry*)msgdef2class(subdef);
+    }
+
+    Message* self = UNBOX(Message, object);
+    MapField* intern = UNBOX(MapField, cached_value);
+    MapField___construct(intern, 
+                         upb_fielddef_descriptortype(key_fielddef),
+                         upb_fielddef_descriptortype(value_fielddef),
+                         self->arena, klass);
+
+    //  Add elements
+    HashTable* table = HASH_OF(value);
+    HashPosition pointer;
+    zval key;
+    void* value;
+    for (zend_hash_internal_pointer_reset_ex(table, &pointer);
+         proto_zend_hash_get_current_data_ex(table, (void**)&value,
+                                             &pointer) == SUCCESS;
+         zend_hash_move_forward_ex(table, &pointer)) {
+      zend_hash_get_current_key_zval_ex(table, &key, &pointer);
+      MapField_offsetSet(intern, &key, CACHED_VALUE_PTR_TO_ZVAL_PTR(
+                         (CACHED_VALUE*)value));
+    }
   } else {
-    upb_msgval msgval = tomsgval(value, type, upb_msg_alloc(self->msg));
-    upb_msg_set(self->msg, field_index, msgval, self->layout);
+#if PHP_MAJOR_VERSION < 7
+    REPLACE_ZVAL_VALUE(OBJ_PROP(Z_OBJ_P(object), property_info->offset),
+                       value, 1);
+#else
+    zval_ptr_dtor(OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+    ZVAL_ZVAL(OBJ_PROP(Z_OBJ_P(object), property_info->offset),
+                       value, 1, 0);
+#endif
+    cached_value = CACHED_VALUE_PTR_TO_ZVAL_PTR(
+        OBJ_PROP(Z_OBJ_P(object), property_info->offset));
   }
+
+  // Set to upb msg.
+  upb_msgval msgval;
+  MapField *map = UNBOX(MapField, cached_value);
+  Message* self = UNBOX(Message, object);
+  int field_index = upb_fielddef_index(f);
+  upb_msgval_setmap(&msgval, map->map);
+  upb_msg_set(self->msg, field_index, msgval, self->layout);
+}
+
+static void message_set_property_internal(zval* object, zval* member,
+                                          zval* value TSRMLS_DC) {
+  Message* self = UNBOX(Message, object);
+  const upb_fielddef* f = upb_msgdef_ntofz(self->msgdef, Z_STRVAL_P(member));
+  assert(f != NULL);
+
+  if (upb_fielddef_ismap(f)) {
+    message_set_map_internal(object, member, value, f TSRMLS_CC);
+    return;
+  } else if (upb_fielddef_isseq(f)) {
+    message_set_array_internal(object, member, value, f TSRMLS_CC);
+    return;
+  } else if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+    message_set_message_internal(object, member, value, f TSRMLS_CC);
+    return;
+  }
+
+  // Set scalar fields.
+  int field_index = upb_fielddef_index(f);
+  upb_fieldtype_t type = upb_fielddef_type(f);
+  upb_msgval msgval = tomsgval(value, type, upb_msg_alloc(self->msg));
+  upb_msg_set(self->msg, field_index, msgval, self->layout);
 }
 
 static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC) {

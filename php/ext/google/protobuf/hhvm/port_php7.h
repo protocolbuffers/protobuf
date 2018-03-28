@@ -101,6 +101,16 @@ static inline int php_proto_zend_lookup_class(
   intern->std.handlers = handler;                                         \
   return &intern->std;
 
+// PHP Hashtable
+static inline int proto_zend_hash_get_current_data_ex(HashTable* ht,
+                                                      void** pDest,
+                                                      HashPosition* pos) {
+  void* result = NULL;
+  result = zend_hash_get_current_data_ex(ht, pos);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
 /////////////////////////////////////
 
 #define ARENA zend_object*

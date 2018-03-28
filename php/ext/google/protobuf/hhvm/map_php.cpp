@@ -218,23 +218,7 @@ PHP_METHOD(MapField, offsetGet) {
   }
 }
 
-/**
- * Assign the element at the given key.
- * This will also be called for: $map[$key] = $ele
- * @param mixed The key of the element to be assigned.
- * @param object The element to be assigned.
- * @exception Invalid type for key.
- * @exception Non-existing key.
- * @exception Incorrect type of the element.
- */
-PHP_METHOD(MapField, offsetSet) {
-  zval *key, *value;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zz", &key, &value) ==
-      FAILURE) {
-    return;
-  }
-
-  MapField *intern = UNBOX(MapField, getThis());
+void MapField_offsetSet(MapField* intern, zval* key, zval* value) {
   Arena *cpparena = UNBOX_ARENA(intern->arena);
   upb_alloc *alloc = upb_arena_alloc(cpparena->arena);
   upb_msgval k = tomsgval(key, upb_map_keytype(intern->map), alloc);
@@ -253,6 +237,26 @@ PHP_METHOD(MapField, offsetSet) {
     PHP_OBJECT_ADDREF(cached);
     (*(intern->wrappers))[(void*)upb_msgval_getmsg(v)] = cached;
   }
+}
+
+/**
+ * Assign the element at the given key.
+ * This will also be called for: $map[$key] = $ele
+ * @param mixed The key of the element to be assigned.
+ * @param object The element to be assigned.
+ * @exception Invalid type for key.
+ * @exception Non-existing key.
+ * @exception Incorrect type of the element.
+ */
+PHP_METHOD(MapField, offsetSet) {
+  zval *key, *value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zz", &key, &value) ==
+      FAILURE) {
+    return;
+  }
+
+  MapField *intern = UNBOX(MapField, getThis());
+  MapField_offsetSet(intern, key, value);
 }
 
 /**

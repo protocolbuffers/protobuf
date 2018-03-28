@@ -1,5 +1,4 @@
-<?php
-
+<?php 
 require_once('generated/NoNamespaceEnum.php');
 require_once('generated/NoNamespaceMessage.php');
 require_once('test_base.php');
@@ -393,25 +392,25 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals($repeated_int32, $m->getRepeatedInt32());
     }
 
-#     public function testRepeatedFieldViaArray()
-#     {
-#         $m = new TestMessage();
-# 
-#         $arr = array();
-#         $m->setRepeatedInt32($arr);
-#         $this->assertSame(0, count($m->getRepeatedInt32()));
-# 
-#         $arr = array(1, 2.1, "3");
-#         $m->setRepeatedInt32($arr);
-#         $this->assertTrue($m->getRepeatedInt32() instanceof RepeatedField);
-#         $this->assertSame("Google\Protobuf\Internal\RepeatedField",
-#                           get_class($m->getRepeatedInt32()));
-#         $this->assertSame(3, count($m->getRepeatedInt32()));
-#         $this->assertSame(1, $m->getRepeatedInt32()[0]);
-#         $this->assertSame(2, $m->getRepeatedInt32()[1]);
-#         $this->assertSame(3, $m->getRepeatedInt32()[2]);
-#         $this->assertFalse($arr instanceof RepeatedField);
-#     }
+    public function testRepeatedFieldViaArray()
+    {
+        $m = new TestMessage();
+
+        $arr = array();
+        $m->setRepeatedInt32($arr);
+        $this->assertSame(0, count($m->getRepeatedInt32()));
+
+        $arr = array(1, 2.1, "3");
+        $m->setRepeatedInt32($arr);
+        $this->assertTrue($m->getRepeatedInt32() instanceof RepeatedField);
+        $this->assertSame("Google\Protobuf\Internal\RepeatedField",
+                          get_class($m->getRepeatedInt32()));
+        $this->assertSame(3, count($m->getRepeatedInt32()));
+        $this->assertSame(1, $m->getRepeatedInt32()[0]);
+        $this->assertSame(2, $m->getRepeatedInt32()[1]);
+        $this->assertSame(3, $m->getRepeatedInt32()[2]);
+        $this->assertFalse($arr instanceof RepeatedField);
+    }
 
     #########################################################
     # Test map field.
@@ -426,23 +425,23 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals($map_int32_int32, $m->getMapInt32Int32());
     }
 
-#     public function testMapFieldViaArray()
-#     {
-#         $m = new TestMessage();
-# 
-#         $dict = array();
-#         $m->setMapInt32Int32($dict);
-#         $this->assertSame(0, count($m->getMapInt32Int32()));
-# 
-#         $dict = array(5 => 5, 6.1 => 6.1, "7" => "7");
-#         $m->setMapInt32Int32($dict);
-#         $this->assertTrue($m->getMapInt32Int32() instanceof MapField);
-#         $this->assertSame(3, count($m->getMapInt32Int32()));
-#         $this->assertSame(5, $m->getMapInt32Int32()[5]);
-#         $this->assertSame(6, $m->getMapInt32Int32()[6]);
-#         $this->assertSame(7, $m->getMapInt32Int32()[7]);
-#         $this->assertFalse($dict instanceof MapField);
-#     }
+    public function testMapFieldViaArray()
+    {
+        $m = new TestMessage();
+
+        $dict = array();
+        $m->setMapInt32Int32($dict);
+        $this->assertSame(0, count($m->getMapInt32Int32()));
+
+        $dict = array(5 => 5, 6.1 => 6.1, "7" => "7");
+        $m->setMapInt32Int32($dict);
+        $this->assertTrue($m->getMapInt32Int32() instanceof MapField);
+        $this->assertSame(3, count($m->getMapInt32Int32()));
+        $this->assertSame(5, $m->getMapInt32Int32()[5]);
+        $this->assertSame(6, $m->getMapInt32Int32()[6]);
+        $this->assertSame(7, $m->getMapInt32Int32()[7]);
+        $this->assertFalse($dict instanceof MapField);
+    }
 
     #########################################################
     # Test oneof field.

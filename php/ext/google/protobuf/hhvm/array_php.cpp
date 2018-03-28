@@ -137,6 +137,17 @@ PHP_METHOD(RepeatedField, __construct) {
       intern, static_cast<upb_descriptortype_t>(type), NULL, klass);
 }
 
+void RepeatedField_append(RepeatedField *intern, zval *value) {
+  upb_msgval val = tomsgval(value, upb_array_type(intern->array), NULL);
+  size_t size = upb_array_size(intern->array);
+  upb_array_set(intern->array, size, val);
+  if (upb_array_type(intern->array) == UPB_TYPE_MESSAGE) {
+    PHP_OBJECT cached = ZVAL_PTR_TO_PHP_OBJECT(value);
+    PHP_OBJECT_ADDREF(cached);
+    (*intern->wrappers)[(void*)upb_msgval_getmsg(val)] = cached;
+  }
+}
+
 /**
  * Append element to the end of the repeated field.
  * @param object The element to be added.
@@ -150,14 +161,7 @@ PHP_METHOD(RepeatedField, append) {
   }
 
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
-  upb_msgval val = tomsgval(value, upb_array_type(intern->array), NULL);
-  size_t size = upb_array_size(intern->array);
-  upb_array_set(intern->array, size, val);
-  if (upb_array_type(intern->array) == UPB_TYPE_MESSAGE) {
-    PHP_OBJECT cached = ZVAL_PTR_TO_PHP_OBJECT(value);
-    PHP_OBJECT_ADDREF(cached);
-    (*intern->wrappers)[(void*)upb_msgval_getmsg(val)] = cached;
-  }
+  RepeatedField_append(intern, value);
 }
 
 /**

@@ -109,6 +109,10 @@
 #define UNBOX(class_name, val) \
   (class_name*)zend_object_store_get_object(val TSRMLS_CC);
 
+// PHP Hashtable
+#define proto_zend_hash_get_current_data_ex(ht, pDest, pos) \
+  zend_hash_get_current_data_ex(ht, pDest, pos)
+
 /////////////////////////////////////
 
 #define ARENA zval*
