@@ -30,9 +30,11 @@
 
 #import "GPBTestUtilities.h"
 
-#import "GPBCodedInputStream.h"
+#import "GPBProtocolBuffers.h"
+
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
+
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestMset.pbobjc.h"
 #import "google/protobuf/UnittestMsetWireFormat.pbobjc.h"
