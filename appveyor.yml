@@ -8,13 +8,13 @@ environment:
   matrix:
     - language: cpp
       image: Visual Studio 2015
-      generator: Visual Studio 14 Win64
+      generator: Visual Studio 14 2015 Win64
       BUILD_DLL: ON
       UNICODE: ON
 
     - language: cpp
       image: Visual Studio 2017
-      generator: Visual Studio 15 Win64
+      generator: Visual Studio 15 2017 Win64
       BUILD_DLL: ON
       UNICODE: ON
 
