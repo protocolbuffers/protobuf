@@ -163,6 +163,8 @@ namespace Google.Protobuf.Reflection
         {
             try
             {
+                PreventLinkerFailures();
+                // Try to do the conversion using reflection, so we can see whether it's supported.
                 MethodInfo method = typeof(ReflectionUtil).GetMethod(nameof(SampleEnumMethod));
                 // If this passes, we're in a reasonable runtime.
                 method.CreateDelegate(typeof(Func<int>));
@@ -172,6 +174,23 @@ namespace Google.Protobuf.Reflection
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// This method is effectively pointless, but only called once. It's present (and called)
+        /// to avoid the Unity linker from removing code that's only called via reflection.
+        /// </summary>
+        private static void PreventLinkerFailures()
+        {
+            // Exercise the method directly. This should avoid any pro-active linkers from stripping
+            // the method out.
+            SampleEnum x = SampleEnumMethod();
+            if (x != SampleEnum.X)
+            {
+                throw new InvalidOperationException("Failure in reflection utilities");
+            }
+            // Make sure the ReflectionHelper parameterless constructor isn't removed...
+            var helper = new ReflectionHelper<int, int>();
         }
 
         public enum SampleEnum
