@@ -41,9 +41,16 @@ Good. Now you are ready to continue.
 Getting Sources
 ===============
 
-You can get the latest stable source packages from the
-[releases](https://github.com/google/protobuf/releases) page.
-Or you can type:
+You can get the latest stable source packages from the release page:
+
+    https://github.com/google/protobuf/releases/latest
+
+For example: if you only need C++, download `protobuf-cpp-[VERSION].tar.gz`; if
+you need C++ and Java, download `protobuf-java-[VERSION].tar.gz` (every package
+contains C++ source already); if you need C++ and multiple other languages,
+download `protobuf-all-[VERSION].tar.gz`.
+
+Or you can use git to clone from protobuf git repository.
 
      C:\Path\to> git clone -b [release_tag] https://github.com/google/protobuf.git
 
@@ -55,7 +62,8 @@ Go to the project folder:
      C:\Path\to>cd protobuf
      C:\Path\to\protobuf>
 
-Remember to update any submodules:
+Remember to update any submodules if you are using git clone (you can skip this
+step if you are using a release .tar.gz or .zip package):
 
 ```console
 C:\Path\to> git submodule update --init --recursive
@@ -63,7 +71,7 @@ C:\Path\to> git submodule update --init --recursive
 
 Now go to *cmake* folder in protobuf sources:
 
-     C:\Path\to\protobuf\gmock>cd ..\cmake
+     C:\Path\to\protobuf>cd cmake
      C:\Path\to\protobuf\cmake>
 
 Good. Now you are ready to *CMake* configuration.
@@ -113,7 +121,7 @@ It will generate *nmake* *Makefile* in current directory.
 To create *Visual Studio* solution file:
 
      C:\Path\to\protobuf\cmake\build>mkdir solution & cd solution
-     C:\Path\to\protobuf\cmake\build\solution>cmake -G "Visual Studio 12 2013 Win64" ^
+     C:\Path\to\protobuf\cmake\build\solution>cmake -G "Visual Studio 14 2015 Win64" ^
      -DCMAKE_INSTALL_PREFIX=../../../../install ^
      ../..
 
