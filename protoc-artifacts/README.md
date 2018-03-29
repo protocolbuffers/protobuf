@@ -140,7 +140,7 @@ $ docker build -t protoc-artifacts .
 
 To run the image:
 ```
-$ docker run -it --rm=true protoc-artifacts
+$ docker run -it --rm=true protoc-artifacts bash
 ```
 
 To checkout protobuf (run within the container):

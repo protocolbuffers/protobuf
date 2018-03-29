@@ -39,5 +39,7 @@ RUN wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo -P /etc/yum
                    devtoolset-1.1-libstdc++-devel.i686 && \
     yum clean all
 
+COPY scl-enable-devtoolset.sh /var/local/
+
 # Start in devtoolset environment that uses GCC 4.7
-CMD ["scl", "enable", "devtoolset-1.1", "bash"]
+ENTRYPOINT ["/var/local/scl-enable-devtoolset.sh"]
