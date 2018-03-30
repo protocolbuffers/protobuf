@@ -66,6 +66,7 @@ class FileGenerator {
  private:
   const FileDescriptor* file_;
   string root_class_name_;
+  bool is_bundled_proto_;
 
   std::vector<EnumGenerator*> enum_generators_;
   std::vector<MessageGenerator*> message_generators_;

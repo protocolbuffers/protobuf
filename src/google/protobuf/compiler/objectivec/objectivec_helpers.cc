@@ -1504,10 +1504,12 @@ bool ParseSimpleFile(
 
 ImportWriter::ImportWriter(
   const string& generate_for_named_framework,
-  const string& named_framework_to_proto_path_mappings_path)
+  const string& named_framework_to_proto_path_mappings_path,
+  bool include_wkt_imports)
     : generate_for_named_framework_(generate_for_named_framework),
       named_framework_to_proto_path_mappings_path_(
           named_framework_to_proto_path_mappings_path),
+      include_wkt_imports_(include_wkt_imports),
       need_to_parse_mapping_file_(true) {
 }
 
@@ -1518,9 +1520,14 @@ void ImportWriter::AddFile(const FileDescriptor* file,
   const string file_path(FilePath(file));
 
   if (IsProtobufLibraryBundledProtoFile(file)) {
-    protobuf_framework_imports_.push_back(
-        FilePathBasename(file) + header_extension);
-    protobuf_non_framework_imports_.push_back(file_path + header_extension);
+    // The imports of the WKTs are only needed within the library itself,
+    // in other cases, they get skipped because the generated code already
+    // import GPBProtocolBuffers.h and hence proves them.
+    if (include_wkt_imports_) {
+      protobuf_framework_imports_.push_back(
+          FilePathBasename(file) + header_extension);
+      protobuf_non_framework_imports_.push_back(file_path + header_extension);
+    }
     return;
   }
 

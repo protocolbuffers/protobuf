@@ -188,6 +188,7 @@ bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
 FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
     : file_(file),
       root_class_name_(FileClassName(file)),
+      is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)),
       options_(options) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
@@ -217,7 +218,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   std::set<string> headers;
   // Generated files bundled with the library get minimal imports, everything
   // else gets the wrapper so everything is usable.
-  if (IsProtobufLibraryBundledProtoFile(file_)) {
+  if (is_bundled_proto_) {
     headers.insert("GPBRootObject.h");
     headers.insert("GPBMessage.h");
     headers.insert("GPBDescriptor.h");
@@ -246,7 +247,8 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   {
     ImportWriter import_writer(
         options_.generate_for_named_framework,
-        options_.named_framework_to_proto_path_mappings_path);
+        options_.named_framework_to_proto_path_mappings_path,
+        is_bundled_proto_);
     const string header_extension(kHeaderExtension);
     for (int i = 0; i < file_->public_dependency_count(); i++) {
       import_writer.AddFile(file_->public_dependency(i), header_extension);
@@ -364,7 +366,8 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   {
     ImportWriter import_writer(
         options_.generate_for_named_framework,
-        options_.named_framework_to_proto_path_mappings_path);
+        options_.named_framework_to_proto_path_mappings_path,
+        is_bundled_proto_);
     const string header_extension(kHeaderExtension);
 
     // #import the header for this proto file.
