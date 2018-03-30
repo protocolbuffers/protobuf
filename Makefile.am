@@ -502,6 +502,31 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBArrayTests.m                                           \
   objectivec/Tests/GPBCodedInputStreamTests.m                                \
   objectivec/Tests/GPBCodedOuputStreamTests.m                                \
+  objectivec/Tests/GPBCompileTest01.m                                        \
+  objectivec/Tests/GPBCompileTest02.m                                        \
+  objectivec/Tests/GPBCompileTest03.m                                        \
+  objectivec/Tests/GPBCompileTest04.m                                        \
+  objectivec/Tests/GPBCompileTest05.m                                        \
+  objectivec/Tests/GPBCompileTest06.m                                        \
+  objectivec/Tests/GPBCompileTest07.m                                        \
+  objectivec/Tests/GPBCompileTest08.m                                        \
+  objectivec/Tests/GPBCompileTest09.m                                        \
+  objectivec/Tests/GPBCompileTest10.m                                        \
+  objectivec/Tests/GPBCompileTest11.m                                        \
+  objectivec/Tests/GPBCompileTest12.m                                        \
+  objectivec/Tests/GPBCompileTest13.m                                        \
+  objectivec/Tests/GPBCompileTest14.m                                        \
+  objectivec/Tests/GPBCompileTest15.m                                        \
+  objectivec/Tests/GPBCompileTest16.m                                        \
+  objectivec/Tests/GPBCompileTest17.m                                        \
+  objectivec/Tests/GPBCompileTest18.m                                        \
+  objectivec/Tests/GPBCompileTest19.m                                        \
+  objectivec/Tests/GPBCompileTest20.m                                        \
+  objectivec/Tests/GPBCompileTest21.m                                        \
+  objectivec/Tests/GPBCompileTest22.m                                        \
+  objectivec/Tests/GPBCompileTest23.m                                        \
+  objectivec/Tests/GPBCompileTest24.m                                        \
+  objectivec/Tests/GPBCompileTest25.m                                        \
   objectivec/Tests/GPBConcurrencyTests.m                                     \
   objectivec/Tests/GPBDescriptorTests.m                                      \
   objectivec/Tests/GPBDictionaryTests+Bool.m                                 \

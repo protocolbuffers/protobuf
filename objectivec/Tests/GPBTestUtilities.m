@@ -30,6 +30,8 @@
 
 #import "GPBTestUtilities.h"
 
+#import "GPBProtocolBuffers.h"
+
 #import "google/protobuf/MapUnittest.pbobjc.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestImport.pbobjc.h"

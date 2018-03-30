@@ -30,6 +30,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBBootstrap.h"
+
 @class GPBMessage;
 @class GPBExtensionRegistry;
 

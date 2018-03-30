@@ -28,17 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#import <objc/runtime.h>
 #import <XCTest/XCTest.h>
 
 #import "GPBUtilities_PackagePrivate.h"
 
-#import <objc/runtime.h>
-
 #import "GPBTestUtilities.h"
 
-#import "GPBDescriptor.h"
+#import "GPBProtocolBuffers.h"
 #import "GPBDescriptor_PackagePrivate.h"
-#import "GPBMessage.h"
 #import "GPBUnknownField_PackagePrivate.h"
 
 #import "google/protobuf/MapUnittest.pbobjc.h"

@@ -32,12 +32,14 @@
 
 #import <objc/runtime.h>
 
+#import "GPBProtocolBuffers.h"
+
 #import "GPBArray_PackagePrivate.h"
-#import "GPBDescriptor.h"
 #import "GPBDictionary_PackagePrivate.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
+
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
 

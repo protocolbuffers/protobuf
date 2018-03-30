@@ -32,7 +32,7 @@
 
 #import <objc/runtime.h>
 
-#import "GPBMessage.h"
+#import "GPBProtocolBuffers.h"
 
 #import "google/protobuf/MapUnittest.pbobjc.h"
 #import "google/protobuf/Unittest.pbobjc.h"
