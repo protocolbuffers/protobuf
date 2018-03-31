@@ -132,6 +132,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 }
 
 static PHP_MINIT_FUNCTION(protobuf) {
+  protobuf_module = new ProtobufModule();
   Arena_init(TSRMLS_C);
   InternalDescriptorPool_init(TSRMLS_C);
   MapField_init(TSRMLS_C);
@@ -144,4 +145,5 @@ static PHP_MINIT_FUNCTION(protobuf) {
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
+  delete protobuf_module;
 }

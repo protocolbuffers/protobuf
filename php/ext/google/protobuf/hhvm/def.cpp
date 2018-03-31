@@ -38,31 +38,31 @@ static void classname_no_prefix(const char *fullname, const char *package_name,
 static const char *classname_prefix(const char *classname,
                                     const char *prefix_given,
                                     const char *package_name) {
-//   size_t i;
-//   bool is_reserved = false;
-// 
-//   if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
-//     return prefix_given;
-//   }
-// 
-//   char* lower = ALLOC_N(char, strlen(classname) + 1);
-//   i = 0;
-//   while(classname[i]) {
-//     lower[i] = (char)tolower(classname[i]);
-//     i++;
-//   }
-//   lower[i] = 0;
-// 
-//   is_reserved = is_reserved_name(lower);
-//   FREE(lower);
-// 
-//   if (is_reserved) {
-//     if (package_name != NULL && strcmp("google.protobuf", package_name) == 0) {
-//       return "GPB";
-//     } else {
-//       return "PB";
-//     }
-//   }
+  size_t i;
+  bool is_reserved = false;
+
+  if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
+    return prefix_given;
+  }
+
+  char* lower = ALLOC_N(char, strlen(classname) + 1);
+  i = 0;
+  while(classname[i]) {
+    lower[i] = (char)tolower(classname[i]);
+    i++;
+  }
+  lower[i] = 0;
+
+  is_reserved = is_reserved_name(lower);
+  FREE(lower);
+
+  if (is_reserved) {
+    if (package_name != NULL && strcmp("google.protobuf", package_name) == 0) {
+      return "GPB";
+    } else {
+      return "PB";
+    }
+  }
 
   return "";
 }
@@ -145,14 +145,12 @@ static const char * kReservedNames[] = {
 ProtobufModule::ProtobufModule() {
   int kReservedNamesSize = 73;
   for (int i = 0; i < kReservedNamesSize; i++) {
-//     printf("%s\n", kReservedNames[0]);
-//     this->reserved_names.insert(kReservedNames[i]);
+    this->reserved_names.insert(kReservedNames[i]);
   }
 }
 
 bool ProtobufModule::IsReservedName(const string& name) {
-  // return this->reserved_names.find(name) != this->reserved_names.end();
-  return false;
+  return this->reserved_names.find(name) != this->reserved_names.end();
 }
 
 // -----------------------------------------------------------------------------
