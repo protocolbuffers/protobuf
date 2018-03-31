@@ -200,15 +200,67 @@ static void Message_set_impl(Message *self, const upb_fielddef *f,
   int field_index = upb_fielddef_index(f);
   upb_fieldtype_t type = upb_fielddef_type(f);
 
-  if (upb_fielddef_isseq(f)) {
-    RepeatedField *arr = Native::data<RepeatedField>(value.toObject());
+  if (upb_fielddef_ismap(f)) {
+    MapField *intern = NULL;
+    if (value.isPHPArray()) {
+      Object map = Object(Unit::loadClass(s_MapField.get()));
+      intern = Native::data<MapField>(map);
+
+      Class* klass = NULL;
+      const upb_msgdef *mapentry_msgdef = upb_fielddef_msgsubdef(f);
+      const upb_fielddef *key_fielddef =
+          upb_msgdef_ntof(mapentry_msgdef, "key", 3);
+      const upb_fielddef *value_fielddef =
+          upb_msgdef_ntof(mapentry_msgdef, "value", 5);
+
+      if (upb_fielddef_issubmsg(value_fielddef)) {
+        const upb_msgdef *subdef = upb_fielddef_msgsubdef(value_fielddef);
+        klass = (Class*)(msgdef2class(subdef));
+      }
+
+      MapField___construct(intern, 
+                           upb_fielddef_descriptortype(key_fielddef),
+                           upb_fielddef_descriptortype(value_fielddef),
+                           self->arena,
+                           klass);
+
+      Array map_hhvm = value.toArray();
+      ArrayData* elements = map_hhvm.get();
+      for (int i = 0; i < elements->size(); i++) {
+        MapField_offsetSet(intern, elements->getKey(i), elements->getValue(i));
+      }
+    } else {
+      intern = Native::data<MapField>(value.toObject());
+    }
+
     upb_msgval msgval;
-    upb_msgval_setarr(&msgval, arr->array);
+    upb_msgval_setmap(&msgval, intern->map);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
-  } else if (upb_fielddef_ismap(f)) {
-    MapField *map = Native::data<MapField>(value.toObject());
+  } else if (upb_fielddef_isseq(f)) {
+    RepeatedField *intern = NULL;
+    if (value.isPHPArray()) {
+      Object array = Object(Unit::loadClass(s_RepeatedField.get()));
+      intern = Native::data<RepeatedField>(array);
+
+      Class* klass = NULL;
+      if (upb_fielddef_issubmsg(f)) {
+        const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+        klass = (Class*)(msgdef2class(subdef));
+      }
+
+      RepeatedField___construct(intern, upb_fielddef_descriptortype(f),
+                                self->arena, klass);
+      Array arr_hhvm = value.toArray();
+      ArrayData* elements = arr_hhvm.get();
+      for (int i = 0; i < elements->size(); i++) {
+        RepeatedField_append(intern, elements->get(i));
+      }
+    } else {
+      intern = Native::data<RepeatedField>(value.toObject());
+    }
+
     upb_msgval msgval;
-    upb_msgval_setmap(&msgval, map->map);
+    upb_msgval_setarr(&msgval, intern->array);
     upb_msg_set(self->msg, field_index, msgval, self->layout);
   } else {
     upb_msgval msgval = tomsgval(value, type);

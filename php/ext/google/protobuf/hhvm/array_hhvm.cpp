@@ -126,11 +126,15 @@ Object HHVM_METHOD(RepeatedField, getIterator) {
   return iterobj;
 }
 
-void HHVM_METHOD(RepeatedField, append, const Variant& newvalue) {
-  RepeatedField *intern = Native::data<RepeatedField>(this_);
+void RepeatedField_append(RepeatedField *intern, const Variant& newvalue) {
   upb_msgval val = tomsgval(newvalue, upb_array_type(intern->array));
   size_t size = upb_array_size(intern->array);
   upb_array_set(intern->array, size, val);
+}
+
+void HHVM_METHOD(RepeatedField, append, const Variant& newvalue) {
+  RepeatedField *intern = Native::data<RepeatedField>(this_);
+  RepeatedField_append(intern, newvalue);
 }
 
 // -----------------------------------------------------------------------------

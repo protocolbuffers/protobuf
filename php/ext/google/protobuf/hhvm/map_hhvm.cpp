@@ -99,6 +99,13 @@ Variant HHVM_METHOD(MapField, offsetGet, const Variant& key) {
   }
 }
 
+void MapField_offsetSet(MapField *intern, const Variant& key,
+                        const Variant& newvalue) {
+  upb_msgval k = tomsgval(key, upb_map_keytype(intern->map));
+  upb_msgval v = tomsgval(newvalue, upb_map_valuetype(intern->map));
+  upb_map_set(intern->map, k, v, NULL);
+}
+
 void HHVM_METHOD(MapField, offsetSet, const Variant& key,
                  const Variant& newvalue) {
   MapField *intern = Native::data<MapField>(this_);

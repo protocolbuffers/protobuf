@@ -626,7 +626,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   Indent(printer);
 
   // Type check.
-  if (field->is_map()) {
+  if (field->is_map() && !is_hhvm) {
     const Descriptor* map_entry = field->message_type();
     const FieldDescriptor* key = map_entry->FindFieldByName("key");
     const FieldDescriptor* value = map_entry->FindFieldByName("value");
@@ -649,7 +649,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     } else {
       printer->Print(");\n");
     }
-  } else if (field->is_repeated()) {
+  } else if (field->is_repeated() && !is_hhvm) {
     printer->Print(
         "$arr = GPBUtil::checkRepeatedField($var, "
         "\\Google\\Protobuf\\Internal\\GPBType::^type^",
@@ -693,7 +693,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   } else if (field->is_repeated()) {
     if (is_hhvm) {
       printer->Print(
-          "$this->writeProperty(\"^name^\", $arr);\n",
+          "$this->writeProperty(\"^name^\", $var);\n",
           "name", field->name());
     } else {
       printer->Print(

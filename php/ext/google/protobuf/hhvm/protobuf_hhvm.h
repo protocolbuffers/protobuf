@@ -14,6 +14,10 @@ Variant tophpval(const upb_msgval& msgval,
                  ARENA arena,
                  Class* klass);
 
+void MapField_offsetSet(MapField *intern, const Variant& key,
+                        const Variant& newvalue);
+void RepeatedField_append(RepeatedField *intern, const Variant& newvalue);
+
 extern const StaticString s_RepeatedField;
 extern const StaticString s_MapField;
 
