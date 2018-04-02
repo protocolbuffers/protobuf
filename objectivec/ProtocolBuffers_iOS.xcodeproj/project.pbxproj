@@ -44,6 +44,31 @@
 		8BD3981F14BE59D70081D629 /* GPBUnittestProtos.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BD3981E14BE59D70081D629 /* GPBUnittestProtos.m */; };
 		8BF8193514A0DDA600A2C982 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		F401DC351A8E5C6F00FCC765 /* GPBArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F401DC341A8E5C6F00FCC765 /* GPBArrayTests.m */; };
+		F40EE4F0206BF91E0071091A /* GPBCompileTest01.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CD206BF9170071091A /* GPBCompileTest01.m */; };
+		F40EE4F1206BF91E0071091A /* GPBCompileTest02.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C6206BF9170071091A /* GPBCompileTest02.m */; };
+		F40EE4F2206BF91E0071091A /* GPBCompileTest03.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D6206BF9190071091A /* GPBCompileTest03.m */; };
+		F40EE4F3206BF91E0071091A /* GPBCompileTest04.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C3206BF9160071091A /* GPBCompileTest04.m */; };
+		F40EE4F4206BF91E0071091A /* GPBCompileTest05.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C4206BF9160071091A /* GPBCompileTest05.m */; };
+		F40EE4F5206BF91E0071091A /* GPBCompileTest06.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D7206BF9190071091A /* GPBCompileTest06.m */; };
+		F40EE4F6206BF91E0071091A /* GPBCompileTest07.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C5206BF9170071091A /* GPBCompileTest07.m */; };
+		F40EE4F7206BF91E0071091A /* GPBCompileTest08.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C2206BF9160071091A /* GPBCompileTest08.m */; };
+		F40EE4F8206BF91E0071091A /* GPBCompileTest09.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C9206BF9170071091A /* GPBCompileTest09.m */; };
+		F40EE4F9206BF91E0071091A /* GPBCompileTest10.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D1206BF9180071091A /* GPBCompileTest10.m */; };
+		F40EE4FA206BF91E0071091A /* GPBCompileTest11.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D8206BF9190071091A /* GPBCompileTest11.m */; };
+		F40EE4FB206BF91E0071091A /* GPBCompileTest12.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D5206BF9180071091A /* GPBCompileTest12.m */; };
+		F40EE4FC206BF91E0071091A /* GPBCompileTest13.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C8206BF9170071091A /* GPBCompileTest13.m */; };
+		F40EE4FD206BF91E0071091A /* GPBCompileTest14.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D4206BF9180071091A /* GPBCompileTest14.m */; };
+		F40EE4FE206BF91E0071091A /* GPBCompileTest15.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CE206BF9170071091A /* GPBCompileTest15.m */; };
+		F40EE4FF206BF91E0071091A /* GPBCompileTest16.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D0206BF9180071091A /* GPBCompileTest16.m */; };
+		F40EE500206BF91E0071091A /* GPBCompileTest17.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D2206BF9180071091A /* GPBCompileTest17.m */; };
+		F40EE501206BF91E0071091A /* GPBCompileTest18.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D3206BF9180071091A /* GPBCompileTest18.m */; };
+		F40EE502206BF91E0071091A /* GPBCompileTest19.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C7206BF9170071091A /* GPBCompileTest19.m */; };
+		F40EE503206BF91E0071091A /* GPBCompileTest20.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CA206BF9170071091A /* GPBCompileTest20.m */; };
+		F40EE504206BF91E0071091A /* GPBCompileTest21.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CB206BF9170071091A /* GPBCompileTest21.m */; };
+		F40EE505206BF91E0071091A /* GPBCompileTest22.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CF206BF9170071091A /* GPBCompileTest22.m */; };
+		F40EE506206BF91E0071091A /* GPBCompileTest23.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CC206BF9170071091A /* GPBCompileTest23.m */; };
+		F40EE511206C068D0071091A /* GPBCompileTest24.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE50E206C06880071091A /* GPBCompileTest24.m */; };
+		F40EE512206C068D0071091A /* GPBCompileTest25.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE50D206C06880071091A /* GPBCompileTest25.m */; };
 		F41C175D1833D3310064ED4D /* GPBPerfTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F41C175C1833D3310064ED4D /* GPBPerfTests.m */; };
 		F4353D1F1AB88243005A6198 /* GPBDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D1E1AB88243005A6198 /* GPBDescriptorTests.m */; };
 		F4353D271ABB156F005A6198 /* GPBDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D251ABB156F005A6198 /* GPBDictionary.m */; };
@@ -178,6 +203,31 @@
 		8BD3981E14BE59D70081D629 /* GPBUnittestProtos.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnittestProtos.m; sourceTree = "<group>"; };
 		8BEB5AE01498033E0078BF9D /* GPBRuntimeTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBRuntimeTypes.h; sourceTree = "<group>"; };
 		F401DC341A8E5C6F00FCC765 /* GPBArrayTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBArrayTests.m; sourceTree = "<group>"; };
+		F40EE4C2206BF9160071091A /* GPBCompileTest08.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest08.m; sourceTree = "<group>"; };
+		F40EE4C3206BF9160071091A /* GPBCompileTest04.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest04.m; sourceTree = "<group>"; };
+		F40EE4C4206BF9160071091A /* GPBCompileTest05.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest05.m; sourceTree = "<group>"; };
+		F40EE4C5206BF9170071091A /* GPBCompileTest07.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest07.m; sourceTree = "<group>"; };
+		F40EE4C6206BF9170071091A /* GPBCompileTest02.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest02.m; sourceTree = "<group>"; };
+		F40EE4C7206BF9170071091A /* GPBCompileTest19.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest19.m; sourceTree = "<group>"; };
+		F40EE4C8206BF9170071091A /* GPBCompileTest13.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest13.m; sourceTree = "<group>"; };
+		F40EE4C9206BF9170071091A /* GPBCompileTest09.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest09.m; sourceTree = "<group>"; };
+		F40EE4CA206BF9170071091A /* GPBCompileTest20.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest20.m; sourceTree = "<group>"; };
+		F40EE4CB206BF9170071091A /* GPBCompileTest21.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest21.m; sourceTree = "<group>"; };
+		F40EE4CC206BF9170071091A /* GPBCompileTest23.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest23.m; sourceTree = "<group>"; };
+		F40EE4CD206BF9170071091A /* GPBCompileTest01.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest01.m; sourceTree = "<group>"; };
+		F40EE4CE206BF9170071091A /* GPBCompileTest15.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest15.m; sourceTree = "<group>"; };
+		F40EE4CF206BF9170071091A /* GPBCompileTest22.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest22.m; sourceTree = "<group>"; };
+		F40EE4D0206BF9180071091A /* GPBCompileTest16.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest16.m; sourceTree = "<group>"; };
+		F40EE4D1206BF9180071091A /* GPBCompileTest10.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest10.m; sourceTree = "<group>"; };
+		F40EE4D2206BF9180071091A /* GPBCompileTest17.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest17.m; sourceTree = "<group>"; };
+		F40EE4D3206BF9180071091A /* GPBCompileTest18.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest18.m; sourceTree = "<group>"; };
+		F40EE4D4206BF9180071091A /* GPBCompileTest14.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest14.m; sourceTree = "<group>"; };
+		F40EE4D5206BF9180071091A /* GPBCompileTest12.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest12.m; sourceTree = "<group>"; };
+		F40EE4D6206BF9190071091A /* GPBCompileTest03.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest03.m; sourceTree = "<group>"; };
+		F40EE4D7206BF9190071091A /* GPBCompileTest06.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest06.m; sourceTree = "<group>"; };
+		F40EE4D8206BF9190071091A /* GPBCompileTest11.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest11.m; sourceTree = "<group>"; };
+		F40EE50D206C06880071091A /* GPBCompileTest25.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest25.m; sourceTree = "<group>"; };
+		F40EE50E206C06880071091A /* GPBCompileTest24.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest24.m; sourceTree = "<group>"; };
 		F41C175C1833D3310064ED4D /* GPBPerfTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBPerfTests.m; sourceTree = "<group>"; };
 		F4353D1E1AB88243005A6198 /* GPBDescriptorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBDescriptorTests.m; sourceTree = "<group>"; };
 		F4353D241ABB156F005A6198 /* GPBDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBDictionary.h; sourceTree = "<group>"; };
@@ -433,6 +483,31 @@
 				F401DC341A8E5C6F00FCC765 /* GPBArrayTests.m */,
 				7461B69B0F94FDF800A0C422 /* GPBCodedInputStreamTests.m */,
 				7461B69D0F94FDF800A0C422 /* GPBCodedOuputStreamTests.m */,
+				F40EE4CD206BF9170071091A /* GPBCompileTest01.m */,
+				F40EE4C6206BF9170071091A /* GPBCompileTest02.m */,
+				F40EE4D6206BF9190071091A /* GPBCompileTest03.m */,
+				F40EE4C3206BF9160071091A /* GPBCompileTest04.m */,
+				F40EE4C4206BF9160071091A /* GPBCompileTest05.m */,
+				F40EE4D7206BF9190071091A /* GPBCompileTest06.m */,
+				F40EE4C5206BF9170071091A /* GPBCompileTest07.m */,
+				F40EE4C2206BF9160071091A /* GPBCompileTest08.m */,
+				F40EE4C9206BF9170071091A /* GPBCompileTest09.m */,
+				F40EE4D1206BF9180071091A /* GPBCompileTest10.m */,
+				F40EE4D8206BF9190071091A /* GPBCompileTest11.m */,
+				F40EE4D5206BF9180071091A /* GPBCompileTest12.m */,
+				F40EE4C8206BF9170071091A /* GPBCompileTest13.m */,
+				F40EE4D4206BF9180071091A /* GPBCompileTest14.m */,
+				F40EE4CE206BF9170071091A /* GPBCompileTest15.m */,
+				F40EE4D0206BF9180071091A /* GPBCompileTest16.m */,
+				F40EE4D2206BF9180071091A /* GPBCompileTest17.m */,
+				F40EE4D3206BF9180071091A /* GPBCompileTest18.m */,
+				F40EE4C7206BF9170071091A /* GPBCompileTest19.m */,
+				F40EE4CA206BF9170071091A /* GPBCompileTest20.m */,
+				F40EE4CB206BF9170071091A /* GPBCompileTest21.m */,
+				F40EE4CF206BF9170071091A /* GPBCompileTest22.m */,
+				F40EE4CC206BF9170071091A /* GPBCompileTest23.m */,
+				F40EE50E206C06880071091A /* GPBCompileTest24.m */,
+				F40EE50D206C06880071091A /* GPBCompileTest25.m */,
 				5102DABB1891A052002037B6 /* GPBConcurrencyTests.m */,
 				F4353D1E1AB88243005A6198 /* GPBDescriptorTests.m */,
 				F4C4B9E51E1D97BB00D3B61D /* GPBDictionaryTests.m */,
@@ -757,28 +832,53 @@
 			buildActionMask = 2147483647;
 			files = (
 				8BBEA4A9147C727D00C4ADB7 /* GPBCodedInputStreamTests.m in Sources */,
+				F40EE511206C068D0071091A /* GPBCompileTest24.m in Sources */,
+				F40EE503206BF91E0071091A /* GPBCompileTest20.m in Sources */,
 				F401DC351A8E5C6F00FCC765 /* GPBArrayTests.m in Sources */,
+				F40EE4F9206BF91E0071091A /* GPBCompileTest10.m in Sources */,
 				F4353D441AC06F31005A6198 /* GPBDictionaryTests+Int64.m in Sources */,
+				F40EE505206BF91E0071091A /* GPBCompileTest22.m in Sources */,
+				F40EE4F7206BF91E0071091A /* GPBCompileTest08.m in Sources */,
+				F40EE500206BF91E0071091A /* GPBCompileTest17.m in Sources */,
 				F4353D471AC06F31005A6198 /* GPBDictionaryTests+UInt64.m in Sources */,
 				8BBEA4AA147C727D00C4ADB7 /* GPBCodedOuputStreamTests.m in Sources */,
+				F40EE506206BF91E0071091A /* GPBCompileTest23.m in Sources */,
 				8BBEA4AC147C727D00C4ADB7 /* GPBMessageTests.m in Sources */,
 				F4487C811AAF62FC00531423 /* GPBMessageTests+Serialization.m in Sources */,
+				F40EE502206BF91E0071091A /* GPBCompileTest19.m in Sources */,
+				F40EE4F5206BF91E0071091A /* GPBCompileTest06.m in Sources */,
+				F40EE4FB206BF91E0071091A /* GPBCompileTest12.m in Sources */,
 				8B4248E61A929C9900BC1EC6 /* GPBWellKnownTypesTest.m in Sources */,
+				F40EE4F2206BF91E0071091A /* GPBCompileTest03.m in Sources */,
+				F40EE501206BF91E0071091A /* GPBCompileTest18.m in Sources */,
+				F40EE4FC206BF91E0071091A /* GPBCompileTest13.m in Sources */,
+				F40EE4FE206BF91E0071091A /* GPBCompileTest15.m in Sources */,
+				F40EE4F6206BF91E0071091A /* GPBCompileTest07.m in Sources */,
 				F4353D1F1AB88243005A6198 /* GPBDescriptorTests.m in Sources */,
+				F40EE504206BF91E0071091A /* GPBCompileTest21.m in Sources */,
+				F40EE4FA206BF91E0071091A /* GPBCompileTest11.m in Sources */,
 				F4F8D8861D78A193002CE128 /* GPBUnittestProtos2.m in Sources */,
 				F4B51B1C1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm in Sources */,
 				8B4248B41A8BD96E00BC1EC6 /* GPBSwiftTests.swift in Sources */,
+				F40EE512206C068D0071091A /* GPBCompileTest25.m in Sources */,
 				F4584D831ECCB53600803AB6 /* GPBExtensionRegistryTest.m in Sources */,
 				5102DABC1891A073002037B6 /* GPBConcurrencyTests.m in Sources */,
 				F4487C771AADF84900531423 /* GPBMessageTests+Runtime.m in Sources */,
+				F40EE4F1206BF91E0071091A /* GPBCompileTest02.m in Sources */,
 				F4353D431AC06F31005A6198 /* GPBDictionaryTests+Int32.m in Sources */,
+				F40EE4F4206BF91E0071091A /* GPBCompileTest05.m in Sources */,
+				F40EE4FD206BF91E0071091A /* GPBCompileTest14.m in Sources */,
 				8BBEA4B0147C727D00C4ADB7 /* GPBTestUtilities.m in Sources */,
+				F40EE4F3206BF91E0071091A /* GPBCompileTest04.m in Sources */,
+				F40EE4FF206BF91E0071091A /* GPBCompileTest16.m in Sources */,
 				F41C175D1833D3310064ED4D /* GPBPerfTests.m in Sources */,
 				F4353D421AC06F31005A6198 /* GPBDictionaryTests+Bool.m in Sources */,
 				F4487C851AAF6AC500531423 /* GPBMessageTests+Merge.m in Sources */,
+				F40EE4F0206BF91E0071091A /* GPBCompileTest01.m in Sources */,
 				8BBEA4B6147C727D00C4ADB7 /* GPBUnknownFieldSetTest.m in Sources */,
 				F4353D451AC06F31005A6198 /* GPBDictionaryTests+String.m in Sources */,
 				F4353D461AC06F31005A6198 /* GPBDictionaryTests+UInt32.m in Sources */,
+				F40EE4F8206BF91E0071091A /* GPBCompileTest09.m in Sources */,
 				8BBEA4B7147C727D00C4ADB7 /* GPBUtilitiesTests.m in Sources */,
 				F4C4B9E71E1D97BF00D3B61D /* GPBDictionaryTests.m in Sources */,
 				8BBEA4B8147C727D00C4ADB7 /* GPBWireFormatTests.m in Sources */,

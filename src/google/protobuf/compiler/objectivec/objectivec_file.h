@@ -66,6 +66,7 @@ class FileGenerator {
  private:
   const FileDescriptor* file_;
   string root_class_name_;
+  bool is_bundled_proto_;
 
   std::vector<EnumGenerator*> enum_generators_;
   std::vector<MessageGenerator*> message_generators_;
@@ -74,7 +75,7 @@ class FileGenerator {
   const Options options_;
 
   void PrintFileRuntimePreamble(
-      io::Printer* printer, const string& header_to_import) const;
+      io::Printer* printer, const std::set<string>& headers_to_import) const;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };

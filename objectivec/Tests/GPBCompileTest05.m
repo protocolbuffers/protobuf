@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// This header is meant to only be used by the generated source, it should not
-// be included in code using protocol buffers.
 
-#import "GPBBootstrap.h"
+// This is a test including a single public header to ensure things build.
+// It helps test that imports are complete/ordered correctly.
 
-#import "GPBDescriptor_PackagePrivate.h"
-#import "GPBExtensionInternals.h"
-#import "GPBMessage_PackagePrivate.h"
-#import "GPBRootObject_PackagePrivate.h"
-#import "GPBUtilities_PackagePrivate.h"
+#import "GPBDictionary.h"
+
+
+// Something in the body of this file so the compiler/linker won't complain
+// about an empty .o file.
+__attribute__((visibility("default"))) char dummy_symbol_5 = 0;
