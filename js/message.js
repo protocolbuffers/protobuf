@@ -923,6 +923,17 @@ jspb.Message.setProto3IntField = function(msg, fieldNumber, value) {
 
 
 /**
+ * Sets the value of a non-extension integer, handled as string, field of a proto3
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {number} value New value
+ * @protected
+ */
+jspb.Message.setProto3StringIntField = function(msg, fieldNumber, value) {
+  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, '0');
+};
+
+/**
  * Sets the value of a non-extension floating point field of a proto3
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
