@@ -1,5 +1,10 @@
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../third_party/googletest/CMakeLists.txt")
-  message(FATAL_ERROR "Cannot find third_party/googletest directory.")
+  message(FATAL_ERROR
+          "Cannot find third_party/googletest directory that's needed to "
+          "build tests. If you use git, make sure you have cloned submodules:\n"
+          "  git submodule update --init --recursive\n"
+          "If instead you want to skip tests, run cmake with:\n"
+          "  cmake -Dprotobuf_BUILD_TESTS=OFF\n")
 endif()
 
 option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
