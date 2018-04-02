@@ -12,7 +12,7 @@ if [ ! -f gperftools/.libs/libtcmalloc.so ]; then
   cd gperftools
   ./autogen.sh
   ./configure
-  make -j2
+  make -j8
   cd ..
 fi
 
@@ -24,11 +24,11 @@ cd $oldpwd
 
 # build Python protobuf
 ./autogen.sh
-./configure "-fPIC -O2 -fno-semantic-interposition"
+./configure CXXFLAGS="-fPIC -O2 -fno-semantic-interposition"
 make -j8
 cd python
-python setup.py build
-python setup.py build --cpp_implementation --compile_static_extension
+python setup.py build --cpp_implementation
+pip install .
 
 # build and run Python benchmark
 cd ../benchmarks
@@ -36,11 +36,11 @@ make python-pure-python-benchmark
 make python-cpp-reflection-benchmark
 make -j8 python-cpp-generated-code-benchmark
 echo "benchmarking pure python..."
-sudo ./python-pure-python-benchmark $datasets > tmp/python_result.txt
+./python-pure-python-benchmark $datasets > tmp/python_result.txt
 echo "benchmarking python cpp reflection..."
-sudo env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-reflection-benchmark $datasets >> tmp/python_result.txt
+env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-reflection-benchmark $datasets >> tmp/python_result.txt
 echo "benchmarking python cpp generated code..."
-sudo env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-generated-code-benchmark $datasets >> tmp/python_result.txt
+env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-generated-code-benchmark $datasets >> tmp/python_result.txt
 cd $oldpwd
 
 # build CPP protobuf
@@ -49,7 +49,7 @@ make clean && make -j8
 
 # build CPP benchmark
 cd benchmarks
-make clean && make -j8 cpp-benchmark
+mv tmp/python_result.txt . && make clean && make -j8 cpp-benchmark && mv python_result.txt tmp
 echo "benchmarking cpp..."
 env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./cpp-benchmark --benchmark_min_time=5.0 $datasets > tmp/cpp_result.txt
 cd $oldpwd
