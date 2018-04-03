@@ -56,12 +56,13 @@ using internal::WireFormatLite;
 
 namespace {
 
-void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           int messageBitIndex,
-                           int builderBitIndex,
-                           const FieldGeneratorInfo* info,
-                           ClassNameResolver* name_resolver,
-                           std::map<string, string>* variables) {
+// Note: Number suffix is so source files can be amalgamated.
+void SetPrimitiveVariables2(const FieldDescriptor* descriptor,
+                            int messageBitIndex,
+                            int builderBitIndex,
+                            const FieldGeneratorInfo* info,
+                            ClassNameResolver* name_resolver,
+                            std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
   (*variables)["type"] = PrimitiveTypeName(javaType);
@@ -180,9 +181,9 @@ ImmutablePrimitiveFieldLiteGenerator(const FieldDescriptor* descriptor,
   : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
     builderBitIndex_(builderBitIndex), context_(context),
     name_resolver_(context->GetNameResolver()) {
-  SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
-                        context->GetFieldGeneratorInfo(descriptor),
-                        name_resolver_, &variables_);
+  SetPrimitiveVariables2(descriptor, messageBitIndex, builderBitIndex,
+                         context->GetFieldGeneratorInfo(descriptor),
+                         name_resolver_, &variables_);
 }
 
 ImmutablePrimitiveFieldLiteGenerator::~ImmutablePrimitiveFieldLiteGenerator() {}
@@ -616,9 +617,9 @@ RepeatedImmutablePrimitiveFieldLiteGenerator(const FieldDescriptor* descriptor,
   : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
     builderBitIndex_(builderBitIndex), context_(context),
     name_resolver_(context->GetNameResolver()) {
-  SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
-                        context->GetFieldGeneratorInfo(descriptor),
-                        name_resolver_, &variables_);
+  SetPrimitiveVariables2(descriptor, messageBitIndex, builderBitIndex,
+                         context->GetFieldGeneratorInfo(descriptor),
+                         name_resolver_, &variables_);
 }
 
 RepeatedImmutablePrimitiveFieldLiteGenerator::

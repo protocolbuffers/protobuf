@@ -132,7 +132,7 @@ util::Status JsonStreamParser::Parse(StringPiece json) {
   }
 
   // Find the structurally valid UTF8 prefix and parse only that.
-  int n = internal::UTF8SpnStructurallyValid(chunk);
+  int n = ::google::protobuf::internal::UTF8SpnStructurallyValid(chunk);
   if (n > 0) {
     util::Status status = ParseChunk(chunk.substr(0, n));
 
@@ -157,11 +157,12 @@ util::Status JsonStreamParser::FinishParse() {
   std::unique_ptr<char[]> utf8;
   if (coerce_to_utf8_) {
     utf8.reset(new char[leftover_.size()]);
-    char* coerced = internal::UTF8CoerceToStructurallyValid(leftover_, utf8.get(), ' ');
+    char* coerced = ::google::protobuf::internal::UTF8CoerceToStructurallyValid(
+        leftover_, utf8.get(), ' ');
     p_ = json_ = StringPiece(coerced, leftover_.size());
   } else {
     p_ = json_ = leftover_;
-    if (!internal::IsStructurallyValidUTF8(leftover_)) {
+    if (!::google::protobuf::internal::IsStructurallyValidUTF8(leftover_)) {
       return ReportFailure("Encountered non UTF-8 code points.");
     }
   }
