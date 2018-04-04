@@ -44,10 +44,8 @@ they're only relevant when building the `Google.Protobuf` assembly.
 Testing
 =======
 
-The unit tests use [NUnit 3](https://github.com/nunit/nunit). NUnit doesn't yet
-support `dotnet test`, so for now the test project is a console application 
-using NUnitLite. Simply run `Google.Protobuf.Test.exe` to run the unit tests 
-directly, or else use `dotnet run`.
+The unit tests use [NUnit 3](https://github.com/nunit/nunit). Tests can be
+run using the Visual Studio Test Explorer or `dotnet test`.
 
 .NET 3.5
 ========
