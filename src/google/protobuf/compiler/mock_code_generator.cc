@@ -35,9 +35,6 @@
 #include <stdlib.h>
 #include <iostream>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <vector>
 
 
@@ -70,7 +67,7 @@ namespace compiler {
 
 // Returns the list of the names of files in all_files in the form of a
 // comma-separated string.
-string CommaSeparatedList(const std::vector<const FileDescriptor*> all_files) {
+string CommaSeparatedList(const std::vector<const FileDescriptor*>& all_files) {
   std::vector<string> names;
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
@@ -103,8 +100,7 @@ void MockCodeGenerator::ExpectGenerated(
       File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
                         &content, true));
 
-  std::vector<string> lines =
-      Split(content, "\n", true);
+  std::vector<string> lines = Split(content, "\n", true);
 
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
@@ -232,7 +228,7 @@ bool MockCodeGenerator::Generate(
 
     for (size_t i = 0; i < insert_into.size(); i++) {
       {
-        google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->OpenForInsert(
+        std::unique_ptr<io::ZeroCopyOutputStream> output(context->OpenForInsert(
             GetOutputFileName(insert_into[i], file), kFirstInsertionPointName));
         io::Printer printer(output.get(), '$');
         printer.PrintRaw(GetOutputFileContent(name_, "first_insert",
@@ -244,7 +240,7 @@ bool MockCodeGenerator::Generate(
       }
 
       {
-        google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+        std::unique_ptr<io::ZeroCopyOutputStream> output(
             context->OpenForInsert(GetOutputFileName(insert_into[i], file),
                                    kSecondInsertionPointName));
         io::Printer printer(output.get(), '$');
@@ -257,7 +253,7 @@ bool MockCodeGenerator::Generate(
       }
     }
   } else {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+    std::unique_ptr<io::ZeroCopyOutputStream> output(
         context->Open(GetOutputFileName(name_, file)));
 
     GeneratedCodeInfo annotations;
@@ -287,7 +283,7 @@ bool MockCodeGenerator::Generate(
       return false;
     }
     if (annotate) {
-      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> meta_output(
+      std::unique_ptr<io::ZeroCopyOutputStream> meta_output(
           context->Open(GetOutputFileName(name_, file) + ".meta"));
       if (!TextFormat::Print(annotations, meta_output.get())) {
         *error = "MockCodeGenerator couldn't write .meta";

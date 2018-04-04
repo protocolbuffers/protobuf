@@ -130,13 +130,22 @@ def GetMessages(file_protos):
   """Builds a dictionary of all the messages available in a set of files.
 
   Args:
-    file_protos: A sequence of file protos to build messages out of.
+    file_protos: Iterable of FileDescriptorProto to build messages out of.
 
   Returns:
     A dictionary mapping proto names to the message classes. This will include
     any dependent messages as well as any messages defined in the same file as
     a specified message.
   """
-  for file_proto in file_protos:
+  # The cpp implementation of the protocol buffer library requires to add the
+  # message in topological order of the dependency graph.
+  file_by_name = {file_proto.name: file_proto for file_proto in file_protos}
+  def _AddFile(file_proto):
+    for dependency in file_proto.dependency:
+      if dependency in file_by_name:
+        # Remove from elements to be visited, in order to cut cycles.
+        _AddFile(file_by_name.pop(dependency))
     _FACTORY.pool.Add(file_proto)
+  while file_by_name:
+    _AddFile(file_by_name.popitem()[1])
   return _FACTORY.GetMessages([file_proto.name for file_proto in file_protos])

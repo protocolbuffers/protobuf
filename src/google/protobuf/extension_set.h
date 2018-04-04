@@ -38,16 +38,16 @@
 #ifndef GOOGLE_PROTOBUF_EXTENSION_SET_H__
 #define GOOGLE_PROTOBUF_EXTENSION_SET_H__
 
-#include <vector>
+#include <algorithm>
+#include <cassert>
 #include <map>
-#include <utility>
 #include <string>
-
+#include <utility>
+#include <vector>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/once.h>
-
 #include <google/protobuf/repeated_field.h>
 
 namespace google {
@@ -464,7 +464,12 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
         const MessageLite& prototype) = 0;
 
     virtual bool IsInitialized() const = 0;
-    virtual int ByteSize() const = 0;
+
+    PROTOBUF_RUNTIME_DEPRECATED("Please use ByteSizeLong() instead")
+    virtual int ByteSize() const {
+      return internal::ToIntSize(ByteSizeLong());
+    }
+    virtual size_t ByteSizeLong() const = 0;
     virtual size_t SpaceUsedLong() const = 0;
 
     virtual void MergeFrom(const LazyMessageExtension& other) = 0;
@@ -483,6 +488,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     }
 
    private:
+    virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
+
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyMessageExtension);
   };
   struct Extension {
@@ -565,9 +572,89 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     int GetSize() const;
     void Free();
     size_t SpaceUsedExcludingSelfLong() const;
+    bool IsInitialized() const;
   };
-  typedef std::map<int, Extension> ExtensionMap;
 
+  // The Extension struct is small enough to be passed by value, so we use it
+  // directly as the value type in mappings rather than use pointers.  We use
+  // sorted maps rather than hash-maps because we expect most ExtensionSets will
+  // only contain a small number of extension.  Also, we want AppendToList and
+  // deterministic serialization to order fields by field number.
+
+  struct KeyValue {
+    int first;
+    Extension second;
+
+    struct FirstComparator {
+      bool operator()(const KeyValue& lhs, const KeyValue& rhs) const {
+        return lhs.first < rhs.first;
+      }
+      bool operator()(const KeyValue& lhs, int key) const {
+        return lhs.first < key;
+      }
+      bool operator()(int key, const KeyValue& rhs) const {
+        return key < rhs.first;
+      }
+    };
+  };
+
+  typedef std::map<int, Extension> LargeMap;
+
+  // Wrapper API that switches between flat-map and LargeMap.
+
+  // Finds a key (if present) in the ExtensionSet.
+  const Extension* FindOrNull(int key) const;
+  Extension* FindOrNull(int key);
+
+  // Helper-functions that only inspect the LargeMap.
+  const Extension* FindOrNullInLargeMap(int key) const;
+  Extension* FindOrNullInLargeMap(int key);
+
+  // Inserts a new (key, Extension) into the ExtensionSet (and returns true), or
+  // finds the already-existing Extension for that key (returns false).
+  // The Extension* will point to the new-or-found Extension.
+  std::pair<Extension*, bool> Insert(int key);
+
+  // Grows the flat_capacity_.
+  // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.
+  void GrowCapacity(size_t minimum_new_capacity);
+  static constexpr uint16 kMaximumFlatCapacity = 256;
+  bool is_large() const { return flat_capacity_ > kMaximumFlatCapacity; }
+
+  // Removes a key from the ExtensionSet.
+  void Erase(int key);
+
+  size_t Size() const {
+    return GOOGLE_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
+  }
+
+  // Similar to std::for_each.
+  // Each Iterator is decomposed into ->first and ->second fields, so
+  // that the KeyValueFunctor can be agnostic vis-a-vis KeyValue-vs-std::pair.
+  template <typename Iterator, typename KeyValueFunctor>
+  static KeyValueFunctor ForEach(Iterator begin, Iterator end,
+                                 KeyValueFunctor func) {
+    for (Iterator it = begin; it != end; ++it) func(it->first, it->second);
+    return std::move(func);
+  }
+
+  // Applies a functor to the <int, Extension&> pairs in sorted order.
+  template <typename KeyValueFunctor>
+  KeyValueFunctor ForEach(KeyValueFunctor func) {
+    if (GOOGLE_PREDICT_FALSE(is_large())) {
+      return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
+    }
+    return ForEach(flat_begin(), flat_end(), std::move(func));
+  }
+
+  // Applies a functor to the <int, const Extension&> pairs in sorted order.
+  template <typename KeyValueFunctor>
+  KeyValueFunctor ForEach(KeyValueFunctor func) const {
+    if (GOOGLE_PREDICT_FALSE(is_large())) {
+      return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
+    }
+    return ForEach(flat_begin(), flat_end(), std::move(func));
+  }
 
   // Merges existing Extension from other_extension
   void InternalExtensionMergeFrom(int number, const Extension& other_extension);
@@ -631,14 +718,38 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   static inline size_t RepeatedMessage_SpaceUsedExcludingSelfLong(
       RepeatedPtrFieldBase* field);
 
-  // The Extension struct is small enough to be passed by value, so we use it
-  // directly as the value type in the map rather than use pointers.  We use
-  // a map rather than hash_map here because we expect most ExtensionSets will
-  // only contain a small number of extensions whereas hash_map is optimized
-  // for 100 elements or more.  Also, we want AppendToList() to order fields
-  // by field number.
-  ExtensionMap extensions_;
+  KeyValue* flat_begin() {
+    assert(!is_large());
+    return map_.flat;
+  }
+  const KeyValue* flat_begin() const {
+    assert(!is_large());
+    return map_.flat;
+  }
+  KeyValue* flat_end() {
+    assert(!is_large());
+    return map_.flat + flat_size_;
+  }
+  const KeyValue* flat_end() const {
+    assert(!is_large());
+    return map_.flat + flat_size_;
+  }
+
   ::google::protobuf::Arena* arena_;
+
+  // Manual memory-management:
+  // map_.flat is an allocated array of flat_capacity_ elements.
+  // [map_.flat, map_.flat + flat_size_) is the currently-in-use prefix.
+  uint16 flat_capacity_;
+  uint16 flat_size_;
+  union AllocatedData {
+    KeyValue* flat;
+
+    // If flat_capacity_ > kMaximumFlatCapacity, switch to LargeMap,
+    // which guarantees O(n lg n) CPU but larger constant factors.
+    LargeMap* large;
+  } map_;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
 
@@ -1125,7 +1236,7 @@ LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_message_generic_type_traits_
 // message-type repeated field extensions.
 class LIBPROTOBUF_EXPORT RepeatedMessageGenericTypeTraits {
  public:
-  typedef RepeatedPtrField< ::google::protobuf::MessageLite*> RepeatedFieldType;
+  typedef RepeatedPtrField<::google::protobuf::MessageLite*> RepeatedFieldType;
  private:
   template<typename Type> friend class RepeatedMessageTypeTraits;
   static void InitializeDefaultRepeatedFields();

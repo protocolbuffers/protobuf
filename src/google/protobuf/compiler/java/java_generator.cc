@@ -35,9 +35,6 @@
 #include <google/protobuf/compiler/java/java_generator.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/compiler/java/java_file.h>
 #include <google/protobuf/compiler/java/java_generator_factory.h>
@@ -45,9 +42,9 @@
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/compiler/java/java_options.h>
 #include <google/protobuf/compiler/java/java_shared_code_generator.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/descriptor.pb.h>
 
 #include <google/protobuf/stubs/strutil.h>
 
@@ -144,7 +141,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
     }
 
     // Generate main java file.
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+    std::unique_ptr<io::ZeroCopyOutputStream> output(
         context->Open(java_filename));
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
@@ -160,7 +157,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
                                      &all_annotations);
 
     if (file_options.annotate_code) {
-      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+      std::unique_ptr<io::ZeroCopyOutputStream> info_output(
           context->Open(info_full_path));
       annotations.SerializeToZeroCopyStream(info_output.get());
     }
@@ -175,7 +172,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   if (!file_options.output_list_file.empty()) {
     // Generate output list.  This is just a simple text file placed in a
     // deterministic location which lists the .java files being generated.
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> srclist_raw_output(
+    std::unique_ptr<io::ZeroCopyOutputStream> srclist_raw_output(
         context->Open(file_options.output_list_file));
     io::Printer srclist_printer(srclist_raw_output.get(), '$');
     for (int i = 0; i < all_files.size(); i++) {
@@ -186,7 +183,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   if (!file_options.annotation_list_file.empty()) {
     // Generate output list.  This is just a simple text file placed in a
     // deterministic location which lists the .java files being generated.
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> annotation_list_raw_output(
+    std::unique_ptr<io::ZeroCopyOutputStream> annotation_list_raw_output(
         context->Open(file_options.annotation_list_file));
     io::Printer annotation_list_printer(annotation_list_raw_output.get(), '$');
     for (int i = 0; i < all_annotations.size(); i++) {

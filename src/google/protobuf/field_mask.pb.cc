@@ -7,14 +7,18 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/port.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
+// This is a temporary google only hack
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+#include "third_party/protobuf/version.h"
+#endif
 // @@protoc_insertion_point(includes)
+
 namespace google {
 namespace protobuf {
 class FieldMaskDefaultTypeInternal {
@@ -25,10 +29,9 @@ class FieldMaskDefaultTypeInternal {
 }  // namespace protobuf
 }  // namespace google
 namespace protobuf_google_2fprotobuf_2ffield_5fmask_2eproto {
-void InitDefaultsFieldMaskImpl() {
+static void InitDefaultsFieldMask() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  ::google::protobuf::internal::InitProtobufDefaults();
   {
     void* ptr = &::google::protobuf::_FieldMask_default_instance_;
     new (ptr) ::google::protobuf::FieldMask();
@@ -37,9 +40,11 @@ void InitDefaultsFieldMaskImpl() {
   ::google::protobuf::FieldMask::InitAsDefaultInstance();
 }
 
-void InitDefaultsFieldMask() {
-  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
-  ::google::protobuf::GoogleOnceInit(&once, &InitDefaultsFieldMaskImpl);
+LIBPROTOBUF_EXPORT ::google::protobuf::internal::SCCInfo<0> scc_info_FieldMask =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsFieldMask}, {}};
+
+void InitDefaults() {
+  ::google::protobuf::internal::InitSCC(&scc_info_FieldMask.base);
 }
 
 ::google::protobuf::Metadata file_level_metadata[1];
@@ -62,15 +67,14 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
 
 void protobuf_AssignDescriptors() {
   AddDescriptors();
-  ::google::protobuf::MessageFactory* factory = NULL;
   AssignDescriptors(
-      "google/protobuf/field_mask.proto", schemas, file_default_instances, TableStruct::offsets, factory,
+      "google/protobuf/field_mask.proto", schemas, file_default_instances, TableStruct::offsets,
       file_level_metadata, NULL, NULL);
 }
 
 void protobuf_AssignDescriptorsOnce() {
-  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
-  ::google::protobuf::GoogleOnceInit(&once, &protobuf_AssignDescriptors);
+  static ::google::protobuf::internal::once_flag once;
+  ::google::protobuf::internal::call_once(once, protobuf_AssignDescriptors);
 }
 
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
@@ -96,8 +100,8 @@ void AddDescriptorsImpl() {
 }
 
 void AddDescriptors() {
-  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
-  ::google::protobuf::GoogleOnceInit(&once, &AddDescriptorsImpl);
+  static ::google::protobuf::internal::once_flag once;
+  ::google::protobuf::internal::call_once(once, AddDescriptorsImpl);
 }
 // Force AddDescriptors() to be called at dynamic initialization time.
 struct StaticDescriptorInitializer {
@@ -119,23 +123,20 @@ const int FieldMask::kPathsFieldNumber;
 
 FieldMask::FieldMask()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
-  if (GOOGLE_PREDICT_TRUE(this != internal_default_instance())) {
-    ::protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::InitDefaultsFieldMask();
-  }
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::scc_info_FieldMask.base);
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FieldMask)
 }
 FieldMask::FieldMask(const FieldMask& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      paths_(from.paths_),
-      _cached_size_(0) {
+      paths_(from.paths_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
 
 void FieldMask::SharedCtor() {
-  _cached_size_ = 0;
 }
 
 FieldMask::~FieldMask() {
@@ -147,9 +148,7 @@ void FieldMask::SharedDtor() {
 }
 
 void FieldMask::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  _cached_size_.Set(size);
 }
 const ::google::protobuf::Descriptor* FieldMask::descriptor() {
   ::protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::protobuf_AssignDescriptorsOnce();
@@ -157,17 +156,10 @@ const ::google::protobuf::Descriptor* FieldMask::descriptor() {
 }
 
 const FieldMask& FieldMask::default_instance() {
-  ::protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::InitDefaultsFieldMask();
+  ::google::protobuf::internal::InitSCC(&protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::scc_info_FieldMask.base);
   return *internal_default_instance();
 }
 
-FieldMask* FieldMask::New(::google::protobuf::Arena* arena) const {
-  FieldMask* n = new FieldMask;
-  if (arena != NULL) {
-    arena->Own(n);
-  }
-  return n;
-}
 
 void FieldMask::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
@@ -185,7 +177,7 @@ bool FieldMask::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FieldMask)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -292,9 +284,7 @@ size_t FieldMask::ByteSizeLong() const {
   }
 
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = cached_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  SetCachedSize(cached_size);
   return total_size;
 }
 
@@ -347,9 +337,8 @@ void FieldMask::Swap(FieldMask* other) {
 }
 void FieldMask::InternalSwap(FieldMask* other) {
   using std::swap;
-  paths_.InternalSwap(&other->paths_);
+  paths_.InternalSwap(CastToBase(&other->paths_));
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  swap(_cached_size_, other->_cached_size_);
 }
 
 ::google::protobuf::Metadata FieldMask::GetMetadata() const {
@@ -359,6 +348,13 @@ void FieldMask::InternalSwap(FieldMask* other) {
 
 
 // @@protoc_insertion_point(namespace_scope)
+}  // namespace protobuf
+}  // namespace google
+namespace google {
+namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::google::protobuf::FieldMask* Arena::CreateMaybeMessage< ::google::protobuf::FieldMask >(Arena* arena) {
+  return Arena::CreateInternal< ::google::protobuf::FieldMask >(arena);
+}
 }  // namespace protobuf
 }  // namespace google
 

@@ -80,7 +80,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   // Use deprecated valueOf() method to be compatible with old generated code
   // for v2.5.0/v2.6.1.
   // TODO(xiaofeng): Use "forNumber" when we no longer support compatibility
-  // with v2.5.0/v2.6.1.
+  // with v2.5.0/v2.6.1, and remove the @SuppressWarnings annotations.
   (*variables)["for_number"] = "valueOf";
 
   if (SupportFieldPresence(descriptor->file())) {
@@ -199,6 +199,7 @@ GenerateMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+    "  @SuppressWarnings(\"deprecation\")\n"
     "  $type$ result = $type$.$for_number$($name$_);\n"
     "  return result == null ? $unknown$ : result;\n"
     "}\n");
@@ -237,6 +238,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
+    "  @SuppressWarnings(\"deprecation\")\n"
     "  $type$ result = $type$.$for_number$($name$_);\n"
     "  return result == null ? $unknown$ : result;\n"
     "}\n");
@@ -320,6 +322,7 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
+    "  @SuppressWarnings(\"deprecation\")\n"
       "$type$ value = $type$.$for_number$(rawValue);\n"
       "if (value == null) {\n"
       "  unknownFields.mergeVarintField($number$, rawValue);\n"
@@ -412,6 +415,7 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
     "  if ($has_oneof_case_message$) {\n"
+    "    @SuppressWarnings(\"deprecation\")\n"
     "    $type$ result = $type$.$for_number$(\n"
     "        (java.lang.Integer) $oneof_name$_);\n"
     "    return result == null ? $unknown$ : result;\n"
@@ -456,6 +460,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
     "  if ($has_oneof_case_message$) {\n"
+    "    @SuppressWarnings(\"deprecation\")\n"
     "    $type$ result = $type$.$for_number$(\n"
     "        (java.lang.Integer) $oneof_name$_);\n"
     "    return result == null ? $unknown$ : result;\n"
@@ -517,6 +522,7 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
+      "@SuppressWarnings(\"deprecation\")\n"
       "$type$ value = $type$.$for_number$(rawValue);\n"
       "if (value == null) {\n"
       "  unknownFields.mergeVarintField($number$, rawValue);\n"
@@ -626,6 +632,7 @@ GenerateMembers(io::Printer* printer) const {
     "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
     "            java.lang.Integer, $type$>() {\n"
     "          public $type$ convert(java.lang.Integer from) {\n"
+    "            @SuppressWarnings(\"deprecation\")\n"
     "            $type$ result = $type$.$for_number$(from);\n"
     "            return result == null ? $unknown$ : result;\n"
     "          }\n"
@@ -667,8 +674,7 @@ GenerateMembers(io::Printer* printer) const {
     printer->Annotate("{", "}", descriptor_);
   }
 
-  if (descriptor_->is_packed() &&
-      context_->HasGeneratedMethods(descriptor_->containing_type())) {
+  if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
   }
@@ -879,6 +885,7 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
+      "@SuppressWarnings(\"deprecation\")\n"
       "$type$ value = $type$.$for_number$(rawValue);\n"
       "if (value == null) {\n"
       "  unknownFields.mergeVarintField($number$, rawValue);\n"

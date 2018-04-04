@@ -43,8 +43,6 @@
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_options.h>
 
-using google::protobuf::internal::scoped_ptr;
-
 namespace google {
 namespace protobuf {
 namespace compiler {

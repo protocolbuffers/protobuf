@@ -105,7 +105,7 @@ public class JsonFormat {
   public static Printer printer() {
     return new Printer(
         TypeRegistry.getEmptyTypeRegistry(), false, Collections.<FieldDescriptor>emptySet(),
-        false, false);
+        false, false, false);
   }
 
   /**
@@ -125,18 +125,21 @@ public class JsonFormat {
     private Set<FieldDescriptor> includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
     private final boolean omittingInsignificantWhitespace;
+    private final boolean printingEnumsAsInts;
 
     private Printer(
         TypeRegistry registry,
         boolean alwaysOutputDefaultValueFields,
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
-        boolean omittingInsignificantWhitespace) {
+        boolean omittingInsignificantWhitespace,
+        boolean printingEnumsAsInts) {
       this.registry = registry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
+      this.printingEnumsAsInts = printingEnumsAsInts;
     }
 
     /**
@@ -154,7 +157,8 @@ public class JsonFormat {
           alwaysOutputDefaultValueFields,
           includingDefaultValueFields,
           preservingProtoFieldNames,
-          omittingInsignificantWhitespace);
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts);
     }
 
     /**
@@ -170,7 +174,31 @@ public class JsonFormat {
           true,
           Collections.<FieldDescriptor>emptySet(),
           preservingProtoFieldNames,
-          omittingInsignificantWhitespace);
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts);
+    }
+
+    /**
+     * Creates a new {@link Printer} that will print enum field values as integers instead of as
+     * string.
+     * The new Printer clones all other configurations from the current
+     * {@link Printer}.
+     */
+    public Printer printingEnumsAsInts() {
+      checkUnsetPrintingEnumsAsInts();
+      return new Printer(
+          registry,
+          alwaysOutputDefaultValueFields,
+          Collections.<FieldDescriptor>emptySet(),
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          true);
+    }
+
+    private void checkUnsetPrintingEnumsAsInts() {
+      if (printingEnumsAsInts) {
+        throw new IllegalStateException("JsonFormat printingEnumsAsInts has already been set.");
+      }
     }
 
     /**
@@ -191,7 +219,8 @@ public class JsonFormat {
           false,
           fieldsToAlwaysOutput,
           preservingProtoFieldNames,
-          omittingInsignificantWhitespace);
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts);
     }
 
     private void checkUnsetIncludingDefaultValueFields() {
@@ -213,7 +242,8 @@ public class JsonFormat {
           alwaysOutputDefaultValueFields,
           includingDefaultValueFields,
           true,
-          omittingInsignificantWhitespace);
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts);
     }
 
 
@@ -240,7 +270,8 @@ public class JsonFormat {
           alwaysOutputDefaultValueFields,
           includingDefaultValueFields,
           preservingProtoFieldNames,
-          true);
+          true,
+          printingEnumsAsInts);
     }
 
     /**
@@ -259,7 +290,8 @@ public class JsonFormat {
               includingDefaultValueFields,
               preservingProtoFieldNames,
               output,
-              omittingInsignificantWhitespace)
+              omittingInsignificantWhitespace,
+              printingEnumsAsInts)
           .print(message);
     }
 
@@ -416,7 +448,7 @@ public class JsonFormat {
        */
       public Builder add(Iterable<Descriptor> messageTypes) {
         if (types == null) {
-          throw new IllegalStateException("A TypeRegistry.Builer can only be used once.");
+          throw new IllegalStateException("A TypeRegistry.Builder can only be used once.");
         }
         for (Descriptor type : messageTypes) {
           addFile(type.getFile());
@@ -570,6 +602,7 @@ public class JsonFormat {
     private final boolean alwaysOutputDefaultValueFields;
     private final Set<FieldDescriptor> includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
+    private final boolean printingEnumsAsInts;
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
@@ -586,11 +619,13 @@ public class JsonFormat {
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
         Appendable jsonOutput,
-        boolean omittingInsignificantWhitespace) {
+        boolean omittingInsignificantWhitespace,
+        boolean printingEnumsAsInts) {
       this.registry = registry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
+      this.printingEnumsAsInts = printingEnumsAsInts;
       this.gson = GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
@@ -1069,7 +1104,7 @@ public class JsonFormat {
               generator.print("\"");
             }
           } else {
-            if (((EnumValueDescriptor) value).getIndex() == -1) {
+            if (printingEnumsAsInts || ((EnumValueDescriptor) value).getIndex() == -1) {
               generator.print(String.valueOf(((EnumValueDescriptor) value).getNumber()));
             } else {
               generator.print("\"" + ((EnumValueDescriptor) value).getName() + "\"");

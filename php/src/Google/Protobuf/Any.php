@@ -4,7 +4,6 @@
 
 namespace Google\Protobuf;
 
-use Google\Protobuf\Internal\DescriptorPool;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBUtil;
 use Google\Protobuf\Internal\Message;
@@ -207,9 +206,9 @@ class Any extends \Google\Protobuf\Internal\Message
     public function unpack()
     {
         // Get fully qualifed name from type url.
-        $url_prifix_len = strlen(Any::TYPE_URL_PREFIX);
+        $url_prifix_len = strlen(GPBUtil::TYPE_URL_PREFIX);
         if (substr($this->type_url, 0, $url_prifix_len) !=
-                Any::TYPE_URL_PREFIX) {
+                GPBUtil::TYPE_URL_PREFIX) {
             throw new \Exception(
                 "Type url needs to be type.googleapis.com/fully-qulified");
         }
@@ -217,7 +216,7 @@ class Any extends \Google\Protobuf\Internal\Message
             substr($this->type_url, $url_prifix_len);
 
         // Create message according to fully qualified name.
-        $pool = DescriptorPool::getGeneratedPool();
+        $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByProtoName( ".".$fully_qualifed_name);
         if (is_null($desc)) {
             throw new \Exception("Class ".$fully_qualifed_name
@@ -248,10 +247,10 @@ class Any extends \Google\Protobuf\Internal\Message
         $this->value = $msg->serializeToString();
 
         // Set type url.
-        $pool = DescriptorPool::getGeneratedPool();
+        $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName(get_class($msg));
         $fully_qualifed_name = $desc->getFullName();
-        $this->type_url = Any::TYPE_URL_PREFIX.substr(
+        $this->type_url = GPBUtil::TYPE_URL_PREFIX.substr(
             $fully_qualifed_name, 1, strlen($fully_qualifed_name));
     }
 
@@ -262,10 +261,10 @@ class Any extends \Google\Protobuf\Internal\Message
      */
     public function is($klass)
     {
-        $pool = DescriptorPool::getGeneratedPool();
+        $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName($klass);
         $fully_qualifed_name = $desc->getFullName();
-        $type_url = Any::TYPE_URL_PREFIX.substr(
+        $type_url = GPBUtil::TYPE_URL_PREFIX.substr(
             $fully_qualifed_name, 1, strlen($fully_qualifed_name));
         return $this->type_url === $type_url;
     }

@@ -50,7 +50,15 @@ $to->mergeFromString($data);
 
 TestUtil::assertTestMessage($to);
 
-$from->setRecursive($from);
+$from = new TestMessage();
+TestUtil::setTestMessage2($from);
+
+$data = $from->serializeToString();
+
+$to->mergeFromString($data);
+
+// TODO(teboring): This causes following tests fail in php7.
+# $from->setRecursive($from);
 
 $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
 $arr[] = new TestMessage;
@@ -101,8 +109,72 @@ $n = new TestMessage();
 $n->mergeFromString($data);
 assert(1 === $n->getOneofMessage()->getA());
 
-# $from = new TestMessage();
-# $to = new TestMessage();
-# TestUtil::setTestMessage($from);
-# $to->mergeFrom($from);
-# TestUtil::assertTestMessage($to);
+$m = new TestMessage();
+$m->mergeFromString(hex2bin('F80601'));
+assert('f80601' === bin2hex($m->serializeToString()));
+
+// Test create repeated field via array.
+$str_arr = array("abc");
+$m = new TestMessage();
+$m->setRepeatedString($str_arr);
+
+// Test create map field via array.
+$str_arr = array("abc"=>"abc");
+$m = new TestMessage();
+$m->setMapStringString($str_arr);
+
+// Test unset
+$from = new TestMessage();
+TestUtil::setTestMessage($from);
+unset($from);
+
+// Test wellknown
+$from = new \Google\Protobuf\Timestamp();
+$from->setSeconds(1);
+assert(1, $from->getSeconds());
+
+$timestamp = new \Google\Protobuf\Timestamp();
+
+date_default_timezone_set('UTC');
+$from = new DateTime('2011-01-01T15:03:01.012345UTC');
+$timestamp->fromDateTime($from);
+assert($from->format('U') == $timestamp->getSeconds());
+assert(0 == $timestamp->getNanos());
+
+$to = $timestamp->toDateTime();
+assert(\DateTime::class == get_class($to));
+assert($from->format('U') == $to->format('U'));
+
+$from = new \Google\Protobuf\Value();
+$from->setNumberValue(1);
+assert(1, $from->getNumberValue());
+
+// Test discard unknown in message.
+$m = new TestMessage();
+$from = hex2bin('F80601');
+$m->mergeFromString($from);
+$m->discardUnknownFields();
+$to = $m->serializeToString();
+assert("" === bin2hex($to));
+
+// Test clear
+$m = new TestMessage();
+TestUtil::setTestMessage($m);
+$m->clear();
+
+// Test unset map element
+$m = new TestMessage();
+$map = $m->getMapStringString();
+$map[1] = 1;
+unset($map[1]);
+
+// Test descriptor
+$pool = \Google\Protobuf\DescriptorPool::getGeneratedPool();
+$desc = $pool->getDescriptorByClassName("\Foo\TestMessage");
+$field = $desc->getField(1);
+
+$from = new TestMessage();
+$to = new TestMessage();
+TestUtil::setTestMessage($from);
+$to->mergeFrom($from);
+TestUtil::assertTestMessage($to);

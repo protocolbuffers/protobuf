@@ -694,20 +694,19 @@ TEST_F(JsonStreamParserTest, ExtraCharactersAfterObject) {
   }
 }
 
-// numbers too large
-TEST_F(JsonStreamParserTest, PositiveNumberTooBig) {
-  StringPiece str = "[18446744073709551616]";  // 2^64
+TEST_F(JsonStreamParserTest, PositiveNumberTooBigIsDouble) {
+  StringPiece str = "18446744073709551616";  // 2^64
   for (int i = 0; i <= str.length(); ++i) {
-    ow_.StartList("");
-    DoErrorTest(str, i, "Unable to parse number.");
+    ow_.RenderDouble("", 18446744073709552000.0);
+    DoTest(str, i);
   }
 }
 
-TEST_F(JsonStreamParserTest, NegativeNumberTooBig) {
-  StringPiece str = "[-18446744073709551616]";
+TEST_F(JsonStreamParserTest, NegativeNumberTooBigIsDouble) {
+  StringPiece str = "-18446744073709551616";
   for (int i = 0; i <= str.length(); ++i) {
-    ow_.StartList("");
-    DoErrorTest(str, i, "Unable to parse number.");
+    ow_.RenderDouble("", -18446744073709551616.0);
+    DoTest(str, i);
   }
 }
 

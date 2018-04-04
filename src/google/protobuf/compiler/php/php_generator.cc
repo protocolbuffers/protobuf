@@ -40,8 +40,6 @@
 
 #include <sstream>
 
-using google::protobuf::internal::scoped_ptr;
-
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
 const std::string kEmptyFile = "google/protobuf/empty.proto";
 const std::string kEmptyMetadataFile = "GPBMetadata/Google/Protobuf/GPBEmpty.php";
@@ -49,8 +47,28 @@ const std::string kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
-const char* const kReservedNames[] = {"ARRAY", "Empty", "ECHO"};
-const int kReservedNamesSize = 3;
+const char* const kReservedNames[] = {
+    "abstract",   "and",        "array",        "as",           "break",
+    "callable",   "case",       "catch",        "class",        "clone",
+    "const",      "continue",   "declare",      "default",      "die",
+    "do",         "echo",       "else",         "elseif",       "empty",
+    "enddeclare", "endfor",     "endforeach",   "endif",        "endswitch",
+    "endwhile",   "eval",       "exit",         "extends",      "final",
+    "for",        "foreach",    "function",     "global",       "goto",
+    "if",         "implements", "include",      "include_once", "instanceof",
+    "insteadof",  "interface",  "isset",        "list",         "namespace",
+    "new",        "or",         "print",        "private",      "protected",
+    "public",     "require",    "require_once", "return",       "static",
+    "switch",     "throw",      "trait",        "try",          "unset",
+    "use",        "var",        "while",        "xor",          "int",
+    "float",      "bool",       "string",       "true",         "false",
+    "null",       "void",       "iterable"};
+const char* const kValidConstantNames[] = {
+    "int",   "float", "bool", "string",   "true",
+    "false", "null",  "void", "iterable",
+};
+const int kReservedNamesSize = 73;
+const int kValidConstantNamesSize = 9;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -125,8 +143,11 @@ std::string ClassNamePrefix(const string& classname,
 
   bool is_reserved = false;
 
+  string lower = classname;
+  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
   for (int i = 0; i < kReservedNamesSize; i++) {
-    if (classname == kReservedNames[i]) {
+    if (lower == kReservedNames[i]) {
       is_reserved = true;
       break;
     }
@@ -138,6 +159,33 @@ std::string ClassNamePrefix(const string& classname,
     } else {
       return "PB";
     }
+  }
+
+  return "";
+}
+
+std::string ConstantNamePrefix(const string& classname) {
+  bool is_reserved = false;
+
+  string lower = classname;
+  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+  for (int i = 0; i < kReservedNamesSize; i++) {
+    if (lower == kReservedNames[i]) {
+      is_reserved = true;
+      break;
+    }
+  }
+
+  for (int i = 0; i < kValidConstantNamesSize; i++) {
+    if (lower == kValidConstantNames[i]) {
+      is_reserved = false;
+      break;
+    }
+  }
+
+  if (is_reserved) {
+    return "PB";
   }
 
   return "";
@@ -165,19 +213,12 @@ std::string NamespacedName(const string& classname,
 
 template <typename DescriptorType>
 std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
-  string classname = desc->name();
-  const Descriptor* containing = desc->containing_type();
-  while (containing != NULL) {
-    classname = containing->name() + '_' + classname;
-    containing = containing->containing_type();
-  }
-  classname = ClassNamePrefix(classname, desc) + classname;
+  string classname = GeneratedClassName(desc);
   return NamespacedName(classname, desc, is_descriptor);
 }
 
 std::string FullClassName(const ServiceDescriptor* desc, bool is_descriptor) {
-  string classname = desc->name();
-  classname = ClassNamePrefix(classname, desc) + classname;
+  string classname = GeneratedClassName(desc);
   return NamespacedName(classname, desc, is_descriptor);
 }
 
@@ -678,7 +719,7 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
     const EnumValueDescriptor* value = en->value(i);
     printer->Print(
         "->value(\"^name^\", ^number^)\n",
-        "name", ClassNamePrefix(value->name(), en) + value->name(),
+        "name", ConstantNamePrefix(value->name()) + value->name(),
         "number", IntToString(value->number()));
   }
   printer->Print("->finalizeToPool();\n\n");
@@ -905,7 +946,7 @@ void GenerateMetadataFile(const FileDescriptor* file,
                           bool is_descriptor,
                           GeneratorContext* generator_context) {
   std::string filename = GeneratedMetadataFileName(file->name(), is_descriptor);
-  scoped_ptr<io::ZeroCopyOutputStream> output(
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
 
@@ -940,7 +981,7 @@ void GenerateMetadataFile(const FileDescriptor* file,
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       bool is_descriptor, GeneratorContext* generator_context) {
   std::string filename = GeneratedEnumFileName(en, is_descriptor);
-  scoped_ptr<io::ZeroCopyOutputStream> output(
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
 
@@ -981,7 +1022,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     const EnumValueDescriptor* value = en->value(i);
     GenerateEnumValueDocComment(&printer, value);
     printer.Print("const ^name^ = ^number^;\n",
-                  "name", ClassNamePrefix(value->name(), en) + value->name(),
+                  "name", ConstantNamePrefix(value->name()) + value->name(),
                   "number", IntToString(value->number()));
   }
 
@@ -999,7 +1040,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   }
 
   std::string filename = GeneratedMessageFileName(message, is_descriptor);
-  scoped_ptr<io::ZeroCopyOutputStream> output(
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
 
@@ -1100,7 +1141,7 @@ void GenerateServiceFile(const FileDescriptor* file,
   const ServiceDescriptor* service, bool is_descriptor,
   GeneratorContext* generator_context) {
   std::string filename = GeneratedServiceFileName(service, is_descriptor);
-  scoped_ptr<io::ZeroCopyOutputStream> output(
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
 
@@ -1222,7 +1263,7 @@ static void GenerateDocCommentBodyForLocation(
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapePhpdoc(comments);
 
-    vector<string> lines = Split(comments, "\n");
+    std::vector<string> lines = Split(comments, "\n");
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }
@@ -1367,6 +1408,31 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
   GenerateFile(file, is_descriptor, generator_context);
 
   return true;
+}
+
+std::string GeneratedClassName(const Descriptor* desc) {
+  std::string classname = desc->name();
+  const Descriptor* containing = desc->containing_type();
+  while (containing != NULL) {
+    classname = containing->name() + '_' + classname;
+    containing = containing->containing_type();
+  }
+  return ClassNamePrefix(classname, desc) + classname;
+}
+
+std::string GeneratedClassName(const EnumDescriptor* desc) {
+  std::string classname = desc->name();
+  const Descriptor* containing = desc->containing_type();
+  while (containing != NULL) {
+    classname = containing->name() + '_' + classname;
+    containing = containing->containing_type();
+  }
+  return ClassNamePrefix(classname, desc) + classname;
+}
+
+std::string GeneratedClassName(const ServiceDescriptor* desc) {
+  std::string classname = desc->name();
+  return ClassNamePrefix(classname, desc) + classname;
 }
 
 }  // namespace php

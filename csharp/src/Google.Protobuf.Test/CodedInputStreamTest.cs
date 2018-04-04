@@ -615,5 +615,88 @@ namespace Google.Protobuf
             var stream = new CodedInputStream(new byte[10]);
             stream.Dispose();
         }
+
+        [Test]
+        public void TestParseMessagesCloseTo2G()
+        {
+            byte[] serializedMessage = GenerateBigSerializedMessage();
+            // How many of these big messages do we need to take us near our 2GB limit?
+            int count = Int32.MaxValue / serializedMessage.Length;
+            // Now make a MemoryStream that will fake a near-2GB stream of messages by returning
+            // our big serialized message 'count' times.
+            using (RepeatingMemoryStream stream = new RepeatingMemoryStream(serializedMessage, count))
+            {
+                Assert.DoesNotThrow(()=>TestAllTypes.Parser.ParseFrom(stream));
+            }
+        }
+
+        [Test]
+        public void TestParseMessagesOver2G()
+        {
+            byte[] serializedMessage = GenerateBigSerializedMessage();
+            // How many of these big messages do we need to take us near our 2GB limit?
+            int count = Int32.MaxValue / serializedMessage.Length;
+            // Now add one to take us over the 2GB limit
+            count++;
+            // Now make a MemoryStream that will fake a near-2GB stream of messages by returning
+            // our big serialized message 'count' times.
+            using (RepeatingMemoryStream stream = new RepeatingMemoryStream(serializedMessage, count))
+            {
+                Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(stream),
+                    "Protocol message was too large.  May be malicious.  " +
+                    "Use CodedInputStream.SetSizeLimit() to increase the size limit.");
+            }
+        }
+
+        /// <returns>A serialized big message</returns>
+        private static byte[] GenerateBigSerializedMessage()
+        {
+            byte[] value = new byte[16 * 1024 * 1024];
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
+            message.SingleBytes = ByteString.CopyFrom(value);
+            return message.ToByteArray();
+        }
+
+        /// <summary>
+        /// A MemoryStream that repeats a byte arrays' content a number of times.
+        /// Simulates really large input without consuming loads of memory. Used above
+        /// to test the parsing behavior when the input size exceeds 2GB or close to it.
+        /// </summary>
+        private class RepeatingMemoryStream: MemoryStream
+        {
+            private readonly byte[] bytes;
+            private readonly int maxIterations;
+            private int index = 0;
+
+            public RepeatingMemoryStream(byte[] bytes, int maxIterations)
+            {
+                this.bytes = bytes;
+                this.maxIterations = maxIterations;
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                if (bytes.Length == 0)
+                {
+                    return 0;
+                }
+                int numBytesCopiedTotal = 0;
+                while (numBytesCopiedTotal < count && index < maxIterations)
+                {
+                    int numBytesToCopy = Math.Min(bytes.Length - (int)Position, count);
+                    Array.Copy(bytes, (int)Position, buffer, offset, numBytesToCopy);
+                    numBytesCopiedTotal += numBytesToCopy;
+                    offset += numBytesToCopy;
+                    count -= numBytesCopiedTotal;
+                    Position += numBytesToCopy;
+                    if (Position >= bytes.Length)
+                    {
+                        Position = 0;
+                        index++;
+                    }
+                }
+                return numBytesCopiedTotal;
+            }
+        }
     }
 }

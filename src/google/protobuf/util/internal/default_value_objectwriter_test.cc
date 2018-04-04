@@ -60,7 +60,7 @@ class BaseDefaultValueObjectWriterTest
   TypeInfoTestHelper helper_;
   MockObjectWriter mock_;
   ExpectingObjectWriter expects_;
-  google::protobuf::scoped_ptr<DefaultValueObjectWriter> testing_;
+  std::unique_ptr<DefaultValueObjectWriter> testing_;
 };
 
 // Tests to cover some basic DefaultValueObjectWriter use cases. More tests are
@@ -156,7 +156,7 @@ class DefaultValueObjectWriterSuppressListTest
       : BaseDefaultValueObjectWriterTest(DefaultValueTest::descriptor()) {
     testing_->set_suppress_empty_list(true);
   }
-  ~DefaultValueObjectWriterSuppressListTest() {}
+  ~DefaultValueObjectWriterSuppressListTest() override {}
 };
 
 INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,

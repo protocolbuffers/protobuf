@@ -16,10 +16,6 @@ install it as you would any other gem:
 
     $ gem install [--prerelease] google-protobuf
 
-The `--pre` flag is necessary if we have not yet made a non-alpha/beta release
-of the Ruby extension; it allows `gem` to consider these "pre-release"
-alpha/beta versions.
-
 Once the gem is installed, you may or may not need `protoc`. If you write your
 message type descriptions directly in the Ruby DSL, you do not need it.
 However, if you wish to generate the Ruby DSL from a `.proto` file, you will

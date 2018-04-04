@@ -36,9 +36,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -157,7 +154,7 @@ util::Status JsonStreamParser::FinishParse() {
   }
 
   // Storage for UTF8-coerced string.
-  google::protobuf::scoped_array<char> utf8;
+  std::unique_ptr<char[]> utf8;
   if (coerce_to_utf8_) {
     utf8.reset(new char[leftover_.size()]);
     char* coerced = internal::UTF8CoerceToStructurallyValid(leftover_, utf8.get(), ' ');
@@ -498,6 +495,19 @@ util::Status JsonStreamParser::ParseNumber() {
   return result;
 }
 
+util::Status JsonStreamParser::ParseDoubleHelper(
+    const string& number, NumberResult* result) {
+  if (!safe_strtod(number, &result->double_val)) {
+    return ReportFailure("Unable to parse number.");
+  }
+  if (!loose_float_number_conversion_ &&
+      !MathLimits<double>::IsFinite(result->double_val)) {
+    return ReportFailure("Number exceeds the range of double.");
+  }
+  result->type = NumberResult::DOUBLE;
+  return util::Status();
+}
+
 util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
   const char* data = p_.data();
   int length = p_.length();
@@ -533,16 +543,11 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
 
   // Floating point number, parse as a double.
   if (floating) {
-    if (!safe_strtod(number, &result->double_val)) {
-      return ReportFailure("Unable to parse number.");
+    util::Status status = ParseDoubleHelper(number, result);
+    if (status.ok()) {
+      p_.remove_prefix(index);
     }
-    if (!loose_float_number_conversion_ &&
-        !MathLimits<double>::IsFinite(result->double_val)) {
-      return ReportFailure("Number exceeds the range of double.");
-    }
-    result->type = NumberResult::DOUBLE;
-    p_.remove_prefix(index);
-    return util::Status();
+    return status;
   }
 
   // Positive non-floating point number, parse as a uint64.
@@ -551,12 +556,18 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
     if (number.length() >= 2 && number[0] == '0') {
       return ReportFailure("Octal/hex numbers are not valid JSON values.");
     }
-    if (!safe_strtou64(number, &result->uint_val)) {
-      return ReportFailure("Unable to parse number.");
+    if (safe_strtou64(number, &result->uint_val)) {
+      result->type = NumberResult::UINT;
+      p_.remove_prefix(index);
+      return util::Status();
+    } else {
+      // If the value is too large, parse it as double.
+      util::Status status = ParseDoubleHelper(number, result);
+      if (status.ok()) {
+        p_.remove_prefix(index);
+      }
+      return status;
     }
-    result->type = NumberResult::UINT;
-    p_.remove_prefix(index);
-    return util::Status();
   }
 
   // Octal/Hex numbers are not valid JSON values.
@@ -564,12 +575,18 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
     return ReportFailure("Octal/hex numbers are not valid JSON values.");
   }
   // Negative non-floating point number, parse as an int64.
-  if (!safe_strto64(number, &result->int_val)) {
-    return ReportFailure("Unable to parse number.");
+  if (safe_strto64(number, &result->int_val)) {
+    result->type = NumberResult::INT;
+    p_.remove_prefix(index);
+    return util::Status();
+  } else {
+    // If the value is too large, parse it as double.
+    util::Status status = ParseDoubleHelper(number, result);
+    if (status.ok()) {
+      p_.remove_prefix(index);
+    }
+    return status;
   }
-  result->type = NumberResult::INT;
-  p_.remove_prefix(index);
-  return util::Status();
 }
 
 util::Status JsonStreamParser::HandleBeginObject() {

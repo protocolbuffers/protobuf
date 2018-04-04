@@ -35,9 +35,6 @@
 #include <google/protobuf/compiler/java/java_file.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <set>
 
 #include <google/protobuf/compiler/java/java_context.h>
@@ -51,9 +48,9 @@
 #include <google/protobuf/compiler/java/java_service.h>
 #include <google/protobuf/compiler/java/java_shared_code_generator.h>
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -136,7 +133,7 @@ void CollectExtensions(const FileDescriptorProto& file_proto,
            "descriptor.proto is not in the transitive dependencies. "
            "This normally should not happen. Please report a bug.";
     DynamicMessageFactory factory;
-    google::protobuf::scoped_ptr<Message> dynamic_file_proto(
+    std::unique_ptr<Message> dynamic_file_proto(
         factory.GetPrototype(file_proto_desc)->New());
     GOOGLE_CHECK(dynamic_file_proto.get() != NULL);
     GOOGLE_CHECK(dynamic_file_proto->ParseFromString(file_data));
@@ -190,9 +187,9 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
     : file_(file),
       java_package_(FileJavaPackage(file, immutable_api)),
       message_generators_(
-          new google::protobuf::scoped_ptr<MessageGenerator>[file->message_type_count()]),
+          new std::unique_ptr<MessageGenerator>[file->message_type_count()]),
       extension_generators_(
-          new google::protobuf::scoped_ptr<ExtensionGenerator>[file->extension_count()]),
+          new std::unique_ptr<ExtensionGenerator>[file->extension_count()]),
       context_(new Context(file, options)),
       name_resolver_(context_->GetNameResolver()),
       options_(options),
@@ -248,9 +245,12 @@ void FileGenerator::Generate(io::Printer* printer) {
   PrintGeneratedAnnotation(
       printer, '$', options_.annotate_code ? classname_ + ".java.pb.meta" : "");
   printer->Print(
-      "public final class $classname$ {\n"
+      "$deprecation$public final class $classname$ {\n"
       "  private $ctor$() {}\n",
-      "classname", classname_, "ctor", classname_);
+      "deprecation", file_->options().deprecated() ?
+          "@java.lang.Deprecated " : "",
+      "classname", classname_,
+      "ctor", classname_);
   printer->Annotate("classname", file_->name());
   printer->Indent();
 
@@ -306,7 +306,7 @@ void FileGenerator::Generate(io::Printer* printer) {
     }
     if (HasGenericServices(file_, context_->EnforceLite())) {
       for (int i = 0; i < file_->service_count(); i++) {
-        google::protobuf::scoped_ptr<ServiceGenerator> generator(
+        std::unique_ptr<ServiceGenerator> generator(
             generator_factory_->NewServiceGenerator(file_->service(i)));
         generator->Generate(printer);
       }
@@ -432,7 +432,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       "    com.google.protobuf.ExtensionRegistry.newInstance();\n");
     FieldDescriptorSet::iterator it;
     for (it = extensions.begin(); it != extensions.end(); it++) {
-      google::protobuf::scoped_ptr<ExtensionGenerator> generator(
+      std::unique_ptr<ExtensionGenerator> generator(
           generator_factory_->NewExtensionGenerator(*it));
       bytecode_estimate += generator->GenerateRegistrationCode(printer);
       MaybeRestartJavaMethod(
@@ -585,7 +585,7 @@ static void GenerateSibling(const string& package_dir,
   io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
       &annotations);
 
-  google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
+  std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
   io::Printer printer(output.get(), '$',
                       annotate_code ? &annotation_collector : NULL);
 
@@ -604,7 +604,7 @@ static void GenerateSibling(const string& package_dir,
   (generator->*pfn)(&printer);
 
   if (annotate_code) {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+    std::unique_ptr<io::ZeroCopyOutputStream> info_output(
         context->Open(info_full_path));
     annotations.SerializeToZeroCopyStream(info_output.get());
     annotation_list->push_back(info_full_path);
@@ -647,7 +647,7 @@ void FileGenerator::GenerateSiblings(const string& package_dir,
     }
     if (HasGenericServices(file_, context_->EnforceLite())) {
       for (int i = 0; i < file_->service_count(); i++) {
-        google::protobuf::scoped_ptr<ServiceGenerator> generator(
+        std::unique_ptr<ServiceGenerator> generator(
             generator_factory_->NewServiceGenerator(file_->service(i)));
         GenerateSibling<ServiceGenerator>(
             package_dir, java_package_, file_->service(i), context, file_list,

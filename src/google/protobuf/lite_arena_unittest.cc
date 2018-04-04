@@ -30,7 +30,6 @@
 
 #include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/map_lite_test_util.h>
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -39,17 +38,17 @@ namespace {
 
 class LiteArenaTest : public testing::Test {
  protected:
-  // We create an Arena with a large initial block of memory, so that tests can
-  // verify that no new allocations are made.
-  LiteArenaTest() : arena_block_(128 * 1024) {
+  LiteArenaTest() {
     ArenaOptions options;
-    options.initial_block = &arena_block_[0];
-    options.initial_block_size = arena_block_.size();
+    options.start_block_size = 128 * 1024;
+    options.max_block_size = 128 * 1024;
     arena_.reset(new Arena(options));
+    // Trigger the allocation of the first arena block, so that further use of
+    // the arena will not require any heap allocations.
+    google::protobuf::Arena::CreateArray<char>(arena_.get(), 1);
   }
 
-  std::vector<char> arena_block_;
-  google::protobuf::scoped_ptr<Arena> arena_;
+  std::unique_ptr<Arena> arena_;
 };
 
 TEST_F(LiteArenaTest, MapNoHeapAllocation) {

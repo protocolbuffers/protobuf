@@ -52,7 +52,6 @@
 
 // Compilers on Windows other than MSVC (e.g. Cygwin, MinGW32) define the
 // following functions already, except for mkdir.
-#ifdef _MSC_VER
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -70,16 +69,30 @@ LIBPROTOBUF_EXPORT int read(int fd, void* buffer, size_t size);
 LIBPROTOBUF_EXPORT int setmode(int fd, int mode);
 LIBPROTOBUF_EXPORT int stat(const char* path, struct _stat* buffer);
 LIBPROTOBUF_EXPORT int write(int fd, const void* buffer, size_t size);
-LIBPROTOBUF_EXPORT std::wstring testonly_path_to_winpath(
-    const std::string& path);
+LIBPROTOBUF_EXPORT std::wstring testonly_utf8_to_winpath(const char* path);
+
+namespace strings {
+
+// Convert from UTF-16 to Active-Code-Page-encoded or to UTF-8-encoded text.
+LIBPROTOBUF_EXPORT bool wcs_to_mbs(
+    const wchar_t* s, std::string* out, bool outUtf8);
+
+// Convert from Active-Code-Page-encoded or UTF-8-encoded text to UTF-16.
+LIBPROTOBUF_EXPORT bool mbs_to_wcs(
+    const char* s, std::wstring* out, bool inUtf8);
+
+// Convert from UTF-8-encoded text to UTF-16.
+LIBPROTOBUF_EXPORT bool utf8_to_wcs(const char* input, std::wstring* out);
+
+// Convert from UTF-16-encoded text to UTF-8.
+LIBPROTOBUF_EXPORT bool wcs_to_utf8(const wchar_t* input, std::string* out);
+
+}  // namespace strings
 
 }  // namespace win32
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
-#else  // _MSC_VER
-#define mkdir(name, mode) mkdir(name)
-#endif // !_MSC_VER
 
 #ifndef W_OK
 #define W_OK 02  // not defined by MSVC for whatever reason
@@ -100,5 +113,3 @@ LIBPROTOBUF_EXPORT std::wstring testonly_path_to_winpath(
 #endif  // defined(_WIN32)
 
 #endif  // GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
-
-

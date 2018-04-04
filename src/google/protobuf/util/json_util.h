@@ -56,10 +56,10 @@ struct JsonPrintOptions {
   // Whether to add spaces, line breaks and indentation to make the JSON output
   // easy to read.
   bool add_whitespace;
-  // Whether to always print primitive fields. By default primitive fields with
-  // default values will be omitted in JSON joutput. For example, an int32 field
-  // set to 0 will be omitted. Set this flag to true will override the default
-  // behavior and print primitive fields regardless of their values.
+  // Whether to always print primitive fields. By default proto3 primitive
+  // fields with default values will be omitted in JSON output. For example, an
+  // int32 field set to 0 will be omitted. Set this flag to true will override
+  // the default behavior and print primitive fields regardless of their values.
   bool always_print_primitive_fields;
   // Whether to always print enums as ints. By default they are rendered as
   // strings.
@@ -179,7 +179,7 @@ namespace internal {
 class LIBPROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
-      : stream_(stream), buffer_size_(0) {}
+      : stream_(stream), buffer_(NULL), buffer_size_(0) {}
   ~ZeroCopyStreamByteSink();
 
   virtual void Append(const char* bytes, size_t len);

@@ -124,7 +124,7 @@ GPB_INLINE int64_t GPBDecodeZigZag64(uint64_t n) {
 // thus always taking 10 bytes on the wire.)
 GPB_INLINE uint32_t GPBEncodeZigZag32(int32_t n) {
   // Note:  the right-shift must be arithmetic
-  return (uint32_t)((n << 1) ^ (n >> 31));
+  return ((uint32_t)n << 1) ^ (uint32_t)(n >> 31);
 }
 
 // Encode a ZigZag-encoded 64-bit value.  ZigZag encodes signed integers
@@ -133,7 +133,7 @@ GPB_INLINE uint32_t GPBEncodeZigZag32(int32_t n) {
 // thus always taking 10 bytes on the wire.)
 GPB_INLINE uint64_t GPBEncodeZigZag64(int64_t n) {
   // Note:  the right-shift must be arithmetic
-  return (uint64_t)((n << 1) ^ (n >> 63));
+  return ((uint64_t)n << 1) ^ (uint64_t)(n >> 63);
 }
 
 #pragma clang diagnostic push
@@ -309,7 +309,8 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
 
 // A series of selectors that are used solely to get @encoding values
 // for them by the dynamic protobuf runtime code. See
-// GPBMessageEncodingForSelector for details.
+// GPBMessageEncodingForSelector for details. GPBRootObject conforms to
+// the protocol so that it is encoded in the Objective C runtime.
 @protocol GPBMessageSignatureProtocol
 @optional
 

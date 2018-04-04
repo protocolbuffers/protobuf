@@ -311,7 +311,7 @@ foo(x, y)
     mc = pddm.MacroCollection(f)
     try:
       result = mc.Expand('foo(A,B)')
-      self.fail('Should throw exception, entry %d' % idx)
+      self.fail('Should throw exception! Test failed to catch recursion.')
     except pddm.PDDMError as e:
       self.assertEqual(e.message,
                        'Found macro recusion, invoking "foo(1, A)":\n...while expanding "bar(1, A)".\n...while expanding "foo(A,B)".')
@@ -483,7 +483,7 @@ foo
     sf = pddm.SourceFile(f)
     try:
       sf.ProcessContent()
-      self.fail('Should throw exception, entry %d' % idx)
+      self.fail('Should throw exception! Test failed to catch macro parsing error.')
     except pddm.PDDMError as e:
       self.assertEqual(e.message,
                        'Attempt to redefine macro: "PDDM-DEFINE mumble(x_)"\n'
@@ -503,7 +503,7 @@ foo
     sf = pddm.SourceFile(f)
     try:
       sf.ProcessContent()
-      self.fail('Should throw exception, entry %d' % idx)
+      self.fail('Should throw exception! Test failed to catch expand error.')
     except pddm.PDDMError as e:
       self.assertEqual(e.message,
                        'No macro named "foobar".\n'

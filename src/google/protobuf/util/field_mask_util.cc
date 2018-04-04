@@ -31,6 +31,7 @@
 #include <google/protobuf/util/field_mask_util.h>
 
 #include <google/protobuf/stubs/strutil.h>
+
 #include <google/protobuf/stubs/map_util.h>
 
 namespace google {
@@ -131,27 +132,27 @@ bool FieldMaskUtil::FromJsonString(StringPiece str, FieldMask* out) {
 bool FieldMaskUtil::GetFieldDescriptors(
     const Descriptor* descriptor, StringPiece path,
     std::vector<const FieldDescriptor*>* field_descriptors) {
-  if (field_descriptors != NULL) {
+  if (field_descriptors != nullptr) {
     field_descriptors->clear();
   }
   std::vector<string> parts = Split(path, ".");
   for (int i = 0; i < parts.size(); ++i) {
     const string& field_name = parts[i];
-    if (descriptor == NULL) {
+    if (descriptor == nullptr) {
       return false;
     }
     const FieldDescriptor* field = descriptor->FindFieldByName(field_name);
-    if (field == NULL) {
+    if (field == nullptr) {
       return false;
     }
-    if (field_descriptors != NULL) {
+    if (field_descriptors != nullptr) {
       field_descriptors->push_back(field);
     }
     if (!field->is_repeated() &&
         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       descriptor = field->message_type();
     } else {
-      descriptor = NULL;
+      descriptor = nullptr;
     }
   }
   return true;
@@ -191,6 +192,13 @@ class FieldMaskTree {
   // tree, that non-leaf node will be turned into a leaf node with all its
   // children removed because the path matches all the node's children.
   void AddPath(const string& path);
+
+  // Remove a path from the tree.
+  // If the path is a sub-path of an existing field path in the tree, it means
+  // we need remove the existing fied path and add all sub-paths except
+  // specified path. If the path matches an existing node in the tree, this node
+  // will be moved.
+  void RemovePath(const string& path, const Descriptor* descriptor);
 
   // Calculate the intersection part of a field path with this tree and add
   // the intersection field path into out.
@@ -330,6 +338,65 @@ void FieldMaskTree::AddPath(const string& path) {
   }
   if (!node->children.empty()) {
     node->ClearChildren();
+  }
+}
+
+void FieldMaskTree::RemovePath(const string& path,
+                               const Descriptor* descriptor) {
+  if (root_.children.empty()) {
+    // Nothing to be removed from an empty tree. We shortcut it here so an empty
+    // tree won't be interpreted as a field mask containing all fields by the
+    // code below.
+    return;
+  }
+  std::vector<string> parts = Split(path, ".");
+  if (parts.empty()) {
+    return;
+  }
+  std::vector<Node*> nodes(parts.size());
+  Node* node = &root_;
+  const Descriptor* current_descriptor = descriptor;
+  Node* new_branch_node = nullptr;
+  for (int i = 0; i < parts.size(); ++i) {
+    nodes[i] = node;
+    const FieldDescriptor* field_descriptor =
+        current_descriptor->FindFieldByName(parts[i]);
+    if (field_descriptor == nullptr ||
+        (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE &&
+         i != parts.size() - 1)) {
+      // Invalid path.
+      if (new_branch_node != nullptr) {
+        // If add any new nodes, cleanup.
+        new_branch_node->ClearChildren();
+      }
+      return;
+    }
+
+    if (node->children.empty()) {
+      if (new_branch_node == nullptr) {
+        new_branch_node = node;
+      }
+      for (int i = 0; i < current_descriptor->field_count(); ++i) {
+        node->children[current_descriptor->field(i)->name()] = new Node();
+      }
+    }
+    if (ContainsKey(node->children, parts[i])) {
+      node = node->children[parts[i]];
+      if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        current_descriptor = field_descriptor->message_type();
+      }
+    } else {
+      // Path does not exist.
+      return;
+    }
+  }
+  // Remove path.
+  for (int i = parts.size() - 1; i >= 0; i--) {
+    delete nodes[i]->children[parts[i]];
+    nodes[i]->children.erase(parts[i]);
+    if (!nodes[i]->children.empty()) {
+      break;
+    }
   }
 }
 
@@ -482,7 +549,7 @@ void FieldMaskTree::AddRequiredFieldPath(
     if (field->is_required()) {
       const string& node_name = field->name();
       Node*& child = node->children[node_name];
-      if (child == NULL) {
+      if (child == nullptr) {
         // Add required field path to the tree
         child = new Node();
       } else if (child->children.empty()){
@@ -558,6 +625,22 @@ void FieldMaskUtil::Intersect(const FieldMask& mask1, const FieldMask& mask2,
   }
   out->Clear();
   intersection.MergeToFieldMask(out);
+}
+
+void FieldMaskUtil::InternalSubtract(const Descriptor* descriptor,
+                                     const FieldMask& mask1,
+                                     const FieldMask& mask2, FieldMask* out) {
+  if (mask1.paths().empty()) {
+    out->Clear();
+    return;
+  }
+  FieldMaskTree tree;
+  tree.MergeFromFieldMask(mask1);
+  for (int i = 0; i < mask2.paths_size(); ++i) {
+    tree.RemovePath(mask2.paths(i), descriptor);
+  }
+  out->Clear();
+  tree.MergeToFieldMask(out);
 }
 
 bool FieldMaskUtil::IsPathInFieldMask(StringPiece path, const FieldMask& mask) {

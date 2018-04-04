@@ -37,6 +37,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
 
+#include <initializer_list>
 #include <iterator>
 #include <limits>  // To support Visual Studio 2008
 #include <set>
@@ -140,6 +141,24 @@ class Map {
       : arena_(NULL), default_enum_value_(other.default_enum_value_) {
     Init();
     insert(other.begin(), other.end());
+  }
+
+  Map(Map&& other) noexcept : Map() {
+    if (other.arena_) {
+      *this = other;
+    } else {
+      swap(other);
+    }
+  }
+  Map& operator=(Map&& other) noexcept {
+    if (this != &other) {
+      if (arena_ != other.arena_) {
+        *this = other;
+      } else {
+        swap(other);
+      }
+    }
+    return *this;
   }
 
   template <class InputIt>
@@ -721,7 +740,7 @@ class Map {
           return true;
         }
       } else if (GOOGLE_PREDICT_FALSE(new_size <= lo_cutoff &&
-                               num_buckets_ > kMinTableSize)) {
+                                    num_buckets_ > kMinTableSize)) {
         size_type lg2_of_size_reduction_factor = 1;
         // It's possible we want to shrink a lot here... size() could even be 0.
         // So, estimate how much to shrink by making sure we don't shrink so
@@ -1036,12 +1055,12 @@ class Map {
   }
   const T& at(const key_type& key) const {
     const_iterator it = find(key);
-    GOOGLE_CHECK(it != end());
+    GOOGLE_CHECK(it != end()) << "key not found: " << key;
     return it->second;
   }
   T& at(const key_type& key) {
     iterator it = find(key);
-    GOOGLE_CHECK(it != end());
+    GOOGLE_CHECK(it != end()) << "key not found: " << key;
     return it->second;
   }
 
@@ -1092,6 +1111,9 @@ class Map {
         operator[](it->first) = it->second;
       }
     }
+  }
+  void insert(std::initializer_list<value_type> values) {
+    insert(values.begin(), values.end());
   }
 
   // Erase and clear

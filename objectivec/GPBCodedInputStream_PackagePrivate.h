@@ -34,8 +34,6 @@
 
 #import "GPBCodedInputStream.h"
 
-#import <libkern/OSAtomic.h>
-
 @class GPBUnknownFieldSet;
 @class GPBFieldDescriptor;
 

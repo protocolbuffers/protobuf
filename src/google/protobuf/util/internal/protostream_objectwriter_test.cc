@@ -146,7 +146,7 @@ class BaseProtoStreamObjectWriterTest
 
   void CheckOutput(const Message& expected, int expected_length) {
     size_t nbytes;
-    google::protobuf::scoped_array<char> buffer(output_->GetBuffer(&nbytes));
+    std::unique_ptr<char[]> buffer(output_->GetBuffer(&nbytes));
     if (expected_length >= 0) {
       EXPECT_EQ(expected_length, nbytes);
     }
@@ -154,7 +154,7 @@ class BaseProtoStreamObjectWriterTest
 
     std::stringbuf str_buf(str, std::ios_base::in);
     std::istream istream(&str_buf);
-    google::protobuf::scoped_ptr<Message> message(expected.New());
+    std::unique_ptr<Message> message(expected.New());
     message->ParsePartialFromIstream(&istream);
 
     if (!MessageDifferencer::Equivalent(expected, *message)) {
@@ -170,8 +170,8 @@ class BaseProtoStreamObjectWriterTest
 
   testing::TypeInfoTestHelper helper_;
   MockErrorListener listener_;
-  google::protobuf::scoped_ptr<GrowingArrayByteSink> output_;
-  google::protobuf::scoped_ptr<ProtoStreamObjectWriter> ow_;
+  std::unique_ptr<GrowingArrayByteSink> output_;
+  std::unique_ptr<ProtoStreamObjectWriter> ow_;
   ProtoStreamObjectWriter::Options options_;
 };
 

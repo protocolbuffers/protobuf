@@ -39,14 +39,16 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__
 
 #include <assert.h>
+#include <atomic>
 #include <climits>
 #include <string>
 #include <vector>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>
+#include <google/protobuf/stubs/once.h>  // Add direct dep on port for pb.cc
 #include <google/protobuf/has_bits.h>
+#include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -120,6 +122,21 @@ template <class Type> bool AllAreInitialized(const Type& t) {
   return true;
 }
 
+// "Weak" variant of AllAreInitialized, used to implement implicit weak fields.
+// This version operates on MessageLite to avoid introducing a dependency on the
+// concrete message type.
+template <class T>
+bool AllAreInitializedWeak(const ::google::protobuf::RepeatedPtrField<T>& t) {
+  for (int i = t.size(); --i >= 0;) {
+    if (!reinterpret_cast<const ::google::protobuf::internal::RepeatedPtrFieldBase&>(t)
+             .Get<::google::protobuf::internal::ImplicitWeakTypeHandler<T> >(i)
+             .IsInitialized()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 LIBPROTOBUF_EXPORT void InitProtobufDefaults();
 
 struct LIBPROTOBUF_EXPORT FieldMetadata {
@@ -148,7 +165,8 @@ struct LIBPROTOBUF_EXPORT FieldMetadata {
   enum {
     kCordType = 19,
     kStringPieceType = 20,
-    kNumTypes = 20,
+    kInlinedType = 21,
+    kNumTypes = 21,
     kSpecial = kNumTypes * kNumTypeClasses,
   };
 
@@ -157,7 +175,7 @@ struct LIBPROTOBUF_EXPORT FieldMetadata {
 
 inline bool IsPresent(const void* base, uint32 hasbit) {
   const uint32* has_bits_array = static_cast<const uint32*>(base);
-  return has_bits_array[hasbit / 32] & (1u << (hasbit & 31));
+  return (has_bits_array[hasbit / 32] & (1u << (hasbit & 31))) != 0;
 }
 
 inline bool IsOneofPresent(const void* base, uint32 offset, uint32 tag) {
@@ -272,6 +290,73 @@ void MapFieldSerializer(const uint8* base, uint32 offset, uint32 tag,
                         t->num_fields, output);
     }
   }
+}
+
+LIBPROTOBUF_EXPORT MessageLite* DuplicateIfNonNullInternal(MessageLite* message);
+LIBPROTOBUF_EXPORT MessageLite* GetOwnedMessageInternal(Arena* message_arena,
+                                     MessageLite* submessage,
+                                     Arena* submessage_arena);
+
+template <typename T>
+T* DuplicateIfNonNull(T* message) {
+  // The casts must be reinterpret_cast<> because T might be a forward-declared
+  // type that the compiler doesn't know is related to MessageLite.
+  return reinterpret_cast<T*>(
+      DuplicateIfNonNullInternal(reinterpret_cast<MessageLite*>(message)));
+}
+
+template <typename T>
+T* GetOwnedMessage(Arena* message_arena, T* submessage,
+                   Arena* submessage_arena) {
+  // The casts must be reinterpret_cast<> because T might be a forward-declared
+  // type that the compiler doesn't know is related to MessageLite.
+  return reinterpret_cast<T*>(GetOwnedMessageInternal(
+      message_arena, reinterpret_cast<MessageLite*>(submessage),
+      submessage_arena));
+}
+
+// Hide atomic from the public header and allow easy change to regular int
+// on platforms where the atomic might have a perf impact.
+class LIBPROTOBUF_EXPORT CachedSize {
+ public:
+  int Get() const { return size_.load(std::memory_order_relaxed); }
+  void Set(int size) { size_.store(size, std::memory_order_relaxed); }
+ private:
+  std::atomic<int> size_{0};
+};
+
+// SCCInfo represents information of a strongly connected component of
+// mutual dependent messages.
+struct LIBPROTOBUF_EXPORT SCCInfoBase {
+  // We use 0 for the Initialized state, because test eax,eax, jnz is smaller
+  // and is subject to macro fusion.
+  enum {
+    kInitialized = 0,  // final state
+    kRunning = 1,
+    kUninitialized = -1,  // initial state
+  };
+  std::atomic<int> visit_status;
+  int num_deps;
+  void (*init_func)();
+  // This is followed by an array  of num_deps
+  // const SCCInfoBase* deps[];
+};
+
+template <int N>
+struct SCCInfo {
+  SCCInfoBase base;
+  // Semantically this is const SCCInfo<T>* which is is a templated type.
+  // The obvious inheriting from SCCInfoBase mucks with struct initialization.
+  // Attempts showed the compiler was generating dynamic initialization code.
+  // Zero length arrays produce warnings with MSVC.
+  SCCInfoBase* deps[N ? N : 1];
+};
+
+LIBPROTOBUF_EXPORT void InitSCCImpl(SCCInfoBase* scc);
+
+inline void InitSCC(SCCInfoBase* scc) {
+  auto status = scc->visit_status.load(std::memory_order_acquire);
+  if (GOOGLE_PREDICT_FALSE(status != SCCInfoBase::kInitialized)) InitSCCImpl(scc);
 }
 
 }  // namespace internal

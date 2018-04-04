@@ -86,10 +86,10 @@ class MessageGenerator {
   FieldGeneratorMap field_generators_;
   const string class_name_;
   const string deprecated_attribute_;
-  vector<ExtensionGenerator*> extension_generators_;
-  vector<EnumGenerator*> enum_generators_;
-  vector<MessageGenerator*> nested_message_generators_;
-  vector<OneofGenerator*> oneof_generators_;
+  std::vector<ExtensionGenerator*> extension_generators_;
+  std::vector<EnumGenerator*> enum_generators_;
+  std::vector<MessageGenerator*> nested_message_generators_;
+  std::vector<OneofGenerator*> oneof_generators_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
 };

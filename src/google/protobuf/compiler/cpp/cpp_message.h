@@ -36,9 +36,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <set>
 #include <string>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
@@ -85,10 +82,7 @@ class MessageGenerator {
 
   // Generate definitions of inline methods (placed at the end of the header
   // file).
-  void GenerateInlineMethods(io::Printer* printer, bool is_inline);
-
-  // Dependent methods are always inline.
-  void GenerateDependentInlineMethods(io::Printer* printer);
+  void GenerateInlineMethods(io::Printer* printer);
 
   // Source file stuff.
 
@@ -106,13 +100,13 @@ class MessageGenerator {
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* printer);
 
+  // Generate source file code that should go outside any namespace.
+  void GenerateSourceInProto2Namespace(io::Printer* printer);
+
  private:
   // Generate declarations and definitions of accessors for fields.
-  void GenerateDependentBaseClassDefinition(io::Printer* printer);
-  void GenerateDependentFieldAccessorDeclarations(io::Printer* printer);
   void GenerateFieldAccessorDeclarations(io::Printer* printer);
-  void GenerateDependentFieldAccessorDefinitions(io::Printer* printer);
-  void GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline);
+  void GenerateFieldAccessorDefinitions(io::Printer* printer);
 
   // Generate the table-driven parsing array.  Returns the number of entries
   // generated.
@@ -189,7 +183,7 @@ class MessageGenerator {
                                     std::map<string, string> vars,
                                     io::Printer* printer);
   // Generates has_foo() functions and variables for oneof field has-bits.
-  void GenerateOneofHasBits(io::Printer* printer, bool is_inline);
+  void GenerateOneofHasBits(io::Printer* printer);
   // Generates has_foo_bar() functions for oneof members.
   void GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                   const std::map<string, string>& vars,
@@ -197,6 +191,7 @@ class MessageGenerator {
   // Generates the clear_foo() method for a field.
   void GenerateFieldClear(const FieldDescriptor* field,
                           const std::map<string, string>& vars,
+                          bool is_inline,
                           io::Printer* printer);
 
   void GenerateConstructorBody(io::Printer* printer,
@@ -218,15 +213,14 @@ class MessageGenerator {
   std::vector<const FieldDescriptor *> optimized_order_;
   std::vector<int> has_bit_indices_;
   int max_has_bit_index_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<EnumGenerator> > enum_generators_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<ExtensionGenerator> > extension_generators_;
+  std::unique_ptr<std::unique_ptr<EnumGenerator> []> enum_generators_;
+  std::unique_ptr<std::unique_ptr<ExtensionGenerator> []> extension_generators_;
   int num_required_fields_;
-  bool use_dependent_base_;
   int num_weak_fields_;
   // table_driven_ indicates the generated message uses table-driven parsing.
   bool table_driven_;
 
-  google::protobuf::scoped_ptr<MessageLayoutHelper> message_layout_helper_;
+  std::unique_ptr<MessageLayoutHelper> message_layout_helper_;
 
   SCCAnalyzer* scc_analyzer_;
   string scc_name_;

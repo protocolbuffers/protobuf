@@ -43,7 +43,7 @@
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/message_lite.h>
 
 namespace google {
 namespace protobuf {

@@ -33,6 +33,8 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // A proto file we will use for unit testing.
+//
+// LINT: ALLOW_GROUPS, LEGACY_NAMES
 
 syntax = "proto2";
 
@@ -189,6 +191,9 @@ message NestedTestAllTypes {
 
 message TestDeprecatedFields {
   optional int32 deprecated_int32 = 1 [deprecated=true];
+  oneof oneof_fields {
+    int32 deprecated_int32_in_oneof = 2 [deprecated=true];
+  }
 }
 
 message TestDeprecatedMessage {
@@ -330,6 +335,17 @@ extend TestAllExtensions {
   optional bytes oneof_bytes_extension = 114;
 }
 
+message TestGroup {
+  optional group OptionalGroup = 16 {
+    optional int32 a = 17;
+  }
+  optional ForeignEnum optional_foreign_enum = 22;
+}
+
+message TestGroupExtension {
+  extensions 1 to max;
+}
+
 message TestNestedExtension {
   extend TestAllExtensions {
     // Check for bug where string extensions declared in tested scope did not
@@ -338,6 +354,13 @@ message TestNestedExtension {
     // Used to test if generated extension name is correct when there are
     // underscores.
     optional string nested_string_extension = 1003;
+  }
+
+  extend TestGroupExtension {
+    optional group OptionalGroup_extension = 16 {
+      optional int32 a = 17;
+    }
+    optional ForeignEnum optional_foreign_enum_extension = 22;
   }
 }
 
@@ -551,12 +574,30 @@ message TestFieldOrderings {
   optional NestedMessage optional_nested_message  = 200;
 }
 
-
 extend TestFieldOrderings {
   optional string my_extension_string = 50;
   optional int32 my_extension_int = 5;
 }
 
+message TestExtensionOrderings1 {
+  extend TestFieldOrderings {
+    optional TestExtensionOrderings1 test_ext_orderings1 = 13;
+  }
+  optional string my_string = 1;
+}
+
+message TestExtensionOrderings2 {
+  extend TestFieldOrderings {
+    optional TestExtensionOrderings2 test_ext_orderings2 = 12;
+  }
+  message TestExtensionOrderings3 {
+    extend TestFieldOrderings {
+      optional TestExtensionOrderings3 test_ext_orderings3 = 14;
+    }
+    optional string my_string = 1;
+  }
+  optional string my_string = 1;
+}
 
 message TestExtremeDefaultValues {
   optional bytes escaped_bytes = 1 [default = "\0\001\a\b\f\n\r\t\v\\\'\"\xfe"];
@@ -943,3 +984,21 @@ message TestHugeFieldNumbers {
 extend TestHugeFieldNumbers {
   optional TestAllTypes test_all_types = 536860000;
 }
+
+message TestExtensionInsideTable {
+  optional int32 field1 = 1;
+  optional int32 field2 = 2;
+  optional int32 field3 = 3;
+  optional int32 field4 = 4;
+  extensions 5 to 5;
+  optional int32 field6 = 6;
+  optional int32 field7 = 7;
+  optional int32 field8 = 8;
+  optional int32 field9 = 9;
+  optional int32 field10 = 10;
+}
+
+extend TestExtensionInsideTable {
+  optional int32 test_extension_inside_table_extension = 5;
+}
+

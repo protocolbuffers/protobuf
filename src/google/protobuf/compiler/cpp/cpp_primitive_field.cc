@@ -123,15 +123,13 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 }
 
 void PrimitiveFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer, bool is_inline) const {
-  std::map<string, string> variables(variables_);
-  variables["inline"] = is_inline ? "inline " : "";
-  printer->Print(variables,
-    "$inline$$type$ $classname$::$name$() const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline $type$ $classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "$inline$void $classname$::set_$name$($type$ value) {\n"
+    "inline void $classname$::set_$name$($type$ value) {\n"
     "  $set_hasbit$\n"
     "  $name$_ = value;\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
@@ -212,30 +210,28 @@ PrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
 PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {}
 
 void PrimitiveOneofFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer, bool is_inline) const {
-  std::map<string, string> variables(variables_);
-  variables["inline"] = is_inline ? "inline " : "";
-  printer->Print(variables,
-    "$inline$$type$ $classname$::$name$() const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline $type$ $classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  if (has_$name$()) {\n"
-    "    return $oneof_prefix$$name$_;\n"
+    "    return $field_member$;\n"
     "  }\n"
     "  return $default$;\n"
     "}\n"
-    "$inline$void $classname$::set_$name$($type$ value) {\n"
+    "inline void $classname$::set_$name$($type$ value) {\n"
     "  if (!has_$name$()) {\n"
     "    clear_$oneof_name$();\n"
     "    set_has_$name$();\n"
     "  }\n"
-    "  $oneof_prefix$$name$_ = value;\n"
+    "  $field_member$ = value;\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n");
 }
 
 void PrimitiveOneofFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$oneof_prefix$$name$_ = $default$;\n");
+  printer->Print(variables_, "$field_member$ = $default$;\n");
 }
 
 void PrimitiveOneofFieldGenerator::
@@ -255,7 +251,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     "clear_$oneof_name$();\n"
     "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
     "         $type$, $wire_format_field_type$>(\n"
-    "       input, &$oneof_prefix$$name$_)));\n"
+    "       input, &$field_member$)));\n"
     "set_has_$name$();\n");
 }
 
@@ -311,28 +307,26 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 }
 
 void RepeatedPrimitiveFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer, bool is_inline) const {
-  std::map<string, string> variables(variables_);
-  variables["inline"] = is_inline ? "inline " : "";
-  printer->Print(variables,
-    "$inline$$type$ $classname$::$name$(int index) const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+    "inline $type$ $classname$::$name$(int index) const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return $name$_.Get(index);\n"
     "}\n"
-    "$inline$void $classname$::set_$name$(int index, $type$ value) {\n"
+    "inline void $classname$::set_$name$(int index, $type$ value) {\n"
     "  $name$_.Set(index, value);\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n"
-    "$inline$void $classname$::add_$name$($type$ value) {\n"
+    "inline void $classname$::add_$name$($type$ value) {\n"
     "  $name$_.Add(value);\n"
     "  // @@protoc_insertion_point(field_add:$full_name$)\n"
     "}\n"
-    "$inline$const ::google::protobuf::RepeatedField< $type$ >&\n"
+    "inline const ::google::protobuf::RepeatedField< $type$ >&\n"
     "$classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "$inline$::google::protobuf::RepeatedField< $type$ >*\n"
+    "inline ::google::protobuf::RepeatedField< $type$ >*\n"
     "$classname$::mutable_$name$() {\n"
     "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
     "  return &$name$_;\n"

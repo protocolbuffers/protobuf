@@ -72,6 +72,8 @@ final class UnsafeUtil {
 
   private static final long BUFFER_ADDRESS_OFFSET = fieldOffset(bufferAddressField());
 
+  private static final long STRING_VALUE_OFFSET = fieldOffset(stringValueField());
+
   private UnsafeUtil() {}
 
   static boolean hasUnsafeArrayOperations() {
@@ -81,6 +83,7 @@ final class UnsafeUtil {
   static boolean hasUnsafeByteBufferOperations() {
     return HAS_UNSAFE_BYTEBUFFER_OPERATIONS;
   }
+
 
   static long objectFieldOffset(Field field) {
     return MEMORY_ACCESSOR.objectFieldOffset(field);
@@ -259,6 +262,26 @@ final class UnsafeUtil {
     return MEMORY_ACCESSOR.getLong(buffer, BUFFER_ADDRESS_OFFSET);
   }
 
+  /**
+   * Returns a new {@link String} backed by the given {@code chars}. The char array should not
+   * be mutated any more after calling this function.
+   */
+  static String moveToString(char[] chars) {
+    if (STRING_VALUE_OFFSET == -1) {
+      // In the off-chance that this JDK does not implement String as we'd expect, just do a copy.
+      return new String(chars);
+    }
+    final String str;
+    try {
+      str = (String) UNSAFE.allocateInstance(String.class);
+    } catch (InstantiationException e) {
+      // This should never happen, but return a copy as a fallback just in case.
+      return new String(chars);
+    }
+    putObject(str, STRING_VALUE_OFFSET, chars);
+    return str;
+  }
+
   static Object getStaticObject(Field field) {
     return MEMORY_ACCESSOR.getStaticObject(field);
   }
@@ -266,7 +289,7 @@ final class UnsafeUtil {
   /**
    * Gets the {@code sun.misc.Unsafe} instance, or {@code null} if not available on this platform.
    */
-  private static sun.misc.Unsafe getUnsafe() {
+  static sun.misc.Unsafe getUnsafe() {
     sun.misc.Unsafe unsafe = null;
     try {
       unsafe =
@@ -346,6 +369,10 @@ final class UnsafeUtil {
       clazz.getMethod("objectFieldOffset", Field.class);
       clazz.getMethod("getLong", Object.class, long.class);
 
+      if (bufferAddressField() == null) {
+        return false;
+      }
+
       clazz.getMethod("getByte", long.class);
       clazz.getMethod("putByte", long.class, byte.class);
       clazz.getMethod("getInt", long.class);
@@ -364,18 +391,16 @@ final class UnsafeUtil {
   }
 
 
-  @SuppressWarnings("unchecked")
-  private static <T> Class<T> getClassForName(String name) {
-    try {
-      return (Class<T>) Class.forName(name);
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
   /** Finds the address field within a direct {@link Buffer}. */
   private static Field bufferAddressField() {
-    return field(Buffer.class, "address");
+    Field field = field(Buffer.class, "address");
+    return field != null && field.getType() == long.class ? field : null;
+  }
+
+  /** Finds the value field within a {@link String}. */
+  private static Field stringValueField() {
+    Field field = field(String.class, "value");
+    return field != null && field.getType() == char[].class ? field : null;
   }
 
   /**

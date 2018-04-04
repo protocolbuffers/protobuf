@@ -112,7 +112,7 @@
 
 #include <iosfwd>
 #include <string>
-#include <google/protobuf/stubs/type_traits.h>
+#include <type_traits>
 #include <vector>
 
 #include <google/protobuf/arena.h>
@@ -151,6 +151,9 @@ class CodedOutputStream;       // coded_stream.h
 }
 namespace python {
 class MapReflectionFriend;     // scalar_map_container.h
+}
+namespace expr {
+class CelMapReflectionFriend;  // field_backed_map_impl.cc
 }
 
 
@@ -339,7 +342,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   //
   // This method remains virtual in case a subclass does not implement
   // reflection and wants to override the default behavior.
-  virtual const Reflection* GetReflection() const PROTOBUF_FINAL {
+  virtual const Reflection* GetReflection() const final {
     return GetMetadata().reflection;
   }
 
@@ -406,9 +409,6 @@ class MutableRepeatedFieldRef;
 // double the message's memory footprint, probably worse.  Allocating the
 // objects on-demand, on the other hand, would be expensive and prone to
 // memory leaks.  So, instead we ended up with this flat interface.
-//
-// TODO(kenton):  Create a utility class which callers can use to read and
-//   write fields from a Reflection without paying attention to the type.
 class LIBPROTOBUF_EXPORT Reflection {
  public:
   inline Reflection() {}
@@ -815,6 +815,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //
   // for T = Cord and all protobuf scalar types except enums.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetRepeatedFieldRef() instead")
   const RepeatedField<T>& GetRepeatedField(
       const Message&, const FieldDescriptor*) const;
 
@@ -822,6 +823,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //
   // for T = Cord and all protobuf scalar types except enums.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetMutableRepeatedFieldRef() instead")
   RepeatedField<T>* MutableRepeatedField(
       Message*, const FieldDescriptor*) const;
 
@@ -830,6 +832,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // for T = string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetRepeatedFieldRef() instead")
   const RepeatedPtrField<T>& GetRepeatedPtrField(
       const Message&, const FieldDescriptor*) const;
 
@@ -838,6 +841,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // for T = string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetMutableRepeatedFieldRef() instead")
   RepeatedPtrField<T>* MutableRepeatedPtrField(
       Message*, const FieldDescriptor*) const;
 
@@ -949,6 +953,8 @@ class LIBPROTOBUF_EXPORT Reflection {
   template<typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
   friend class ::google::protobuf::python::MapReflectionFriend;
+#define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
+  friend class ::google::protobuf::expr::CelMapReflectionFriend;
   friend class internal::MapFieldReflectionTest;
   friend class internal::MapKeySorter;
   friend class internal::WireFormat;

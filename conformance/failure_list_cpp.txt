@@ -54,4 +54,3 @@ Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT32
 Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT64
 Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT32
 Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT64
-

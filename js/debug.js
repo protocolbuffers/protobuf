@@ -42,7 +42,7 @@ goog.require('jspb.Message');
 
 /**
  * Turns a proto into a human readable object that can i.e. be written to the
- * console: {@code console.log(jspb.debug.dump(myProto))}.
+ * console: `console.log(jspb.debug.dump(myProto))`.
  * This function makes a best effort and may not work in all cases. It will not
  * work in obfuscated and or optimized code.
  * Use this in environments where {@see jspb.Message.prototype.toObject} is
@@ -74,15 +74,22 @@ jspb.debug.dump = function(message) {
  */
 jspb.debug.dump_ = function(thing) {
   var type = goog.typeOf(thing);
+  var message = thing;  // Copy because we don't want type inference on thing.
   if (type == 'number' || type == 'string' || type == 'boolean' ||
       type == 'null' || type == 'undefined') {
     return thing;
   }
+  if (typeof Uint8Array !== 'undefined') {
+    // Will fail on IE9, where Uint8Array doesn't exist.
+    if (message instanceof Uint8Array) {
+      return thing;
+    }
+  }
+
   if (type == 'array') {
     goog.asserts.assertArray(thing);
     return goog.array.map(thing, jspb.debug.dump_);
   }
-  var message = thing;  // Copy because we don't want type inference on thing.
   goog.asserts.assert(message instanceof jspb.Message,
       'Only messages expected: ' + thing);
   var ctor = message.constructor;

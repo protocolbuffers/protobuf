@@ -1,3 +1,110 @@
+2017-12-20 version 3.5.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Planned Future Changes
+  * Make C++ implementation C++11 only: we plan to require C++11 to build
+    protobuf code starting from 3.6.0 release. Please join this github issue:
+    https://github.com/google/protobuf/issues/2780 to provide your feedback.
+
+  protoc
+  * Fixed a bug introduced in 3.5.0 and protoc in Windows now accepts non-ascii
+    characters in paths again.
+
+  C++
+  * Removed several usages of C++11 features in the code base.
+  * Fixed some compiler warnings.
+
+  PHP
+  * Fixed memory leak in C-extension implementation.
+  * Added discardUnknokwnFields API.
+  * Removed duplicatd typedef in C-extension headers.
+  * Avoided calling private php methods (timelib_update_ts).
+  * Fixed Any.php to use fully-qualified name for DescriptorPool.
+
+  Ruby
+  * Added Google_Protobuf_discard_unknown for discarding unknown fields in
+    messages.
+
+  C#
+  * Unknown fields are now preserved by default.
+  * Floating point values are now bitwise compared, affecting message equality
+    check and Contains() API in map and repeated fields.
+
+
+2017-11-13 version 3.5.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Planned Future Changes
+  * Make C++ implementation C++11 only: we plan to require C++11 to build
+    protobuf code starting from 3.6.0 release. Please join this github issue:
+    https://github.com/google/protobuf/issues/2780 to provide your feedback.
+
+  General
+  * Unknown fields are now preserved in proto3 for most of the language
+    implementations for proto3 by default. See the per-language section for
+    details.
+  * reserve keyword are now supported in enums
+
+  C++
+  * Proto3 messages are now preserving unknown fields by default. If you rely on
+    unknowns fields being dropped. Please use DiscardUnknownFields() explicitly.
+  * Deprecated the unsafe_arena_release_* and unsafe_arena_add_allocated_*
+    methods for string fields.
+  * Added move constructor and move assignment to RepeatedField,
+    RepeatedPtrField and google::protobuf::Any.
+  * Added perfect forwarding in Arena::CreateMessage
+  * In-progress experimental support for implicit weak fields with lite protos.
+    This feature allows the linker to strip out more unused messages and reduce
+    binary size.
+  * Various performance optimizations.
+
+  Java
+  * Proto3 messages are now preserving unknown fields by default. If you’d like
+    to drop unknown fields, please use the DiscardUnknownFieldsParser API. For
+    example:
+      Parser<Foo> parser = DiscardUnknownFieldsParser.wrap(Foo.parser());
+      Foo foo = parser.parseFrom(input);
+  * Added a new CodedInputStream decoder for Iterable<ByteBuffer> with direct
+    ByteBuffers.
+  * TextFormat now prints unknown length-delimited fields as messages if
+    possible.
+  * FieldMaskUtil.merge() no longer creates unnecessary empty messages when a
+    message field is unset in both source message and destination message.
+  * Various performance optimizations.
+
+  Python
+  * Proto3 messages are now preserving unknown fields by default. Use
+    message.DiscardUnknownFields() to drop unknown fields.
+  * Add FieldDescriptor.file in generated code.
+  * Add descriptor pool FindOneofByName in pure python.
+  * Change unknown enum values into unknown field set .
+  * Add more Python dict/list compatibility for Struct/ListValue.
+  * Add utf-8 support for text_format.Merge()/Parse().
+  * Support numeric unknown enum values for proto3 JSON format.
+  * Add warning for Unexpected end-group tag in cpp extension.
+
+  PHP
+  * Proto3 messages are now preserving unknown fields.
+  * Provide well known type messages in runtime.
+  * Add prefix ‘PB’ to generated class of reserved names.
+  * Fixed all conformance tests for encode/decode json in php runtime. C
+    extension needs more work.
+
+  Objective-C
+  * Fixed some issues around copying of messages with unknown fields and then
+    mutating the unknown fields in the copy.
+
+  C#
+  * Added unknown field support in JsonParser.
+  * Fixed oneof message field merge.
+  * Simplify parsing messages from array slices.
+
+  Ruby
+  * Unknown fields are now preserved by default.
+  * Fixed several bugs for segment fault.
+
+  Javascript
+  * Decoder can handle both paced and unpacked data no matter how the proto is
+    defined.
+  * Decoder now accept long varint for 32 bit integers.
+
+
 2017-08-14 version 3.4.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Planned Future Changes
   * There are some changes that are not included in this release but are planned
@@ -92,7 +199,7 @@
   * Note: AppEngine 2.5 is deprecated on June 2017 that AppEngine 2.5 will
     never update protobuf runtime. Users who depend on AppEngine 2.5 should use
     old protoc.
-  
+
   PHP
   * Support PHP generic services. Specify file option php_generic_service=true
     to enable generating service interface.

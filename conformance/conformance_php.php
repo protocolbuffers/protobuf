@@ -3,24 +3,6 @@
 require_once("Conformance/WireFormat.php");
 require_once("Conformance/ConformanceResponse.php");
 require_once("Conformance/ConformanceRequest.php");
-require_once("Google/Protobuf/Any.php");
-require_once("Google/Protobuf/Duration.php");
-require_once("Google/Protobuf/FieldMask.php");
-require_once("Google/Protobuf/Struct.php");
-require_once("Google/Protobuf/Value.php");
-require_once("Google/Protobuf/ListValue.php");
-require_once("Google/Protobuf/NullValue.php");
-require_once("Google/Protobuf/Timestamp.php");
-require_once("Google/Protobuf/DoubleValue.php");
-require_once("Google/Protobuf/BytesValue.php");
-require_once("Google/Protobuf/FloatValue.php");
-require_once("Google/Protobuf/Int64Value.php");
-require_once("Google/Protobuf/UInt32Value.php");
-require_once("Google/Protobuf/BoolValue.php");
-require_once("Google/Protobuf/DoubleValue.php");
-require_once("Google/Protobuf/Int32Value.php");
-require_once("Google/Protobuf/StringValue.php");
-require_once("Google/Protobuf/UInt64Value.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
 require_once("Protobuf_test_messages/Proto3/ForeignEnum.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3.php");
@@ -28,12 +10,6 @@ require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedMessage.php
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedEnum.php");
 
 require_once("GPBMetadata/Conformance.php");
-require_once("GPBMetadata/Google/Protobuf/Any.php");
-require_once("GPBMetadata/Google/Protobuf/Duration.php");
-require_once("GPBMetadata/Google/Protobuf/FieldMask.php");
-require_once("GPBMetadata/Google/Protobuf/Struct.php");
-require_once("GPBMetadata/Google/Protobuf/Timestamp.php");
-require_once("GPBMetadata/Google/Protobuf/Wrappers.php");
 require_once("GPBMetadata/Google/Protobuf/TestMessagesProto3.php");
 
 use  \Conformance\WireFormat;
@@ -57,10 +33,10 @@ function doTest($request)
           return $response;
         }
       } elseif ($request->getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2") {
-	$response->setSkipped("PHP doesn't support proto2");
-	return $response;
+        $response->setSkipped("PHP doesn't support proto2");
+        return $response;
       } else {
-	trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
+        trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
       }
     } elseif ($request->getPayload() == "json_payload") {
       try {
@@ -78,7 +54,12 @@ function doTest($request)
     } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
       $response->setProtobufPayload($test_message->serializeToString());
     } elseif ($request->getRequestedOutputFormat() == WireFormat::JSON) {
-      $response->setJsonPayload($test_message->serializeToJsonString());
+      try {
+          $response->setJsonPayload($test_message->serializeToJsonString());
+      } catch (Exception $e) {
+          $response->setSerializeError($e->getMessage());
+          return $response;
+      }
     }
 
     return $response;

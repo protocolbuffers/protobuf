@@ -32,14 +32,29 @@
 
 namespace Google\Protobuf\Internal;
 
+use Google\Protobuf\Duration;
+use Google\Protobuf\FieldMask;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
+
+function camel2underscore($input) {
+    preg_match_all(
+        '!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!',
+        $input,
+        $matches);
+    $ret = $matches[0];
+    foreach ($ret as &$match) {
+        $match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
+    }
+    return implode('_', $ret);
+}
 
 class GPBUtil
 {
     const NANOS_PER_MILLISECOND = 1000000;
     const NANOS_PER_MICROSECOND = 1000;
+    const TYPE_URL_PREFIX = 'type.googleapis.com/';
 
     public static function divideInt64ToInt32($value, &$high, &$low, $trim = false)
     {
@@ -255,14 +270,29 @@ class GPBUtil
             return $prefix;
         }
 
-        $reserved_words = array("Empty", "ECHO", "ARRAY");
-        foreach ($reserved_words as $reserved_word) {
-            if ($classname === $reserved_word) {
-                if ($file_proto->getPackage() === "google.protobuf") {
-                    return "GPB";
-                } else {
-                    return "PB";
-                }
+        $reserved_words = array(
+            "abstract"=>0, "and"=>0, "array"=>0, "as"=>0, "break"=>0,
+            "callable"=>0, "case"=>0, "catch"=>0, "class"=>0, "clone"=>0,
+            "const"=>0, "continue"=>0, "declare"=>0, "default"=>0, "die"=>0,
+            "do"=>0, "echo"=>0, "else"=>0, "elseif"=>0, "empty"=>0,
+            "enddeclare"=>0, "endfor"=>0, "endforeach"=>0, "endif"=>0,
+            "endswitch"=>0, "endwhile"=>0, "eval"=>0, "exit"=>0, "extends"=>0,
+            "final"=>0, "for"=>0, "foreach"=>0, "function"=>0, "global"=>0,
+            "goto"=>0, "if"=>0, "implements"=>0, "include"=>0,
+            "include_once"=>0, "instanceof"=>0, "insteadof"=>0, "interface"=>0,
+            "isset"=>0, "list"=>0, "namespace"=>0, "new"=>0, "or"=>0,
+            "print"=>0, "private"=>0, "protected"=>0, "public"=>0, "require"=>0,
+            "require_once"=>0, "return"=>0, "static"=>0, "switch"=>0,
+            "throw"=>0, "trait"=>0, "try"=>0, "unset"=>0, "use"=>0, "var"=>0,
+            "while"=>0, "xor"=>0, "int"=>0, "float"=>0, "bool"=>0, "string"=>0,
+            "true"=>0, "false"=>0, "null"=>0, "void"=>0, "iterable"=>0
+        );
+
+        if (array_key_exists(strtolower($classname), $reserved_words)) {
+            if ($file_proto->getPackage() === "google.protobuf") {
+                return "GPB";
+            } else {
+                return "PB";
             }
         }
 
@@ -343,7 +373,7 @@ class GPBUtil
         }
         return $result;
     }
-    
+
     public static function parseTimestamp($timestamp)
     {
         // prevent parsing timestamps containing with the non-existant year "0000"
@@ -355,7 +385,7 @@ class GPBUtil
         if (substr($timestamp, -1, 1) === "z") {
             throw new \Exception("Timezone cannot be a lowercase z.");
         }
-        
+
         $nanoseconds = 0;
         $periodIndex = strpos($timestamp, ".");
         if ($periodIndex !== false) {
@@ -396,15 +426,108 @@ class GPBUtil
         $value->setNanos($nanoseconds);
         return $value;
     }
-    
+
     public static function formatTimestamp($value)
     {
+        if (bccomp($value->getSeconds(), "253402300800") != -1) {
+          throw new GPBDecodeException("Duration number too large.");
+        }
+        if (bccomp($value->getSeconds(), "-62135596801") != 1) {
+          throw new GPBDecodeException("Duration number too small.");
+        }
         $nanoseconds = static::getNanosecondsForTimestamp($value->getNanos());
         if (!empty($nanoseconds)) {
             $nanoseconds = ".".$nanoseconds;
         }
         $date = new \DateTime('@'.$value->getSeconds(), new \DateTimeZone("UTC"));
         return $date->format("Y-m-d\TH:i:s".$nanoseconds."\Z");
+    }
+
+    public static function parseDuration($value)
+    {
+        if (strlen($value) < 2 || substr($value, -1) !== "s") {
+          throw new GPBDecodeException("Missing s after duration string");
+        }
+        $number = substr($value, 0, -1);
+        if (bccomp($number, "315576000001") != -1) {
+          throw new GPBDecodeException("Duration number too large.");
+        }
+        if (bccomp($number, "-315576000001") != 1) {
+          throw new GPBDecodeException("Duration number too small.");
+        }
+        $pos = strrpos($number, ".");
+        if ($pos !== false) {
+            $seconds = substr($number, 0, $pos);
+            if (bccomp($seconds, 0) < 0) {
+                $nanos = bcmul("0" . substr($number, $pos), -1000000000);
+            } else {
+                $nanos = bcmul("0" . substr($number, $pos), 1000000000);
+            }
+        } else {
+            $seconds = $number;
+            $nanos = 0;
+        }
+        $duration = new Duration();
+        $duration->setSeconds($seconds);
+        $duration->setNanos($nanos);
+        return $duration;
+    }
+
+    public static function formatDuration($value)
+    {
+        if (bccomp($value->getSeconds(), "315576000001") != -1) {
+          throw new GPBDecodeException("Duration number too large.");
+        }
+        if (bccomp($value->getSeconds(), "-315576000001") != 1) {
+          throw new GPBDecodeException("Duration number too small.");
+        }
+        return strval(bcadd($value->getSeconds(),
+                      $value->getNanos() / 1000000000.0, 9));
+    }
+
+
+
+    public static function parseFieldMask($paths_string)
+    {
+        $path_strings = explode(",", $paths_string);
+        $field_mask = new FieldMask();
+        $paths = $field_mask->getPaths();
+        foreach($path_strings as &$path_string) {
+            $field_strings = explode(".", $path_string);
+            foreach($field_strings as &$field_string) {
+                $field_string = camel2underscore($field_string);
+            }
+            $path_string = implode(".", $field_strings);
+            $paths[] = $path_string;
+        }
+        return $field_mask;
+    }
+
+    public static function formatFieldMask($field_mask)
+    {
+        $converted_paths = [];
+        foreach($field_mask->getPaths() as $path) {
+            $fields = explode('.', $path);
+            $converted_path = [];
+            foreach ($fields as $field) {
+                $segments = explode('_', $field);
+                $start = true;
+                $converted_segments = "";
+                foreach($segments as $segment) {
+                  if (!$start) {
+                    $converted = ucfirst($segment);
+                  } else {
+                    $converted = $segment;
+                    $start = false;
+                  }
+                  $converted_segments .= $converted;
+                }
+                $converted_path []= $converted_segments;
+            }
+            $converted_path = implode(".", $converted_path);
+            $converted_paths []= $converted_path;
+        }
+        return implode(",", $converted_paths);
     }
 
     public static function getNanosecondsForTimestamp($nanoseconds)
@@ -419,5 +542,30 @@ class GPBUtil
             return sprintf('%06d', $nanoseconds / static::NANOS_PER_MICROSECOND);
         }
         return sprintf('%09d', $nanoseconds);
+    }
+
+    public static function hasSpecialJsonMapping($msg)
+    {
+        return is_a($msg, 'Google\Protobuf\Any')         ||
+               is_a($msg, "Google\Protobuf\ListValue")   ||
+               is_a($msg, "Google\Protobuf\Struct")      ||
+               is_a($msg, "Google\Protobuf\Value")       ||
+               is_a($msg, "Google\Protobuf\Duration")    ||
+               is_a($msg, "Google\Protobuf\Timestamp")   ||
+               is_a($msg, "Google\Protobuf\FieldMask")   ||
+               static::hasJsonValue($msg);
+    }
+
+    public static function hasJsonValue($msg)
+    {
+        return is_a($msg, "Google\Protobuf\DoubleValue") ||
+               is_a($msg, "Google\Protobuf\FloatValue")  ||
+               is_a($msg, "Google\Protobuf\Int64Value")  ||
+               is_a($msg, "Google\Protobuf\UInt64Value") ||
+               is_a($msg, "Google\Protobuf\Int32Value")  ||
+               is_a($msg, "Google\Protobuf\UInt32Value") ||
+               is_a($msg, "Google\Protobuf\BoolValue")   ||
+               is_a($msg, "Google\Protobuf\StringValue") ||
+               is_a($msg, "Google\Protobuf\BytesValue");
     }
 }

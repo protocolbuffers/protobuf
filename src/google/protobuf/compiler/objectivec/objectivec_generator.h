@@ -56,7 +56,7 @@ class LIBPROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
                 const string& parameter,
                 GeneratorContext* context,
                 string* error) const;
-  bool GenerateAll(const vector<const FileDescriptor*>& files,
+  bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                    const string& parameter,
                    GeneratorContext* context,
                    string* error) const;

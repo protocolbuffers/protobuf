@@ -30,13 +30,8 @@
 
 #include <string>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <vector>
 
-#include <google/protobuf/test_util.h>
-#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_proto3_lite.pb.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/testing/googletest.h>

@@ -158,7 +158,7 @@ idea of how the library generally works:
     message.setPhoneNumbers(["800-555-1212", "800-555-0000"]);
 
     // Serializes to a UInt8Array.
-    bytes = message.serializeBinary();
+    var bytes = message.serializeBinary();
 
     var message2 = MyMessage.deserializeBinary(bytes);
 

@@ -34,6 +34,7 @@ file, in types that make this information accessible in Python.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import threading
 import six
 
 from google.protobuf.internal import api_implementation
@@ -41,8 +42,8 @@ from google.protobuf.internal import api_implementation
 _USE_C_DESCRIPTORS = False
 if api_implementation.Type() == 'cpp':
   # Used by MakeDescriptor in cpp mode
+  import binascii
   import os
-  import uuid
   from google.protobuf.pyext import _message
   _USE_C_DESCRIPTORS = getattr(_message, '_USE_C_DESCRIPTORS', False)
 
@@ -72,6 +73,24 @@ else:
   DescriptorMetaclass = type
 
 
+class _Lock(object):
+  """Wrapper class of threading.Lock(), which is allowed by 'with'."""
+
+  def __new__(cls):
+    self = object.__new__(cls)
+    self._lock = threading.Lock()  # pylint: disable=protected-access
+    return self
+
+  def __enter__(self):
+    self._lock.acquire()
+
+  def __exit__(self, exc_type, exc_value, exc_tb):
+    self._lock.release()
+
+
+_lock = threading.Lock()
+
+
 class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
 
   """Descriptors base class.
@@ -92,16 +111,17 @@ class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
     # subclasses" of this descriptor class.
     _C_DESCRIPTOR_CLASS = ()
 
-  def __init__(self, options, options_class_name):
+  def __init__(self, options, serialized_options, options_class_name):
     """Initialize the descriptor given its options message and the name of the
     class of the options message. The name of the class is required in case
     the options message is None and has to be created.
     """
     self._options = options
     self._options_class_name = options_class_name
+    self._serialized_options = serialized_options
 
     # Does this descriptor have non-default options?
-    self.has_options = options is not None
+    self.has_options = (options is not None) or (serialized_options is not None)
 
   def _SetOptions(self, options, options_class_name):
     """Sets the descriptor's options
@@ -123,14 +143,23 @@ class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
     """
     if self._options:
       return self._options
+
     from google.protobuf import descriptor_pb2
     try:
-      options_class = getattr(descriptor_pb2, self._options_class_name)
+      options_class = getattr(descriptor_pb2,
+                              self._options_class_name)
     except AttributeError:
       raise RuntimeError('Unknown options class name %s!' %
                          (self._options_class_name))
-    self._options = options_class()
-    return self._options
+
+    with _lock:
+      if self._serialized_options is None:
+        self._options = options_class()
+      else:
+        self._options = _ParseOptions(options_class(),
+                                      self._serialized_options)
+
+      return self._options
 
 
 class _NestedDescriptorBase(DescriptorBase):
@@ -138,7 +167,7 @@ class _NestedDescriptorBase(DescriptorBase):
 
   def __init__(self, options, options_class_name, name, full_name,
                file, containing_type, serialized_start=None,
-               serialized_end=None):
+               serialized_end=None, serialized_options=None):
     """Constructor.
 
     Args:
@@ -157,9 +186,10 @@ class _NestedDescriptorBase(DescriptorBase):
         file.serialized_pb that describes this descriptor.
       serialized_end: The end index (exclusive) in block in the
         file.serialized_pb that describes this descriptor.
+      serialized_options: Protocol message serilized options or None.
     """
     super(_NestedDescriptorBase, self).__init__(
-        options, options_class_name)
+        options, serialized_options, options_class_name)
 
     self.name = name
     # TODO(falk): Add function to calculate full_name instead of having it in
@@ -250,6 +280,7 @@ class Descriptor(_NestedDescriptorBase):
 
     def __new__(cls, name, full_name, filename, containing_type, fields,
                 nested_types, enum_types, extensions, options=None,
+                serialized_options=None,
                 is_extendable=True, extension_ranges=None, oneofs=None,
                 file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
                 syntax=None):
@@ -261,6 +292,7 @@ class Descriptor(_NestedDescriptorBase):
   # name of the argument.
   def __init__(self, name, full_name, filename, containing_type, fields,
                nested_types, enum_types, extensions, options=None,
+               serialized_options=None,
                is_extendable=True, extension_ranges=None, oneofs=None,
                file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
                syntax=None):
@@ -273,7 +305,7 @@ class Descriptor(_NestedDescriptorBase):
     super(Descriptor, self).__init__(
         options, 'MessageOptions', name, full_name, file,
         containing_type, serialized_start=serialized_start,
-        serialized_end=serialized_end)
+        serialized_end=serialized_end, serialized_options=serialized_options)
 
     # We have fields in addition to fields_by_name and fields_by_number,
     # so that:
@@ -492,8 +524,9 @@ class FieldDescriptor(DescriptorBase):
     def __new__(cls, name, full_name, index, number, type, cpp_type, label,
                 default_value, message_type, enum_type, containing_type,
                 is_extension, extension_scope, options=None,
+                serialized_options=None,
                 has_default_value=True, containing_oneof=None, json_name=None,
-                file=None):
+                file=None):  # pylint: disable=redefined-builtin
       _message.Message._CheckCalledFromGeneratedFile()
       if is_extension:
         return _message.default_pool.FindExtensionByName(full_name)
@@ -503,8 +536,9 @@ class FieldDescriptor(DescriptorBase):
   def __init__(self, name, full_name, index, number, type, cpp_type, label,
                default_value, message_type, enum_type, containing_type,
                is_extension, extension_scope, options=None,
+               serialized_options=None,
                has_default_value=True, containing_oneof=None, json_name=None,
-               file=None):
+               file=None):  # pylint: disable=redefined-builtin
     """The arguments are as described in the description of FieldDescriptor
     attributes above.
 
@@ -512,7 +546,8 @@ class FieldDescriptor(DescriptorBase):
     (to deal with circular references between message types, for example).
     Likewise for extension_scope.
     """
-    super(FieldDescriptor, self).__init__(options, 'FieldOptions')
+    super(FieldDescriptor, self).__init__(
+        options, serialized_options, 'FieldOptions')
     self.name = name
     self.full_name = full_name
     self.file = file
@@ -598,13 +633,15 @@ class EnumDescriptor(_NestedDescriptorBase):
     _C_DESCRIPTOR_CLASS = _message.EnumDescriptor
 
     def __new__(cls, name, full_name, filename, values,
-                containing_type=None, options=None, file=None,
+                containing_type=None, options=None,
+                serialized_options=None, file=None,  # pylint: disable=redefined-builtin
                 serialized_start=None, serialized_end=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindEnumTypeByName(full_name)
 
   def __init__(self, name, full_name, filename, values,
-               containing_type=None, options=None, file=None,
+               containing_type=None, options=None,
+               serialized_options=None, file=None,  # pylint: disable=redefined-builtin
                serialized_start=None, serialized_end=None):
     """Arguments are as described in the attribute description above.
 
@@ -614,7 +651,7 @@ class EnumDescriptor(_NestedDescriptorBase):
     super(EnumDescriptor, self).__init__(
         options, 'EnumOptions', name, full_name, file,
         containing_type, serialized_start=serialized_start,
-        serialized_end=serialized_end)
+        serialized_end=serialized_end, serialized_options=serialized_options)
 
     self.values = values
     for value in self.values:
@@ -650,7 +687,9 @@ class EnumValueDescriptor(DescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.EnumValueDescriptor
 
-    def __new__(cls, name, index, number, type=None, options=None):
+    def __new__(cls, name, index, number,
+                type=None,  # pylint: disable=redefined-builtin
+                options=None, serialized_options=None):
       _message.Message._CheckCalledFromGeneratedFile()
       # There is no way we can build a complete EnumValueDescriptor with the
       # given parameters (the name of the Enum is not known, for example).
@@ -658,9 +697,12 @@ class EnumValueDescriptor(DescriptorBase):
       # constructor, which will ignore it, so returning None is good enough.
       return None
 
-  def __init__(self, name, index, number, type=None, options=None):
+  def __init__(self, name, index, number,
+               type=None,  # pylint: disable=redefined-builtin
+               options=None, serialized_options=None):
     """Arguments are as described in the attribute description above."""
-    super(EnumValueDescriptor, self).__init__(options, 'EnumValueOptions')
+    super(EnumValueDescriptor, self).__init__(
+        options, serialized_options, 'EnumValueOptions')
     self.name = name
     self.index = index
     self.number = number
@@ -685,14 +727,17 @@ class OneofDescriptor(DescriptorBase):
     _C_DESCRIPTOR_CLASS = _message.OneofDescriptor
 
     def __new__(
-        cls, name, full_name, index, containing_type, fields, options=None):
+        cls, name, full_name, index, containing_type, fields, options=None,
+        serialized_options=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindOneofByName(full_name)
 
   def __init__(
-      self, name, full_name, index, containing_type, fields, options=None):
+      self, name, full_name, index, containing_type, fields, options=None,
+      serialized_options=None):
     """Arguments are as described in the attribute description above."""
-    super(OneofDescriptor, self).__init__(options, 'OneofOptions')
+    super(OneofDescriptor, self).__init__(
+        options, serialized_options, 'OneofOptions')
     self.name = name
     self.full_name = full_name
     self.index = index
@@ -721,17 +766,19 @@ class ServiceDescriptor(_NestedDescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.ServiceDescriptor
 
-    def __new__(cls, name, full_name, index, methods, options=None, file=None,  # pylint: disable=redefined-builtin
+    def __new__(cls, name, full_name, index, methods, options=None,
+                serialized_options=None, file=None,  # pylint: disable=redefined-builtin
                 serialized_start=None, serialized_end=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindServiceByName(full_name)
 
-  def __init__(self, name, full_name, index, methods, options=None, file=None,
+  def __init__(self, name, full_name, index, methods, options=None,
+               serialized_options=None, file=None,  # pylint: disable=redefined-builtin
                serialized_start=None, serialized_end=None):
     super(ServiceDescriptor, self).__init__(
         options, 'ServiceOptions', name, full_name, file,
         None, serialized_start=serialized_start,
-        serialized_end=serialized_end)
+        serialized_end=serialized_end, serialized_options=serialized_options)
     self.index = index
     self.methods = methods
     self.methods_by_name = dict((m.name, m) for m in methods)
@@ -772,18 +819,19 @@ class MethodDescriptor(DescriptorBase):
     _C_DESCRIPTOR_CLASS = _message.MethodDescriptor
 
     def __new__(cls, name, full_name, index, containing_service,
-                input_type, output_type, options=None):
+                input_type, output_type, options=None, serialized_options=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindMethodByName(full_name)
 
   def __init__(self, name, full_name, index, containing_service,
-               input_type, output_type, options=None):
+               input_type, output_type, options=None, serialized_options=None):
     """The arguments are as described in the description of MethodDescriptor
     attributes above.
 
     Note that containing_service may be None, and may be set later if necessary.
     """
-    super(MethodDescriptor, self).__init__(options, 'MethodOptions')
+    super(MethodDescriptor, self).__init__(
+        options, serialized_options, 'MethodOptions')
     self.name = name
     self.full_name = full_name
     self.index = index
@@ -818,7 +866,8 @@ class FileDescriptor(DescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.FileDescriptor
 
-    def __new__(cls, name, package, options=None, serialized_pb=None,
+    def __new__(cls, name, package, options=None,
+                serialized_options=None, serialized_pb=None,
                 dependencies=None, public_dependencies=None,
                 syntax=None, pool=None):
       # FileDescriptor() is called from various places, not only from generated
@@ -830,11 +879,13 @@ class FileDescriptor(DescriptorBase):
       else:
         return super(FileDescriptor, cls).__new__(cls)
 
-  def __init__(self, name, package, options=None, serialized_pb=None,
+  def __init__(self, name, package, options=None,
+               serialized_options=None, serialized_pb=None,
                dependencies=None, public_dependencies=None,
                syntax=None, pool=None):
     """Constructor."""
-    super(FileDescriptor, self).__init__(options, 'FileOptions')
+    super(FileDescriptor, self).__init__(
+        options, serialized_options, 'FileOptions')
 
     if pool is None:
       from google.protobuf import descriptor_pool
@@ -952,7 +1003,7 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
     # imported ones. We need to specify a file name so the descriptor pool
     # accepts our FileDescriptorProto, but it is not important what that file
     # name is actually set to.
-    proto_name = str(uuid.uuid4())
+    proto_name = binascii.hexlify(os.urandom(16)).decode('ascii')
 
     if package:
       file_descriptor_proto.name = os.path.join(package.replace('.', '/'),

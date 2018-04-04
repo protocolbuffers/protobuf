@@ -454,3 +454,22 @@ message TestOneofParsingLite {
     V2EnumLite oneof_enum = 9;
   }
 }
+
+// The following four messages are set up to test for wire compatibility between
+// packed and non-packed repeated fields. We use the field number 2048, because
+// that is large enough to require a 3-byte varint for the tag.
+message PackedInt32 {
+  repeated int32 repeated_int32 = 2048 [packed = true];
+}
+
+message NonPackedInt32 {
+  repeated int32 repeated_int32 = 2048;
+}
+
+message PackedFixed32 {
+  repeated fixed32 repeated_fixed32 = 2048 [packed = true];
+}
+
+message NonPackedFixed32 {
+  repeated fixed32 repeated_fixed32 = 2048;
+}

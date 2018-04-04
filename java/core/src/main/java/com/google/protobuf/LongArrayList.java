@@ -82,6 +82,18 @@ final class LongArrayList extends AbstractProtobufList<Long>
   }
 
   @Override
+  protected void removeRange(int fromIndex, int toIndex) {
+    ensureIsMutable();
+    if (toIndex < fromIndex) {
+      throw new IndexOutOfBoundsException("toIndex < fromIndex");
+    }
+
+    System.arraycopy(array, toIndex, array, fromIndex, size - toIndex);
+    size -= (toIndex - fromIndex);
+    modCount++;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -246,7 +258,9 @@ final class LongArrayList extends AbstractProtobufList<Long>
     ensureIsMutable();
     ensureIndexInRange(index);
     long value = array[index];
-    System.arraycopy(array, index + 1, array, index, size - index);
+    if (index < size - 1) {
+      System.arraycopy(array, index + 1, array, index, size - index);
+    }
     size--;
     modCount++;
     return value;

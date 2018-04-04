@@ -73,14 +73,14 @@ namespace {
 
 static int kDefaultMaxRecursionDepth = 64;
 
-// Finds a field with the given number. NULL if none found.
+// Finds a field with the given number. nullptr if none found.
 const google::protobuf::Field* FindFieldByNumber(
     const google::protobuf::Type& type, int number);
 
 // Returns true if the field is packable.
 bool IsPackable(const google::protobuf::Field& field);
 
-// Finds an enum value with the given number. NULL if none found.
+// Finds an enum value with the given number. nullptr if none found.
 const google::protobuf::EnumValue* FindEnumValueByNumber(
     const google::protobuf::Enum& tech_enum, int number);
 
@@ -127,7 +127,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       render_unknown_fields_(false),
       render_unknown_enum_values_(true),
       add_trailing_zeros_for_timestamp_and_duration_(false) {
-  GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
+  GOOGLE_LOG_IF(DFATAL, stream == nullptr) << "Input stream is nullptr.";
 }
 
 ProtoStreamObjectSource::ProtoStreamObjectSource(
@@ -145,7 +145,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       render_unknown_fields_(false),
       render_unknown_enum_values_(true),
       add_trailing_zeros_for_timestamp_and_duration_(false) {
-  GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
+  GOOGLE_LOG_IF(DFATAL, stream == nullptr) << "Input stream is nullptr.";
 }
 
 ProtoStreamObjectSource::~ProtoStreamObjectSource() {
@@ -165,7 +165,7 @@ const google::protobuf::Field* ProtoStreamObjectSource::FindAndVerifyField(
   const google::protobuf::Field* field = FindFieldByNumber(type, tag >> 3);
   // Verify if the field corresponds to the wire type in tag.
   // If there is any discrepancy, mark the field as not found.
-  if (field != NULL) {
+  if (field != nullptr) {
     WireFormatLite::WireType expected_type =
         WireFormatLite::WireTypeForFieldType(
             static_cast<WireFormatLite::FieldType>(field->kind()));
@@ -173,7 +173,7 @@ const google::protobuf::Field* ProtoStreamObjectSource::FindAndVerifyField(
     if (actual_type != expected_type &&
         (!IsPackable(*field) ||
          actual_type != WireFormatLite::WIRETYPE_LENGTH_DELIMITED)) {
-      field = NULL;
+      field = nullptr;
     }
   }
   return field;
@@ -186,11 +186,11 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
                                              ObjectWriter* ow) const {
 
     const TypeRenderer* type_renderer = FindTypeRenderer(type.name());
-    if (type_renderer != NULL) {
+    if (type_renderer != nullptr) {
       return (*type_renderer)(this, type, name, ow);
     }
 
-  const google::protobuf::Field* field = NULL;
+  const google::protobuf::Field* field = nullptr;
   string field_name;
   // last_tag set to dummy value that is different from tag.
   uint32 tag = stream_->ReadTag(), last_tag = tag + 1;
@@ -203,7 +203,7 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
     if (tag != last_tag) {  // Update field only if tag is changed.
       last_tag = tag;
       field = FindAndVerifyField(type, tag);
-      if (field != NULL) {
+      if (field != nullptr) {
         if (preserve_proto_field_names_) {
           field_name = field->name();
         } else {
@@ -211,11 +211,11 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
         }
       }
     }
-    if (field == NULL) {
+    if (field == nullptr) {
       // If we didn't find a field, skip this unknown tag.
       // TODO(wpoon): Check return boolean value.
       WireFormat::SkipField(stream_, tag,
-                            render_unknown_fields_ ? &unknown_fields : NULL);
+                            render_unknown_fields_ ? &unknown_fields : nullptr);
       tag = stream_->ReadTag();
       continue;
     }
@@ -282,8 +282,8 @@ StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
     for (uint32 tag = stream_->ReadTag(); tag != 0; tag = stream_->ReadTag()) {
       const google::protobuf::Field* field =
           FindAndVerifyField(*field_type, tag);
-      if (field == NULL) {
-        WireFormat::SkipField(stream_, tag, NULL);
+      if (field == nullptr) {
+        WireFormat::SkipField(stream_, tag, nullptr);
         continue;
       }
       // Map field numbers are key = 1 and value = 2
@@ -294,14 +294,12 @@ StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
           // An absent map key is treated as the default.
           const google::protobuf::Field* key_field =
               FindFieldByNumber(*field_type, 1);
-          if (key_field == NULL) {
+          if (key_field == nullptr) {
             // The Type info for this map entry is incorrect. It should always
             // have a field named "key" and with field number 1.
             return Status(util::error::INTERNAL, "Invalid map entry.");
           }
           ASSIGN_OR_RETURN(map_key, MapKeyDefaultValueAsString(*key_field));
-          // Key is empty, force it to render as empty (for string values).
-          ow->empty_name_ok_for_next_key();
         }
         RETURN_IF_ERROR(RenderField(field, map_key, ow));
       } else {
@@ -527,7 +525,7 @@ Status ProtoStreamObjectSource::RenderStruct(const ProtoStreamObjectSource* os,
                                              const google::protobuf::Type& type,
                                              StringPiece field_name,
                                              ObjectWriter* ow) {
-  const google::protobuf::Field* field = NULL;
+  const google::protobuf::Field* field = nullptr;
   uint32 tag = os->stream_->ReadTag();
   ow->StartObject(field_name);
   while (tag != 0) {
@@ -545,12 +543,12 @@ Status ProtoStreamObjectSource::RenderStruct(const ProtoStreamObjectSource* os,
 Status ProtoStreamObjectSource::RenderStructValue(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  const google::protobuf::Field* field = NULL;
+  const google::protobuf::Field* field = nullptr;
   for (uint32 tag = os->stream_->ReadTag(); tag != 0;
        tag = os->stream_->ReadTag()) {
     field = os->FindAndVerifyField(type, tag);
-    if (field == NULL) {
-      WireFormat::SkipField(os->stream_, tag, NULL);
+    if (field == nullptr) {
+      WireFormat::SkipField(os->stream_, tag, nullptr);
       continue;
     }
     RETURN_IF_ERROR(os->RenderField(field, field_name, ow));
@@ -573,8 +571,8 @@ Status ProtoStreamObjectSource::RenderStructListValue(
 
   while (tag != 0) {
     const google::protobuf::Field* field = os->FindAndVerifyField(type, tag);
-    if (field == NULL) {
-      WireFormat::SkipField(os->stream_, tag, NULL);
+    if (field == nullptr) {
+      WireFormat::SkipField(os->stream_, tag, nullptr);
       tag = os->stream_->ReadTag();
       continue;
     }
@@ -595,8 +593,8 @@ Status ProtoStreamObjectSource::RenderAny(const ProtoStreamObjectSource* os,
   // First read out the type_url and value from the proto stream
   for (tag = os->stream_->ReadTag(); tag != 0; tag = os->stream_->ReadTag()) {
     const google::protobuf::Field* field = os->FindAndVerifyField(type, tag);
-    if (field == NULL) {
-      WireFormat::SkipField(os->stream_, tag, NULL);
+    if (field == nullptr) {
+      WireFormat::SkipField(os->stream_, tag, nullptr);
       continue;
     }
     // 'type_url' has field number of 1 and 'value' has field number 2
@@ -669,7 +667,7 @@ Status ProtoStreamObjectSource::RenderFieldMask(
        tag = os->stream_->ReadTag()) {
     if (paths_field_tag == 0) {
       const google::protobuf::Field* field = os->FindAndVerifyField(type, tag);
-      if (field != NULL && field->number() == 1 &&
+      if (field != nullptr && field->number() == 1 &&
           field->name() == "paths") {
         paths_field_tag = tag;
       }
@@ -756,7 +754,7 @@ Status ProtoStreamObjectSource::RenderField(
     // Get the nested message type for this field.
     const google::protobuf::Type* type =
         typeinfo_->GetTypeByTypeUrl(field->type_url());
-    if (type == NULL) {
+    if (type == nullptr) {
       return Status(util::error::INTERNAL,
                     StrCat("Invalid configuration. Could not find the type: ",
                            field->type_url()));
@@ -765,7 +763,7 @@ Status ProtoStreamObjectSource::RenderField(
     // Short-circuit any special type rendering to save call-stack space.
     const TypeRenderer* type_renderer = FindTypeRenderer(type->name());
 
-    bool use_type_renderer = type_renderer != NULL;
+    bool use_type_renderer = type_renderer != nullptr;
 
     if (use_type_renderer) {
       RETURN_IF_ERROR((*type_renderer)(this, *type, field_name, ow));
@@ -875,14 +873,15 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
           typeinfo_->GetEnumByTypeUrl(field->type_url());
       // Lookup the name of the enum, and render that. Unknown enum values
       // are printed as integers.
-      if (en != NULL) {
+      if (en != nullptr) {
         const google::protobuf::EnumValue* enum_value =
             FindEnumValueByNumber(*en, buffer32);
-        if (enum_value != NULL) {
+        if (enum_value != nullptr) {
           if (use_ints_for_enums_) {
             ow->RenderInt32(field_name, buffer32);
           } else if (use_lower_camel_for_enums_) {
-            ow->RenderString(field_name, ToCamelCase(enum_value->name()));
+            ow->RenderString(field_name,
+                             EnumValueNameToLowerCamelCase(enum_value->name()));
           } else {
             ow->RenderString(field_name, enum_value->name());
           }
@@ -1004,10 +1003,10 @@ const string ProtoStreamObjectSource::ReadFieldValueAsString(
       const google::protobuf::Enum* en =
           typeinfo_->GetEnumByTypeUrl(field.type_url());
       // Lookup the name of the enum, and render that. Skips unknown enums.
-      if (en != NULL) {
+      if (en != nullptr) {
         const google::protobuf::EnumValue* enum_value =
             FindEnumValueByNumber(*en, buffer32);
-        if (enum_value != NULL) {
+        if (enum_value != nullptr) {
           result = enum_value->name();
         }
       }
@@ -1051,8 +1050,8 @@ std::pair<int64, int32> ProtoStreamObjectSource::ReadSecondsAndNanos(
 
   for (tag = stream_->ReadTag(); tag != 0; tag = stream_->ReadTag()) {
     const google::protobuf::Field* field = FindAndVerifyField(type, tag);
-    if (field == NULL) {
-      WireFormat::SkipField(stream_, tag, NULL);
+    if (field == nullptr) {
+      WireFormat::SkipField(stream_, tag, nullptr);
       continue;
     }
     // 'seconds' has field number of 1 and 'nanos' has field number 2
@@ -1090,7 +1089,7 @@ const google::protobuf::Field* FindFieldByNumber(
       return &type.fields(i);
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 // TODO(skarvaje): Replace FieldDescriptor by implementing IsTypePackable()
@@ -1111,7 +1110,7 @@ const google::protobuf::EnumValue* FindEnumValueByNumber(
       return &ev;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 // TODO(skarvaje): Look into optimizing this by not doing computation on

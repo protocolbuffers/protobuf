@@ -44,6 +44,11 @@ void Message_mark(void* _self) {
 }
 
 void Message_free(void* self) {
+  stringsink* unknown = ((MessageHeader *)self)->unknown_fields;
+  if (unknown != NULL) {
+    stringsink_uninit(unknown);
+    free(unknown);
+  }
   xfree(self);
 }
 
@@ -66,6 +71,8 @@ VALUE Message_alloc(VALUE klass) {
   ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
   msg->descriptor = desc;
   rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
+
+  msg->unknown_fields = NULL;
 
   layout_init(desc->layout, Message_data(msg));
 
@@ -533,9 +540,9 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
               get_def_obj(desc->msgdef));
   rb_define_alloc_func(klass, Message_alloc);
   rb_require("google/protobuf/message_exts");
-  rb_include_module(klass, rb_eval_string("Google::Protobuf::MessageExts"));
+  rb_include_module(klass, rb_eval_string("::Google::Protobuf::MessageExts"));
   rb_extend_object(
-      klass, rb_eval_string("Google::Protobuf::MessageExts::ClassMethods"));
+      klass, rb_eval_string("::Google::Protobuf::MessageExts::ClassMethods"));
 
   rb_define_method(klass, "method_missing",
                    Message_method_missing, -1);

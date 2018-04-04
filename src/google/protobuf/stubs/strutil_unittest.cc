@@ -782,7 +782,7 @@ TEST(Base64, EscapeAndUnescape) {
       reinterpret_cast<const unsigned char*>(base64_strings[i].plaintext);
     int plain_length = strlen(base64_strings[i].plaintext);
     int cypher_length = strlen(base64_strings[i].cyphertext);
-    vector<char> buffer(cypher_length+1);
+    std::vector<char> buffer(cypher_length+1);
     int encode_length = WebSafeBase64Escape(unsigned_plaintext,
                                                      plain_length,
                                                      &buffer[0],

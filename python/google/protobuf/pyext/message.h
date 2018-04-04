@@ -37,10 +37,10 @@
 #include <Python.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
+
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/pyext/thread_unsafe_shared_ptr.h>
 
 namespace google {
 namespace protobuf {
@@ -51,13 +51,6 @@ class FieldDescriptor;
 class Descriptor;
 class DescriptorPool;
 class MessageFactory;
-
-#ifdef _SHARED_PTR_H
-using std::shared_ptr;
-using std::string;
-#else
-using internal::shared_ptr;
-#endif
 
 namespace python {
 
@@ -71,7 +64,9 @@ typedef struct CMessage {
   // proto tree.  Every Python CMessage holds a reference to it in
   // order to keep it alive as long as there's a Python object that
   // references any part of the tree.
-  shared_ptr<Message> owner;
+
+  typedef ThreadUnsafeSharedPtr<Message> OwnerRef;
+  OwnerRef owner;
 
   // Weak reference to a parent CMessage object. This is NULL for any top-level
   // message and is set for any child message (i.e. a child submessage or a
@@ -240,22 +235,22 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg);
 // has been registered with the same field number on this class.
 PyObject* RegisterExtension(PyObject* cls, PyObject* extension_handle);
 
-// Retrieves an attribute named 'name' from CMessage 'self'. Returns
-// the attribute value on success, or NULL on failure.
+// Retrieves an attribute named 'name' from 'self', which is interpreted as a
+// CMessage. Returns the attribute value on success, or null on failure.
 //
 // Returns a new reference.
-PyObject* GetAttr(CMessage* self, PyObject* name);
+PyObject* GetAttr(PyObject* self, PyObject* name);
 
-// Set the value of the attribute named 'name', for CMessage 'self',
-// to the value 'value'. Returns -1 on failure.
-int SetAttr(CMessage* self, PyObject* name, PyObject* value);
+// Set the value of the attribute named 'name', for 'self', which is interpreted
+// as a CMessage, to the value 'value'. Returns -1 on failure.
+int SetAttr(PyObject* self, PyObject* name, PyObject* value);
 
 PyObject* FindInitializationErrors(CMessage* self);
 
 // Set the owner field of self and any children of self, recursively.
 // Used when self is being released and thus has a new owner (the
 // released Message.)
-int SetOwner(CMessage* self, const shared_ptr<Message>& new_owner);
+int SetOwner(CMessage* self, const CMessage::OwnerRef& new_owner);
 
 int AssureWritable(CMessage* self);
 
@@ -336,7 +331,8 @@ bool CheckAndSetString(
     const Reflection* reflection,
     bool append,
     int index);
-PyObject* ToStringObject(const FieldDescriptor* descriptor, string value);
+PyObject* ToStringObject(const FieldDescriptor* descriptor,
+                         const string& value);
 
 // Check if the passed field descriptor belongs to the given message.
 // If not, return false and set a Python exception (a KeyError)
@@ -346,6 +342,15 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
 extern PyObject* PickleError_class;
 
 bool InitProto2MessageModule(PyObject *m);
+
+#if LANG_CXX11
+// These are referenced by repeated_scalar_container, and must
+// be explicitly instantiated.
+extern template bool CheckAndGetInteger<int32>(PyObject*, int32*);
+extern template bool CheckAndGetInteger<int64>(PyObject*, int64*);
+extern template bool CheckAndGetInteger<uint32>(PyObject*, uint32*);
+extern template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
+#endif
 
 }  // namespace python
 }  // namespace protobuf

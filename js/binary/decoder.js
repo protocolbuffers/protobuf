@@ -58,7 +58,7 @@ goog.require('jspb.utils');
  * @param {?jspb.BinaryDecoder=} opt_decoder
  * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
  *     opt_next The decoder method to use for next().
- * @param {?Array.<number|boolean|string>=} opt_elements
+ * @param {?Array<number|boolean|string>=} opt_elements
  * @constructor
  * @struct
  */
@@ -92,7 +92,7 @@ jspb.BinaryIterator = function(opt_decoder, opt_next, opt_elements) {
  * @param {?jspb.BinaryDecoder=} opt_decoder
  * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
  *     opt_next The decoder method to use for next().
- * @param {?Array.<number|boolean|string>=} opt_elements
+ * @param {?Array<number|boolean|string>=} opt_elements
  * @private
  */
 jspb.BinaryIterator.prototype.init_ =
@@ -112,7 +112,7 @@ jspb.BinaryIterator.prototype.init_ =
 
 /**
  * Global pool of BinaryIterator instances.
- * @private {!Array.<!jspb.BinaryIterator>}
+ * @private {!Array<!jspb.BinaryIterator>}
  */
 jspb.BinaryIterator.instanceCache_ = [];
 
@@ -123,7 +123,7 @@ jspb.BinaryIterator.instanceCache_ = [];
  * @param {?jspb.BinaryDecoder=} opt_decoder
  * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
  *     opt_next The decoder method to use for next().
- * @param {?Array.<number|boolean|string>=} opt_elements
+ * @param {?Array<number|boolean|string>=} opt_elements
  * @return {!jspb.BinaryIterator}
  */
 jspb.BinaryIterator.alloc = function(opt_decoder, opt_next, opt_elements) {
@@ -274,7 +274,7 @@ jspb.BinaryDecoder = function(opt_bytes, opt_start, opt_length) {
 
 /**
  * Global pool of BinaryDecoder instances.
- * @private {!Array.<!jspb.BinaryDecoder>}
+ * @private {!Array<!jspb.BinaryDecoder>}
  */
 jspb.BinaryDecoder.instanceCache_ = [];
 
@@ -583,27 +583,24 @@ jspb.BinaryDecoder.prototype.readUnsignedVarint32 = function() {
   x |= (temp & 0x0F) << 28;
   if (temp < 128) {
     // We're reading the high bits of an unsigned varint. The byte we just read
-    // also contains bits 33 through 35, which we're going to discard. Those
-    // bits _must_ be zero, or the encoding is invalid.
-    goog.asserts.assert((temp & 0xF0) == 0);
+    // also contains bits 33 through 35, which we're going to discard.
     this.cursor_ += 5;
     goog.asserts.assert(this.cursor_ <= this.end_);
     return x >>> 0;
   }
 
-  // If we get here, we're reading the sign extension of a negative 32-bit int.
-  // We can skip these bytes, as we know in advance that they have to be all
-  // 1's if the varint is correctly encoded. Since we also know the value is
-  // negative, we don't have to coerce it to unsigned before we return it.
+  // If we get here, we need to truncate coming bytes. However we need to make
+  // sure cursor place is correct.
+  this.cursor_ += 5;
+  if (bytes[this.cursor_++] >= 128 &&
+      bytes[this.cursor_++] >= 128 &&
+      bytes[this.cursor_++] >= 128 &&
+      bytes[this.cursor_++] >= 128 &&
+      bytes[this.cursor_++] >= 128) {
+    // If we get here, the varint is too long.
+    goog.asserts.assert(false);
+  }
 
-  goog.asserts.assert((temp & 0xF0) == 0xF0);
-  goog.asserts.assert(bytes[this.cursor_ + 5] == 0xFF);
-  goog.asserts.assert(bytes[this.cursor_ + 6] == 0xFF);
-  goog.asserts.assert(bytes[this.cursor_ + 7] == 0xFF);
-  goog.asserts.assert(bytes[this.cursor_ + 8] == 0xFF);
-  goog.asserts.assert(bytes[this.cursor_ + 9] == 0x01);
-
-  this.cursor_ += 10;
   goog.asserts.assert(this.cursor_ <= this.end_);
   return x;
 };
@@ -989,7 +986,7 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       codeUnits.push(high, low);
     }
 
-    // Avoid exceeding the maximum stack size when calling {@code apply}.
+    // Avoid exceeding the maximum stack size when calling `apply`.
     if (codeUnits.length >= 8192) {
       result += String.fromCharCode.apply(null, codeUnits);
       codeUnits.length = 0;
