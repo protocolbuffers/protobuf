@@ -15,6 +15,9 @@ endif()
 # Project
 project(protobuf C CXX)
 
+# Add c++11 flags for clang
+set(CMAKE_CXX_FLAGS "-std=c++11")
+
 # Options
 option(protobuf_BUILD_TESTS "Build tests" ON)
 option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
