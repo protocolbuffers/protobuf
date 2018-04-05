@@ -109,8 +109,7 @@ initialize_submodule:
 	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
 	cd $$oldpwd
 	touch initialize_submodule
-	
-$(top_srcdir)/src/libprotobuf.la: initialize_submodule
+
 $(top_srcdir)/third_party/benchmark/src/libbenchmark.a: initialize_submodule
 
 AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
@@ -296,6 +295,26 @@ go: go_protoc_middleman go_protoc_middleman2 go-benchmark
 	./go-benchmark $(all_data)
 
 ############# GO RULES END ##############
+
+############ UTIL RULES BEGIN ############
+
+bin_PROGRAMS += protoc-gen-gogoproto gogo-data-scrubber
+
+protoc_gen_gogoproto_LDADD = $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/src/libprotoc.la
+protoc_gen_gogoproto_SOURCES = util/protoc-gen-gogoproto.cc
+protoc_gen_gogoproto_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp -I$(srcdir)/util
+
+gogo_data_scrubber_LDADD = $(top_srcdir)/src/libprotobuf.la
+gogo_data_scrubber_SOURCES = util/gogo_data_scrubber.cc
+gogo_data_scrubber_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp -I$(srcdir)/util
+gogo_data_scrubber-gogo_data_scrubber.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header)
+nodist_gogo_data_scrubber_SOURCES =                                        \
+	$(benchmarks_protoc_outputs)                                             \
+	$(benchmarks_protoc_outputs_proto2)                                      \
+	$(benchmarks_protoc_outputs_proto2_header)                               \
+	$(benchmarks_protoc_outputs_header)
+	
+############ UTIL RULES END ############
 
 
 MAINTAINERCLEANFILES =                                                     \
