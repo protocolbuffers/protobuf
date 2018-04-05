@@ -60,7 +60,7 @@ namespace compiler {
 namespace java {
 
 namespace {
-bool GenerateHasBits(const Descriptor* descriptor) {
+bool GenerateHasBits2(const Descriptor* descriptor) {
   return SupportFieldPresence(descriptor->file()) ||
       HasRepeatedFields(descriptor);
 }
@@ -120,7 +120,7 @@ Generate(io::Printer* printer) {
       "\n");
   }
 
-  if (GenerateHasBits(descriptor_)) {
+  if (GenerateHasBits2(descriptor_)) {
     // Integers for bit fields.
     int totalBits = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {

@@ -51,12 +51,12 @@ namespace java {
 
 namespace {
 
-void SetMessageVariables(const FieldDescriptor* descriptor,
-                         int messageBitIndex,
-                         int builderBitIndex,
-                         const FieldGeneratorInfo* info,
-                         ClassNameResolver* name_resolver,
-                         std::map<string, string>* variables) {
+void SetMessageVariables4(const FieldDescriptor* descriptor,
+                          int messageBitIndex,
+                          int builderBitIndex,
+                          const FieldGeneratorInfo* info,
+                          ClassNameResolver* name_resolver,
+                          std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -112,9 +112,9 @@ ImmutableMessageFieldLiteGenerator(const FieldDescriptor* descriptor,
   : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
     builderBitIndex_(builderBitIndex), context_(context),
     name_resolver_(context->GetNameResolver()) {
-    SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
-                        context->GetFieldGeneratorInfo(descriptor),
-                        name_resolver_, &variables_);
+    SetMessageVariables4(descriptor, messageBitIndex, builderBitIndex,
+                         context->GetFieldGeneratorInfo(descriptor),
+                         name_resolver_, &variables_);
 }
 
 ImmutableMessageFieldLiteGenerator::~ImmutableMessageFieldLiteGenerator() {}
@@ -600,9 +600,9 @@ RepeatedImmutableMessageFieldLiteGenerator(const FieldDescriptor* descriptor,
   : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
     builderBitIndex_(builderBitIndex), context_(context),
     name_resolver_(context->GetNameResolver())  {
-  SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
-                      context->GetFieldGeneratorInfo(descriptor),
-                      name_resolver_, &variables_);
+  SetMessageVariables4(descriptor, messageBitIndex, builderBitIndex,
+                       context->GetFieldGeneratorInfo(descriptor),
+                       name_resolver_, &variables_);
 }
 
 RepeatedImmutableMessageFieldLiteGenerator::

@@ -74,13 +74,15 @@ bool EnableExperimentalRuntimeForLite() {
 #endif  // !PROTOBUF_EXPERIMENT
 }
 
-bool GenerateHasBits(const Descriptor* descriptor) {
+// TODO: I'm identical to what's in java_message.cc
+bool GenerateHasBits4(const Descriptor* descriptor) {
   return SupportFieldPresence(descriptor->file()) ||
       HasRepeatedFields(descriptor);
 }
 
-string MapValueImmutableClassdName(const Descriptor* descriptor,
-                                   ClassNameResolver* name_resolver) {
+// TODO: Consolidate me into a util file.
+string MapValueImmutableClassdName3(const Descriptor* descriptor,
+                                    ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->FindFieldByName("value");
   GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
@@ -233,7 +235,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     messageGenerator.Generate(printer);
   }
 
-  if (GenerateHasBits(descriptor_)) {
+  if (GenerateHasBits4(descriptor_)) {
     // Integers for bit fields.
     int totalBits = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -842,8 +844,8 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodIsInitialized(
               "    return null;\n"
               "  }\n"
               "}\n",
-              "type", MapValueImmutableClassdName(field->message_type(),
-                                                  name_resolver_),
+              "type", MapValueImmutableClassdName3(field->message_type(),
+                                                   name_resolver_),
               "name", info->capitalized_name);
           } else {
             printer->Print(
@@ -963,7 +965,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodVisit(
       "oneof_name", context_->GetOneofGeneratorInfo(field)->name);
   }
 
-  if (GenerateHasBits(descriptor_)) {
+  if (GenerateHasBits4(descriptor_)) {
     // Integers for bit fields.
     int totalBits = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {

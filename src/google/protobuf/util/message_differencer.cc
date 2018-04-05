@@ -486,7 +486,8 @@ bool MessageDifferencer::Compare(
     return false;
   }
   // Expand google.protobuf.Any payload if possible.
-  if (descriptor1->full_name() == internal::kAnyFullTypeName) {
+  if (descriptor1->full_name() ==
+      ::google::protobuf::internal::kAnyFullTypeName) {
     std::unique_ptr<Message> data1;
     std::unique_ptr<Message> data2;
     if (UnpackAny(message1, &data1) && UnpackAny(message2, &data2)) {
@@ -1069,12 +1070,14 @@ bool MessageDifferencer::UnpackAny(const Message& any,
   const Reflection* reflection = any.GetReflection();
   const FieldDescriptor* type_url_field;
   const FieldDescriptor* value_field;
-  if (!internal::GetAnyFieldDescriptors(any, &type_url_field, &value_field)) {
+  if (!::google::protobuf::internal::GetAnyFieldDescriptors(
+          any, &type_url_field, &value_field)) {
     return false;
   }
   const string& type_url = reflection->GetString(any, type_url_field);
   string full_type_name;
-  if (!internal::ParseAnyTypeUrl(type_url, &full_type_name)) {
+  if (!::google::protobuf::internal::ParseAnyTypeUrl(type_url,
+                                                     &full_type_name)) {
     return false;
   }
 

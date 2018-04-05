@@ -53,12 +53,12 @@ namespace java {
 
 namespace {
 
-void SetEnumVariables(const FieldDescriptor* descriptor,
-                      int messageBitIndex,
-                      int builderBitIndex,
-                      const FieldGeneratorInfo* info,
-                      ClassNameResolver* name_resolver,
-                      std::map<string, string>* variables) {
+void SetEnumVariablesLite(const FieldDescriptor* descriptor,
+                          int messageBitIndex,
+                          int builderBitIndex,
+                          const FieldGeneratorInfo* info,
+                          ClassNameResolver* name_resolver,
+                          std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -125,9 +125,9 @@ ImmutableEnumFieldLiteGenerator(const FieldDescriptor* descriptor,
   : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
     builderBitIndex_(builderBitIndex),
     name_resolver_(context->GetNameResolver()) {
-  SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
-                   context->GetFieldGeneratorInfo(descriptor),
-                   name_resolver_, &variables_);
+  SetEnumVariablesLite(descriptor, messageBitIndex, builderBitIndex,
+                       context->GetFieldGeneratorInfo(descriptor),
+                       name_resolver_, &variables_);
 }
 
 ImmutableEnumFieldLiteGenerator::~ImmutableEnumFieldLiteGenerator() {}
@@ -577,9 +577,9 @@ RepeatedImmutableEnumFieldLiteGenerator(const FieldDescriptor* descriptor,
   : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
     builderBitIndex_(builderBitIndex), context_(context),
     name_resolver_(context->GetNameResolver()) {
-  SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
-                   context->GetFieldGeneratorInfo(descriptor),
-                   name_resolver_, &variables_);
+  SetEnumVariablesLite(descriptor, messageBitIndex, builderBitIndex,
+                       context->GetFieldGeneratorInfo(descriptor),
+                       name_resolver_, &variables_);
 }
 
 RepeatedImmutableEnumFieldLiteGenerator::
