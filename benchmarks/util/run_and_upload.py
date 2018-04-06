@@ -5,41 +5,46 @@ import copy
 import uuid
 import calendar
 import time
-import big_query_utils
+from util import big_query_utils
 import datetime
-
+import json
+# This import depends on the automake rule protoc_middleman, please make sure
+# protoc_middleman has been built before run this file.
+import tmp.benchmarks_pb2 as benchmarks_pb2
+from click.types import STRING
 
 _PROJECT_ID = 'grpc-testing'
 _DATASET = 'protobuf_benchmark_result'
 _TABLE = 'opensource_result_v1'
-_NOW = "%d%02d%02d"%(datetime.datetime.now().year,
-                     datetime.datetime.now().month,
-                     datetime.datetime.now().day)
+_NOW = "%d%02d%02d" % (datetime.datetime.now().year,
+                       datetime.datetime.now().month,
+                       datetime.datetime.now().day)
+
+file_size_map = {}
+
+def get_data_size(file_name):
+  if file_name in file_size_map:
+    return file_size_map[file_name]
+  benchmark_dataset = benchmarks_pb2.BenchmarkDataset()
+  benchmark_dataset.ParseFromString(
+      open(os.path.dirname(os.path.abspath(__file__)) + "/../" + file_name).read())
+  size = 0
+  count = 0
+  for payload in benchmark_dataset.payload:
+    size += len(payload)
+    count += 1
+  file_size_map[file_name] = (size, 1.0 * size / count)
+  return size, 1.0 * size / count
 
 
-average_bytes_per_message = {
-  "google_message2": 84570.0,
-  "google_message1_proto2": 228.0,
-  "google_message1_proto3": 228.0,
-  "google_message4": 18687.277215502345,
-  "google_message3_4": 16161.58529111338,
-  "google_message3_3": 75.3473942530787,
-  "google_message3_5": 20.979602347823803,
-  "google_message3_2": 366554.9166666667,
-  "google_message3_1": 200567668
-}
+def extract_file_name(file_name):
+  name_list = re.split("[/\.]", file_name)
+  short_file_name = ""
+  for name in name_list:
+    if name[:14] == "google_message":
+      short_file_name = name
+  return short_file_name
 
-total_bytes = {
-  "google_message2": 84570.0,
-  "google_message1_proto2": 228.0,
-  "google_message1_proto3": 228.0,
-  "google_message4": 75702160.0,
-  "google_message3_4": 31644384.0,
-  "google_message3_3": 8443429,
-  "google_message3_5": 45540234,
-  "google_message3_2": 105567816,
-  "google_message3_1": 200567668
-}
 
 cpp_result = []
 python_result = []
@@ -47,6 +52,20 @@ java_result = []
 go_result = []
 
 
+# CPP results example:
+# [ 
+#   "benchmarks": [ 
+#     {
+#       "bytes_per_second": int,
+#       "cpu_time": int,
+#       "name: string,
+#       "time_unit: string,
+#       ...
+#     },
+#     ... 
+#   ],
+#   ... 
+# ]
 def parse_cpp_result(filename):
   global cpp_result
   if filename == "":
@@ -54,52 +73,86 @@ def parse_cpp_result(filename):
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
   with open(filename) as f:
-    for line in f:
-      result_list = re.split("[\ \t]+", line)
-      benchmark_name_list = re.findall("google_message[0-9]+.*$",
-                                       result_list[0])
-      if len(benchmark_name_list) == 0:
-        continue
-      filename = re.split("(_parse_|_serialize)", benchmark_name_list[0])[0]
-      behavior = benchmark_name_list[0][len(filename) + 1:]
-      throughput_with_unit = re.split('/s', result_list[-1])[0]
-      if throughput_with_unit[-2:] == "GB":
-        throughput = float(throughput_with_unit[:-2]) * 1024
-      else:
-        throughput = float(throughput_with_unit[:-2])
+    results = json.loads(f.read())
+    for benchmark in results["benchmarks"]:
+      data_filename = "".join(
+          re.split("(_parse_|_serialize)", benchmark["name"])[0])
+      behavior = benchmark["name"][len(data_filename) + 1:]
       cpp_result.append({
-        "dataFilename": filename,
-        "throughput": throughput,
+        "language": "cpp",
+        "dataFileName": data_filename,
         "behavior": behavior,
-        "language": "cpp"
+        "throughput": benchmark["bytes_per_second"] / 2.0 ** 20
       })
 
 
+# Python results example:
+# [ 
+#   [ 
+#     {
+#       "filename": string,
+#       "benchmarks": {
+#         behavior: results, 
+#         ...
+#       },
+#       "message_name": STRING
+#     },
+#     ... 
+#   ], #pure-python
+#   ... 
+# ]
 def parse_python_result(filename):
-  global average_bytes_per_message, python_result
+  global python_result
   if filename == "":
     return
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
   with open(filename) as f:
-    result = {"language": "python"}
-    for line in f:
-      if line.find("./python") != -1:
-        result["behavior"] = re.split("[ \t\n]+", line)[0][9:]
-      elif line.find("dataset file") != -1:
-        result["dataFileName"] = re.split(
-            "\.",
-            re.findall("google_message[0-9]+.*$", line)[0])[-2]
-      elif line.find("Average time for ") != -1:
-        elements = re.split("[ \t]+", line)
-        new_result = copy.deepcopy(result)
-        new_result["behavior"] += '_' + elements[3][:-1]
-        new_result["throughput"] = \
-          average_bytes_per_message[new_result["dataFileName"]] / \
-          float(elements[4]) * 1e9 / 1024 / 1024
-        python_result.append(new_result)
+    results_list = json.loads(f.read())
+    for results in results_list:
+      for result in results:
+        _, avg_size = get_data_size(result["filename"])
+        for behavior in result["benchmarks"]:
+          python_result.append({
+            "language": "python",
+            "dataFileName": extract_file_name(result["filename"]),
+            "behavior": behavior,
+            "throughput": avg_size /
+                          result["benchmarks"][behavior] * 1e9 / 2 ** 20
+          })
 
 
+# Java results example:
+# [ 
+#   {
+#     "id": string,
+#     "instrumentSpec": {...},
+#     "measurements": [
+#       {
+#         "weight": float,
+#         "value": {
+#           "magnitude": float,
+#           "unit": string
+#         },
+#         ...
+#       },
+#       ...
+#     ],
+#     "run": {...},
+#     "scenario": {
+#       "benchmarkSpec": {
+#         "methodName": string,
+#         "parameters": {
+#            defined parameters in the benchmark: parameters value
+#         },
+#         ...
+#       },
+#       ...
+#     }
+#     
+#   }, 
+#   ... 
+# ]
 def parse_java_result(filename):
   global average_bytes_per_message, java_result
   if filename == "":
@@ -107,28 +160,38 @@ def parse_java_result(filename):
   if filename[0] != '/':
     filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
   with open(filename) as f:
-    result = {"language": "java"}
-    for line in f:
-      if line.find("dataFile=") != -1:
-        result["dataFileName"] = re.split(
-            "\.",
-            re.findall("google_message[0-9]+.*$", line)[0])[-2]
-      if line.find("benchmarkMethod=") != -1:
-        for element in re.split("[ \t,]+", line):
-          if element[:16] == "benchmarkMethod=":
-            result["behavior"] = element[16:]
-      if line.find("median=") != -1:
-        for element in re.split("[ \t,]+", line):
-          if element[:7] == "median=":
-            result["throughput"] = \
-              average_bytes_per_message[result["dataFileName"]] / \
-              float(element[7:]) * 1e9 / 1024 / 1024
-            java_result.append(copy.deepcopy(result))
-            continue
+    results = json.loads(f.read())
+    for result in results:
+      total_weight = 0
+      total_value = 0
+      for measurement in result["measurements"]:
+        total_weight += measurement["weight"]
+        total_value += measurement["value"]["magnitude"]
+      avg_time = total_value * 1.0 / total_weight
+      total_size, _ = get_data_size(
+          result["scenario"]["benchmarkSpec"]["parameters"]["dataFile"])
+      java_result.append({
+        "language": "java",
+        "throughput": total_size / avg_time * 1e9 / 2 ** 20,
+        "behavior": result["scenario"]["benchmarkSpec"]["methodName"],
+        "dataFileName": extract_file_name(
+            result["scenario"]["benchmarkSpec"]["parameters"]["dataFile"])
+      })
 
 
+# Go benchmark results:
+#
+# goos: linux
+# goarch: amd64
+# Benchmark/./datasets/google_message2/dataset.google_message2.pb/Unmarshal-12               3000      705784 ns/op
+# Benchmark/./datasets/google_message2/dataset.google_message2.pb/Marshal-12                 2000      634648 ns/op
+# Benchmark/./datasets/google_message2/dataset.google_message2.pb/Size-12                    5000      244174 ns/op
+# Benchmark/./datasets/google_message2/dataset.google_message2.pb/Clone-12                    300     4120954 ns/op
+# Benchmark/./datasets/google_message2/dataset.google_message2.pb/Merge-12                    300     4108632 ns/op
+# PASS
+# ok    _/usr/local/google/home/yilunchong/mygit/protobuf/benchmarks  124.173s
 def parse_go_result(filename):
-  global average_bytes_per_message, go_result
+  global go_result
   if filename == "":
     return
   if filename[0] != '/':
@@ -136,20 +199,21 @@ def parse_go_result(filename):
   with open(filename) as f:
     for line in f:
       result_list = re.split("[\ \t]+", line)
-      benchmark_name_list = re.split("[/\.]+", result_list[0])
-      filename = ""
-      for s in benchmark_name_list:
-        if s[:14] == "google_message":
-          filename = s
-      if filename == "":
+      if result_list[0][:9] != "Benchmark":
         continue
-      behavior = benchmark_name_list[-1]
-      throughput = \
-        total_bytes[filename] / \
-        float(result_list[-2]) * 1e9 / 1024 / 1024
+      first_slash_index = result_list[0].find('/')
+      last_slash_index = result_list[0].rfind('/')
+      full_filename = result_list[0][first_slash_index+1:last_slash_index]
+      total_bytes, _ = get_data_size(full_filename)
+      behavior_with_suffix = result_list[0][last_slash_index+1:]
+      last_dash = behavior_with_suffix.rfind("-")
+      if last_dash == -1:
+        behavior = behavior_with_suffix
+      else:
+        behavior = behavior_with_suffix[:last_dash]
       go_result.append({
-        "dataFilename": filename,
-        "throughput": throughput,
+        "dataFilename": extract_file_name(full_filename),
+        "throughput": total_bytes / float(result_list[2]) * 1e9 / 2 ** 20,
         "behavior": behavior,
         "language": "go"
       })
