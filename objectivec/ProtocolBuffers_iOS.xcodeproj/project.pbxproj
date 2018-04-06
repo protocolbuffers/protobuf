@@ -714,7 +714,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0710;
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0930;
 				TargetAttributes = {
 					8BBEA4A5147C727100C4ADB7 = {
 						LastSwiftMigration = 0800;
@@ -930,6 +930,7 @@
 		7461B52F0F94FAFA00A0C422 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = ProtocolBuffers;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -939,6 +940,7 @@
 		7461B5300F94FAFA00A0C422 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = ProtocolBuffers;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -979,6 +981,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
 					"$(inherited)",
@@ -1014,6 +1017,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
 					"$(inherited)",
@@ -1187,6 +1191,7 @@
 		F4487C6C1A9F8F8100531423 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = TestSingleSourceBuild;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1196,6 +1201,7 @@
 		F4487C6D1A9F8F8100531423 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = TestSingleSourceBuild;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1205,12 +1211,14 @@
 		F45BBC0F1B0CDB50002D064D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 			};
 			name = Debug;
 		};
 		F45BBC101B0CDB50002D064D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 			};
 			name = Release;
 		};
