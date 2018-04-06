@@ -203,9 +203,7 @@ if __name__ == '__main__':
       extra_compile_args.append('-DMS_WIN64')
 
     # MSVS default is dymanic
-    if (sys.platform == 'win32' and
-        ((sys.version_info[0] == 3 and sys.version_info[1] == 5) or
-         (sys.version_info[0] == 3 and sys.version_info[1] == 6))):
+    if (sys.platform == 'win32'):
       extra_compile_args.append('/MT')
 
     if "clang" in os.popen('$CC --version 2> /dev/null').read():
