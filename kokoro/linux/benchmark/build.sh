@@ -76,7 +76,7 @@ echo "benchmarking go..."
 # build java benchmark
 make java-benchmark
 echo "benchmarking java..."
-./java-benchmark -Cresults.file.options.file="tmp/java_result.json"" $datasets
+./java-benchmark -Cresults.file.options.file="tmp/java_result.json" $datasets
 
 # upload result to bq
 cd run_and_upload_result
