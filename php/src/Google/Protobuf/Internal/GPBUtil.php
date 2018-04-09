@@ -194,7 +194,7 @@ class GPBUtil
     public static function checkMessage(&$var, $klass)
     {
         if (!$var instanceof $klass && !is_null($var)) {
-            throw new \Exception("Expect message.");
+            throw new \Exception("Expect $klass.");
         }
     }
 
