@@ -1104,7 +1104,7 @@ class Message
      */
     public function parseFromJsonStream($input)
     {
-        $array = json_decode($input->getData(), JSON_BIGINT_AS_STRING);
+        $array = json_decode($input->getData(), true, 512, JSON_BIGINT_AS_STRING);
         if (is_null($array)) {
             throw new GPBDecodeException(
                 "Cannot decode json string.");
