@@ -763,6 +763,7 @@ python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
   python/google/__init__.py                                                  \
   python/google/protobuf/__init__.py                                         \
+  python/google/protobuf/compiler/__init__.py                                \
   python/google/protobuf/descriptor.py                                       \
   python/google/protobuf/descriptor_database.py                              \
   python/google/protobuf/descriptor_pool.py                                  \
@@ -858,6 +859,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/symbol_database.py                                  \
   python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
+  python/google/protobuf/util/__init__.py                                    \
   python/release.sh                                                          \
   python/mox.py                                                              \
   python/setup.cfg                                                           \

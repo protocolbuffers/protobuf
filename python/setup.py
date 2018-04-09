@@ -120,9 +120,7 @@ class clean(_clean):
       for filename in filenames:
         filepath = os.path.join(dirpath, filename)
         if filepath.endswith("_pb2.py") or filepath.endswith(".pyc") or \
-          filepath.endswith(".so") or filepath.endswith(".o") or \
-          filepath.endswith('google/protobuf/compiler/__init__.py') or \
-          filepath.endswith('google/protobuf/util/__init__.py'):
+          filepath.endswith(".so") or filepath.endswith(".o"):
           os.remove(filepath)
     # _clean is an old-style class, so super() doesn't work.
     _clean.run(self)
@@ -144,12 +142,6 @@ class build_py(_build_py):
     generate_proto("../src/google/protobuf/wrappers.proto")
     GenerateUnittestProtos()
 
-    # Make sure google.protobuf/** are valid packages.
-    for path in ['', 'internal/', 'compiler/', 'pyext/', 'util/']:
-      try:
-        open('google/protobuf/%s__init__.py' % path, 'a').close()
-      except EnvironmentError:
-        pass
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
 
