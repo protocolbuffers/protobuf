@@ -144,7 +144,9 @@ if __name__ == "__main__":
       print "Message %s of dataset file %s" % \
           (result["message_name"], result["filename"])
       print "Average time for parse_from_benchmark: %.2f ns" % \
-          (result["benchmarks"]["parse_from_benchmark"])
+          (result["benchmarks"][ \
+                      args.behavior_prefix + "_parse_from_benchmark"])
       print "Average time for serialize_to_benchmark: %.2f ns" % \
-          (result["benchmarks"]["serialize_to_benchmark"])
+          (result["benchmarks"][ \
+                      args.behavior_prefix + "_serialize_to_benchmark"])
       print ""

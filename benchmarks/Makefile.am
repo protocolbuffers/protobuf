@@ -25,18 +25,6 @@ make_tmp_dir:
 	mkdir -p 'tmp/java/src/main/java'
 	touch make_tmp_dir
 
-if USE_EXTERNAL_PROTOC
-
-protoc_middleman: make_tmp_dir $(benchmarks_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=./cpp --java_out=./tmp $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper)
-	touch protoc_middleman
-
-protoc_middleman2: make_tmp_dir $(benchmarks_protoc_inputs_proto2)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=./cpp --java_out=./tmp $(benchmarks_protoc_inputs_proto2)
-	touch protoc_middleman2
-
-else
-
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
@@ -48,9 +36,7 @@ protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd/cpp --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2) )
 	touch protoc_middleman2
 
-endif
-
-all_data = $$(find . -type f -name "dataset.*.pb" -not -path "./tmp/*")
+all_data = $$(find $(srcdir) -type f -name "dataset.*.pb" -not -path "./tmp/*")
 
 ############# CPP RULES ##############
 
@@ -109,8 +95,7 @@ initialize_submodule:
 	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
 	cd $$oldpwd
 	touch initialize_submodule
-	
-$(top_srcdir)/src/libprotobuf.la: initialize_submodule
+
 $(top_srcdir)/third_party/benchmark/src/libbenchmark.a: initialize_submodule
 
 AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
@@ -142,7 +127,7 @@ java_benchmark_testing_files =                                      \
 	java/src/main/java/com/google/protobuf/ProtoCaliperBenchmark.java
 
 javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middleman2
-	cp -r java tmp && cd tmp/java &&  mvn clean compile assembly:single
+	cp -r $(srcdir)/java tmp && cd tmp/java &&  mvn clean compile assembly:single
 	cd ../..
 	@touch javac_middleman
 
@@ -191,7 +176,7 @@ python-pure-python-benchmark: python_add_init
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-pure-python-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-pure-python-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'python\' >> python-pure-python-benchmark
-	@echo cp python/py_benchmark.py tmp >> python-pure-python-benchmark
+	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-pure-python-benchmark
 	@echo python tmp/py_benchmark.py '$$@' >> python-pure-python-benchmark
 	@chmod +x python-pure-python-benchmark
 
@@ -201,7 +186,7 @@ python-cpp-reflection-benchmark: python_add_init
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-reflection-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-reflection-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-reflection-benchmark
-	@echo cp python/py_benchmark.py tmp >> python-cpp-reflection-benchmark
+	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-cpp-reflection-benchmark
 	@echo python tmp/py_benchmark.py '$$@' >> python-cpp-reflection-benchmark
 	@chmod +x python-cpp-reflection-benchmark
 
@@ -211,7 +196,7 @@ python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-generated-code-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-generated-code-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-generated-code-benchmark
-	@echo cp python/py_benchmark.py tmp >> python-cpp-generated-code-benchmark
+	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-cpp-generated-code-benchmark
 	@echo python tmp/py_benchmark.py --cpp_generated '$$@' >> python-cpp-generated-code-benchmark
 	@chmod +x python-cpp-generated-code-benchmark
 
@@ -251,43 +236,19 @@ benchmarks_protoc_inputs_proto2_message4 =                                 \
 	datasets/google_message4/benchmark_message4_2.proto                      \
 	datasets/google_message4/benchmark_message4_3.proto
 
-if USE_EXTERNAL_PROTOC
-
-go_protoc_middleman: make_tmp_dir $(benchmarks_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) 
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_benchmark_wrapper)
-	touch protoc_middleman
-
-go_protoc_middleman2: make_tmp_dir $(benchmarks_protoc_inputs_proto2_message1) $(benchmarks_protoc_inputs_proto2_message2) $(benchmarks_protoc_inputs_proto2_message3) $(benchmarks_protoc_inputs_proto2_message4)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message1)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message2)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message3)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message4)
-	touch protoc_middleman2
-
-else
-
-# We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
-# relative to srcdir, which may not be the same as the current directory when
-# building out-of-tree.
-go_protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs)
+go_protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs) $(benchmarks_protoc_inputs_proto2_message1) $(benchmarks_protoc_inputs_proto2_message2) $(benchmarks_protoc_inputs_proto2_message3) $(benchmarks_protoc_inputs_proto2_message4) $(well_known_type_protoc_inputs)
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_benchmark_wrapper) )
-	touch protoc_middleman
-
-go_protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs_proto2_message1) $(benchmarks_protoc_inputs_proto2_message2) $(benchmarks_protoc_inputs_proto2_message3) $(benchmarks_protoc_inputs_proto2_message4) $(well_known_type_protoc_inputs)
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message1) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message2) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message3) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2_message4) )
-	touch protoc_middleman2
+	touch go_protoc_middleman
 
-endif
-
-go-benchmark: go_protoc_middleman go_protoc_middleman2 
+go-benchmark: go_protoc_middleman 
 	@echo "Writing shortcut script go-benchmark..."
 	@echo '#! /bin/sh' > go-benchmark
-	@echo 'cd go' >> go-benchmark
+	@echo 'cd $(srcdir)/go' >> go-benchmark
 	@echo 'all_data=""' >> go-benchmark
 	@echo 'conf=()' >> go-benchmark
 	@echo 'data_files=()' >> go-benchmark
@@ -296,11 +257,211 @@ go-benchmark: go_protoc_middleman go_protoc_middleman2
 	@echo 'cd ..' >> go-benchmark
 	@chmod +x go-benchmark
 
-go: go_protoc_middleman go_protoc_middleman2 go-benchmark
+go: go_protoc_middleman go-benchmark 
 	./go-benchmark $(all_data)
 
 ############# GO RULES END ##############
 
+############# GOGO RULES BEGIN ############
+
+cpp_no_group_benchmarks_protoc_outputs_header =                             \
+	gogo/cpp_no_group/benchmarks.pb.h                                         \
+	gogo/cpp_no_group/datasets/google_message1/proto3/benchmark_message1_proto3.pb.h
+
+cpp_no_group_benchmarks_protoc_outputs =                                    \
+	gogo/cpp_no_group/benchmarks.pb.cc                                        \
+	gogo/cpp_no_group/datasets/google_message1/proto3/benchmark_message1_proto3.pb.cc
+
+cpp_no_group_benchmarks_protoc_outputs_proto2_header =                      \
+	gogo/cpp_no_group/datasets/google_message1/proto2/benchmark_message1_proto2.pb.h \
+	gogo/cpp_no_group/datasets/google_message2/benchmark_message2.pb.h        \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3.pb.h        \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_1.pb.h      \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_2.pb.h      \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_3.pb.h      \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_4.pb.h      \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_5.pb.h      \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_6.pb.h      \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_7.pb.h      \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_8.pb.h      \
+	gogo/cpp_no_group/datasets/google_message4/benchmark_message4.pb.h        \
+	gogo/cpp_no_group/datasets/google_message4/benchmark_message4_1.pb.h      \
+	gogo/cpp_no_group/datasets/google_message4/benchmark_message4_2.pb.h      \
+	gogo/cpp_no_group/datasets/google_message4/benchmark_message4_3.pb.h
+
+cpp_no_group_benchmarks_protoc_outputs_proto2 =                             \
+	gogo/cpp_no_group/datasets/google_message1/proto2/benchmark_message1_proto2.pb.cc \
+	gogo/cpp_no_group/datasets/google_message2/benchmark_message2.pb.cc       \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3.pb.cc       \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_1.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_2.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_3.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_4.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_5.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_6.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_7.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message3/benchmark_message3_8.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message4/benchmark_message4.pb.cc       \
+	gogo/cpp_no_group/datasets/google_message4/benchmark_message4_1.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message4/benchmark_message4_2.pb.cc     \
+	gogo/cpp_no_group/datasets/google_message4/benchmark_message4_3.pb.cc
+
+$(cpp_no_group_benchmarks_protoc_outputs): cpp_no_group_protoc_middleman
+$(cpp_no_group_benchmarks_protoc_outputs_header): cpp_no_group_protoc_middleman
+$(cpp_no_group_benchmarks_protoc_outputs_proto2): cpp_no_group_protoc_middleman
+$(cpp_no_group_benchmarks_protoc_outputs_proto2_header): cpp_no_group_protoc_middleman
+
+generate_cpp_no_group_benchmark_code:
+	cp $(srcdir)/cpp/cpp_benchmark.cc gogo/cpp_no_group/cpp_benchmark.cc
+	sed -i -e "s/\#include \"datasets/\#include \"gogo\/cpp_no_group\/datasets/g" gogo/cpp_no_group/cpp_benchmark.cc
+	sed -i -e "s/\#include \"benchmarks.pb.h/\#include \"gogo\/cpp_no_group\/benchmarks.pb.h/g" gogo/cpp_no_group/cpp_benchmark.cc  
+	touch generate_cpp_no_group_benchmark_code
+	
+bin_PROGRAMS += cpp-no-group-benchmark
+cpp_no_group_benchmark_LDADD = $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
+cpp_no_group_benchmark_SOURCES = gogo/cpp_no_group/cpp_benchmark.cc
+cpp_no_group_benchmark_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/gogo/cpp_no_group -I$(top_srcdir)/third_party/benchmark/include
+# Explicit deps because BUILT_SOURCES are only done before a "make all/check"
+# so a direct "make test_cpp" could fail if parallel enough.
+# See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
+gogo/cpp_no_group/cpp_no_group_benchmark-cpp_benchmark.$(OBJEXT): $(cpp_no_group_benchmarks_protoc_outputs) $(cpp_no_group_benchmarks_protoc_outputs_proto2) $(cpp_no_group_benchmarks_protoc_outputs_header) \
+	$(cpp_no_group_benchmarks_protoc_outputs_proto2_header) $(top_srcdir)/third_party/benchmark/src/libbenchmark.a generate_cpp_no_group_benchmark_code
+gogo/cpp_no_group/cpp_benchmark.cc: generate_cpp_no_group_benchmark_code
+nodist_cpp_no_group_benchmark_SOURCES =                                    \
+	$(cpp_no_group_benchmarks_protoc_outputs_proto2)                         \
+	$(cpp_no_group_benchmarks_protoc_outputs)                                \
+	$(cpp_no_group_benchmarks_protoc_outputs_header)                         \
+	$(cpp_no_group_benchmarks_protoc_outputs_proto2_header)
+
+cpp_no_group: cpp_no_group_protoc_middleman generate_gogo_data cpp-no-group-benchmark
+	./cpp-no-group-benchmark $(gogo_data)
+ 
+gogo_proto_middleman: protoc-gen-gogoproto
+	mkdir -p "tmp/gogo_proto"
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I$(srcdir) -I$(top_srcdir) --plugin=protoc-gen-gogoproto --gogoproto_out=$$oldpwd/tmp/gogo_proto $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) $(benchmarks_protoc_inputs_proto2) )
+	touch gogo_proto_middleman
+
+new_data = $$(for data in $(all_data); do echo "tmp$${data\#$(srcdir)}"; done | xargs)
+
+generate_gogo_data: protoc_middleman protoc_middleman2 gogo-data-scrubber
+	mkdir -p `dirname $(new_data)`
+	./gogo-data-scrubber $(all_data) $(new_data)
+	touch generate_gogo_data
+	
+make_tmp_dir_gogo:
+	mkdir -p tmp/go_no_group/benchmark_code
+	mkdir -p tmp/gogofast/benchmark_code
+	mkdir -p tmp/gogofaster/benchmark_code
+	mkdir -p tmp/gogoslick/benchmark_code
+	touch make_tmp_dir_gogo
+
+go_no_group_protoc_middleman: make_tmp_dir_gogo $(top_srcdir)/src/protoc$(EXEEXT) gogo_proto_middleman $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --go_out=$$oldpwd/tmp/go_no_group $(benchmarks_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --go_out=$$oldpwd/tmp/go_no_group $(benchmarks_protoc_inputs_benchmark_wrapper) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --go_out=$$oldpwd/tmp/go_no_group $(benchmarks_protoc_inputs_proto2_message1) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --go_out=$$oldpwd/tmp/go_no_group $(benchmarks_protoc_inputs_proto2_message2) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --go_out=$$oldpwd/tmp/go_no_group $(benchmarks_protoc_inputs_proto2_message3) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --go_out=$$oldpwd/tmp/go_no_group $(benchmarks_protoc_inputs_proto2_message4) )
+	touch go_no_group_protoc_middleman
+
+cpp_no_group_protoc_middleman: make_tmp_dir_gogo $(top_srcdir)/src/protoc$(EXEEXT) gogo_proto_middleman $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --cpp_out=$$oldpwd/gogo/cpp_no_group $(benchmarks_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --cpp_out=$$oldpwd/gogo/cpp_no_group $(benchmarks_protoc_inputs_benchmark_wrapper) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --cpp_out=$$oldpwd/gogo/cpp_no_group $(benchmarks_protoc_inputs_proto2_message1) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --cpp_out=$$oldpwd/gogo/cpp_no_group $(benchmarks_protoc_inputs_proto2_message2) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --cpp_out=$$oldpwd/gogo/cpp_no_group $(benchmarks_protoc_inputs_proto2_message3) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --cpp_out=$$oldpwd/gogo/cpp_no_group $(benchmarks_protoc_inputs_proto2_message4) )
+	touch cpp_no_group_protoc_middleman
+
+gogofast_protoc_middleman: make_tmp_dir_gogo $(top_srcdir)/src/protoc$(EXEEXT) gogo_proto_middleman $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofast_out=$$oldpwd/tmp/gogofast $(benchmarks_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofast_out=$$oldpwd/tmp/gogofast $(benchmarks_protoc_inputs_benchmark_wrapper) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofast_out=$$oldpwd/tmp/gogofast $(benchmarks_protoc_inputs_proto2_message1) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofast_out=$$oldpwd/tmp/gogofast $(benchmarks_protoc_inputs_proto2_message2) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofast_out=$$oldpwd/tmp/gogofast $(benchmarks_protoc_inputs_proto2_message3) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofast_out=$$oldpwd/tmp/gogofast $(benchmarks_protoc_inputs_proto2_message4) )
+	touch gogofast_protoc_middleman
+
+gogofaster_protoc_middleman: make_tmp_dir_gogo $(top_srcdir)/src/protoc$(EXEEXT) gogo_proto_middleman $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofaster_out=$$oldpwd/tmp/gogofaster $(benchmarks_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofaster_out=$$oldpwd/tmp/gogofaster $(benchmarks_protoc_inputs_benchmark_wrapper) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofaster_out=$$oldpwd/tmp/gogofaster $(benchmarks_protoc_inputs_proto2_message1) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofaster_out=$$oldpwd/tmp/gogofaster $(benchmarks_protoc_inputs_proto2_message2) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofaster_out=$$oldpwd/tmp/gogofaster $(benchmarks_protoc_inputs_proto2_message3) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogofaster_out=$$oldpwd/tmp/gogofaster $(benchmarks_protoc_inputs_proto2_message4) )
+	touch gogofaster_protoc_middleman
+
+gogoslick_protoc_middleman: make_tmp_dir_gogo $(top_srcdir)/src/protoc$(EXEEXT) gogo_proto_middleman $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogoslick_out=$$oldpwd/tmp/gogoslick $(benchmarks_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogoslick_out=$$oldpwd/tmp/gogoslick $(benchmarks_protoc_inputs_benchmark_wrapper) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogoslick_out=$$oldpwd/tmp/gogoslick $(benchmarks_protoc_inputs_proto2_message1) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogoslick_out=$$oldpwd/tmp/gogoslick $(benchmarks_protoc_inputs_proto2_message2) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogoslick_out=$$oldpwd/tmp/gogoslick $(benchmarks_protoc_inputs_proto2_message3) )
+	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogoslick_out=$$oldpwd/tmp/gogoslick $(benchmarks_protoc_inputs_proto2_message4) )
+	touch gogoslick_protoc_middleman
+
+gogo_data = $$(find . -type f -name "dataset.*.pb" -path "./tmp/*")
+
+generate-gogo-benchmark-code:
+	@echo '#! /bin/sh' > generate-gogo-benchmark-code
+	@echo 'cp $(srcdir)/go/go_benchmark_test.go tmp/$$1/benchmark_code/$$1_benchmark1_test.go' >> generate-gogo-benchmark-code
+	@echo 'sed -i -e "s/\.\.\/tmp/../g" tmp/$$1/benchmark_code/$$1_benchmark1_test.go' >> generate-gogo-benchmark-code
+	@echo 'sed -i -e "s/b\.Run(\"\(.*\)\"/b.Run(\"\1\_$$1\"/g" tmp/$$1/benchmark_code/$$1_benchmark1_test.go' >> generate-gogo-benchmark-code
+	@echo 'if [[ $$2 == 1 ]]; then sed -i -e "s/github\.com\/golang/github.com\/gogo/g" tmp/$$1/benchmark_code/$$1_benchmark1_test.go; fi ' >> generate-gogo-benchmark-code
+	@chmod +x generate-gogo-benchmark-code
+
+generate_all_gogo_benchmark_code: generate-gogo-benchmark-code make_tmp_dir_gogo
+	./generate-gogo-benchmark-code go_no_group 0
+	./generate-gogo-benchmark-code gogofast 1
+	./generate-gogo-benchmark-code gogofaster 1
+	./generate-gogo-benchmark-code gogoslick 1
+
+gogo-benchmark:
+	@echo "Writing shortcut script gogo-benchmark..."
+	@echo '#! /bin/sh' > gogo-benchmark
+	@echo 'cd tmp/$$1/benchmark_code' >> gogo-benchmark
+	@echo 'shift' >> gogo-benchmark
+	@echo 'all_data=""' >> gogo-benchmark
+	@echo 'for data_file in $$@; do all_data="$$all_data ../../../$$data_file"; done' >> gogo-benchmark
+	@echo 'go test -bench=. -- $$all_data' >> gogo-benchmark
+	@echo 'cd ../..' >> gogo-benchmark
+	@chmod +x gogo-benchmark
+
+go_no_group: go_no_group_protoc_middleman generate_gogo_data generate_all_gogo_benchmark_code gogo-benchmark
+	./gogo-benchmark go_no_group $(gogo_data)
+	
+gogofast: gogofast_protoc_middleman generate_gogo_data gogo-benchmark generate_all_gogo_benchmark_code 
+	./gogo-benchmark gogofast $(gogo_data)
+	
+gogofaster: gogofaster_protoc_middleman  generate_gogo_data gogo-benchmark generate_all_gogo_benchmark_code
+	./gogo-benchmark gogofaster $(gogo_data)
+
+gogoslick: gogoslick_protoc_middleman  generate_gogo_data gogo-benchmark generate_all_gogo_benchmark_code
+	./gogo-benchmark gogoslick $(gogo_data)
+
+
+############# GOGO RULES END ############
+
+ 
+############ UTIL RULES BEGIN ############
+
+bin_PROGRAMS += protoc-gen-gogoproto gogo-data-scrubber
+
+protoc_gen_gogoproto_LDADD = $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/src/libprotoc.la
+protoc_gen_gogoproto_SOURCES = util/protoc-gen-gogoproto.cc
+protoc_gen_gogoproto_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp -I$(srcdir)/util
+
+gogo_data_scrubber_LDADD = $(top_srcdir)/src/libprotobuf.la
+gogo_data_scrubber_SOURCES = util/gogo_data_scrubber.cc
+gogo_data_scrubber_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp -I$(srcdir)/util
+util/gogo_data_scrubber-gogo_data_scrubber.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header)
+nodist_gogo_data_scrubber_SOURCES =                                        \
+	$(benchmarks_protoc_outputs)                                             \
+	$(benchmarks_protoc_outputs_proto2)                                      \
+	$(benchmarks_protoc_outputs_proto2_header)                               \
+	$(benchmarks_protoc_outputs_header)
+	
+############ UTIL RULES END ############
 
 MAINTAINERCLEANFILES =                                                     \
 	Makefile.in
@@ -322,7 +483,30 @@ CLEANFILES =                                                               \
 	python-cpp-generated-code-benchmark                                      \
 	go-benchmark                                                             \
 	go_protoc_middleman                                                      \
-	go_protoc_middleman2
+	make_tmp_dir_gogo                                                        \
+	gogo_proto_middleman                                                     \
+	generate_gogo_data                                                       \
+	go_no_group_protoc_middleman                                             \
+	go_no_group                                                              \
+	go-no-group-benchmark                                                    \
+	$(cpp_no_group_benchmarks_protoc_outputs_header)                         \
+	$(cpp_no_group_benchmarks_protoc_outputs)                                \
+	$(cpp_no_group_benchmarks_protoc_outputs_proto2_header)                  \
+	$(cpp_no_group_benchmarks_protoc_outputs_proto2)                         \
+	generate_all_gogo_benchmark_code                                         \
+	generate-gogo-benchmark-code                                             \
+	cpp_no_group_protoc_middleman                                            \
+	generate_cpp_no_group_benchmark_code                                     \
+	generate_gogo_benchmark_code                                             \
+	gogofast_protoc_middleman                                                \
+	gogofast                                                                 \
+	gogofaster_protoc_middleman                                              \
+	gogofaster                                                               \
+	gogoslick_protoc_middleman                                               \
+	gogoslick                                                                \
+	gogo-benchmark                                                           \
+	gogo/cpp_no_group/cpp_benchmark.* 
+	
 
 clean-local:
 	-rm -rf tmp/*
