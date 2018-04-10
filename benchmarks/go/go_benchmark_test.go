@@ -1,12 +1,12 @@
 package main
 
 import (
-	benchmarkWrapper "./tmp"
-	googleMessage1Proto2 "./tmp/datasets/google_message1/proto2"
-	googleMessage1Proto3 "./tmp/datasets/google_message1/proto3"
-	googleMessage2 "./tmp/datasets/google_message2"
-	googleMessage3 "./tmp/datasets/google_message3"
-	googleMessage4 "./tmp/datasets/google_message4"
+	benchmarkWrapper "../tmp"
+	googleMessage1Proto2 "../tmp/datasets/google_message1/proto2"
+	googleMessage1Proto3 "../tmp/datasets/google_message1/proto3"
+	googleMessage2 "../tmp/datasets/google_message2"
+	googleMessage3 "../tmp/datasets/google_message3"
+	googleMessage4 "../tmp/datasets/google_message4"
 	"flag"
 	"github.com/golang/protobuf/proto"
 	"io/ioutil"

@@ -107,49 +107,51 @@ $ make python-cpp-generated-code
 $ make go
 ```
 
-To run a specific dataset:
+To run a specific dataset or run with specific options:
 
 ### Java:
 
 ```
 $ make java-benchmark
-$ ./java-benchmark $(specific generated dataset file name) [-- $(caliper option)]
+$ ./java-benchmark $(specific generated dataset file name) [$(caliper options)]
 ```
 
 ### CPP:
 
 ```
 $ make cpp-benchmark
-$ ./cpp-benchmark $(specific generated dataset file name)
+$ ./cpp-benchmark $(specific generated dataset file name) [$(benchmark options)]
 ```
 
 ### Python:
+
+For Python benchmark we have `--json` for outputing the json result
 
 #### Pure Python:
 
 ```
 $ make python-pure-python-benchmark
-$ ./python-pure-python-benchmark $(specific generated dataset file name)
+$ ./python-pure-python-benchmark [--json] $(specific generated dataset file name)
 ```
 
 #### CPP reflection:
 
 ```
 $ make python-cpp-reflection-benchmark
-$ ./python-cpp-reflection-benchmark $(specific generated dataset file name)
+$ ./python-cpp-reflection-benchmark [--json] $(specific generated dataset file name)
 ```
 
 #### CPP generated code:
 
 ```
 $ make python-cpp-generated-code-benchmark
-$ ./python-cpp-generated-code-benchmark $(specific generated dataset file name)
+$ ./python-cpp-generated-code-benchmark [--json] $(specific generated dataset file name)
 ```
 
 ### Go:
 ```
 $ make go-benchmark
-$ ./go-benchmark $(specific generated dataset file name)
+$ ./go-benchmark $(specific generated dataset file name) [go testing options]
 ```
 
 

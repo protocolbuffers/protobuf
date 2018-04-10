@@ -2,20 +2,34 @@ import sys
 import os
 import timeit
 import math
+import argparse
 import fnmatch
+import json
 
+parser = argparse.ArgumentParser(description="Python protobuf benchmark")
+parser.add_argument("data_files", metavar="dataFile", nargs="+", 
+                    help="testing data files.")
+parser.add_argument("--json", action="store_const", dest="json",
+                    const="yes", default="no",
+                    help="Whether to output json results")
+parser.add_argument("--behavior_prefix", dest="behavior_prefix",
+                    help="The output json format's behavior's name's prefix",
+                    default="")
+# BEGIN CPP GENERATED MESSAGE
+parser.add_argument("--cpp_generated", action="store_const",
+                    dest="cpp_generated", const="yes", default="no",
+                    help="Whether to link generated code library")
+# END CPP GENERATED MESSAGE
+args = parser.parse_args()
 # BEGIN CPP GENERATED MESSAGE
 # CPP generated code must be linked before importing the generated Python code
 # for the descriptor can be found in the pool
-if len(sys.argv) < 2:
-  raise IOError("Need string argument \"true\" or \"false\" for whether to use cpp generated code")
-if sys.argv[1] == "true":
+if args.cpp_generated != "no":
   sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) + "/.libs" )
   import libbenchmark_messages
   sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) + "/tmp" )
-elif sys.argv[1] != "false":
-  raise IOError("Need string argument \"true\" or \"false\" for whether to use cpp generated code")
 # END CPP GENERATED MESSAGE
+
 
 import datasets.google_message1.proto2.benchmark_message1_proto2_pb2 as benchmark_message1_proto2_pb2
 import datasets.google_message1.proto3.benchmark_message1_proto3_pb2 as benchmark_message1_proto3_pb2
@@ -26,19 +40,24 @@ import benchmarks_pb2 as benchmarks_pb2
 
 
 def run_one_test(filename):
-  data = open(os.path.dirname(sys.argv[0]) + "/../" + filename).read()
+  data = open(filename).read()
   benchmark_dataset = benchmarks_pb2.BenchmarkDataset()
   benchmark_dataset.ParseFromString(data)
   benchmark_util = Benchmark(full_iteration=len(benchmark_dataset.payload),
                              module="py_benchmark",
                              setup_method="init")
-  print "Message %s of dataset file %s" % \
-    (benchmark_dataset.message_name, filename)
+  result={}
+  result["filename"] =  filename
+  result["message_name"] =  benchmark_dataset.message_name
+  result["benchmarks"] = {}
   benchmark_util.set_test_method("parse_from_benchmark")
-  print benchmark_util.run_benchmark(setup_method_args='"%s"' % (filename))
+  result["benchmarks"][args.behavior_prefix + "_parse_from_benchmark"] = \
+    benchmark_util.run_benchmark(setup_method_args='"%s"' % (filename))
   benchmark_util.set_test_method("serialize_to_benchmark")
-  print benchmark_util.run_benchmark(setup_method_args='"%s"' % (filename))
-  print ""
+  result["benchmarks"][args.behavior_prefix + "_serialize_to_benchmark"] = \
+    benchmark_util.run_benchmark(setup_method_args='"%s"' % (filename))
+  return result
+
 
 def init(filename):
   global benchmark_dataset, message_class, message_list, counter
@@ -66,10 +85,12 @@ def init(filename):
     temp.ParseFromString(one_payload)
     message_list.append(temp)
 
+
 def parse_from_benchmark():
   global counter, message_class, benchmark_dataset
   m = message_class().ParseFromString(benchmark_dataset.payload[counter % len(benchmark_dataset.payload)])
   counter = counter + 1
+
 
 def serialize_to_benchmark():
   global counter, message_list, message_class
@@ -108,11 +129,22 @@ class Benchmark:
     t = timeit.timeit(stmt="%s(%s)" % (self.test_method, test_method_args),
                       setup=self.full_setup_code(setup_method_args),
                       number=reps);
-    return "Average time for %s: %.2f ns" % \
-      (self.test_method, 1.0 * t / reps * (10 ** 9))
-
+    return 1.0 * t / reps * (10 ** 9)
+  
 
 if __name__ == "__main__":
-  for i in range(2, len(sys.argv)):
-    run_one_test(sys.argv[i])
-
+  results = []
+  for file in args.data_files:
+    results.append(run_one_test(file))
+  
+  if args.json != "no":
+    print json.dumps(results)
+  else:
+    for result in results:
+      print "Message %s of dataset file %s" % \
+          (result["message_name"], result["filename"])
+      print "Average time for parse_from_benchmark: %.2f ns" % \
+          (result["benchmarks"]["parse_from_benchmark"])
+      print "Average time for serialize_to_benchmark: %.2f ns" % \
+          (result["benchmarks"]["serialize_to_benchmark"])
+      print ""
