@@ -28,11 +28,11 @@ make_tmp_dir:
 if USE_EXTERNAL_PROTOC
 
 protoc_middleman: make_tmp_dir $(benchmarks_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=./tmp $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=./cpp --java_out=./tmp $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper)
 	touch protoc_middleman
 
 protoc_middleman2: make_tmp_dir $(benchmarks_protoc_inputs_proto2)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=./tmp $(benchmarks_protoc_inputs_proto2)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=./cpp --java_out=./tmp $(benchmarks_protoc_inputs_proto2)
 	touch protoc_middleman2
 
 else
@@ -41,60 +41,60 @@ else
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
 protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs) $(well_known_type_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd/cpp --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) )
 	touch protoc_middleman
 
 protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_protoc_inputs_proto2) $(well_known_type_protoc_inputs)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd/cpp --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2) )
 	touch protoc_middleman2
 
 endif
 
-all_data = `find . -type f -name "dataset.*.pb"`
+all_data = $$(find . -type f -name "dataset.*.pb" -not -path "./tmp/*")
 
 ############# CPP RULES ##############
 
 benchmarks_protoc_outputs =                                                \
-	benchmarks.pb.cc                                                         \
-	datasets/google_message1/proto3/benchmark_message1_proto3.pb.cc
-  
+	cpp/benchmarks.pb.cc                                                     \
+	cpp/datasets/google_message1/proto3/benchmark_message1_proto3.pb.cc
+
 benchmarks_protoc_outputs_header =                                         \
-	benchmarks.pb.h                                                          \
-	datasets/google_message1/proto3/benchmark_message1_proto3.pb.h
+	cpp/benchmarks.pb.h                                                      \
+	cpp/datasets/google_message1/proto3/benchmark_message1_proto3.pb.h
 
 benchmarks_protoc_outputs_proto2_header =                                  \
-	datasets/google_message1/proto2/benchmark_message1_proto2.pb.h           \
-	datasets/google_message2/benchmark_message2.pb.h                         \
-	datasets/google_message3/benchmark_message3.pb.h                         \
-	datasets/google_message3/benchmark_message3_1.pb.h                       \
-	datasets/google_message3/benchmark_message3_2.pb.h                       \
-	datasets/google_message3/benchmark_message3_3.pb.h                       \
-	datasets/google_message3/benchmark_message3_4.pb.h                       \
-	datasets/google_message3/benchmark_message3_5.pb.h                       \
-	datasets/google_message3/benchmark_message3_6.pb.h                       \
-	datasets/google_message3/benchmark_message3_7.pb.h                       \
-	datasets/google_message3/benchmark_message3_8.pb.h                       \
-	datasets/google_message4/benchmark_message4.pb.h                         \
-	datasets/google_message4/benchmark_message4_1.pb.h                       \
-	datasets/google_message4/benchmark_message4_2.pb.h                       \
-	datasets/google_message4/benchmark_message4_3.pb.h
+	cpp/datasets/google_message1/proto2/benchmark_message1_proto2.pb.h       \
+	cpp/datasets/google_message2/benchmark_message2.pb.h                     \
+	cpp/datasets/google_message3/benchmark_message3.pb.h                     \
+	cpp/datasets/google_message3/benchmark_message3_1.pb.h                   \
+	cpp/datasets/google_message3/benchmark_message3_2.pb.h                   \
+	cpp/datasets/google_message3/benchmark_message3_3.pb.h                   \
+	cpp/datasets/google_message3/benchmark_message3_4.pb.h                   \
+	cpp/datasets/google_message3/benchmark_message3_5.pb.h                   \
+	cpp/datasets/google_message3/benchmark_message3_6.pb.h                   \
+	cpp/datasets/google_message3/benchmark_message3_7.pb.h                   \
+	cpp/datasets/google_message3/benchmark_message3_8.pb.h                   \
+	cpp/datasets/google_message4/benchmark_message4.pb.h                     \
+	cpp/datasets/google_message4/benchmark_message4_1.pb.h                   \
+	cpp/datasets/google_message4/benchmark_message4_2.pb.h                   \
+	cpp/datasets/google_message4/benchmark_message4_3.pb.h
 
 benchmarks_protoc_outputs_proto2 =                                         \
-	datasets/google_message1/proto2/benchmark_message1_proto2.pb.cc          \
-	datasets/google_message2/benchmark_message2.pb.cc                        \
-	datasets/google_message3/benchmark_message3.pb.cc                        \
-	datasets/google_message3/benchmark_message3_1.pb.cc                      \
-	datasets/google_message3/benchmark_message3_2.pb.cc                      \
-	datasets/google_message3/benchmark_message3_3.pb.cc                      \
-	datasets/google_message3/benchmark_message3_4.pb.cc                      \
-	datasets/google_message3/benchmark_message3_5.pb.cc                      \
-	datasets/google_message3/benchmark_message3_6.pb.cc                      \
-	datasets/google_message3/benchmark_message3_7.pb.cc                      \
-	datasets/google_message3/benchmark_message3_8.pb.cc                      \
-	datasets/google_message4/benchmark_message4.pb.cc                        \
-	datasets/google_message4/benchmark_message4_1.pb.cc                      \
-	datasets/google_message4/benchmark_message4_2.pb.cc                      \
-	datasets/google_message4/benchmark_message4_3.pb.cc
+	cpp/datasets/google_message1/proto2/benchmark_message1_proto2.pb.cc      \
+	cpp/datasets/google_message2/benchmark_message2.pb.cc                    \
+	cpp/datasets/google_message3/benchmark_message3.pb.cc                    \
+	cpp/datasets/google_message3/benchmark_message3_1.pb.cc                  \
+	cpp/datasets/google_message3/benchmark_message3_2.pb.cc                  \
+	cpp/datasets/google_message3/benchmark_message3_3.pb.cc                  \
+	cpp/datasets/google_message3/benchmark_message3_4.pb.cc                  \
+	cpp/datasets/google_message3/benchmark_message3_5.pb.cc                  \
+	cpp/datasets/google_message3/benchmark_message3_6.pb.cc                  \
+	cpp/datasets/google_message3/benchmark_message3_7.pb.cc                  \
+	cpp/datasets/google_message3/benchmark_message3_8.pb.cc                  \
+	cpp/datasets/google_message4/benchmark_message4.pb.cc                    \
+	cpp/datasets/google_message4/benchmark_message4_1.pb.cc                  \
+	cpp/datasets/google_message4/benchmark_message4_2.pb.cc                  \
+	cpp/datasets/google_message4/benchmark_message4_3.pb.cc
 
 
 $(benchmarks_protoc_outputs): protoc_middleman
@@ -118,12 +118,12 @@ AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG) -Wall -Wwrite-strings -Wov
 bin_PROGRAMS = cpp-benchmark
 
 cpp_benchmark_LDADD = $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
-cpp_benchmark_SOURCES = cpp_benchmark.cc
-cpp_benchmark_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir) -I$(top_srcdir)/third_party/benchmark/include
+cpp_benchmark_SOURCES = cpp/cpp_benchmark.cc
+cpp_benchmark_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp -I$(top_srcdir)/third_party/benchmark/include
 # Explicit deps because BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
 # See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
-cpp_benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
+cpp/cpp_benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
 nodist_cpp_benchmark_SOURCES =                                             \
 	$(benchmarks_protoc_outputs)                                             \
 	$(benchmarks_protoc_outputs_proto2)                                      \
@@ -174,11 +174,11 @@ python_add_init: protoc_middleman protoc_middleman2
 python_cpp_pkg_flags = `pkg-config --cflags --libs python`
 
 lib_LTLIBRARIES = libbenchmark_messages.la
-libbenchmark_messages_la_SOURCES = python_benchmark_messages.cc
+libbenchmark_messages_la_SOURCES = python/python_benchmark_messages.cc
 libbenchmark_messages_la_LIBADD = $(top_srcdir)/src/.libs/libprotobuf.la
 libbenchmark_messages_la_LDFLAGS = -version-info 1:0:0 -export-dynamic
-libbenchmark_messages_la_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir) $(python_cpp_pkg_flags)
-libbenchmark_messages_la-libbenchmark_messages_la.$(OBJEXT): $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2)
+libbenchmark_messages_la_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp $(python_cpp_pkg_flags)
+libbenchmark_messages_la-python_benchmark_messages.$(OBJEXT): $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2)
 nodist_libbenchmark_messages_la_SOURCES =                         \
 	$(benchmarks_protoc_outputs)                                    \
 	$(benchmarks_protoc_outputs_proto2)                             \
@@ -191,8 +191,8 @@ python-pure-python-benchmark: python_add_init
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-pure-python-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-pure-python-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'python\' >> python-pure-python-benchmark
-	@echo cp py_benchmark.py tmp >> python-pure-python-benchmark
-	@echo python tmp/py_benchmark.py false '$$@' >> python-pure-python-benchmark
+	@echo cp python/py_benchmark.py tmp >> python-pure-python-benchmark
+	@echo python tmp/py_benchmark.py '$$@' >> python-pure-python-benchmark
 	@chmod +x python-pure-python-benchmark
 
 python-cpp-reflection-benchmark: python_add_init
@@ -201,8 +201,8 @@ python-cpp-reflection-benchmark: python_add_init
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-reflection-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-reflection-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-reflection-benchmark
-	@echo cp py_benchmark.py tmp >> python-cpp-reflection-benchmark
-	@echo python tmp/py_benchmark.py false '$$@' >> python-cpp-reflection-benchmark
+	@echo cp python/py_benchmark.py tmp >> python-cpp-reflection-benchmark
+	@echo python tmp/py_benchmark.py '$$@' >> python-cpp-reflection-benchmark
 	@chmod +x python-cpp-reflection-benchmark
 
 python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
@@ -211,8 +211,8 @@ python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-generated-code-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-generated-code-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-generated-code-benchmark
-	@echo cp py_benchmark.py tmp >> python-cpp-generated-code-benchmark
-	@echo python tmp/py_benchmark.py true '$$@' >> python-cpp-generated-code-benchmark
+	@echo cp python/py_benchmark.py tmp >> python-cpp-generated-code-benchmark
+	@echo python tmp/py_benchmark.py --cpp_generated '$$@' >> python-cpp-generated-code-benchmark
 	@chmod +x python-cpp-generated-code-benchmark
 
 python-pure-python: python-pure-python-benchmark
@@ -287,9 +287,13 @@ endif
 go-benchmark: go_protoc_middleman go_protoc_middleman2 
 	@echo "Writing shortcut script go-benchmark..."
 	@echo '#! /bin/sh' > go-benchmark
-	@echo 'mkdir tmp_cc && mv *.cc tmp_cc' >> go-benchmark
-	@echo 'go test -bench=. -- $$@' >> go-benchmark
-	@echo 'mv tmp_cc/* . && rm -rf tmp_cc' >> go-benchmark
+	@echo 'cd go' >> go-benchmark
+	@echo 'all_data=""' >> go-benchmark
+	@echo 'conf=()' >> go-benchmark
+	@echo 'data_files=()' >> go-benchmark
+	@echo 'for arg in $$@; do if [[ $${arg:0:1} == "-" ]]; then conf+=($$arg); else data_files+=("../$$arg"); fi; done' >> go-benchmark
+	@echo 'go test -bench=. $${conf[*]} -- $${data_files[*]}' >> go-benchmark
+	@echo 'cd ..' >> go-benchmark
 	@chmod +x go-benchmark
 
 go: go_protoc_middleman go_protoc_middleman2 go-benchmark
