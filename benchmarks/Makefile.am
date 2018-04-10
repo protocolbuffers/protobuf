@@ -177,7 +177,7 @@ python-pure-python-benchmark: python_add_init
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-pure-python-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'python\' >> python-pure-python-benchmark
 	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-pure-python-benchmark
-	@echo python tmp/py_benchmark.py false '$$@' >> python-pure-python-benchmark
+	@echo python tmp/py_benchmark.py '$$@' >> python-pure-python-benchmark
 	@chmod +x python-pure-python-benchmark
 
 python-cpp-reflection-benchmark: python_add_init
@@ -187,7 +187,7 @@ python-cpp-reflection-benchmark: python_add_init
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-reflection-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-reflection-benchmark
 	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-cpp-reflection-benchmark
-	@echo python tmp/py_benchmark.py false '$$@' >> python-cpp-reflection-benchmark
+	@echo python tmp/py_benchmark.py '$$@' >> python-cpp-reflection-benchmark
 	@chmod +x python-cpp-reflection-benchmark
 
 python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
@@ -197,7 +197,7 @@ python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-generated-code-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-generated-code-benchmark
 	@echo cp $(srcdir)/python/py_benchmark.py tmp >> python-cpp-generated-code-benchmark
-	@echo python tmp/py_benchmark.py true '$$@' >> python-cpp-generated-code-benchmark
+	@echo python tmp/py_benchmark.py --cpp_generated '$$@' >> python-cpp-generated-code-benchmark
 	@chmod +x python-cpp-generated-code-benchmark
 
 python-pure-python: python-pure-python-benchmark
@@ -250,8 +250,10 @@ go-benchmark: go_protoc_middleman
 	@echo '#! /bin/sh' > go-benchmark
 	@echo 'cd $(srcdir)/go' >> go-benchmark
 	@echo 'all_data=""' >> go-benchmark
-	@echo 'for data_file in $$@; do all_data="$$all_data ../$$data_file"; done' >> go-benchmark
-	@echo 'go test -bench=. -- $$all_data' >> go-benchmark
+	@echo 'conf=()' >> go-benchmark
+	@echo 'data_files=()' >> go-benchmark
+	@echo 'for arg in $$@; do if [[ $${arg:0:1} == "-" ]]; then conf+=($$arg); else data_files+=("../$$arg"); fi; done' >> go-benchmark
+	@echo 'go test -bench=. $${conf[*]} -- $${data_files[*]}' >> go-benchmark
 	@echo 'cd ..' >> go-benchmark
 	@chmod +x go-benchmark
 
