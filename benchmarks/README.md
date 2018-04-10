@@ -125,6 +125,8 @@ $ ./cpp-benchmark $(specific generated dataset file name) [$(benchmark options)]
 
 ### Python:
 
+For Python benchmark we have `--json` for outputing the json result
+
 #### Pure Python:
 
 ```
@@ -149,7 +151,7 @@ $ ./python-cpp-generated-code-benchmark [--json] $(specific generated dataset fi
 ### Go:
 ```
 $ make go-benchmark
-$ ./go-benchmark [-json] $(specific generated dataset file name)
+$ ./go-benchmark $(specific generated dataset file name) [go testing options]
 ```
 
 

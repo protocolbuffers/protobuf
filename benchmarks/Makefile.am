@@ -289,9 +289,10 @@ go-benchmark: go_protoc_middleman go_protoc_middleman2
 	@echo '#! /bin/sh' > go-benchmark
 	@echo 'cd go' >> go-benchmark
 	@echo 'all_data=""' >> go-benchmark
-	@echo 'if [[ $$1 == "-json" ]]; then use_json="-json"; shift; fi' >> go-benchmark
-	@echo 'for data_file in $$@; do all_data="$$all_data ../$$data_file"; done' >> go-benchmark
-	@echo 'go test -bench=. $$use_json -- $$all_data' >> go-benchmark
+	@echo 'conf=()' >> go-benchmark
+	@echo 'data_files=()' >> go-benchmark
+	@echo 'for arg in $$@; do if [[ $${arg:0:1} == "-" ]]; then conf+=($$arg); else data_files+=("../$$arg"); fi; done' >> go-benchmark
+	@echo 'go test -bench=. $${conf[*]} -- $${data_files[*]}' >> go-benchmark
 	@echo 'cd ..' >> go-benchmark
 	@chmod +x go-benchmark
 
