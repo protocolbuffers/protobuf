@@ -279,6 +279,13 @@ static char *upb_decode_prepareslot(upb_decstate *d,
   if (field->oneof_index != UPB_NOT_IN_ONEOF) {
     const upb_msglayout_oneofinit_v1 *o = &frame->m->oneofs[field->oneof_index];
     field_mem = frame->msg + o->data_offset;
+    if (field->descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE) {
+      // Reset oneof slot if another field was set previously
+      uint32_t oneof_case = *(uint32_t*)(frame->msg + o->case_offset);
+      if (field->number != oneof_case) {
+        *(void**)field_mem = NULL;
+      }
+    }
   } else {
     field_mem = frame->msg + field->offset;
   }
@@ -461,7 +468,12 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
     case UPB_DESCRIPTOR_TYPE_BYTES: {
       void *field_mem = upb_array_add(arr, 1);
       CHK(field_mem);
-      memcpy(field_mem, &val, sizeof(val));
+      // Containing message needs to own the string.
+      char *data = (char*)upb_malloc(upb_msg_alloc(frame->msg),
+                                     val.size);
+      memcpy(data, val.data, val.size);
+      upb_stringview strval = upb_stringview_make(data, val.size);
+      memcpy(field_mem, &strval, sizeof(strval));
       return true;
     }
     case UPB_DESCRIPTOR_TYPE_FLOAT:
@@ -574,7 +586,12 @@ static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
       case UPB_DESCRIPTOR_TYPE_BYTES: {
         void *field_mem = upb_decode_prepareslot(d, frame, field);
         CHK(field_mem);
-        memcpy(field_mem, &val, sizeof(val));
+        // Containing message needs to own the string.
+        char *data = (char*)upb_malloc(upb_msg_alloc(frame->msg),
+                                       val.size);
+        memcpy(data, val.data, val.size);
+        upb_stringview strval = upb_stringview_make(data, val.size);
+        memcpy(field_mem, &strval, sizeof(strval));
         break;
       }
       case UPB_DESCRIPTOR_TYPE_MESSAGE:

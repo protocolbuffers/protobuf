@@ -83,6 +83,18 @@ void Message_wrap(Message* intern, upb_msg *msg,
   ARENA_ADDREF(arena);
 }
 
+void Message_mergeFrom(Message* from, Message* to) {
+  UPB_ASSERT(from->msgdef == to->msgdef);
+
+  stackenv se;
+  stackenv_init(&se, "Error occurred during encoding: %s");
+  size_t size;
+  const char* data = upb_encode2(from->msg, from->layout, &se.env, &size);
+
+  Message_mergeFromString(to, data, size);
+  stackenv_uninit(&se);
+}
+
 void Message_mergeFromString(
     Message* intern, const char* data, size_t size) {
   upb_env env;

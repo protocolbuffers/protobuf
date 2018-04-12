@@ -496,131 +496,131 @@ class GeneratedClassTest extends TestBase
 #         $this->expectEmptyFields($m);
 #     }
 # 
-#     #########################################################
-#     # Test mergeFrom method.
-#     #########################################################
-# 
-#     public function testMessageMergeFrom()
-#     {
-#         $m = new TestMessage();
-#         $this->setFields($m);
-#         $this->expectFields($m);
-#         $arr = $m->getOptionalMessage()->getB();
-#         $arr[] = 1;
-# 
-#         $n = new TestMessage();
-# 
-#         // Singular
-#         $n->setOptionalInt32(100);
-#         $sub1 = new TestMessage_Sub();
-#         $sub1->setA(101);
-# 
-#         $b = $sub1->getB();
-#         $b[] = 102;
-#         $sub1->setB($b);
-# 
-#         $n->setOptionalMessage($sub1);
-# 
-#         // Repeated
-#         $repeatedInt32 = $n->getRepeatedInt32();
-#         $repeatedInt32[] = 200;
-#         $n->setRepeatedInt32($repeatedInt32);
-# 
-#         $repeatedString = $n->getRepeatedString();
-#         $repeatedString[] = 'abc';
-#         $n->setRepeatedString($repeatedString);
-# 
-#         $sub2 = new TestMessage_Sub();
-#         $sub2->setA(201);
-#         $repeatedMessage = $n->getRepeatedMessage();
-#         $repeatedMessage[] = $sub2;
-#         $n->setRepeatedMessage($repeatedMessage);
-# 
-#         // Map
-#         $mapInt32Int32 = $n->getMapInt32Int32();
-#         $mapInt32Int32[1] = 300;
-#         $mapInt32Int32[-62] = 301;
-#         $n->setMapInt32Int32($mapInt32Int32);
-# 
-#         $mapStringString = $n->getMapStringString();
-#         $mapStringString['def'] = 'def';
-#         $n->setMapStringString($mapStringString);
-# 
-#         $mapInt32Message = $n->getMapInt32Message();
-#         $mapInt32Message[1] = new TestMessage_Sub();
-#         $mapInt32Message[1]->setA(302);
-#         $mapInt32Message[2] = new TestMessage_Sub();
-#         $mapInt32Message[2]->setA(303);
-#         $n->setMapInt32Message($mapInt32Message);
-# 
-#         $m->mergeFrom($n);
-# 
-#         $this->assertSame(100, $m->getOptionalInt32());
-#         $this->assertSame(42, $m->getOptionalUint32());
-#         $this->assertSame(101, $m->getOptionalMessage()->getA());
-#         $this->assertSame(2, count($m->getOptionalMessage()->getB()));
-#         $this->assertSame(1, $m->getOptionalMessage()->getB()[0]);
-#         $this->assertSame(102, $m->getOptionalMessage()->getB()[1]);
-# 
-#         $this->assertSame(3, count($m->getRepeatedInt32()));
-#         $this->assertSame(200, $m->getRepeatedInt32()[2]);
-#         $this->assertSame(2, count($m->getRepeatedUint32()));
-#         $this->assertSame(3, count($m->getRepeatedString()));
-#         $this->assertSame('abc', $m->getRepeatedString()[2]);
-#         $this->assertSame(3, count($m->getRepeatedMessage()));
-#         $this->assertSame(201, $m->getRepeatedMessage()[2]->getA());
-# 
-#         $this->assertSame(2, count($m->getMapInt32Int32()));
-#         $this->assertSame(300, $m->getMapInt32Int32()[1]);
-#         $this->assertSame(301, $m->getMapInt32Int32()[-62]);
-#         $this->assertSame(1, count($m->getMapUint32Uint32()));
-#         $this->assertSame(2, count($m->getMapStringString()));
-#         $this->assertSame('def', $m->getMapStringString()['def']);
-# 
-#         $this->assertSame(2, count($m->getMapInt32Message()));
-#         $this->assertSame(302, $m->getMapInt32Message()[1]->getA());
-#         $this->assertSame(303, $m->getMapInt32Message()[2]->getA());
-# 
-#         $this->assertSame("", $m->getMyOneof());
-# 
-#         // Check sub-messages are copied by value.
-#         $n->getOptionalMessage()->setA(-101);
-#         $this->assertSame(101, $m->getOptionalMessage()->getA());
-# 
-#         $repeatedMessage = $n->getRepeatedMessage();
-#         $repeatedMessage[0]->setA(-201);
-#         $n->setRepeatedMessage($repeatedMessage);
-#         $this->assertSame(201, $m->getRepeatedMessage()[2]->getA());
-# 
-#         $mapInt32Message = $n->getMapInt32Message();
-#         $mapInt32Message[1]->setA(-302);
-#         $n->setMapInt32Message($mapInt32Message);
-# 
-#         $this->assertSame(302, $m->getMapInt32Message()[1]->getA());
-# 
-#         // Test merge oneof.
-#         $m = new TestMessage();
-# 
-#         $n = new TestMessage();
-#         $n->setOneofInt32(1);
-#         $m->mergeFrom($n);
-#         $this->assertSame(1, $m->getOneofInt32());
-# 
-#         $sub = new TestMessage_Sub();
-#         $n->setOneofMessage($sub);
-#         $n->getOneofMessage()->setA(400);
-#         $m->mergeFrom($n);
-#         $this->assertSame(400, $m->getOneofMessage()->getA());
-#         $n->getOneofMessage()->setA(-400);
-#         $this->assertSame(400, $m->getOneofMessage()->getA());
-# 
-#         // Test all fields
-#         $m = new TestMessage();
-#         $n = new TestMessage();
-#         $this->setFields($m);
-#         $n->mergeFrom($m);
-#         $this->expectFields($n);
-#     }
+    #########################################################
+    # Test mergeFrom method.
+    #########################################################
+
+    public function testMessageMergeFrom()
+    {
+        $m = new TestMessage();
+        $this->setFields($m);
+        $this->expectFields($m);
+        $arr = $m->getOptionalMessage()->getB();
+        $arr[] = 1;
+
+        $n = new TestMessage();
+
+        // Singular
+        $n->setOptionalInt32(100);
+        $sub1 = new TestMessage_Sub();
+        $sub1->setA(101);
+
+        $b = $sub1->getB();
+        $b[] = 102;
+        $sub1->setB($b);
+
+        $n->setOptionalMessage($sub1);
+
+        // Repeated
+        $repeatedInt32 = $n->getRepeatedInt32();
+        $repeatedInt32[] = 200;
+        $n->setRepeatedInt32($repeatedInt32);
+
+        $repeatedString = $n->getRepeatedString();
+        $repeatedString[] = 'abc';
+        $n->setRepeatedString($repeatedString);
+
+        $sub2 = new TestMessage_Sub();
+        $sub2->setA(201);
+        $repeatedMessage = $n->getRepeatedMessage();
+        $repeatedMessage[] = $sub2;
+        $n->setRepeatedMessage($repeatedMessage);
+
+        // Map
+        $mapInt32Int32 = $n->getMapInt32Int32();
+        $mapInt32Int32[1] = 300;
+        $mapInt32Int32[-62] = 301;
+        $n->setMapInt32Int32($mapInt32Int32);
+
+        $mapStringString = $n->getMapStringString();
+        $mapStringString['def'] = 'def';
+        $n->setMapStringString($mapStringString);
+
+        $mapInt32Message = $n->getMapInt32Message();
+        $mapInt32Message[1] = new TestMessage_Sub();
+        $mapInt32Message[1]->setA(302);
+        $mapInt32Message[2] = new TestMessage_Sub();
+        $mapInt32Message[2]->setA(303);
+        $n->setMapInt32Message($mapInt32Message);
+
+        $m->mergeFrom($n);
+
+        $this->assertSame(100, $m->getOptionalInt32());
+        $this->assertSame(42, $m->getOptionalUint32());
+        $this->assertSame(101, $m->getOptionalMessage()->getA());
+        $this->assertSame(2, count($m->getOptionalMessage()->getB()));
+        $this->assertSame(1, $m->getOptionalMessage()->getB()[0]);
+        $this->assertSame(102, $m->getOptionalMessage()->getB()[1]);
+
+        $this->assertSame(3, count($m->getRepeatedInt32()));
+        $this->assertSame(200, $m->getRepeatedInt32()[2]);
+        $this->assertSame(2, count($m->getRepeatedUint32()));
+        $this->assertSame(3, count($m->getRepeatedString()));
+        $this->assertSame('abc', $m->getRepeatedString()[2]);
+        $this->assertSame(3, count($m->getRepeatedMessage()));
+        $this->assertSame(201, $m->getRepeatedMessage()[2]->getA());
+
+        $this->assertSame(2, count($m->getMapInt32Int32()));
+        $this->assertSame(300, $m->getMapInt32Int32()[1]);
+        $this->assertSame(301, $m->getMapInt32Int32()[-62]);
+        $this->assertSame(1, count($m->getMapUint32Uint32()));
+        $this->assertSame(2, count($m->getMapStringString()));
+        $this->assertSame('def', $m->getMapStringString()['def']);
+
+        $this->assertSame(2, count($m->getMapInt32Message()));
+        $this->assertSame(302, $m->getMapInt32Message()[1]->getA());
+        $this->assertSame(303, $m->getMapInt32Message()[2]->getA());
+
+        $this->assertSame("", $m->getMyOneof());
+
+        // Check sub-messages are copied by value.
+        $n->getOptionalMessage()->setA(-101);
+        $this->assertSame(101, $m->getOptionalMessage()->getA());
+
+        $repeatedMessage = $n->getRepeatedMessage();
+        $repeatedMessage[0]->setA(-201);
+        $n->setRepeatedMessage($repeatedMessage);
+        $this->assertSame(201, $m->getRepeatedMessage()[2]->getA());
+
+        $mapInt32Message = $n->getMapInt32Message();
+        $mapInt32Message[1]->setA(-302);
+        $n->setMapInt32Message($mapInt32Message);
+
+        $this->assertSame(302, $m->getMapInt32Message()[1]->getA());
+
+        // Test merge oneof.
+        $m = new TestMessage();
+
+        $n = new TestMessage();
+        $n->setOneofInt32(1);
+        $m->mergeFrom($n);
+        $this->assertSame(1, $m->getOneofInt32());
+
+        $sub = new TestMessage_Sub();
+        $n->setOneofMessage($sub);
+        $n->getOneofMessage()->setA(400);
+        $m->mergeFrom($n);
+        $this->assertSame(400, $m->getOneofMessage()->getA());
+        $n->getOneofMessage()->setA(-400);
+        $this->assertSame(400, $m->getOneofMessage()->getA());
+
+        // Test all fields
+        $m = new TestMessage();
+        $n = new TestMessage();
+        $this->setFields($m);
+        $n->mergeFrom($m);
+        $this->expectFields($n);
+  }
 
     #########################################################
     # Test message/enum without namespace.

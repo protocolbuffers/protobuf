@@ -100,6 +100,7 @@ void Message_wrap(Message *intern, upb_msg *msg,
                   const upb_msgdef *msgde, ARENA arena);
 
 void Message___construct(Message *intern, const upb_msgdef *msgdef);
+void Message_mergeFrom(Message* from, Message* to);
 void Message_mergeFromString(
     Message *intern, const char *data, size_t size);
 

@@ -543,6 +543,7 @@ static void Message_init_type(zend_class_entry* klass) {}
 
 PHP_METHOD(Message, __construct);
 PHP_METHOD(Message, serializeToString);
+PHP_METHOD(Message, mergeFrom);
 PHP_METHOD(Message, mergeFromString);
 PHP_METHOD(Message, writeOneof);
 PHP_METHOD(Message, readOneof);
@@ -551,6 +552,7 @@ PHP_METHOD(Message, whichOneof);
 static zend_function_entry Message_methods[] = {
   PHP_ME(Message, __construct, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PUBLIC)
@@ -591,6 +593,24 @@ PHP_METHOD(Message, mergeFromString) {
     return;
   }
   Message_mergeFromString(intern, data, size);
+}
+
+PHP_METHOD(Message, mergeFrom) {
+  zval* value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &value,
+                            Message_type) == FAILURE) {
+    return;
+  }
+
+  Message* from = UNBOX(Message, value);
+  Message* to = UNBOX(Message, getThis());
+
+  if(from->msgdef != to->msgdef) {
+    zend_error(E_USER_ERROR, "Cannot merge messages with different class.");
+    return;
+  }
+
+  Message_mergeFrom(from, to);
 }
 
 PHP_METHOD(Message, readOneof) {

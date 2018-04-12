@@ -155,9 +155,9 @@ foreach ($arr as $val) {
 # $m = new TestMessage();
 # $m->mergeFromString(hex2bin('F80601'));
 # assert('F80601', bin2hex($m->serializeToString()));
-# 
-# # $from = new TestMessage();
-# # $to = new TestMessage();
-# # TestUtil::setTestMessage($from);
-# # $to->mergeFrom($from);
-# # TestUtil::assertTestMessage($to);
+
+$from = new TestMessage();
+$to = new TestMessage();
+TestUtil::setTestMessage($from);
+$to->mergeFrom($from);
+TestUtil::assertTestMessage($to);
