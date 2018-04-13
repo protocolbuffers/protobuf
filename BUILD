@@ -226,6 +226,13 @@ cc_proto_library(
     visibility = ["//visibility:public"],
 )
 
+proto_library(
+    name = "well_known_protos_proto",
+    srcs = [],
+    deps = [dep + "_proto" for dep in WELL_KNOWN_PROTO_MAP],
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Well Known Types Proto Library Rules
 #
