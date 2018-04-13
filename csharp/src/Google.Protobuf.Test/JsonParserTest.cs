@@ -848,6 +848,24 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Any_IgnoreUnknownType_WithValue()
+        {
+            string json = "{ \"@type\": \"type.googleapis.com/bogus\", \"foo\": \"bar\" }";
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownTypes(true));
+            var any = parser.Parse<Any>(json);
+            Assert.IsTrue(any.Value.IsEmpty);
+        }
+
+        [Test]
+        public void Any_IgnoreUnknownType_NoValue()
+        {
+            string json = "{ \"@type\": \"type.googleapis.com/bogus\" }";
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownTypes(true));
+            var any = parser.Parse<Any>(json);
+            Assert.IsTrue(any.Value.IsEmpty);
+        }
+
+        [Test]
         public void Any_NoTypeUrl()
         {
             string json = "{ \"foo\": \"bar\" }";

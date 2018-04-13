@@ -521,29 +521,46 @@ namespace Google.Protobuf
             string typeUrl = token.StringValue;
             string typeName = Any.GetTypeName(typeUrl);
 
+            message.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.SetValue(message, typeUrl);
+
             MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
+
             if (descriptor == null)
             {
-                throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'");
-            }
+                if (!this.settings.IgnoreUnknownTypes)
+                {
+                    throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'");
+                }
 
-            // Now replay the token stream we've already read and anything that remains of the object, just parsing it
-            // as normal. Our original tokenizer should end up at the end of the object.
-            var replay = JsonTokenizer.FromReplayedTokens(tokens, tokenizer);
-            var body = descriptor.Parser.CreateTemplate();
-            if (descriptor.IsWellKnownType)
-            {
-                MergeWellKnownTypeAnyBody(body, replay);
+                // Skip all properties since the type is not registered
+                while (token.Type != JsonToken.TokenType.EndObject &&
+                       tokenizer.ObjectDepth == typeUrlObjectDepth ||
+                       tokenizer.ObjectDepth > typeUrlObjectDepth)
+                {
+                    token = tokenizer.Next();
+                }
             }
             else
             {
-                Merge(body, replay);
-            }
-            var data = body.ToByteString();
+                // Now replay the token stream we've already read and anything that remains of the object, just parsing it
+                // as normal. Our original tokenizer should end up at the end of the object.
+                var replay = JsonTokenizer.FromReplayedTokens(tokens, tokenizer);
 
-            // Now that we have the message data, we can pack it into an Any (the message received as a parameter).
-            message.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.SetValue(message, typeUrl);
-            message.Descriptor.Fields[Any.ValueFieldNumber].Accessor.SetValue(message, data);
+                var body = descriptor.Parser.CreateTemplate();
+                if (descriptor.IsWellKnownType)
+                {
+                    MergeWellKnownTypeAnyBody(body, replay);
+                }
+                else
+                {
+                    Merge(body, replay);
+                }
+
+                var data = body.ToByteString();
+
+                // Now that we have the message data, we can pack it into an Any (the message received as a parameter).
+                message.Descriptor.Fields[Any.ValueFieldNumber].Accessor.SetValue(message, data);
+            }
         }
 
         // Well-known types end up in a property called "value" in the JSON. As there's no longer a @type property
@@ -1002,15 +1019,22 @@ namespace Google.Protobuf
             public TypeRegistry TypeRegistry { get; }
 
             /// <summary>
+            /// Whether the parser should ignore unknown types (<c>true</c>) or throw an exception when
+            /// they are encountered (<c>false</c>).
+            /// </summary>
+            public bool IgnoreUnknownTypes { get; }
+
+            /// <summary>
             /// Whether the parser should ignore unknown fields (<c>true</c>) or throw an exception when
             /// they are encountered (<c>false</c>).
             /// </summary>
             public bool IgnoreUnknownFields { get; }
 
-            private Settings(int recursionLimit, TypeRegistry typeRegistry, bool ignoreUnknownFields)
+            private Settings(int recursionLimit, TypeRegistry typeRegistry, bool ignoreUnknownTypes, bool ignoreUnknownFields)
             {
                 RecursionLimit = recursionLimit;
                 TypeRegistry = ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
+                IgnoreUnknownTypes = ignoreUnknownTypes;
                 IgnoreUnknownFields = ignoreUnknownFields;
             }
 
@@ -1027,9 +1051,17 @@ namespace Google.Protobuf
             /// </summary>
             /// <param name="recursionLimit">The maximum depth of messages to parse</param>
             /// <param name="typeRegistry">The type registry used to parse <see cref="Any"/> messages</param>
-            public Settings(int recursionLimit, TypeRegistry typeRegistry) : this(recursionLimit, typeRegistry, false)
+            public Settings(int recursionLimit, TypeRegistry typeRegistry) : this(recursionLimit, typeRegistry, false, false)
             {
             }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object set to either ignore unknown types, or throw an exception
+            /// when unknown types are encountered.
+            /// </summary>
+            /// <param name="ignoreUnknownTypes"><c>true</c> if unknown types should be ignored when parsing; <c>false</c> to throw an exception.</param>
+            public Settings WithIgnoreUnknownTypes(bool ignoreUnknownTypes) =>
+                new Settings(RecursionLimit, TypeRegistry, ignoreUnknownTypes, IgnoreUnknownFields);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object set to either ignore unknown fields, or throw an exception
@@ -1037,14 +1069,14 @@ namespace Google.Protobuf
             /// </summary>
             /// <param name="ignoreUnknownFields"><c>true</c> if unknown fields should be ignored when parsing; <c>false</c> to throw an exception.</param>
             public Settings WithIgnoreUnknownFields(bool ignoreUnknownFields) =>
-                new Settings(RecursionLimit, TypeRegistry, ignoreUnknownFields);
+                new Settings(RecursionLimit, TypeRegistry, IgnoreUnknownTypes, ignoreUnknownFields);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object based on this one, but with the specified recursion limit.
             /// </summary>
             /// <param name="recursionLimit">The new recursion limit.</param>
             public Settings WithRecursionLimit(int recursionLimit) =>
-                new Settings(recursionLimit, TypeRegistry, IgnoreUnknownFields);
+                new Settings(recursionLimit, TypeRegistry, IgnoreUnknownTypes, IgnoreUnknownFields);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object based on this one, but with the specified type registry.
@@ -1054,6 +1086,7 @@ namespace Google.Protobuf
                 new Settings(
                     RecursionLimit,
                     ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry)),
+                    IgnoreUnknownTypes,
                     IgnoreUnknownFields);
         }
     }
