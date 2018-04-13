@@ -24,11 +24,12 @@ cd $oldpwd
 
 # build Python protobuf
 ./autogen.sh
-./configure CXXFLAGS="-fPIC -O2 -fno-semantic-interposition"
+./configure CXXFLAGS="-fPIC -O2"
 make -j8
 cd python
 python setup.py build --cpp_implementation
 pip install .
+
 
 # build and run Python benchmark
 cd ../benchmarks
