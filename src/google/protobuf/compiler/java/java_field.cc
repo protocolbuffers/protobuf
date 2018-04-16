@@ -211,8 +211,7 @@ template <>
 FieldGeneratorMap<ImmutableFieldGenerator>::FieldGeneratorMap(
     const Descriptor* descriptor, Context* context)
     : descriptor_(descriptor),
-      field_generators_(new std::unique_ptr<
-          ImmutableFieldGenerator>[descriptor->field_count()]) {
+      field_generators_(descriptor->field_count()) {
 
   // Construct all the FieldGenerators and assign them bit indices for their
   // bit fields.
@@ -234,8 +233,7 @@ template <>
 FieldGeneratorMap<ImmutableFieldLiteGenerator>::FieldGeneratorMap(
     const Descriptor* descriptor, Context* context)
     : descriptor_(descriptor),
-      field_generators_(new std::unique_ptr<
-          ImmutableFieldLiteGenerator>[descriptor->field_count()]) {
+      field_generators_(descriptor->field_count()) {
   // Construct all the FieldGenerators and assign them bit indices for their
   // bit fields.
   int messageBitIndex = 0;

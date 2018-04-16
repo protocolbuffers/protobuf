@@ -203,7 +203,7 @@ class FieldGeneratorMap {
  private:
   const Descriptor* descriptor_;
   const Options& options_;
-  std::unique_ptr<std::unique_ptr<FieldGenerator> []> field_generators_;
+  std::vector<std::unique_ptr<FieldGenerator>> field_generators_;
 
   static FieldGenerator* MakeGenerator(const FieldDescriptor* field,
                                        const Options& options,
