@@ -138,7 +138,7 @@ class FieldGeneratorMap {
   const Descriptor* descriptor_;
   Context* context_;
   ClassNameResolver* name_resolver_;
-  std::unique_ptr<std::unique_ptr<FieldGeneratorType> []> field_generators_;
+  std::vector<std::unique_ptr<FieldGeneratorType>> field_generators_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };

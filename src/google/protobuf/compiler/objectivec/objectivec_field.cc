@@ -410,10 +410,8 @@ bool RepeatedFieldGenerator::RuntimeUsesHasBit(void) const {
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
                                      const Options& options)
     : descriptor_(descriptor),
-      field_generators_(
-          new std::unique_ptr<FieldGenerator>[descriptor->field_count()]),
-      extension_generators_(
-          new std::unique_ptr<FieldGenerator>[descriptor->extension_count()]) {
+      field_generators_(descriptor->field_count()),
+      extension_generators_(descriptor->extension_count()) {
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
     field_generators_[i].reset(

@@ -186,10 +186,8 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
                              bool immutable_api)
     : file_(file),
       java_package_(FileJavaPackage(file, immutable_api)),
-      message_generators_(
-          new std::unique_ptr<MessageGenerator>[file->message_type_count()]),
-      extension_generators_(
-          new std::unique_ptr<ExtensionGenerator>[file->extension_count()]),
+      message_generators_(file->message_type_count()),
+      extension_generators_(file->extension_count()),
       context_(new Context(file, options)),
       name_resolver_(context_->GetNameResolver()),
       options_(options),

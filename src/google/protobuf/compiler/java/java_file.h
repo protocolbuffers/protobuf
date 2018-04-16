@@ -98,8 +98,8 @@ class FileGenerator {
   string java_package_;
   string classname_;
 
-  std::unique_ptr<std::unique_ptr<MessageGenerator> []> message_generators_;
-  std::unique_ptr<std::unique_ptr<ExtensionGenerator> []> extension_generators_;
+  std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
+  std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
   std::unique_ptr<GeneratorFactory> generator_factory_;
   std::unique_ptr<Context> context_;
   ClassNameResolver* name_resolver_;
