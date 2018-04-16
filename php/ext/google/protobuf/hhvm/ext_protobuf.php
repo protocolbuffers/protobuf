@@ -13,6 +13,8 @@ class Message {
   <<__Native>>
   public function serializeToString(): string;
   <<__Native>>
+  public function clear(): void;
+  <<__Native>>
   public function mergeFrom(Message $other): void;
   <<__Native>>
   public function mergeFromString(string $data): void;

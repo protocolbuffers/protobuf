@@ -291,6 +291,7 @@ static Variant Message_unset(const Object& obj, const String& name) {
 
 void HHVM_METHOD(Message, __construct);
 String HHVM_METHOD(Message, serializeToString);
+void HHVM_METHOD(Message, clear);
 void HHVM_METHOD(Message, mergeFrom, const Variant& other);
 void HHVM_METHOD(Message, mergeFromString, const String& data);
 void HHVM_METHOD(Message, writeProperty, const String& name,
@@ -308,6 +309,8 @@ void Message_init() {
                 __construct, HHVM_MN(Message, __construct));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
                 serializeToString, HHVM_MN(Message, serializeToString));
+  HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
+                clear, HHVM_MN(Message, clear));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
                 mergeFrom, HHVM_MN(Message, mergeFrom));
   HHVM_NAMED_ME(Google\\Protobuf\\Internal\\Message,
@@ -350,6 +353,11 @@ String HHVM_METHOD(Message, serializeToString) {
   String return_value = String(data, size, CopyString);
   stackenv_uninit(&se);
   return return_value;
+}
+
+void HHVM_METHOD(Message, clear) {
+  Message* intern = Native::data<Message>(this_);
+  Message_clear(intern);
 }
 
 void HHVM_METHOD(Message, mergeFrom, const Variant& other) {

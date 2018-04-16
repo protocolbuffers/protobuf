@@ -161,3 +161,43 @@ $to = new TestMessage();
 TestUtil::setTestMessage($from);
 $to->mergeFrom($from);
 TestUtil::assertTestMessage($to);
+
+#########################################################
+# Test Clear.
+#########################################################
+$m = new TestMessage();
+
+$sub_m1 = new TestMessage_Sub();
+$sub_m1->setA(1);
+$m->setOptionalMessage($sub_m1);
+assert($m->getOptionalMessage()->getA() === 1);
+
+$arr = $m->getRepeatedMessage();
+$arr[] = new TestMessage_Sub();
+assert(1 === count($arr));
+
+$map = $m->getMapInt32Message();
+$map[0] = new TestMessage_Sub();
+assert(1 === count($map));
+
+$m->clear();
+
+assert(is_null($m->getOptionalMessage()));
+
+$arr = $m->getRepeatedMessage();
+assert(0 === count($arr));
+
+$map = $m->getMapInt32Message();
+assert(0 === count($map));
+
+#########################################################
+# Test Clear Oneof.
+#########################################################
+$m = new TestMessage();
+$subm = new TestMessage_Sub();
+$subm->setA(1);
+$m->setOneofMessage($subm);
+assert(1 === $m->getOneofMessage()->getA());
+$m->clear();
+assert(0 === $m->getOneofInt32());
+assert(is_null($m->getOneofMessage()));

@@ -394,7 +394,6 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
       if (Z_TYPE_P(retval) == IS_NULL) {
         return retval;
       }
-      UPB_UNREACHABLE();
     } else {
       if (Z_TYPE_P(retval) == IS_OBJECT) {
         Message* cppmsg = UNBOX(Message, retval);
@@ -403,6 +402,21 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
         }
       }
     }
+  }
+
+  // Up to this point, old cached zval is not valid.
+  if (Z_TYPE_P(retval) == IS_OBJECT) {
+#if PHP_MAJOR_VERSION < 7
+    zval null_value;
+    ZVAL_NULL(&null_value);
+    REPLACE_ZVAL_VALUE(OBJ_PROP(Z_OBJ_P(object),
+                       property_info->offset), &null_value, 0);
+    retval = CACHED_VALUE_PTR_TO_ZVAL_PTR(
+      OBJ_PROP(Z_OBJ_P(object), property_info->offset));
+#else
+    zval_ptr_dtor(retval);
+    ZVAL_NULL(retval);
+#endif
   }
 
   // Update returned value
@@ -440,13 +454,11 @@ static zval* message_get_property_internal(zval* object, zval* member TSRMLS_DC)
       MapField_wrap(intern, const_cast<upb_map*>(map), klass, self->arena);
     }
   } else if (upb_fielddef_isseq(f)) {
-    if (Z_TYPE_P(retval) == IS_NULL) {
-      ZVAL_OBJ(retval, RepeatedField_type->create_object(
-          RepeatedField_type TSRMLS_CC));
+    ZVAL_OBJ(retval, RepeatedField_type->create_object(
+        RepeatedField_type TSRMLS_CC));
 #if PHP_MAJOR_VERSION < 7
-       Z_SET_ISREF_P(retval);
+    Z_SET_ISREF_P(retval);
 #endif
-    }
     RepeatedField* intern = UNBOX(RepeatedField, retval);
 
     zend_class_entry* klass = NULL;
@@ -542,6 +554,7 @@ static void Message_init_type(zend_class_entry* klass) {}
 // -----------------------------------------------------------------------------
 
 PHP_METHOD(Message, __construct);
+PHP_METHOD(Message, clear);
 PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFrom);
 PHP_METHOD(Message, mergeFromString);
@@ -551,6 +564,7 @@ PHP_METHOD(Message, whichOneof);
 
 static zend_function_entry Message_methods[] = {
   PHP_ME(Message, __construct, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
@@ -571,6 +585,11 @@ PHP_METHOD(Message, __construct) {
   zend_class_entry* ce = Z_OBJCE_P(getThis());
   const upb_msgdef* msgdef = class2msgdef(ce);
   Message___construct(intern, msgdef);
+}
+
+PHP_METHOD(Message, clear) {
+  Message* intern = UNBOX(Message, getThis());
+  Message_clear(intern);
 }
 
 PHP_METHOD(Message, serializeToString) {

@@ -83,6 +83,12 @@ void Message_wrap(Message* intern, upb_msg *msg,
   ARENA_ADDREF(arena);
 }
 
+void Message_clear(Message* intern) {
+  upb_alloc* a = upb_msg_alloc(intern->msg);
+  void* mem = upb_msg_uninit(intern->msg, intern->layout);
+  upb_msg_init(mem, intern->layout, a);
+}
+
 void Message_mergeFrom(Message* from, Message* to) {
   UPB_ASSERT(from->msgdef == to->msgdef);
 
