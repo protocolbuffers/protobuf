@@ -80,7 +80,8 @@ struct GeneratorOptions {
         error_on_name_conflict(false),
         extension(".js"),
         one_output_file_per_input_file(false),
-        annotate_code(false) {}
+        annotate_code(false),
+        enum_value_name_style(kFullUpperCase) {}
 
   bool ParseFromOptions(
       const std::vector< std::pair< string, string > >& options,
@@ -122,6 +123,11 @@ struct GeneratorOptions {
   // If true, we should build .meta files that contain annotations for
   // generated code. See GeneratedCodeInfo in descriptor.proto.
   bool annotate_code;
+
+  enum EnumValueNameStyle {
+      kFullUpperCase,
+      kShortUpperCase,
+  } enum_value_name_style;
 };
 
 // CodeGenerator implementation which generates a JavaScript source file and

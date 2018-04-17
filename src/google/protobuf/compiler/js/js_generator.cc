@@ -391,6 +391,31 @@ string ToEnumCase(const string& input) {
   return result;
 }
 
+string ToEnumValueName(const string& enumName, const string& valueName) {
+
+    string result;
+    result.reserve(valueName.size());
+
+    for (int i = 0; i < valueName.size(); i++) {
+        char c = valueName[i];
+        if (!isalnum(c)) continue;
+
+
+        if ('a' <= c && c <= 'z') c = c - 'a' + 'A';
+
+        if (i < enumName.size()) {
+            char nc = enumName[i];
+            if ('a' <= nc && nc <= 'z') nc = nc - 'a' + 'A';
+
+            if (c == nc) continue;
+        }
+
+        result.push_back(c);
+    }
+
+    return result;
+}
+
 string ToFileName(const string& input) {
   string result;
   result.reserve(input.size());
@@ -3189,9 +3214,23 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
 
   for (int i = 0; i < enumdesc->value_count(); i++) {
     const EnumValueDescriptor* value = enumdesc->value(i);
+
+    string valName = "";
+    switch (options.enum_value_name_style)
+    {
+    case GeneratorOptions::kFullUpperCase:
+        valName = ToEnumCase(value->name());
+        break;
+    case GeneratorOptions::kShortUpperCase:
+        valName = ToEnumValueName(enumdesc->name(), value->name());
+        break;
+    default:
+        break;
+    }
+
     printer->Print(
         "  $name$: $value$$comma$\n",
-        "name", ToEnumCase(value->name()),
+        "name", valName,
         "value", SimpleItoa(value->number()),
         "comma", (i == enumdesc->value_count() - 1) ? "" : ",");
     printer->Annotate("name", value);
@@ -3343,6 +3382,18 @@ bool GeneratorOptions::ParseFromOptions(
         return false;
       }
       annotate_code = true;
+    } else if (options[i].first == "enum_value_name_style") {
+      if (options[i].second == "full") {
+          enum_value_name_style = kFullUpperCase;
+      }
+      else if (options[i].second == "short") {
+          enum_value_name_style = kShortUpperCase;
+      }
+      else {
+          *error = "Unknown enum value name style " + options[i].second + ", expected " +
+              "one of: full, short.";
+          return false;
+      }
     } else {
       // Assume any other option is an output directory, as long as it is a bare
       // `key` rather than a `key=value` option.
