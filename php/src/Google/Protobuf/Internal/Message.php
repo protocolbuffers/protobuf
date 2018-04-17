@@ -1562,12 +1562,12 @@ class Message
                             $key);
                         $data_size += GPBWire::tagSize($key_field);
                     }
-                    if ($value != $this->defaultValue($value_field)) {
+                   // if ($value != $this->defaultValue($value_field)) {
                         $data_size += $this->fieldDataOnlyByteSize(
                             $value_field,
                             $value);
                         $data_size += GPBWire::tagSize($value_field);
-                    }
+                    //}
                     $size += GPBWire::varint32Size($data_size) + $data_size;
                 }
             }
