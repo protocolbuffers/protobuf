@@ -52,8 +52,18 @@ void register_upbdef(const char* classname, const upb_def* def) {
 
 const upb_msgdef* class2msgdef(const void* klass) {
   const upb_def* def = (*class2def)[klass];
-  assert(def->type == UPB_DEF_MSG);
+  if (def == NULL || upb_def_type(def) != UPB_DEF_MSG) {
+    return NULL;
+  }
   return upb_downcast_msgdef(def);
+}
+
+const upb_enumdef* class2enumdef(const void* klass) {
+  const upb_def* def = (*class2def)[klass];
+  if (def == NULL || upb_def_type(def) != UPB_DEF_ENUM) {
+    return NULL;
+  }
+  return upb_downcast_enumdef(def);
 }
 
 const void* msgdef2class(const upb_msgdef* msgdef) {
@@ -119,13 +129,22 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   if (internal_generated_pool != NULL) {
     zval_dtor(internal_generated_pool);
     FREE_ZVAL(internal_generated_pool);
+    zval_dtor(generated_pool);
+    FREE_ZVAL(generated_pool);
     upb_msgfactory_free(message_factory);
   }
 #else
   if (internal_generated_pool != NULL) {
-    zval tmp;
-    ZVAL_OBJ(&tmp, internal_generated_pool);
-    zval_dtor(&tmp);
+    {
+      zval tmp;
+      ZVAL_OBJ(&tmp, internal_generated_pool);
+      zval_dtor(&tmp);
+    }
+    {
+      zval tmp;
+      ZVAL_OBJ(&tmp, generated_pool);
+      zval_dtor(&tmp);
+    }
     upb_msgfactory_free(message_factory);
   }
 #endif
@@ -134,6 +153,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 static PHP_MINIT_FUNCTION(protobuf) {
   protobuf_module = new ProtobufModule();
   Arena_init(TSRMLS_C);
+  DescriptorPool_init(TSRMLS_C);
   InternalDescriptorPool_init(TSRMLS_C);
   MapField_init(TSRMLS_C);
   MapFieldIter_init(TSRMLS_C);
@@ -142,6 +162,13 @@ static PHP_MINIT_FUNCTION(protobuf) {
   RepeatedFieldIter_init(TSRMLS_C);
   Type_init(TSRMLS_C);
   Util_init(TSRMLS_C);
+
+  // Descriptors
+  Descriptor_init(TSRMLS_C);
+  EnumDescriptor_init(TSRMLS_C);
+  EnumValueDescriptor_init(TSRMLS_C);
+  FieldDescriptor_init(TSRMLS_C);
+  OneofDescriptor_init(TSRMLS_C);
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {

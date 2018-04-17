@@ -8,8 +8,10 @@
 
 #if PHP_MAJOR_VERSION < 7
 extern zval* internal_generated_pool;
+extern zval* generated_pool;
 #else
 extern zend_object *internal_generated_pool;
+extern zend_object *generated_pool;
 #endif
 
 upb_msgval tomsgval(zval* value, upb_fieldtype_t type, upb_alloc* alloc);

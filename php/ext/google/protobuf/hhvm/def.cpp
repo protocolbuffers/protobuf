@@ -192,66 +192,44 @@ void InternalDescriptorPool_add_generated_file(
   for (i = 0; i < upb_filedef_defcount(files[0]); i++) {
     const upb_def *def = upb_filedef_def(files[0], i);
     switch (upb_def_type(def)) {
-      case UPB_DEF_MSG: {
-        const upb_msgdef *msgdef = upb_downcast_msgdef(def);
-        const char *fullname = upb_msgdef_fullname(msgdef);
-        const char *php_namespace = upb_filedef_phpnamespace(files[0]);
-        const char *prefix_given = upb_filedef_phpprefix(files[0]);
-        size_t classname_len = strlen(fullname) + 5;
-        if (prefix_given != NULL) {
-          classname_len += strlen(prefix_given);
-        }
-        if (php_namespace != NULL) {
-          classname_len += strlen(php_namespace);
-        }
-        char *classname = ALLOC_N(char, classname_len);
-        memset(classname, 0, classname_len);
-        const char *package = upb_filedef_package(files[0]);
-        classname_no_prefix(fullname, package, classname);
-        const char *prefix = classname_prefix(classname, prefix_given, package);
-        convert_to_class_name_inplace(package, php_namespace, prefix, classname);
-        register_upbdef(classname, def);
-        FREE(classname);
-        break;
-      }
-// #define CASE_TYPE(def_type, def_type_lower, desc_type, desc_type_lower)        \
-//   case UPB_DEF_##def_type: {                                                   \
-//     const upb_##def_type_lower *def_type_lower =                               \
-//         upb_downcast_##def_type_lower(def);                                    \
-//     /* Unlike other messages, MapEntry is shared by all map fields and doesn't \
-//      * have generated PHP class.*/                                             \
-//     if (upb_def_type(def) == UPB_DEF_MSG &&                                    \
-//         upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
-//       break;                                                                   \
-//     }                                                                          \
-//     /* Prepend '.' to package name to make it absolute. In the 5 additional    \
-//      * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
-//      * given message is google.protobuf.Empty.*/                               \
-//     const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-//     const char *php_namespace = upb_filedef_phpnamespace(files[0]);            \
-//     const char *prefix_given = upb_filedef_phpprefix(files[0]);                \
-//     size_t classname_len = strlen(fullname) + 5;                               \
-//     if (prefix_given != NULL) {                                                \
-//       classname_len += strlen(prefix_given);                                   \
-//     }                                                                          \
-//     if (php_namespace != NULL) {                                               \
-//       classname_len += strlen(php_namespace);                                  \
-//     }                                                                          \
-//     char *classname = ALLOC_N(char, classname_len);                            \
-//     const char *package = upb_filedef_package(files[0]);                       \
-//     classname_no_prefix(fullname, package, classname);                         \
-//     const char *prefix = classname_prefix(classname, prefix_given, package);   \
-//     convert_to_class_name_inplace(package, php_namespace, prefix, classname);  \
-//     PROTO_CLASS* klass = lookup_class(classname);                              \
-//     add_class2def(klass, def);                                                 \
-//     FREE(classname);                                                           \
-//     break;                                                                     \
-//   }
-// 
-//       CASE_TYPE(MSG, msgdef, Descriptor, descriptor)
-//       CASE_TYPE(ENUM, enumdef, EnumDescriptor, enum_descriptor)
-// #undef CASE_TYPE
-// 
+#define CASE_TYPE(def_type, def_type_lower, desc_type)                         \
+  case UPB_DEF_##def_type: {                                                   \
+    const upb_##def_type_lower *def_type_lower =                               \
+        upb_downcast_##def_type_lower(def);                                    \
+    /* Unlike other messages, MapEntry is shared by all map fields and doesn't \
+     * have generated PHP class.*/                                             \
+    if (upb_def_type(def) == UPB_DEF_MSG &&                                    \
+        upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
+      break;                                                                   \
+    }                                                                          \
+    /* Prepend '.' to package name to make it absolute. In the 5 additional    \
+     * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
+     * given message is google.protobuf.Empty.*/                               \
+    const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
+    const char *php_namespace = upb_filedef_phpnamespace(files[0]);            \
+    const char *prefix_given = upb_filedef_phpprefix(files[0]);                \
+    size_t classname_len = strlen(fullname) + 5;                               \
+    if (prefix_given != NULL) {                                                \
+      classname_len += strlen(prefix_given);                                   \
+    }                                                                          \
+    if (php_namespace != NULL) {                                               \
+      classname_len += strlen(php_namespace);                                  \
+    }                                                                          \
+    char *classname = ALLOC_N(char, classname_len);                            \
+    memset(classname, 0, classname_len);                                       \
+    const char *package = upb_filedef_package(files[0]);                       \
+    classname_no_prefix(fullname, package, classname);                         \
+    const char *prefix = classname_prefix(classname, prefix_given, package);   \
+    convert_to_class_name_inplace(package, php_namespace, prefix, classname);  \
+    register_upbdef(classname, def);                                           \
+    FREE(classname);                                                           \
+    break;                                                                     \
+  }
+
+      CASE_TYPE(MSG, msgdef, Descriptor)
+      CASE_TYPE(ENUM, enumdef, EnumDescriptor)
+#undef CASE_TYPE
+
       default:
         break;
     }
@@ -271,3 +249,73 @@ void InternalDescriptorPool_add_generated_file(
   upb_filedef_unref(files[0], &pool);
   upb_gfree(files);
 }
+
+void DescriptorPool_init_c_instance(
+    DescriptorPool *pool TSRMLS_DC) {
+  pool->intern = NULL;
+}
+
+void DescriptorPool_free_c(
+    DescriptorPool *pool TSRMLS_DC) {}
+
+// -----------------------------------------------------------------------------
+// Descriptor
+// -----------------------------------------------------------------------------
+
+void Descriptor_init_c_instance(
+    Descriptor *self TSRMLS_DC) {
+  self->intern = NULL;
+  self->klass = NULL;
+}
+
+void Descriptor_free_c(
+    Descriptor *self TSRMLS_DC) {}
+
+// -----------------------------------------------------------------------------
+// EnumDescriptor
+// -----------------------------------------------------------------------------
+
+void EnumDescriptor_init_c_instance(
+    EnumDescriptor *self TSRMLS_DC) {
+  self->intern = NULL;
+}
+
+void EnumDescriptor_free_c(
+    EnumDescriptor *self TSRMLS_DC) {}
+
+// -----------------------------------------------------------------------------
+// EnumValueDescriptor
+// -----------------------------------------------------------------------------
+
+void EnumValueDescriptor_init_c_instance(
+    EnumValueDescriptor *self TSRMLS_DC) {
+  self->name = NULL;
+  self->number = 0;
+}
+
+void EnumValueDescriptor_free_c(
+    EnumValueDescriptor *self TSRMLS_DC) {}
+
+// -----------------------------------------------------------------------------
+// FieldDescriptor
+// -----------------------------------------------------------------------------
+
+void FieldDescriptor_init_c_instance(
+    FieldDescriptor *self TSRMLS_DC) {
+  self->intern = NULL;
+}
+
+void FieldDescriptor_free_c(
+    FieldDescriptor *self TSRMLS_DC) {}
+
+// -----------------------------------------------------------------------------
+// OneofDescriptor
+// -----------------------------------------------------------------------------
+
+void OneofDescriptor_init_c_instance(
+    OneofDescriptor *self TSRMLS_DC) {
+  self->intern = NULL;
+}
+
+void OneofDescriptor_free_c(
+    OneofDescriptor *self TSRMLS_DC) {}

@@ -19,6 +19,7 @@
 
 void register_upbdef(const char* classname, const upb_def* def);
 const upb_msgdef* class2msgdef(const void* klass);
+const upb_enumdef* class2enumdef(const void* klass);
 const void* msgdef2class(const upb_msgdef* msgdef);
 
 // -----------------------------------------------------------------------------
@@ -83,6 +84,98 @@ PROTO_WRAP_OBJECT_END
 
 extern InternalDescriptorPool* internal_generated_pool_cpp;
 extern upb_msgfactory* message_factory;
+
+// -----------------------------------------------------------------------------
+// DescriptorPool
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(DescriptorPool);
+
+void DescriptorPool_init(TSRMLS_D);
+
+void DescriptorPool_free_c(DescriptorPool *object TSRMLS_DC);
+void DescriptorPool_init_c_instance(DescriptorPool *pool TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(DescriptorPool)
+  InternalDescriptorPool* intern;
+PROTO_WRAP_OBJECT_END
+
+// -----------------------------------------------------------------------------
+// Descriptor
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(Descriptor);
+
+void Descriptor_init(TSRMLS_D);
+
+void Descriptor_free_c(Descriptor *self TSRMLS_DC);
+void Descriptor_init_c_instance(Descriptor *self TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(Descriptor)
+  const upb_msgdef* intern;
+  CLASS klass;
+PROTO_WRAP_OBJECT_END
+
+// -----------------------------------------------------------------------------
+// EnumDescriptor
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(EnumDescriptor);
+
+void EnumDescriptor_init(TSRMLS_D);
+
+void EnumDescriptor_free_c(EnumDescriptor *self TSRMLS_DC);
+void EnumDescriptor_init_c_instance(EnumDescriptor *self TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(EnumDescriptor)
+  const upb_enumdef* intern;
+PROTO_WRAP_OBJECT_END
+
+// -----------------------------------------------------------------------------
+// EnumValueDescriptor
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(EnumValueDescriptor);
+
+void EnumValueDescriptor_init(TSRMLS_D);
+
+void EnumValueDescriptor_free_c(EnumValueDescriptor *self TSRMLS_DC);
+void EnumValueDescriptor_init_c_instance(EnumValueDescriptor *self TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(EnumValueDescriptor)
+  const char* name;
+  int32_t number;
+PROTO_WRAP_OBJECT_END
+
+// -----------------------------------------------------------------------------
+// FieldDescriptor
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(FieldDescriptor);
+
+void FieldDescriptor_init(TSRMLS_D);
+
+void FieldDescriptor_free_c(FieldDescriptor *self TSRMLS_DC);
+void FieldDescriptor_init_c_instance(FieldDescriptor *self TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(FieldDescriptor)
+  const upb_fielddef* intern;
+PROTO_WRAP_OBJECT_END
+
+// -----------------------------------------------------------------------------
+// OneofDescriptor
+// -----------------------------------------------------------------------------
+
+PROTO_FORWARD_DECLARE_CLASS(OneofDescriptor);
+
+void OneofDescriptor_init(TSRMLS_D);
+
+void OneofDescriptor_free_c(OneofDescriptor *self TSRMLS_DC);
+void OneofDescriptor_init_c_instance(OneofDescriptor *self TSRMLS_DC);
+
+PROTO_WRAP_OBJECT_START(OneofDescriptor)
+  const upb_oneofdef* intern;
+PROTO_WRAP_OBJECT_END
 
 // -----------------------------------------------------------------------------
 // Message

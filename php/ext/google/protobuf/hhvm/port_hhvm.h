@@ -9,6 +9,7 @@ using namespace HPHP;
 
 // Define class.
 #define PROTO_CLASS Class 
+#define CLASS Class
 
 #define PROTO_FORWARD_DECLARE_CLASS(CLASSNAME) \
   class CLASSNAME

@@ -2,12 +2,15 @@
 #define __GOOGLE_PROTOBUF_PHP_PORT_PHP_H__
 
 #include "php.h"
+#include "Zend/zend_exceptions.h"
 
 #if PHP_MAJOR_VERSION < 7
 #include "port_php5.h"
 #else  // php5
 #include "port_php7.h"
 #endif  // php7
+
+#define CLASS zend_class_entry*
 
 #define PROTO_DEFINE_CLASS(CLASSNAME, STRINGNAME) \
   zend_class_entry *CLASSNAME##_type;             \
