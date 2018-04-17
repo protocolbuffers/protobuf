@@ -370,9 +370,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
   java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/test_extra_interfaces.proto         \
-  java/lite/generate-sources-build.xml                                             \
-  java/lite/generate-test-sources-build.xml                                        \
-  java/lite/pom.xml                                                                \
+  java/lite.md                                                                     \
   java/pom.xml                                                                     \
   java/util/pom.xml                                                                \
   java/util/src/main/java/com/google/protobuf/util/Durations.java                  \
