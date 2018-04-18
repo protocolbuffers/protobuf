@@ -33,8 +33,6 @@
     <test.proto.dir>src/test/proto</test.proto.dir>
     <generated.sources.dir>${project.build.directory}/generated-sources</generated.sources.dir>
     <generated.testsources.dir>${project.build.directory}/generated-test-sources</generated.testsources.dir>
-    <generated.sources.lite.dir>${project.build.directory}/generated-sources-lite</generated.sources.lite.dir>
-    <generated.testsources.lite.dir>${project.build.directory}/generated-test-sources-lite</generated.testsources.lite.dir>
   </properties>
 
   <licenses>
@@ -208,7 +206,6 @@
 
   <modules>
     <module>core</module>
-    <!-- <module>lite</module> -->
     <module>util</module>
   </modules>
 

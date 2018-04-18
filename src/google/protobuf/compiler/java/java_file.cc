@@ -223,6 +223,16 @@ bool FileGenerator::Validate(string* error) {
       "option to specify a different outer class name for the .proto file.");
     return false;
   }
+  // Print a warning if optimize_for = LITE_RUNTIME is used.
+  if (file_->options().optimize_for() == FileOptions::LITE_RUNTIME) {
+    GOOGLE_LOG(WARNING)
+        << "The optimize_for = LITE_RUNTIME option is no longer supported by "
+        << "protobuf Java code generator and may generate broken code. It "
+        << "will be ignored by protoc in the future and protoc will always "
+        << "generate full runtime code for Java. To use Java Lite runtime, "
+        << "users should use the Java Lite plugin instead. See:\n"
+        << "  https://github.com/google/protobuf/blob/master/java/lite.md";
+  }
   return true;
 }
 
