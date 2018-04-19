@@ -4,11 +4,15 @@
 
 namespace Google\Protobuf\Internal\FieldDescriptorProto;
 
+use Google\Protobuf\Internal\EnumTrait;
+
 /**
  * Protobuf type <code>google.protobuf.FieldDescriptorProto.Type</code>
  */
 class Type
 {
+    use EnumTrait;
+
     /**
      * 0 is reserved for errors.
      * Order is weird for historical reasons.
@@ -103,6 +107,27 @@ class Type
      * Generated from protobuf enum <code>TYPE_SINT64 = 18;</code>
      */
     const TYPE_SINT64 = 18;
+
+    private static $valueToName = [
+        self::TYPE_DOUBLE => 'TYPE_DOUBLE',
+        self::TYPE_FLOAT => 'TYPE_FLOAT',
+        self::TYPE_INT64 => 'TYPE_INT64',
+        self::TYPE_UINT64 => 'TYPE_UINT64',
+        self::TYPE_INT32 => 'TYPE_INT32',
+        self::TYPE_FIXED64 => 'TYPE_FIXED64',
+        self::TYPE_FIXED32 => 'TYPE_FIXED32',
+        self::TYPE_BOOL => 'TYPE_BOOL',
+        self::TYPE_STRING => 'TYPE_STRING',
+        self::TYPE_GROUP => 'TYPE_GROUP',
+        self::TYPE_MESSAGE => 'TYPE_MESSAGE',
+        self::TYPE_BYTES => 'TYPE_BYTES',
+        self::TYPE_UINT32 => 'TYPE_UINT32',
+        self::TYPE_ENUM => 'TYPE_ENUM',
+        self::TYPE_SFIXED32 => 'TYPE_SFIXED32',
+        self::TYPE_SFIXED64 => 'TYPE_SFIXED64',
+        self::TYPE_SINT32 => 'TYPE_SINT32',
+        self::TYPE_SINT64 => 'TYPE_SINT64',
+    ];
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

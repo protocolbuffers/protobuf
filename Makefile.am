@@ -639,6 +639,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/EnumDescriptorProto.php            \
   php/src/Google/Protobuf/Internal/EnumDescriptorProto/EnumReservedRange.php \
   php/src/Google/Protobuf/Internal/EnumOptions.php                    \
+  php/src/Google/Protobuf/Internal/EnumTrait.php                      \
   php/src/Google/Protobuf/Internal/EnumValueDescriptorProto.php       \
   php/src/Google/Protobuf/Internal/EnumValueOptions.php               \
   php/src/Google/Protobuf/Internal/ExtensionRangeOptions.php          \

@@ -4,6 +4,8 @@
 
 namespace Google\Protobuf;
 
+use Google\Protobuf\Internal\EnumTrait;
+
 /**
  * `NullValue` is a singleton enumeration to represent the null value for the
  * `Value` type union.
@@ -13,11 +15,17 @@ namespace Google\Protobuf;
  */
 class NullValue
 {
+    use EnumTrait;
+
     /**
      * Null value.
      *
      * Generated from protobuf enum <code>NULL_VALUE = 0;</code>
      */
     const NULL_VALUE = 0;
+
+    private static $valueToName = [
+        self::NULL_VALUE => 'NULL_VALUE',
+    ];
 }
 

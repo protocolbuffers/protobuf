@@ -4,6 +4,8 @@
 
 namespace Google\Protobuf\Internal\FileOptions;
 
+use Google\Protobuf\Internal\EnumTrait;
+
 /**
  * Generated classes can be optimized for speed or code size.
  *
@@ -11,6 +13,8 @@ namespace Google\Protobuf\Internal\FileOptions;
  */
 class OptimizeMode
 {
+    use EnumTrait;
+
     /**
      * Generate complete code for parsing, serialization,
      *
@@ -29,6 +33,12 @@ class OptimizeMode
      * Generated from protobuf enum <code>LITE_RUNTIME = 3;</code>
      */
     const LITE_RUNTIME = 3;
+
+    private static $valueToName = [
+        self::SPEED => 'SPEED',
+        self::CODE_SIZE => 'CODE_SIZE',
+        self::LITE_RUNTIME => 'LITE_RUNTIME',
+    ];
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

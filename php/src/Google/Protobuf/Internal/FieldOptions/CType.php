@@ -4,11 +4,15 @@
 
 namespace Google\Protobuf\Internal\FieldOptions;
 
+use Google\Protobuf\Internal\EnumTrait;
+
 /**
  * Protobuf type <code>google.protobuf.FieldOptions.CType</code>
  */
 class CType
 {
+    use EnumTrait;
+
     /**
      * Default mode.
      *
@@ -23,6 +27,12 @@ class CType
      * Generated from protobuf enum <code>STRING_PIECE = 2;</code>
      */
     const STRING_PIECE = 2;
+
+    private static $valueToName = [
+        self::STRING => 'STRING',
+        self::CORD => 'CORD',
+        self::STRING_PIECE => 'STRING_PIECE',
+    ];
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

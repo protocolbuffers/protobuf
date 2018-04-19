@@ -1107,17 +1107,21 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "name", fullname.substr(0, lastindex));
   }
 
+  printer.Print("use Google\\Protobuf\\Internal\\EnumTrait;\n\n");
+
+  GenerateEnumDocComment(&printer, en, is_descriptor);
+
   if (lastindex != string::npos) {
     fullname = fullname.substr(lastindex + 1);
   }
-
-  GenerateEnumDocComment(&printer, en, is_descriptor);
 
   printer.Print(
       "class ^name^\n"
       "{\n",
       "name", fullname);
   Indent(&printer);
+
+  printer.Print("use EnumTrait;\n\n");
 
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
@@ -1126,6 +1130,16 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                   "name", ConstantNamePrefix(value->name()) + value->name(),
                   "number", IntToString(value->number()));
   }
+
+  printer.Print("\nprivate static $valueToName = [\n");
+  Indent(&printer);
+  for (int i = 0; i < en->value_count(); i++) {
+    const EnumValueDescriptor* value = en->value(i);
+    printer.Print("self::^name^ => '^name^',\n",
+                  "name", ConstantNamePrefix(value->name()) + value->name());
+  }
+  Outdent(&printer);
+  printer.Print("];\n");
 
   Outdent(&printer);
   printer.Print("}\n\n");

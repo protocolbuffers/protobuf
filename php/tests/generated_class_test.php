@@ -8,6 +8,7 @@ require_once('test_util.php');
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
+use Google\Protobuf\Internal\EnumTrait;
 use Bar\TestLegacyMessage;
 use Bar\TestLegacyMessage_NestedEnum;
 use Bar\TestLegacyMessage_NestedMessage;
@@ -232,6 +233,28 @@ class GeneratedClassTest extends TestBase
         // Set string.
         $m->setOptionalEnum("1");
         $this->assertEquals(TestEnum::ONE, $m->getOptionalEnum());
+
+        // Test Enum methods
+        $this->assertEquals('ONE', TestEnum::name(1));
+        $this->assertEquals(1, TestEnum::value('ONE'));
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Enum Foo\TestEnum has no name defined for value -1
+     */
+    public function testInvalidEnumValueThrowsException()
+    {
+        TestEnum::name(-1);
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Enum Foo\TestEnum has no value defined for name DOES_NOT_EXIST
+     */
+    public function testInvalidEnumNameThrowsException()
+    {
+        TestEnum::value('DOES_NOT_EXIST');
     }
 
     public function testNestedEnum()

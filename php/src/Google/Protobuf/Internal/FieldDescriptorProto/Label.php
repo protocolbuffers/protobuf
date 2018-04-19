@@ -4,11 +4,15 @@
 
 namespace Google\Protobuf\Internal\FieldDescriptorProto;
 
+use Google\Protobuf\Internal\EnumTrait;
+
 /**
  * Protobuf type <code>google.protobuf.FieldDescriptorProto.Label</code>
  */
 class Label
 {
+    use EnumTrait;
+
     /**
      * 0 is reserved for errors
      *
@@ -23,6 +27,12 @@ class Label
      * Generated from protobuf enum <code>LABEL_REPEATED = 3;</code>
      */
     const LABEL_REPEATED = 3;
+
+    private static $valueToName = [
+        self::LABEL_OPTIONAL => 'LABEL_OPTIONAL',
+        self::LABEL_REQUIRED => 'LABEL_REQUIRED',
+        self::LABEL_REPEATED => 'LABEL_REPEATED',
+    ];
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.
