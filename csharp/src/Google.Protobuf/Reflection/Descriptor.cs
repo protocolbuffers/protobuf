@@ -350,8 +350,8 @@ namespace Google.Protobuf.Reflection {
       enumType_ = other.enumType_.Clone();
       service_ = other.service_.Clone();
       extension_ = other.extension_.Clone();
-      Options = other.options_ != null ? other.Options.Clone() : null;
-      SourceCodeInfo = other.sourceCodeInfo_ != null ? other.SourceCodeInfo.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
+      sourceCodeInfo_ = other.sourceCodeInfo_ != null ? other.sourceCodeInfo_.Clone() : null;
       syntax_ = other.syntax_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -775,7 +775,7 @@ namespace Google.Protobuf.Reflection {
       enumType_ = other.enumType_.Clone();
       extensionRange_ = other.extensionRange_.Clone();
       oneofDecl_ = other.oneofDecl_.Clone();
-      Options = other.options_ != null ? other.Options.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       reservedRange_ = other.reservedRange_.Clone();
       reservedName_ = other.reservedName_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1099,7 +1099,7 @@ namespace Google.Protobuf.Reflection {
         public ExtensionRange(ExtensionRange other) : this() {
           start_ = other.start_;
           end_ = other.end_;
-          Options = other.options_ != null ? other.Options.Clone() : null;
+          options_ = other.options_ != null ? other.options_.Clone() : null;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -1597,7 +1597,7 @@ namespace Google.Protobuf.Reflection {
       defaultValue_ = other.defaultValue_;
       oneofIndex_ = other.oneofIndex_;
       jsonName_ = other.jsonName_;
-      Options = other.options_ != null ? other.Options.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2078,7 +2078,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public OneofDescriptorProto(OneofDescriptorProto other) : this() {
       name_ = other.name_;
-      Options = other.options_ != null ? other.Options.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2245,7 +2245,7 @@ namespace Google.Protobuf.Reflection {
     public EnumDescriptorProto(EnumDescriptorProto other) : this() {
       name_ = other.name_;
       value_ = other.value_.Clone();
-      Options = other.options_ != null ? other.Options.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       reservedRange_ = other.reservedRange_.Clone();
       reservedName_ = other.reservedName_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -2658,7 +2658,7 @@ namespace Google.Protobuf.Reflection {
     public EnumValueDescriptorProto(EnumValueDescriptorProto other) : this() {
       name_ = other.name_;
       number_ = other.number_;
-      Options = other.options_ != null ? other.Options.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2852,7 +2852,7 @@ namespace Google.Protobuf.Reflection {
     public ServiceDescriptorProto(ServiceDescriptorProto other) : this() {
       name_ = other.name_;
       method_ = other.method_.Clone();
-      Options = other.options_ != null ? other.Options.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3039,7 +3039,7 @@ namespace Google.Protobuf.Reflection {
       name_ = other.name_;
       inputType_ = other.inputType_;
       outputType_ = other.outputType_;
-      Options = other.options_ != null ? other.Options.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       clientStreaming_ = other.clientStreaming_;
       serverStreaming_ = other.serverStreaming_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);

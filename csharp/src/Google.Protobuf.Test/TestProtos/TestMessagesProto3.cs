@@ -273,13 +273,13 @@ namespace ProtobufTestMessages.Proto3 {
       optionalBool_ = other.optionalBool_;
       optionalString_ = other.optionalString_;
       optionalBytes_ = other.optionalBytes_;
-      OptionalNestedMessage = other.optionalNestedMessage_ != null ? other.OptionalNestedMessage.Clone() : null;
-      OptionalForeignMessage = other.optionalForeignMessage_ != null ? other.OptionalForeignMessage.Clone() : null;
+      optionalNestedMessage_ = other.optionalNestedMessage_ != null ? other.optionalNestedMessage_.Clone() : null;
+      optionalForeignMessage_ = other.optionalForeignMessage_ != null ? other.optionalForeignMessage_.Clone() : null;
       optionalNestedEnum_ = other.optionalNestedEnum_;
       optionalForeignEnum_ = other.optionalForeignEnum_;
       optionalStringPiece_ = other.optionalStringPiece_;
       optionalCord_ = other.optionalCord_;
-      RecursiveMessage = other.recursiveMessage_ != null ? other.RecursiveMessage.Clone() : null;
+      recursiveMessage_ = other.recursiveMessage_ != null ? other.recursiveMessage_.Clone() : null;
       repeatedInt32_ = other.repeatedInt32_.Clone();
       repeatedInt64_ = other.repeatedInt64_.Clone();
       repeatedUint32_ = other.repeatedUint32_.Clone();
@@ -338,12 +338,12 @@ namespace ProtobufTestMessages.Proto3 {
       repeatedDoubleWrapper_ = other.repeatedDoubleWrapper_.Clone();
       repeatedStringWrapper_ = other.repeatedStringWrapper_.Clone();
       repeatedBytesWrapper_ = other.repeatedBytesWrapper_.Clone();
-      OptionalDuration = other.optionalDuration_ != null ? other.OptionalDuration.Clone() : null;
-      OptionalTimestamp = other.optionalTimestamp_ != null ? other.OptionalTimestamp.Clone() : null;
-      OptionalFieldMask = other.optionalFieldMask_ != null ? other.OptionalFieldMask.Clone() : null;
-      OptionalStruct = other.optionalStruct_ != null ? other.OptionalStruct.Clone() : null;
-      OptionalAny = other.optionalAny_ != null ? other.OptionalAny.Clone() : null;
-      OptionalValue = other.optionalValue_ != null ? other.OptionalValue.Clone() : null;
+      optionalDuration_ = other.optionalDuration_ != null ? other.optionalDuration_.Clone() : null;
+      optionalTimestamp_ = other.optionalTimestamp_ != null ? other.optionalTimestamp_.Clone() : null;
+      optionalFieldMask_ = other.optionalFieldMask_ != null ? other.optionalFieldMask_.Clone() : null;
+      optionalStruct_ = other.optionalStruct_ != null ? other.optionalStruct_.Clone() : null;
+      optionalAny_ = other.optionalAny_ != null ? other.optionalAny_.Clone() : null;
+      optionalValue_ = other.optionalValue_ != null ? other.optionalValue_.Clone() : null;
       repeatedDuration_ = other.repeatedDuration_.Clone();
       repeatedTimestamp_ = other.repeatedTimestamp_.Clone();
       repeatedFieldmask_ = other.repeatedFieldmask_.Clone();
@@ -3455,7 +3455,7 @@ namespace ProtobufTestMessages.Proto3 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public NestedMessage(NestedMessage other) : this() {
           a_ = other.a_;
-          Corecursive = other.corecursive_ != null ? other.Corecursive.Clone() : null;
+          corecursive_ = other.corecursive_ != null ? other.corecursive_.Clone() : null;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 

@@ -280,13 +280,13 @@ namespace Google.Protobuf.TestProtos {
       singleBool_ = other.singleBool_;
       singleString_ = other.singleString_;
       singleBytes_ = other.singleBytes_;
-      SingleNestedMessage = other.singleNestedMessage_ != null ? other.SingleNestedMessage.Clone() : null;
-      SingleForeignMessage = other.singleForeignMessage_ != null ? other.SingleForeignMessage.Clone() : null;
-      SingleImportMessage = other.singleImportMessage_ != null ? other.SingleImportMessage.Clone() : null;
+      singleNestedMessage_ = other.singleNestedMessage_ != null ? other.singleNestedMessage_.Clone() : null;
+      singleForeignMessage_ = other.singleForeignMessage_ != null ? other.singleForeignMessage_.Clone() : null;
+      singleImportMessage_ = other.singleImportMessage_ != null ? other.singleImportMessage_.Clone() : null;
       singleNestedEnum_ = other.singleNestedEnum_;
       singleForeignEnum_ = other.singleForeignEnum_;
       singleImportEnum_ = other.singleImportEnum_;
-      SinglePublicImportMessage = other.singlePublicImportMessage_ != null ? other.SinglePublicImportMessage.Clone() : null;
+      singlePublicImportMessage_ = other.singlePublicImportMessage_ != null ? other.singlePublicImportMessage_.Clone() : null;
       repeatedInt32_ = other.repeatedInt32_.Clone();
       repeatedInt64_ = other.repeatedInt64_.Clone();
       repeatedUint32_ = other.repeatedUint32_.Clone();
@@ -1786,8 +1786,8 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public NestedTestAllTypes(NestedTestAllTypes other) : this() {
-      Child = other.child_ != null ? other.Child.Clone() : null;
-      Payload = other.payload_ != null ? other.Payload.Clone() : null;
+      child_ = other.child_ != null ? other.child_.Clone() : null;
+      payload_ = other.payload_ != null ? other.payload_.Clone() : null;
       repeatedChild_ = other.repeatedChild_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -2342,7 +2342,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestForeignNested(TestForeignNested other) : this() {
-      ForeignNested = other.foreignNested_ != null ? other.ForeignNested.Clone() : null;
+      foreignNested_ = other.foreignNested_ != null ? other.foreignNested_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2641,7 +2641,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestRecursiveMessage(TestRecursiveMessage other) : this() {
-      A = other.a_ != null ? other.A.Clone() : null;
+      a_ = other.a_ != null ? other.a_.Clone() : null;
       i_ = other.i_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -2807,7 +2807,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestMutualRecursionA(TestMutualRecursionA other) : this() {
-      Bb = other.bb_ != null ? other.Bb.Clone() : null;
+      bb_ = other.bb_ != null ? other.bb_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2942,7 +2942,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestMutualRecursionB(TestMutualRecursionB other) : this() {
-      A = other.a_ != null ? other.A.Clone() : null;
+      a_ = other.a_ != null ? other.a_.Clone() : null;
       optionalInt32_ = other.optionalInt32_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -3241,7 +3241,7 @@ namespace Google.Protobuf.TestProtos {
       primitiveField_ = other.primitiveField_;
       stringField_ = other.stringField_;
       enumField_ = other.enumField_;
-      MessageField = other.messageField_ != null ? other.MessageField.Clone() : null;
+      messageField_ = other.messageField_ != null ? other.messageField_.Clone() : null;
       repeatedPrimitiveField_ = other.repeatedPrimitiveField_.Clone();
       repeatedStringField_ = other.repeatedStringField_.Clone();
       repeatedEnumField_ = other.repeatedEnumField_.Clone();
@@ -3546,7 +3546,7 @@ namespace Google.Protobuf.TestProtos {
       myString_ = other.myString_;
       myInt_ = other.myInt_;
       myFloat_ = other.myFloat_;
-      SingleNestedMessage = other.singleNestedMessage_ != null ? other.SingleNestedMessage.Clone() : null;
+      singleNestedMessage_ = other.singleNestedMessage_ != null ? other.singleNestedMessage_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 

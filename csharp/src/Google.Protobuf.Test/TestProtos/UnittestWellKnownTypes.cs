@@ -204,15 +204,15 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestWellKnownTypes(TestWellKnownTypes other) : this() {
-      AnyField = other.anyField_ != null ? other.AnyField.Clone() : null;
-      ApiField = other.apiField_ != null ? other.ApiField.Clone() : null;
-      DurationField = other.durationField_ != null ? other.DurationField.Clone() : null;
-      EmptyField = other.emptyField_ != null ? other.EmptyField.Clone() : null;
-      FieldMaskField = other.fieldMaskField_ != null ? other.FieldMaskField.Clone() : null;
-      SourceContextField = other.sourceContextField_ != null ? other.SourceContextField.Clone() : null;
-      StructField = other.structField_ != null ? other.StructField.Clone() : null;
-      TimestampField = other.timestampField_ != null ? other.TimestampField.Clone() : null;
-      TypeField = other.typeField_ != null ? other.TypeField.Clone() : null;
+      anyField_ = other.anyField_ != null ? other.anyField_.Clone() : null;
+      apiField_ = other.apiField_ != null ? other.apiField_.Clone() : null;
+      durationField_ = other.durationField_ != null ? other.durationField_.Clone() : null;
+      emptyField_ = other.emptyField_ != null ? other.emptyField_.Clone() : null;
+      fieldMaskField_ = other.fieldMaskField_ != null ? other.fieldMaskField_.Clone() : null;
+      sourceContextField_ = other.sourceContextField_ != null ? other.sourceContextField_.Clone() : null;
+      structField_ = other.structField_ != null ? other.structField_.Clone() : null;
+      timestampField_ = other.timestampField_ != null ? other.timestampField_.Clone() : null;
+      typeField_ = other.typeField_ != null ? other.typeField_.Clone() : null;
       DoubleField = other.DoubleField;
       FloatField = other.FloatField;
       Int64Field = other.Int64Field;
@@ -222,7 +222,7 @@ namespace Google.Protobuf.TestProtos {
       BoolField = other.BoolField;
       StringField = other.StringField;
       BytesField = other.BytesField;
-      ValueField = other.valueField_ != null ? other.ValueField.Clone() : null;
+      valueField_ = other.valueField_ != null ? other.valueField_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
