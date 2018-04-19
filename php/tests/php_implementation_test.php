@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBLabel;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\CodedOutputStream;
+use Google\Protobuf\Internal\EnumTrait;
 
 class ImplementationTest extends TestBase
 {
@@ -584,4 +585,18 @@ class ImplementationTest extends TestBase
             [['map_int32_int32' => null]],
         ];
     }
+
+    /**
+     * @expectedException LogicException
+     * @expectedExceptionMessage Classes implementing Google\Protobuf\Internal\EnumTrait must define the static property $valueToName to use this function
+     */
+    public function testBadEnumThrowsException()
+    {
+        BadEnum::name(1);
+    }
+}
+
+class BadEnum
+{
+    use EnumTrait;
 }

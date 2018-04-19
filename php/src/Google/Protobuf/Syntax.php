@@ -4,6 +4,8 @@
 
 namespace Google\Protobuf;
 
+use Google\Protobuf\Internal\EnumTrait;
+
 /**
  * The syntax in which a protocol buffer element is defined.
  *
@@ -11,6 +13,8 @@ namespace Google\Protobuf;
  */
 class Syntax
 {
+    use EnumTrait;
+
     /**
      * Syntax `proto2`.
      *
@@ -23,5 +27,10 @@ class Syntax
      * Generated from protobuf enum <code>SYNTAX_PROTO3 = 1;</code>
      */
     const SYNTAX_PROTO3 = 1;
+
+    private static $valueToName = [
+        self::SYNTAX_PROTO2 => 'SYNTAX_PROTO2',
+        self::SYNTAX_PROTO3 => 'SYNTAX_PROTO3',
+    ];
 }
 

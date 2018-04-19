@@ -4,6 +4,8 @@
 
 namespace Google\Protobuf\Field;
 
+use Google\Protobuf\Internal\EnumTrait;
+
 /**
  * Whether a field is optional, required, or repeated.
  *
@@ -11,6 +13,8 @@ namespace Google\Protobuf\Field;
  */
 class Cardinality
 {
+    use EnumTrait;
+
     /**
      * For fields with unknown cardinality.
      *
@@ -35,6 +39,13 @@ class Cardinality
      * Generated from protobuf enum <code>CARDINALITY_REPEATED = 3;</code>
      */
     const CARDINALITY_REPEATED = 3;
+
+    private static $valueToName = [
+        self::CARDINALITY_UNKNOWN => 'CARDINALITY_UNKNOWN',
+        self::CARDINALITY_OPTIONAL => 'CARDINALclITY_OPTIONAL',
+        self::CARDINALITY_REQUIRED => 'CARDINALITY_REQUIRED',
+        self::CARDINALITY_REPEATED => 'CARDINALITY_REPEATED',
+    ];
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.
