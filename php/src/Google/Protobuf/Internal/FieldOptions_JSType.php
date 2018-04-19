@@ -4,11 +4,15 @@
 
 namespace Google\Protobuf\Internal;
 
+use Google\Protobuf\EnumTrait;
+
 /**
  * Protobuf enum <code>Google\Protobuf\Internal</code>
  */
 class FieldOptions_JSType
 {
+    use EnumTrait;
+
     /**
      * Use the default type.
      *
@@ -27,5 +31,11 @@ class FieldOptions_JSType
      * Generated from protobuf enum <code>JS_NUMBER = 2;</code>
      */
     const JS_NUMBER = 2;
+
+    private static $valueToName = [
+        self::JS_NORMAL => 'JS_NORMAL',
+        self::JS_STRING => 'JS_STRING',
+        self::JS_NUMBER => 'JS_NUMBER',
+    ];
 }
 
