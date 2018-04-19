@@ -767,7 +767,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
     return;
   }
   string class_name = name_prefix.empty()?
-      message->name() : name_prefix + "_" + message->name();
+      message->name() : name_prefix + "\\" + message->name();
 
   printer->Print(
       "$pool->addMessage('^message^', "
