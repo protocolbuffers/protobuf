@@ -226,8 +226,12 @@ internal_install_python_deps() {
   if [ "$TRAVIS" != "true" ]; then
     return;
   fi
-  # install tox
-  sudo pip install tox
+  # Install tox (OS X doesn't have pip).
+  if [ $(uname -s) == "Darwin" ]; then
+    sudo brew install tox
+  else
+    sudo pip install tox
+  fi
   # Only install Python2.6/3.x on Linux.
   if [ $(uname -s) == "Linux" ]; then
     sudo apt-get install -y python-software-properties # for apt-add-repository
