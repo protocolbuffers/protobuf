@@ -303,8 +303,10 @@ class GPBUtil
         $name,
         $file_proto)
     {
-        $classname = implode('_', explode('.', $name));
-        return static::getClassNamePrefix($classname, $file_proto) . $classname;
+        $parts = explode('.', $name);
+        $lastIndex = count($parts)-1;
+        $parts[$lastIndex] = static::getClassNamePrefix($parts[$lastIndex], $file_proto) . $parts[$lastIndex];
+        return implode('\\', $parts);
     }
 
     public static function getFullClassName(
@@ -349,7 +351,8 @@ class GPBUtil
         } else {
             $classname =
                 implode('\\', array_map('ucwords', explode('.', $package))).
-                "\\".$class_name_without_package;
+                "\\".self::getClassNamePrefix($class_name_without_package,$file_proto).
+                $class_name_without_package;
         }
     }
 

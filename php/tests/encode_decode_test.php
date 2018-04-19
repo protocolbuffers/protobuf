@@ -7,7 +7,7 @@ use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
 use Foo\TestEnum;
 use Foo\TestMessage;
-use Foo\TestMessage_Sub;
+use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
@@ -82,7 +82,7 @@ class EncodeDecodeTest extends TestBase
         $n->mergeFromString($data);
         $this->assertSame('abc', $n->getOneofString());
 
-        $sub_m = new TestMessage_Sub();
+        $sub_m = new Sub();
         $sub_m->setA(1);
         $m->setOneofMessage($sub_m);
         $data = $m->serializeToString();
@@ -105,7 +105,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("oneof_string", $n->getMyOneof());
         $this->assertSame("", $n->getOneofString());
 
-        $sub_m = new TestMessage_Sub();
+        $sub_m = new Sub();
         $m->setOneofMessage($sub_m);
         $data = $m->serializeToString();
         $n = new TestMessage();

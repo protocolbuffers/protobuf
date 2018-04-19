@@ -5,7 +5,7 @@ require_once('test_util.php');
 
 use Foo\TestEnum;
 use Foo\TestMessage;
-use Foo\TestMessage_Sub;
+use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Google\Protobuf\Internal\CodedInputStream;
 use Google\Protobuf\Internal\FileDescriptorSet;

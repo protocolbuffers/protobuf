@@ -113,7 +113,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      */
     public function setIdempotencyLevel($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\MethodOptions_IdempotencyLevel::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\MethodOptions\IdempotencyLevel::class);
         $this->idempotency_level = $var;
         $this->has_idempotency_level = true;
 

@@ -12,7 +12,7 @@ use Foo\TestEnum;
 use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
-use Foo\TestMessage_Sub;
+use Foo\TestMessage\Sub;
 use Foo\TestReverseFieldOrder;
 use Foo\testLowerCaseMessage;
 use Foo\testLowerCaseEnum;
@@ -231,7 +231,7 @@ class GeneratedClassTest extends TestBase
     public function testNestedEnum()
     {
         $m = new TestMessage();
-        $m->setOptionalNestedEnum(\Foo\TestMessage_NestedEnum::ZERO);
+        $m->setOptionalNestedEnum(\Foo\TestMessage\NestedEnum::ZERO);
     }
 
     #########################################################
@@ -370,7 +370,7 @@ class GeneratedClassTest extends TestBase
     {
         $m = new TestMessage();
 
-        $sub_m = new TestMessage_Sub();
+        $sub_m = new Sub();
         $sub_m->setA(1);
         $m->setOptionalMessage($sub_m);
         $this->assertSame(1, $m->getOptionalMessage()->getA());
@@ -474,7 +474,7 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(NULL, $m->getOneofMessage());
         $this->assertSame("oneof_string", $m->getMyOneof());
 
-        $sub_m = new TestMessage_Sub();
+        $sub_m = new Sub();
         $sub_m->setA(1);
         $m->setOneofMessage($sub_m);
         $this->assertSame(0, $m->getOneofInt32());
@@ -513,7 +513,7 @@ class GeneratedClassTest extends TestBase
 
         // Singular
         $n->setOptionalInt32(100);
-        $sub1 = new TestMessage_Sub();
+        $sub1 = new Sub();
         $sub1->setA(101);
 
         $b = $sub1->getB();
@@ -531,7 +531,7 @@ class GeneratedClassTest extends TestBase
         $repeatedString[] = 'abc';
         $n->setRepeatedString($repeatedString);
 
-        $sub2 = new TestMessage_Sub();
+        $sub2 = new Sub();
         $sub2->setA(201);
         $repeatedMessage = $n->getRepeatedMessage();
         $repeatedMessage[] = $sub2;
@@ -548,9 +548,9 @@ class GeneratedClassTest extends TestBase
         $n->setMapStringString($mapStringString);
 
         $mapInt32Message = $n->getMapInt32Message();
-        $mapInt32Message[1] = new TestMessage_Sub();
+        $mapInt32Message[1] = new Sub();
         $mapInt32Message[1]->setA(302);
-        $mapInt32Message[2] = new TestMessage_Sub();
+        $mapInt32Message[2] = new Sub();
         $mapInt32Message[2]->setA(303);
         $n->setMapInt32Message($mapInt32Message);
 
@@ -607,7 +607,7 @@ class GeneratedClassTest extends TestBase
         $m->mergeFrom($n);
         $this->assertSame(1, $m->getOneofInt32());
 
-        $sub = new TestMessage_Sub();
+        $sub = new Sub();
         $n->setOneofMessage($sub);
         $n->getOneofMessage()->setA(400);
         $m->mergeFrom($n);
@@ -637,7 +637,7 @@ class GeneratedClassTest extends TestBase
         $m->setRepeatedNoNamespaceMessage($repeatedNoNamespaceMessage);
 
         $n = new NoNamespaceMessage();
-        $n->setB(NoNamespaceMessage_NestedEnum::ZERO);
+        $n->setB(NoNamespaceMessage\NestedEnum::ZERO);
     }
 
     public function testEnumWithoutNamespace()
@@ -647,6 +647,14 @@ class GeneratedClassTest extends TestBase
         $repeatedNoNamespaceEnum = $m->getRepeatedNoNamespaceEnum();
         $repeatedNoNamespaceEnum[] = NoNameSpaceEnum::VALUE_A;
         $m->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);
+    }
+
+    public function testNestedMessageWithoutNamespace()
+    {
+        $m = new NoNamespaceMessage();
+        $sub = new NoNamespaceMessage\NestedMessage();
+        $sub->setNestedMessage(new NoNamespaceMessage\NestedMessage\NestedMessage());
+        $m->setD($sub);
     }
 
     #########################################################
@@ -681,13 +689,26 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(1, $m->getEmptyNamespaceMessage()->getA());
     }
 
+    public function testNestedMessageWithNamespace()
+    {
+        $m = new TestNamespace();
+        $sub = new TestNamespace\NestedMessage();
+        $m->setNestedMessage($sub);
+    }
+
+    public function testNestedEnumWithNamespace()
+    {
+        $m = new TestNamespace();
+        $m->setNestedEnum(TestNamespace\NestedEnum::ZERO);
+    }
+
     #########################################################
     # Test prefix for reserved words.
     #########################################################
 
     public function testPrefixForReservedWords()
     {
-        $m = new \Foo\TestMessage_Empty();
+        $m = new \Foo\TestMessage\PBEmpty();
         $m = new \Foo\PBEmpty();
         $m = new \PrefixEmpty();
         $m = new \Foo\PBARRAY();

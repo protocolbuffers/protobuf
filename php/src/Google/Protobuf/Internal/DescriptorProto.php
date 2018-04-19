@@ -247,12 +247,12 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;</code>
-     * @param \Google\Protobuf\Internal\DescriptorProto_ExtensionRange[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\DescriptorProto\ExtensionRange[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setExtensionRange($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto_ExtensionRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto\ExtensionRange::class);
         $this->extension_range = $arr;
         $this->has_extension_range = true;
 
@@ -331,12 +331,12 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;</code>
-     * @param \Google\Protobuf\Internal\DescriptorProto_ReservedRange[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\DescriptorProto\ReservedRange[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setReservedRange($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto_ReservedRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto\ReservedRange::class);
         $this->reserved_range = $arr;
         $this->has_reserved_range = true;
 

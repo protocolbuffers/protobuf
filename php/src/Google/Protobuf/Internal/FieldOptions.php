@@ -202,7 +202,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      */
     public function setCtype($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions_CType::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions\CType::class);
         $this->ctype = $var;
         $this->has_ctype = true;
 
@@ -292,7 +292,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      */
     public function setJstype($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions_JSType::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions\JSType::class);
         $this->jstype = $var;
         $this->has_jstype = true;
 

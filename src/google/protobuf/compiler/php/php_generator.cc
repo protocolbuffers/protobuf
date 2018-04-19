@@ -1018,9 +1018,9 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     if (!php_namespace.empty()) {
       printer.Print(
           "namespace ^name^;\n\n",
-          "name", php_namespace);
+          "name", fullname.substr(0, lastindex));
     }
-  } else if (!file->package().empty()) {
+  } else if (!file->package().empty() || lastindex != string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1077,9 +1077,9 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
     if (!php_namespace.empty()) {
       printer.Print(
           "namespace ^name^;\n\n",
-          "name", php_namespace);
+          "name", fullname.substr(0, lastindex));
     }
-  } else if (!file->package().empty()) {
+  } else if (!file->package().empty() || lastindex != string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1472,7 +1472,7 @@ std::string GeneratedClassName(const Descriptor* desc) {
   std::string classname = desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
-    classname = containing->name() + '_' + classname;
+    classname = containing->name() + '\\' + ClassNamePrefix(classname, desc) + classname;
     containing = containing->containing_type();
   }
   return ClassNamePrefix(classname, desc) + classname;
@@ -1482,7 +1482,7 @@ std::string GeneratedClassName(const EnumDescriptor* desc) {
   std::string classname = desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
-    classname = containing->name() + '_' + classname;
+    classname = containing->name() + '\\' + ClassNamePrefix(classname, desc) + classname;
     containing = containing->containing_type();
   }
   return ClassNamePrefix(classname, desc) + classname;

@@ -176,12 +176,12 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * overlap.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;</code>
-     * @param \Google\Protobuf\Internal\EnumDescriptorProto_EnumReservedRange[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setReservedRange($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto_EnumReservedRange::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange::class);
         $this->reserved_range = $arr;
         $this->has_reserved_range = true;
 

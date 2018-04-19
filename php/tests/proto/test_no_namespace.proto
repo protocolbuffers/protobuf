@@ -10,6 +10,16 @@ message NoNamespaceMessage {
   }
   NestedEnum b = 2;
   repeated NestedEnum c = 3;
+
+  // Test nested messages
+  NestedMessage d = 4;
+  message NestedMessage {
+    NestedMessage nested_message = 2;
+
+    message NestedMessage {
+        int32 a = 1;
+    }
+  }
 }
 
 enum NoNamespaceEnum {
