@@ -79,7 +79,7 @@ class Message
                 $this->mergeFromArray($data);
             } else if (!empty($data)) {
                 throw new \InvalidArgumentException(
-                    'Message constructor must be an array, Descriptor, or null.'
+                    'Message constructor must be an array or null.'
                 );
             }
         }
