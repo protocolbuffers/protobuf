@@ -4,6 +4,8 @@
 
 namespace Google\Protobuf\Internal;
 
+use Google\Protobuf\EnumTrait;
+
 /**
  * Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
  * or neither? HTTP based RPC implementation may choose GET verb for safe
@@ -13,6 +15,8 @@ namespace Google\Protobuf\Internal;
  */
 class MethodOptions_IdempotencyLevel
 {
+    use EnumTrait;
+
     /**
      * Generated from protobuf enum <code>IDEMPOTENCY_UNKNOWN = 0;</code>
      */
@@ -29,5 +33,11 @@ class MethodOptions_IdempotencyLevel
      * Generated from protobuf enum <code>IDEMPOTENT = 2;</code>
      */
     const IDEMPOTENT = 2;
+
+    private static $valueToName = [
+        self::IDEMPOTENCY_UNKNOWN => 'IDEMPOTENCY_UNKNOWN',
+        self::NO_SIDE_EFFECTS => 'NO_SIDE_EFFECTS',
+        self::IDEMPOTENT => 'IDEMPOTENT',
+    ];
 }
 

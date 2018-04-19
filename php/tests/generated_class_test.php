@@ -8,6 +8,7 @@ require_once('test_util.php');
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
+use Google\Protobuf\EnumTrait;
 use Foo\TestEnum;
 use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
@@ -226,6 +227,37 @@ class GeneratedClassTest extends TestBase
         // Set string.
         $m->setOptionalEnum("1");
         $this->assertEquals(TestEnum::ONE, $m->getOptionalEnum());
+
+        // Test Enum methods
+        $this->assertEquals('ONE', TestEnum::name(1));
+        $this->assertEquals(1, TestEnum::value('ONE'));
+    }
+
+    /**
+     * @expectedException LogicException
+     * @expectedExceptionMessage Classes implementing Google\Protobuf\EnumTrait must define the static property $valueToName
+     */
+    public function testBadEnumThrowsException()
+    {
+        BadEnum::name(1);
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Enum GoodEnum has no name defined for value 2
+     */
+    public function testInvalidEnumValueThrowsException()
+    {
+        GoodEnum::name(2);
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Enum GoodEnum has no value defined for name DOES_NOT_EXIST
+     */
+    public function testInvalidEnumNameThrowsException()
+    {
+        GoodEnum::value('DOES_NOT_EXIST');
     }
 
     public function testNestedEnum()
@@ -1171,4 +1203,20 @@ class GeneratedClassTest extends TestBase
         $m = new testLowerCaseMessage();
         $n = testLowerCaseEnum::VALUE;
     }
+}
+
+class BadEnum
+{
+    use EnumTrait;
+}
+
+class GoodEnum
+{
+    use EnumTrait;
+
+    const EXAMPLE_VALUE = 1;
+
+    private static $valueToName = [
+        self::EXAMPLE_VALUE => 'EXAMPLE_VALUE',
+    ];
 }
