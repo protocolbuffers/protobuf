@@ -132,7 +132,7 @@ javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middlem
 
 java-benchmark: javac_middleman
 	@echo "Writing shortcut script java-benchmark..."
-	@echo '#! /bin/sh' > java-benchmark
+	@echo '#! /bin/bash' > java-benchmark
 	@echo 'all_data=""' >> java-benchmark
 	@echo 'conf=()' >> java-benchmark
 	@echo 'data_files=""' >> java-benchmark
@@ -178,7 +178,7 @@ nodist_libbenchmark_messages_la_SOURCES =                         \
 
 python-pure-python-benchmark: python_add_init
 	@echo "Writing shortcut script python-pure-python-benchmark..."
-	@echo '#! /bin/sh' > python-pure-python-benchmark
+	@echo '#! /bin/bash' > python-pure-python-benchmark
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-pure-python-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-pure-python-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'python\' >> python-pure-python-benchmark
@@ -188,7 +188,7 @@ python-pure-python-benchmark: python_add_init
 
 python-cpp-reflection-benchmark: python_add_init
 	@echo "Writing shortcut script python-cpp-reflection-benchmark..."
-	@echo '#! /bin/sh' > python-cpp-reflection-benchmark
+	@echo '#! /bin/bash' > python-cpp-reflection-benchmark
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-reflection-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-reflection-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-reflection-benchmark
@@ -198,7 +198,7 @@ python-cpp-reflection-benchmark: python_add_init
 
 python-cpp-generated-code-benchmark: python_add_init libbenchmark_messages.la
 	@echo "Writing shortcut script python-cpp-generated-code-benchmark..."
-	@echo '#! /bin/sh' > python-cpp-generated-code-benchmark
+	@echo '#! /bin/bash' > python-cpp-generated-code-benchmark
 	@echo export LD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-generated-code-benchmark
 	@echo export DYLD_LIBRARY_PATH=$(top_srcdir)/src/libprotobuf.la >> python-cpp-generated-code-benchmark
 	@echo export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=\'cpp\' >> python-cpp-generated-code-benchmark
@@ -253,7 +253,7 @@ go_protoc_middleman: make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks
 
 go-benchmark: go_protoc_middleman 
 	@echo "Writing shortcut script go-benchmark..."
-	@echo '#! /bin/sh' > go-benchmark
+	@echo '#! /bin/bash' > go-benchmark
 	@echo 'cd $(srcdir)/go' >> go-benchmark
 	@echo 'all_data=""' >> go-benchmark
 	@echo 'conf=()' >> go-benchmark
@@ -409,7 +409,7 @@ gogoslick_protoc_middleman: make_tmp_dir_gogo $(top_srcdir)/src/protoc$(EXEEXT) 
 gogo_data = $$(find . -type f -name "dataset.*.pb" -path "./tmp/*")
 
 generate-gogo-benchmark-code:
-	@echo '#! /bin/sh' > generate-gogo-benchmark-code
+	@echo '#! /bin/bash' > generate-gogo-benchmark-code
 	@echo 'cp $(srcdir)/go/go_benchmark_test.go tmp/$$1/benchmark_code/$$1_benchmark1_test.go' >> generate-gogo-benchmark-code
 	@echo 'sed -i -e "s/\.\.\/tmp/../g" tmp/$$1/benchmark_code/$$1_benchmark1_test.go' >> generate-gogo-benchmark-code
 	@echo 'sed -i -e "s/b\.Run(\"\(.*\)\"/b.Run(\"\1\_$$1\"/g" tmp/$$1/benchmark_code/$$1_benchmark1_test.go' >> generate-gogo-benchmark-code
@@ -424,7 +424,7 @@ generate_all_gogo_benchmark_code: generate-gogo-benchmark-code make_tmp_dir_gogo
 
 gogo-benchmark:
 	@echo "Writing shortcut script gogo-benchmark..."
-	@echo '#! /bin/sh' > gogo-benchmark
+	@echo '#! /bin/bash' > gogo-benchmark
 	@echo 'cd tmp/$$1/benchmark_code' >> gogo-benchmark
 	@echo 'shift' >> gogo-benchmark
 	@echo 'all_data=""' >> gogo-benchmark

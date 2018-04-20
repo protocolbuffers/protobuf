@@ -27,7 +27,7 @@ cd $oldpwd
 ./configure CXXFLAGS="-fPIC -O2"
 make -j8
 cd python
-python setup.py build --cpp_implementation
+python setup.py -q build --cpp_implementation
 pip install .
 
 
