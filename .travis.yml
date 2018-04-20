@@ -14,21 +14,21 @@ matrix:
 
     - os: osx
       env: CONFIG=objectivec_osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       language: objective-c
     # iOS build log was starting to choke travis UI, so split to cover the
     # Xcode Debug and Release Configurations independently.
     - os: osx
       env: CONFIG=objectivec_ios_debug
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       language: objective-c
     - os: osx
       env: CONFIG=objectivec_ios_release
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       language: objective-c
     - os: osx
       env: CONFIG=objectivec_cocoapods_integration
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       language: objective-c
 
     # -----------------------------------------------------------------
