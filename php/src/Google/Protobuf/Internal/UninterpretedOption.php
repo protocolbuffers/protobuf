@@ -61,6 +61,23 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     private $aggregate_value = '';
     private $has_aggregate_value = false;
 
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type \Google\Protobuf\Internal\UninterpretedOption_NamePart[]|\Google\Protobuf\Internal\RepeatedField $name
+     *     @type string $identifier_value
+     *           The value of the uninterpreted option, in whatever type the tokenizer
+     *           identified it as during parsing. Exactly one of these should be set.
+     *     @type int|string $positive_int_value
+     *     @type int|string $negative_int_value
+     *     @type float $double_value
+     *     @type string $string_value
+     *     @type string $aggregate_value
+     * }
+     */
     public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
