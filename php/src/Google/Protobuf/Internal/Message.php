@@ -71,7 +71,7 @@ class Message
         // MapEntry message is shared by all types of map fields, whose
         // descriptors are different from each other. Thus, we cannot find a
         // specific descriptor from the descriptor pool.
-        if ($data instanceof Descriptor) {
+        if ($this instanceof MapEntry) {
             $this->initWithDescriptor($data);
         } else {
             $this->initWithGeneratedPool();
