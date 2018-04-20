@@ -139,6 +139,17 @@ for HEADER in $PUBLIC_HEADERS; do
   WINPATH=$(echo $HEADER | sed 's;/;\\;g')
   echo "copy \"\${PROTOBUF_SOURCE_WIN32_PATH}\\..\\src\\$WINPATH\" include\\$WINPATH" >> $EXTRACT_INCLUDES_BAT
 done
+for PROTO in ${WKT_PROTOS}; do
+  PROTO_DIR=$(dirname "$PROTO")
+  while [ ! "$PROTO_DIR" = "." ]; do
+    echo "mkdir include\\${PROTO_DIR//\//\\}"
+    PROTO_DIR=$(dirname "$PROTO_DIR")
+  done
+done | sort | uniq >> $EXTRACT_INCLUDES_BAT
+for PROTO in $WKT_PROTOS; do
+  WINPATH=${PROTO//\//\\}
+  echo "copy \"\${PROTOBUF_SOURCE_WIN32_PATH}\\..\\src\\$WINPATH\" include\\$WINPATH" >> $EXTRACT_INCLUDES_BAT
+done
 
 ################################################################################
 # Update bazel BUILD files.
