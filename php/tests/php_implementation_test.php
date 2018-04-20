@@ -533,9 +533,9 @@ class ImplementationTest extends TestBase
             'optional_string' => 'a',
             'optional_bytes' => 'b',
             'optional_enum' => TestEnum::ONE,
-            'optional_message' => [
+            'optional_message' => new TestMessage_Sub([
                 'a' => 33
-            ],
+            ]),
             'repeated_int32' => [-42, -52],
             'repeated_int64' => [-43, -53],
             'repeated_uint32' => [42, 52],
@@ -552,7 +552,10 @@ class ImplementationTest extends TestBase
             'repeated_string' => ['a', 'c'],
             'repeated_bytes' => ['b', 'd'],
             'repeated_enum' => [TestEnum::ZERO, TestEnum::ONE],
-            'repeated_message' => [['a' => 34], ['a' => 35]],
+            'repeated_message' => [
+                new TestMessage_Sub(['a' => 34]),
+                new TestMessage_Sub(['a' => 35]),
+            ],
             'map_int32_int32' => [-62 => -62],
             'map_int64_int64' => [-63 => -63],
             'map_uint32_uint32' => [62 => 62],
@@ -569,7 +572,7 @@ class ImplementationTest extends TestBase
             'map_string_string' => ['e' => 'e'],
             'map_int32_bytes' => [1 => 'f'],
             'map_int32_enum' => [1 => TestEnum::ONE],
-            'map_int32_message' => [1 => ['a' => 36]],
+            'map_int32_message' => [1 => new TestMessage_Sub(['a' => 36])],
         ]);
 
         TestUtil::assertTestMessage($m);
@@ -590,17 +593,19 @@ class ImplementationTest extends TestBase
         $this->assertEquals(34, $m->getRepeatedMessage()[0]->getA());
         $this->assertEquals(35, $m->getRepeatedMessage()[1]->getA());
         $this->assertEquals(36, $m->getMapInt32Message()[1]->getA());
+    }
 
-        // Using both arrays and objects
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Expected type Foo\TestMessage_Sub for field "optional_message".
+     */
+    public function testArraysForMessagesThrowsException()
+    {
         $m = new TestMessage([
-            'repeated_message' => [
-                new TestMessage_Sub(['a' => 34]),
-                ['a' => 35],
-            ],
+            'optional_message' => [
+                'a' => 33
+            ]
         ]);
-
-        $this->assertEquals(34, $m->getRepeatedMessage()[0]->getA());
-        $this->assertEquals(35, $m->getRepeatedMessage()[1]->getA());
     }
 
     public function testMergeFromArrayWithNullValuesDoesNotThrowException()

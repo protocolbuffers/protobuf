@@ -919,18 +919,12 @@ class Message
         switch ($field->getType()) {
             case GPBType::MESSAGE:
                 $klass = $field->getMessageType()->getClass();
-                if ($value instanceof $klass) {
-                    return $value;
+                if (!$value instanceof $klass) {
+                    throw new \Exception(sprintf(
+                        'Expected type %s for field "%s".',
+                        $klass, $field->getName()));
                 }
-                if (!is_object($value) && !is_array($value)) {
-                    throw new \Exception("Expect message or array.");
-                }
-                $submsg = new $klass;
-                if (!is_null($value) &&
-                    $klass !== "Google\Protobuf\Any") {
-                    $submsg->mergeFromArrayImpl(false, $value);
-                }
-                return $submsg;
+                return $value;
             case GPBType::BYTES:
                 if (is_null($value)) {
                     return $this->defaultValue($field);
