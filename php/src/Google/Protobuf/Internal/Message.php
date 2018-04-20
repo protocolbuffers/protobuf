@@ -76,7 +76,7 @@ class Message
         } else {
             $this->initWithGeneratedPool();
             if (is_array($data)) {
-                $this->mergeFromArray($data);
+                $this->mergeFrom($data);
             } else if (!empty($data)) {
                 throw new \InvalidArgumentException(
                     'Message constructor must be an array or null.'
@@ -647,63 +647,66 @@ class Message
      * Singular/Oneof sub-messages are recursively merged. All overritten
      * sub-messages are deep-copied.
      *
-     * @param object $msg Protobuf message to be merged from.
+     * @param object|array $msgOrArr Array or Protobuf message to be merged from.
      * @return null.
      */
-    public function mergeFrom($msg)
+    public function mergeFrom($msgOrArr)
     {
-      if (get_class($this) !== get_class($msg)) {
-          user_error("Cannot merge messages with different class.");
-          return;
-      }
+        if (is_array($msgOrArr)) {
+            return $this->mergeFromArrayImpl(false, $msgOrArr);
+        }
+        if (get_class($this) !== get_class($msgOrArr)) {
+            user_error("Cannot merge messages with different class.");
+            return;
+        }
 
-      foreach ($this->desc->getField() as $field) {
-          $setter = $field->getSetter();
-          $getter = $field->getGetter();
-          if ($field->isMap()) {
-              if (count($msg->$getter()) != 0) {
-                  $value_field = $field->getMessageType()->getFieldByNumber(2);
-                  foreach ($msg->$getter() as $key => $value) {
-                      if ($value_field->getType() == GPBType::MESSAGE) {
-                          $klass = $value_field->getMessageType()->getClass();
-                          $copy = new $klass;
-                          $copy->mergeFrom($value);
+        foreach ($this->desc->getField() as $field) {
+            $setter = $field->getSetter();
+            $getter = $field->getGetter();
+            if ($field->isMap()) {
+                if (count($msgOrArr->$getter()) != 0) {
+                    $value_field = $field->getMessageType()->getFieldByNumber(2);
+                    foreach ($msgOrArr->$getter() as $key => $value) {
+                        if ($value_field->getType() == GPBType::MESSAGE) {
+                            $klass = $value_field->getMessageType()->getClass();
+                            $copy = new $klass;
+                            $copy->mergeFrom($value);
 
-                          $this->kvUpdateHelper($field, $key, $copy);
-                      } else {
-                          $this->kvUpdateHelper($field, $key, $value);
-                      }
-                  }
-              }
-          } else if ($field->getLabel() === GPBLabel::REPEATED) {
-              if (count($msg->$getter()) != 0) {
-                  foreach ($msg->$getter() as $tmp) {
-                      if ($field->getType() == GPBType::MESSAGE) {
-                          $klass = $field->getMessageType()->getClass();
-                          $copy = new $klass;
-                          $copy->mergeFrom($tmp);
-                          $this->appendHelper($field, $copy);
-                      } else {
-                          $this->appendHelper($field, $tmp);
-                      }
-                  }
-              }
-          } else if ($field->getLabel() === GPBLabel::OPTIONAL) {
-              if($msg->$getter() !== $this->defaultValue($field)) {
-                  $tmp = $msg->$getter();
-                  if ($field->getType() == GPBType::MESSAGE) {
-                      if (is_null($this->$getter())) {
-                          $klass = $field->getMessageType()->getClass();
-                          $new_msg = new $klass;
-                          $this->$setter($new_msg);
-                      }
-                      $this->$getter()->mergeFrom($tmp);
-                  } else {
-                      $this->$setter($tmp);
-                  }
-              }
-          }
-      }
+                            $this->kvUpdateHelper($field, $key, $copy);
+                        } else {
+                            $this->kvUpdateHelper($field, $key, $value);
+                        }
+                    }
+                }
+            } else if ($field->getLabel() === GPBLabel::REPEATED) {
+                if (count($msgOrArr->$getter()) != 0) {
+                    foreach ($msgOrArr->$getter() as $tmp) {
+                        if ($field->getType() == GPBType::MESSAGE) {
+                            $klass = $field->getMessageType()->getClass();
+                            $copy = new $klass;
+                            $copy->mergeFrom($tmp);
+                            $this->appendHelper($field, $copy);
+                        } else {
+                            $this->appendHelper($field, $tmp);
+                        }
+                    }
+                }
+            } else if ($field->getLabel() === GPBLabel::OPTIONAL) {
+                if($msgOrArr->$getter() !== $this->defaultValue($field)) {
+                    $tmp = $msgOrArr->$getter();
+                    if ($field->getType() == GPBType::MESSAGE) {
+                        if (is_null($this->$getter())) {
+                            $klass = $field->getMessageType()->getClass();
+                            $new_msg = new $klass;
+                            $this->$setter($new_msg);
+                        }
+                        $this->$getter()->mergeFrom($tmp);
+                    } else {
+                        $this->$setter($tmp);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -1090,7 +1093,7 @@ class Message
      *
      * Example:
      * ```
-     * $message->mergeFromArray([
+     * $this->mergeFromArrayImpl(false, [
      *     'name' => 'This is a message name',
      *     'interval' => [
      *          'startTime' => time() - 60,
@@ -1099,16 +1102,12 @@ class Message
      * ]);
      * ```
      *
+     * @param bool $is_json True if the array was decoded from a JSON string.
      * @param array $array An array containing message properties and values.
      * @return null.
      * @throws Exception Invalid data.
      */
-    public function mergeFromArray($array)
-    {
-        return $this->mergeFromArrayImpl(false, $array);
-    }
-
-    protected function mergeFromArrayImpl($is_json, $array)
+    protected function mergeFromArrayImpl($is_json, array $array)
     {
         if (is_a($this, "Google\Protobuf\Any")) {
             $this->clear();
