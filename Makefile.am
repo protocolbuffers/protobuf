@@ -552,25 +552,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBUtilitiesTests.m                                       \
   objectivec/Tests/GPBWellKnownTypesTest.m                                   \
   objectivec/Tests/GPBWireFormatTests.m                                      \
-  objectivec/Tests/iOSTestHarness/AppDelegate.m                              \
-  objectivec/Tests/iOSTestHarness/en.lproj/InfoPlist.strings                 \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_20.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_29.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_40.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_58.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_60.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_76.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_80.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_87.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_120.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_152.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_167.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_180.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_1024.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/Contents.json \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/LaunchImage.launchimage/Contents.json \
-  objectivec/Tests/iOSTestHarness/Info.plist                                  \
-  objectivec/Tests/iOSTestHarness/LaunchScreen.xib                            \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
