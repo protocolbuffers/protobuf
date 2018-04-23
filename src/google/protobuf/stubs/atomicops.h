@@ -184,9 +184,13 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 #elif defined(GOOGLE_PROTOBUF_OS_SOLARIS)
 #include <google/protobuf/stubs/atomicops_internals_solaris.h>
 
-// AIX
-#elif defined(GOOGLE_PROTOBUF_OS_AIX)
+// AIX TODO: This should be handled later
+ #elif defined(GOOGLE_PROTOBUF_OS_AIX)
+#if defined(__GNUC__)
+#include <google/protobuf/stubs/atomicops_internals_ppc_gcc.h>
+#else
 #include <google/protobuf/stubs/atomicops_internals_power.h>
+#endif
 
 // GCC.
 #elif defined(__GNUC__)
@@ -235,3 +239,4 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 #endif  // GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
 #endif  // GOOGLE_PROTOBUF_ATOMICOPS_H_
+

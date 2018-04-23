@@ -146,6 +146,84 @@ inline Atomic32 Release_Load(volatile const Atomic32 *ptr) {
   return *ptr;
 }
 
+#ifdef GOOGLE_PROTOBUF_ARCH_64_BIT
+inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64 *ptr,
+                                         Atomic64 old_value,
+                                         Atomic64 new_value) {
+    Atomic64 prev;
+
+    __asm__ __volatile__(
+    "cas0:                               \n\t"
+    "lwarx %[prev],0,%[ptr]              \n\t"
+    "cmpw 0,%[prev],%[old_value]         \n\t"
+    "bne- cas1                           \n\t"
+    "stwcx. %[new_value],0,%[ptr]        \n\t"
+    "bne- cas0                           \n\t"
+    "cas1:                               \n\t"
+    : [prev] "=&r"(prev), "+m"(*ptr)
+    : [ptr] "r"(ptr), [old_value] "r"(old_value), [new_value] "r"(new_value)
+    : "cc", "memory");
+
+    return prev;
+}
+
+inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64 *ptr,
+                                          Atomic64 increment) {
+  Atomic64 temp;
+
+  __asm__ __volatile__(
+      "ai0:                                \n\t"
+      "lwarx %[temp],0,%[ptr]              \n\t"
+      "add %[temp],%[increment],%[temp]    \n\t"
+      "stwcx. %[temp],0,%[ptr]             \n\t"
+      "bne- ai0                            \n\t"
+      : [temp] "=&r"(temp)
+      : [increment] "r"(increment), [ptr] "r"(ptr)
+      : "cc", "memory");
+
+  return temp;
+}
+
+inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64 *ptr,
+                                        Atomic64 increment) {
+    MemoryBarrierInternal();
+    Atomic64 res = NoBarrier_AtomicIncrement(ptr, increment);
+    MemoryBarrierInternal();
+    return res;
+}
+
+inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64 *ptr,
+                                       Atomic64 old_value, Atomic64 new_value) {
+  Atomic64 res = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  MemoryBarrierInternal();
+  return res;
+}
+
+inline Atomic64 Release_CompareAndSwap(volatile Atomic64 *ptr,
+                                       Atomic64 old_value, Atomic64 new_value) {
+  MemoryBarrierInternal();
+  Atomic64 res = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  return res;
+}
+
+inline void NoBarrier_Store(volatile Atomic64 *ptr, Atomic64 value) {
+  *ptr = value;
+}
+
+inline void Release_Store(volatile Atomic64 *ptr, Atomic64 value) {
+  MemoryBarrierInternal();
+  *ptr = value;
+}
+
+inline Atomic64 NoBarrier_Load(volatile const Atomic64 *ptr) { return *ptr; }
+
+inline Atomic64 Acquire_Load(volatile const Atomic64 *ptr) {
+    Atomic64 value = *ptr;
+    MemoryBarrierInternal();
+    return value;
+}
+#endif
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -153,3 +231,4 @@ inline Atomic32 Release_Load(volatile const Atomic32 *ptr) {
 #undef ATOMICOPS_COMPILER_BARRIER
 
 #endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_PPC_GCC_H_
+
