@@ -1,5 +1,5 @@
 # Minimum CMake required
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Configuring...")
@@ -15,8 +15,10 @@ endif()
 # Project
 project(protobuf C CXX)
 
-# Add c++11 flags for clang
-set(CMAKE_CXX_FLAGS "-std=c++11")
+# Add c++11 flags
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Options
 option(protobuf_BUILD_TESTS "Build tests" ON)
