@@ -227,7 +227,10 @@ internal_install_python_deps() {
     return;
   fi
   # Install tox (OS X doesn't have pip).
-  if [ $(uname -s) != "Darwin" ]; then
+  if [ $(uname -s) == "Darwin" ]; then
+    brew upgrade python;
+    python -m pip install -q tox;
+  else
     sudo pip install tox
   fi
   # Only install Python2.6/3.x on Linux.
