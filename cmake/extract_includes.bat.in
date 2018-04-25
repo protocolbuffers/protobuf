@@ -111,9 +111,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format.h" includ
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format_lite.h" include\google\protobuf\wire_format_lite.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format_lite_inl.h" include\google\protobuf\wire_format_lite_inl.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wrappers.pb.h" include\google\protobuf\wrappers.pb.h
-mkdir include\google
-mkdir include\google\protobuf
-mkdir include\google\protobuf\compiler
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\any.proto" include\google\protobuf\any.proto
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\api.proto" include\google\protobuf\api.proto
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.proto" include\google\protobuf\compiler\plugin.proto
