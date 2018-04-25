@@ -52,6 +52,12 @@ if RUBY_PLATFORM == "java"
   end
 else
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
+    unless RUBY_PLATFORM =~ /darwin/
+      # TODO: also set "no_native to true" for mac if possible. As is,
+      # "no_native" can only be set if the RUBY_PLATFORM doing
+      # cross-compilation is contained in the "ext.cross_platform" array.
+      ext.no_native = true
+    end
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
     ext.cross_compile = true
