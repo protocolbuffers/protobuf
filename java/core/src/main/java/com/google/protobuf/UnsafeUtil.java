@@ -41,38 +41,76 @@ import java.util.logging.Logger;
 
 /** Utility class for working with unsafe operations. */
 final class UnsafeUtil {
-  private static final Logger logger = Logger.getLogger(UnsafeUtil.class.getName());
-  private static final sun.misc.Unsafe UNSAFE = getUnsafe();
-  private static final MemoryAccessor MEMORY_ACCESSOR = getMemoryAccessor();
-  private static final boolean HAS_UNSAFE_BYTEBUFFER_OPERATIONS =
-      supportsUnsafeByteBufferOperations();
-  private static final boolean HAS_UNSAFE_ARRAY_OPERATIONS = supportsUnsafeArrayOperations();
+  private static final Logger logger;
+  private static final sun.misc.Unsafe UNSAFE;
+  private static final MemoryAccessor MEMORY_ACCESSOR;
+  private static final boolean HAS_UNSAFE_BYTEBUFFER_OPERATIONS;
+  private static final boolean HAS_UNSAFE_ARRAY_OPERATIONS;
 
-  private static final long BYTE_ARRAY_BASE_OFFSET = arrayBaseOffset(byte[].class);
+  private static final long BYTE_ARRAY_BASE_OFFSET;
   // Micro-optimization: we can assume a scale of 1 and skip the multiply
   // private static final long BYTE_ARRAY_INDEX_SCALE = 1;
 
-  private static final long BOOLEAN_ARRAY_BASE_OFFSET = arrayBaseOffset(boolean[].class);
-  private static final long BOOLEAN_ARRAY_INDEX_SCALE = arrayIndexScale(boolean[].class);
+  private static final long BOOLEAN_ARRAY_BASE_OFFSET;
+  private static final long BOOLEAN_ARRAY_INDEX_SCALE;
 
-  private static final long INT_ARRAY_BASE_OFFSET = arrayBaseOffset(int[].class);
-  private static final long INT_ARRAY_INDEX_SCALE = arrayIndexScale(int[].class);
+  private static final long INT_ARRAY_BASE_OFFSET;
+  private static final long INT_ARRAY_INDEX_SCALE;
 
-  private static final long LONG_ARRAY_BASE_OFFSET = arrayBaseOffset(long[].class);
-  private static final long LONG_ARRAY_INDEX_SCALE = arrayIndexScale(long[].class);
+  private static final long LONG_ARRAY_BASE_OFFSET;
+  private static final long LONG_ARRAY_INDEX_SCALE;
 
-  private static final long FLOAT_ARRAY_BASE_OFFSET = arrayBaseOffset(float[].class);
-  private static final long FLOAT_ARRAY_INDEX_SCALE = arrayIndexScale(float[].class);
+  private static final long FLOAT_ARRAY_BASE_OFFSET;
+  private static final long FLOAT_ARRAY_INDEX_SCALE;
 
-  private static final long DOUBLE_ARRAY_BASE_OFFSET = arrayBaseOffset(double[].class);
-  private static final long DOUBLE_ARRAY_INDEX_SCALE = arrayIndexScale(double[].class);
+  private static final long DOUBLE_ARRAY_BASE_OFFSET;
+  private static final long DOUBLE_ARRAY_INDEX_SCALE;
 
-  private static final long OBJECT_ARRAY_BASE_OFFSET = arrayBaseOffset(Object[].class);
-  private static final long OBJECT_ARRAY_INDEX_SCALE = arrayIndexScale(Object[].class);
+  private static final long OBJECT_ARRAY_BASE_OFFSET;
+  private static final long OBJECT_ARRAY_INDEX_SCALE;
 
-  private static final long BUFFER_ADDRESS_OFFSET = fieldOffset(bufferAddressField());
+  private static final long BUFFER_ADDRESS_OFFSET;
 
-  private static final long STRING_VALUE_OFFSET = fieldOffset(stringValueField());
+  private static final long STRING_VALUE_OFFSET;
+
+  static {
+    logger = Logger.getLogger(UnsafeUtil.class.getName());
+    if (System.getProperty("java.version").startsWith("1.")) {
+      UNSAFE = getUnsafe();
+      MEMORY_ACCESSOR = getMemoryAccessor();
+      HAS_UNSAFE_BYTEBUFFER_OPERATIONS = supportsUnsafeByteBufferOperations();
+      HAS_UNSAFE_ARRAY_OPERATIONS = supportsUnsafeArrayOperations();
+    } else {
+      UNSAFE = null;
+      MEMORY_ACCESSOR = null;
+      HAS_UNSAFE_BYTEBUFFER_OPERATIONS = false;
+      HAS_UNSAFE_ARRAY_OPERATIONS = false;
+    }
+
+    BYTE_ARRAY_BASE_OFFSET = arrayBaseOffset(byte[].class);
+
+    BOOLEAN_ARRAY_BASE_OFFSET = arrayBaseOffset(boolean[].class);
+    BOOLEAN_ARRAY_INDEX_SCALE = arrayIndexScale(boolean[].class);
+
+    INT_ARRAY_BASE_OFFSET = arrayBaseOffset(int[].class);
+    INT_ARRAY_INDEX_SCALE = arrayIndexScale(int[].class);
+
+    LONG_ARRAY_BASE_OFFSET = arrayBaseOffset(long[].class);
+    LONG_ARRAY_INDEX_SCALE = arrayIndexScale(long[].class);
+
+    FLOAT_ARRAY_BASE_OFFSET = arrayBaseOffset(float[].class);
+    FLOAT_ARRAY_INDEX_SCALE = arrayIndexScale(float[].class);
+
+    DOUBLE_ARRAY_BASE_OFFSET = arrayBaseOffset(double[].class);
+    DOUBLE_ARRAY_INDEX_SCALE = arrayIndexScale(double[].class);
+
+    OBJECT_ARRAY_BASE_OFFSET = arrayBaseOffset(Object[].class);
+    OBJECT_ARRAY_INDEX_SCALE = arrayIndexScale(Object[].class);
+
+    BUFFER_ADDRESS_OFFSET = fieldOffset(bufferAddressField());
+
+    STRING_VALUE_OFFSET = fieldOffset(stringValueField());
+  }
 
   private UnsafeUtil() {}
 
