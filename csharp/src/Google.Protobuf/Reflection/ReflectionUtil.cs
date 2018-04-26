@@ -50,6 +50,29 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     internal static class ReflectionUtil
     {
+        static ReflectionUtil()
+        {
+            ForceInitialize<string>(); // Handles all reference types
+            ForceInitialize<int>();
+            ForceInitialize<long>();
+            ForceInitialize<uint>();
+            ForceInitialize<ulong>();
+            ForceInitialize<float>();
+            ForceInitialize<double>();
+            ForceInitialize<bool>();
+            ForceInitialize<int?>();
+            ForceInitialize<long?>();
+            ForceInitialize<uint?>();
+            ForceInitialize<ulong?>();
+            ForceInitialize<float?>();
+            ForceInitialize<double?>();
+            ForceInitialize<bool?>();
+            ForceInitialize<SampleEnum>();
+            SampleEnumMethod();
+        }
+
+        internal static void ForceInitialize<T>() => new ReflectionHelper<IMessage, T>();
+
         /// <summary>
         /// Empty Type[] used when calling GetProperty to force property instead of indexer fetching.
         /// </summary>
@@ -163,7 +186,6 @@ namespace Google.Protobuf.Reflection
         {
             try
             {
-                PreventLinkerFailures();
                 // Try to do the conversion using reflection, so we can see whether it's supported.
                 MethodInfo method = typeof(ReflectionUtil).GetMethod(nameof(SampleEnumMethod));
                 // If this passes, we're in a reasonable runtime.
@@ -174,23 +196,6 @@ namespace Google.Protobuf.Reflection
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// This method is effectively pointless, but only called once. It's present (and called)
-        /// to avoid the Unity linker from removing code that's only called via reflection.
-        /// </summary>
-        private static void PreventLinkerFailures()
-        {
-            // Exercise the method directly. This should avoid any pro-active linkers from stripping
-            // the method out.
-            SampleEnum x = SampleEnumMethod();
-            if (x != SampleEnum.X)
-            {
-                throw new InvalidOperationException("Failure in reflection utilities");
-            }
-            // Make sure the ReflectionHelper parameterless constructor isn't removed...
-            var helper = new ReflectionHelper<int, int>();
         }
 
         public enum SampleEnum
