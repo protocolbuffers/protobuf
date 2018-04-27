@@ -49,7 +49,8 @@ set(libprotobuf_lite_includes
 )
 
 add_library(libprotobuf-lite ${protobuf_SHARED_OR_STATIC}
-  ${libprotobuf_lite_files} ${libprotobuf_lite_includes})
+  ${libprotobuf_lite_files} ${libprotobuf_lite_includes}
+  ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 target_link_libraries(libprotobuf-lite ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(libprotobuf-lite PUBLIC ${protobuf_source_dir}/src)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)
