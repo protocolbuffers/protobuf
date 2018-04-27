@@ -761,23 +761,6 @@ class Message
         }
     }
 
-    private function convertToProtoValueImpl(
-        $is_json,
-        $value,
-        $field,
-        $is_map_key = false)
-    {
-        return $is_json
-            ? $this->convertJsonValueToProtoValue(
-                $value,
-                $field,
-                $is_map_key)
-            : $this->convertNativeValueToProtoValue(
-                $value,
-                $field,
-                $is_map_key);
-    }
-
     private function convertJsonValueToProtoValue(
         $value,
         $field,
@@ -862,127 +845,28 @@ class Message
                         "Bool field only accept bool value");
                 }
                 return $value;
-            case GPBType::INT64:
-            case GPBType::SINT64:
-            case GPBType::SFIXED64:
-                if (is_null($value)) {
-                    return $this->defaultValue($field);
-                }
-                if (!is_numeric($value)) {
-                   throw new GPBDecodeException(
-                       "Invalid data type for int64 field");
-                }
-                if (bccomp($value, "9223372036854775807") > 0) {
-                    throw new GPBDecodeException(
-                        "Int64 too large");
-                }
-                if (bccomp($value, "-9223372036854775808") < 0) {
-                    throw new GPBDecodeException(
-                        "Int64 too small");
-                }
-                return $value;
-            case GPBType::UINT64:
-            case GPBType::FIXED64:
-                if (is_null($value)) {
-                    return $this->defaultValue($field);
-                }
-                if (!is_numeric($value)) {
-                   throw new GPBDecodeException(
-                       "Invalid data type for int64 field");
-                }
-                if (bccomp($value, "18446744073709551615") > 0) {
-                    throw new GPBDecodeException(
-                        "Uint64 too large");
-                }
-                if (bccomp($value, "9223372036854775807") > 0) {
-                    $value = bcsub($value, "18446744073709551616");
-                }
-                return $value;
-        }
-        return $this->convertNativeValueToProtoValue(
-            $value,
-            $field,
-            $is_map_key);
-    }
-
-    private function convertNativeValueToProtoValue(
-        $value,
-        $field,
-        $is_map_key = false)
-    {
-        if (is_null($value)) {
-            return $this->defaultValue($field);
-        }
-        switch ($field->getType()) {
-            case GPBType::MESSAGE:
-                $klass = $field->getMessageType()->getClass();
-                if (!$value instanceof $klass) {
-                    throw new \Exception(sprintf(
-                        'Expected type %s for field "%s".',
-                        $klass, $field->getName()));
-                }
-                return $value;
-            case GPBType::BYTES:
-                if (is_null($value)) {
-                    return $this->defaultValue($field);
-                }
-                if (!is_string($value)) {
-                    throw new GPBDecodeException("Expect string");
-                }
-                return $value;
-            case GPBType::BOOL:
-                if (is_null($value)) {
-                    return $this->defaultValue($field);
-                }
-                if ($is_map_key) {
-                    if ($value === 1) {
-                        return true;
-                    }
-                    if ($value === 0) {
-                        return false;
-                    }
-                    throw new GPBDecodeException(
-                        "Bool field only accept bool value");
-                }
-                if (!is_bool($value)) {
-                    throw new GPBDecodeException(
-                        "Bool field only accept bool value");
-                }
-                return $value;
             case GPBType::ENUM:
                 if (is_null($value)) {
                     return $this->defaultValue($field);
-                } else if (is_integer($value)) {
-                    return $value;
-                } else {
-                    $enum_value =
-                        $field->getEnumType()->getValueByName($value);
                 }
+                if (is_integer($value)) {
+                    return $value;
+                }
+                $enum_value = $field->getEnumType()->getValueByName($value);
                 if (!is_null($enum_value)) {
                     return $enum_value->getNumber();
                 }
+                throw new GPBDecodeException(
+                        "Enum field only accepts bool value");
             case GPBType::STRING:
                 if (is_null($value)) {
                     return $this->defaultValue($field);
                 }
                 if (!is_string($value)) {
-                    throw new GPBDecodeException("Expect string");
+                    throw new GPBDecodeException("String field only accepts strig value");
                 }
                 return $value;
             case GPBType::FLOAT:
-                if (is_null($value)) {
-                    return $this->defaultValue($field);
-                }
-                if ($value === "Infinity") {
-                    return INF;
-                }
-                if ($value === "-Infinity") {
-                    return -INF;
-                }
-                if ($value === "NaN") {
-                    return NAN;
-                }
-                return $value;
             case GPBType::DOUBLE:
                 if (is_null($value)) {
                     return $this->defaultValue($field);
@@ -1048,9 +932,6 @@ class Message
                     throw new GPBDecodeException(
                         "Int64 too small");
                 }
-                if (PHP_INT_SIZE == 4) {
-                    return (string) $value;
-                }
                 return $value;
             case GPBType::UINT64:
             case GPBType::FIXED64:
@@ -1068,13 +949,12 @@ class Message
                 if (bccomp($value, "9223372036854775807") > 0) {
                     $value = bcsub($value, "18446744073709551616");
                 }
-                if (PHP_INT_SIZE == 4) {
-                    return (string) $value;
-                }
-                return $value;
-            default:
                 return $value;
         }
+        throw new GPBDecodeException(sprintf(
+            'Unknown data type %s',
+            $field->getType()
+        ));
     }
 
     /**
@@ -1194,6 +1074,24 @@ class Message
             }
             return;
         }
+        if ($is_json) {
+            $this->mergeFromArrayJsonImpl($array);
+        } else {
+            // Just call the setters for the field names
+            foreach ($array as $key => $value) {
+                $field = $this->desc->getFieldByJsonName($key)
+                    ?: $this->desc->getFieldByName($key);
+                if (is_null($field)) {
+                    continue;
+                }
+                $setter = $field->getSetter();
+                $this->$setter($value);
+            }
+        }
+    }
+
+    private function mergeFromArrayJsonImpl($array)
+    {
         foreach ($array as $key => $value) {
             $field = $this->desc->getFieldByJsonName($key);
             if (is_null($field)) {
@@ -1202,7 +1100,6 @@ class Message
                     continue;
                 }
             }
-            $setter = $field->getSetter();
             if ($field->isMap()) {
                 if (is_null($value)) {
                     continue;
@@ -1214,13 +1111,11 @@ class Message
                         throw new \Exception(
                             "Map value field element cannot be null.");
                     }
-                    $proto_key = $this->convertToProtoValueImpl(
-                        $is_json,
+                    $proto_key = $this->convertJsonValueToProtoValue(
                         $tmp_key,
                         $key_field,
                         true);
-                    $proto_value = $this->convertToProtoValueImpl(
-                        $is_json,
+                    $proto_value = $this->convertJsonValueToProtoValue(
                         $tmp_value,
                         $value_field);
                     self::kvUpdateHelper($field, $proto_key, $proto_value);
@@ -1234,16 +1129,14 @@ class Message
                         throw new \Exception(
                             "Repeated field elements cannot be null.");
                     }
-                    $proto_value = $this->convertToProtoValueImpl(
-                        $is_json,
+                    $proto_value = $this->convertJsonValueToProtoValue(
                         $tmp,
                         $field);
                     self::appendHelper($field, $proto_value);
                 }
             } else {
                 $setter = $field->getSetter();
-                $proto_value = $this->convertToProtoValueImpl(
-                    $is_json,
+                $proto_value = $this->convertJsonValueToProtoValue(
                     $value,
                     $field);
                 if ($field->getType() === GPBType::MESSAGE) {

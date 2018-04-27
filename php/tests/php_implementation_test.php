@@ -597,7 +597,7 @@ class ImplementationTest extends TestBase
 
     /**
      * @expectedException Exception
-     * @expectedExceptionMessage Expected type Foo\TestMessage_Sub for field "optional_message".
+     * @expectedExceptionMessage Expect message.
      */
     public function testArraysForMessagesThrowsException()
     {
@@ -608,38 +608,61 @@ class ImplementationTest extends TestBase
         ]);
     }
 
-    public function testMergeFromArrayWithNullValuesDoesNotThrowException()
+    public function testMergeFromArrayWithStringAndBoolDoesNotThrowException()
     {
         $requestData = [
-            'optional_int32' => null,
-            'optional_int64' => null,
-            'optional_uint32' => null,
-            'optional_uint64' => null,
-            'optional_sint32' => null,
-            'optional_sint64' => null,
-            'optional_fixed32' => null,
-            'optional_fixed64' => null,
-            'optional_sfixed32' => null,
-            'optional_sfixed64' => null,
-            'optional_float' => null,
-            'optional_double' => null,
             'optional_bool' => null,
             'optional_string' => null,
-            'optional_bytes' => null,
-            'optional_enum' => null,
-            'optional_message' => null,
         ];
 
         $messageFromArray = new TestMessage($requestData);
-        $messageFromJson = new TestMessage();
-        $messageFromJson->mergeFromJsonString(json_encode($requestData));
+    }
 
-        foreach ($requestData as $key => $value) {
-            $getter = 'get' . str_replace(' ', '', ucwords(
-                str_replace('_', ' ', $key)
-            ));
-            $this->assertTrue(empty($messageFromArray->$getter()));
-            $this->assertTrue(empty($messageFromJson->$getter()));
-        }
+    /**
+     * @dataProvider provideMergeFromArrayWithNullValuesThrowsException
+     * @expectedException Exception
+     */
+    public function testMergeFromArrayWithNullValuesThrowsException($requestData)
+    {
+        $messageFromArray = new TestMessage($requestData);
+    }
+
+    /**
+     * @dataProvider provideMergeFromArrayWithNullValuesDoNotThrowException
+     */
+    public function testMergeFromArrayWithNullValuesDoNotThrowException($requestData)
+    {
+        $messageFromArray = new TestMessage($requestData);
+    }
+
+    public function provideMergeFromArrayWithNullValuesThrowsException()
+    {
+        return [
+            [['optional_int32' => null]],
+            [['optional_int64' => null]],
+            [['optional_uint32' => null]],
+            [['optional_uint64' => null]],
+            [['optional_sint32' => null]],
+            [['optional_sint64' => null]],
+            [['optional_fixed32' => null]],
+            [['optional_fixed64' => null]],
+            [['optional_sfixed32' => null]],
+            [['optional_sfixed64' => null]],
+            [['optional_float' => null]],
+            [['optional_double' => null]],
+            [['optional_enum' => null]],
+            [['repeated_int32' => null]],
+            [['map_int32_int32' => null]],
+        ];
+    }
+
+    public function provideMergeFromArrayWithNullValuesDoNotThrowException()
+    {
+        return [
+            [['optional_bool' => null]],
+            [['optional_string' => null]],
+            [['optional_bytes' => null]],
+            [['optional_message' => null]],
+        ];
     }
 }
