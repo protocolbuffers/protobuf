@@ -63,9 +63,9 @@ static void RaiseException(NSInteger code, NSString *reason) {
 
   NSDictionary *exceptionInfo =
       @{ GPBCodedInputStreamUnderlyingErrorKey: error };
-  [[[NSException alloc] initWithName:GPBCodedInputStreamException
-                              reason:reason
-                            userInfo:exceptionInfo] raise];
+  [[NSException exceptionWithName:GPBCodedInputStreamException
+                           reason:reason
+                         userInfo:exceptionInfo] raise];
 }
 
 static void CheckRecursionLimit(GPBCodedInputStreamState *state) {
