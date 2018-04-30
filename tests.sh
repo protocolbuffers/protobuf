@@ -18,7 +18,7 @@ internal_build_cpp() {
     return
   fi
 
-  if [[ $(uname -s) == "Linux" && "$TRAVIS" == "true" ]]; then
+  if [[ $(uname -s) == "Linux" && "$TRAVIS" == "true" && $(gcc -dumpversion) != "4.8" ]]; then
     # Install GCC 4.8 to replace the default GCC 4.6. We need 4.8 for more
     # decent C++ 11 support in order to compile conformance tests.
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
