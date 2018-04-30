@@ -3,6 +3,8 @@
 
 #include "protobuf_cpp.h"
 
+#include <string>
+
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
 
@@ -13,6 +15,9 @@ extern zval* generated_pool;
 extern zend_object *internal_generated_pool;
 extern zend_object *generated_pool;
 #endif
+void init_generated_pool_once(TSRMLS_D);
+
+zend_class_entry* name2class(const std::string& name);
 
 upb_msgval tomsgval(zval* value, upb_fieldtype_t type, upb_alloc* alloc);
 void tophpval(const upb_msgval &msgval,
@@ -26,6 +31,7 @@ void RepeatedField_append(RepeatedField *intern, zval *value);
 
 extern zend_class_entry* RepeatedField_type;
 extern zend_class_entry* MapField_type;
+extern zend_class_entry* Message_type;
 
 // -----------------------------------------------------------------------------
 // Type conversion.

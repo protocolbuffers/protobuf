@@ -461,7 +461,7 @@ PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
   PROTO_RETURN_BOOL(true);
 }
 
-static void init_generated_pool_once(TSRMLS_D) {
+void init_generated_pool_once(TSRMLS_D) {
   if (internal_generated_pool == NULL) {
 #if PHP_MAJOR_VERSION < 7
     MAKE_STD_ZVAL(internal_generated_pool);

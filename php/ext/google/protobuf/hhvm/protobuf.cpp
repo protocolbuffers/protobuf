@@ -38,6 +38,7 @@
 
 static std::map<const void*, const upb_def*>* class2def;
 static std::map<const upb_def*, const void*>* def2class;
+static std::map<const std::string, zend_class_entry*>* name2classmap;
 
 void register_upbdef(const char* classname, const upb_def* def) {
   PROTO_CE_DECLARE pce;
@@ -48,6 +49,7 @@ void register_upbdef(const char* classname, const upb_def* def) {
   }
   (*class2def)[PROTO_CE_UNREF(pce)] = def;
   (*def2class)[def] = PROTO_CE_UNREF(pce);
+  (*name2classmap)[std::string(upb_def_fullname(def))] = PROTO_CE_UNREF(pce);
 }
 
 const upb_msgdef* class2msgdef(const void* klass) {
@@ -69,6 +71,12 @@ const upb_enumdef* class2enumdef(const void* klass) {
 const void* msgdef2class(const upb_msgdef* msgdef) {
   const zend_class_entry* klass = (const zend_class_entry*)
       (*def2class)[upb_msgdef_upcast(msgdef)];
+  assert(klass != NULL);
+  return klass;
+}
+
+zend_class_entry* name2class(const std::string& name) {
+  zend_class_entry* klass = (*name2classmap)[name];
   assert(klass != NULL);
   return klass;
 }
@@ -118,6 +126,7 @@ static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 static PHP_RINIT_FUNCTION(protobuf) {
   class2def = new std::map<const void*, const upb_def*>();
   def2class = new std::map<const upb_def*, const void*>();
+  name2classmap = new std::map<const std::string, zend_class_entry*>();
   internal_generated_pool = NULL;
   return 0;
 }
@@ -125,6 +134,7 @@ static PHP_RINIT_FUNCTION(protobuf) {
 static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   delete class2def;
   delete def2class;
+  delete name2classmap;
 #if PHP_MAJOR_VERSION < 7
   if (internal_generated_pool != NULL) {
     zval_dtor(internal_generated_pool);
@@ -169,6 +179,38 @@ static PHP_MINIT_FUNCTION(protobuf) {
   EnumValueDescriptor_init(TSRMLS_C);
   FieldDescriptor_init(TSRMLS_C);
   OneofDescriptor_init(TSRMLS_C);
+
+  // Well Known Types
+  Any_init(TSRMLS_C);
+  Api_init(TSRMLS_C);
+  BoolValue_init(TSRMLS_C);
+  BytesValue_init(TSRMLS_C);
+  DoubleValue_init(TSRMLS_C);
+  Duration_init(TSRMLS_C);
+  Empty_init(TSRMLS_C);
+  Enum_init(TSRMLS_C);
+  EnumValue_init(TSRMLS_C);
+  Field_Cardinality_init(TSRMLS_C);
+  Field_init(TSRMLS_C);
+  Field_Kind_init(TSRMLS_C);
+  FieldMask_init(TSRMLS_C);
+  FloatValue_init(TSRMLS_C);
+  GPBType_init(TSRMLS_C);
+  Int32Value_init(TSRMLS_C);
+  Int64Value_init(TSRMLS_C);
+  ListValue_init(TSRMLS_C);
+  Method_init(TSRMLS_C);
+  Mixin_init(TSRMLS_C);
+  NullValue_init(TSRMLS_C);
+  Option_init(TSRMLS_C);
+  SourceContext_init(TSRMLS_C);
+  StringValue_init(TSRMLS_C);
+  Struct_init(TSRMLS_C);
+  Syntax_init(TSRMLS_C);
+  Timestamp_init(TSRMLS_C);
+  UInt32Value_init(TSRMLS_C);
+  UInt64Value_init(TSRMLS_C);
+  Value_init(TSRMLS_C);
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {

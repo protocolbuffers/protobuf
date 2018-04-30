@@ -101,11 +101,11 @@ void Message_mergeFrom(Message* from, Message* to) {
   stackenv_uninit(&se);
 }
 
-void Message_mergeFromString(
+bool Message_mergeFromString(
     Message* intern, const char* data, size_t size) {
   upb_env env;
   upb_alloc *alloc = upb_msg_alloc(intern->msg);
   upb_env_init2(&env, NULL, 0, alloc);
-  upb_decode2(upb_stringview_make(data, size),
-              intern->msg, intern->layout, &env);
+  return upb_decode2(upb_stringview_make(data, size),
+                     intern->msg, intern->layout, &env);
 }

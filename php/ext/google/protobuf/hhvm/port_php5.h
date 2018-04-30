@@ -39,6 +39,8 @@
                       .bucket.obj.object))
 #define OBJ_PROP(OBJECT, OFFSET) &((OBJECT)->properties_table[OFFSET])
 
+#define PROTO_RETVAL_ZVAL(value) ZVAL_ZVAL(return_value, value, 1, 0)
+
 // Define wrapper class.
 #define PROTO_CE_DECLARE zend_class_entry**
 #define PROTO_CE_UNREF(ce) (*ce)
@@ -108,6 +110,8 @@
 // Coversion between php and cpp object.
 #define UNBOX(class_name, val) \
   (class_name*)zend_object_store_get_object(val TSRMLS_CC);
+
+#define UNBOX_HASHTABLE_VALUE(class_name, val) UNBOX(class_name, val)
 
 // PHP Hashtable
 #define proto_zend_hash_get_current_data_ex(ht, pDest, pos) \

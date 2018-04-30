@@ -38,6 +38,8 @@ static inline int php_proto_zend_lookup_class(
   return *ce != NULL ? SUCCESS : FAILURE;
 }
 
+#define PROTO_RETVAL_ZVAL(value) ZVAL_COPY(return_value, value)
+
 # define PROTO_FORWARD_DECLARE_CLASS(CLASSNAME) \
   struct CLASSNAME
 
@@ -89,6 +91,9 @@ static inline int php_proto_zend_lookup_class(
 // Coversion between php and cpp object.
 #define UNBOX(class_name, val) \
   (class_name*)((char*)Z_OBJ_P(val) - XtOffsetOf(class_name, std));
+
+#define UNBOX_HASHTABLE_VALUE(class_name, val) \
+  (class_name*)((char*)val - XtOffsetOf(class_name, std))
 
 ///////////////////////////////////
 #define PROTO_ALLOC_CLASS_OBJECT(class_object, class_type)                   \

@@ -138,7 +138,9 @@ PHP_METHOD(RepeatedField, __construct) {
 }
 
 void RepeatedField_append(RepeatedField *intern, zval *value) {
-  upb_msgval val = tomsgval(value, upb_array_type(intern->array), NULL);
+  Arena *arena = UNBOX_ARENA(intern->arena);
+  upb_msgval val = tomsgval(value, upb_array_type(intern->array),
+                            upb_arena_alloc(arena->arena));
   size_t size = upb_array_size(intern->array);
   upb_array_set(intern->array, size, val);
   if (upb_array_type(intern->array) == UPB_TYPE_MESSAGE) {

@@ -195,7 +195,7 @@ void Message_wrap(Message *intern, upb_msg *msg,
 void Message___construct(Message *intern, const upb_msgdef *msgdef);
 void Message_clear(Message* msg);
 void Message_mergeFrom(Message* from, Message* to);
-void Message_mergeFromString(
+bool Message_mergeFromString(
     Message *intern, const char *data, size_t size);
 
 // TODO(teboring): Combine all metadata.
@@ -303,6 +303,42 @@ void Type_init(TSRMLS_D);
 // -----------------------------------------------------------------------------
 
 void Util_init(TSRMLS_D);
+
+// -----------------------------------------------------------------------------
+// Well Known Types
+// -----------------------------------------------------------------------------
+
+void Any_init(TSRMLS_D);
+void Api_init(TSRMLS_D);
+void BoolValue_init(TSRMLS_D);
+void BytesValue_init(TSRMLS_D);
+void DoubleValue_init(TSRMLS_D);
+void Duration_init(TSRMLS_D);
+void Empty_init(TSRMLS_D);
+void Enum_init(TSRMLS_D);
+void EnumValue_init(TSRMLS_D);
+void Field_Cardinality_init(TSRMLS_D);
+void Field_init(TSRMLS_D);
+void Field_Kind_init(TSRMLS_D);
+void FieldMask_init(TSRMLS_D);
+void FloatValue_init(TSRMLS_D);
+void GPBType_init(TSRMLS_D);
+void Int32Value_init(TSRMLS_D);
+void Int64Value_init(TSRMLS_D);
+void ListValue_init(TSRMLS_D);
+void Method_init(TSRMLS_D);
+void Mixin_init(TSRMLS_D);
+void NullValue_init(TSRMLS_D);
+void Option_init(TSRMLS_D);
+void Repeated_field_iter_init(TSRMLS_D);
+void SourceContext_init(TSRMLS_D);
+void StringValue_init(TSRMLS_D);
+void Struct_init(TSRMLS_D);
+void Syntax_init(TSRMLS_D);
+void Timestamp_init(TSRMLS_D);
+void UInt32Value_init(TSRMLS_D);
+void UInt64Value_init(TSRMLS_D);
+void Value_init(TSRMLS_D);
 
 // -----------------------------------------------------------------------------
 // Help Methods

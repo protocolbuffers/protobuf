@@ -45,6 +45,52 @@
 #define PROTO_METHOD(CLASSNAME, METHODNAME, RETURN_TYPE) \
   PHP_METHOD(CLASSNAME, METHODNAME)
 
+// Extend message class
+#define PROTO_INIT_MSG_SUBCLASS_START(FULLNAME, CLASSNAME)                  \
+  static zend_class_entry* CLASSNAME##_type;                                \
+  void CLASSNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                            \
+    const char* class_name = FULLNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, FULLNAME, strlen(FULLNAME),             \
+                        CLASSNAME##_methods);                               \
+    CLASSNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    CLASSNAME##_type->create_object = Message_create;                       \
+    zend_class_implements(CLASSNAME##_type TSRMLS_CC, 1, Message_type);
+#define PROTO_INIT_MSG_SUBCLASS_END \
+  }
+
+// Extend enum class
+#define PROTO_INIT_ENUMCLASS_START(FULLNAME, CLASSNAME)         \
+  static zend_class_entry* CLASSNAME##_type;                    \
+  void CLASSNAME##_init(TSRMLS_D) {                             \
+    zend_class_entry class_type;                                \
+    const char* class_name = FULLNAME;                          \
+    INIT_CLASS_ENTRY_EX(class_type, FULLNAME, strlen(FULLNAME), \
+                        CLASSNAME##_methods);                    \
+    CLASSNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC);
+#define PROTO_INIT_ENUMCLASS_END \
+  }
+
+// Fake scope
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
+#define PROTO_FAKE_SCOPE_BEGIN(klass)      \
+  zend_class_entry* old_scope = EG(scope); \
+  EG(scope) = klass;
+#define PROTO_FAKE_SCOPE_RESTART(klass) \
+  old_scope = EG(scope);                \
+  EG(scope) = klass;
+#define PROTO_FAKE_SCOPE_END EG(scope) = old_scope;
+#else
+#define PROTO_FAKE_SCOPE_BEGIN(klass)           \
+  zend_class_entry* old_scope = EG(fake_scope); \
+  EG(fake_scope) = klass;
+#define PROTO_FAKE_SCOPE_RESTART(klass) \
+  old_scope = EG(fake_scope);           \
+  EG(fake_scope) = klass;
+#define PROTO_FAKE_SCOPE_END EG(fake_scope) = old_scope;
+#endif
+
+
 // -----------------------------------------------------------------------------
 // Utilities.
 // -----------------------------------------------------------------------------
