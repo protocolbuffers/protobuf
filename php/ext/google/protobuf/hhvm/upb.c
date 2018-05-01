@@ -331,7 +331,7 @@ static bool upb_decode_submsg(upb_decstate *d,
         *(void**)submsg, (upb_msglayout*)subm, upb_arena_alloc(upb_env_arena(d->env)));
   }
 
-  upb_decode_message(d, limit, group_number, *(void**)submsg, subm);
+  CHK(upb_decode_message(d, limit, group_number, *(void**)submsg, subm));
 
   return true;
 }

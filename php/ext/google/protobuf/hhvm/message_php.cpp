@@ -560,8 +560,10 @@ static void Message_init_type(zend_class_entry* klass) {}
 
 PHP_METHOD(Message, __construct);
 PHP_METHOD(Message, clear);
+PHP_METHOD(Message, serializeToJsonString);
 PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFrom);
+PHP_METHOD(Message, mergeFromJsonString);
 PHP_METHOD(Message, mergeFromString);
 PHP_METHOD(Message, writeOneof);
 PHP_METHOD(Message, readOneof);
@@ -598,6 +600,16 @@ PHP_METHOD(Message, clear) {
   Message_clear(intern);
 }
 
+PHP_METHOD(Message, serializeToJsonString) {
+  Message* intern = UNBOX(Message, getThis());
+  stackenv se;
+  stackenv_init(&se, "Error occurred during encoding: %s");
+  size_t size;
+  const char* data = upb_encode2(intern->msg, intern->layout, &se.env, &size);
+  PROTO_RETVAL_STRINGL(data, size, 1);
+  stackenv_uninit(&se);
+}
+
 PHP_METHOD(Message, serializeToString) {
   Message* intern = UNBOX(Message, getThis());
   stackenv se;
@@ -617,7 +629,11 @@ PHP_METHOD(Message, mergeFromString) {
       FAILURE) {
     return;
   }
-  Message_mergeFromString(intern, data, size);
+  if (!Message_mergeFromString(intern, data, size)) {
+    zend_throw_exception(
+        NULL, "Invalid data for binary format parsing.",
+        0 TSRMLS_CC);
+  }
 }
 
 PHP_METHOD(Message, mergeFrom) {

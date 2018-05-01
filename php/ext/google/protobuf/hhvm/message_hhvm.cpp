@@ -368,7 +368,10 @@ void HHVM_METHOD(Message, mergeFrom, const Variant& other) {
 
 void HHVM_METHOD(Message, mergeFromString, const String& data) {
   Message* intern = Native::data<Message>(this_);
-  Message_mergeFromString(intern, data.c_str(), data.length());
+  if (!Message_mergeFromString(intern, data.c_str(), data.length())) {
+    throw Object(SystemLib::AllocExceptionObject(
+        "Invalid data for binary format parsing."));
+  }
 }
 
 void HHVM_METHOD(Message, writeProperty, const String& name,
