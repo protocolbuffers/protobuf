@@ -16,9 +16,13 @@ endif()
 project(protobuf C CXX)
 
 # Add c++11 flags
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+if (CYGWIN)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+else()
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
 
 # Options
 option(protobuf_BUILD_TESTS "Build tests" ON)
@@ -163,7 +167,7 @@ if (MSVC)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   configure_file(extract_includes.bat.in extract_includes.bat)
-  
+
   # Suppress linker warnings about files with no symbols defined.
   set(CMAKE_STATIC_LINKER_FLAGS /ignore:4221)
 endif (MSVC)
