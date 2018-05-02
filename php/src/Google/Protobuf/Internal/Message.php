@@ -813,6 +813,27 @@ class Message
                     $submsg->mergeFromJsonArray($value);
                 }
                 return $submsg;
+            case GPBType::ENUM:
+                if (is_null($value)) {
+                    return $this->defaultValue($field);
+                }
+                if (is_integer($value)) {
+                    return $value;
+                }
+                $enum_value = $field->getEnumType()->getValueByName($value);
+                if (!is_null($enum_value)) {
+                    return $enum_value->getNumber();
+                }
+                throw new GPBDecodeException(
+                        "Enum field only accepts bool value");
+            case GPBType::STRING:
+                if (is_null($value)) {
+                    return $this->defaultValue($field);
+                }
+                if (!is_string($value)) {
+                    throw new GPBDecodeException("String field only accepts strig value");
+                }
+                return $value;
             case GPBType::BYTES:
                 if (is_null($value)) {
                     return $this->defaultValue($field);
@@ -843,27 +864,6 @@ class Message
                 if (!is_bool($value)) {
                     throw new GPBDecodeException(
                         "Bool field only accept bool value");
-                }
-                return $value;
-            case GPBType::ENUM:
-                if (is_null($value)) {
-                    return $this->defaultValue($field);
-                }
-                if (is_integer($value)) {
-                    return $value;
-                }
-                $enum_value = $field->getEnumType()->getValueByName($value);
-                if (!is_null($enum_value)) {
-                    return $enum_value->getNumber();
-                }
-                throw new GPBDecodeException(
-                        "Enum field only accepts bool value");
-            case GPBType::STRING:
-                if (is_null($value)) {
-                    return $this->defaultValue($field);
-                }
-                if (!is_string($value)) {
-                    throw new GPBDecodeException("String field only accepts strig value");
                 }
                 return $value;
             case GPBType::FLOAT:
@@ -950,11 +950,9 @@ class Message
                     $value = bcsub($value, "18446744073709551616");
                 }
                 return $value;
+            default:
+                return $value;
         }
-        throw new GPBDecodeException(sprintf(
-            'Unknown data type %s',
-            $field->getType()
-        ));
     }
 
     /**
