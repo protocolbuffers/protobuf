@@ -596,6 +596,19 @@ class ImplementationTest extends TestBase
     }
 
     /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Invalid message property: optionalInt32
+     */
+    public function testArrayConstructorJsonCaseFails()
+    {
+        $m = new TestMessage([
+            'optionalInt32' => -42,
+        ]);
+
+        $this->assertEquals(0, $m->getOptionalInt32());
+    }
+
+    /**
      * @expectedException Exception
      * @expectedExceptionMessage Expect message.
      */

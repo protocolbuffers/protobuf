@@ -810,7 +810,7 @@ class Message
                     } elseif (!is_object($value) && !is_array($value)) {
                         throw new GPBDecodeException("Expect message.");
                     }
-                    $submsg->mergeFromArrayImpl(true, $value);
+                    $submsg->mergeFromJsonArray($value);
                 }
                 return $submsg;
             case GPBType::BYTES:
@@ -958,9 +958,8 @@ class Message
     }
 
     /**
-     * Populates the message from a user-supplied PHP array.
-     * Array keys correspond to Message properties and nested message
-     * properties.
+     * Populates the message from a user-supplied PHP array. Array keys
+     * correspond to Message properties and nested message properties.
      *
      * Example:
      * ```
@@ -979,20 +978,29 @@ class Message
      */
     protected function mergeFromArray(array $array)
     {
-        return $this->mergeFromArrayImpl(false, $array);
+        // Just call the setters for the field names
+        foreach ($array as $key => $value) {
+            $field = $this->desc->getFieldByName($key);
+            if (is_null($field)) {
+                throw new \UnexpectedValueException(
+                    'Invalid message property: ' . $key);
+            }
+            $setter = $field->getSetter();
+            $this->$setter($value);
+        }
     }
 
-    protected function mergeFromArrayImpl($is_json, $array)
+    protected function mergeFromJsonArray($array)
     {
         if (is_a($this, "Google\Protobuf\Any")) {
             $this->clear();
             $this->setTypeUrl($array["@type"]);
             $msg = $this->unpack();
             if (GPBUtil::hasSpecialJsonMapping($msg)) {
-                $msg->mergeFromArrayImpl($is_json, $array["value"]);
+                $msg->mergeFromJsonArray($array["value"]);
             } else {
                 unset($array["@type"]);
-                $msg->mergeFromArrayImpl($is_json, $array);
+                $msg->mergeFromJsonArray($array);
             }
             $this->setValue($msg->serializeToString());
             return;
@@ -1028,7 +1036,7 @@ class Message
             $fields = $this->getFields();
             foreach($array as $key => $value) {
                 $v = new Value();
-                $v->mergeFromArrayImpl($is_json, $value);
+                $v->mergeFromJsonArray($value);
                 $fields[$key] = $v;
             }
         }
@@ -1051,7 +1059,7 @@ class Message
                     }
                     foreach ($array as $key => $v) {
                         $value = new Value();
-                        $value->mergeFromArrayImpl($is_json, $v);
+                        $value->mergeFromJsonArray($v);
                         $values = $struct_value->getFields();
                         $values[$key]= $value;
                     }
@@ -1064,7 +1072,7 @@ class Message
                     }
                     foreach ($array as $v) {
                         $value = new Value();
-                        $value->mergeFromArrayImpl($is_json, $v);
+                        $value->mergeFromJsonArray($v);
                         $values = $list_value->getValues();
                         $values[]= $value;
                     }
@@ -1074,20 +1082,7 @@ class Message
             }
             return;
         }
-        if ($is_json) {
-            $this->mergeFromArrayJsonImpl($array);
-        } else {
-            // Just call the setters for the field names
-            foreach ($array as $key => $value) {
-                $field = $this->desc->getFieldByJsonName($key)
-                    ?: $this->desc->getFieldByName($key);
-                if (is_null($field)) {
-                    continue;
-                }
-                $setter = $field->getSetter();
-                $this->$setter($value);
-            }
-        }
+        $this->mergeFromArrayJsonImpl($array);
     }
 
     private function mergeFromArrayJsonImpl($array)
@@ -1166,7 +1161,7 @@ class Message
                 "Cannot decode json string.");
         }
         try {
-            $this->mergeFromArrayImpl(true, $array);
+            $this->mergeFromJsonArray($array);
         } catch (\Exception $e) {
             throw new GPBDecodeException($e->getMessage());
         }
