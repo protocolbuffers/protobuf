@@ -599,13 +599,11 @@ class ImplementationTest extends TestBase
      * @expectedException UnexpectedValueException
      * @expectedExceptionMessage Invalid message property: optionalInt32
      */
-    public function testArrayConstructorJsonCaseFails()
+    public function testArrayConstructorJsonCaseThrowsException()
     {
         $m = new TestMessage([
             'optionalInt32' => -42,
         ]);
-
-        $this->assertEquals(0, $m->getOptionalInt32());
     }
 
     /**
@@ -621,34 +619,33 @@ class ImplementationTest extends TestBase
         ]);
     }
 
-    public function testMergeFromArrayWithStringAndBoolDoesNotThrowException()
+    public function testArrayConstructorWithNullValues()
     {
         $requestData = [
             'optional_bool' => null,
             'optional_string' => null,
+            'optional_bytes' => null,
+            'optional_message' => null,
         ];
 
-        $messageFromArray = new TestMessage($requestData);
+        $m = new TestMessage($requestData);
+
+        $this->assertSame(false, $m->getOptionalBool());
+        $this->assertSame('', $m->getOptionalString());
+        $this->assertSame('', $m->getOptionalBytes());
+        $this->assertSame(null, $m->getOptionalMessage());
     }
 
     /**
-     * @dataProvider provideMergeFromArrayWithNullValuesThrowsException
+     * @dataProvider provideArrayConstructorWithNullValuesThrowsException
      * @expectedException Exception
      */
-    public function testMergeFromArrayWithNullValuesThrowsException($requestData)
+    public function testArrayConstructorWithNullValuesThrowsException($requestData)
     {
-        $messageFromArray = new TestMessage($requestData);
+        $m = new TestMessage($requestData);
     }
 
-    /**
-     * @dataProvider provideMergeFromArrayWithNullValuesDoNotThrowException
-     */
-    public function testMergeFromArrayWithNullValuesDoNotThrowException($requestData)
-    {
-        $messageFromArray = new TestMessage($requestData);
-    }
-
-    public function provideMergeFromArrayWithNullValuesThrowsException()
+    public function provideArrayConstructorWithNullValuesThrowsException()
     {
         return [
             [['optional_int32' => null]],
@@ -666,16 +663,6 @@ class ImplementationTest extends TestBase
             [['optional_enum' => null]],
             [['repeated_int32' => null]],
             [['map_int32_int32' => null]],
-        ];
-    }
-
-    public function provideMergeFromArrayWithNullValuesDoNotThrowException()
-    {
-        return [
-            [['optional_bool' => null]],
-            [['optional_string' => null]],
-            [['optional_bytes' => null]],
-            [['optional_message' => null]],
         ];
     }
 }
