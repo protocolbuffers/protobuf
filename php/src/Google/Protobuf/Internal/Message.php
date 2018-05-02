@@ -787,7 +787,8 @@ class Message
                     try {
                         $timestamp = GPBUtil::parseTimestamp($value);
                     } catch (\Exception $e) {
-                        throw new GPBDecodeException("Invalid RFC 3339 timestamp: ".$e->getMessage());
+                        throw new GPBDecodeException(
+                            "Invalid RFC 3339 timestamp: ".$e->getMessage());
                     }
 
                     $submsg->setSeconds($timestamp->getSeconds());
@@ -799,7 +800,8 @@ class Message
                     try {
                         return GPBUtil::parseFieldMask($value);
                     } catch (\Exception $e) {
-                        throw new GPBDecodeException("Invalid FieldMask: ".$e->getMessage());
+                        throw new GPBDecodeException(
+                            "Invalid FieldMask: ".$e->getMessage());
                     }
                 } else {
                     if (is_null($value) &&
@@ -825,13 +827,14 @@ class Message
                     return $enum_value->getNumber();
                 }
                 throw new GPBDecodeException(
-                        "Enum field only accepts bool value");
+                        "Enum field only accepts integer or enum value name");
             case GPBType::STRING:
                 if (is_null($value)) {
                     return $this->defaultValue($field);
                 }
                 if (!is_string($value)) {
-                    throw new GPBDecodeException("String field only accepts strig value");
+                    throw new GPBDecodeException(
+                        "String field only accepts string value");
                 }
                 return $value;
             case GPBType::BYTES:
@@ -839,12 +842,12 @@ class Message
                     return $this->defaultValue($field);
                 }
                 if (!is_string($value)) {
-                    throw new GPBDecodeException("Expect string");
+                    throw new GPBDecodeException(
+                        "Byte field only accepts string value");
                 }
                 $proto_value = base64_decode($value, true);
                 if ($proto_value === false) {
-                    throw new GPBDecodeException(
-                        "Invalid base64 characters");
+                    throw new GPBDecodeException("Invalid base64 characters");
                 }
                 return $proto_value;
             case GPBType::BOOL:
@@ -859,11 +862,11 @@ class Message
                         return false;
                     }
                     throw new GPBDecodeException(
-                        "Bool field only accept bool value");
+                        "Bool field only accepts bool value");
                 }
                 if (!is_bool($value)) {
                     throw new GPBDecodeException(
-                        "Bool field only accept bool value");
+                        "Bool field only accepts bool value");
                 }
                 return $value;
             case GPBType::FLOAT:
