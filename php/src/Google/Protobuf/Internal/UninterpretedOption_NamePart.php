@@ -32,9 +32,19 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
     private $is_extension = false;
     private $has_is_extension = false;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type string $name_part
+     *     @type bool $is_extension
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

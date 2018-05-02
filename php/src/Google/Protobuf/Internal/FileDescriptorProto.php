@@ -99,9 +99,42 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     private $syntax = '';
     private $has_syntax = false;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type string $name
+     *           file name, relative to root of source tree
+     *     @type string $package
+     *           e.g. "foo", "foo.bar", etc.
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $dependency
+     *           Names of files imported by this file.
+     *     @type int[]|\Google\Protobuf\Internal\RepeatedField $public_dependency
+     *           Indexes of the public imported files in the dependency list above.
+     *     @type int[]|\Google\Protobuf\Internal\RepeatedField $weak_dependency
+     *           Indexes of the weak imported files in the dependency list.
+     *           For Google-internal migration only. Do not use.
+     *     @type \Google\Protobuf\Internal\DescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $message_type
+     *           All top-level definitions in this file.
+     *     @type \Google\Protobuf\Internal\EnumDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $enum_type
+     *     @type \Google\Protobuf\Internal\ServiceDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $service
+     *     @type \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $extension
+     *     @type \Google\Protobuf\Internal\FileOptions $options
+     *     @type \Google\Protobuf\Internal\SourceCodeInfo $source_code_info
+     *           This field contains optional information about the original source code.
+     *           You may safely remove this entire field without harming runtime
+     *           functionality of the descriptors -- the information is needed only by
+     *           development tools.
+     *     @type string $syntax
+     *           The syntax of the proto file.
+     *           The supported values are "proto2" and "proto3".
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

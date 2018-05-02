@@ -16,6 +16,14 @@ class GeneratedPhpdocTest extends TestBase
         $this->assertContains('foo.TestMessage', $doc);
     }
 
+    public function testPhpDocForConstructor()
+    {
+        $class = new ReflectionClass('Foo\TestMessage');
+        $doc = $class->getMethod('__construct')->getDocComment();
+        $this->assertContains('@param array $data', $doc);
+        $this->assertContains('@type int $optional_int32', $doc);
+    }
+
     /**
      * @dataProvider providePhpDocForGettersAndSetters
      */
