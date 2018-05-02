@@ -36,9 +36,21 @@ class EnumDescriptorProto_EnumReservedRange extends \Google\Protobuf\Internal\Me
     private $end = 0;
     private $has_end = false;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type int $start
+     *           Inclusive.
+     *     @type int $end
+     *           Inclusive.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

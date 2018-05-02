@@ -3,6 +3,7 @@
 require_once('test_base.php');
 require_once('test_util.php');
 
+use Foo\TestEnum;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
 use Foo\TestPackedMessage;
@@ -15,7 +16,6 @@ use Google\Protobuf\Internal\CodedOutputStream;
 
 class ImplementationTest extends TestBase
 {
-
     public function testReadInt32()
     {
         $value = null;
@@ -512,5 +512,157 @@ class ImplementationTest extends TestBase
         $m = new TestPackedMessage();
         TestUtil::setTestPackedMessage($m);
         $this->assertSame(166, $m->byteSize());
+    }
+
+    public function testArrayConstructor()
+    {
+        $m = new TestMessage([
+            'optional_int32' => -42,
+            'optional_int64' => -43,
+            'optional_uint32' => 42,
+            'optional_uint64' => 43,
+            'optional_sint32' => -44,
+            'optional_sint64' => -45,
+            'optional_fixed32' => 46,
+            'optional_fixed64' => 47,
+            'optional_sfixed32' => -46,
+            'optional_sfixed64' => -47,
+            'optional_float' => 1.5,
+            'optional_double' => 1.6,
+            'optional_bool' => true,
+            'optional_string' => 'a',
+            'optional_bytes' => 'b',
+            'optional_enum' => TestEnum::ONE,
+            'optional_message' => new TestMessage_Sub([
+                'a' => 33
+            ]),
+            'repeated_int32' => [-42, -52],
+            'repeated_int64' => [-43, -53],
+            'repeated_uint32' => [42, 52],
+            'repeated_uint64' => [43, 53],
+            'repeated_sint32' => [-44, -54],
+            'repeated_sint64' => [-45, -55],
+            'repeated_fixed32' => [46, 56],
+            'repeated_fixed64' => [47, 57],
+            'repeated_sfixed32' => [-46, -56],
+            'repeated_sfixed64' => [-47, -57],
+            'repeated_float' => [1.5, 2.5],
+            'repeated_double' => [1.6, 2.6],
+            'repeated_bool' => [true, false],
+            'repeated_string' => ['a', 'c'],
+            'repeated_bytes' => ['b', 'd'],
+            'repeated_enum' => [TestEnum::ZERO, TestEnum::ONE],
+            'repeated_message' => [
+                new TestMessage_Sub(['a' => 34]),
+                new TestMessage_Sub(['a' => 35]),
+            ],
+            'map_int32_int32' => [-62 => -62],
+            'map_int64_int64' => [-63 => -63],
+            'map_uint32_uint32' => [62 => 62],
+            'map_uint64_uint64' => [63 => 63],
+            'map_sint32_sint32' => [-64 => -64],
+            'map_sint64_sint64' => [-65 => -65],
+            'map_fixed32_fixed32' => [66 => 66],
+            'map_fixed64_fixed64' => [67 => 67],
+            'map_sfixed32_sfixed32' => [-68 => -68],
+            'map_sfixed64_sfixed64' => [-69 => -69],
+            'map_int32_float' => [1 => 3.5],
+            'map_int32_double' => [1 => 3.6],
+            'map_bool_bool' => [true => true],
+            'map_string_string' => ['e' => 'e'],
+            'map_int32_bytes' => [1 => 'f'],
+            'map_int32_enum' => [1 => TestEnum::ONE],
+            'map_int32_message' => [1 => new TestMessage_Sub(['a' => 36])],
+        ]);
+
+        TestUtil::assertTestMessage($m);
+
+        // Using message objects
+        $m = new TestMessage([
+            'optional_message' => new TestMessage_Sub(['a' => 33]),
+            'repeated_message' => [
+                new TestMessage_Sub(['a' => 34]),
+                new TestMessage_Sub(['a' => 35]),
+            ],
+            'map_int32_message' => [
+                1 => new TestMessage_Sub(['a' => 36])
+            ],
+        ]);
+
+        $this->assertEquals(33, $m->getOptionalMessage()->getA());
+        $this->assertEquals(34, $m->getRepeatedMessage()[0]->getA());
+        $this->assertEquals(35, $m->getRepeatedMessage()[1]->getA());
+        $this->assertEquals(36, $m->getMapInt32Message()[1]->getA());
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Invalid message property: optionalInt32
+     */
+    public function testArrayConstructorJsonCaseThrowsException()
+    {
+        $m = new TestMessage([
+            'optionalInt32' => -42,
+        ]);
+    }
+
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage Expect message.
+     */
+    public function testArraysForMessagesThrowsException()
+    {
+        $m = new TestMessage([
+            'optional_message' => [
+                'a' => 33
+            ]
+        ]);
+    }
+
+    public function testArrayConstructorWithNullValues()
+    {
+        $requestData = [
+            'optional_bool' => null,
+            'optional_string' => null,
+            'optional_bytes' => null,
+            'optional_message' => null,
+        ];
+
+        $m = new TestMessage($requestData);
+
+        $this->assertSame(false, $m->getOptionalBool());
+        $this->assertSame('', $m->getOptionalString());
+        $this->assertSame('', $m->getOptionalBytes());
+        $this->assertSame(null, $m->getOptionalMessage());
+    }
+
+    /**
+     * @dataProvider provideArrayConstructorWithNullValuesThrowsException
+     * @expectedException Exception
+     */
+    public function testArrayConstructorWithNullValuesThrowsException($requestData)
+    {
+        $m = new TestMessage($requestData);
+    }
+
+    public function provideArrayConstructorWithNullValuesThrowsException()
+    {
+        return [
+            [['optional_int32' => null]],
+            [['optional_int64' => null]],
+            [['optional_uint32' => null]],
+            [['optional_uint64' => null]],
+            [['optional_sint32' => null]],
+            [['optional_sint64' => null]],
+            [['optional_fixed32' => null]],
+            [['optional_fixed64' => null]],
+            [['optional_sfixed32' => null]],
+            [['optional_sfixed64' => null]],
+            [['optional_float' => null]],
+            [['optional_double' => null]],
+            [['optional_enum' => null]],
+            [['repeated_int32' => null]],
+            [['map_int32_int32' => null]],
+        ];
     }
 }
