@@ -34,9 +34,21 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
     private $end = 0;
     private $has_end = false;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type int $start
+     *           Inclusive.
+     *     @type int $end
+     *           Exclusive.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

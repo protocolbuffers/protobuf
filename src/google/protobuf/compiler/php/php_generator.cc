@@ -94,6 +94,9 @@ void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
 void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message,
                                int is_descriptor);
+void GenerateMessageConstructorDocComment(io::Printer* printer,
+                                          const Descriptor* message,
+                                          int is_descriptor);
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
                              int is_descriptor, int function_type);
 void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
@@ -1109,8 +1112,9 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   }
   printer.Print("\n");
 
+  GenerateMessageConstructorDocComment(&printer, message, is_descriptor);
   printer.Print(
-      "public function __construct() {\n");
+      "public function __construct($data = NULL) {\n");
   Indent(&printer);
 
   std::string metadata_filename =
@@ -1118,7 +1122,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   std::string metadata_fullname = FilenameToClassname(metadata_filename);
   printer.Print(
       "\\^fullname^::initOnce();\n"
-      "parent::__construct();\n",
+      "parent::__construct($data);\n",
       "fullname", metadata_fullname);
 
   Outdent(&printer);
@@ -1271,7 +1275,8 @@ static string EscapePhpdoc(const string& input) {
 }
 
 static void GenerateDocCommentBodyForLocation(
-    io::Printer* printer, const SourceLocation& location) {
+    io::Printer* printer, const SourceLocation& location, bool trailingNewline,
+    int indentCount) {
   string comments = location.leading_comments.empty() ?
       location.trailing_comments : location.leading_comments;
   if (!comments.empty()) {
@@ -1292,14 +1297,16 @@ static void GenerateDocCommentBodyForLocation(
       // Most lines should start with a space.  Watch out for lines that start
       // with a /, since putting that right after the leading asterisk will
       // close the comment.
-      if (!lines[i].empty() && lines[i][0] == '/') {
+      if (indentCount == 0 && !lines[i].empty() && lines[i][0] == '/') {
         printer->Print(" * ^line^\n", "line", lines[i]);
       } else {
-        printer->Print(" *^line^\n", "line", lines[i]);
+        std::string indent = std::string(indentCount, ' ');
+        printer->Print(" *^ind^^line^\n", "ind", indent, "line", lines[i]);
       }
     }
-    printer->Print(
-        " *\n");
+    if (trailingNewline) {
+      printer->Print(" *\n");
+    }
   }
 }
 
@@ -1308,7 +1315,7 @@ static void GenerateDocCommentBody(
     io::Printer* printer, const DescriptorType* descriptor) {
   SourceLocation location;
   if (descriptor->GetSourceLocation(&location)) {
-    GenerateDocCommentBodyForLocation(printer, location);
+    GenerateDocCommentBodyForLocation(printer, location, true, 0);
   }
 }
 
@@ -1332,6 +1339,37 @@ void GenerateMessageDocComment(io::Printer* printer,
     " */\n",
     "fullname", EscapePhpdoc(PhpName(message->full_name(), is_descriptor)),
     "messagename", EscapePhpdoc(message->full_name()));
+}
+
+void GenerateMessageConstructorDocComment(io::Printer* printer,
+                                          const Descriptor* message,
+                                          int is_descriptor) {
+  // In theory we should have slightly different comments for setters, getters,
+  // etc., but in practice everyone already knows the difference between these
+  // so it's redundant information.
+
+  // We start the comment with the main body based on the comments from the
+  // .proto file (if present). We then end with the field declaration, e.g.:
+  //   optional string foo = 5;
+  // If the field is a group, the debug string might end with {.
+  printer->Print("/**\n");
+  printer->Print(" * Constructor.\n");
+  printer->Print(" *\n");
+  printer->Print(" * @param array $data {\n");
+  printer->Print(" *     Optional. Data for populating the Message object.\n");
+  printer->Print(" *\n");
+  for (int i = 0; i < message->field_count(); i++) {
+    const FieldDescriptor* field = message->field(i);
+    printer->Print(" *     @type ^php_type^ $^var^\n",
+      "php_type", PhpSetterTypeName(field, is_descriptor),
+      "var", field->name());
+    SourceLocation location;
+    if (field->GetSourceLocation(&location)) {
+      GenerateDocCommentBodyForLocation(printer, location, false, 10);
+    }
+  }
+  printer->Print(" * }\n");
+  printer->Print(" */\n");
 }
 
 void GenerateServiceDocComment(io::Printer* printer,

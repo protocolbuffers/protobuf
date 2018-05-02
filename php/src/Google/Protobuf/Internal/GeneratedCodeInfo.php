@@ -28,9 +28,20 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
     private $annotation;
     private $has_annotation = false;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type \Google\Protobuf\Internal\GeneratedCodeInfo_Annotation[]|\Google\Protobuf\Internal\RepeatedField $annotation
+     *           An Annotation connects some span of text in generated code to an element
+     *           of its generating .proto file.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**
