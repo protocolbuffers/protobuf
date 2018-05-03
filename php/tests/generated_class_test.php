@@ -1171,4 +1171,70 @@ class GeneratedClassTest extends TestBase
         $m = new testLowerCaseMessage();
         $n = testLowerCaseEnum::VALUE;
     }
+
+    #########################################################
+    # Test Array Constructor.
+    #########################################################
+
+    public function testArrayConstructor()
+    {
+        $m = new TestMessage([
+            'optional_int32' => -42,
+            'optional_int64' => -43,
+            'optional_uint32' => 42,
+            'optional_uint64' => 43,
+            'optional_sint32' => -44,
+            'optional_sint64' => -45,
+            'optional_fixed32' => 46,
+            'optional_fixed64' => 47,
+            'optional_sfixed32' => -46,
+            'optional_sfixed64' => -47,
+            'optional_float' => 1.5,
+            'optional_double' => 1.6,
+            'optional_bool' => true,
+            'optional_string' => 'a',
+            'optional_bytes' => 'b',
+            'optional_enum' => TestEnum::ONE,
+            'optional_message' => new TestMessage_Sub([
+                'a' => 33
+            ]),
+            'repeated_int32' => [-42, -52],
+            'repeated_int64' => [-43, -53],
+            'repeated_uint32' => [42, 52],
+            'repeated_uint64' => [43, 53],
+            'repeated_sint32' => [-44, -54],
+            'repeated_sint64' => [-45, -55],
+            'repeated_fixed32' => [46, 56],
+            'repeated_fixed64' => [47, 57],
+            'repeated_sfixed32' => [-46, -56],
+            'repeated_sfixed64' => [-47, -57],
+            'repeated_float' => [1.5, 2.5],
+            'repeated_double' => [1.6, 2.6],
+            'repeated_bool' => [true, false],
+            'repeated_string' => ['a', 'c'],
+            'repeated_bytes' => ['b', 'd'],
+            'repeated_enum' => [TestEnum::ZERO, TestEnum::ONE],
+            'repeated_message' => [new TestMessage_Sub(['a' => 34]),
+                                   new TestMessage_Sub(['a' => 35])],
+            'map_int32_int32' => [-62 => -62],
+            'map_int64_int64' => [-63 => -63],
+            'map_uint32_uint32' => [62 => 62],
+            'map_uint64_uint64' => [63 => 63],
+            'map_sint32_sint32' => [-64 => -64],
+            'map_sint64_sint64' => [-65 => -65],
+            'map_fixed32_fixed32' => [66 => 66],
+            'map_fixed64_fixed64' => [67 => 67],
+            'map_sfixed32_sfixed32' => [-68 => -68],
+            'map_sfixed64_sfixed64' => [-69 => -69],
+            'map_int32_float' => [1 => 3.5],
+            'map_int32_double' => [1 => 3.6],
+            'map_bool_bool' => [true => true],
+            'map_string_string' => ['e' => 'e'],
+            'map_int32_bytes' => [1 => 'f'],
+            'map_int32_enum' => [1 => TestEnum::ONE],
+            'map_int32_message' => [1 => new TestMessage_Sub(['a' => 36])],
+        ]);
+
+        TestUtil::assertTestMessage($m);
+    }
 }
