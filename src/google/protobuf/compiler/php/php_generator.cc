@@ -766,8 +766,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
   if (message->options().map_entry()) {
     return;
   }
-  string class_name = name_prefix.empty()?
-      message->name() : name_prefix + "\\" + message->name();
+  string class_name = ClassNamePrefix(message->name(), message) + message->name();
 
   printer->Print(
       "$pool->addMessage('^message^', "
@@ -1013,14 +1012,12 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  if (file->options().has_php_namespace()) {
-    const string& php_namespace = file->options().php_namespace();
-    if (!php_namespace.empty()) {
-      printer.Print(
-          "namespace ^name^;\n\n",
-          "name", fullname.substr(0, lastindex));
-    }
-  } else if (!file->package().empty() || lastindex != string::npos) {
+  const string& php_namespace = file->options().php_namespace();
+  if (
+    !php_namespace.empty()
+    || (!file->options().has_php_namespace() && !file->package().empty())
+    || lastindex != string::npos
+  ) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1072,14 +1069,12 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  if (file->options().has_php_namespace()) {
-    const string& php_namespace = file->options().php_namespace();
-    if (!php_namespace.empty()) {
-      printer.Print(
-          "namespace ^name^;\n\n",
-          "name", fullname.substr(0, lastindex));
-    }
-  } else if (!file->package().empty() || lastindex != string::npos) {
+  const string& php_namespace = file->options().php_namespace();
+  if (
+    !php_namespace.empty()
+    || (!file->options().has_php_namespace() && !file->package().empty())
+    || lastindex != string::npos
+  ) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1472,7 +1467,8 @@ std::string GeneratedClassName(const Descriptor* desc) {
   std::string classname = desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
-    classname = containing->name() + '\\' + ClassNamePrefix(classname, desc) + classname;
+    classname = ClassNamePrefix(containing->name(), desc) + containing->name()
+       + '\\' + ClassNamePrefix(classname, desc) + classname;
     containing = containing->containing_type();
   }
   return ClassNamePrefix(classname, desc) + classname;
@@ -1482,7 +1478,8 @@ std::string GeneratedClassName(const EnumDescriptor* desc) {
   std::string classname = desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
-    classname = containing->name() + '\\' + ClassNamePrefix(classname, desc) + classname;
+    classname = ClassNamePrefix(containing->name(), desc) + containing->name()
+      + '\\' + ClassNamePrefix(classname, desc) + classname;
     containing = containing->containing_type();
   }
   return ClassNamePrefix(classname, desc) + classname;

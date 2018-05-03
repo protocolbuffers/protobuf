@@ -6,4 +6,14 @@ option php_metadata_namespace = "";
 
 message TestEmptyNamespace {
   int32 a = 1;
+
+  // Test nested messages, enums, and reserved names
+  NestedMessage nested_message = 2;
+  NestedEnum nested_enum = 3;
+  message NestedMessage {
+    int32 a = 1;
+  }
+  enum NestedEnum {
+      ZERO = 0;
+  };
 }

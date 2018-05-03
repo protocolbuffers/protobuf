@@ -635,9 +635,6 @@ class GeneratedClassTest extends TestBase
         $repeatedNoNamespaceMessage = $m->getRepeatedNoNamespaceMessage();
         $repeatedNoNamespaceMessage[] = new NoNameSpaceMessage();
         $m->setRepeatedNoNamespaceMessage($repeatedNoNamespaceMessage);
-
-        $n = new NoNamespaceMessage();
-        $n->setB(NoNamespaceMessage\NestedEnum::ZERO);
     }
 
     public function testEnumWithoutNamespace()
@@ -653,8 +650,7 @@ class GeneratedClassTest extends TestBase
     {
         $m = new NoNamespaceMessage();
         $sub = new NoNamespaceMessage\NestedMessage();
-        $sub->setNestedMessage(new NoNamespaceMessage\NestedMessage\NestedMessage());
-        $m->setD($sub);
+        $m->setNestedMessage($sub);
     }
 
     #########################################################
@@ -689,17 +685,50 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(1, $m->getEmptyNamespaceMessage()->getA());
     }
 
-    public function testNestedMessageWithNamespace()
+    public function testNestedMessagesAndEnumsWithPhpNamespace()
     {
         $m = new TestNamespace();
-        $sub = new TestNamespace\NestedMessage();
-        $m->setNestedMessage($sub);
+        $n = new TestNamespace\NestedMessage();
+        $m->setNestedMessage($n);
+        $m->setNestedEnum(TestNamespace\NestedEnum::ZERO);
+        $this->assertSame($n, $m->getNestedMessage());
+        $this->assertSame(TestNamespace\NestedEnum::ZERO, $m->getNestedEnum());
     }
 
-    public function testNestedEnumWithNamespace()
+    public function testNestedMessageAndEnumsWithEmptyPhpNamespace()
+    {
+        $m = new TestEmptyNamespace();
+        $n = new TestEmptyNamespace\NestedMessage();
+        $m->setNestedMessage($n);
+        $m->setNestedEnum(TestEmptyNamespace\NestedEnum::ZERO);
+        $this->assertSame($n, $m->getNestedMessage());
+        $this->assertSame(TestEmptyNamespace\NestedEnum::ZERO, $m->getNestedEnum());
+    }
+
+    public function testNestedMessageAndEnumsWithNoNamespace()
+    {
+        $m = new NoNamespaceMessage();
+        $n = new NoNamespaceMessage\NestedMessage();
+        $m->setNestedMessage($n);
+        $m->setNestedEnum(NoNamespaceMessage\NestedEnum::ZERO);
+        $this->assertSame($n, $m->getNestedMessage());
+        $this->assertSame(NoNamespaceMessage\NestedEnum::ZERO, $m->getNestedEnum());
+    }
+
+    public function testReservedWordsWithPhpNamespace()
     {
         $m = new TestNamespace();
-        $m->setNestedEnum(TestNamespace\NestedEnum::ZERO);
+        $n = new TestNamespace\PBEmpty();
+        $o = new TestNamespace\PBEmpty\NestedMessage();
+        $n->setNestedMessage($o);
+        $n->setNestedEnum(TestNamespace\PBEmpty\NestedEnum::ZERO);
+        $m->setReservedName($n);
+        $this->assertSame($n, $m->getReservedName());
+        $this->assertSame($o, $n->getNestedMessage());
+        $this->assertSame(
+            TestNamespace\PBEmpty\NestedEnum::ZERO,
+            $n->getNestedEnum()
+        );
     }
 
     #########################################################
@@ -1216,7 +1245,7 @@ class GeneratedClassTest extends TestBase
             'optional_string' => 'a',
             'optional_bytes' => 'b',
             'optional_enum' => TestEnum::ONE,
-            'optional_message' => new TestMessage_Sub([
+            'optional_message' => new Sub([
                 'a' => 33
             ]),
             'repeated_int32' => [-42, -52],
@@ -1235,8 +1264,8 @@ class GeneratedClassTest extends TestBase
             'repeated_string' => ['a', 'c'],
             'repeated_bytes' => ['b', 'd'],
             'repeated_enum' => [TestEnum::ZERO, TestEnum::ONE],
-            'repeated_message' => [new TestMessage_Sub(['a' => 34]),
-                                   new TestMessage_Sub(['a' => 35])],
+            'repeated_message' => [new Sub(['a' => 34]),
+                                   new Sub(['a' => 35])],
             'map_int32_int32' => [-62 => -62],
             'map_int64_int64' => [-63 => -63],
             'map_uint32_uint32' => [62 => 62],
@@ -1253,7 +1282,7 @@ class GeneratedClassTest extends TestBase
             'map_string_string' => ['e' => 'e'],
             'map_int32_bytes' => [1 => 'f'],
             'map_int32_enum' => [1 => TestEnum::ONE],
-            'map_int32_message' => [1 => new TestMessage_Sub(['a' => 36])],
+            'map_int32_message' => [1 => new Sub(['a' => 36])],
         ]);
 
         TestUtil::assertTestMessage($m);

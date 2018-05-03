@@ -304,8 +304,9 @@ class GPBUtil
         $file_proto)
     {
         $parts = explode('.', $name);
-        $lastIndex = count($parts)-1;
-        $parts[$lastIndex] = static::getClassNamePrefix($parts[$lastIndex], $file_proto) . $parts[$lastIndex];
+        foreach ($parts as $i => $part) {
+            $parts[$i] = static::getClassNamePrefix($parts[$i], $file_proto) . $parts[$i];
+        }
         return implode('\\', $parts);
     }
 
