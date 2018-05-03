@@ -229,8 +229,8 @@ internal_install_python_deps() {
   # Install 
   (OS X doesn't have pip).
   if [ $(uname -s) == "Darwin" ]; then
-    brew upgrade python;
-    python3 -m pip install -q tox;
+    brew upgrade python
+    python3 -m pip install tox
   else
     sudo pip install tox
   fi
