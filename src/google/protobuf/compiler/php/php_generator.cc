@@ -1464,25 +1464,25 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
 }
 
 std::string GeneratedClassName(const Descriptor* desc) {
-  std::string classname = desc->name();
+  std::string classname = ClassNamePrefix(desc->name(), desc) + desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
     classname = ClassNamePrefix(containing->name(), desc) + containing->name()
-       + '\\' + ClassNamePrefix(classname, desc) + classname;
+       + '\\' + classname;
     containing = containing->containing_type();
   }
-  return ClassNamePrefix(classname, desc) + classname;
+  return classname;
 }
 
 std::string GeneratedClassName(const EnumDescriptor* desc) {
-  std::string classname = desc->name();
+  std::string classname = ClassNamePrefix(desc->name(), desc) + desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
     classname = ClassNamePrefix(containing->name(), desc) + containing->name()
-      + '\\' + ClassNamePrefix(classname, desc) + classname;
+       + '\\' + classname;
     containing = containing->containing_type();
   }
-  return ClassNamePrefix(classname, desc) + classname;
+  return classname;
 }
 
 std::string GeneratedClassName(const ServiceDescriptor* desc) {

@@ -670,19 +670,24 @@ class GeneratedClassTest extends TestBase
     # Test message with given namespace.
     #########################################################
 
-    public function testNamespaceMessage()
+    public function testNestedMessagesAndEnumsWithNamespace()
     {
-        $m = new TestIncludeNamespaceMessage();
+        $m = new TestMessage();
+        $n = new TestMessage\Sub();
+        $m->setOptionalMessage($n);
+        $m->setOptionalNestedEnum(TestMessage\NestedEnum::ZERO);
+        $this->assertSame($n, $m->getOptionalMessage());
+        $this->assertSame(TestMessage\NestedEnum::ZERO, $m->getOptionalNestedEnum());
+    }
 
-        $n = new TestNamespace();
-        $n->setA(1);
-        $m->setNamespaceMessage($n);
-        $this->assertSame(1, $m->getNamespaceMessage()->getA());
-
-        $n = new TestEmptyNamespace();
-        $n->setA(1);
-        $m->setEmptyNamespaceMessage($n);
-        $this->assertSame(1, $m->getEmptyNamespaceMessage()->getA());
+    public function testNestedMessagesAndEnumsWithPrefixes()
+    {
+        $m = new PrefixTestPrefix();
+        $n = new PrefixTestPrefix\PrefixNestedMessage();
+        $m->setNestedMessage($n);
+        $m->setNestedEnum(PrefixTestPrefix\PrefixNestedEnum::ZERO);
+        $this->assertSame($n, $m->getNestedMessage());
+        $this->assertSame(PrefixTestPrefix\PrefixNestedEnum::ZERO, $m->getNestedEnum());
     }
 
     public function testNestedMessagesAndEnumsWithPhpNamespace()
@@ -695,7 +700,7 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(TestNamespace\NestedEnum::ZERO, $m->getNestedEnum());
     }
 
-    public function testNestedMessageAndEnumsWithEmptyPhpNamespace()
+    public function testNestedMessagesAndEnumsWithEmptyPhpNamespace()
     {
         $m = new TestEmptyNamespace();
         $n = new TestEmptyNamespace\NestedMessage();
@@ -705,7 +710,7 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(TestEmptyNamespace\NestedEnum::ZERO, $m->getNestedEnum());
     }
 
-    public function testNestedMessageAndEnumsWithNoNamespace()
+    public function testNestedMessagesAndEnumsWithNoNamespace()
     {
         $m = new NoNamespaceMessage();
         $n = new NoNamespaceMessage\NestedMessage();
