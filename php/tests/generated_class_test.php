@@ -16,6 +16,7 @@ use Foo\TestMessage\Sub;
 use Foo\TestReverseFieldOrder;
 use Foo\testLowerCaseMessage;
 use Foo\testLowerCaseEnum;
+use PBEmpty\PBEcho\TestEmptyPackage;
 use Php\Test\TestNamespace;
 
 class GeneratedClassTest extends TestBase
@@ -670,7 +671,7 @@ class GeneratedClassTest extends TestBase
     # Test message with given namespace.
     #########################################################
 
-    public function testNestedMessagesAndEnumsWithNamespace()
+    public function testNestedMessagesAndEnums()
     {
         $m = new TestMessage();
         $n = new TestMessage\Sub();
@@ -720,7 +721,17 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(NoNamespaceMessage\NestedEnum::ZERO, $m->getNestedEnum());
     }
 
-    public function testReservedWordsWithPhpNamespace()
+    public function testReservedWordsInPackageName()
+    {
+        $m = new TestEmptyPackage();
+        $n = new TestEmptyPackage\NestedMessage();
+        $m->setNestedMessage($n);
+        $m->setNestedEnum(TestEmptyPackage\NestedEnum::ZERO);
+        $this->assertSame($n, $m->getNestedMessage());
+        $this->assertSame(TestEmptyPackage\NestedEnum::ZERO, $m->getNestedEnum());
+    }
+
+    public function testReservedWordsInNamespace()
     {
         $m = new TestNamespace();
         $n = new TestNamespace\PBEmpty();

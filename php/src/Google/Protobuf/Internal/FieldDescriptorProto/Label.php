@@ -5,7 +5,7 @@
 namespace Google\Protobuf\Internal\FieldDescriptorProto;
 
 /**
- * Protobuf enum <code>Google\Protobuf\Internal</code>
+ * Protobuf type <code>google.protobuf.FieldDescriptorProto.Label</code>
  */
 class Label
 {

@@ -7,7 +7,7 @@ namespace Google\Protobuf\Internal\FileOptions;
 /**
  * Generated classes can be optimized for speed or code size.
  *
- * Protobuf enum <code>Google\Protobuf\Internal</code>
+ * Protobuf type <code>google.protobuf.FileOptions.OptimizeMode</code>
  */
 class OptimizeMode
 {

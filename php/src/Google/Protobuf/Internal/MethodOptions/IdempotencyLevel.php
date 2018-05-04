@@ -9,7 +9,7 @@ namespace Google\Protobuf\Internal\MethodOptions;
  * or neither? HTTP based RPC implementation may choose GET verb for safe
  * methods, and PUT verb for idempotent methods instead of the default POST.
  *
- * Protobuf enum <code>Google\Protobuf\Internal</code>
+ * Protobuf type <code>google.protobuf.MethodOptions.IdempotencyLevel</code>
  */
 class IdempotencyLevel
 {

@@ -5,7 +5,7 @@
 namespace Google\Protobuf\Internal\FieldOptions;
 
 /**
- * Protobuf enum <code>Google\Protobuf\Internal</code>
+ * Protobuf type <code>google.protobuf.FieldOptions.JSType</code>
  */
 class JSType
 {

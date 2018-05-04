@@ -72,7 +72,7 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Google\Protobuf\Internal\SourceCodeInfo_Location[]|\Google\Protobuf\Internal\RepeatedField $location
+     *     @type \Google\Protobuf\Internal\SourceCodeInfo\Location[]|\Google\Protobuf\Internal\RepeatedField $location
      *           A Location identifies a piece of source code in a .proto file which
      *           corresponds to a particular definition.  This information is intended
      *           to be useful to IDEs, code indexers, documentation generators, and similar

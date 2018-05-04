@@ -59,7 +59,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      *     @type string $name
      *     @type \Google\Protobuf\Internal\EnumValueDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $value
      *     @type \Google\Protobuf\Internal\EnumOptions $options
-     *     @type \Google\Protobuf\Internal\EnumDescriptorProto_EnumReservedRange[]|\Google\Protobuf\Internal\RepeatedField $reserved_range
+     *     @type \Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange[]|\Google\Protobuf\Internal\RepeatedField $reserved_range
      *           Range of reserved numeric values. Reserved numeric values may not be used
      *           by enum values in the same enum declaration. Reserved ranges may not
      *           overlap.

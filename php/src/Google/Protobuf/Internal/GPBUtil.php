@@ -350,8 +350,12 @@ class GPBUtil
         if ($package === "") {
             $classname = $class_name_without_package;
         } else {
+            $parts = array_map('ucwords', explode('.', $package));
+            foreach ($parts as $i => $part) {
+                $parts[$i] = self::getClassNamePrefix($part, $file_proto).$part;
+            }
             $classname =
-                implode('\\', array_map('ucwords', explode('.', $package))).
+                implode('\\', $parts) .
                 "\\".self::getClassNamePrefix($class_name_without_package,$file_proto).
                 $class_name_without_package;
         }

@@ -67,7 +67,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type \Google\Protobuf\Internal\UninterpretedOption_NamePart[]|\Google\Protobuf\Internal\RepeatedField $name
+     *     @type \Google\Protobuf\Internal\UninterpretedOption\NamePart[]|\Google\Protobuf\Internal\RepeatedField $name
      *     @type string $identifier_value
      *           The value of the uninterpreted option, in whatever type the tokenizer
      *           identified it as during parsing. Exactly one of these should be set.

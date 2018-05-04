@@ -138,9 +138,10 @@ std::string EnumFullName(const EnumDescriptor* envm, bool is_descriptor) {
 
 template <typename DescriptorType>
 std::string ClassNamePrefix(const string& classname,
-                            const DescriptorType* desc) {
+                            const DescriptorType* desc,
+                            bool add_php_prefix) {
   const string& prefix = (desc->file()->options()).php_class_prefix();
-  if (prefix != "") {
+  if (add_php_prefix && prefix != "") {
     return prefix;
   }
 
@@ -160,6 +161,19 @@ std::string ClassNamePrefix(const string& classname,
     if (desc->file()->package() == "google.protobuf") {
       return "GPB";
     } else {
+      return "PB";
+    }
+  }
+
+  return "";
+}
+
+std::string ClassNamePrefix(const string& classname) {
+  string lower = classname;
+  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+  for (int i = 0; i < kReservedNamesSize; i++) {
+    if (lower == kReservedNames[i]) {
       return "PB";
     }
   }
@@ -209,8 +223,8 @@ std::string NamespacedName(const string& classname,
   if (desc->file()->package() == "") {
     return classname;
   } else {
-    return PhpName(desc->file()->package(), is_descriptor) + '\\' +
-           classname;
+    string package_name = PhpName(desc->file()->package(), is_descriptor);
+    return package_name + '\\' + classname;
   }
 }
 
@@ -230,20 +244,23 @@ std::string PhpName(const std::string& full_name, bool is_descriptor) {
     return kDescriptorPackageName;
   }
 
+  std::string segment;
   std::string result;
   bool cap_next_letter = true;
   for (int i = 0; i < full_name.size(); i++) {
     if ('a' <= full_name[i] && full_name[i] <= 'z' && cap_next_letter) {
-      result += full_name[i] + ('A' - 'a');
+      segment += full_name[i] + ('A' - 'a');
       cap_next_letter = false;
     } else if (full_name[i] == '.') {
-      result += '\\';
+      result += ClassNamePrefix(segment) + segment + '\\';
+      segment = "";
       cap_next_letter = true;
     } else {
-      result += full_name[i];
+      segment += full_name[i];
       cap_next_letter = false;
     }
   }
+  result += ClassNamePrefix(segment) + segment;
   return result;
 }
 
@@ -766,7 +783,8 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
   if (message->options().map_entry()) {
     return;
   }
-  string class_name = ClassNamePrefix(message->name(), message) + message->name();
+  string class_name = (name_prefix.empty() ? "" : name_prefix + "\\") +
+    ClassNamePrefix(message->name(), message, false) + message->name();
 
   printer->Print(
       "$pool->addMessage('^message^', "
@@ -1013,11 +1031,9 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   int lastindex = fullname.find_last_of("\\");
 
   const string& php_namespace = file->options().php_namespace();
-  if (
-    !php_namespace.empty()
-    || (!file->options().has_php_namespace() && !file->package().empty())
-    || lastindex != string::npos
-  ) {
+  if (!php_namespace.empty() ||
+      (!file->options().has_php_namespace() && !file->package().empty()) ||
+      lastindex != string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1070,11 +1086,9 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   int lastindex = fullname.find_last_of("\\");
 
   const string& php_namespace = file->options().php_namespace();
-  if (
-    !php_namespace.empty()
-    || (!file->options().has_php_namespace() && !file->package().empty())
-    || lastindex != string::npos
-  ) {
+  if (!php_namespace.empty() ||
+      (!file->options().has_php_namespace() && !file->package().empty()) ||
+      lastindex != string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1169,14 +1183,10 @@ void GenerateServiceFile(const FileDescriptor* file,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  if (file->options().has_php_namespace()) {
-    const string& php_namespace = file->options().php_namespace();
-    if (!php_namespace.empty()) {
-      printer.Print(
-          "namespace ^name^;\n\n",
-          "name", php_namespace);
-    }
-  } else if (!file->package().empty()) {
+  const string& php_namespace = file->options().php_namespace();
+  if (!php_namespace.empty() ||
+      (!file->options().has_php_namespace() && !file->package().empty()) ||
+      lastindex != string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1332,7 +1342,7 @@ void GenerateMessageDocComment(io::Printer* printer,
   printer->Print(
     " * Generated from protobuf message <code>^messagename^</code>\n"
     " */\n",
-    "fullname", EscapePhpdoc(PhpName(message->full_name(), is_descriptor)),
+    "fullname", EscapePhpdoc(FullClassName(message, is_descriptor)),
     "messagename", EscapePhpdoc(message->full_name()));
 }
 
@@ -1408,9 +1418,9 @@ void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, enum_);
   printer->Print(
-    " * Protobuf enum <code>^fullname^</code>\n"
+    " * Protobuf type <code>^fullname^</code>\n"
     " */\n",
-    "fullname", EscapePhpdoc(PhpName(enum_->full_name(), is_descriptor)));
+    "fullname", EscapePhpdoc(enum_->full_name()));
 }
 
 void GenerateEnumValueDocComment(io::Printer* printer,
@@ -1464,10 +1474,10 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
 }
 
 std::string GeneratedClassName(const Descriptor* desc) {
-  std::string classname = ClassNamePrefix(desc->name(), desc) + desc->name();
+  std::string classname = ClassNamePrefix(desc->name(), desc, true) + desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
-    classname = ClassNamePrefix(containing->name(), desc) + containing->name()
+    classname = ClassNamePrefix(containing->name(), desc, true) + containing->name()
        + '\\' + classname;
     containing = containing->containing_type();
   }
@@ -1475,10 +1485,10 @@ std::string GeneratedClassName(const Descriptor* desc) {
 }
 
 std::string GeneratedClassName(const EnumDescriptor* desc) {
-  std::string classname = ClassNamePrefix(desc->name(), desc) + desc->name();
+  std::string classname = ClassNamePrefix(desc->name(), desc, true) + desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
-    classname = ClassNamePrefix(containing->name(), desc) + containing->name()
+    classname = ClassNamePrefix(containing->name(), desc, true) + containing->name()
        + '\\' + classname;
     containing = containing->containing_type();
   }
@@ -1487,7 +1497,7 @@ std::string GeneratedClassName(const EnumDescriptor* desc) {
 
 std::string GeneratedClassName(const ServiceDescriptor* desc) {
   std::string classname = desc->name();
-  return ClassNamePrefix(classname, desc) + classname;
+  return ClassNamePrefix(classname, desc, true) + classname;
 }
 
 }  // namespace php

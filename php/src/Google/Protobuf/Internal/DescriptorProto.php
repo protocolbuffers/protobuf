@@ -82,10 +82,10 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      *     @type \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $extension
      *     @type \Google\Protobuf\Internal\DescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $nested_type
      *     @type \Google\Protobuf\Internal\EnumDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $enum_type
-     *     @type \Google\Protobuf\Internal\DescriptorProto_ExtensionRange[]|\Google\Protobuf\Internal\RepeatedField $extension_range
+     *     @type \Google\Protobuf\Internal\DescriptorProto\ExtensionRange[]|\Google\Protobuf\Internal\RepeatedField $extension_range
      *     @type \Google\Protobuf\Internal\OneofDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $oneof_decl
      *     @type \Google\Protobuf\Internal\MessageOptions $options
-     *     @type \Google\Protobuf\Internal\DescriptorProto_ReservedRange[]|\Google\Protobuf\Internal\RepeatedField $reserved_range
+     *     @type \Google\Protobuf\Internal\DescriptorProto\ReservedRange[]|\Google\Protobuf\Internal\RepeatedField $reserved_range
      *     @type string[]|\Google\Protobuf\Internal\RepeatedField $reserved_name
      *           Reserved field names, which may not be used by fields in the same message.
      *           A given name may only be reserved once.
