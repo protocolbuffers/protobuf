@@ -317,12 +317,30 @@ bool Parser::ConsumeNumber(double* output, const char* error) {
   }
 }
 
-bool Parser::ConsumeString(std::string* output, const char* error) {
+bool Parser::ConsumeStringName(std::string* output, const char* error) {
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     io::Tokenizer::ParseString(input_->current().text, output);
     input_->Next();
     // Allow C++ like concatenation of adjacent string tokens.
     while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+      io::Tokenizer::ParseStringAppend(input_->current().text, output);
+      input_->Next();
+    }
+    return true;
+  } else {
+    AddError(error);
+    return false;
+  }
+}
+
+bool Parser::ConsumeStringValue(std::string *output, const char *error) {
+  if (LookingAtType(io::Tokenizer::TYPE_STRING)
+      || LookingAtType(io::Tokenizer::TYPE_M_STRING)) {
+    io::Tokenizer::ParseString(input_->current().text, output);
+    input_->Next();
+    // Allow C++ like concatenation of adjacent string tokens.
+    while (LookingAtType(io::Tokenizer::TYPE_STRING)
+           || LookingAtType(io::Tokenizer::TYPE_M_STRING)) {
       io::Tokenizer::ParseStringAppend(input_->current().text, output);
       input_->Next();
     }
@@ -683,8 +701,8 @@ bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
       "File must begin with a syntax statement, e.g. 'syntax = \"proto2\";'."));
   DO(Consume("="));
   io::Tokenizer::Token syntax_token = input_->current();
-  std::string syntax;
-  DO(ConsumeString(&syntax, "Expected syntax identifier."));
+    std::string syntax;
+  DO(ConsumeStringName(&syntax, "Expected syntax identifier."));
   DO(ConsumeEndOfDeclaration(";", &syntax_location));
 
   syntax_identifier_ = syntax;
@@ -1300,13 +1318,13 @@ bool Parser::ParseDefaultAssignment(
       // Note: When file opton java_string_check_utf8 is true, if a
       // non-string representation (eg byte[]) is later supported, it must
       // be checked for UTF-8-ness.
-      DO(ConsumeString(default_value,
-                       "Expected string for field default "
-                       "value."));
+      DO(ConsumeStringValue(default_value,
+                            "Expected string for field default "
+                            "value."));
       break;
 
     case FieldDescriptorProto::TYPE_BYTES:
-      DO(ConsumeString(default_value, "Expected string."));
+      DO(ConsumeStringName(default_value, "Expected string."));
       *default_value = CEscape(*default_value);
       break;
 
@@ -1345,8 +1363,8 @@ bool Parser::ParseJsonName(FieldDescriptorProto* field,
   value_location.RecordLegacyLocation(
       field, DescriptorPool::ErrorCollector::OPTION_VALUE);
 
-  DO(ConsumeString(field->mutable_json_name(),
-                   "Expected string for JSON name."));
+  DO(ConsumeStringName(field->mutable_json_name(),
+                       "Expected string for JSON name."));
   return true;
 }
 
@@ -1520,6 +1538,7 @@ bool Parser::ParseOption(Message* options,
         break;
       }
 
+      case io::Tokenizer::TYPE_M_STRING:
       case io::Tokenizer::TYPE_STRING: {
         value_location.AddPath(UninterpretedOption::kStringValueFieldNumber);
         if (is_negative) {
@@ -1527,7 +1546,7 @@ bool Parser::ParseOption(Message* options,
           return false;
         }
         std::string value;
-        DO(ConsumeString(&value, "Expected string."));
+        DO(ConsumeStringValue(&value, "Expected string."));
         uninterpreted_option->set_string_value(value);
         break;
       }
@@ -1679,7 +1698,7 @@ bool Parser::ParseReservedNames(DescriptorProto* message,
                                 const LocationRecorder& parent_location) {
   do {
     LocationRecorder location(parent_location, message->reserved_name_size());
-    DO(ConsumeString(message->add_reserved_name(), "Expected field name."));
+    DO(ConsumeStringName(message->add_reserved_name(), "Expected field name."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -1756,7 +1775,7 @@ bool Parser::ParseReservedNames(EnumDescriptorProto* message,
                                 const LocationRecorder& parent_location) {
   do {
     LocationRecorder location(parent_location, message->reserved_name_size());
-    DO(ConsumeString(message->add_reserved_name(), "Expected enum value."));
+    DO(ConsumeStringName(message->add_reserved_name(), "Expected enum value."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -2325,8 +2344,8 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
   }
 
   string import_file;
-  DO(ConsumeString(&import_file,
-                   "Expected a string naming the file to import."));
+  DO(ConsumeStringName(&import_file,
+                       "Expected a string naming the file to import."));
   *dependency->Add() = import_file;
   location.RecordLegacyImportLocation(containing_file, import_file);
 

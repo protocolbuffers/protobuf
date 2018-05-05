@@ -196,6 +196,8 @@ class TokenizerTest : public testing::Test {
 struct SimpleTokenCase {
   std::string input;
   Tokenizer::TokenType type;
+  int add_lines; // lines crossed after token scan
+  int add_prev;  // characters from previous line
 };
 
 inline std::ostream& operator<<(std::ostream& out,
@@ -239,6 +241,18 @@ SimpleTokenCase kSimpleTokenCases[] = {
     {"\"a\\\"b\"", Tokenizer::TYPE_STRING},
     {"'\\xf'", Tokenizer::TYPE_STRING},
     {"'\\0'", Tokenizer::TYPE_STRING},
+    {"'hello\\`world'", Tokenizer::TYPE_STRING},
+    {"\"foo\\`bar\"", Tokenizer::TYPE_STRING},
+
+    // Test multiline strings.
+    { R"x(`how
+now`)x", Tokenizer::TYPE_M_STRING, 1, 5 },
+    { R"x(`how
+now\``)x", Tokenizer::TYPE_M_STRING, 1, 5 },
+    { R"x("""how
+"now\"""")x", Tokenizer::TYPE_M_STRING, 1, 7 },
+    { R"x(""""how"
+now""")x", Tokenizer::TYPE_M_STRING, 1, 9 },
 
     // Test symbols.
     {"+", Tokenizer::TYPE_SYMBOL},
@@ -270,7 +284,7 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   EXPECT_EQ(0, tokenizer.current().line);
   EXPECT_EQ(0, tokenizer.current().column);
   EXPECT_EQ(kSimpleTokenCases_case.input.size(),
-            tokenizer.current().end_column);
+            tokenizer.current().end_column + kSimpleTokenCases_case.add_prev);
 
   // There should be no more input.
   EXPECT_FALSE(tokenizer.Next());
@@ -278,10 +292,11 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   // After Next() returns false, the token should have type TYPE_END.
   EXPECT_EQ(Tokenizer::TYPE_END, tokenizer.current().type);
   EXPECT_EQ("", tokenizer.current().text);
-  EXPECT_EQ(0, tokenizer.current().line);
-  EXPECT_EQ(kSimpleTokenCases_case.input.size(), tokenizer.current().column);
+  EXPECT_EQ(kSimpleTokenCases_case.add_lines, tokenizer.current().line);
   EXPECT_EQ(kSimpleTokenCases_case.input.size(),
-            tokenizer.current().end_column);
+            tokenizer.current().column + kSimpleTokenCases_case.add_prev);
+  EXPECT_EQ(kSimpleTokenCases_case.input.size(),
+            tokenizer.current().end_column + kSimpleTokenCases_case.add_prev);
 
   // There should be no errors.
   EXPECT_TRUE(error_collector.text_.empty());

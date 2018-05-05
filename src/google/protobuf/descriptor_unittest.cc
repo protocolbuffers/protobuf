@@ -3047,6 +3047,8 @@ TEST(CustomOptions, OptionTypes) {
                    options->GetExtension(protobuf_unittest::double_opt));
   EXPECT_EQ("Hello, \"World\"",
             options->GetExtension(protobuf_unittest::string_opt));
+  EXPECT_EQ("Hello\nWorld",
+            options->GetExtension(protobuf_unittest::mstring_opt));
 
   EXPECT_EQ(std::string("Hello\0World", 11),
             options->GetExtension(protobuf_unittest::bytes_opt));
@@ -3433,28 +3435,49 @@ TEST(CustomOptions, AggregateOptions) {
       file->options().GetExtension(protobuf_unittest::fileopt);
   EXPECT_EQ(100, file_options.i());
   EXPECT_EQ("FileAnnotation", file_options.s());
+  EXPECT_EQ("multiline\nFileAnnotation", file_options.ms());
   EXPECT_EQ("NestedFileAnnotation", file_options.sub().s());
+  EXPECT_EQ("multiline\nNestedFileAnnotation", file_options.sub().ms());
   EXPECT_EQ("FileExtensionAnnotation",
             file_options.file().GetExtension(protobuf_unittest::fileopt).s());
+  EXPECT_EQ("multiline\nFileExtensionAnnotation",
+            file_options.file().GetExtension(protobuf_unittest::fileopt).ms());
   EXPECT_EQ("EmbeddedMessageSetElement",
             file_options.mset()
                 .GetExtension(protobuf_unittest::AggregateMessageSetElement ::
                                   message_set_extension)
                 .s());
+  EXPECT_EQ("multiline\nEmbeddedMessageSetElement",
+            file_options.mset()
+                .GetExtension(protobuf_unittest::AggregateMessageSetElement ::
+                                  message_set_extension)
+                .ms());
 
   // Simple tests for all the other types of annotations
   EXPECT_EQ("MessageAnnotation",
             msg->options().GetExtension(protobuf_unittest::msgopt).s());
+  EXPECT_EQ("multiline\nMessageAnnotation",
+            msg->options().GetExtension(protobuf_unittest::msgopt).ms());
   EXPECT_EQ("FieldAnnotation",
             field->options().GetExtension(protobuf_unittest::fieldopt).s());
+  EXPECT_EQ("multiline\nFieldAnnotation",
+            field->options().GetExtension(protobuf_unittest::fieldopt).ms());
   EXPECT_EQ("EnumAnnotation",
             enumd->options().GetExtension(protobuf_unittest::enumopt).s());
+  EXPECT_EQ("multiline\nEnumAnnotation",
+            enumd->options().GetExtension(protobuf_unittest::enumopt).ms());
   EXPECT_EQ("EnumValueAnnotation",
             enumv->options().GetExtension(protobuf_unittest::enumvalopt).s());
+  EXPECT_EQ("multiline\nEnumValueAnnotation",
+            enumv->options().GetExtension(protobuf_unittest::enumvalopt).ms());
   EXPECT_EQ("ServiceAnnotation",
             service->options().GetExtension(protobuf_unittest::serviceopt).s());
+  EXPECT_EQ("multiline\nServiceAnnotation",
+            service->options().GetExtension(protobuf_unittest::serviceopt).ms());
   EXPECT_EQ("MethodAnnotation",
             method->options().GetExtension(protobuf_unittest::methodopt).s());
+  EXPECT_EQ("multiline\nMethodAnnotation",
+            method->options().GetExtension(protobuf_unittest::methodopt).ms());
 }
 
 TEST(CustomOptions, UnusedImportWarning) {

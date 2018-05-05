@@ -121,6 +121,7 @@
 [protobuf_unittest.default_bool_extension]: false
 [protobuf_unittest.default_string_extension]: "415"
 [protobuf_unittest.default_bytes_extension]: "416"
+[protobuf_unittest.default_m_string_extension]: "417"
 [protobuf_unittest.default_nested_enum_extension]: FOO
 [protobuf_unittest.default_foreign_enum_extension]: FOREIGN_FOO
 [protobuf_unittest.default_import_enum_extension]: IMPORT_FOO

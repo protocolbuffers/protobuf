@@ -325,6 +325,7 @@ inline void TestUtil::ReflectionTester::SetAllFieldsViaReflection(
   reflection->SetBool(message, F("default_bool"), false);
   reflection->SetString(message, F("default_string"), "415");
   reflection->SetString(message, F("default_bytes"), "416");
+  reflection->SetString(message, F("default_m_string"), "417");
 
   reflection->SetEnum(message, F("default_nested_enum"), nested_foo_);
   reflection->SetEnum(message, F("default_foreign_enum"), foreign_foo_);
@@ -759,6 +760,7 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
   EXPECT_TRUE(reflection->HasField(message, F("default_bool")));
   EXPECT_TRUE(reflection->HasField(message, F("default_string")));
   EXPECT_TRUE(reflection->HasField(message, F("default_bytes")));
+  EXPECT_TRUE(reflection->HasField(message, F("default_m_string")));
 
   EXPECT_TRUE(reflection->HasField(message, F("default_nested_enum")));
   EXPECT_TRUE(reflection->HasField(message, F("default_foreign_enum")));
@@ -782,10 +784,13 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
   EXPECT_FALSE(reflection->GetBool(message, F("default_bool")));
   EXPECT_EQ("415", reflection->GetString(message, F("default_string")));
   EXPECT_EQ("416", reflection->GetString(message, F("default_bytes")));
+  EXPECT_EQ("417", reflection->GetString(message, F("default_m_string")));
 
   EXPECT_EQ("415", reflection->GetStringReference(message, F("default_string"),
                                                   &scratch));
   EXPECT_EQ("416", reflection->GetStringReference(message, F("default_bytes"),
+                                                  &scratch));
+  EXPECT_EQ("417", reflection->GetStringReference(message, F("default_m_string"),
                                                   &scratch));
 
   EXPECT_EQ(nested_foo_,
@@ -1010,6 +1015,7 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_FALSE(reflection->HasField(message, F("default_bool")));
   EXPECT_FALSE(reflection->HasField(message, F("default_string")));
   EXPECT_FALSE(reflection->HasField(message, F("default_bytes")));
+  EXPECT_FALSE(reflection->HasField(message, F("default_m_string")));
 
   EXPECT_FALSE(reflection->HasField(message, F("default_nested_enum")));
   EXPECT_FALSE(reflection->HasField(message, F("default_foreign_enum")));
@@ -1034,11 +1040,14 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_TRUE(reflection->GetBool(message, F("default_bool")));
   EXPECT_EQ("hello", reflection->GetString(message, F("default_string")));
   EXPECT_EQ("world", reflection->GetString(message, F("default_bytes")));
+  EXPECT_EQ("hello\nworld", reflection->GetString(message, F("default_m_string")));
 
   EXPECT_EQ("hello", reflection->GetStringReference(
                          message, F("default_string"), &scratch));
   EXPECT_EQ("world", reflection->GetStringReference(message, F("default_bytes"),
                                                     &scratch));
+  EXPECT_EQ("hello\nworld", reflection->GetStringReference(
+            message, F("default_m_string"), &scratch));
 
   EXPECT_EQ(nested_bar_,
             reflection->GetEnum(message, F("default_nested_enum")));

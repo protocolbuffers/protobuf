@@ -943,13 +943,13 @@ class TextFormat::Parser::ParserImpl {
   // Consumes a string and saves its value in the text parameter.
   // Returns false if the token is not of type STRING.
   bool ConsumeString(std::string* text) {
-    if (!LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    if (!LookingAtType(io::Tokenizer::TYPE_STRING) && !LookingAtType(io::Tokenizer::TYPE_M_STRING)) {
       ReportError("Expected string, got: " + tokenizer_.current().text);
       return false;
     }
 
     text->clear();
-    while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    while (LookingAtType(io::Tokenizer::TYPE_STRING) || LookingAtType(io::Tokenizer::TYPE_M_STRING)) {
       io::Tokenizer::ParseStringAppend(tokenizer_.current().text, text);
 
       tokenizer_.Next();

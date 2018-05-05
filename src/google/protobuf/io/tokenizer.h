@@ -118,6 +118,9 @@ class PROTOBUF_EXPORT Tokenizer {
     TYPE_STRING,      // A quoted sequence of escaped characters.  Either single
                       // or double quotes can be used, but they must match.
                       // A string literal cannot cross a line break.
+    TYPE_M_STRING,    // A quoted sequence of escaped characters.  Either single
+                      // or double quotes can be used, but they must match.
+                      // A string literal cannot cross a line break.
     TYPE_SYMBOL,      // Any other printable character, like '!' or '+'.
                       // Symbols are always a single character, so "!+$%" is
                       // four tokens.
@@ -127,8 +130,8 @@ class PROTOBUF_EXPORT Tokenizer {
   struct Token {
     TokenType type;
     std::string text;  // The exact text of the token as it appeared in
-                       // the input.  e.g. tokens of TYPE_STRING will still
-                       // be escaped and in quotes.
+                       // the input.  e.g. tokens of TYPE_STRING and TYPE_M_STRING
+                       // will still be escaped and in quotes.
 
     // "line" and "column" specify the position of the first character of
     // the token within the input stream.  They are zero-based.

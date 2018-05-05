@@ -164,6 +164,8 @@ message TestAllTypes {
   optional     bool default_bool     = 73 [default = true   ];
   optional   string default_string   = 74 [default = "hello"];
   optional    bytes default_bytes    = 75 [default = "world"];
+  optional   string default_m_string = 76 [default = `hello
+world`];
 
   optional NestedEnum  default_nested_enum  = 81 [default = BAR        ];
   optional ForeignEnum default_foreign_enum = 82 [default = FOREIGN_BAR];
@@ -316,6 +318,8 @@ extend TestAllExtensions {
   optional     bool default_bool_extension     = 73 [default = true   ];
   optional   string default_string_extension   = 74 [default = "hello"];
   optional    bytes default_bytes_extension    = 75 [default = "world"];
+  optional   string default_m_string_extension = 76 [default = `hello
+world`];
 
   optional TestAllTypes.NestedEnum
     default_nested_enum_extension = 81 [default = BAR];
@@ -646,6 +650,13 @@ message TestExtremeDefaultValues {
   optional string cord_with_zero         = 26 [ctype=CORD,
                                                default="12\0003"];
   optional string replacement_string     = 27 [default="${unknown}"];
+  optional string tick_multiline_string  = 28 [default=`backtick
+multiline
+default`];
+  optional string multiline_string       = 29 [default="""triple
+double-quote
+multiline
+default"""];
 }
 
 message SparseEnumMessage {

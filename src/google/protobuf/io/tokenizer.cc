@@ -55,12 +55,18 @@
 //   a lot of code that ends up basically as complex as the hand-coded
 //   version anyway.
 // - The regular expression to match a string literal looks like this:
-//     kString  = new RE("(\"([^\"\\\\]|"              // non-escaped
-//                       "\\\\[abfnrtv?\"'\\\\0-7]|"   // normal escape
+//     kString  = new RE("(\"([^\"\\n\\\\]|"           // non-escaped
+//                       "\\\\[abfnrtv?\"'`\\\\0-7]|"  // normal escape
 //                       "\\\\x[0-9a-fA-F])*\"|"       // hex escape
-//                       "\'([^\'\\\\]|"        // Also support single-quotes.
-//                       "\\\\[abfnrtv?\"'\\\\0-7]|"
-//                       "\\\\x[0-9a-fA-F])*\')");
+//                       "'([^'\\n\\\\]|"              // Also support single-quotes.
+//                       "\\\\[abfnrtv?\"'`\\\\0-7]|"
+//                       "\\\\x[0-9a-fA-F])*'|"
+//                       "`([^`\\\\]|"                 // Also support back-ticks for multi-line strings.
+//                       "\\\\[abfnrtv?\"'`\\\\0-7]|"
+//                       "\\\\x[0-9a-fA-F])*`|"
+//                       "\"\"\"((?!\"\"\")[^\\\\]|"   // Also support triple double-quotes for multi-line strings.
+//                       "\\\\[abfnrtv?\"'`\\\\0-7]|"
+//                       "\\\\x[0-9a-fA-F])*\"\"\")");
 //   Verifying the correctness of this line noise is actually harder than
 //   verifying the correctness of ConsumeString(), defined below.  I'm not
 //   even confident that the above is correct, after staring at it for some
@@ -141,7 +147,7 @@ CHARACTER_CLASS(Alphanumeric, ('a' <= c && c <= 'z') ||
 
 CHARACTER_CLASS(Escape, c == 'a' || c == 'b' || c == 'f' || c == 'n' ||
                             c == 'r' || c == 't' || c == 'v' || c == '\\' ||
-                            c == '?' || c == '\'' || c == '\"');
+                            c == '?' || c == '\'' || c == '\"' || c == '`');
 
 #undef CHARACTER_CLASS
 
@@ -413,8 +419,11 @@ void Tokenizer::ConsumeString(char delimiter) {
       }
 
       default: {
-        if (current_char_ == delimiter) {
-          NextChar();
+        if (delimiter == 0) {
+          if (TryConsume('"') && TryConsume('"') && TryConsume('"')) {
+            return;
+          }
+        } else if (TryConsume(delimiter)) {
           return;
         }
         NextChar();
@@ -626,9 +635,29 @@ bool Tokenizer::Next() {
         }
       } else if (TryConsumeOne<Digit>()) {
         current_.type = ConsumeNumber(false, false);
+      } else if (TryConsume('`')) {
+        bool save = allow_multiline_strings_;
+        // temporarily allow multi-line strings
+        allow_multiline_strings_ = true;
+        ConsumeString('`');
+        allow_multiline_strings_ = save;
+        current_.type = TYPE_M_STRING;
       } else if (TryConsume('\"')) {
-        ConsumeString('\"');
-        current_.type = TYPE_STRING;
+        if (TryConsume('\"')) {
+          if (TryConsume('\"')) {
+            bool save = allow_multiline_strings_;
+            // temporarily allow multi-line strings
+            allow_multiline_strings_ = true;
+            ConsumeString(0);
+            allow_multiline_strings_ = save;
+            current_.type = TYPE_M_STRING;
+          } else {
+            current_.type = TYPE_STRING;
+          }
+        } else {
+          ConsumeString('\"');
+          current_.type = TYPE_STRING;
+        }
       } else if (TryConsume('\'')) {
         ConsumeString('\'');
         current_.type = TYPE_STRING;

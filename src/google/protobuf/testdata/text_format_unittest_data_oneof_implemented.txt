@@ -121,6 +121,7 @@ default_double: 412
 default_bool: false
 default_string: "415"
 default_bytes: "416"
+default_m_string: "417"
 default_nested_enum: FOO
 default_foreign_enum: FOREIGN_FOO
 default_import_enum: IMPORT_FOO
