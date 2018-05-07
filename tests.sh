@@ -226,8 +226,7 @@ internal_install_python_deps() {
   if [ "$TRAVIS" != "true" ]; then
     return;
   fi
-  # Install 
-  (OS X doesn't have pip).
+  # Install tox (OS X doesn't have pip).
   if [ $(uname -s) == "Darwin" ]; then
     brew upgrade python
     python3 -m pip install tox
