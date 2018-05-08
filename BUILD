@@ -927,9 +927,11 @@ genrule(
 
 proto_library(
     name = "generated_protos_proto",
-    srcs = ["unittest_gen.proto"],
+    srcs = [
+        "unittest_gen.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
 )
-
 
 py_proto_library(
     name = "generated_protos_py",
