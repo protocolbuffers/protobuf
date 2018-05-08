@@ -159,11 +159,11 @@ class Timestamp extends \Google\Protobuf\Internal\Message
     /**
      * Converts PHP DateTime to Timestamp.
      *
-     * @param DateTime $datetime
+     * @param \DateTime $datetime
      */
     public function fromDateTime($datetime)
     {
-        if (get_class($datetime) !== \DateTime::class) {
+        if ($datetime instanceOf \DateTime) {
             trigger_error("Given parameter is not a DateTime.",
                           E_USER_ERROR);
         }
