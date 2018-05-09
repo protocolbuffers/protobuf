@@ -161,12 +161,8 @@ class Timestamp extends \Google\Protobuf\Internal\Message
      *
      * @param \DateTime $datetime
      */
-    public function fromDateTime($datetime)
+    public function fromDateTime(\DateTime $datetime)
     {
-        if ($datetime instanceOf \DateTime) {
-            trigger_error("Given parameter is not a DateTime.",
-                          E_USER_ERROR);
-        }
         $this->seconds = $datetime->format('U');
         $this->nanos = 0;
     }
