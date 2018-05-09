@@ -793,6 +793,16 @@ py_library(
     ],
 )
 
+cc_library(
+    name = "python_protobuf",
+    hdrs = [
+        "python/google/protobuf/python_protobuf.h",
+    ],
+    deps = [
+        "//external:python_headers",
+    ],
+)
+
 internal_protobuf_py_tests(
     name = "python_tests_batch",
     data = glob([
