@@ -159,14 +159,10 @@ class Timestamp extends \Google\Protobuf\Internal\Message
     /**
      * Converts PHP DateTime to Timestamp.
      *
-     * @param DateTime $datetime
+     * @param \DateTime $datetime
      */
-    public function fromDateTime($datetime)
+    public function fromDateTime(\DateTime $datetime)
     {
-        if (get_class($datetime) !== \DateTime::class) {
-            trigger_error("Given parameter is not a DateTime.",
-                          E_USER_ERROR);
-        }
         $this->seconds = $datetime->format('U');
         $this->nanos = 0;
     }
@@ -174,7 +170,7 @@ class Timestamp extends \Google\Protobuf\Internal\Message
     /**
      * Converts Timestamp to PHP DateTime. Nano second is ignored.
      *
-     * @return DateTime $datetime
+     * @return \DateTime $datetime
      */
     public function toDateTime()
     {
