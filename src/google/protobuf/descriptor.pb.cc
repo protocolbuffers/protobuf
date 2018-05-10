@@ -841,25 +841,29 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::FileOptions, swift_prefix_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::FileOptions, php_class_prefix_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::FileOptions, php_namespace_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::FileOptions, php_metadata_namespace_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::FileOptions, ruby_package_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::FileOptions, uninterpreted_option_),
   0,
   1,
-  9,
   10,
   11,
-  17,
-  2,
   12,
+  19,
+  2,
   13,
   14,
   15,
   16,
-  8,
+  17,
+  18,
   3,
   4,
   5,
   6,
   7,
+  8,
+  9,
   ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::MessageOptions, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::google::protobuf::MessageOptions, _internal_metadata_),
@@ -1027,20 +1031,20 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 146, 154, sizeof(::google::protobuf::EnumValueDescriptorProto)},
   { 157, 165, sizeof(::google::protobuf::ServiceDescriptorProto)},
   { 168, 179, sizeof(::google::protobuf::MethodDescriptorProto)},
-  { 185, 209, sizeof(::google::protobuf::FileOptions)},
-  { 228, 238, sizeof(::google::protobuf::MessageOptions)},
-  { 243, 255, sizeof(::google::protobuf::FieldOptions)},
-  { 262, 268, sizeof(::google::protobuf::OneofOptions)},
-  { 269, 277, sizeof(::google::protobuf::EnumOptions)},
-  { 280, 287, sizeof(::google::protobuf::EnumValueOptions)},
-  { 289, 296, sizeof(::google::protobuf::ServiceOptions)},
-  { 298, 306, sizeof(::google::protobuf::MethodOptions)},
-  { 309, 316, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
-  { 318, 330, sizeof(::google::protobuf::UninterpretedOption)},
-  { 337, 347, sizeof(::google::protobuf::SourceCodeInfo_Location)},
-  { 352, 358, sizeof(::google::protobuf::SourceCodeInfo)},
-  { 359, 368, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
-  { 372, 378, sizeof(::google::protobuf::GeneratedCodeInfo)},
+  { 185, 211, sizeof(::google::protobuf::FileOptions)},
+  { 232, 242, sizeof(::google::protobuf::MessageOptions)},
+  { 247, 259, sizeof(::google::protobuf::FieldOptions)},
+  { 266, 272, sizeof(::google::protobuf::OneofOptions)},
+  { 273, 281, sizeof(::google::protobuf::EnumOptions)},
+  { 284, 291, sizeof(::google::protobuf::EnumValueOptions)},
+  { 293, 300, sizeof(::google::protobuf::ServiceOptions)},
+  { 302, 310, sizeof(::google::protobuf::MethodOptions)},
+  { 313, 320, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
+  { 322, 334, sizeof(::google::protobuf::UninterpretedOption)},
+  { 341, 351, sizeof(::google::protobuf::SourceCodeInfo_Location)},
+  { 356, 362, sizeof(::google::protobuf::SourceCodeInfo)},
+  { 363, 372, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
+  { 376, 382, sizeof(::google::protobuf::GeneratedCodeInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -1167,7 +1171,7 @@ void AddDescriptorsImpl() {
       "ut_type\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.google."
       "protobuf.MethodOptions\022\037\n\020client_streami"
       "ng\030\005 \001(\010:\005false\022\037\n\020server_streaming\030\006 \001("
-      "\010:\005false\"\360\005\n\013FileOptions\022\024\n\014java_package"
+      "\010:\005false\"\246\006\n\013FileOptions\022\024\n\014java_package"
       "\030\001 \001(\t\022\034\n\024java_outer_classname\030\010 \001(\t\022\"\n\023"
       "java_multiple_files\030\n \001(\010:\005false\022)\n\035java"
       "_generate_equals_and_hash\030\024 \001(\010B\002\030\001\022%\n\026j"
@@ -1182,71 +1186,72 @@ void AddDescriptorsImpl() {
       "\030\037 \001(\010:\005false\022\031\n\021objc_class_prefix\030$ \001(\t"
       "\022\030\n\020csharp_namespace\030% \001(\t\022\024\n\014swift_pref"
       "ix\030\' \001(\t\022\030\n\020php_class_prefix\030( \001(\t\022\025\n\rph"
-      "p_namespace\030) \001(\t\022C\n\024uninterpreted_optio"
+      "p_namespace\030) \001(\t\022\036\n\026php_metadata_namesp"
+      "ace\030, \001(\t\022\024\n\014ruby_package\030- \001(\t\022C\n\024unint"
+      "erpreted_option\030\347\007 \003(\0132$.google.protobuf"
+      ".UninterpretedOption\":\n\014OptimizeMode\022\t\n\005"
+      "SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTIME\020\003"
+      "*\t\010\350\007\020\200\200\200\200\002J\004\010&\020\'\"\362\001\n\016MessageOptions\022&\n\027"
+      "message_set_wire_format\030\001 \001(\010:\005false\022.\n\037"
+      "no_standard_descriptor_accessor\030\002 \001(\010:\005f"
+      "alse\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\021\n\tmap_e"
+      "ntry\030\007 \001(\010\022C\n\024uninterpreted_option\030\347\007 \003("
+      "\0132$.google.protobuf.UninterpretedOption*"
+      "\t\010\350\007\020\200\200\200\200\002J\004\010\010\020\tJ\004\010\t\020\n\"\236\003\n\014FieldOptions\022"
+      ":\n\005ctype\030\001 \001(\0162#.google.protobuf.FieldOp"
+      "tions.CType:\006STRING\022\016\n\006packed\030\002 \001(\010\022\?\n\006j"
+      "stype\030\006 \001(\0162$.google.protobuf.FieldOptio"
+      "ns.JSType:\tJS_NORMAL\022\023\n\004lazy\030\005 \001(\010:\005fals"
+      "e\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\023\n\004weak\030\n \001"
+      "(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003(\013"
+      "2$.google.protobuf.UninterpretedOption\"/"
+      "\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001\022\020\n\014STRING_"
+      "PIECE\020\002\"5\n\006JSType\022\r\n\tJS_NORMAL\020\000\022\r\n\tJS_S"
+      "TRING\020\001\022\r\n\tJS_NUMBER\020\002*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005\""
+      "^\n\014OneofOptions\022C\n\024uninterpreted_option\030"
+      "\347\007 \003(\0132$.google.protobuf.UninterpretedOp"
+      "tion*\t\010\350\007\020\200\200\200\200\002\"\223\001\n\013EnumOptions\022\023\n\013allow"
+      "_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001(\010:\005false\022"
+      "C\n\024uninterpreted_option\030\347\007 \003(\0132$.google."
+      "protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002J"
+      "\004\010\005\020\006\"}\n\020EnumValueOptions\022\031\n\ndeprecated\030"
+      "\001 \001(\010:\005false\022C\n\024uninterpreted_option\030\347\007 "
+      "\003(\0132$.google.protobuf.UninterpretedOptio"
+      "n*\t\010\350\007\020\200\200\200\200\002\"{\n\016ServiceOptions\022\031\n\ndeprec"
+      "ated\030! \001(\010:\005false\022C\n\024uninterpreted_optio"
       "n\030\347\007 \003(\0132$.google.protobuf.Uninterpreted"
-      "Option\":\n\014OptimizeMode\022\t\n\005SPEED\020\001\022\r\n\tCOD"
-      "E_SIZE\020\002\022\020\n\014LITE_RUNTIME\020\003*\t\010\350\007\020\200\200\200\200\002J\004\010"
-      "&\020\'\"\362\001\n\016MessageOptions\022&\n\027message_set_wi"
-      "re_format\030\001 \001(\010:\005false\022.\n\037no_standard_de"
-      "scriptor_accessor\030\002 \001(\010:\005false\022\031\n\ndeprec"
-      "ated\030\003 \001(\010:\005false\022\021\n\tmap_entry\030\007 \001(\010\022C\n\024"
-      "uninterpreted_option\030\347\007 \003(\0132$.google.pro"
-      "tobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\010"
-      "\020\tJ\004\010\t\020\n\"\236\003\n\014FieldOptions\022:\n\005ctype\030\001 \001(\016"
-      "2#.google.protobuf.FieldOptions.CType:\006S"
-      "TRING\022\016\n\006packed\030\002 \001(\010\022\?\n\006jstype\030\006 \001(\0162$."
-      "google.protobuf.FieldOptions.JSType:\tJS_"
-      "NORMAL\022\023\n\004lazy\030\005 \001(\010:\005false\022\031\n\ndeprecate"
-      "d\030\003 \001(\010:\005false\022\023\n\004weak\030\n \001(\010:\005false\022C\n\024u"
-      "ninterpreted_option\030\347\007 \003(\0132$.google.prot"
-      "obuf.UninterpretedOption\"/\n\005CType\022\n\n\006STR"
-      "ING\020\000\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002\"5\n\006JST"
-      "ype\022\r\n\tJS_NORMAL\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_"
-      "NUMBER\020\002*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005\"^\n\014OneofOption"
-      "s\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.googl"
-      "e.protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200"
-      "\002\"\223\001\n\013EnumOptions\022\023\n\013allow_alias\030\002 \001(\010\022\031"
-      "\n\ndeprecated\030\003 \001(\010:\005false\022C\n\024uninterpret"
-      "ed_option\030\347\007 \003(\0132$.google.protobuf.Unint"
-      "erpretedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\005\020\006\"}\n\020EnumV"
-      "alueOptions\022\031\n\ndeprecated\030\001 \001(\010:\005false\022C"
-      "\n\024uninterpreted_option\030\347\007 \003(\0132$.google.p"
-      "rotobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"{"
-      "\n\016ServiceOptions\022\031\n\ndeprecated\030! \001(\010:\005fa"
-      "lse\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.goo"
-      "gle.protobuf.UninterpretedOption*\t\010\350\007\020\200\200"
-      "\200\200\002\"\255\002\n\rMethodOptions\022\031\n\ndeprecated\030! \001("
-      "\010:\005false\022_\n\021idempotency_level\030\" \001(\0162/.go"
-      "ogle.protobuf.MethodOptions.IdempotencyL"
-      "evel:\023IDEMPOTENCY_UNKNOWN\022C\n\024uninterpret"
-      "ed_option\030\347\007 \003(\0132$.google.protobuf.Unint"
-      "erpretedOption\"P\n\020IdempotencyLevel\022\027\n\023ID"
-      "EMPOTENCY_UNKNOWN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001"
-      "\022\016\n\nIDEMPOTENT\020\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023Uninterp"
-      "retedOption\022;\n\004name\030\002 \003(\0132-.google.proto"
-      "buf.UninterpretedOption.NamePart\022\030\n\020iden"
-      "tifier_value\030\003 \001(\t\022\032\n\022positive_int_value"
-      "\030\004 \001(\004\022\032\n\022negative_int_value\030\005 \001(\003\022\024\n\014do"
-      "uble_value\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014\022\027"
-      "\n\017aggregate_value\030\010 \001(\t\0323\n\010NamePart\022\021\n\tn"
-      "ame_part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n"
-      "\016SourceCodeInfo\022:\n\010location\030\001 \003(\0132(.goog"
-      "le.protobuf.SourceCodeInfo.Location\032\206\001\n\010"
-      "Location\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005"
-      "B\002\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021traili"
-      "ng_comments\030\004 \001(\t\022!\n\031leading_detached_co"
-      "mments\030\006 \003(\t\"\247\001\n\021GeneratedCodeInfo\022A\n\nan"
-      "notation\030\001 \003(\0132-.google.protobuf.Generat"
-      "edCodeInfo.Annotation\032O\n\nAnnotation\022\020\n\004p"
-      "ath\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005be"
-      "gin\030\003 \001(\005\022\013\n\003end\030\004 \001(\005B\217\001\n\023com.google.pr"
-      "otobufB\020DescriptorProtosH\001Z>github.com/g"
-      "olang/protobuf/protoc-gen-go/descriptor;"
-      "descriptor\370\001\001\242\002\003GPB\252\002\032Google.Protobuf.Re"
-      "flection"
+      "Option*\t\010\350\007\020\200\200\200\200\002\"\255\002\n\rMethodOptions\022\031\n\nd"
+      "eprecated\030! \001(\010:\005false\022_\n\021idempotency_le"
+      "vel\030\" \001(\0162/.google.protobuf.MethodOption"
+      "s.IdempotencyLevel:\023IDEMPOTENCY_UNKNOWN\022"
+      "C\n\024uninterpreted_option\030\347\007 \003(\0132$.google."
+      "protobuf.UninterpretedOption\"P\n\020Idempote"
+      "ncyLevel\022\027\n\023IDEMPOTENCY_UNKNOWN\020\000\022\023\n\017NO_"
+      "SIDE_EFFECTS\020\001\022\016\n\nIDEMPOTENT\020\002*\t\010\350\007\020\200\200\200\200"
+      "\002\"\236\002\n\023UninterpretedOption\022;\n\004name\030\002 \003(\0132"
+      "-.google.protobuf.UninterpretedOption.Na"
+      "mePart\022\030\n\020identifier_value\030\003 \001(\t\022\032\n\022posi"
+      "tive_int_value\030\004 \001(\004\022\032\n\022negative_int_val"
+      "ue\030\005 \001(\003\022\024\n\014double_value\030\006 \001(\001\022\024\n\014string"
+      "_value\030\007 \001(\014\022\027\n\017aggregate_value\030\010 \001(\t\0323\n"
+      "\010NamePart\022\021\n\tname_part\030\001 \002(\t\022\024\n\014is_exten"
+      "sion\030\002 \002(\010\"\325\001\n\016SourceCodeInfo\022:\n\010locatio"
+      "n\030\001 \003(\0132(.google.protobuf.SourceCodeInfo"
+      ".Location\032\206\001\n\010Location\022\020\n\004path\030\001 \003(\005B\002\020\001"
+      "\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading_comments\030\003"
+      " \001(\t\022\031\n\021trailing_comments\030\004 \001(\t\022!\n\031leadi"
+      "ng_detached_comments\030\006 \003(\t\"\247\001\n\021Generated"
+      "CodeInfo\022A\n\nannotation\030\001 \003(\0132-.google.pr"
+      "otobuf.GeneratedCodeInfo.Annotation\032O\n\nA"
+      "nnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\023\n\013source_fi"
+      "le\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003end\030\004 \001(\005B\217\001\n"
+      "\023com.google.protobufB\020DescriptorProtosH\001"
+      "Z>github.com/golang/protobuf/protoc-gen-"
+      "go/descriptor;descriptor\370\001\001\242\002\003GPB\252\002\032Goog"
+      "le.Protobuf.Reflection"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 5968);
+      descriptor, 6022);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
 }
@@ -7564,6 +7569,8 @@ const int FileOptions::kCsharpNamespaceFieldNumber;
 const int FileOptions::kSwiftPrefixFieldNumber;
 const int FileOptions::kPhpClassPrefixFieldNumber;
 const int FileOptions::kPhpNamespaceFieldNumber;
+const int FileOptions::kPhpMetadataNamespaceFieldNumber;
+const int FileOptions::kRubyPackageFieldNumber;
 const int FileOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
@@ -7631,9 +7638,19 @@ FileOptions::FileOptions(const FileOptions& from)
     php_namespace_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.php_namespace(),
       GetArenaNoVirtual());
   }
-  ::memcpy(&cc_enable_arenas_, &from.cc_enable_arenas_,
+  php_metadata_namespace_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_php_metadata_namespace()) {
+    php_metadata_namespace_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.php_metadata_namespace(),
+      GetArenaNoVirtual());
+  }
+  ruby_package_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_ruby_package()) {
+    ruby_package_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.ruby_package(),
+      GetArenaNoVirtual());
+  }
+  ::memcpy(&java_multiple_files_, &from.java_multiple_files_,
     static_cast<size_t>(reinterpret_cast<char*>(&optimize_for_) -
-    reinterpret_cast<char*>(&cc_enable_arenas_)) + sizeof(optimize_for_));
+    reinterpret_cast<char*>(&java_multiple_files_)) + sizeof(optimize_for_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileOptions)
 }
 
@@ -7646,9 +7663,11 @@ void FileOptions::SharedCtor() {
   swift_prefix_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   php_class_prefix_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   php_namespace_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&cc_enable_arenas_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&deprecated_) -
-      reinterpret_cast<char*>(&cc_enable_arenas_)) + sizeof(deprecated_));
+  php_metadata_namespace_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ruby_package_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::memset(&java_multiple_files_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&cc_enable_arenas_) -
+      reinterpret_cast<char*>(&java_multiple_files_)) + sizeof(cc_enable_arenas_));
   optimize_for_ = 1;
 }
 
@@ -7667,6 +7686,8 @@ void FileOptions::SharedDtor() {
   swift_prefix_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   php_class_prefix_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   php_namespace_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  php_metadata_namespace_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ruby_package_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void FileOptions::ArenaDtor(void* object) {
@@ -7724,13 +7745,23 @@ void FileOptions::Clear() {
       php_namespace_.ClearNonDefaultToEmpty();
     }
   }
-  if (cached_has_bits & 65280u) {
-    ::memset(&cc_enable_arenas_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&php_generic_services_) -
-        reinterpret_cast<char*>(&cc_enable_arenas_)) + sizeof(php_generic_services_));
+  if (cached_has_bits & 768u) {
+    if (cached_has_bits & 0x00000100u) {
+      php_metadata_namespace_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000200u) {
+      ruby_package_.ClearNonDefaultToEmpty();
+    }
   }
-  if (cached_has_bits & 196608u) {
-    deprecated_ = false;
+  if (cached_has_bits & 64512u) {
+    ::memset(&java_multiple_files_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&py_generic_services_) -
+        reinterpret_cast<char*>(&java_multiple_files_)) + sizeof(py_generic_services_));
+  }
+  if (cached_has_bits & 983040u) {
+    ::memset(&php_generic_services_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&cc_enable_arenas_) -
+        reinterpret_cast<char*>(&php_generic_services_)) + sizeof(cc_enable_arenas_));
     optimize_for_ = 1;
   }
   _has_bits_.Clear();
@@ -8021,6 +8052,38 @@ bool FileOptions::MergePartialFromCodedStream(
         break;
       }
 
+      // optional string php_metadata_namespace = 44;
+      case 44: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(98u /* 354 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_php_metadata_namespace()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->php_metadata_namespace().data(), static_cast<int>(this->php_metadata_namespace().length()),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "google.protobuf.FileOptions.php_metadata_namespace");
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional string ruby_package = 45;
+      case 45: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(106u /* 362 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_ruby_package()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->ruby_package().data(), static_cast<int>(this->ruby_package().length()),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "google.protobuf.FileOptions.ruby_package");
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
@@ -8087,13 +8150,13 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-  if (cached_has_bits & 0x00020000u) {
+  if (cached_has_bits & 0x00080000u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       9, this->optimize_for(), output);
   }
 
   // optional bool java_multiple_files = 10 [default = false];
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(10, this->java_multiple_files(), output);
   }
 
@@ -8108,37 +8171,37 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional bool cc_generic_services = 16 [default = false];
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(16, this->cc_generic_services(), output);
   }
 
   // optional bool java_generic_services = 17 [default = false];
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(17, this->java_generic_services(), output);
   }
 
   // optional bool py_generic_services = 18 [default = false];
-  if (cached_has_bits & 0x00004000u) {
+  if (cached_has_bits & 0x00008000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(18, this->py_generic_services(), output);
   }
 
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(20, this->java_generate_equals_and_hash(), output);
   }
 
   // optional bool deprecated = 23 [default = false];
-  if (cached_has_bits & 0x00010000u) {
+  if (cached_has_bits & 0x00020000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(23, this->deprecated(), output);
   }
 
   // optional bool java_string_check_utf8 = 27 [default = false];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(27, this->java_string_check_utf8(), output);
   }
 
   // optional bool cc_enable_arenas = 31 [default = false];
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00040000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(31, this->cc_enable_arenas(), output);
   }
 
@@ -8193,8 +8256,28 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional bool php_generic_services = 42 [default = false];
-  if (cached_has_bits & 0x00008000u) {
+  if (cached_has_bits & 0x00010000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(42, this->php_generic_services(), output);
+  }
+
+  // optional string php_metadata_namespace = 44;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->php_metadata_namespace().data(), static_cast<int>(this->php_metadata_namespace().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.php_metadata_namespace");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      44, this->php_metadata_namespace(), output);
+  }
+
+  // optional string ruby_package = 45;
+  if (cached_has_bits & 0x00000200u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->ruby_package().data(), static_cast<int>(this->ruby_package().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.ruby_package");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      45, this->ruby_package(), output);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8248,13 +8331,13 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-  if (cached_has_bits & 0x00020000u) {
+  if (cached_has_bits & 0x00080000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       9, this->optimize_for(), target);
   }
 
   // optional bool java_multiple_files = 10 [default = false];
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(10, this->java_multiple_files(), target);
   }
 
@@ -8270,37 +8353,37 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional bool cc_generic_services = 16 [default = false];
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(16, this->cc_generic_services(), target);
   }
 
   // optional bool java_generic_services = 17 [default = false];
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(17, this->java_generic_services(), target);
   }
 
   // optional bool py_generic_services = 18 [default = false];
-  if (cached_has_bits & 0x00004000u) {
+  if (cached_has_bits & 0x00008000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(18, this->py_generic_services(), target);
   }
 
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(20, this->java_generate_equals_and_hash(), target);
   }
 
   // optional bool deprecated = 23 [default = false];
-  if (cached_has_bits & 0x00010000u) {
+  if (cached_has_bits & 0x00020000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(23, this->deprecated(), target);
   }
 
   // optional bool java_string_check_utf8 = 27 [default = false];
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(27, this->java_string_check_utf8(), target);
   }
 
   // optional bool cc_enable_arenas = 31 [default = false];
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00040000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(31, this->cc_enable_arenas(), target);
   }
 
@@ -8360,8 +8443,30 @@ void FileOptions::SerializeWithCachedSizes(
   }
 
   // optional bool php_generic_services = 42 [default = false];
-  if (cached_has_bits & 0x00008000u) {
+  if (cached_has_bits & 0x00010000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(42, this->php_generic_services(), target);
+  }
+
+  // optional string php_metadata_namespace = 44;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->php_metadata_namespace().data(), static_cast<int>(this->php_metadata_namespace().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.php_metadata_namespace");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        44, this->php_metadata_namespace(), target);
+  }
+
+  // optional string ruby_package = 45;
+  if (cached_has_bits & 0x00000200u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->ruby_package().data(), static_cast<int>(this->ruby_package().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileOptions.ruby_package");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        45, this->ruby_package(), target);
   }
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -8465,9 +8570,18 @@ size_t FileOptions::ByteSizeLong() const {
 
   }
   if (_has_bits_[8 / 32] & 65280u) {
-    // optional bool cc_enable_arenas = 31 [default = false];
-    if (has_cc_enable_arenas()) {
-      total_size += 2 + 1;
+    // optional string php_metadata_namespace = 44;
+    if (has_php_metadata_namespace()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->php_metadata_namespace());
+    }
+
+    // optional string ruby_package = 45;
+    if (has_ruby_package()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->ruby_package());
     }
 
     // optional bool java_multiple_files = 10 [default = false];
@@ -8500,15 +8614,20 @@ size_t FileOptions::ByteSizeLong() const {
       total_size += 2 + 1;
     }
 
+  }
+  if (_has_bits_[16 / 32] & 983040u) {
     // optional bool php_generic_services = 42 [default = false];
     if (has_php_generic_services()) {
       total_size += 2 + 1;
     }
 
-  }
-  if (_has_bits_[16 / 32] & 196608u) {
     // optional bool deprecated = 23 [default = false];
     if (has_deprecated()) {
+      total_size += 2 + 1;
+    }
+
+    // optional bool cc_enable_arenas = 31 [default = false];
+    if (has_cc_enable_arenas()) {
       total_size += 2 + 1;
     }
 
@@ -8577,36 +8696,42 @@ void FileOptions::MergeFrom(const FileOptions& from) {
   }
   if (cached_has_bits & 65280u) {
     if (cached_has_bits & 0x00000100u) {
-      cc_enable_arenas_ = from.cc_enable_arenas_;
+      set_php_metadata_namespace(from.php_metadata_namespace());
     }
     if (cached_has_bits & 0x00000200u) {
-      java_multiple_files_ = from.java_multiple_files_;
+      set_ruby_package(from.ruby_package());
     }
     if (cached_has_bits & 0x00000400u) {
-      java_generate_equals_and_hash_ = from.java_generate_equals_and_hash_;
+      java_multiple_files_ = from.java_multiple_files_;
     }
     if (cached_has_bits & 0x00000800u) {
-      java_string_check_utf8_ = from.java_string_check_utf8_;
+      java_generate_equals_and_hash_ = from.java_generate_equals_and_hash_;
     }
     if (cached_has_bits & 0x00001000u) {
-      cc_generic_services_ = from.cc_generic_services_;
+      java_string_check_utf8_ = from.java_string_check_utf8_;
     }
     if (cached_has_bits & 0x00002000u) {
-      java_generic_services_ = from.java_generic_services_;
+      cc_generic_services_ = from.cc_generic_services_;
     }
     if (cached_has_bits & 0x00004000u) {
-      py_generic_services_ = from.py_generic_services_;
+      java_generic_services_ = from.java_generic_services_;
     }
     if (cached_has_bits & 0x00008000u) {
-      php_generic_services_ = from.php_generic_services_;
+      py_generic_services_ = from.py_generic_services_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 196608u) {
+  if (cached_has_bits & 983040u) {
     if (cached_has_bits & 0x00010000u) {
-      deprecated_ = from.deprecated_;
+      php_generic_services_ = from.php_generic_services_;
     }
     if (cached_has_bits & 0x00020000u) {
+      deprecated_ = from.deprecated_;
+    }
+    if (cached_has_bits & 0x00040000u) {
+      cc_enable_arenas_ = from.cc_enable_arenas_;
+    }
+    if (cached_has_bits & 0x00080000u) {
       optimize_for_ = from.optimize_for_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -8674,7 +8799,10 @@ void FileOptions::InternalSwap(FileOptions* other) {
     GetArenaNoVirtual());
   php_namespace_.Swap(&other->php_namespace_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  swap(cc_enable_arenas_, other->cc_enable_arenas_);
+  php_metadata_namespace_.Swap(&other->php_metadata_namespace_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  ruby_package_.Swap(&other->ruby_package_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(java_multiple_files_, other->java_multiple_files_);
   swap(java_generate_equals_and_hash_, other->java_generate_equals_and_hash_);
   swap(java_string_check_utf8_, other->java_string_check_utf8_);
@@ -8683,6 +8811,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
   swap(py_generic_services_, other->py_generic_services_);
   swap(php_generic_services_, other->php_generic_services_);
   swap(deprecated_, other->deprecated_);
+  swap(cc_enable_arenas_, other->cc_enable_arenas_);
   swap(optimize_for_, other->optimize_for_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
