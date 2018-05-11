@@ -128,15 +128,15 @@ set_cmake_value $CMAKE_DIR/tests.cmake lite_arena_test_files $CMAKE_PREFIX $LITE
 
 # Generate extract_includes.bat
 echo "mkdir include" > $EXTRACT_INCLUDES_BAT
-for HEADER in $PUBLIC_HEADERS; do
-  HEADER_DIR=$(dirname $HEADER)
-  while [ ! "$HEADER_DIR" = "." ]; do
-    echo $HEADER_DIR | sed "s/\\//\\\\/g"
-    HEADER_DIR=$(dirname $HEADER_DIR)
+for INCLUDE in $PUBLIC_HEADERS $WKT_PROTOS; do
+  INCLUDE_DIR=$(dirname "$INCLUDE")
+  while [ ! "$INCLUDE_DIR" = "." ]; do
+    echo "mkdir include\\${INCLUDE_DIR//\//\\}"
+    INCLUDE_DIR=$(dirname "$INCLUDE_DIR")
   done
-done | sort | uniq | sed "s/^/mkdir include\\\\/" >> $EXTRACT_INCLUDES_BAT
-for HEADER in $PUBLIC_HEADERS; do
-  WINPATH=$(echo $HEADER | sed 's;/;\\;g')
+done | sort | uniq >> $EXTRACT_INCLUDES_BAT
+for INCLUDE in $PUBLIC_HEADERS $WKT_PROTOS; do
+  WINPATH=${INCLUDE//\//\\}
   echo "copy \"\${PROTOBUF_SOURCE_WIN32_PATH}\\..\\src\\$WINPATH\" include\\$WINPATH" >> $EXTRACT_INCLUDES_BAT
 done
 

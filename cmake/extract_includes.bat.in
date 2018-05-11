@@ -111,3 +111,15 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format.h" includ
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format_lite.h" include\google\protobuf\wire_format_lite.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format_lite_inl.h" include\google\protobuf\wire_format_lite_inl.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wrappers.pb.h" include\google\protobuf\wrappers.pb.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\any.proto" include\google\protobuf\any.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\api.proto" include\google\protobuf\api.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.proto" include\google\protobuf\compiler\plugin.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\descriptor.proto" include\google\protobuf\descriptor.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\duration.proto" include\google\protobuf\duration.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\empty.proto" include\google\protobuf\empty.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\field_mask.proto" include\google\protobuf\field_mask.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\source_context.proto" include\google\protobuf\source_context.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\struct.proto" include\google\protobuf\struct.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\timestamp.proto" include\google\protobuf\timestamp.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\type.proto" include\google\protobuf\type.proto
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wrappers.proto" include\google\protobuf\wrappers.proto
