@@ -27,8 +27,8 @@ cd $oldpwd
 ./configure CXXFLAGS="-fPIC -O2"
 make -j8
 cd python
-python setup.py -q build --cpp_implementation
-pip install .
+python setup.py build --cpp_implementation
+pip install . --user
 
 
 # build and run Python benchmark
@@ -78,6 +78,7 @@ echo "benchmarking go..."
 make java-benchmark
 echo "benchmarking java..."
 ./java-benchmark -Cresults.file.options.file="tmp/java_result.json" $datasets
+cat $(find /tmp -name "trail-1.log")
 
 # upload result to bq
 make python_add_init
