@@ -791,7 +791,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   // AssignDescriptors().  All later times, waits for the first call to
   // complete and then returns.
     printer->Print(
-        "void protobuf_AssignDescriptors() {\n"
+        "static void protobuf_AssignDescriptors() {\n"
         // Make sure the file has found its way into the pool.  If a descriptor
         // is requested *during* static init then AddDescriptors() may not have
         // been called yet, so we call it manually.  Note that it's fine if
@@ -812,7 +812,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
     printer->Print(
         "}\n"
         "\n"
-        "void protobuf_AssignDescriptorsOnce() {\n"
+        "static void protobuf_AssignDescriptorsOnce() {\n"
         "  static ::google::protobuf::internal::once_flag once;\n"
         "  ::google::protobuf::internal::call_once(once, protobuf_AssignDescriptors);\n"
         "}\n"
@@ -850,7 +850,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
 
     // Now generate the AddDescriptors() function.
     printer->Print(
-        "void AddDescriptorsImpl() {\n"
+        "static void AddDescriptorsImpl() {\n"
         "  InitDefaults();\n");
     printer->Indent();
 
