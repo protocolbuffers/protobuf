@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package foo;
 option php_namespace = "";
+option php_metadata_namespace = "";
 
 message TestEmptyNamespace {
   int32 a = 1;

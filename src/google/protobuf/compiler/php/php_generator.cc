@@ -294,9 +294,13 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   if (file->options().has_php_metadata_namespace()) {
     const string& php_metadata_namespace =
         file->options().php_metadata_namespace();
-    result += php_metadata_namespace;
-    std::replace(result.begin(), result.end(), '\\', '/');
-    result += "/";
+    if (php_metadata_namespace != "" && php_metadata_namespace != "\\") {
+      result += php_metadata_namespace;
+      std::replace(result.begin(), result.end(), '\\', '/');
+      if (result.at(result.size() - 1) != '/') {
+        result += "/";
+      }
+    }
   } else {
     result += "GPBMetadata/";
     while (first_index != string::npos) {
@@ -309,8 +313,14 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   }
 
   // Append file name.
+  int file_name_start = file_no_suffix.find_last_of("/");
+  if (file_name_start == string::npos) {
+    file_name_start = 0;
+  } else {
+    file_name_start += 1;
+  }
   result += RenameEmpty(UnderscoresToCamelCase(
-      file_no_suffix.substr(start_index, first_index - start_index), true));
+      file_no_suffix.substr(file_name_start, first_index - file_name_start), true));
 
   return result += ".php";
 }
@@ -965,11 +975,11 @@ void GenerateMetadataFile(const FileDescriptor* file,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  printer.Print(
-      "namespace ^name^;\n\n",
-      "name", fullname.substr(0, lastindex));
-
   if (lastindex != string::npos) {
+    printer.Print(
+        "namespace ^name^;\n\n",
+        "name", fullname.substr(0, lastindex));
+
     printer.Print(
         "class ^name^\n"
         "{\n",
