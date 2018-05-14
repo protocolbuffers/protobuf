@@ -166,11 +166,22 @@ if (MSVC)
   add_definitions(/bigobj)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
+  string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
   configure_file(extract_includes.bat.in extract_includes.bat)
 
   # Suppress linker warnings about files with no symbols defined.
   set(CMAKE_STATIC_LINKER_FLAGS /ignore:4221)
+
+  # Configure Resource Compiler
+  enable_language(RC)
+  # use English language (0x409) in resource compiler
+  set(rc_flags "/l0x409")
+  # fix rc.exe invocations because of usage of add_definitions()
+  set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> ${rc_flags} <DEFINES> /fo<OBJECT> <SOURCE>")
+
+  configure_file(version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
 endif (MSVC)
+
 
 get_filename_component(protobuf_source_dir ${protobuf_SOURCE_DIR} PATH)
 

@@ -161,6 +161,10 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.h
 )
 
+set(libprotoc_rc_files
+  ${CMAKE_CURRENT_BINARY_DIR}/version.rc
+)
+
 set(js_well_known_types_sources
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/any.js
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/struct.js
@@ -174,7 +178,7 @@ add_custom_command(
 )
 
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
-  ${libprotoc_files} ${libprotoc_headers})
+  ${libprotoc_files} ${libprotoc_headers} ${libprotoc_rc_files})
 target_link_libraries(libprotoc libprotobuf)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
