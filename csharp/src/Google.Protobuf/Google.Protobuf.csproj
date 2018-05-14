@@ -17,8 +17,6 @@
     <PackageLicenseUrl>https://github.com/google/protobuf/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/google/protobuf.git</RepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <IncludeSource>true</IncludeSource>
   </PropertyGroup>
 
   <!-- 
@@ -29,5 +27,9 @@
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
     <TargetFrameworks>netstandard1.0</TargetFrameworks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.7.6" PrivateAssets="All" /> 
+  </ItemGroup>
 
 </Project>
