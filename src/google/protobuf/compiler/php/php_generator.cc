@@ -83,7 +83,7 @@ std::string PhpName(const std::string& full_name, bool is_descriptor);
 std::string DefaultForField(FieldDescriptor* field);
 std::string IntToString(int32 value);
 std::string FilenameToClassname(const string& filename);
-std::string GeneratedMetadataFileName(const std::string& proto_file,
+std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       bool is_descriptor);
 std::string LabelForField(FieldDescriptor* field);
 std::string TypeName(FieldDescriptor* field);
@@ -268,11 +268,12 @@ std::string DefaultForField(const FieldDescriptor* field) {
   }
 }
 
-std::string GeneratedMetadataFileName(const std::string& proto_file,
+std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       bool is_descriptor) {
+  const string& proto_file = file->name();
   int start_index = 0;
   int first_index = proto_file.find_first_of("/", start_index);
-  std::string result = "GPBMetadata/";
+  std::string result = "";
 
   if (proto_file == kEmptyFile) {
     return kEmptyMetadataFile;
@@ -290,17 +291,36 @@ std::string GeneratedMetadataFileName(const std::string& proto_file,
     file_no_suffix = proto_file.substr(0, lastindex);
   }
 
-  while (first_index != string::npos) {
-    result += UnderscoresToCamelCase(
-        file_no_suffix.substr(start_index, first_index - start_index), true);
-    result += "/";
-    start_index = first_index + 1;
-    first_index = file_no_suffix.find_first_of("/", start_index);
+  if (file->options().has_php_metadata_namespace()) {
+    const string& php_metadata_namespace =
+        file->options().php_metadata_namespace();
+    if (php_metadata_namespace != "" && php_metadata_namespace != "\\") {
+      result += php_metadata_namespace;
+      std::replace(result.begin(), result.end(), '\\', '/');
+      if (result.at(result.size() - 1) != '/') {
+        result += "/";
+      }
+    }
+  } else {
+    result += "GPBMetadata/";
+    while (first_index != string::npos) {
+      result += UnderscoresToCamelCase(
+          file_no_suffix.substr(start_index, first_index - start_index), true);
+      result += "/";
+      start_index = first_index + 1;
+      first_index = file_no_suffix.find_first_of("/", start_index);
+    }
   }
 
   // Append file name.
+  int file_name_start = file_no_suffix.find_last_of("/");
+  if (file_name_start == string::npos) {
+    file_name_start = 0;
+  } else {
+    file_name_start += 1;
+  }
   result += RenameEmpty(UnderscoresToCamelCase(
-      file_no_suffix.substr(start_index, first_index - start_index), true));
+      file_no_suffix.substr(file_name_start, first_index - file_name_start), true));
 
   return result += ".php";
 }
@@ -851,7 +871,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
         continue;
       }
       std::string dependency_filename =
-          GeneratedMetadataFileName(name, is_descriptor);
+          GeneratedMetadataFileName(file->dependency(i), is_descriptor);
       printer->Print(
           "\\^name^::initOnce();\n",
           "name", FilenameToClassname(dependency_filename));
@@ -945,7 +965,7 @@ std::string FilenameToClassname(const string& filename) {
 void GenerateMetadataFile(const FileDescriptor* file,
                           bool is_descriptor,
                           GeneratorContext* generator_context) {
-  std::string filename = GeneratedMetadataFileName(file->name(), is_descriptor);
+  std::string filename = GeneratedMetadataFileName(file, is_descriptor);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -955,11 +975,11 @@ void GenerateMetadataFile(const FileDescriptor* file,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  printer.Print(
-      "namespace ^name^;\n\n",
-      "name", fullname.substr(0, lastindex));
-
   if (lastindex != string::npos) {
+    printer.Print(
+        "namespace ^name^;\n\n",
+        "name", fullname.substr(0, lastindex));
+
     printer.Print(
         "class ^name^\n"
         "{\n",
@@ -1094,7 +1114,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   Indent(&printer);
 
   std::string metadata_filename =
-      GeneratedMetadataFileName(file->name(), is_descriptor);
+      GeneratedMetadataFileName(file, is_descriptor);
   std::string metadata_fullname = FilenameToClassname(metadata_filename);
   printer.Print(
       "\\^fullname^::initOnce();\n"
