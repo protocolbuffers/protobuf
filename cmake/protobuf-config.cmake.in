@@ -11,7 +11,7 @@ function(protobuf_generate)
   include(CMakeParseArguments)
 
   set(_options APPEND_PATH)
-  set(_singleargs LANGUAGE OUT_VAR EXPORT_MACRO)
+  set(_singleargs LANGUAGE OUT_VAR EXPORT_MACRO PROTOC_OUT_DIR)
   if(COMMAND target_sources)
     list(APPEND _singleargs TARGET)
   endif()
@@ -34,6 +34,10 @@ function(protobuf_generate)
   endif()
   string(TOLOWER ${protobuf_generate_LANGUAGE} protobuf_generate_LANGUAGE)
 
+  if(NOT protobuf_generate_PROTOC_OUT_DIR)
+    set(protobuf_generate_PROTOC_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  endif()
+  
   if(protobuf_generate_EXPORT_MACRO AND protobuf_generate_LANGUAGE STREQUAL cpp)
     set(_dll_export_decl "dllexport_decl=${protobuf_generate_EXPORT_MACRO}:")
   endif()
@@ -92,14 +96,14 @@ function(protobuf_generate)
 
     set(_generated_srcs)
     foreach(_ext ${protobuf_generate_GENERATE_EXTENSIONS})
-      list(APPEND _generated_srcs "${CMAKE_CURRENT_BINARY_DIR}/${_basename}${_ext}")
+      list(APPEND _generated_srcs "${protobuf_generate_PROTOC_OUT_DIR}/${_basename}${_ext}")
     endforeach()
     list(APPEND _generated_srcs_all ${_generated_srcs})
 
     add_custom_command(
       OUTPUT ${_generated_srcs}
       COMMAND  protobuf::protoc
-      ARGS --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${_abs_file}
+      ARGS --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_protobuf_include_path} ${_abs_file}
       DEPENDS ${ABS_FIL} protobuf::protoc
       COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}"
       VERBATIM )
