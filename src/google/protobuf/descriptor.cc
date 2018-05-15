@@ -406,9 +406,10 @@ typedef std::pair<const EnumDescriptor*, int> EnumIntPair;
 template<typename PairType>
 struct PointerIntegerPairHash {
   size_t operator()(const PairType& p) const {
-    // FIXME(kenton):  What is the best way to compute this hash?  I have
-    // no idea!  This seems a bit better than an XOR.
-    return reinterpret_cast<intptr_t>(p.first) * ((1 << 16) - 1) + p.second;
+    static const size_t prime1 = 16777499;
+    static const size_t prime2 = 16777619;
+    return reinterpret_cast<size_t>(p.first) * prime1 ^
+           static_cast<size_t>(p.second) * prime2;
   }
 
 #ifdef _MSC_VER
@@ -424,11 +425,10 @@ struct PointerIntegerPairHash {
 
 struct PointerStringPairHash {
   size_t operator()(const PointerStringPair& p) const {
-    // FIXME(kenton):  What is the best way to compute this hash?  I have
-    // no idea!  This seems a bit better than an XOR.
+    static const size_t prime = 16777619;
     hash<const char*> cstring_hash;
-    return reinterpret_cast<intptr_t>(p.first) * ((1 << 16) - 1) +
-           cstring_hash(p.second);
+    return reinterpret_cast<size_t>(p.first) * prime ^
+           static_cast<size_t>(cstring_hash(p.second));
   }
 
 #ifdef _MSC_VER
