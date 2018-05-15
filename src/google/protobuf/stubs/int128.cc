@@ -76,9 +76,6 @@ static inline int Fls128(uint128 n) {
   return Fls64(Uint128Low64(n));
 }
 
-// Long division/modulo for uint128 implemented using the shift-subtract
-// division algorithm adapted from:
-// http://stackoverflow.com/questions/5386377/division-without-using
 void uint128::DivModImpl(uint128 dividend, uint128 divisor,
                          uint128* quotient_ret, uint128* remainder_ret) {
 	if (divisor == 0) {
