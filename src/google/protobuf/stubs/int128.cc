@@ -81,45 +81,25 @@ static inline int Fls128(uint128 n) {
 // http://stackoverflow.com/questions/5386377/division-without-using
 void uint128::DivModImpl(uint128 dividend, uint128 divisor,
                          uint128* quotient_ret, uint128* remainder_ret) {
-  if (divisor == 0) {
-    GOOGLE_LOG(FATAL) << "Division or mod by zero: dividend.hi=" << dividend.hi_
-                      << ", lo=" << dividend.lo_;
-  }
-
-  if (divisor > dividend) {
-    *quotient_ret = 0;
-    *remainder_ret = dividend;
-    return;
-  }
-
-  if (divisor == dividend) {
-    *quotient_ret = 1;
-    *remainder_ret = 0;
-    return;
-  }
-
-  uint128 denominator = divisor;
-  uint128 position = 1;
-  uint128 quotient = 0;
-
-  // Left aligns the MSB of the denominator and the dividend.
-  int shift = Fls128(dividend) - Fls128(denominator);
-  denominator <<= shift;
-  position <<= shift;
-
-  // Uses shift-subtract algorithm to divide dividend by denominator. The
-  // remainder will be left in dividend.
-  while (position > 0) {
-    if (dividend >= denominator) {
-      dividend -= denominator;
-      quotient |= position;
-    }
-    position >>= 1;
-    denominator >>= 1;
-  }
-
-  *quotient_ret = quotient;
-  *remainder_ret = dividend;
+	if (divisor == 0) {
+		GOOGLE_LOG(FATAL) << "Division or mod by zero: dividend.hi=" << dividend.hi_
+			<< ", lo=" << dividend.lo_;
+	}else{
+		int dividend_bit_length = Fls128(dividend);
+		int divisor_bit_length = Fls128(divisor);
+		int difference = dividend_bit_length - divisor_bit_length;
+		*quotient_ret = 0;
+		while (difference >= 0) {
+			*quotient_ret <<= 1;
+			uint128 shifted_divisor = divisor << difference;
+			if (shifted_divisor <= dividend) {
+				dividend -= shifted_divisor;
+				*quotient_ret += 0b1;
+			}
+			difference--;
+		}
+		*remainder_ret = dividend;
+	}
 }
 
 uint128& uint128::operator/=(const uint128& divisor) {
