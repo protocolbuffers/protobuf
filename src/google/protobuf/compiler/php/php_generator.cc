@@ -223,8 +223,7 @@ std::string NamespacedName(const string& classname,
   if (desc->file()->package() == "") {
     return classname;
   } else {
-    string package_name = PhpName(desc->file()->package(), is_descriptor);
-    return package_name + '\\' + classname;
+    return PhpName(desc->file()->package(), is_descriptor) + '\\' + classname;
   }
 }
 
@@ -1030,28 +1029,26 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  const string& php_namespace = file->options().php_namespace();
-  if (!php_namespace.empty() ||
+  std::string php_namespace = "";
+  if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||
       lastindex != string::npos) {
+    php_namespace = fullname.substr(0, lastindex);
     printer.Print(
         "namespace ^name^;\n\n",
-        "name", fullname.substr(0, lastindex));
+        "name", php_namespace);
+  }
+
+  if (lastindex != string::npos) {
+    fullname = fullname.substr(lastindex + 1);
   }
 
   GenerateEnumDocComment(&printer, en, is_descriptor);
 
-  if (lastindex != string::npos) {
-    printer.Print(
-        "class ^name^\n"
-        "{\n",
-        "name", fullname.substr(lastindex + 1));
-  } else {
-    printer.Print(
-        "class ^name^\n"
-        "{\n",
-        "name", fullname);
-  }
+  printer.Print(
+      "class ^name^\n"
+      "{\n",
+      "name", fullname);
   Indent(&printer);
 
   for (int i = 0; i < en->value_count(); i++) {
@@ -1085,29 +1082,27 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  const string& php_namespace = file->options().php_namespace();
-  if (!php_namespace.empty() ||
+  std::string php_namespace = "";
+  if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||
       lastindex != string::npos) {
+    php_namespace = fullname.substr(0, lastindex);
     printer.Print(
         "namespace ^name^;\n\n",
-        "name", fullname.substr(0, lastindex));
+        "name", php_namespace);
   }
 
   GenerateUseDeclaration(is_descriptor, &printer);
 
   GenerateMessageDocComment(&printer, message, is_descriptor);
   if (lastindex != string::npos) {
-    printer.Print(
-        "class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
-        "{\n",
-        "name", fullname.substr(lastindex + 1));
-  } else {
-    printer.Print(
-        "class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
-        "{\n",
-        "name", fullname);
+    fullname = fullname.substr(lastindex + 1);
   }
+
+  printer.Print(
+      "class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
+      "{\n",
+      "name", fullname);
   Indent(&printer);
 
   // Field and oneof definitions.

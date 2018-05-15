@@ -527,7 +527,7 @@ class ImplementationTest extends TestBase
 
     /**
      * @expectedException Exception
-     * @expectedExceptionMessage Expect message.
+     * @expectedExceptionMessage Expect Foo\TestMessage\Sub.
      */
     public function testArraysForMessagesThrowsException()
     {

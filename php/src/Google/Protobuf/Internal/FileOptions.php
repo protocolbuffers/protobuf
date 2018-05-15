@@ -278,6 +278,14 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *           Use this option to change the namespace of php generated classes. Default
      *           is empty. When this option is empty, the package name will be used for
      *           determining the namespace.
+     *     @type string $php_metadata_namespace
+     *           Use this option to change the namespace of php generated metadata classes.
+     *           Default is empty. When this option is empty, the proto file name will be used
+     *           for determining the namespace.
+     *     @type string $ruby_package
+     *           Use this option to change the package of ruby generated classes. Default
+     *           is empty. When this option is not set, the package name will be used for
+     *           determining the ruby package.
      *     @type \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here.
      *           See the documentation for the "Options" section above.
