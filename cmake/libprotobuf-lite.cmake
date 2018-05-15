@@ -48,9 +48,11 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/wire_format_lite.h
 )
 
+if (MSVC)
 set(libprotobuf_lite_rc_files
   ${CMAKE_CURRENT_BINARY_DIR}/version.rc
 )
+endif()
 
 add_library(libprotobuf-lite ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_files} ${libprotobuf_lite_includes} ${libprotobuf_lite_rc_files})
