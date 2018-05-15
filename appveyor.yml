@@ -1,11 +1,11 @@
-# Only test one combination: "Visual Studio 12 + Win64 + Debug + DLL". We can
-# test more combinations but AppVeyor just takes too long to finish (each
-# combination takes ~15mins).
 configuration:
   - Debug
 
 environment:
   matrix:
+    # Only test few combinations: "Visual Studio 2015 (14) + Win64/MinGW + Debug + DLL". We can
+    # test more combinations but AppVeyor just takes too long to finish (each
+    # combination takes ~15mins).
     - platform: MinGW
       language: cpp
       image: Visual Studio 2015
