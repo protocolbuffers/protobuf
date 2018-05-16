@@ -105,3 +105,6 @@ class Type
     const TYPE_SINT64 = 18;
 }
 
+// Adding a class alias for backwards compatibility with the previous class name.
+class_alias(Type::class, \Google\Protobuf\Internal\FieldDescriptorProto_Type::class);
+

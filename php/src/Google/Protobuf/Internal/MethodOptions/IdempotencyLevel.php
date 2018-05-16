@@ -31,3 +31,6 @@ class IdempotencyLevel
     const IDEMPOTENT = 2;
 }
 
+// Adding a class alias for backwards compatibility with the previous class name.
+class_alias(IdempotencyLevel::class, \Google\Protobuf\Internal\MethodOptions_IdempotencyLevel::class);
+

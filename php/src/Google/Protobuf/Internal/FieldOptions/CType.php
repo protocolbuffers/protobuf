@@ -25,3 +25,6 @@ class CType
     const STRING_PIECE = 2;
 }
 
+// Adding a class alias for backwards compatibility with the previous class name.
+class_alias(CType::class, \Google\Protobuf\Internal\FieldOptions_CType::class);
+

@@ -31,3 +31,6 @@ class OptimizeMode
     const LITE_RUNTIME = 3;
 }
 
+// Adding a class alias for backwards compatibility with the previous class name.
+class_alias(OptimizeMode::class, \Google\Protobuf\Internal\FileOptions_OptimizeMode::class);
+

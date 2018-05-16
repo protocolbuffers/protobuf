@@ -116,23 +116,14 @@ std::string RenameEmpty(const std::string& name) {
   }
 }
 
-std::string MessageFullName(const Descriptor* message, bool is_descriptor) {
+template <typename DescriptorType>
+std::string DescriptorFullName(const DescriptorType* desc, bool is_descriptor) {
   if (is_descriptor) {
-    return StringReplace(message->full_name(),
+    return StringReplace(desc->full_name(),
                          "google.protobuf",
                          "google.protobuf.internal", false);
   } else {
-    return message->full_name();
-  }
-}
-
-std::string EnumFullName(const EnumDescriptor* envm, bool is_descriptor) {
-  if (is_descriptor) {
-    return StringReplace(envm->full_name(),
-                         "google.protobuf",
-                         "google.protobuf.internal", false);
-  } else {
-    return envm->full_name();
+    return desc->full_name();
   }
 }
 
@@ -344,9 +335,10 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   return result += ".php";
 }
 
-std::string GeneratedMessageFileName(const Descriptor* message,
+template <typename DescriptorType>
+std::string GeneratedClassFileName(const DescriptorType* desc,
                                      bool is_descriptor) {
-  std::string result = FullClassName(message, is_descriptor);
+  std::string result = FullClassName(desc, is_descriptor);
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
       result[i] = '/';
@@ -355,9 +347,12 @@ std::string GeneratedMessageFileName(const Descriptor* message,
   return result + ".php";
 }
 
-std::string GeneratedEnumFileName(const EnumDescriptor* en,
-                                  bool is_descriptor) {
-  std::string result = FullClassName(en, is_descriptor);
+template <typename DescriptorType>
+std::string GeneratedLegacyClassFileName(const DescriptorType* desc,
+                                     bool is_descriptor) {
+  std::string classname = GeneratedLegacyClassName(desc);
+  std::string result = NamespacedName(classname, desc, is_descriptor);
+
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
       result[i] = '/';
@@ -500,10 +495,10 @@ std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
 std::string EnumOrMessageSuffix(
     const FieldDescriptor* field, bool is_descriptor) {
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    return ", '" + MessageFullName(field->message_type(), is_descriptor) + "'";
+    return ", '" + DescriptorFullName(field->message_type(), is_descriptor) + "'";
   }
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-    return ", '" + EnumFullName(field->enum_type(), is_descriptor) + "'";
+    return ", '" + DescriptorFullName(field->enum_type(), is_descriptor) + "'";
   }
   return "";
 }
@@ -750,7 +745,7 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
   printer->Print(
       "$pool->addEnum('^name^', "
       "\\Google\\Protobuf\\Internal\\^class_name^::class)\n",
-      "name", EnumFullName(en, true),
+      "name", DescriptorFullName(en, true),
       "class_name", en->name());
   Indent(printer);
 
@@ -788,7 +783,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
   printer->Print(
       "$pool->addMessage('^message^', "
       "\\Google\\Protobuf\\Internal\\^class_name^::class)\n",
-      "message", MessageFullName(message, true),
+      "message", DescriptorFullName(message, true),
       "class_name", class_name);
 
   Indent(printer);
@@ -1017,9 +1012,43 @@ void GenerateMetadataFile(const FileDescriptor* file,
   printer.Print("}\n\n");
 }
 
+template <typename DescriptorType>
+void GenerateLegacyClassFile(const FileDescriptor* file, const DescriptorType* desc,
+                         bool is_descriptor,
+                         GeneratorContext* generator_context) {
+
+  std::string filename = GeneratedLegacyClassFileName(desc, is_descriptor);
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
+      generator_context->Open(filename));
+  io::Printer printer(output.get(), '^');
+
+  GenerateHead(file, &printer);
+
+  std::string newname = GeneratedClassName(desc);
+  std::string fullname = FilenameToClassname(filename);
+
+  std::string php_namespace = "";
+  int lastindex = fullname.find_last_of("\\");
+  if (lastindex != string::npos) {
+    php_namespace = fullname.substr(0, lastindex);
+    printer.Print(
+        "namespace ^name^;\n\n",
+        "name", php_namespace);
+    printer.Print("// This class has been renamed.\n// @see ^new^\n",
+      "new", php_namespace + "\\" + newname);
+  } else {
+    printer.Print("// This class has been renamed.\n// @see ^new^\n",
+      "new", newname);
+  }
+
+  printer.Print(
+      "class_exists(^new^::class);\n\n",
+      "new", newname);
+}
+
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       bool is_descriptor, GeneratorContext* generator_context) {
-  std::string filename = GeneratedEnumFileName(en, is_descriptor);
+  std::string filename = GeneratedClassFileName(en, is_descriptor);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -1061,6 +1090,23 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
 
   Outdent(&printer);
   printer.Print("}\n\n");
+
+  // write legacy file for backwards compatiblity with nested messages and enums
+  if (en->containing_type() != NULL) {
+    int oldlastindex = php_namespace.find_last_of("\\");
+    std::string oldnamespace = "";
+    if (oldlastindex != string::npos) {
+      oldnamespace = php_namespace.substr(0, oldlastindex + 1);
+    }
+    printer.Print(
+      "// Adding a class alias for backwards compatibility with the previous class name.\n");
+    printer.Print(
+        "class_alias(^new^::class, \\^oldnamespace^^old^::class);\n\n",
+        "new", fullname,
+        "oldnamespace", oldnamespace,
+        "old", GeneratedLegacyClassName(en));
+    GenerateLegacyClassFile(file, en, is_descriptor, generator_context);
+  }
 }
 
 void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
@@ -1072,7 +1118,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
     return;
   }
 
-  std::string filename = GeneratedMessageFileName(message, is_descriptor);
+  std::string filename = GeneratedClassFileName(message, is_descriptor);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -1153,6 +1199,23 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
 
   Outdent(&printer);
   printer.Print("}\n\n");
+
+  // write legacy file for backwards compatiblity with nested messages and enums
+  if (message->containing_type() != NULL) {
+    int oldlastindex = php_namespace.find_last_of("\\");
+    std::string oldnamespace = "";
+    if (oldlastindex != string::npos) {
+      oldnamespace = php_namespace.substr(0, oldlastindex + 1);
+    }
+    printer.Print(
+      "// Adding a class alias for backwards compatibility with the previous class name.\n");
+    printer.Print(
+        "class_alias(^new^::class, \\^oldnamespace^^old^::class);\n\n",
+        "new", fullname,
+        "oldnamespace", oldnamespace,
+        "old", GeneratedLegacyClassName(message));
+    GenerateLegacyClassFile(file, message, is_descriptor, generator_context);
+  }
 
   // Nested messages and enums.
   for (int i = 0; i < message->nested_type_count(); i++) {
@@ -1492,6 +1555,26 @@ std::string GeneratedClassName(const EnumDescriptor* desc) {
 
 std::string GeneratedClassName(const ServiceDescriptor* desc) {
   std::string classname = desc->name();
+  return ClassNamePrefix(classname, desc, true) + classname;
+}
+
+std::string GeneratedLegacyClassName(const Descriptor* desc) {
+  std::string classname = desc->name();
+  const Descriptor* containing = desc->containing_type();
+  while (containing != NULL) {
+    classname = containing->name() + '_' + classname;
+    containing = containing->containing_type();
+  }
+  return ClassNamePrefix(classname, desc, true) + classname;
+}
+
+std::string GeneratedLegacyClassName(const EnumDescriptor* desc) {
+  std::string classname = desc->name();
+  const Descriptor* containing = desc->containing_type();
+  while (containing != NULL) {
+    classname = containing->name() + '_' + classname;
+    containing = containing->containing_type();
+  }
   return ClassNamePrefix(classname, desc, true) + classname;
 }
 

@@ -25,3 +25,6 @@ class Label
     const LABEL_REPEATED = 3;
 }
 
+// Adding a class alias for backwards compatibility with the previous class name.
+class_alias(Label::class, \Google\Protobuf\Internal\FieldDescriptorProto_Label::class);
+

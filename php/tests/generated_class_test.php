@@ -13,6 +13,8 @@ use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
+use Foo\TestMessage_Sub;
+use Foo\TestMessage\NestedEnum;
 use Foo\TestReverseFieldOrder;
 use Foo\testLowerCaseMessage;
 use Foo\testLowerCaseEnum;
@@ -232,7 +234,28 @@ class GeneratedClassTest extends TestBase
     public function testNestedEnum()
     {
         $m = new TestMessage();
-        $m->setOptionalNestedEnum(\Foo\TestMessage\NestedEnum::ZERO);
+        $m->setOptionalNestedEnum(NestedEnum::ZERO);
+    }
+
+    public function testLegacyNestedEnum()
+    {
+        $m = new TestMessage();
+        $m->setOptionalNestedEnum(\Foo\TestMessage_NestedEnum::ZERO);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testLegacyTypehintWithNestedEnums()
+    {
+        $this->legacyEnum(new NestedEnum);
+    }
+
+    private function legacyEnum(Foo\TestMessage_NestedEnum $enum)
+    {
+        // If we made it here without a PHP Fatal error, the typehint worked
+        $this->assertTrue(true);
     }
 
     #########################################################
@@ -379,6 +402,35 @@ class GeneratedClassTest extends TestBase
         $null = null;
         $m->setOptionalMessage($null);
         $this->assertNull($m->getOptionalMessage());
+    }
+
+    public function testLegacyMessageField()
+    {
+        $m = new TestMessage();
+
+        $sub_m = new TestMessage_Sub();
+        $sub_m->setA(1);
+        $m->setOptionalMessage($sub_m);
+        $this->assertSame(1, $m->getOptionalMessage()->getA());
+
+        $null = null;
+        $m->setOptionalMessage($null);
+        $this->assertNull($m->getOptionalMessage());
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testLegacyTypehintWithNestedMessages()
+    {
+        $this->legacyMessage(new Sub);
+    }
+
+    private function legacyMessage(Foo\TestMessage_Sub $sub)
+    {
+        // If we made it here without a PHP Fatal error, the typehint worked
+        $this->assertTrue(true);
     }
 
     #########################################################

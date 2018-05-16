@@ -29,3 +29,6 @@ class JSType
     const JS_NUMBER = 2;
 }
 
+// Adding a class alias for backwards compatibility with the previous class name.
+class_alias(JSType::class, \Google\Protobuf\Internal\FieldOptions_JSType::class);
+
