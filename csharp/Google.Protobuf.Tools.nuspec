@@ -33,5 +33,7 @@
     <file src="..\src\google\protobuf\timestamp.proto" target="tools\google\protobuf" />
     <file src="..\src\google\protobuf\type.proto" target="tools\google\protobuf" />
     <file src="..\src\google\protobuf\wrappers.proto" target="tools\google\protobuf" />
+    <file src="Google.Protobuf.Tools.targets" target="buildCrossTargeting" />
+    <file src="Google.Protobuf.Tools.targets" target="build" />
   </files>
 </package>
