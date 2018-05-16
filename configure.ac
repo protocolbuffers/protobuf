@@ -190,7 +190,7 @@ AM_CONDITIONAL([HAVE_PTHREAD], [test "x$ax_pthread_ok" = "xyes"])
 AC_CXX_STL_HASH
 
 case "$target_os" in
-  mingw* | cygwin* | win* | aix*)
+  mingw* | cygwin* | win* | aix* | *android* )
     ;;
   *)
     # Need to link against rt on Solaris
