@@ -177,7 +177,7 @@ std::string GeneratedClassName(const ServiceDescriptor* desc) {
 }
 
 template <typename DescriptorType>
-std::string GeneratedLegacyClassName(const DescriptorType* desc) {
+std::string LegacyGeneratedClassName(const DescriptorType* desc) {
   std::string classname = desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
@@ -228,28 +228,39 @@ std::string ConstantNamePrefix(const string& classname) {
 }
 
 template <typename DescriptorType>
-std::string NamespacedName(const string& classname,
-                            const DescriptorType* desc, bool is_descriptor) {
+std::string RootPhpNamespace(const DescriptorType* desc, bool is_descriptor) {
   if (desc->file()->options().has_php_namespace()) {
     const string& php_namespace = desc->file()->options().php_namespace();
     if (php_namespace != "") {
-      return php_namespace + '\\' + classname;
-    } else {
-      return classname;
+      return php_namespace;
     }
+    return "";
   }
 
-  if (desc->file()->package() == "") {
-    return classname;
-  } else {
-    return PhpName(desc->file()->package(), is_descriptor) + '\\' + classname;
+  if (desc->file()->package() != "") {
+    return PhpName(desc->file()->package(), is_descriptor);
   }
+  return "";
 }
 
 template <typename DescriptorType>
 std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
   string classname = GeneratedClassName(desc);
-  return NamespacedName(classname, desc, is_descriptor);
+  string php_namespace = RootPhpNamespace(desc, is_descriptor);
+  if (php_namespace != "") {
+    return php_namespace + "\\" + classname;
+  }
+  return classname;
+}
+
+template <typename DescriptorType>
+std::string LegacyFullClassName(const DescriptorType* desc, bool is_descriptor) {
+  string classname = LegacyGeneratedClassName(desc);
+  string php_namespace = RootPhpNamespace(desc, is_descriptor);
+  if (php_namespace != "") {
+    return php_namespace + "\\" + classname;
+  }
+  return classname;
 }
 
 std::string PhpName(const std::string& full_name, bool is_descriptor) {
@@ -371,10 +382,9 @@ std::string GeneratedClassFileName(const DescriptorType* desc,
 }
 
 template <typename DescriptorType>
-std::string GeneratedLegacyClassFileName(const DescriptorType* desc,
+std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
                                      bool is_descriptor) {
-  std::string classname = GeneratedLegacyClassName(desc);
-  std::string result = NamespacedName(classname, desc, is_descriptor);
+  std::string result = LegacyFullClassName(desc, is_descriptor);
 
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
@@ -1036,37 +1046,28 @@ void GenerateMetadataFile(const FileDescriptor* file,
 }
 
 template <typename DescriptorType>
-void GenerateLegacyClassFile(const FileDescriptor* file, const DescriptorType* desc,
+void LegacyGenerateClassFile(const FileDescriptor* file, const DescriptorType* desc,
                          bool is_descriptor,
                          GeneratorContext* generator_context) {
 
-  std::string filename = GeneratedLegacyClassFileName(desc, is_descriptor);
+  std::string filename = LegacyGeneratedClassFileName(desc, is_descriptor);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
 
   GenerateHead(file, &printer);
 
-  std::string newname = GeneratedClassName(desc);
-  std::string fullname = FilenameToClassname(filename);
-
-  std::string php_namespace = "";
-  int lastindex = fullname.find_last_of("\\");
-  if (lastindex != string::npos) {
-    php_namespace = fullname.substr(0, lastindex);
+  std::string php_namespace = RootPhpNamespace(desc, is_descriptor);
+  if (php_namespace != "") {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", php_namespace);
-    printer.Print("// This class has been renamed.\n// @see ^new^\n",
-      "new", php_namespace + "\\" + newname);
-  } else {
-    printer.Print("// This class has been renamed.\n// @see ^new^\n",
-      "new", newname);
   }
-
+  printer.Print("// This class has been renamed.\n// @see ^new^\n",
+      "new", FullClassName(desc, is_descriptor));
   printer.Print(
       "class_exists(^new^::class);\n\n",
-      "new", newname);
+      "new", GeneratedClassName(desc));
 }
 
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
@@ -1081,14 +1082,12 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  std::string php_namespace = "";
   if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||
       lastindex != string::npos) {
-    php_namespace = fullname.substr(0, lastindex);
     printer.Print(
         "namespace ^name^;\n\n",
-        "name", php_namespace);
+        "name", fullname.substr(0, lastindex));
   }
 
   if (lastindex != string::npos) {
@@ -1116,19 +1115,13 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
 
   // write legacy file for backwards compatiblity with nested messages and enums
   if (en->containing_type() != NULL) {
-    int oldlastindex = php_namespace.find_last_of("\\");
-    std::string oldnamespace = "";
-    if (oldlastindex != string::npos) {
-      oldnamespace = php_namespace.substr(0, oldlastindex + 1);
-    }
     printer.Print(
-      "// Adding a class alias for backwards compatibility with the previous class name.\n");
+        "// Adding a class alias for backwards compatibility with the previous class name.\n");
     printer.Print(
-        "class_alias(^new^::class, \\^oldnamespace^^old^::class);\n\n",
+        "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
-        "oldnamespace", oldnamespace,
-        "old", GeneratedLegacyClassName(en));
-    GenerateLegacyClassFile(file, en, is_descriptor, generator_context);
+        "old", LegacyFullClassName(en, is_descriptor));
+    LegacyGenerateClassFile(file, en, is_descriptor, generator_context);
   }
 }
 
@@ -1151,14 +1144,12 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  std::string php_namespace = "";
   if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||
       lastindex != string::npos) {
-    php_namespace = fullname.substr(0, lastindex);
     printer.Print(
         "namespace ^name^;\n\n",
-        "name", php_namespace);
+        "name", fullname.substr(0, lastindex));
   }
 
   GenerateUseDeclaration(is_descriptor, &printer);
@@ -1225,19 +1216,13 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
 
   // write legacy file for backwards compatiblity with nested messages and enums
   if (message->containing_type() != NULL) {
-    int oldlastindex = php_namespace.find_last_of("\\");
-    std::string oldnamespace = "";
-    if (oldlastindex != string::npos) {
-      oldnamespace = php_namespace.substr(0, oldlastindex + 1);
-    }
     printer.Print(
-      "// Adding a class alias for backwards compatibility with the previous class name.\n");
+        "// Adding a class alias for backwards compatibility with the previous class name.\n");
     printer.Print(
-        "class_alias(^new^::class, \\^oldnamespace^^old^::class);\n\n",
+        "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
-        "oldnamespace", oldnamespace,
-        "old", GeneratedLegacyClassName(message));
-    GenerateLegacyClassFile(file, message, is_descriptor, generator_context);
+        "old", LegacyFullClassName(message, is_descriptor));
+    LegacyGenerateClassFile(file, message, is_descriptor, generator_context);
   }
 
   // Nested messages and enums.
@@ -1264,8 +1249,7 @@ void GenerateServiceFile(const FileDescriptor* file,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  const string& php_namespace = file->options().php_namespace();
-  if (!php_namespace.empty() ||
+  if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||
       lastindex != string::npos) {
     printer.Print(
