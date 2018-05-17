@@ -81,6 +81,25 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
     "  set {\n"
     "    $name$_ = value;\n"
     "  }\n"
+    "}\n\n");
+
+  printer->Print(
+    variables_,
+    "/// <summary>Gets whether the $descriptor_name$ field is set</summary>\n");
+  AddPublicMemberAttributes(printer);
+  printer->Print(
+    variables_,
+    "$access_level$ bool Has$property_name$ {\n"
+    "  get { return $name$_ != null; }\n"
+    "}\n\n");
+  printer->Print(
+    variables_,
+    "/// <summary>Clears the value of the $descriptor_name$ field</summary>\n");
+  AddPublicMemberAttributes(printer);
+  printer->Print(
+    variables_,
+    "$access_level$ void Clear$property_name$() {\n"
+    "  $name$_ = null;\n"
     "}\n");
 }
 
@@ -187,6 +206,28 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "  set {\n"
     "    $oneof_name$_ = value;\n"
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
+    "  }\n"
+    "}\n");
+  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+    printer->Print(
+      variables_,
+      "/// <summary>Gets whether the \"$descriptor_name$\" field is set</summary>\n");
+    AddPublicMemberAttributes(printer);
+    printer->Print(
+      variables_,
+      "$access_level$ bool Has$property_name$ {\n"
+      "  get { return $oneof_name$Case_ == $oneof_property_name$OneofCase.$property_name$; }\n"
+      "}\n");
+  }
+  printer->Print(
+    variables_,
+    "/// <summary> Clears the value of the oneof if it's currently set to \"$descriptor_name$\" </summary>\n");
+  AddPublicMemberAttributes(printer);
+  printer->Print(
+    variables_,
+    "$access_level$ void Clear$property_name$() {\n"
+    "  if ($has_property_check$) {\n"
+    "    Clear$oneof_property_name$();\n"
     "  }\n"
     "}\n");
 }
