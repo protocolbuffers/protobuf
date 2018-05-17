@@ -55,7 +55,9 @@ use Google\Protobuf\Internal\GPBUtil;
  * {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
  * seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
  * are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
- * is required, though only UTC (as indicated by "Z") is presently supported.
+ * is required. A proto3 JSON serializer should always use UTC (as indicated by
+ * "Z") when printing the Timestamp type and a proto3 JSON parser should be
+ * able to accept both UTC and other timezones (as indicated by an offset).
  * For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
  * 01:30 UTC on January 15, 2017.
  * In JavaScript, one can convert a Date object to this format using the
@@ -64,8 +66,8 @@ use Google\Protobuf\Internal\GPBUtil;
  * to this format using [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)
  * with the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one
  * can use the Joda Time's [`ISODateTimeFormat.dateTime()`](
- * http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime--)
- * to obtain a formatter capable of generating timestamps in this format.
+ * http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime--
+ * ) to obtain a formatter capable of generating timestamps in this format.
  *
  * Generated from protobuf message <code>google.protobuf.Timestamp</code>
  */
