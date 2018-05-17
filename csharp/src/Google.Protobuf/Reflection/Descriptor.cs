@@ -824,12 +824,12 @@ namespace Google.Protobuf.Reflection {
         return false;
       }
       if (HasOptions) {
-        if (!Options.IsInitialized()) {
+        if (!options_.IsInitialized()) {
           return false;
         }
       }
       if (HasSourceCodeInfo) {
-        if (!SourceCodeInfo.IsInitialized()) {
+        if (!sourceCodeInfo_.IsInitialized()) {
           return false;
         }
       }
@@ -1208,7 +1208,7 @@ namespace Google.Protobuf.Reflection {
         return false;
       }
       if (HasOptions) {
-        if (!Options.IsInitialized()) {
+        if (!options_.IsInitialized()) {
           return false;
         }
       }
@@ -1454,7 +1454,7 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool IsInitialized() {
           if (HasOptions) {
-            if (!Options.IsInitialized()) {
+            if (!options_.IsInitialized()) {
               return false;
             }
           }
@@ -2352,7 +2352,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsInitialized() {
       if (HasOptions) {
-        if (!Options.IsInitialized()) {
+        if (!options_.IsInitialized()) {
           return false;
         }
       }
@@ -2619,7 +2619,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsInitialized() {
       if (HasOptions) {
-        if (!Options.IsInitialized()) {
+        if (!options_.IsInitialized()) {
           return false;
         }
       }
@@ -2891,7 +2891,7 @@ namespace Google.Protobuf.Reflection {
         return false;
       }
       if (HasOptions) {
-        if (!Options.IsInitialized()) {
+        if (!options_.IsInitialized()) {
           return false;
         }
       }
@@ -3345,7 +3345,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsInitialized() {
       if (HasOptions) {
-        if (!Options.IsInitialized()) {
+        if (!options_.IsInitialized()) {
           return false;
         }
       }
@@ -3568,7 +3568,7 @@ namespace Google.Protobuf.Reflection {
         return false;
       }
       if (HasOptions) {
-        if (!Options.IsInitialized()) {
+        if (!options_.IsInitialized()) {
           return false;
         }
       }
@@ -3942,7 +3942,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsInitialized() {
       if (HasOptions) {
-        if (!Options.IsInitialized()) {
+        if (!options_.IsInitialized()) {
           return false;
         }
       }
@@ -7411,10 +7411,10 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool IsInitialized() {
-          if (!(HasNamePart_)) {
+          if (!!HasNamePart_) {
             return false;
           }
-          if (!(HasIsExtension)) {
+          if (!!HasIsExtension) {
             return false;
           }
           return true;
