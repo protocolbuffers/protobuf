@@ -61,11 +61,11 @@ namespace Google.Protobuf
             /// </summary>
             LengthDelimited = 2,
             /// <summary>
-            /// A "start group" value - not supported by this implementation.
+            /// A "start group" value
             /// </summary>
             StartGroup = 3,
             /// <summary>
-            /// An "end group" value - not supported by this implementation.
+            /// An "end group" value
             /// </summary>
             EndGroup = 4,
             /// <summary>

@@ -56,16 +56,8 @@ namespace Google.Protobuf.Reflection
                 throw new ArgumentException("Not all required properties/methods available");
             }
             setValueDelegate = ReflectionUtil.CreateActionIMessageObject(property.GetSetMethod());
-
-            var clrType = property.PropertyType;
-            
-            // TODO: Validate that this is a reasonable single field? (Should be a value type, a message type, or string/ByteString.)
-            object defaultValue =
-                descriptor.FieldType == FieldType.Message ? null
-                : clrType == typeof(string) ? ""
-                : clrType == typeof(ByteString) ? ByteString.Empty
-                : Activator.CreateInstance(clrType);
-            clearDelegate = message => SetValue(message, defaultValue);
+            MethodInfo clearMethod = property.DeclaringType.GetRuntimeMethod("Clear" + property.Name, ReflectionUtil.EmptyTypes);
+            clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod ?? throw new ArgumentException("Not all required properties/methods are available"));
         }
 
         public override void Clear(IMessage message)

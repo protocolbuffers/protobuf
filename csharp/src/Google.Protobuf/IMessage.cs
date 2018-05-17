@@ -67,6 +67,11 @@ namespace Google.Protobuf
         /// same value as the static property declared on the type.
         /// </summary>
         MessageDescriptor Descriptor { get; }
+
+        /// <summary>
+        /// Checks if all required fields have values set
+        /// </summary>
+        bool IsInitialized();
     }
 
     /// <summary>
