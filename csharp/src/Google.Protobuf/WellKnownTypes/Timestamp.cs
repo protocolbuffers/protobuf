@@ -156,6 +156,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "seconds" field.</summary>
     public const int SecondsFieldNumber = 1;
+    /// <summary>Default value for the "seconds" field</summary>
+    public const long SecondsDefaultValue = 0L;
+
     private long seconds_;
     /// <summary>
     /// Represents seconds of UTC time since Unix epoch
@@ -169,9 +172,17 @@ namespace Google.Protobuf.WellKnownTypes {
         seconds_ = value;
       }
     }
+    /// <summary>Clears the value of the "seconds" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSeconds() {
+      seconds_ = SecondsDefaultValue;
+    }
 
     /// <summary>Field number for the "nanos" field.</summary>
     public const int NanosFieldNumber = 2;
+    /// <summary>Default value for the "nanos" field</summary>
+    public const int NanosDefaultValue = 0;
+
     private int nanos_;
     /// <summary>
     /// Non-negative fractions of a second at nanosecond resolution. Negative
@@ -185,6 +196,11 @@ namespace Google.Protobuf.WellKnownTypes {
       set {
         nanos_ = value;
       }
+    }
+    /// <summary>Clears the value of the "nanos" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearNanos() {
+      nanos_ = NanosDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -223,6 +239,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Seconds != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(Seconds);
@@ -283,8 +300,13 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   #endregion

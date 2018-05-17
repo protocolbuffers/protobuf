@@ -158,6 +158,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       fields_.WriteTo(output, _map_fields_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -197,8 +198,16 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!fields_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   /// <summary>
@@ -276,6 +285,13 @@ namespace Google.Protobuf.WellKnownTypes {
         kindCase_ = KindOneofCase.NullValue;
       }
     }
+    /// <summary> Clears the value of the oneof if it's currently set to "null_value" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearNullValue() {
+      if (kindCase_ == KindOneofCase.NullValue) {
+        ClearKind();
+      }
+    }
 
     /// <summary>Field number for the "number_value" field.</summary>
     public const int NumberValueFieldNumber = 2;
@@ -288,6 +304,13 @@ namespace Google.Protobuf.WellKnownTypes {
       set {
         kind_ = value;
         kindCase_ = KindOneofCase.NumberValue;
+      }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "number_value" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearNumberValue() {
+      if (kindCase_ == KindOneofCase.NumberValue) {
+        ClearKind();
       }
     }
 
@@ -304,6 +327,13 @@ namespace Google.Protobuf.WellKnownTypes {
         kindCase_ = KindOneofCase.StringValue;
       }
     }
+    /// <summary> Clears the value of the oneof if it's currently set to "string_value" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearStringValue() {
+      if (kindCase_ == KindOneofCase.StringValue) {
+        ClearKind();
+      }
+    }
 
     /// <summary>Field number for the "bool_value" field.</summary>
     public const int BoolValueFieldNumber = 4;
@@ -316,6 +346,13 @@ namespace Google.Protobuf.WellKnownTypes {
       set {
         kind_ = value;
         kindCase_ = KindOneofCase.BoolValue;
+      }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "bool_value" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearBoolValue() {
+      if (kindCase_ == KindOneofCase.BoolValue) {
+        ClearKind();
       }
     }
 
@@ -332,6 +369,13 @@ namespace Google.Protobuf.WellKnownTypes {
         kindCase_ = value == null ? KindOneofCase.None : KindOneofCase.StructValue;
       }
     }
+    /// <summary> Clears the value of the oneof if it's currently set to "struct_value" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearStructValue() {
+      if (kindCase_ == KindOneofCase.StructValue) {
+        ClearKind();
+      }
+    }
 
     /// <summary>Field number for the "list_value" field.</summary>
     public const int ListValueFieldNumber = 6;
@@ -344,6 +388,13 @@ namespace Google.Protobuf.WellKnownTypes {
       set {
         kind_ = value;
         kindCase_ = value == null ? KindOneofCase.None : KindOneofCase.ListValue;
+      }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "list_value" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearListValue() {
+      if (kindCase_ == KindOneofCase.ListValue) {
+        ClearKind();
       }
     }
 
@@ -416,6 +467,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (kindCase_ == KindOneofCase.NullValue) {
         output.WriteRawTag(8);
         output.WriteEnum((int) NullValue);
@@ -552,8 +604,13 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -642,6 +699,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       values_.WriteTo(output, _repeated_values_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -681,8 +739,16 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!values_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   #endregion

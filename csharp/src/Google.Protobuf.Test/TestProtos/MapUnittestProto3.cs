@@ -462,6 +462,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       mapInt32Int32_.WriteTo(output, _map_mapInt32Int32_codec);
       mapInt64Int64_.WriteTo(output, _map_mapInt64Int64_codec);
       mapUint32Uint32_.WriteTo(output, _map_mapUint32Uint32_codec);
@@ -613,8 +614,64 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!mapInt32Int32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt64Int64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapUint32Uint32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapUint64Uint64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapSint32Sint32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapSint64Sint64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapFixed32Fixed32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapFixed64Fixed64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapSfixed32Sfixed32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapSfixed64Sfixed64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32Float_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32Double_.IsInitialized()) {
+        return false;
+      }
+      if (!mapBoolBool_.IsInitialized()) {
+        return false;
+      }
+      if (!mapStringString_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32Bytes_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32Enum_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32ForeignMessage_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   public sealed partial class TestMapSubmessage : pb::IMessage<TestMapSubmessage> {
@@ -661,6 +718,16 @@ namespace Google.Protobuf.TestProtos {
         testMap_ = value;
       }
     }
+    /// <summary>Gets whether the test_map field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasTestMap {
+      get { return testMap_ != null; }
+    }
+    /// <summary>Clears the value of the test_map field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearTestMap() {
+      testMap_ = null;
+    }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
@@ -696,6 +763,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (testMap_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(TestMap);
@@ -748,8 +816,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestMessageMap : pb::IMessage<TestMessageMap> {
@@ -830,6 +903,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       mapInt32Message_.WriteTo(output, _map_mapInt32Message_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -869,8 +943,16 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!mapInt32Message_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   /// <summary>
@@ -967,6 +1049,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       map1_.WriteTo(output, _map_map1_codec);
       map2_.WriteTo(output, _map_map2_codec);
       if (_unknownFields != null) {
@@ -1013,8 +1096,19 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!map1_.IsInitialized()) {
+        return false;
+      }
+      if (!map2_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   public sealed partial class TestArenaMap : pb::IMessage<TestArenaMap> {
@@ -1277,6 +1371,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       mapInt32Int32_.WriteTo(output, _map_mapInt32Int32_codec);
       mapInt64Int64_.WriteTo(output, _map_mapInt64Int64_codec);
       mapUint32Uint32_.WriteTo(output, _map_mapUint32Uint32_codec);
@@ -1414,8 +1509,58 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!mapInt32Int32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt64Int64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapUint32Uint32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapUint64Uint64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapSint32Sint32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapSint64Sint64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapFixed32Fixed32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapFixed64Fixed64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapSfixed32Sfixed32_.IsInitialized()) {
+        return false;
+      }
+      if (!mapSfixed64Sfixed64_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32Float_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32Double_.IsInitialized()) {
+        return false;
+      }
+      if (!mapBoolBool_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32Enum_.IsInitialized()) {
+        return false;
+      }
+      if (!mapInt32ForeignMessage_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   /// <summary>
@@ -1500,6 +1645,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       type_.WriteTo(output, _map_type_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1539,8 +1685,16 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!type_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
     #region Nested types
     /// <summary>Container for nested types declared in the MessageContainingEnumCalledType message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1635,6 +1789,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       entry_.WriteTo(output, _map_entry_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1674,8 +1829,16 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!entry_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   #endregion
