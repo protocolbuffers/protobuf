@@ -36,6 +36,9 @@
 #include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <vector>
+#include <sstream>
+#include <locale>
+#include <codecvt>
 
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
@@ -439,6 +442,23 @@ std::string StringToBase64(const std::string& input) {
       result += '=';
       src += 1;
       break;
+  }
+  return result;
+}
+
+static const char hex_chars[] = "0123456789abcdef";
+
+std::string StringToEscapedCSharpString(const std::string& input) {
+  // convert string to UTF16 to make unicode literals
+  std::wstring_convert<std::codecvt_utf8<char16_t>,char16_t> converter;
+  std::u16string converted = converter.from_bytes(input);
+  std::string result;
+  for (int i = 0; i < converted.size(); i++) {
+    result += "\\u";
+    result += hex_chars[(converted[i] & 0xF000) >> 12];
+    result += hex_chars[(converted[i] & 0x0F00) >> 8];
+    result += hex_chars[(converted[i] & 0x00F0) >> 4];
+    result += hex_chars[(converted[i] & 0x000F)];
   }
   return result;
 }

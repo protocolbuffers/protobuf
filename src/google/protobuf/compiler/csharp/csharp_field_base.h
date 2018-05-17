@@ -62,6 +62,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   virtual void WriteEquals(io::Printer* printer) = 0;
   // Currently unused, as we use reflection to generate JSON
   virtual void WriteToString(io::Printer* printer) = 0;
+  virtual void GenerateIsInitialized(io::Printer* printer);
 
  protected:
   const FieldDescriptor* descriptor_;
@@ -81,6 +82,8 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   std::string name();
   std::string type_name();
   std::string type_name(const FieldDescriptor* descriptor);
+  std::string nullable_type_name();
+  std::string nullable_type_name(const FieldDescriptor* descriptor);
   bool has_default_value();
   bool is_nullable_type();
   std::string default_value();
@@ -90,8 +93,6 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 
  private:
   void SetCommonFieldVariables(std::map<string, string>* variables);
-  std::string GetStringDefaultValueInternal();
-  std::string GetBytesDefaultValueInternal();
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorBase);
 };
