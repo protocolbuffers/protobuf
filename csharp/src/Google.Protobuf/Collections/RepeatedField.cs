@@ -293,6 +293,28 @@ namespace Google.Protobuf.Collections
         public bool IsReadOnly => false;
 
         /// <summary>
+        /// Gets a value indicating whether the elements in the collection are all initialized
+        /// </summary>
+        public bool IsInitialized()
+        {
+            for (int i = 0; i < count; i++)
+            {
+                T value = array[i];
+                if (value is IMessage message)
+                {
+                    if (!message.IsInitialized())
+                        return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Adds all of the specified values into this collection.
         /// </summary>
         /// <param name="values">The values to add to this collection.</param>
