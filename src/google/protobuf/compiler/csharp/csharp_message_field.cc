@@ -154,7 +154,7 @@ void MessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) {
     printer->Print(
       variables_,
       "if ($has_property_check$) {\n"
-      "  if (!$property_name$.IsInitialized()) {\n"
+      "  if (!$name$_.IsInitialized()) {\n"
       "    return false;\n"
       "  }\n"
       "}\n");
