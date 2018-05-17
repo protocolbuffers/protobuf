@@ -77,17 +77,15 @@ static inline int Fls128(uint128 n) {
 }
 
 void uint128::DivModImpl(uint128 dividend, uint128 divisor,
-  uint128* quotient_ret, uint128* remainder_ret) {
+                         uint128* quotient_ret, uint128* remainder_ret) {
   if (divisor == 0) {
     GOOGLE_LOG(FATAL) << "Division or mod by zero: dividend.hi=" << dividend.hi_
-      << ", lo=" << dividend.lo_;
-  }
-  else if (dividend < divisor) {
-	  *quotient_ret = 0;
-	  *remainder_ret = dividend;
-	  return;
-  }
-  else {
+                      << ", lo=" << dividend.lo_;
+  } else if (dividend < divisor) {
+    *quotient_ret = 0;
+    *remainder_ret = dividend;
+    return;
+  } else {
     int dividend_bit_length = Fls128(dividend);
     int divisor_bit_length = Fls128(divisor);
     int difference = dividend_bit_length - divisor_bit_length;
@@ -104,7 +102,6 @@ void uint128::DivModImpl(uint128 dividend, uint128 divisor,
     //record the final quotient and remainder
     *quotient_ret = quotient;
     *remainder_ret = dividend;
-	return;
   }
 }
 
