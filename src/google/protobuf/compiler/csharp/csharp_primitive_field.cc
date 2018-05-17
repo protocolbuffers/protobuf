@@ -227,7 +227,7 @@ void PrimitiveFieldGenerator::GenerateIsInitialized(io::Printer* printer) {
   if (descriptor_->is_required()) {
     printer->Print(
       variables_,
-      "if (!($has_property_check$)) {\n"
+      "if (!$has_not_property_check$) {\n"
       "  return false;\n"
       "}\n");
   }
