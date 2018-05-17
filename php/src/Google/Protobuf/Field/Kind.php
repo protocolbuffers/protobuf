@@ -7,7 +7,7 @@ namespace Google\Protobuf\Field;
 /**
  * Basic field types.
  *
- * Protobuf enum <code>Google\Protobuf\Field\Kind</code>
+ * Protobuf type <code>google.protobuf.Field.Kind</code>
  */
 class Kind
 {
@@ -126,4 +126,7 @@ class Kind
      */
     const TYPE_SINT64 = 18;
 }
+
+// Adding a class alias for backwards compatibility with the previous class name.
+class_alias(Kind::class, \Google\Protobuf\Field_Kind::class);
 

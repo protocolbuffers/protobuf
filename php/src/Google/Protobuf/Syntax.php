@@ -7,7 +7,7 @@ namespace Google\Protobuf;
 /**
  * The syntax in which a protocol buffer element is defined.
  *
- * Protobuf enum <code>Google\Protobuf\Syntax</code>
+ * Protobuf type <code>google.protobuf.Syntax</code>
  */
 class Syntax
 {

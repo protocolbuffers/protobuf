@@ -78,9 +78,39 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     private $default_value = '';
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type int $kind
+     *           The field type.
+     *     @type int $cardinality
+     *           The field cardinality.
+     *     @type int $number
+     *           The field number.
+     *     @type string $name
+     *           The field name.
+     *     @type string $type_url
+     *           The field type URL, without the scheme, for message or enumeration
+     *           types. Example: `"type.googleapis.com/google.protobuf.Timestamp"`.
+     *     @type int $oneof_index
+     *           The index of the field type in `Type.oneofs`, for message or enumeration
+     *           types. The first type has index 1; zero means the type is not in the list.
+     *     @type bool $packed
+     *           Whether to use alternative packed wire representation.
+     *     @type \Google\Protobuf\Option[]|\Google\Protobuf\Internal\RepeatedField $options
+     *           The protocol buffer options.
+     *     @type string $json_name
+     *           The field JSON name.
+     *     @type string $default_value
+     *           The string value of the default value of this field. Proto2 syntax only.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Type::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

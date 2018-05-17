@@ -7,7 +7,7 @@ namespace Google\Protobuf\Field;
 /**
  * Whether a field is optional, required, or repeated.
  *
- * Protobuf enum <code>Google\Protobuf\Field\Cardinality</code>
+ * Protobuf type <code>google.protobuf.Field.Cardinality</code>
  */
 class Cardinality
 {
@@ -36,4 +36,7 @@ class Cardinality
      */
     const CARDINALITY_REPEATED = 3;
 }
+
+// Adding a class alias for backwards compatibility with the previous class name.
+class_alias(Cardinality::class, \Google\Protobuf\Field_Cardinality::class);
 
