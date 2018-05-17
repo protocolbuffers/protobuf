@@ -156,7 +156,10 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "type_url" field.</summary>
     public const int TypeUrlFieldNumber = 1;
-    private string typeUrl_ = "";
+    /// <summary>Default value for the "type_url" field</summary>
+    public const string TypeUrlDefaultValue = "";
+
+    private string typeUrl_ = TypeUrlDefaultValue;
     /// <summary>
     /// A URL/resource name that uniquely identifies the type of the serialized
     /// protocol buffer message. This string must contain at least
@@ -193,10 +196,18 @@ namespace Google.Protobuf.WellKnownTypes {
         typeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Clears the value of the "type_url" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearTypeUrl() {
+      typeUrl_ = TypeUrlDefaultValue;
+    }
 
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 2;
-    private pb::ByteString value_ = pb::ByteString.Empty;
+    /// <summary>Default value for the "value" field</summary>
+    public readonly static pb::ByteString ValueDefaultValue = pb::ByteString.Empty;
+
+    private pb::ByteString value_ = ValueDefaultValue;
     /// <summary>
     /// Must be a valid serialized protocol buffer of the above specified type.
     /// </summary>
@@ -206,6 +217,11 @@ namespace Google.Protobuf.WellKnownTypes {
       set {
         value_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Clears the value of the "value" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearValue() {
+      value_ = ValueDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -244,6 +260,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (TypeUrl.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(TypeUrl);
@@ -304,8 +321,13 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   #endregion

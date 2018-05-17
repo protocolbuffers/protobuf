@@ -334,6 +334,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_int32" field.</summary>
     public const int SingleInt32FieldNumber = 1;
+    /// <summary>Default value for the "single_int32" field</summary>
+    public const int SingleInt32DefaultValue = 0;
+
     private int singleInt32_;
     /// <summary>
     /// Singular
@@ -345,9 +348,17 @@ namespace Google.Protobuf.TestProtos {
         singleInt32_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_int32" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleInt32() {
+      singleInt32_ = SingleInt32DefaultValue;
+    }
 
     /// <summary>Field number for the "single_int64" field.</summary>
     public const int SingleInt64FieldNumber = 2;
+    /// <summary>Default value for the "single_int64" field</summary>
+    public const long SingleInt64DefaultValue = 0L;
+
     private long singleInt64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long SingleInt64 {
@@ -356,9 +367,17 @@ namespace Google.Protobuf.TestProtos {
         singleInt64_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_int64" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleInt64() {
+      singleInt64_ = SingleInt64DefaultValue;
+    }
 
     /// <summary>Field number for the "single_uint32" field.</summary>
     public const int SingleUint32FieldNumber = 3;
+    /// <summary>Default value for the "single_uint32" field</summary>
+    public const uint SingleUint32DefaultValue = 0;
+
     private uint singleUint32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint SingleUint32 {
@@ -367,9 +386,17 @@ namespace Google.Protobuf.TestProtos {
         singleUint32_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_uint32" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleUint32() {
+      singleUint32_ = SingleUint32DefaultValue;
+    }
 
     /// <summary>Field number for the "single_uint64" field.</summary>
     public const int SingleUint64FieldNumber = 4;
+    /// <summary>Default value for the "single_uint64" field</summary>
+    public const ulong SingleUint64DefaultValue = 0UL;
+
     private ulong singleUint64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong SingleUint64 {
@@ -378,9 +405,17 @@ namespace Google.Protobuf.TestProtos {
         singleUint64_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_uint64" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleUint64() {
+      singleUint64_ = SingleUint64DefaultValue;
+    }
 
     /// <summary>Field number for the "single_sint32" field.</summary>
     public const int SingleSint32FieldNumber = 5;
+    /// <summary>Default value for the "single_sint32" field</summary>
+    public const int SingleSint32DefaultValue = 0;
+
     private int singleSint32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int SingleSint32 {
@@ -389,9 +424,17 @@ namespace Google.Protobuf.TestProtos {
         singleSint32_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_sint32" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleSint32() {
+      singleSint32_ = SingleSint32DefaultValue;
+    }
 
     /// <summary>Field number for the "single_sint64" field.</summary>
     public const int SingleSint64FieldNumber = 6;
+    /// <summary>Default value for the "single_sint64" field</summary>
+    public const long SingleSint64DefaultValue = 0L;
+
     private long singleSint64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long SingleSint64 {
@@ -400,9 +443,17 @@ namespace Google.Protobuf.TestProtos {
         singleSint64_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_sint64" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleSint64() {
+      singleSint64_ = SingleSint64DefaultValue;
+    }
 
     /// <summary>Field number for the "single_fixed32" field.</summary>
     public const int SingleFixed32FieldNumber = 7;
+    /// <summary>Default value for the "single_fixed32" field</summary>
+    public const uint SingleFixed32DefaultValue = 0;
+
     private uint singleFixed32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint SingleFixed32 {
@@ -411,9 +462,17 @@ namespace Google.Protobuf.TestProtos {
         singleFixed32_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_fixed32" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleFixed32() {
+      singleFixed32_ = SingleFixed32DefaultValue;
+    }
 
     /// <summary>Field number for the "single_fixed64" field.</summary>
     public const int SingleFixed64FieldNumber = 8;
+    /// <summary>Default value for the "single_fixed64" field</summary>
+    public const ulong SingleFixed64DefaultValue = 0UL;
+
     private ulong singleFixed64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong SingleFixed64 {
@@ -422,9 +481,17 @@ namespace Google.Protobuf.TestProtos {
         singleFixed64_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_fixed64" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleFixed64() {
+      singleFixed64_ = SingleFixed64DefaultValue;
+    }
 
     /// <summary>Field number for the "single_sfixed32" field.</summary>
     public const int SingleSfixed32FieldNumber = 9;
+    /// <summary>Default value for the "single_sfixed32" field</summary>
+    public const int SingleSfixed32DefaultValue = 0;
+
     private int singleSfixed32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int SingleSfixed32 {
@@ -433,9 +500,17 @@ namespace Google.Protobuf.TestProtos {
         singleSfixed32_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_sfixed32" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleSfixed32() {
+      singleSfixed32_ = SingleSfixed32DefaultValue;
+    }
 
     /// <summary>Field number for the "single_sfixed64" field.</summary>
     public const int SingleSfixed64FieldNumber = 10;
+    /// <summary>Default value for the "single_sfixed64" field</summary>
+    public const long SingleSfixed64DefaultValue = 0L;
+
     private long singleSfixed64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long SingleSfixed64 {
@@ -444,9 +519,17 @@ namespace Google.Protobuf.TestProtos {
         singleSfixed64_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_sfixed64" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleSfixed64() {
+      singleSfixed64_ = SingleSfixed64DefaultValue;
+    }
 
     /// <summary>Field number for the "single_float" field.</summary>
     public const int SingleFloatFieldNumber = 11;
+    /// <summary>Default value for the "single_float" field</summary>
+    public const float SingleFloatDefaultValue = 0F;
+
     private float singleFloat_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float SingleFloat {
@@ -455,9 +538,17 @@ namespace Google.Protobuf.TestProtos {
         singleFloat_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_float" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleFloat() {
+      singleFloat_ = SingleFloatDefaultValue;
+    }
 
     /// <summary>Field number for the "single_double" field.</summary>
     public const int SingleDoubleFieldNumber = 12;
+    /// <summary>Default value for the "single_double" field</summary>
+    public const double SingleDoubleDefaultValue = 0D;
+
     private double singleDouble_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double SingleDouble {
@@ -466,9 +557,17 @@ namespace Google.Protobuf.TestProtos {
         singleDouble_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_double" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleDouble() {
+      singleDouble_ = SingleDoubleDefaultValue;
+    }
 
     /// <summary>Field number for the "single_bool" field.</summary>
     public const int SingleBoolFieldNumber = 13;
+    /// <summary>Default value for the "single_bool" field</summary>
+    public const bool SingleBoolDefaultValue = false;
+
     private bool singleBool_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool SingleBool {
@@ -477,10 +576,18 @@ namespace Google.Protobuf.TestProtos {
         singleBool_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_bool" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleBool() {
+      singleBool_ = SingleBoolDefaultValue;
+    }
 
     /// <summary>Field number for the "single_string" field.</summary>
     public const int SingleStringFieldNumber = 14;
-    private string singleString_ = "";
+    /// <summary>Default value for the "single_string" field</summary>
+    public const string SingleStringDefaultValue = "";
+
+    private string singleString_ = SingleStringDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string SingleString {
       get { return singleString_; }
@@ -488,16 +595,29 @@ namespace Google.Protobuf.TestProtos {
         singleString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Clears the value of the "single_string" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleString() {
+      singleString_ = SingleStringDefaultValue;
+    }
 
     /// <summary>Field number for the "single_bytes" field.</summary>
     public const int SingleBytesFieldNumber = 15;
-    private pb::ByteString singleBytes_ = pb::ByteString.Empty;
+    /// <summary>Default value for the "single_bytes" field</summary>
+    public readonly static pb::ByteString SingleBytesDefaultValue = pb::ByteString.Empty;
+
+    private pb::ByteString singleBytes_ = SingleBytesDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString SingleBytes {
       get { return singleBytes_; }
       set {
         singleBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Clears the value of the "single_bytes" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleBytes() {
+      singleBytes_ = SingleBytesDefaultValue;
     }
 
     /// <summary>Field number for the "single_nested_message" field.</summary>
@@ -510,6 +630,16 @@ namespace Google.Protobuf.TestProtos {
         singleNestedMessage_ = value;
       }
     }
+    /// <summary>Gets whether the single_nested_message field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasSingleNestedMessage {
+      get { return singleNestedMessage_ != null; }
+    }
+    /// <summary>Clears the value of the single_nested_message field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleNestedMessage() {
+      singleNestedMessage_ = null;
+    }
 
     /// <summary>Field number for the "single_foreign_message" field.</summary>
     public const int SingleForeignMessageFieldNumber = 19;
@@ -520,6 +650,16 @@ namespace Google.Protobuf.TestProtos {
       set {
         singleForeignMessage_ = value;
       }
+    }
+    /// <summary>Gets whether the single_foreign_message field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasSingleForeignMessage {
+      get { return singleForeignMessage_ != null; }
+    }
+    /// <summary>Clears the value of the single_foreign_message field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleForeignMessage() {
+      singleForeignMessage_ = null;
     }
 
     /// <summary>Field number for the "single_import_message" field.</summary>
@@ -532,10 +672,23 @@ namespace Google.Protobuf.TestProtos {
         singleImportMessage_ = value;
       }
     }
+    /// <summary>Gets whether the single_import_message field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasSingleImportMessage {
+      get { return singleImportMessage_ != null; }
+    }
+    /// <summary>Clears the value of the single_import_message field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleImportMessage() {
+      singleImportMessage_ = null;
+    }
 
     /// <summary>Field number for the "single_nested_enum" field.</summary>
     public const int SingleNestedEnumFieldNumber = 21;
-    private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = 0;
+    /// <summary>Default value for the "single_nested_enum" field</summary>
+    public const global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum SingleNestedEnumDefaultValue = 0;
+
+    private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = SingleNestedEnumDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum SingleNestedEnum {
       get { return singleNestedEnum_; }
@@ -543,10 +696,18 @@ namespace Google.Protobuf.TestProtos {
         singleNestedEnum_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_nested_enum" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleNestedEnum() {
+      singleNestedEnum_ = SingleNestedEnumDefaultValue;
+    }
 
     /// <summary>Field number for the "single_foreign_enum" field.</summary>
     public const int SingleForeignEnumFieldNumber = 22;
-    private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = 0;
+    /// <summary>Default value for the "single_foreign_enum" field</summary>
+    public const global::Google.Protobuf.TestProtos.ForeignEnum SingleForeignEnumDefaultValue = 0;
+
+    private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = SingleForeignEnumDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.ForeignEnum SingleForeignEnum {
       get { return singleForeignEnum_; }
@@ -554,16 +715,29 @@ namespace Google.Protobuf.TestProtos {
         singleForeignEnum_ = value;
       }
     }
+    /// <summary>Clears the value of the "single_foreign_enum" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleForeignEnum() {
+      singleForeignEnum_ = SingleForeignEnumDefaultValue;
+    }
 
     /// <summary>Field number for the "single_import_enum" field.</summary>
     public const int SingleImportEnumFieldNumber = 23;
-    private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = 0;
+    /// <summary>Default value for the "single_import_enum" field</summary>
+    public const global::Google.Protobuf.TestProtos.ImportEnum SingleImportEnumDefaultValue = 0;
+
+    private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = SingleImportEnumDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.ImportEnum SingleImportEnum {
       get { return singleImportEnum_; }
       set {
         singleImportEnum_ = value;
       }
+    }
+    /// <summary>Clears the value of the "single_import_enum" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleImportEnum() {
+      singleImportEnum_ = SingleImportEnumDefaultValue;
     }
 
     /// <summary>Field number for the "single_public_import_message" field.</summary>
@@ -578,6 +752,16 @@ namespace Google.Protobuf.TestProtos {
       set {
         singlePublicImportMessage_ = value;
       }
+    }
+    /// <summary>Gets whether the single_public_import_message field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasSinglePublicImportMessage {
+      get { return singlePublicImportMessage_ != null; }
+    }
+    /// <summary>Clears the value of the single_public_import_message field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSinglePublicImportMessage() {
+      singlePublicImportMessage_ = null;
     }
 
     /// <summary>Field number for the "repeated_int32" field.</summary>
@@ -816,6 +1000,13 @@ namespace Google.Protobuf.TestProtos {
         oneofFieldCase_ = OneofFieldOneofCase.OneofUint32;
       }
     }
+    /// <summary> Clears the value of the oneof if it's currently set to "oneof_uint32" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOneofUint32() {
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
+        ClearOneofField();
+      }
+    }
 
     /// <summary>Field number for the "oneof_nested_message" field.</summary>
     public const int OneofNestedMessageFieldNumber = 112;
@@ -825,6 +1016,13 @@ namespace Google.Protobuf.TestProtos {
       set {
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.OneofNestedMessage;
+      }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "oneof_nested_message" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOneofNestedMessage() {
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+        ClearOneofField();
       }
     }
 
@@ -838,6 +1036,13 @@ namespace Google.Protobuf.TestProtos {
         oneofFieldCase_ = OneofFieldOneofCase.OneofString;
       }
     }
+    /// <summary> Clears the value of the oneof if it's currently set to "oneof_string" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOneofString() {
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
+        ClearOneofField();
+      }
+    }
 
     /// <summary>Field number for the "oneof_bytes" field.</summary>
     public const int OneofBytesFieldNumber = 114;
@@ -847,6 +1052,13 @@ namespace Google.Protobuf.TestProtos {
       set {
         oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
+      }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "oneof_bytes" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOneofBytes() {
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
+        ClearOneofField();
       }
     }
 
@@ -1001,6 +1213,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (SingleInt32 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(SingleInt32);
@@ -1602,8 +1815,25 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!repeatedNestedMessage_.IsInitialized()) {
+        return false;
+      }
+      if (!repeatedForeignMessage_.IsInitialized()) {
+        return false;
+      }
+      if (!repeatedImportMessage_.IsInitialized()) {
+        return false;
+      }
+      if (!repeatedPublicImportMessage_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
     #region Nested types
     /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1655,6 +1885,9 @@ namespace Google.Protobuf.TestProtos {
 
         /// <summary>Field number for the "bb" field.</summary>
         public const int BbFieldNumber = 1;
+        /// <summary>Default value for the "bb" field</summary>
+        public const int BbDefaultValue = 0;
+
         private int bb_;
         /// <summary>
         /// The field name "b" fails to compile in proto1 because it conflicts with
@@ -1667,6 +1900,11 @@ namespace Google.Protobuf.TestProtos {
           set {
             bb_ = value;
           }
+        }
+        /// <summary>Clears the value of the "bb" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void ClearBb() {
+          bb_ = BbDefaultValue;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1703,6 +1941,7 @@ namespace Google.Protobuf.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          pb::ProtoPreconditions.CheckInitialized(this);
           if (Bb != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -1749,8 +1988,13 @@ namespace Google.Protobuf.TestProtos {
               }
             }
           }
+          pb::ProtoPreconditions.CheckMergedRequiredFields(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool IsInitialized() {
+          return true;
+        }
       }
 
     }
@@ -1807,6 +2051,16 @@ namespace Google.Protobuf.TestProtos {
         child_ = value;
       }
     }
+    /// <summary>Gets whether the child field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasChild {
+      get { return child_ != null; }
+    }
+    /// <summary>Clears the value of the child field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearChild() {
+      child_ = null;
+    }
 
     /// <summary>Field number for the "payload" field.</summary>
     public const int PayloadFieldNumber = 2;
@@ -1817,6 +2071,16 @@ namespace Google.Protobuf.TestProtos {
       set {
         payload_ = value;
       }
+    }
+    /// <summary>Gets whether the payload field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasPayload {
+      get { return payload_ != null; }
+    }
+    /// <summary>Clears the value of the payload field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearPayload() {
+      payload_ = null;
     }
 
     /// <summary>Field number for the "repeated_child" field.</summary>
@@ -1867,6 +2131,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (child_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Child);
@@ -1946,8 +2211,16 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!repeatedChild_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields> {
@@ -1986,6 +2259,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "deprecated_int32" field.</summary>
     public const int DeprecatedInt32FieldNumber = 1;
+    /// <summary>Default value for the "deprecated_int32" field</summary>
+    public const int DeprecatedInt32DefaultValue = 0;
+
     private int deprecatedInt32_;
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1994,6 +2270,12 @@ namespace Google.Protobuf.TestProtos {
       set {
         deprecatedInt32_ = value;
       }
+    }
+    /// <summary>Clears the value of the "deprecated_int32" field</summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearDeprecatedInt32() {
+      deprecatedInt32_ = DeprecatedInt32DefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2030,6 +2312,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (DeprecatedInt32 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(DeprecatedInt32);
@@ -2076,8 +2359,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -2120,6 +2408,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "c" field.</summary>
     public const int CFieldNumber = 1;
+    /// <summary>Default value for the "c" field</summary>
+    public const int CDefaultValue = 0;
+
     private int c_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int C {
@@ -2127,6 +2418,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         c_ = value;
       }
+    }
+    /// <summary>Clears the value of the "c" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearC() {
+      c_ = CDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2163,6 +2459,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (C != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(C);
@@ -2209,8 +2506,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields> {
@@ -2278,6 +2580,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2310,8 +2613,13 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -2361,6 +2669,16 @@ namespace Google.Protobuf.TestProtos {
         foreignNested_ = value;
       }
     }
+    /// <summary>Gets whether the foreign_nested field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasForeignNested {
+      get { return foreignNested_ != null; }
+    }
+    /// <summary>Clears the value of the foreign_nested field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearForeignNested() {
+      foreignNested_ = null;
+    }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
@@ -2396,6 +2714,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (foreignNested_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(ForeignNested);
@@ -2448,8 +2767,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -2492,6 +2816,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "a" field.</summary>
     public const int AFieldNumber = 1;
+    /// <summary>Default value for the "a" field</summary>
+    public const int ADefaultValue = 0;
+
     private int a_;
     /// <summary>
     /// The largest possible tag number is 2^28 - 1, since the wire format uses
@@ -2504,9 +2831,17 @@ namespace Google.Protobuf.TestProtos {
         a_ = value;
       }
     }
+    /// <summary>Clears the value of the "a" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearA() {
+      a_ = ADefaultValue;
+    }
 
     /// <summary>Field number for the "bb" field.</summary>
     public const int BbFieldNumber = 268435455;
+    /// <summary>Default value for the "bb" field</summary>
+    public const int BbDefaultValue = 0;
+
     private int bb_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Bb {
@@ -2514,6 +2849,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         bb_ = value;
       }
+    }
+    /// <summary>Clears the value of the "bb" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearBb() {
+      bb_ = BbDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2552,6 +2892,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (A != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -2612,8 +2953,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage> {
@@ -2661,9 +3007,22 @@ namespace Google.Protobuf.TestProtos {
         a_ = value;
       }
     }
+    /// <summary>Gets whether the a field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasA {
+      get { return a_ != null; }
+    }
+    /// <summary>Clears the value of the a field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearA() {
+      a_ = null;
+    }
 
     /// <summary>Field number for the "i" field.</summary>
     public const int IFieldNumber = 2;
+    /// <summary>Default value for the "i" field</summary>
+    public const int IDefaultValue = 0;
+
     private int i_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int I {
@@ -2671,6 +3030,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         i_ = value;
       }
+    }
+    /// <summary>Clears the value of the "i" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearI() {
+      i_ = IDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2709,6 +3073,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
@@ -2775,8 +3140,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -2826,6 +3196,16 @@ namespace Google.Protobuf.TestProtos {
         bb_ = value;
       }
     }
+    /// <summary>Gets whether the bb field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasBb {
+      get { return bb_ != null; }
+    }
+    /// <summary>Clears the value of the bb field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearBb() {
+      bb_ = null;
+    }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
@@ -2861,6 +3241,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (bb_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Bb);
@@ -2913,8 +3294,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB> {
@@ -2962,9 +3348,22 @@ namespace Google.Protobuf.TestProtos {
         a_ = value;
       }
     }
+    /// <summary>Gets whether the a field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasA {
+      get { return a_ != null; }
+    }
+    /// <summary>Clears the value of the a field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearA() {
+      a_ = null;
+    }
 
     /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 2;
+    /// <summary>Default value for the "optional_int32" field</summary>
+    public const int OptionalInt32DefaultValue = 0;
+
     private int optionalInt32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OptionalInt32 {
@@ -2972,6 +3371,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         optionalInt32_ = value;
       }
+    }
+    /// <summary>Clears the value of the "optional_int32" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOptionalInt32() {
+      optionalInt32_ = OptionalInt32DefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3010,6 +3414,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
@@ -3076,8 +3481,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestEnumAllowAlias : pb::IMessage<TestEnumAllowAlias> {
@@ -3116,13 +3526,21 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
-    private global::Google.Protobuf.TestProtos.TestEnumWithDupValue value_ = 0;
+    /// <summary>Default value for the "value" field</summary>
+    public const global::Google.Protobuf.TestProtos.TestEnumWithDupValue ValueDefaultValue = 0;
+
+    private global::Google.Protobuf.TestProtos.TestEnumWithDupValue value_ = ValueDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.TestEnumWithDupValue Value {
       get { return value_; }
       set {
         value_ = value;
       }
+    }
+    /// <summary>Clears the value of the "value" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearValue() {
+      value_ = ValueDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3159,6 +3577,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
@@ -3205,8 +3624,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -3256,6 +3680,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "PrimitiveField" field.</summary>
     public const int PrimitiveFieldFieldNumber = 1;
+    /// <summary>Default value for the "PrimitiveField" field</summary>
+    public const int PrimitiveFieldDefaultValue = 0;
+
     private int primitiveField_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int PrimitiveField {
@@ -3264,10 +3691,18 @@ namespace Google.Protobuf.TestProtos {
         primitiveField_ = value;
       }
     }
+    /// <summary>Clears the value of the "PrimitiveField" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearPrimitiveField() {
+      primitiveField_ = PrimitiveFieldDefaultValue;
+    }
 
     /// <summary>Field number for the "StringField" field.</summary>
     public const int StringFieldFieldNumber = 2;
-    private string stringField_ = "";
+    /// <summary>Default value for the "StringField" field</summary>
+    public const string StringFieldDefaultValue = "";
+
+    private string stringField_ = StringFieldDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string StringField {
       get { return stringField_; }
@@ -3275,16 +3710,29 @@ namespace Google.Protobuf.TestProtos {
         stringField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Clears the value of the "StringField" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearStringField() {
+      stringField_ = StringFieldDefaultValue;
+    }
 
     /// <summary>Field number for the "EnumField" field.</summary>
     public const int EnumFieldFieldNumber = 3;
-    private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = 0;
+    /// <summary>Default value for the "EnumField" field</summary>
+    public const global::Google.Protobuf.TestProtos.ForeignEnum EnumFieldDefaultValue = 0;
+
+    private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = EnumFieldDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.ForeignEnum EnumField {
       get { return enumField_; }
       set {
         enumField_ = value;
       }
+    }
+    /// <summary>Clears the value of the "EnumField" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearEnumField() {
+      enumField_ = EnumFieldDefaultValue;
     }
 
     /// <summary>Field number for the "MessageField" field.</summary>
@@ -3296,6 +3744,16 @@ namespace Google.Protobuf.TestProtos {
       set {
         messageField_ = value;
       }
+    }
+    /// <summary>Gets whether the MessageField field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasMessageField {
+      get { return messageField_ != null; }
+    }
+    /// <summary>Clears the value of the MessageField field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearMessageField() {
+      messageField_ = null;
     }
 
     /// <summary>Field number for the "RepeatedPrimitiveField" field.</summary>
@@ -3386,6 +3844,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (PrimitiveField != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveField);
@@ -3510,8 +3969,16 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      if (!repeatedMessageField_.IsInitialized()) {
+        return false;
+      }
+      return true;
+    }
   }
 
   /// <summary>
@@ -3557,7 +4024,10 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "my_string" field.</summary>
     public const int MyStringFieldNumber = 11;
-    private string myString_ = "";
+    /// <summary>Default value for the "my_string" field</summary>
+    public const string MyStringDefaultValue = "";
+
+    private string myString_ = MyStringDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string MyString {
       get { return myString_; }
@@ -3565,9 +4035,17 @@ namespace Google.Protobuf.TestProtos {
         myString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Clears the value of the "my_string" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearMyString() {
+      myString_ = MyStringDefaultValue;
+    }
 
     /// <summary>Field number for the "my_int" field.</summary>
     public const int MyIntFieldNumber = 1;
+    /// <summary>Default value for the "my_int" field</summary>
+    public const long MyIntDefaultValue = 0L;
+
     private long myInt_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long MyInt {
@@ -3576,9 +4054,17 @@ namespace Google.Protobuf.TestProtos {
         myInt_ = value;
       }
     }
+    /// <summary>Clears the value of the "my_int" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearMyInt() {
+      myInt_ = MyIntDefaultValue;
+    }
 
     /// <summary>Field number for the "my_float" field.</summary>
     public const int MyFloatFieldNumber = 101;
+    /// <summary>Default value for the "my_float" field</summary>
+    public const float MyFloatDefaultValue = 0F;
+
     private float myFloat_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float MyFloat {
@@ -3586,6 +4072,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         myFloat_ = value;
       }
+    }
+    /// <summary>Clears the value of the "my_float" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearMyFloat() {
+      myFloat_ = MyFloatDefaultValue;
     }
 
     /// <summary>Field number for the "single_nested_message" field.</summary>
@@ -3597,6 +4088,16 @@ namespace Google.Protobuf.TestProtos {
       set {
         singleNestedMessage_ = value;
       }
+    }
+    /// <summary>Gets whether the single_nested_message field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasSingleNestedMessage {
+      get { return singleNestedMessage_ != null; }
+    }
+    /// <summary>Clears the value of the single_nested_message field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSingleNestedMessage() {
+      singleNestedMessage_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3639,6 +4140,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (MyInt != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(MyInt);
@@ -3733,8 +4235,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
     #region Nested types
     /// <summary>Container for nested types declared in the TestFieldOrderings message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3776,6 +4283,9 @@ namespace Google.Protobuf.TestProtos {
 
         /// <summary>Field number for the "oo" field.</summary>
         public const int OoFieldNumber = 2;
+        /// <summary>Default value for the "oo" field</summary>
+        public const long OoDefaultValue = 0L;
+
         private long oo_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public long Oo {
@@ -3784,9 +4294,17 @@ namespace Google.Protobuf.TestProtos {
             oo_ = value;
           }
         }
+        /// <summary>Clears the value of the "oo" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void ClearOo() {
+          oo_ = OoDefaultValue;
+        }
 
         /// <summary>Field number for the "bb" field.</summary>
         public const int BbFieldNumber = 1;
+        /// <summary>Default value for the "bb" field</summary>
+        public const int BbDefaultValue = 0;
+
         private int bb_;
         /// <summary>
         /// The field name "b" fails to compile in proto1 because it conflicts with
@@ -3799,6 +4317,11 @@ namespace Google.Protobuf.TestProtos {
           set {
             bb_ = value;
           }
+        }
+        /// <summary>Clears the value of the "bb" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void ClearBb() {
+          bb_ = BbDefaultValue;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3837,6 +4360,7 @@ namespace Google.Protobuf.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          pb::ProtoPreconditions.CheckInitialized(this);
           if (Bb != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -3897,8 +4421,13 @@ namespace Google.Protobuf.TestProtos {
               }
             }
           }
+          pb::ProtoPreconditions.CheckMergedRequiredFields(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool IsInitialized() {
+          return true;
+        }
       }
 
     }
@@ -3942,13 +4471,21 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "sparse_enum" field.</summary>
     public const int SparseEnumFieldNumber = 1;
-    private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = 0;
+    /// <summary>Default value for the "sparse_enum" field</summary>
+    public const global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnumDefaultValue = 0;
+
+    private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = SparseEnumDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnum {
       get { return sparseEnum_; }
       set {
         sparseEnum_ = value;
       }
+    }
+    /// <summary>Clears the value of the "sparse_enum" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSparseEnum() {
+      sparseEnum_ = SparseEnumDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3985,6 +4522,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (SparseEnum != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) SparseEnum);
@@ -4031,8 +4569,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -4074,13 +4617,21 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
-    private string data_ = "";
+    /// <summary>Default value for the "data" field</summary>
+    public const string DataDefaultValue = "";
+
+    private string data_ = DataDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Data {
       get { return data_; }
       set {
         data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Clears the value of the "data" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearData() {
+      data_ = DataDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4117,6 +4668,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Data);
@@ -4163,8 +4715,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class MoreString : pb::IMessage<MoreString> {
@@ -4245,6 +4802,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       data_.WriteTo(output, _repeated_data_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -4284,8 +4842,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class OneBytes : pb::IMessage<OneBytes> {
@@ -4324,13 +4887,21 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
-    private pb::ByteString data_ = pb::ByteString.Empty;
+    /// <summary>Default value for the "data" field</summary>
+    public readonly static pb::ByteString DataDefaultValue = pb::ByteString.Empty;
+
+    private pb::ByteString data_ = DataDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString Data {
       get { return data_; }
       set {
         data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Clears the value of the "data" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearData() {
+      data_ = DataDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4367,6 +4938,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteBytes(Data);
@@ -4413,8 +4985,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class MoreBytes : pb::IMessage<MoreBytes> {
@@ -4453,13 +5030,21 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
-    private pb::ByteString data_ = pb::ByteString.Empty;
+    /// <summary>Default value for the "data" field</summary>
+    public readonly static pb::ByteString DataDefaultValue = pb::ByteString.Empty;
+
+    private pb::ByteString data_ = DataDefaultValue;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString Data {
       get { return data_; }
       set {
         data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Clears the value of the "data" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearData() {
+      data_ = DataDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4496,6 +5081,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteBytes(Data);
@@ -4542,8 +5128,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -4585,6 +5176,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
+    /// <summary>Default value for the "data" field</summary>
+    public const int DataDefaultValue = 0;
+
     private int data_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Data {
@@ -4592,6 +5186,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         data_ = value;
       }
+    }
+    /// <summary>Clears the value of the "data" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearData() {
+      data_ = DataDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4628,6 +5227,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Data);
@@ -4674,8 +5274,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class Uint32Message : pb::IMessage<Uint32Message> {
@@ -4714,6 +5319,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
+    /// <summary>Default value for the "data" field</summary>
+    public const uint DataDefaultValue = 0;
+
     private uint data_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint Data {
@@ -4721,6 +5329,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         data_ = value;
       }
+    }
+    /// <summary>Clears the value of the "data" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearData() {
+      data_ = DataDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4757,6 +5370,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != 0) {
         output.WriteRawTag(8);
         output.WriteUInt32(Data);
@@ -4803,8 +5417,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class Int64Message : pb::IMessage<Int64Message> {
@@ -4843,6 +5462,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
+    /// <summary>Default value for the "data" field</summary>
+    public const long DataDefaultValue = 0L;
+
     private long data_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long Data {
@@ -4850,6 +5472,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         data_ = value;
       }
+    }
+    /// <summary>Clears the value of the "data" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearData() {
+      data_ = DataDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4886,6 +5513,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(Data);
@@ -4932,8 +5560,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class Uint64Message : pb::IMessage<Uint64Message> {
@@ -4972,6 +5605,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
+    /// <summary>Default value for the "data" field</summary>
+    public const ulong DataDefaultValue = 0UL;
+
     private ulong data_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong Data {
@@ -4979,6 +5615,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         data_ = value;
       }
+    }
+    /// <summary>Clears the value of the "data" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearData() {
+      data_ = DataDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5015,6 +5656,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != 0UL) {
         output.WriteRawTag(8);
         output.WriteUInt64(Data);
@@ -5061,8 +5703,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class BoolMessage : pb::IMessage<BoolMessage> {
@@ -5101,6 +5748,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
+    /// <summary>Default value for the "data" field</summary>
+    public const bool DataDefaultValue = false;
+
     private bool data_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Data {
@@ -5108,6 +5758,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         data_ = value;
       }
+    }
+    /// <summary>Clears the value of the "data" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearData() {
+      data_ = DataDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5144,6 +5799,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != false) {
         output.WriteRawTag(8);
         output.WriteBool(Data);
@@ -5190,8 +5846,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -5252,6 +5913,13 @@ namespace Google.Protobuf.TestProtos {
         fooCase_ = FooOneofCase.FooInt;
       }
     }
+    /// <summary> Clears the value of the oneof if it's currently set to "foo_int" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearFooInt() {
+      if (fooCase_ == FooOneofCase.FooInt) {
+        ClearFoo();
+      }
+    }
 
     /// <summary>Field number for the "foo_string" field.</summary>
     public const int FooStringFieldNumber = 2;
@@ -5263,6 +5931,13 @@ namespace Google.Protobuf.TestProtos {
         fooCase_ = FooOneofCase.FooString;
       }
     }
+    /// <summary> Clears the value of the oneof if it's currently set to "foo_string" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearFooString() {
+      if (fooCase_ == FooOneofCase.FooString) {
+        ClearFoo();
+      }
+    }
 
     /// <summary>Field number for the "foo_message" field.</summary>
     public const int FooMessageFieldNumber = 3;
@@ -5272,6 +5947,13 @@ namespace Google.Protobuf.TestProtos {
       set {
         foo_ = value;
         fooCase_ = value == null ? FooOneofCase.None : FooOneofCase.FooMessage;
+      }
+    }
+    /// <summary> Clears the value of the oneof if it's currently set to "foo_message" </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearFooMessage() {
+      if (fooCase_ == FooOneofCase.FooMessage) {
+        ClearFoo();
       }
     }
 
@@ -5335,6 +6017,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (fooCase_ == FooOneofCase.FooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -5420,8 +6103,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes> {
@@ -5671,6 +6359,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       packedInt32_.WriteTo(output, _repeated_packedInt32_codec);
       packedInt64_.WriteTo(output, _repeated_packedInt64_codec);
       packedUint32_.WriteTo(output, _repeated_packedUint32_codec);
@@ -5815,8 +6504,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -6070,6 +6764,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       unpackedInt32_.WriteTo(output, _repeated_unpackedInt32_codec);
       unpackedInt64_.WriteTo(output, _repeated_unpackedInt64_codec);
       unpackedUint32_.WriteTo(output, _repeated_unpackedUint32_codec);
@@ -6214,8 +6909,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes> {
@@ -6375,6 +7075,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       repeatedFixed32_.WriteTo(output, _repeated_repeatedFixed32_codec);
       repeatedInt32_.WriteTo(output, _repeated_repeatedInt32_codec);
       repeatedFixed64_.WriteTo(output, _repeated_repeatedFixed64_codec);
@@ -6455,8 +7156,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage> {
@@ -6495,7 +7201,10 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "a" field.</summary>
     public const int AFieldNumber = 1;
-    private string a_ = "";
+    /// <summary>Default value for the "a" field</summary>
+    public const string ADefaultValue = "";
+
+    private string a_ = ADefaultValue;
     /// <summary>
     /// */ &lt;- This should not close the generated doc comment
     /// </summary>
@@ -6505,6 +7214,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         a_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Clears the value of the "a" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearA() {
+      a_ = ADefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6541,6 +7255,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (A.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(A);
@@ -6587,8 +7302,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   /// <summary>
@@ -6659,6 +7379,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -6691,8 +7412,13 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class FooResponse : pb::IMessage<FooResponse> {
@@ -6760,6 +7486,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -6792,8 +7519,13 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage> {
@@ -6861,6 +7593,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -6893,8 +7626,13 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage> {
@@ -6962,6 +7700,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -6994,8 +7733,13 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class BarRequest : pb::IMessage<BarRequest> {
@@ -7063,6 +7807,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7095,8 +7840,13 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class BarResponse : pb::IMessage<BarResponse> {
@@ -7164,6 +7914,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7196,8 +7947,13 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   public sealed partial class TestEmptyMessage : pb::IMessage<TestEmptyMessage> {
@@ -7265,6 +8021,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7297,8 +8054,13 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   #endregion

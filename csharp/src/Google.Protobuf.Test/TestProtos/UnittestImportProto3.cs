@@ -86,6 +86,9 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "d" field.</summary>
     public const int DFieldNumber = 1;
+    /// <summary>Default value for the "d" field</summary>
+    public const int DDefaultValue = 0;
+
     private int d_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int D {
@@ -93,6 +96,11 @@ namespace Google.Protobuf.TestProtos {
       set {
         d_ = value;
       }
+    }
+    /// <summary>Clears the value of the "d" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearD() {
+      d_ = DDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -129,6 +137,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      pb::ProtoPreconditions.CheckInitialized(this);
       if (D != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(D);
@@ -175,8 +184,13 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
+      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IsInitialized() {
+      return true;
+    }
   }
 
   #endregion
