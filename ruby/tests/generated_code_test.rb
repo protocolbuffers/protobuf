@@ -5,6 +5,7 @@ $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
 require 'generated_code_pb'
 require 'test_import_pb'
+require 'test_ruby_package_pb'
 require 'test/unit'
 
 class GeneratedCodeTest < Test::Unit::TestCase
@@ -15,5 +16,6 @@ class GeneratedCodeTest < Test::Unit::TestCase
     # aspect of the extension (basic.rb is for that).
     m = A::B::C::TestMessage.new()
     m2 = FooBar::TestImportedMessage.new()
+    m3 = A::B::TestRubyPackageMessage.new()
   end
 end

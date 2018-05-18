@@ -337,9 +337,20 @@ void GenerateEnumAssignment(
 }
 
 int GeneratePackageModules(
-    std::string package_name,
+    const FileDescriptor* file,
     google::protobuf::io::Printer* printer) {
   int levels = 0;
+  bool need_change_to_module;
+  std::string package_name;
+
+  if (file->options().has_ruby_package()) {
+    package_name = file->options().ruby_package();
+    need_change_to_module = false;
+  } else {
+    package_name = file->package();
+    need_change_to_module = true;
+  }
+
   while (!package_name.empty()) {
     size_t dot_index = package_name.find(".");
     string component;
@@ -350,7 +361,9 @@ int GeneratePackageModules(
       component = package_name.substr(0, dot_index);
       package_name = package_name.substr(dot_index + 1);
     }
-    component = PackageToModule(component);
+    if (need_change_to_module) {
+      component = PackageToModule(component);
+    }
     printer->Print(
       "module $name$\n",
       "name", component);
@@ -462,7 +475,7 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   printer->Print(
     "end\n\n");
 
-  int levels = GeneratePackageModules(file->package(), printer);
+  int levels = GeneratePackageModules(file, printer);
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessageAssignment("", file->message_type(i), printer);
   }
