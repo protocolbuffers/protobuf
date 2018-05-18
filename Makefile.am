@@ -633,38 +633,28 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/DescriptorPool.php                 \
   php/src/Google/Protobuf/Internal/DescriptorProto.php                \
   php/src/Google/Protobuf/Internal/DescriptorProto/ExtensionRange.php \
-  php/src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php \
   php/src/Google/Protobuf/Internal/DescriptorProto/ReservedRange.php  \
-  php/src/Google/Protobuf/Internal/DescriptorProto_ReservedRange.php  \
   php/src/Google/Protobuf/Internal/EnumBuilderContext.php             \
   php/src/Google/Protobuf/Internal/EnumDescriptor.php                 \
   php/src/Google/Protobuf/Internal/EnumDescriptorProto.php            \
   php/src/Google/Protobuf/Internal/EnumDescriptorProto/EnumReservedRange.php \
-  php/src/Google/Protobuf/Internal/EnumDescriptorProto_EnumReservedRange.php \
   php/src/Google/Protobuf/Internal/EnumOptions.php                    \
   php/src/Google/Protobuf/Internal/EnumValueDescriptorProto.php       \
   php/src/Google/Protobuf/Internal/EnumValueOptions.php               \
   php/src/Google/Protobuf/Internal/ExtensionRangeOptions.php          \
-  php/src/Google/Protobuf/Internal/FieldDescriptorProto/Label.php     \
-  php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
   php/src/Google/Protobuf/Internal/FieldDescriptor.php                \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto/Label.php     \
-  php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto/Type.php      \
-  php/src/Google/Protobuf/Internal/FieldDescriptorProto_Type.php      \
   php/src/Google/Protobuf/Internal/FieldOptions.php                   \
   php/src/Google/Protobuf/Internal/FieldOptions/CType.php             \
-  php/src/Google/Protobuf/Internal/FieldOptions_CType.php             \
   php/src/Google/Protobuf/Internal/FieldOptions/JSType.php            \
-  php/src/Google/Protobuf/Internal/FieldOptions_JSType.php            \
   php/src/Google/Protobuf/Internal/FileDescriptor.php                 \
   php/src/Google/Protobuf/Internal/FileDescriptorProto.php            \
   php/src/Google/Protobuf/Internal/FileDescriptorSet.php              \
   php/src/Google/Protobuf/Internal/FileOptions.php                    \
   php/src/Google/Protobuf/Internal/FileOptions/OptimizeMode.php       \
-  php/src/Google/Protobuf/Internal/FileOptions_OptimizeMode.php       \
   php/src/Google/Protobuf/Internal/GPBDecodeException.php             \
   php/src/Google/Protobuf/Internal/GPBJsonWire.php                    \
   php/src/Google/Protobuf/Internal/GPBLabel.php                       \
@@ -674,7 +664,6 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/GPBWireType.php                    \
   php/src/Google/Protobuf/Internal/GeneratedCodeInfo.php              \
   php/src/Google/Protobuf/Internal/GeneratedCodeInfo/Annotation.php   \
-  php/src/Google/Protobuf/Internal/GeneratedCodeInfo_Annotation.php   \
   php/src/Google/Protobuf/Internal/GetPublicDescriptorTrait.php       \
   php/src/Google/Protobuf/Internal/HasPublicDescriptorTrait.php       \
   php/src/Google/Protobuf/Internal/MapEntry.php                       \
@@ -686,7 +675,6 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/MethodDescriptorProto.php          \
   php/src/Google/Protobuf/Internal/MethodOptions.php                  \
   php/src/Google/Protobuf/Internal/MethodOptions/IdempotencyLevel.php \
-  php/src/Google/Protobuf/Internal/MethodOptions_IdempotencyLevel.php \
   php/src/Google/Protobuf/Internal/OneofDescriptor.php                \
   php/src/Google/Protobuf/Internal/OneofDescriptorProto.php           \
   php/src/Google/Protobuf/Internal/OneofField.php                     \
@@ -698,10 +686,8 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/ServiceOptions.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo/Location.php        \
-  php/src/Google/Protobuf/Internal/SourceCodeInfo_Location.php        \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php   \
-  php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
   php/src/Google/Protobuf/ListValue.php                               \
   php/src/Google/Protobuf/Method.php                                  \
   php/src/Google/Protobuf/Mixin.php                                   \
