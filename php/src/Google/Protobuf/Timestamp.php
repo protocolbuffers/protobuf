@@ -175,5 +175,25 @@ class Timestamp extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
+    /*
+     * Converts PHP DateTime to Timestamp.
+     *
+     * @param \DateTime $datetime
+     */
+    public function fromDateTime(\DateTime $datetime)
+    {
+        $this->seconds = $datetime->format('U');
+        $this->nanos = 0;
+    }
+
+    /**
+     * Converts Timestamp to PHP DateTime. Nano second is ignored.
+     *
+     * @return \DateTime $datetime
+     */
+    public function toDateTime()
+    {
+        return \DateTime::createFromFormat('U', $this->seconds);
+    }
 }
 
