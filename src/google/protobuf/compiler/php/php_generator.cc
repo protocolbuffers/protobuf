@@ -1087,9 +1087,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  if (!file->options().php_namespace().empty() ||
-      (!file->options().has_php_namespace() && !file->package().empty()) ||
-      lastindex != string::npos) {
+  if (lastindex != string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1149,9 +1147,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  if (!file->options().php_namespace().empty() ||
-      (!file->options().has_php_namespace() && !file->package().empty()) ||
-      lastindex != string::npos) {
+  if (lastindex != string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
