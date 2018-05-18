@@ -449,9 +449,9 @@ std::string StringToBase64(const std::string& input) {
 static const char hex_chars[] = "0123456789abcdef";
 
 std::string StringToEscapedCSharpString(const std::string& input) {
-  // convert string to UTF16 to make unicode literals
-  std::wstring_convert<std::codecvt_utf8<char16_t>,char16_t> converter;
-  std::u16string converted = converter.from_bytes(input);
+  // convert UTF8 string to UTF16 to make unicode literals
+  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>,wchar_t> converter;
+  std::wstring converted = converter.from_bytes(input);
   std::string result;
   for (int i = 0; i < converted.size(); i++) {
     result += "\\u";
