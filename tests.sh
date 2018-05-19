@@ -352,9 +352,9 @@ generate_php_test_proto() {
   rm -rf generated
   mkdir generated
   ../../src/protoc --php_out=generated         \
+    proto/empty/echo.proto                     \
     proto/test.proto                           \
     proto/test_include.proto                   \
-    proto/test_empty_package.proto             \
     proto/test_no_namespace.proto              \
     proto/test_prefix.proto                    \
     proto/test_php_namespace.proto             \

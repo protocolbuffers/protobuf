@@ -683,11 +683,15 @@ class GeneratedClassTest extends TestBase
     public function testMessageWithoutNamespace()
     {
         $m = new TestMessage();
-        $sub = new NoNameSpaceMessage();
-        $m->setOptionalNoNamespaceMessage($sub);
+        $n = new NoNameSpaceMessage();
+        $m->setOptionalNoNamespaceMessage($n);
         $repeatedNoNamespaceMessage = $m->getRepeatedNoNamespaceMessage();
         $repeatedNoNamespaceMessage[] = new NoNameSpaceMessage();
         $m->setRepeatedNoNamespaceMessage($repeatedNoNamespaceMessage);
+
+        // test nested messages
+        $sub = new NoNamespaceMessage\NestedMessage();
+        $n->setNestedMessage($sub);
     }
 
     public function testEnumWithoutNamespace()
@@ -697,26 +701,6 @@ class GeneratedClassTest extends TestBase
         $repeatedNoNamespaceEnum = $m->getRepeatedNoNamespaceEnum();
         $repeatedNoNamespaceEnum[] = NoNameSpaceEnum::VALUE_A;
         $m->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);
-    }
-
-    public function testNestedMessageWithoutNamespace()
-    {
-        $m = new NoNamespaceMessage();
-        $sub = new NoNamespaceMessage\NestedMessage();
-        $m->setNestedMessage($sub);
-    }
-
-    #########################################################
-    # Test message with given prefix.
-    #########################################################
-
-    public function testPrefixMessage()
-    {
-        $m = new TestIncludePrefixMessage();
-        $n = new PrefixTestPrefix();
-        $n->setA(1);
-        $m->setPrefixMessage($n);
-        $this->assertSame(1, $m->getPrefixMessage()->getA());
     }
 
     #########################################################
@@ -733,17 +717,25 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(TestMessage\NestedEnum::ZERO, $m->getOptionalNestedEnum());
     }
 
-    public function testNestedMessagesAndEnumsWithPrefixes()
+    public function testMessagesAndEnumsWithPrefix()
     {
-        $m = new PrefixTestPrefix();
-        $n = new PrefixTestPrefix\PrefixNestedMessage();
-        $m->setNestedMessage($n);
-        $m->setNestedEnum(PrefixTestPrefix\PrefixNestedEnum::ZERO);
-        $this->assertSame($n, $m->getNestedMessage());
-        $this->assertSame(PrefixTestPrefix\PrefixNestedEnum::ZERO, $m->getNestedEnum());
+        // Test message prefix
+        $m = new TestIncludePrefixMessage();
+        $n = new PrefixTestPrefix();
+        $n->setA(1);
+        $m->setPrefixMessage($n);
+        $this->assertSame(1, $m->getPrefixMessage()->getA());
+
+        // Test nested message prefix
+        $o = new PrefixTestPrefix();
+        $p = new PrefixTestPrefix\PrefixNestedMessage();
+        $o->setNestedMessage($p);
+        $o->setNestedEnum(PrefixTestPrefix\PrefixNestedEnum::ZERO);
+        $this->assertSame($p, $o->getNestedMessage());
+        $this->assertSame(PrefixTestPrefix\PrefixNestedEnum::ZERO, $o->getNestedEnum());
     }
 
-    public function testNestedMessagesAndEnumsWithPhpNamespace()
+    public function testMessagesAndEnumsWithPhpNamespace()
     {
         $m = new TestNamespace();
         $n = new TestNamespace\NestedMessage();
@@ -753,7 +745,7 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(TestNamespace\NestedEnum::ZERO, $m->getNestedEnum());
     }
 
-    public function testNestedMessagesAndEnumsWithEmptyPhpNamespace()
+    public function testMesssagesAndEnumsWithEmptyPhpNamespace()
     {
         $m = new TestEmptyNamespace();
         $n = new TestEmptyNamespace\NestedMessage();
@@ -763,7 +755,7 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(TestEmptyNamespace\NestedEnum::ZERO, $m->getNestedEnum());
     }
 
-    public function testNestedMessagesAndEnumsWithNoNamespace()
+    public function testMessagesAndEnumsWithNoNamespace()
     {
         $m = new NoNamespaceMessage();
         $n = new NoNamespaceMessage\NestedMessage();

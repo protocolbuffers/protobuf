@@ -108,12 +108,30 @@ void GenerateServiceDocComment(io::Printer* printer,
 void GenerateServiceMethodDocComment(io::Printer* printer,
                               const MethodDescriptor* method);
 
-std::string RenameEmpty(const std::string& name) {
-  if (name == "Empty") {
-    return "GPBEmpty";
-  } else {
-    return name;
+
+std::string ReservedNamePrefix(const string& classname,
+                                const FileDescriptor* file) {
+  bool is_reserved = false;
+
+  string lower = classname;
+  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+  for (int i = 0; i < kReservedNamesSize; i++) {
+    if (lower == kReservedNames[i]) {
+      is_reserved = true;
+      break;
+    }
   }
+
+  if (is_reserved) {
+    if (file->package() == "google.protobuf") {
+      return "GPB";
+    } else {
+      return "PB";
+    }
+  }
+
+  return "";
 }
 
 template <typename DescriptorType>
@@ -129,42 +147,21 @@ std::string DescriptorFullName(const DescriptorType* desc, bool is_descriptor) {
 
 template <typename DescriptorType>
 std::string ClassNamePrefix(const string& classname,
-                            const DescriptorType* desc,
-                            bool add_php_prefix) {
+                            const DescriptorType* desc) {
   const string& prefix = (desc->file()->options()).php_class_prefix();
-  if (add_php_prefix && prefix != "") {
+  if (prefix != "") {
     return prefix;
   }
 
-  bool is_reserved = false;
-
-  string lower = classname;
-  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-
-  for (int i = 0; i < kReservedNamesSize; i++) {
-    if (lower == kReservedNames[i]) {
-      is_reserved = true;
-      break;
-    }
-  }
-
-  if (is_reserved) {
-    if (desc->file()->package() == "google.protobuf") {
-      return "GPB";
-    } else {
-      return "PB";
-    }
-  }
-
-  return "";
+  return ReservedNamePrefix(classname, desc->file());
 }
 
 template <typename DescriptorType>
 std::string GeneratedClassName(const DescriptorType* desc) {
-  std::string classname = ClassNamePrefix(desc->name(), desc, true) + desc->name();
+  std::string classname = ClassNamePrefix(desc->name(), desc) + desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
-    classname = ClassNamePrefix(containing->name(), desc, true) + containing->name()
+    classname = ClassNamePrefix(containing->name(), desc) + containing->name()
        + '\\' + classname;
     containing = containing->containing_type();
   }
@@ -173,7 +170,7 @@ std::string GeneratedClassName(const DescriptorType* desc) {
 
 std::string GeneratedClassName(const ServiceDescriptor* desc) {
   std::string classname = desc->name();
-  return ClassNamePrefix(classname, desc, true) + classname;
+  return ClassNamePrefix(classname, desc) + classname;
 }
 
 template <typename DescriptorType>
@@ -184,7 +181,7 @@ std::string LegacyGeneratedClassName(const DescriptorType* desc) {
     classname = containing->name() + '_' + classname;
     containing = containing->containing_type();
   }
-  return ClassNamePrefix(classname, desc, true) + classname;
+  return ClassNamePrefix(classname, desc) + classname;
 }
 
 std::string ClassNamePrefix(const string& classname) {
@@ -318,6 +315,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   int start_index = 0;
   int first_index = proto_file.find_first_of("/", start_index);
   std::string result = "";
+  std::string segment = "";
 
   if (proto_file == kEmptyFile) {
     return kEmptyMetadataFile;
@@ -348,9 +346,9 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   } else {
     result += "GPBMetadata/";
     while (first_index != string::npos) {
-      result += UnderscoresToCamelCase(
+      segment = UnderscoresToCamelCase(
           file_no_suffix.substr(start_index, first_index - start_index), true);
-      result += "/";
+      result += ReservedNamePrefix(segment, file) + segment + "/";
       start_index = first_index + 1;
       first_index = file_no_suffix.find_first_of("/", start_index);
     }
@@ -363,10 +361,10 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   } else {
     file_name_start += 1;
   }
-  result += RenameEmpty(UnderscoresToCamelCase(
-      file_no_suffix.substr(file_name_start, first_index - file_name_start), true));
+  segment = UnderscoresToCamelCase(
+      file_no_suffix.substr(file_name_start, first_index - file_name_start), true);
 
-  return result += ".php";
+  return result + ReservedNamePrefix(segment, file) + segment + ".php";
 }
 
 template <typename DescriptorType>
@@ -811,7 +809,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
     return;
   }
   string class_name = (name_prefix.empty() ? "" : name_prefix + "\\") +
-    ClassNamePrefix(message->name(), message, false) + message->name();
+    ReservedNamePrefix(message->name(), message->file()) + message->name();
 
   printer->Print(
       "$pool->addMessage('^message^', "
