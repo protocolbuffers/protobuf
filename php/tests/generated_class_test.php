@@ -249,6 +249,9 @@ class GeneratedClassTest extends TestBase
      */
     public function testLegacyTypehintWithNestedEnums()
     {
+        if (extension_loaded('protobuf')) {
+            $this->markTestSkipped('Protobuf extension fails when phpunit runs in a separate process');
+        }
         $this->legacyEnum(new NestedEnum);
     }
 
@@ -424,6 +427,9 @@ class GeneratedClassTest extends TestBase
      */
     public function testLegacyTypehintWithNestedMessages()
     {
+        if (extension_loaded('protobuf')) {
+            $this->markTestSkipped('Protobuf extension fails when phpunit runs in a separate process');
+        }
         $this->legacyMessage(new Sub);
     }
 
