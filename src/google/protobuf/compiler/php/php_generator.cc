@@ -1061,16 +1061,21 @@ void LegacyGenerateClassFile(const FileDescriptor* file, const DescriptorType* d
         "namespace ^name^;\n\n",
         "name", php_namespace);
   }
-  std::string fullname = FullClassName(desc, is_descriptor);
-  printer.Print("// This class has been renamed.\n// @see ^new^\n",
-      "new", fullname);
-  printer.Print(
-      "class_exists(^new^::class);\n",
+  std::string oldname = LegacyFullClassName(desc, is_descriptor);
+  std::string newname = FullClassName(desc, is_descriptor);
+  printer.Print("/**\n");
+  printer.Print(" * This class has been renamed.\n");
+  printer.Print(" * @see ^new^\n",
+      "new", newname);
+  printer.Print(" * @deprecated ^old^\n",
+      "old", oldname);
+  printer.Print(" */\n");
+  printer.Print("class_exists(^new^::class);\n",
       "new", GeneratedClassName(desc));
-  printer.Print(
-      "@trigger_error('^old^ is deprecated and will be removed in the next major release. Use ^new^ instead', E_USER_DEPRECATED);\n\n",
-      "old", LegacyFullClassName(desc, is_descriptor),
-      "new", fullname);
+  printer.Print("@trigger_error('^old^ is deprecated and will be removed in "
+      "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
+      "old", oldname,
+      "fullname", newname);
 }
 
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
