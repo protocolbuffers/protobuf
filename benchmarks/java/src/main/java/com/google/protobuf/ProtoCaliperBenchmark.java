@@ -5,6 +5,7 @@ import com.google.caliper.BeforeExperiment;
 import com.google.caliper.AfterExperiment;
 import com.google.caliper.Benchmark;
 import com.google.caliper.Param;
+import com.google.caliper.api.VmOptions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedOutputStream;
 import com.google.protobuf.ExtensionRegistry;
@@ -22,6 +23,12 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
+// Caliper set CICompilerCount to 1 for making sure compilation doesn't run in parallel with itself,
+// This makes TieredCompilation not working. We just disable TieredCompilation by default. In master 
+// branch this has been disabled by default in caliper: 
+// https://github.com/google/caliper/blob/master/caliper-runner/src/main/java/com/google/caliper/runner/target/Jvm.java#L38:14
+// But this haven't been added into most recent release.
+@VmOptions("-XX:-TieredCompilation")
 public class ProtoCaliperBenchmark {
   public enum BenchmarkMessageType {
     GOOGLE_MESSAGE1_PROTO3 {
@@ -152,18 +159,6 @@ public class ProtoCaliperBenchmark {
   
   
   @Benchmark
-  void serializeToByteString(int reps) throws IOException {
-    if (sampleMessageList.size() == 0) {
-      return;
-    }
-    for (int i = 0; i < reps; i++) {
-      for (int j = 0; j < sampleMessageList.size(); j++) {
-        sampleMessageList.get(j).toByteString();        
-      }
-    }
-  }
-  
-  @Benchmark
   void serializeToByteArray(int reps) throws IOException {
     if (sampleMessageList.size() == 0) {
       return;
@@ -184,19 +179,6 @@ public class ProtoCaliperBenchmark {
       for (int j = 0; j < sampleMessageList.size(); j++) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         sampleMessageList.get(j).writeTo(output); 
-      }
-    }
-  }
-  
-  @Benchmark
-  void deserializeFromByteString(int reps) throws IOException {
-    if (inputStringList.size() == 0) {
-      return;
-    }
-    for (int i = 0; i < reps; i++) {
-      for (int j = 0; j < inputStringList.size(); j++) {
-        benchmarkMessageType.getDefaultInstance().getParserForType().parseFrom(
-          inputStringList.get(j), extensions);
       }
     }
   }

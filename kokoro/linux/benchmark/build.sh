@@ -41,16 +41,21 @@ echo "benchmarking pure python..."
 ./python-pure-python-benchmark --json --behavior_prefix="pure-python-benchmark" $datasets  >> tmp/python_result.json
 echo "," >> "tmp/python_result.json"
 echo "benchmarking python cpp reflection..."
-env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-reflection-benchmark --json --behavior_prefix="cpp-reflection-benchmark" $datasets  >> tmp/python_result.json
+env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" LD_LIBRARY_PATH="$oldpwd/src/.libs" ./python-cpp-reflection-benchmark --json --behavior_prefix="cpp-reflection-benchmark" $datasets  >> tmp/python_result.json
 echo "," >> "tmp/python_result.json"
 echo "benchmarking python cpp generated code..."
-env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./python-cpp-generated-code-benchmark --json --behavior_prefix="cpp-generated-code-benchmark" $datasets >> tmp/python_result.json
+env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" LD_LIBRARY_PATH="$oldpwd/src/.libs" ./python-cpp-generated-code-benchmark --json --behavior_prefix="cpp-generated-code-benchmark" $datasets >> tmp/python_result.json
 echo "]" >> "tmp/python_result.json"
 cd $oldpwd
 
 # build CPP protobuf
 ./configure
 make clean && make -j8
+
+# build Java protobuf
+cd java
+mvn package
+cd ..
 
 # build CPP benchmark
 cd benchmarks
@@ -78,11 +83,10 @@ echo "benchmarking go..."
 make java-benchmark
 echo "benchmarking java..."
 ./java-benchmark -Cresults.file.options.file="tmp/java_result.json" $datasets
-cat $(find /tmp -name "trail-1.log")
 
 # upload result to bq
 make python_add_init
-python util/run_and_upload.py -cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" \
+env LD_LIBRARY_PATH="$oldpwd/src/.libs" python util/run_and_upload.py -cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" \
     -python="../tmp/python_result.json" -go="../tmp/go_result.txt"
 
 cd $oldpwd

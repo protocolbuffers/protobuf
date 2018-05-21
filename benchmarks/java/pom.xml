@@ -14,7 +14,10 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.5.0</version>
+      <version>${protobuf.version}</version>
+      <type>jar</type>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/protobuf-java.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>com.google.caliper</groupId>
