@@ -1681,6 +1681,7 @@ void Generator::GenerateProvides(const GeneratorOptions& options,
       if (options.import_style == GeneratorOptions::kImportCommonJsStrict) {
         string namespaceObject = *it;
         // Remove "proto." from the namespace object
+        GOOGLE_CHECK(namespaceObject.compare(0, 6, "proto."));
         namespaceObject.erase(0, 6);
         printer->Print("goog.exportSymbol('$name$', null, proto);\n", "name",
                 namespaceObject);
