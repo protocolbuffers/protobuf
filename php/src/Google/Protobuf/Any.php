@@ -112,6 +112,8 @@ class Any extends \Google\Protobuf\Internal\Message
      */
     private $value = '';
 
+    const TYPE_URL_PREFIX = 'type.googleapis.com/';
+
     /**
      * Constructor.
      *
