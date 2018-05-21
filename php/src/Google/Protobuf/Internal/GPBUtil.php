@@ -191,7 +191,7 @@ class GPBUtil
         $var = boolval($var);
     }
 
-    public static function checkMessage(&$var, $klass)
+    public static function checkMessage(&$var, $klass, $newClass = null)
     {
         if (!$var instanceof $klass && !is_null($var)) {
             throw new \Exception("Expect $klass.");
