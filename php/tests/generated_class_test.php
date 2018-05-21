@@ -8,6 +8,9 @@ require_once('test_util.php');
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
+use Bar\TestLegacyMessage;
+use Bar\TestLegacyMessage_NestedEnum;
+use Bar\TestLegacyMessage_NestedMessage;
 use Foo\TestEnum;
 use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
@@ -243,19 +246,12 @@ class GeneratedClassTest extends TestBase
         $m->setOptionalNestedEnum(\Foo\TestMessage_NestedEnum::ZERO);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
     public function testLegacyTypehintWithNestedEnums()
     {
-        if (extension_loaded('protobuf')) {
-            $this->markTestSkipped('Protobuf extension fails when phpunit runs in a separate process');
-        }
-        $this->legacyEnum(new NestedEnum);
+        $this->legacyEnum(new TestLegacyMessage\NestedEnum);
     }
 
-    private function legacyEnum(Foo\TestMessage_NestedEnum $enum)
+    private function legacyEnum(TestLegacyMessage_NestedEnum $enum)
     {
         // If we made it here without a PHP Fatal error, the typehint worked
         $this->assertTrue(true);
@@ -421,19 +417,12 @@ class GeneratedClassTest extends TestBase
         $this->assertNull($m->getOptionalMessage());
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
     public function testLegacyTypehintWithNestedMessages()
     {
-        if (extension_loaded('protobuf')) {
-            $this->markTestSkipped('Protobuf extension fails when phpunit runs in a separate process');
-        }
-        $this->legacyMessage(new Sub);
+        $this->legacyMessage(new TestLegacyMessage\NestedMessage);
     }
 
-    private function legacyMessage(Foo\TestMessage_Sub $sub)
+    private function legacyMessage(TestLegacyMessage_NestedMessage $sub)
     {
         // If we made it here without a PHP Fatal error, the typehint worked
         $this->assertTrue(true);
