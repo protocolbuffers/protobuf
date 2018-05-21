@@ -33,8 +33,11 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/message_lite.h>
+#include <climits>
+
 #include <google/protobuf/arena.h>
+#include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <string>
 #include <google/protobuf/stubs/logging.h>
@@ -45,8 +48,6 @@
 
 namespace google {
 namespace protobuf {
-
-MessageLite::~MessageLite() {}
 
 string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
@@ -60,15 +61,17 @@ namespace {
 // protobuf implementation but is more likely caused by concurrent modification
 // of the message.  This function attempts to distinguish between the two and
 // provide a useful error message.
-void ByteSizeConsistencyError(int byte_size_before_serialization,
-                              int byte_size_after_serialization,
-                              int bytes_produced_by_serialization) {
+void ByteSizeConsistencyError(size_t byte_size_before_serialization,
+                              size_t byte_size_after_serialization,
+                              size_t bytes_produced_by_serialization,
+                              const MessageLite& message) {
   GOOGLE_CHECK_EQ(byte_size_before_serialization, byte_size_after_serialization)
-      << "Protocol message was modified concurrently during serialization.";
+      << message.GetTypeName()
+      << " was modified concurrently during serialization.";
   GOOGLE_CHECK_EQ(bytes_produced_by_serialization, byte_size_before_serialization)
       << "Byte size calculation and serialization were inconsistent.  This "
          "may indicate a bug in protocol buffers or it may be caused by "
-         "concurrent modification of the message.";
+         "concurrent modification of " << message.GetTypeName() << ".";
   GOOGLE_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
 }
 
@@ -100,15 +103,15 @@ string InitializationErrorMessage(const char* action,
 // call MergePartialFromCodedStream().  However, when parsing very small
 // messages, every function call introduces significant overhead.  To avoid
 // this without reproducing code, we use these forced-inline helpers.
-GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineMergeFromCodedStream(
+GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineMergeFromCodedStream(
     io::CodedInputStream* input, MessageLite* message);
-GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineParseFromCodedStream(
+GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineParseFromCodedStream(
     io::CodedInputStream* input, MessageLite* message);
-GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineParsePartialFromCodedStream(
+GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineParsePartialFromCodedStream(
     io::CodedInputStream* input, MessageLite* message);
-GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineParseFromArray(
+GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineParseFromArray(
     const void* data, int size, MessageLite* message);
-GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineParsePartialFromArray(
+GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineParsePartialFromArray(
     const void* data, int size, MessageLite* message);
 
 inline bool InlineMergeFromCodedStream(io::CodedInputStream* input,
@@ -220,14 +223,8 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
 // ===================================================================
 
 uint8* MessageLite::SerializeWithCachedSizesToArray(uint8* target) const {
-  // We only optimize this when using optimize_for = SPEED.  In other cases
-  // we just use the CodedOutputStream path.
-  int size = GetCachedSize();
-  io::ArrayOutputStream out(target, size);
-  io::CodedOutputStream coded_out(&out);
-  SerializeWithCachedSizes(&coded_out);
-  GOOGLE_CHECK(!coded_out.HadError());
-  return target + size;
+  return InternalSerializeWithCachedSizesToArray(
+      io::CodedOutputStream::IsDefaultSerializationDeterministic(), target);
 }
 
 bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
@@ -237,18 +234,18 @@ bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
 
 bool MessageLite::SerializePartialToCodedStream(
     io::CodedOutputStream* output) const {
-  const int size = ByteSize();  // Force size to be cached.
-  if (size < 0) {
-    // Messages >2G cannot be serialized due to overflow computing ByteSize.
-    GOOGLE_LOG(ERROR) << "Error computing ByteSize (possible overflow?).";
+  const size_t size = ByteSizeLong();  // Force size to be cached.
+  if (size > INT_MAX) {
+    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
 
   uint8* buffer = output->GetDirectBufferForNBytesAndAdvance(size);
   if (buffer != NULL) {
-    uint8* end = SerializeWithCachedSizesToArray(buffer);
+    uint8* end = InternalSerializeWithCachedSizesToArray(
+        output->IsSerializationDeterministic(), buffer);
     if (end - buffer != size) {
-      ByteSizeConsistencyError(size, ByteSize(), end - buffer);
+      ByteSizeConsistencyError(size, ByteSizeLong(), end - buffer, *this);
     }
     return true;
   } else {
@@ -260,8 +257,8 @@ bool MessageLite::SerializePartialToCodedStream(
     int final_byte_count = output->ByteCount();
 
     if (final_byte_count - original_byte_count != size) {
-      ByteSizeConsistencyError(size, ByteSize(),
-                               final_byte_count - original_byte_count);
+      ByteSizeConsistencyError(size, ByteSizeLong(),
+                               final_byte_count - original_byte_count, *this);
     }
 
     return true;
@@ -286,11 +283,10 @@ bool MessageLite::AppendToString(string* output) const {
 }
 
 bool MessageLite::AppendPartialToString(string* output) const {
-  int old_size = output->size();
-  int byte_size = ByteSize();
-  if (byte_size < 0) {
-    // Messages >2G cannot be serialized due to overflow computing ByteSize.
-    GOOGLE_LOG(ERROR) << "Error computing ByteSize (possible overflow?).";
+  size_t old_size = output->size();
+  size_t byte_size = ByteSizeLong();
+  if (byte_size > INT_MAX) {
+    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << byte_size;
     return false;
   }
 
@@ -299,7 +295,7 @@ bool MessageLite::AppendPartialToString(string* output) const {
       reinterpret_cast<uint8*>(io::mutable_string_data(output) + old_size);
   uint8* end = SerializeWithCachedSizesToArray(start);
   if (end - start != byte_size) {
-    ByteSizeConsistencyError(byte_size, ByteSize(), end - start);
+    ByteSizeConsistencyError(byte_size, ByteSizeLong(), end - start, *this);
   }
   return true;
 }
@@ -320,12 +316,12 @@ bool MessageLite::SerializeToArray(void* data, int size) const {
 }
 
 bool MessageLite::SerializePartialToArray(void* data, int size) const {
-  int byte_size = ByteSize();
+  int byte_size = ByteSizeLong();
   if (size < byte_size) return false;
   uint8* start = reinterpret_cast<uint8*>(data);
   uint8* end = SerializeWithCachedSizesToArray(start);
   if (end - start != byte_size) {
-    ByteSizeConsistencyError(byte_size, ByteSize(), end - start);
+    ByteSizeConsistencyError(byte_size, ByteSizeLong(), end - start, *this);
   }
   return true;
 }
@@ -348,6 +344,39 @@ string MessageLite::SerializePartialAsString() const {
   return output;
 }
 
+void MessageLite::SerializeWithCachedSizes(
+    io::CodedOutputStream* output) const {
+  GOOGLE_DCHECK(InternalGetTable());
+  internal::TableSerialize(
+      *this,
+      static_cast<const internal::SerializationTable*>(InternalGetTable()),
+      output);
+}
+
+// The table driven code optimizes the case that the CodedOutputStream buffer
+// is large enough to serialize into it directly.
+// If the proto is optimized for speed, this method will be overridden by
+// generated code for maximum speed. If the proto is optimized for size or
+// is lite, then we need to specialize this to avoid infinite recursion.
+uint8* MessageLite::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, uint8* target) const {
+  const internal::SerializationTable* table =
+      static_cast<const internal::SerializationTable*>(InternalGetTable());
+  if (table == NULL) {
+    // We only optimize this when using optimize_for = SPEED.  In other cases
+    // we just use the CodedOutputStream path.
+    int size = GetCachedSize();
+    io::ArrayOutputStream out(target, size);
+    io::CodedOutputStream coded_out(&out);
+    coded_out.SetSerializationDeterministic(deterministic);
+    SerializeWithCachedSizes(&coded_out);
+    GOOGLE_CHECK(!coded_out.HadError());
+    return target + size;
+  } else {
+    return internal::TableSerializeToArray(*this, table, deterministic, target);
+  }
+}
+
 namespace internal {
 template<>
 MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
@@ -359,6 +388,19 @@ void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to) {
   to->CheckTypeAndMergeFrom(from);
 }
+template<>
+void GenericTypeHandler<string>::Merge(const string& from,
+                                              string* to) {
+  *to = from;
+}
+
+bool proto3_preserve_unknown_ = true;
+
+void SetProto3PreserveUnknownsDefault(bool preserve) {
+  proto3_preserve_unknown_ = preserve;
+}
+
+
 }  // namespace internal
 
 }  // namespace protobuf

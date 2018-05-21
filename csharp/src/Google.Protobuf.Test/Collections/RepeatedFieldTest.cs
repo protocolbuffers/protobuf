@@ -75,10 +75,96 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
-        public void Add_RepeatedField()
+        public void AddRange_SlowPath()
+        {
+            var list = new RepeatedField<string>();
+            list.AddRange(new[] { "foo", "bar" }.Select(x => x));
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual("foo", list[0]);
+            Assert.AreEqual("bar", list[1]);
+        }
+
+        [Test]
+        public void AddRange_SlowPath_NullsProhibited_ReferenceType()
+        {
+            var list = new RepeatedField<string>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { "foo", null }.Select(x => x)));
+        }
+
+        [Test]
+        public void AddRange_SlowPath_NullsProhibited_NullableValueType()
+        {
+            var list = new RepeatedField<int?>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { 20, (int?)null }.Select(x => x)));
+        }
+
+        [Test]
+        public void AddRange_Optimized_NonNullableValueType()
+        {
+            var list = new RepeatedField<int>();
+            list.AddRange(new List<int> { 20, 30 });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual(20, list[0]);
+            Assert.AreEqual(30, list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_ReferenceType()
+        {
+            var list = new RepeatedField<string>();
+            list.AddRange(new List<string> { "foo", "bar" });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual("foo", list[0]);
+            Assert.AreEqual("bar", list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullableValueType()
+        {
+            var list = new RepeatedField<int?>();
+            list.AddRange(new List<int?> { 20, 30 });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual((int?) 20, list[0]);
+            Assert.AreEqual((int?) 30, list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullsProhibited_ReferenceType()
+        {
+            // We don't just trust that a collection with a nullable element type doesn't contain nulls
+            var list = new RepeatedField<string>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new List<string> { "foo", null }));
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullsProhibited_NullableValueType()
+        {
+            // We don't just trust that a collection with a nullable element type doesn't contain nulls
+            var list = new RepeatedField<int?>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new List<int?> { 20, null }));
+        }
+
+        [Test]
+        public void AddRange_AlreadyNotEmpty()
+        {
+            var list = new RepeatedField<int> { 1, 2, 3 };
+            list.AddRange(new List<int> { 4, 5, 6 });
+            CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5, 6 }, list);
+        }
+
+        [Test]
+        public void AddRange_RepeatedField()
         {
             var list = new RepeatedField<string> { "original" };
-            list.Add(new RepeatedField<string> { "foo", "bar" });
+            list.AddRange(new RepeatedField<string> { "foo", "bar" });
             Assert.AreEqual(3, list.Count);
             Assert.AreEqual("original", list[0]);
             Assert.AreEqual("foo", list[1]);
@@ -655,6 +741,19 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<Struct> { message };
             var text = list.ToString();
             Assert.AreEqual(text, "[ { \"foo\": 20 } ]", message.ToString());
+        }
+
+        [Test]
+        public void NaNValuesComparedBitwise()
+        {
+            var list1 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
+            var list2 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.PayloadFlipped };
+            var list3 = new RepeatedField<double> { SampleNaNs.Regular, SampleNaNs.SignallingFlipped };
+
+            EqualityTester.AssertInequality(list1, list2);
+            EqualityTester.AssertEquality(list1, list3);
+            Assert.True(list1.Contains(SampleNaNs.SignallingFlipped));
+            Assert.False(list2.Contains(SampleNaNs.SignallingFlipped));
         }
     }
 }

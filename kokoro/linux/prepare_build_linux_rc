@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Source this rc script to prepare the environment for Linux builds
+
+# Set up dotnet
+sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB3E94ADBE1229CF
+sudo apt-get update
+# We use the .NET Core SDK 2.x to build...
+sudo apt-get install -y dotnet-sdk-2.0.3
+# But we also need the 1.x framework to test against, as we
+# target netstandard1.x
+sudo apt-get install -y dotnet-sharedframework-microsoft.netcore.app-1.0.5

@@ -43,28 +43,30 @@ namespace cpp {
 
 class MapFieldGenerator : public FieldGenerator {
  public:
-  explicit MapFieldGenerator(const FieldDescriptor* descriptor,
-                             const Options& options);
+  MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
   ~MapFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const;
   void GenerateAccessorDeclarations(io::Printer* printer) const;
-  void GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                         bool is_inline) const;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
-  void GenerateConstructorCode(io::Printer* printer) const;
+  void GenerateConstructorCode(io::Printer* printer) const {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
 
  private:
+  // A helper for GenerateSerializeWithCachedSizes{,ToArray}.
+  void GenerateSerializeWithCachedSizes(
+      io::Printer* printer, const std::map<string, string>& variables) const;
+
   const FieldDescriptor* descriptor_;
-  const bool dependent_field_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);
 };

@@ -32,25 +32,23 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/importer.h>
+
 #include <google/protobuf/stubs/hash.h>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
-#include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-
-#include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
-#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/map_util.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -71,11 +69,18 @@ class MockErrorCollector : public MultiFileErrorCollector {
   ~MockErrorCollector() {}
 
   string text_;
+  string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
   void AddError(const string& filename, int line, int column,
                 const string& message) {
     strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
+                                 filename, line, column, message);
+  }
+
+  void AddWarning(const string& filename, int line, int column,
+                  const string& message) {
+    strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n",
                                  filename, line, column, message);
   }
 };
@@ -123,6 +128,7 @@ class ImporterTest : public testing::Test {
 
   // Return the collected error text
   string error() const { return error_collector_.text_; }
+  string warning() const { return error_collector_.warning_text_; }
 
   MockErrorCollector error_collector_;
   MockSourceTree source_tree_;
@@ -259,7 +265,7 @@ class DiskSourceTreeTest : public testing::Test {
 
   void ExpectFileContents(const string& filename,
                           const char* expected_contents) {
-    google::protobuf::scoped_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
+    std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
 
     ASSERT_FALSE(input == NULL);
 
@@ -276,7 +282,7 @@ class DiskSourceTreeTest : public testing::Test {
 
   void ExpectCannotOpenFile(const string& filename,
                             const string& error_message) {
-    google::protobuf::scoped_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
+    std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
     EXPECT_TRUE(input == NULL);
     EXPECT_EQ(error_message, source_tree_.GetLastErrorMessage());
   }
@@ -284,7 +290,7 @@ class DiskSourceTreeTest : public testing::Test {
   DiskSourceTree source_tree_;
 
   // Paths of two on-disk directories to use during the test.
-  vector<string> dirnames_;
+  std::vector<string> dirnames_;
 };
 
 TEST_F(DiskSourceTreeTest, MapRoot) {

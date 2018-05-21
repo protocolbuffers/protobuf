@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -43,7 +44,17 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class FileDescriptor : IDescriptor
     {
-        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
+        // Prevent linker failures when using IL2CPP with the well-known types.
+        static FileDescriptor()
+        {
+            ForceReflectionInitialization<Syntax>();
+            ForceReflectionInitialization<NullValue>();
+            ForceReflectionInitialization<Field.Types.Cardinality>();
+            ForceReflectionInitialization<Field.Types.Kind>();
+            ForceReflectionInitialization<Value.KindOneofCase>();
+        }
+
+        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
         {
             SerializedData = descriptorData;
             DescriptorPool = pool;
@@ -223,7 +234,7 @@ namespace Google.Protobuf.Reflection
         /// <exception cref="DescriptorValidationException">If <paramref name="proto"/> is not
         /// a valid descriptor. This can occur for a number of reasons, such as a field
         /// having an undefined type or because two messages were defined with the same name.</exception>
-        private static FileDescriptor BuildFrom(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
+        private static FileDescriptor BuildFrom(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
         {
             // Building descriptors involves two steps: translating and linking.
             // In the translation step (implemented by FileDescriptor's
@@ -250,17 +261,6 @@ namespace Google.Protobuf.Reflection
                     result,
                     "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
                     "those listed in the FileDescriptorProto.");
-            }
-            for (int i = 0; i < proto.Dependency.Count; i++)
-            {
-                if (dependencies[i].Name != proto.Dependency[i])
-                {
-                    throw new DescriptorValidationException(
-                        result,
-                        "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-                        "those listed in the FileDescriptorProto. Expected: " +
-                        proto.Dependency[i] + " but was: " + dependencies[i].Name);
-                }
             }
 
             result.CrossLink();
@@ -291,7 +291,7 @@ namespace Google.Protobuf.Reflection
         public static FileDescriptor FromGeneratedCode(
             byte[] descriptorData,
             FileDescriptor[] dependencies,
-            GeneratedCodeInfo generatedCodeInfo)
+            GeneratedClrTypeInfo generatedCodeInfo)
         {
             FileDescriptorProto proto;
             try
@@ -340,5 +340,23 @@ namespace Google.Protobuf.Reflection
         /// The file descriptor for <c>descriptor.proto</c>.
         /// </value>
         public static FileDescriptor DescriptorProtoFileDescriptor { get { return DescriptorReflection.Descriptor; } }
+
+        /// <summary>
+        /// The (possibly empty) set of custom options for this file.
+        /// </summary>
+        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+
+        /// <summary>
+        /// Performs initialization for the given generic type argument.
+        /// </summary>
+        /// <remarks>
+        /// This method is present for the sake of AOT compilers. It allows code (whether handwritten or generated)
+        /// to make calls into the reflection machinery of this library to express an intention to use that type
+        /// reflectively (e.g. for JSON parsing and formatting). The call itself does almost nothing, but AOT compilers
+        /// attempting to determine which generic type arguments need to be handled will spot the code path and act
+        /// accordingly.
+        /// </remarks>
+        /// <typeparam name="T">The type to force initialization for.</typeparam>
+        public static void ForceReflectionInitialization<T>() => ReflectionUtil.ForceInitialize<T>();
     }
 }

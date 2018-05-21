@@ -275,7 +275,7 @@ class RepeatedScalarFieldContainer(BaseContainer):
     new_values = [self._type_checker.CheckValue(elem) for elem in elem_seq_iter]
     if new_values:
       self._values.extend(new_values)
-      self._message_listener.Modified()
+    self._message_listener.Modified()
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this
@@ -436,9 +436,11 @@ class ScalarMap(MutableMapping):
   """Simple, type-checked, dict-like container for holding repeated scalars."""
 
   # Disallows assignment to other attributes.
-  __slots__ = ['_key_checker', '_value_checker', '_values', '_message_listener']
+  __slots__ = ['_key_checker', '_value_checker', '_values', '_message_listener',
+               '_entry_descriptor']
 
-  def __init__(self, message_listener, key_checker, value_checker):
+  def __init__(self, message_listener, key_checker, value_checker,
+               entry_descriptor):
     """
     Args:
       message_listener: A MessageListener implementation.
@@ -448,10 +450,12 @@ class ScalarMap(MutableMapping):
         inserted into this container.
       value_checker: A type_checkers.ValueChecker instance to run on values
         inserted into this container.
+      entry_descriptor: The MessageDescriptor of a map entry: key and value.
     """
     self._message_listener = message_listener
     self._key_checker = key_checker
     self._value_checker = value_checker
+    self._entry_descriptor = entry_descriptor
     self._values = {}
 
   def __getitem__(self, key):
@@ -464,6 +468,9 @@ class ScalarMap(MutableMapping):
       return val
 
   def __contains__(self, item):
+    # We check the key's type to match the strong-typing flavor of the API.
+    # Also this makes it easier to match the behavior of the C++ implementation.
+    self._key_checker.CheckValue(item)
     return item in self._values
 
   # We need to override this explicitly, because our defaultdict-like behavior
@@ -491,14 +498,27 @@ class ScalarMap(MutableMapping):
   def __iter__(self):
     return iter(self._values)
 
+  def __repr__(self):
+    return repr(self._values)
+
   def MergeFrom(self, other):
     self._values.update(other._values)
     self._message_listener.Modified()
+
+  def InvalidateIterators(self):
+    # It appears that the only way to reliably invalidate iterators to
+    # self._values is to ensure that its size changes.
+    original = self._values
+    self._values = original.copy()
+    original[None] = None
 
   # This is defined in the abstract base, but we can do it much more cheaply.
   def clear(self):
     self._values.clear()
     self._message_listener.Modified()
+
+  def GetEntryClass(self):
+    return self._entry_descriptor._concrete_class
 
 
 class MessageMap(MutableMapping):
@@ -507,9 +527,10 @@ class MessageMap(MutableMapping):
 
   # Disallows assignment to other attributes.
   __slots__ = ['_key_checker', '_values', '_message_listener',
-               '_message_descriptor']
+               '_message_descriptor', '_entry_descriptor']
 
-  def __init__(self, message_listener, message_descriptor, key_checker):
+  def __init__(self, message_listener, message_descriptor, key_checker,
+               entry_descriptor):
     """
     Args:
       message_listener: A MessageListener implementation.
@@ -519,17 +540,19 @@ class MessageMap(MutableMapping):
         inserted into this container.
       value_checker: A type_checkers.ValueChecker instance to run on values
         inserted into this container.
+      entry_descriptor: The MessageDescriptor of a map entry: key and value.
     """
     self._message_listener = message_listener
     self._message_descriptor = message_descriptor
     self._key_checker = key_checker
+    self._entry_descriptor = entry_descriptor
     self._values = {}
 
   def __getitem__(self, key):
+    key = self._key_checker.CheckValue(key)
     try:
       return self._values[key]
     except KeyError:
-      key = self._key_checker.CheckValue(key)
       new_element = self._message_descriptor._concrete_class()
       new_element._SetListener(self._message_listener)
       self._values[key] = new_element
@@ -561,12 +584,14 @@ class MessageMap(MutableMapping):
       return default
 
   def __contains__(self, item):
+    item = self._key_checker.CheckValue(item)
     return item in self._values
 
   def __setitem__(self, key, value):
     raise ValueError('May not set values directly, call my_map[key].foo = 5')
 
   def __delitem__(self, key):
+    key = self._key_checker.CheckValue(key)
     del self._values[key]
     self._message_listener.Modified()
 
@@ -576,13 +601,30 @@ class MessageMap(MutableMapping):
   def __iter__(self):
     return iter(self._values)
 
+  def __repr__(self):
+    return repr(self._values)
+
   def MergeFrom(self, other):
     for key in other:
-      self[key].MergeFrom(other[key])
+      # According to documentation: "When parsing from the wire or when merging,
+      # if there are duplicate map keys the last key seen is used".
+      if key in self:
+        del self[key]
+      self[key].CopyFrom(other[key])
     # self._message_listener.Modified() not required here, because
     # mutations to submessages already propagate.
+
+  def InvalidateIterators(self):
+    # It appears that the only way to reliably invalidate iterators to
+    # self._values is to ensure that its size changes.
+    original = self._values
+    self._values = original.copy()
+    original[None] = None
 
   # This is defined in the abstract base, but we can do it much more cheaply.
   def clear(self):
     self._values.clear()
     self._message_listener.Modified()
+
+  def GetEntryClass(self):
+    return self._entry_descriptor._concrete_class

@@ -33,14 +33,14 @@
 
 #include <google/protobuf/testing/googletest.h>
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <stdlib.h>
 #ifdef _MSC_VER
-#include <io.h>
-#include <direct.h>
+// #include <direct.h>
 #else
 #include <unistd.h>
 #endif
@@ -53,7 +53,13 @@ namespace google {
 namespace protobuf {
 
 #ifdef _WIN32
-#define mkdir(name, mode) mkdir(name)
+// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
+// them like we do below.
+using google::protobuf::internal::win32::close;
+using google::protobuf::internal::win32::dup2;
+using google::protobuf::internal::win32::dup;
+using google::protobuf::internal::win32::mkdir;
+using google::protobuf::internal::win32::open;
 #endif
 
 #ifndef O_BINARY
@@ -66,6 +72,9 @@ namespace protobuf {
 
 string TestSourceDir() {
 #ifndef GOOGLE_THIRD_PARTY_PROTOBUF
+#ifdef GOOGLE_PROTOBUF_TEST_SOURCE_PATH
+  return GOOGLE_PROTOBUF_TEST_SOURCE_PATH;
+#else
 #ifndef _MSC_VER
   // automake sets the "srcdir" environment variable.
   char* result = getenv("srcdir");
@@ -86,6 +95,7 @@ string TestSourceDir() {
     prefix += "/..";
   }
   return prefix + "/src";
+#endif  // GOOGLE_PROTOBUF_TEST_SOURCE_PATH
 #else
   return "third_party/protobuf/src";
 #endif  // GOOGLE_THIRD_PARTY_PROTOBUF
@@ -107,14 +117,32 @@ string GetTemporaryDirectoryName() {
   char b[L_tmpnam + 1];     // HPUX multithread return 0 if s is 0
   string result = tmpnam(b);
 #ifdef _WIN32
+  // Avoid a trailing dot by changing it to an underscore. On Win32 the names of
+  // files and directories can, but should not, end with dot.
+  //
+  // In MS-DOS and FAT16 filesystem the filenames were 8dot3 style so it didn't
+  // make sense to have a name ending in dot without an extension, so the shell
+  // silently ignored trailing dots. To this day the Win32 API still maintains
+  // this behavior and silently ignores trailing dots in path arguments of
+  // functions such as CreateFile{A,W}. Even POSIX API function implementations
+  // seem to wrap the Win32 API functions (e.g. CreateDirectoryA) and behave
+  // this way.
+  // It's possible to avoid this behavior and create files / directories with
+  // trailing dots (using CreateFileW / CreateDirectoryW and prefixing the path
+  // with "\\?\") but these will be degenerate in the sense that you cannot
+  // chdir into such directories (or navigate into them with Windows Explorer)
+  // nor can you open such files with some programs (e.g. Notepad).
+  if (result[result.size() - 1] == '.') {
+    result[result.size() - 1] = '_';
+  }
   // On Win32, tmpnam() returns a file prefixed with '\', but which is supposed
   // to be used in the current working directory.  WTF?
   if (HasPrefixString(result, "\\")) {
     result.erase(0, 1);
   }
-  // The Win32 API accepts forward slashes as a path delimiter even though
-  // backslashes are standard.  Let's avoid confusion and use only forward
-  // slashes.
+  // The Win32 API accepts forward slashes as a path delimiter as long as the
+  // path doesn't use the "\\?\" prefix.
+  // Let's avoid confusion and use only forward slashes.
   result = StringReplace(result, "\\", "/", true);
 #endif  // _WIN32
   return result;
@@ -235,7 +263,7 @@ ScopedMemoryLog::~ScopedMemoryLog() {
   active_log_ = NULL;
 }
 
-const vector<string>& ScopedMemoryLog::GetMessages(LogLevel level) {
+const std::vector<string>& ScopedMemoryLog::GetMessages(LogLevel level) {
   GOOGLE_CHECK(level == ERROR ||
                level == WARNING);
   return messages_[level];
@@ -257,6 +285,8 @@ namespace {
 // call to malloc() has a corresponding free().
 struct ForceShutdown {
   ~ForceShutdown() {
+    ShutdownProtobufLibrary();
+    // Test to shutdown the library twice, which should succeed.
     ShutdownProtobufLibrary();
   }
 } force_shutdown;

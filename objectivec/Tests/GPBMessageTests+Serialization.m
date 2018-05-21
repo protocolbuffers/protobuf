@@ -42,10 +42,6 @@
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto3.pbobjc.h"
 
-static NSData *DataFromCStr(const char *str) {
-  return [NSData dataWithBytes:str length:strlen(str)];
-}
-
 @interface MessageSerializationTests : GPBTestCase
 @end
 
@@ -111,35 +107,6 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqual([data length], 0U);
 
   [msg release];
-}
-
-- (void)testProto3DroppingUnknownFields {
-  DropUnknownsFooWithExtraFields *fooWithExtras =
-      [[DropUnknownsFooWithExtraFields alloc] init];
-
-  fooWithExtras.int32Value = 1;
-  fooWithExtras.enumValue = DropUnknownsFooWithExtraFields_NestedEnum_Baz;
-  fooWithExtras.extraInt32Value = 2;
-
-  NSData *data = [fooWithExtras data];
-  XCTAssertNotNil(data);
-  DropUnknownsFoo *foo = [DropUnknownsFoo parseFromData:data error:NULL];
-
-  XCTAssertEqual(foo.int32Value, 1);
-  XCTAssertEqual(foo.enumValue, DropUnknownsFoo_NestedEnum_Baz);
-  // Nothing should end up in the unknowns.
-  XCTAssertEqual([foo.unknownFields countOfFields], 0U);
-
-  [fooWithExtras release];
-  data = [foo data];
-  fooWithExtras =
-      [DropUnknownsFooWithExtraFields parseFromData:data error:NULL];
-  XCTAssertEqual(fooWithExtras.int32Value, 1);
-  XCTAssertEqual(fooWithExtras.enumValue,
-                 DropUnknownsFooWithExtraFields_NestedEnum_Baz);
-  // And the extra value is gone (back to the default).
-  XCTAssertEqual(fooWithExtras.extraInt32Value, 0);
-  XCTAssertEqual([foo.unknownFields countOfFields], 0U);
 }
 
 - (void)testProto2UnknownEnumToUnknownField {
@@ -881,6 +848,156 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqualObjects(extsParse, extsOrig);
 }
 
+- (void)testErrorSubsectionInvalidLimit {
+  NSData *data = DataFromCStr(
+      "\x0A\x08\x0A\x07\x12\x04\x72\x02\x4B\x50\x12\x04\x72\x02\x4B\x50");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSubsectionLimit);
+}
+
+- (void)testErrorSubsectionLimitReached {
+  NSData *data = DataFromCStr("\x0A\x06\x12\x03\x72\x02\x4B\x50");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorSubsectionLimitReached);
+}
+
+- (void)testErrorInvalidVarint {
+  NSData *data = DataFromCStr("\x72\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF");
+  NSError *error = nil;
+  TestAllTypes *msg = [TestAllTypes parseFromData:data error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidVarInt);
+}
+
+- (void)testErrorInvalidUTF8 {
+  NSData *data = DataFromCStr("\x72\x04\xF4\xFF\xFF\xFF");
+  NSError *error = nil;
+  TestAllTypes *msg = [TestAllTypes parseFromData:data error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidUTF8);
+}
+
+- (void)testErrorInvalidSize {
+  NSData *data = DataFromCStr("\x72\x03\x4B\x50");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSize);
+}
+
+- (void)testErrorInvalidTag {
+  NSData *data = DataFromCStr("\x0F");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidTag);
+}
+
+- (void)testZeroFieldNum {
+  // These are ConformanceTestSuite::TestIllegalTags.
+
+  const char *tests[] = {
+    "\1DEADBEEF",
+    "\2\1\1",
+    "\3\4",
+    "\5DEAD"
+  };
+
+  for (size_t i = 0; i < GPBARRAYSIZE(tests); ++i) {
+    NSData *data = DataFromCStr(tests[i]);
+
+    {
+      // Message from proto2 syntax file
+      NSError *error = nil;
+      Message2 *msg = [Message2 parseFromData:data error:&error];
+      XCTAssertNil(msg, @"i = %zd", i);
+      XCTAssertNotNil(error, @"i = %zd", i);
+      XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain, @"i = %zd", i);
+      XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidTag, @"i = %zd", i);
+    }
+
+    {
+      // Message from proto3 syntax file
+      NSError *error = nil;
+      Message3 *msg = [Message3 parseFromData:data error:&error];
+      XCTAssertNil(msg, @"i = %zd", i);
+      XCTAssertNotNil(error, @"i = %zd", i);
+      XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain, @"i = %zd", i);
+      XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidTag, @"i = %zd", i);
+    }
+  }
+}
+
+- (void)testErrorRecursionDepthReached {
+  NSData *data = DataFromCStr(
+      "\x0A\xF2\x01\x0A\xEF\x01\x0A\xEC\x01\x0A\xE9\x01\x0A\xE6\x01"
+      "\x0A\xE3\x01\x0A\xE0\x01\x0A\xDD\x01\x0A\xDA\x01\x0A\xD7\x01"
+      "\x0A\xD4\x01\x0A\xD1\x01\x0A\xCE\x01\x0A\xCB\x01\x0A\xC8\x01"
+      "\x0A\xC5\x01\x0A\xC2\x01\x0A\xBF\x01\x0A\xBC\x01\x0A\xB9\x01"
+      "\x0A\xB6\x01\x0A\xB3\x01\x0A\xB0\x01\x0A\xAD\x01\x0A\xAA\x01"
+      "\x0A\xA7\x01\x0A\xA4\x01\x0A\xA1\x01\x0A\x9E\x01\x0A\x9B\x01"
+      "\x0A\x98\x01\x0A\x95\x01\x0A\x92\x01\x0A\x8F\x01\x0A\x8C\x01"
+      "\x0A\x89\x01\x0A\x86\x01\x0A\x83\x01\x0A\x80\x01\x0A\x7E"
+      "\x0A\x7C\x0A\x7A\x0A\x78\x0A\x76\x0A\x74\x0A\x72\x0A\x70"
+      "\x0A\x6E\x0A\x6C\x0A\x6A\x0A\x68\x0A\x66\x0A\x64\x0A\x62"
+      "\x0A\x60\x0A\x5E\x0A\x5C\x0A\x5A\x0A\x58\x0A\x56\x0A\x54"
+      "\x0A\x52\x0A\x50\x0A\x4E\x0A\x4C\x0A\x4A\x0A\x48\x0A\x46"
+      "\x0A\x44\x0A\x42\x0A\x40\x0A\x3E\x0A\x3C\x0A\x3A\x0A\x38"
+      "\x0A\x36\x0A\x34\x0A\x32\x0A\x30\x0A\x2E\x0A\x2C\x0A\x2A"
+      "\x0A\x28\x0A\x26\x0A\x24\x0A\x22\x0A\x20\x0A\x1E\x0A\x1C"
+      "\x0A\x1A\x0A\x18\x0A\x16\x0A\x14\x0A\x12\x0A\x10\x0A\x0E"
+      "\x0A\x0C\x0A\x0A\x0A\x08\x0A\x06\x12\x04\x72\x02\x4B\x50");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorRecursionDepthExceeded);
+}
+
+- (void)testParseDelimitedDataWithNegativeSize {
+  NSData *data = DataFromCStr("\xFF\xFF\xFF\xFF\x0F");
+  GPBCodedInputStream *input = [GPBCodedInputStream streamWithData:data];
+  NSError *error;
+  [GPBMessage parseDelimitedFromCodedInputStream:input
+                               extensionRegistry:nil
+                                           error:&error];
+  XCTAssertNil(error);
+}
+
+#ifdef DEBUG
+- (void)testErrorMissingRequiredField {
+  NSData *data = DataFromCStr("");
+  NSError *error = nil;
+  TestRequired *msg = [TestRequired parseFromData:data error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBMessageErrorDomain);
+  XCTAssertEqual(error.code, GPBMessageErrorCodeMissingRequiredField);
+}
+#endif
+
 #pragma mark - Subset from from map_tests.cc
 
 // TEST(GeneratedMapFieldTest, StandardWireFormat)
@@ -890,7 +1007,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:1 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:1]);
   XCTAssertEqual(val, 1);
 
   [msg release];
@@ -904,7 +1021,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:2 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:2]);
   XCTAssertEqual(val, 1);
 
   [msg release];
@@ -918,7 +1035,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:2 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:2]);
   XCTAssertEqual(val, 1);
 
   [msg release];
@@ -932,7 +1049,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:1 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:1]);
   XCTAssertEqual(val, 2);
 
   [msg release];
@@ -946,7 +1063,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:0 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:0]);
   XCTAssertEqual(val, 1);
 
   [msg release];
@@ -960,7 +1077,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:1 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:1]);
   XCTAssertEqual(val, 0);
 
   [msg release];
@@ -974,7 +1091,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:2 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:2]);
   XCTAssertEqual(val, 3);
 
   [msg release];
@@ -989,29 +1106,29 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [TestMap parseFromData:data error:&error];
   XCTAssertNil(msg);
   XCTAssertNotNil(error);
-  XCTAssertEqualObjects(error.domain, GPBMessageErrorDomain);
-  XCTAssertEqual(error.code, GPBMessageErrorCodeMalformedData);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSubsectionLimit);
 }
 
 // TEST(GeneratedMapFieldTest, Proto2UnknownEnum)
 - (void)testMap_Proto2UnknownEnum {
   TestEnumMapPlusExtra *orig = [[TestEnumMapPlusExtra alloc] init];
 
-  orig.knownMapField = [GPBInt32EnumDictionary
-      dictionaryWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue];
-  orig.unknownMapField = [GPBInt32EnumDictionary
-      dictionaryWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue];
-  [orig.knownMapField setValue:Proto2MapEnumPlusExtra_EProto2MapEnumFoo
-                        forKey:0];
-  [orig.unknownMapField setValue:Proto2MapEnumPlusExtra_EProto2MapEnumExtra
-                          forKey:0];
+  orig.knownMapField = [[[GPBInt32EnumDictionary alloc]
+      initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
+  orig.unknownMapField = [[[GPBInt32EnumDictionary alloc]
+      initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
+  [orig.knownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumFoo
+                       forKey:0];
+  [orig.unknownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumExtra
+                         forKey:0];
 
   NSData *data = [orig data];
   XCTAssertNotNil(data);
   TestEnumMap *msg1 = [TestEnumMap parseFromData:data error:NULL];
   XCTAssertEqual(msg1.knownMapField.count, 1U);
   int32_t val = -1;
-  XCTAssertTrue([msg1.knownMapField valueForKey:0 value:&val]);
+  XCTAssertTrue([msg1.knownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnum_Proto2MapEnumFoo);
   XCTAssertEqual(msg1.unknownFields.countOfFields, 1U);
 
@@ -1020,11 +1137,11 @@ static NSData *DataFromCStr(const char *str) {
       [TestEnumMapPlusExtra parseFromData:data error:NULL];
   val = -1;
   XCTAssertEqual(msg2.knownMapField.count, 1U);
-  XCTAssertTrue([msg2.knownMapField valueForKey:0 value:&val]);
+  XCTAssertTrue([msg2.knownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumFoo);
   val = -1;
   XCTAssertEqual(msg2.unknownMapField.count, 1U);
-  XCTAssertTrue([msg2.unknownMapField valueForKey:0 value:&val]);
+  XCTAssertTrue([msg2.unknownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumExtra);
   XCTAssertEqual(msg2.unknownFields.countOfFields, 0U);
 
@@ -1040,32 +1157,37 @@ static NSData *DataFromCStr(const char *str) {
 
   // Key/Value data should result in different byte lengths on wire to ensure
   // everything is right.
-  [msg.mapInt32Int32 setValue:1000 forKey:200];
-  [msg.mapInt32Int32 setValue:101 forKey:2001];
-  [msg.mapInt64Int64 setValue:1002 forKey:202];
-  [msg.mapInt64Int64 setValue:103 forKey:2003];
-  [msg.mapUint32Uint32 setValue:1004 forKey:204];
-  [msg.mapUint32Uint32 setValue:105 forKey:2005];
-  [msg.mapUint64Uint64 setValue:1006 forKey:206];
-  [msg.mapUint64Uint64 setValue:107 forKey:2007];
-  [msg.mapSint32Sint32 setValue:1008 forKey:208];
-  [msg.mapSint32Sint32 setValue:109 forKey:2009];
-  [msg.mapSint64Sint64 setValue:1010 forKey:210];
-  [msg.mapSint64Sint64 setValue:111 forKey:2011];
-  [msg.mapFixed32Fixed32 setValue:1012 forKey:212];
-  [msg.mapFixed32Fixed32 setValue:113 forKey:2013];
-  [msg.mapFixed64Fixed64 setValue:1014 forKey:214];
-  [msg.mapFixed64Fixed64 setValue:115 forKey:2015];
-  [msg.mapSfixed32Sfixed32 setValue:1016 forKey:216];
-  [msg.mapSfixed32Sfixed32 setValue:117 forKey:2017];
-  [msg.mapSfixed64Sfixed64 setValue:1018 forKey:218];
-  [msg.mapSfixed64Sfixed64 setValue:119 forKey:2019];
-  [msg.mapInt32Float setValue:1020.f forKey:220];
-  [msg.mapInt32Float setValue:121.f forKey:2021];
-  [msg.mapInt32Double setValue:1022. forKey:222];
-  [msg.mapInt32Double setValue:123. forKey:2023];
-  [msg.mapBoolBool setValue:false forKey:true];
-  [msg.mapBoolBool setValue:true forKey:false];
+  [msg.mapInt32Int32 setInt32:1000 forKey:200];
+  [msg.mapInt32Int32 setInt32:101 forKey:2001];
+  [msg.mapInt64Int64 setInt64:1002 forKey:202];
+  [msg.mapInt64Int64 setInt64:103 forKey:2003];
+  [msg.mapInt64Int64 setInt64:4294967296 forKey:4294967297];
+  [msg.mapUint32Uint32 setUInt32:1004 forKey:204];
+  [msg.mapUint32Uint32 setUInt32:105 forKey:2005];
+  [msg.mapUint64Uint64 setUInt64:1006 forKey:206];
+  [msg.mapUint64Uint64 setUInt64:107 forKey:2007];
+  [msg.mapUint64Uint64 setUInt64:4294967298 forKey:4294967299];
+  [msg.mapSint32Sint32 setInt32:1008 forKey:208];
+  [msg.mapSint32Sint32 setInt32:109 forKey:2009];
+  [msg.mapSint64Sint64 setInt64:1010 forKey:210];
+  [msg.mapSint64Sint64 setInt64:111 forKey:2011];
+  [msg.mapSint64Sint64 setInt64:4294967300 forKey:4294967301];
+  [msg.mapFixed32Fixed32 setUInt32:1012 forKey:212];
+  [msg.mapFixed32Fixed32 setUInt32:113 forKey:2013];
+  [msg.mapFixed64Fixed64 setUInt64:1014 forKey:214];
+  [msg.mapFixed64Fixed64 setUInt64:115 forKey:2015];
+  [msg.mapFixed64Fixed64 setUInt64:4294967302 forKey:4294967303];
+  [msg.mapSfixed32Sfixed32 setInt32:1016 forKey:216];
+  [msg.mapSfixed32Sfixed32 setInt32:117 forKey:2017];
+  [msg.mapSfixed64Sfixed64 setInt64:1018 forKey:218];
+  [msg.mapSfixed64Sfixed64 setInt64:119 forKey:2019];
+  [msg.mapSfixed64Sfixed64 setInt64:4294967304 forKey:4294967305];
+  [msg.mapInt32Float setFloat:1020.f forKey:220];
+  [msg.mapInt32Float setFloat:121.f forKey:2021];
+  [msg.mapInt32Double setDouble:1022. forKey:222];
+  [msg.mapInt32Double setDouble:123. forKey:2023];
+  [msg.mapBoolBool setBool:false forKey:true];
+  [msg.mapBoolBool setBool:true forKey:false];
   msg.mapStringString[@"224"] = @"1024";
   msg.mapStringString[@"2025"] = @"125";
   msg.mapStringBytes[@"226"] = DataFromCStr("1026");
@@ -1074,12 +1196,12 @@ static NSData *DataFromCStr(const char *str) {
   val1.optionalInt32 = 1028;
   Message2 *val2 = [[Message2 alloc] init];
   val2.optionalInt32 = 129;
-  [msg.mapStringMessage setValue:val1 forKey:@"228"];
-  [msg.mapStringMessage setValue:val2 forKey:@"2029"];
+  [msg.mapStringMessage setObject:val1 forKey:@"228"];
+  [msg.mapStringMessage setObject:val2 forKey:@"2029"];
   [msg.mapInt32Bytes setObject:DataFromCStr("1030 bytes") forKey:230];
   [msg.mapInt32Bytes setObject:DataFromCStr("131") forKey:2031];
-  [msg.mapInt32Enum setValue:Message2_Enum_Bar forKey:232];
-  [msg.mapInt32Enum setValue:Message2_Enum_Baz forKey:2033];
+  [msg.mapInt32Enum setEnum:Message2_Enum_Bar forKey:232];
+  [msg.mapInt32Enum setEnum:Message2_Enum_Baz forKey:2033];
   Message2 *val3 = [[Message2 alloc] init];
   val3.optionalInt32 = 1034;
   Message2 *val4 = [[Message2 alloc] init];

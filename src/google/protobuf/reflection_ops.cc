@@ -31,19 +31,33 @@
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
+#include <google/protobuf/reflection_ops.h>
 
 #include <string>
 #include <vector>
 
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/map_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
 namespace internal {
+
+static const Reflection* GetReflectionOrDie(const Message& m) {
+  const Reflection* r = m.GetReflection();
+  if (r == nullptr) {
+    const Descriptor* d = m.GetDescriptor();
+    const string& mtype = d ? d->name() : "unknown";
+    // RawMessage is one known type for which GetReflection() returns nullptr.
+    GOOGLE_LOG(FATAL) << "Message does not support reflection (type " << mtype << ").";
+  }
+  return r;
+}
 
 void ReflectionOps::Copy(const Message& from, Message* to) {
   if (&from == to) return;
@@ -60,10 +74,10 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
     << "(merge " << descriptor->full_name()
     << " to " << to->GetDescriptor()->full_name() << ")";
 
-  const Reflection* from_reflection = from.GetReflection();
-  const Reflection* to_reflection = to->GetReflection();
+  const Reflection* from_reflection = GetReflectionOrDie(from);
+  const Reflection* to_reflection = GetReflectionOrDie(*to);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   from_reflection->ListFields(from, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
@@ -127,9 +141,9 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
 }
 
 void ReflectionOps::Clear(Message* message) {
-  const Reflection* reflection = message->GetReflection();
+  const Reflection* reflection = GetReflectionOrDie(*message);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     reflection->ClearField(message, fields[i]);
@@ -140,7 +154,7 @@ void ReflectionOps::Clear(Message* message) {
 
 bool ReflectionOps::IsInitialized(const Message& message) {
   const Descriptor* descriptor = message.GetDescriptor();
-  const Reflection* reflection = message.GetReflection();
+  const Reflection* reflection = GetReflectionOrDie(message);
 
   // Check required fields of this message.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -152,11 +166,32 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   }
 
   // Check that sub-messages are initialized.
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+
+      if (field->is_map()) {
+        const FieldDescriptor* value_field = field->message_type()->field(1);
+        if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          MapFieldBase* map_field =
+              reflection->MapData(const_cast<Message*>(&message), field);
+          if (map_field->IsMapValid()) {
+            MapIterator iter(const_cast<Message*>(&message), field);
+            MapIterator end(const_cast<Message*>(&message), field);
+            for (map_field->MapBegin(&iter), map_field->MapEnd(&end);
+                 iter != end; ++iter) {
+              if (!iter.GetValueRef().GetMessageValue().IsInitialized()) {
+                return false;
+              }
+            }
+            continue;
+          }
+        } else {
+          continue;
+        }
+      }
 
       if (field->is_repeated()) {
         int size = reflection->FieldSize(message, field);
@@ -179,11 +214,11 @@ bool ReflectionOps::IsInitialized(const Message& message) {
 }
 
 void ReflectionOps::DiscardUnknownFields(Message* message) {
-  const Reflection* reflection = message->GetReflection();
+  const Reflection* reflection = GetReflectionOrDie(*message);
 
   reflection->MutableUnknownFields(message)->Clear();
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
@@ -224,9 +259,9 @@ static string SubMessagePrefix(const string& prefix,
 void ReflectionOps::FindInitializationErrors(
     const Message& message,
     const string& prefix,
-    vector<string>* errors) {
+    std::vector<string>* errors) {
   const Descriptor* descriptor = message.GetDescriptor();
-  const Reflection* reflection = message.GetReflection();
+  const Reflection* reflection = GetReflectionOrDie(message);
 
   // Check required fields of this message.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -238,7 +273,7 @@ void ReflectionOps::FindInitializationErrors(
   }
 
   // Check sub-messages.
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];

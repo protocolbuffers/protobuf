@@ -36,12 +36,12 @@
 #include <string>
 
 #include <google/protobuf/compiler/java/java_context.h>
-#include <google/protobuf/compiler/java/java_enum_lite.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
+#include <google/protobuf/compiler/java/java_enum_lite.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -49,22 +49,12 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-namespace {
-bool EnumHasCustomOptions(const EnumDescriptor* descriptor) {
-  if (descriptor->options().unknown_fields().field_count() > 0) return true;
-  for (int i = 0; i < descriptor->value_count(); ++i) {
-    const EnumValueDescriptor* value = descriptor->value(i);
-    if (value->options().unknown_fields().field_count() > 0) return true;
-  }
-  return false;
-}
-}  // namespace
-
 EnumLiteGenerator::EnumLiteGenerator(const EnumDescriptor* descriptor,
-                             bool immutable_api,
-                             Context* context)
-  : descriptor_(descriptor), immutable_api_(immutable_api),
-    name_resolver_(context->GetNameResolver())  {
+                                     bool immutable_api, Context* context)
+    : descriptor_(descriptor),
+      immutable_api_(immutable_api),
+      context_(context),
+      name_resolver_(context->GetNameResolver()) {
   for (int i = 0; i < descriptor_->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor_->value(i);
     const EnumValueDescriptor* canonical_value =
@@ -85,34 +75,30 @@ EnumLiteGenerator::~EnumLiteGenerator() {}
 
 void EnumLiteGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_);
-  if (HasDescriptorMethods(descriptor_)) {
-    printer->Print(
-      "public enum $classname$\n"
-      "    implements com.google.protobuf.ProtocolMessageEnum {\n",
-      "classname", descriptor_->name());
-  } else {
-    printer->Print(
+  MaybePrintGeneratedAnnotation(context_, printer, descriptor_, immutable_api_);
+  printer->Print(
       "public enum $classname$\n"
       "    implements com.google.protobuf.Internal.EnumLite {\n",
       "classname", descriptor_->name());
-  }
+  printer->Annotate("classname", descriptor_);
   printer->Indent();
 
   for (int i = 0; i < canonical_values_.size(); i++) {
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["name"] = canonical_values_[i]->name();
-    vars["index"] = SimpleItoa(canonical_values_[i]->index());
     vars["number"] = SimpleItoa(canonical_values_[i]->number());
     WriteEnumValueDocComment(printer, canonical_values_[i]);
     if (canonical_values_[i]->options().deprecated()) {
       printer->Print("@java.lang.Deprecated\n");
     }
     printer->Print(vars,
-      "$name$($index$, $number$),\n");
+      "$name$($number$),\n");
+    printer->Annotate("name", canonical_values_[i]);
   }
 
   if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print("UNRECOGNIZED(-1, -1),\n");
+    printer->Print("${$UNRECOGNIZED$}$(-1),\n", "{", "", "}", "");
+    printer->Annotate("{", "}", descriptor_);
   }
 
   printer->Print(
@@ -122,44 +108,57 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   // -----------------------------------------------------------------
 
   for (int i = 0; i < aliases_.size(); i++) {
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["classname"] = descriptor_->name();
     vars["name"] = aliases_[i].value->name();
     vars["canonical_name"] = aliases_[i].canonical_value->name();
     WriteEnumValueDocComment(printer, aliases_[i].value);
     printer->Print(vars,
       "public static final $classname$ $name$ = $canonical_name$;\n");
+    printer->Annotate("name", aliases_[i].value);
   }
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["name"] = descriptor_->value(i)->name();
     vars["number"] = SimpleItoa(descriptor_->value(i)->number());
+    vars["{"] = "";
+    vars["}"] = "";
     WriteEnumValueDocComment(printer, descriptor_->value(i));
     printer->Print(vars,
-      "public static final int $name$_VALUE = $number$;\n");
+      "public static final int ${$$name$_VALUE$}$ = $number$;\n");
+    printer->Annotate("{", "}", descriptor_->value(i));
   }
   printer->Print("\n");
 
   // -----------------------------------------------------------------
 
   printer->Print(
-    "\n"
-    "public final int getNumber() {\n");
+      "\n"
+      "@java.lang.Override\n"
+      "public final int getNumber() {\n");
   if (SupportUnknownEnumValue(descriptor_->file())) {
     printer->Print(
-      "  if (index == -1) {\n"
-      "    throw new java.lang.IllegalArgumentException(\n"
-      "        \"Can't get the number of an unknown enum value.\");\n"
-      "  }\n");
+        "  if (this == UNRECOGNIZED) {\n"
+        "    throw new java.lang.IllegalArgumentException(\n"
+        "        \"Can't get the number of an unknown enum value.\");\n"
+        "  }\n");
   }
   printer->Print(
-    "  return value;\n"
-    "}\n"
-    "\n"
-    "public static $classname$ valueOf(int value) {\n"
-    "  switch (value) {\n",
-    "classname", descriptor_->name());
+      "  return value;\n"
+      "}\n"
+      "\n"
+      "/**\n"
+      " * @deprecated Use {@link #forNumber(int)} instead.\n"
+      " */\n"
+      "@java.lang.Deprecated\n"
+      "public static $classname$ valueOf(int value) {\n"
+      "  return forNumber(value);\n"
+      "}\n"
+      "\n"
+      "public static $classname$ forNumber(int value) {\n"
+      "  switch (value) {\n",
+      "classname", descriptor_->name());
   printer->Indent();
   printer->Indent();
 
@@ -184,8 +183,9 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
     "private static final com.google.protobuf.Internal.EnumLiteMap<\n"
     "    $classname$> internalValueMap =\n"
     "      new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {\n"
+    "        @java.lang.Override\n"
     "        public $classname$ findValueByNumber(int number) {\n"
-    "          return $classname$.valueOf(number);\n"
+    "          return $classname$.forNumber(number);\n"
     "        }\n"
     "      };\n"
     "\n",
@@ -193,7 +193,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     "private final int value;\n\n"
-    "private $classname$(int index, int value) {\n",
+    "private $classname$(int value) {\n",
     "classname", descriptor_->name());
   printer->Print(
     "  this.value = value;\n"

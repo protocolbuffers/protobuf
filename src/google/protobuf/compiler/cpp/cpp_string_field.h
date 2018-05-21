@@ -46,32 +46,39 @@ namespace cpp {
 
 class StringFieldGenerator : public FieldGenerator {
  public:
-  explicit StringFieldGenerator(const FieldDescriptor* descriptor,
-                                const Options& options);
+  StringFieldGenerator(const FieldDescriptor* descriptor,
+                       const Options& options);
   ~StringFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const;
   void GenerateStaticMembers(io::Printer* printer) const;
   void GenerateAccessorDeclarations(io::Printer* printer) const;
-  void GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                         bool is_inline) const;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateNonInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateClearingCode(io::Printer* printer) const;
+  void GenerateMessageClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
+  void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateDestructorCode(io::Printer* printer) const;
+  bool GenerateArenaDestructorCode(io::Printer* printer) const;
   void GenerateDefaultInstanceAllocator(io::Printer* printer) const;
-  void GenerateShutdownCode(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
+  uint32 CalculateFieldTag() const;
+  bool IsInlined() const { return inlined_; }
+
+  bool MergeFromCodedStreamNeedsArena() const;
 
  protected:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
+  const bool lite_;
+  bool inlined_;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringFieldGenerator);
@@ -79,39 +86,41 @@ class StringFieldGenerator : public FieldGenerator {
 
 class StringOneofFieldGenerator : public StringFieldGenerator {
  public:
-  explicit StringOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                     const Options& options);
+  StringOneofFieldGenerator(const FieldDescriptor* descriptor,
+                            const Options& options);
   ~StringOneofFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
-  void GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                         bool is_inline) const;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateClearingCode(io::Printer* printer) const;
+
+  // StringFieldGenerator, from which we inherit, overrides this so we need to
+  // override it as well.
+  void GenerateMessageClearingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
   void GenerateDestructorCode(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
 
  private:
-  const bool dependent_field_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOneofFieldGenerator);
 };
 
 class RepeatedStringFieldGenerator : public FieldGenerator {
  public:
-  explicit RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
-                                        const Options& options);
+  RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
+                               const Options& options);
   ~RepeatedStringFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const;
   void GenerateAccessorDeclarations(io::Printer* printer) const;
-  void GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                         bool is_inline) const;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
+  void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
@@ -119,7 +128,7 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedStringFieldGenerator);
 };

@@ -38,21 +38,32 @@
 #ifndef CONFORMANCE_CONFORMANCE_TEST_H
 #define CONFORMANCE_CONFORMANCE_TEST_H
 
+#include <functional>
 #include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/wire_format_lite.h>
+
+#include "third_party/jsoncpp/json.h"
 
 namespace conformance {
 class ConformanceRequest;
 class ConformanceResponse;
 }  // namespace conformance
 
+namespace protobuf_test_messages {
+namespace proto3 {
+class TestAllTypesProto3;
+}  // namespace proto3
+}  // namespace protobuf_test_messages
+
 namespace google {
 namespace protobuf {
 
 class ConformanceTestRunner {
  public:
+  virtual ~ConformanceTestRunner() {}
+
   // Call to run a single conformance test.
   //
   // "input" is a serialized conformance.ConformanceRequest.
@@ -60,7 +71,9 @@ class ConformanceTestRunner {
   //
   // If there is any error in running the test itself, set "runtime_error" in
   // the response.
-  virtual void RunTest(const std::string& input, std::string* output) = 0;
+  virtual void RunTest(const std::string& test_name,
+                       const std::string& input,
+                       std::string* output) = 0;
 };
 
 // Class representing the test suite itself.  To run it, implement your own
@@ -83,14 +96,30 @@ class ConformanceTestRunner {
 //
 class ConformanceTestSuite {
  public:
-  ConformanceTestSuite() : verbose_(false) {}
+  ConformanceTestSuite() : verbose_(false), enforce_recommended_(false) {}
 
   void SetVerbose(bool verbose) { verbose_ = verbose; }
 
   // Sets the list of tests that are expected to fail when RunSuite() is called.
   // RunSuite() will fail unless the set of failing tests is exactly the same
   // as this list.
-  void SetFailureList(const std::vector<std::string>& failure_list);
+  //
+  // The filename here is *only* used to create/format useful error messages for
+  // how to update the failure list.  We do NOT read this file at all.
+  void SetFailureList(const std::string& filename,
+                      const std::vector<std::string>& failure_list);
+
+  // Whether to require the testee to pass RECOMMENDED tests. By default failing
+  // a RECOMMENDED test case will not fail the entire suite but will only
+  // generated a warning. If this flag is set to true, RECOMMENDED tests will
+  // be treated the same way as REQUIRED tests and failing a RECOMMENDED test
+  // case will cause the entire test suite to fail as well. An implementation
+  // can enable this if it wants to be strictly conforming to protobuf spec.
+  // See the comments about ConformanceLevel below to learn more about the
+  // difference between REQUIRED and RECOMMENDED test cases.
+  void SetEnforceRecommended(bool value) {
+    enforce_recommended_ = value;
+  }
 
   // Run all the conformance tests against the given test runner.
   // Test output will be stored in "output".
@@ -101,8 +130,27 @@ class ConformanceTestSuite {
   bool RunSuite(ConformanceTestRunner* runner, std::string* output);
 
  private:
+  // Test cases are classified into a few categories:
+  //   REQUIRED: the test case must be passed for an implementation to be
+  //             interoperable with other implementations. For example, a
+  //             parser implementaiton must accept both packed and unpacked
+  //             form of repeated primitive fields.
+  //   RECOMMENDED: the test case is not required for the implementation to
+  //                be interoperable with other implementations, but is
+  //                recommended for best performance and compatibility. For
+  //                example, a proto3 serializer should serialize repeated
+  //                primitive fields in packed form, but an implementation
+  //                failing to do so will still be able to communicate with
+  //                other implementations.
+  enum ConformanceLevel {
+    REQUIRED = 0,
+    RECOMMENDED = 1,
+  };
+  string ConformanceLevelToString(ConformanceLevel level);
+
   void ReportSuccess(const std::string& test_name);
   void ReportFailure(const string& test_name,
+                     ConformanceLevel level,
                      const conformance::ConformanceRequest& request,
                      const conformance::ConformanceResponse& response,
                      const char* fmt, ...);
@@ -112,23 +160,84 @@ class ConformanceTestSuite {
   void RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
-  void RunValidInputTest(const string& test_name, const string& input,
+  void RunValidInputTest(const string& test_name,
+                         ConformanceLevel level,
+                         const string& input,
                          conformance::WireFormat input_format,
                          const string& equivalent_text_format,
-                         conformance::WireFormat requested_output);
-  void RunValidJsonTest(const string& test_name, const string& input_json,
+                         conformance::WireFormat requested_output,
+                         bool isProto3);
+  void RunValidBinaryInputTest(const string& test_name,
+                               ConformanceLevel level,
+                               const string& input,
+                               conformance::WireFormat input_format,
+                               const string& equivalent_wire_format,
+                               conformance::WireFormat requested_output,
+                               bool isProto3);
+  void RunValidJsonTest(const string& test_name,
+                        ConformanceLevel level,
+                        const string& input_json,
                         const string& equivalent_text_format);
+  void RunValidJsonTestWithProtobufInput(
+      const string& test_name,
+      ConformanceLevel level,
+      const protobuf_test_messages::proto3::TestAllTypesProto3& input,
+      const string& equivalent_text_format);
+  void RunValidProtobufTest(const string& test_name, ConformanceLevel level,
+                            const string& input_protobuf,
+                            const string& equivalent_text_format,
+                            bool isProto3);
+  void RunValidBinaryProtobufTest(const string& test_name,
+                                  ConformanceLevel level,
+                                  const string& input_protobuf,
+                                  bool isProto3);
+  void RunValidProtobufTestWithMessage(
+      const string& test_name, ConformanceLevel level,
+      const Message *input,
+      const string& equivalent_text_format,
+      bool isProto3);
+
+  typedef std::function<bool(const Json::Value&)> Validator;
+  void RunValidJsonTestWithValidator(const string& test_name,
+                                     ConformanceLevel level,
+                                     const string& input_json,
+                                     const Validator& validator);
+  void ExpectParseFailureForJson(const string& test_name,
+                                 ConformanceLevel level,
+                                 const string& input_json);
+  void ExpectSerializeFailureForJson(const string& test_name,
+                                     ConformanceLevel level,
+                                     const string& text_format);
+  void ExpectParseFailureForProtoWithProtoVersion (const string& proto,
+                                                   const string& test_name,
+                                                   ConformanceLevel level,
+                                                   bool isProto3);
   void ExpectParseFailureForProto(const std::string& proto,
-                                  const std::string& test_name);
+                                  const std::string& test_name,
+                                  ConformanceLevel level);
   void ExpectHardParseFailureForProto(const std::string& proto,
-                                      const std::string& test_name);
+                                      const std::string& test_name,
+                                      ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
-  bool CheckSetEmpty(const set<string>& set_to_check, const char* msg);
+  void TestIllegalTags();
+  template <class MessageType>
+  void TestOneofMessage (MessageType &message,
+                         bool isProto3);
+  template <class MessageType>
+  void TestUnknownMessage (MessageType &message,
+                           bool isProto3);
+  void TestValidDataForType(
+      google::protobuf::FieldDescriptor::Type,
+      std::vector<std::pair<std::string, std::string>> values);
+  bool CheckSetEmpty(const std::set<string>& set_to_check,
+                     const std::string& write_to_file, const std::string& msg);
   ConformanceTestRunner* runner_;
   int successes_;
   int expected_failures_;
   bool verbose_;
+  bool enforce_recommended_;
   std::string output_;
+  std::string failure_list_filename_;
 
   // The set of test names that are expected to fail in this run, but haven't
   // failed yet.
@@ -147,8 +256,7 @@ class ConformanceTestSuite {
   // The set of tests that the testee opted out of;
   std::set<std::string> skipped_;
 
-  google::protobuf::internal::scoped_ptr<google::protobuf::util::TypeResolver>
-      type_resolver_;
+  std::unique_ptr<google::protobuf::util::TypeResolver> type_resolver_;
   std::string type_url_;
 };
 

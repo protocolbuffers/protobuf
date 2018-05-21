@@ -1089,19 +1089,19 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
 - (void)setAllMapFields:(TestMap *)message numEntries:(uint32_t)count {
   for (uint32_t i = 0; i < count; i++) {
-    [message.mapInt32Int32 setValue:(i + 1) forKey:100 + i * 100];
-    [message.mapInt64Int64 setValue:(i + 1) forKey:101 + i * 100];
-    [message.mapUint32Uint32 setValue:(i + 1) forKey:102 + i * 100];
-    [message.mapUint64Uint64 setValue:(i + 1) forKey:103 + i * 100];
-    [message.mapSint32Sint32 setValue:(i + 1) forKey:104 + i * 100];
-    [message.mapSint64Sint64 setValue:(i + 1) forKey:105 + i * 100];
-    [message.mapFixed32Fixed32 setValue:(i + 1) forKey:106 + i * 100];
-    [message.mapFixed64Fixed64 setValue:(i + 1) forKey:107 + i * 100];
-    [message.mapSfixed32Sfixed32 setValue:(i + 1) forKey:108 + i * 100];
-    [message.mapSfixed64Sfixed64 setValue:(i + 1) forKey:109 + i * 100];
-    [message.mapInt32Float setValue:(i + 1) forKey:110 + i * 100];
-    [message.mapInt32Double setValue:(i + 1) forKey:111 + i * 100];
-    [message.mapBoolBool setValue:((i % 2) == 1) forKey:((i % 2) == 0)];
+    [message.mapInt32Int32 setInt32:(i + 1) forKey:100 + i * 100];
+    [message.mapInt64Int64 setInt64:(i + 1) forKey:101 + i * 100];
+    [message.mapUint32Uint32 setUInt32:(i + 1) forKey:102 + i * 100];
+    [message.mapUint64Uint64 setUInt64:(i + 1) forKey:103 + i * 100];
+    [message.mapSint32Sint32 setInt32:(i + 1) forKey:104 + i * 100];
+    [message.mapSint64Sint64 setInt64:(i + 1) forKey:105 + i * 100];
+    [message.mapFixed32Fixed32 setUInt32:(i + 1) forKey:106 + i * 100];
+    [message.mapFixed64Fixed64 setUInt64:(i + 1) forKey:107 + i * 100];
+    [message.mapSfixed32Sfixed32 setInt32:(i + 1) forKey:108 + i * 100];
+    [message.mapSfixed64Sfixed64 setInt64:(i + 1) forKey:109 + i * 100];
+    [message.mapInt32Float setFloat:(i + 1) forKey:110 + i * 100];
+    [message.mapInt32Double setDouble:(i + 1) forKey:111 + i * 100];
+    [message.mapBoolBool setBool:((i % 2) == 1) forKey:((i % 2) == 0)];
 
     NSString *keyStr = [[NSString alloc] initWithFormat:@"%d", 112 + i * 100];
     NSString *dataStr = [[NSString alloc] initWithFormat:@"%d", i + 1];
@@ -1114,8 +1114,8 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [data release];
 
     [message.mapInt32Enum
-        setValue:(i % 2) ? MapEnum_MapEnumBar : MapEnum_MapEnumBaz
-          forKey:114 + i * 100];
+        setEnum:(i % 2) ? MapEnum_MapEnumBar : MapEnum_MapEnumBaz
+         forKey:114 + i * 100];
 
     ForeignMessage *subMsg = [[ForeignMessage alloc] init];
     subMsg.c = i + 1;

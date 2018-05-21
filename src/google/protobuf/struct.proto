@@ -27,15 +27,17 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 syntax = "proto3";
 
 package google.protobuf;
 
-option java_generate_equals_and_hash = true;
-option java_multiple_files = true;
-option java_outer_classname = "StructProto";
-option java_package = "com.google.protobuf";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option cc_enable_arenas = true;
+option go_package = "github.com/golang/protobuf/ptypes/struct;structpb";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "StructProto";
+option java_multiple_files = true;
 option objc_class_prefix = "GPB";
 
 
@@ -48,7 +50,7 @@ option objc_class_prefix = "GPB";
 //
 // The JSON representation for `Struct` is JSON object.
 message Struct {
-  // Map of dynamically typed values.
+  // Unordered map of dynamically typed values.
   map<string, Value> fields = 1;
 }
 

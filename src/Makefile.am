@@ -19,8 +19,9 @@ PTHREAD_DEF =
 endif
 
 if GCC
-# These are good warnings to turn on by default
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
+# Turn on all warnings except for sign comparison (we ignore sign comparison
+# in Google so our code base have tons of such warnings).
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wno-sign-compare
 else
 NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF)
 endif
@@ -32,17 +33,21 @@ AM_LDFLAGS = $(PTHREAD_CFLAGS)
 # If I say "dist_include_DATA", automake complains that $(includedir) is not
 # a "legitimate" directory for DATA.  Screw you, automake.
 protodir = $(includedir)
-nobase_dist_proto_DATA = google/protobuf/descriptor.proto     \
-                         google/protobuf/any.proto            \
-                         google/protobuf/api.proto            \
-                         google/protobuf/duration.proto       \
-                         google/protobuf/empty.proto          \
-                         google/protobuf/field_mask.proto     \
-                         google/protobuf/source_context.proto \
-                         google/protobuf/struct.proto         \
-                         google/protobuf/timestamp.proto      \
-                         google/protobuf/type.proto           \
-                         google/protobuf/wrappers.proto       \
+
+# If you are adding new files here, also remember to change the build files for
+# all other languages, //protoc-artifacts/build-zip.sh and run
+# //update_file_list.sh for bazel.
+nobase_dist_proto_DATA = google/protobuf/descriptor.proto      \
+                         google/protobuf/any.proto             \
+                         google/protobuf/api.proto             \
+                         google/protobuf/duration.proto        \
+                         google/protobuf/empty.proto           \
+                         google/protobuf/field_mask.proto      \
+                         google/protobuf/source_context.proto  \
+                         google/protobuf/struct.proto          \
+                         google/protobuf/timestamp.proto       \
+                         google/protobuf/type.proto            \
+                         google/protobuf/wrappers.proto        \
                          google/protobuf/compiler/plugin.proto
 
 # Not sure why these don't get cleaned automatically.
@@ -50,138 +55,133 @@ clean-local:
 	rm -f *.loT
 
 CLEANFILES = $(protoc_outputs) unittest_proto_middleman \
-             testzip.jar testzip.list testzip.proto testzip.zip
+             testzip.jar testzip.list testzip.proto testzip.zip \
+             no_warning_test.cc \
+             google/protobuf/compiler/js/well_known_types_embed.cc \
+             js_embed$(EXEEXT)
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
 
-nobase_include_HEADERS =                                        \
-  google/protobuf/stubs/atomic_sequence_num.h                   \
-  google/protobuf/stubs/atomicops.h                             \
-  google/protobuf/stubs/atomicops_internals_power.h             \
-  google/protobuf/stubs/atomicops_internals_arm64_gcc.h         \
-  google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
-  google/protobuf/stubs/atomicops_internals_arm_qnx.h           \
-  google/protobuf/stubs/atomicops_internals_atomicword_compat.h \
-  google/protobuf/stubs/atomicops_internals_generic_gcc.h       \
-  google/protobuf/stubs/atomicops_internals_macosx.h            \
-  google/protobuf/stubs/atomicops_internals_mips_gcc.h          \
-  google/protobuf/stubs/atomicops_internals_pnacl.h             \
-  google/protobuf/stubs/atomicops_internals_solaris.h           \
-  google/protobuf/stubs/atomicops_internals_tsan.h              \
-  google/protobuf/stubs/atomicops_internals_x86_gcc.h           \
-  google/protobuf/stubs/atomicops_internals_x86_msvc.h          \
-  google/protobuf/stubs/callback.h                              \
-  google/protobuf/stubs/bytestream.h                            \
-  google/protobuf/stubs/casts.h                                 \
-  google/protobuf/stubs/common.h                                \
-  google/protobuf/stubs/fastmem.h                               \
-  google/protobuf/stubs/hash.h                                  \
-  google/protobuf/stubs/logging.h                               \
-  google/protobuf/stubs/macros.h                                \
-  google/protobuf/stubs/mutex.h                                 \
-  google/protobuf/stubs/once.h                                  \
-  google/protobuf/stubs/platform_macros.h                       \
-  google/protobuf/stubs/port.h                                  \
-  google/protobuf/stubs/scoped_ptr.h                            \
-  google/protobuf/stubs/shared_ptr.h                            \
-  google/protobuf/stubs/singleton.h                             \
-  google/protobuf/stubs/status.h                                \
-  google/protobuf/stubs/stl_util.h                              \
-  google/protobuf/stubs/stringpiece.h                           \
-  google/protobuf/stubs/template_util.h                         \
-  google/protobuf/stubs/type_traits.h                           \
-  google/protobuf/any.pb.h                                      \
-  google/protobuf/api.pb.h                                      \
-  google/protobuf/any.h                                         \
-  google/protobuf/arena.h                                       \
-  google/protobuf/arenastring.h                                 \
-  google/protobuf/descriptor_database.h                         \
-  google/protobuf/descriptor.h                                  \
-  google/protobuf/descriptor.pb.h                               \
-  google/protobuf/duration.pb.h                                 \
-  google/protobuf/dynamic_message.h                             \
-  google/protobuf/empty.pb.h                                    \
-  google/protobuf/extension_set.h                               \
-  google/protobuf/field_mask.pb.h                               \
-  google/protobuf/generated_enum_reflection.h                   \
-  google/protobuf/generated_enum_util.h                         \
-  google/protobuf/generated_message_reflection.h                \
-  google/protobuf/generated_message_util.h                      \
-  google/protobuf/map_entry.h                                   \
-  google/protobuf/map_entry_lite.h                              \
-  google/protobuf/map_field.h                                   \
-  google/protobuf/map_field_inl.h                               \
-  google/protobuf/map_field_lite.h                              \
-  google/protobuf/map.h                                         \
-  google/protobuf/map_type_handler.h                            \
-  google/protobuf/message.h                                     \
-  google/protobuf/message_lite.h                                \
-  google/protobuf/metadata.h                                    \
-  google/protobuf/reflection.h                                  \
-  google/protobuf/reflection_ops.h                              \
-  google/protobuf/repeated_field.h                              \
-  google/protobuf/repeated_field_reflection.h                   \
-  google/protobuf/service.h                                     \
-  google/protobuf/source_context.pb.h                           \
-  google/protobuf/struct.pb.h                                   \
-  google/protobuf/text_format.h                                 \
-  google/protobuf/timestamp.pb.h                                \
-  google/protobuf/type.pb.h                                     \
-  google/protobuf/unknown_field_set.h                           \
-  google/protobuf/wire_format.h                                 \
-  google/protobuf/wire_format_lite.h                            \
-  google/protobuf/wire_format_lite_inl.h                        \
-  google/protobuf/wrappers.pb.h                                 \
-  google/protobuf/io/coded_stream.h                             \
-  $(GZHEADERS)                                                  \
-  google/protobuf/io/printer.h                                  \
-  google/protobuf/io/strtod.h                                   \
-  google/protobuf/io/tokenizer.h                                \
-  google/protobuf/io/zero_copy_stream.h                         \
-  google/protobuf/io/zero_copy_stream_impl.h                    \
-  google/protobuf/io/zero_copy_stream_impl_lite.h               \
-  google/protobuf/compiler/code_generator.h                     \
-  google/protobuf/compiler/command_line_interface.h             \
-  google/protobuf/compiler/importer.h                           \
-  google/protobuf/compiler/parser.h                             \
-  google/protobuf/compiler/plugin.h                             \
-  google/protobuf/compiler/plugin.pb.h                          \
-  google/protobuf/compiler/cpp/cpp_generator.h                  \
-  google/protobuf/compiler/java/java_generator.h                \
-  google/protobuf/compiler/java/java_names.h                    \
-  google/protobuf/compiler/javanano/javanano_generator.h        \
-  google/protobuf/compiler/objectivec/objectivec_generator.h    \
-  google/protobuf/compiler/objectivec/objectivec_helpers.h      \
-  google/protobuf/compiler/python/python_generator.h            \
-  google/protobuf/compiler/ruby/ruby_generator.h                \
-  google/protobuf/compiler/csharp/csharp_generator.h            \
-  google/protobuf/compiler/csharp/csharp_names.h                \
-  google/protobuf/util/type_resolver.h                          \
-  google/protobuf/util/field_comparator.h                       \
-  google/protobuf/util/field_mask_util.h                        \
-  google/protobuf/util/json_util.h                              \
-  google/protobuf/util/time_util.h                              \
-  google/protobuf/util/type_resolver_util.h                     \
+nobase_include_HEADERS =                                         \
+  google/protobuf/stubs/callback.h                               \
+  google/protobuf/stubs/bytestream.h                             \
+  google/protobuf/stubs/casts.h                                  \
+  google/protobuf/stubs/common.h                                 \
+  google/protobuf/stubs/fastmem.h                                \
+  google/protobuf/stubs/hash.h                                   \
+  google/protobuf/stubs/logging.h                                \
+  google/protobuf/stubs/macros.h                                 \
+  google/protobuf/stubs/mutex.h                                  \
+  google/protobuf/stubs/once.h                                   \
+  google/protobuf/stubs/platform_macros.h                        \
+  google/protobuf/stubs/port.h                                   \
+  google/protobuf/stubs/singleton.h                              \
+  google/protobuf/stubs/status.h                                 \
+  google/protobuf/stubs/stl_util.h                               \
+  google/protobuf/stubs/stringpiece.h                            \
+  google/protobuf/stubs/template_util.h                          \
+  google/protobuf/any.pb.h                                       \
+  google/protobuf/api.pb.h                                       \
+  google/protobuf/any.h                                          \
+  google/protobuf/arena.h                                        \
+  google/protobuf/arena_impl.h                                   \
+  google/protobuf/arenastring.h                                  \
+  google/protobuf/descriptor_database.h                          \
+  google/protobuf/descriptor.h                                   \
+  google/protobuf/descriptor.pb.h                                \
+  google/protobuf/duration.pb.h                                  \
+  google/protobuf/dynamic_message.h                              \
+  google/protobuf/empty.pb.h                                     \
+  google/protobuf/extension_set.h                                \
+  google/protobuf/field_mask.pb.h                                \
+  google/protobuf/generated_enum_reflection.h                    \
+  google/protobuf/generated_enum_util.h                          \
+  google/protobuf/generated_message_reflection.h                 \
+  google/protobuf/generated_message_table_driven.h               \
+  google/protobuf/generated_message_util.h                       \
+  google/protobuf/has_bits.h                                     \
+  google/protobuf/implicit_weak_message.h                        \
+  google/protobuf/inlined_string_field.h                         \
+  google/protobuf/map_entry.h                                    \
+  google/protobuf/map_entry_lite.h                               \
+  google/protobuf/map_field.h                                    \
+  google/protobuf/map_field_inl.h                                \
+  google/protobuf/map_field_lite.h                               \
+  google/protobuf/map.h                                          \
+  google/protobuf/map_type_handler.h                             \
+  google/protobuf/message.h                                      \
+  google/protobuf/message_lite.h                                 \
+  google/protobuf/metadata.h                                     \
+  google/protobuf/metadata_lite.h                                \
+  google/protobuf/reflection.h                                   \
+  google/protobuf/reflection_ops.h                               \
+  google/protobuf/repeated_field.h                               \
+  google/protobuf/service.h                                      \
+  google/protobuf/source_context.pb.h                            \
+  google/protobuf/struct.pb.h                                    \
+  google/protobuf/text_format.h                                  \
+  google/protobuf/timestamp.pb.h                                 \
+  google/protobuf/type.pb.h                                      \
+  google/protobuf/unknown_field_set.h                            \
+  google/protobuf/wire_format.h                                  \
+  google/protobuf/wire_format_lite.h                             \
+  google/protobuf/wire_format_lite_inl.h                         \
+  google/protobuf/wrappers.pb.h                                  \
+  google/protobuf/io/coded_stream.h                              \
+  $(GZHEADERS)                                                   \
+  google/protobuf/io/printer.h                                   \
+  google/protobuf/io/strtod.h                                    \
+  google/protobuf/io/tokenizer.h                                 \
+  google/protobuf/io/zero_copy_stream.h                          \
+  google/protobuf/io/zero_copy_stream_impl.h                     \
+  google/protobuf/io/zero_copy_stream_impl_lite.h                \
+  google/protobuf/compiler/code_generator.h                      \
+  google/protobuf/compiler/command_line_interface.h              \
+  google/protobuf/compiler/importer.h                            \
+  google/protobuf/compiler/parser.h                              \
+  google/protobuf/compiler/plugin.h                              \
+  google/protobuf/compiler/plugin.pb.h                           \
+  google/protobuf/compiler/cpp/cpp_generator.h                   \
+  google/protobuf/compiler/csharp/csharp_generator.h             \
+  google/protobuf/compiler/csharp/csharp_names.h                 \
+  google/protobuf/compiler/java/java_generator.h                 \
+  google/protobuf/compiler/java/java_names.h                     \
+  google/protobuf/compiler/js/js_generator.h                     \
+  google/protobuf/compiler/js/well_known_types_embed.h           \
+  google/protobuf/compiler/objectivec/objectivec_generator.h     \
+  google/protobuf/compiler/objectivec/objectivec_helpers.h       \
+  google/protobuf/compiler/php/php_generator.h                   \
+  google/protobuf/compiler/python/python_generator.h             \
+  google/protobuf/compiler/ruby/ruby_generator.h                 \
+  google/protobuf/util/type_resolver.h                           \
+  google/protobuf/util/delimited_message_util.h                  \
+  google/protobuf/util/field_comparator.h                        \
+  google/protobuf/util/field_mask_util.h                         \
+  google/protobuf/util/json_util.h                               \
+  google/protobuf/util/time_util.h                               \
+  google/protobuf/util/type_resolver_util.h                      \
   google/protobuf/util/message_differencer.h
 
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_lite_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
+libprotobuf_lite_la_LDFLAGS = -version-info 15:1:0 -export-dynamic -no-undefined
+if HAVE_LD_VERSION_SCRIPT
+libprotobuf_lite_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf-lite.map
+EXTRA_libprotobuf_lite_la_DEPENDENCIES = libprotobuf-lite.map
+endif
 libprotobuf_lite_la_SOURCES =                                  \
-  google/protobuf/stubs/atomicops_internals_x86_gcc.cc         \
-  google/protobuf/stubs/atomicops_internals_x86_msvc.cc        \
   google/protobuf/stubs/bytestream.cc                          \
   google/protobuf/stubs/bytestream.h                           \
   google/protobuf/stubs/common.cc                              \
   google/protobuf/stubs/hash.h                                 \
   google/protobuf/stubs/int128.cc                              \
   google/protobuf/stubs/int128.h                               \
+  google/protobuf/stubs/io_win32.cc                            \
+  google/protobuf/stubs/io_win32.h                             \
   google/protobuf/stubs/map_util.h                             \
   google/protobuf/stubs/mathutil.h                             \
-  google/protobuf/stubs/once.cc                                \
-  google/protobuf/stubs/shared_ptr.h                           \
   google/protobuf/stubs/status.cc                              \
   google/protobuf/stubs/status.h                               \
   google/protobuf/stubs/status_macros.h                        \
@@ -200,6 +200,9 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
+  google/protobuf/generated_message_table_driven_lite.h        \
+  google/protobuf/generated_message_table_driven_lite.cc       \
+  google/protobuf/implicit_weak_message.cc                     \
   google/protobuf/message_lite.cc                              \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
@@ -209,7 +212,11 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
+libprotobuf_la_LDFLAGS = -version-info 15:1:0 -export-dynamic -no-undefined
+if HAVE_LD_VERSION_SCRIPT
+libprotobuf_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf.map
+EXTRA_libprotobuf_la_DEPENDENCIES = libprotobuf.map
+endif
 libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
   google/protobuf/any.pb.cc                                    \
@@ -226,6 +233,8 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/extension_set_heavy.cc                       \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_reflection.cc              \
+  google/protobuf/generated_message_table_driven_lite.h        \
+  google/protobuf/generated_message_table_driven.cc            \
   google/protobuf/map_field.cc                                 \
   google/protobuf/message.cc                                   \
   google/protobuf/reflection_internal.h                        \
@@ -248,6 +257,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/io/zero_copy_stream_impl.cc                  \
   google/protobuf/compiler/importer.cc                         \
   google/protobuf/compiler/parser.cc                           \
+  google/protobuf/util/delimited_message_util.cc               \
   google/protobuf/util/field_comparator.cc                     \
   google/protobuf/util/field_mask_util.cc                      \
   google/protobuf/util/internal/constants.h                    \
@@ -276,9 +286,9 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/protostream_objectsource.h     \
   google/protobuf/util/internal/protostream_objectwriter.cc    \
   google/protobuf/util/internal/protostream_objectwriter.h     \
-  google/protobuf/util/internal/snake2camel_objectwriter.h     \
+  google/protobuf/util/internal/proto_writer.cc                \
+  google/protobuf/util/internal/proto_writer.h                 \
   google/protobuf/util/internal/structured_objectwriter.h      \
-  google/protobuf/util/internal/testdata                       \
   google/protobuf/util/internal/type_info.cc                   \
   google/protobuf/util/internal/type_info.h                    \
   google/protobuf/util/internal/type_info_test_helper.cc       \
@@ -293,7 +303,11 @@ libprotobuf_la_SOURCES =                                       \
 nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
-libprotoc_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
+libprotoc_la_LDFLAGS = -version-info 15:1:0 -export-dynamic -no-undefined
+if HAVE_LD_VERSION_SCRIPT
+libprotoc_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotoc.map
+EXTRA_libprotoc_la_DEPENDENCIES = libprotoc.map
+endif
 libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/code_generator.cc                   \
   google/protobuf/compiler/command_line_interface.cc           \
@@ -322,7 +336,10 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/cpp/cpp_message.h                   \
   google/protobuf/compiler/cpp/cpp_message_field.cc            \
   google/protobuf/compiler/cpp/cpp_message_field.h             \
+  google/protobuf/compiler/cpp/cpp_message_layout_helper.h     \
   google/protobuf/compiler/cpp/cpp_options.h                   \
+  google/protobuf/compiler/cpp/cpp_padding_optimizer.cc        \
+  google/protobuf/compiler/cpp/cpp_padding_optimizer.h         \
   google/protobuf/compiler/cpp/cpp_primitive_field.cc          \
   google/protobuf/compiler/cpp/cpp_primitive_field.h           \
   google/protobuf/compiler/cpp/cpp_service.cc                  \
@@ -341,6 +358,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_enum_lite.h               \
   google/protobuf/compiler/java/java_extension.cc              \
   google/protobuf/compiler/java/java_extension.h               \
+  google/protobuf/compiler/java/java_extension_lite.cc         \
+  google/protobuf/compiler/java/java_extension_lite.h          \
   google/protobuf/compiler/java/java_field.cc                  \
   google/protobuf/compiler/java/java_field.h                   \
   google/protobuf/compiler/java/java_file.cc                   \
@@ -372,6 +391,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_message_builder_lite.h    \
   google/protobuf/compiler/java/java_name_resolver.cc          \
   google/protobuf/compiler/java/java_name_resolver.h           \
+  google/protobuf/compiler/java/java_options.h                 \
   google/protobuf/compiler/java/java_primitive_field.cc        \
   google/protobuf/compiler/java/java_primitive_field.h         \
   google/protobuf/compiler/java/java_primitive_field_lite.cc   \
@@ -386,29 +406,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_string_field_lite.h       \
   google/protobuf/compiler/java/java_doc_comment.cc            \
   google/protobuf/compiler/java/java_doc_comment.h             \
-  google/protobuf/compiler/javanano/javanano_enum.cc           \
-  google/protobuf/compiler/javanano/javanano_enum.h            \
-  google/protobuf/compiler/javanano/javanano_enum_field.cc     \
-  google/protobuf/compiler/javanano/javanano_enum_field.h      \
-  google/protobuf/compiler/javanano/javanano_extension.cc      \
-  google/protobuf/compiler/javanano/javanano_extension.h       \
-  google/protobuf/compiler/javanano/javanano_field.cc          \
-  google/protobuf/compiler/javanano/javanano_field.h           \
-  google/protobuf/compiler/javanano/javanano_file.cc           \
-  google/protobuf/compiler/javanano/javanano_file.h            \
-  google/protobuf/compiler/javanano/javanano_generator.cc      \
-  google/protobuf/compiler/javanano/javanano_generator.h       \
-  google/protobuf/compiler/javanano/javanano_helpers.cc        \
-  google/protobuf/compiler/javanano/javanano_helpers.h         \
-  google/protobuf/compiler/javanano/javanano_map_field.cc      \
-  google/protobuf/compiler/javanano/javanano_map_field.h       \
-  google/protobuf/compiler/javanano/javanano_message.cc        \
-  google/protobuf/compiler/javanano/javanano_message.h         \
-  google/protobuf/compiler/javanano/javanano_message_field.cc  \
-  google/protobuf/compiler/javanano/javanano_message_field.h   \
-  google/protobuf/compiler/javanano/javanano_params.h          \
-  google/protobuf/compiler/javanano/javanano_primitive_field.cc \
-  google/protobuf/compiler/javanano/javanano_primitive_field.h \
+  google/protobuf/compiler/js/js_generator.cc                  \
+  google/protobuf/compiler/js/well_known_types_embed.cc        \
   google/protobuf/compiler/objectivec/objectivec_enum.cc       \
   google/protobuf/compiler/objectivec/objectivec_enum.h        \
   google/protobuf/compiler/objectivec/objectivec_enum_field.cc \
@@ -432,6 +431,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/objectivec/objectivec_oneof.h       \
   google/protobuf/compiler/objectivec/objectivec_primitive_field.cc \
   google/protobuf/compiler/objectivec/objectivec_primitive_field.h \
+  google/protobuf/compiler/php/php_generator.cc                \
   google/protobuf/compiler/python/python_generator.cc          \
   google/protobuf/compiler/ruby/ruby_generator.cc              \
   google/protobuf/compiler/csharp/csharp_doc_comment.cc        \
@@ -451,6 +451,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_message.h             \
   google/protobuf/compiler/csharp/csharp_message_field.cc      \
   google/protobuf/compiler/csharp/csharp_message_field.h       \
+  google/protobuf/compiler/csharp/csharp_options.h             \
   google/protobuf/compiler/csharp/csharp_primitive_field.cc    \
   google/protobuf/compiler/csharp/csharp_primitive_field.h     \
   google/protobuf/compiler/csharp/csharp_reflection_class.cc     \
@@ -470,6 +471,22 @@ bin_PROGRAMS = protoc
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 protoc_SOURCES = google/protobuf/compiler/main.cc
 
+# The special JS code for the well-known types is linked into the compiler via
+# well_known_types_embed.cc, which is generated from .js source files. We have
+# to build the js_embed binary using $(CXX_FOR_BUILD) so that it is executable
+# on the build machine in a cross-compilation setup.
+js_embed$(EXEEXT): $(srcdir)/google/protobuf/compiler/js/embed.cc
+	$(CXX_FOR_BUILD) -o $@ $<
+js_well_known_types_sources =                                  \
+	google/protobuf/compiler/js/well_known_types/any.js          \
+	google/protobuf/compiler/js/well_known_types/struct.js       \
+	google/protobuf/compiler/js/well_known_types/timestamp.js
+# We have to cd to $(srcdir) so that out-of-tree builds work properly.
+google/protobuf/compiler/js/well_known_types_embed.cc: js_embed$(EXEEXT) $(js_well_known_types_sources)
+	mkdir -p `dirname $@` && \
+	oldpwd=`pwd` && cd $(srcdir) && \
+	$$oldpwd/js_embed$(EXEEXT) $(js_well_known_types_sources) > $$oldpwd/$@
+
 # Tests ==============================================================
 
 protoc_inputs =                                                   \
@@ -488,6 +505,9 @@ protoc_inputs =                                                   \
   google/protobuf/unittest_import.proto                           \
   google/protobuf/unittest_import_public_lite.proto               \
   google/protobuf/unittest_import_public.proto                    \
+  google/protobuf/unittest_lazy_dependencies.proto                \
+  google/protobuf/unittest_lazy_dependencies_custom_option.proto  \
+  google/protobuf/unittest_lazy_dependencies_enum.proto           \
   google/protobuf/unittest_lite_imports_nonlite.proto             \
   google/protobuf/unittest_lite.proto                             \
   google/protobuf/unittest_mset.proto                             \
@@ -502,6 +522,8 @@ protoc_inputs =                                                   \
   google/protobuf/unittest_preserve_unknown_enum.proto            \
   google/protobuf/unittest.proto                                  \
   google/protobuf/unittest_proto3_arena.proto                     \
+  google/protobuf/unittest_proto3_arena_lite.proto                \
+  google/protobuf/unittest_proto3_lite.proto                      \
   google/protobuf/unittest_well_known_types.proto                 \
   google/protobuf/util/internal/testdata/anys.proto               \
   google/protobuf/util/internal/testdata/books.proto              \
@@ -510,17 +532,25 @@ protoc_inputs =                                                   \
   google/protobuf/util/internal/testdata/field_mask.proto         \
   google/protobuf/util/internal/testdata/maps.proto               \
   google/protobuf/util/internal/testdata/oneofs.proto             \
+  google/protobuf/util/internal/testdata/proto3.proto             \
   google/protobuf/util/internal/testdata/struct.proto             \
   google/protobuf/util/internal/testdata/timestamp_duration.proto \
+  google/protobuf/util/internal/testdata/wrappers.proto           \
   google/protobuf/util/json_format_proto3.proto                   \
+  google/protobuf/util/message_differencer_unittest.proto         \
   google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
 
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
+  $(js_well_known_types_sources)                               \
   solaris/libstdc++.la                                         \
+  google/protobuf/unittest_proto3.proto                        \
+  google/protobuf/test_messages_proto3.proto                   \
+  google/protobuf/test_messages_proto2.proto                   \
   google/protobuf/io/gzip_stream.h                             \
   google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/testdata/golden_message                      \
+  google/protobuf/testdata/golden_message_maps                 \
   google/protobuf/testdata/golden_message_oneof_implemented    \
   google/protobuf/testdata/golden_message_proto3               \
   google/protobuf/testdata/golden_packed_fields_message        \
@@ -534,10 +564,16 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/text_format_unittest_extensions_data_pointy.txt  \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
+  google/protobuf/util/package_info.h                          \
+  google/protobuf/compiler/js/embed.cc                         \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
-  google/protobuf/compiler/ruby/ruby_generated_code.rb         \
+  google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
   google/protobuf/compiler/package_info.h                      \
-  google/protobuf/compiler/zip_output_unittest.sh
+  google/protobuf/compiler/zip_output_unittest.sh              \
+  libprotobuf-lite.map                                         \
+  libprotobuf.map                                              \
+  libprotoc.map                                                \
+  README.md
 
 protoc_lite_outputs =                                          \
   google/protobuf/map_lite_unittest.pb.cc                      \
@@ -579,6 +615,12 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_import.pb.h                            \
   google/protobuf/unittest_import_public.pb.cc                    \
   google/protobuf/unittest_import_public.pb.h                     \
+  google/protobuf/unittest_lazy_dependencies.pb.cc                \
+  google/protobuf/unittest_lazy_dependencies.pb.h                 \
+  google/protobuf/unittest_lazy_dependencies_custom_option.pb.cc  \
+  google/protobuf/unittest_lazy_dependencies_custom_option.pb.h   \
+  google/protobuf/unittest_lazy_dependencies_enum.pb.cc           \
+  google/protobuf/unittest_lazy_dependencies_enum.pb.h            \
   google/protobuf/unittest_lite_imports_nonlite.pb.cc             \
   google/protobuf/unittest_lite_imports_nonlite.pb.h              \
   google/protobuf/unittest_mset.pb.cc                             \
@@ -603,6 +645,10 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_preserve_unknown_enum.pb.h             \
   google/protobuf/unittest_proto3_arena.pb.cc                     \
   google/protobuf/unittest_proto3_arena.pb.h                      \
+  google/protobuf/unittest_proto3_arena_lite.pb.cc                \
+  google/protobuf/unittest_proto3_arena_lite.pb.h                 \
+  google/protobuf/unittest_proto3_lite.pb.cc                      \
+  google/protobuf/unittest_proto3_lite.pb.h                       \
   google/protobuf/unittest_well_known_types.pb.cc                 \
   google/protobuf/unittest_well_known_types.pb.h                  \
   google/protobuf/util/internal/testdata/anys.pb.cc               \
@@ -619,14 +665,18 @@ protoc_outputs =                                                  \
   google/protobuf/util/internal/testdata/maps.pb.h                \
   google/protobuf/util/internal/testdata/oneofs.pb.cc             \
   google/protobuf/util/internal/testdata/oneofs.pb.h              \
+  google/protobuf/util/internal/testdata/proto3.pb.cc             \
+  google/protobuf/util/internal/testdata/proto3.pb.h              \
   google/protobuf/util/internal/testdata/struct.pb.cc             \
   google/protobuf/util/internal/testdata/struct.pb.h              \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.cc \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.h  \
+  google/protobuf/util/internal/testdata/wrappers.pb.cc           \
+  google/protobuf/util/internal/testdata/wrappers.pb.h            \
   google/protobuf/util/json_format_proto3.pb.cc                   \
-  google/protobuf/util/json_format_proto3.pb.h
-
-BUILT_SOURCES = $(protoc_outputs)
+  google/protobuf/util/json_format_proto3.pb.h                    \
+  google/protobuf/util/message_differencer_unittest.pb.cc         \
+  google/protobuf/util/message_differencer_unittest.pb.h
 
 if USE_EXTERNAL_PROTOC
 
@@ -655,20 +705,25 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/map_test_util_impl.h                         \
   google/protobuf/test_util.cc                                 \
   google/protobuf/test_util.h                                  \
+  google/protobuf/test_util.inc                                \
   google/protobuf/testing/googletest.cc                        \
   google/protobuf/testing/googletest.h                         \
   google/protobuf/testing/file.cc                              \
   google/protobuf/testing/file.h
 
+GOOGLETEST_BUILD_DIR=../third_party/googletest/googletest
+GOOGLEMOCK_BUILD_DIR=../third_party/googletest/googlemock
+GOOGLETEST_SRC_DIR=$(srcdir)/../third_party/googletest/googletest
+GOOGLEMOCK_SRC_DIR=$(srcdir)/../third_party/googletest/googlemock
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin protobuf-lite-arena-test \
-                 $(GZCHECKPROGRAMS)
+                 no-warning-test $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                      ../gmock/gtest/lib/libgtest.la              \
-                      ../gmock/lib/libgmock.la                    \
-                      ../gmock/lib/libgmock_main.la
-protobuf_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include \
-                         -I$(srcdir)/../gmock/include
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la     \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la     \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_test_CPPFLAGS = -I$(GOOGLETEST_SRC_DIR)/include \
+                         -I$(GOOGLEMOCK_SRC_DIR)/include
 # Disable optimization for tests unless the user explicitly asked for it,
 # since test_util.cc takes forever to compile with optimization (with GCC).
 # See configure.ac for more info.
@@ -677,7 +732,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/bytestream_unittest.cc                 \
   google/protobuf/stubs/common_unittest.cc                     \
   google/protobuf/stubs/int128_unittest.cc                     \
-  google/protobuf/stubs/once_unittest.cc                       \
+  google/protobuf/stubs/io_win32_unittest.cc                   \
   google/protobuf/stubs/statusor_test.cc                       \
   google/protobuf/stubs/status_test.cc                         \
   google/protobuf/stubs/stringpiece_unittest.cc                \
@@ -686,7 +741,6 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/strutil_unittest.cc                    \
   google/protobuf/stubs/template_util_unittest.cc              \
   google/protobuf/stubs/time_test.cc                           \
-  google/protobuf/stubs/type_traits_unittest.cc                \
   google/protobuf/any_test.cc                                  \
   google/protobuf/arenastring_unittest.cc                      \
   google/protobuf/arena_unittest.cc                            \
@@ -699,9 +753,12 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/map_field_test.cc                            \
   google/protobuf/map_test.cc                                  \
   google/protobuf/message_unittest.cc                          \
+  google/protobuf/message_unittest.inc                         \
   google/protobuf/no_field_presence_test.cc                    \
   google/protobuf/preserve_unknown_enum_test.cc                \
+  google/protobuf/proto3_arena_lite_unittest.cc                \
   google/protobuf/proto3_arena_unittest.cc                     \
+  google/protobuf/proto3_lite_unittest.cc                      \
   google/protobuf/reflection_ops_unittest.cc                   \
   google/protobuf/repeated_field_reflection_unittest.cc        \
   google/protobuf/repeated_field_unittest.cc                   \
@@ -713,21 +770,28 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/io/printer_unittest.cc                       \
   google/protobuf/io/tokenizer_unittest.cc                     \
   google/protobuf/io/zero_copy_stream_unittest.cc              \
+  google/protobuf/compiler/annotation_test_util.h              \
+  google/protobuf/compiler/annotation_test_util.cc             \
   google/protobuf/compiler/command_line_interface_unittest.cc  \
   google/protobuf/compiler/importer_unittest.cc                \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/compiler/mock_code_generator.h               \
   google/protobuf/compiler/parser_unittest.cc                  \
   google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc       \
+  google/protobuf/compiler/cpp/cpp_move_unittest.cc            \
   google/protobuf/compiler/cpp/cpp_unittest.h                  \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
+  google/protobuf/compiler/cpp/cpp_unittest.inc                \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
+  google/protobuf/compiler/cpp/metadata_test.cc                \
   google/protobuf/compiler/java/java_plugin_unittest.cc        \
   google/protobuf/compiler/java/java_doc_comment_unittest.cc   \
   google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc \
   google/protobuf/compiler/python/python_plugin_unittest.cc    \
   google/protobuf/compiler/ruby/ruby_generator_unittest.cc     \
+  google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc \
   google/protobuf/compiler/csharp/csharp_generator_unittest.cc \
+  google/protobuf/util/delimited_message_util_test.cc          \
   google/protobuf/util/field_comparator_test.cc                \
   google/protobuf/util/field_mask_util_test.cc                 \
   google/protobuf/util/internal/default_value_objectwriter_test.cc \
@@ -737,27 +801,28 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/util/internal/protostream_objectwriter_test.cc \
   google/protobuf/util/internal/type_info_test_helper.cc       \
   google/protobuf/util/json_util_test.cc                       \
+  google/protobuf/util/message_differencer_unittest.cc         \
   google/protobuf/util/time_util_test.cc                       \
   google/protobuf/util/type_resolver_util_test.cc              \
   $(COMMON_TEST_SOURCES)
-
-
 nodist_protobuf_test_SOURCES = $(protoc_outputs)
+$(am_protobuf_test_OBJECTS): unittest_proto_middleman
 
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
                       libprotoc.la                                   \
-                      ../gmock/gtest/lib/libgtest.la                 \
-                      ../gmock/lib/libgmock.la                       \
-                      ../gmock/lib/libgmock_main.la
-protobuf_lazy_descriptor_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
-                                         -I$(srcdir)/../gmock/gtest/include \
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lazy_descriptor_test_CPPFLAGS = -I$(GOOGLEMOCK_SRC_DIR)/include \
+                                         -I$(GOOGLETEST_SRC_DIR)/include \
                                          -DPROTOBUF_TEST_NO_DESCRIPTORS
 protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
   $(COMMON_TEST_SOURCES)
 nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
+$(am_protobuf_lazy_descriptor_test_OBJECTS): unittest_proto_middleman
 
 COMMON_LITE_TEST_SOURCES =                                             \
   google/protobuf/arena_test_util.cc                                   \
@@ -771,32 +836,39 @@ COMMON_LITE_TEST_SOURCES =                                             \
 # depend on gtest because our internal version of gtest depend on proto
 # full runtime and we want to make sure this test builds without full
 # runtime.
-protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
+protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la     \
+                           $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la \
+                           $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la \
+                           $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lite_test_CPPFLAGS= -I$(GOOGLEMOCK_SRC_DIR)/include \
+                             -I$(GOOGLETEST_SRC_DIR)/include
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
   $(COMMON_LITE_TEST_SOURCES)
 nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
+$(am_protobuf_lite_test_OBJECTS): unittest_proto_middleman
 
 # lite_arena_unittest depends on gtest because teboring@ found that without
 # gtest when building the test internally our memory sanitizer doesn't detect
 # memory leaks (don't know why).
 protobuf_lite_arena_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la \
-                      ../gmock/gtest/lib/libgtest.la                 \
-                      ../gmock/lib/libgmock.la                       \
-                      ../gmock/lib/libgmock_main.la
-protobuf_lite_arena_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
-                                    -I$(srcdir)/../gmock/gtest/include
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lite_arena_test_CPPFLAGS = -I$(GOOGLEMOCK_SRC_DIR)/include  \
+                                    -I$(GOOGLETEST_SRC_DIR)/include
 protobuf_lite_arena_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_arena_test_SOURCES =       \
   google/protobuf/lite_arena_unittest.cc \
   $(COMMON_LITE_TEST_SOURCES)
 nodist_protobuf_lite_arena_test_SOURCES = $(protoc_lite_outputs)
+$(am_protobuf_lite_arena_test_OBJECTS): unittest_proto_middleman
 
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                    ../gmock/gtest/lib/libgtest.la
-test_plugin_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
+                    $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la
+test_plugin_CPPFLAGS = -I$(GOOGLETEST_SRC_DIR)/include
 test_plugin_SOURCES =                                          \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/testing/file.cc                              \
@@ -811,6 +883,21 @@ zcgunzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
 zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
 endif
 
+# This test target is to ensure all our public header files and generated
+# code is free from warnings. We have to be more pedantic about these
+# files because they are compiled by users with different compiler flags.
+no_warning_test.cc:
+	echo "// Generated from Makefile.am" > no_warning_test.cc
+	for FILE in $(nobase_include_HEADERS); do \
+    echo "#include <$${FILE}>" >> no_warning_test.cc; \
+	done
+	echo "int main(int, char**) { return 0; }" >> no_warning_test.cc
+
+no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
+no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
+                           -Wall -Wextra -Werror -Wno-unused-parameter
+nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
+
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
         google/protobuf/compiler/zip_output_unittest.sh $(GZTESTS)     \
-        protobuf-lite-arena-test
+        protobuf-lite-arena-test no-warning-test

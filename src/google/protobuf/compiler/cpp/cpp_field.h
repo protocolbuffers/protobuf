@@ -37,13 +37,11 @@
 
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/descriptor.h>
 
 namespace google {
 namespace protobuf {
@@ -61,15 +59,15 @@ namespace cpp {
 // ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',
 // 'deprecation'].
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             map<string, string>* variables,
+                             std::map<string, string>* variables,
                              const Options& options);
 
 void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
-                                  map<string, string>* variables);
+                                  std::map<string, string>* variables);
 
 class FieldGenerator {
  public:
-  FieldGenerator() {}
+  explicit FieldGenerator(const Options& options) : options_(options) {}
   virtual ~FieldGenerator();
 
   // Generate lines of code declaring members fields of the message class
@@ -82,51 +80,35 @@ class FieldGenerator {
   // implementation is empty.
   virtual void GenerateStaticMembers(io::Printer* /*printer*/) const {}
 
-  // Generate prototypes for accessors that will manipulate imported
-  // messages inline.  These are for .proto.h headers.
-  //
-  // In .proto.h mode, the headers of imports are not #included. However,
-  // functions that manipulate the imported message types need access to
-  // the class definition of the imported message, meaning that the headers
-  // must be #included. To get around this, functions that manipulate
-  // imported message objects are defined as dependent functions in a base
-  // template class. By making them dependent template functions, the
-  // function templates will not be instantiated until they are called, so
-  // we can defer to those translation units to #include the necessary
-  // generated headers.
-  //
-  // See:
-  // http://en.cppreference.com/w/cpp/language/class_template#Implicit_instantiation
-  //
-  // Most field types don't need this, so the default implementation is empty.
-  virtual void GenerateDependentAccessorDeclarations(
-      io::Printer* printer) const {}
-
   // Generate prototypes for all of the accessor functions related to this
   // field.  These are placed inside the class definition.
   virtual void GenerateAccessorDeclarations(io::Printer* printer) const = 0;
 
-  // Generate inline definitions of depenent accessor functions for this field.
-  // These are placed inside the header after all class definitions.
-  virtual void GenerateDependentInlineAccessorDefinitions(
-    io::Printer* printer) const {}
-
   // Generate inline definitions of accessor functions for this field.
   // These are placed inside the header after all class definitions.
-  // In non-.proto.h mode, this generates dependent accessor functions as well.
   virtual void GenerateInlineAccessorDefinitions(
-    io::Printer* printer, bool is_inline) const = 0;
+      io::Printer* printer) const = 0;
 
   // Generate definitions of accessors that aren't inlined.  These are
   // placed somewhere in the .cc file.
   // Most field types don't need this, so the default implementation is empty.
   virtual void GenerateNonInlineAccessorDefinitions(
-    io::Printer* /*printer*/) const {}
+      io::Printer* /*printer*/) const {}
 
   // Generate lines of code (statements, not declarations) which clear the
-  // field.  This is used to define the clear_$name$() method as well as
-  // the Clear() method for the whole message.
+  // field.  This is used to define the clear_$name$() method
   virtual void GenerateClearingCode(io::Printer* printer) const = 0;
+
+  // Generate lines of code (statements, not declarations) which clear the field
+  // as part of the Clear() method for the whole message.  For message types
+  // which have field presence bits, MessageGenerator::GenerateClear will have
+  // already checked the presence bits.
+  //
+  // Since most field types can re-use GenerateClearingCode, this method is not
+  // pure virtual.
+  virtual void GenerateMessageClearingCode(io::Printer* printer) const {
+    GenerateClearingCode(printer);
+  }
 
   // Generate lines of code (statements, not declarations) which merges the
   // contents of the field from the current message to the target message,
@@ -135,6 +117,9 @@ class FieldGenerator {
   // Details of this usage can be found in message.cc under the
   // GenerateMergeFrom method.
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
+
+  // Generates a copy constructor
+  virtual void GenerateCopyConstructorCode(io::Printer* printer) const = 0;
 
   // Generate lines of code (statements, not declarations) which swaps
   // this field and the corresponding field of another message, which
@@ -167,13 +152,13 @@ class FieldGenerator {
   virtual void GenerateDefaultInstanceAllocator(io::Printer* /*printer*/)
       const {}
 
-  // Generate code that should be run when ShutdownProtobufLibrary() is called,
-  // to delete all dynamically-allocated objects.
-  virtual void GenerateShutdownCode(io::Printer* /*printer*/) const {}
-
   // Generate lines to decode this field, which will be placed inside the
   // message's MergeFromCodedStream() method.
   virtual void GenerateMergeFromCodedStream(io::Printer* printer) const = 0;
+
+  // Returns true if this field's "MergeFromCodedStream" code needs the arena
+  // to be defined as a variable.
+  virtual bool MergeFromCodedStreamNeedsArena() const { return false; }
 
   // Generate lines to decode this field from a packed value, which will be
   // placed inside the message's MergeFromCodedStream() method.
@@ -194,6 +179,14 @@ class FieldGenerator {
   // are placed in the message's ByteSize() method.
   virtual void GenerateByteSize(io::Printer* printer) const = 0;
 
+  // Any tags about field layout decisions (such as inlining) to embed in the
+  // offset.
+  virtual uint32 CalculateFieldTag() const { return 0; }
+  virtual bool IsInlined() const { return false; }
+
+ protected:
+  const Options& options_;
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGenerator);
 };
@@ -201,21 +194,23 @@ class FieldGenerator {
 // Convenience class which constructs FieldGenerators for a Descriptor.
 class FieldGeneratorMap {
  public:
-  explicit FieldGeneratorMap(const Descriptor* descriptor, const Options& options);
+  FieldGeneratorMap(const Descriptor* descriptor, const Options& options,
+                    SCCAnalyzer* scc_analyzer);
   ~FieldGeneratorMap();
 
   const FieldGenerator& get(const FieldDescriptor* field) const;
 
  private:
   const Descriptor* descriptor_;
-  google::protobuf::scoped_array<google::protobuf::scoped_ptr<FieldGenerator> > field_generators_;
+  const Options& options_;
+  std::vector<std::unique_ptr<FieldGenerator>> field_generators_;
 
   static FieldGenerator* MakeGenerator(const FieldDescriptor* field,
-                                       const Options& options);
+                                       const Options& options,
+                                       SCCAnalyzer* scc_analyzer);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorMap);
 };
-
 
 }  // namespace cpp
 }  // namespace compiler

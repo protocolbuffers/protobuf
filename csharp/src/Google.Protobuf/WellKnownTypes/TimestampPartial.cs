@@ -31,15 +31,25 @@
 #endregion
 
 using System;
+using System.Globalization;
+using System.Text;
 
 namespace Google.Protobuf.WellKnownTypes
 {
-    public partial class Timestamp
+    public partial class Timestamp : ICustomDiagnosticMessage
     {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private static readonly long BclSecondsAtUnixEpoch = UnixEpoch.Ticks / TimeSpan.TicksPerSecond;
-        internal static readonly long UnixSecondsAtBclMinValue = -BclSecondsAtUnixEpoch;
-        internal static readonly long UnixSecondsAtBclMaxValue = (DateTime.MaxValue.Ticks / TimeSpan.TicksPerSecond) - BclSecondsAtUnixEpoch;
+        // Constants determined programmatically, but then hard-coded so they can be constant expressions.
+        private const long BclSecondsAtUnixEpoch = 62135596800;
+        internal const long UnixSecondsAtBclMaxValue = 253402300799;
+        internal const long UnixSecondsAtBclMinValue = -BclSecondsAtUnixEpoch;
+        internal const int MaxNanos = Duration.NanosecondsPerSecond - 1;
+
+        private static bool IsNormalized(long seconds, int nanoseconds) =>
+            nanoseconds >= 0 &&
+            nanoseconds <= MaxNanos &&
+            seconds >= UnixSecondsAtBclMinValue &&
+            seconds <= UnixSecondsAtBclMaxValue;
 
         /// <summary>
         /// Returns the difference between one <see cref="Timestamp"/> and another, as a <see cref="Duration"/>.
@@ -49,8 +59,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The difference between the two specified timestamps.</returns>
         public static Duration operator -(Timestamp lhs, Timestamp rhs)
         {
-            Preconditions.CheckNotNull(lhs, "lhs");
-            Preconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, "lhs");
+            ProtoPreconditions.CheckNotNull(rhs, "rhs");
             checked
             {
                 return Duration.Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
@@ -65,8 +75,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The result of adding the duration to the timestamp.</returns>
         public static Timestamp operator +(Timestamp lhs, Duration rhs)
         {
-            Preconditions.CheckNotNull(lhs, "lhs");
-            Preconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, "lhs");
+            ProtoPreconditions.CheckNotNull(rhs, "rhs");
             checked
             {
                 return Normalize(lhs.Seconds + rhs.Seconds, lhs.Nanos + rhs.Nanos);
@@ -81,8 +91,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The result of subtracting the duration from the timestamp.</returns>
         public static Timestamp operator -(Timestamp lhs, Duration rhs)
         {
-            Preconditions.CheckNotNull(lhs, "lhs");
-            Preconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, "lhs");
+            ProtoPreconditions.CheckNotNull(rhs, "rhs");
             checked
             {
                 return Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
@@ -99,8 +109,14 @@ namespace Google.Protobuf.WellKnownTypes
         /// <see cref="DateTime"/> value precisely on a second.
         /// </remarks>
         /// <returns>This timestamp as a <c>DateTime</c>.</returns>
+        /// <exception cref="InvalidOperationException">The timestamp contains invalid values; either it is
+        /// incorrectly normalized or is outside the valid range.</exception>
         public DateTime ToDateTime()
         {
+            if (!IsNormalized(Seconds, Nanos))
+            {
+                throw new InvalidOperationException(@"Timestamp contains invalid values: Seconds={Seconds}; Nanos={Nanos}");
+            }
             return UnixEpoch.AddSeconds(Seconds).AddTicks(Nanos / Duration.NanosecondsPerTick);
         }
 
@@ -114,6 +130,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <see cref="DateTimeOffset"/> value precisely on a second.
         /// </remarks>
         /// <returns>This timestamp as a <c>DateTimeOffset</c>.</returns>
+        /// <exception cref="InvalidOperationException">The timestamp contains invalid values; either it is
+        /// incorrectly normalized or is outside the valid range.</exception>
         public DateTimeOffset ToDateTimeOffset()
         {
             return new DateTimeOffset(ToDateTime(), TimeSpan.Zero);
@@ -164,6 +182,60 @@ namespace Google.Protobuf.WellKnownTypes
                 seconds--;
             }
             return new Timestamp { Seconds = seconds, Nanos = nanoseconds };
+        }
+
+        /// <summary>
+        /// Converts a timestamp specified in seconds/nanoseconds to a string.
+        /// </summary>
+        /// <remarks>
+        /// If the value is a normalized duration in the range described in <c>timestamp.proto</c>,
+        /// <paramref name="diagnosticOnly"/> is ignored. Otherwise, if the parameter is <c>true</c>,
+        /// a JSON object with a warning is returned; if it is <c>false</c>, an <see cref="InvalidOperationException"/> is thrown.
+        /// </remarks>
+        /// <param name="seconds">Seconds portion of the duration.</param>
+        /// <param name="nanoseconds">Nanoseconds portion of the duration.</param>
+        /// <param name="diagnosticOnly">Determines the handling of non-normalized values</param>
+        /// <exception cref="InvalidOperationException">The represented duration is invalid, and <paramref name="diagnosticOnly"/> is <c>false</c>.</exception>
+        internal static string ToJson(long seconds, int nanoseconds, bool diagnosticOnly)
+        {
+            if (IsNormalized(seconds, nanoseconds))
+            {
+                // Use .NET's formatting for the value down to the second, including an opening double quote (as it's a string value)
+                DateTime dateTime = UnixEpoch.AddSeconds(seconds);
+                var builder = new StringBuilder();
+                builder.Append('"');
+                builder.Append(dateTime.ToString("yyyy'-'MM'-'dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
+                Duration.AppendNanoseconds(builder, nanoseconds);
+                builder.Append("Z\"");
+                return builder.ToString();
+            }
+            if (diagnosticOnly)
+            {
+                return string.Format(CultureInfo.InvariantCulture,
+                    "{{ \"@warning\": \"Invalid Timestamp\", \"seconds\": \"{0}\", \"nanos\": {1} }}",
+                    seconds,
+                    nanoseconds);
+            }
+            else
+            {
+                throw new InvalidOperationException("Non-normalized timestamp value");
+            }
+        }
+
+        /// <summary>
+        /// Returns a string representation of this <see cref="Timestamp"/> for diagnostic purposes.
+        /// </summary>
+        /// <remarks>
+        /// Normally the returned value will be a JSON string value (including leading and trailing quotes) but
+        /// when the value is non-normalized or out of range, a JSON object representation will be returned
+        /// instead, including a warning. This is to avoid exceptions being thrown when trying to
+        /// diagnose problems - the regular JSON formatter will still throw an exception for non-normalized
+        /// values.
+        /// </remarks>
+        /// <returns>A string representation of this value.</returns>
+        public string ToDiagnosticString()
+        {
+            return ToJson(Seconds, Nanos, true);
         }
     }
 }

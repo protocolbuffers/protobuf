@@ -30,9 +30,7 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_MUTEX_H_
 #define GOOGLE_PROTOBUF_STUBS_MUTEX_H_
 
-#ifdef GOOGLE_PROTOBUF_NO_THREADLOCAL
-#include <pthread.h>
-#endif
+#include <mutex>
 
 #include <google/protobuf/stubs/macros.h>
 
@@ -42,41 +40,25 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// A Mutex is a non-reentrant (aka non-recursive) mutex.  At most one thread T
-// may hold a mutex at a given time.  If T attempts to Lock() the same Mutex
-// while holding it, T will deadlock.
-class LIBPROTOBUF_EXPORT Mutex {
+#define GOOGLE_PROTOBUF_LINKER_INITIALIZED
+
+// Mutex is a natural type to wrap. As both google and other organization have
+// specialized mutexes. gRPC also provides an injection mechanism for custom
+// mutexes.
+class LIBPROTOBUF_EXPORT WrappedMutex {
  public:
-  // Create a Mutex that is not held by anybody.
-  Mutex();
-
-  // Destructor
-  ~Mutex();
-
-  // Block if necessary until this Mutex is free, then acquire it exclusively.
-  void Lock();
-
-  // Release this Mutex.  Caller must hold it exclusively.
-  void Unlock();
-
+  WrappedMutex() = default;
+  void Lock() { mu_.lock(); }
+  void Unlock() { mu_.unlock(); }
   // Crash if this Mutex is not held exclusively by this thread.
   // May fail to crash when it should; will never crash when it should not.
-  void AssertHeld();
+  void AssertHeld() const {}
 
  private:
-  struct Internal;
-  Internal* mInternal;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Mutex);
+  std::mutex mu_;
 };
 
-// Undefine the macros  to workaround the conflicts with Google internal
-// MutexLock implementation.
-// TODO(liujisi): Remove the undef once internal macros are removed.
-#undef MutexLock
-#undef ReaderMutexLock
-#undef WriterMutexLock
-#undef MutexLockMaybe
+using Mutex = WrappedMutex;
 
 // MutexLock(mu) acquires mu when constructed and releases it when destroyed.
 class LIBPROTOBUF_EXPORT MutexLock {

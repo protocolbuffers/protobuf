@@ -36,6 +36,8 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/plugin.pb.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -43,6 +45,33 @@ namespace protobuf {
 namespace compiler {
 
 CodeGenerator::~CodeGenerator() {}
+
+bool CodeGenerator::GenerateAll(
+    const std::vector<const FileDescriptor*>& files,
+    const string& parameter,
+    GeneratorContext* generator_context,
+    string* error) const {
+  // Default implemenation is just to call the per file method, and prefix any
+  // error string with the file to provide context.
+  bool succeeded = true;
+  for (int i = 0; i < files.size(); i++) {
+    const FileDescriptor* file = files[i];
+    succeeded = Generate(file, parameter, generator_context, error);
+    if (!succeeded && error && error->empty()) {
+      *error = "Code generator returned false but provided no error "
+               "description.";
+    }
+    if (error && !error->empty()) {
+      *error = file->name() + ": " + *error;
+      break;
+    }
+    if (!succeeded) {
+      break;
+    }
+  }
+  return succeeded;
+}
+
 GeneratorContext::~GeneratorContext() {}
 
 io::ZeroCopyOutputStream*
@@ -57,18 +86,25 @@ io::ZeroCopyOutputStream* GeneratorContext::OpenForInsert(
 }
 
 void GeneratorContext::ListParsedFiles(
-    vector<const FileDescriptor*>* output) {
+    std::vector<const FileDescriptor*>* output) {
   GOOGLE_LOG(FATAL) << "This GeneratorContext does not support ListParsedFiles";
+}
+
+void GeneratorContext::GetCompilerVersion(Version* version) const {
+  version->set_major(GOOGLE_PROTOBUF_VERSION / 1000000);
+  version->set_minor(GOOGLE_PROTOBUF_VERSION / 1000 % 1000);
+  version->set_patch(GOOGLE_PROTOBUF_VERSION % 1000);
+  version->set_suffix(GOOGLE_PROTOBUF_VERSION_SUFFIX);
 }
 
 // Parses a set of comma-delimited name/value pairs.
 void ParseGeneratorParameter(const string& text,
-                             vector<pair<string, string> >* output) {
-  vector<string> parts = Split(text, ",", true);
+                             std::vector<std::pair<string, string> >* output) {
+  std::vector<string> parts = Split(text, ",", true);
 
   for (int i = 0; i < parts.size(); i++) {
     string::size_type equals_pos = parts[i].find_first_of('=');
-    pair<string, string> value;
+    std::pair<string, string> value;
     if (equals_pos == string::npos) {
       value.first = parts[i];
       value.second = "";

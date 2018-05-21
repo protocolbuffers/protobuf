@@ -22,6 +22,17 @@ The scripts only work under Unix-like environments, e.g., Linux, MacOSX, and
 Cygwin or MinGW for Windows. Please see ``README.md`` of the Protobuf project
 for how to set up the build environment.
 
+## Building from a freshly checked-out source
+
+If you just checked out the Protobuf source from github, you need to
+generate the configure script.
+
+Under the protobuf project directory:
+
+```
+$ ./autogen.sh && ./configure && make
+```
+
 ## To install artifacts locally
 The following command will install the ``protoc`` artifact to your local Maven repository.
 ```
@@ -43,7 +54,7 @@ Frequently used values are:
 - ``os.detected.name``: ``linux``, ``osx``, ``windows``.
 - ``os.detected.arch``: ``x86_32``, ``x86_64``
 
-For example, MingGW32 only ships with 32-bit compilers, but you can still build
+For example, MinGW32 only ships with 32-bit compilers, but you can still build
 32-bit protoc under 64-bit Windows, with the following command:
 ```
 $ mvn install -Dos.detected.arch=x86_32
@@ -55,13 +66,18 @@ read [this page](http://central.sonatype.org/pages/apache-maven.html) on how to
 configure GPG and Sonatype account.
 
 You need to perform the deployment for every platform that you want to
-suppport. DO NOT close the staging repository until you have done the
+support. DO NOT close the staging repository until you have done the
 deployment for all platforms. Currently the following platforms are supported:
-- Linux (x86_32 and x86_64)
+- Linux (x86_32, x86_64 and cross compiled aarch_64)
 - Windows (x86_32 and x86_64) with
- - Cygwin with MinGW compilers (both x86_32 and x86_64)
- - MSYS with MinGW32 (x86_32 only)
+  - Cygwin64 with MinGW compilers (x86_64)
+  - MSYS with MinGW32 (x86_32)
+  - Cross compile in Linux with MinGW-w64 (x86_32, x86_64)
 - MacOSX (x86_32 and x86_64)
+
+As for MSYS2/MinGW64 for Windows: protoc will build, but it insists on
+adding a dependency of `libwinpthread-1.dll`, which isn't shipped with
+Windows.
 
 Use the following command to deploy artifacts for the host platform to a
 staging repository.
@@ -83,9 +99,34 @@ $ mvn clean deploy -P release -Dstaging.repository=comgoogle-123
 A 32-bit artifact can be deployed from a 64-bit host with
 ``-Dos.detected.arch=x86_32``
 
+An arm64 artifact can be deployed from x86 host with
+``-Dos.detected.arch=aarch_64``
+
+A windows artifact can be deployed from a linux machine with
+``-Dos.detected.name=windows``
+
 When you have done deployment for all platforms, go to
 https://oss.sonatype.org/#stagingRepositories, verify that the staging
 repository has all the binaries, close and release this repository.
+
+## Upload zip packages to github release page.
+After uploading protoc artifacts to Maven Central repository, run the
+build-zip.sh script to bulid zip packages for these protoc binaries
+and upload these zip packages to the download section of the github
+release. For example:
+```
+$ ./build-zip.sh 3.0.0-beta-4
+```
+The above command will create 5 zip files:
+```
+dist/protoc-3.0.0-beta-4-win32.zip
+dist/protoc-3.0.0-beta-4-osx-x86_32.zip
+dist/protoc-3.0.0-beta-4-osx-x86_64.zip
+dist/protoc-3.0.0-beta-4-linux-x86_32.zip
+dist/protoc-3.0.0-beta-4-linux-x86_64.zip
+```
+Before running the script, make sure the artifacts are accessible from:
+http://repo1.maven.org/maven2/com/google/protobuf/protoc/
 
 ### Tips for deploying on Linux
 We build on Centos 6.6 to provide a good compatibility for not very new
@@ -99,10 +140,14 @@ $ docker build -t protoc-artifacts .
 
 To run the image:
 ```
-$ docker run -it --rm=true protoc-artifacts
+$ docker run -it --rm=true protoc-artifacts bash
 ```
 
-The Protobuf repository has been cloned into ``/protobuf``.
+To checkout protobuf (run within the container):
+```
+$ # Replace v3.5.1 with the version you want
+$ wget -O - https://github.com/google/protobuf/archive/v3.5.1.tar.gz | tar xvzp
+```
 
 ### Tips for deploying on Windows
 Under Windows the following error may occur: ``gpg: cannot open tty `no tty':
@@ -113,7 +158,7 @@ stored:
 <settings>
   <servers>
     <server>
-      <id>ossrh</id>
+      <id>sonatype-nexus-staging</id>
       <username>[username]</username>
       <password>[password]</password>
     </server>
@@ -134,10 +179,13 @@ stored:
 ```
 
 ### Tested build environments
-We have succesfully built artifacts on the following environments:
+We have successfully built artifacts on the following environments:
 - Linux x86_32 and x86_64:
- - Centos 6.6 (within Docker 1.6.1)
- - Ubuntu 14.04.2 64-bit
+  - Centos 6.6 (within Docker 1.6.1)
+  - Ubuntu 14.04.2 64-bit
+- Linux aarch_64: Cross compiled with `g++-aarch64-linux-gnu` on Ubuntu 14.04.2 64-bit
 - Windows x86_32: MSYS with ``mingw32-gcc-g++ 4.8.1-4`` on Windows 7 64-bit
+- Windows x86_32: Cross compile with ``i686-w64-mingw32-g++ 4.8.2`` on Ubuntu 14.04.2 64-bit
 - Windows x86_64: Cygwin64 with ``mingw64-x86_64-gcc-g++ 4.8.3-1`` on Windows 7 64-bit
+- Windows x86_64: Cross compile with ``x86_64-w64-mingw32-g++ 4.8.2`` on Ubuntu 14.04.2 64-bit
 - Mac OS X x86_32 and x86_64: Mac OS X 10.9.5

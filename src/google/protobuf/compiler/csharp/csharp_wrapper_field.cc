@@ -39,6 +39,7 @@
 
 #include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
 namespace google {
@@ -47,8 +48,8 @@ namespace compiler {
 namespace csharp {
 
 WrapperFieldGenerator::WrapperFieldGenerator(const FieldDescriptor* descriptor,
-                                       int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+                                       int fieldOrdinal, const Options *options)
+    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
   variables_["has_property_check"] = name() + "_ != null";
   variables_["has_not_property_check"] = name() + "_ == null";
   const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
@@ -72,7 +73,7 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
     ";\n"
     "private $type_name$ $name$_;\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
@@ -119,15 +120,25 @@ void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 }
 
 void WrapperFieldGenerator::WriteHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+  if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
+    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode($property_name$);\n";
+  }
+  else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
+    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode($property_name$);\n";
+  }
+  printer->Print(variables_, text);
 }
 
 void WrapperFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($property_name$ != other.$property_name$) return false;\n");
+  const char *text = "if ($property_name$ != other.$property_name$) return false;\n";
+  if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
+    text = "if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals($property_name$, other.$property_name$)) return false;\n";
+  }
+  else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
+    text = "if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals($property_name$, other.$property_name$)) return false;\n";
+  }
+  printer->Print(variables_, text);
 }
 
 void WrapperFieldGenerator::WriteToString(io::Printer* printer) {
@@ -151,9 +162,9 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
   }
 }
 
-WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(const FieldDescriptor* descriptor,
-    int fieldOrdinal)
-    : WrapperFieldGenerator(descriptor, fieldOrdinal) {
+WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    : WrapperFieldGenerator(descriptor, fieldOrdinal, options) {
     SetCommonOneofFieldVariables(&variables_);
 }
 
@@ -168,7 +179,7 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   GenerateCodecCode(printer);
   printer->Print(";\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
@@ -178,6 +189,10 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"
     "}\n");
+}
+
+void WrapperOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(variables_, "$property_name$ = other.$property_name$;\n");
 }
 
 void WrapperOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {

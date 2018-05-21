@@ -43,7 +43,9 @@ namespace csharp {
 
 class MapFieldGenerator : public FieldGeneratorBase {
  public:
-  MapFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  MapFieldGenerator(const FieldDescriptor* descriptor,
+                    int fieldOrdinal,
+                    const Options* options);
   ~MapFieldGenerator();
 
   virtual void GenerateCloningCode(io::Printer* printer);

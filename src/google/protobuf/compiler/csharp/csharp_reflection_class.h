@@ -43,7 +43,7 @@ namespace csharp {
 
 class ReflectionClassGenerator : public SourceGeneratorBase {
  public:
-  ReflectionClassGenerator(const FileDescriptor* file);
+  ReflectionClassGenerator(const FileDescriptor* file, const Options* options);
   ~ReflectionClassGenerator();
 
   void Generate(io::Printer* printer);
@@ -56,7 +56,9 @@ class ReflectionClassGenerator : public SourceGeneratorBase {
 
   void WriteIntroduction(io::Printer* printer);
   void WriteDescriptor(io::Printer* printer);
-  void WriteGeneratedCodeInfo(const Descriptor* descriptor, io::Printer* printer, bool last);
+  void WriteGeneratedCodeInfo(const Descriptor* descriptor,
+                              io::Printer* printer,
+                              bool last);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ReflectionClassGenerator);
 };

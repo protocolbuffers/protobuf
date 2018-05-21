@@ -3,20 +3,10 @@
 # You first need to make sure protoc has been built (see instructions on
 # building protoc in root of this repository)
 
-# This script performs a few fix-ups as part of generation. These are:
-# - descriptor.proto is renamed to descriptor_proto_file.proto before
-#   generation, to avoid the naming collision between the class for the file
-#   descriptor and its Descriptor property
-# - This change also impacts UnittestCustomOptions, which expects to
-#   use a class of Descriptor when it's actually been renamed to
-#   DescriptorProtoFile.
-# - Issue 307 (codegen for double-nested types) breaks Unittest.proto and
-#   its lite equivalents.
-
-set -ex
+set -e
 
 # cd to repository root
-cd $(dirname $0)/..
+pushd $(dirname $0)/..
 
 # Protocol buffer compiler to use. If the PROTOC variable is set,
 # use that. Otherwise, probe for expected locations under both
@@ -50,23 +40,21 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     src/google/protobuf/type.proto \
     src/google/protobuf/wrappers.proto
 
-# Test protos where the namespace matches the target location
-$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test \
-    --csharp_opt=base_namespace=Google.Protobuf \
-    src/google/protobuf/map_unittest_proto3.proto \
-    src/google/protobuf/unittest_proto3.proto \
-    src/google/protobuf/unittest_import_proto3.proto \
-    src/google/protobuf/unittest_import_public_proto3.proto \
-    src/google/protobuf/unittest_well_known_types.proto
-
-# Different base namespace to the protos above
-$PROTOC -Icsharp/protos --csharp_out=csharp/src/Google.Protobuf.Test \
-    --csharp_opt=base_namespace=UnitTest.Issues \
-    csharp/protos/unittest_issues.proto
+# Test protos
+$PROTOC -Isrc -Icsharp/protos \
+    --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    csharp/protos/map_unittest_proto3.proto \
+    csharp/protos/unittest_issues.proto \
+    csharp/protos/unittest_custom_options_proto3.proto \
+    csharp/protos/unittest_proto3.proto \
+    csharp/protos/unittest_import_proto3.proto \
+    csharp/protos/unittest_import_public_proto3.proto \
+    src/google/protobuf/unittest_well_known_types.proto \
+    src/google/protobuf/test_messages_proto3.proto
 
 # AddressBook sample protos
-$PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
+$PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
     examples/addressbook.proto
 
-$PROTOC -Iconformance --csharp_out=csharp/src/Google.Protobuf.Conformance \
+$PROTOC -Iconformance -Isrc --csharp_out=csharp/src/Google.Protobuf.Conformance \
     conformance/conformance.proto

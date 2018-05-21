@@ -41,15 +41,9 @@
 
 #include <string>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/wire_format_lite.h>
-
-// Do UTF-8 validation on string type in Debug build only
-#ifndef NDEBUG
-#define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-#endif
 
 namespace google {
 namespace protobuf {
@@ -85,7 +79,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
 
   // Compute the byte size of a tag.  For groups, this includes both the start
   // and end tags.
-  static inline int TagSize(int field_number, FieldDescriptor::Type type);
+  static inline size_t TagSize(int field_number, FieldDescriptor::Type type);
 
   // These procedures can be used to implement the methods of Message which
   // handle parsing and serialization of the protocol buffer wire format
@@ -122,7 +116,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // will have their ByteSize() methods called, so their sizes will be cached.
   // Therefore, calling this method is sufficient to allow you to call
   // WireFormat::SerializeWithCachedSizes() on the same object.
-  static int ByteSize(const Message& message);
+  static size_t ByteSize(const Message& message);
 
   // -----------------------------------------------------------------
   // Helpers for dealing with unknown fields
@@ -173,11 +167,11 @@ class LIBPROTOBUF_EXPORT WireFormat {
       uint8* target);
 
   // Compute the size of the UnknownFieldSet on the wire.
-  static int ComputeUnknownFieldsSize(const UnknownFieldSet& unknown_fields);
+  static size_t ComputeUnknownFieldsSize(const UnknownFieldSet& unknown_fields);
 
   // Same thing except for messages that have the message_set_wire_format
   // option.
-  static int ComputeUnknownMessageSetItemsSize(
+  static size_t ComputeUnknownMessageSetItemsSize(
       const UnknownFieldSet& unknown_fields);
 
 
@@ -205,7 +199,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // Compute size of a single field.  If the field is a message type, this
   // will call ByteSize() for the embedded message, insuring that it caches
   // its size.
-  static int FieldByteSize(
+  static size_t FieldByteSize(
       const FieldDescriptor* field,        // Cannot be NULL
       const Message& message);
 
@@ -218,7 +212,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
       const FieldDescriptor* field,
       const Message& message,
       io::CodedOutputStream* output);
-  static int MessageSetItemByteSize(
+  static size_t MessageSetItemByteSize(
       const FieldDescriptor* field,
       const Message& message);
 
@@ -226,7 +220,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // only includes the size of the raw data, and not the size of the total
   // length, but for other length-delimited types, the size of the length is
   // included.
-  static int FieldDataOnlyByteSize(
+  static size_t FieldDataOnlyByteSize(
       const FieldDescriptor* field,        // Cannot be NULL
       const Message& message);
 
@@ -301,7 +295,8 @@ inline uint32 WireFormat::MakeTag(const FieldDescriptor* field) {
   return WireFormatLite::MakeTag(field->number(), WireTypeForField(field));
 }
 
-inline int WireFormat::TagSize(int field_number, FieldDescriptor::Type type) {
+inline size_t WireFormat::TagSize(int field_number,
+                                  FieldDescriptor::Type type) {
   // Some compilers don't like enum -> enum casts, so we implicit_cast to
   // int first.
   return WireFormatLite::TagSize(field_number,
@@ -315,7 +310,7 @@ inline void WireFormat::VerifyUTF8String(const char* data, int size,
   WireFormatLite::VerifyUtf8String(
       data, size, static_cast<WireFormatLite::Operation>(op), NULL);
 #else
-  // Avoid the compiler warning about unsued variables.
+  // Avoid the compiler warning about unused variables.
   (void)data; (void)size; (void)op;
 #endif
 }
@@ -326,6 +321,9 @@ inline void WireFormat::VerifyUTF8StringNamedField(
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   WireFormatLite::VerifyUtf8String(
       data, size, static_cast<WireFormatLite::Operation>(op), field_name);
+#else
+  // Avoid the compiler warning about unused variables.
+  (void)data; (void)size; (void)op; (void)field_name;
 #endif
 }
 

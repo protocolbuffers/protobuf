@@ -105,7 +105,10 @@ func main() {
 			log.Fatalln("Error reading file:", err)
 		}
 	}
+
+	// [START marshal_proto]
 	book := &pb.AddressBook{}
+	// [START_EXCLUDE]
 	if err := proto.Unmarshal(in, book); err != nil {
 		log.Fatalln("Failed to parse address book:", err)
 	}
@@ -116,6 +119,7 @@ func main() {
 		log.Fatalln("Error with address:", err)
 	}
 	book.People = append(book.People, addr)
+	// [END_EXCLUDE]
 
 	// Write the new address book back to disk.
 	out, err := proto.Marshal(book)
@@ -125,4 +129,5 @@ func main() {
 	if err := ioutil.WriteFile(fname, out, 0644); err != nil {
 		log.Fatalln("Failed to write address book:", err)
 	}
+	// [END marshal_proto]
 }

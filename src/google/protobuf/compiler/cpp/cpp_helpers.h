@@ -37,16 +37,15 @@
 
 #include <map>
 #include <string>
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
-
-namespace io {
-class Printer;
-}
-
 namespace compiler {
 namespace cpp {
 
@@ -55,6 +54,32 @@ namespace cpp {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
+
+// Name space of the proto file. This namespace is such that the string
+// "<namespace>::some_name" is the correct fully qualified namespace.
+// This means if the package is empty the namespace is "", and otherwise
+// the namespace is "::foo::bar::...::baz" without trailing semi-colons.
+string Namespace(const string& package);
+inline string Namespace(const FileDescriptor* d) {
+  return Namespace(d->package());
+}
+template <typename Desc>
+string Namespace(const Desc* d) {
+  return Namespace(d->file());
+}
+
+// Returns true if it's safe to reset "field" to zero.
+bool CanInitializeByZeroing(const FieldDescriptor* field);
+
+string ClassName(const Descriptor* descriptor);
+string ClassName(const EnumDescriptor* enum_descriptor);
+template <typename Desc>
+string QualifiedClassName(const Desc* d) {
+  return Namespace(d) + "::" + ClassName(d);
+}
+
+// DEPRECATED just use ClassName or QualifiedClassName, a boolean is very
+// unreadable at the callsite.
 // Returns the non-nested type name for the given type.  If "qualified" is
 // true, prefix the type with the full namespace.  For example, if you had:
 //   package foo.bar;
@@ -63,21 +88,24 @@ extern const char kThinSeparator[];
 //   ::foo::bar::Baz_Qux
 // While the non-qualified version would be:
 //   Baz_Qux
-string ClassName(const Descriptor* descriptor, bool qualified);
-string ClassName(const EnumDescriptor* enum_descriptor, bool qualified);
+inline string ClassName(const Descriptor* descriptor, bool qualified) {
+  return qualified ? QualifiedClassName(descriptor) : ClassName(descriptor);
+}
 
-// Name of the CRTP class template (for use with proto_h).
-// This is a class name, like "ProtoName_InternalBase".
-string DependentBaseClassTemplateName(const Descriptor* descriptor);
+inline string ClassName(const EnumDescriptor* descriptor, bool qualified) {
+  return qualified ? QualifiedClassName(descriptor) : ClassName(descriptor);
+}
 
-// Name of the base class: either the dependent base class (for use with
-// proto_h) or google::protobuf::Message.
-string SuperClassName(const Descriptor* descriptor);
+// Fully qualified name of the default_instance of this message.
+string DefaultInstanceName(const Descriptor* descriptor);
 
-// Returns a string that down-casts from the dependent base class to the
-// derived class.
-string DependentBaseDownCast();
-string DependentBaseConstDownCast();
+// Returns the name of a no-op function that we can call to introduce a linker
+// dependency on the given message type. This is used to implement implicit weak
+// fields.
+string ReferenceFunctionName(const Descriptor* descriptor);
+
+// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
+string SuperClassName(const Descriptor* descriptor, const Options& options);
 
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People
@@ -87,6 +115,12 @@ string FieldName(const FieldDescriptor* field);
 
 // Get the sanitized name that should be used for the given enum in C++ code.
 string EnumValueName(const EnumValueDescriptor* enum_value);
+
+// Returns an estimate of the compiler's alignment for the field.  This
+// can't guarantee to be correct because the generated code could be compiled on
+// different systems with different alignment rules.  The estimates below assume
+// 64-bit pointers.
+int EstimateAlignmentSize(const FieldDescriptor* field);
 
 // Get the unqualified name that should be used for a field's field
 // number constant.
@@ -99,26 +133,12 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
     field->extension_scope() : field->containing_type();
 }
 
-// Returns true if the given 'field_descriptor' has a message type that is
-// a dependency of the file where the field is defined (i.e., the field
-// type is defined in a different file than the message holding the field).
-//
-// This only applies to Message-typed fields. Enum-typed fields may refer
-// to an enum in a dependency; however, enums are specified and
-// forward-declared with an enum-base, so the definition is not required to
-// manipulate the field value.
-bool IsFieldDependent(const FieldDescriptor* field_descriptor);
-
-// Returns the name that should be used for forcing dependent lookup from a
-// dependent base class.
-string DependentTypeName(const FieldDescriptor* field);
-
 // Returns the fully-qualified type name field->message_type().  Usually this
 // is just ClassName(field->message_type(), true);
 string FieldMessageTypeName(const FieldDescriptor* field);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-string StripProto(const string& filename);
+LIBPROTOC_EXPORT string StripProto(const string& filename);
 
 // Get the C++ type name for a primitive type (e.g. "double", "::google::protobuf::int32", etc.).
 // Note:  non-built-in type names will be qualified, meaning they will start
@@ -143,17 +163,18 @@ string DefaultValue(const FieldDescriptor* field);
 // Convert a file name into a valid identifier.
 string FilenameIdentifier(const string& filename);
 
-// Return the name of the AddDescriptors() function for a given file.
-string GlobalAddDescriptorsName(const string& filename);
-
-// Return the name of the AssignDescriptors() function for a given file.
-string GlobalAssignDescriptorsName(const string& filename);
+// For each .proto file generates a unique namespace. In this namespace global
+// definitions are put to prevent collisions.
+string FileLevelNamespace(const string& filename);
+inline string FileLevelNamespace(const FileDescriptor* file) {
+  return FileLevelNamespace(file->name());
+}
+inline string FileLevelNamespace(const Descriptor* d) {
+  return FileLevelNamespace(d->file());
+}
 
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name);
-
-// Return the name of the ShutdownFile() function for a given file.
-string GlobalShutdownFileName(const string& filename);
 
 // Escape C++ trigraphs by escaping question marks to \?
 string EscapeTrigraphs(const string& to_escape);
@@ -163,17 +184,30 @@ string SafeFunctionName(const Descriptor* descriptor,
                         const FieldDescriptor* field,
                         const string& prefix);
 
-// Returns true if unknown fields are preseved after parsing.
-inline bool PreserveUnknownFields(const Descriptor* message) {
+// Returns true if unknown fields are always preserved after parsing.
+inline bool AlwaysPreserveUnknownFields(const FileDescriptor* file) {
+  return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
+}
+
+// Returns true if unknown fields are preserved after parsing.
+inline bool AlwaysPreserveUnknownFields(const Descriptor* message) {
+  return AlwaysPreserveUnknownFields(message->file());
+}
+
+// Returns true if generated messages have public unknown fields accessors
+inline bool PublicUnknownFieldsAccessors(const Descriptor* message) {
   return message->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
 }
 
-// If PreserveUnknownFields() is true, determines whether unknown
-// fields will be stored in an UnknownFieldSet or a string.
-// If PreserveUnknownFields() is false, this method will not be
-// used.
-inline bool UseUnknownFieldSet(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
+// Returns the optimize mode for <file>, respecting <options.enforce_lite>.
+::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(
+    const FileDescriptor* file, const Options& options);
+
+// Determines whether unknown fields will be stored in an UnknownFieldSet or
+// a string.
+inline bool UseUnknownFieldSet(const FileDescriptor* file,
+                               const Options& options) {
+  return GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME;
 }
 
 
@@ -186,45 +220,32 @@ bool HasEnumDefinitions(const FileDescriptor* file);
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
-inline bool HasGeneratedMethods(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::CODE_SIZE;
+inline bool HasGeneratedMethods(const FileDescriptor* file,
+                                const Options& options) {
+  return GetOptimizeFor(file, options) != FileOptions::CODE_SIZE;
 }
 
 // Do message classes in this file have descriptor and reflection methods?
-inline bool HasDescriptorMethods(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const FileDescriptor* file,
+                                 const Options& options) {
+  return GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor* file) {
+inline bool HasGenericServices(const FileDescriptor* file,
+                               const Options& options) {
   return file->service_count() > 0 &&
-         file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
+         GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME &&
          file->options().cc_generic_services();
 }
 
 // Should we generate a separate, super-optimized code path for serializing to
 // flat arrays?  We don't do this in Lite mode because we'd rather reduce code
 // size.
-inline bool HasFastArraySerialization(const FileDescriptor* file) {
-  return file->options().optimize_for() == FileOptions::SPEED;
+inline bool HasFastArraySerialization(const FileDescriptor* file,
+                                      const Options& options) {
+  return GetOptimizeFor(file, options) == FileOptions::SPEED;
 }
-
-// Returns whether we have to generate code with static initializers.
-bool StaticInitializersForced(const FileDescriptor* file);
-
-// Prints 'with_static_init' if static initializers have to be used for the
-// provided file. Otherwise emits both 'with_static_init' and
-// 'without_static_init' using #ifdef.
-void PrintHandlingOptionalStaticInitializers(
-    const FileDescriptor* file, io::Printer* printer,
-    const char* with_static_init, const char* without_static_init,
-    const char* var1 = NULL, const string& val1 = "",
-    const char* var2 = NULL, const string& val2 = "");
-
-void PrintHandlingOptionalStaticInitializers(
-    const map<string, string>& vars, const FileDescriptor* file,
-    io::Printer* printer, const char* with_static_init,
-    const char* without_static_init);
 
 
 inline bool IsMapEntryMessage(const Descriptor* descriptor) {
@@ -262,24 +283,175 @@ inline bool SupportsArenas(const FieldDescriptor* field) {
   return SupportsArenas(field->file());
 }
 
+inline bool IsCrossFileMessage(const FieldDescriptor* field) {
+  return field->type() == FieldDescriptor::TYPE_MESSAGE &&
+         field->message_type()->file() != field->file();
+}
+
+inline string MessageCreateFunction(const Descriptor* d) {
+  return SupportsArenas(d) ? "CreateMessage" : "Create";
+}
+
+inline string MakeDefaultName(const FieldDescriptor* field) {
+  return "_i_give_permission_to_break_this_code_default_" + FieldName(field) +
+         "_";
+}
+
 bool IsAnyMessage(const FileDescriptor* descriptor);
 bool IsAnyMessage(const Descriptor* descriptor);
 
 bool IsWellKnownMessage(const FileDescriptor* descriptor);
 
-void GenerateUtf8CheckCodeForString(
-    const FieldDescriptor* field,
-    bool for_parse,
-    const map<string, string>& variables,
-    const char* parameters,
-    io::Printer* printer);
+void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
+                                    const Options& options, bool for_parse,
+                                    const std::map<string, string>& variables,
+                                    const char* parameters,
+                                    io::Printer* printer);
 
-void GenerateUtf8CheckCodeForCord(
-    const FieldDescriptor* field,
-    bool for_parse,
-    const map<string, string>& variables,
-    const char* parameters,
-    io::Printer* printer);
+void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
+                                  const Options& options, bool for_parse,
+                                  const std::map<string, string>& variables,
+                                  const char* parameters, io::Printer* printer);
+
+inline ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(
+    const FileDescriptor* file, const Options& options) {
+  return options.enforce_lite
+      ? FileOptions::LITE_RUNTIME
+      : file->options().optimize_for();
+}
+
+// This orders the messages in a .pb.cc as it's outputted by file.cc
+void FlattenMessagesInFile(const FileDescriptor* file,
+                           std::vector<const Descriptor*>* result);
+inline std::vector<const Descriptor*> FlattenMessagesInFile(
+    const FileDescriptor* file) {
+  std::vector<const Descriptor*> result;
+  FlattenMessagesInFile(file, &result);
+  return result;
+}
+
+bool HasWeakFields(const Descriptor* desc);
+bool HasWeakFields(const FileDescriptor* desc);
+
+// Returns true if the "required" restriction check should be ignored for the
+// given field.
+inline static bool ShouldIgnoreRequiredFieldCheck(const FieldDescriptor* field,
+                                                  const Options& options) {
+  return false;
+}
+
+class LIBPROTOC_EXPORT NamespaceOpener {
+ public:
+  explicit NamespaceOpener(io::Printer* printer) : printer_(printer) {}
+  NamespaceOpener(const string& name, io::Printer* printer)
+      : printer_(printer) {
+    ChangeTo(name);
+  }
+  ~NamespaceOpener() { ChangeTo(""); }
+
+  void ChangeTo(const string& name) {
+    std::vector<string> new_stack_ =
+        Split(name, "::", true);
+    int len = std::min(name_stack_.size(), new_stack_.size());
+    int common_idx = 0;
+    while (common_idx < len) {
+      if (name_stack_[common_idx] != new_stack_[common_idx]) break;
+      common_idx++;
+    }
+    for (int i = name_stack_.size() - 1; i >= common_idx; i--) {
+      printer_->Print("}  // namespace $ns$\n", "ns", name_stack_[i]);
+    }
+    name_stack_.swap(new_stack_);
+    for (int i = common_idx; i < name_stack_.size(); i++) {
+      printer_->Print("namespace $ns$ {\n", "ns", name_stack_[i]);
+    }
+  }
+
+ private:
+  io::Printer* printer_;
+  std::vector<string> name_stack_;
+};
+
+// Description of each strongly connected component. Note that the order
+// of both the descriptors in this SCC and the order of children is
+// deterministic.
+struct SCC {
+  std::vector<const Descriptor*> descriptors;
+  std::vector<const SCC*> children;
+
+  const Descriptor* GetRepresentative() const { return descriptors[0]; }
+};
+
+struct MessageAnalysis {
+  bool is_recursive;
+  bool contains_cord;
+  bool contains_extension;
+  bool contains_required;
+};
+
+// This class is used in FileGenerator, to ensure linear instead of
+// quadratic performance, if we do this per message we would get O(V*(V+E)).
+// Logically this is just only used in message.cc, but in the header for
+// FileGenerator to help share it.
+class LIBPROTOC_EXPORT SCCAnalyzer {
+ public:
+  explicit SCCAnalyzer(const Options& options) : options_(options), index_(0) {}
+  ~SCCAnalyzer() {
+    for (int i = 0; i < garbage_bin_.size(); i++) delete garbage_bin_[i];
+  }
+
+  const SCC* GetSCC(const Descriptor* descriptor) {
+    if (cache_.count(descriptor)) return cache_[descriptor].scc;
+    return DFS(descriptor).scc;
+  }
+
+  MessageAnalysis GetSCCAnalysis(const SCC* scc);
+
+  bool HasRequiredFields(const Descriptor* descriptor) {
+    MessageAnalysis result = GetSCCAnalysis(GetSCC(descriptor));
+    return result.contains_required || result.contains_extension;
+  }
+
+ private:
+  struct NodeData {
+    const SCC* scc;  // if null it means its still on the stack
+    int index;
+    int lowlink;
+  };
+
+  Options options_;
+  std::map<const Descriptor*, NodeData> cache_;
+  std::map<const SCC*, MessageAnalysis> analysis_cache_;
+  std::vector<const Descriptor*> stack_;
+  int index_;
+  std::vector<SCC*> garbage_bin_;
+
+  SCC* CreateSCC() {
+    garbage_bin_.push_back(new SCC());
+    return garbage_bin_.back();
+  }
+
+  // Tarjan's Strongly Connected Components algo
+  NodeData DFS(const Descriptor* descriptor);
+
+  // Add the SCC's that are children of this SCC to its children.
+  void AddChildren(SCC* scc);
+};
+
+void ListAllFields(const Descriptor* d,
+                   std::vector<const FieldDescriptor*>* fields);
+void ListAllFields(const FileDescriptor* d,
+                   std::vector<const FieldDescriptor*>* fields);
+void ListAllTypesForServices(const FileDescriptor* fd,
+                             std::vector<const Descriptor*>* types);
+
+// Indicates whether we should use implicit weak fields for this file.
+bool UsingImplicitWeakFields(const FileDescriptor* file,
+                             const Options& options);
+
+// Indicates whether to treat this field as implicitly weak.
+bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
+                         SCCAnalyzer* scc_analyzer);
 
 }  // namespace cpp
 }  // namespace compiler

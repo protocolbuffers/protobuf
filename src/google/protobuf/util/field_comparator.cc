@@ -36,6 +36,7 @@
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/mathlimits.h>
 #include <google/protobuf/stubs/mathutil.h>
@@ -92,7 +93,27 @@ FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
     case FieldDescriptor::CPPTYPE_INT64:
       COMPARE_FIELD(Int64);
     case FieldDescriptor::CPPTYPE_STRING:
-      COMPARE_FIELD(String);
+      if (field->is_repeated()) {
+        // Allocate scratch strings to store the result if a conversion is
+        // needed.
+        string scratch1;
+        string scratch2;
+        return ResultFromBoolean(
+            CompareString(*field, reflection_1->GetRepeatedStringReference(
+                                      message_1, field, index_1, &scratch1),
+                          reflection_2->GetRepeatedStringReference(
+                              message_2, field, index_2, &scratch2)));
+      } else {
+        // Allocate scratch strings to store the result if a conversion is
+        // needed.
+        string scratch1;
+        string scratch2;
+        return ResultFromBoolean(CompareString(
+            *field,
+            reflection_1->GetStringReference(message_1, field, &scratch1),
+            reflection_2->GetStringReference(message_2, field, &scratch2)));
+      }
+      break;
     case FieldDescriptor::CPPTYPE_UINT32:
       COMPARE_FIELD(UInt32);
     case FieldDescriptor::CPPTYPE_UINT64:
@@ -108,6 +129,15 @@ FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
                  << " of CppType = " << field->cpp_type();
       return DIFFERENT;
   }
+}
+
+bool DefaultFieldComparator::Compare(
+    MessageDifferencer* differencer,
+    const Message& message1,
+    const Message& message2,
+    const google::protobuf::util::FieldContext* field_context) {
+  return differencer->Compare(
+      message1, message2, field_context->parent_fields());
 }
 
 void DefaultFieldComparator::SetDefaultFractionAndMargin(double fraction,
@@ -169,7 +199,7 @@ bool DefaultFieldComparator::CompareDoubleOrFloat(const FieldDescriptor& field,
       return MathUtil::AlmostEquals(value_1, value_2);
     } else {
       // Use user-provided fraction and margin. Since they are stored as
-      // doubles, we explicitely cast them to types of values provided. This
+      // doubles, we explicitly cast them to types of values provided. This
       // is very likely to fail if provided values are not numeric.
       return MathUtil::WithinFractionOrMargin(
           value_1, value_2, static_cast<T>(tolerance->fraction),

@@ -33,6 +33,7 @@
 #include <map>
 #include <string>
 
+
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -254,6 +255,13 @@ string ClassNameResolver::GetExtensionIdentifierName(
 
 string ClassNameResolver::GetJavaImmutableClassName(
     const Descriptor* descriptor) {
+  return GetJavaClassFullName(
+      ClassNameWithoutPackage(descriptor, true),
+      descriptor->file(), true);
+}
+
+string ClassNameResolver::GetJavaImmutableClassName(
+    const EnumDescriptor* descriptor) {
   return GetJavaClassFullName(
       ClassNameWithoutPackage(descriptor, true),
       descriptor->file(), true);

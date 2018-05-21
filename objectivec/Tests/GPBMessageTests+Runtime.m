@@ -36,6 +36,7 @@
 
 #import "google/protobuf/MapUnittest.pbobjc.h"
 #import "google/protobuf/Unittest.pbobjc.h"
+#import "google/protobuf/UnittestCycle.pbobjc.h"
 #import "google/protobuf/UnittestObjcStartup.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto3.pbobjc.h"
@@ -49,11 +50,24 @@
 // specific.
 
 - (void)testStartupOrdering {
-  // Just have to create a message.  Nothing else uses the classes from
-  // this file, so the first selector invoked on the class will initialize
-  // it, which also initializes the root.
+  // Message class/Root class initialization is a little tricky, so these just
+  // create some possible patterns that can be a problem. The messages don't
+  // have to be exercised, just creating them is enough to test.  If there
+  // is a problem, the runtime should assert or hang.
+  //
+  // Note: the messages from these proto files should not be used in any other
+  // tests, that way when they are referenced here it will be the first use and
+  // initialization will take place now.
+
   TestObjCStartupMessage *message = [TestObjCStartupMessage message];
   XCTAssertNotNil(message);
+
+  CycleBaz *baz = [CycleBaz message];
+  CycleBar *bar = [CycleBar message];
+  CycleFoo *foo = [CycleFoo message];
+  XCTAssertNotNil(baz);
+  XCTAssertNotNil(bar);
+  XCTAssertNotNil(foo);
 }
 
 - (void)testProto2HasMethodSupport {
@@ -326,6 +340,17 @@
 //%    [msg release];
 //%  }
 //%
+//%PDDM-DEFINE PROTO2_TEST_CLEAR_FIELD_WITH_NIL(FIELD, VALUE)
+//%  {  // optional##FIELD
+//%    Message2 *msg = [[Message2 alloc] init];
+//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
+//%    msg.optional##FIELD = VALUE;
+//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
+//%    msg.optional##FIELD = nil;
+//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_Optional##FIELD));
+//%    [msg release];
+//%  }
+//%
 //%PDDM-DEFINE PROTO2_TEST_HAS_FIELDS()
 //%PROTO2_TEST_HAS_FIELD(Int32, 1, 0)
 //%PROTO2_TEST_HAS_FIELD(Int64, 1, 0)
@@ -347,6 +372,14 @@
 //%  //
 //%
 //%PROTO2_TEST_HAS_FIELD(Enum, Message2_Enum_Bar, Message2_Enum_Foo)
+//%  //
+//%  // Nil can also be used to clear strings, bytes, groups, and messages.
+//%  //
+//%
+//%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(String, @"foo")
+//%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding])
+//%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Group, [Message2_OptionalGroup message])
+//%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message2 message])
 //%PDDM-EXPAND PROTO2_TEST_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
 
@@ -658,13 +691,57 @@
     [msg release];
   }
 
+  //
+  // Nil can also be used to clear strings, bytes, groups, and messages.
+  //
+
+  {  // optionalString
+    Message2 *msg = [[Message2 alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalString));
+    msg.optionalString = @"foo";
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalString));
+    msg.optionalString = nil;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalString));
+    [msg release];
+  }
+
+  {  // optionalBytes
+    Message2 *msg = [[Message2 alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalBytes));
+    msg.optionalBytes = [@"foo" dataUsingEncoding:NSUTF8StringEncoding];
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalBytes));
+    msg.optionalBytes = nil;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalBytes));
+    [msg release];
+  }
+
+  {  // optionalGroup
+    Message2 *msg = [[Message2 alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalGroup));
+    msg.optionalGroup = [Message2_OptionalGroup message];
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalGroup));
+    msg.optionalGroup = nil;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalGroup));
+    [msg release];
+  }
+
+  {  // optionalMessage
+    Message2 *msg = [[Message2 alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalMessage));
+    msg.optionalMessage = [Message2 message];
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalMessage));
+    msg.optionalMessage = nil;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message2_FieldNumber_OptionalMessage));
+    [msg release];
+  }
+
 //%PDDM-EXPAND-END PROTO2_TEST_HAS_FIELDS()
 }
 
 - (void)testProto3SingleFieldHasBehavior {
   //
-  // Setting to any value including the default value (0) should result has*
-  // being true.
+  // Setting to any value but the default value (0) should result has*
+  // being true.  When set to the default, shouldn't be true.
   //
 
 //%PDDM-DEFINE PROTO3_TEST_HAS_FIELD(FIELD, NON_ZERO_VALUE, ZERO_VALUE)
@@ -674,6 +751,17 @@
 //%    msg.optional##FIELD = NON_ZERO_VALUE;
 //%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
 //%    msg.optional##FIELD = ZERO_VALUE;
+//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
+//%    [msg release];
+//%  }
+//%
+//%PDDM-DEFINE PROTO3_TEST_CLEAR_FIELD_WITH_NIL(FIELD, VALUE)
+//%  {  // optional##FIELD
+//%    Message3 *msg = [[Message3 alloc] init];
+//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
+//%    msg.optional##FIELD = VALUE;
+//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
+//%    msg.optional##FIELD = nil;
 //%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_Optional##FIELD));
 //%    [msg release];
 //%  }
@@ -695,10 +783,17 @@
 //%PROTO3_TEST_HAS_FIELD(String, @"foo", @"")
 //%PROTO3_TEST_HAS_FIELD(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding], [NSData data])
 //%  //
-//%  // Test doesn't apply to optionalGroup/optionalMessage.
+//%  // Test doesn't apply to optionalMessage (no groups in proto3).
 //%  //
 //%
 //%PROTO3_TEST_HAS_FIELD(Enum, Message3_Enum_Bar, Message3_Enum_Foo)
+//%  //
+//%  // Nil can also be used to clear strings, bytes, and messages (no groups in proto3).
+//%  //
+//%
+//%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(String, @"foo")
+//%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding])
+//%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message3 message])
 //%PDDM-EXPAND PROTO3_TEST_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
 
@@ -853,7 +948,7 @@
   }
 
   //
-  // Test doesn't apply to optionalGroup/optionalMessage.
+  // Test doesn't apply to optionalMessage (no groups in proto3).
   //
 
   {  // optionalEnum
@@ -863,6 +958,40 @@
     XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalEnum));
     msg.optionalEnum = Message3_Enum_Foo;
     XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalEnum));
+    [msg release];
+  }
+
+  //
+  // Nil can also be used to clear strings, bytes, and messages (no groups in proto3).
+  //
+
+  {  // optionalString
+    Message3 *msg = [[Message3 alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalString));
+    msg.optionalString = @"foo";
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalString));
+    msg.optionalString = nil;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalString));
+    [msg release];
+  }
+
+  {  // optionalBytes
+    Message3 *msg = [[Message3 alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalBytes));
+    msg.optionalBytes = [@"foo" dataUsingEncoding:NSUTF8StringEncoding];
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalBytes));
+    msg.optionalBytes = nil;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalBytes));
+    [msg release];
+  }
+
+  {  // optionalMessage
+    Message3 *msg = [[Message3 alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalMessage));
+    msg.optionalMessage = [Message3 message];
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalMessage));
+    msg.optionalMessage = nil;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3_FieldNumber_OptionalMessage));
     [msg release];
   }
 
@@ -1972,6 +2101,262 @@
   [msg release];
 }
 
+- (void)testProto2OneofSetToDefault {
+
+  // proto3 doesn't normally write out zero (default) fields, but if they are
+  // in a oneof it does.  proto2 doesn't have this special behavior, but we
+  // still confirm setting to the explicit default does set the case to be
+  // sure the runtime is working correctly.
+
+  NSString *oneofStringDefault = @"string";
+  NSData *oneofBytesDefault = [@"data" dataUsingEncoding:NSUTF8StringEncoding];
+
+  Message2 *msg = [[Message2 alloc] init];
+
+  uint32_t values[] = {
+    Message2_O_OneOfCase_OneofInt32,
+    Message2_O_OneOfCase_OneofInt64,
+    Message2_O_OneOfCase_OneofUint32,
+    Message2_O_OneOfCase_OneofUint64,
+    Message2_O_OneOfCase_OneofSint32,
+    Message2_O_OneOfCase_OneofSint64,
+    Message2_O_OneOfCase_OneofFixed32,
+    Message2_O_OneOfCase_OneofFixed64,
+    Message2_O_OneOfCase_OneofSfixed32,
+    Message2_O_OneOfCase_OneofSfixed64,
+    Message2_O_OneOfCase_OneofFloat,
+    Message2_O_OneOfCase_OneofDouble,
+    Message2_O_OneOfCase_OneofBool,
+    Message2_O_OneOfCase_OneofString,
+    Message2_O_OneOfCase_OneofBytes,
+    // Skip group
+    // Skip message
+    Message2_O_OneOfCase_OneofEnum,
+  };
+
+  for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
+    switch (values[i]) {
+      case Message2_O_OneOfCase_OneofInt32:
+        msg.oneofInt32 = 100;
+        break;
+      case Message2_O_OneOfCase_OneofInt64:
+        msg.oneofInt64 = 101;
+        break;
+      case Message2_O_OneOfCase_OneofUint32:
+        msg.oneofUint32 = 102;
+        break;
+      case Message2_O_OneOfCase_OneofUint64:
+        msg.oneofUint64 = 103;
+        break;
+      case Message2_O_OneOfCase_OneofSint32:
+        msg.oneofSint32 = 104;
+        break;
+      case Message2_O_OneOfCase_OneofSint64:
+        msg.oneofSint64 = 105;
+        break;
+      case Message2_O_OneOfCase_OneofFixed32:
+        msg.oneofFixed32 = 106;
+        break;
+      case Message2_O_OneOfCase_OneofFixed64:
+        msg.oneofFixed64 = 107;
+        break;
+      case Message2_O_OneOfCase_OneofSfixed32:
+        msg.oneofSfixed32 = 108;
+        break;
+      case Message2_O_OneOfCase_OneofSfixed64:
+        msg.oneofSfixed64 = 109;
+        break;
+      case Message2_O_OneOfCase_OneofFloat:
+        msg.oneofFloat = 110.0f;
+        break;
+      case Message2_O_OneOfCase_OneofDouble:
+        msg.oneofDouble = 111.0;
+        break;
+      case Message2_O_OneOfCase_OneofBool:
+        msg.oneofBool = YES;
+        break;
+      case Message2_O_OneOfCase_OneofString:
+        msg.oneofString = oneofStringDefault;
+        break;
+      case Message2_O_OneOfCase_OneofBytes:
+        msg.oneofBytes = oneofBytesDefault;
+        break;
+      case Message2_O_OneOfCase_OneofEnum:
+        msg.oneofEnum = Message3_Enum_Baz;
+        break;
+      default:
+        XCTFail(@"shouldn't happen, loop: %zd, value: %d", i, values[i]);
+        break;
+    }
+
+    // Should be set to the correct case.
+    XCTAssertEqual(msg.oOneOfCase, values[i], "Loop: %zd", i);
+
+    // Confirm everything is the defaults.
+    XCTAssertEqual(msg.oneofInt32, 100, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofInt64, 101, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofUint32, 102U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofUint64, 103U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSint32, 104, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSint64, 105, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFixed32, 106U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFixed64, 107U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSfixed32, 108, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSfixed64, 109, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFloat, 110.0f, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofDouble, 111.0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofBool, YES, "Loop: %zd", i);
+    XCTAssertEqualObjects(msg.oneofString, oneofStringDefault, "Loop: %zd", i);
+    XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault, "Loop: %zd", i);
+    // Skip group, no default to consider.
+    // Skip message, no default to consider.
+    XCTAssertEqual(msg.oneofEnum, Message2_Enum_Baz, "Loop: %zd", i);
+  }
+
+  // We special case nil on string, data, group, and message, ensure they work
+  // as expected. i.e. - it clears the case.
+  msg.oneofString = nil;
+  XCTAssertEqualObjects(msg.oneofString, oneofStringDefault);
+  XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  msg.oneofBytes = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault);
+  msg.oneofGroup = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofGroup);
+  msg.oneofMessage = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofMessage);
+
+  [msg release];
+}
+
+- (void)testProto3OneofSetToZero {
+
+  // Normally setting a proto3 field to the zero value should result in it being
+  // reset/cleared.  But in a oneof, it still gets recored so it can go out
+  // over the wire and the other side can see what was set in the oneof.
+
+  NSString *oneofStringDefault = @"";
+  NSData *oneofBytesDefault = [NSData data];
+
+  Message3 *msg = [[Message3 alloc] init];
+
+  uint32_t values[] = {
+    Message3_O_OneOfCase_OneofInt32,
+    Message3_O_OneOfCase_OneofInt64,
+    Message3_O_OneOfCase_OneofUint32,
+    Message3_O_OneOfCase_OneofUint64,
+    Message3_O_OneOfCase_OneofSint32,
+    Message3_O_OneOfCase_OneofSint64,
+    Message3_O_OneOfCase_OneofFixed32,
+    Message3_O_OneOfCase_OneofFixed64,
+    Message3_O_OneOfCase_OneofSfixed32,
+    Message3_O_OneOfCase_OneofSfixed64,
+    Message3_O_OneOfCase_OneofFloat,
+    Message3_O_OneOfCase_OneofDouble,
+    Message3_O_OneOfCase_OneofBool,
+    Message3_O_OneOfCase_OneofString,
+    Message3_O_OneOfCase_OneofBytes,
+    Message3_O_OneOfCase_OneofMessage,
+    Message3_O_OneOfCase_OneofEnum,
+  };
+
+  for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
+    switch (values[i]) {
+      case Message3_O_OneOfCase_OneofInt32:
+        msg.oneofInt32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofInt64:
+        msg.oneofInt64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofUint32:
+        msg.oneofUint32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofUint64:
+        msg.oneofUint64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofSint32:
+        msg.oneofSint32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofSint64:
+        msg.oneofSint64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofFixed32:
+        msg.oneofFixed32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofFixed64:
+        msg.oneofFixed64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofSfixed32:
+        msg.oneofSfixed32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofSfixed64:
+        msg.oneofSfixed64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofFloat:
+        msg.oneofFloat = 0.0f;
+        break;
+      case Message3_O_OneOfCase_OneofDouble:
+        msg.oneofDouble = 0.0;
+        break;
+      case Message3_O_OneOfCase_OneofBool:
+        msg.oneofBool = NO;
+        break;
+      case Message3_O_OneOfCase_OneofString:
+        msg.oneofString = oneofStringDefault;
+        break;
+      case Message3_O_OneOfCase_OneofBytes:
+        msg.oneofBytes = oneofBytesDefault;
+        break;
+      case Message3_O_OneOfCase_OneofMessage:
+        msg.oneofMessage.optionalInt32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofEnum:
+        msg.oneofEnum = Message3_Enum_Foo;
+        break;
+      default:
+        XCTFail(@"shouldn't happen, loop: %zd, value: %d", i, values[i]);
+        break;
+    }
+
+    // Should be set to the correct case.
+    XCTAssertEqual(msg.oOneOfCase, values[i], "Loop: %zd", i);
+
+    // Confirm everything is still zeros.
+    XCTAssertEqual(msg.oneofInt32, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofInt64, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofUint32, 0U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofUint64, 0U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSint32, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSint64, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFixed32, 0U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFixed64, 0U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSfixed32, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSfixed64, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFloat, 0.0f, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofDouble, 0.0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofBool, NO, "Loop: %zd", i);
+    XCTAssertEqualObjects(msg.oneofString, oneofStringDefault, "Loop: %zd", i);
+    XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault, "Loop: %zd", i);
+    XCTAssertNotNil(msg.oneofMessage, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofEnum, Message3_Enum_Foo, "Loop: %zd", i);
+  }
+
+  // We special case nil on string, data, message, ensure they work as expected.
+  msg.oneofString = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofString, oneofStringDefault);
+  msg.oneofBytes = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault);
+  msg.oneofMessage = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofMessage);
+
+  [msg release];
+}
+
 - (void)testCopyingMakesUniqueObjects {
   const int repeatCount = 5;
   TestAllTypes *msg1 = [TestAllTypes message];
@@ -2066,6 +2451,46 @@
       }];
 }
 
+- (void)test_GPBGetMessageRepeatedField {
+  TestAllTypes *message = [TestAllTypes message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"repeatedStringArray"];
+  XCTAssertNotNil(fieldDescriptor);
+  NSMutableArray *fieldArray = GPBGetMessageRepeatedField(message, fieldDescriptor);
+  XCTAssertNotNil(fieldArray);  // Should have autocreated.
+  XCTAssertTrue(fieldArray == message.repeatedStringArray);  // Same pointer
+}
+
+- (void)test_GPBSetMessageRepeatedField {
+  TestAllTypes *message = [TestAllTypes message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"repeatedStringArray"];
+  XCTAssertNotNil(fieldDescriptor);
+
+  NSMutableArray *fieldArray = [NSMutableArray arrayWithObject:@"foo"];
+  GPBSetMessageRepeatedField(message, fieldDescriptor, fieldArray);
+  XCTAssertTrue(fieldArray == message.repeatedStringArray);  // Same pointer
+  XCTAssertEqualObjects(@"foo", message.repeatedStringArray.firstObject);
+}
+
+- (void)test_GPBGetMessageMapField {
+  TestMap *message = [TestMap message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"mapStringString"];
+  XCTAssertNotNil(fieldDescriptor);
+  NSMutableDictionary *fieldMap = GPBGetMessageMapField(message, fieldDescriptor);
+  XCTAssertNotNil(fieldMap);  // Should have autocreated.
+  XCTAssertTrue(fieldMap == message.mapStringString);  // Same pointer
+}
+
+- (void)test_GPBSetMessageMapField {
+  TestMap *message = [TestMap message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"mapStringString"];
+  XCTAssertNotNil(fieldDescriptor);
+
+  NSMutableDictionary *fieldMap = [NSMutableDictionary dictionaryWithObject:@"bar" forKey:@"foo"];
+  GPBSetMessageMapField(message, fieldDescriptor, fieldMap);
+  XCTAssertTrue(fieldMap == message.mapStringString);  // Same pointer
+  XCTAssertEqualObjects(@"bar", message.mapStringString[@"foo"]);
+}
+
 #pragma mark - Subset from from map_tests.cc
 
 // TEST(GeneratedMapFieldTest, IsInitialized)
@@ -2074,7 +2499,6 @@
 
   // Add an uninitialized message.
   TestRequired *subMsg = [[TestRequired alloc] init];
-  msg.mapField = [GPBInt32ObjectDictionary dictionary];
   [msg.mapField setObject:subMsg forKey:0];
   XCTAssertFalse(msg.initialized);
 

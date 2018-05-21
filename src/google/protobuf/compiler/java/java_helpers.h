@@ -36,7 +36,9 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__
 
 #include <string>
+#include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -49,6 +51,17 @@ namespace java {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
+// If annotation_file is non-empty, prints a javax.annotation.Generated
+// annotation to the given Printer. annotation_file will be referenced in the
+// annotation's comments field. delimiter should be the Printer's delimiter
+// character. annotation_file will be included verbatim into a Java literal
+// string, so it should not contain quotes or invalid Java escape sequences;
+// however, these are unlikely to appear in practice, as the value of
+// annotation_file should be generated from the filename of the source file
+// being annotated (which in turn must be a Java identifier plus ".java").
+void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
+                              const string& annotation_file = "");
+
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
 string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
@@ -60,6 +73,10 @@ string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
 // Similar, but for method names.  (Typically, this merely has the effect
 // of lower-casing the first letter of the name.)
 string UnderscoresToCamelCase(const MethodDescriptor* method);
+
+// Similar to UnderscoresToCamelCase, but guarentees that the result is a
+// complete Java identifier by adding a _ if needed.
+string CamelCaseFieldName(const FieldDescriptor* field);
 
 // Get an identifier that uniquely identifies this type within the file.
 // This is used to declare static variables related to this type at the
@@ -119,11 +136,50 @@ inline string ShortMutableJavaClassName(const Descriptor* descriptor) {
   return descriptor->name();
 }
 
+// Whether the given descriptor is for one of the core descriptor protos. We
+// cannot currently use the new runtime with core protos since there is a
+// bootstrapping problem with obtaining their descriptors.
+inline bool IsDescriptorProto(const Descriptor* descriptor) {
+  return descriptor->file()->name() == "google/protobuf/descriptor.proto";
+}
+
 
 // Whether we should generate multiple java files for messages.
 inline bool MultipleJavaFiles(
     const FileDescriptor* descriptor, bool immutable) {
   return descriptor->options().java_multiple_files();
+}
+
+// Returns true if `descriptor` will be written to its own .java file.
+// `immutable` should be set to true if we're generating for the immutable API.
+template <typename Descriptor>
+bool IsOwnFile(const Descriptor* descriptor, bool immutable) {
+  return descriptor->containing_type() == NULL &&
+         MultipleJavaFiles(descriptor->file(), immutable);
+}
+
+template <>
+inline bool IsOwnFile(const ServiceDescriptor* descriptor, bool immutable) {
+  return MultipleJavaFiles(descriptor->file(), immutable);
+}
+
+// If `descriptor` describes an object with its own .java file,
+// returns the name (relative to that .java file) of the file that stores
+// annotation data for that descriptor. `suffix` is usually empty, but may
+// (e.g.) be "OrBuilder" for some generated interfaces.
+template <typename Descriptor>
+string AnnotationFileName(const Descriptor* descriptor, const string& suffix) {
+  return descriptor->name() + suffix + ".java.pb.meta";
+}
+
+template <typename Descriptor>
+void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
+                                   Descriptor* descriptor, bool immutable,
+                                   const string& suffix = "") {
+  if (context->options().annotate_code && IsOwnFile(descriptor, immutable)) {
+    PrintGeneratedAnnotation(printer, '$',
+                             AnnotationFileName(descriptor, suffix));
+  }
 }
 
 // Get the unqualified name that should be used for a field's field
@@ -169,48 +225,32 @@ inline string ImmutableDefaultValue(const FieldDescriptor* field,
   return DefaultValue(field, true, name_resolver);
 }
 bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
-
-// Does this message class have generated parsing, serialization, and other
-// standard methods for which reflection-based fallback implementations exist?
-inline bool HasGeneratedMethods(const Descriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::CODE_SIZE;
-}
-
-// Does this message have specialized equals() and hashCode() methods?
-inline bool HasEqualsAndHashCode(const Descriptor* descriptor) {
-  return descriptor->file()->options().java_generate_equals_and_hash();
-}
+bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field);
 
 // Does this message class have descriptor and reflection methods?
-inline bool HasDescriptorMethods(const Descriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const Descriptor* descriptor,
+                                 bool enforce_lite) {
+  return !enforce_lite &&
+         descriptor->file()->options().optimize_for() !=
+             FileOptions::LITE_RUNTIME;
 }
-inline bool HasDescriptorMethods(const EnumDescriptor* descriptor) {
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const EnumDescriptor* descriptor,
+                                 bool enforce_lite) {
+  return !enforce_lite &&
+         descriptor->file()->options().optimize_for() !=
+             FileOptions::LITE_RUNTIME;
 }
-inline bool HasDescriptorMethods(const FileDescriptor* descriptor) {
-  return descriptor->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const FileDescriptor* descriptor,
+                                 bool enforce_lite) {
+  return !enforce_lite &&
+         descriptor->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor *file) {
+inline bool HasGenericServices(const FileDescriptor *file, bool enforce_lite) {
   return file->service_count() > 0 &&
-         file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
+         HasDescriptorMethods(file, enforce_lite) &&
          file->options().java_generic_services();
-}
-
-inline bool IsLazy(const FieldDescriptor* descriptor) {
-  // Currently, the proto-lite version suports lazy field.
-  // TODO(niwasaki): Support lazy fields also for other proto runtimes.
-  if (descriptor->file()->options().optimize_for() !=
-      FileOptions::LITE_RUNTIME) {
-    return false;
-  }
-  return descriptor->options().lazy();
 }
 
 // Methods for shared bitfields.
@@ -334,12 +374,12 @@ inline bool IsMapField(const FieldDescriptor* descriptor) {
   return descriptor->is_map();
 }
 
-inline bool PreserveUnknownFields(const Descriptor* descriptor) {
-  return descriptor->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
-}
-
 inline bool IsAnyMessage(const Descriptor* descriptor) {
   return descriptor->full_name() == "google.protobuf.Any";
+}
+
+inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
+  return descriptor->name() == "google/protobuf/wrappers.proto";
 }
 
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
@@ -347,6 +387,38 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
       descriptor->file()->options().java_string_check_utf8();
 }
 
+inline string GeneratedCodeVersionSuffix() {
+  return "V3";
+}
+
+inline bool EnableExperimentalRuntime(Context* context) {
+  return false;
+}
+
+void WriteUInt32ToUtf16CharSequence(uint32 number, std::vector<uint16>* output);
+
+inline void WriteIntToUtf16CharSequence(int value,
+                                        std::vector<uint16>* output) {
+  WriteUInt32ToUtf16CharSequence(static_cast<uint32>(value), output);
+}
+
+// Escape a UTF-16 character so it can be embedded in a Java string literal.
+void EscapeUtf16ToString(uint16 code, string* output);
+
+// Only the lowest two bytes of the return value are used. The lowest byte
+// is the integer value of a j/c/g/protobuf/FieldType enum. For the other
+// byte:
+//    bit 0: whether the field is required.
+//    bit 1: whether the field requires UTF-8 validation.
+//    bit 2: whether the field needs isInitialized check.
+//    bit 3: whether the field is a map field with proto2 enum value.
+//    bits 4-7: unused
+int GetExperimentalJavaFieldType(const FieldDescriptor* field);
+
+// To get the total number of entries need to be built for experimental runtime
+// and the first field number that are not in the table part
+std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
+    const FieldDescriptor** fields, int count);
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

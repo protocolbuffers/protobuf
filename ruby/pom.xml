@@ -21,8 +21,8 @@
     <url>https://developers.google.com/protocol-buffers/</url>
     <licenses>
       <license>
-        <name>New BSD license</name>
-        <url>http://www.opensource.org/licenses/bsd-license.php</url>
+        <name>3-Clause BSD License</name>
+        <url>https://opensource.org/licenses/BSD-3-Clause</url>
         <distribution>repo</distribution>
       </license>
     </licenses>
@@ -86,7 +86,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.0.0-alpha-3</version>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
 </project>

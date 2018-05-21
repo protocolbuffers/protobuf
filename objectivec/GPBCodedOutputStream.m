@@ -28,13 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 
 #import <mach/vm_param.h>
 
 #import "GPBArray.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
+
+// These values are the existing values so as not to break any code that might
+// have already been inspecting them when they weren't documented/exposed.
+NSString *const GPBCodedOutputStreamException_OutOfSpace = @"OutOfSpace";
+NSString *const GPBCodedOutputStreamException_WriteFailed = @"WriteFailed";
 
 // Structure for containing state of a GPBCodedInputStream. Brought out into
 // a struct so that we can inline several common functions instead of dealing
@@ -59,13 +64,13 @@ static const int32_t LITTLE_ENDIAN_64_SIZE = sizeof(uint64_t);
 static void GPBRefreshBuffer(GPBOutputBufferState *state) {
   if (state->output == nil) {
     // We're writing to a single buffer.
-    [NSException raise:@"OutOfSpace" format:@""];
+    [NSException raise:GPBCodedOutputStreamException_OutOfSpace format:@""];
   }
   if (state->position != 0) {
     NSInteger written =
         [state->output write:state->bytes maxLength:state->position];
     if (written != (NSInteger)state->position) {
-      [NSException raise:@"WriteFailed" format:@""];
+      [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
     }
     state->position = 0;
   }
@@ -144,22 +149,6 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   GPBWriteRawByte(state, (int32_t)(value >> 56) & 0xFF);
 }
 
-#if DEBUG && !defined(NS_BLOCK_ASSERTIONS)
-+ (void)load {
-  // This test exists to verify that CFStrings with embedded NULLs will work
-  // for us. If this Assert fails, all code below that depends on
-  // CFStringGetCStringPtr will NOT work properly on strings that contain
-  // embedded NULLs, and we do get that in some protobufs.
-  // Note that this will not be compiled in release.
-  // We didn't feel that just keeping it in a unit test was sufficient because
-  // the Protobuf unit tests are only run when somebody is actually working
-  // on protobufs.
-  CFStringRef zeroTest = CFSTR("Test\0String");
-  const char *cString = CFStringGetCStringPtr(zeroTest, kCFStringEncodingUTF8);
-  NSAssert(cString == NULL, @"Serious Error");
-}
-#endif  // DEBUG && !defined(NS_BLOCK_ASSERTIONS)
-
 - (void)dealloc {
   [self flush];
   [state_.output close];
@@ -178,12 +167,6 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   return [self initWithOutputStream:nil data:data];
 }
 
-- (instancetype)initWithOutputStream:(NSOutputStream *)output
-                          bufferSize:(size_t)bufferSize {
-  NSMutableData *data = [NSMutableData dataWithLength:bufferSize];
-  return [self initWithOutputStream:output data:data];
-}
-
 // This initializer isn't exposed, but it is the designated initializer.
 // Setting OutputStream and NSData is to control the buffering behavior/size
 // of the work, but that is more obvious via the bufferSize: version.
@@ -191,28 +174,29 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
                                 data:(NSMutableData *)data {
   if ((self = [super init])) {
     buffer_ = [data retain];
-    [output open];
     state_.bytes = [data mutableBytes];
     state_.size = [data length];
     state_.output = [output retain];
+    [state_.output open];
   }
   return self;
 }
 
-+ (instancetype)streamWithOutputStream:(NSOutputStream *)output
-                            bufferSize:(size_t)bufferSize {
-  return [[[self alloc] initWithOutputStream:output
-                                  bufferSize:bufferSize] autorelease];
-}
-
 + (instancetype)streamWithOutputStream:(NSOutputStream *)output {
+  NSMutableData *data = [NSMutableData dataWithLength:PAGE_SIZE];
   return [[[self alloc] initWithOutputStream:output
-                                  bufferSize:PAGE_SIZE] autorelease];
+                                        data:data] autorelease];
 }
 
 + (instancetype)streamWithData:(NSMutableData *)data {
   return [[[self alloc] initWithData:data] autorelease];
 }
+
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
 - (void)writeDoubleNoTag:(double)value {
   GPBWriteRawLittleEndian64(&state_, GPBConvertDoubleToInt64(value));
@@ -287,18 +271,14 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 }
 
 - (void)writeStringNoTag:(const NSString *)value {
-  // If you are concerned about embedded NULLs see the test in
-  // +load above.
-  const char *quickString =
-      CFStringGetCStringPtr((CFStringRef)value, kCFStringEncodingUTF8);
-  size_t length = (quickString != NULL)
-                      ? strlen(quickString)
-                      : [value lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+  size_t length = [value lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
   GPBWriteRawVarint32(&state_, (int32_t)length);
-
   if (length == 0) {
     return;
   }
+
+  const char *quickString =
+      CFStringGetCStringPtr((CFStringRef)value, kCFStringEncodingUTF8);
 
   // Fast path: Most strings are short, if the buffer already has space,
   // add to it directly.
@@ -315,7 +295,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
                      maxLength:bufferBytesLeft
                     usedLength:&usedBufferLength
                       encoding:NSUTF8StringEncoding
-                       options:0
+                       options:(NSStringEncodingConversionOptions)0
                          range:NSMakeRange(0, [value length])
                 remainingRange:NULL];
     }
@@ -962,7 +942,10 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
       state_.position = length;
     } else {
       // Write is very big.  Let's do it all at once.
-      [state_.output write:((uint8_t *)value) + offset maxLength:length];
+      NSInteger written = [state_.output write:((uint8_t *)value) + offset maxLength:length];
+      if (written != (NSInteger)length) {
+        [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
+      }
     }
   }
 }
@@ -991,6 +974,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 - (void)writeRawLittleEndian64:(int64_t)value {
   GPBWriteRawLittleEndian64(&state_, value);
 }
+
+#pragma clang diagnostic pop
 
 @end
 
@@ -1041,14 +1026,7 @@ size_t GPBComputeBoolSizeNoTag(BOOL value) {
 }
 
 size_t GPBComputeStringSizeNoTag(NSString *value) {
-  // If you are concerned about embedded NULLs see the test in
-  // +load above.
-  const char *quickString =
-      CFStringGetCStringPtr((CFStringRef)value, kCFStringEncodingUTF8);
-  NSUInteger length =
-      (quickString != NULL)
-          ? strlen(quickString)
-          : [value lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+  NSUInteger length = [value lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
   return GPBComputeRawVarint32SizeForInteger(length) + length;
 }
 

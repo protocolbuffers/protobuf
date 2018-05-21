@@ -41,15 +41,10 @@
 #define GOOGLE_PROTOBUF_HAVE_HASH_MAP 1
 #define GOOGLE_PROTOBUF_HAVE_HASH_SET 1
 
-// Android
-#if defined(__ANDROID__)
-# undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
-# undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
-
 // Use C++11 unordered_{map|set} if available.
-#elif ((_LIBCPP_STD_VER >= 11) || \
-      (((__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X)) && \
-      (__GLIBCXX__ > 20090421)))
+#if ((defined(_LIBCPP_STD_VER) && _LIBCPP_STD_VER >= 11) || \
+    (((__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X)) && \
+    (__GLIBCXX__ > 20090421)))
 # define GOOGLE_PROTOBUF_HAS_CXX11_HASH
 
 // For XCode >= 4.6:  the compiler is clang with libc++.
@@ -97,6 +92,13 @@
 #  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
 # endif
 
+// GCC <= 4.1 does not define std::tr1::hash for `long long int` or `long long unsigned int`
+# if __GNUC__ == 4 && defined(__GNUC_MINOR__) && __GNUC_MINOR__ <= 1
+#  undef GOOGLE_PROTOBUF_HAS_TR1
+#  undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
+#  undef GOOGLE_PROTOBUF_HAVE_HASH_SET
+# endif
+
 // Version checks for MSC.
 // Apparently Microsoft decided to move hash_map *back* to the std namespace in
 // MSVC 2010:
@@ -108,8 +110,13 @@
 #  define GOOGLE_PROTOBUF_HAS_CXX11_HASH
 #  define GOOGLE_PROTOBUF_HASH_COMPARE std::hash_compare
 # elif _MSC_VER >= 1500  // Since Visual Studio 2008
-#  undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
-#  undef GOOGLE_PROTOBUF_HAVE_HASH_SET
+#  define GOOGLE_PROTOBUF_HASH_NAMESPACE stdext
+#  include <hash_map>
+#  define GOOGLE_PROTOBUF_HASH_MAP_CLASS hash_map
+#  include <hash_set>
+#  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
+#  define GOOGLE_PROTOBUF_HASH_COMPARE stdext::hash_compare
+#  define GOOGLE_PROTOBUF_CONTAINERS_NEED_HASH_COMPARE
 # elif _MSC_VER >= 1310
 #  define GOOGLE_PROTOBUF_HASH_NAMESPACE stdext
 #  include <hash_map>
@@ -214,6 +221,8 @@ class hash_map : public std::map<Key, Data, HashFcn, Alloc> {
   hash_map(int a = 0, const HashFcn& b = HashFcn(),
            const EqualKey& c = EqualKey(),
            const Alloc& d = Alloc()) : BaseClass(b, d) {}
+
+  HashFcn hash_function() const { return HashFcn(); }
 };
 
 template <typename Key,
@@ -222,9 +231,12 @@ template <typename Key,
 class hash_set : public std::set<Key, HashFcn> {
  public:
   hash_set(int = 0) {}
+
+  HashFcn hash_function() const { return HashFcn(); }
 };
 
-#elif defined(_MSC_VER) && !defined(_STLPORT_VERSION)
+#elif defined(_MSC_VER) && !defined(_STLPORT_VERSION) && \
+    !(defined(_LIBCPP_STD_VER) && _LIBCPP_STD_VER >= 11)
 
 template <typename Key>
 struct hash : public GOOGLE_PROTOBUF_HASH_COMPARE<Key> {
@@ -243,6 +255,52 @@ template <>
 struct hash<const char*>
     : public GOOGLE_PROTOBUF_HASH_COMPARE<const char*, CstringLess> {};
 
+#ifdef GOOGLE_PROTOBUF_CONTAINERS_NEED_HASH_COMPARE
+
+template <typename Key, typename HashFcn, typename EqualKey>
+struct InternalHashCompare : public GOOGLE_PROTOBUF_HASH_COMPARE<Key> {
+  InternalHashCompare() {}
+  InternalHashCompare(HashFcn hashfcn, EqualKey equalkey)
+      : hashfcn_(hashfcn), equalkey_(equalkey) {}
+  size_t operator()(const Key& key) const { return hashfcn_(key); }
+  bool operator()(const Key& key1, const Key& key2) const {
+    return !equalkey_(key1, key2);
+  }
+  HashFcn hashfcn_;
+  EqualKey equalkey_;
+};
+
+template <typename Key, typename Data,
+          typename HashFcn = hash<Key>,
+          typename EqualKey = std::equal_to<Key>,
+          typename Alloc = std::allocator< std::pair<const Key, Data> > >
+class hash_map
+    : public GOOGLE_PROTOBUF_HASH_NAMESPACE::GOOGLE_PROTOBUF_HASH_MAP_CLASS<
+          Key, Data, InternalHashCompare<Key, HashFcn, EqualKey>, Alloc> {
+  typedef GOOGLE_PROTOBUF_HASH_NAMESPACE::GOOGLE_PROTOBUF_HASH_MAP_CLASS<
+      Key, Data, InternalHashCompare<Key, HashFcn, EqualKey>, Alloc> BaseClass;
+
+ public:
+  hash_map(int a = 0, const HashFcn& b = HashFcn(),
+           const EqualKey& c = EqualKey(), const Alloc& d = Alloc())
+      : BaseClass(InternalHashCompare<Key, HashFcn, EqualKey>(b, c), d) {}
+
+  HashFcn hash_function() const { return HashFcn(); }
+};
+
+template <typename Key, typename HashFcn = hash<Key>,
+          typename EqualKey = std::equal_to<Key> >
+class hash_set
+    : public GOOGLE_PROTOBUF_HASH_NAMESPACE::GOOGLE_PROTOBUF_HASH_SET_CLASS<
+          Key, InternalHashCompare<Key, HashFcn, EqualKey> > {
+ public:
+  hash_set(int = 0) {}
+
+  HashFcn hash_function() const { return HashFcn(); }
+};
+
+#else  // GOOGLE_PROTOBUF_CONTAINERS_NEED_HASH_COMPARE
+
 template <typename Key, typename Data,
           typename HashFcn = hash<Key>,
           typename EqualKey = std::equal_to<Key>,
@@ -257,6 +315,8 @@ class hash_map
   hash_map(int a = 0, const HashFcn& b = HashFcn(),
            const EqualKey& c = EqualKey(),
            const Alloc& d = Alloc()) : BaseClass(a, b, c, d) {}
+
+  HashFcn hash_function() const { return HashFcn(); }
 };
 
 template <typename Key, typename HashFcn = hash<Key>,
@@ -266,9 +326,12 @@ class hash_set
           Key, HashFcn, EqualKey> {
  public:
   hash_set(int = 0) {}
-};
 
-#else
+  HashFcn hash_function() const { return HashFcn(); }
+};
+#endif  // GOOGLE_PROTOBUF_CONTAINERS_NEED_HASH_COMPARE
+
+#else  // defined(_MSC_VER) && !defined(_STLPORT_VERSION)
 
 template <typename Key>
 struct hash : public GOOGLE_PROTOBUF_HASH_NAMESPACE::hash<Key> {
@@ -288,7 +351,7 @@ struct hash<const char*> {
   inline size_t operator()(const char* str) const {
     size_t result = 0;
     for (; *str != '\0'; str++) {
-      result = 5 * result + *str;
+      result = 5 * result + static_cast<size_t>(*str);
     }
     return result;
   }
@@ -315,6 +378,8 @@ class hash_map
   hash_map(int a = 0, const HashFcn& b = HashFcn(),
            const EqualKey& c = EqualKey(),
            const Alloc& d = Alloc()) : BaseClass(a, b, c, d) {}
+
+  HashFcn hash_function() const { return HashFcn(); }
 };
 
 template <typename Key, typename HashFcn = hash<Key>,
@@ -324,6 +389,8 @@ class hash_set
           Key, HashFcn, EqualKey> {
  public:
   hash_set(int = 0) {}
+
+  HashFcn hash_function() const { return HashFcn(); }
 };
 
 #endif  // !GOOGLE_PROTOBUF_MISSING_HASH
@@ -342,8 +409,8 @@ struct hash<string> {
 };
 
 template <typename First, typename Second>
-struct hash<pair<First, Second> > {
-  inline size_t operator()(const pair<First, Second>& key) const {
+struct hash<std::pair<First, Second> > {
+  inline size_t operator()(const std::pair<First, Second>& key) const {
     size_t first_hash = hash<First>()(key.first);
     size_t second_hash = hash<Second>()(key.second);
 
@@ -354,8 +421,8 @@ struct hash<pair<First, Second> > {
 
   static const size_t bucket_size = 4;
   static const size_t min_buckets = 8;
-  inline bool operator()(const pair<First, Second>& a,
-                           const pair<First, Second>& b) const {
+  inline bool operator()(const std::pair<First, Second>& a,
+                           const std::pair<First, Second>& b) const {
     return a < b;
   }
 };

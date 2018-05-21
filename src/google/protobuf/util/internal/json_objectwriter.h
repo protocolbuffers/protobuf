@@ -32,9 +32,6 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_JSON_OBJECTWRITER_H__
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 
 #include <google/protobuf/io/coded_stream.h>
@@ -89,10 +86,11 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
  public:
   JsonObjectWriter(StringPiece indent_string,
                    google::protobuf::io::CodedOutputStream* out)
-      : element_(new Element(NULL)),
-        stream_(out), sink_(out),
-        indent_string_(indent_string.ToString()) {
-  }
+      : element_(new Element(/*parent=*/nullptr, /*is_json_object=*/false)),
+        stream_(out),
+        sink_(out),
+        indent_string_(indent_string.ToString()),
+        use_websafe_base64_for_bytes_(false) {}
   virtual ~JsonObjectWriter();
 
   // ObjectWriter methods.
@@ -110,11 +108,19 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   virtual JsonObjectWriter* RenderString(StringPiece name, StringPiece value);
   virtual JsonObjectWriter* RenderBytes(StringPiece name, StringPiece value);
   virtual JsonObjectWriter* RenderNull(StringPiece name);
+  virtual JsonObjectWriter* RenderNullAsEmpty(StringPiece name);
+
+  void set_use_websafe_base64_for_bytes(bool value) {
+    use_websafe_base64_for_bytes_ = value;
+  }
 
  protected:
   class LIBPROTOBUF_EXPORT Element : public BaseElement {
    public:
-    explicit Element(Element* parent) : BaseElement(parent), is_first_(true) {}
+    Element(Element* parent, bool is_json_object)
+        : BaseElement(parent),
+          is_first_(true),
+          is_json_object_(is_json_object) {}
 
     // Called before each field of the Element is to be processed.
     // Returns true if this is the first call (processing the first field).
@@ -126,8 +132,13 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       return false;
     }
 
+    // Whether we are currently renderring inside a JSON object (i.e., between
+    // StartObject() and EndObject()).
+    bool is_json_object() const { return is_json_object_; }
+
    private:
     bool is_first_;
+    bool is_json_object_;
 
     GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(Element);
   };
@@ -161,8 +172,15 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
     return this;
   }
 
-  // Pushes a new element to the stack.
-  void Push() { element_.reset(new Element(element_.release())); }
+  // Pushes a new JSON array element to the stack.
+  void PushArray() {
+    element_.reset(new Element(element_.release(), /*is_json_object=*/false));
+  }
+
+  // Pushes a new JSON object element to the stack.
+  void PushObject() {
+    element_.reset(new Element(element_.release(), /*is_json_object=*/true));
+  }
 
   // Pops an element off of the stack and deletes the popped element.
   void Pop() {
@@ -190,10 +208,14 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Writes an individual character to the output.
   void WriteChar(const char c) { stream_->WriteRaw(&c, sizeof(c)); }
 
-  google::protobuf::scoped_ptr<Element> element_;
+  std::unique_ptr<Element> element_;
   google::protobuf::io::CodedOutputStream* stream_;
   ByteSinkWrapper sink_;
   const string indent_string_;
+
+  // Whether to use regular or websafe base64 encoding for byte fields. Defaults
+  // to regular base64 encoding.
+  bool use_websafe_base64_for_bytes_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonObjectWriter);
 };

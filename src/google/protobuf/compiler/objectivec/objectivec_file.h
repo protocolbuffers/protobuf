@@ -55,36 +55,27 @@ class MessageGenerator;
 
 class FileGenerator {
  public:
-  explicit FileGenerator(const FileDescriptor* file);
+  FileGenerator(const FileDescriptor* file, const Options& options);
   ~FileGenerator();
 
   void GenerateSource(io::Printer* printer);
   void GenerateHeader(io::Printer* printer);
 
   const string& RootClassName() const { return root_class_name_; }
-  const string Path() const;
-
-  bool IsPublicDependency() const { return is_public_dep_; }
-
- protected:
-  void SetIsPublicDependency(bool is_public_dep) {
-    is_public_dep_ = is_public_dep;
-  }
 
  private:
   const FileDescriptor* file_;
   string root_class_name_;
+  bool is_bundled_proto_;
 
-  // Access this field through the DependencyGenerators accessor call below.
-  // Do not reference it directly.
-  vector<FileGenerator*> dependency_generators_;
+  std::vector<EnumGenerator*> enum_generators_;
+  std::vector<MessageGenerator*> message_generators_;
+  std::vector<ExtensionGenerator*> extension_generators_;
 
-  vector<EnumGenerator*> enum_generators_;
-  vector<MessageGenerator*> message_generators_;
-  vector<ExtensionGenerator*> extension_generators_;
-  bool is_public_dep_;
+  const Options options_;
 
-  const vector<FileGenerator*>& DependencyGenerators();
+  void PrintFileRuntimePreamble(
+      io::Printer* printer, const std::set<string>& headers_to_import) const;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };

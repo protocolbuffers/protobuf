@@ -334,7 +334,7 @@ namespace Google.Protobuf
             }
             // Now test Input stream:
             {
-                CodedInputStream cin = new CodedInputStream(new MemoryStream(bytes), new byte[50], 0, 0);
+                CodedInputStream cin = new CodedInputStream(new MemoryStream(bytes), new byte[50], 0, 0, false);
                 Assert.AreEqual(0, cin.Position);
                 // Field 1:
                 uint tag = cin.ReadTag();
@@ -386,6 +386,41 @@ namespace Google.Protobuf
                 Assert.AreEqual(130, cin.Position);
                 Assert.IsTrue(cin.IsAtEnd);
             }
+        }
+
+        [Test]
+        public void Dispose_DisposesUnderlyingStream()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.IsTrue(memoryStream.CanWrite);
+            using (var cos = new CodedOutputStream(memoryStream))
+            {
+                cos.WriteRawByte(0);
+                Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
+            }
+            Assert.AreEqual(1, memoryStream.ToArray().Length); // Flushed data from CodedOutputStream to MemoryStream
+            Assert.IsFalse(memoryStream.CanWrite); // Disposed
+        }
+
+        [Test]
+        public void Dispose_WithLeaveOpen()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.IsTrue(memoryStream.CanWrite);
+            using (var cos = new CodedOutputStream(memoryStream, true))
+            {
+                cos.WriteRawByte(0);
+                Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
+            }
+            Assert.AreEqual(1, memoryStream.Position); // Flushed data from CodedOutputStream to MemoryStream
+            Assert.IsTrue(memoryStream.CanWrite); // We left the stream open
+        }
+
+        [Test]
+        public void Dispose_FromByteArray()
+        {
+            var stream = new CodedOutputStream(new byte[10]);
+            stream.Dispose();
         }
     }
 }

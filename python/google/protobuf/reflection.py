@@ -58,14 +58,10 @@ else:
   from google.protobuf.internal import python_message as message_impl
 
 # The type of all Message classes.
-# Part of the public interface.
-#
-# Used by generated files, but clients can also use it at runtime:
-#   mydescriptor = pool.FindDescriptor(.....)
-#   class MyProtoClass(Message):
-#     __metaclass__ = GeneratedProtocolMessageType
-#     DESCRIPTOR = mydescriptor
+# Part of the public interface, but normally only used by message factories.
 GeneratedProtocolMessageType = message_impl.GeneratedProtocolMessageType
+
+MESSAGE_CLASS_CACHE = {}
 
 
 def ParseMessage(descriptor, byte_str):
@@ -110,11 +106,16 @@ def MakeClass(descriptor):
   Returns:
     The Message class object described by the descriptor.
   """
+  if descriptor in MESSAGE_CLASS_CACHE:
+    return MESSAGE_CLASS_CACHE[descriptor]
+
   attributes = {}
   for name, nested_type in descriptor.nested_types_by_name.items():
     attributes[name] = MakeClass(nested_type)
 
   attributes[GeneratedProtocolMessageType._DESCRIPTOR_KEY] = descriptor
 
-  return GeneratedProtocolMessageType(str(descriptor.name), (message.Message,),
-                                      attributes)
+  result = GeneratedProtocolMessageType(
+      str(descriptor.name), (message.Message,), attributes)
+  MESSAGE_CLASS_CACHE[descriptor] = result
+  return result

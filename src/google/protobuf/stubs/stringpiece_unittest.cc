@@ -746,23 +746,6 @@ TEST(StringPiece, Comparisons2) {
   EXPECT_TRUE(abc.ends_with("nopqrstuvwxyz"));
 }
 
-TEST(StringPiece, HashFunction) {
-  hash_set<StringPiece> set;
-
-  set.insert(StringPiece("hello"));
-  EXPECT_EQ(1, set.size());
-
-  // Insert a StringPiece of the same value again and should NOT increment
-  // size of the set.
-  set.insert(StringPiece("hello"));
-  EXPECT_EQ(1, set.size());
-
-  // Insert a StringPiece with different value and check that size of the set
-  // has been increment by one.
-  set.insert(StringPiece("world"));
-  EXPECT_EQ(2, set.size());
-}
-
 TEST(ComparisonOpsTest, StringCompareNotAmbiguous) {
   EXPECT_EQ("hello", string("hello"));
   EXPECT_LT("hello", string("world"));
@@ -800,11 +783,13 @@ TEST(FindOneCharTest, EdgeCases) {
   EXPECT_EQ(StringPiece::npos, a.rfind('x'));
 }
 
+#ifdef PROTOBUF_HAS_DEATH_TEST
 #ifndef NDEBUG
 TEST(NonNegativeLenTest, NonNegativeLen) {
   EXPECT_DEATH(StringPiece("xyz", -1), "len >= 0");
 }
 #endif  // ndef DEBUG
+#endif  // PROTOBUF_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace protobuf

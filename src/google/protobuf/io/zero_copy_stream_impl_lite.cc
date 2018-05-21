@@ -64,12 +64,9 @@ ArrayInputStream::ArrayInputStream(const void* data, int size,
     last_returned_size_(0) {
 }
 
-ArrayInputStream::~ArrayInputStream() {
-}
-
 bool ArrayInputStream::Next(const void** data, int* size) {
   if (position_ < size_) {
-    last_returned_size_ = min(block_size_, size_ - position_);
+    last_returned_size_ = std::min(block_size_, size_ - position_);
     *data = data_ + position_;
     *size = last_returned_size_;
     position_ += last_returned_size_;
@@ -117,12 +114,9 @@ ArrayOutputStream::ArrayOutputStream(void* data, int size, int block_size)
     last_returned_size_(0) {
 }
 
-ArrayOutputStream::~ArrayOutputStream() {
-}
-
 bool ArrayOutputStream::Next(void** data, int* size) {
   if (position_ < size_) {
-    last_returned_size_ = min(block_size_, size_ - position_);
+    last_returned_size_ = std::min(block_size_, size_ - position_);
     *data = data_ + position_;
     *size = last_returned_size_;
     position_ += last_returned_size_;
@@ -153,10 +147,8 @@ StringOutputStream::StringOutputStream(string* target)
   : target_(target) {
 }
 
-StringOutputStream::~StringOutputStream() {
-}
-
 bool StringOutputStream::Next(void** data, int* size) {
+  GOOGLE_CHECK(target_ != NULL);
   int old_size = target_->size();
 
   // Grow the string.
@@ -176,9 +168,9 @@ bool StringOutputStream::Next(void** data, int* size) {
     // Double the size, also make sure that the new size is at least
     // kMinimumSize.
     STLStringResizeUninitialized(
-      target_,
-      max(old_size * 2,
-          kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
+        target_,
+        std::max(old_size * 2,
+                 kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
   }
 
   *data = mutable_string_data(target_) + old_size;
@@ -188,24 +180,28 @@ bool StringOutputStream::Next(void** data, int* size) {
 
 void StringOutputStream::BackUp(int count) {
   GOOGLE_CHECK_GE(count, 0);
+  GOOGLE_CHECK(target_ != NULL);
   GOOGLE_CHECK_LE(count, target_->size());
   target_->resize(target_->size() - count);
 }
 
 int64 StringOutputStream::ByteCount() const {
+  GOOGLE_CHECK(target_ != NULL);
   return target_->size();
 }
 
-// ===================================================================
+void StringOutputStream::SetString(string* target) {
+  target_ = target;
+}
 
-CopyingInputStream::~CopyingInputStream() {}
+// ===================================================================
 
 int CopyingInputStream::Skip(int count) {
   char junk[4096];
   int skipped = 0;
   while (skipped < count) {
-    int bytes = Read(junk, min(count - skipped,
-                               implicit_cast<int>(sizeof(junk))));
+    int bytes =
+        Read(junk, std::min(count - skipped, implicit_cast<int>(sizeof(junk))));
     if (bytes <= 0) {
       // EOF or read error.
       return skipped;
@@ -318,8 +314,6 @@ void CopyingInputStreamAdaptor::FreeBuffer() {
 }
 
 // ===================================================================
-
-CopyingOutputStream::~CopyingOutputStream() {}
 
 CopyingOutputStreamAdaptor::CopyingOutputStreamAdaptor(
     CopyingOutputStream* copying_stream, int block_size)

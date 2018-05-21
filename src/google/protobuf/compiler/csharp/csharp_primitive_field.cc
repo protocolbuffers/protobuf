@@ -40,6 +40,7 @@
 
 #include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 
 namespace google {
@@ -48,8 +49,8 @@ namespace compiler {
 namespace csharp {
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
   // TODO(jonskeet): Make this cleaner...
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
@@ -70,7 +71,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "private $type_name$ $name_def_message$;\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
@@ -83,7 +84,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   } else {
     printer->Print(
       variables_,
-      "    $name$_ = pb::Preconditions.CheckNotNull(value, \"value\");\n");
+      "    $name$_ = pb::ProtoPreconditions.CheckNotNull(value, \"value\");\n");
   }
   printer->Print(
     "  }\n"
@@ -136,14 +137,22 @@ void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 }
 
 void PrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+  if (descriptor_->type() == FieldDescriptor::TYPE_FLOAT) {
+    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode($property_name$);\n";
+  } else if (descriptor_->type() == FieldDescriptor::TYPE_DOUBLE) {
+    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode($property_name$);\n";
+  }
+	printer->Print(variables_, text);
 }
 void PrimitiveFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($property_name$ != other.$property_name$) return false;\n");
+  const char *text = "if ($property_name$ != other.$property_name$) return false;\n";
+  if (descriptor_->type() == FieldDescriptor::TYPE_FLOAT) {
+    text = "if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals($property_name$, other.$property_name$)) return false;\n";
+  } else if (descriptor_->type() == FieldDescriptor::TYPE_DOUBLE) {
+    text = "if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals($property_name$, other.$property_name$)) return false;\n";
+  }
+  printer->Print(variables_, text);
 }
 void PrimitiveFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(
@@ -163,8 +172,8 @@ void PrimitiveFieldGenerator::GenerateCodecCode(io::Printer* printer) {
 }
 
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal)
-    : PrimitiveFieldGenerator(descriptor, fieldOrdinal) {
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    : PrimitiveFieldGenerator(descriptor, fieldOrdinal, options) {
   SetCommonOneofFieldVariables(&variables_);
 }
 
@@ -173,7 +182,7 @@ PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {
 
 void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
@@ -186,13 +195,17 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     } else {
       printer->Print(
         variables_,
-        "    $oneof_name$_ = pb::Preconditions.CheckNotNull(value, \"value\");\n");
+        "    $oneof_name$_ = pb::ProtoPreconditions.CheckNotNull(value, \"value\");\n");
     }
     printer->Print(
       variables_,
       "    $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
       "  }\n"
       "}\n");
+}
+
+void PrimitiveOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(variables_, "$property_name$ = other.$property_name$;\n");
 }
 
 void PrimitiveOneofFieldGenerator::WriteToString(io::Printer* printer) {

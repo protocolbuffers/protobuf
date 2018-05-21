@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Helper functions for generating ObjectiveC code.
+
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
 
@@ -42,58 +44,75 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+// Generator options (see objectivec_generator.cc for a description of each):
+struct Options {
+  Options();
+  string expected_prefixes_path;
+  string generate_for_named_framework;
+  string named_framework_to_proto_path_mappings_path;
+};
+
+// Escape C++ trigraphs by escaping question marks to "\?".
+string LIBPROTOC_EXPORT EscapeTrigraphs(const string& to_escape);
+
 // Strips ".proto" or ".protodevel" from the end of a filename.
-string StripProto(const string& filename);
+string LIBPROTOC_EXPORT StripProto(const string& filename);
+
+// Remove white space from either end of a StringPiece.
+void LIBPROTOC_EXPORT StringPieceTrimWhitespace(StringPiece* input);
 
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.
-bool IsRetainedName(const string& name);
+bool LIBPROTOC_EXPORT IsRetainedName(const string& name);
 
 // Returns true if the name starts with "init" and will need to have special
 // handling under ARC.
-bool IsInitName(const string& name);
+bool LIBPROTOC_EXPORT IsInitName(const string& name);
 
-// Gets the name of the file we're going to generate (sans the .pb.h
-// extension).  This does not include the path to that file.
-string FileName(const FileDescriptor* file);
+// Gets the objc_class_prefix.
+string LIBPROTOC_EXPORT FileClassPrefix(const FileDescriptor* file);
 
 // Gets the path of the file we're going to generate (sans the .pb.h
 // extension).  The path will be dependent on the objectivec package
 // declared in the proto package.
-string FilePath(const FileDescriptor* file);
+string LIBPROTOC_EXPORT FilePath(const FileDescriptor* file);
+
+// Just like FilePath(), but without the directory part.
+string LIBPROTOC_EXPORT FilePathBasename(const FileDescriptor* file);
 
 // Gets the name of the root class we'll generate in the file.  This class
 // is not meant for external consumption, but instead contains helpers that
-// the rest of the the classes need
-string FileClassName(const FileDescriptor* file);
+// the rest of the classes need
+string LIBPROTOC_EXPORT FileClassName(const FileDescriptor* file);
 
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
-string ClassName(const Descriptor* descriptor);
-string EnumName(const EnumDescriptor* descriptor);
+string LIBPROTOC_EXPORT ClassName(const Descriptor* descriptor);
+string LIBPROTOC_EXPORT ClassName(const Descriptor* descriptor, string* out_suffix_added);
+string LIBPROTOC_EXPORT EnumName(const EnumDescriptor* descriptor);
 
 // Returns the fully-qualified name of the enum value corresponding to the
 // the descriptor.
-string EnumValueName(const EnumValueDescriptor* descriptor);
+string LIBPROTOC_EXPORT EnumValueName(const EnumValueDescriptor* descriptor);
 
 // Returns the name of the enum value corresponding to the descriptor.
-string EnumValueShortName(const EnumValueDescriptor* descriptor);
+string LIBPROTOC_EXPORT EnumValueShortName(const EnumValueDescriptor* descriptor);
 
 // Reverse what an enum does.
-string UnCamelCaseEnumShortName(const string& name);
+string LIBPROTOC_EXPORT UnCamelCaseEnumShortName(const string& name);
 
 // Returns the name to use for the extension (used as the method off the file's
 // Root class).
-string ExtensionMethodName(const FieldDescriptor* descriptor);
+string LIBPROTOC_EXPORT ExtensionMethodName(const FieldDescriptor* descriptor);
 
 // Returns the transformed field name.
-string FieldName(const FieldDescriptor* field);
-string FieldNameCapitalized(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT FieldName(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT FieldNameCapitalized(const FieldDescriptor* field);
 
 // Returns the transformed oneof name.
-string OneofEnumName(const OneofDescriptor* descriptor);
-string OneofName(const OneofDescriptor* descriptor);
-string OneofNameCapitalized(const OneofDescriptor* descriptor);
+string LIBPROTOC_EXPORT OneofEnumName(const OneofDescriptor* descriptor);
+string LIBPROTOC_EXPORT OneofName(const OneofDescriptor* descriptor);
+string LIBPROTOC_EXPORT OneofNameCapitalized(const OneofDescriptor* descriptor);
 
 inline bool HasFieldPresence(const FileDescriptor* file) {
   return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
@@ -108,7 +127,7 @@ inline bool IsMapEntryMessage(const Descriptor* descriptor) {
 }
 
 // Reverse of the above.
-string UnCamelCaseFieldName(const string& name, const FieldDescriptor* field);
+string LIBPROTOC_EXPORT UnCamelCaseFieldName(const string& name, const FieldDescriptor* field);
 
 enum ObjectiveCType {
   OBJECTIVECTYPE_INT32,
@@ -124,34 +143,83 @@ enum ObjectiveCType {
   OBJECTIVECTYPE_MESSAGE
 };
 
-string GetCapitalizedType(const FieldDescriptor* field);
+enum FlagType {
+  FLAGTYPE_DESCRIPTOR_INITIALIZATION,
+  FLAGTYPE_EXTENSION,
+  FLAGTYPE_FIELD
+};
 
-ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type);
+template<class TDescriptor>
+string GetOptionalDeprecatedAttribute(
+    const TDescriptor* descriptor,
+    const FileDescriptor* file = NULL,
+    bool preSpace = true, bool postNewline = false) {
+  bool isDeprecated = descriptor->options().deprecated();
+  // The file is only passed when checking Messages & Enums, so those types
+  // get tagged. At the moment, it doesn't seem to make sense to tag every
+  // field or enum value with when the file is deprecated.
+  if (!isDeprecated && file) {
+    isDeprecated = file->options().deprecated();
+  }
+  if (isDeprecated) {
+    string result = "DEPRECATED_ATTRIBUTE";
+    if (preSpace) {
+      result.insert(0, " ");
+    }
+    if (postNewline) {
+      result.append("\n");
+    }
+    return result;
+  } else {
+    return "";
+  }
+}
+
+string LIBPROTOC_EXPORT GetCapitalizedType(const FieldDescriptor* field);
+
+ObjectiveCType LIBPROTOC_EXPORT GetObjectiveCType(FieldDescriptor::Type field_type);
 
 inline ObjectiveCType GetObjectiveCType(const FieldDescriptor* field) {
   return GetObjectiveCType(field->type());
 }
 
-bool IsPrimitiveType(const FieldDescriptor* field);
-bool IsReferenceType(const FieldDescriptor* field);
+bool LIBPROTOC_EXPORT IsPrimitiveType(const FieldDescriptor* field);
+bool LIBPROTOC_EXPORT IsReferenceType(const FieldDescriptor* field);
 
-string GPBGenericValueFieldName(const FieldDescriptor* field);
-string DefaultValue(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT GPBGenericValueFieldName(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT DefaultValue(const FieldDescriptor* field);
+bool LIBPROTOC_EXPORT HasNonZeroDefaultValue(const FieldDescriptor* field);
 
-string BuildFlagsString(const vector<string>& strings);
+string LIBPROTOC_EXPORT BuildFlagsString(const FlagType type, const std::vector<string>& strings);
 
-string BuildCommentsString(const SourceLocation& location);
+// Builds HeaderDoc/appledoc style comments out of the comments in the .proto
+// file.
+string LIBPROTOC_EXPORT BuildCommentsString(const SourceLocation& location,
+                           bool prefer_single_line);
 
-// Checks the prefix for a given file and outputs any warnings needed, if
-// there are flat out errors, then out_error is filled in and the result is
-// false.
-bool ValidateObjCClassPrefix(const FileDescriptor* file, string *out_error);
+// The name the commonly used by the library when built as a framework.
+// This lines up to the name used in the CocoaPod.
+extern LIBPROTOC_EXPORT const char* const ProtobufLibraryFrameworkName;
+// Returns the CPP symbol name to use as the gate for framework style imports
+// for the given framework name to use.
+string LIBPROTOC_EXPORT ProtobufFrameworkImportSymbol(const string& framework_name);
+
+// Checks if the file is one of the proto's bundled with the library.
+bool LIBPROTOC_EXPORT IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
+
+// Checks the prefix for the given files and outputs any warnings as needed. If
+// there are flat out errors, then out_error is filled in with the first error
+// and the result is false.
+bool LIBPROTOC_EXPORT ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
+                               const Options& generation_options,
+                               string* out_error);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
-// the input into the the expected output.
+// the input into the expected output.
 class LIBPROTOC_EXPORT TextFormatDecodeData {
  public:
-  TextFormatDecodeData() {}
+  TextFormatDecodeData();
+  ~TextFormatDecodeData();
 
   void AddString(int32 key, const string& input_for_decode,
                  const string& desired_output);
@@ -165,7 +233,57 @@ class LIBPROTOC_EXPORT TextFormatDecodeData {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormatDecodeData);
 
   typedef std::pair<int32, string> DataEntry;
-  vector<DataEntry> entries_;
+  std::vector<DataEntry> entries_;
+};
+
+// Helper for parsing simple files.
+class LIBPROTOC_EXPORT LineConsumer {
+ public:
+  LineConsumer();
+  virtual ~LineConsumer();
+  virtual bool ConsumeLine(const StringPiece& line, string* out_error) = 0;
+};
+
+bool LIBPROTOC_EXPORT ParseSimpleFile(
+    const string& path, LineConsumer* line_consumer, string* out_error);
+
+
+// Helper class for parsing framework import mappings and generating
+// import statements.
+class LIBPROTOC_EXPORT ImportWriter {
+ public:
+  ImportWriter(const string& generate_for_named_framework,
+               const string& named_framework_to_proto_path_mappings_path,
+               bool include_wkt_imports);
+  ~ImportWriter();
+
+  void AddFile(const FileDescriptor* file, const string& header_extension);
+  void Print(io::Printer *printer) const;
+
+ private:
+  class ProtoFrameworkCollector : public LineConsumer {
+   public:
+    ProtoFrameworkCollector(std::map<string, string>* inout_proto_file_to_framework_name)
+        : map_(inout_proto_file_to_framework_name) {}
+
+    virtual bool ConsumeLine(const StringPiece& line, string* out_error);
+
+   private:
+    std::map<string, string>* map_;
+  };
+
+  void ParseFrameworkMappings();
+
+  const string generate_for_named_framework_;
+  const string named_framework_to_proto_path_mappings_path_;
+  const bool include_wkt_imports_;
+  std::map<string, string> proto_file_to_framework_name_;
+  bool need_to_parse_mapping_file_;
+
+  std::vector<string> protobuf_framework_imports_;
+  std::vector<string> protobuf_non_framework_imports_;
+  std::vector<string> other_framework_imports_;
+  std::vector<string> other_imports_;
 };
 
 }  // namespace objectivec

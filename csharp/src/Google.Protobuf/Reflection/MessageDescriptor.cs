@@ -34,6 +34,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+#if NET35
+// Needed for ReadOnlyDictionary, which does not exist in .NET 3.5
+using Google.Protobuf.Collections;
+#endif
 
 namespace Google.Protobuf.Reflection
 {
@@ -60,7 +64,7 @@ namespace Google.Protobuf.Reflection
         private readonly IList<FieldDescriptor> fieldsInNumberOrder;
         private readonly IDictionary<string, FieldDescriptor> jsonFieldMap;
         
-        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedCodeInfo generatedCodeInfo)
+        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
         {
             Proto = proto;
@@ -92,9 +96,20 @@ namespace Google.Protobuf.Reflection
                 new FieldDescriptor(field, file, this, index, generatedCodeInfo?.PropertyNames[index]));
             fieldsInNumberOrder = new ReadOnlyCollection<FieldDescriptor>(fieldsInDeclarationOrder.OrderBy(field => field.FieldNumber).ToArray());
             // TODO: Use field => field.Proto.JsonName when we're confident it's appropriate. (And then use it in the formatter, too.)
-            jsonFieldMap = new ReadOnlyDictionary<string, FieldDescriptor>(fieldsInNumberOrder.ToDictionary(field => JsonFormatter.ToCamelCase(field.Name)));
+            jsonFieldMap = CreateJsonFieldMap(fieldsInNumberOrder);
             file.DescriptorPool.AddSymbol(this);
             Fields = new FieldCollection(this);
+        }
+
+        private static ReadOnlyDictionary<string, FieldDescriptor> CreateJsonFieldMap(IList<FieldDescriptor> fields)
+        {
+            var map = new Dictionary<string, FieldDescriptor>();
+            foreach (var field in fields)
+            {
+                map[field.Name] = field;
+                map[field.JsonName] = field;
+            }
+            return new ReadOnlyDictionary<string, FieldDescriptor>(map);
         }
 
         /// <summary>
@@ -206,6 +221,11 @@ namespace Google.Protobuf.Reflection
             File.DescriptorPool.FindSymbol<T>(FullName + "." + name);
 
         /// <summary>
+        /// The (possibly empty) set of custom options for this message.
+        /// </summary>
+        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+
+        /// <summary>
         /// Looks up and cross-links all fields and nested types.
         /// </summary>
         internal void CrossLink()
@@ -255,9 +275,10 @@ namespace Google.Protobuf.Reflection
             // TODO: consider making this public in the future. (Being conservative for now...)
 
             /// <value>
-            /// Returns a read-only dictionary mapping the field names in this message as they're used
+            /// Returns a read-only dictionary mapping the field names in this message as they're available
             /// in the JSON representation to the field descriptors. For example, a field <c>foo_bar</c>
-            /// in the message would result in an entry with a key <c>fooBar</c>.
+            /// in the message would result two entries, one with a key <c>fooBar</c> and one with a key
+            /// <c>foo_bar</c>, both referring to the same field.
             /// </value>
             internal IDictionary<string, FieldDescriptor> ByJsonName() => messageDescriptor.jsonFieldMap;
 

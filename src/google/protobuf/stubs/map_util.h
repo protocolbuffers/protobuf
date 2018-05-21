@@ -208,7 +208,7 @@ typename Collection::value_type::second_type::element_type&
 FindLinkedPtrOrDie(const Collection& collection,
                    const typename Collection::value_type::first_type& key) {
   typename Collection::const_iterator it = collection.find(key);
-  CHECK(it != collection.end()) <<  "key not found: " << key;
+  GOOGLE_CHECK(it != collection.end()) <<  "key not found: " << key;
   // Since linked_ptr::operator*() is a const member returning a non const,
   // we do not need a version of this function taking a non const collection.
   return *it->second;
@@ -337,14 +337,15 @@ bool InsertIfNotPresent(
 template <class Collection>
 void InsertOrDie(Collection* const collection,
                  const typename Collection::value_type& value) {
-  CHECK(InsertIfNotPresent(collection, value)) << "duplicate value: " << value;
+  GOOGLE_CHECK(InsertIfNotPresent(collection, value))
+      << "duplicate value: " << value;
 }
 
 // Same as above except doesn't log the value on error.
 template <class Collection>
 void InsertOrDieNoPrint(Collection* const collection,
                         const typename Collection::value_type& value) {
-  CHECK(InsertIfNotPresent(collection, value)) << "duplicate value.";
+  GOOGLE_CHECK(InsertIfNotPresent(collection, value)) << "duplicate value.";
 }
 
 // Inserts the key-value pair into the collection. Dies if key was already
@@ -653,7 +654,8 @@ InsertOrReturnExisting(
 //     delete EraseKeyReturnValuePtr(&my_map, "abc");
 //
 // Use returned value:
-//     scoped_ptr<MyType> value_ptr(EraseKeyReturnValuePtr(&my_map, "abc"));
+//     std::unique_ptr<MyType> value_ptr(
+//         EraseKeyReturnValuePtr(&my_map, "abc"));
 //     if (value_ptr.get())
 //       value_ptr->DoSomething();
 //
@@ -707,7 +709,7 @@ void AppendKeysFromMap(const MapContainer& map_container,
 // without the complexity of a SFINAE-based solution.)
 template <class MapContainer, class KeyType>
 void AppendKeysFromMap(const MapContainer& map_container,
-                       vector<KeyType>* key_container) {
+                       std::vector<KeyType>* key_container) {
   GOOGLE_CHECK(key_container != NULL);
   // We now have the opportunity to call reserve(). Calling reserve() every
   // time is a bad idea for some use cases: libstdc++'s implementation of
@@ -751,7 +753,7 @@ void AppendValuesFromMap(const MapContainer& map_container,
 // without the complexity of a SFINAE-based solution.)
 template <class MapContainer, class ValueType>
 void AppendValuesFromMap(const MapContainer& map_container,
-                         vector<ValueType>* value_container) {
+                         std::vector<ValueType>* value_container) {
   GOOGLE_CHECK(value_container != NULL);
   // See AppendKeysFromMap for why this is done.
   if (value_container->empty()) {

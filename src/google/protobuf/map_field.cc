@@ -37,86 +37,74 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-ProtobufOnceType map_entry_default_instances_once_;
-Mutex* map_entry_default_instances_mutex_;
-vector<MessageLite*>* map_entry_default_instances_;
-
-void DeleteMapEntryDefaultInstances() {
-  for (int i = 0; i < map_entry_default_instances_->size(); ++i) {
-    delete map_entry_default_instances_->at(i);
-  }
-  delete map_entry_default_instances_mutex_;
-  delete map_entry_default_instances_;
-}
-
-void InitMapEntryDefaultInstances() {
-  map_entry_default_instances_mutex_ = new Mutex();
-  map_entry_default_instances_ = new vector<MessageLite*>();
-  OnShutdown(&DeleteMapEntryDefaultInstances);
-}
-
-void RegisterMapEntryDefaultInstance(MessageLite* default_instance) {
-  ::google::protobuf::GoogleOnceInit(&map_entry_default_instances_once_,
-                 &InitMapEntryDefaultInstances);
-  MutexLock lock(map_entry_default_instances_mutex_);
-  map_entry_default_instances_->push_back(default_instance);
-}
-
 MapFieldBase::~MapFieldBase() {
   if (repeated_field_ != NULL && arena_ == NULL) delete repeated_field_;
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
   SyncRepeatedFieldWithMap();
-  return *repeated_field_;
+  return *reinterpret_cast<::google::protobuf::internal::RepeatedPtrFieldBase*>(
+      repeated_field_);
 }
 
 RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
   SyncRepeatedFieldWithMap();
   SetRepeatedDirty();
-  return repeated_field_;
+  return reinterpret_cast<::google::protobuf::internal::RepeatedPtrFieldBase*>(
+      repeated_field_);
 }
 
-int MapFieldBase::SpaceUsedExcludingSelf() const {
+size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   mutex_.Lock();
-  int size = SpaceUsedExcludingSelfNoLock();
+  size_t size = SpaceUsedExcludingSelfNoLock();
   mutex_.Unlock();
   return size;
 }
 
-int MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
+size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
   if (repeated_field_ != NULL) {
-    return repeated_field_->SpaceUsedExcludingSelf();
+    return repeated_field_->SpaceUsedExcludingSelfLong();
   } else {
     return 0;
   }
 }
 
-void MapFieldBase::InitMetadataOnce() const {
-  GOOGLE_CHECK(entry_descriptor_ != NULL);
-  GOOGLE_CHECK(assign_descriptor_callback_ != NULL);
-  (*assign_descriptor_callback_)();
+bool MapFieldBase::IsMapValid() const {
+  // "Acquire" insures the operation after SyncRepeatedFieldWithMap won't get
+  // executed before state_ is checked.
+  int state = state_.load(std::memory_order_acquire);
+  return state != STATE_MODIFIED_REPEATED;
 }
 
-void MapFieldBase::SetMapDirty() { state_ = STATE_MODIFIED_MAP; }
+bool MapFieldBase::IsRepeatedFieldValid() const {
+  int state = state_.load(std::memory_order_acquire);
+  return state != STATE_MODIFIED_MAP;
+}
 
-void MapFieldBase::SetRepeatedDirty() { state_ = STATE_MODIFIED_REPEATED; }
+void MapFieldBase::SetMapDirty() {
+  // These are called by (non-const) mutator functions. So by our API it's the
+  // callers responsibility to have these calls properly ordered.
+  state_.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
+}
+
+void MapFieldBase::SetRepeatedDirty() {
+  // These are called by (non-const) mutator functions. So by our API it's the
+  // callers responsibility to have these calls properly ordered.
+  state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
+}
 
 void* MapFieldBase::MutableRepeatedPtrField() const { return repeated_field_; }
 
 void MapFieldBase::SyncRepeatedFieldWithMap() const {
-  // "Acquire" insures the operation after SyncRepeatedFieldWithMap won't get
-  // executed before state_ is checked.
-  Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
-  if (state == STATE_MODIFIED_MAP) {
+  // acquire here matches with release below to ensure that we can only see a
+  // value of CLEAN after all previous changes have been synced.
+  if (state_.load(std::memory_order_acquire) == STATE_MODIFIED_MAP) {
     mutex_.Lock();
     // Double check state, because another thread may have seen the same state
     // and done the synchronization before the current thread.
-    if (state_ == STATE_MODIFIED_MAP) {
+    if (state_.load(std::memory_order_relaxed) == STATE_MODIFIED_MAP) {
       SyncRepeatedFieldWithMapNoLock();
-      // "Release" insures state_ can only be changed "after"
-      // SyncRepeatedFieldWithMapNoLock is finished.
-      google::protobuf::internal::Release_Store(&state_, CLEAN);
+      state_.store(CLEAN, std::memory_order_release);
     }
     mutex_.Unlock();
   }
@@ -129,18 +117,15 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() const {
 }
 
 void MapFieldBase::SyncMapWithRepeatedField() const {
-  // "Acquire" insures the operation after SyncMapWithRepeatedField won't get
-  // executed before state_ is checked.
-  Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
-  if (state == STATE_MODIFIED_REPEATED) {
+  // acquire here matches with release below to ensure that we can only see a
+  // value of CLEAN after all previous changes have been synced.
+  if (state_.load(std::memory_order_acquire) == STATE_MODIFIED_REPEATED) {
     mutex_.Lock();
     // Double check state, because another thread may have seen the same state
     // and done the synchronization before the current thread.
-    if (state_ == STATE_MODIFIED_REPEATED) {
+    if (state_.load(std::memory_order_relaxed) == STATE_MODIFIED_REPEATED) {
       SyncMapWithRepeatedFieldNoLock();
-      // "Release" insures state_ can only be changed "after"
-      // SyncRepeatedFieldWithMapNoLock is finished.
-      google::protobuf::internal::Release_Store(&state_, CLEAN);
+      state_.store(CLEAN, std::memory_order_release);
     }
     mutex_.Unlock();
   }
@@ -154,6 +139,7 @@ DynamicMapField::DynamicMapField(const Message* default_entry)
 DynamicMapField::DynamicMapField(const Message* default_entry,
                                  Arena* arena)
     : TypeDefinedMapFieldBase<MapKey, MapValueRef>(arena),
+      map_(arena),
       default_entry_(default_entry) {
 }
 
@@ -178,18 +164,19 @@ bool DynamicMapField::ContainsMapKey(
   return iter != map.end();
 }
 
-bool DynamicMapField::InsertMapValue(
+bool DynamicMapField::InsertOrLookupMapValue(
     const MapKey& map_key, MapValueRef* val) {
-  bool result = false;
-
-  MapValueRef& map_val = (*MutableMap())[map_key];
-  // If map_val.data_ is not set, it is newly inserted by map_[map_key].
-  if (map_val.data_ == NULL) {
-    result = true;
+  // Always use mutable map because users may change the map value by
+  // MapValueRef.
+  Map<MapKey, MapValueRef>* map = MutableMap();
+  Map<MapKey, MapValueRef>::iterator iter = map->find(map_key);
+  if (iter == map->end()) {
+    // Insert
+    MapValueRef& map_val = (*map)[map_key];
     const FieldDescriptor* val_des =
         default_entry_->GetDescriptor()->FindFieldByName("value");
     map_val.SetType(val_des->cpp_type());
-    // Allocate momery for the inserted MapValueRef, and initialize to
+    // Allocate memory for the inserted MapValueRef, and initialize to
     // default value.
     switch (val_des->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, TYPE)                              \
@@ -216,9 +203,13 @@ bool DynamicMapField::InsertMapValue(
         break;
       }
     }
+    val->CopyFrom(map_val);
+    return true;
   }
-  val->CopyFrom(map_val);
-  return result;
+  // map_key is already in the map. Make sure (*map)[map_key] is not called.
+  // [] may reorder the map and iterators.
+  val->CopyFrom(iter->second);
+  return false;
 }
 
 bool DynamicMapField::DeleteMapValue(const MapKey& map_key) {
@@ -385,6 +376,13 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
         GOOGLE_LOG(FATAL) << "Can't get here.";
         break;
     }
+
+    // Remove existing map value with same key.
+    Map<MapKey, MapValueRef>::iterator iter = map->find(map_key);
+    if (iter != map->end()) {
+      iter->second.DeleteData();
+    }
+
     MapValueRef& map_val = (*map)[map_key];
     map_val.SetType(val_des->cpp_type());
     switch (val_des->cpp_type()) {
@@ -416,13 +414,13 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
   }
 }
 
-int DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
-  int size = 0;
+size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
+  size_t size = 0;
   if (MapFieldBase::repeated_field_ != NULL) {
-    size += MapFieldBase::repeated_field_->SpaceUsedExcludingSelf();
+    size += MapFieldBase::repeated_field_->SpaceUsedExcludingSelfLong();
   }
   size += sizeof(map_);
-  int map_size = map_.size();
+  size_t map_size = map_.size();
   if (map_size) {
     Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
     size += sizeof(it->first) * map_size;
@@ -451,7 +449,7 @@ int DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
       case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE: {
         while (it != map_.end()) {
           const Message& message = it->second.GetMessageValue();
-          size += message.GetReflection()->SpaceUsed(message);
+          size += message.GetReflection()->SpaceUsedLong(message);
           ++it;
         }
         break;

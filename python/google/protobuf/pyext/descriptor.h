@@ -47,6 +47,8 @@ extern PyTypeObject PyEnumDescriptor_Type;
 extern PyTypeObject PyEnumValueDescriptor_Type;
 extern PyTypeObject PyFileDescriptor_Type;
 extern PyTypeObject PyOneofDescriptor_Type;
+extern PyTypeObject PyServiceDescriptor_Type;
+extern PyTypeObject PyMethodDescriptor_Type;
 
 // Wraps a Descriptor in a Python object.
 // The C++ pointer is usually borrowed from the global DescriptorPool.
@@ -60,6 +62,10 @@ PyObject* PyEnumValueDescriptor_FromDescriptor(
 PyObject* PyOneofDescriptor_FromDescriptor(const OneofDescriptor* descriptor);
 PyObject* PyFileDescriptor_FromDescriptor(
     const FileDescriptor* file_descriptor);
+PyObject* PyServiceDescriptor_FromDescriptor(
+    const ServiceDescriptor* descriptor);
+PyObject* PyMethodDescriptor_FromDescriptor(
+    const MethodDescriptor* descriptor);
 
 // Alternate constructor of PyFileDescriptor, used when we already have a
 // serialized FileDescriptorProto that can be cached.
@@ -74,6 +80,8 @@ const Descriptor* PyMessageDescriptor_AsDescriptor(PyObject* obj);
 const FieldDescriptor* PyFieldDescriptor_AsDescriptor(PyObject* obj);
 const EnumDescriptor* PyEnumDescriptor_AsDescriptor(PyObject* obj);
 const FileDescriptor* PyFileDescriptor_AsDescriptor(PyObject* obj);
+const ServiceDescriptor* PyServiceDescriptor_AsDescriptor(PyObject* obj);
+const MethodDescriptor* PyMethodDescriptor_AsDescriptor(PyObject* obj);
 
 // Returns the raw C++ pointer.
 const void* PyDescriptor_AsVoidPtr(PyObject* obj);

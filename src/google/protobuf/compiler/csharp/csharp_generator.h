@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Generates C# code for a given .proto file.
+
 #ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_GENERATOR_H__
 
@@ -40,8 +42,13 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+// CodeGenerator implementation which generates a C# source file and
+// header.  If you create your own protocol compiler binary and you want
+// it to support C# output, you can do so by registering an instance of this
+// CodeGenerator with the CommandLineInterface in your main() function.
 class LIBPROTOC_EXPORT Generator
     : public google::protobuf::compiler::CodeGenerator {
+public:
   virtual bool Generate(
       const FileDescriptor* file,
       const string& parameter,
@@ -55,4 +62,3 @@ class LIBPROTOC_EXPORT Generator
 }  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_GENERATOR_H__
-

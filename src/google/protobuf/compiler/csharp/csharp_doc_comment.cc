@@ -56,7 +56,7 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
     // node of a summary element, not part of an attribute.
     comments = StringReplace(comments, "&", "&amp;", true);
     comments = StringReplace(comments, "<", "&lt;", true);
-    vector<string> lines = Split(comments, "\n", false /* skip_empty */);
+    std::vector<string> lines = Split(comments, "\n", false /* skip_empty */);
     // TODO: We really should work out which part to put in the summary and which to put in the remarks...
     // but that needs to be part of a bigger effort to understand the markdown better anyway.
     printer->Print("/// <summary>\n");
@@ -74,7 +74,7 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
                 printer->Print("///\n");
             }
             last_was_empty = false;
-            printer->Print("/// $line$\n", "line", *it);
+            printer->Print("///$line$\n", "line", *it);
         }
     }
     printer->Print("/// </summary>\n");

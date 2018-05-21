@@ -1,8 +1,9 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_CALLBACK_H_
 #define GOOGLE_PROTOBUF_STUBS_CALLBACK_H_
 
+#include <type_traits>
+
 #include <google/protobuf/stubs/macros.h>
-#include <google/protobuf/stubs/type_traits.h>
 
 // ===================================================================
 // emulates google3/base/callback.h
@@ -76,6 +77,18 @@ class LIBPROTOBUF_EXPORT Closure {
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Closure);
+};
+
+template<typename R>
+class ResultCallback {
+ public:
+  ResultCallback() {}
+  virtual ~ResultCallback() {}
+
+  virtual R Run() = 0;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ResultCallback);
 };
 
 template<typename R, typename A1>
@@ -240,6 +253,50 @@ class MethodClosure2 : public Closure {
   Arg2 arg2_;
 };
 
+template<typename R>
+class FunctionResultCallback_0_0 : public ResultCallback<R> {
+ public:
+  typedef R (*FunctionType)();
+
+  FunctionResultCallback_0_0(FunctionType function, bool self_deleting)
+      : function_(function), self_deleting_(self_deleting) {}
+  ~FunctionResultCallback_0_0() {}
+
+  R Run() {
+    bool needs_delete = self_deleting_;  // read in case callback deletes
+    R result = function_();
+    if (needs_delete) delete this;
+    return result;
+  }
+
+ private:
+  FunctionType function_;
+  bool self_deleting_;
+};
+
+template<typename R, typename P1>
+class FunctionResultCallback_1_0 : public ResultCallback<R> {
+ public:
+  typedef R (*FunctionType)(P1);
+
+  FunctionResultCallback_1_0(FunctionType function, bool self_deleting,
+                             P1 p1)
+      : function_(function), self_deleting_(self_deleting), p1_(p1) {}
+  ~FunctionResultCallback_1_0() {}
+
+  R Run() {
+    bool needs_delete = self_deleting_;  // read in case callback deletes
+    R result = function_(p1_);
+    if (needs_delete) delete this;
+    return result;
+  }
+
+ private:
+  FunctionType function_;
+  bool self_deleting_;
+  P1 p1_;
+};
+
 template<typename R, typename Arg1>
 class FunctionResultCallback_0_1 : public ResultCallback1<R, Arg1> {
  public:
@@ -286,8 +343,31 @@ class FunctionResultCallback_1_1 : public ResultCallback1<R, A1> {
 
 template <typename T>
 struct InternalConstRef {
-  typedef typename remove_reference<T>::type base_type;
+  typedef typename std::remove_reference<T>::type base_type;
   typedef const base_type& type;
+};
+
+template<typename R, typename T>
+class MethodResultCallback_0_0 : public ResultCallback<R> {
+ public:
+  typedef R (T::*MethodType)();
+  MethodResultCallback_0_0(T* object, MethodType method, bool self_deleting)
+      : object_(object),
+        method_(method),
+        self_deleting_(self_deleting) {}
+  ~MethodResultCallback_0_0() {}
+
+  R Run() {
+    bool needs_delete = self_deleting_;
+    R result = (object_->*method_)();
+    if (needs_delete) delete this;
+    return result;
+  }
+
+ private:
+  T* object_;
+  MethodType method_;
+  bool self_deleting_;
 };
 
 template <typename R, typename T, typename P1, typename P2, typename P3,
@@ -318,12 +398,14 @@ class MethodResultCallback_5_2 : public ResultCallback2<R, A1, A2> {
   T* object_;
   MethodType method_;
   bool self_deleting_;
-  typename remove_reference<P1>::type p1_;
-  typename remove_reference<P2>::type p2_;
-  typename remove_reference<P3>::type p3_;
-  typename remove_reference<P4>::type p4_;
-  typename remove_reference<P5>::type p5_;
+  typename std::remove_reference<P1>::type p1_;
+  typename std::remove_reference<P2>::type p2_;
+  typename std::remove_reference<P3>::type p3_;
+  typename std::remove_reference<P4>::type p4_;
+  typename std::remove_reference<P5>::type p5_;
 };
+
+}  // namespace internal
 
 // See Closure.
 inline Closure* NewCallback(void (*function)()) {
@@ -408,6 +490,33 @@ inline Closure* NewPermanentCallback(
     object, method, false, arg1, arg2);
 }
 
+// See ResultCallback
+template<typename R>
+inline ResultCallback<R>* NewCallback(R (*function)()) {
+  return new internal::FunctionResultCallback_0_0<R>(function, true);
+}
+
+// See ResultCallback
+template<typename R>
+inline ResultCallback<R>* NewPermanentCallback(R (*function)()) {
+  return new internal::FunctionResultCallback_0_0<R>(function, false);
+}
+
+// See ResultCallback
+template<typename R, typename P1>
+inline ResultCallback<R>* NewCallback(R (*function)(P1), P1 p1) {
+  return new internal::FunctionResultCallback_1_0<R, P1>(
+      function, true, p1);
+}
+
+// See ResultCallback
+template<typename R, typename P1>
+inline ResultCallback<R>* NewPermanentCallback(
+    R (*function)(P1), P1 p1) {
+  return new internal::FunctionResultCallback_1_0<R, P1>(
+      function, false, p1);
+}
+
 // See ResultCallback1
 template<typename R, typename A1>
 inline ResultCallback1<R, A1>* NewCallback(R (*function)(A1)) {
@@ -435,6 +544,13 @@ inline ResultCallback1<R, A1>* NewPermanentCallback(
       function, false, p1);
 }
 
+// See MethodResultCallback_0_0
+template <typename R, typename T1, typename T2>
+inline ResultCallback<R>* NewPermanentCallback(
+    T1* object, R (T2::*function)()) {
+  return new internal::MethodResultCallback_0_0<R, T1>(object, function, false);
+}
+
 // See MethodResultCallback_5_2
 template <typename R, typename T, typename P1, typename P2, typename P3,
           typename P4, typename P5, typename A1, typename A2>
@@ -449,8 +565,6 @@ inline ResultCallback2<R, A1, A2>* NewPermanentCallback(
                                                 A2>(object, function, false, p1,
                                                     p2, p3, p4, p5);
 }
-
-}  // namespace internal
 
 // A function which does nothing.  Useful for creating no-op callbacks, e.g.:
 //   Closure* nothing = NewCallback(&DoNothing);

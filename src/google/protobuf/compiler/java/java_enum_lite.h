@@ -58,9 +58,8 @@ namespace java {
 
 class EnumLiteGenerator {
  public:
-  explicit EnumLiteGenerator(const EnumDescriptor* descriptor,
-                         bool immutable_api,
-                         Context* context);
+  EnumLiteGenerator(const EnumDescriptor* descriptor, bool immutable_api,
+                    Context* context);
   ~EnumLiteGenerator();
 
   void Generate(io::Printer* printer);
@@ -73,13 +72,13 @@ class EnumLiteGenerator {
   // considered equivalent.  We treat the first defined constant for any
   // given numeric value as "canonical" and the rest as aliases of that
   // canonical value.
-  vector<const EnumValueDescriptor*> canonical_values_;
+  std::vector<const EnumValueDescriptor*> canonical_values_;
 
   struct Alias {
     const EnumValueDescriptor* value;
     const EnumValueDescriptor* canonical_value;
   };
-  vector<Alias> aliases_;
+  std::vector<Alias> aliases_;
 
   bool immutable_api_;
 

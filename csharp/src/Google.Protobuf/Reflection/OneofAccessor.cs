@@ -52,7 +52,7 @@ namespace Google.Protobuf.Reflection
                 throw new ArgumentException("Cannot read from property");
             }
             this.descriptor = descriptor;
-            caseDelegate = ReflectionUtil.CreateFuncIMessageT<int>(caseProperty.GetGetMethod());
+            caseDelegate = ReflectionUtil.CreateFuncIMessageInt32(caseProperty.GetGetMethod());
 
             this.descriptor = descriptor;
             clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod);

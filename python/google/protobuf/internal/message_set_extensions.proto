@@ -54,6 +54,14 @@ message TestMessageSetExtension2 {
   optional string str = 25;
 }
 
+message TestMessageSetExtension3 {
+  optional string text = 35;
+}
+
+extend TestMessageSet {
+  optional TestMessageSetExtension3 message_set_extension3 = 98418655;
+}
+
 // This message was used to generate
 // //net/proto2/python/internal/testdata/message_set_message, but is commented
 // out since it must not actually exist in code, to simulate an "unknown"

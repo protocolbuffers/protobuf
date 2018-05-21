@@ -27,6 +27,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 syntax = "proto3";
 
 package google.protobuf;
@@ -34,22 +35,23 @@ package google.protobuf;
 import "google/protobuf/any.proto";
 import "google/protobuf/source_context.proto";
 
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option cc_enable_arenas = true;
 option java_package = "com.google.protobuf";
 option java_outer_classname = "TypeProto";
 option java_multiple_files = true;
-option java_generate_equals_and_hash = true;
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option objc_class_prefix = "GPB";
+option go_package = "google.golang.org/genproto/protobuf/ptype;ptype";
 
-// A light-weight descriptor for a proto message type.
+// A protocol buffer message type.
 message Type {
   // The fully qualified message name.
   string name = 1;
   // The list of fields.
   repeated Field fields = 2;
-  // The list of oneof definitions.
-  repeated string oneofs = 3;  // The list of oneofs declared in this Type
-  // The proto options.
+  // The list of types appearing in `oneof` definitions in this type.
+  repeated string oneofs = 3;
+  // The protocol buffer options.
   repeated Option options = 4;
   // The source context.
   SourceContext source_context = 5;
@@ -57,9 +59,9 @@ message Type {
   Syntax syntax = 6;
 }
 
-// Field represents a single field of a message type.
+// A single field of a message type.
 message Field {
-  // Kind represents a basic field type.
+  // Basic field types.
   enum Kind {
     // Field type unknown.
     TYPE_UNKNOWN        = 0;
@@ -81,7 +83,7 @@ message Field {
     TYPE_BOOL           = 8;
     // Field type string.
     TYPE_STRING         = 9;
-    // Field type group (deprecated proto2 type)
+    // Field type group. Proto2 syntax only, and deprecated.
     TYPE_GROUP          = 10;
     // Field type message.
     TYPE_MESSAGE        = 11;
@@ -101,38 +103,40 @@ message Field {
     TYPE_SINT64         = 18;
   };
 
-  // Cardinality represents whether a field is optional, required, or
-  // repeated.
+  // Whether a field is optional, required, or repeated.
   enum Cardinality {
-    // The field cardinality is unknown. Typically an error condition.
+    // For fields with unknown cardinality.
     CARDINALITY_UNKNOWN = 0;
     // For optional fields.
     CARDINALITY_OPTIONAL = 1;
-    // For required fields. Not used for proto3.
+    // For required fields. Proto2 syntax only.
     CARDINALITY_REQUIRED = 2;
     // For repeated fields.
     CARDINALITY_REPEATED = 3;
   };
 
-  // The field kind.
+  // The field type.
   Kind kind = 1;
-  // The field cardinality, i.e. optional/required/repeated.
+  // The field cardinality.
   Cardinality cardinality = 2;
-  // The proto field number.
+  // The field number.
   int32 number = 3;
   // The field name.
   string name = 4;
-  // The type URL (without the scheme) when the type is MESSAGE or ENUM,
-  // such as `type.googleapis.com/google.protobuf.Empty`.
+  // The field type URL, without the scheme, for message or enumeration
+  // types. Example: `"type.googleapis.com/google.protobuf.Timestamp"`.
   string type_url = 6;
-  // Index in Type.oneofs. Starts at 1. Zero means no oneof mapping.
+  // The index of the field type in `Type.oneofs`, for message or enumeration
+  // types. The first type has index 1; zero means the type is not in the list.
   int32 oneof_index = 7;
   // Whether to use alternative packed wire representation.
   bool packed = 8;
-  // The proto options.
+  // The protocol buffer options.
   repeated Option options = 9;
-  // The JSON name for this field.
+  // The field JSON name.
   string json_name = 10;
+  // The string value of the default value of this field. Proto2 syntax only.
+  string default_value = 11;
 }
 
 // Enum type definition.
@@ -141,7 +145,7 @@ message Enum {
   string name = 1;
   // Enum value definitions.
   repeated EnumValue enumvalue = 2;
-  // Proto options for the enum type.
+  // Protocol buffer options.
   repeated Option options = 3;
   // The source context.
   SourceContext source_context = 4;
@@ -155,22 +159,29 @@ message EnumValue {
   string name = 1;
   // Enum value number.
   int32 number = 2;
-  // Proto options for the enum value.
+  // Protocol buffer options.
   repeated Option options = 3;
 }
 
-// Proto option attached to messages/fields/enums etc.
+// A protocol buffer option, which can be attached to a message, field,
+// enumeration, etc.
 message Option {
-  // Proto option name.
+  // The option's name. For protobuf built-in options (options defined in
+  // descriptor.proto), this is the short name. For example, `"map_entry"`.
+  // For custom options, it should be the fully-qualified name. For example,
+  // `"google.api.http"`.
   string name = 1;
-  // Proto option value.
+  // The option's value packed in an Any message. If the value is a primitive,
+  // the corresponding wrapper type defined in google/protobuf/wrappers.proto
+  // should be used. If the value is an enum, it should be stored as an int32
+  // value using the google.protobuf.Int32Value type.
   Any value = 2;
 }
 
-// Syntax specifies the syntax in which a service element was defined.
+// The syntax in which a protocol buffer element is defined.
 enum Syntax {
-  // Syntax "proto2"
+  // Syntax `proto2`.
   SYNTAX_PROTO2 = 0;
-  // Syntax "proto3"
+  // Syntax `proto3`.
   SYNTAX_PROTO3 = 1;
 }

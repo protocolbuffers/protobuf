@@ -34,23 +34,8 @@
 
 #import "GPBCodedInputStream.h"
 
-#import <libkern/OSAtomic.h>
-
 @class GPBUnknownFieldSet;
 @class GPBFieldDescriptor;
-
-// GPBString is a string subclass that avoids the overhead of initializing
-// a full NSString until it is actually needed. Lots of protocol buffers contain
-// strings, and instantiating all of those strings and having them parsed to
-// verify correctness when the message was being read was expensive, when many
-// of the strings were never being used.
-//
-// Note for future-self. I tried implementing this using a NSProxy.
-// Turned out the performance was horrible in client apps because folks
-// like to use libraries like SBJSON that grab characters one at a time.
-// The proxy overhead was a killer.
-@interface GPBString : NSString
-@end
 
 typedef struct GPBCodedInputStreamState {
   const uint8_t *bytes;
@@ -91,10 +76,6 @@ typedef struct GPBCodedInputStreamState {
 @end
 
 CF_EXTERN_C_BEGIN
-
-// Returns a GPBString with a +1 retain count.
-GPBString *GPBCreateGPBStringWithUTF8(const void *bytes, NSUInteger length)
-    __attribute__((ns_returns_retained));
 
 int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state);
 

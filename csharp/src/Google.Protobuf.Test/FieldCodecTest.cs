@@ -32,6 +32,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
@@ -58,7 +59,7 @@ namespace Google.Protobuf
             new FieldCodecTestData<float>(FieldCodec.ForFloat(100), 1234.5f, "Float"),
             new FieldCodecTestData<double>(FieldCodec.ForDouble(100), 1234567890.5d, "Double"),
             new FieldCodecTestData<ForeignEnum>(
-                FieldCodec.ForEnum(100, t => (int) t, t => (ForeignEnum) t), ForeignEnum.FOREIGN_BAZ, "Enum"),
+                FieldCodec.ForEnum(100, t => (int) t, t => (ForeignEnum) t), ForeignEnum.ForeignBaz, "Enum"),
             new FieldCodecTestData<ForeignMessage>(
                 FieldCodec.ForMessage(100, ForeignMessage.Parser), new ForeignMessage { C = 10 }, "Message"),
         };
@@ -157,15 +158,18 @@ namespace Google.Protobuf
             {
                 // WriteTagAndValue ignores default values
                 var stream = new MemoryStream();
-                var codedOutput = new CodedOutputStream(stream);
+                CodedOutputStream codedOutput;
+#if !NET35
+                codedOutput = new CodedOutputStream(stream);
                 codec.WriteTagAndValue(codedOutput, codec.DefaultValue);
                 codedOutput.Flush();
                 Assert.AreEqual(0, stream.Position);
                 Assert.AreEqual(0, codec.CalculateSizeWithTag(codec.DefaultValue));
-                if (typeof(T).IsValueType)
+                if (typeof(T).GetTypeInfo().IsValueType)
                 {
                     Assert.AreEqual(default(T), codec.DefaultValue);
                 }
+#endif
 
                 // The plain ValueWriter/ValueReader delegates don't.
                 if (codec.DefaultValue != null) // This part isn't appropriate for message types.

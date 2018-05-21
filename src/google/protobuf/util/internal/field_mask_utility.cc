@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/internal/field_mask_utility.h>
 
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status_macros.h>
 
@@ -44,11 +45,6 @@ inline util::Status CallPathSink(PathSinkCallback path_sink,
   return path_sink->Run(arg);
 }
 
-util::Status CreatePublicError(util::error::Code code,
-                                 const string& message) {
-  return util::Status(code, message);
-}
-
 // Appends a FieldMask path segment to a prefix.
 string AppendPathSegmentToPrefix(StringPiece prefix, StringPiece segment) {
   if (prefix.empty()) {
@@ -58,7 +54,7 @@ string AppendPathSegmentToPrefix(StringPiece prefix, StringPiece segment) {
     return prefix.ToString();
   }
   // If the segment is a map key, appends it to the prefix without the ".".
-  if (segment.starts_with("[\"")) {
+  if (StringStartsWith(segment, "[\"")) {
     return StrCat(prefix, segment);
   }
   return StrCat(prefix, ".", segment);
@@ -112,7 +108,7 @@ string ConvertFieldMaskPath(const StringPiece path,
 
 util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
                                            PathSinkCallback path_sink) {
-  stack<string> prefix;
+  std::stack<string> prefix;
   int length = paths.length();
   int previous_position = 0;
   bool in_map_key = false;
@@ -216,7 +212,7 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
                           StrCat("Invalid FieldMask '", paths,
                                  "'. Cannot find matching ')' for all '('."));
   }
-  return util::Status::OK;
+  return util::Status();
 }
 
 }  // namespace converter

@@ -4,15 +4,20 @@
 AC_PREREQ(2.59)
 
 # Note:  If you change the version, you must also update it in:
-# * java/pom.xml
-# * python/setup.py
+# * Protobuf.podspec
+# * csharp/Google.Protobuf.Tools.nuspec
+# * csharp/src/*/AssemblyInfo.cs
+# * csharp/src/Google.Protobuf/Google.Protobuf.nuspec
+# * java/*/pom.xml
+# * python/google/protobuf/__init__.py
+# * protoc-artifacts/pom.xml
 # * src/google/protobuf/stubs/common.h
 # * src/Makefile.am (Update -version-info for LDFLAGS if needed)
 #
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.0.0-beta-1],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.5.2],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -26,7 +31,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_ARG_VAR(DIST_LANG, [language to include in the distribution package (i.e., make dist)])
 case "$DIST_LANG" in
   "") DIST_LANG=all ;;
-  all | cpp | csharp | java | python | javanano | objectivec | ruby) ;;
+  all | cpp | csharp | java | python | javanano | objectivec | ruby | js | php) ;;
   *) AC_MSG_FAILURE([unknown language: $DIST_LANG]) ;;
 esac
 AC_SUBST(DIST_LANG)
@@ -47,6 +52,16 @@ AC_ARG_WITH([zlib],
     [include classes for streaming compressed data in and out @<:@default=check@:>@])],
   [],[with_zlib=check])
 
+AC_ARG_WITH([zlib-include],
+  [AS_HELP_STRING([--with-zlib-include=PATH],
+    [zlib include directory])],
+  [CPPFLAGS="-I$withval $CPPFLAGS"])
+
+AC_ARG_WITH([zlib-lib],
+  [AS_HELP_STRING([--with-zlib-lib=PATH],
+    [zlib lib directory])],
+  [LDFLAGS="-L$withval $LDFLAGS"])
+
 AC_ARG_WITH([protoc],
   [AS_HELP_STRING([--with-protoc=COMMAND],
     [use the given protoc command instead of building a new one when building tests (useful for cross-compiling)])],
@@ -55,6 +70,7 @@ AC_ARG_WITH([protoc],
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_CXX_FOR_BUILD
 AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
@@ -86,6 +102,25 @@ ACX_CHECK_SUNCC
 # Have to do libtool after SUNCC, other wise it "helpfully" adds Crun Cstd
 # to the link
 AC_PROG_LIBTOOL
+
+# Check whether the linker supports version scripts
+AC_MSG_CHECKING([whether the linker supports version scripts])
+save_LDFLAGS=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--version-script=conftest.map"
+cat > conftest.map <<EOF
+{
+  global:
+    main;
+  local:
+    *;
+};
+EOF
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([int main() { return 0; }])],
+  [have_ld_version_script=yes; AC_MSG_RESULT(yes)],
+  [have_ld_version_script=no; AC_MSG_RESULT(no)])
+LDFLAGS=$save_LDFLAGS
+AM_CONDITIONAL([HAVE_LD_VERSION_SCRIPT], [test "$have_ld_version_script" == "yes"])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -149,14 +184,13 @@ AS_IF([test "$with_protoc" != "no"], [
 ])
 AM_CONDITIONAL([USE_EXTERNAL_PROTOC], [test "$with_protoc" != "no"])
 
-ACX_PTHREAD
-AM_CONDITIONAL([HAVE_PTHREAD], [test "x$acx_pthread_ok" = "xyes"])
-
+AX_PTHREAD
+AM_CONDITIONAL([HAVE_PTHREAD], [test "x$ax_pthread_ok" = "xyes"])
 # We still keep this for improving pbconfig.h for unsupported platforms.
 AC_CXX_STL_HASH
 
 case "$target_os" in
-  mingw* | cygwin* | win*)
+  mingw* | cygwin* | win* | aix*)
     ;;
   *)
     # Need to link against rt on Solaris
@@ -173,12 +207,14 @@ case "$target_os" in
 esac
 AM_CONDITIONAL([OBJC_CONFORMANCE_TEST], [test $OBJC_CONFORMANCE_TEST = 1])
 
+AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
+
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock
 #   too.
 export CFLAGS
 export CXXFLAGS
-AC_CONFIG_SUBDIRS([gmock])
+AC_CONFIG_SUBDIRS([third_party/googletest])
 
-AC_CONFIG_FILES([Makefile src/Makefile conformance/Makefile protobuf.pc protobuf-lite.pc])
+AC_CONFIG_FILES([Makefile src/Makefile benchmarks/Makefile conformance/Makefile protobuf.pc protobuf-lite.pc])
 AC_OUTPUT

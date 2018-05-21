@@ -74,8 +74,8 @@ class ServiceGenerator {
 
 class ImmutableServiceGenerator : public ServiceGenerator {
  public:
-  explicit ImmutableServiceGenerator(const ServiceDescriptor* descriptor,
-                                     Context* context);
+  ImmutableServiceGenerator(const ServiceDescriptor* descriptor,
+                            Context* context);
   virtual ~ImmutableServiceGenerator();
 
   virtual void Generate(io::Printer* printer);
@@ -121,6 +121,9 @@ class ImmutableServiceGenerator : public ServiceGenerator {
   // Generate the method signature for one method of a blocking stub.
   void GenerateBlockingMethodSignature(io::Printer* printer,
                                        const MethodDescriptor* method);
+
+  // Return the output type of the method.
+  string GetOutput(const MethodDescriptor* method);
 
   Context* context_;
   ClassNameResolver* name_resolver_;

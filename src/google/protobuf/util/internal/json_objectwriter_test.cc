@@ -47,8 +47,7 @@ class JsonObjectWriterTest : public ::testing::Test {
   JsonObjectWriterTest()
       : str_stream_(new StringOutputStream(&output_)),
         out_stream_(new CodedOutputStream(str_stream_)),
-        ow_(NULL) {
-  }
+        ow_(nullptr) {}
 
   virtual ~JsonObjectWriterTest() {
     delete ow_;
@@ -59,52 +58,56 @@ class JsonObjectWriterTest : public ::testing::Test {
   string output_;
   StringOutputStream* const str_stream_;
   CodedOutputStream* const out_stream_;
-  ObjectWriter* ow_;
+  JsonObjectWriter* ow_;
 };
 
 TEST_F(JsonObjectWriterTest, EmptyRootObject) {
   ow_ = new JsonObjectWriter("", out_stream_);
-  ow_->StartObject("")
-     ->EndObject();
+  ow_->StartObject("")->EndObject();
   EXPECT_EQ("{}", output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, EmptyObject) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->StartObject("")
-       ->RenderString("test", "value")
-       ->StartObject("empty")
-       ->EndObject()
-     ->EndObject();
+      ->RenderString("test", "value")
+      ->StartObject("empty")
+      ->EndObject()
+      ->EndObject();
   EXPECT_EQ("{\"test\":\"value\",\"empty\":{}}",
             output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, EmptyRootList) {
   ow_ = new JsonObjectWriter("", out_stream_);
-  ow_->StartList("")
-     ->EndList();
+  ow_->StartList("")->EndList();
   EXPECT_EQ("[]", output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, EmptyList) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->StartObject("")
-       ->RenderString("test", "value")
-       ->StartList("empty")
-       ->EndList()
-     ->EndObject();
+      ->RenderString("test", "value")
+      ->StartList("empty")
+      ->EndList()
+      ->EndObject();
   EXPECT_EQ("{\"test\":\"value\",\"empty\":[]}",
             output_.substr(0, out_stream_->ByteCount()));
+}
+
+TEST_F(JsonObjectWriterTest, EmptyObjectKey) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->StartObject("")->RenderString("", "value")->EndObject();
+  EXPECT_EQ("{\"\":\"value\"}", output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, ObjectInObject) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->StartObject("")
-       ->StartObject("nested")
-         ->RenderString("field", "value")
-       ->EndObject()
-     ->EndObject();
+      ->StartObject("nested")
+      ->RenderString("field", "value")
+      ->EndObject()
+      ->EndObject();
   EXPECT_EQ("{\"nested\":{\"field\":\"value\"}}",
             output_.substr(0, out_stream_->ByteCount()));
 }
@@ -112,10 +115,10 @@ TEST_F(JsonObjectWriterTest, ObjectInObject) {
 TEST_F(JsonObjectWriterTest, ListInObject) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->StartObject("")
-       ->StartList("nested")
-         ->RenderString("", "value")
-       ->EndList()
-     ->EndObject();
+      ->StartList("nested")
+      ->RenderString("", "value")
+      ->EndList()
+      ->EndObject();
   EXPECT_EQ("{\"nested\":[\"value\"]}",
             output_.substr(0, out_stream_->ByteCount()));
 }
@@ -123,10 +126,10 @@ TEST_F(JsonObjectWriterTest, ListInObject) {
 TEST_F(JsonObjectWriterTest, ObjectInList) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->StartList("")
-       ->StartObject("")
-         ->RenderString("field", "value")
-       ->EndObject()
-     ->EndList();
+      ->StartObject("")
+      ->RenderString("field", "value")
+      ->EndObject()
+      ->EndList();
   EXPECT_EQ("[{\"field\":\"value\"}]",
             output_.substr(0, out_stream_->ByteCount()));
 }
@@ -134,10 +137,10 @@ TEST_F(JsonObjectWriterTest, ObjectInList) {
 TEST_F(JsonObjectWriterTest, ListInList) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->StartList("")
-       ->StartList("")
-         ->RenderString("", "value")
-       ->EndList()
-     ->EndList();
+      ->StartList("")
+      ->RenderString("", "value")
+      ->EndList()
+      ->EndList();
   EXPECT_EQ("[[\"value\"]]", output_.substr(0, out_stream_->ByteCount()));
 }
 
@@ -156,14 +159,18 @@ TEST_F(JsonObjectWriterTest, RenderPrimitives) {
       ->EndObject();
   EXPECT_EQ(
       "{\"bool\":true,"
-      "\"double\":" + ValueAsString<double>(1.7976931348623157e+308) + ","
-      "\"float\":" + ValueAsString<float>(3.4028235e+38) + ","
-      "\"int\":-2147483648,"
-      "\"long\":\"-9223372036854775808\","
-      "\"bytes\":\"YWJyYWNhZGFicmE=\","
-      "\"string\":\"string\","
-      "\"emptybytes\":\"\","
-      "\"emptystring\":\"\"}",
+      "\"double\":" +
+          ValueAsString<double>(std::numeric_limits<double>::max()) +
+          ","
+          "\"float\":" +
+          ValueAsString<float>(std::numeric_limits<float>::max()) +
+          ","
+          "\"int\":-2147483648,"
+          "\"long\":\"-9223372036854775808\","
+          "\"bytes\":\"YWJyYWNhZGFicmE=\","
+          "\"string\":\"string\","
+          "\"emptybytes\":\"\","
+          "\"emptystring\":\"\"}",
       output_.substr(0, out_stream_->ByteCount()));
 }
 
@@ -181,81 +188,83 @@ TEST_F(JsonObjectWriterTest, BytesEncodesAsNonWebSafeBase64) {
 TEST_F(JsonObjectWriterTest, PrettyPrintList) {
   ow_ = new JsonObjectWriter(" ", out_stream_);
   ow_->StartObject("")
-       ->StartList("items")
-         ->RenderString("", "item1")
-         ->RenderString("", "item2")
-         ->RenderString("", "item3")
-       ->EndList()
-       ->StartList("empty")
-       ->EndList()
-     ->EndObject();
-  EXPECT_EQ("{\n"
-            " \"items\": [\n"
-            "  \"item1\",\n"
-            "  \"item2\",\n"
-            "  \"item3\"\n"
-            " ],\n"
-            " \"empty\": []\n"
-            "}\n",
-            output_.substr(0, out_stream_->ByteCount()));
+      ->StartList("items")
+      ->RenderString("", "item1")
+      ->RenderString("", "item2")
+      ->RenderString("", "item3")
+      ->EndList()
+      ->StartList("empty")
+      ->EndList()
+      ->EndObject();
+  EXPECT_EQ(
+      "{\n"
+      " \"items\": [\n"
+      "  \"item1\",\n"
+      "  \"item2\",\n"
+      "  \"item3\"\n"
+      " ],\n"
+      " \"empty\": []\n"
+      "}\n",
+      output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, PrettyPrintObject) {
   ow_ = new JsonObjectWriter(" ", out_stream_);
   ow_->StartObject("")
-       ->StartObject("items")
-         ->RenderString("key1", "item1")
-         ->RenderString("key2", "item2")
-         ->RenderString("key3", "item3")
-       ->EndObject()
-       ->StartObject("empty")
-       ->EndObject()
-     ->EndObject();
-  EXPECT_EQ("{\n"
-            " \"items\": {\n"
-            "  \"key1\": \"item1\",\n"
-            "  \"key2\": \"item2\",\n"
-            "  \"key3\": \"item3\"\n"
-            " },\n"
-            " \"empty\": {}\n"
-            "}\n",
-            output_.substr(0, out_stream_->ByteCount()));
+      ->StartObject("items")
+      ->RenderString("key1", "item1")
+      ->RenderString("key2", "item2")
+      ->RenderString("key3", "item3")
+      ->EndObject()
+      ->StartObject("empty")
+      ->EndObject()
+      ->EndObject();
+  EXPECT_EQ(
+      "{\n"
+      " \"items\": {\n"
+      "  \"key1\": \"item1\",\n"
+      "  \"key2\": \"item2\",\n"
+      "  \"key3\": \"item3\"\n"
+      " },\n"
+      " \"empty\": {}\n"
+      "}\n",
+      output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, PrettyPrintEmptyObjectInEmptyList) {
   ow_ = new JsonObjectWriter(" ", out_stream_);
   ow_->StartObject("")
-       ->StartList("list")
-         ->StartObject("")
-         ->EndObject()
-       ->EndList()
-     ->EndObject();
-  EXPECT_EQ("{\n"
-            " \"list\": [\n"
-            "  {}\n"
-            " ]\n"
-            "}\n",
-            output_.substr(0, out_stream_->ByteCount()));
+      ->StartList("list")
+      ->StartObject("")
+      ->EndObject()
+      ->EndList()
+      ->EndObject();
+  EXPECT_EQ(
+      "{\n"
+      " \"list\": [\n"
+      "  {}\n"
+      " ]\n"
+      "}\n",
+      output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, PrettyPrintDoubleIndent) {
   ow_ = new JsonObjectWriter("  ", out_stream_);
   ow_->StartObject("")
-       ->RenderBool("bool", true)
-       ->RenderInt32("int", 42)
-     ->EndObject();
-  EXPECT_EQ("{\n"
-            "  \"bool\": true,\n"
-            "  \"int\": 42\n"
-            "}\n",
-            output_.substr(0, out_stream_->ByteCount()));
+      ->RenderBool("bool", true)
+      ->RenderInt32("int", 42)
+      ->EndObject();
+  EXPECT_EQ(
+      "{\n"
+      "  \"bool\": true,\n"
+      "  \"int\": 42\n"
+      "}\n",
+      output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, StringsEscapedAndEnclosedInDoubleQuotes) {
   ow_ = new JsonObjectWriter("", out_stream_);
-  ow_->StartObject("")
-       ->RenderString("string", "'<>&amp;\\\"\r\n")
-     ->EndObject();
+  ow_->StartObject("")->RenderString("string", "'<>&amp;\\\"\r\n")->EndObject();
   EXPECT_EQ("{\"string\":\"'\\u003c\\u003e&amp;\\\\\\\"\\r\\n\"}",
             output_.substr(0, out_stream_->ByteCount()));
 }
@@ -263,13 +272,13 @@ TEST_F(JsonObjectWriterTest, StringsEscapedAndEnclosedInDoubleQuotes) {
 TEST_F(JsonObjectWriterTest, Stringification) {
   ow_ = new JsonObjectWriter("", out_stream_);
   ow_->StartObject("")
-       ->RenderDouble("double_nan", std::numeric_limits<double>::quiet_NaN())
-       ->RenderFloat("float_nan", std::numeric_limits<float>::quiet_NaN())
-       ->RenderDouble("double_pos", std::numeric_limits<double>::infinity())
-       ->RenderFloat("float_pos", std::numeric_limits<float>::infinity())
-       ->RenderDouble("double_neg", -std::numeric_limits<double>::infinity())
-       ->RenderFloat("float_neg", -std::numeric_limits<float>::infinity())
-     ->EndObject();
+      ->RenderDouble("double_nan", std::numeric_limits<double>::quiet_NaN())
+      ->RenderFloat("float_nan", std::numeric_limits<float>::quiet_NaN())
+      ->RenderDouble("double_pos", std::numeric_limits<double>::infinity())
+      ->RenderFloat("float_pos", std::numeric_limits<float>::infinity())
+      ->RenderDouble("double_neg", -std::numeric_limits<double>::infinity())
+      ->RenderFloat("float_neg", -std::numeric_limits<float>::infinity())
+      ->EndObject();
   EXPECT_EQ(
       "{\"double_nan\":\"NaN\","
       "\"float_nan\":\"NaN\","
@@ -278,6 +287,30 @@ TEST_F(JsonObjectWriterTest, Stringification) {
       "\"double_neg\":\"-Infinity\","
       "\"float_neg\":\"-Infinity\"}",
       output_.substr(0, out_stream_->ByteCount()));
+}
+
+TEST_F(JsonObjectWriterTest, TestRegularByteEncoding) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->StartObject("")
+      ->RenderBytes("bytes", "\x03\xef\xc0")
+      ->EndObject();
+
+  // Test that we get regular (non websafe) base64 encoding on byte fields by
+  // default.
+  EXPECT_EQ("{\"bytes\":\"A+/A\"}",
+            output_.substr(0, out_stream_->ByteCount()));
+}
+
+TEST_F(JsonObjectWriterTest, TestWebsafeByteEncoding) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->set_use_websafe_base64_for_bytes(true);
+  ow_->StartObject("")
+      ->RenderBytes("bytes", "\x03\xef\xc0\x10")
+      ->EndObject();
+
+  // Test that we get websafe base64 encoding when explicitly asked.
+  EXPECT_EQ("{\"bytes\":\"A-_AEA==\"}",
+            output_.substr(0, out_stream_->ByteCount()));
 }
 
 }  // namespace converter

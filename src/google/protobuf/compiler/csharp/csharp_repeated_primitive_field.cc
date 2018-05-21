@@ -48,8 +48,8 @@ namespace compiler {
 namespace csharp {
 
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
 }
 
 RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {
@@ -64,7 +64,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(variables_,
     "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"

@@ -28,13 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: ksroka@google.com (Krzysztof Sroka)
+// Defines classes for field comparison.
 
 #ifndef GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 #define GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include <google/protobuf/stubs/common.h>
 
@@ -48,6 +49,7 @@ class FieldDescriptor;
 namespace util {
 
 class FieldContext;
+class MessageDifferencer;
 
 // Base class specifying the interface for comparing protocol buffer fields.
 // Regular users should consider using or subclassing DefaultFieldComparator
@@ -91,9 +93,9 @@ class LIBPROTOBUF_EXPORT FieldComparator {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldComparator);
 };
 
-// Basic implementation of FieldComparator.  Supports four modes of floating
+// Basic implementation of FieldComparator.  Supports three modes of floating
 // point value comparison: exact, approximate using MathUtil::AlmostEqual
-// method, and arbitrarilly precise using MathUtil::WithinFracionOrMargin.
+// method, and arbitrarily precise using MathUtil::WithinFractionOrMargin.
 class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
  public:
   enum FloatComparison {
@@ -153,6 +155,15 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // REQUIRES: float_comparison_ == APPROXIMATE
   void SetDefaultFractionAndMargin(double fraction, double margin);
 
+ protected:
+  // Compare using the provided message_differencer. For example, a subclass can
+  // use this method to compare some field in a certain way using the same
+  // message_differencer instance and the field context.
+  bool Compare(MessageDifferencer* differencer,
+               const google::protobuf::Message& message1,
+               const google::protobuf::Message& message2,
+               const google::protobuf::util::FieldContext* field_context);
+
  private:
   // Defines the tolerance for floating point comparison (fraction and margin).
   struct Tolerance {
@@ -167,7 +178,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   };
 
   // Defines the map to store the tolerances for floating point comparison.
-  typedef map<const FieldDescriptor*, Tolerance> ToleranceMap;
+  typedef std::map<const FieldDescriptor*, Tolerance> ToleranceMap;
 
   // The following methods get executed when CompareFields is called for the
   // basic types (instead of submessages). They return true on success. One
@@ -237,7 +248,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
 
   // True iff default_tolerance_ has been explicitly set.
   //
-  // If false, then the default tolerance for flaots and doubles is that which
+  // If false, then the default tolerance for floats and doubles is that which
   // is used by MathUtil::AlmostEquals().
   bool has_default_tolerance_;
 

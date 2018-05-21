@@ -112,12 +112,10 @@ struct Descriptor {
   VALUE klass;  // begins as nil
   const upb_handlers* fill_handlers;
   const upb_pbdecodermethod* fill_method;
+  const upb_json_parsermethod* json_fill_method;
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
-  // Handlers hold type class references for sub-message fields directly in some
-  // cases. We need to keep these rooted because they might otherwise be
-  // collected.
-  VALUE typeclass_references;
+  const upb_handlers* json_serialize_handlers_preserve;
 };
 
 struct FieldDescriptor {
@@ -278,6 +276,7 @@ void Builder_free(void* _self);
 VALUE Builder_alloc(VALUE klass);
 void Builder_register(VALUE module);
 Builder* ruby_to_Builder(VALUE value);
+VALUE Builder_initialize(VALUE _self);
 VALUE Builder_add_message(VALUE _self, VALUE name);
 VALUE Builder_add_enum(VALUE _self, VALUE name);
 VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
@@ -311,7 +310,7 @@ void native_slot_dup(upb_fieldtype_t type, void* to, void* from);
 void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from);
 bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2);
 
-void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value);
+VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value);
 void native_slot_check_int_range_precision(upb_fieldtype_t type, VALUE value);
 
 extern rb_encoding* kRubyStringUtf8Encoding;
@@ -364,6 +363,7 @@ RepeatedField* ruby_to_RepeatedField(VALUE value);
 VALUE RepeatedField_each(VALUE _self);
 VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self);
 void* RepeatedField_index_native(VALUE _self, int index);
+int RepeatedField_size(VALUE _self);
 VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val);
 void RepeatedField_reserve(RepeatedField* self, int new_size);
 VALUE RepeatedField_push(VALUE _self, VALUE val);
@@ -392,6 +392,7 @@ typedef struct {
   upb_fieldtype_t key_type;
   upb_fieldtype_t value_type;
   VALUE value_type_class;
+  VALUE parse_frame;
   upb_strtable table;
 } Map;
 
@@ -400,6 +401,7 @@ void Map_free(void* self);
 VALUE Map_alloc(VALUE klass);
 VALUE Map_init(int argc, VALUE* argv, VALUE self);
 void Map_register(VALUE module);
+VALUE Map_set_frame(VALUE self, VALUE val);
 
 extern const rb_data_type_t Map_type;
 extern VALUE cMap;
@@ -419,6 +421,7 @@ VALUE Map_dup(VALUE _self);
 VALUE Map_deep_copy(VALUE _self);
 VALUE Map_eq(VALUE _self, VALUE _other);
 VALUE Map_hash(VALUE _self);
+VALUE Map_to_h(VALUE _self);
 VALUE Map_inspect(VALUE _self);
 VALUE Map_merge(VALUE _self, VALUE hashmap);
 VALUE Map_merge_into_self(VALUE _self, VALUE hashmap);
@@ -472,8 +475,20 @@ VALUE layout_inspect(MessageLayout* layout, void* storage);
 // Message class creation.
 // -----------------------------------------------------------------------------
 
+// This should probably be factored into a common upb component.
+
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} stringsink;
+
+void stringsink_uninit(stringsink *sink);
+
 struct MessageHeader {
-  Descriptor* descriptor;  // kept alive by self.class.descriptor reference.
+  Descriptor* descriptor;      // kept alive by self.class.descriptor reference.
+  stringsink* unknown_fields;  // store unknown fields in decoding.
   // Data comes after this.
 };
 
@@ -491,14 +506,16 @@ VALUE Message_deep_copy(VALUE _self);
 VALUE Message_eq(VALUE _self, VALUE _other);
 VALUE Message_hash(VALUE _self);
 VALUE Message_inspect(VALUE _self);
+VALUE Message_to_h(VALUE _self);
 VALUE Message_index(VALUE _self, VALUE field_name);
 VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value);
 VALUE Message_descriptor(VALUE klass);
 VALUE Message_decode(VALUE klass, VALUE data);
 VALUE Message_encode(VALUE klass, VALUE msg_rb);
 VALUE Message_decode_json(VALUE klass, VALUE data);
-VALUE Message_encode_json(VALUE klass, VALUE msg_rb);
+VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
 
+VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
 
 VALUE build_module_from_enumdesc(EnumDescriptor* enumdef);

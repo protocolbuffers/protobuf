@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package foo;
+option php_namespace = "Php\\Test";
+
+message TestNamespace {
+  int32 a = 1;
+}

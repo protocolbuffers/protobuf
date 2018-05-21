@@ -34,9 +34,6 @@
 #define GOOGLE_PROTOBUF_REFLECTION_H__
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/message.h>
 #include <google/protobuf/generated_enum_util.h>
@@ -63,7 +60,7 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
 // RepeatedFieldRef definition for non-message types.
 template<typename T>
 class RepeatedFieldRef<
-    T, typename internal::enable_if<!internal::is_base_of<Message, T>::value>::type> {
+    T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
   typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
@@ -80,6 +77,12 @@ class RepeatedFieldRef<
 
   typedef IteratorType iterator;
   typedef IteratorType const_iterator;
+  typedef T value_type;
+  typedef T& reference;
+  typedef const T& const_reference;
+  typedef int size_type;
+  typedef ptrdiff_t difference_type;
+
   iterator begin() const {
     return iterator(data_, accessor_, true);
   }
@@ -106,7 +109,7 @@ class RepeatedFieldRef<
 // MutableRepeatedFieldRef definition for non-message types.
 template<typename T>
 class MutableRepeatedFieldRef<
-    T, typename internal::enable_if<!internal::is_base_of<Message, T>::value>::type> {
+    T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -171,7 +174,7 @@ class MutableRepeatedFieldRef<
 // RepeatedFieldRef definition for message types.
 template<typename T>
 class RepeatedFieldRef<
-    T, typename internal::enable_if<internal::is_base_of<Message, T>::value>::type> {
+    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
   typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
@@ -202,11 +205,18 @@ class RepeatedFieldRef<
 
   typedef IteratorType iterator;
   typedef IteratorType const_iterator;
+  typedef T value_type;
+  typedef T& reference;
+  typedef const T& const_reference;
+  typedef int size_type;
+  typedef ptrdiff_t difference_type;
+
   iterator begin() const {
     return iterator(data_, accessor_, true, NewMessage());
   }
   iterator end() const {
-    return iterator(data_, accessor_, false, NewMessage());
+    // The end iterator must not be dereferenced, no need for scratch space.
+    return iterator(data_, accessor_, false, nullptr);
   }
 
  private:
@@ -232,7 +242,7 @@ class RepeatedFieldRef<
 // MutableRepeatedFieldRef definition for message types.
 template<typename T>
 class MutableRepeatedFieldRef<
-    T, typename internal::enable_if<internal::is_base_of<Message, T>::value>::type> {
+    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -356,7 +366,7 @@ class LIBPROTOBUF_EXPORT RepeatedFieldAccessor {
   virtual void Swap(Field* data, const RepeatedFieldAccessor* other_mutator,
                     Field* other_data) const = 0;
 
-  // Create an iterator that points at the begining of the repeated field.
+  // Create an iterator that points at the beginning of the repeated field.
   virtual Iterator* BeginIterator(const Field* data) const = 0;
   // Create an iterator that points at the end of the repeated field.
   virtual Iterator* EndIterator(const Field* data) const = 0;
@@ -428,13 +438,13 @@ class RepeatedFieldRefIterator
  public:
   // Constructor for non-message fields.
   RepeatedFieldRefIterator(const void* data,
-                           const RepeatedFieldAccessor* accessor,
-                           bool begin)
-      : data_(data), accessor_(accessor),
-        iterator_(begin ? accessor->BeginIterator(data) :
-                          accessor->EndIterator(data)),
-        scratch_space_(new AccessorValueType) {
-  }
+                           const RepeatedFieldAccessor* accessor, bool begin)
+      : data_(data),
+        accessor_(accessor),
+        iterator_(begin ? accessor->BeginIterator(data)
+                        : accessor->EndIterator(data)),
+        // The end iterator must not be dereferenced, no need for scratch space.
+        scratch_space_(begin ? new AccessorValueType : nullptr) {}
   // Constructor for message fields.
   RepeatedFieldRefIterator(const void* data,
                            const RepeatedFieldAccessor* accessor,
@@ -495,7 +505,7 @@ class RepeatedFieldRefIterator
   const void* data_;
   const RepeatedFieldAccessor* accessor_;
   void* iterator_;
-  google::protobuf::scoped_ptr<AccessorValueType> scratch_space_;
+  std::unique_ptr<AccessorValueType> scratch_space_;
 };
 
 // TypeTraits that maps the type parameter T of RepeatedFieldRef or
@@ -522,7 +532,7 @@ DEFINE_PRIMITIVE(BOOL, bool)
 
 template<typename T>
 struct RefTypeTraits<
-    T, typename internal::enable_if<PrimitiveTraits<T>::is_primitive>::type> {
+    T, typename std::enable_if<PrimitiveTraits<T>::is_primitive>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef T AccessorValueType;
@@ -537,7 +547,7 @@ struct RefTypeTraits<
 
 template<typename T>
 struct RefTypeTraits<
-    T, typename internal::enable_if<is_proto_enum<T>::value>::type> {
+    T, typename std::enable_if<is_proto_enum<T>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   // We use int32 for repeated enums in RepeatedFieldAccessor.
@@ -553,12 +563,12 @@ struct RefTypeTraits<
 
 template<typename T>
 struct RefTypeTraits<
-    T, typename internal::enable_if< ::google::protobuf::internal::is_same<string, T>::value>::type> {
+    T, typename std::enable_if<std::is_same<string, T>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef string AccessorValueType;
-  typedef string IteratorValueType;
-  typedef string* IteratorPointerType;
+  typedef const string IteratorValueType;
+  typedef const string* IteratorPointerType;
   static const FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_STRING;
   static const Descriptor* GetMessageFieldDescriptor() {
@@ -581,7 +591,7 @@ struct MessageDescriptorGetter<Message> {
 
 template<typename T>
 struct RefTypeTraits<
-    T, typename internal::enable_if<internal::is_base_of<Message, T>::value>::type> {
+    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef Message AccessorValueType;

@@ -36,19 +36,14 @@
 
 #include <algorithm>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -181,7 +176,7 @@ class DescriptorDatabaseTest
     EXPECT_FALSE(test_case_->AddToDatabase(file_proto));
   }
 
-  google::protobuf::scoped_ptr<DescriptorDatabaseTestCase> test_case_;
+  std::unique_ptr<DescriptorDatabaseTestCase> test_case_;
   DescriptorDatabase* database_;
 };
 
@@ -249,6 +244,10 @@ TEST_P(DescriptorDatabaseTest, FindFileContainingSymbol) {
     FileDescriptorProto file;
     EXPECT_TRUE(database_->FindFileContainingSymbol("Foo.qux", &file));
     EXPECT_EQ("foo.proto", file.name());
+    // Non-existent field under a valid top level symbol can also be
+    // found.
+    EXPECT_TRUE(database_->FindFileContainingSymbol("Foo.none_field.none",
+                                                    &file));
   }
 
   {
@@ -411,7 +410,7 @@ TEST_P(DescriptorDatabaseTest, FindAllExtensionNumbers) {
     "extension { name:\"waldo\"  extendee: \"Bar\"        number:56 } ");
 
   {
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_TRUE(database_->FindAllExtensionNumbers("Foo", &numbers));
     ASSERT_EQ(2, numbers.size());
     std::sort(numbers.begin(), numbers.end());
@@ -420,7 +419,7 @@ TEST_P(DescriptorDatabaseTest, FindAllExtensionNumbers) {
   }
 
   {
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_TRUE(database_->FindAllExtensionNumbers("corge.Bar", &numbers));
     // Note: won't find extension 56 due to the name not being fully qualified.
     ASSERT_EQ(1, numbers.size());
@@ -429,13 +428,13 @@ TEST_P(DescriptorDatabaseTest, FindAllExtensionNumbers) {
 
   {
     // Can't find extensions for non-existent types.
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_FALSE(database_->FindAllExtensionNumbers("NoSuchType", &numbers));
   }
 
   {
     // Can't find extensions for unqualified types.
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_FALSE(database_->FindAllExtensionNumbers("Bar", &numbers));
   }
 }
@@ -709,7 +708,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindFileContainingExtension) {
 TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
   {
     // Message only has extension in database1_
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_TRUE(forward_merged_.FindAllExtensionNumbers("Foo", &numbers));
     ASSERT_EQ(1, numbers.size());
     EXPECT_EQ(3, numbers[0]);
@@ -717,7 +716,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
 
   {
     // Message only has extension in database2_
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_TRUE(forward_merged_.FindAllExtensionNumbers("Bar", &numbers));
     ASSERT_EQ(1, numbers.size());
     EXPECT_EQ(5, numbers[0]);
@@ -725,7 +724,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
 
   {
     // Merge results from the two databases.
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_TRUE(forward_merged_.FindAllExtensionNumbers("Baz", &numbers));
     ASSERT_EQ(2, numbers.size());
     std::sort(numbers.begin(), numbers.end());
@@ -734,7 +733,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
   }
 
   {
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_TRUE(reverse_merged_.FindAllExtensionNumbers("Baz", &numbers));
     ASSERT_EQ(2, numbers.size());
     std::sort(numbers.begin(), numbers.end());
@@ -744,7 +743,7 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
 
   {
     // Can't find extensions for a non-existent message.
-    vector<int> numbers;
+    std::vector<int> numbers;
     EXPECT_FALSE(reverse_merged_.FindAllExtensionNumbers("Blah", &numbers));
   }
 }

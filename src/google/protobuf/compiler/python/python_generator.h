@@ -48,6 +48,7 @@ class Descriptor;
 class EnumDescriptor;
 class EnumValueDescriptor;
 class FieldDescriptor;
+class OneofDescriptor;
 class ServiceDescriptor;
 
 namespace io { class Printer; }
@@ -96,10 +97,10 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
 
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor, const string& prefix,
-                    vector<string>* to_register) const;
+                    std::vector<string>* to_register) const;
   void PrintNestedMessages(const Descriptor& containing_descriptor,
                            const string& prefix,
-                           vector<string>* to_register) const;
+                           std::vector<string>* to_register) const;
 
   void FixForeignFieldsInDescriptors() const;
   void FixForeignFieldsInDescriptor(
@@ -111,6 +112,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void AddMessageToFileDescriptor(const Descriptor& descriptor) const;
   void AddEnumToFileDescriptor(const EnumDescriptor& descriptor) const;
   void AddExtensionToFileDescriptor(const FieldDescriptor& descriptor) const;
+  void AddServiceToFileDescriptor(const ServiceDescriptor& descriptor) const;
   string FieldReferencingExpression(const Descriptor* containing_type,
                                     const FieldDescriptor& field,
                                     const string& python_dict_name) const;
@@ -125,15 +127,15 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void FixForeignFieldsInNestedExtensions(const Descriptor& descriptor) const;
 
   void PrintServices() const;
+  void PrintServiceDescriptors() const;
   void PrintServiceDescriptor(const ServiceDescriptor& descriptor) const;
   void PrintServiceClass(const ServiceDescriptor& descriptor) const;
   void PrintServiceStub(const ServiceDescriptor& descriptor) const;
   void PrintDescriptorKeyAndModuleName(
-      const ServiceDescriptor& descriptor) const ;
+      const ServiceDescriptor& descriptor) const;
 
   void PrintEnumValueDescriptor(const EnumValueDescriptor& descriptor) const;
-  string OptionsValue(const string& class_name,
-                      const string& serialized_options) const;
+  string OptionsValue(const string& serialized_options) const;
   bool GeneratingDescriptorProto() const;
 
   template <typename DescriptorT>
@@ -148,6 +150,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
 
   void FixAllDescriptorOptions() const;
   void FixOptionsForField(const FieldDescriptor& field) const;
+  void FixOptionsForOneof(const OneofDescriptor& oneof) const;
   void FixOptionsForEnum(const EnumDescriptor& descriptor) const;
   void FixOptionsForMessage(const Descriptor& descriptor) const;
 

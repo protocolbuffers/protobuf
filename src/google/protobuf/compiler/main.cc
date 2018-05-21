@@ -32,12 +32,19 @@
 
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
+
+#ifndef OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
 #include <google/protobuf/compiler/python/python_generator.h>
 #include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/javanano/javanano_generator.h>
-#include <google/protobuf/compiler/ruby/ruby_generator.h>
+#endif  // ! OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
+
+#ifndef OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
 #include <google/protobuf/compiler/csharp/csharp_generator.h>
+#include <google/protobuf/compiler/js/js_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
+#include <google/protobuf/compiler/php/php_generator.h>
+#include <google/protobuf/compiler/ruby/ruby_generator.h>
+#endif  // ! OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
 
 int main(int argc, char* argv[]) {
 
@@ -49,21 +56,24 @@ int main(int argc, char* argv[]) {
   cli.RegisterGenerator("--cpp_out", "--cpp_opt", &cpp_generator,
                         "Generate C++ header and source.");
 
+#ifndef OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
   // Proto2 Java
   google::protobuf::compiler::java::JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator,
+  cli.RegisterGenerator("--java_out", "--java_opt", &java_generator,
                         "Generate Java source file.");
+#endif  // !OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
 
 
+#ifndef OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
   // Proto2 Python
   google::protobuf::compiler::python::Generator py_generator;
   cli.RegisterGenerator("--python_out", &py_generator,
                         "Generate Python source file.");
 
-  // Java Nano
-  google::protobuf::compiler::javanano::JavaNanoGenerator javanano_generator;
-  cli.RegisterGenerator("--javanano_out", &javanano_generator,
-                        "Generate Java Nano source file.");
+  // PHP
+  google::protobuf::compiler::php::Generator php_generator;
+  cli.RegisterGenerator("--php_out", &php_generator,
+                        "Generate PHP source file.");
 
   // Ruby
   google::protobuf::compiler::ruby::Generator rb_generator;
@@ -77,8 +87,14 @@ int main(int argc, char* argv[]) {
 
   // Objective C
   google::protobuf::compiler::objectivec::ObjectiveCGenerator objc_generator;
-  cli.RegisterGenerator("--objc_out", &objc_generator,
+  cli.RegisterGenerator("--objc_out", "--objc_opt", &objc_generator,
                         "Generate Objective C header and source.");
+
+  // JavaScript
+  google::protobuf::compiler::js::Generator js_generator;
+  cli.RegisterGenerator("--js_out", &js_generator,
+                        "Generate JavaScript source.");
+#endif  // !OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
 
   return cli.Run(argc, argv);
 }

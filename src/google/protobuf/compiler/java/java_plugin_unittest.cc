@@ -35,18 +35,16 @@
 //   worth.
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
 
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/testing/file.h>
 
 namespace google {
 namespace protobuf {
@@ -75,7 +73,7 @@ class TestGenerator : public CodeGenerator {
 
   void TryInsert(const string& filename, const string& insertion_point,
                  GeneratorContext* context) const {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+    std::unique_ptr<io::ZeroCopyOutputStream> output(
         context->OpenForInsert(filename, insertion_point));
     io::Printer printer(output.get(), '$');
     printer.Print("// inserted $name$\n", "name", insertion_point);

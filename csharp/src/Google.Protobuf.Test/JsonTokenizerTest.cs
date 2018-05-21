@@ -249,7 +249,6 @@ namespace Google.Protobuf
         [TestCase("[,", 1)]
         [TestCase("{", 1)]
         [TestCase("{,", 1)]
-        [TestCase("{", 1)]
         [TestCase("{[", 1)]
         [TestCase("{{", 1)]
         [TestCase("{0", 1)]
@@ -349,6 +348,22 @@ namespace Google.Protobuf
             tokenizer.PushBack(JsonToken.EndDocument);
             Assert.AreEqual(JsonToken.EndDocument, tokenizer.Next());
             Assert.Throws<InvalidOperationException>(() => tokenizer.Next());
+        }
+
+        [Test]
+        [TestCase("{ 'skip': 0, 'next': 1")]
+        [TestCase("{ 'skip': [0, 1, 2], 'next': 1")]
+        [TestCase("{ 'skip': 'x', 'next': 1")]
+        [TestCase("{ 'skip': ['x', 'y'], 'next': 1")]
+        [TestCase("{ 'skip': {'a': 0}, 'next': 1")]
+        [TestCase("{ 'skip': {'a': [0, {'b':[]}]}, 'next': 1")]
+        public void SkipValue(string json)
+        {
+            var tokenizer = JsonTokenizer.FromTextReader(new StringReader(json.Replace('\'', '"')));
+            Assert.AreEqual(JsonToken.StartObject, tokenizer.Next());
+            Assert.AreEqual("skip", tokenizer.Next().StringValue);
+            tokenizer.SkipValue();
+            Assert.AreEqual("next", tokenizer.Next().StringValue);
         }
        
         /// <summary>

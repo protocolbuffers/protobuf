@@ -90,6 +90,11 @@ namespace Google.Protobuf.Reflection
         /// </value>
         public OneofAccessor Accessor { get { return accessor; } }
 
+        /// <summary>
+        /// The (possibly empty) set of custom options for this oneof.
+        /// </summary>
+        public CustomOptions CustomOptions => proto.Options?.CustomOptions ?? CustomOptions.Empty;
+
         internal void CrossLink()
         {
             List<FieldDescriptor> fieldCollection = new List<FieldDescriptor>();

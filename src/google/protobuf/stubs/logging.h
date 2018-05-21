@@ -174,7 +174,7 @@ T* CheckNotNull(const char* /* file */, int /* line */,
 
 #ifdef NDEBUG
 
-#define GOOGLE_DLOG GOOGLE_LOG_IF(INFO, false)
+#define GOOGLE_DLOG(LEVEL) GOOGLE_LOG_IF(LEVEL, false)
 
 #define GOOGLE_DCHECK(EXPRESSION) while(false) GOOGLE_CHECK(EXPRESSION)
 #define GOOGLE_DCHECK_OK(E) GOOGLE_DCHECK(::google::protobuf::internal::IsOk(E))

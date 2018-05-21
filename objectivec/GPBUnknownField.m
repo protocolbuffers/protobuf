@@ -31,7 +31,7 @@
 #import "GPBUnknownField_PackagePrivate.h"
 
 #import "GPBArray.h"
-#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 
 @implementation GPBUnknownField {
  @protected
@@ -39,8 +39,8 @@
   GPBUInt64Array *mutableVarintList_;
   GPBUInt32Array *mutableFixed32List_;
   GPBUInt64Array *mutableFixed64List_;
-  NSMutableArray *mutableLengthDelimitedList_;
-  NSMutableArray *mutableGroupList_;
+  NSMutableArray<NSData*> *mutableLengthDelimitedList_;
+  NSMutableArray<GPBUnknownFieldSet*> *mutableGroupList_;
 }
 
 @synthesize number = number_;
@@ -67,13 +67,19 @@
   [super dealloc];
 }
 
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 - (id)copyWithZone:(NSZone *)zone {
   GPBUnknownField *result =
       [[GPBUnknownField allocWithZone:zone] initWithNumber:number_];
   result->mutableFixed32List_ = [mutableFixed32List_ copyWithZone:zone];
   result->mutableFixed64List_ = [mutableFixed64List_ copyWithZone:zone];
   result->mutableLengthDelimitedList_ =
-      [mutableLengthDelimitedList_ copyWithZone:zone];
+      [mutableLengthDelimitedList_ mutableCopyWithZone:zone];
   result->mutableVarintList_ = [mutableVarintList_ copyWithZone:zone];
   if (mutableGroupList_.count) {
     result->mutableGroupList_ = [[NSMutableArray allocWithZone:zone]
@@ -91,6 +97,7 @@
   if (self == object) return YES;
   if (![object isKindOfClass:[GPBUnknownField class]]) return NO;
   GPBUnknownField *field = (GPBUnknownField *)object;
+  if (number_ != field->number_) return NO;
   BOOL equalVarint =
       (mutableVarintList_.count == 0 && field->mutableVarintList_.count == 0) ||
       [mutableVarintList_ isEqual:field->mutableVarintList_];
@@ -196,8 +203,9 @@
 }
 
 - (NSString *)description {
-  NSMutableString *description = [NSMutableString
-      stringWithFormat:@"<%@ %p>: Field: %d {\n", [self class], self, number_];
+  NSMutableString *description =
+      [NSMutableString stringWithFormat:@"<%@ %p>: Field: %d {\n",
+       [self class], self, number_];
   [mutableVarintList_
       enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
 #pragma unused(idx, stop)
@@ -322,5 +330,7 @@
     [mutableGroupList_ addObject:value];
   }
 }
+
+#pragma clang diagnostic pop
 
 @end

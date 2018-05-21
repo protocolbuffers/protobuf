@@ -31,7 +31,6 @@
 #import "GPBRootObject_PackagePrivate.h"
 
 #import <objc/runtime.h>
-#import <libkern/OSAtomic.h>
 
 #import <CoreFoundation/CoreFoundation.h>
 
@@ -42,6 +41,14 @@
 @interface GPBExtensionDescriptor (GPBRootObject)
 // Get singletonName as a c string.
 - (const char *)singletonNameC;
+@end
+
+// We need some object to conform to the MessageSignatureProtocol to make sure
+// the selectors in it are recorded in our Objective C runtime information.
+// GPBMessage is arguably the more "obvious" choice, but given that all messages
+// inherit from GPBMessage, conflicts seem likely, so we are using GPBRootObject
+// instead.
+@interface GPBRootObject () <GPBMessageSignatureProtocol>
 @end
 
 @implementation GPBRootObject
@@ -96,13 +103,19 @@ static CFHashCode GPBRootExtensionKeyHash(const void *value) {
   return jenkins_one_at_a_time_hash(key);
 }
 
-static OSSpinLock gExtensionSingletonDictionaryLock_ = OS_SPINLOCK_INIT;
+// NOTE: OSSpinLock may seem like a good fit here but Apple engineers have
+// pointed out that they are vulnerable to live locking on iOS in cases of
+// priority inversion:
+//   http://mjtsai.com/blog/2015/12/16/osspinlock-is-unsafe/
+//   https://lists.swift.org/pipermail/swift-dev/Week-of-Mon-20151214/000372.html
+static dispatch_semaphore_t gExtensionSingletonDictionarySemaphore;
 static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
 static GPBExtensionRegistry *gDefaultExtensionRegistry = NULL;
 
 + (void)initialize {
   // Ensure the global is started up.
   if (!gExtensionSingletonDictionary) {
+    gExtensionSingletonDictionarySemaphore = dispatch_semaphore_create(1);
     CFDictionaryKeyCallBacks keyCallBacks = {
       // See description above for reason for using custom dictionary.
       0,
@@ -134,9 +147,10 @@ static GPBExtensionRegistry *gDefaultExtensionRegistry = NULL;
 
 + (void)globallyRegisterExtension:(GPBExtensionDescriptor *)field {
   const char *key = [field singletonNameC];
-  OSSpinLockLock(&gExtensionSingletonDictionaryLock_);
+  dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore,
+                          DISPATCH_TIME_FOREVER);
   CFDictionarySetValue(gExtensionSingletonDictionary, key, field);
-  OSSpinLockUnlock(&gExtensionSingletonDictionaryLock_);
+  dispatch_semaphore_signal(gExtensionSingletonDictionarySemaphore);
 }
 
 static id ExtensionForName(id self, SEL _cmd) {
@@ -166,14 +180,23 @@ static id ExtensionForName(id self, SEL _cmd) {
   key[classNameLen] = '_';
   memcpy(&key[classNameLen + 1], selName, selNameLen);
   key[classNameLen + 1 + selNameLen] = '\0';
-  OSSpinLockLock(&gExtensionSingletonDictionaryLock_);
+
+  // NOTE: Even though this method is called from another C function,
+  // gExtensionSingletonDictionarySemaphore and gExtensionSingletonDictionary
+  // will always be initialized. This is because this call flow is just to
+  // lookup the Extension, meaning the code is calling an Extension class
+  // message on a Message or Root class. This guarantees that the class was
+  // initialized and Message classes ensure their Root was also initialized.
+  NSAssert(gExtensionSingletonDictionary, @"Startup order broken!");
+
+  dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore,
+                          DISPATCH_TIME_FOREVER);
   id extension = (id)CFDictionaryGetValue(gExtensionSingletonDictionary, key);
-  if (extension) {
-    // The method is getting wired in to the class, so no need to keep it in
-    // the dictionary.
-    CFDictionaryRemoveValue(gExtensionSingletonDictionary, key);
-  }
-  OSSpinLockUnlock(&gExtensionSingletonDictionaryLock_);
+  // We can't remove the key from the dictionary here (as an optimization),
+  // two threads could have gone into +resolveClassMethod: for the same method,
+  // and ended up here; there's no way to ensure both return YES without letting
+  // both try to wire in the method.
+  dispatch_semaphore_signal(gExtensionSingletonDictionarySemaphore);
   return extension;
 }
 
@@ -196,9 +219,17 @@ BOOL GPBResolveExtensionClassMethod(Class self, SEL sel) {
 #pragma unused(obj)
       return extension;
     });
-    if (class_addMethod(metaClass, sel, imp, encoding)) {
-      return YES;
+    BOOL methodAdded = class_addMethod(metaClass, sel, imp, encoding);
+    // class_addMethod() is documented as also failing if the method was already
+    // added; so we check if the method is already there and return success so
+    // the method dispatch will still happen.  Why would it already be added?
+    // Two threads could cause the same method to be bound at the same time,
+    // but only one will actually bind it; the other still needs to return true
+    // so things will dispatch.
+    if (!methodAdded) {
+      methodAdded = GPBClassHasSel(metaClass, sel);
     }
+    return methodAdded;
   }
   return NO;
 }

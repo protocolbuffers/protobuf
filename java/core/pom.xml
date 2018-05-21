@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.google.protobuf</groupId>
+    <artifactId>protobuf-parent</artifactId>
+    <version>3.5.2</version>
+  </parent>
+
+  <artifactId>protobuf-java</artifactId>
+  <packaging>bundle</packaging>
+
+  <name>Protocol Buffers [Core]</name>
+  <description>
+    Core Protocol Buffers library. Protocol Buffers are a way of encoding structured data in an
+    efficient yet extensible format.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymockclassextension</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- Include core protos in the bundle as resources -->
+    <resources>
+      <resource>
+        <directory>${protobuf.source.dir}</directory>
+        <includes>
+          <include>google/protobuf/any.proto</include>
+          <include>google/protobuf/api.proto</include>
+          <include>google/protobuf/descriptor.proto</include>
+          <include>google/protobuf/duration.proto</include>
+          <include>google/protobuf/empty.proto</include>
+          <include>google/protobuf/field_mask.proto</include>
+          <include>google/protobuf/source_context.proto</include>
+          <include>google/protobuf/struct.proto</include>
+          <include>google/protobuf/timestamp.proto</include>
+          <include>google/protobuf/type.proto</include>
+          <include>google/protobuf/wrappers.proto</include>
+          <include>google/protobuf/compiler/plugin.proto</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <!-- Use Antrun plugin to generate sources with protoc -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <!-- Generate core protos -->
+          <execution>
+            <id>generate-sources</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <ant antfile="generate-sources-build.xml"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+
+          <!-- Generate the test protos -->
+          <execution>
+            <id>generate-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <configuration>
+              <target>
+                <ant antfile="generate-test-sources-build.xml"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Add the generated sources to the build -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.sources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-generated-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.testsources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- OSGI bundle configuration -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
+            <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
+            <Export-Package>com.google.protobuf;version=${project.version}</Export-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

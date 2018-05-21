@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
 
 namespace google {
@@ -46,8 +47,8 @@ namespace compiler {
 namespace csharp {
 
 EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
-                                       int fieldOrdinal)
-    : PrimitiveFieldGenerator(descriptor, fieldOrdinal) {
+                                       int fieldOrdinal, const Options *options)
+    : PrimitiveFieldGenerator(descriptor, fieldOrdinal, options) {
 }
 
 EnumFieldGenerator::~EnumFieldGenerator() {
@@ -80,12 +81,16 @@ void EnumFieldGenerator::GenerateCodecCode(io::Printer* printer) {
         "pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x)");
 }
 
-EnumOneofFieldGenerator::EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
-						 int fieldOrdinal)
-  : PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal) {
+EnumOneofFieldGenerator::EnumOneofFieldGenerator(
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+  : PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal, options) {
 }
 
 EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {
+}
+
+void EnumOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(variables_, "$property_name$ = other.$property_name$;\n");
 }
 
 void EnumOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {

@@ -46,15 +46,13 @@
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
 
-using google::protobuf::internal::scoped_ptr;
-
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
 
 void FieldGeneratorBase::SetCommonFieldVariables(
-    map<string, string>* variables) {
+    std::map<string, string>* variables) {
   // Note: this will be valid even though the tag emitted for packed and unpacked versions of
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
@@ -92,16 +90,17 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 }
 
 void FieldGeneratorBase::SetCommonOneofFieldVariables(
-    map<string, string>* variables) {
+    std::map<string, string>* variables) {
   (*variables)["oneof_name"] = oneof_name();
-  (*variables)["has_property_check"] = oneof_name() + "Case_ == " + oneof_property_name() +
+  (*variables)["has_property_check"] =
+    oneof_name() + "Case_ == " + oneof_property_name() +
     "OneofCase." + property_name();
   (*variables)["oneof_property_name"] = oneof_property_name();
 }
 
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
-                                       int fieldOrdinal)
-    : SourceGeneratorBase(descriptor->file()),
+                                       int fieldOrdinal, const Options* options)
+    : SourceGeneratorBase(descriptor->file(), options),
       descriptor_(descriptor),
       fieldOrdinal_(fieldOrdinal) {
   SetCommonFieldVariables(&variables_);
@@ -121,14 +120,17 @@ void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
 }
 
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
-  if (descriptor_->options().deprecated())
-  {
-    printer->Print("[global::System.ObsoleteAttribute()]\n");
+  if (descriptor_->options().deprecated()) {
+    printer->Print("[global::System.ObsoleteAttribute]\n");
+  } else if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE &&
+           descriptor_->message_type()->options().deprecated()) {
+    printer->Print("[global::System.ObsoleteAttribute]\n");
   }
 }
 
 void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
   AddDeprecatedFlag(printer);
+  WriteGeneratedCodeAttributes(printer);
 }
 
 std::string FieldGeneratorBase::oneof_property_name() {
@@ -158,10 +160,11 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
       if (IsWrapperType(descriptor)) {
-        const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
+        const FieldDescriptor* wrapped_field =
+            descriptor->message_type()->field(0);
         string wrapped_field_type_name = type_name(wrapped_field);
-        // String and ByteString go to the same type; other wrapped types go to the
-        // nullable equivalent.
+        // String and ByteString go to the same type; other wrapped types
+        // go to the nullable equivalent.
         if (wrapped_field->type() == FieldDescriptor::TYPE_STRING ||
             wrapped_field->type() == FieldDescriptor::TYPE_BYTES) {
           return wrapped_field_type_name;
@@ -304,7 +307,9 @@ std::string FieldGeneratorBase::default_value() {
 std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_ENUM:
-      return type_name() + "." + descriptor->default_value_enum()->name();
+      // All proto3 enums have a default value of 0, and there's an implicit conversion from the constant 0 to
+      // any C# enum. This means we don't need to work out what we actually mapped the enum value name to.
+     return "0";
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
       if (IsWrapperType(descriptor)) {
@@ -315,9 +320,9 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
       }
     case FieldDescriptor::TYPE_DOUBLE: {
       double value = descriptor->default_value_double();
-      if (value == numeric_limits<double>::infinity()) {
+      if (value == std::numeric_limits<double>::infinity()) {
         return "double.PositiveInfinity";
-      } else if (value == -numeric_limits<double>::infinity()) {
+      } else if (value == -std::numeric_limits<double>::infinity()) {
         return "double.NegativeInfinity";
       } else if (MathLimits<double>::IsNaN(value)) {
         return "double.NaN";
@@ -326,9 +331,9 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
     }
     case FieldDescriptor::TYPE_FLOAT: {
       float value = descriptor->default_value_float();
-      if (value == numeric_limits<float>::infinity()) {
+      if (value == std::numeric_limits<float>::infinity()) {
         return "float.PositiveInfinity";
-      } else if (value == -numeric_limits<float>::infinity()) {
+      } else if (value == -std::numeric_limits<float>::infinity()) {
         return "float.NegativeInfinity";
       } else if (MathLimits<float>::IsNaN(value)) {
         return "float.NaN";

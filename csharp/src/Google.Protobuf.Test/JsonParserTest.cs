@@ -39,9 +39,7 @@ using System;
 namespace Google.Protobuf
 {
     /// <summary>
-    /// Unit tests for JSON parsing. Some tests are ignored at the moment as the desired behaviour
-    /// isn't fully known, either in terms of which exceptions should be thrown or whether they should
-    /// count as valid values.
+    /// Unit tests for JSON parsing.
     /// </summary>
     public class JsonParserTest
     {
@@ -71,6 +69,14 @@ namespace Google.Protobuf
             // it's correct for other numeric key types.
             var json = "{ \"mapInt32Int32\": { \"" + keyText + "\" : \"1\" } }";
             Assert.Throws<InvalidProtocolBufferException>(() => JsonParser.Default.Parse<TestMap>(json));
+        }
+
+        [Test]
+        public void OriginalFieldNameAccepted()
+        {
+            var json = "{ \"single_int32\": 10 }";
+            var expected = new TestAllTypes { SingleInt32 = 10 };
+            Assert.AreEqual(expected, TestAllTypes.Parser.ParseJson(json));
         }
 
         [Test]
@@ -118,24 +124,29 @@ namespace Google.Protobuf
         [Test]
         public void SingularWrappers_ExplicitNulls()
         {
-            var message = new TestWellKnownTypes();
+            // When we parse the "valueField": null part, we remember it... basically, it's one case
+            // where explicit default values don't fully roundtrip.
+            var message = new TestWellKnownTypes { ValueField = Value.ForNull() };
             var json = new JsonFormatter(new JsonFormatter.Settings(true)).Format(message);
             var parsed = JsonParser.Default.Parse<TestWellKnownTypes>(json);
             Assert.AreEqual(message, parsed);
         }
 
         [Test]
+        [TestCase(typeof(BoolValue), "true", true)]
         [TestCase(typeof(Int32Value), "32", 32)]
         [TestCase(typeof(Int64Value), "32", 32L)]
+        [TestCase(typeof(Int64Value), "\"32\"", 32L)]
         [TestCase(typeof(UInt32Value), "32", 32U)]
+        [TestCase(typeof(UInt64Value), "\"32\"", 32UL)]
         [TestCase(typeof(UInt64Value), "32", 32UL)]
         [TestCase(typeof(StringValue), "\"foo\"", "foo")]
         [TestCase(typeof(FloatValue), "1.5", 1.5f)]
         [TestCase(typeof(DoubleValue), "1.5", 1.5d)]
         public void Wrappers_Standalone(System.Type wrapperType, string json, object expectedValue)
         {
-            IMessage parsed = (IMessage) Activator.CreateInstance(wrapperType);
-            IMessage expected = (IMessage) Activator.CreateInstance(wrapperType);
+            IMessage parsed = (IMessage)Activator.CreateInstance(wrapperType);
+            IMessage expected = (IMessage)Activator.CreateInstance(wrapperType);
             JsonParser.Default.Merge(parsed, "null");
             Assert.AreEqual(expected, parsed);
 
@@ -145,11 +156,19 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void ExplicitNullValue()
+        {
+            string json = "{\"valueField\": null}";
+            var message = JsonParser.Default.Parse<TestWellKnownTypes>(json);
+            Assert.AreEqual(new TestWellKnownTypes { ValueField = Value.ForNull() }, message);
+        }
+
+        [Test]
         public void BytesWrapper_Standalone()
         {
             ByteString data = ByteString.CopyFrom(1, 2, 3);
             // Can't do this with attributes...
-            var parsed = JsonParser.Default.Parse<BytesValue>("\"" + data.ToBase64() + "\"");
+            var parsed = JsonParser.Default.Parse<BytesValue>(WrapInQuotes(data.ToBase64()));
             var expected = new BytesValue { Value = data };
             Assert.AreEqual(expected, parsed);
         }
@@ -173,6 +192,36 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void RepeatedField_NullElementProhibited()
+        {
+            string json = "{ \"repeated_foreign_message\": [null] }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void RepeatedField_NullOverallValueAllowed()
+        {
+            string json = "{ \"repeated_foreign_message\": null }";
+            Assert.AreEqual(new TestAllTypes(), TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        [TestCase("{ \"mapInt32Int32\": { \"10\": null }")]
+        [TestCase("{ \"mapStringString\": { \"abc\": null }")]
+        [TestCase("{ \"mapInt32ForeignMessage\": { \"10\": null }")]
+        public void MapField_NullValueProhibited(string json)
+        {
+            Assert.Throws<InvalidProtocolBufferException>(() => TestMap.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void MapField_NullOverallValueAllowed()
+        {
+            string json = "{ \"mapInt32Int32\": null }";
+            Assert.AreEqual(new TestMap(), TestMap.Parser.ParseJson(json));
+        }
+
+        [Test]
         public void IndividualWrapperTypes()
         {
             Assert.AreEqual(new StringValue { Value = "foo" }, StringValue.Parser.ParseJson("\"foo\""));
@@ -184,7 +233,7 @@ namespace Google.Protobuf
         private static void AssertRoundtrip<T>(T message) where T : IMessage<T>, new()
         {
             var clone = message.Clone();
-            var json = message.ToString();
+            var json = JsonFormatter.Default.Format(message);
             var parsed = JsonParser.Default.Parse<T>(json);
             Assert.AreEqual(clone, parsed);
         }
@@ -205,6 +254,8 @@ namespace Google.Protobuf
 
         [Test]
         [TestCase("+0")]
+        [TestCase(" 1")]
+        [TestCase("1 ")]
         [TestCase("00")]
         [TestCase("-00")]
         [TestCase("--1")]
@@ -318,7 +369,18 @@ namespace Google.Protobuf
         [TestCase("1.0.0")]
         [TestCase("+1")]
         [TestCase("00")]
+        [TestCase("01")]
+        [TestCase("-00")]
+        [TestCase("-01")]
         [TestCase("--1")]
+        [TestCase(" Infinity")]
+        [TestCase(" -Infinity")]
+        [TestCase("NaN ")]
+        [TestCase("Infinity ")]
+        [TestCase("-Infinity ")]
+        [TestCase(" NaN")]
+        [TestCase("INFINITY")]
+        [TestCase("nan")]
         [TestCase("\u00BD")] // 1/2 as a single Unicode character. Just sanity checking...
         public void StringToDouble_Invalid(string jsonValue)
         {
@@ -363,6 +425,10 @@ namespace Google.Protobuf
         [TestCase("-1", -1)]
         [TestCase("2147483647", 2147483647)]
         [TestCase("-2147483648", -2147483648)]
+        [TestCase("1e1", 10)]
+        [TestCase("-1e1", -10)]
+        [TestCase("10.00", 10)]
+        [TestCase("-10.00", -10)]
         public void NumberToInt32_Valid(string jsonValue, int expectedParsedValue)
         {
             string json = "{ \"singleInt32\": " + jsonValue + "}";
@@ -376,7 +442,8 @@ namespace Google.Protobuf
         [TestCase("-00", typeof(InvalidJsonException))]
         [TestCase("--1", typeof(InvalidJsonException))]
         [TestCase("+1", typeof(InvalidJsonException))]
-        [TestCase("1.5", typeof(InvalidProtocolBufferException), Ignore = true, Reason = "Desired behaviour unclear")]
+        [TestCase("1.5", typeof(InvalidProtocolBufferException))]
+        // Value is out of range
         [TestCase("1e10", typeof(InvalidProtocolBufferException))]
         [TestCase("2147483648", typeof(InvalidProtocolBufferException))]
         [TestCase("-2147483649", typeof(InvalidProtocolBufferException))]
@@ -411,8 +478,10 @@ namespace Google.Protobuf
         [TestCase("0", 0L)]
         [TestCase("1", 1L)]
         [TestCase("-1", -1L)]
-        [TestCase("9223372036854775807", 9223372036854775807, Ignore = true, Reason = "Desired behaviour unclear")]
-        [TestCase("-9223372036854775808", -9223372036854775808, Ignore = true, Reason = "Desired behaviour unclear")]
+        // long.MaxValue isn't actually representable as a double. This string value is the highest
+        // representable value which isn't greater than long.MaxValue.
+        [TestCase("9223372036854774784", 9223372036854774784)]
+        [TestCase("-9223372036854775808", -9223372036854775808)]
         public void NumberToInt64_Valid(string jsonValue, long expectedParsedValue)
         {
             string json = "{ \"singleInt64\": " + jsonValue + "}";
@@ -422,8 +491,11 @@ namespace Google.Protobuf
 
         // Assume that anything non-bounds-related is covered in the Int32 case
         [Test]
-        [TestCase("-9223372036854775809", Ignore = true, Reason = "Desired behaviour unclear")]
-        [TestCase("9223372036854775808", Ignore = true, Reason = "Desired behaviour unclear")]
+        [TestCase("9223372036854775808")]
+        // Theoretical bound would be -9223372036854775809, but when that is parsed to a double
+        // we end up with the exact value of long.MinValue due to lack of precision. The value here
+        // is the "next double down".
+        [TestCase("-9223372036854780000")]
         public void NumberToInt64_Invalid(string jsonValue)
         {
             string json = "{ \"singleInt64\": " + jsonValue + "}";
@@ -433,7 +505,9 @@ namespace Google.Protobuf
         [Test]
         [TestCase("0", 0UL)]
         [TestCase("1", 1UL)]
-        [TestCase("18446744073709551615", 18446744073709551615, Ignore = true, Reason = "Desired behaviour unclear")]
+        // ulong.MaxValue isn't representable as a double. This value is the largest double within
+        // the range of ulong.
+        [TestCase("18446744073709549568", 18446744073709549568UL)]
         public void NumberToUInt64_Valid(string jsonValue, ulong expectedParsedValue)
         {
             string json = "{ \"singleUint64\": " + jsonValue + "}";
@@ -475,9 +549,9 @@ namespace Google.Protobuf
         }
 
         [Test]
-        [TestCase("1.7977e308", Ignore = true, Reason = "Desired behaviour unclear")]
-        [TestCase("-1.7977e308", Ignore = true, Reason = "Desired behaviour unclear")]
-        [TestCase("1e309", Ignore = true, Reason = "Desired behaviour unclear")]
+        [TestCase("1.7977e308")]
+        [TestCase("-1.7977e308")]
+        [TestCase("1e309")]
         [TestCase("1,0")]
         [TestCase("1.0.0")]
         [TestCase("+1")]
@@ -565,11 +639,11 @@ namespace Google.Protobuf
         public void Timestamp_Valid(string jsonValue, string expectedFormatted)
         {
             expectedFormatted = expectedFormatted ?? jsonValue;
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             var parsed = Timestamp.Parser.ParseJson(json);
-            Assert.AreEqual(expectedFormatted, parsed.ToString());
+            Assert.AreEqual(WrapInQuotes(expectedFormatted), parsed.ToString());
         }
-        
+
         [Test]
         [TestCase("2015-10-09 14:46:23.123456789Z", Description = "No T between date and time")]
         [TestCase("2015/10/09T14:46:23.123456789Z", Description = "Wrong date separators")]
@@ -592,7 +666,7 @@ namespace Google.Protobuf
         [TestCase("2100-02-29T14:46:23.123456789Z", Description = "Feb 29th on a non-leap-year")]
         public void Timestamp_Invalid(string jsonValue)
         {
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             Assert.Throws<InvalidProtocolBufferException>(() => Timestamp.Parser.ParseJson(json));
         }
 
@@ -619,6 +693,22 @@ namespace Google.Protobuf
         public void StructValue_List()
         {
             Assert.AreEqual(Value.ForList(Value.ForNumber(1), Value.ForString("x")), Value.Parser.ParseJson("[1, \"x\"]"));
+        }
+
+        [Test]
+        public void Value_List_WithNullElement()
+        {
+            var expected = Value.ForList(Value.ForString("x"), Value.ForNull(), Value.ForString("y"));
+            var actual = Value.Parser.ParseJson("[\"x\", null, \"y\"]");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void StructValue_NullElement()
+        {
+            var expected = Value.ForStruct(new Struct { Fields = { { "x", Value.ForNull() } } });
+            var actual = Value.Parser.ParseJson("{ \"x\": null }");
+            Assert.AreEqual(expected, actual);
         }
 
         [Test]
@@ -666,9 +756,9 @@ namespace Google.Protobuf
         public void Duration_Valid(string jsonValue, string expectedFormatted)
         {
             expectedFormatted = expectedFormatted ?? jsonValue;
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             var parsed = Duration.Parser.ParseJson(json);
-            Assert.AreEqual(expectedFormatted, parsed.ToString());
+            Assert.AreEqual(WrapInQuotes(expectedFormatted), parsed.ToString());
         }
 
         // The simplest way of testing that the value has parsed correctly is to reformat it,
@@ -692,12 +782,11 @@ namespace Google.Protobuf
         [TestCase("--0.123456789s", Description = "Double minus sign")]
         // Violate upper/lower bounds in various ways
         [TestCase("315576000001s", Description = "Integer part too large")]
-        [TestCase("315576000000.000000001s", Description = "Integer part is upper bound; non-zero fraction")]
         [TestCase("3155760000000s", Description = "Integer part too long (positive)")]
         [TestCase("-3155760000000s", Description = "Integer part too long (negative)")]
         public void Duration_Invalid(string jsonValue)
         {
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             Assert.Throws<InvalidProtocolBufferException>(() => Duration.Parser.ParseJson(json));
         }
 
@@ -713,9 +802,17 @@ namespace Google.Protobuf
         [TestCase("fooBar.bazQux", "foo_bar.baz_qux")]
         public void FieldMask_Valid(string jsonValue, params string[] expectedPaths)
         {
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             var parsed = FieldMask.Parser.ParseJson(json);
             CollectionAssert.AreEqual(expectedPaths, parsed.Paths);
+        }
+
+        [Test]
+        [TestCase("foo_bar")]
+        public void FieldMask_Invalid(string jsonValue)
+        {
+            string json = WrapInQuotes(jsonValue);
+            Assert.Throws<InvalidProtocolBufferException>(() => FieldMask.Parser.ParseJson(json));
         }
 
         [Test]
@@ -728,8 +825,19 @@ namespace Google.Protobuf
             var json = formatter.Format(original); // This is tested in JsonFormatterTest
             var parser = new JsonParser(new JsonParser.Settings(10, registry));
             Assert.AreEqual(original, parser.Parse<Any>(json));
-            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest.TestAllTypes\" }";
+            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest3.TestAllTypes\" }";
             Assert.AreEqual(original, parser.Parse<Any>(valueFirstJson));
+        }
+
+        [Test]
+        public void Any_CustomPrefix()
+        {
+            var registry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);
+            var message = new TestAllTypes { SingleInt32 = 10 };
+            var original = Any.Pack(message, "custom.prefix/middle-part");
+            var parser = new JsonParser(new JsonParser.Settings(10, registry));
+            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest3.TestAllTypes\", \"singleInt32\": 10 }";
+            Assert.AreEqual(original, parser.Parse<Any>(json));
         }
 
         [Test]
@@ -737,6 +845,13 @@ namespace Google.Protobuf
         {
             string json = "{ \"@type\": \"type.googleapis.com/bogus\" }";
             Assert.Throws<InvalidOperationException>(() => Any.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void Any_NoTypeUrl()
+        {
+            string json = "{ \"foo\": \"bar\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => Any.Parser.ParseJson(json));
         }
 
         [Test]
@@ -789,7 +904,73 @@ namespace Google.Protobuf
 
             var parser63 = new JsonParser(new JsonParser.Settings(63));
             Assert.Throws<InvalidProtocolBufferException>(() => parser63.Parse<TestRecursiveMessage>(data64));
+        }
 
+        [Test]
+        [TestCase("AQI")]
+        [TestCase("_-==")]
+        public void Bytes_InvalidBase64(string badBase64)
+        {
+            string json = "{ \"singleBytes\": \"" + badBase64 + "\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        [TestCase("\"FOREIGN_BAR\"", ForeignEnum.ForeignBar)]
+        [TestCase("5", ForeignEnum.ForeignBar)]
+        [TestCase("100", (ForeignEnum)100)]
+        public void EnumValid(string value, ForeignEnum expectedValue)
+        {
+            string json = "{ \"singleForeignEnum\": " + value + " }";
+            var parsed = TestAllTypes.Parser.ParseJson(json);
+            Assert.AreEqual(new TestAllTypes { SingleForeignEnum = expectedValue }, parsed);
+        }
+
+        [Test]
+        [TestCase("\"NOT_A_VALID_VALUE\"")]
+        [TestCase("5.5")]
+        public void Enum_Invalid(string value)
+        {
+            string json = "{ \"singleForeignEnum\": " + value + " }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void OneofDuplicate_Invalid()
+        {
+            string json = "{ \"oneofString\": \"x\", \"oneofUint32\": 10 }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void UnknownField_NotIgnored()
+        {
+            string json = "{ \"unknownField\": 10, \"singleString\": \"x\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        [TestCase("5")]
+        [TestCase("\"text\"")]
+        [TestCase("[0, 1, 2]")]
+        [TestCase("{ \"a\": { \"b\": 10 } }")]
+        public void UnknownField_Ignored(string value)
+        {
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"unknownField\": " + value + ", \"singleString\": \"x\" }";
+            var actual = parser.Parse<TestAllTypes>(json);
+            var expected = new TestAllTypes { SingleString = "x" };
+            Assert.AreEqual(expected, actual);
+        }
+
+        /// <summary>
+        /// Various tests use strings which have quotes round them for parsing or as the result
+        /// of formatting, but without those quotes being specified in the tests (for the sake of readability).
+        /// This method simply returns the input, wrapped in double quotes.
+        /// </summary>
+        internal static string WrapInQuotes(string text)
+        {
+            return '"' + text + '"';
         }
     }
 }

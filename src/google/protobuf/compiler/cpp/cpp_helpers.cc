@@ -32,17 +32,21 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <map>
+#include <queue>
 #include <vector>
-#include <google/protobuf/stubs/hash.h>
 
-#include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+
+
 
 
 namespace google {
@@ -68,14 +72,15 @@ const char* const kKeywordList[] = {
   "alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor",
   "bool", "break", "case", "catch", "char", "class", "compl", "const",
   "constexpr", "const_cast", "continue", "decltype", "default", "delete", "do",
-  "double", "dynamic_cast", "else", "enum", "explicit", "extern", "false",
-  "float", "for", "friend", "goto", "if", "inline", "int", "long", "mutable",
-  "namespace", "new", "noexcept", "not", "not_eq", "NULL", "operator", "or",
-  "or_eq", "private", "protected", "public", "register", "reinterpret_cast",
-  "return", "short", "signed", "sizeof", "static", "static_assert",
-  "static_cast", "struct", "switch", "template", "this", "thread_local",
-  "throw", "true", "try", "typedef", "typeid", "typename", "union", "unsigned",
-  "using", "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
+  "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern",
+  "false", "float", "for", "friend", "goto", "if", "inline", "int", "long",
+  "mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr",
+  "operator", "or", "or_eq", "private", "protected", "public", "register",
+  "reinterpret_cast", "return", "short", "signed", "sizeof", "static",
+  "static_assert", "static_cast", "struct", "switch", "template", "this",
+  "thread_local", "throw", "true", "try", "typedef", "typeid", "typename",
+  "union", "unsigned", "using", "virtual", "void", "volatile", "wchar_t",
+  "while", "xor", "xor_eq"
 };
 
 hash_set<string> MakeKeywordsMap() {
@@ -100,6 +105,30 @@ bool HasExtension(const Descriptor* descriptor) {
     }
   }
   return false;
+}
+
+// Encode [0..63] as 'A'-'Z', 'a'-'z', '0'-'9', '_'
+char Base63Char(int value) {
+  GOOGLE_CHECK_GE(value, 0);
+  if (value < 26) return 'A' + value;
+  value -= 26;
+  if (value < 26) return 'a' + value;
+  value -= 26;
+  if (value < 10) return '0' + value;
+  GOOGLE_CHECK_EQ(value, 10);
+  return '_';
+}
+
+// Given a c identifier has 63 legal characters we can't implement base64
+// encoding. So we return the k least significant "digits" in base 63.
+template <typename I>
+string Base63(I n, int k) {
+  string res;
+  while (k-- > 0) {
+    res += Base63Char(static_cast<int>(n % 63));
+    n /= 63;
+  }
+  return res;
 }
 
 }  // namespace
@@ -134,54 +163,67 @@ const char kThickSeparator[] =
 const char kThinSeparator[] =
   "// -------------------------------------------------------------------\n";
 
-string ClassName(const Descriptor* descriptor, bool qualified) {
-
-  // Find "outer", the descriptor of the top-level message in which
-  // "descriptor" is embedded.
-  const Descriptor* outer = descriptor;
-  while (outer->containing_type() != NULL) outer = outer->containing_type();
-
-  const string& outer_name = outer->full_name();
-  string inner_name = descriptor->full_name().substr(outer_name.size());
-
-  if (qualified) {
-    return "::" + DotsToColons(outer_name) + DotsToUnderscores(inner_name);
-  } else {
-    return outer->name() + DotsToUnderscores(inner_name);
+bool CanInitializeByZeroing(const FieldDescriptor* field) {
+  if (field->is_repeated() || field->is_extension()) return false;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() == 0;
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() == 0;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() == 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() == 0;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() == 0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() == 0;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() == 0;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() == false;
+    default:
+      return false;
   }
 }
 
-string ClassName(const EnumDescriptor* enum_descriptor, bool qualified) {
+string ClassName(const Descriptor* descriptor) {
+  const Descriptor* parent = descriptor->containing_type();
+  string res;
+  if (parent) res += ClassName(parent) + "_";
+  res += descriptor->name();
+  if (IsMapEntryMessage(descriptor)) res += "_DoNotUse";
+  return res;
+}
+
+string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == NULL) {
-    if (qualified) {
-      return "::" + DotsToColons(enum_descriptor->full_name());
-    } else {
-      return enum_descriptor->name();
-    }
+    return enum_descriptor->name();
   } else {
-    string result = ClassName(enum_descriptor->containing_type(), qualified);
-    result += '_';
-    result += enum_descriptor->name();
-    return result;
+    return ClassName(enum_descriptor->containing_type()) + "_" +
+           enum_descriptor->name();
   }
 }
 
-
-string DependentBaseClassTemplateName(const Descriptor* descriptor) {
-  return ClassName(descriptor, false) + "_InternalBase";
+string Namespace(const string& package) {
+  if (package.empty()) return "";
+  return "::" + DotsToColons(package);
 }
 
-string SuperClassName(const Descriptor* descriptor) {
-  return HasDescriptorMethods(descriptor->file()) ?
-      "::google::protobuf::Message" : "::google::protobuf::MessageLite";
+string DefaultInstanceName(const Descriptor* descriptor) {
+  string prefix = descriptor->file()->package().empty() ? "" : "::";
+  return prefix + DotsToColons(descriptor->file()->package()) + "::_" +
+      ClassName(descriptor, false) + "_default_instance_";
 }
 
-string DependentBaseDownCast() {
-  return "reinterpret_cast<T*>(this)->";
+string ReferenceFunctionName(const Descriptor* descriptor) {
+  return QualifiedClassName(descriptor) + "_ReferenceStrong";
 }
 
-string DependentBaseConstDownCast() {
-  return "reinterpret_cast<const T*>(this)->";
+string SuperClassName(const Descriptor* descriptor, const Options& options) {
+  return HasDescriptorMethods(descriptor->file(), options)
+             ? "::google::protobuf::Message"
+             : "::google::protobuf::MessageLite";
 }
 
 string FieldName(const FieldDescriptor* field) {
@@ -201,6 +243,30 @@ string EnumValueName(const EnumValueDescriptor* enum_value) {
   return result;
 }
 
+int EstimateAlignmentSize(const FieldDescriptor* field) {
+  if (field == NULL) return 0;
+  if (field->is_repeated()) return 8;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return 1;
+
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return 4;
+
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_STRING:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return 8;
+  }
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return -1;  // Make compiler happy.
+}
+
 string FieldConstantName(const FieldDescriptor *field) {
   string field_name = UnderscoresToCamelCase(field->name(), true);
   string result = "k" + field_name + "FieldNumber";
@@ -215,60 +281,6 @@ string FieldConstantName(const FieldDescriptor *field) {
   }
 
   return result;
-}
-
-bool IsFieldDependent(const FieldDescriptor* field) {
-  if (field->containing_oneof() != NULL &&
-      field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-    return true;
-  }
-  if (field->is_map()) {
-    const Descriptor* map_descriptor = field->message_type();
-    for (int i = 0; i < map_descriptor->field_count(); i++) {
-      if (IsFieldDependent(map_descriptor->field(i))) {
-        return true;
-      }
-    }
-    return false;
-  }
-  if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    return false;
-  }
-  if (field->containing_oneof() != NULL) {
-    // Oneof fields will always be dependent.
-    //
-    // This is a unique case for field codegen. Field generators are
-    // responsible for generating all the field-specific accessor
-    // functions, except for the clear_*() function; instead, field
-    // generators produce inline clearing code.
-    //
-    // For non-oneof fields, the Message class uses the inline clearing
-    // code to define the field's clear_*() function, as well as in the
-    // destructor. For oneof fields, the Message class generates a much
-    // more complicated clear_*() function, which clears only the oneof
-    // member that is set, in addition to clearing methods for each of the
-    // oneof members individually.
-    //
-    // Since oneofs do not have their own generator class, the Message code
-    // generation logic would be significantly complicated in order to
-    // split dependent and non-dependent manipulation logic based on
-    // whether the oneof truly needs to be dependent; so, for oneof fields,
-    // we just assume it (and its constituents) should be manipulated by a
-    // dependent base class function.
-    //
-    // This is less precise than how dependent message-typed fields are
-    // handled, but the cost is limited to only the generated code for the
-    // oneof field, which seems like an acceptable tradeoff.
-    return true;
-  }
-  if (field->file() == field->message_type()->file()) {
-    return false;
-  }
-  return true;
-}
-
-string DependentTypeName(const FieldDescriptor* field) {
-  return "InternalBase_" + field->name() + "_T";
 }
 
 string FieldMessageTypeName(const FieldDescriptor* field) {
@@ -369,9 +381,9 @@ string DefaultValue(const FieldDescriptor* field) {
       return "GOOGLE_ULONGLONG(" + SimpleItoa(field->default_value_uint64())+ ")";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
-      if (value == numeric_limits<double>::infinity()) {
+      if (value == std::numeric_limits<double>::infinity()) {
         return "::google::protobuf::internal::Infinity()";
-      } else if (value == -numeric_limits<double>::infinity()) {
+      } else if (value == -std::numeric_limits<double>::infinity()) {
         return "-::google::protobuf::internal::Infinity()";
       } else if (value != value) {
         return "::google::protobuf::internal::NaN()";
@@ -382,9 +394,9 @@ string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_FLOAT:
       {
         float value = field->default_value_float();
-        if (value == numeric_limits<float>::infinity()) {
+        if (value == std::numeric_limits<float>::infinity()) {
           return "static_cast<float>(::google::protobuf::internal::Infinity())";
-        } else if (value == -numeric_limits<float>::infinity()) {
+        } else if (value == -std::numeric_limits<float>::infinity()) {
           return "static_cast<float>(-::google::protobuf::internal::Infinity())";
         } else if (value != value) {
           return "static_cast<float>(::google::protobuf::internal::NaN())";
@@ -413,7 +425,8 @@ string DefaultValue(const FieldDescriptor* field) {
         CEscape(field->default_value_string())) +
         "\"";
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return FieldMessageTypeName(field) + "::default_instance()";
+      return "*" + FieldMessageTypeName(field) +
+             "::internal_default_instance()";
   }
   // Can't actually get here; make compiler happy.  (We could add a default
   // case above but then we wouldn't get the nice compiler warning when a
@@ -437,19 +450,8 @@ string FilenameIdentifier(const string& filename) {
   return result;
 }
 
-// Return the name of the AddDescriptors() function for a given file.
-string GlobalAddDescriptorsName(const string& filename) {
-  return "protobuf_AddDesc_" + FilenameIdentifier(filename);
-}
-
-// Return the name of the AssignDescriptors() function for a given file.
-string GlobalAssignDescriptorsName(const string& filename) {
-  return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
-}
-
-// Return the name of the ShutdownFile() function for a given file.
-string GlobalShutdownFileName(const string& filename) {
-  return "protobuf_ShutdownFile_" + FilenameIdentifier(filename);
+string FileLevelNamespace(const string& filename) {
+  return "protobuf_" + FilenameIdentifier(filename);
 }
 
 // Return the qualified C++ name for a file level symbol.
@@ -483,50 +485,6 @@ string SafeFunctionName(const Descriptor* descriptor,
     function_name.append("_");
   }
   return function_name;
-}
-
-bool StaticInitializersForced(const FileDescriptor* file) {
-  if (HasDescriptorMethods(file) || file->extension_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasExtension(file->message_type(i))) {
-      return true;
-    }
-  }
-  return false;
-}
-
-void PrintHandlingOptionalStaticInitializers(
-    const FileDescriptor* file, io::Printer* printer,
-    const char* with_static_init, const char* without_static_init,
-    const char* var1, const string& val1,
-    const char* var2, const string& val2) {
-  map<string, string> vars;
-  if (var1) {
-    vars[var1] = val1;
-  }
-  if (var2) {
-    vars[var2] = val2;
-  }
-  PrintHandlingOptionalStaticInitializers(
-      vars, file, printer, with_static_init, without_static_init);
-}
-
-void PrintHandlingOptionalStaticInitializers(
-    const map<string, string>& vars, const FileDescriptor* file,
-    io::Printer* printer, const char* with_static_init,
-    const char* without_static_init) {
-  if (StaticInitializersForced(file)) {
-    printer->Print(vars, with_static_init);
-  } else {
-    printer->Print(vars, (string(
-      "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n") +
-      without_static_init +
-      "#else\n" +
-      with_static_init +
-      "#endif\n").c_str());
-  }
 }
 
 
@@ -612,10 +570,11 @@ enum Utf8CheckMode {
 };
 
 // Which level of UTF-8 enforcemant is placed on this file.
-static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field) {
+static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
+                                      const Options& options) {
   if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
     return STRICT;
-  } else if (field->file()->options().optimize_for() !=
+  } else if (GetOptimizeFor(field->file(), options) !=
              FileOptions::LITE_RUNTIME) {
     return VERIFY;
   } else {
@@ -624,13 +583,13 @@ static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field) {
 }
 
 static void GenerateUtf8CheckCode(const FieldDescriptor* field,
-                                  bool for_parse,
-                                  const map<string, string>& variables,
+                                  const Options& options, bool for_parse,
+                                  const std::map<string, string>& variables,
                                   const char* parameters,
                                   const char* strict_function,
                                   const char* verify_function,
                                   io::Printer* printer) {
-  switch (GetUtf8CheckMode(field)) {
+  switch (GetUtf8CheckMode(field, options)) {
     case STRICT: {
       if (for_parse) {
         printer->Print("DO_(");
@@ -674,24 +633,233 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
 }
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
-                                    bool for_parse,
-                                    const map<string, string>& variables,
+                                    const Options& options, bool for_parse,
+                                    const std::map<string, string>& variables,
                                     const char* parameters,
                                     io::Printer* printer) {
-  GenerateUtf8CheckCode(field, for_parse, variables, parameters,
+  GenerateUtf8CheckCode(field, options, for_parse, variables, parameters,
                         "VerifyUtf8String", "VerifyUTF8StringNamedField",
                         printer);
 }
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
-                                  bool for_parse,
-                                  const map<string, string>& variables,
+                                  const Options& options, bool for_parse,
+                                  const std::map<string, string>& variables,
                                   const char* parameters,
                                   io::Printer* printer) {
-  GenerateUtf8CheckCode(field, for_parse, variables, parameters,
-                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField",
-                        printer);
+  GenerateUtf8CheckCode(field, options, for_parse, variables, parameters,
+                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField", printer);
 }
+
+namespace {
+
+void Flatten(const Descriptor* descriptor,
+             std::vector<const Descriptor*>* flatten) {
+  for (int i = 0; i < descriptor->nested_type_count(); i++)
+    Flatten(descriptor->nested_type(i), flatten);
+  flatten->push_back(descriptor);
+}
+
+}  // namespace
+
+void FlattenMessagesInFile(const FileDescriptor* file,
+                           std::vector<const Descriptor*>* result) {
+  for (int i = 0; i < file->message_type_count(); i++) {
+    Flatten(file->message_type(i), result);
+  }
+}
+
+bool HasWeakFields(const Descriptor* descriptor) {
+  return false;
+}
+
+bool HasWeakFields(const FileDescriptor* file) {
+  return false;
+}
+
+bool UsingImplicitWeakFields(const FileDescriptor* file,
+                             const Options& options) {
+  return options.lite_implicit_weak_fields &&
+         GetOptimizeFor(file, options) == FileOptions::LITE_RUNTIME;
+}
+
+bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
+                         SCCAnalyzer* scc_analyzer) {
+  return UsingImplicitWeakFields(field->file(), options) &&
+         field->type() == FieldDescriptor::TYPE_MESSAGE &&
+         !field->is_required() && !field->is_map() &&
+         field->containing_oneof() == NULL &&
+         !IsWellKnownMessage(field->message_type()->file()) &&
+         // We do not support implicit weak fields between messages in the same
+         // strongly-connected component.
+         scc_analyzer->GetSCC(field->containing_type()) !=
+             scc_analyzer->GetSCC(field->message_type());
+}
+
+struct CompareDescriptors {
+  bool operator()(const Descriptor* a, const Descriptor* b) {
+    return a->full_name() < b->full_name();
+  }
+};
+
+SCCAnalyzer::NodeData SCCAnalyzer::DFS(const Descriptor* descriptor) {
+  // Must not have visited already.
+  GOOGLE_DCHECK_EQ(cache_.count(descriptor), 0);
+
+  // Mark visited by inserting in map.
+  NodeData& result = cache_[descriptor];
+  // Initialize data structures.
+  result.index = result.lowlink = index_++;
+  stack_.push_back(descriptor);
+
+  // Recurse the fields / nodes in graph
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    const Descriptor* child = descriptor->field(i)->message_type();
+    if (child) {
+      if (cache_.count(child) == 0) {
+        // unexplored node
+        NodeData child_data = DFS(child);
+        result.lowlink = std::min(result.lowlink, child_data.lowlink);
+      } else {
+        NodeData child_data = cache_[child];
+        if (child_data.scc == NULL) {
+          // Still in the stack_ so we found a back edge
+          result.lowlink = std::min(result.lowlink, child_data.index);
+        }
+      }
+    }
+  }
+  if (result.index == result.lowlink) {
+    // This is the root of a strongly connected component
+    SCC* scc = CreateSCC();
+    while (true) {
+      const Descriptor* scc_desc = stack_.back();
+      scc->descriptors.push_back(scc_desc);
+      // Remove from stack
+      stack_.pop_back();
+      cache_[scc_desc].scc = scc;
+
+      if (scc_desc == descriptor) break;
+    }
+
+    // The order of descriptors is random and depends how this SCC was
+    // discovered. In-order to ensure maximum stability we sort it by name.
+    std::sort(scc->descriptors.begin(), scc->descriptors.end(),
+              CompareDescriptors());
+    AddChildren(scc);
+  }
+  return result;
+}
+
+void SCCAnalyzer::AddChildren(SCC* scc) {
+  std::set<const SCC*> seen;
+  for (int i = 0; i < scc->descriptors.size(); i++) {
+    const Descriptor* descriptor = scc->descriptors[i];
+    for (int j = 0; j < descriptor->field_count(); j++) {
+      const Descriptor* child_msg = descriptor->field(j)->message_type();
+      if (child_msg) {
+        const SCC* child = GetSCC(child_msg);
+        if (child == scc) continue;
+        if (seen.insert(child).second) {
+          scc->children.push_back(child);
+        }
+      }
+    }
+  }
+}
+
+MessageAnalysis SCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
+  if (analysis_cache_.count(scc)) return analysis_cache_[scc];
+  MessageAnalysis result = MessageAnalysis();
+  for (int i = 0; i < scc->descriptors.size(); i++) {
+    const Descriptor* descriptor = scc->descriptors[i];
+    if (descriptor->extension_range_count() > 0) {
+      result.contains_extension = true;
+    }
+    for (int i = 0; i < descriptor->field_count(); i++) {
+      const FieldDescriptor* field = descriptor->field(i);
+      if (field->is_required()) {
+        result.contains_required = true;
+      }
+      switch (field->type()) {
+        case FieldDescriptor::TYPE_STRING:
+        case FieldDescriptor::TYPE_BYTES: {
+          if (field->options().ctype() == FieldOptions::CORD) {
+            result.contains_cord = true;
+          }
+          break;
+        }
+        case FieldDescriptor::TYPE_GROUP:
+        case FieldDescriptor::TYPE_MESSAGE: {
+          const SCC* child = GetSCC(field->message_type());
+          if (child != scc) {
+            MessageAnalysis analysis = GetSCCAnalysis(child);
+            result.contains_cord |= analysis.contains_cord;
+            result.contains_extension |= analysis.contains_extension;
+            if (!ShouldIgnoreRequiredFieldCheck(field, options_)) {
+              result.contains_required |= analysis.contains_required;
+            }
+          } else {
+            // This field points back into the same SCC hence the messages
+            // in the SCC are recursive. Note if SCC contains more than two
+            // nodes it has to be recursive, however this test also works for
+            // a single node that is recursive.
+            result.is_recursive = true;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  }
+  // We deliberately only insert the result here. After we contracted the SCC
+  // in the graph, the graph should be a DAG. Hence we shouldn't need to mark
+  // nodes visited as we can never return to them. By inserting them here
+  // we will go in an infinite loop if the SCC is not correct.
+  return analysis_cache_[scc] = result;
+}
+
+void ListAllFields(const Descriptor* d,
+                   std::vector<const FieldDescriptor*>* fields) {
+  // Collect sub messages
+  for (int i = 0; i < d->nested_type_count(); i++) {
+    ListAllFields(d->nested_type(i), fields);
+  }
+  // Collect message level extensions.
+  for (int i = 0; i < d->extension_count(); i++) {
+    fields->push_back(d->extension(i));
+  }
+  // Add types of fields necessary
+  for (int i = 0; i < d->field_count(); i++) {
+    fields->push_back(d->field(i));
+  }
+}
+
+void ListAllFields(const FileDescriptor* d,
+                   std::vector<const FieldDescriptor*>* fields) {
+  // Collect file level message.
+  for (int i = 0; i < d->message_type_count(); i++) {
+    ListAllFields(d->message_type(i), fields);
+  }
+  // Collect message level extensions.
+  for (int i = 0; i < d->extension_count(); i++) {
+    fields->push_back(d->extension(i));
+  }
+}
+
+void ListAllTypesForServices(const FileDescriptor* fd,
+                             std::vector<const Descriptor*>* types) {
+  for (int i = 0; i < fd->service_count(); i++) {
+    const ServiceDescriptor* sd = fd->service(i);
+    for (int j = 0; j < sd->method_count(); j++) {
+      const MethodDescriptor* method = sd->method(j);
+      types->push_back(method->input_type());
+      types->push_back(method->output_type());
+    }
+  }
+}
+
 
 }  // namespace cpp
 }  // namespace compiler

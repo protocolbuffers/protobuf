@@ -1,0 +1,21 @@
+{
+  "name": "google/protobuf",
+  "type": "library",
+  "description": "proto library for PHP",
+  "keywords": ["proto"],
+  "homepage": "https://developers.google.com/protocol-buffers/",
+  "license": "BSD-3-Clause",
+  "require": {
+    "php": ">=5.5.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": ">=4.8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Google\\Protobuf\\": "src/Google/Protobuf",
+      "GPBMetadata\\Google\\Protobuf\\": "src/GPBMetadata/Google/Protobuf",
+      "": "tests/generated"
+    }
+  }
+}
