@@ -597,7 +597,7 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
    public:
     explicit StreamReporter(io::ZeroCopyOutputStream* output);
     explicit StreamReporter(io::Printer* printer);  // delimiter '$'
-    virtual ~StreamReporter();
+    virtual ~StreamReporter() override;
 
     // When set to true, the stream reporter will also output aggregates nodes
     // (i.e. messages and groups) whose subfields have been modified. When
@@ -607,32 +607,33 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
     }
 
     // The following are implementations of the methods described above.
+
     virtual void ReportAdded(const Message& message1, const Message& message2,
-                             const std::vector<SpecificField>& field_path);
+                             const std::vector<SpecificField>& field_path) override;
 
     virtual void ReportDeleted(const Message& message1,
                                const Message& message2,
-                               const std::vector<SpecificField>& field_path);
+                               const std::vector<SpecificField>& field_path) override;
 
     virtual void ReportModified(const Message& message1,
                                 const Message& message2,
-                                const std::vector<SpecificField>& field_path);
+                                const std::vector<SpecificField>& field_path) override;
 
     virtual void ReportMoved(const Message& message1,
                              const Message& message2,
-                             const std::vector<SpecificField>& field_path);
+                             const std::vector<SpecificField>& field_path) override;
 
     virtual void ReportMatched(const Message& message1,
                                const Message& message2,
-                               const std::vector<SpecificField>& field_path);
+                               const std::vector<SpecificField>& field_path) override;
 
     virtual void ReportIgnored(const Message& message1,
                                const Message& message2,
-                               const std::vector<SpecificField>& field_path);
+                               const std::vector<SpecificField>& field_path) override;
 
-    virtual void ReportUnknownFieldIgnored(
+    void ReportUnknownFieldIgnored(
         const Message& message1, const Message& message2,
-        const std::vector<SpecificField>& field_path);
+        const std::vector<SpecificField>& field_path) override;
 
    protected:
     // Prints the specified path of fields to the buffer.  message is used to
@@ -681,7 +682,7 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
    public:
     explicit MapEntryKeyComparator(MessageDifferencer* message_differencer);
     virtual bool IsMatch(const Message& message1, const Message& message2,
-                         const std::vector<SpecificField>& parent_fields) const;
+                         const std::vector<SpecificField>& parent_fields) const override;
 
    private:
     MessageDifferencer* message_differencer_;

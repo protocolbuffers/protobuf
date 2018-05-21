@@ -60,7 +60,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
                              const DescriptorPool* pool)
       : url_prefix_(url_prefix), pool_(pool) {}
 
-  Status ResolveMessageType(const string& type_url, Type* type) {
+  Status ResolveMessageType(const string& type_url, Type* type) override {
     string type_name;
     Status status = ParseTypeUrl(type_url, &type_name);
     if (!status.ok()) {
@@ -75,7 +75,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     return Status();
   }
 
-  Status ResolveEnumType(const string& type_url, Enum* enum_type) {
+  Status ResolveEnumType(const string& type_url, Enum* enum_type) override {
     string type_name;
     Status status = ParseTypeUrl(type_url, &type_name);
     if (!status.ok()) {

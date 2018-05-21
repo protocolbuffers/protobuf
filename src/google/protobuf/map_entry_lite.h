@@ -177,13 +177,13 @@ class MapEntryImpl : public Base {
 
   // MapEntryImpl is for implementation only and this function isn't called
   // anywhere. Just provide a fake implementation here for MessageLite.
-  string GetTypeName() const { return ""; }
+  string GetTypeName() const override { return ""; }
 
-  void CheckTypeAndMergeFrom(const MessageLite& other) {
+  void CheckTypeAndMergeFrom(const MessageLite& other) override {
     MergeFromInternal(*::google::protobuf::down_cast<const Derived*>(&other));
   }
 
-  bool MergePartialFromCodedStream(::google::protobuf::io::CodedInputStream* input) {
+  bool MergePartialFromCodedStream(::google::protobuf::io::CodedInputStream* input) override {
     uint32 tag;
 
     for (;;) {
@@ -224,7 +224,7 @@ class MapEntryImpl : public Base {
     }
   }
 
-  size_t ByteSizeLong() const {
+  size_t ByteSizeLong() const override {
     size_t size = 0;
     size += has_key() ?
         kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key())) : 0;
@@ -233,13 +233,13 @@ class MapEntryImpl : public Base {
     return size;
   }
 
-  void SerializeWithCachedSizes(::google::protobuf::io::CodedOutputStream* output) const {
+  void SerializeWithCachedSizes(::google::protobuf::io::CodedOutputStream* output) const override {
     KeyTypeHandler::Write(kKeyFieldNumber, key(), output);
     ValueTypeHandler::Write(kValueFieldNumber, value(), output);
   }
 
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(bool deterministic,
-                                                   ::google::protobuf::uint8* output) const {
+                                                   ::google::protobuf::uint8* output) const override {
     output = KeyTypeHandler::InternalWriteToArray(kKeyFieldNumber, key(),
                                                   deterministic, output);
     output = ValueTypeHandler::InternalWriteToArray(kValueFieldNumber, value(),
@@ -249,7 +249,7 @@ class MapEntryImpl : public Base {
 
   // Don't override SerializeWithCachedSizesToArray.  Use MessageLite's.
 
-  int GetCachedSize() const {
+  int GetCachedSize() const override {
     int size = 0;
     size += has_key()
         ? static_cast<int>(kTagSize) + KeyTypeHandler::GetCachedSize(key())
@@ -260,23 +260,16 @@ class MapEntryImpl : public Base {
     return size;
   }
 
-  bool IsInitialized() const { return ValueTypeHandler::IsInitialized(value_); }
+  bool IsInitialized() const override { return ValueTypeHandler::IsInitialized(value_); }
 
-  Base* New() const {
+  Base* New() const override {
     Derived* entry = new Derived;
     return entry;
   }
 
-  Base* New(Arena* arena) const {
+  Base* New(Arena* arena) const override {
     Derived* entry = Arena::CreateMessage<Derived>(arena);
     return entry;
-  }
-
-  size_t SpaceUsedLong() const {
-    size_t size = sizeof(Derived);
-    size += KeyTypeHandler::SpaceUsedInMapEntryLong(key_);
-    size += ValueTypeHandler::SpaceUsedInMapEntryLong(value_);
-    return size;
   }
 
  protected:
@@ -298,7 +291,7 @@ class MapEntryImpl : public Base {
   }
 
  public:
-  void Clear() {
+  void Clear() override {
     KeyTypeHandler::Clear(&key_, GetArenaNoVirtual());
     ValueTypeHandler::ClearMaybeByDefaultEnum(
         &value_, GetArenaNoVirtual(), default_enum_value);
@@ -312,7 +305,7 @@ class MapEntryImpl : public Base {
     ValueTypeHandler::AssignDefaultValue(&d->value_);
   }
 
-  Arena* GetArena() const {
+  Arena* GetArena() const override {
     return GetArenaNoVirtual();
   }
 
@@ -466,8 +459,8 @@ class MapEntryImpl : public Base {
       BaseClass::set_has_key();
       BaseClass::set_has_value();
     }
-    inline const KeyMapEntryAccessorType& key() const { return key_; }
-    inline const ValueMapEntryAccessorType& value() const { return value_; }
+    inline const KeyMapEntryAccessorType &key() const override { return key_; }
+    inline const ValueMapEntryAccessorType& value() const override { return value_; }
 
    private:
     const Key& key_;

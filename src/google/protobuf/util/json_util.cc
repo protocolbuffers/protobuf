@@ -119,19 +119,20 @@ util::Status BinaryToJsonString(TypeResolver* resolver,
 namespace {
 class StatusErrorListener : public converter::ErrorListener {
  public:
+
   StatusErrorListener() {}
-  virtual ~StatusErrorListener() {}
+  virtual ~StatusErrorListener() override {}
 
   util::Status GetStatus() { return status_; }
 
   virtual void InvalidName(const converter::LocationTrackerInterface& loc,
-                           StringPiece unknown_name, StringPiece message) {
+                   StringPiece unknown_name, StringPiece message) override {
     status_ = util::Status(util::error::INVALID_ARGUMENT,
                              loc.ToString() + ": " + string(message));
   }
 
   virtual void InvalidValue(const converter::LocationTrackerInterface& loc,
-                            StringPiece type_name, StringPiece value) {
+                    StringPiece type_name, StringPiece value) override {
     status_ =
         util::Status(util::error::INVALID_ARGUMENT,
                        loc.ToString() + ": invalid value " + string(value) +
@@ -139,7 +140,7 @@ class StatusErrorListener : public converter::ErrorListener {
   }
 
   virtual void MissingField(const converter::LocationTrackerInterface& loc,
-                            StringPiece missing_name) {
+                    StringPiece missing_name) override {
     status_ = util::Status(
         util::error::INVALID_ARGUMENT,
         loc.ToString() + ": missing field " + string(missing_name));

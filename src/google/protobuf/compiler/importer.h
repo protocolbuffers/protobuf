@@ -96,12 +96,13 @@ class LIBPROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabas
   }
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(const string& filename, FileDescriptorProto* output);
+  bool FindFileByName(const string& filename,
+                      FileDescriptorProto* output) override;
   bool FindFileContainingSymbol(const string& symbol_name,
-                                FileDescriptorProto* output);
+                                FileDescriptorProto*output) override;
   bool FindFileContainingExtension(const string& containing_type,
                                    int field_number,
-                                   FileDescriptorProto* output);
+                                   FileDescriptorProto* output) override;
 
  private:
   class SingleFileErrorCollector;
@@ -119,13 +120,13 @@ class LIBPROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabas
                   const string& element_name,
                   const Message* descriptor,
                   ErrorLocation location,
-                  const string& message);
+                  const string& message) override;
 
     virtual void AddWarning(const string& filename,
                             const string& element_name,
                             const Message* descriptor,
                             ErrorLocation location,
-                            const string& message);
+                            const string& message) override;
 
    private:
     SourceTreeDescriptorDatabase* owner_;
@@ -293,9 +294,9 @@ class LIBPROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   bool VirtualFileToDiskFile(const string& virtual_file, string* disk_file);
 
   // implements SourceTree -------------------------------------------
-  virtual io::ZeroCopyInputStream* Open(const string& filename);
+  virtual io::ZeroCopyInputStream* Open(const string& filename) override;
 
-  virtual string GetLastErrorMessage();
+  virtual string GetLastErrorMessage() override;
 
  private:
   struct Mapping {

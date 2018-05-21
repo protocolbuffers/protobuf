@@ -90,7 +90,7 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
   virtual bool IsMatch(
       const Message& message1,
       const Message& message2,
-      const std::vector<SpecificField>& parent_fields) const {
+      const std::vector<SpecificField>& parent_fields) const override {
     for (int i = 0; i < key_field_paths_.size(); ++i) {
       if (!IsMatchInternal(message1, message2, parent_fields,
                            key_field_paths_[i], 0)) {

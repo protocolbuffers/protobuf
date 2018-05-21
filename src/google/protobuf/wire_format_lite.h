@@ -763,9 +763,9 @@ class LIBPROTOBUF_EXPORT CodedOutputStreamFieldSkipper : public FieldSkipper {
   virtual ~CodedOutputStreamFieldSkipper() {}
 
   // implements FieldSkipper -----------------------------------------
-  virtual bool SkipField(io::CodedInputStream* input, uint32 tag);
-  virtual bool SkipMessage(io::CodedInputStream* input);
-  virtual void SkipUnknownEnum(int field_number, int value);
+  virtual bool SkipField(io::CodedInputStream* input, uint32 tag) override;
+  virtual bool SkipMessage(io::CodedInputStream* input) override;
+  virtual void SkipUnknownEnum(int field_number, int value) override;
 
  protected:
   io::CodedOutputStream* unknown_fields_;

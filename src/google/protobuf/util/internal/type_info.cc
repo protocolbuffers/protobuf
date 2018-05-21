@@ -59,7 +59,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
   }
 
   virtual util::StatusOr<const google::protobuf::Type*> ResolveTypeUrl(
-      StringPiece type_url) const {
+      StringPiece type_url) const override {
     std::map<StringPiece, StatusOrType>::iterator it =
         cached_types_.find(type_url);
     if (it != cached_types_.end()) {
@@ -79,13 +79,13 @@ class TypeInfoForTypeResolver : public TypeInfo {
   }
 
   virtual const google::protobuf::Type* GetTypeByTypeUrl(
-      StringPiece type_url) const {
+      StringPiece type_url) const override {
     StatusOrType result = ResolveTypeUrl(type_url);
     return result.ok() ? result.ValueOrDie() : NULL;
   }
 
   virtual const google::protobuf::Enum* GetEnumByTypeUrl(
-      StringPiece type_url) const {
+      StringPiece type_url) const override {
     std::map<StringPiece, StatusOrEnum>::iterator it =
         cached_enums_.find(type_url);
     if (it != cached_enums_.end()) {
@@ -105,8 +105,10 @@ class TypeInfoForTypeResolver : public TypeInfo {
     return result.ok() ? result.ValueOrDie() : NULL;
   }
 
+
   virtual const google::protobuf::Field* FindField(
-      const google::protobuf::Type* type, StringPiece camel_case_name) const {
+      const google::protobuf::Type* type,
+      StringPiece camel_case_name) const override {
     std::map<const google::protobuf::Type*, CamelCaseNameTable>::const_iterator
         it = indexed_types_.find(type);
     const CamelCaseNameTable& camel_case_name_table =

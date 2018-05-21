@@ -94,20 +94,20 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   virtual ~JsonObjectWriter();
 
   // ObjectWriter methods.
-  virtual JsonObjectWriter* StartObject(StringPiece name);
-  virtual JsonObjectWriter* EndObject();
-  virtual JsonObjectWriter* StartList(StringPiece name);
-  virtual JsonObjectWriter* EndList();
-  virtual JsonObjectWriter* RenderBool(StringPiece name, bool value);
-  virtual JsonObjectWriter* RenderInt32(StringPiece name, int32 value);
-  virtual JsonObjectWriter* RenderUint32(StringPiece name, uint32 value);
-  virtual JsonObjectWriter* RenderInt64(StringPiece name, int64 value);
-  virtual JsonObjectWriter* RenderUint64(StringPiece name, uint64 value);
-  virtual JsonObjectWriter* RenderDouble(StringPiece name, double value);
-  virtual JsonObjectWriter* RenderFloat(StringPiece name, float value);
-  virtual JsonObjectWriter* RenderString(StringPiece name, StringPiece value);
-  virtual JsonObjectWriter* RenderBytes(StringPiece name, StringPiece value);
-  virtual JsonObjectWriter* RenderNull(StringPiece name);
+  virtual JsonObjectWriter* StartObject(StringPiece name) override;
+  virtual JsonObjectWriter* EndObject() override;
+  virtual JsonObjectWriter* StartList(StringPiece name) override;
+  virtual JsonObjectWriter* EndList() override;
+  virtual JsonObjectWriter* RenderBool(StringPiece name, bool value) override;
+  virtual JsonObjectWriter* RenderInt32(StringPiece name, int32 value) override;
+  virtual JsonObjectWriter* RenderUint32(StringPiece name, uint32 value) override;
+  virtual JsonObjectWriter* RenderInt64(StringPiece name, int64 value) override;
+  virtual JsonObjectWriter* RenderUint64(StringPiece name, uint64 value) override;
+  virtual JsonObjectWriter* RenderDouble(StringPiece name, double value) override;
+  virtual JsonObjectWriter* RenderFloat(StringPiece name, float value) override;
+  virtual JsonObjectWriter* RenderString(StringPiece name, StringPiece value) override;
+  virtual JsonObjectWriter* RenderBytes(StringPiece name, StringPiece value) override;
+  virtual JsonObjectWriter* RenderNull(StringPiece name) override;
   virtual JsonObjectWriter* RenderNullAsEmpty(StringPiece name);
 
   void set_use_websafe_base64_for_bytes(bool value) {
@@ -143,17 +143,17 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
     GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(Element);
   };
 
-  virtual Element* element() { return element_.get(); }
+  Element* element() override { return element_.get(); }
 
  private:
   class LIBPROTOBUF_EXPORT ByteSinkWrapper : public strings::ByteSink {
    public:
     explicit ByteSinkWrapper(google::protobuf::io::CodedOutputStream* stream)
         : stream_(stream) {}
-    virtual ~ByteSinkWrapper() {}
+    ~ByteSinkWrapper() override {}
 
     // ByteSink methods.
-    virtual void Append(const char* bytes, size_t n) {
+    void Append(const char* bytes, size_t n) override {
       stream_->WriteRaw(bytes, n);
     }
 
