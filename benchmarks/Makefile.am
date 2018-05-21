@@ -126,8 +126,10 @@ java_benchmark_testing_files =                                      \
 	java/src/main/java/com/google/protobuf/ProtoCaliperBenchmark.java
 
 javac_middleman: $(java_benchmark_testing_files) protoc_middleman protoc_middleman2
-	cp -r $(srcdir)/java tmp && cd tmp/java &&  mvn clean compile assembly:single
-	cd ../..
+	cp -r $(srcdir)/java tmp 
+	mkdir -p tmp/java/lib
+	cp $(top_srcdir)/java/core/target/*.jar tmp/java/lib/protobuf-java.jar
+	cd tmp/java && mvn clean compile assembly:single -Dprotobuf.version=$(PACKAGE_VERSION) && cd ../..
 	@touch javac_middleman
 
 java-benchmark: javac_middleman
@@ -137,10 +139,10 @@ java-benchmark: javac_middleman
 	@echo 'conf=()' >> java-benchmark
 	@echo 'data_files=""' >> java-benchmark
 	@echo 'for arg in $$@; do if [[ $${arg:0:1} == "-" ]]; then conf+=($$arg); else data_files+="$$arg,"; fi; done' >> java-benchmark
-	@echo 'java -cp '"tmp/java/target/*.jar"' com.google.caliper.runner.CaliperMain com.google.protobuf.ProtoCaliperBenchmark -i runtime '"\\"  >> java-benchmark
-	@echo '-b serializeToByteString,serializeToByteArray,serializeToMemoryStream,'"\\"  >> java-benchmark
-	@echo 'deserializeFromByteString,deserializeFromByteArray,deserializeFromMemoryStream '"\\" >> java-benchmark
-	@echo '-DdataFile=$${data_files:0:-1} $${conf[*]}' >> java-benchmark
+	@echo 'java -cp '\"tmp/java/target/*:$(top_srcdir)/java/core/target/*:$(top_srcdir)/java/util/target/*\"" \\" >>java-benchmark
+	@echo '   com.google.caliper.runner.CaliperMain com.google.protobuf.ProtoCaliperBenchmark -i runtime '"\\"  >> java-benchmark
+	@echo '   -b serializeToByteArray,serializeToMemoryStream,deserializeFromByteArray,deserializeFromMemoryStream '"\\" >> java-benchmark
+	@echo '   -DdataFile=$${data_files:0:-1} $${conf[*]}' >> java-benchmark
 	@chmod +x java-benchmark
 
 java: protoc_middleman protoc_middleman2 java-benchmark
