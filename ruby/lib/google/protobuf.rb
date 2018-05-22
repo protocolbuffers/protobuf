@@ -60,8 +60,8 @@ module Google
       msg.to_proto
     end
 
-    def self.encode_json(msg)
-      msg.to_json
+    def self.encode_json(msg, options = {})
+      msg.to_json(options)
     end
 
     def self.decode(klass, proto)
