@@ -604,6 +604,7 @@ php_EXTRA_DIST=                                                       \
   php/src/GPBMetadata/Google/Protobuf/Timestamp.php                   \
   php/src/GPBMetadata/Google/Protobuf/Type.php                        \
   php/src/GPBMetadata/Google/Protobuf/Wrappers.php                    \
+  php/src/GPBMetadata/Google/Protobuf/Internal/Compiler/Plugin.php    \
   php/src/Google/Protobuf/Any.php                                     \
   php/src/Google/Protobuf/Api.php                                     \
   php/src/Google/Protobuf/BoolValue.php                               \
@@ -625,6 +626,9 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/GPBEmpty.php                                \
   php/src/Google/Protobuf/Int32Value.php                              \
   php/src/Google/Protobuf/Int64Value.php                              \
+  php/src/Google/Protobuf/Internal/CodeGeneratorRequest.php           \
+  php/src/Google/Protobuf/Internal/CodeGeneratorResponse.php          \
+  php/src/Google/Protobuf/Internal/CodeGeneratorResponse_File.php     \
   php/src/Google/Protobuf/Internal/CodedInputStream.php               \
   php/src/Google/Protobuf/Internal/CodedOutputStream.php              \
   php/src/Google/Protobuf/Internal/Descriptor.php                     \
@@ -687,6 +691,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/SourceCodeInfo_Location.php        \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
+  php/src/Google/Protobuf/Internal/Version.php                        \
   php/src/Google/Protobuf/ListValue.php                               \
   php/src/Google/Protobuf/Method.php                                  \
   php/src/Google/Protobuf/Mixin.php                                   \

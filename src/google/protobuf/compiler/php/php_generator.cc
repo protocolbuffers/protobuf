@@ -41,10 +41,13 @@
 #include <sstream>
 
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
+const std::string kPluginFile = "google/protobuf/compiler/plugin.proto";
 const std::string kEmptyFile = "google/protobuf/empty.proto";
 const std::string kEmptyMetadataFile = "GPBMetadata/Google/Protobuf/GPBEmpty.php";
 const std::string kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
+const std::string kPluginMetadataFile =
+    "GPBMetadata/Google/Protobuf/Internal/Compiler/Plugin.php";
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
@@ -115,9 +118,12 @@ std::string RenameEmpty(const std::string& name) {
 
 std::string MessageFullName(const Descriptor* message, bool is_descriptor) {
   if (is_descriptor) {
-    return StringReplace(message->full_name(),
+    std::string full_name = StringReplace(message->full_name(),
                          "google.protobuf",
                          "google.protobuf.internal", false);
+    return StringReplace(full_name,
+                         "internal.compiler",
+                         "internal", false);
   } else {
     return message->full_name();
   }
@@ -125,9 +131,12 @@ std::string MessageFullName(const Descriptor* message, bool is_descriptor) {
 
 std::string EnumFullName(const EnumDescriptor* envm, bool is_descriptor) {
   if (is_descriptor) {
-    return StringReplace(envm->full_name(),
+    std::string full_name = StringReplace(envm->full_name(),
                          "google.protobuf",
                          "google.protobuf.internal", false);
+    return StringReplace(full_name,
+                         "internal.compiler",
+                         "internal", false);
   } else {
     return envm->full_name();
   }
@@ -279,6 +288,9 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
     return kEmptyMetadataFile;
   }
   if (is_descriptor) {
+    if (proto_file == kPluginFile) {
+      return kPluginMetadataFile;
+    }
     return kDescriptorMetadataFile;
   }
 
@@ -852,6 +864,16 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
         "}\n");
 
   if (is_descriptor) {
+    if (file->name() == kPluginFile) {
+      for (int i = 0; i < file->dependency_count(); i++) {
+        const std::string& name = file->dependency(i)->name();
+        std::string dependency_filename =
+          GeneratedMetadataFileName(name, is_descriptor);
+        printer->Print(
+            "\\^name^::initOnce();\n",
+            "name", FilenameToClassname(dependency_filename));
+      }
+    }
     for (int i = 0; i < file->message_type_count(); i++) {
       GenerateMessageToPool("", file->message_type(i), printer);
     }
@@ -864,10 +886,10 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
   } else {
     for (int i = 0; i < file->dependency_count(); i++) {
       const std::string& name = file->dependency(i)->name();
-      // Currently, descriptor.proto is not ready for external usage. Skip to
+      // Currently, (descriptor|plugin).proto are not ready for external usage. Skip to
       // import it for now, so that its dependencies can still work as long as
       // they don't use protos defined in descriptor.proto.
-      if (name == kDescriptorFile) {
+      if (name == kDescriptorFile || name == kPluginFile) {
         continue;
       }
       std::string dependency_filename =
@@ -1412,9 +1434,10 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
                          string* error) const {
   bool is_descriptor = parameter == "internal";
 
-  if (is_descriptor && file->name() != kDescriptorFile) {
+  if (is_descriptor
+      && (file->name() != kDescriptorFile && file->name() != kPluginFile)) {
     *error =
-        "Can only generate PHP code for google/protobuf/descriptor.proto.\n";
+        "Can only generate PHP code for google/protobuf/descriptor.proto and google/protobuf/compiler/plugin.proto.\n";
     return false;
   }
 
