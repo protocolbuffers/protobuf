@@ -718,6 +718,170 @@ PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
 #endif
 }
 
+static size_t classname_len_max(const char *fullname,
+                                const char *package,
+                                const char *php_namespace,
+                                const char *prefix) {
+  size_t fullname_len = strlen(fullname);
+  size_t package_len = 0;
+  size_t prefix_len = 0;
+  size_t namespace_len = 0;
+  size_t length = fullname_len;
+  int i, segment, classname_start = 0;
+
+  if (package != NULL) {
+    package_len = strlen(package);
+  }
+  if (prefix != NULL) {
+    prefix_len = strlen(prefix);
+  }
+  if (php_namespace != NULL) {
+    namespace_len = strlen(php_namespace);
+  }
+
+  // Process package
+  if (package_len > 0) {
+    segment = 1;
+    for (i = 0; i < package_len; i++) {
+      if (package[i] == '.') {
+        segment++;
+      }
+    }
+    // In case of reserved name in package.
+    length += 3 * segment;
+
+    classname_start = package_len + 1;
+  }
+
+  // Process class name
+  segment = 1;
+  for (i = classname_start; i < fullname_len; i++) {
+    if (fullname[i] == '.') {
+      segment++;
+    }
+  }
+  if (prefix_len == 0) {
+    length += 3 * segment;
+  } else {
+    length += prefix_len * segment;
+  }
+
+  // The additional 2, one is for preceding '.' and the other is for trailing 0.
+  return length + namespace_len + 2;
+}
+
+static bool is_reserved(const char *segment, int length) {
+  bool result;
+  char* lower = ALLOC_N(char, length + 1);
+  memcpy(lower, segment, length);
+  int i = 0;
+  while(lower[i]) {
+    lower[i] = (char)tolower(lower[i]);
+    i++;
+  }
+  lower[length] = 0;
+  result = is_reserved_name(lower);
+  FREE(lower);
+  return result;
+}
+
+static char* fill_prefix(const char *segment, int length,
+                         const char *prefix_given,
+                         const char *package_name, char *classname) {
+  size_t i;
+
+  if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
+    size_t prefix_len = strlen(prefix_given);
+    memcpy(classname, prefix_given, strlen(prefix_given));
+    classname += prefix_len;
+  } else {
+    if (is_reserved(segment, length)) {
+      if (package_name != NULL &&
+          strcmp("google.protobuf", package_name) == 0) {
+        memcpy(classname, "GPB", 3);
+        classname += 3;
+      } else {
+        memcpy(classname, "PB", 2);
+        classname += 2;
+      }
+    }
+  }
+  return classname;
+}
+
+static char* fill_segment(const char *segment, int length,
+                          char *classname, bool use_camel) {
+  memcpy(classname, segment, length);
+  if (use_camel && (segment[0] < 'A' || segment[0] > 'Z')) {
+    classname[0] += 'A' - 'a';
+  }
+  return classname + length;
+}
+
+static char* fill_namespace(const char *package, const char *namespace_given,
+                            char *classname) {
+  if (namespace_given != NULL) {
+    size_t namespace_len = strlen(namespace_given);
+    memcpy(classname, namespace_given, namespace_len);
+    classname += namespace_len;
+    *classname = '\\';
+    classname++;
+  } else if (package != NULL) {
+    int i = 0, j, offset = 0;
+    size_t package_len = strlen(package);
+    while (i < package_len) {
+      j = i;
+      while (j < package_len && package[j] != '.') {
+        j++;
+      }
+      classname = fill_prefix(package + i, j - i, "", package, classname);
+      classname = fill_segment(package + i, j - i, classname, true);
+      classname[0] = '\\';
+      classname++;
+      i = j + 1;
+    }
+  }
+  return classname;
+}
+
+static char* fill_classname(const char *fullname,
+                            const char *package,
+                            const char *namespace_given,
+                            const char *prefix, char *classname) {
+  int classname_start = 0;
+  if (package != NULL) {
+    size_t package_len = strlen(package);
+    classname_start = package_len == 0 ? 0 : package_len + 1;
+  }
+  size_t fullname_len = strlen(fullname);
+  classname = fill_prefix(fullname + classname_start,
+                          fullname_len - classname_start,
+                          prefix, package, classname);
+
+  int i = classname_start, j;
+  while (i < fullname_len) {
+    j = i;
+    while (j < fullname_len && fullname[j] != '.') {
+      j++;
+    }
+    classname = fill_segment(fullname + i, j - i, classname, false);
+    if (j != fullname_len) {
+      *classname = '_';
+      classname++;
+    }
+    i = j + 1;
+  }
+  return classname;
+}
+
+static char* fill_qualified_classname(const char *fullname,
+                                      const char *package,
+                                      const char *namespace_given,
+                                      const char *prefix, char *classname) {
+  classname = fill_namespace(package, namespace_given, classname);
+  return fill_classname(fullname, package, namespace_given, prefix, classname);
+}
+
 static void classname_no_prefix(const char *fullname, const char *package_name,
                                 char *class_name) {
   size_t i = 0, j;
@@ -858,20 +1022,18 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
      * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
      * given message is google.protobuf.Empty.*/                               \
     const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
+    const char *package = upb_filedef_package(files[0]);                       \
     const char *php_namespace = upb_filedef_phpnamespace(files[0]);            \
     const char *prefix_given = upb_filedef_phpprefix(files[0]);                \
-    size_t classname_len = strlen(fullname) + 5;                               \
-    if (prefix_given != NULL) {                                                \
-      classname_len += strlen(prefix_given);                                   \
-    }                                                                          \
-    if (php_namespace != NULL) {                                               \
-      classname_len += strlen(php_namespace);                                  \
-    }                                                                          \
+    size_t classname_len = classname_len_max(fullname, package,                \
+                                             php_namespace, prefix_given);     \
     char *classname = ecalloc(sizeof(char), classname_len);                    \
-    const char *package = upb_filedef_package(files[0]);                       \
-    classname_no_prefix(fullname, package, classname);                         \
-    const char *prefix = classname_prefix(classname, prefix_given, package);   \
-    convert_to_class_name_inplace(package, php_namespace, prefix, classname);  \
+    fill_qualified_classname(fullname, package, php_namespace,                 \
+                             prefix_given, classname);                         \
+    /* classname_no_prefix(fullname, package, classname);                         \
+     * const char *prefix = classname_prefix(classname, prefix_given, package);   \
+     * convert_to_class_name_inplace(package, php_namespace, prefix, classname);  \
+     */                                                                        \
     PHP_PROTO_CE_DECLARE pce;                                                  \
     if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==     \
         FAILURE) {                                                             \
