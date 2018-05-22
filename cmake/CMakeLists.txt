@@ -7,7 +7,11 @@ endif()
 
 # CMake policies
 cmake_policy(SET CMP0022 NEW)
-
+# On MacOS use @rpath/ for target's install name prefix path
+if (POLICY CMP0042)
+  cmake_policy(SET CMP0042 NEW)
+endif ()
+# Clear VERSION variables when no VERSION is given to project()
 if(POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
 endif()
