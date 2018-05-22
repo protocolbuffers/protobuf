@@ -133,7 +133,7 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     public function setKind($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Field\Kind::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Field_Kind::class);
         $this->kind = $var;
 
         return $this;
@@ -159,7 +159,7 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     public function setCardinality($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Field\Cardinality::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Field_Cardinality::class);
         $this->cardinality = $var;
 
         return $this;

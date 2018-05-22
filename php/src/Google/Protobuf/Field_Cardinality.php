@@ -4,11 +4,13 @@
 
 namespace Google\Protobuf;
 
-/**
- * This class has been renamed.
- * @see Google\Protobuf\Field\Cardinality
- * @deprecated Google\Protobuf\Field_Cardinality
- */
+if (false) {
+    /**
+     * This class is deprecated. Use Google\Protobuf\Field\Cardinality instead.
+     * @deprecated
+     */
+    class Field_Cardinality {}
+}
 class_exists(Field\Cardinality::class);
 @trigger_error('Google\Protobuf\Field_Cardinality is deprecated and will be removed in the next major release. Use Google\Protobuf\Field\Cardinality instead', E_USER_DEPRECATED);
 

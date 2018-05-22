@@ -1061,20 +1061,23 @@ void LegacyGenerateClassFile(const FileDescriptor* file, const DescriptorType* d
         "namespace ^name^;\n\n",
         "name", php_namespace);
   }
-  std::string oldname = LegacyFullClassName(desc, is_descriptor);
   std::string newname = FullClassName(desc, is_descriptor);
+  printer.Print("if (false) {\n");
+  Indent(&printer);
   printer.Print("/**\n");
-  printer.Print(" * This class has been renamed.\n");
-  printer.Print(" * @see ^new^\n",
+  printer.Print(" * This class is deprecated. Use ^new^ instead.\n",
       "new", newname);
-  printer.Print(" * @deprecated ^old^\n",
-      "old", oldname);
+  printer.Print(" * @deprecated\n");
   printer.Print(" */\n");
+  printer.Print("class ^old^ {}\n",
+      "old", LegacyGeneratedClassName(desc));
+  Outdent(&printer);
+  printer.Print("}\n");
   printer.Print("class_exists(^new^::class);\n",
       "new", GeneratedClassName(desc));
   printer.Print("@trigger_error('^old^ is deprecated and will be removed in "
       "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
-      "old", oldname,
+      "old", LegacyFullClassName(desc, is_descriptor),
       "fullname", newname);
 }
 
