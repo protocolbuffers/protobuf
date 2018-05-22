@@ -40,7 +40,7 @@ module Google
       module ClassMethods
       end
 
-      def to_json
+      def to_json(_opts=nil)
         self.class.encode_json(self)
       end
 
