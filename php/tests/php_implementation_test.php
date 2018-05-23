@@ -5,7 +5,7 @@ require_once('test_util.php');
 
 use Foo\TestEnum;
 use Foo\TestMessage;
-use Foo\TestMessage_Sub;
+use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Google\Protobuf\Internal\CodedInputStream;
 use Google\Protobuf\Internal\FileDescriptorSet;
@@ -527,7 +527,7 @@ class ImplementationTest extends TestBase
 
     /**
      * @expectedException Exception
-     * @expectedExceptionMessage Expect message.
+     * @expectedExceptionMessage Expect Foo\TestMessage_Sub.
      */
     public function testArraysForMessagesThrowsException()
     {

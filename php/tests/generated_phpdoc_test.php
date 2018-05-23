@@ -201,7 +201,7 @@ class GeneratedPhpdocTest extends TestBase
                 [
                     'setRepeatedMessage',
                 ],
-                '@param \Foo\TestMessage_Sub[]|\Google\Protobuf\Internal\RepeatedField $var'
+                '@param \Foo\TestMessage\Sub[]|\Google\Protobuf\Internal\RepeatedField $var'
             ],
             [
                 [
@@ -294,14 +294,14 @@ class GeneratedPhpdocTest extends TestBase
                     'getOptionalMessage',
                     'getOneofMessage'
                 ],
-                '@return \Foo\TestMessage_Sub'
+                '@return \Foo\TestMessage\Sub'
             ],
             [
                 [
                     'setOptionalMessage',
                     'setOneofMessage'
                 ],
-                '@param \Foo\TestMessage_Sub $var'
+                '@param \Foo\TestMessage\Sub $var'
             ],
             [
                 [

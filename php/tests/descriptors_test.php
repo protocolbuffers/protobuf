@@ -10,7 +10,7 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Descriptors\TestDescriptorsEnum;
 use Descriptors\TestDescriptorsMessage;
-use Descriptors\TestDescriptorsMessage_Sub;
+use Descriptors\TestDescriptorsMessage\Sub;
 
 class DescriptorsTest extends TestBase
 {
