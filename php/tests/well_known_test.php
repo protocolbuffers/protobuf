@@ -14,8 +14,8 @@ use Google\Protobuf\Enum;
 use Google\Protobuf\EnumValue;
 use Google\Protobuf\Field;
 use Google\Protobuf\FieldMask;
-use Google\Protobuf\Field_Cardinality;
-use Google\Protobuf\Field_Kind;
+use Google\Protobuf\Field\Cardinality;
+use Google\Protobuf\Field\Kind;
 use Google\Protobuf\FloatValue;
 use Google\Protobuf\GPBEmpty;
 use Google\Protobuf\Int32Value;
@@ -206,11 +206,11 @@ class WellKnownTest extends TestBase {
     {
         $m = new Field();
 
-        $m->setKind(Field_Kind::TYPE_DOUBLE);
-        $this->assertSame(Field_Kind::TYPE_DOUBLE, $m->getKind());
+        $m->setKind(Kind::TYPE_DOUBLE);
+        $this->assertSame(Kind::TYPE_DOUBLE, $m->getKind());
 
-        $m->setCardinality(Field_Cardinality::CARDINALITY_OPTIONAL);
-        $this->assertSame(Field_Cardinality::CARDINALITY_OPTIONAL, $m->getCardinality());
+        $m->setCardinality(Cardinality::CARDINALITY_OPTIONAL);
+        $this->assertSame(Cardinality::CARDINALITY_OPTIONAL, $m->getCardinality());
 
         $m->setNumber(1);
         $this->assertSame(1, $m->getNumber());
