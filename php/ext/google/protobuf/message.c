@@ -858,7 +858,7 @@ static zend_function_entry field_cardinality_methods[] = {
 zend_class_entry* field_cardinality_type;
 
 // Init class entry.
-PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field_Cardinality",
+PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field\\Cardinality",
                                 Field_Cardinality, field_cardinality)
   zend_declare_class_constant_long(field_cardinality_type,
                                    "CARDINALITY_UNKNOWN", 19, 0 TSRMLS_CC);
@@ -868,6 +868,8 @@ PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field_Cardinality",
                                    "CARDINALITY_REQUIRED", 20, 2 TSRMLS_CC);
   zend_declare_class_constant_long(field_cardinality_type,
                                    "CARDINALITY_REPEATED", 20, 3 TSRMLS_CC);
+  const char *alias = "Google\\Protobuf\\Field_Cardinality";
+  zend_register_class_alias_ex(alias, strlen(alias), field_cardinality_type TSRMLS_CC);
 PHP_PROTO_INIT_ENUMCLASS_END
 
 // -----------------------------------------------------------------------------
@@ -881,7 +883,7 @@ static zend_function_entry field_kind_methods[] = {
 zend_class_entry* field_kind_type;
 
 // Init class entry.
-PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field_Kind",
+PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field\\Kind",
                                 Field_Kind, field_kind)
   zend_declare_class_constant_long(field_kind_type,
                                    "TYPE_UNKNOWN", 12, 0 TSRMLS_CC);
@@ -921,6 +923,8 @@ PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field_Kind",
                                    "TYPE_SINT32", 11, 17 TSRMLS_CC);
   zend_declare_class_constant_long(field_kind_type,
                                    "TYPE_SINT64", 11, 18 TSRMLS_CC);
+  const char *alias = "Google\\Protobuf\\Field_Kind";
+  zend_register_class_alias_ex(alias, strlen(alias), field_kind_type TSRMLS_CC);
 PHP_PROTO_INIT_ENUMCLASS_END
 
 // -----------------------------------------------------------------------------
