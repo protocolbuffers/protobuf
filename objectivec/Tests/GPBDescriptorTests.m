@@ -190,6 +190,52 @@
   XCTAssertFalse([descriptor getValue:&value forEnumTextFormatName:@"Unknown"]);
 }
 
+- (void)testEnumDescriptorIntrospection {
+  GPBEnumDescriptor *descriptor = TestAllTypes_NestedEnum_EnumDescriptor();
+
+  XCTAssertEqual(descriptor.enumNameCount, 4U);
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:0],
+                        @"TestAllTypes_NestedEnum_Foo");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:0], @"FOO");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:1],
+                 @"TestAllTypes_NestedEnum_Bar");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:1], @"BAR");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:2],
+                 @"TestAllTypes_NestedEnum_Baz");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:2], @"BAZ");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:3],
+                 @"TestAllTypes_NestedEnum_Neg");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:3], @"NEG");
+}
+
+- (void)testEnumDescriptorIntrospectionWithAlias {
+  GPBEnumDescriptor *descriptor = TestAllTypes_NestedEnumAllowingAlias_EnumDescriptor();
+  NSString *enumName;
+  int32_t value;
+
+  XCTAssertEqual(descriptor.enumNameCount, 3U);
+
+  enumName = [descriptor getEnumNameForIndex:0];
+  XCTAssertEqualObjects(enumName, @"TestAllTypes_NestedEnumAllowingAlias_Zero");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 0);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:0], @"ZERO");
+
+  enumName = [descriptor getEnumNameForIndex:1];
+  XCTAssertEqualObjects(enumName, @"TestAllTypes_NestedEnumAllowingAlias_One");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 1);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:1], @"ONE");
+
+  enumName = [descriptor getEnumNameForIndex:2];
+  XCTAssertEqualObjects(enumName, @"TestAllTypes_NestedEnumAllowingAlias_AlsoOne");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 1);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:2], @"ALSO_ONE");
+
+
+}
+
 - (void)testEnumValueValidator {
   GPBDescriptor *descriptor = [TestAllTypes descriptor];
   GPBFieldDescriptor *fieldDescriptor =
