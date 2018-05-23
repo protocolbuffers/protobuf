@@ -23,9 +23,19 @@ class BoolValue extends \Google\Protobuf\Internal\Message
      */
     private $value = false;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type bool $value
+     *           The bool value.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Wrappers::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

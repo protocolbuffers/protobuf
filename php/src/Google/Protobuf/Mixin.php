@@ -90,9 +90,22 @@ class Mixin extends \Google\Protobuf\Internal\Message
      */
     private $root = '';
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type string $name
+     *           The fully qualified name of the interface which is included.
+     *     @type string $root
+     *           If non-empty specifies a path under which inherited HTTP paths
+     *           are rooted.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Api::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

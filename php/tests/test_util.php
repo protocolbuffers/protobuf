@@ -2,7 +2,7 @@
 
 use Foo\TestEnum;
 use Foo\TestMessage;
-use Foo\TestMessage_Sub;
+use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Foo\TestUnpackedMessage;
 
@@ -67,7 +67,7 @@ class TestUtil
         $m->setOptionalString('a');
         $m->setOptionalBytes('b');
         $m->setOptionalEnum(TestEnum::ONE);
-        $sub = new TestMessage_Sub();
+        $sub = new Sub();
         $m->setOptionalMessage($sub);
         $m->getOptionalMessage()->SetA(33);
 
@@ -87,7 +87,7 @@ class TestUtil
         self::appendHelper($m, 'RepeatedString',   'a');
         self::appendHelper($m, 'RepeatedBytes',    'b');
         self::appendHelper($m, 'RepeatedEnum',     TestEnum::ZERO);
-        self::appendHelper($m, 'RepeatedMessage',  new TestMessage_Sub());
+        self::appendHelper($m, 'RepeatedMessage',  new Sub());
         $m->getRepeatedMessage()[0]->setA(34);
 
         self::appendHelper($m, 'RepeatedInt32',    -52);
@@ -106,7 +106,7 @@ class TestUtil
         self::appendHelper($m, 'RepeatedString',   'c');
         self::appendHelper($m, 'RepeatedBytes',    'd');
         self::appendHelper($m, 'RepeatedEnum',     TestEnum::ONE);
-        self::appendHelper($m, 'RepeatedMessage',  new TestMessage_Sub());
+        self::appendHelper($m, 'RepeatedMessage',  new Sub());
         $m->getRepeatedMessage()[1]->SetA(35);
 
         self::kvUpdateHelper($m, 'MapInt32Int32', -62, -62);
@@ -125,13 +125,13 @@ class TestUtil
         self::kvUpdateHelper($m, 'MapStringString', 'e', 'e');
         self::kvUpdateHelper($m, 'MapInt32Bytes', 1, 'f');
         self::kvUpdateHelper($m, 'MapInt32Enum', 1, TestEnum::ONE);
-        self::kvUpdateHelper($m, 'MapInt32Message', 1, new TestMessage_Sub());
+        self::kvUpdateHelper($m, 'MapInt32Message', 1, new Sub());
         $m->getMapInt32Message()[1]->SetA(36);
     }
 
     public static function setTestMessage2(TestMessage $m)
     {
-        $sub = new TestMessage_Sub();
+        $sub = new Sub();
 
         $m->setOptionalInt32(-142);
         $m->setOptionalInt64(-143);
@@ -168,7 +168,7 @@ class TestUtil
         self::appendHelper($m, 'RepeatedString',   'aa');
         self::appendHelper($m, 'RepeatedBytes',    'bb');
         self::appendHelper($m, 'RepeatedEnum',     TestEnum::TWO);
-        self::appendHelper($m, 'RepeatedMessage',  new TestMessage_Sub());
+        self::appendHelper($m, 'RepeatedMessage',  new Sub());
         $m->getRepeatedMessage()[0]->setA(134);
 
         self::kvUpdateHelper($m, 'MapInt32Int32', -62, -162);
@@ -187,7 +187,7 @@ class TestUtil
         self::kvUpdateHelper($m, 'MapStringString', 'e', 'ee');
         self::kvUpdateHelper($m, 'MapInt32Bytes', 1, 'ff');
         self::kvUpdateHelper($m, 'MapInt32Enum', 1, TestEnum::TWO);
-        self::kvUpdateHelper($m, 'MapInt32Message', 1, new TestMessage_Sub());
+        self::kvUpdateHelper($m, 'MapInt32Message', 1, new Sub());
         $m->getMapInt32Message()[1]->SetA(136);
 
         self::kvUpdateHelper($m, 'MapInt32Int32', -162, -162);
@@ -206,7 +206,7 @@ class TestUtil
         self::kvUpdateHelper($m, 'MapStringString', 'ee', 'ee');
         self::kvUpdateHelper($m, 'MapInt32Bytes', 2, 'ff');
         self::kvUpdateHelper($m, 'MapInt32Enum', 2, TestEnum::TWO);
-        self::kvUpdateHelper($m, 'MapInt32Message', 2, new TestMessage_Sub());
+        self::kvUpdateHelper($m, 'MapInt32Message', 2, new Sub());
         $m->getMapInt32Message()[2]->SetA(136);
     }
 
