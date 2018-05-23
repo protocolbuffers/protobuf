@@ -272,7 +272,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * Gets the enum name corresponding to the given index.
  *
  * @param index Index into the available names.  The defined range is from 0
- *              to [self -enumNameCount] - 1.
+ *              to self.enumNameCount - 1.
  *
  * @returns The enum name at the given index, or nil if the index is out of range.
  */
@@ -282,7 +282,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * Gets the enum text format name corresponding to the given index.
  *
  * @param index Index into the available names.  The defined range is from 0
- *              to [self -enumNameCount] - 1.
+ *              to self.enumNameCount - 1.
  *
  * @returns The text format name at the given index, or nil if the index is out of range.
  */
