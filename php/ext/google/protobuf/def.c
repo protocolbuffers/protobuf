@@ -900,89 +900,6 @@ static void classname_no_prefix(const char *fullname, const char *package_name,
   }
 }
 
-static const char *classname_prefix(const char *classname,
-                                    const char *prefix_given,
-                                    const char *package_name) {
-  size_t i;
-  bool is_reserved = false;
-
-  if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
-    return prefix_given;
-  }
-
-  char* lower = ALLOC_N(char, strlen(classname) + 1);
-  i = 0;
-  while(classname[i]) {
-    lower[i] = (char)tolower(classname[i]);
-    i++;
-  }
-  lower[i] = 0;
-
-  is_reserved = is_reserved_name(lower);
-  FREE(lower);
-
-  if (is_reserved) {
-    if (package_name != NULL && strcmp("google.protobuf", package_name) == 0) {
-      return "GPB";
-    } else {
-      return "PB";
-    }
-  }
-
-  return "";
-}
-
-static void convert_to_class_name_inplace(const char *package,
-                                          const char *namespace_given,
-                                          const char *prefix, char *classname) {
-  size_t prefix_len = prefix == NULL ? 0 : strlen(prefix);
-  size_t classname_len = strlen(classname);
-  int i = 0, j;
-  bool first_char = true;
-
-  size_t package_len = package == NULL ? 0 : strlen(package);
-  size_t namespace_given_len =
-      namespace_given == NULL ? 0 : strlen(namespace_given);
-  bool use_namespace_given = namespace_given != NULL;
-  size_t namespace_len =
-      use_namespace_given ? namespace_given_len : package_len;
-
-  int offset = namespace_len != 0 ? 2 : 0;
-
-  for (j = 0; j < classname_len; j++) {
-    classname[namespace_len + prefix_len + classname_len + offset - 1 - j] =
-        classname[classname_len - j - 1];
-  }
-
-  if (namespace_len != 0) {
-    classname[i++] = '\\';
-    for (j = 0; j < namespace_len; j++) {
-      if (use_namespace_given) {
-        classname[i++] = namespace_given[j];
-        continue;
-      }
-      // php packages are divided by '\'.
-      if (package[j] == '.') {
-        classname[i++] = '\\';
-        first_char = true;
-      } else if (first_char) {
-        // PHP package uses camel case.
-        if (package[j] < 'A' || package[j] > 'Z') {
-          classname[i++] = package[j] + 'A' - 'a';
-        } else {
-          classname[i++] = package[j];
-        }
-        first_char = false;
-      } else {
-        classname[i++] = package[j];
-      }
-    }
-    classname[i++] = '\\';
-  }
-
-  memcpy(classname + i, prefix, prefix_len);
-}
-
 void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
                                  InternalDescriptorPool *pool TSRMLS_DC) {
   upb_filedef **files;
@@ -1030,10 +947,6 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     char *classname = ecalloc(sizeof(char), classname_len);                    \
     fill_qualified_classname(fullname, package, php_namespace,                 \
                              prefix_given, classname);                         \
-    /* classname_no_prefix(fullname, package, classname);                         \
-     * const char *prefix = classname_prefix(classname, prefix_given, package);   \
-     * convert_to_class_name_inplace(package, php_namespace, prefix, classname);  \
-     */                                                                        \
     PHP_PROTO_CE_DECLARE pce;                                                  \
     if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==     \
         FAILURE) {                                                             \
