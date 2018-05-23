@@ -228,7 +228,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  *
  * @param number The raw enum value.
  *
- * @return The first name that the enum value passed, or nil if not valid.
+ * @return The first name that matches the enum value passed, or nil if not valid.
  **/
 - (nullable NSString *)enumNameForValue:(int32_t)number;
 
