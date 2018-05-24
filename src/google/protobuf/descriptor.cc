@@ -775,10 +775,10 @@ class FileDescriptorTables {
 
   SymbolsByParentMap symbols_by_parent_;
   mutable FieldsByNameMap fields_by_lowercase_name_;
-  mutable FieldsByNameMap* fields_by_lowercase_name_tmp_;
+  std::unique_ptr<FieldsByNameMap> fields_by_lowercase_name_tmp_;
   mutable GoogleOnceDynamic fields_by_lowercase_name_once_;
   mutable FieldsByNameMap fields_by_camelcase_name_;
-  mutable FieldsByNameMap* fields_by_camelcase_name_tmp_;
+  std::unique_ptr<FieldsByNameMap> fields_by_camelcase_name_tmp_;
   mutable GoogleOnceDynamic fields_by_camelcase_name_once_;
   FieldsByNumberMap fields_by_number_;  // Not including extensions.
   EnumValuesByNumberMap enum_values_by_number_;
@@ -1146,10 +1146,8 @@ bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
 
 void FileDescriptorTables::FinalizeTables() {
   // Clean up the temporary maps used by AddFieldByStylizedNames().
-  delete fields_by_lowercase_name_tmp_;
-  fields_by_lowercase_name_tmp_ = NULL;
-  delete fields_by_camelcase_name_tmp_;
-  fields_by_camelcase_name_tmp_ = NULL;
+  fields_by_lowercase_name_tmp_ = nullptr;
+  fields_by_camelcase_name_tmp_ = nullptr;
 }
 
 void FileDescriptorTables::AddFieldByStylizedNames(
@@ -1164,7 +1162,7 @@ void FileDescriptorTables::AddFieldByStylizedNames(
   // entries from fields_by_number_.
 
   PointerStringPair lowercase_key(parent, field->lowercase_name().c_str());
-  if (!InsertIfNotPresent(fields_by_lowercase_name_tmp_, lowercase_key,
+  if (!InsertIfNotPresent(fields_by_lowercase_name_tmp_.get(), lowercase_key,
                           field)) {
     InsertIfNotPresent(
         &fields_by_lowercase_name_, lowercase_key,
@@ -1172,7 +1170,7 @@ void FileDescriptorTables::AddFieldByStylizedNames(
   }
 
   PointerStringPair camelcase_key(parent, field->camelcase_name().c_str());
-  if (!InsertIfNotPresent(fields_by_camelcase_name_tmp_, camelcase_key,
+  if (!InsertIfNotPresent(fields_by_camelcase_name_tmp_.get(), camelcase_key,
                           field)) {
     InsertIfNotPresent(
         &fields_by_camelcase_name_, camelcase_key,
