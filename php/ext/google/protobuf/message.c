@@ -387,9 +387,9 @@ void Message_construct(zval* msg, zval* array_wrapper) {
 // object. Here, we manually modify it to our message in such a case.
 PHP_METHOD(Message, __construct) {
   // Init message with array
-  zval* array_wrapper;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a!", &array_wrapper,
-                            message_type) == FAILURE) {
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
     return;
   }
 
