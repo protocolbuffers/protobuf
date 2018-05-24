@@ -14,21 +14,21 @@ matrix:
 
     - os: osx
       env: CONFIG=objectivec_osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       language: objective-c
     # iOS build log was starting to choke travis UI, so split to cover the
     # Xcode Debug and Release Configurations independently.
     - os: osx
       env: CONFIG=objectivec_ios_debug
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       language: objective-c
     - os: osx
       env: CONFIG=objectivec_ios_release
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       language: objective-c
     - os: osx
       env: CONFIG=objectivec_cocoapods_integration
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       language: objective-c
 
     # -----------------------------------------------------------------
@@ -59,9 +59,16 @@ matrix:
       env: CONFIG=csharp
       language: csharp
       dist: trusty
-      sudo: required
-      dotnet: 1.0.4
+      dotnet: 2.0.3
       mono: none
+      # Install the .NET Core 1.0 runtime as that's what we test against
+      addons:
+        apt:
+          sources:
+          - sourceline: 'deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main'
+            key_url: 'https://packages.microsoft.com/keys/microsoft.asc'
+          packages:
+          - dotnet-sharedframework-microsoft.netcore.app-1.0.5
     # This test is kept on travis because it doesn't play nicely with other
     # tests on jenkins running in parallel.
     - os: linux

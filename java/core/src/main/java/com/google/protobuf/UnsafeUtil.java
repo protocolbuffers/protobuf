@@ -71,8 +71,6 @@ final class UnsafeUtil {
 
   private static final long BUFFER_ADDRESS_OFFSET = fieldOffset(bufferAddressField());
 
-  private static final long STRING_VALUE_OFFSET = fieldOffset(stringValueField());
-
   private UnsafeUtil() {}
 
   static boolean hasUnsafeArrayOperations() {
@@ -82,6 +80,7 @@ final class UnsafeUtil {
   static boolean hasUnsafeByteBufferOperations() {
     return HAS_UNSAFE_BYTEBUFFER_OPERATIONS;
   }
+
 
   static long objectFieldOffset(Field field) {
     return MEMORY_ACCESSOR.objectFieldOffset(field);
@@ -145,10 +144,6 @@ final class UnsafeUtil {
 
   static Object getObject(Object target, long offset) {
     return MEMORY_ACCESSOR.getObject(target, offset);
-  }
-
-  static void putObject(Object target, long offset, Object value) {
-    MEMORY_ACCESSOR.putObject(target, offset, value);
   }
 
   static byte getByte(byte[] target, long index) {
@@ -260,26 +255,6 @@ final class UnsafeUtil {
     return MEMORY_ACCESSOR.getLong(buffer, BUFFER_ADDRESS_OFFSET);
   }
 
-  /**
-   * Returns a new {@link String} backed by the given {@code chars}. The char array should not
-   * be mutated any more after calling this function.
-   */
-  static String moveToString(char[] chars) {
-    if (STRING_VALUE_OFFSET == -1) {
-      // In the off-chance that this JDK does not implement String as we'd expect, just do a copy.
-      return new String(chars);
-    }
-    final String str;
-    try {
-      str = (String) UNSAFE.allocateInstance(String.class);
-    } catch (InstantiationException e) {
-      // This should never happen, but return a copy as a fallback just in case.
-      return new String(chars);
-    }
-    putObject(str, STRING_VALUE_OFFSET, chars);
-    return str;
-  }
-
   static Object getStaticObject(Field field) {
     return MEMORY_ACCESSOR.getStaticObject(field);
   }
@@ -287,7 +262,7 @@ final class UnsafeUtil {
   /**
    * Gets the {@code sun.misc.Unsafe} instance, or {@code null} if not available on this platform.
    */
-  private static sun.misc.Unsafe getUnsafe() {
+  static sun.misc.Unsafe getUnsafe() {
     sun.misc.Unsafe unsafe = null;
     try {
       unsafe =
@@ -367,6 +342,10 @@ final class UnsafeUtil {
       clazz.getMethod("objectFieldOffset", Field.class);
       clazz.getMethod("getLong", Object.class, long.class);
 
+      if (bufferAddressField() == null) {
+        return false;
+      }
+
       clazz.getMethod("getByte", long.class);
       clazz.getMethod("putByte", long.class, byte.class);
       clazz.getMethod("getInt", long.class);
@@ -387,12 +366,14 @@ final class UnsafeUtil {
 
   /** Finds the address field within a direct {@link Buffer}. */
   private static Field bufferAddressField() {
-    return field(Buffer.class, "address", long.class);
+    Field field = field(Buffer.class, "address");
+    return field != null && field.getType() == long.class ? field : null;
   }
 
   /** Finds the value field within a {@link String}. */
   private static Field stringValueField() {
-    return field(String.class, "value", char[].class);
+    Field field = field(String.class, "value");
+    return field != null && field.getType() == char[].class ? field : null;
   }
 
   /**
@@ -407,14 +388,11 @@ final class UnsafeUtil {
    * Gets the field with the given name within the class, or {@code null} if not found. If found,
    * the field is made accessible.
    */
-  private static Field field(Class<?> clazz, String fieldName, Class<?> expectedType) {
+  private static Field field(Class<?> clazz, String fieldName) {
     Field field;
     try {
       field = clazz.getDeclaredField(fieldName);
       field.setAccessible(true);
-      if (!field.getType().equals(expectedType)) {
-        return null;
-      }
     } catch (Throwable t) {
       // Failed to access the fields.
       field = null;

@@ -704,7 +704,7 @@ namespace UnitTest.Issues.TestProtos {
     public DeprecatedFieldsMessage(DeprecatedFieldsMessage other) : this() {
       primitiveValue_ = other.primitiveValue_;
       primitiveArray_ = other.primitiveArray_.Clone();
-      MessageValue = other.messageValue_ != null ? other.MessageValue.Clone() : null;
+      messageValue_ = other.messageValue_ != null ? other.messageValue_.Clone() : null;
       messageArray_ = other.messageArray_.Clone();
       enumValue_ = other.enumValue_;
       enumArray_ = other.enumArray_.Clone();

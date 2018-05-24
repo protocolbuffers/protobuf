@@ -1474,10 +1474,7 @@ final class Utf8 {
         }
       }
 
-      if (resultPos < resultArr.length) {
-        resultArr = Arrays.copyOf(resultArr, resultPos);
-      }
-      return UnsafeUtil.moveToString(resultArr);
+      return new String(resultArr, 0, resultPos);
     }
 
     @Override
@@ -1553,10 +1550,7 @@ final class Utf8 {
         }
       }
 
-      if (resultPos < resultArr.length) {
-        resultArr = Arrays.copyOf(resultArr, resultPos);
-      }
-      return UnsafeUtil.moveToString(resultArr);
+      return new String(resultArr, 0, resultPos);
     }
 
     @Override

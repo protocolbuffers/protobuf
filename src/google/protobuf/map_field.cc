@@ -43,14 +43,14 @@ MapFieldBase::~MapFieldBase() {
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
   SyncRepeatedFieldWithMap();
-  return *reinterpret_cast< ::google::protobuf::internal::RepeatedPtrFieldBase*>(
+  return *reinterpret_cast<::google::protobuf::internal::RepeatedPtrFieldBase*>(
       repeated_field_);
 }
 
 RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
   SyncRepeatedFieldWithMap();
   SetRepeatedDirty();
-  return reinterpret_cast< ::google::protobuf::internal::RepeatedPtrFieldBase*>(
+  return reinterpret_cast<::google::protobuf::internal::RepeatedPtrFieldBase*>(
       repeated_field_);
 }
 
@@ -72,29 +72,39 @@ size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
 bool MapFieldBase::IsMapValid() const {
   // "Acquire" insures the operation after SyncRepeatedFieldWithMap won't get
   // executed before state_ is checked.
-  Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
+  int state = state_.load(std::memory_order_acquire);
   return state != STATE_MODIFIED_REPEATED;
 }
 
-void MapFieldBase::SetMapDirty() { state_ = STATE_MODIFIED_MAP; }
+bool MapFieldBase::IsRepeatedFieldValid() const {
+  int state = state_.load(std::memory_order_acquire);
+  return state != STATE_MODIFIED_MAP;
+}
 
-void MapFieldBase::SetRepeatedDirty() { state_ = STATE_MODIFIED_REPEATED; }
+void MapFieldBase::SetMapDirty() {
+  // These are called by (non-const) mutator functions. So by our API it's the
+  // callers responsibility to have these calls properly ordered.
+  state_.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
+}
+
+void MapFieldBase::SetRepeatedDirty() {
+  // These are called by (non-const) mutator functions. So by our API it's the
+  // callers responsibility to have these calls properly ordered.
+  state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
+}
 
 void* MapFieldBase::MutableRepeatedPtrField() const { return repeated_field_; }
 
 void MapFieldBase::SyncRepeatedFieldWithMap() const {
-  // "Acquire" insures the operation after SyncRepeatedFieldWithMap won't get
-  // executed before state_ is checked.
-  Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
-  if (state == STATE_MODIFIED_MAP) {
+  // acquire here matches with release below to ensure that we can only see a
+  // value of CLEAN after all previous changes have been synced.
+  if (state_.load(std::memory_order_acquire) == STATE_MODIFIED_MAP) {
     mutex_.Lock();
     // Double check state, because another thread may have seen the same state
     // and done the synchronization before the current thread.
-    if (state_ == STATE_MODIFIED_MAP) {
+    if (state_.load(std::memory_order_relaxed) == STATE_MODIFIED_MAP) {
       SyncRepeatedFieldWithMapNoLock();
-      // "Release" insures state_ can only be changed "after"
-      // SyncRepeatedFieldWithMapNoLock is finished.
-      google::protobuf::internal::Release_Store(&state_, CLEAN);
+      state_.store(CLEAN, std::memory_order_release);
     }
     mutex_.Unlock();
   }
@@ -107,18 +117,15 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() const {
 }
 
 void MapFieldBase::SyncMapWithRepeatedField() const {
-  // "Acquire" insures the operation after SyncMapWithRepeatedField won't get
-  // executed before state_ is checked.
-  Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
-  if (state == STATE_MODIFIED_REPEATED) {
+  // acquire here matches with release below to ensure that we can only see a
+  // value of CLEAN after all previous changes have been synced.
+  if (state_.load(std::memory_order_acquire) == STATE_MODIFIED_REPEATED) {
     mutex_.Lock();
     // Double check state, because another thread may have seen the same state
     // and done the synchronization before the current thread.
-    if (state_ == STATE_MODIFIED_REPEATED) {
+    if (state_.load(std::memory_order_relaxed) == STATE_MODIFIED_REPEATED) {
       SyncMapWithRepeatedFieldNoLock();
-      // "Release" insures state_ can only be changed "after"
-      // SyncRepeatedFieldWithMapNoLock is finished.
-      google::protobuf::internal::Release_Store(&state_, CLEAN);
+      state_.store(CLEAN, std::memory_order_release);
     }
     mutex_.Unlock();
   }

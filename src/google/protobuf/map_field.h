@@ -31,7 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_H__
 
-#include <google/protobuf/stubs/atomicops.h>
+#include <atomic>
+
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/generated_message_reflection.h>
@@ -86,6 +87,8 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   virtual bool ContainsMapKey(const MapKey& map_key) const = 0;
   virtual bool InsertOrLookupMapValue(
       const MapKey& map_key, MapValueRef* val) = 0;
+  // Returns whether changes to the map are reflected in the repeated field.
+  bool IsRepeatedFieldValid() const;
   // Insures operations after won't get executed before calling this.
   bool IsMapValid() const;
   virtual bool DeleteMapValue(const MapKey& map_key) = 0;
@@ -140,9 +143,7 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
 
   mutable Mutex mutex_;  // The thread to synchronize map and repeated field
                          // needs to get lock first;
-  mutable volatile Atomic32 state_;  // 0: STATE_MODIFIED_MAP
-                                     // 1: STATE_MODIFIED_REPEATED
-                                     // 2: CLEAN
+  mutable std::atomic<State> state_;
 
  private:
   friend class ContendedMapCleanTest;
@@ -814,13 +815,13 @@ struct hash<google::protobuf::MapKey> {
       case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
         return hash<string>()(map_key.GetStringValue());
       case google::protobuf::FieldDescriptor::CPPTYPE_INT64:
-        return hash< ::google::protobuf::int64>()(map_key.GetInt64Value());
+        return hash<::google::protobuf::int64>()(map_key.GetInt64Value());
       case google::protobuf::FieldDescriptor::CPPTYPE_INT32:
-        return hash< ::google::protobuf::int32>()(map_key.GetInt32Value());
+        return hash<::google::protobuf::int32>()(map_key.GetInt32Value());
       case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
-        return hash< ::google::protobuf::uint64>()(map_key.GetUInt64Value());
+        return hash<::google::protobuf::uint64>()(map_key.GetUInt64Value());
       case google::protobuf::FieldDescriptor::CPPTYPE_UINT32:
-        return hash< ::google::protobuf::uint32>()(map_key.GetUInt32Value());
+        return hash<::google::protobuf::uint32>()(map_key.GetUInt32Value());
       case google::protobuf::FieldDescriptor::CPPTYPE_BOOL:
         return hash<bool>()(map_key.GetBoolValue());
     }

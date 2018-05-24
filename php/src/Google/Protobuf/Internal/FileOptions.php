@@ -174,6 +174,24 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     private $php_namespace = '';
     private $has_php_namespace = false;
     /**
+     * Use this option to change the namespace of php generated metadata classes.
+     * Default is empty. When this option is empty, the proto file name will be used
+     * for determining the namespace.
+     *
+     * Generated from protobuf field <code>optional string php_metadata_namespace = 44;</code>
+     */
+    private $php_metadata_namespace = '';
+    private $has_php_metadata_namespace = false;
+    /**
+     * Use this option to change the package of ruby generated classes. Default
+     * is empty. When this option is not set, the package name will be used for
+     * determining the ruby package.
+     *
+     * Generated from protobuf field <code>optional string ruby_package = 45;</code>
+     */
+    private $ruby_package = '';
+    private $has_ruby_package = false;
+    /**
      * The parser stores options it doesn't recognize here.
      * See the documentation for the "Options" section above.
      *
@@ -825,6 +843,78 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     public function hasPhpNamespace()
     {
         return $this->has_php_namespace;
+    }
+
+    /**
+     * Use this option to change the namespace of php generated metadata classes.
+     * Default is empty. When this option is empty, the proto file name will be used
+     * for determining the namespace.
+     *
+     * Generated from protobuf field <code>optional string php_metadata_namespace = 44;</code>
+     * @return string
+     */
+    public function getPhpMetadataNamespace()
+    {
+        return $this->php_metadata_namespace;
+    }
+
+    /**
+     * Use this option to change the namespace of php generated metadata classes.
+     * Default is empty. When this option is empty, the proto file name will be used
+     * for determining the namespace.
+     *
+     * Generated from protobuf field <code>optional string php_metadata_namespace = 44;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPhpMetadataNamespace($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->php_metadata_namespace = $var;
+        $this->has_php_metadata_namespace = true;
+
+        return $this;
+    }
+
+    public function hasPhpMetadataNamespace()
+    {
+        return $this->has_php_metadata_namespace;
+    }
+
+    /**
+     * Use this option to change the package of ruby generated classes. Default
+     * is empty. When this option is not set, the package name will be used for
+     * determining the ruby package.
+     *
+     * Generated from protobuf field <code>optional string ruby_package = 45;</code>
+     * @return string
+     */
+    public function getRubyPackage()
+    {
+        return $this->ruby_package;
+    }
+
+    /**
+     * Use this option to change the package of ruby generated classes. Default
+     * is empty. When this option is not set, the package name will be used for
+     * determining the ruby package.
+     *
+     * Generated from protobuf field <code>optional string ruby_package = 45;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setRubyPackage($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->ruby_package = $var;
+        $this->has_ruby_package = true;
+
+        return $this;
+    }
+
+    public function hasRubyPackage()
+    {
+        return $this->has_ruby_package;
     }
 
     /**

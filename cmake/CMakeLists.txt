@@ -1,5 +1,5 @@
 # Minimum CMake required
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Configuring...")
@@ -7,9 +7,26 @@ endif()
 
 # CMake policies
 cmake_policy(SET CMP0022 NEW)
+# On MacOS use @rpath/ for target's install name prefix path
+if (POLICY CMP0042)
+  cmake_policy(SET CMP0042 NEW)
+endif ()
+# Clear VERSION variables when no VERSION is given to project()
+if(POLICY CMP0048)
+  cmake_policy(SET CMP0048 NEW)
+endif()
 
 # Project
 project(protobuf C CXX)
+
+# Add c++11 flags
+if (CYGWIN)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+else()
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
 
 # Options
 option(protobuf_BUILD_TESTS "Build tests" ON)
@@ -24,11 +41,7 @@ option(protobuf_BUILD_SHARED_LIBS "Build Shared Libraries" ${protobuf_BUILD_SHAR
 include(CMakeDependentOption)
 cmake_dependent_option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime libraries" ON
   "NOT protobuf_BUILD_SHARED_LIBS" OFF)
-if (MSVC)
-  set(protobuf_WITH_ZLIB_DEFAULT OFF)
-else (MSVC)
-  set(protobuf_WITH_ZLIB_DEFAULT ON)
-endif (MSVC)
+set(protobuf_WITH_ZLIB_DEFAULT ON)
 option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
 set(protobuf_DEBUG_POSTFIX "d"
   CACHE STRING "Default debug postfix")
@@ -157,11 +170,22 @@ if (MSVC)
   add_definitions(/bigobj)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
+  string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
   configure_file(extract_includes.bat.in extract_includes.bat)
-  
+
   # Suppress linker warnings about files with no symbols defined.
   set(CMAKE_STATIC_LINKER_FLAGS /ignore:4221)
+
+  # Configure Resource Compiler
+  enable_language(RC)
+  # use English language (0x409) in resource compiler
+  set(rc_flags "/l0x409")
+  # fix rc.exe invocations because of usage of add_definitions()
+  set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> ${rc_flags} <DEFINES> /fo<OBJECT> <SOURCE>")
+
+  configure_file(version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
 endif (MSVC)
+
 
 get_filename_component(protobuf_source_dir ${protobuf_SOURCE_DIR} PATH)
 

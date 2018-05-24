@@ -484,11 +484,11 @@ static void map_slot_init(void* memory, upb_fieldtype_t type, zval* cache) {
       // Store zval** in memory in order to be consistent with the layout of
       // singular fields.
       zval** holder = ALLOC(zval*);
+      *(zval***)memory = holder;
       zval* tmp;
       MAKE_STD_ZVAL(tmp);
       PHP_PROTO_ZVAL_STRINGL(tmp, "", 0, 1);
       *holder = tmp;
-      *(zval***)memory = holder;
 #else
       *(zval**)memory = cache;
       PHP_PROTO_ZVAL_STRINGL(*(zval**)memory, "", 0, 1);
@@ -521,7 +521,7 @@ static void map_slot_uninit(void* memory, upb_fieldtype_t type) {
     case UPB_TYPE_BYTES: {
 #if PHP_MAJOR_VERSION < 7
       zval** holder = *(zval***)memory;
-      php_proto_zval_ptr_dtor(*holder);
+      zval_ptr_dtor(holder);
       FREE(holder);
 #else
       php_proto_zval_ptr_dtor(*(zval**)memory);
@@ -1621,6 +1621,7 @@ static void discard_unknown_fields(MessageHeader* msg) {
   stringsink* unknown = DEREF(message_data(msg), 0, stringsink*);
   if (unknown != NULL) {
     stringsink_uninit(unknown);
+    FREE(unknown);
     DEREF(message_data(msg), 0, stringsink*) = NULL;
   }
 

@@ -8,8 +8,8 @@ AUTOMAKE_OPTIONS = foreign
 # the right time.
 SUBDIRS = . src
 
-# Always include gmock in distributions.
-DIST_SUBDIRS = $(subdirs) src conformance benchmarks
+# Always include third_party directories in distributions.
+DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 
 # Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
 # because then "make check" would also build and run all of gmock's own tests,
@@ -18,8 +18,8 @@ DIST_SUBDIRS = $(subdirs) src conformance benchmarks
 # the installed version of gmock if there is one.
 check-local:
 	@echo "Making lib/libgmock.a lib/libgmock_main.a in gmock"
-	@cd gmock && $(MAKE) $(AM_MAKEFLAGS) lib/libgmock.la lib/libgmock_main.la
-	@cd gmock/gtest && $(MAKE) $(AM_MAKEFLAGS) lib/libgtest.la lib/libgtest_main.la
+	@cd third_party/googletest/googletest && $(MAKE) $(AM_MAKEFLAGS) lib/libgtest.la lib/libgtest_main.la
+	@cd third_party/googletest/googlemock && $(MAKE) $(AM_MAKEFLAGS) lib/libgmock.la lib/libgmock_main.la
 
 # We would like to clean gmock when "make clean" is invoked.  But we have to
 # be careful because clean-local is also invoked during "make distclean", but
@@ -28,9 +28,9 @@ check-local:
 # cd to the directory again and "make clean" it will fail.  So, check that the
 # Makefile exists before recursing.
 clean-local:
-	@if test -e gmock/Makefile; then \
-	  echo "Making clean in gmock"; \
-	  cd gmock && $(MAKE) $(AM_MAKEFLAGS) clean; \
+	@if test -e third_party/googletest/Makefile; then \
+	  echo "Making clean in googletest"; \
+	  cd third_party/googletest && $(MAKE) $(AM_MAKEFLAGS) clean; \
 	fi; \
 	if test -e conformance/Makefile; then \
 	  echo "Making clean in conformance"; \
@@ -98,7 +98,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
   csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
-  csharp/src/Google.Protobuf.Test/Program.cs                                 \
   csharp/src/Google.Protobuf.Test/Reflection/CustomOptionsTest.cs            \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
   csharp/src/Google.Protobuf.Test/Reflection/FieldAccessTest.cs              \
@@ -133,6 +132,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Collections/ProtobufEqualityComparers.cs        \
   csharp/src/Google.Protobuf/Collections/ReadOnlyDictionary.cs               \
   csharp/src/Google.Protobuf/Collections/RepeatedField.cs                    \
+  csharp/src/Google.Protobuf/Compatibility/MethodInfoExtensions.cs           \
   csharp/src/Google.Protobuf/Compatibility/PropertyInfoExtensions.cs         \
   csharp/src/Google.Protobuf/Compatibility/StreamExtensions.cs               \
   csharp/src/Google.Protobuf/Compatibility/TypeExtensions.cs                 \
@@ -354,6 +354,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/map_for_proto2_lite_test.proto      \
   java/core/src/test/proto/com/google/protobuf/map_for_proto2_test.proto           \
   java/core/src/test/proto/com/google/protobuf/map_initialization_order_test.proto \
+  java/core/src/test/proto/com/google/protobuf/map_lite_test.proto                 \
   java/core/src/test/proto/com/google/protobuf/map_test.proto                      \
   java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto           \
   java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto          \
@@ -369,9 +370,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
   java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/test_extra_interfaces.proto         \
-  java/lite/generate-sources-build.xml                                             \
-  java/lite/generate-test-sources-build.xml                                        \
-  java/lite/pom.xml                                                                \
+  java/lite.md                                                                     \
   java/pom.xml                                                                     \
   java/util/pom.xml                                                                \
   java/util/src/main/java/com/google/protobuf/util/Durations.java                  \
@@ -385,45 +384,6 @@ java_EXTRA_DIST=                                                                
   java/util/src/test/java/com/google/protobuf/util/JsonFormatTest.java             \
   java/util/src/test/java/com/google/protobuf/util/TimeUtilTest.java               \
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
-
-javanano_EXTRA_DIST=                                                                      \
-  javanano/src/main/java/com/google/protobuf/nano/CodedOutputByteBufferNano.java          \
-  javanano/src/main/java/com/google/protobuf/nano/FieldData.java                          \
-  javanano/src/main/java/com/google/protobuf/nano/FieldArray.java                         \
-  javanano/src/main/java/com/google/protobuf/nano/WireFormatNano.java                     \
-  javanano/src/main/java/com/google/protobuf/nano/Extension.java                          \
-  javanano/src/main/java/com/google/protobuf/nano/CodedInputByteBufferNano.java           \
-  javanano/src/main/java/com/google/protobuf/nano/UnknownFieldData.java                   \
-  javanano/src/main/java/com/google/protobuf/nano/MessageNano.java                        \
-  javanano/src/main/java/com/google/protobuf/nano/InternalNano.java                       \
-  javanano/src/main/java/com/google/protobuf/nano/InvalidProtocolBufferNanoException.java \
-  javanano/src/main/java/com/google/protobuf/nano/MapFactories.java                       \
-  javanano/src/main/java/com/google/protobuf/nano/ExtendableMessageNano.java              \
-  javanano/src/main/java/com/google/protobuf/nano/MessageNanoPrinter.java                 \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_accessors_nano.proto           \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_enum_class_nano.proto          \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_reference_types_nano.proto     \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_extension_repeated_nano.proto  \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_has_nano.proto                 \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_nano.proto                     \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_multiple_nameclash_nano.proto  \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_single_nano.proto              \
-  javanano/src/test/java/com/google/protobuf/nano/NanoTest.java                           \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_simple_nano.proto              \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_import_nano.proto              \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_repeated_merge_nano.proto      \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_extension_nano.proto           \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_repeated_packables_nano.proto  \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_extension_singular_nano.proto  \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_recursive_nano.proto           \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_extension_packed_nano.proto    \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_enum_validity_nano.proto       \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_stringutf8_nano.proto          \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_multiple_nano.proto            \
-  javanano/src/test/java/com/google/protobuf/nano/unittest_enum_class_multiple_nano.proto \
-  javanano/src/test/java/com/google/protobuf/nano/map_test.proto                          \
-  javanano/README.md                                                                      \
-  javanano/pom.xml
 
 objectivec_EXTRA_DIST=                                                       \
   objectivec/DevTools/check_version_stamps.sh                                \
@@ -497,11 +457,13 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBWireFormat.m                                                 \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.pbxproj                   \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
+  objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings \
   objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
   objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.pbxproj                   \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
+  objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
@@ -539,6 +501,31 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBArrayTests.m                                           \
   objectivec/Tests/GPBCodedInputStreamTests.m                                \
   objectivec/Tests/GPBCodedOuputStreamTests.m                                \
+  objectivec/Tests/GPBCompileTest01.m                                        \
+  objectivec/Tests/GPBCompileTest02.m                                        \
+  objectivec/Tests/GPBCompileTest03.m                                        \
+  objectivec/Tests/GPBCompileTest04.m                                        \
+  objectivec/Tests/GPBCompileTest05.m                                        \
+  objectivec/Tests/GPBCompileTest06.m                                        \
+  objectivec/Tests/GPBCompileTest07.m                                        \
+  objectivec/Tests/GPBCompileTest08.m                                        \
+  objectivec/Tests/GPBCompileTest09.m                                        \
+  objectivec/Tests/GPBCompileTest10.m                                        \
+  objectivec/Tests/GPBCompileTest11.m                                        \
+  objectivec/Tests/GPBCompileTest12.m                                        \
+  objectivec/Tests/GPBCompileTest13.m                                        \
+  objectivec/Tests/GPBCompileTest14.m                                        \
+  objectivec/Tests/GPBCompileTest15.m                                        \
+  objectivec/Tests/GPBCompileTest16.m                                        \
+  objectivec/Tests/GPBCompileTest17.m                                        \
+  objectivec/Tests/GPBCompileTest18.m                                        \
+  objectivec/Tests/GPBCompileTest19.m                                        \
+  objectivec/Tests/GPBCompileTest20.m                                        \
+  objectivec/Tests/GPBCompileTest21.m                                        \
+  objectivec/Tests/GPBCompileTest22.m                                        \
+  objectivec/Tests/GPBCompileTest23.m                                        \
+  objectivec/Tests/GPBCompileTest24.m                                        \
+  objectivec/Tests/GPBCompileTest25.m                                        \
   objectivec/Tests/GPBConcurrencyTests.m                                     \
   objectivec/Tests/GPBDescriptorTests.m                                      \
   objectivec/Tests/GPBDictionaryTests+Bool.m                                 \
@@ -565,25 +552,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBUtilitiesTests.m                                       \
   objectivec/Tests/GPBWellKnownTypesTest.m                                   \
   objectivec/Tests/GPBWireFormatTests.m                                      \
-  objectivec/Tests/iOSTestHarness/AppDelegate.m                              \
-  objectivec/Tests/iOSTestHarness/en.lproj/InfoPlist.strings                 \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_20.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_29.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_40.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_58.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_60.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_76.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_80.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_87.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_120.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_152.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_167.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_180.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/appicon_1024.png \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/Contents.json \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/LaunchImage.launchimage/Contents.json \
-  objectivec/Tests/iOSTestHarness/Info.plist                                  \
-  objectivec/Tests/iOSTestHarness/LaunchScreen.xib                            \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
@@ -774,6 +742,7 @@ python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
   python/google/__init__.py                                                  \
   python/google/protobuf/__init__.py                                         \
+  python/google/protobuf/compiler/__init__.py                                \
   python/google/protobuf/descriptor.py                                       \
   python/google/protobuf/descriptor_database.py                              \
   python/google/protobuf/descriptor_pool.py                                  \
@@ -808,6 +777,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/more_extensions.proto                      \
   python/google/protobuf/internal/more_extensions_dynamic.proto              \
   python/google/protobuf/internal/more_messages.proto                        \
+  python/google/protobuf/internal/no_package.proto                           \
   python/google/protobuf/internal/packed_field_test.proto                    \
   python/google/protobuf/internal/proto_builder_test.py                      \
   python/google/protobuf/internal/python_message.py                          \
@@ -861,12 +831,14 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
   python/google/protobuf/pyext/safe_numerics.h                               \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
+  python/google/protobuf/pyext/thread_unsafe_shared_ptr.h                    \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
   python/google/protobuf/service_reflection.py                               \
   python/google/protobuf/symbol_database.py                                  \
   python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
+  python/google/protobuf/util/__init__.py                                    \
   python/release.sh                                                          \
   python/mox.py                                                              \
   python/setup.cfg                                                           \
@@ -932,6 +904,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/stress.rb                                                       \
   ruby/tests/generated_code.proto                                            \
   ruby/tests/test_import.proto                                               \
+  ruby/tests/test_ruby_package.proto                                         \
   ruby/tests/generated_code_test.rb                                          \
   ruby/tests/well_known_types_test.rb                                        \
   ruby/travis-test.sh
@@ -1033,7 +1006,7 @@ js_EXTRA_DIST=                                                         \
   js/testbinary.proto                                                  \
   js/testempty.proto
 
-all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
+all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
 
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   autogen.sh                             \
@@ -1044,7 +1017,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   CHANGES.txt                            \
   update_file_lists.sh                   \
   BUILD                                  \
-  gmock.BUILD                            \
   WORKSPACE                              \
   cmake/CMakeLists.txt                   \
   cmake/README.md                        \
@@ -1062,6 +1034,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   cmake/protobuf.pc.cmake                \
   cmake/protoc.cmake                     \
   cmake/tests.cmake                      \
+  cmake/version.rc.in                    \
   editors/README.txt                     \
   editors/proto.vim                      \
   editors/protobuf-mode.el               \

@@ -1,10 +1,9 @@
 workspace(name = "com_google_protobuf")
 
-new_git_repository(
-    name = "googletest",
-    build_file = "gmock.BUILD",
-    remote = "https://github.com/google/googletest",
-    tag = "release-1.8.0",
+new_local_repository(
+    name = "submodule_gmock",
+    path = "third_party/googletest",
+    build_file = "third_party/googletest/BUILD.bazel"
 )
 
 new_http_archive(
@@ -21,12 +20,12 @@ bind(
 
 bind(
     name = "gtest",
-    actual = "@googletest//:gtest",
+    actual = "@submodule_gmock//:gtest",
 )
 
 bind(
     name = "gtest_main",
-    actual = "@googletest//:gtest_main",
+    actual = "@submodule_gmock//:gtest_main",
 )
 
 bind(

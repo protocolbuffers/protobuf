@@ -11,7 +11,9 @@ RUN yum install -y git \
                    libtool \
                    glibc-static.i686 \
                    glibc-devel \
-                   glibc-devel.i686
+                   glibc-devel.i686 \
+                   && \
+    yum clean all
 
 # Install Java 8
 RUN wget -q --no-cookies --no-check-certificate \
@@ -27,15 +29,17 @@ RUN wget -q http://apache.cs.utah.edu/maven/maven-3/3.3.9/binaries/apache-maven-
 ENV PATH /var/local/apache-maven-3.3.9/bin:$PATH
 
 # Install GCC 4.7 to support -static-libstdc++
-RUN wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo -P /etc/yum.repos.d
-RUN bash -c 'echo "enabled=1" >> /etc/yum.repos.d/devtools-1.1.repo'
-RUN bash -c "sed -e 's/\$basearch/i386/g' /etc/yum.repos.d/devtools-1.1.repo > /etc/yum.repos.d/devtools-i386-1.1.repo"
-RUN sed -e 's/testing-/testing-i386-/g' -i /etc/yum.repos.d/devtools-i386-1.1.repo
-RUN rpm --rebuilddb && yum install -y devtoolset-1.1 \
+RUN wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo -P /etc/yum.repos.d && \
+    bash -c 'echo "enabled=1" >> /etc/yum.repos.d/devtools-1.1.repo' && \
+    bash -c "sed -e 's/\$basearch/i386/g' /etc/yum.repos.d/devtools-1.1.repo > /etc/yum.repos.d/devtools-i386-1.1.repo" && \
+    sed -e 's/testing-/testing-i386-/g' -i /etc/yum.repos.d/devtools-i386-1.1.repo && \
+    rpm --rebuilddb && \
+    yum install -y devtoolset-1.1 \
                    devtoolset-1.1-libstdc++-devel \
-                   devtoolset-1.1-libstdc++-devel.i686
+                   devtoolset-1.1-libstdc++-devel.i686 && \
+    yum clean all
 
-RUN git clone --depth 1 https://github.com/google/protobuf.git
+COPY scl-enable-devtoolset.sh /var/local/
 
 # Start in devtoolset environment that uses GCC 4.7
-CMD ["scl", "enable", "devtoolset-1.1", "bash"]
+ENTRYPOINT ["/var/local/scl-enable-devtoolset.sh"]

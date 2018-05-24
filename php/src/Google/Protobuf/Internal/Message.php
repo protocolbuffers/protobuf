@@ -82,7 +82,7 @@ class Message
         $pool = DescriptorPool::getGeneratedPool();
         $this->desc = $pool->getDescriptorByClassName(get_class($this));
         if (is_null($this->desc)) {
-            user_error(get_class($this) . "is not found in descriptor pool.");
+            user_error(get_class($this) . " is not found in descriptor pool.");
         }
         foreach ($this->desc->getField() as $field) {
             $setter = $field->getSetter();
@@ -1104,7 +1104,7 @@ class Message
      */
     public function parseFromJsonStream($input)
     {
-        $array = json_decode($input->getData(), JSON_BIGINT_AS_STRING);
+        $array = json_decode($input->getData(), true, 512, JSON_BIGINT_AS_STRING);
         if (is_null($array)) {
             throw new GPBDecodeException(
                 "Cannot decode json string.");

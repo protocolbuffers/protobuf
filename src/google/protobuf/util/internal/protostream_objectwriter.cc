@@ -62,7 +62,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
     const ProtoStreamObjectWriter::Options& options)
     : ProtoWriter(type_resolver, type, output, listener),
       master_type_(type),
-      current_(NULL),
+      current_(nullptr),
       options_(options) {
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
   set_use_lower_camel_for_enums(options_.use_lower_camel_for_enums);
@@ -73,18 +73,18 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
     strings::ByteSink* output, ErrorListener* listener)
     : ProtoWriter(typeinfo, type, output, listener),
       master_type_(type),
-      current_(NULL),
+      current_(nullptr),
       options_(ProtoStreamObjectWriter::Options::Defaults()) {}
 
 ProtoStreamObjectWriter::~ProtoStreamObjectWriter() {
-  if (current_ == NULL) return;
+  if (current_ == nullptr) return;
   // Cleanup explicitly in order to avoid destructor stack overflow when input
   // is deeply nested.
   // Cast to BaseElement to avoid doing additional checks (like missing fields)
   // during pop().
-  google::protobuf::scoped_ptr<BaseElement> element(
+  std::unique_ptr<BaseElement> element(
       static_cast<BaseElement*>(current_.get())->pop<BaseElement>());
-  while (element != NULL) {
+  while (element != nullptr) {
     element.reset(element->pop<BaseElement>());
   }
 }
@@ -186,7 +186,7 @@ ProtoStreamObjectWriter::AnyWriter::AnyWriter(ProtoStreamObjectWriter* parent)
       output_(&data_),
       depth_(0),
       is_well_known_type_(false),
-      well_known_type_render_(NULL) {}
+      well_known_type_render_(nullptr) {}
 
 ProtoStreamObjectWriter::AnyWriter::~AnyWriter() {}
 
@@ -195,7 +195,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartObject(StringPiece name) {
   // If an object writer is absent, that means we have not called StartAny()
   // before reaching here, which happens when we have data before the "@type"
   // field.
-  if (ow_ == NULL) {
+  if (ow_ == nullptr) {
     // Save data before the "@type" field for later replay.
     uninterpreted_events_.push_back(Event(Event::START_OBJECT, name));
   } else if (is_well_known_type_ && depth_ == 1) {
@@ -217,7 +217,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartObject(StringPiece name) {
 
 bool ProtoStreamObjectWriter::AnyWriter::EndObject() {
   --depth_;
-  if (ow_ == NULL) {
+  if (ow_ == nullptr) {
     if (depth_ >= 0) {
       // Save data before the "@type" field for later replay.
       uninterpreted_events_.push_back(Event(Event::END_OBJECT));
@@ -239,7 +239,7 @@ bool ProtoStreamObjectWriter::AnyWriter::EndObject() {
 
 void ProtoStreamObjectWriter::AnyWriter::StartList(StringPiece name) {
   ++depth_;
-  if (ow_ == NULL) {
+  if (ow_ == nullptr) {
     // Save data before the "@type" field for later replay.
     uninterpreted_events_.push_back(Event(Event::START_LIST, name));
   } else if (is_well_known_type_ && depth_ == 1) {
@@ -260,7 +260,7 @@ void ProtoStreamObjectWriter::AnyWriter::EndList() {
     GOOGLE_LOG(DFATAL) << "Mismatched EndList found, should not be possible";
     depth_ = 0;
   }
-  if (ow_ == NULL) {
+  if (ow_ == nullptr) {
     // Save data before the "@type" field for later replay.
     uninterpreted_events_.push_back(Event(Event::END_LIST));
   } else {
@@ -272,9 +272,9 @@ void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
     StringPiece name, const DataPiece& value) {
   // Start an Any only at depth_ 0. Other RenderDataPiece calls with "@type"
   // should go to the contained ow_ as they indicate nested Anys.
-  if (depth_ == 0 && ow_ == NULL && name == "@type") {
+  if (depth_ == 0 && ow_ == nullptr && name == "@type") {
     StartAny(value);
-  } else if (ow_ == NULL) {
+  } else if (ow_ == nullptr) {
     // Save data before the "@type" field.
     uninterpreted_events_.push_back(Event(name, value));
   } else if (depth_ == 0 && is_well_known_type_) {
@@ -283,7 +283,7 @@ void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
                             "Expect a \"value\" field for well-known types.");
       invalid_ = true;
     }
-    if (well_known_type_render_ == NULL) {
+    if (well_known_type_render_ == nullptr) {
       // Only Any and Struct don't have a special type render but both of
       // them expect a JSON object (i.e., a StartObject() call).
       if (value.type() != DataPiece::TYPE_NULL && !invalid_) {
@@ -327,7 +327,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
   const google::protobuf::Type* type = resolved_type.ValueOrDie();
 
   well_known_type_render_ = FindTypeRenderer(type_url_);
-  if (well_known_type_render_ != NULL ||
+  if (well_known_type_render_ != nullptr ||
       // Explicitly list Any and Struct here because they don't have a
       // custom renderer.
       type->name() == kAnyType || type->name() == kStructType) {
@@ -360,7 +360,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
 }
 
 void ProtoStreamObjectWriter::AnyWriter::WriteAny() {
-  if (ow_ == NULL) {
+  if (ow_ == nullptr) {
     if (uninterpreted_events_.empty()) {
       // We never got any content, so just return immediately, which is
       // equivalent to writing an empty Any.
@@ -421,7 +421,7 @@ void ProtoStreamObjectWriter::AnyWriter::Event::DeepCopy() {
 ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter* enclosing,
                                     ItemType item_type, bool is_placeholder,
                                     bool is_list)
-    : BaseElement(NULL),
+    : BaseElement(nullptr),
       ow_(enclosing),
       any_(),
       item_type_(item_type),
@@ -467,7 +467,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
   // Starting the root message. Create the root Item and return.
   // ANY message type does not need special handling, just set the ItemType
   // to ANY.
-  if (current_ == NULL) {
+  if (current_ == nullptr) {
     ProtoWriter::StartObject(name);
     current_.reset(new Item(
         this, master_type_.name() == kAnyType ? Item::ANY : Item::MESSAGE,
@@ -541,14 +541,14 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
 
     // If top of stack is g.p.Struct type, start the struct the map field within
     // it.
-    if (element() != NULL && IsStruct(*element()->parent_field())) {
+    if (element() != nullptr && IsStruct(*element()->parent_field())) {
       // Render "fields": [
       Push("fields", Item::MAP, true, true);
       return this;
     }
 
     // If top of stack is g.p.Value type, start the Struct within it.
-    if (element() != NULL && IsStructValue(*element()->parent_field())) {
+    if (element() != nullptr && IsStructValue(*element()->parent_field())) {
       // Render
       // "struct_value": {
       //   "fields": [
@@ -559,7 +559,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
   }
 
   const google::protobuf::Field* field = BeginNamed(name, false);
-  if (field == NULL) return this;
+  if (field == nullptr) return this;
 
   if (IsStruct(*field)) {
     // Start a struct object.
@@ -607,7 +607,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndObject() {
     return this;
   }
 
-  if (current_ == NULL) return this;
+  if (current_ == nullptr) return this;
 
   if (current_->IsAny()) {
     if (current_->any()->EndObject()) return this;
@@ -627,7 +627,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
   // Since we cannot have a top-level repeated item in protobuf, the only way
   // this is valid is if we start a special type google.protobuf.ListValue or
   // google.protobuf.Value.
-  if (current_ == NULL) {
+  if (current_ == nullptr) {
     if (!name.empty()) {
       InvalidName(name, "Root element should not be named.");
       IncrementInvalidDepth();
@@ -706,7 +706,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
     if (invalid_depth() > 0) return this;
 
     // case i and ii above. Start "list_value" field within g.p.Value
-    if (element() != NULL && element()->parent_field() != NULL) {
+    if (element() != nullptr && element()->parent_field() != nullptr) {
       // Render
       // "list_value": {
       //   "values": [  // Start this list
@@ -734,7 +734,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
   // When name is empty and stack is not empty, we are rendering an item within
   // a list.
   if (name.empty()) {
-    if (element() != NULL && element()->parent_field() != NULL) {
+    if (element() != nullptr && element()->parent_field() != nullptr) {
       if (IsStructValue(*element()->parent_field())) {
         // Since it is g.p.Value, we bind directly to the list_value.
         // Render
@@ -765,7 +765,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
 
   // name is not empty
   const google::protobuf::Field* field = Lookup(name);
-  if (field == NULL) {
+  if (field == nullptr) {
     IncrementInvalidDepth();
     return this;
   }
@@ -837,7 +837,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndList() {
     return this;
   }
 
-  if (current_ == NULL) return this;
+  if (current_ == nullptr) return this;
 
   if (current_->IsAny()) {
     current_->any()->EndList();
@@ -961,7 +961,7 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
 // TODO(tsun): figure out how to do proto descriptor based snake case
 // conversions as much as possible. Because ToSnakeCase sometimes returns the
 // wrong value.
-  google::protobuf::scoped_ptr<ResultCallback1<util::Status, StringPiece> > callback(
+  std::unique_ptr<ResultCallback1<util::Status, StringPiece> > callback(
       ::google::protobuf::NewPermanentCallback(&RenderOneFieldPath, ow));
   return DecodeCompactFieldMaskPaths(data.str(), callback.get());
 }
@@ -977,13 +977,13 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
 
   StringPiece value(data.str());
 
-  if (!value.ends_with("s")) {
+  if (!StringEndsWith(value, "s")) {
     return Status(INVALID_ARGUMENT,
                   "Illegal duration format; duration must end with 's'");
   }
   value = value.substr(0, value.size() - 1);
   int sign = 1;
-  if (value.starts_with("-")) {
+  if (StringStartsWith(value, "-")) {
     sign = -1;
     value = value.substr(1);
   }
@@ -1028,10 +1028,10 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
   Status status;
   if (invalid_depth() > 0) return this;
 
-  if (current_ == NULL) {
+  if (current_ == nullptr) {
     const TypeRenderer* type_renderer =
         FindTypeRenderer(GetFullTypeWithUrl(master_type_.name()));
-    if (type_renderer == NULL) {
+    if (type_renderer == nullptr) {
       InvalidName(name, "Root element must be a message.");
       return this;
     }
@@ -1054,7 +1054,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     return this;
   }
 
-  const google::protobuf::Field* field = NULL;
+  const google::protobuf::Field* field = nullptr;
   if (current_->IsMap()) {
     if (!ValidMapKey(name)) return this;
 
@@ -1064,14 +1064,14 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     ProtoWriter::RenderDataPiece("key",
                                  DataPiece(name, use_strict_base64_decoding()));
     field = Lookup("value");
-    if (field == NULL) {
+    if (field == nullptr) {
       Pop();
       GOOGLE_LOG(DFATAL) << "Map does not have a value field.";
       return this;
     }
 
     const TypeRenderer* type_renderer = FindTypeRenderer(field->type_url());
-    if (type_renderer != NULL) {
+    if (type_renderer != nullptr) {
       // Map's value type is a special type. Render it like a message:
       // "value": {
       //   ... Render special type ...
@@ -1101,11 +1101,11 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
   }
 
   field = Lookup(name);
-  if (field == NULL) return this;
+  if (field == nullptr) return this;
 
   // Check if the field is of special type. Render it accordingly if so.
   const TypeRenderer* type_renderer = FindTypeRenderer(field->type_url());
-  if (type_renderer != NULL) {
+  if (type_renderer != nullptr) {
     // Pass through null value only for google.protobuf.Value. For other
     // types we ignore null value just like for regular field types.
     if (data.type() != DataPiece::TYPE_NULL ||
@@ -1199,7 +1199,7 @@ ProtoStreamObjectWriter::FindTypeRenderer(const string& type_url) {
 }
 
 bool ProtoStreamObjectWriter::ValidMapKey(StringPiece unnormalized_name) {
-  if (current_ == NULL) return true;
+  if (current_ == nullptr) return true;
 
   if (!current_->InsertMapKeyIfNotPresent(unnormalized_name)) {
     listener()->InvalidName(
@@ -1224,10 +1224,10 @@ void ProtoStreamObjectWriter::Push(StringPiece name, Item::ItemType item_type,
 void ProtoStreamObjectWriter::Pop() {
   // Pop all placeholder items sending StartObject or StartList events to
   // ProtoWriter according to is_list value.
-  while (current_ != NULL && current_->is_placeholder()) {
+  while (current_ != nullptr && current_->is_placeholder()) {
     PopOneElement();
   }
-  if (current_ != NULL) {
+  if (current_ != nullptr) {
     PopOneElement();
   }
 }

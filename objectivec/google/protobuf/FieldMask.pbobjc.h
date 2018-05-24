@@ -8,9 +8,13 @@
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <Protobuf/GPBProtocolBuffers.h>
+ #import <Protobuf/GPBDescriptor.h>
+ #import <Protobuf/GPBMessage.h>
+ #import <Protobuf/GPBRootObject.h>
 #else
- #import "GPBProtocolBuffers.h"
+ #import "GPBDescriptor.h"
+ #import "GPBMessage.h"
+ #import "GPBRootObject.h"
 #endif
 
 #if GOOGLE_PROTOBUF_OBJC_VERSION < 30002
@@ -255,8 +259,8 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
  *
  * ## Field Mask Verification
  *
- * The implementation of the all the API methods, which have any FieldMask type
- * field in the request, should verify the included field paths, and return
+ * The implementation of any API method which has a FieldMask type field in the
+ * request should verify the included field paths, and return an
  * `INVALID_ARGUMENT` error if any path is duplicated or unmappable.
  **/
 @interface GPBFieldMask : GPBMessage

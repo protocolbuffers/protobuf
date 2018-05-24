@@ -383,8 +383,6 @@ TEST(RepeatedField, SelfAssign) {
   EXPECT_EQ(8, source.Get(1));
 }
 
-#if LANG_CXX11
-
 TEST(RepeatedField, MoveConstruct) {
   {
     RepeatedField<int> source;
@@ -405,7 +403,7 @@ TEST(RepeatedField, MoveConstruct) {
     source->Add(1);
     source->Add(2);
     RepeatedField<int> destination = std::move(*source);
-    EXPECT_EQ(NULL, destination.GetArena());
+    EXPECT_EQ(nullptr, destination.GetArena());
     EXPECT_THAT(destination, ElementsAre(1, 2));
     // This property isn't guaranteed but it's useful to have a test that would
     // catch changes in this area.
@@ -516,8 +514,6 @@ TEST(RepeatedField, MoveAssign) {
     EXPECT_THAT(*field, ElementsAre(1, 2));
   }
 }
-
-#endif  // LANG_CXX11
 
 TEST(RepeatedField, MutableDataIsMutable) {
   RepeatedField<int> field;
@@ -1045,8 +1041,6 @@ TEST(RepeatedPtrField, SelfAssign) {
   EXPECT_EQ("8", source.Get(1));
 }
 
-#if LANG_CXX11
-
 TEST(RepeatedPtrField, MoveConstruct) {
   {
     RepeatedPtrField<string> source;
@@ -1067,7 +1061,7 @@ TEST(RepeatedPtrField, MoveConstruct) {
     *source->Add() = "1";
     *source->Add() = "2";
     RepeatedPtrField<string> destination = std::move(*source);
-    EXPECT_EQ(NULL, destination.GetArena());
+    EXPECT_EQ(nullptr, destination.GetArena());
     EXPECT_THAT(destination, ElementsAre("1", "2"));
     // This property isn't guaranteed but it's useful to have a test that would
     // catch changes in this area.
@@ -1178,8 +1172,6 @@ TEST(RepeatedPtrField, MoveAssign) {
     EXPECT_THAT(*field, ElementsAre("1", "2"));
   }
 }
-
-#endif  // LANG_CXX11
 
 TEST(RepeatedPtrField, MutableDataIsMutable) {
   RepeatedPtrField<string> field;
@@ -1844,7 +1836,6 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 
-#if LANG_CXX11
 TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
   std::vector<string> src = {"a", "b", "c", "d"};
   std::vector<string> copy = src;  // copy since move leaves in undefined state
@@ -1874,7 +1865,6 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
               testproto.repeated_nested_message(i).DebugString());
   }
 }
-#endif
 
 }  // namespace
 

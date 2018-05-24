@@ -1,4 +1,111 @@
 // Amalgamated source file
+
+// php.h intentionally defined NDEBUG. We have to define this macro in order to
+// be used together with php.h
+#ifndef NDEBUG
+#define NDEBUG
+#endif
+
+/*
+** upb_decode: parsing into a upb_msg using a upb_msglayout.
+*/
+
+#ifndef UPB_DECODE_H_
+#define UPB_DECODE_H_
+
+/*
+** upb::Message is a representation for protobuf messages.
+**
+** However it differs from other common representations like
+** google::protobuf::Message in one key way: it does not prescribe any
+** ownership between messages and submessages, and it relies on the
+** client to delete each message/submessage/array/map at the appropriate
+** time.
+**
+** A client can access a upb::Message without knowing anything about
+** ownership semantics, but to create or mutate a message a user needs
+** to implement the memory management themselves.
+**
+** Currently all messages, arrays, and maps store a upb_alloc* internally.
+** Mutating operations use this when they require dynamically-allocated
+** memory.  We could potentially eliminate this size overhead later by
+** letting the user flip a bit on the factory that prevents this from
+** being stored.  The user would then need to use separate functions where
+** the upb_alloc* is passed explicitly.  However for handlers to populate
+** such structures, they would need a place to store this upb_alloc* during
+** parsing; upb_handlers don't currently have a good way to accommodate this.
+**
+** TODO: UTF-8 checking?
+**/
+
+#ifndef UPB_MSG_H_
+#define UPB_MSG_H_
+
+/*
+** Defs are upb's internal representation of the constructs that can appear
+** in a .proto file:
+**
+** - upb::MessageDef (upb_msgdef): describes a "message" construct.
+** - upb::FieldDef (upb_fielddef): describes a message field.
+** - upb::FileDef (upb_filedef): describes a .proto file and its defs.
+** - upb::EnumDef (upb_enumdef): describes an enum.
+** - upb::OneofDef (upb_oneofdef): describes a oneof.
+** - upb::Def (upb_def): base class of all the others.
+**
+** TODO: definitions of services.
+**
+** Like upb_refcounted objects, defs are mutable only until frozen, and are
+** only thread-safe once frozen.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
+
+#ifndef UPB_DEF_H_
+#define UPB_DEF_H_
+
+/*
+** upb::RefCounted (upb_refcounted)
+**
+** A refcounting scheme that supports circular refs.  It accomplishes this by
+** partitioning the set of objects into groups such that no cycle spans groups;
+** we can then reference-count the group as a whole and ignore refs within the
+** group.  When objects are mutable, these groups are computed very
+** conservatively; we group any objects that have ever had a link between them.
+** When objects are frozen, we compute strongly-connected components which
+** allows us to be precise and only group objects that are actually cyclic.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
+
+#ifndef UPB_REFCOUNTED_H_
+#define UPB_REFCOUNTED_H_
+
+/*
+** upb_table
+**
+** This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
+** This file defines very fast int->upb_value (inttable) and string->upb_value
+** (strtable) hash tables.
+**
+** The table uses chained scatter with Brent's variation (inspired by the Lua
+** implementation of hash tables).  The hash function for strings is Austin
+** Appleby's "MurmurHash."
+**
+** The inttable uses uintptr_t as its key, which guarantees it can be used to
+** store pointers or integers of at least 32 bits (upb isn't really useful on
+** systems where sizeof(void*) < 4).
+**
+** The table must be homogenous (all values of the same type).  In debug
+** mode, we check this on insert and lookup.
+*/
+
+#ifndef UPB_TABLE_H_
+#define UPB_TABLE_H_
+
+#include <stdint.h>
+#include <string.h>
 /*
 ** This file contains shared definitions that are widely used across upb.
 **
@@ -8,12 +115,6 @@
 
 #ifndef UPB_H_
 #define UPB_H_
-
-// php.h intentionally defined NDEBUG. We have to define this macro in order to
-// be used together with php.h
-#ifndef NDEBUG
-#define NDEBUG
-#endif
 
 #include <assert.h>
 #include <stdarg.h>
@@ -743,106 +844,6 @@ template <int N> class upb::InlinedEnvironment : public upb::Environment {
 
 
 #endif  /* UPB_H_ */
-/*
-** upb_decode: parsing into a upb_msg using a upb_msglayout.
-*/
-
-#ifndef UPB_DECODE_H_
-#define UPB_DECODE_H_
-
-/*
-** upb::Message is a representation for protobuf messages.
-**
-** However it differs from other common representations like
-** google::protobuf::Message in one key way: it does not prescribe any
-** ownership between messages and submessages, and it relies on the
-** client to delete each message/submessage/array/map at the appropriate
-** time.
-**
-** A client can access a upb::Message without knowing anything about
-** ownership semantics, but to create or mutate a message a user needs
-** to implement the memory management themselves.
-**
-** Currently all messages, arrays, and maps store a upb_alloc* internally.
-** Mutating operations use this when they require dynamically-allocated
-** memory.  We could potentially eliminate this size overhead later by
-** letting the user flip a bit on the factory that prevents this from
-** being stored.  The user would then need to use separate functions where
-** the upb_alloc* is passed explicitly.  However for handlers to populate
-** such structures, they would need a place to store this upb_alloc* during
-** parsing; upb_handlers don't currently have a good way to accommodate this.
-**
-** TODO: UTF-8 checking?
-**/
-
-#ifndef UPB_MSG_H_
-#define UPB_MSG_H_
-
-/*
-** Defs are upb's internal representation of the constructs that can appear
-** in a .proto file:
-**
-** - upb::MessageDef (upb_msgdef): describes a "message" construct.
-** - upb::FieldDef (upb_fielddef): describes a message field.
-** - upb::FileDef (upb_filedef): describes a .proto file and its defs.
-** - upb::EnumDef (upb_enumdef): describes an enum.
-** - upb::OneofDef (upb_oneofdef): describes a oneof.
-** - upb::Def (upb_def): base class of all the others.
-**
-** TODO: definitions of services.
-**
-** Like upb_refcounted objects, defs are mutable only until frozen, and are
-** only thread-safe once frozen.
-**
-** This is a mixed C/C++ interface that offers a full API to both languages.
-** See the top-level README for more information.
-*/
-
-#ifndef UPB_DEF_H_
-#define UPB_DEF_H_
-
-/*
-** upb::RefCounted (upb_refcounted)
-**
-** A refcounting scheme that supports circular refs.  It accomplishes this by
-** partitioning the set of objects into groups such that no cycle spans groups;
-** we can then reference-count the group as a whole and ignore refs within the
-** group.  When objects are mutable, these groups are computed very
-** conservatively; we group any objects that have ever had a link between them.
-** When objects are frozen, we compute strongly-connected components which
-** allows us to be precise and only group objects that are actually cyclic.
-**
-** This is a mixed C/C++ interface that offers a full API to both languages.
-** See the top-level README for more information.
-*/
-
-#ifndef UPB_REFCOUNTED_H_
-#define UPB_REFCOUNTED_H_
-
-/*
-** upb_table
-**
-** This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
-** This file defines very fast int->upb_value (inttable) and string->upb_value
-** (strtable) hash tables.
-**
-** The table uses chained scatter with Brent's variation (inspired by the Lua
-** implementation of hash tables).  The hash function for strings is Austin
-** Appleby's "MurmurHash."
-**
-** The inttable uses uintptr_t as its key, which guarantees it can be used to
-** store pointers or integers of at least 32 bits (upb isn't really useful on
-** systems where sizeof(void*) < 4).
-**
-** The table must be homogenous (all values of the same type).  In debug
-** mode, we check this on insert and lookup.
-*/
-
-#ifndef UPB_TABLE_H_
-#define UPB_TABLE_H_
-
-#include <stdint.h>
-#include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -2000,6 +2001,9 @@ typedef enum {
   UPB_SYNTAX_PROTO2 = 2,
   UPB_SYNTAX_PROTO3 = 3
 } upb_syntax_t;
+
+/* Maps descriptor type -> upb field type.  */
+extern const uint8_t upb_desctype_to_fieldtype[];
 
 /* Maximum field number allowed for FieldDefs.  This is an inherent limit of the
  * protobuf wire format. */
@@ -6747,7 +6751,7 @@ typedef struct {
   uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
   uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
   uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
-  uint8_t type;
+  uint8_t descriptortype;
   uint8_t label;
 } upb_msglayout_fieldinit_v1;
 
@@ -6792,6 +6796,714 @@ bool upb_decode(upb_stringview buf, void *msg,
 UPB_END_EXTERN_C
 
 #endif  /* UPB_DECODE_H_ */
+/*
+** upb_encode: parsing into a upb_msg using a upb_msglayout.
+*/
+
+#ifndef UPB_ENCODE_H_
+#define UPB_ENCODE_H_
+
+
+UPB_BEGIN_EXTERN_C
+
+char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *l,
+                 upb_env *env, size_t *size);
+
+UPB_END_EXTERN_C
+
+#endif  /* UPB_ENCODE_H_ */
+/* This file was generated by upbc (the upb compiler) from the input
+ * file:
+ *
+ *     google/protobuf/descriptor.proto
+ *
+ * Do not edit -- your changes will be discarded when the file is
+ * regenerated. */
+
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
+#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
+
+
+UPB_BEGIN_EXTERN_C
+
+struct google_protobuf_FileDescriptorSet;
+typedef struct google_protobuf_FileDescriptorSet google_protobuf_FileDescriptorSet;
+struct google_protobuf_FileDescriptorProto;
+typedef struct google_protobuf_FileDescriptorProto google_protobuf_FileDescriptorProto;
+struct google_protobuf_DescriptorProto;
+typedef struct google_protobuf_DescriptorProto google_protobuf_DescriptorProto;
+struct google_protobuf_DescriptorProto_ExtensionRange;
+typedef struct google_protobuf_DescriptorProto_ExtensionRange google_protobuf_DescriptorProto_ExtensionRange;
+struct google_protobuf_DescriptorProto_ReservedRange;
+typedef struct google_protobuf_DescriptorProto_ReservedRange google_protobuf_DescriptorProto_ReservedRange;
+struct google_protobuf_ExtensionRangeOptions;
+typedef struct google_protobuf_ExtensionRangeOptions google_protobuf_ExtensionRangeOptions;
+struct google_protobuf_FieldDescriptorProto;
+typedef struct google_protobuf_FieldDescriptorProto google_protobuf_FieldDescriptorProto;
+struct google_protobuf_OneofDescriptorProto;
+typedef struct google_protobuf_OneofDescriptorProto google_protobuf_OneofDescriptorProto;
+struct google_protobuf_EnumDescriptorProto;
+typedef struct google_protobuf_EnumDescriptorProto google_protobuf_EnumDescriptorProto;
+struct google_protobuf_EnumDescriptorProto_EnumReservedRange;
+typedef struct google_protobuf_EnumDescriptorProto_EnumReservedRange google_protobuf_EnumDescriptorProto_EnumReservedRange;
+struct google_protobuf_EnumValueDescriptorProto;
+typedef struct google_protobuf_EnumValueDescriptorProto google_protobuf_EnumValueDescriptorProto;
+struct google_protobuf_ServiceDescriptorProto;
+typedef struct google_protobuf_ServiceDescriptorProto google_protobuf_ServiceDescriptorProto;
+struct google_protobuf_MethodDescriptorProto;
+typedef struct google_protobuf_MethodDescriptorProto google_protobuf_MethodDescriptorProto;
+struct google_protobuf_FileOptions;
+typedef struct google_protobuf_FileOptions google_protobuf_FileOptions;
+struct google_protobuf_MessageOptions;
+typedef struct google_protobuf_MessageOptions google_protobuf_MessageOptions;
+struct google_protobuf_FieldOptions;
+typedef struct google_protobuf_FieldOptions google_protobuf_FieldOptions;
+struct google_protobuf_OneofOptions;
+typedef struct google_protobuf_OneofOptions google_protobuf_OneofOptions;
+struct google_protobuf_EnumOptions;
+typedef struct google_protobuf_EnumOptions google_protobuf_EnumOptions;
+struct google_protobuf_EnumValueOptions;
+typedef struct google_protobuf_EnumValueOptions google_protobuf_EnumValueOptions;
+struct google_protobuf_ServiceOptions;
+typedef struct google_protobuf_ServiceOptions google_protobuf_ServiceOptions;
+struct google_protobuf_MethodOptions;
+typedef struct google_protobuf_MethodOptions google_protobuf_MethodOptions;
+struct google_protobuf_UninterpretedOption;
+typedef struct google_protobuf_UninterpretedOption google_protobuf_UninterpretedOption;
+struct google_protobuf_UninterpretedOption_NamePart;
+typedef struct google_protobuf_UninterpretedOption_NamePart google_protobuf_UninterpretedOption_NamePart;
+struct google_protobuf_SourceCodeInfo;
+typedef struct google_protobuf_SourceCodeInfo google_protobuf_SourceCodeInfo;
+struct google_protobuf_SourceCodeInfo_Location;
+typedef struct google_protobuf_SourceCodeInfo_Location google_protobuf_SourceCodeInfo_Location;
+struct google_protobuf_GeneratedCodeInfo;
+typedef struct google_protobuf_GeneratedCodeInfo google_protobuf_GeneratedCodeInfo;
+struct google_protobuf_GeneratedCodeInfo_Annotation;
+typedef struct google_protobuf_GeneratedCodeInfo_Annotation google_protobuf_GeneratedCodeInfo_Annotation;
+/* Enums */
+
+typedef enum {
+  google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL = 1,
+  google_protobuf_FieldDescriptorProto_LABEL_REQUIRED = 2,
+  google_protobuf_FieldDescriptorProto_LABEL_REPEATED = 3
+} google_protobuf_FieldDescriptorProto_Label;
+
+typedef enum {
+  google_protobuf_FieldDescriptorProto_TYPE_DOUBLE = 1,
+  google_protobuf_FieldDescriptorProto_TYPE_FLOAT = 2,
+  google_protobuf_FieldDescriptorProto_TYPE_INT64 = 3,
+  google_protobuf_FieldDescriptorProto_TYPE_UINT64 = 4,
+  google_protobuf_FieldDescriptorProto_TYPE_INT32 = 5,
+  google_protobuf_FieldDescriptorProto_TYPE_FIXED64 = 6,
+  google_protobuf_FieldDescriptorProto_TYPE_FIXED32 = 7,
+  google_protobuf_FieldDescriptorProto_TYPE_BOOL = 8,
+  google_protobuf_FieldDescriptorProto_TYPE_STRING = 9,
+  google_protobuf_FieldDescriptorProto_TYPE_GROUP = 10,
+  google_protobuf_FieldDescriptorProto_TYPE_MESSAGE = 11,
+  google_protobuf_FieldDescriptorProto_TYPE_BYTES = 12,
+  google_protobuf_FieldDescriptorProto_TYPE_UINT32 = 13,
+  google_protobuf_FieldDescriptorProto_TYPE_ENUM = 14,
+  google_protobuf_FieldDescriptorProto_TYPE_SFIXED32 = 15,
+  google_protobuf_FieldDescriptorProto_TYPE_SFIXED64 = 16,
+  google_protobuf_FieldDescriptorProto_TYPE_SINT32 = 17,
+  google_protobuf_FieldDescriptorProto_TYPE_SINT64 = 18
+} google_protobuf_FieldDescriptorProto_Type;
+
+typedef enum {
+  google_protobuf_FieldOptions_STRING = 0,
+  google_protobuf_FieldOptions_CORD = 1,
+  google_protobuf_FieldOptions_STRING_PIECE = 2
+} google_protobuf_FieldOptions_CType;
+
+typedef enum {
+  google_protobuf_FieldOptions_JS_NORMAL = 0,
+  google_protobuf_FieldOptions_JS_STRING = 1,
+  google_protobuf_FieldOptions_JS_NUMBER = 2
+} google_protobuf_FieldOptions_JSType;
+
+typedef enum {
+  google_protobuf_FileOptions_SPEED = 1,
+  google_protobuf_FileOptions_CODE_SIZE = 2,
+  google_protobuf_FileOptions_LITE_RUNTIME = 3
+} google_protobuf_FileOptions_OptimizeMode;
+
+typedef enum {
+  google_protobuf_MethodOptions_IDEMPOTENCY_UNKNOWN = 0,
+  google_protobuf_MethodOptions_NO_SIDE_EFFECTS = 1,
+  google_protobuf_MethodOptions_IDEMPOTENT = 2
+} google_protobuf_MethodOptions_IdempotencyLevel;
+
+/* google_protobuf_FileDescriptorSet */
+extern const upb_msglayout_msginit_v1 google_protobuf_FileDescriptorSet_msginit;
+google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_new(upb_env *env);
+google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_FileDescriptorSet_serialize(google_protobuf_FileDescriptorSet *msg, upb_env *env, size_t *len);
+void google_protobuf_FileDescriptorSet_free(google_protobuf_FileDescriptorSet *msg, upb_env *env);
+
+/* getters. */
+const upb_array* google_protobuf_FileDescriptorSet_file(const google_protobuf_FileDescriptorSet *msg);
+
+/* setters. */
+void google_protobuf_FileDescriptorSet_set_file(google_protobuf_FileDescriptorSet *msg, upb_array* value);
+
+
+/* google_protobuf_FileDescriptorProto */
+extern const upb_msglayout_msginit_v1 google_protobuf_FileDescriptorProto_msginit;
+google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_new(upb_env *env);
+google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_FileDescriptorProto_serialize(google_protobuf_FileDescriptorProto *msg, upb_env *env, size_t *len);
+void google_protobuf_FileDescriptorProto_free(google_protobuf_FileDescriptorProto *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_FileDescriptorProto_name(const google_protobuf_FileDescriptorProto *msg);
+upb_stringview google_protobuf_FileDescriptorProto_package(const google_protobuf_FileDescriptorProto *msg);
+const upb_array* google_protobuf_FileDescriptorProto_dependency(const google_protobuf_FileDescriptorProto *msg);
+const upb_array* google_protobuf_FileDescriptorProto_message_type(const google_protobuf_FileDescriptorProto *msg);
+const upb_array* google_protobuf_FileDescriptorProto_enum_type(const google_protobuf_FileDescriptorProto *msg);
+const upb_array* google_protobuf_FileDescriptorProto_service(const google_protobuf_FileDescriptorProto *msg);
+const upb_array* google_protobuf_FileDescriptorProto_extension(const google_protobuf_FileDescriptorProto *msg);
+const google_protobuf_FileOptions* google_protobuf_FileDescriptorProto_options(const google_protobuf_FileDescriptorProto *msg);
+const google_protobuf_SourceCodeInfo* google_protobuf_FileDescriptorProto_source_code_info(const google_protobuf_FileDescriptorProto *msg);
+const upb_array* google_protobuf_FileDescriptorProto_public_dependency(const google_protobuf_FileDescriptorProto *msg);
+const upb_array* google_protobuf_FileDescriptorProto_weak_dependency(const google_protobuf_FileDescriptorProto *msg);
+upb_stringview google_protobuf_FileDescriptorProto_syntax(const google_protobuf_FileDescriptorProto *msg);
+
+/* setters. */
+void google_protobuf_FileDescriptorProto_set_name(google_protobuf_FileDescriptorProto *msg, upb_stringview value);
+void google_protobuf_FileDescriptorProto_set_package(google_protobuf_FileDescriptorProto *msg, upb_stringview value);
+void google_protobuf_FileDescriptorProto_set_dependency(google_protobuf_FileDescriptorProto *msg, upb_array* value);
+void google_protobuf_FileDescriptorProto_set_message_type(google_protobuf_FileDescriptorProto *msg, upb_array* value);
+void google_protobuf_FileDescriptorProto_set_enum_type(google_protobuf_FileDescriptorProto *msg, upb_array* value);
+void google_protobuf_FileDescriptorProto_set_service(google_protobuf_FileDescriptorProto *msg, upb_array* value);
+void google_protobuf_FileDescriptorProto_set_extension(google_protobuf_FileDescriptorProto *msg, upb_array* value);
+void google_protobuf_FileDescriptorProto_set_options(google_protobuf_FileDescriptorProto *msg, google_protobuf_FileOptions* value);
+void google_protobuf_FileDescriptorProto_set_source_code_info(google_protobuf_FileDescriptorProto *msg, google_protobuf_SourceCodeInfo* value);
+void google_protobuf_FileDescriptorProto_set_public_dependency(google_protobuf_FileDescriptorProto *msg, upb_array* value);
+void google_protobuf_FileDescriptorProto_set_weak_dependency(google_protobuf_FileDescriptorProto *msg, upb_array* value);
+void google_protobuf_FileDescriptorProto_set_syntax(google_protobuf_FileDescriptorProto *msg, upb_stringview value);
+
+
+/* google_protobuf_DescriptorProto */
+extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_msginit;
+google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_new(upb_env *env);
+google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_DescriptorProto_serialize(google_protobuf_DescriptorProto *msg, upb_env *env, size_t *len);
+void google_protobuf_DescriptorProto_free(google_protobuf_DescriptorProto *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_DescriptorProto_name(const google_protobuf_DescriptorProto *msg);
+const upb_array* google_protobuf_DescriptorProto_field(const google_protobuf_DescriptorProto *msg);
+const upb_array* google_protobuf_DescriptorProto_nested_type(const google_protobuf_DescriptorProto *msg);
+const upb_array* google_protobuf_DescriptorProto_enum_type(const google_protobuf_DescriptorProto *msg);
+const upb_array* google_protobuf_DescriptorProto_extension_range(const google_protobuf_DescriptorProto *msg);
+const upb_array* google_protobuf_DescriptorProto_extension(const google_protobuf_DescriptorProto *msg);
+const google_protobuf_MessageOptions* google_protobuf_DescriptorProto_options(const google_protobuf_DescriptorProto *msg);
+const upb_array* google_protobuf_DescriptorProto_oneof_decl(const google_protobuf_DescriptorProto *msg);
+const upb_array* google_protobuf_DescriptorProto_reserved_range(const google_protobuf_DescriptorProto *msg);
+const upb_array* google_protobuf_DescriptorProto_reserved_name(const google_protobuf_DescriptorProto *msg);
+
+/* setters. */
+void google_protobuf_DescriptorProto_set_name(google_protobuf_DescriptorProto *msg, upb_stringview value);
+void google_protobuf_DescriptorProto_set_field(google_protobuf_DescriptorProto *msg, upb_array* value);
+void google_protobuf_DescriptorProto_set_nested_type(google_protobuf_DescriptorProto *msg, upb_array* value);
+void google_protobuf_DescriptorProto_set_enum_type(google_protobuf_DescriptorProto *msg, upb_array* value);
+void google_protobuf_DescriptorProto_set_extension_range(google_protobuf_DescriptorProto *msg, upb_array* value);
+void google_protobuf_DescriptorProto_set_extension(google_protobuf_DescriptorProto *msg, upb_array* value);
+void google_protobuf_DescriptorProto_set_options(google_protobuf_DescriptorProto *msg, google_protobuf_MessageOptions* value);
+void google_protobuf_DescriptorProto_set_oneof_decl(google_protobuf_DescriptorProto *msg, upb_array* value);
+void google_protobuf_DescriptorProto_set_reserved_range(google_protobuf_DescriptorProto *msg, upb_array* value);
+void google_protobuf_DescriptorProto_set_reserved_name(google_protobuf_DescriptorProto *msg, upb_array* value);
+
+
+/* google_protobuf_DescriptorProto_ExtensionRange */
+extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_ExtensionRange_msginit;
+google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_DescriptorProto_ExtensionRange_new(upb_env *env);
+google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_DescriptorProto_ExtensionRange_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_DescriptorProto_ExtensionRange_serialize(google_protobuf_DescriptorProto_ExtensionRange *msg, upb_env *env, size_t *len);
+void google_protobuf_DescriptorProto_ExtensionRange_free(google_protobuf_DescriptorProto_ExtensionRange *msg, upb_env *env);
+
+/* getters. */
+int32_t google_protobuf_DescriptorProto_ExtensionRange_start(const google_protobuf_DescriptorProto_ExtensionRange *msg);
+int32_t google_protobuf_DescriptorProto_ExtensionRange_end(const google_protobuf_DescriptorProto_ExtensionRange *msg);
+const google_protobuf_ExtensionRangeOptions* google_protobuf_DescriptorProto_ExtensionRange_options(const google_protobuf_DescriptorProto_ExtensionRange *msg);
+
+/* setters. */
+void google_protobuf_DescriptorProto_ExtensionRange_set_start(google_protobuf_DescriptorProto_ExtensionRange *msg, int32_t value);
+void google_protobuf_DescriptorProto_ExtensionRange_set_end(google_protobuf_DescriptorProto_ExtensionRange *msg, int32_t value);
+void google_protobuf_DescriptorProto_ExtensionRange_set_options(google_protobuf_DescriptorProto_ExtensionRange *msg, google_protobuf_ExtensionRangeOptions* value);
+
+
+/* google_protobuf_DescriptorProto_ReservedRange */
+extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_ReservedRange_msginit;
+google_protobuf_DescriptorProto_ReservedRange *google_protobuf_DescriptorProto_ReservedRange_new(upb_env *env);
+google_protobuf_DescriptorProto_ReservedRange *google_protobuf_DescriptorProto_ReservedRange_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_DescriptorProto_ReservedRange_serialize(google_protobuf_DescriptorProto_ReservedRange *msg, upb_env *env, size_t *len);
+void google_protobuf_DescriptorProto_ReservedRange_free(google_protobuf_DescriptorProto_ReservedRange *msg, upb_env *env);
+
+/* getters. */
+int32_t google_protobuf_DescriptorProto_ReservedRange_start(const google_protobuf_DescriptorProto_ReservedRange *msg);
+int32_t google_protobuf_DescriptorProto_ReservedRange_end(const google_protobuf_DescriptorProto_ReservedRange *msg);
+
+/* setters. */
+void google_protobuf_DescriptorProto_ReservedRange_set_start(google_protobuf_DescriptorProto_ReservedRange *msg, int32_t value);
+void google_protobuf_DescriptorProto_ReservedRange_set_end(google_protobuf_DescriptorProto_ReservedRange *msg, int32_t value);
+
+
+/* google_protobuf_ExtensionRangeOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_ExtensionRangeOptions_msginit;
+google_protobuf_ExtensionRangeOptions *google_protobuf_ExtensionRangeOptions_new(upb_env *env);
+google_protobuf_ExtensionRangeOptions *google_protobuf_ExtensionRangeOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_ExtensionRangeOptions_serialize(google_protobuf_ExtensionRangeOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_ExtensionRangeOptions_free(google_protobuf_ExtensionRangeOptions *msg, upb_env *env);
+
+/* getters. */
+const upb_array* google_protobuf_ExtensionRangeOptions_uninterpreted_option(const google_protobuf_ExtensionRangeOptions *msg);
+
+/* setters. */
+void google_protobuf_ExtensionRangeOptions_set_uninterpreted_option(google_protobuf_ExtensionRangeOptions *msg, upb_array* value);
+
+
+/* google_protobuf_FieldDescriptorProto */
+extern const upb_msglayout_msginit_v1 google_protobuf_FieldDescriptorProto_msginit;
+google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProto_new(upb_env *env);
+google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_FieldDescriptorProto_serialize(google_protobuf_FieldDescriptorProto *msg, upb_env *env, size_t *len);
+void google_protobuf_FieldDescriptorProto_free(google_protobuf_FieldDescriptorProto *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_FieldDescriptorProto_name(const google_protobuf_FieldDescriptorProto *msg);
+upb_stringview google_protobuf_FieldDescriptorProto_extendee(const google_protobuf_FieldDescriptorProto *msg);
+int32_t google_protobuf_FieldDescriptorProto_number(const google_protobuf_FieldDescriptorProto *msg);
+google_protobuf_FieldDescriptorProto_Label google_protobuf_FieldDescriptorProto_label(const google_protobuf_FieldDescriptorProto *msg);
+google_protobuf_FieldDescriptorProto_Type google_protobuf_FieldDescriptorProto_type(const google_protobuf_FieldDescriptorProto *msg);
+upb_stringview google_protobuf_FieldDescriptorProto_type_name(const google_protobuf_FieldDescriptorProto *msg);
+upb_stringview google_protobuf_FieldDescriptorProto_default_value(const google_protobuf_FieldDescriptorProto *msg);
+const google_protobuf_FieldOptions* google_protobuf_FieldDescriptorProto_options(const google_protobuf_FieldDescriptorProto *msg);
+int32_t google_protobuf_FieldDescriptorProto_oneof_index(const google_protobuf_FieldDescriptorProto *msg);
+upb_stringview google_protobuf_FieldDescriptorProto_json_name(const google_protobuf_FieldDescriptorProto *msg);
+
+/* setters. */
+void google_protobuf_FieldDescriptorProto_set_name(google_protobuf_FieldDescriptorProto *msg, upb_stringview value);
+void google_protobuf_FieldDescriptorProto_set_extendee(google_protobuf_FieldDescriptorProto *msg, upb_stringview value);
+void google_protobuf_FieldDescriptorProto_set_number(google_protobuf_FieldDescriptorProto *msg, int32_t value);
+void google_protobuf_FieldDescriptorProto_set_label(google_protobuf_FieldDescriptorProto *msg, google_protobuf_FieldDescriptorProto_Label value);
+void google_protobuf_FieldDescriptorProto_set_type(google_protobuf_FieldDescriptorProto *msg, google_protobuf_FieldDescriptorProto_Type value);
+void google_protobuf_FieldDescriptorProto_set_type_name(google_protobuf_FieldDescriptorProto *msg, upb_stringview value);
+void google_protobuf_FieldDescriptorProto_set_default_value(google_protobuf_FieldDescriptorProto *msg, upb_stringview value);
+void google_protobuf_FieldDescriptorProto_set_options(google_protobuf_FieldDescriptorProto *msg, google_protobuf_FieldOptions* value);
+void google_protobuf_FieldDescriptorProto_set_oneof_index(google_protobuf_FieldDescriptorProto *msg, int32_t value);
+void google_protobuf_FieldDescriptorProto_set_json_name(google_protobuf_FieldDescriptorProto *msg, upb_stringview value);
+
+
+/* google_protobuf_OneofDescriptorProto */
+extern const upb_msglayout_msginit_v1 google_protobuf_OneofDescriptorProto_msginit;
+google_protobuf_OneofDescriptorProto *google_protobuf_OneofDescriptorProto_new(upb_env *env);
+google_protobuf_OneofDescriptorProto *google_protobuf_OneofDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_OneofDescriptorProto_serialize(google_protobuf_OneofDescriptorProto *msg, upb_env *env, size_t *len);
+void google_protobuf_OneofDescriptorProto_free(google_protobuf_OneofDescriptorProto *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_OneofDescriptorProto_name(const google_protobuf_OneofDescriptorProto *msg);
+const google_protobuf_OneofOptions* google_protobuf_OneofDescriptorProto_options(const google_protobuf_OneofDescriptorProto *msg);
+
+/* setters. */
+void google_protobuf_OneofDescriptorProto_set_name(google_protobuf_OneofDescriptorProto *msg, upb_stringview value);
+void google_protobuf_OneofDescriptorProto_set_options(google_protobuf_OneofDescriptorProto *msg, google_protobuf_OneofOptions* value);
+
+
+/* google_protobuf_EnumDescriptorProto */
+extern const upb_msglayout_msginit_v1 google_protobuf_EnumDescriptorProto_msginit;
+google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_new(upb_env *env);
+google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_EnumDescriptorProto_serialize(google_protobuf_EnumDescriptorProto *msg, upb_env *env, size_t *len);
+void google_protobuf_EnumDescriptorProto_free(google_protobuf_EnumDescriptorProto *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_EnumDescriptorProto_name(const google_protobuf_EnumDescriptorProto *msg);
+const upb_array* google_protobuf_EnumDescriptorProto_value(const google_protobuf_EnumDescriptorProto *msg);
+const google_protobuf_EnumOptions* google_protobuf_EnumDescriptorProto_options(const google_protobuf_EnumDescriptorProto *msg);
+const upb_array* google_protobuf_EnumDescriptorProto_reserved_range(const google_protobuf_EnumDescriptorProto *msg);
+const upb_array* google_protobuf_EnumDescriptorProto_reserved_name(const google_protobuf_EnumDescriptorProto *msg);
+
+/* setters. */
+void google_protobuf_EnumDescriptorProto_set_name(google_protobuf_EnumDescriptorProto *msg, upb_stringview value);
+void google_protobuf_EnumDescriptorProto_set_value(google_protobuf_EnumDescriptorProto *msg, upb_array* value);
+void google_protobuf_EnumDescriptorProto_set_options(google_protobuf_EnumDescriptorProto *msg, google_protobuf_EnumOptions* value);
+void google_protobuf_EnumDescriptorProto_set_reserved_range(google_protobuf_EnumDescriptorProto *msg, upb_array* value);
+void google_protobuf_EnumDescriptorProto_set_reserved_name(google_protobuf_EnumDescriptorProto *msg, upb_array* value);
+
+
+/* google_protobuf_EnumDescriptorProto_EnumReservedRange */
+extern const upb_msglayout_msginit_v1 google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit;
+google_protobuf_EnumDescriptorProto_EnumReservedRange *google_protobuf_EnumDescriptorProto_EnumReservedRange_new(upb_env *env);
+google_protobuf_EnumDescriptorProto_EnumReservedRange *google_protobuf_EnumDescriptorProto_EnumReservedRange_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_EnumDescriptorProto_EnumReservedRange_serialize(google_protobuf_EnumDescriptorProto_EnumReservedRange *msg, upb_env *env, size_t *len);
+void google_protobuf_EnumDescriptorProto_EnumReservedRange_free(google_protobuf_EnumDescriptorProto_EnumReservedRange *msg, upb_env *env);
+
+/* getters. */
+int32_t google_protobuf_EnumDescriptorProto_EnumReservedRange_start(const google_protobuf_EnumDescriptorProto_EnumReservedRange *msg);
+int32_t google_protobuf_EnumDescriptorProto_EnumReservedRange_end(const google_protobuf_EnumDescriptorProto_EnumReservedRange *msg);
+
+/* setters. */
+void google_protobuf_EnumDescriptorProto_EnumReservedRange_set_start(google_protobuf_EnumDescriptorProto_EnumReservedRange *msg, int32_t value);
+void google_protobuf_EnumDescriptorProto_EnumReservedRange_set_end(google_protobuf_EnumDescriptorProto_EnumReservedRange *msg, int32_t value);
+
+
+/* google_protobuf_EnumValueDescriptorProto */
+extern const upb_msglayout_msginit_v1 google_protobuf_EnumValueDescriptorProto_msginit;
+google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescriptorProto_new(upb_env *env);
+google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_EnumValueDescriptorProto_serialize(google_protobuf_EnumValueDescriptorProto *msg, upb_env *env, size_t *len);
+void google_protobuf_EnumValueDescriptorProto_free(google_protobuf_EnumValueDescriptorProto *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_EnumValueDescriptorProto_name(const google_protobuf_EnumValueDescriptorProto *msg);
+int32_t google_protobuf_EnumValueDescriptorProto_number(const google_protobuf_EnumValueDescriptorProto *msg);
+const google_protobuf_EnumValueOptions* google_protobuf_EnumValueDescriptorProto_options(const google_protobuf_EnumValueDescriptorProto *msg);
+
+/* setters. */
+void google_protobuf_EnumValueDescriptorProto_set_name(google_protobuf_EnumValueDescriptorProto *msg, upb_stringview value);
+void google_protobuf_EnumValueDescriptorProto_set_number(google_protobuf_EnumValueDescriptorProto *msg, int32_t value);
+void google_protobuf_EnumValueDescriptorProto_set_options(google_protobuf_EnumValueDescriptorProto *msg, google_protobuf_EnumValueOptions* value);
+
+
+/* google_protobuf_ServiceDescriptorProto */
+extern const upb_msglayout_msginit_v1 google_protobuf_ServiceDescriptorProto_msginit;
+google_protobuf_ServiceDescriptorProto *google_protobuf_ServiceDescriptorProto_new(upb_env *env);
+google_protobuf_ServiceDescriptorProto *google_protobuf_ServiceDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_ServiceDescriptorProto_serialize(google_protobuf_ServiceDescriptorProto *msg, upb_env *env, size_t *len);
+void google_protobuf_ServiceDescriptorProto_free(google_protobuf_ServiceDescriptorProto *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_ServiceDescriptorProto_name(const google_protobuf_ServiceDescriptorProto *msg);
+const upb_array* google_protobuf_ServiceDescriptorProto_method(const google_protobuf_ServiceDescriptorProto *msg);
+const google_protobuf_ServiceOptions* google_protobuf_ServiceDescriptorProto_options(const google_protobuf_ServiceDescriptorProto *msg);
+
+/* setters. */
+void google_protobuf_ServiceDescriptorProto_set_name(google_protobuf_ServiceDescriptorProto *msg, upb_stringview value);
+void google_protobuf_ServiceDescriptorProto_set_method(google_protobuf_ServiceDescriptorProto *msg, upb_array* value);
+void google_protobuf_ServiceDescriptorProto_set_options(google_protobuf_ServiceDescriptorProto *msg, google_protobuf_ServiceOptions* value);
+
+
+/* google_protobuf_MethodDescriptorProto */
+extern const upb_msglayout_msginit_v1 google_protobuf_MethodDescriptorProto_msginit;
+google_protobuf_MethodDescriptorProto *google_protobuf_MethodDescriptorProto_new(upb_env *env);
+google_protobuf_MethodDescriptorProto *google_protobuf_MethodDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_MethodDescriptorProto_serialize(google_protobuf_MethodDescriptorProto *msg, upb_env *env, size_t *len);
+void google_protobuf_MethodDescriptorProto_free(google_protobuf_MethodDescriptorProto *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_MethodDescriptorProto_name(const google_protobuf_MethodDescriptorProto *msg);
+upb_stringview google_protobuf_MethodDescriptorProto_input_type(const google_protobuf_MethodDescriptorProto *msg);
+upb_stringview google_protobuf_MethodDescriptorProto_output_type(const google_protobuf_MethodDescriptorProto *msg);
+const google_protobuf_MethodOptions* google_protobuf_MethodDescriptorProto_options(const google_protobuf_MethodDescriptorProto *msg);
+bool google_protobuf_MethodDescriptorProto_client_streaming(const google_protobuf_MethodDescriptorProto *msg);
+bool google_protobuf_MethodDescriptorProto_server_streaming(const google_protobuf_MethodDescriptorProto *msg);
+
+/* setters. */
+void google_protobuf_MethodDescriptorProto_set_name(google_protobuf_MethodDescriptorProto *msg, upb_stringview value);
+void google_protobuf_MethodDescriptorProto_set_input_type(google_protobuf_MethodDescriptorProto *msg, upb_stringview value);
+void google_protobuf_MethodDescriptorProto_set_output_type(google_protobuf_MethodDescriptorProto *msg, upb_stringview value);
+void google_protobuf_MethodDescriptorProto_set_options(google_protobuf_MethodDescriptorProto *msg, google_protobuf_MethodOptions* value);
+void google_protobuf_MethodDescriptorProto_set_client_streaming(google_protobuf_MethodDescriptorProto *msg, bool value);
+void google_protobuf_MethodDescriptorProto_set_server_streaming(google_protobuf_MethodDescriptorProto *msg, bool value);
+
+
+/* google_protobuf_FileOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_FileOptions_msginit;
+google_protobuf_FileOptions *google_protobuf_FileOptions_new(upb_env *env);
+google_protobuf_FileOptions *google_protobuf_FileOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_FileOptions_serialize(google_protobuf_FileOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_FileOptions_free(google_protobuf_FileOptions *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_FileOptions_java_package(const google_protobuf_FileOptions *msg);
+upb_stringview google_protobuf_FileOptions_java_outer_classname(const google_protobuf_FileOptions *msg);
+google_protobuf_FileOptions_OptimizeMode google_protobuf_FileOptions_optimize_for(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_java_multiple_files(const google_protobuf_FileOptions *msg);
+upb_stringview google_protobuf_FileOptions_go_package(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_cc_generic_services(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_java_generic_services(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_py_generic_services(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_java_generate_equals_and_hash(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_deprecated(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_java_string_check_utf8(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_cc_enable_arenas(const google_protobuf_FileOptions *msg);
+upb_stringview google_protobuf_FileOptions_objc_class_prefix(const google_protobuf_FileOptions *msg);
+upb_stringview google_protobuf_FileOptions_csharp_namespace(const google_protobuf_FileOptions *msg);
+upb_stringview google_protobuf_FileOptions_swift_prefix(const google_protobuf_FileOptions *msg);
+upb_stringview google_protobuf_FileOptions_php_class_prefix(const google_protobuf_FileOptions *msg);
+upb_stringview google_protobuf_FileOptions_php_namespace(const google_protobuf_FileOptions *msg);
+bool google_protobuf_FileOptions_php_generic_services(const google_protobuf_FileOptions *msg);
+const upb_array* google_protobuf_FileOptions_uninterpreted_option(const google_protobuf_FileOptions *msg);
+
+/* setters. */
+void google_protobuf_FileOptions_set_java_package(google_protobuf_FileOptions *msg, upb_stringview value);
+void google_protobuf_FileOptions_set_java_outer_classname(google_protobuf_FileOptions *msg, upb_stringview value);
+void google_protobuf_FileOptions_set_optimize_for(google_protobuf_FileOptions *msg, google_protobuf_FileOptions_OptimizeMode value);
+void google_protobuf_FileOptions_set_java_multiple_files(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_go_package(google_protobuf_FileOptions *msg, upb_stringview value);
+void google_protobuf_FileOptions_set_cc_generic_services(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_java_generic_services(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_py_generic_services(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_java_generate_equals_and_hash(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_deprecated(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_java_string_check_utf8(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_cc_enable_arenas(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_objc_class_prefix(google_protobuf_FileOptions *msg, upb_stringview value);
+void google_protobuf_FileOptions_set_csharp_namespace(google_protobuf_FileOptions *msg, upb_stringview value);
+void google_protobuf_FileOptions_set_swift_prefix(google_protobuf_FileOptions *msg, upb_stringview value);
+void google_protobuf_FileOptions_set_php_class_prefix(google_protobuf_FileOptions *msg, upb_stringview value);
+void google_protobuf_FileOptions_set_php_namespace(google_protobuf_FileOptions *msg, upb_stringview value);
+void google_protobuf_FileOptions_set_php_generic_services(google_protobuf_FileOptions *msg, bool value);
+void google_protobuf_FileOptions_set_uninterpreted_option(google_protobuf_FileOptions *msg, upb_array* value);
+
+
+/* google_protobuf_MessageOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_MessageOptions_msginit;
+google_protobuf_MessageOptions *google_protobuf_MessageOptions_new(upb_env *env);
+google_protobuf_MessageOptions *google_protobuf_MessageOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_MessageOptions_serialize(google_protobuf_MessageOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_MessageOptions_free(google_protobuf_MessageOptions *msg, upb_env *env);
+
+/* getters. */
+bool google_protobuf_MessageOptions_message_set_wire_format(const google_protobuf_MessageOptions *msg);
+bool google_protobuf_MessageOptions_no_standard_descriptor_accessor(const google_protobuf_MessageOptions *msg);
+bool google_protobuf_MessageOptions_deprecated(const google_protobuf_MessageOptions *msg);
+bool google_protobuf_MessageOptions_map_entry(const google_protobuf_MessageOptions *msg);
+const upb_array* google_protobuf_MessageOptions_uninterpreted_option(const google_protobuf_MessageOptions *msg);
+
+/* setters. */
+void google_protobuf_MessageOptions_set_message_set_wire_format(google_protobuf_MessageOptions *msg, bool value);
+void google_protobuf_MessageOptions_set_no_standard_descriptor_accessor(google_protobuf_MessageOptions *msg, bool value);
+void google_protobuf_MessageOptions_set_deprecated(google_protobuf_MessageOptions *msg, bool value);
+void google_protobuf_MessageOptions_set_map_entry(google_protobuf_MessageOptions *msg, bool value);
+void google_protobuf_MessageOptions_set_uninterpreted_option(google_protobuf_MessageOptions *msg, upb_array* value);
+
+
+/* google_protobuf_FieldOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_FieldOptions_msginit;
+google_protobuf_FieldOptions *google_protobuf_FieldOptions_new(upb_env *env);
+google_protobuf_FieldOptions *google_protobuf_FieldOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_FieldOptions_serialize(google_protobuf_FieldOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_FieldOptions_free(google_protobuf_FieldOptions *msg, upb_env *env);
+
+/* getters. */
+google_protobuf_FieldOptions_CType google_protobuf_FieldOptions_ctype(const google_protobuf_FieldOptions *msg);
+bool google_protobuf_FieldOptions_packed(const google_protobuf_FieldOptions *msg);
+bool google_protobuf_FieldOptions_deprecated(const google_protobuf_FieldOptions *msg);
+bool google_protobuf_FieldOptions_lazy(const google_protobuf_FieldOptions *msg);
+google_protobuf_FieldOptions_JSType google_protobuf_FieldOptions_jstype(const google_protobuf_FieldOptions *msg);
+bool google_protobuf_FieldOptions_weak(const google_protobuf_FieldOptions *msg);
+const upb_array* google_protobuf_FieldOptions_uninterpreted_option(const google_protobuf_FieldOptions *msg);
+
+/* setters. */
+void google_protobuf_FieldOptions_set_ctype(google_protobuf_FieldOptions *msg, google_protobuf_FieldOptions_CType value);
+void google_protobuf_FieldOptions_set_packed(google_protobuf_FieldOptions *msg, bool value);
+void google_protobuf_FieldOptions_set_deprecated(google_protobuf_FieldOptions *msg, bool value);
+void google_protobuf_FieldOptions_set_lazy(google_protobuf_FieldOptions *msg, bool value);
+void google_protobuf_FieldOptions_set_jstype(google_protobuf_FieldOptions *msg, google_protobuf_FieldOptions_JSType value);
+void google_protobuf_FieldOptions_set_weak(google_protobuf_FieldOptions *msg, bool value);
+void google_protobuf_FieldOptions_set_uninterpreted_option(google_protobuf_FieldOptions *msg, upb_array* value);
+
+
+/* google_protobuf_OneofOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_OneofOptions_msginit;
+google_protobuf_OneofOptions *google_protobuf_OneofOptions_new(upb_env *env);
+google_protobuf_OneofOptions *google_protobuf_OneofOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_OneofOptions_serialize(google_protobuf_OneofOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_OneofOptions_free(google_protobuf_OneofOptions *msg, upb_env *env);
+
+/* getters. */
+const upb_array* google_protobuf_OneofOptions_uninterpreted_option(const google_protobuf_OneofOptions *msg);
+
+/* setters. */
+void google_protobuf_OneofOptions_set_uninterpreted_option(google_protobuf_OneofOptions *msg, upb_array* value);
+
+
+/* google_protobuf_EnumOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_EnumOptions_msginit;
+google_protobuf_EnumOptions *google_protobuf_EnumOptions_new(upb_env *env);
+google_protobuf_EnumOptions *google_protobuf_EnumOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_EnumOptions_serialize(google_protobuf_EnumOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_EnumOptions_free(google_protobuf_EnumOptions *msg, upb_env *env);
+
+/* getters. */
+bool google_protobuf_EnumOptions_allow_alias(const google_protobuf_EnumOptions *msg);
+bool google_protobuf_EnumOptions_deprecated(const google_protobuf_EnumOptions *msg);
+const upb_array* google_protobuf_EnumOptions_uninterpreted_option(const google_protobuf_EnumOptions *msg);
+
+/* setters. */
+void google_protobuf_EnumOptions_set_allow_alias(google_protobuf_EnumOptions *msg, bool value);
+void google_protobuf_EnumOptions_set_deprecated(google_protobuf_EnumOptions *msg, bool value);
+void google_protobuf_EnumOptions_set_uninterpreted_option(google_protobuf_EnumOptions *msg, upb_array* value);
+
+
+/* google_protobuf_EnumValueOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_EnumValueOptions_msginit;
+google_protobuf_EnumValueOptions *google_protobuf_EnumValueOptions_new(upb_env *env);
+google_protobuf_EnumValueOptions *google_protobuf_EnumValueOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_EnumValueOptions_serialize(google_protobuf_EnumValueOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_EnumValueOptions_free(google_protobuf_EnumValueOptions *msg, upb_env *env);
+
+/* getters. */
+bool google_protobuf_EnumValueOptions_deprecated(const google_protobuf_EnumValueOptions *msg);
+const upb_array* google_protobuf_EnumValueOptions_uninterpreted_option(const google_protobuf_EnumValueOptions *msg);
+
+/* setters. */
+void google_protobuf_EnumValueOptions_set_deprecated(google_protobuf_EnumValueOptions *msg, bool value);
+void google_protobuf_EnumValueOptions_set_uninterpreted_option(google_protobuf_EnumValueOptions *msg, upb_array* value);
+
+
+/* google_protobuf_ServiceOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_ServiceOptions_msginit;
+google_protobuf_ServiceOptions *google_protobuf_ServiceOptions_new(upb_env *env);
+google_protobuf_ServiceOptions *google_protobuf_ServiceOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_ServiceOptions_serialize(google_protobuf_ServiceOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_ServiceOptions_free(google_protobuf_ServiceOptions *msg, upb_env *env);
+
+/* getters. */
+bool google_protobuf_ServiceOptions_deprecated(const google_protobuf_ServiceOptions *msg);
+const upb_array* google_protobuf_ServiceOptions_uninterpreted_option(const google_protobuf_ServiceOptions *msg);
+
+/* setters. */
+void google_protobuf_ServiceOptions_set_deprecated(google_protobuf_ServiceOptions *msg, bool value);
+void google_protobuf_ServiceOptions_set_uninterpreted_option(google_protobuf_ServiceOptions *msg, upb_array* value);
+
+
+/* google_protobuf_MethodOptions */
+extern const upb_msglayout_msginit_v1 google_protobuf_MethodOptions_msginit;
+google_protobuf_MethodOptions *google_protobuf_MethodOptions_new(upb_env *env);
+google_protobuf_MethodOptions *google_protobuf_MethodOptions_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_MethodOptions_serialize(google_protobuf_MethodOptions *msg, upb_env *env, size_t *len);
+void google_protobuf_MethodOptions_free(google_protobuf_MethodOptions *msg, upb_env *env);
+
+/* getters. */
+bool google_protobuf_MethodOptions_deprecated(const google_protobuf_MethodOptions *msg);
+google_protobuf_MethodOptions_IdempotencyLevel google_protobuf_MethodOptions_idempotency_level(const google_protobuf_MethodOptions *msg);
+const upb_array* google_protobuf_MethodOptions_uninterpreted_option(const google_protobuf_MethodOptions *msg);
+
+/* setters. */
+void google_protobuf_MethodOptions_set_deprecated(google_protobuf_MethodOptions *msg, bool value);
+void google_protobuf_MethodOptions_set_idempotency_level(google_protobuf_MethodOptions *msg, google_protobuf_MethodOptions_IdempotencyLevel value);
+void google_protobuf_MethodOptions_set_uninterpreted_option(google_protobuf_MethodOptions *msg, upb_array* value);
+
+
+/* google_protobuf_UninterpretedOption */
+extern const upb_msglayout_msginit_v1 google_protobuf_UninterpretedOption_msginit;
+google_protobuf_UninterpretedOption *google_protobuf_UninterpretedOption_new(upb_env *env);
+google_protobuf_UninterpretedOption *google_protobuf_UninterpretedOption_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_UninterpretedOption_serialize(google_protobuf_UninterpretedOption *msg, upb_env *env, size_t *len);
+void google_protobuf_UninterpretedOption_free(google_protobuf_UninterpretedOption *msg, upb_env *env);
+
+/* getters. */
+const upb_array* google_protobuf_UninterpretedOption_name(const google_protobuf_UninterpretedOption *msg);
+upb_stringview google_protobuf_UninterpretedOption_identifier_value(const google_protobuf_UninterpretedOption *msg);
+uint64_t google_protobuf_UninterpretedOption_positive_int_value(const google_protobuf_UninterpretedOption *msg);
+int64_t google_protobuf_UninterpretedOption_negative_int_value(const google_protobuf_UninterpretedOption *msg);
+double google_protobuf_UninterpretedOption_double_value(const google_protobuf_UninterpretedOption *msg);
+upb_stringview google_protobuf_UninterpretedOption_string_value(const google_protobuf_UninterpretedOption *msg);
+upb_stringview google_protobuf_UninterpretedOption_aggregate_value(const google_protobuf_UninterpretedOption *msg);
+
+/* setters. */
+void google_protobuf_UninterpretedOption_set_name(google_protobuf_UninterpretedOption *msg, upb_array* value);
+void google_protobuf_UninterpretedOption_set_identifier_value(google_protobuf_UninterpretedOption *msg, upb_stringview value);
+void google_protobuf_UninterpretedOption_set_positive_int_value(google_protobuf_UninterpretedOption *msg, uint64_t value);
+void google_protobuf_UninterpretedOption_set_negative_int_value(google_protobuf_UninterpretedOption *msg, int64_t value);
+void google_protobuf_UninterpretedOption_set_double_value(google_protobuf_UninterpretedOption *msg, double value);
+void google_protobuf_UninterpretedOption_set_string_value(google_protobuf_UninterpretedOption *msg, upb_stringview value);
+void google_protobuf_UninterpretedOption_set_aggregate_value(google_protobuf_UninterpretedOption *msg, upb_stringview value);
+
+
+/* google_protobuf_UninterpretedOption_NamePart */
+extern const upb_msglayout_msginit_v1 google_protobuf_UninterpretedOption_NamePart_msginit;
+google_protobuf_UninterpretedOption_NamePart *google_protobuf_UninterpretedOption_NamePart_new(upb_env *env);
+google_protobuf_UninterpretedOption_NamePart *google_protobuf_UninterpretedOption_NamePart_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_UninterpretedOption_NamePart_serialize(google_protobuf_UninterpretedOption_NamePart *msg, upb_env *env, size_t *len);
+void google_protobuf_UninterpretedOption_NamePart_free(google_protobuf_UninterpretedOption_NamePart *msg, upb_env *env);
+
+/* getters. */
+upb_stringview google_protobuf_UninterpretedOption_NamePart_name_part(const google_protobuf_UninterpretedOption_NamePart *msg);
+bool google_protobuf_UninterpretedOption_NamePart_is_extension(const google_protobuf_UninterpretedOption_NamePart *msg);
+
+/* setters. */
+void google_protobuf_UninterpretedOption_NamePart_set_name_part(google_protobuf_UninterpretedOption_NamePart *msg, upb_stringview value);
+void google_protobuf_UninterpretedOption_NamePart_set_is_extension(google_protobuf_UninterpretedOption_NamePart *msg, bool value);
+
+
+/* google_protobuf_SourceCodeInfo */
+extern const upb_msglayout_msginit_v1 google_protobuf_SourceCodeInfo_msginit;
+google_protobuf_SourceCodeInfo *google_protobuf_SourceCodeInfo_new(upb_env *env);
+google_protobuf_SourceCodeInfo *google_protobuf_SourceCodeInfo_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_SourceCodeInfo_serialize(google_protobuf_SourceCodeInfo *msg, upb_env *env, size_t *len);
+void google_protobuf_SourceCodeInfo_free(google_protobuf_SourceCodeInfo *msg, upb_env *env);
+
+/* getters. */
+const upb_array* google_protobuf_SourceCodeInfo_location(const google_protobuf_SourceCodeInfo *msg);
+
+/* setters. */
+void google_protobuf_SourceCodeInfo_set_location(google_protobuf_SourceCodeInfo *msg, upb_array* value);
+
+
+/* google_protobuf_SourceCodeInfo_Location */
+extern const upb_msglayout_msginit_v1 google_protobuf_SourceCodeInfo_Location_msginit;
+google_protobuf_SourceCodeInfo_Location *google_protobuf_SourceCodeInfo_Location_new(upb_env *env);
+google_protobuf_SourceCodeInfo_Location *google_protobuf_SourceCodeInfo_Location_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_SourceCodeInfo_Location_serialize(google_protobuf_SourceCodeInfo_Location *msg, upb_env *env, size_t *len);
+void google_protobuf_SourceCodeInfo_Location_free(google_protobuf_SourceCodeInfo_Location *msg, upb_env *env);
+
+/* getters. */
+const upb_array* google_protobuf_SourceCodeInfo_Location_path(const google_protobuf_SourceCodeInfo_Location *msg);
+const upb_array* google_protobuf_SourceCodeInfo_Location_span(const google_protobuf_SourceCodeInfo_Location *msg);
+upb_stringview google_protobuf_SourceCodeInfo_Location_leading_comments(const google_protobuf_SourceCodeInfo_Location *msg);
+upb_stringview google_protobuf_SourceCodeInfo_Location_trailing_comments(const google_protobuf_SourceCodeInfo_Location *msg);
+const upb_array* google_protobuf_SourceCodeInfo_Location_leading_detached_comments(const google_protobuf_SourceCodeInfo_Location *msg);
+
+/* setters. */
+void google_protobuf_SourceCodeInfo_Location_set_path(google_protobuf_SourceCodeInfo_Location *msg, upb_array* value);
+void google_protobuf_SourceCodeInfo_Location_set_span(google_protobuf_SourceCodeInfo_Location *msg, upb_array* value);
+void google_protobuf_SourceCodeInfo_Location_set_leading_comments(google_protobuf_SourceCodeInfo_Location *msg, upb_stringview value);
+void google_protobuf_SourceCodeInfo_Location_set_trailing_comments(google_protobuf_SourceCodeInfo_Location *msg, upb_stringview value);
+void google_protobuf_SourceCodeInfo_Location_set_leading_detached_comments(google_protobuf_SourceCodeInfo_Location *msg, upb_array* value);
+
+
+/* google_protobuf_GeneratedCodeInfo */
+extern const upb_msglayout_msginit_v1 google_protobuf_GeneratedCodeInfo_msginit;
+google_protobuf_GeneratedCodeInfo *google_protobuf_GeneratedCodeInfo_new(upb_env *env);
+google_protobuf_GeneratedCodeInfo *google_protobuf_GeneratedCodeInfo_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_GeneratedCodeInfo_serialize(google_protobuf_GeneratedCodeInfo *msg, upb_env *env, size_t *len);
+void google_protobuf_GeneratedCodeInfo_free(google_protobuf_GeneratedCodeInfo *msg, upb_env *env);
+
+/* getters. */
+const upb_array* google_protobuf_GeneratedCodeInfo_annotation(const google_protobuf_GeneratedCodeInfo *msg);
+
+/* setters. */
+void google_protobuf_GeneratedCodeInfo_set_annotation(google_protobuf_GeneratedCodeInfo *msg, upb_array* value);
+
+
+/* google_protobuf_GeneratedCodeInfo_Annotation */
+extern const upb_msglayout_msginit_v1 google_protobuf_GeneratedCodeInfo_Annotation_msginit;
+google_protobuf_GeneratedCodeInfo_Annotation *google_protobuf_GeneratedCodeInfo_Annotation_new(upb_env *env);
+google_protobuf_GeneratedCodeInfo_Annotation *google_protobuf_GeneratedCodeInfo_Annotation_parsenew(upb_stringview buf, upb_env *env);
+char *google_protobuf_GeneratedCodeInfo_Annotation_serialize(google_protobuf_GeneratedCodeInfo_Annotation *msg, upb_env *env, size_t *len);
+void google_protobuf_GeneratedCodeInfo_Annotation_free(google_protobuf_GeneratedCodeInfo_Annotation *msg, upb_env *env);
+
+/* getters. */
+const upb_array* google_protobuf_GeneratedCodeInfo_Annotation_path(const google_protobuf_GeneratedCodeInfo_Annotation *msg);
+upb_stringview google_protobuf_GeneratedCodeInfo_Annotation_source_file(const google_protobuf_GeneratedCodeInfo_Annotation *msg);
+int32_t google_protobuf_GeneratedCodeInfo_Annotation_begin(const google_protobuf_GeneratedCodeInfo_Annotation *msg);
+int32_t google_protobuf_GeneratedCodeInfo_Annotation_end(const google_protobuf_GeneratedCodeInfo_Annotation *msg);
+
+/* setters. */
+void google_protobuf_GeneratedCodeInfo_Annotation_set_path(google_protobuf_GeneratedCodeInfo_Annotation *msg, upb_array* value);
+void google_protobuf_GeneratedCodeInfo_Annotation_set_source_file(google_protobuf_GeneratedCodeInfo_Annotation *msg, upb_stringview value);
+void google_protobuf_GeneratedCodeInfo_Annotation_set_begin(google_protobuf_GeneratedCodeInfo_Annotation *msg, int32_t value);
+void google_protobuf_GeneratedCodeInfo_Annotation_set_end(google_protobuf_GeneratedCodeInfo_Annotation *msg, int32_t value);
+
+
+UPB_END_EXTERN_C
+
+#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_ */
 /*
 ** structs.int.h: structures definitions that are internal to upb.
 */
@@ -7001,22 +7713,6 @@ extern const struct upb_refcounted_vtbl upb_filedef_vtbl;
 
 #endif  /* UPB_STATICINIT_H_ */
 /*
-** upb_encode: parsing into a upb_msg using a upb_msglayout.
-*/
-
-#ifndef UPB_ENCODE_H_
-#define UPB_ENCODE_H_
-
-
-UPB_BEGIN_EXTERN_C
-
-char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *l,
-                 upb_env *env, size_t *size);
-
-UPB_END_EXTERN_C
-
-#endif  /* UPB_ENCODE_H_ */
-/*
 ** upb::descriptor::Reader (upb_descreader)
 **
 ** Provides a way of building upb::Defs from data in descriptor.proto format.
@@ -7117,53 +7813,6 @@ inline FileDef* Reader::file(size_t i) const {
 
 
 UPB_BEGIN_EXTERN_C
-
-/* Enums */
-
-typedef enum {
-  google_protobuf_FieldDescriptorProto_LABEL_OPTIONAL = 1,
-  google_protobuf_FieldDescriptorProto_LABEL_REQUIRED = 2,
-  google_protobuf_FieldDescriptorProto_LABEL_REPEATED = 3
-} google_protobuf_FieldDescriptorProto_Label;
-
-typedef enum {
-  google_protobuf_FieldDescriptorProto_TYPE_DOUBLE = 1,
-  google_protobuf_FieldDescriptorProto_TYPE_FLOAT = 2,
-  google_protobuf_FieldDescriptorProto_TYPE_INT64 = 3,
-  google_protobuf_FieldDescriptorProto_TYPE_UINT64 = 4,
-  google_protobuf_FieldDescriptorProto_TYPE_INT32 = 5,
-  google_protobuf_FieldDescriptorProto_TYPE_FIXED64 = 6,
-  google_protobuf_FieldDescriptorProto_TYPE_FIXED32 = 7,
-  google_protobuf_FieldDescriptorProto_TYPE_BOOL = 8,
-  google_protobuf_FieldDescriptorProto_TYPE_STRING = 9,
-  google_protobuf_FieldDescriptorProto_TYPE_GROUP = 10,
-  google_protobuf_FieldDescriptorProto_TYPE_MESSAGE = 11,
-  google_protobuf_FieldDescriptorProto_TYPE_BYTES = 12,
-  google_protobuf_FieldDescriptorProto_TYPE_UINT32 = 13,
-  google_protobuf_FieldDescriptorProto_TYPE_ENUM = 14,
-  google_protobuf_FieldDescriptorProto_TYPE_SFIXED32 = 15,
-  google_protobuf_FieldDescriptorProto_TYPE_SFIXED64 = 16,
-  google_protobuf_FieldDescriptorProto_TYPE_SINT32 = 17,
-  google_protobuf_FieldDescriptorProto_TYPE_SINT64 = 18
-} google_protobuf_FieldDescriptorProto_Type;
-
-typedef enum {
-  google_protobuf_FieldOptions_STRING = 0,
-  google_protobuf_FieldOptions_CORD = 1,
-  google_protobuf_FieldOptions_STRING_PIECE = 2
-} google_protobuf_FieldOptions_CType;
-
-typedef enum {
-  google_protobuf_FieldOptions_JS_NORMAL = 0,
-  google_protobuf_FieldOptions_JS_STRING = 1,
-  google_protobuf_FieldOptions_JS_NUMBER = 2
-} google_protobuf_FieldOptions_JSType;
-
-typedef enum {
-  google_protobuf_FileOptions_SPEED = 1,
-  google_protobuf_FileOptions_CODE_SIZE = 2,
-  google_protobuf_FileOptions_LITE_RUNTIME = 3
-} google_protobuf_FileOptions_OptimizeMode;
 
 /* MessageDefs: call these functions to get a ref to a msgdef. */
 const upb_msgdef *upbdefs_google_protobuf_DescriptorProto_get(const void *owner);

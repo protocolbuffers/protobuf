@@ -43,11 +43,11 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/once.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/stubs/port.h>
 
 namespace google {
 namespace protobuf {
-class Arena;
 template <typename T>
 class RepeatedPtrField;
 namespace io {
@@ -60,6 +60,7 @@ namespace internal {
 
 class RepeatedPtrFieldBase;
 class WireFormatLite;
+class WeakFieldMap;
 
 #ifndef SWIG
 // We compute sizes as size_t but cache them as int.  This function converts a
@@ -113,13 +114,7 @@ class ExplicitlyConstructed {
     get_mutable()->~T();
   }
 
-#if LANG_CXX11
-  constexpr
-#endif
-      const T&
-      get() const {
-    return reinterpret_cast<const T&>(union_);
-  }
+  constexpr const T& get() const { return reinterpret_cast<const T&>(union_); }
   T* get_mutable() { return reinterpret_cast<T*>(&union_); }
 
  private:
@@ -133,7 +128,7 @@ class ExplicitlyConstructed {
 
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
-extern ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
+LIBPROTOBUF_EXPORT extern ExplicitlyConstructed<::std::string> fixed_address_empty_string;
 LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
 LIBPROTOBUF_EXPORT void InitEmptyString();
 
@@ -274,7 +269,7 @@ class LIBPROTOBUF_EXPORT MessageLite {
 
 
   // Reads a protocol buffer from the stream and merges it into this
-  // Message.  Singular fields read from the input overwrite what is
+  // Message.  Singular fields read from the what is
   // already in the Message and repeated fields are appended to those
   // already present.
   //
@@ -399,12 +394,18 @@ class LIBPROTOBUF_EXPORT MessageLite {
     return repeated;
   }
 
+  template <typename T>
+  static T* CreateMaybeMessage(Arena* arena) {
+    return Arena::CreateMaybeMessage<T>(arena);
+  }
+
  private:
   // TODO(gerbens) make this a pure abstract function
   virtual const void* InternalGetTable() const { return NULL; }
 
   friend class internal::WireFormatLite;
   friend class Message;
+  friend class internal::WeakFieldMap;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageLite);
 };

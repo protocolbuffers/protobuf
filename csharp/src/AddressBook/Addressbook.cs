@@ -78,7 +78,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       id_ = other.id_;
       email_ = other.email_;
       phones_ = other.phones_.Clone();
-      LastUpdated = other.lastUpdated_ != null ? other.LastUpdated.Clone() : null;
+      lastUpdated_ = other.lastUpdated_ != null ? other.lastUpdated_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 

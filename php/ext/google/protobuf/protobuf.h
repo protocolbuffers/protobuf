@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.5.1"
+#define PHP_PROTOBUF_VERSION "3.5.2"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -1171,6 +1171,17 @@ extern zend_class_entry* oneof_descriptor_type;
 // -----------------------------------------------------------------------------
 // Well Known Type.
 // -----------------------------------------------------------------------------
+
+extern bool is_inited_file_any;
+extern bool is_inited_file_api;
+extern bool is_inited_file_duration;
+extern bool is_inited_file_field_mask;
+extern bool is_inited_file_empty;
+extern bool is_inited_file_source_context;
+extern bool is_inited_file_struct;
+extern bool is_inited_file_timestamp;
+extern bool is_inited_file_type;
+extern bool is_inited_file_wrappers;
 
 PHP_METHOD(GPBMetadata_Any, initOnce);
 PHP_METHOD(GPBMetadata_Api, initOnce);

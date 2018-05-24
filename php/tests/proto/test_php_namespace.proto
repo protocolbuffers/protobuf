@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package foo;
 option php_namespace = "Php\\Test";
+option php_metadata_namespace = "Metadata\\Php\\Test";
 
 message TestNamespace {
   int32 a = 1;

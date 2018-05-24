@@ -10,13 +10,10 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_impl_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/message_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/once.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/status.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/statusor.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/stringpiece.cc
@@ -38,7 +35,6 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_impl_lite.h
   ${protobuf_source_dir}/src/google/protobuf/message_lite.h
   ${protobuf_source_dir}/src/google/protobuf/repeated_field.h
-  ${protobuf_source_dir}/src/google/protobuf/stubs/atomicops_internals_x86_msvc.h
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream.h
   ${protobuf_source_dir}/src/google/protobuf/stubs/common.h
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128.h
@@ -52,8 +48,14 @@ set(libprotobuf_lite_includes
   ${protobuf_source_dir}/src/google/protobuf/wire_format_lite.h
 )
 
+if (MSVC)
+set(libprotobuf_lite_rc_files
+  ${CMAKE_CURRENT_BINARY_DIR}/version.rc
+)
+endif()
+
 add_library(libprotobuf-lite ${protobuf_SHARED_OR_STATIC}
-  ${libprotobuf_lite_files} ${libprotobuf_lite_includes})
+  ${libprotobuf_lite_files} ${libprotobuf_lite_includes} ${libprotobuf_lite_rc_files})
 target_link_libraries(libprotobuf-lite ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(libprotobuf-lite PUBLIC ${protobuf_source_dir}/src)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)
@@ -62,5 +64,7 @@ if(MSVC AND protobuf_BUILD_SHARED_LIBS)
     PRIVATE LIBPROTOBUF_EXPORTS)
 endif()
 set_target_properties(libprotobuf-lite PROPERTIES
+    VERSION ${protobuf_VERSION}
     OUTPUT_NAME ${LIB_PREFIX}protobuf-lite
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
+add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)

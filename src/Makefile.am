@@ -64,20 +64,6 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 nobase_include_HEADERS =                                         \
-  google/protobuf/stubs/atomic_sequence_num.h                    \
-  google/protobuf/stubs/atomicops.h                              \
-  google/protobuf/stubs/atomicops_internals_power.h              \
-  google/protobuf/stubs/atomicops_internals_ppc_gcc.h            \
-  google/protobuf/stubs/atomicops_internals_arm64_gcc.h          \
-  google/protobuf/stubs/atomicops_internals_arm_gcc.h            \
-  google/protobuf/stubs/atomicops_internals_arm_qnx.h            \
-  google/protobuf/stubs/atomicops_internals_generic_c11_atomic.h \
-  google/protobuf/stubs/atomicops_internals_generic_gcc.h        \
-  google/protobuf/stubs/atomicops_internals_mips_gcc.h           \
-  google/protobuf/stubs/atomicops_internals_solaris.h            \
-  google/protobuf/stubs/atomicops_internals_tsan.h               \
-  google/protobuf/stubs/atomicops_internals_x86_gcc.h            \
-  google/protobuf/stubs/atomicops_internals_x86_msvc.h           \
   google/protobuf/stubs/callback.h                               \
   google/protobuf/stubs/bytestream.h                             \
   google/protobuf/stubs/casts.h                                  \
@@ -90,14 +76,11 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/once.h                                   \
   google/protobuf/stubs/platform_macros.h                        \
   google/protobuf/stubs/port.h                                   \
-  google/protobuf/stubs/scoped_ptr.h                             \
-  google/protobuf/stubs/shared_ptr.h                             \
   google/protobuf/stubs/singleton.h                              \
   google/protobuf/stubs/status.h                                 \
   google/protobuf/stubs/stl_util.h                               \
   google/protobuf/stubs/stringpiece.h                            \
   google/protobuf/stubs/template_util.h                          \
-  google/protobuf/stubs/type_traits.h                            \
   google/protobuf/any.pb.h                                       \
   google/protobuf/api.pb.h                                       \
   google/protobuf/any.h                                          \
@@ -119,6 +102,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
+  google/protobuf/inlined_string_field.h                         \
   google/protobuf/map_entry.h                                    \
   google/protobuf/map_entry_lite.h                               \
   google/protobuf/map_field.h                                    \
@@ -163,7 +147,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/csharp/csharp_names.h                 \
   google/protobuf/compiler/java/java_generator.h                 \
   google/protobuf/compiler/java/java_names.h                     \
-  google/protobuf/compiler/javanano/javanano_generator.h         \
   google/protobuf/compiler/js/js_generator.h                     \
   google/protobuf/compiler/js/well_known_types_embed.h           \
   google/protobuf/compiler/objectivec/objectivec_generator.h     \
@@ -189,8 +172,6 @@ libprotobuf_lite_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf-lite.m
 EXTRA_libprotobuf_lite_la_DEPENDENCIES = libprotobuf-lite.map
 endif
 libprotobuf_lite_la_SOURCES =                                  \
-  google/protobuf/stubs/atomicops_internals_x86_gcc.cc         \
-  google/protobuf/stubs/atomicops_internals_x86_msvc.cc        \
   google/protobuf/stubs/bytestream.cc                          \
   google/protobuf/stubs/bytestream.h                           \
   google/protobuf/stubs/common.cc                              \
@@ -201,8 +182,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/io_win32.h                             \
   google/protobuf/stubs/map_util.h                             \
   google/protobuf/stubs/mathutil.h                             \
-  google/protobuf/stubs/once.cc                                \
-  google/protobuf/stubs/shared_ptr.h                           \
   google/protobuf/stubs/status.cc                              \
   google/protobuf/stubs/status.h                               \
   google/protobuf/stubs/status_macros.h                        \
@@ -429,29 +408,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_doc_comment.h             \
   google/protobuf/compiler/js/js_generator.cc                  \
   google/protobuf/compiler/js/well_known_types_embed.cc        \
-  google/protobuf/compiler/javanano/javanano_enum.cc           \
-  google/protobuf/compiler/javanano/javanano_enum.h            \
-  google/protobuf/compiler/javanano/javanano_enum_field.cc     \
-  google/protobuf/compiler/javanano/javanano_enum_field.h      \
-  google/protobuf/compiler/javanano/javanano_extension.cc      \
-  google/protobuf/compiler/javanano/javanano_extension.h       \
-  google/protobuf/compiler/javanano/javanano_field.cc          \
-  google/protobuf/compiler/javanano/javanano_field.h           \
-  google/protobuf/compiler/javanano/javanano_file.cc           \
-  google/protobuf/compiler/javanano/javanano_file.h            \
-  google/protobuf/compiler/javanano/javanano_generator.cc      \
-  google/protobuf/compiler/javanano/javanano_generator.h       \
-  google/protobuf/compiler/javanano/javanano_helpers.cc        \
-  google/protobuf/compiler/javanano/javanano_helpers.h         \
-  google/protobuf/compiler/javanano/javanano_map_field.cc      \
-  google/protobuf/compiler/javanano/javanano_map_field.h       \
-  google/protobuf/compiler/javanano/javanano_message.cc        \
-  google/protobuf/compiler/javanano/javanano_message.h         \
-  google/protobuf/compiler/javanano/javanano_message_field.cc  \
-  google/protobuf/compiler/javanano/javanano_message_field.h   \
-  google/protobuf/compiler/javanano/javanano_params.h          \
-  google/protobuf/compiler/javanano/javanano_primitive_field.cc \
-  google/protobuf/compiler/javanano/javanano_primitive_field.h \
   google/protobuf/compiler/objectivec/objectivec_enum.cc       \
   google/protobuf/compiler/objectivec/objectivec_enum.h        \
   google/protobuf/compiler/objectivec/objectivec_enum_field.cc \
@@ -722,8 +678,6 @@ protoc_outputs =                                                  \
   google/protobuf/util/message_differencer_unittest.pb.cc         \
   google/protobuf/util/message_differencer_unittest.pb.h
 
-BUILT_SOURCES = $(protoc_outputs) google/protobuf/compiler/js/well_known_types_embed.cc
-
 if USE_EXTERNAL_PROTOC
 
 unittest_proto_middleman: $(protoc_inputs)
@@ -751,20 +705,25 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/map_test_util_impl.h                         \
   google/protobuf/test_util.cc                                 \
   google/protobuf/test_util.h                                  \
+  google/protobuf/test_util.inc                                \
   google/protobuf/testing/googletest.cc                        \
   google/protobuf/testing/googletest.h                         \
   google/protobuf/testing/file.cc                              \
   google/protobuf/testing/file.h
 
+GOOGLETEST_BUILD_DIR=../third_party/googletest/googletest
+GOOGLEMOCK_BUILD_DIR=../third_party/googletest/googlemock
+GOOGLETEST_SRC_DIR=$(srcdir)/../third_party/googletest/googletest
+GOOGLEMOCK_SRC_DIR=$(srcdir)/../third_party/googletest/googlemock
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin protobuf-lite-arena-test \
                  no-warning-test $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                      ../gmock/gtest/lib/libgtest.la              \
-                      ../gmock/lib/libgmock.la                    \
-                      ../gmock/lib/libgmock_main.la
-protobuf_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include \
-                         -I$(srcdir)/../gmock/include
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la     \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la     \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_test_CPPFLAGS = -I$(GOOGLETEST_SRC_DIR)/include \
+                         -I$(GOOGLEMOCK_SRC_DIR)/include
 # Disable optimization for tests unless the user explicitly asked for it,
 # since test_util.cc takes forever to compile with optimization (with GCC).
 # See configure.ac for more info.
@@ -774,7 +733,6 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/common_unittest.cc                     \
   google/protobuf/stubs/int128_unittest.cc                     \
   google/protobuf/stubs/io_win32_unittest.cc                   \
-  google/protobuf/stubs/once_unittest.cc                       \
   google/protobuf/stubs/statusor_test.cc                       \
   google/protobuf/stubs/status_test.cc                         \
   google/protobuf/stubs/stringpiece_unittest.cc                \
@@ -783,7 +741,6 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/strutil_unittest.cc                    \
   google/protobuf/stubs/template_util_unittest.cc              \
   google/protobuf/stubs/time_test.cc                           \
-  google/protobuf/stubs/type_traits_unittest.cc                \
   google/protobuf/any_test.cc                                  \
   google/protobuf/arenastring_unittest.cc                      \
   google/protobuf/arena_unittest.cc                            \
@@ -796,10 +753,11 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/map_field_test.cc                            \
   google/protobuf/map_test.cc                                  \
   google/protobuf/message_unittest.cc                          \
+  google/protobuf/message_unittest.inc                         \
   google/protobuf/no_field_presence_test.cc                    \
   google/protobuf/preserve_unknown_enum_test.cc                \
-  google/protobuf/proto3_arena_unittest.cc                     \
   google/protobuf/proto3_arena_lite_unittest.cc                \
+  google/protobuf/proto3_arena_unittest.cc                     \
   google/protobuf/proto3_lite_unittest.cc                      \
   google/protobuf/reflection_ops_unittest.cc                   \
   google/protobuf/repeated_field_reflection_unittest.cc        \
@@ -823,6 +781,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/cpp/cpp_move_unittest.cc            \
   google/protobuf/compiler/cpp/cpp_unittest.h                  \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
+  google/protobuf/compiler/cpp/cpp_unittest.inc                \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
   google/protobuf/compiler/cpp/metadata_test.cc                \
   google/protobuf/compiler/java/java_plugin_unittest.cc        \
@@ -846,24 +805,24 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/util/time_util_test.cc                       \
   google/protobuf/util/type_resolver_util_test.cc              \
   $(COMMON_TEST_SOURCES)
-
-
 nodist_protobuf_test_SOURCES = $(protoc_outputs)
+$(am_protobuf_test_OBJECTS): unittest_proto_middleman
 
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
                       libprotoc.la                                   \
-                      ../gmock/gtest/lib/libgtest.la                 \
-                      ../gmock/lib/libgmock.la                       \
-                      ../gmock/lib/libgmock_main.la
-protobuf_lazy_descriptor_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
-                                         -I$(srcdir)/../gmock/gtest/include \
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lazy_descriptor_test_CPPFLAGS = -I$(GOOGLEMOCK_SRC_DIR)/include \
+                                         -I$(GOOGLETEST_SRC_DIR)/include \
                                          -DPROTOBUF_TEST_NO_DESCRIPTORS
 protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
   $(COMMON_TEST_SOURCES)
 nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
+$(am_protobuf_lazy_descriptor_test_OBJECTS): unittest_proto_middleman
 
 COMMON_LITE_TEST_SOURCES =                                             \
   google/protobuf/arena_test_util.cc                                   \
@@ -877,37 +836,39 @@ COMMON_LITE_TEST_SOURCES =                                             \
 # depend on gtest because our internal version of gtest depend on proto
 # full runtime and we want to make sure this test builds without full
 # runtime.
-protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la \
-                           ../gmock/gtest/lib/libgtest.la      \
-                           ../gmock/lib/libgmock.la            \
-                           ../gmock/lib/libgmock_main.la
-protobuf_lite_test_CPPFLAGS= -I$(srcdir)/../gmock/include \
-                             -I$(srcdir)/../gmock/gtest/include
+protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la     \
+                           $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la \
+                           $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la \
+                           $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lite_test_CPPFLAGS= -I$(GOOGLEMOCK_SRC_DIR)/include \
+                             -I$(GOOGLETEST_SRC_DIR)/include
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \
   $(COMMON_LITE_TEST_SOURCES)
 nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
+$(am_protobuf_lite_test_OBJECTS): unittest_proto_middleman
 
 # lite_arena_unittest depends on gtest because teboring@ found that without
 # gtest when building the test internally our memory sanitizer doesn't detect
 # memory leaks (don't know why).
 protobuf_lite_arena_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la \
-                      ../gmock/gtest/lib/libgtest.la                 \
-                      ../gmock/lib/libgmock.la                       \
-                      ../gmock/lib/libgmock_main.la
-protobuf_lite_arena_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
-                                    -I$(srcdir)/../gmock/gtest/include
+                      $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock.la        \
+                      $(GOOGLEMOCK_BUILD_DIR)/lib/libgmock_main.la
+protobuf_lite_arena_test_CPPFLAGS = -I$(GOOGLEMOCK_SRC_DIR)/include  \
+                                    -I$(GOOGLETEST_SRC_DIR)/include
 protobuf_lite_arena_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_arena_test_SOURCES =       \
   google/protobuf/lite_arena_unittest.cc \
   $(COMMON_LITE_TEST_SOURCES)
 nodist_protobuf_lite_arena_test_SOURCES = $(protoc_lite_outputs)
+$(am_protobuf_lite_arena_test_OBJECTS): unittest_proto_middleman
 
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                    ../gmock/gtest/lib/libgtest.la
-test_plugin_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
+                    $(GOOGLETEST_BUILD_DIR)/lib/libgtest.la
+test_plugin_CPPFLAGS = -I$(GOOGLETEST_SRC_DIR)/include
 test_plugin_SOURCES =                                          \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/testing/file.cc                              \
@@ -928,9 +889,7 @@ endif
 no_warning_test.cc:
 	echo "// Generated from Makefile.am" > no_warning_test.cc
 	for FILE in $(nobase_include_HEADERS); do \
-	  if ! echo $${FILE} | grep "atomicops"; then \
-	    echo "#include <$${FILE}>" >> no_warning_test.cc; \
-	  fi \
+    echo "#include <$${FILE}>" >> no_warning_test.cc; \
 	done
 	echo "int main(int, char**) { return 0; }" >> no_warning_test.cc
 

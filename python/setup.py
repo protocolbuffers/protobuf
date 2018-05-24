@@ -107,6 +107,7 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/more_extensions.proto", False)
   generate_proto("google/protobuf/internal/more_extensions_dynamic.proto", False)
   generate_proto("google/protobuf/internal/more_messages.proto", False)
+  generate_proto("google/protobuf/internal/no_package.proto", False)
   generate_proto("google/protobuf/internal/packed_field_test.proto", False)
   generate_proto("google/protobuf/internal/test_bad_identifiers.proto", False)
   generate_proto("google/protobuf/pyext/python.proto", False)
@@ -119,9 +120,7 @@ class clean(_clean):
       for filename in filenames:
         filepath = os.path.join(dirpath, filename)
         if filepath.endswith("_pb2.py") or filepath.endswith(".pyc") or \
-          filepath.endswith(".so") or filepath.endswith(".o") or \
-          filepath.endswith('google/protobuf/compiler/__init__.py') or \
-          filepath.endswith('google/protobuf/util/__init__.py'):
+          filepath.endswith(".so") or filepath.endswith(".o"):
           os.remove(filepath)
     # _clean is an old-style class, so super() doesn't work.
     _clean.run(self)
@@ -143,12 +142,6 @@ class build_py(_build_py):
     generate_proto("../src/google/protobuf/wrappers.proto")
     GenerateUnittestProtos()
 
-    # Make sure google.protobuf/** are valid packages.
-    for path in ['', 'internal/', 'compiler/', 'pyext/', 'util/']:
-      try:
-        open('google/protobuf/%s__init__.py' % path, 'a').close()
-      except EnvironmentError:
-        pass
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
 
@@ -178,9 +171,6 @@ if __name__ == '__main__':
     # extension. Note that those libraries have to be compiled with
     # -fPIC for this to work.
     compile_static_ext = get_option_from_sys_argv('--compile_static_extension')
-    extra_compile_args = ['-Wno-write-strings',
-                          '-Wno-invalid-offsetof',
-                          '-Wno-sign-compare']
     libraries = ['protobuf']
     extra_objects = None
     if compile_static_ext:
@@ -189,6 +179,25 @@ if __name__ == '__main__':
                        '../src/.libs/libprotobuf-lite.a']
     test_conformance.target = 'test_python_cpp'
 
+    extra_compile_args = []
+
+    if sys.platform != 'win32':
+        extra_compile_args.append('-Wno-write-strings')
+        extra_compile_args.append('-Wno-invalid-offsetof')
+        extra_compile_args.append('-Wno-sign-compare')
+
+    # https://github.com/Theano/Theano/issues/4926
+    if sys.platform == 'win32':
+      extra_compile_args.append('-D_hypot=hypot')
+
+    # https://github.com/tpaviot/pythonocc-core/issues/48
+    if sys.platform == 'win32' and  '64 bit' in sys.version:
+      extra_compile_args.append('-DMS_WIN64')
+
+    # MSVS default is dymanic
+    if (sys.platform == 'win32'):
+      extra_compile_args.append('/MT')
+
     if "clang" in os.popen('$CC --version 2> /dev/null').read():
       extra_compile_args.append('-Wno-shorten-64-to-32')
 
@@ -196,6 +205,8 @@ if __name__ == '__main__':
     if v:
       v = float('.'.join(v.split('.')[:2]))
       if v >= 10.12:
+        extra_compile_args.append('-std=c++11')
+    elif os.getenv('KOKORO_BUILD_NUMBER') or os.getenv('KOKORO_BUILD_ID'):
         extra_compile_args.append('-std=c++11')
 
     if warnings_as_errors in sys.argv:
@@ -216,7 +227,7 @@ if __name__ == '__main__':
         Extension(
             "google.protobuf.internal._api_implementation",
             glob.glob('google/protobuf/internal/api_implementation.cc'),
-            extra_compile_args=['-DPYTHON_PROTO2_CPP_IMPL_V2'],
+            extra_compile_args=extra_compile_args + ['-DPYTHON_PROTO2_CPP_IMPL_V2'],
         ),
     ])
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'

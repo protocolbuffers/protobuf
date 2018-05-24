@@ -48,9 +48,9 @@ goog.forwardDeclare('jspb.BinaryWriter');
  *
  * @template K, V
  *
- * @param {!Array<!Array<!Object>>} arr
+ * @param {!Array<!Array<?>>} arr
  *
- * @param {?function(new:V)|function(new:V,?)=} opt_valueCtor
+ * @param {?function(new:V, ?=)=} opt_valueCtor
  *    The constructor for type V, if type V is a message type.
  *
  * @constructor
@@ -118,7 +118,7 @@ jspb.Map.prototype.toArray = function() {
     strKeys.sort();
     for (var i = 0; i < strKeys.length; i++) {
       var entry = this.map_[strKeys[i]];
-      var valueWrapper = /** @type {!Object} */ (entry.valueWrapper);
+      var valueWrapper = /** @type {?jspb.Message} */ (entry.valueWrapper);
       if (valueWrapper) {
         valueWrapper.toArray();
       }
@@ -165,7 +165,7 @@ jspb.Map.prototype.toObject = function(includeInstance, valueToObject) {
  *
  * @template K, V
  * @param {!Array<!Array<!Object>>} entries
- * @param {!function(new:V)|function(new:V,?)} valueCtor
+ * @param {!function(new:V,?=)} valueCtor
  *    The constructor for type V.
  * @param {!function(!Object):V} valueFromObject
  *    The fromObject function for type V.
@@ -432,7 +432,8 @@ jspb.Map.prototype.serializeBinary = function(
       valueWriterFn.call(writer, 2, this.wrapEntry_(entry),
                          opt_valueWriterCallback);
     } else {
-      valueWriterFn.call(writer, 2, entry.value);
+      /** @type {function(this:jspb.BinaryWriter,number,?)} */ (valueWriterFn)
+          .call(writer, 2, entry.value);
     }
     writer.endSubMessage();
   }
@@ -475,10 +476,13 @@ jspb.Map.deserializeBinary = function(map, reader, keyReaderFn, valueReaderFn,
     } else if (field == 2) {
       // Value.
       if (map.valueCtor_) {
+        goog.asserts.assert(opt_valueReaderCallback);
         value = new map.valueCtor_();
         valueReaderFn.call(reader, value, opt_valueReaderCallback);
       } else {
-        value = valueReaderFn.call(reader);
+        value =
+            (/** @type {function(this:jspb.BinaryReader):?} */ (valueReaderFn))
+                .call(reader);
       }
     }
   }

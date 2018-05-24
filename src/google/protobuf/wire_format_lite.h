@@ -346,32 +346,27 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
                                Operation op,
                                const char* field_name);
 
+  template <typename MessageType>
   static inline bool ReadGroup(int field_number, io::CodedInputStream* input,
-                               MessageLite* value);
-  static inline bool ReadMessage(io::CodedInputStream* input,
-                                 MessageLite* value);
+                               MessageType* value);
 
-  // Like above, but de-virtualize the call to MergePartialFromCodedStream().
-  // The pointer must point at an instance of MessageType, *not* a subclass (or
-  // the subclass must not override MergePartialFromCodedStream()).
+  template <typename MessageType>
+  static inline bool ReadMessage(io::CodedInputStream* input,
+                                 MessageType* value);
+
+  // Do not use.
   template <typename MessageType>
   static inline bool ReadGroupNoVirtual(int field_number,
                                         io::CodedInputStream* input,
-                                        MessageType* value);
+                                        MessageType* value) {
+    return ReadGroup(field_number, input, value);
+  }
+
   template<typename MessageType>
   static inline bool ReadMessageNoVirtual(io::CodedInputStream* input,
-                                          MessageType* value);
-
-  // The same, but do not modify input's recursion depth.  This is useful
-  // when reading a bunch of groups or messages in a loop, because then the
-  // recursion depth can be incremented before the loop and decremented after.
-  template<typename MessageType>
-  static inline bool ReadGroupNoVirtualNoRecursionDepth(
-      int field_number, io::CodedInputStream* input, MessageType* value);
-
-  template<typename MessageType>
-  static inline bool ReadMessageNoVirtualNoRecursionDepth(
-      io::CodedInputStream* input, MessageType* value);
+                                          MessageType* value) {
+    return ReadMessage(input, value);
+  }
 
   // Write a tag.  The Write*() functions typically include the tag, so
   // normally there's no need to call this unless using the Write*NoTag()
@@ -612,12 +607,14 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // of serialization, the "ToArray" variants may be invoked.  But they don't
   // have a CodedOutputStream available, so they get an additional parameter
   // telling them whether to serialize deterministically.
+  template<typename MessageType>
   INL static uint8* InternalWriteGroupToArray(int field_number,
-                                              const MessageLite& value,
+                                              const MessageType& value,
                                               bool deterministic,
                                               uint8* target);
+  template<typename MessageType>
   INL static uint8* InternalWriteMessageToArray(int field_number,
-                                                const MessageLite& value,
+                                                const MessageType& value,
                                                 bool deterministic,
                                                 uint8* target);
 
@@ -694,8 +691,10 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static inline size_t StringSize(const string& value);
   static inline size_t BytesSize (const string& value);
 
-  static inline size_t GroupSize  (const MessageLite& value);
-  static inline size_t MessageSize(const MessageLite& value);
+  template<typename MessageType>
+  static inline size_t GroupSize  (const MessageType& value);
+  template<typename MessageType>
+  static inline size_t MessageSize(const MessageType& value);
 
   // Like above, but de-virtualize the call to ByteSize().  The
   // pointer must point at an instance of MessageType, *not* a subclass (or

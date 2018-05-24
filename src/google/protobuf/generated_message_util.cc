@@ -35,6 +35,9 @@
 #include <google/protobuf/generated_message_util.h>
 
 #include <limits>
+// We're only using this as a standard way for getting the thread id.
+// We're not using any thread functionality.
+#include <thread>  // NOLINT
 #include <vector>
 
 #include <google/protobuf/io/coded_stream_inl.h>
@@ -43,6 +46,7 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -61,7 +65,7 @@ double NaN() {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
-ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
+ExplicitlyConstructed<::std::string> fixed_address_empty_string;
 GOOGLE_PROTOBUF_DECLARE_ONCE(empty_string_once_init_);
 
 void DeleteEmptyString() { fixed_address_empty_string.Destruct(); }
@@ -251,6 +255,10 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_BYTES>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {};
 
 
+template <>
+struct PrimitiveTypeHelper<FieldMetadata::kInlinedType>
+    : PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {};
+
 // We want to serialize to both CodedOutputStream and directly into byte arrays
 // without duplicating the code. In fact we might want extra output channels in
 // the future.
@@ -274,7 +282,7 @@ void WriteLengthTo(uint32 length, O* output) {
 
 // Specialization for coded output stream
 template <int type>
-struct OutputHelper< ::google::protobuf::io::CodedOutputStream, type> {
+struct OutputHelper<::google::protobuf::io::CodedOutputStream, type> {
   static void Serialize(const void* ptr,
                         ::google::protobuf::io::CodedOutputStream* output) {
     PrimitiveTypeHelper<type>::Serialize(ptr, output);
@@ -416,6 +424,15 @@ struct SingularFieldHelper<WireFormatLite::TYPE_MESSAGE> {
   }
 };
 
+template <>
+struct SingularFieldHelper<FieldMetadata::kInlinedType> {
+  template <typename O>
+  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
+    WriteTagTo(md.tag, output);
+    SerializeTo<FieldMetadata::kInlinedType>(&Get<::std::string>(field), output);
+  }
+};
+
 template <int type>
 struct RepeatedFieldHelper {
   template <typename O>
@@ -488,6 +505,10 @@ struct RepeatedFieldHelper<WireFormatLite::TYPE_MESSAGE> {
 };
 
 
+template <>
+struct RepeatedFieldHelper<FieldMetadata::kInlinedType>
+    : RepeatedFieldHelper<WireFormatLite::TYPE_STRING> {};
+
 template <int type>
 struct PackedFieldHelper {
   template <typename O>
@@ -523,6 +544,9 @@ struct PackedFieldHelper<WireFormatLite::TYPE_GROUP>
 template <>
 struct PackedFieldHelper<WireFormatLite::TYPE_MESSAGE>
     : PackedFieldHelper<WireFormatLite::TYPE_STRING> {};
+template <>
+struct PackedFieldHelper<FieldMetadata::kInlinedType>
+    : PackedFieldHelper<WireFormatLite::TYPE_STRING> {};
 
 template <int type>
 struct OneOfFieldHelper {
@@ -532,6 +556,15 @@ struct OneOfFieldHelper {
   }
 };
 
+
+template <>
+struct OneOfFieldHelper<FieldMetadata::kInlinedType> {
+  template <typename O>
+  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
+    SingularFieldHelper<FieldMetadata::kInlinedType>::Serialize(
+        Get<const ::std::string*>(field), md, output);
+  }
+};
 
 void SerializeNotImplemented(int field) {
   GOOGLE_LOG(FATAL) << "Not implemented field number " << field;
@@ -572,6 +605,11 @@ bool IsNull<WireFormatLite::TYPE_MESSAGE>(const void* ptr) {
   return Get<const MessageLite*>(ptr) == NULL;
 }
 
+
+template <>
+bool IsNull<FieldMetadata::kInlinedType>(const void* ptr) {
+  return static_cast<const ::std::string*>(ptr)->empty();
+}
 
 #define SERIALIZERS_FOR_TYPE(type)                                            \
   case SERIALIZE_TABLE_OP(type, FieldMetadata::kPresence):                    \
@@ -620,6 +658,7 @@ void SerializeInternal(const uint8* base,
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SFIXED64);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT32);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT64);
+      SERIALIZERS_FOR_TYPE(FieldMetadata::kInlinedType);
 
       // Special cases
       case FieldMetadata::kSpecial:
@@ -663,6 +702,7 @@ uint8* SerializeInternalToArray(const uint8* base,
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SFIXED64);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT32);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT64);
+      SERIALIZERS_FOR_TYPE(FieldMetadata::kInlinedType);
       // Special cases
       case FieldMetadata::kSpecial: {
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
@@ -698,9 +738,9 @@ void UnknownFieldSerializerLite(const uint8* ptr, uint32 offset, uint32 tag,
           ->unknown_fields());
 }
 
-MessageLite* DuplicateIfNonNullInternal(MessageLite* message, Arena* arena) {
+MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
   if (message) {
-    MessageLite* ret = message->New(arena);
+    MessageLite* ret = message->New();
     ret->CheckTypeAndMergeFrom(*message);
     return ret;
   } else {
@@ -723,6 +763,49 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
     ret->CheckTypeAndMergeFrom(*submessage);
     return ret;
   }
+}
+
+namespace {
+
+void InitSCC_DFS(SCCInfoBase* scc) {
+  if (scc->visit_status.load(std::memory_order_relaxed) !=
+      SCCInfoBase::kUninitialized) return;
+  scc->visit_status.store(SCCInfoBase::kRunning, std::memory_order_relaxed);
+  // Each base is followed by an array of pointers to deps
+  auto deps = reinterpret_cast<SCCInfoBase* const*>(scc + 1);
+  for (int i = 0; i < scc->num_deps; i++) {
+    if (deps[i]) InitSCC_DFS(deps[i]);
+  }
+  scc->init_func();
+  // Mark done (note we use memory order release here), other threads could
+  // now see this as initialized and thus the initialization must have happened
+  // before.
+  scc->visit_status.store(SCCInfoBase::kInitialized, std::memory_order_release);
+}
+
+}  // namespace
+
+void InitSCCImpl(SCCInfoBase* scc) {
+  static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
+  // Either the default in case no initialization is running or the id of the
+  // thread that is currently initializing.
+  static std::atomic<std::thread::id> runner;
+  auto me = std::this_thread::get_id();
+  // This will only happen because the constructor will call InitSCC while
+  // constructing the default instance.
+  if (runner.load(std::memory_order_relaxed) == me) {
+    // Because we're in the process of constructing the default instance.
+    // We can be assured that we're already exploring this SCC.
+    GOOGLE_CHECK_EQ(scc->visit_status.load(std::memory_order_relaxed),
+             SCCInfoBase::kRunning);
+    return;
+  }
+  InitProtobufDefaults();
+  mu.Lock();
+  runner.store(me, std::memory_order_relaxed);
+  InitSCC_DFS(scc);
+  runner.store(std::thread::id{}, std::memory_order_relaxed);
+  mu.Unlock();
 }
 
 }  // namespace internal

@@ -295,14 +295,30 @@ public final class UnknownFieldSetLite {
     return true;
   }
 
+  private static int hashCode(int[] tags, int count) {
+    int hashCode = 17;
+    for (int i = 0; i < count; ++i) {
+      hashCode = 31 * hashCode + tags[i];
+    }
+    return hashCode;
+  }
+
+  private static int hashCode(Object[] objects, int count) {
+    int hashCode = 17;
+    for (int i = 0; i < count; ++i) {
+      hashCode = 31 * hashCode + objects[i].hashCode();
+    }
+    return hashCode;
+  }
+
   @Override
   public int hashCode() {
     int hashCode = 17;
-    
+
     hashCode = 31 * hashCode + count;
-    hashCode = 31 * hashCode + Arrays.hashCode(tags);
-    hashCode = 31 * hashCode + Arrays.deepHashCode(objects);
-    
+    hashCode = 31 * hashCode + hashCode(tags, count);
+    hashCode = 31 * hashCode + hashCode(objects, count);
+
     return hashCode;
   }
 

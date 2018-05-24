@@ -1740,9 +1740,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ComplexOptionType2(ComplexOptionType2 other) : this() {
-      Bar = other.bar_ != null ? other.Bar.Clone() : null;
+      bar_ = other.bar_ != null ? other.bar_.Clone() : null;
       baz_ = other.baz_;
-      Fred = other.fred_ != null ? other.Fred.Clone() : null;
+      fred_ = other.fred_ != null ? other.fred_.Clone() : null;
       barney_ = other.barney_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -2331,7 +2331,7 @@ namespace UnitTest.Issues.TestProtos {
     public Aggregate(Aggregate other) : this() {
       i_ = other.i_;
       s_ = other.s_;
-      Sub = other.sub_ != null ? other.Sub.Clone() : null;
+      sub_ = other.sub_ != null ? other.sub_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 

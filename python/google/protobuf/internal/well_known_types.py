@@ -375,6 +375,9 @@ def _CheckDurationValid(seconds, nanos):
     raise Error(
         'Duration is not valid: Nanos {0} must be in range '
         '[-999999999, 999999999].'.format(nanos))
+  if (nanos < 0 and seconds > 0) or (nanos > 0 and seconds < 0):
+    raise Error(
+        'Duration is not valid: Sign mismatch.')
 
 
 def _RoundTowardZero(value, divider):
@@ -649,9 +652,10 @@ def _MergeMessage(
         raise ValueError('Error: Field {0} in message {1} is not a singular '
                          'message field and cannot have sub-fields.'.format(
                              name, source_descriptor.full_name))
-      _MergeMessage(
-          child, getattr(source, name), getattr(destination, name),
-          replace_message, replace_repeated)
+      if source.HasField(name):
+        _MergeMessage(
+            child, getattr(source, name), getattr(destination, name),
+            replace_message, replace_repeated)
       continue
     if field.label == FieldDescriptor.LABEL_REPEATED:
       if replace_repeated:

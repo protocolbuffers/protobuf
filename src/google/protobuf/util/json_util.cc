@@ -97,6 +97,8 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
         resolver, type, &json_writer);
     default_value_writer.set_preserve_proto_field_names(
         options.preserve_proto_field_names);
+    default_value_writer.set_print_enums_as_ints(
+        options.always_print_enums_as_ints);
     return proto_source.WriteTo(&default_value_writer);
   } else {
     return proto_source.WriteTo(&json_writer);
@@ -125,22 +127,22 @@ class StatusErrorListener : public converter::ErrorListener {
   virtual void InvalidName(const converter::LocationTrackerInterface& loc,
                            StringPiece unknown_name, StringPiece message) {
     status_ = util::Status(util::error::INVALID_ARGUMENT,
-                             loc.ToString() + ": " + message.ToString());
+                             loc.ToString() + ": " + string(message));
   }
 
   virtual void InvalidValue(const converter::LocationTrackerInterface& loc,
                             StringPiece type_name, StringPiece value) {
     status_ =
         util::Status(util::error::INVALID_ARGUMENT,
-                       loc.ToString() + ": invalid value " + value.ToString() +
-                           " for type " + type_name.ToString());
+                       loc.ToString() + ": invalid value " + string(value) +
+                           " for type " + string(type_name));
   }
 
   virtual void MissingField(const converter::LocationTrackerInterface& loc,
                             StringPiece missing_name) {
     status_ = util::Status(
         util::error::INVALID_ARGUMENT,
-        loc.ToString() + ": missing field " + missing_name.ToString());
+        loc.ToString() + ": missing field " + string(missing_name));
   }
 
  private:

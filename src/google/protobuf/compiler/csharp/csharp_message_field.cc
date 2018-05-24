@@ -133,7 +133,7 @@ void MessageFieldGenerator::WriteToString(io::Printer* printer) {
 
 void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
-    "$property_name$ = other.$has_property_check$ ? other.$property_name$.Clone() : null;\n");
+    "$name$_ = other.$has_property_check$ ? other.$name$_.Clone() : null;\n");
 }
 
 void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {

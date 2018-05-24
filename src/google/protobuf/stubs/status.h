@@ -106,7 +106,7 @@ class LIBPROTOBUF_EXPORT Status {
 };
 
 // Prints a human-readable representation of 'x' to 'os'.
-LIBPROTOBUF_EXPORT ostream& operator<<(ostream& os, const Status& x);
+LIBPROTOBUF_EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 
 #define EXPECT_OK(value) EXPECT_TRUE((value).ok())
 

@@ -38,24 +38,22 @@
 #include <limits>
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <set>
 #include <string>
 #include <vector>
 
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
@@ -64,6 +62,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/substitute.h>
+
 
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -347,14 +346,14 @@ class PrefixRemover {
       }
 
       if (ascii_tolower(str[i]) != prefix_[j++]) {
-        return str.as_string();
+        return string(str);
       }
     }
 
     // If we didn't make it through the prefix, we've failed to strip the
     // prefix.
     if (j < prefix_.size()) {
-      return str.as_string();
+      return string(str);
     }
 
     // Skip underscores between prefix and further characters.
@@ -364,12 +363,12 @@ class PrefixRemover {
 
     // Enum label can't be the empty string.
     if (i == str.size()) {
-      return str.as_string();
+      return string(str);
     }
 
     // We successfully stripped the prefix.
     str.remove_prefix(i);
-    return str.as_string();
+    return string(str);
   }
 
  private:
@@ -407,9 +406,10 @@ typedef std::pair<const EnumDescriptor*, int> EnumIntPair;
 template<typename PairType>
 struct PointerIntegerPairHash {
   size_t operator()(const PairType& p) const {
-    // FIXME(kenton):  What is the best way to compute this hash?  I have
-    // no idea!  This seems a bit better than an XOR.
-    return reinterpret_cast<intptr_t>(p.first) * ((1 << 16) - 1) + p.second;
+    static const size_t prime1 = 16777499;
+    static const size_t prime2 = 16777619;
+    return reinterpret_cast<size_t>(p.first) * prime1 ^
+           static_cast<size_t>(p.second) * prime2;
   }
 
 #ifdef _MSC_VER
@@ -425,11 +425,10 @@ struct PointerIntegerPairHash {
 
 struct PointerStringPairHash {
   size_t operator()(const PointerStringPair& p) const {
-    // FIXME(kenton):  What is the best way to compute this hash?  I have
-    // no idea!  This seems a bit better than an XOR.
+    static const size_t prime = 16777619;
     hash<const char*> cstring_hash;
-    return reinterpret_cast<intptr_t>(p.first) * ((1 << 16) - 1) +
-           cstring_hash(p.second);
+    return reinterpret_cast<size_t>(p.first) * prime ^
+           static_cast<size_t>(cstring_hash(p.second));
   }
 
 #ifdef _MSC_VER
@@ -1802,6 +1801,15 @@ FileDescriptor::FindExtensionByCamelcaseName(const string& key) const {
   }
 }
 
+void Descriptor::ExtensionRange::CopyTo(
+    DescriptorProto_ExtensionRange* proto) const {
+  proto->set_start(this->start);
+  proto->set_end(this->end);
+  if (options_ != &google::protobuf::ExtensionRangeOptions::default_instance()) {
+    *proto->mutable_options() = *options_;
+  }
+}
+
 const Descriptor::ExtensionRange*
 Descriptor::FindExtensionRangeContainingNumber(int number) const {
   // Linear search should be fine because we don't expect a message to have
@@ -2069,13 +2077,7 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
     enum_type(i)->CopyTo(proto->add_enum_type());
   }
   for (int i = 0; i < extension_range_count(); i++) {
-    DescriptorProto::ExtensionRange* range = proto->add_extension_range();
-    range->set_start(extension_range(i)->start);
-    range->set_end(extension_range(i)->end);
-    const ExtensionRangeOptions* options = extension_range(i)->options_;
-    if (options != &ExtensionRangeOptions::default_instance()) {
-      range->mutable_options()->CopyFrom(*options);
-    }
+    extension_range(i)->CopyTo(proto->add_extension_range());
   }
   for (int i = 0; i < extension_count(); i++) {
     extension(i)->CopyTo(proto->add_extension());
@@ -2306,7 +2308,7 @@ bool RetrieveOptions(int depth, const Message& options,
       return RetrieveOptionsAssumingRightPool(depth, options, option_entries);
     }
     DynamicMessageFactory factory;
-    google::protobuf::scoped_ptr<Message> dynamic_options(
+    std::unique_ptr<Message> dynamic_options(
         factory.GetPrototype(option_descriptor)->New());
     if (dynamic_options->ParseFromString(options.SerializeAsString())) {
       return RetrieveOptionsAssumingRightPool(depth, *dynamic_options,
@@ -3116,15 +3118,18 @@ namespace {
 struct OptionsToInterpret {
   OptionsToInterpret(const string& ns,
                      const string& el,
+                     std::vector<int>& path,
                      const Message* orig_opt,
                      Message* opt)
       : name_scope(ns),
         element_name(el),
+        element_path(path),
         original_options(orig_opt),
         options(opt) {
   }
   string name_scope;
   string element_name;
+  std::vector<int> element_path;
   const Message* original_options;
   Message* options;
 };
@@ -3291,7 +3296,7 @@ class DescriptorBuilder {
   // descriptor.proto.
   template<class DescriptorT> void AllocateOptions(
       const typename DescriptorT::OptionsType& orig_options,
-      DescriptorT* descriptor);
+      DescriptorT* descriptor, int options_field_tag);
   // Specialization for FileOptions.
   void AllocateOptions(const FileOptions& orig_options,
                        FileDescriptor* descriptor);
@@ -3301,7 +3306,8 @@ class DescriptorBuilder {
       const string& name_scope,
       const string& element_name,
       const typename DescriptorT::OptionsType& orig_options,
-      DescriptorT* descriptor);
+      DescriptorT* descriptor,
+      std::vector<int>& options_path);
 
   // These methods all have the same signature for the sake of the BUILD_ARRAY
   // macro, below.
@@ -3390,13 +3396,21 @@ class DescriptorBuilder {
     // Otherwise returns true.
     bool InterpretOptions(OptionsToInterpret* options_to_interpret);
 
+    // Updates the given source code info by re-writing uninterpreted option
+    // locations to refer to the corresponding interpreted option.
+    void UpdateSourceCodeInfo(SourceCodeInfo* info);
+
     class AggregateOptionFinder;
 
    private:
     // Interprets uninterpreted_option_ on the specified message, which
     // must be the mutable copy of the original options message to which
-    // uninterpreted_option_ belongs.
-    bool InterpretSingleOption(Message* options);
+    // uninterpreted_option_ belongs. The given src_path is the source
+    // location path to the uninterpreted option, and options_path is the
+    // source location path to the options message. The location paths are
+    // recorded and then used in UpdateSourceCodeInfo.
+    bool InterpretSingleOption(Message* options, std::vector<int>& src_path,
+                               std::vector<int>& options_path);
 
     // Adds the uninterpreted_option to the given options message verbatim.
     // Used when AllowUnknownDependencies() is in effect and we can't find
@@ -3470,6 +3484,16 @@ class DescriptorBuilder {
     // submessage of the original option, not the mutable copy. Therefore we
     // can use it to find locations recorded by the parser.
     const UninterpretedOption* uninterpreted_option_;
+
+    // This maps the element path of uninterpreted options to the element path
+    // of the resulting interpreted option. This is used to modify a file's
+    // source code info to account for option interpretation.
+    std::map<std::vector<int>, std::vector<int>> interpreted_paths_;
+
+    // This maps the path to a repeated option field to the known number of
+    // elements the field contains. This is used to track the compute the
+    // index portion of the element path when interpreting a single option.
+    std::map<std::vector<int>, int> repeated_option_counts_;
 
     // Factory used to create the dynamic messages we need to parse
     // any aggregate option values we encounter.
@@ -4088,24 +4112,30 @@ void DescriptorBuilder::ValidateSymbolName(
 // FileDescriptor.
 template<class DescriptorT> void DescriptorBuilder::AllocateOptions(
     const typename DescriptorT::OptionsType& orig_options,
-    DescriptorT* descriptor) {
+    DescriptorT* descriptor, int options_field_tag) {
+  std::vector<int> options_path;
+  descriptor->GetLocationPath(&options_path);
+  options_path.push_back(options_field_tag);
   AllocateOptionsImpl(descriptor->full_name(), descriptor->full_name(),
-                      orig_options, descriptor);
+                      orig_options, descriptor, options_path);
 }
 
 // We specialize for FileDescriptor.
 void DescriptorBuilder::AllocateOptions(const FileOptions& orig_options,
                                         FileDescriptor* descriptor) {
+  std::vector<int> options_path;
+  options_path.push_back(FileDescriptorProto::kOptionsFieldNumber);
   // We add the dummy token so that LookupSymbol does the right thing.
   AllocateOptionsImpl(descriptor->package() + ".dummy", descriptor->name(),
-                      orig_options, descriptor);
+                      orig_options, descriptor, options_path);
 }
 
 template<class DescriptorT> void DescriptorBuilder::AllocateOptionsImpl(
     const string& name_scope,
     const string& element_name,
     const typename DescriptorT::OptionsType& orig_options,
-    DescriptorT* descriptor) {
+    DescriptorT* descriptor,
+    std::vector<int>& options_path) {
   // We need to use a dummy pointer to work around a bug in older versions of
   // GCC.  Otherwise, the following two lines could be replaced with:
   //   typename DescriptorT::OptionsType* options =
@@ -4128,7 +4158,8 @@ template<class DescriptorT> void DescriptorBuilder::AllocateOptionsImpl(
   // we're still trying to build it.
   if (options->uninterpreted_option_size() > 0) {
     options_to_interpret_.push_back(
-        OptionsToInterpret(name_scope, element_name, &orig_options, options));
+        OptionsToInterpret(name_scope, element_name, options_path,
+            &orig_options, options));
   }
 }
 
@@ -4266,8 +4297,9 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
   result->is_placeholder_ = false;
   result->finished_building_ = false;
+  SourceCodeInfo *info = NULL;
   if (proto.has_source_code_info()) {
-    SourceCodeInfo *info = tables_->AllocateMessage<SourceCodeInfo>();
+    info = tables_->AllocateMessage<SourceCodeInfo>();
     info->CopyFrom(proto.source_code_info());
     result->source_code_info_ = info;
   } else {
@@ -4465,6 +4497,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.InterpretOptions(&(*iter));
     }
     options_to_interpret_.clear();
+
+    if (info != NULL) {
+      option_interpreter.UpdateSourceCodeInfo(info);
+    }
   }
 
   // Validate options. See comments at InternalSetLazilyBuildDependencies about
@@ -4536,7 +4572,8 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    AllocateOptions(proto.options(), result);
+    AllocateOptions(proto.options(), result,
+        DescriptorProto::kOptionsFieldNumber);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -4916,7 +4953,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    AllocateOptions(proto.options(), result);
+    AllocateOptions(proto.options(), result,
+        FieldDescriptorProto::kOptionsFieldNumber);
   }
 
 
@@ -4950,8 +4988,16 @@ void DescriptorBuilder::BuildExtensionRange(
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
+    std::vector<int> options_path;
+    parent->GetLocationPath(&options_path);
+    options_path.push_back(DescriptorProto::kExtensionRangeFieldNumber);
+    // find index of this extension range in order to compute path
+    int index;
+    for (index = 0; parent->extension_ranges_ + index != result; index++);
+    options_path.push_back(index);
+    options_path.push_back(DescriptorProto_ExtensionRange::kOptionsFieldNumber);
     AllocateOptionsImpl(parent->full_name(), parent->full_name(),
-                        proto.options(), result);
+                        proto.options(), result, options_path);
   }
 }
 
@@ -5003,7 +5049,8 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    AllocateOptions(proto.options(), result);
+    AllocateOptions(proto.options(), result,
+        OneofDescriptorProto::kOptionsFieldNumber);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -5120,7 +5167,8 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    AllocateOptions(proto.options(), result);
+    AllocateOptions(proto.options(), result,
+        EnumDescriptorProto::kOptionsFieldNumber);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -5132,13 +5180,13 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
     for (int j = i + 1; j < proto.reserved_range_size(); j++) {
       const EnumDescriptorProto_EnumReservedRange& range2 =
           proto.reserved_range(j);
-      if (range1.end() > range2.start() && range2.end() > range1.start()) {
+      if (range1.end() >= range2.start() && range2.end() >= range1.start()) {
         AddError(result->full_name(), proto.reserved_range(i),
                  DescriptorPool::ErrorCollector::NUMBER,
                  strings::Substitute("Reserved range $0 to $1 overlaps with "
                                      "already-defined range $2 to $3.",
-                                     range2.start(), range2.end() - 1,
-                                     range1.start(), range1.end() - 1));
+                                     range2.start(), range2.end(),
+                                     range1.start(), range1.end()));
       }
     }
   }
@@ -5197,7 +5245,8 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    AllocateOptions(proto.options(), result);
+    AllocateOptions(proto.options(), result,
+        EnumValueDescriptorProto::kOptionsFieldNumber);
   }
 
   // Again, enum values are weird because we makes them appear as siblings
@@ -5264,7 +5313,8 @@ void DescriptorBuilder::BuildService(const ServiceDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    AllocateOptions(proto.options(), result);
+    AllocateOptions(proto.options(), result,
+        ServiceDescriptorProto::kOptionsFieldNumber);
   }
 
   AddSymbol(result->full_name(), NULL, result->name(),
@@ -5292,7 +5342,8 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
   if (!proto.has_options()) {
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
-    AllocateOptions(proto.options(), result);
+    AllocateOptions(proto.options(), result,
+        MethodDescriptorProto::kOptionsFieldNumber);
   }
 
   result->client_streaming_ = proto.client_streaming();
@@ -5661,13 +5712,15 @@ void DescriptorBuilder::CrossLinkField(
       if (!tables_->AddExtension(field)) {
         const FieldDescriptor* conflicting_field =
             tables_->FindExtension(field->containing_type(), field->number());
+        string containing_type_name =
+            field->containing_type() == NULL
+                ? "unknown"
+                : field->containing_type()->full_name();
         string error_msg = strings::Substitute(
             "Extension number $0 has already been used in \"$1\" by extension "
             "\"$2\" defined in $3.",
-            field->number(),
-            field->containing_type()->full_name(),
-            conflicting_field->full_name(),
-            conflicting_field->file()->name());
+            field->number(), containing_type_name,
+            conflicting_field->full_name(), conflicting_field->file()->name());
         // Conflicting extension numbers should be an error. However, before
         // turning this into an error we need to fix all existing broken
         // protos first.
@@ -6262,6 +6315,9 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
       << "No field named \"uninterpreted_option\" in the Options proto.";
   options->GetReflection()->ClearField(options, uninterpreted_options_field);
 
+  std::vector<int> src_path = options_to_interpret->element_path;
+  src_path.push_back(uninterpreted_options_field->number());
+
   // Find the uninterpreted_option field in the original options.
   const FieldDescriptor* original_uninterpreted_options_field =
       original_options->GetDescriptor()->
@@ -6272,14 +6328,17 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
   const int num_uninterpreted_options = original_options->GetReflection()->
       FieldSize(*original_options, original_uninterpreted_options_field);
   for (int i = 0; i < num_uninterpreted_options; ++i) {
+    src_path.push_back(i);
     uninterpreted_option_ = down_cast<const UninterpretedOption*>(
         &original_options->GetReflection()->GetRepeatedMessage(
             *original_options, original_uninterpreted_options_field, i));
-    if (!InterpretSingleOption(options)) {
+    if (!InterpretSingleOption(options, src_path,
+                               options_to_interpret->element_path)) {
       // Error already added by InterpretSingleOption().
       failed = true;
       break;
     }
+    src_path.pop_back();
   }
   // Reset these, so we don't have any dangling pointers.
   uninterpreted_option_ = NULL;
@@ -6312,7 +6371,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
 }
 
 bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
-    Message* options) {
+    Message* options, std::vector<int>& src_path, std::vector<int>& opts_path) {
   // First do some basic validation.
   if (uninterpreted_option_->name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
@@ -6357,6 +6416,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   const FieldDescriptor* field = NULL;
   std::vector<const FieldDescriptor*> intermediate_fields;
   string debug_msg_name = "";
+
+  std::vector<int> dest_path = opts_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
     const string& name_part = uninterpreted_option_->name(i).name_part();
@@ -6420,19 +6481,24 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
                             "\" is not a field or extension of message \"" +
                             descriptor->name() + "\".");
       }
-    } else if (i < uninterpreted_option_->name_size() - 1) {
-      if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-        return AddNameError("Option \"" +  debug_msg_name +
-                            "\" is an atomic type, not a message.");
-      } else if (field->is_repeated()) {
-        return AddNameError("Option field \"" + debug_msg_name +
-                            "\" is a repeated message. Repeated message "
-                            "options must be initialized using an "
-                            "aggregate value.");
-      } else {
-        // Drill down into the submessage.
-        intermediate_fields.push_back(field);
-        descriptor = field->message_type();
+    } else {
+      // accumulate field numbers to form path to interpreted option
+      dest_path.push_back(field->number());
+
+      if (i < uninterpreted_option_->name_size() - 1) {
+        if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+          return AddNameError("Option \"" +  debug_msg_name +
+                              "\" is an atomic type, not a message.");
+        } else if (field->is_repeated()) {
+          return AddNameError("Option field \"" + debug_msg_name +
+                              "\" is a repeated message. Repeated message "
+                              "options must be initialized using an "
+                              "aggregate value.");
+        } else {
+          // Drill down into the submessage.
+          intermediate_fields.push_back(field);
+          descriptor = field->message_type();
+        }
       }
     }
   }
@@ -6453,10 +6519,9 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     return false;  // ExamineIfOptionIsSet() already added the error.
   }
 
-
   // First set the value on the UnknownFieldSet corresponding to the
   // innermost message.
-  google::protobuf::scoped_ptr<UnknownFieldSet> unknown_fields(new UnknownFieldSet());
+  std::unique_ptr<UnknownFieldSet> unknown_fields(new UnknownFieldSet());
   if (!SetOptionValue(field, unknown_fields.get())) {
     return false;  // SetOptionValue() already added the error.
   }
@@ -6466,7 +6531,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   for (std::vector<const FieldDescriptor*>::reverse_iterator iter =
            intermediate_fields.rbegin();
        iter != intermediate_fields.rend(); ++iter) {
-    google::protobuf::scoped_ptr<UnknownFieldSet> parent_unknown_fields(
+    std::unique_ptr<UnknownFieldSet> parent_unknown_fields(
         new UnknownFieldSet());
     switch ((*iter)->type()) {
       case FieldDescriptor::TYPE_MESSAGE: {
@@ -6499,7 +6564,108 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   options->GetReflection()->MutableUnknownFields(options)->MergeFrom(
       *unknown_fields);
 
+  // record the element path of the interpreted option
+  if (field->is_repeated()) {
+    int index = repeated_option_counts_[dest_path]++;
+    dest_path.push_back(index);
+  }
+  interpreted_paths_[src_path] = dest_path;
+
   return true;
+}
+
+void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
+    SourceCodeInfo* info) {
+
+  if (interpreted_paths_.empty()) {
+    // nothing to do!
+    return;
+  }
+
+  // We find locations that match keys in interpreted_paths_ and
+  // 1) replace the path with the corresponding value in interpreted_paths_
+  // 2) remove any subsequent sub-locations (sub-location is one whose path
+  //    has the parent path as a prefix)
+  //
+  // To avoid quadratic behavior of removing interior rows as we go,
+  // we keep a copy. But we don't actually copy anything until we've
+  // found the first match (so if the source code info has no locations
+  // that need to be changed, there is zero copy overhead).
+
+  RepeatedPtrField<SourceCodeInfo_Location>* locs = info->mutable_location();
+  RepeatedPtrField<SourceCodeInfo_Location> new_locs;
+  bool copying = false;
+
+  std::vector<int> pathv;
+  bool matched = false;
+
+  for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
+       loc != locs->end(); loc++) {
+
+    if (matched) {
+      // see if this location is in the range to remove
+      bool loc_matches = true;
+      if (loc->path_size() < pathv.size()) {
+        loc_matches = false;
+      } else {
+        for (int j = 0; j < pathv.size(); j++) {
+          if (loc->path(j) != pathv[j]) {
+            loc_matches = false;
+            break;
+          }
+        }
+      }
+
+      if (loc_matches) {
+        // don't copy this row since it is a sub-location that we're removing
+        continue;
+      }
+
+      matched = false;
+    }
+
+    pathv.clear();
+    for (int j = 0; j < loc->path_size(); j++) {
+      pathv.push_back(loc->path(j));
+    }
+
+    std::map<std::vector<int>, std::vector<int>>::iterator entry =
+        interpreted_paths_.find(pathv);
+
+    if (entry == interpreted_paths_.end()) {
+      // not a match
+      if (copying) {
+        new_locs.Add()->CopyFrom(*loc);
+      }
+      continue;
+    }
+
+    matched = true;
+
+    if (!copying) {
+      // initialize the copy we are building
+      copying = true;
+      new_locs.Reserve(locs->size());
+      for (RepeatedPtrField<SourceCodeInfo_Location>::iterator it =
+           locs->begin(); it != loc; it++) {
+        new_locs.Add()->CopyFrom(*it);
+      }
+    }
+
+    // add replacement and update its path
+    SourceCodeInfo_Location* replacement = new_locs.Add();
+    replacement->CopyFrom(*loc);
+    replacement->clear_path();
+    for (std::vector<int>::iterator rit = entry->second.begin();
+         rit != entry->second.end(); rit++) {
+      replacement->add_path(*rit);
+    }
+  }
+
+  // if we made a changed copy, put it in place
+  if (copying) {
+    *locs = new_locs;
+  }
 }
 
 void DescriptorBuilder::OptionInterpreter::AddWithoutInterpreting(
@@ -6854,7 +7020,7 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
   }
 
   const Descriptor* type = option_field->message_type();
-  google::protobuf::scoped_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
+  std::unique_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
   GOOGLE_CHECK(dynamic.get() != NULL)
       << "Could not create an instance of " << option_field->DebugString();
 

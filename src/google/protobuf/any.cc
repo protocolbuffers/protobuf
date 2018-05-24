@@ -32,6 +32,7 @@
 
 #include <google/protobuf/generated_message_util.h>
 
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -84,13 +85,21 @@ bool AnyMetadata::InternalIs(const Descriptor* descriptor) const {
   return full_name == descriptor->full_name();
 }
 
-bool ParseAnyTypeUrl(const string& type_url, string* full_type_name) {
+bool ParseAnyTypeUrl(const string& type_url, string* url_prefix,
+                     string* full_type_name) {
   size_t pos = type_url.find_last_of("/");
   if (pos == string::npos || pos + 1 == type_url.size()) {
     return false;
   }
+  if (url_prefix) {
+    *url_prefix = type_url.substr(0, pos + 1);
+  }
   *full_type_name = type_url.substr(pos + 1);
   return true;
+}
+
+bool ParseAnyTypeUrl(const string& type_url, string* full_type_name) {
+  return ParseAnyTypeUrl(type_url, NULL, full_type_name);
 }
 
 

@@ -159,6 +159,8 @@ class Descriptor
             ->optional('swift_prefix', \Google\Protobuf\Internal\GPBType::STRING, 39)
             ->optional('php_class_prefix', \Google\Protobuf\Internal\GPBType::STRING, 40)
             ->optional('php_namespace', \Google\Protobuf\Internal\GPBType::STRING, 41)
+            ->optional('php_metadata_namespace', \Google\Protobuf\Internal\GPBType::STRING, 44)
+            ->optional('ruby_package', \Google\Protobuf\Internal\GPBType::STRING, 45)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 

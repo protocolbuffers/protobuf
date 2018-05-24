@@ -216,7 +216,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     ProtoStreamObjectWriter* parent_;
 
     // The nested object writer, used to write events.
-    google::protobuf::scoped_ptr<ProtoStreamObjectWriter> ow_;
+    std::unique_ptr<ProtoStreamObjectWriter> ow_;
 
     // The type_url_ that this Any represents.
     string type_url_;
@@ -292,14 +292,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     ProtoStreamObjectWriter* ow_;
 
     // A writer for Any objects, handles all Any-related nonsense.
-    google::protobuf::scoped_ptr<AnyWriter> any_;
+    std::unique_ptr<AnyWriter> any_;
 
     // The type of this element, see enum for permissible types.
     ItemType item_type_;
 
     // Set of map keys already seen for the type_. Used to validate incoming
     // messages so no map key appears more than once.
-    google::protobuf::scoped_ptr<hash_set<string> > map_keys_;
+    std::unique_ptr<hash_set<string> > map_keys_;
 
     // Conveys whether this Item is a placeholder or not. Placeholder items are
     // pushed to stack to account for special types.
@@ -392,7 +392,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   const google::protobuf::Type& master_type_;
 
   // The current element, variable for internal state processing.
-  google::protobuf::scoped_ptr<Item> current_;
+  std::unique_ptr<Item> current_;
 
   // Reference to the options that control this class's behavior.
   const ProtoStreamObjectWriter::Options options_;

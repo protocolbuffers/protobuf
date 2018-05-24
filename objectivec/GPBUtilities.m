@@ -291,7 +291,7 @@ BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber) {
   } else {
     NSCAssert(idx != GPBNoHasBit, @"Invalid has bit.");
     uint32_t byteIndex = idx / 32;
-    uint32_t bitMask = (1 << (idx % 32));
+    uint32_t bitMask = (1U << (idx % 32));
     BOOL hasIvar =
         (self->messageStorage_->_has_storage_[byteIndex] & bitMask) ? YES : NO;
     return hasIvar;
@@ -315,7 +315,7 @@ void GPBSetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber,
     NSCAssert(idx != GPBNoHasBit, @"Invalid has bit.");
     uint32_t *has_storage = self->messageStorage_->_has_storage_;
     uint32_t byte = idx / 32;
-    uint32_t bitMask = (1 << (idx % 32));
+    uint32_t bitMask = (1U << (idx % 32));
     if (value) {
       has_storage[byte] |= bitMask;
     } else {
@@ -626,34 +626,6 @@ id GPBGetObjectIvarWithFieldNoAutocreate(GPBMessage *self,
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   id *typePtr = (id *)&storage[field->description_->offset];
   return *typePtr;
-}
-
-id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
-  NSCAssert(!GPBFieldIsMapOrArray(field), @"Shouldn't get here");
-  if (GPBGetHasIvarField(self, field)) {
-    uint8_t *storage = (uint8_t *)self->messageStorage_;
-    id *typePtr = (id *)&storage[field->description_->offset];
-    return *typePtr;
-  }
-  // Not set...
-
-  // Non messages (string/data), get their default.
-  if (!GPBFieldDataTypeIsMessage(field)) {
-    return field.defaultValue.valueMessage;
-  }
-
-  GPBPrepareReadOnlySemaphore(self);
-  dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
-  GPBMessage *result = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-  if (!result) {
-    // For non repeated messages, create the object, set it and return it.
-    // This object will not initially be visible via GPBGetHasIvar, so
-    // we save its creator so it can become visible if it's mutated later.
-    result = GPBCreateMessageWithAutocreator(field.msgClass, self, field);
-    GPBSetAutocreatedRetainedObjectIvarWithField(self, field, result);
-  }
-  dispatch_semaphore_signal(self->readOnlySemaphore_);
-  return result;
 }
 
 // Only exists for public api, no core code should use this.

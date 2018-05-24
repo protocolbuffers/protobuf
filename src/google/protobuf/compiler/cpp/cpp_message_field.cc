@@ -70,17 +70,16 @@ string ReinterpretCast(const string& type, const string& expression,
 }
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
-                         std::map<string, string>* variables,
-                         const Options& options) {
+                         const Options& options, bool implicit_weak,
+                         std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = FieldMessageTypeName(descriptor);
-  (*variables)["casted_member"] =
-      ReinterpretCast((*variables)["type"] + "*", (*variables)["name"] + "_",
-                      IsImplicitWeakField(descriptor, options));
+  (*variables)["casted_member"] = ReinterpretCast(
+      (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
   (*variables)["type_default_instance"] =
       DefaultInstanceName(descriptor->message_type());
   (*variables)["type_reference_function"] =
-      IsImplicitWeakField(descriptor, options)
+      implicit_weak
           ? ("  " + ReferenceFunctionName(descriptor->message_type()) + "();\n")
           : "";
   (*variables)["stream_writer"] =
@@ -94,8 +93,6 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       SafeFunctionName(descriptor->containing_type(),
                        descriptor, "release_");
   (*variables)["full_name"] = descriptor->full_name();
-  (*variables)["create_func"] =
-      MessageCreateFunction(descriptor->message_type());
 }
 
 }  // namespace
@@ -103,11 +100,13 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 // ===================================================================
 
 MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
-                                             const Options& options)
+                                             const Options& options,
+                                             SCCAnalyzer* scc_analyzer)
     : FieldGenerator(options),
       descriptor_(descriptor),
-      implicit_weak_field_(IsImplicitWeakField(descriptor, options)) {
-  SetMessageVariables(descriptor, &variables_, options);
+      implicit_weak_field_(
+          IsImplicitWeakField(descriptor, options, scc_analyzer)) {
+  SetMessageVariables(descriptor, options, implicit_weak_field_, &variables_);
 }
 
 MessageFieldGenerator::~MessageFieldGenerator() {}
@@ -115,7 +114,7 @@ MessageFieldGenerator::~MessageFieldGenerator() {}
 void MessageFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
   if (implicit_weak_field_) {
-    printer->Print(variables_, "google::protobuf::MessageLite* $name$_;\n");
+    printer->Print(variables_, "::google::protobuf::MessageLite* $name$_;\n");
   } else {
     printer->Print(variables_, "$type$* $name$_;\n");
   }
@@ -129,8 +128,16 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
     // the field without creating a strong dependency on the message type.
     printer->Print(variables_,
        "private:\n"
-       "const google::protobuf::MessageLite& _internal_$name$() const;\n"
-       "google::protobuf::MessageLite* _internal_mutable_$name$();\n"
+       "const ::google::protobuf::MessageLite& _internal_$name$() const;\n"
+       "::google::protobuf::MessageLite* _internal_mutable_$name$();\n"
+       "public:\n");
+  } else {
+    // This inline accessor directly returns member field and is used in
+    // Serialize such that AFDO profile correctly captures access information to
+    // message fields under serialize.
+    printer->Print(variables_,
+       "private:\n"
+       "const $type$& _internal_$name$() const;\n"
        "public:\n");
   }
   printer->Print(variables_,
@@ -162,22 +169,22 @@ void MessageFieldGenerator::GenerateNonInlineAccessorDefinitions(
     io::Printer* printer) const {
   if (implicit_weak_field_) {
     printer->Print(variables_,
-      "const google::protobuf::MessageLite& $classname$::_internal_$name$() const {\n"
+      "const ::google::protobuf::MessageLite& $classname$::_internal_$name$() const {\n"
       "  if ($name$_ != NULL) {\n"
       "    return *$name$_;\n"
       "  } else if (&$type_default_instance$ != NULL) {\n"
-      "    return *reinterpret_cast<const google::protobuf::MessageLite*>(\n"
+      "    return *reinterpret_cast<const ::google::protobuf::MessageLite*>(\n"
       "        &$type_default_instance$);\n"
       "  } else {\n"
-      "    return *reinterpret_cast<const google::protobuf::MessageLite*>(\n"
-      "        &::google::protobuf::internal::implicit_weak_message_default_instance);\n"
+      "    return "
+      "*::google::protobuf::internal::ImplicitWeakMessage::default_instance();\n"
       "  }\n"
       "}\n");
   }
   if (SupportsArenas(descriptor_)) {
     if (implicit_weak_field_) {
       printer->Print(variables_,
-        "google::protobuf::MessageLite* $classname$::_internal_mutable_$name$() {\n"
+        "::google::protobuf::MessageLite* $classname$::_internal_mutable_$name$() {\n"
         "  $set_hasbit$\n"
         "  if ($name$_ == NULL) {\n"
         "    if (&$type_default_instance$ == NULL) {\n"
@@ -185,7 +192,7 @@ void MessageFieldGenerator::GenerateNonInlineAccessorDefinitions(
         "          ::google::protobuf::internal::ImplicitWeakMessage>(\n"
         "              GetArenaNoVirtual());\n"
         "    } else {\n"
-        "      $name$_ = reinterpret_cast<const google::protobuf::MessageLite*>(\n"
+        "      $name$_ = reinterpret_cast<const ::google::protobuf::MessageLite*>(\n"
         "          &$type_default_instance$)->New(GetArenaNoVirtual());\n"
         "    }\n"
         "  }\n"
@@ -212,13 +219,13 @@ void MessageFieldGenerator::GenerateNonInlineAccessorDefinitions(
       "}\n");
   } else if (implicit_weak_field_) {
     printer->Print(variables_,
-        "google::protobuf::MessageLite* $classname$::_internal_mutable_$name$() {\n"
+        "::google::protobuf::MessageLite* $classname$::_internal_mutable_$name$() {\n"
         "  $set_hasbit$\n"
         "  if ($name$_ == NULL) {\n"
         "    if (&$type_default_instance$ == NULL) {\n"
         "      $name$_ = new ::google::protobuf::internal::ImplicitWeakMessage;\n"
         "    } else {\n"
-        "      $name$_ = reinterpret_cast<const google::protobuf::MessageLite*>(\n"
+        "      $name$_ = reinterpret_cast<const ::google::protobuf::MessageLite*>(\n"
         "          &$type_default_instance$)->New();\n"
         "    }\n"
         "  }\n"
@@ -229,9 +236,14 @@ void MessageFieldGenerator::GenerateNonInlineAccessorDefinitions(
 
 void MessageFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  if (!implicit_weak_field_) {
+    printer->Print(variables_,
+      "inline const $type$& $classname$::_internal_$name$() const {\n"
+      "  return *$field_member$;\n"
+      "}\n");
+  }
   printer->Print(variables_,
     "inline const $type$& $classname$::$name$() const {\n"
-    "$type_reference_function$"
     "  const $type$* p = $casted_member$;\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return p != NULL ? *p : *reinterpret_cast<const $type$*>(\n"
@@ -247,7 +259,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   if (SupportsArenas(descriptor_)) {
     printer->Print(variables_,
       "  if (GetArenaNoVirtual() != NULL) {\n"
-      "    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);\n"
+      "    temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);\n"
       "  }\n");
   }
   printer->Print(variables_,
@@ -269,16 +281,15 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
 
   printer->Print(variables_,
     "inline $type$* $classname$::mutable_$name$() {\n"
-    "$type_reference_function$"
     "  $set_hasbit$\n"
-    "  if ($name$_ == NULL) {\n");
+    "  if ($name$_ == NULL) {\n"
+    "    auto* p = CreateMaybeMessage<$type$>(GetArenaNoVirtual());\n");
   if (implicit_weak_field_) {
     printer->Print(variables_,
-      "    _internal_mutable_$name$();\n");
+      "    $name$_ = reinterpret_cast<::google::protobuf::MessageLite*>(p);\n");
   } else {
     printer->Print(variables_,
-      "    $name$_ = ::google::protobuf::Arena::$create_func$< $type$ >(\n"
-      "        GetArenaNoVirtual());\n");
+      "    $name$_ = p;\n");
   }
   printer->Print(variables_,
     "  }\n"
@@ -309,7 +320,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     // isn't defined in this file.
     printer->Print(variables_,
       "    ::google::protobuf::Arena* submessage_arena =\n"
-      "      reinterpret_cast< ::google::protobuf::MessageLite*>($name$)->GetArena();\n");
+      "      reinterpret_cast<::google::protobuf::MessageLite*>($name$)->GetArena();\n");
   } else if (!SupportsArenas(descriptor_->message_type())) {
     printer->Print(variables_,
       "    ::google::protobuf::Arena* submessage_arena = NULL;\n");
@@ -436,7 +447,7 @@ void MessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
     "::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
-    "  $number$, *$field_member$, output);\n");
+    "  $number$, this->_internal_$name$(), output);\n");
 }
 
 void MessageFieldGenerator::
@@ -444,7 +455,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
     "target = ::google::protobuf::internal::WireFormatLite::\n"
     "  InternalWrite$declared_type$ToArray(\n"
-    "    $number$, *$field_member$, deterministic, target);\n");
+    "    $number$, this->_internal_$name$(), deterministic, target);\n");
 }
 
 void MessageFieldGenerator::
@@ -457,11 +468,10 @@ GenerateByteSize(io::Printer* printer) const {
 
 // ===================================================================
 
-MessageOneofFieldGenerator::
-MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
-                           const Options& options)
-  : MessageFieldGenerator(descriptor, options),
-    dependent_base_(options.proto_h) {
+MessageOneofFieldGenerator::MessageOneofFieldGenerator(
+    const FieldDescriptor* descriptor, const Options& options,
+    SCCAnalyzer* scc_analyzer)
+    : MessageFieldGenerator(descriptor, options, scc_analyzer) {
   SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
@@ -480,7 +490,7 @@ void MessageOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
     // isn't defined in this file.
     printer->Print(variables_,
       "    ::google::protobuf::Arena* submessage_arena =\n"
-      "      reinterpret_cast< ::google::protobuf::MessageLite*>($name$)->GetArena();\n");
+      "      reinterpret_cast<::google::protobuf::MessageLite*>($name$)->GetArena();\n");
   } else if (!SupportsArenas(descriptor_->message_type())) {
     printer->Print(variables_,
       "    ::google::protobuf::Arena* submessage_arena = NULL;\n");
@@ -503,6 +513,12 @@ void MessageOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
 
 void MessageOneofFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  if (!implicit_weak_field_) {
+    printer->Print(variables_,
+      "inline const $type$& $classname$::_internal_$name$() const {\n"
+      "  return *$field_member$;\n"
+      "}\n");
+  }
   printer->Print(variables_,
     "inline $type$* $classname$::$release_name$() {\n"
     "  // @@protoc_insertion_point(field_release:$full_name$)\n"
@@ -512,7 +528,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
   if (SupportsArenas(descriptor_)) {
     printer->Print(variables_,
       "    if (GetArenaNoVirtual() != NULL) {\n"
-      "      temp = ::google::protobuf::internal::DuplicateIfNonNull(temp, NULL);\n"
+      "      temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);\n"
       "    }\n");
   }
   printer->Print(variables_,
@@ -565,7 +581,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "  if (!has_$name$()) {\n"
     "    clear_$oneof_name$();\n"
     "    set_has_$name$();\n"
-    "    $field_member$ = ::google::protobuf::Arena::$create_func$< $type$ >(\n"
+    "    $field_member$ = CreateMaybeMessage< $type$ >(\n"
     "        GetArenaNoVirtual());\n"
     "  }\n"
     "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
@@ -611,12 +627,13 @@ GenerateConstructorCode(io::Printer* printer) const {
 // ===================================================================
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
-    const FieldDescriptor* descriptor, const Options& options)
+    const FieldDescriptor* descriptor, const Options& options,
+    SCCAnalyzer* scc_analyzer)
     : FieldGenerator(options),
       descriptor_(descriptor),
-      dependent_field_(options.proto_h && IsFieldDependent(descriptor)),
-      implicit_weak_field_(IsImplicitWeakField(descriptor, options)) {
-  SetMessageVariables(descriptor, &variables_, options);
+      implicit_weak_field_(
+          IsImplicitWeakField(descriptor, options, scc_analyzer)) {
+  SetMessageVariables(descriptor, options, implicit_weak_field_, &variables_);
 }
 
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
@@ -625,19 +642,6 @@ void RepeatedMessageFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "::google::protobuf::RepeatedPtrField< $type$ > $name$_;\n");
-}
-
-void RepeatedMessageFieldGenerator::
-InternalGenerateTypeDependentAccessorDeclarations(io::Printer* printer) const {
-  printer->Print(variables_, "$deprecated_attr$$type$* ${$add_$name$$}$();\n");
-  printer->Annotate("{", "}", descriptor_);
-}
-
-void RepeatedMessageFieldGenerator::
-GenerateDependentAccessorDeclarations(io::Printer* printer) const {
-  if (dependent_field_) {
-    InternalGenerateTypeDependentAccessorDeclarations(printer);
-  }
 }
 
 void RepeatedMessageFieldGenerator::
@@ -653,36 +657,12 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecated_attr$const $type$& $name$(int index) const;\n");
   printer->Annotate("name", descriptor_);
-  if (!dependent_field_) {
-    InternalGenerateTypeDependentAccessorDeclarations(printer);
-  }
+  printer->Print(variables_, "$deprecated_attr$$type$* ${$add_$name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   printer->Print(variables_,
     "$deprecated_attr$const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
     "    $name$() const;\n");
   printer->Annotate("name", descriptor_);
-}
-
-void RepeatedMessageFieldGenerator::
-GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
-  if (!dependent_field_) {
-    return;
-  }
-  std::map<string, string> variables(variables_);
-  // For the CRTP base class, all mutation methods are dependent, and so
-  // they must be in the header.
-  variables["dependent_classname"] =
-      DependentBaseClassTemplateName(descriptor_->containing_type()) + "<T>";
-  variables["this_message"] = DependentBaseDownCast();
-  variables["this_const_message"] = DependentBaseConstDownCast();
-
-  // Generate per-element accessors:
-  printer->Print(variables,
-    "template <class T>\n"
-    "inline $type$* $dependent_classname$::add_$name$() {\n"
-    "  // @@protoc_insertion_point(field_add:$full_name$)\n"
-    "$type_reference_function$"
-    "  return $this_message$$name$_.Add();\n"
-    "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
@@ -705,7 +685,6 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     printer->Print(variables_,
       "inline const $type$& $classname$::$name$(int index) const {\n"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-      "$type_reference_function$"
       "  return $name$_.InternalCheckedGet(index,\n"
       "      *reinterpret_cast<const $type$*>(&$type_default_instance$));\n"
       "}\n");
@@ -718,14 +697,11 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "}\n");
   }
 
-  if (!dependent_field_) {
-    printer->Print(variables_,
-      "inline $type$* $classname$::add_$name$() {\n"
-      "  // @@protoc_insertion_point(field_add:$full_name$)\n"
-      "$type_reference_function$"
-      "  return $name$_.Add();\n"
-      "}\n");
-  }
+  printer->Print(variables_,
+    "inline $type$* $classname$::add_$name$() {\n"
+    "  // @@protoc_insertion_point(field_add:$full_name$)\n"
+    "  return $name$_.Add();\n"
+    "}\n");
 
   printer->Print(variables_,
     "inline const ::google::protobuf::RepeatedPtrField< $type$ >&\n"

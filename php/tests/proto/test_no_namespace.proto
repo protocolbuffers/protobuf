@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option php_metadata_namespace = "\\";
+
 message NoNamespaceMessage {
   int32 a = 1;
 

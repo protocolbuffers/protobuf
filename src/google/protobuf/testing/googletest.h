@@ -83,10 +83,10 @@ class ScopedMemoryLog {
   virtual ~ScopedMemoryLog();
 
   // Fetches all messages with the given severity level.
-  const vector<string>& GetMessages(LogLevel error);
+  const std::vector<string>& GetMessages(LogLevel error);
 
  private:
-  std::map<LogLevel, vector<string> > messages_;
+  std::map<LogLevel, std::vector<string> > messages_;
   LogHandler* old_handler_;
 
   static void HandleLog(LogLevel level, const char* filename, int line,

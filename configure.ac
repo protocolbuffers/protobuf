@@ -17,7 +17,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.5.1],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.5.2],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -184,14 +184,13 @@ AS_IF([test "$with_protoc" != "no"], [
 ])
 AM_CONDITIONAL([USE_EXTERNAL_PROTOC], [test "$with_protoc" != "no"])
 
-ACX_PTHREAD
-AM_CONDITIONAL([HAVE_PTHREAD], [test "x$acx_pthread_ok" = "xyes"])
-
+AX_PTHREAD
+AM_CONDITIONAL([HAVE_PTHREAD], [test "x$ax_pthread_ok" = "xyes"])
 # We still keep this for improving pbconfig.h for unsupported platforms.
 AC_CXX_STL_HASH
 
 case "$target_os" in
-  mingw* | cygwin* | win* | aix*)
+  mingw* | cygwin* | win* | aix* | *android* )
     ;;
   *)
     # Need to link against rt on Solaris
@@ -215,7 +214,7 @@ AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
 #   too.
 export CFLAGS
 export CXXFLAGS
-AC_CONFIG_SUBDIRS([gmock])
+AC_CONFIG_SUBDIRS([third_party/googletest])
 
 AC_CONFIG_FILES([Makefile src/Makefile benchmarks/Makefile conformance/Makefile protobuf.pc protobuf-lite.pc])
 AC_OUTPUT

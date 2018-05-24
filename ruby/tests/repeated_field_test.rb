@@ -369,6 +369,15 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
   end
 
+  def test_delete_if
+    m = TestMessage.new
+    reference_arr = %w(foo bar baz)
+    m.repeated_string += reference_arr.clone
+    check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
+      arr.delete_if { |v| v == "bar" }
+    end
+  end
+
   def test_fill
     m = TestMessage.new
     reference_arr = %w(foo bar baz)

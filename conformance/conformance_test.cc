@@ -754,7 +754,7 @@ void ConformanceTestSuite::TestValidDataForType(
 }
 
 void ConformanceTestSuite::SetFailureList(const string& filename,
-                                          const vector<string>& failure_list) {
+                                          const std::vector<string>& failure_list) {
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
   std::copy(failure_list.begin(), failure_list.end(),
@@ -1910,6 +1910,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   {
     TestAllTypesProto3 messageProto3;
     TestAllTypesProto2 messageProto2;
+    //TODO(yilunchong): update this behavior when unknown field's behavior
+    // changed in open source. Also delete
+    // Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
+    // from failure list of python_cpp python java
     TestUnknownMessage(messageProto3, true);
     TestUnknownMessage(messageProto2, false);
   }
@@ -2316,6 +2320,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
             }
             values: {
               string_value: "hello"
+            }
+          }
+        }
+      )");
+  RunValidJsonTest(
+      "ValueAcceptListWithNull", REQUIRED,
+      R"({"optionalValue": ["x", null, "y"]})",
+      R"(
+        optional_value: {
+          list_value: {
+            values: {
+              string_value: "x"
+            }
+            values: {
+              null_value: NULL_VALUE
+            }
+            values: {
+              string_value: "y"
             }
           }
         }

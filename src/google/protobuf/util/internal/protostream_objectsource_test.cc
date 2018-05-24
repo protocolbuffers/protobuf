@@ -31,9 +31,6 @@
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <sstream>
 
 #include <google/protobuf/stubs/casts.h>
@@ -122,7 +119,7 @@ class ProtostreamObjectSourceTest
     ArrayInputStream arr_stream(proto.data(), proto.size());
     CodedInputStream in_stream(&arr_stream);
 
-    google::protobuf::scoped_ptr<ProtoStreamObjectSource> os(
+    std::unique_ptr<ProtoStreamObjectSource> os(
         helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor)));
     if (use_lower_camel_for_enums_) os->set_use_lower_camel_for_enums(true);
     if (use_ints_for_enums_) os->set_use_ints_for_enums(true);
@@ -490,13 +487,33 @@ TEST_P(ProtostreamObjectSourceTest,
   DoTest(book, Book::descriptor());
 }
 
-TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputTest) {
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputMacroCase) {
   Book book;
   book.set_type(Book::ACTION_AND_ADVENTURE);
 
   UseLowerCamelForEnums();
 
   ow_.StartObject("")->RenderString("type", "actionAndAdventure")->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputSnakeCase) {
+  Book book;
+  book.set_type(Book::arts_and_photography);
+
+  UseLowerCamelForEnums();
+
+  ow_.StartObject("")->RenderString("type", "artsAndPhotography")->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputWithNumber) {
+  Book book;
+  book.set_type(Book::I18N_Tech);
+
+  UseLowerCamelForEnums();
+
+  ow_.StartObject("")->RenderString("type", "i18nTech")->EndObject();
   DoTest(book, Book::descriptor());
 }
 

@@ -63,11 +63,14 @@ class StringFieldGenerator : public FieldGenerator {
   void GenerateConstructorCode(io::Printer* printer) const;
   void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateDestructorCode(io::Printer* printer) const;
+  bool GenerateArenaDestructorCode(io::Printer* printer) const;
   void GenerateDefaultInstanceAllocator(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
+  uint32 CalculateFieldTag() const;
+  bool IsInlined() const { return inlined_; }
 
   bool MergeFromCodedStreamNeedsArena() const;
 
@@ -75,6 +78,7 @@ class StringFieldGenerator : public FieldGenerator {
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;
   const bool lite_;
+  bool inlined_;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringFieldGenerator);
@@ -99,7 +103,6 @@ class StringOneofFieldGenerator : public StringFieldGenerator {
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
 
  private:
-  const bool dependent_field_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOneofFieldGenerator);
 };
 
