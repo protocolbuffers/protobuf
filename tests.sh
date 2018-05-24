@@ -107,7 +107,7 @@ build_csharp() {
   # Check that the protos haven't broken C# codegen.
   # TODO(jonskeet): Fail if regenerating creates any changes.
   csharp/generate_protos.sh
-  
+
   csharp/buildall.sh
   cd conformance && make test_csharp && cd ..
 
@@ -352,6 +352,7 @@ generate_php_test_proto() {
   rm -rf generated
   mkdir generated
   ../../src/protoc --php_out=generated         \
+    proto/empty/echo.proto                     \
     proto/test.proto                           \
     proto/test_include.proto                   \
     proto/test_no_namespace.proto              \

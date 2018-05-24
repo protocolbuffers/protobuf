@@ -282,15 +282,118 @@ void build_class_from_descriptor(
 // PHP Methods
 // -----------------------------------------------------------------------------
 
+void Message_construct(zval* msg, zval* array_wrapper) {
+  zend_class_entry* ce = Z_OBJCE_P(msg);
+  MessageHeader* intern = NULL;
+  if (EXPECTED(class_added(ce))) {
+    intern = UNBOX(MessageHeader, msg);
+    custom_data_init(ce, intern PHP_PROTO_TSRMLS_CC);
+  }
+
+  if (array_wrapper == NULL) {
+    return;
+  }
+
+  HashTable* array = Z_ARRVAL_P(array_wrapper);
+  HashPosition pointer;
+  zval key;
+  void* value;
+  const upb_fielddef* field;
+
+  for (zend_hash_internal_pointer_reset_ex(array, &pointer);
+       php_proto_zend_hash_get_current_data_ex(array, (void**)&value,
+                                               &pointer) == SUCCESS;
+       zend_hash_move_forward_ex(array, &pointer)) {
+    zend_hash_get_current_key_zval_ex(array, &key, &pointer);
+    field = upb_msgdef_ntofz(intern->descriptor->msgdef, Z_STRVAL_P(&key));
+    if (field == NULL) {
+      zend_error(E_USER_ERROR, "Unknown field: %s", Z_STRVAL_P(&key));
+    }
+    if (upb_fielddef_ismap(field)) {
+      PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));
+      zval* submap = message_get_property_internal(msg, &key TSRMLS_CC);
+      PHP_PROTO_FAKE_SCOPE_END;
+      HashTable* subtable = HASH_OF(
+          CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
+      HashPosition subpointer;
+      zval subkey;
+      void* memory;
+      for (zend_hash_internal_pointer_reset_ex(subtable, &subpointer);
+           php_proto_zend_hash_get_current_data_ex(subtable, (void**)&memory,
+                                                   &subpointer) == SUCCESS;
+           zend_hash_move_forward_ex(subtable, &subpointer)) {
+        zend_hash_get_current_key_zval_ex(subtable, &subkey, &subpointer);
+        map_field_handlers->write_dimension(
+            submap, &subkey,
+            CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+        zval_dtor(&subkey);
+      }
+    } else if (upb_fielddef_isseq(field)) {
+      PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));
+      zval* subarray = message_get_property_internal(msg, &key TSRMLS_CC);
+      PHP_PROTO_FAKE_SCOPE_END;
+      HashTable* subtable = HASH_OF(
+          CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
+      HashPosition subpointer;
+      void* memory;
+      for (zend_hash_internal_pointer_reset_ex(subtable, &subpointer);
+           php_proto_zend_hash_get_current_data_ex(subtable, (void**)&memory,
+                                                   &subpointer) == SUCCESS;
+           zend_hash_move_forward_ex(subtable, &subpointer)) {
+        repeated_field_handlers->write_dimension(
+            subarray, NULL,
+            CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
+      }
+    } else if (upb_fielddef_issubmsg(field)) {
+      const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
+      PHP_PROTO_HASHTABLE_VALUE desc_php = get_def_obj(submsgdef);
+      Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
+      zend_property_info* property_info;
+      PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));
+#if PHP_MAJOR_VERSION < 7
+      property_info =
+          zend_get_property_info(Z_OBJCE_P(msg), &key, true TSRMLS_CC);
+#else
+      property_info =
+          zend_get_property_info(Z_OBJCE_P(msg), Z_STR_P(&key), true);
+#endif
+      PHP_PROTO_FAKE_SCOPE_END;
+      CACHED_VALUE* cached = OBJ_PROP(Z_OBJ_P(msg), property_info->offset);
+#if PHP_MAJOR_VERSION < 7
+      SEPARATE_ZVAL_IF_NOT_REF(cached);
+#endif
+      zval* submsg = CACHED_PTR_TO_ZVAL_PTR(cached);
+      ZVAL_OBJ(submsg, desc->klass->create_object(desc->klass TSRMLS_CC));
+      Message_construct(submsg, NULL);
+      MessageHeader* from = UNBOX(MessageHeader,
+                                  CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
+      MessageHeader* to = UNBOX(MessageHeader, submsg);
+      if(from->descriptor != to->descriptor) {
+        zend_error(E_USER_ERROR, "Cannot merge messages with different class.");
+        return;
+      }
+
+      layout_merge(from->descriptor->layout, from, to TSRMLS_CC);
+    } else {
+      message_set_property_internal(msg, &key,
+          CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value) TSRMLS_CC);
+    }
+    zval_dtor(&key);
+  }
+}
+
 // At the first time the message is created, the class entry hasn't been
 // modified. As a result, the first created instance will be a normal zend
 // object. Here, we manually modify it to our message in such a case.
 PHP_METHOD(Message, __construct) {
-  zend_class_entry* ce = Z_OBJCE_P(getThis());
-  if (EXPECTED(class_added(ce))) {
-    MessageHeader* intern = UNBOX(MessageHeader, getThis());
-    custom_data_init(ce, intern PHP_PROTO_TSRMLS_CC);
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
   }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_METHOD(Message, clear) {
@@ -755,7 +858,7 @@ static zend_function_entry field_cardinality_methods[] = {
 zend_class_entry* field_cardinality_type;
 
 // Init class entry.
-PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field_Cardinality",
+PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field\\Cardinality",
                                 Field_Cardinality, field_cardinality)
   zend_declare_class_constant_long(field_cardinality_type,
                                    "CARDINALITY_UNKNOWN", 19, 0 TSRMLS_CC);
@@ -765,6 +868,8 @@ PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field_Cardinality",
                                    "CARDINALITY_REQUIRED", 20, 2 TSRMLS_CC);
   zend_declare_class_constant_long(field_cardinality_type,
                                    "CARDINALITY_REPEATED", 20, 3 TSRMLS_CC);
+  const char *alias = "Google\\Protobuf\\Field_Cardinality";
+  zend_register_class_alias_ex(alias, strlen(alias), field_cardinality_type TSRMLS_CC);
 PHP_PROTO_INIT_ENUMCLASS_END
 
 // -----------------------------------------------------------------------------
@@ -778,7 +883,7 @@ static zend_function_entry field_kind_methods[] = {
 zend_class_entry* field_kind_type;
 
 // Init class entry.
-PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field_Kind",
+PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field\\Kind",
                                 Field_Kind, field_kind)
   zend_declare_class_constant_long(field_kind_type,
                                    "TYPE_UNKNOWN", 12, 0 TSRMLS_CC);
@@ -818,6 +923,8 @@ PHP_PROTO_INIT_ENUMCLASS_START("Google\\Protobuf\\Field_Kind",
                                    "TYPE_SINT32", 11, 17 TSRMLS_CC);
   zend_declare_class_constant_long(field_kind_type,
                                    "TYPE_SINT64", 11, 18 TSRMLS_CC);
+  const char *alias = "Google\\Protobuf\\Field_Kind";
+  zend_register_class_alias_ex(alias, strlen(alias), field_kind_type TSRMLS_CC);
 PHP_PROTO_INIT_ENUMCLASS_END
 
 // -----------------------------------------------------------------------------
