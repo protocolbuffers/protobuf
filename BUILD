@@ -54,7 +54,7 @@ config_setting(
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
-    ":msvc": [],
+    ":msvc": [
         # Linking to setargv.obj makes the default command line argument
         # parser expand wildcards, so the main method's argv will contain the
         # expanded list instead of the wildcards.
