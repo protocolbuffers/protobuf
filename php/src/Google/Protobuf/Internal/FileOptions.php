@@ -200,9 +200,9 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     private $uninterpreted_option;
     private $has_uninterpreted_option = false;
 
-    public function __construct() {
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

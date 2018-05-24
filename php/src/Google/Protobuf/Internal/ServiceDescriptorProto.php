@@ -33,9 +33,9 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
     private $options = null;
     private $has_options = false;
 
-    public function __construct() {
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

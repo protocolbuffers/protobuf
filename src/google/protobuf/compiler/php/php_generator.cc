@@ -1110,7 +1110,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   printer.Print("\n");
 
   printer.Print(
-      "public function __construct() {\n");
+      "public function __construct($data = NULL) {\n");
   Indent(&printer);
 
   std::string metadata_filename =
@@ -1118,7 +1118,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   std::string metadata_fullname = FilenameToClassname(metadata_filename);
   printer.Print(
       "\\^fullname^::initOnce();\n"
-      "parent::__construct();\n",
+      "parent::__construct($data);\n",
       "fullname", metadata_fullname);
 
   Outdent(&printer);

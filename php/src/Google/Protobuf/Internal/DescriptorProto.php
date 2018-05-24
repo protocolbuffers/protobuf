@@ -71,9 +71,9 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
     private $reserved_name;
     private $has_reserved_name = false;
 
-    public function __construct() {
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**
