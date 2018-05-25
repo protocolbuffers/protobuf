@@ -162,6 +162,10 @@ use Google\Protobuf\Internal\GPBUtil;
  *     }
  * Note that oneof type names ("test_oneof" in this case) cannot be used in
  * paths.
+ * ## Field Mask Verification
+ * The implementation of any API method which has a FieldMask type field in the
+ * request should verify the included field paths, and return an
+ * `INVALID_ARGUMENT` error if any path is duplicated or unmappable.
  *
  * Generated from protobuf message <code>google.protobuf.FieldMask</code>
  */
@@ -174,9 +178,19 @@ class FieldMask extends \Google\Protobuf\Internal\Message
      */
     private $paths;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $paths
+     *           The set of field mask paths.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\FieldMask::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

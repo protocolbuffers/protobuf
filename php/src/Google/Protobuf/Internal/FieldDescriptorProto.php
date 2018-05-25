@@ -94,9 +94,47 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     private $options = null;
     private $has_options = false;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type string $name
+     *     @type int $number
+     *     @type int $label
+     *     @type int $type
+     *           If type_name is set, this need not be set.  If both this and type_name
+     *           are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
+     *     @type string $type_name
+     *           For message and enum types, this is the name of the type.  If the name
+     *           starts with a '.', it is fully-qualified.  Otherwise, C++-like scoping
+     *           rules are used to find the type (i.e. first the nested types within this
+     *           message are searched, then within the parent, on up to the root
+     *           namespace).
+     *     @type string $extendee
+     *           For extensions, this is the name of the type being extended.  It is
+     *           resolved in the same manner as type_name.
+     *     @type string $default_value
+     *           For numeric types, contains the original text representation of the value.
+     *           For booleans, "true" or "false".
+     *           For strings, contains the default text contents (not escaped in any way).
+     *           For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
+     *           TODO(kenton):  Base-64 encode?
+     *     @type int $oneof_index
+     *           If set, gives the index of a oneof in the containing type's oneof_decl
+     *           list.  This field is a member of that oneof.
+     *     @type string $json_name
+     *           JSON name of this field. The value is set by protocol compiler. If the
+     *           user has set a "json_name" option on this field, that option's value
+     *           will be used. Otherwise, it's deduced from the field's name by converting
+     *           it to camelCase.
+     *     @type \Google\Protobuf\Internal\FieldOptions $options
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

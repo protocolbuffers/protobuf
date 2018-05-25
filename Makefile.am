@@ -619,7 +619,9 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Field.php                                   \
   php/src/Google/Protobuf/FieldDescriptor.php                         \
   php/src/Google/Protobuf/FieldMask.php                               \
+  php/src/Google/Protobuf/Field/Cardinality.php                       \
   php/src/Google/Protobuf/Field_Cardinality.php                       \
+  php/src/Google/Protobuf/Field/Kind.php                              \
   php/src/Google/Protobuf/Field_Kind.php                              \
   php/src/Google/Protobuf/FloatValue.php                              \
   php/src/Google/Protobuf/GPBEmpty.php                                \
@@ -630,30 +632,29 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/Descriptor.php                     \
   php/src/Google/Protobuf/Internal/DescriptorPool.php                 \
   php/src/Google/Protobuf/Internal/DescriptorProto.php                \
-  php/src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php \
-  php/src/Google/Protobuf/Internal/DescriptorProto_ReservedRange.php  \
+  php/src/Google/Protobuf/Internal/DescriptorProto/ExtensionRange.php \
+  php/src/Google/Protobuf/Internal/DescriptorProto/ReservedRange.php  \
   php/src/Google/Protobuf/Internal/EnumBuilderContext.php             \
   php/src/Google/Protobuf/Internal/EnumDescriptor.php                 \
   php/src/Google/Protobuf/Internal/EnumDescriptorProto.php            \
-  php/src/Google/Protobuf/Internal/EnumDescriptorProto_EnumReservedRange.php \
+  php/src/Google/Protobuf/Internal/EnumDescriptorProto/EnumReservedRange.php \
   php/src/Google/Protobuf/Internal/EnumOptions.php                    \
   php/src/Google/Protobuf/Internal/EnumValueDescriptorProto.php       \
   php/src/Google/Protobuf/Internal/EnumValueOptions.php               \
   php/src/Google/Protobuf/Internal/ExtensionRangeOptions.php          \
-  php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
   php/src/Google/Protobuf/Internal/FieldDescriptor.php                \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
-  php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
-  php/src/Google/Protobuf/Internal/FieldDescriptorProto_Type.php      \
+  php/src/Google/Protobuf/Internal/FieldDescriptorProto/Label.php     \
+  php/src/Google/Protobuf/Internal/FieldDescriptorProto/Type.php      \
   php/src/Google/Protobuf/Internal/FieldOptions.php                   \
-  php/src/Google/Protobuf/Internal/FieldOptions_CType.php             \
-  php/src/Google/Protobuf/Internal/FieldOptions_JSType.php            \
+  php/src/Google/Protobuf/Internal/FieldOptions/CType.php             \
+  php/src/Google/Protobuf/Internal/FieldOptions/JSType.php            \
   php/src/Google/Protobuf/Internal/FileDescriptor.php                 \
   php/src/Google/Protobuf/Internal/FileDescriptorProto.php            \
   php/src/Google/Protobuf/Internal/FileDescriptorSet.php              \
   php/src/Google/Protobuf/Internal/FileOptions.php                    \
-  php/src/Google/Protobuf/Internal/FileOptions_OptimizeMode.php       \
+  php/src/Google/Protobuf/Internal/FileOptions/OptimizeMode.php       \
   php/src/Google/Protobuf/Internal/GPBDecodeException.php             \
   php/src/Google/Protobuf/Internal/GPBJsonWire.php                    \
   php/src/Google/Protobuf/Internal/GPBLabel.php                       \
@@ -662,7 +663,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/GPBWire.php                        \
   php/src/Google/Protobuf/Internal/GPBWireType.php                    \
   php/src/Google/Protobuf/Internal/GeneratedCodeInfo.php              \
-  php/src/Google/Protobuf/Internal/GeneratedCodeInfo_Annotation.php   \
+  php/src/Google/Protobuf/Internal/GeneratedCodeInfo/Annotation.php   \
   php/src/Google/Protobuf/Internal/GetPublicDescriptorTrait.php       \
   php/src/Google/Protobuf/Internal/HasPublicDescriptorTrait.php       \
   php/src/Google/Protobuf/Internal/MapEntry.php                       \
@@ -673,7 +674,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/MessageOptions.php                 \
   php/src/Google/Protobuf/Internal/MethodDescriptorProto.php          \
   php/src/Google/Protobuf/Internal/MethodOptions.php                  \
-  php/src/Google/Protobuf/Internal/MethodOptions_IdempotencyLevel.php \
+  php/src/Google/Protobuf/Internal/MethodOptions/IdempotencyLevel.php \
   php/src/Google/Protobuf/Internal/OneofDescriptor.php                \
   php/src/Google/Protobuf/Internal/OneofDescriptorProto.php           \
   php/src/Google/Protobuf/Internal/OneofField.php                     \
@@ -684,9 +685,9 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/ServiceDescriptorProto.php         \
   php/src/Google/Protobuf/Internal/ServiceOptions.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo.php                 \
-  php/src/Google/Protobuf/Internal/SourceCodeInfo_Location.php        \
+  php/src/Google/Protobuf/Internal/SourceCodeInfo/Location.php        \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
-  php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
+  php/src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php   \
   php/src/Google/Protobuf/ListValue.php                               \
   php/src/Google/Protobuf/Method.php                                  \
   php/src/Google/Protobuf/Mixin.php                                   \
@@ -716,6 +717,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/map_field_test.php                                        \
   php/tests/memory_leak_test.php                                      \
   php/tests/php_implementation_test.php                               \
+  php/tests/proto/empty/echo.proto                                    \
   php/tests/proto/test.proto                                          \
   php/tests/proto/test_descriptors.proto                              \
   php/tests/proto/test_empty_php_namespace.proto                      \
@@ -904,6 +906,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/stress.rb                                                       \
   ruby/tests/generated_code.proto                                            \
   ruby/tests/test_import.proto                                               \
+  ruby/tests/test_ruby_package.proto                                         \
   ruby/tests/generated_code_test.rb                                          \
   ruby/tests/well_known_types_test.rb                                        \
   ruby/travis-test.sh

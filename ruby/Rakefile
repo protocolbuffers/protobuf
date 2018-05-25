@@ -87,12 +87,17 @@ end
 # Proto for tests.
 genproto_output << "tests/generated_code.rb"
 genproto_output << "tests/test_import.rb"
+genproto_output << "tests/test_ruby_package.rb"
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
   sh "../src/protoc --ruby_out=. tests/generated_code.proto"
 end
 
 file "tests/test_import.rb" => "tests/test_import.proto" do |file_task|
   sh "../src/protoc --ruby_out=. tests/test_import.proto"
+end
+
+file "tests/test_ruby_package.rb" => "tests/test_ruby_package.proto" do |file_task|
+  sh "../src/protoc --ruby_out=. tests/test_ruby_package.proto"
 end
 
 task :genproto => genproto_output
