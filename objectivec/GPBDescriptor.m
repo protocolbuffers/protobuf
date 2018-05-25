@@ -882,8 +882,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)textFormatNameForValue:(int32_t)number {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
-
   // Find the EnumValue descriptor and its index.
   BOOL foundIt = NO;
   uint32_t valueDescriptorIndex;

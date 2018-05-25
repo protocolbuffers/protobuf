@@ -247,7 +247,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  *
  * @param number The raw enum value.
  *
- * @return The text format name for the raw enum value, or nil if not valid.
+ * @return The first text format name which matches the enum value, or nil if not valid.
  **/
 - (nullable NSString *)textFormatNameForValue:(int32_t)number;
 
