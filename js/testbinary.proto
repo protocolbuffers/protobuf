@@ -201,6 +201,38 @@ message TestMapFields {
   map<string, TestMapFields> map_string_testmapfields = 12;
 }
 
+// These proto are 'mock map' entries to test the above map deserializing with
+// undefined keys. Make sure TestMapFieldsOptionalKeys is written to be
+// deserialized by TestMapFields
+message MapEntryOptionalKeysStringKey {
+  optional string key = 1;
+  optional string value = 2;
+}
+
+message MapEntryOptionalKeysInt32Key {
+  optional int32 key = 1;
+  optional string value = 2;
+}
+
+message MapEntryOptionalKeysInt64Key {
+  optional int64 key = 1;
+  optional string value = 2;
+}
+
+message MapEntryOptionalKeysBoolKey {
+  optional bool key = 1;
+  optional string value = 2;
+}
+
+message TestMapFieldsOptionalKeys {
+  optional MapEntryOptionalKeysStringKey map_string_string = 1;
+  optional MapEntryOptionalKeysInt32Key map_int32_string= 8;
+  optional MapEntryOptionalKeysInt64Key map_int64_string = 9;
+  optional MapEntryOptionalKeysBoolKey map_bool_string = 10;
+}
+
+// End mock-map entries
+
 enum MapValueEnum {
   MAP_VALUE_FOO = 0;
   MAP_VALUE_BAR = 1;
