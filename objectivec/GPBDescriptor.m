@@ -830,8 +830,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)enumNameForValue:(int32_t)number {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
-
   for (uint32_t i = 0; i < valueCount_; ++i) {
     if (values_[i] == number) {
       return [self getEnumNameForIndex:i];

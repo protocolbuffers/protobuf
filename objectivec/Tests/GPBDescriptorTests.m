@@ -209,30 +209,41 @@
 }
 
 - (void)testEnumDescriptorIntrospectionWithAlias {
-  GPBEnumDescriptor *descriptor = TestAllTypes_NestedEnumAllowingAlias_EnumDescriptor();
+  GPBEnumDescriptor *descriptor = TestEnumWithDupValue_EnumDescriptor();
   NSString *enumName;
   int32_t value;
 
-  XCTAssertEqual(descriptor.enumNameCount, 3U);
+  XCTAssertEqual(descriptor.enumNameCount, 5U);
 
   enumName = [descriptor getEnumNameForIndex:0];
-  XCTAssertEqualObjects(enumName, @"TestAllTypes_NestedEnumAllowingAlias_Zero");
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Foo1");
   XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
-  XCTAssertEqual(value, 0);
-  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:0], @"ZERO");
+  XCTAssertEqual(value, 1);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:0], @"FOO1");
 
   enumName = [descriptor getEnumNameForIndex:1];
-  XCTAssertEqualObjects(enumName, @"TestAllTypes_NestedEnumAllowingAlias_One");
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Bar1");
   XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
-  XCTAssertEqual(value, 1);
-  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:1], @"ONE");
+  XCTAssertEqual(value, 2);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:1], @"BAR1");
 
   enumName = [descriptor getEnumNameForIndex:2];
-  XCTAssertEqualObjects(enumName, @"TestAllTypes_NestedEnumAllowingAlias_AlsoOne");
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Baz");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 3);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:2], @"BAZ");
+
+  enumName = [descriptor getEnumNameForIndex:3];
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Foo2");
   XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
   XCTAssertEqual(value, 1);
-  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:2], @"ALSO_ONE");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:3], @"FOO2");
 
+  enumName = [descriptor getEnumNameForIndex:4];
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Bar2");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 2);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:4], @"BAR2");
 
 }
 

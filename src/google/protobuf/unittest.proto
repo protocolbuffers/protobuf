@@ -76,13 +76,6 @@ message TestAllTypes {
     NEG = -1;  // Intentionally negative.
   }
 
-  enum NestedEnumAllowingAlias {
-    option allow_alias = true;
-    ZERO = 0;
-    ONE = 1;
-    ALSO_ONE = 1;
-  }
-
   // Singular
   optional    int32 optional_int32    =  1;
   optional    int64 optional_int64    =  2;
