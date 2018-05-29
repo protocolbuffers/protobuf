@@ -341,6 +341,9 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
 
 extern PyObject* PickleError_class;
 
+const Message* PyMessage_GetMessagePointer(PyObject* msg);
+Message* PyMessage_GetMutableMessagePointer(PyObject* msg);
+
 bool InitProto2MessageModule(PyObject *m);
 
 #if LANG_CXX11
