@@ -48,18 +48,17 @@ class LIBPROTOC_EXPORT Generator
       const string& parameter,
       GeneratorContext* generator_context,
       string* error) const;
-
-  // To skip reserved keywords in php, some generated classname are prefixed.
-  // Other code generators may need following API to figure out the actual
-  // classname.
-  LIBPROTOC_EXPORT std::string GeneratedClassName(
-      const google::protobuf::Descriptor* desc);
-  LIBPROTOC_EXPORT std::string GeneratedClassName(
-      const google::protobuf::EnumDescriptor* desc);
-  LIBPROTOC_EXPORT std::string GeneratedClassName(
-      const google::protobuf::ServiceDescriptor* desc);
-
 };
+
+// To skip reserved keywords in php, some generated classname are prefixed.
+// Other code generators may need following API to figure out the actual
+// classname.
+LIBPROTOC_EXPORT std::string GeneratedClassName(
+    const google::protobuf::Descriptor* desc);
+LIBPROTOC_EXPORT std::string GeneratedClassName(
+    const google::protobuf::EnumDescriptor* desc);
+LIBPROTOC_EXPORT std::string GeneratedClassName(
+    const google::protobuf::ServiceDescriptor* desc);
 
 }  // namespace php
 }  // namespace compiler
