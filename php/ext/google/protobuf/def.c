@@ -773,6 +773,7 @@ static size_t classname_len_max(const char *fullname,
 static bool is_reserved(const char *segment, int length) {
   bool result;
   char* lower = ALLOC_N(char, length + 1);
+  memset(lower, 0, length + 1);
   memcpy(lower, segment, length);
   int i = 0;
   while(lower[i]) {
