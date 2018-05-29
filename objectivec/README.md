@@ -20,9 +20,10 @@ The Objective C implementation requires:
 Installation
 ------------
 
-The full distribution pulled from github includes the sources for both the
-compiler (protoc) and the runtime (this directory). To build the compiler
-and run the runtime tests, you can use:
+The distribution pulled from github includes the sources for both the
+compiler (protoc) and the runtime (this directory). After cloning the distribution
+and needed submodules ([see the src directory's README](../src/README.md)),
+to build the compiler and run the runtime tests, you can use:
 
      $ objectivec/DevTools/full_mac_build.sh
 

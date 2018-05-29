@@ -830,13 +830,9 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)enumNameForValue:(int32_t)number {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
-
   for (uint32_t i = 0; i < valueCount_; ++i) {
     if (values_[i] == number) {
-      const char *valueName = valueNames_ + nameOffsets_[i];
-      NSString *fullName = [NSString stringWithFormat:@"%@_%s", name_, valueName];
-      return fullName;
+      return [self getEnumNameForIndex:i];
     }
   }
   return nil;
@@ -886,8 +882,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)textFormatNameForValue:(int32_t)number {
-  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
-
   // Find the EnumValue descriptor and its index.
   BOOL foundIt = NO;
   uint32_t valueDescriptorIndex;
@@ -902,16 +896,39 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   if (!foundIt) {
     return nil;
   }
+  return [self getEnumTextFormatNameForIndex:valueDescriptorIndex];
+}
 
+- (uint32_t)enumNameCount {
+  return valueCount_;
+}
+
+- (NSString *)getEnumNameForIndex:(uint32_t)index {
+  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+
+  if (index >= valueCount_) {
+    return nil;
+  }
+  const char *valueName = valueNames_ + nameOffsets_[index];
+  NSString *fullName = [NSString stringWithFormat:@"%@_%s", name_, valueName];
+  return fullName;
+}
+
+- (NSString *)getEnumTextFormatNameForIndex:(uint32_t)index {
+  if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+
+  if (index >= valueCount_) {
+    return nil;
+  }
   NSString *result = nil;
   // Naming adds an underscore between enum name and value name, skip that also.
-  const char *valueName = valueNames_ + nameOffsets_[valueDescriptorIndex];
+  const char *valueName = valueNames_ + nameOffsets_[index];
   NSString *shortName = @(valueName);
 
   // See if it is in the map of special format handling.
   if (extraTextFormatInfo_) {
     result = GPBDecodeTextFormatName(extraTextFormatInfo_,
-                                     (int32_t)valueDescriptorIndex, shortName);
+                                     (int32_t)index, shortName);
   }
   // Logic here needs to match what objectivec_enum.cc does in the proto
   // compiler.
