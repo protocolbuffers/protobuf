@@ -34,6 +34,18 @@
 
 #include <google/protobuf/stubs/macros.h>
 
+// Define thread-safety annotations for use below, if we are building with
+// Clang.
+#if defined(__clang__) && !defined(SWIG)
+#define GOOGLE_PROTOBUF_ACQUIRE(...) \
+  __attribute__((acquire_capability(__VA_ARGS__)))
+#define GOOGLE_PROTOBUF_RELEASE(...) \
+  __attribute__((release_capability(__VA_ARGS__)))
+#else
+#define GOOGLE_PROTOBUF_ACQUIRE(...)
+#define GOOGLE_PROTOBUF_RELEASE(...)
+#endif
+
 // ===================================================================
 // emulates google3/base/mutex.h
 namespace google {
@@ -48,8 +60,8 @@ namespace internal {
 class LIBPROTOBUF_EXPORT WrappedMutex {
  public:
   WrappedMutex() = default;
-  void Lock() { mu_.lock(); }
-  void Unlock() { mu_.unlock(); }
+  void Lock() GOOGLE_PROTOBUF_ACQUIRE() { mu_.lock(); }
+  void Unlock() GOOGLE_PROTOBUF_RELEASE() { mu_.unlock(); }
   // Crash if this Mutex is not held exclusively by this thread.
   // May fail to crash when it should; will never crash when it should not.
   void AssertHeld() const {}
@@ -123,8 +135,10 @@ using internal::ReaderMutexLock;
 using internal::WriterMutexLock;
 using internal::MutexLockMaybe;
 
-
 }  // namespace protobuf
 }  // namespace google
+
+#undef GOOGLE_PROTOBUF_ACQUIRE
+#undef GOOGLE_PROTOBUF_RELEASE
 
 #endif  // GOOGLE_PROTOBUF_STUBS_MUTEX_H_
