@@ -62,7 +62,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
+  ${protobuf_BINARY_DIR}/well_known_types_embed.cc		# This file is generated, therefore is in different directory
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_extension.cc
@@ -174,9 +174,9 @@ set(js_well_known_types_sources
 )
 add_executable(js_embed ${protobuf_source_dir}/src/google/protobuf/compiler/js/embed.cc)
 add_custom_command(
-  OUTPUT ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
+  OUTPUT ${protobuf_BINARY_DIR}/well_known_types_embed.cc
   DEPENDS js_embed ${js_well_known_types_sources}
-  COMMAND js_embed ${js_well_known_types_sources} > ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
+  COMMAND js_embed ${js_well_known_types_sources} > ${protobuf_BINARY_DIR}/well_known_types_embed.cc
 )
 
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
