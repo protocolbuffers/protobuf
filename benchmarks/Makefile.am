@@ -349,11 +349,11 @@ gogo_proto_middleman: protoc-gen-gogoproto
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I$(srcdir) -I$(top_srcdir) --plugin=protoc-gen-gogoproto --gogoproto_out=$$oldpwd/tmp/gogo_proto $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) $(benchmarks_protoc_inputs_proto2) )
 	touch gogo_proto_middleman
 
-new_data = $$(for data in $(all_data); do echo "tmp$${data\#$(srcdir)}"; done | xargs)
+gogo_data = $$(for data in $(all_data); do echo "tmp/gogo_data$${data\#$(srcdir)}"; done | xargs)
 
 generate_gogo_data: protoc_middleman protoc_middleman2 gogo-data-scrubber
-	mkdir -p `dirname $(new_data)`
-	./gogo-data-scrubber $(all_data) $(new_data)
+	mkdir -p `dirname $(gogo_data)`
+	./gogo-data-scrubber $(all_data) $(gogo_data)
 	touch generate_gogo_data
 	
 make_tmp_dir_gogo:
@@ -408,8 +408,6 @@ gogoslick_protoc_middleman: make_tmp_dir_gogo $(top_srcdir)/src/protoc$(EXEEXT) 
 	oldpwd=`pwd` && ( cd $(srcdir)/tmp/gogo_proto && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$$oldpwd/$(top_srcdir)/src --gogoslick_out=$$oldpwd/tmp/gogoslick $(benchmarks_protoc_inputs_proto2_message4) )
 	touch gogoslick_protoc_middleman
 
-gogo_data = $$(find . -type f -name "dataset.*.pb" -path "./tmp/*")
-
 generate-gogo-benchmark-code:
 	@echo '#! /bin/bash' > generate-gogo-benchmark-code
 	@echo 'cp $(srcdir)/go/go_benchmark_test.go tmp/$$1/benchmark_code/$$1_benchmark1_test.go' >> generate-gogo-benchmark-code
@@ -453,7 +451,7 @@ gogoslick: gogoslick_protoc_middleman  generate_gogo_data gogo-benchmark generat
  
 ############ UTIL RULES BEGIN ############
 
-bin_PROGRAMS += protoc-gen-gogoproto gogo-data-scrubber
+bin_PROGRAMS += protoc-gen-gogoproto gogo-data-scrubber protoc-gen-proto2_to_proto3 proto3-data-stripper
 
 protoc_gen_gogoproto_LDADD = $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/src/libprotoc.la
 protoc_gen_gogoproto_SOURCES = util/protoc-gen-gogoproto.cc
@@ -468,8 +466,39 @@ nodist_gogo_data_scrubber_SOURCES =                                        \
 	$(benchmarks_protoc_outputs_proto2)                                      \
 	$(benchmarks_protoc_outputs_proto2_header)                               \
 	$(benchmarks_protoc_outputs_header)
+
+protoc_gen_proto2_to_proto3_LDADD = $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/src/libprotoc.la
+protoc_gen_proto2_to_proto3_SOURCES = util/protoc-gen-proto2_to_proto3.cc
+protoc_gen_proto2_to_proto3_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp -I$(srcdir)/util
+
+proto3_data_stripper_LDADD = $(top_srcdir)/src/libprotobuf.la
+proto3_data_stripper_SOURCES = util/proto3_data_stripper.cc
+proto3_data_stripper_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp -I$(srcdir)/util
+util/proto3_data_stripper-proto3_data_stripper.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header)
+nodist_proto3_data_stripper_SOURCES =                                      \
+	$(benchmarks_protoc_outputs)                                             \
+	$(benchmarks_protoc_outputs_proto2)                                      \
+	$(benchmarks_protoc_outputs_proto2_header)                               \
+	$(benchmarks_protoc_outputs_header)
+
 	
 ############ UTIL RULES END ############
+
+############ PROTO3 PREPARATION BEGIN #############
+
+proto3_proto_middleman: protoc-gen-proto2_to_proto3
+	mkdir -p "tmp/proto3_proto"
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I$(srcdir) -I$(top_srcdir) --plugin=protoc-gen-proto2_to_proto3 --proto2_to_proto3_out=$$oldpwd/tmp/proto3_proto $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) $(benchmarks_protoc_inputs_proto2) )
+	touch proto3_proto_middleman
+
+proto3_data = $$(for data in $(all_data); do echo "tmp/proto3_data$${data\#$(srcdir)}"; done | xargs)
+
+generate_proto3_data: protoc_middleman protoc_middleman2 proto3-data-stripper
+	mkdir -p `dirname $(proto3_data)`
+	./proto3-data-stripper $(all_data) $(proto3_data)
+	touch generate_proto3_data
+
+############ PROTO3 PREPARATION END #############
 
 MAINTAINERCLEANFILES =                                                     \
 	Makefile.in
@@ -513,7 +542,9 @@ CLEANFILES =                                                               \
 	gogoslick_protoc_middleman                                               \
 	gogoslick                                                                \
 	gogo-benchmark                                                           \
-	gogo/cpp_no_group/cpp_benchmark.* 
+	gogo/cpp_no_group/cpp_benchmark.*                                        \
+	proto3_proto_middleman                                                   \
+	generate_proto3_data
 	
 
 clean-local:

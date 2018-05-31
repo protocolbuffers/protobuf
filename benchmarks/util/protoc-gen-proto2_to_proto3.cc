@@ -13,6 +13,8 @@ using google::protobuf::DescriptorPool;
 using google::protobuf::io::Printer;
 using google::protobuf::util::SchemaGroupStripper;
 using google::protobuf::util::EnumScrubber;
+using google::protobuf::util::ExtensionStripper;
+using google::protobuf::util::FieldScrubber;
 
 namespace google {
 namespace protobuf {
@@ -34,7 +36,7 @@ DescriptorPool new_pool_;
 
 }  // namespace
 
-class GoGoProtoGenerator : public CodeGenerator {
+class Proto2ToProto3Generator : public CodeGenerator {
  public:
   virtual bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                            const string& parameter,
@@ -76,6 +78,9 @@ class GoGoProtoGenerator : public CodeGenerator {
 
     EnumScrubber enum_scrubber;
     enum_scrubber.ScrubFile(&new_file);
+    ExtensionStripper::StripFile(&new_file);
+    FieldScrubber::ScrubFile(&new_file);
+    new_file.set_syntax("proto3");
 
     string filename = file->name();
     string basename = StripProto(filename);
@@ -98,6 +103,6 @@ class GoGoProtoGenerator : public CodeGenerator {
 }  // namespace google
 
 int main(int argc, char* argv[]) {
-  google::protobuf::compiler::GoGoProtoGenerator generator;
+  google::protobuf::compiler::Proto2ToProto3Generator generator;
   return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }
