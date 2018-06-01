@@ -269,24 +269,6 @@ internal_copied_filegroup(
 # Protocol Buffers Compiler
 ################################################################################
 
-cc_binary(
-    name = "js_embed",
-    srcs = ["src/google/protobuf/compiler/js/embed.cc"],
-    visibility = ["//visibility:public"],
-)
-
-genrule(
-    name = "generate_js_well_known_types_embed",
-    srcs = [
-        "src/google/protobuf/compiler/js/well_known_types/any.js",
-        "src/google/protobuf/compiler/js/well_known_types/struct.js",
-        "src/google/protobuf/compiler/js/well_known_types/timestamp.js",
-    ],
-    outs = ["src/google/protobuf/compiler/js/well_known_types_embed.cc"],
-    cmd = "$(location :js_embed) $(SRCS) > $@",
-    tools = [":js_embed"],
-)
-
 cc_library(
     name = "protoc_lib",
     srcs = [
