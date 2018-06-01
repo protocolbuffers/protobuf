@@ -47,7 +47,6 @@ any_test.pb.*
 map*unittest.pb.*
 unittest*.pb.*
 cpp_test*.pb.*
-src/google/protobuf/compiler/js/well_known_types_embed.cc
 src/google/protobuf/util/**/*.pb.cc
 src/google/protobuf/util/**/*.pb.h
 
