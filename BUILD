@@ -69,17 +69,6 @@ config_setting(
 LINK_OPTS = select({
     ":android": [],
     ":msvc": [
-        # Linking to setargv.obj makes the default command line argument
-        # parser expand wildcards, so the main method's argv will contain the
-        # expanded list instead of the wildcards.
-        # Using -WHOLEARCHIVE, because:
-        # - Microsoft ships this object file next to default libraries
-        # - but this file is not a library, just a precompiled object
-        # - just listing the name here without "-WHOLEARCHIVE:" would make Bazel
-        #   believe that "setargv.obj" is a source or rule output in this
-        #   package, which it is not.
-        # See https://msdn.microsoft.com/en-us/library/8bch7bkk.aspx
-        "-WHOLEARCHIVE:setargv.obj",
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
     ],
@@ -375,7 +364,25 @@ cc_library(
     ],
     copts = COPTS,
     includes = ["src/"],
-    linkopts = LINK_OPTS,
+    linkopts = LINK_OPTS + select({
+        ":msvc": [
+            # Linking to setargv.obj makes the default command line argument
+            # parser expand wildcards, so the main method's argv will contain the
+            # expanded list instead of the wildcards.
+            #
+            # Adding dummy "-DEFAULTLIB:kernel32.lib", because:
+            # - Microsoft ships this object file next to default libraries
+            # - but this file is not a library, just a precompiled object
+            # - "-WHOLEARCHIVE" and "-DEFAULTLIB" only accept library,
+            #   not precompiled object.
+            # - Bazel would assume linkopt that does not start with "-" or "$"
+            #   as a label to a target, so we add a harmless "-DEFAULTLIB:kernel32.lib"
+            #   before "setargv.obj".
+            # See https://msdn.microsoft.com/en-us/library/8bch7bkk.aspx
+            "-DEFAULTLIB:kernel32.lib setargv.obj",
+        ],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [":protobuf"],
 )
