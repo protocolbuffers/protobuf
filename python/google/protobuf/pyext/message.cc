@@ -2866,17 +2866,38 @@ const Message* (*GetCProtoInsidePyProtoPtr)(PyObject* msg);
 Message* (*MutableCProtoInsidePyProtoPtr)(PyObject* msg);
 
 static const Message* GetCProtoInsidePyProtoImpl(PyObject* msg) {
+  const Message* message = PyMessage_GetMessagePointer(msg);
+  if (message == NULL) {
+    PyErr_Clear();
+    return NULL;
+  }
+  return message;
+}
+
+static Message* MutableCProtoInsidePyProtoImpl(PyObject* msg) {
+  Message* message = PyMessage_GetMutableMessagePointer(msg);
+  if (message == NULL) {
+    PyErr_Clear();
+    return NULL;
+  }
+  return message;
+}
+
+const Message* PyMessage_GetMessagePointer(PyObject* msg) {
   if (!PyObject_TypeCheck(msg, &CMessage_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a Message instance");
     return NULL;
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(msg);
   return cmsg->message;
 }
 
-static Message* MutableCProtoInsidePyProtoImpl(PyObject* msg) {
+Message* PyMessage_GetMutableMessagePointer(PyObject* msg) {
   if (!PyObject_TypeCheck(msg, &CMessage_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a Message instance");
     return NULL;
   }
+
   CMessage* cmsg = reinterpret_cast<CMessage*>(msg);
   if ((cmsg->composite_fields && PyDict_Size(cmsg->composite_fields) != 0) ||
       (cmsg->extensions != NULL &&
@@ -2885,6 +2906,9 @@ static Message* MutableCProtoInsidePyProtoImpl(PyObject* msg) {
     // the underlying C++ message back to the CMessage (e.g. removed repeated
     // composite containers). We only allow direct mutation of the underlying
     // C++ message if there is no child data in the CMessage.
+    PyErr_SetString(PyExc_ValueError,
+                    "Cannot reliably get a mutable pointer "
+                    "to a message with extra references");
     return NULL;
   }
   cmessage::AssureWritable(cmsg);

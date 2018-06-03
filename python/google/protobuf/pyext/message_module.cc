@@ -31,8 +31,25 @@
 #include <Python.h>
 
 #include <google/protobuf/pyext/message.h>
+#include <google/protobuf/proto_api.h>
 
 #include <google/protobuf/message_lite.h>
+
+namespace {
+
+// C++ API.  Clients get at this via proto_api.h
+struct ApiImplementation : google::protobuf::python::PyProto_API {
+  const google::protobuf::Message*
+      GetMessagePointer(PyObject* msg) const override {
+    return google::protobuf::python::PyMessage_GetMessagePointer(msg);
+  }
+  google::protobuf::Message*
+      GetMutableMessagePointer(PyObject* msg) const override {
+    return google::protobuf::python::PyMessage_GetMutableMessagePointer(msg);
+  }
+};
+
+}  // namespace
 
 static PyObject* GetPythonProto3PreserveUnknownsDefault(
     PyObject* /*m*/, PyObject* /*args*/) {

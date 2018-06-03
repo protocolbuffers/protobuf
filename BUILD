@@ -671,6 +671,7 @@ cc_binary(
     linkstatic = 1,
     deps = [
         ":protobuf",
+        ":proto_api",
     ] + select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
@@ -811,6 +812,15 @@ internal_protobuf_py_tests(
         "wire_format_test",
     ],
     deps = [":python_tests"],
+)
+
+cc_library(
+    name = "proto_api",
+    hdrs = ["python/google/protobuf/proto_api.h"],
+    deps = [
+        ":protobuf_python",
+        "//external:python_headers",
+    ],
 )
 
 proto_lang_toolchain(
