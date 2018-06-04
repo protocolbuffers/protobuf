@@ -74,10 +74,10 @@ class SchemaGroupStripper {
 
 };
 
-class SchemaAddZeroEnumValue {
+class EnumScrubber {
 
  public:
-  SchemaAddZeroEnumValue()
+  EnumScrubber()
       : total_added_(0) {
   }
 
@@ -128,6 +128,63 @@ class SchemaAddZeroEnumValue {
   }
 
   int total_added_;
+};
+
+class ExtensionStripper {
+ public:
+  static void StripFile(FileDescriptorProto *file) {
+    for (int i = 0; i < file->mutable_message_type()->size(); i++) {
+      StripMessage(file->mutable_message_type(i));
+    }
+    file->mutable_extension()->Clear();
+  }
+ private:
+  static void StripMessage(DescriptorProto *message_type) {
+    message_type->mutable_extension()->Clear();
+    message_type->clear_extension_range();
+    for (int i = 0; i < message_type->mutable_nested_type()->size(); i++) {
+      StripMessage(message_type->mutable_nested_type(i));
+    }
+  }
+};
+
+
+class FieldScrubber {
+ public:
+  static void ScrubFile(FileDescriptorProto *file) {
+    for (int i = 0; i < file->mutable_message_type()->size(); i++) {
+      ScrubMessage(file->mutable_message_type(i));
+    }
+    for (int i = 0; i < file->mutable_extension()->size(); i++) {
+      file->mutable_extension(i)->clear_default_value();
+      if (ShouldClearLabel(file->mutable_extension(i))) {
+        file->mutable_extension(i)->clear_label();
+      }
+    }
+  }
+ private:
+  static bool ShouldClearLabel(const FieldDescriptorProto *field) {
+    return field->label() == FieldDescriptorProto::LABEL_REQUIRED;
+  }
+
+  static void ScrubMessage(DescriptorProto *message_type) {
+    message_type->mutable_extension()->Clear();
+    for (int i = 0; i < message_type->mutable_extension()->size(); i++) {
+      message_type->mutable_extension(i)->clear_default_value();
+      if (ShouldClearLabel(message_type->mutable_extension(i))) {
+        message_type->mutable_extension(i)->clear_label();
+      }
+    }
+    for (int i = 0; i < message_type->mutable_field()->size(); i++) {
+      message_type->mutable_field(i)->clear_default_value();
+      if (ShouldClearLabel(message_type->mutable_field(i))) {
+        message_type->mutable_field(i)->clear_label();
+      }
+    }
+    for (int i = 0; i < message_type->mutable_nested_type()->size(); i++) {
+      ScrubMessage(message_type->mutable_nested_type(i));
+    }
+  }
 };
 
 }  // namespace util

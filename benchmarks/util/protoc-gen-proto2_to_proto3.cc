@@ -13,6 +13,8 @@ using google::protobuf::DescriptorPool;
 using google::protobuf::io::Printer;
 using google::protobuf::util::SchemaGroupStripper;
 using google::protobuf::util::EnumScrubber;
+using google::protobuf::util::ExtensionStripper;
+using google::protobuf::util::FieldScrubber;
 
 namespace google {
 namespace protobuf {
@@ -21,42 +23,25 @@ namespace compiler {
 namespace {
 
 string StripProto(string filename) {
-  if (filename.substr(filename.size() - 11) == ".protodevel") {
-    // .protodevel
-    return filename.substr(0, filename.size() - 11);
-  } else {
-    // .proto
-    return filename.substr(0, filename.size() - 6);
-  }
+  return filename.substr(0, filename.rfind(".proto"));
 }
 
-DescriptorPool new_pool_;
+DescriptorPool* GetPool() {
+  static DescriptorPool *pool = new DescriptorPool();
+  return pool;
+}
 
 }  // namespace
 
-class GoGoProtoGenerator : public CodeGenerator {
+class Proto2ToProto3Generator final : public CodeGenerator {
  public:
-  virtual bool GenerateAll(const std::vector<const FileDescriptor*>& files,
+  bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                            const string& parameter,
                            GeneratorContext* context,
                            string* error) const {
     for (int i = 0; i < files.size(); i++) {
       for (auto file : files) {
-        bool can_generate =
-            (new_pool_.FindFileByName(file->name()) == nullptr);
-        for (int j = 0; j < file->dependency_count(); j++) {
-          can_generate &= (new_pool_.FindFileByName(
-              file->dependency(j)->name()) != nullptr);
-        }
-        for (int j = 0; j < file->public_dependency_count(); j++) {
-          can_generate &= (new_pool_.FindFileByName(
-              file->public_dependency(j)->name()) != nullptr);
-        }
-        for (int j = 0; j < file->weak_dependency_count(); j++) {
-          can_generate &= (new_pool_.FindFileByName(
-              file->weak_dependency(j)->name()) != nullptr);
-        }
-        if (can_generate) {
+        if (CanGenerate(file)) {
           Generate(file, parameter, context, error);
           break;
         }
@@ -66,7 +51,7 @@ class GoGoProtoGenerator : public CodeGenerator {
     return true;
   }
 
-  virtual bool Generate(const FileDescriptor* file,
+  bool Generate(const FileDescriptor* file,
                         const string& parameter,
                         GeneratorContext* context,
                         string* error) const {
@@ -76,6 +61,9 @@ class GoGoProtoGenerator : public CodeGenerator {
 
     EnumScrubber enum_scrubber;
     enum_scrubber.ScrubFile(&new_file);
+    ExtensionStripper::StripFile(&new_file);
+    FieldScrubber::ScrubFile(&new_file);
+    new_file.set_syntax("proto3");
 
     string filename = file->name();
     string basename = StripProto(filename);
@@ -85,10 +73,34 @@ class GoGoProtoGenerator : public CodeGenerator {
 
     std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> output(
         context->Open(basename + ".proto"));
-    string content = new_pool_.BuildFile(new_file)->DebugString();
+    string content = GetPool()->BuildFile(new_file)->DebugString();
     Printer printer(output.get(), '$');
     printer.WriteRaw(content.c_str(), content.size());
 
+    return true;
+  }
+ private:
+  bool CanGenerate(const FileDescriptor* file) const {
+    if (GetPool()->FindFileByName(file->name()) != nullptr) {
+      return false;
+    }
+    for (int j = 0; j < file->dependency_count(); j++) {
+      if (GetPool()->FindFileByName(file->dependency(j)->name()) == nullptr) {
+        return false;
+      }
+    }
+    for (int j = 0; j < file->public_dependency_count(); j++) {
+      if (GetPool()->FindFileByName(
+          file->public_dependency(j)->name()) == nullptr) {
+        return false;
+      }
+    }
+    for (int j = 0; j < file->weak_dependency_count(); j++) {
+      if (GetPool()->FindFileByName(
+          file->weak_dependency(j)->name()) == nullptr) {
+        return false;
+      }
+    }
     return true;
   }
 };
@@ -98,6 +110,6 @@ class GoGoProtoGenerator : public CodeGenerator {
 }  // namespace google
 
 int main(int argc, char* argv[]) {
-  google::protobuf::compiler::GoGoProtoGenerator generator;
+  google::protobuf::compiler::Proto2ToProto3Generator generator;
   return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }

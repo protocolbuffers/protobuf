@@ -8,7 +8,7 @@
 
 #include <fstream>
 
-using google::protobuf::util::GogoDataStripper;
+using google::protobuf::util::Proto3DataStripper;
 
 std::string ReadFile(const std::string& name) {
   std::ifstream file(name.c_str());
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < dataset.payload_size(); i++) {
       message->ParseFromString(dataset.payload(i));
-      GogoDataStripper stripper;
+      Proto3DataStripper stripper;
       stripper.StripMessage(message);
       dataset.set_payload(i, message->SerializeAsString());
     }
