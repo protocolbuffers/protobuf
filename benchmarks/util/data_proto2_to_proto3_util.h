@@ -23,6 +23,7 @@ class DataStripper {
       const FieldDescriptor* field = set_fields[i];
       if (ShouldBeClear(field)) {
         reflection->ClearField(message, field);
+        continue;
       }
       if (field->type() == FieldDescriptor::TYPE_MESSAGE) {
         if (field->is_repeated()) {

@@ -164,8 +164,7 @@ class FieldScrubber {
   }
  private:
   static bool ShouldClearLabel(const FieldDescriptorProto *field) {
-    return field->label() == FieldDescriptorProto::LABEL_OPTIONAL ||
-           field->label() == FieldDescriptorProto::LABEL_REQUIRED;
+    return field->label() == FieldDescriptorProto::LABEL_REQUIRED;
   }
 
   static void ScrubMessage(DescriptorProto *message_type) {
