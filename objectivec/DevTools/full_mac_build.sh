@@ -244,8 +244,7 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
       exit 10
       ;;
     7.* )
-      echo "ERROR: The unittests include Swift code that is now Swift 3.0." 1>&2
-      echo "ERROR: Xcode 8.0 or higher is required to build the test suite, but the library works with Xcode 7.x." 1>&2
+      echo "ERROR: Xcode 7.x no longer supported for building, please use 8.0 or higher." 1>&2
       exit 11
       ;;
     8.0* )
