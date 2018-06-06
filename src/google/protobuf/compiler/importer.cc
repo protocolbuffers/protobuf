@@ -229,12 +229,6 @@ void Importer::ClearUnusedImportTrackFiles() {
 
 // ===================================================================
 
-SourceTree::~SourceTree() {}
-
-string SourceTree::GetLastErrorMessage() {
-  return "File not found.";
-}
-
 DiskSourceTree::DiskSourceTree() {}
 
 DiskSourceTree::~DiskSourceTree() {}
