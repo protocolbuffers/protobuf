@@ -2249,8 +2249,11 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
     }
   } else if (field->type() == FieldDescriptor::TYPE_BYTES) {
     // For bytes fields we want to always return the B64 data.
+    // Unless it's proto2 and the user explicitly wants binary.
+    auto mode = field->file()->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
+                options.binary ? BytesMode::BYTES_U8 : BytesMode::BYTES_B64;
     printer->Print("msg.get$getter$()",
-                   "getter", JSGetterName(options, field, BYTES_B64));
+                   "getter", JSGetterName(options, field, mode));
   } else {
     bool use_default = field->has_default_value();
 
