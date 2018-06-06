@@ -1368,6 +1368,8 @@ inline CodedInputStream::CodedInputStream(const uint8* buffer, int size)
     extension_factory_(NULL) {
   // Note that setting current_limit_ == size is important to prevent some
   // code paths from trying to access input_ and segfaulting.
+  if(total_bytes_limit_ < size)
+  	  total_bytes_limit_ = size;
 }
 
 inline bool CodedInputStream::IsFlat() const {
