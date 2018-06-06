@@ -21,6 +21,7 @@ config_setting(
 
 MSVC_COPTS = [
     "/DHAVE_PTHREAD",
+    "/DHAVE_ZLIB",
     "/wd4018", # -Wno-sign-compare
     "/wd4065", # switch statement contains 'default' but no 'case' labels
     "/wd4146", # unary minus operator applied to unsigned type, result still unsigned
@@ -42,6 +43,7 @@ COPTS = select({
     ":msvc" : MSVC_COPTS,
     "//conditions:default": [
         "-DHAVE_PTHREAD",
+	"-DHAVE_ZLIB",
         "-Wall",
         "-Wwrite-strings",
         "-Woverloaded-virtual",
@@ -183,7 +185,7 @@ cc_library(
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = [":protobuf_lite"],
+    deps = [":protobuf_lite", "//external:zlib"],
 )
 
 # This provides just the header files for use in projects that need to build

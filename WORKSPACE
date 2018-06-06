@@ -52,3 +52,15 @@ bind(
     name = "gson",
     actual = "@gson_maven//jar",
 )
+
+http_archive(
+    name = "io_bazel",
+    urls = ["https://github.com/bazelbuild/bazel/archive/master.zip"],
+    strip_prefix = "bazel-master",
+)
+
+# required for the zlib dependency by src/google/protobuf/io/gzip_stream.h
+bind(
+    name = "zlib",
+    actual = "@io_bazel//third_party/zlib:zlib",
+)
