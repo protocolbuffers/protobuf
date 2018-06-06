@@ -206,7 +206,7 @@ string GetFilePath(const GeneratorOptions& options,
   if (!options.namespace_prefix.empty()) {
     return options.namespace_prefix;
   } else if (!file->package().empty()) {
-    return "proto." + file->package();
+    return file->package();
   } else {
     return "proto";
   }
