@@ -337,6 +337,8 @@ class RepeatedScalarFieldContainer(BaseContainer):
     # We are presumably comparing against some other sequence type.
     return other == self._values
 
+  __hash__ = None
+
 collections.MutableSequence.register(BaseContainer)
 
 
@@ -429,6 +431,8 @@ class RepeatedCompositeFieldContainer(BaseContainer):
       raise TypeError('Can only compare repeated composite fields against '
                       'other repeated composite fields.')
     return self._values == other._values
+
+  __hash__ = None
 
 
 class ScalarMap(MutableMapping):
