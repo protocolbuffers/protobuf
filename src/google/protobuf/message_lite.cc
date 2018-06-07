@@ -316,7 +316,11 @@ bool MessageLite::SerializeToArray(void* data, int size) const {
 }
 
 bool MessageLite::SerializePartialToArray(void* data, int size) const {
-  int byte_size = ByteSizeLong();
+  size_t byte_size = ByteSizeLong();
+  if (byte_size > INT_MAX) {
+    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
+    return false;
+  }
   if (size < byte_size) return false;
   uint8* start = reinterpret_cast<uint8*>(data);
   uint8* end = SerializeWithCachedSizesToArray(start);
