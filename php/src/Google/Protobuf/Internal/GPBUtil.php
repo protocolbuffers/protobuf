@@ -320,54 +320,6 @@ class GPBUtil
         return implode('\\', $parts);
     }
 
-    public static function getLegacyFullClassName(
-        $proto,
-        $containing,
-        $file_proto,
-        &$message_name_without_package,
-        &$classname,
-        &$fullname)
-    {
-        // Full name needs to start with '.'.
-        $message_name_without_package = $proto->getName();
-        if ($containing !== "") {
-            $message_name_without_package =
-                $containing . "." . $message_name_without_package;
-        }
-
-        $package = $file_proto->getPackage();
-        if ($package === "") {
-            $fullname = "." . $message_name_without_package;
-        } else {
-            $fullname = "." . $package . "." . $message_name_without_package;
-        }
-
-        $class_name_without_package =
-            static::getLegacyClassNameWithoutPackage(
-                $message_name_without_package, $file_proto);
-
-        $option = $file_proto->getOptions();
-        if (!is_null($option) && $option->hasPhpNamespace()) {
-            $namespace = $option->getPhpNamespace();
-            if ($namespace !== "") {
-                $classname = $namespace . "\\" . $class_name_without_package;
-                return;
-            } else {
-                $classname = $class_name_without_package;
-                return;
-            }
-        }
-
-        if ($package === "") {
-            $classname = $class_name_without_package;
-        } else {
-            $classname =
-                implode('\\', array_map('ucwords', explode('.', $package))).
-                "\\".$class_name_without_package;
-        }
-    }
-
-
     public static function getFullClassName(
         $proto,
         $containing,
