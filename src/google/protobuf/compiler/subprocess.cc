@@ -313,6 +313,7 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
 
   child_pid_ = fork();
   if (child_pid_ == -1) {
+    free(argv[0]);
     GOOGLE_LOG(FATAL) << "fork: " << strerror(errno);
   } else if (child_pid_ == 0) {
     // We are the child.
