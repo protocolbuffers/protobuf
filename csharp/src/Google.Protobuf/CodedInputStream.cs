@@ -282,7 +282,7 @@ namespace Google.Protobuf
         /// </remarks>
         public void Dispose()
         {
-            if (!leaveOpen)
+            if (!leaveOpen && input != null)
             {
                 input.Dispose();
             }
