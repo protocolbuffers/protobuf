@@ -840,7 +840,6 @@ cc_library(
     name = "proto_api",
     hdrs = ["python/google/protobuf/proto_api.h"],
     deps = [
-        ":protobuf_python",
         "//external:python_headers",
     ],
 )
