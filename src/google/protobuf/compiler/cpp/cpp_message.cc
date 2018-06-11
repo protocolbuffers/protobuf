@@ -2280,7 +2280,7 @@ GenerateArenaDestructorCode(io::Printer* printer) {
         "classname", classname_);
   } else {
     printer->Print(
-        "void $classname$::RegisterArenaDtor(::google::protobuf::Arena* arena) {\n"
+        "void $classname$::RegisterArenaDtor(::google::protobuf::Arena*) {\n"
         "}\n",
         "classname", classname_);
   }
