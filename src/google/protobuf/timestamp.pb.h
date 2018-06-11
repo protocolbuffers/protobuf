@@ -190,10 +190,10 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@pro
 
 // ===================================================================
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 // Timestamp
 
 // int64 seconds = 1;
@@ -224,9 +224,9 @@ inline void Timestamp::set_nanos(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.nanos)
 }
 
-#ifdef __GNUC__
+#ifdef GNUC_PRAGMA_DIAGNOSTIC
   #pragma GCC diagnostic pop
-#endif  // __GNUC__
+#endif  // GNUC_PRAGMA_DIAGNOSTIC
 
 // @@protoc_insertion_point(namespace_scope)
 

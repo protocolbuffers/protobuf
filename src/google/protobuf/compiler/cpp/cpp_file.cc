@@ -1363,10 +1363,10 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
   // TODO(gerbens) remove pragmas when gcc is no longer used. Current version
   // of gcc fires a bogus error when compiled with strict-aliasing.
   printer->Print(
-    "#ifdef __GNUC__\n"
+    "#ifdef GNUC_PRAGMA_DIAGNOSTIC\n"
     "  #pragma GCC diagnostic push\n"
     "  #pragma GCC diagnostic ignored \"-Wstrict-aliasing\"\n"
-    "#endif  // __GNUC__\n");
+    "#endif  // GNUC_PRAGMA_DIAGNOSTIC\n");
   // Generate class inline methods.
   for (int i = 0; i < message_generators_.size(); i++) {
     if (i > 0) {
@@ -1376,9 +1376,9 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* printer) {
     message_generators_[i]->GenerateInlineMethods(printer);
   }
   printer->Print(
-    "#ifdef __GNUC__\n"
+    "#ifdef GNUC_PRAGMA_DIAGNOSTIC\n"
     "  #pragma GCC diagnostic pop\n"
-    "#endif  // __GNUC__\n");
+    "#endif  // GNUC_PRAGMA_DIAGNOSTIC\n");
 
   for (int i = 0; i < message_generators_.size(); i++) {
     if (i > 0) {
