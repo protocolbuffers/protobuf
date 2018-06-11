@@ -842,6 +842,7 @@ cc_library(
     deps = [
         "//external:python_headers",
     ],
+    visibility = ["//visibility:public"],
 )
 
 proto_lang_toolchain(
