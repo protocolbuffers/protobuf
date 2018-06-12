@@ -5,7 +5,7 @@ This directory contains benchmarking schemas and data sets that you
 can use to test a variety of performance scenarios against your
 protobuf language runtime. If you are looking for performance 
 numbers of officially support languages, see [here](
-https://github.com/google/protobuf/blob/master/docs/Performance.md)
+https://github.com/google/protobuf/blob/master/docs/performance.md)
 
 ## Prerequisite
 
