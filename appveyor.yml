@@ -20,6 +20,10 @@ environment:
       language: csharp
       image: Visual Studio 2017
 
+    - platform: Win64
+      language: python
+      image: Visual Studio 2017
+
 # Our build scripts run tests automatically; we don't want AppVeyor
 # to try to detect them itself.
 test: off
