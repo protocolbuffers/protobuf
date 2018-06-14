@@ -33,13 +33,13 @@ static void lupbtable_setnum(lua_State *L, int tab, const char *key,
 static void lupbtable_pushval(lua_State *L, upb_tabval val, upb_ctype_t ctype) {
   switch (ctype) {
     case UPB_CTYPE_INT32:
-      lua_pushnumber(L, upb_msgval_getint32(val));
+      lua_pushnumber(L, val.val);
       break;
     case UPB_CTYPE_PTR:
-      lupb_def_pushwrapper(L, upb_msgval_getptr(val), NULL);
+      lupb_def_pushwrapper(L, (void*)val.val, NULL);
       break;
     case UPB_CTYPE_CSTR:
-      lua_pushstring(L, upb_msgval_getcstr(val));
+      lua_pushstring(L, (const char*)val.val);
       break;
     default:
       luaL_error(L, "Unexpected type: %d", ctype);
