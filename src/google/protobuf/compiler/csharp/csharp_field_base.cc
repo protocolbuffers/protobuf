@@ -75,7 +75,9 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 
   (*variables)["property_name"] = property_name();
   (*variables)["type_name"] = type_name();
-  (*variables)["nullable_type_name"] = nullable_type_name();
+  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+    (*variables)["nullable_type_name"] = nullable_type_name();
+  }
   (*variables)["name"] = name();
   (*variables)["descriptor_name"] = descriptor_->name();
   (*variables)["default_value"] = default_value();
