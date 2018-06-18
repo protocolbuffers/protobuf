@@ -335,7 +335,16 @@ struct LIBPROTOBUF_EXPORT SCCInfoBase {
     kRunning = 1,
     kUninitialized = -1,  // initial state
   };
+#ifndef _MSC_VER
   std::atomic<int> visit_status;
+#else
+  // MSVC doesnt make std::atomic constant initialized. This union trick
+  // makes it so.
+  union {
+    int visit_status_to_make_linker_init;
+    std::atomic<int> visit_status;
+  };
+#endif
   int num_deps;
   void (*init_func)();
   // This is followed by an array  of num_deps
