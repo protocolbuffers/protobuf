@@ -61,6 +61,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
                       std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  (*variables)["full_name"] = descriptor->full_name();
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->enum_type());
   (*variables)["mutable_type"] =
@@ -231,6 +232,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
       "${$set$capitalized_name$Value$}$(int value) {\n"
       "  $name$_ = value;\n"
       "  $on_changed$\n"
+      "  // @@protoc_insertion_point(builder_field_setValue:$full_name$)\n"
       "  return this;\n"
       "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -252,6 +254,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value.getNumber();\n"
     "  $on_changed$\n"
+    "  // @@protoc_insertion_point(builder_field_set:$full_name$)\n"
     "  return this;\n"
     "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -261,6 +264,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $clear_has_field_bit_builder$\n"
     "  $name$_ = $default_number$;\n"
     "  $on_changed$\n"
+    "  // @@protoc_insertion_point(builder_field_clear:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -740,6 +744,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.set(index, value.getNumber());\n"
     "  $on_changed$\n"
+    "  // @@protoc_insertion_point(builder_field_set:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -752,6 +757,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value.getNumber());\n"
     "  $on_changed$\n"
+    "  // @@protoc_insertion_point(builder_field_add:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -764,6 +770,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "    $name$_.add(value.getNumber());\n"
     "  }\n"
     "  $on_changed$\n"
+    "  // @@protoc_insertion_point(builder_field_addAll:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -773,6 +780,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_ = java.util.Collections.emptyList();\n"
     "  $clear_mutable_bit_builder$;\n"
     "  $on_changed$\n"
+    "  // @@protoc_insertion_point(builder_field_clear:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -798,6 +806,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
       "  ensure$capitalized_name$IsMutable();\n"
       "  $name$_.set(index, value);\n"
       "  $on_changed$\n"
+      "  // @@protoc_insertion_point(builder_field_set:$full_name$)\n"
       "  return this;\n"
       "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -808,6 +817,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
       "  ensure$capitalized_name$IsMutable();\n"
       "  $name$_.add(value);\n"
       "  $on_changed$\n"
+      "  // @@protoc_insertion_point(builder_field_add:$full_name$)\n"
       "  return this;\n"
       "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -820,6 +830,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
       "    $name$_.add(value);\n"
       "  }\n"
       "  $on_changed$\n"
+      "  // @@protoc_insertion_point(builder_field_addAll:$full_name$)\n"
       "  return this;\n"
       "}\n");
     printer->Annotate("{", "}", descriptor_);

@@ -84,6 +84,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(descriptor, info, variables);
   ClassNameResolver* name_resolver = context->GetNameResolver();
 
+  (*variables)["full_name"] = descriptor->full_name();
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->message_type());
   const FieldDescriptor* key = KeyField(descriptor);
@@ -369,6 +370,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
       "public Builder ${$clear$capitalized_name$$}$() {\n"
       "  internalGetMutable$capitalized_name$().getMutableMap()\n"
       "      .clear();\n"
+      "// @@protoc_insertion_point(builder_field_clear:$full_name$)\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -381,6 +383,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
       "  $key_null_check$\n"
       "  internalGetMutable$capitalized_name$().getMutableMap()\n"
       "      .remove(key);\n"
+      "// @@protoc_insertion_point(builder_field_remove:$full_name$)\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -406,6 +409,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
                    "  $value_null_check$\n"
                    "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                    "      .put(key, $name$ValueConverter.doBackward(value));\n"
+                   "// @@protoc_insertion_point(builder_field_put:$full_name$)\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -417,6 +421,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
         "  internalGetAdapted$capitalized_name$Map(\n"
         "      internalGetMutable$capitalized_name$().getMutableMap())\n"
         "          .putAll(values);\n"
+        "// @@protoc_insertion_point(builder_field_putAll:$full_name$)\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -441,6 +446,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
           "  $key_null_check$\n"
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .put(key, value);\n"
+          "// @@protoc_insertion_point(builder_field_put:$full_name$)\n"
           "  return this;\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_);
@@ -451,6 +457,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
           "    java.util.Map<$boxed_key_type$, $boxed_value_type$> values) {\n"
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .putAll(values);\n"
+          "// @@protoc_insertion_point(builder_field_putAll:$full_name$)\n"
           "  return this;\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_);
@@ -478,6 +485,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
         "  $value_null_check$\n"
         "  internalGetMutable$capitalized_name$().getMutableMap()\n"
         "      .put(key, value);\n"
+        "// @@protoc_insertion_point(builder_field_put:$full_name$)\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -489,6 +497,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
         "    java.util.Map<$type_parameters$> values) {\n"
         "  internalGetMutable$capitalized_name$().getMutableMap()\n"
         "      .putAll(values);\n"
+        "// @@protoc_insertion_point(builder_field_putAll:$full_name$)\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
