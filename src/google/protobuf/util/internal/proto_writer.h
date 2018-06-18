@@ -110,7 +110,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     return RenderDataPiece(name,
                            DataPiece(value, use_strict_base64_decoding()));
   }
-  virtual ProtoWriter* RenderBytes(StringPiece name, StringPiece value) {
+  ProtoWriter* RenderBytes(StringPiece name, StringPiece value) override {
     return RenderDataPiece(
         name, DataPiece(value, false, use_strict_base64_decoding()));
   }
