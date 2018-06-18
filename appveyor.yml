@@ -1,6 +1,3 @@
-# Only test one combination: "Visual Studio 12 + Win64 + Debug + DLL". We can
-# test more combinations but AppVeyor just takes too long to finish (each
-# combination takes ~15mins).
 platform:
   - Win64
 
@@ -12,6 +9,11 @@ environment:
     - language: cpp
       image: Visual Studio 2015
       BUILD_DLL: ON
+      UNICODE: ON
+
+    - language: cpp
+      image: Visual Studio 2017
+      BUILD_DLL: OFF
       UNICODE: ON
 
     - language: csharp
