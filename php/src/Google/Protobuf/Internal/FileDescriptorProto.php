@@ -429,7 +429,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FileOptions $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(\Google\Protobuf\Internal\FileOptions $var = null)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FileOptions::class);
         $this->options = $var;
@@ -467,7 +467,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\SourceCodeInfo $var
      * @return $this
      */
-    public function setSourceCodeInfo($var)
+    public function setSourceCodeInfo(\Google\Protobuf\Internal\SourceCodeInfo $var = null)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\SourceCodeInfo::class);
         $this->source_code_info = $var;

@@ -306,7 +306,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\MessageOptions $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(\Google\Protobuf\Internal\MessageOptions $var = null)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MessageOptions::class);
         $this->options = $var;
