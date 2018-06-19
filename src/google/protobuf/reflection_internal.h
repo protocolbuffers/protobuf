@@ -141,6 +141,8 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
 // RepeatedPtrField<T>.
 template<typename T>
 class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
+  using RepeatedFieldAccessor::Add;
+
  public:
   RepeatedPtrFieldWrapper() {}
   virtual ~RepeatedPtrFieldWrapper() {}
@@ -303,7 +305,6 @@ class RepeatedFieldPrimitiveAccessor : public RepeatedFieldWrapper<T> {
 class RepeatedPtrFieldStringAccessor : public RepeatedPtrFieldWrapper<string> {
   typedef void Field;
   typedef void Value;
-  using RepeatedFieldAccessor::Add;
 
  public:
   RepeatedPtrFieldStringAccessor() {}
