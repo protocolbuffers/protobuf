@@ -193,6 +193,10 @@ class LIBPROTOBUF_EXPORT Parser {
   bool ConsumeEndOfDeclaration(
       const char* text, const LocationRecorder* location);
 
+  // Check the current token to see if whitespace preceded it. If so, report
+  // the given error message.
+  bool HasNoPrecedingWhitespace(const char *error);
+
   // -----------------------------------------------------------------
   // Error logging helpers
 
