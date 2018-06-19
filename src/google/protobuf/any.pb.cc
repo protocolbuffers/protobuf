@@ -66,14 +66,14 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::google::protobuf::_Any_default_instance_),
 };
 
-void protobuf_AssignDescriptors() {
+static void protobuf_AssignDescriptors() {
   AddDescriptors();
   AssignDescriptors(
       "google/protobuf/any.proto", schemas, file_default_instances, TableStruct::offsets,
       file_level_metadata, NULL, NULL);
 }
 
-void protobuf_AssignDescriptorsOnce() {
+static void protobuf_AssignDescriptorsOnce() {
   static ::google::protobuf::internal::once_flag once;
   ::google::protobuf::internal::call_once(once, protobuf_AssignDescriptors);
 }
@@ -84,7 +84,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
 }
 
-void AddDescriptorsImpl() {
+static void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\031google/protobuf/any.proto\022\017google.prot"
