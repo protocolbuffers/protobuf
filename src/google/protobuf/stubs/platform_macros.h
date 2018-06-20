@@ -99,6 +99,7 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 
 #if defined(__APPLE__)
 #define GOOGLE_PROTOBUF_OS_APPLE
+#include <Availability.h>
 #include <TargetConditionals.h>
 #if TARGET_OS_IPHONE
 #define GOOGLE_PROTOBUF_OS_IPHONE
@@ -122,6 +123,11 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 // we use pthread_key_create()/pthread_getspecific()/... methods for
 // TLS support on android.
 // iOS and OpenBSD also do not support the __thread keyword.
+#define GOOGLE_PROTOBUF_NO_THREADLOCAL
+#endif
+
+#if defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED < 1070
+// __thread keyword requires at least 10.7
 #define GOOGLE_PROTOBUF_NO_THREADLOCAL
 #endif
 
