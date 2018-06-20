@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import os
 import timeit
@@ -138,15 +139,15 @@ if __name__ == "__main__":
     results.append(run_one_test(file))
   
   if args.json != "no":
-    print json.dumps(results)
+    print(json.dumps(results))
   else:
     for result in results:
-      print "Message %s of dataset file %s" % \
-          (result["message_name"], result["filename"])
-      print "Average time for parse_from_benchmark: %.2f ns" % \
+      print("Message %s of dataset file %s" % \
+          (result["message_name"], result["filename"]))
+      print("Average time for parse_from_benchmark: %.2f ns" % \
           (result["benchmarks"][ \
-                      args.behavior_prefix + "_parse_from_benchmark"])
-      print "Average time for serialize_to_benchmark: %.2f ns" % \
+                      args.behavior_prefix + "_parse_from_benchmark"]))
+      print("Average time for serialize_to_benchmark: %.2f ns" % \
           (result["benchmarks"][ \
-                      args.behavior_prefix + "_serialize_to_benchmark"])
-      print ""
+                      args.behavior_prefix + "_serialize_to_benchmark"]))
+      print("")

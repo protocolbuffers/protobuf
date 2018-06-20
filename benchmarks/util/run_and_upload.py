@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import argparse
 import os
 import re
@@ -5,7 +7,7 @@ import copy
 import uuid
 import calendar
 import time
-import big_query_utils
+from . import big_query_utils
 import datetime
 import json
 # This import depends on the automake rule protoc_middleman, please make sure
@@ -255,7 +257,7 @@ def upload_result(result_list, metadata):
     if not big_query_utils.insert_rows(bq, _PROJECT_ID, _DATASET,
                                        _TABLE + "$" + _NOW,
                                        [row]):
-      print 'Error when uploading result', new_result
+      print('Error when uploading result', new_result)
 
 
 if __name__ == "__main__":
@@ -280,11 +282,11 @@ if __name__ == "__main__":
   parse_go_result(args.go_input_file)
 
   metadata = get_metadata()
-  print "uploading cpp results..."
+  print("uploading cpp results...")
   upload_result(cpp_result, metadata)
-  print "uploading java results..."
+  print("uploading java results...")
   upload_result(java_result, metadata)
-  print "uploading python results..."
+  print("uploading python results...")
   upload_result(python_result, metadata)
-  print "uploading go results..."
+  print("uploading go results...")
   upload_result(go_result, metadata)
