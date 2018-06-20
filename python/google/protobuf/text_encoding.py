@@ -104,4 +104,4 @@ def CUnescape(text):
   return (result.encode('ascii')  # Make it bytes to allow decode.
           .decode('unicode_escape')
           # Make it bytes again to return the proper type.
-          .encode('raw_unicode_escape'))
+          .encode('utf-8'))
