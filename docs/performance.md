@@ -1,4 +1,4 @@
-# Protobuf Perforamcne
+# Protobuf Performance
 This benchmark result is tested on workstation with processor of Intel® Xeon® Processor E5-2630 and 32GB RAM
 
 This table contains 3 languages' results:
