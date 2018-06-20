@@ -408,7 +408,6 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   printer->Print(
       "public void WriteTo(pb::CodedOutputStream output) {\n");
   printer->Indent();
-  printer->Print("pb::ProtoPreconditions.CheckInitialized(this);\n");
 
   // Serialize all the fields
   for (int i = 0; i < fields_by_number().size(); i++) {
@@ -556,7 +555,6 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print("}\n"); // switch
   printer->Outdent();
   printer->Print("}\n"); // while
-  printer->Print("pb::ProtoPreconditions.CheckMergedRequiredFields(this);\n");
   printer->Outdent();
   printer->Print("}\n\n"); // method
 
