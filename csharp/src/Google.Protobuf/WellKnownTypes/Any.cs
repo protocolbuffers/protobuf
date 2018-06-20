@@ -259,7 +259,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (TypeUrl.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(TypeUrl);
@@ -320,7 +319,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

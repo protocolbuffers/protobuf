@@ -249,7 +249,6 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
         output.WriteRawTag(10);
         output.WriteBytes(ProtobufPayload);
@@ -341,7 +340,6 @@ namespace Conformance {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -613,7 +611,6 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (resultCase_ == ResultOneofCase.ParseError) {
         output.WriteRawTag(10);
         output.WriteString(ParseError);
@@ -733,7 +730,6 @@ namespace Conformance {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

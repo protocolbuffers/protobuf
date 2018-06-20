@@ -147,7 +147,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(Value);
@@ -194,7 +193,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -298,7 +296,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0F) {
         output.WriteRawTag(13);
         output.WriteFloat(Value);
@@ -345,7 +342,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -449,7 +445,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(Value);
@@ -496,7 +491,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -600,7 +594,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0UL) {
         output.WriteRawTag(8);
         output.WriteUInt64(Value);
@@ -647,7 +640,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -751,7 +743,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Value);
@@ -798,7 +789,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -902,7 +892,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0) {
         output.WriteRawTag(8);
         output.WriteUInt32(Value);
@@ -949,7 +938,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1053,7 +1041,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != false) {
         output.WriteRawTag(8);
         output.WriteBool(Value);
@@ -1100,7 +1087,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1204,7 +1190,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Value);
@@ -1251,7 +1236,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1355,7 +1339,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value.Length != 0) {
         output.WriteRawTag(10);
         output.WriteBytes(Value);
@@ -1402,7 +1385,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

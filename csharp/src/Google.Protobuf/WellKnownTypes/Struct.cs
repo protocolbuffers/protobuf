@@ -158,7 +158,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       fields_.WriteTo(output, _map_fields_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -198,7 +197,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -467,7 +465,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (kindCase_ == KindOneofCase.NullValue) {
         output.WriteRawTag(8);
         output.WriteEnum((int) NullValue);
@@ -604,7 +601,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -699,7 +695,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       values_.WriteTo(output, _repeated_values_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -739,7 +734,6 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

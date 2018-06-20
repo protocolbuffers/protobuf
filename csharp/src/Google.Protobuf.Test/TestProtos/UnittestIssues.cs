@@ -153,7 +153,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -186,7 +185,6 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -262,7 +260,6 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          pb::ProtoPreconditions.CheckInitialized(this);
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
@@ -295,7 +292,6 @@ namespace UnitTest.Issues.TestProtos {
                 break;
             }
           }
-          pb::ProtoPreconditions.CheckMergedRequiredFields(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -371,7 +367,6 @@ namespace UnitTest.Issues.TestProtos {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
-              pb::ProtoPreconditions.CheckInitialized(this);
               if (_unknownFields != null) {
                 _unknownFields.WriteTo(output);
               }
@@ -404,7 +399,6 @@ namespace UnitTest.Issues.TestProtos {
                     break;
                 }
               }
-              pb::ProtoPreconditions.CheckMergedRequiredFields(this);
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -536,7 +530,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
@@ -599,7 +592,6 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -673,7 +665,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -706,7 +697,6 @@ namespace UnitTest.Issues.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -897,7 +887,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (PrimitiveValue != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveValue);
@@ -1001,7 +990,6 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1103,7 +1091,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Item != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Item);
@@ -1150,7 +1137,6 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1268,7 +1254,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Types_ != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Types_);
@@ -1329,7 +1314,6 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1408,7 +1392,6 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          pb::ProtoPreconditions.CheckInitialized(this);
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
@@ -1441,7 +1424,6 @@ namespace UnitTest.Issues.TestProtos {
                 break;
             }
           }
-          pb::ProtoPreconditions.CheckMergedRequiredFields(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1716,7 +1698,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (PlainString.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(PlainString);
@@ -1839,7 +1820,6 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1982,7 +1962,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -2057,7 +2036,6 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2206,7 +2184,6 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (valueCase_ == ValueOneofCase.Text) {
         output.WriteRawTag(10);
         output.WriteString(Text);
@@ -2278,7 +2255,6 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2398,7 +2374,6 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          pb::ProtoPreconditions.CheckInitialized(this);
           if (X != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(X);
@@ -2459,7 +2434,6 @@ namespace UnitTest.Issues.TestProtos {
               }
             }
           }
-          pb::ProtoPreconditions.CheckMergedRequiredFields(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

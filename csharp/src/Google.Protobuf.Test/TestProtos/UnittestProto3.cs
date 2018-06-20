@@ -1213,7 +1213,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (SingleInt32 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(SingleInt32);
@@ -1815,7 +1814,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1941,7 +1939,6 @@ namespace Google.Protobuf.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          pb::ProtoPreconditions.CheckInitialized(this);
           if (Bb != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -1988,7 +1985,6 @@ namespace Google.Protobuf.TestProtos {
               }
             }
           }
-          pb::ProtoPreconditions.CheckMergedRequiredFields(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2131,7 +2127,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (child_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Child);
@@ -2211,7 +2206,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2312,7 +2306,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (DeprecatedInt32 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(DeprecatedInt32);
@@ -2359,7 +2352,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2459,7 +2451,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (C != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(C);
@@ -2506,7 +2497,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2580,7 +2570,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -2613,7 +2602,6 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2714,7 +2702,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (foreignNested_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(ForeignNested);
@@ -2767,7 +2754,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2892,7 +2878,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (A != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -2953,7 +2938,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3073,7 +3057,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
@@ -3140,7 +3123,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3241,7 +3223,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (bb_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Bb);
@@ -3294,7 +3275,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3414,7 +3394,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
@@ -3481,7 +3460,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3577,7 +3555,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Value != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
@@ -3624,7 +3601,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3844,7 +3820,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (PrimitiveField != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveField);
@@ -3969,7 +3944,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4140,7 +4114,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (MyInt != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(MyInt);
@@ -4235,7 +4208,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4360,7 +4332,6 @@ namespace Google.Protobuf.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          pb::ProtoPreconditions.CheckInitialized(this);
           if (Bb != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -4421,7 +4392,6 @@ namespace Google.Protobuf.TestProtos {
               }
             }
           }
-          pb::ProtoPreconditions.CheckMergedRequiredFields(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4522,7 +4492,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (SparseEnum != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) SparseEnum);
@@ -4569,7 +4538,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4668,7 +4636,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Data);
@@ -4715,7 +4682,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4802,7 +4768,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       data_.WriteTo(output, _repeated_data_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -4842,7 +4807,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4938,7 +4902,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteBytes(Data);
@@ -4985,7 +4948,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5081,7 +5043,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteBytes(Data);
@@ -5128,7 +5089,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5227,7 +5187,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Data);
@@ -5274,7 +5233,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5370,7 +5328,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != 0) {
         output.WriteRawTag(8);
         output.WriteUInt32(Data);
@@ -5417,7 +5374,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5513,7 +5469,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(Data);
@@ -5560,7 +5515,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5656,7 +5610,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != 0UL) {
         output.WriteRawTag(8);
         output.WriteUInt64(Data);
@@ -5703,7 +5656,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5799,7 +5751,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (Data != false) {
         output.WriteRawTag(8);
         output.WriteBool(Data);
@@ -5846,7 +5797,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6017,7 +5967,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (fooCase_ == FooOneofCase.FooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -6103,7 +6052,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6359,7 +6307,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       packedInt32_.WriteTo(output, _repeated_packedInt32_codec);
       packedInt64_.WriteTo(output, _repeated_packedInt64_codec);
       packedUint32_.WriteTo(output, _repeated_packedUint32_codec);
@@ -6504,7 +6451,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6764,7 +6710,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       unpackedInt32_.WriteTo(output, _repeated_unpackedInt32_codec);
       unpackedInt64_.WriteTo(output, _repeated_unpackedInt64_codec);
       unpackedUint32_.WriteTo(output, _repeated_unpackedUint32_codec);
@@ -6909,7 +6854,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7075,7 +7019,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       repeatedFixed32_.WriteTo(output, _repeated_repeatedFixed32_codec);
       repeatedInt32_.WriteTo(output, _repeated_repeatedInt32_codec);
       repeatedFixed64_.WriteTo(output, _repeated_repeatedFixed64_codec);
@@ -7156,7 +7099,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7255,7 +7197,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (A.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(A);
@@ -7302,7 +7243,6 @@ namespace Google.Protobuf.TestProtos {
           }
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7379,7 +7319,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7412,7 +7351,6 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7486,7 +7424,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7519,7 +7456,6 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7593,7 +7529,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7626,7 +7561,6 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7700,7 +7634,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7733,7 +7666,6 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7807,7 +7739,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7840,7 +7771,6 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7914,7 +7844,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7947,7 +7876,6 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8021,7 +7949,6 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      pb::ProtoPreconditions.CheckInitialized(this);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -8054,7 +7981,6 @@ namespace Google.Protobuf.TestProtos {
             break;
         }
       }
-      pb::ProtoPreconditions.CheckMergedRequiredFields(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
