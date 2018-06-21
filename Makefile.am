@@ -51,6 +51,7 @@ pkgconfig_DATA = protobuf.pc protobuf-lite.pc
 csharp_EXTRA_DIST=                                                           \
   csharp/.gitignore                                                          \
   csharp/CHANGES.txt                                                         \
+  csharp/Google.Protobuf.Tools.targets                                       \
   csharp/Google.Protobuf.Tools.nuspec                                        \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
