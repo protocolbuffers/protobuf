@@ -648,6 +648,9 @@ Status ProtoStreamObjectSource::RenderAny(const ProtoStreamObjectSource* os,
   // using a nested ProtoStreamObjectSource using our nested type information.
   ProtoStreamObjectSource nested_os(&in_stream, os->typeinfo_, *nested_type);
 
+  // TODO(htuch): This is somewhat fragile, since new options may be omitted.
+  // We should probably do this via the constructor or some object grouping
+  // options.
   nested_os.set_use_lower_camel_for_enums(os->use_lower_camel_for_enums_);
   nested_os.set_use_ints_for_enums(os->use_ints_for_enums_);
   nested_os.set_preserve_proto_field_names(os->preserve_proto_field_names_);
