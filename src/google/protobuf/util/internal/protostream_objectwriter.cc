@@ -534,7 +534,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     Push("", Item::MESSAGE, false, false);
     ProtoWriter::RenderDataPiece("key",
                                  DataPiece(name, use_strict_base64_decoding()));
-    Push("value", Item::MESSAGE, true, false);
+    Push("value", IsAny(*Lookup("value")) ? Item::ANY : Item::MESSAGE, true, false);
 
     // Make sure we are valid so far after starting map fields.
     if (invalid_depth() > 0) return this;
