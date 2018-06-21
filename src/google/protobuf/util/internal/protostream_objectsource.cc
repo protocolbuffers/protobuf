@@ -648,6 +648,10 @@ Status ProtoStreamObjectSource::RenderAny(const ProtoStreamObjectSource* os,
   // using a nested ProtoStreamObjectSource using our nested type information.
   ProtoStreamObjectSource nested_os(&in_stream, os->typeinfo_, *nested_type);
 
+  nested_os.set_use_lower_camel_for_enums(os->use_lower_camel_for_enums_);
+  nested_os.set_use_ints_for_enums(os->use_ints_for_enums_);
+  nested_os.set_preserve_proto_field_names(os->preserve_proto_field_names_);
+
   // We manually call start and end object here so we can inject the @type.
   ow->StartObject(field_name);
   ow->RenderString("@type", type_url);

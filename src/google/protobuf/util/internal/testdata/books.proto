@@ -69,6 +69,9 @@ message Book {
   }
   optional Type type = 11;
 
+  // Useful for testing JSON snake/camel-case conversions.
+  optional string snake_field = 12;
+
   extensions 200 to 499;
 }
 
