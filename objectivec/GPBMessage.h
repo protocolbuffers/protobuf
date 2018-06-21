@@ -242,6 +242,18 @@ CF_EXTERN_C_END
                     extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
                                 error:(NSError **)errorPtr;
 
+
+/**
+ * Initializes an instance by parsing the data. This method should be sent to
+ * the generated message class that the data should be interpreted as. If
+ * there is an error the method returns nil and the error is returned in
+ * errorPtr (when provided).
+
+ * @param data The JSON data to parse.
+ * @return An initialized instance of the generated class.
+ */
+- (nullable instancetype)initWithJSONData:(NSData*)data;
+
 /**
  * Initializes an instance by parsing the data from the given input stream. This
  * method should be sent to the generated message class that the data should
@@ -352,6 +364,13 @@ CF_EXTERN_C_END
  * @return The binary representation of the size along with the message.
  **/
 - (NSData *)delimitedData;
+
+/**
+ *Serializes the message to an NSData.
+ *
+ *@return The JSON representation of the message.
+ */
+- (nullable NSData*)json;
 
 /**
  * Calculates the size of the object if it were serialized.
