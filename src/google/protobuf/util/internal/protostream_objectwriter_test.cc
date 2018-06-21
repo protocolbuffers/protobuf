@@ -1679,6 +1679,22 @@ TEST_P(ProtoStreamObjectWriterMapTest, RepeatedMapKeyTest) {
       ->EndObject();
 }
 
+TEST_P(ProtoStreamObjectWriterMapTest, AnyInMap) {
+  MapIn mm;
+  google::protobuf::DoubleValue d;
+  d.set_value(40.2);
+  (*mm.mutable_map_any())["foo"].PackFrom(d);
+  ow_->StartObject("")
+      ->StartObject("map_any")
+      ->StartObject("foo")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.DoubleValue")
+      ->RenderDouble("value", 40.2)
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(mm);
+}
+
 class ProtoStreamObjectWriterAnyTest : public BaseProtoStreamObjectWriterTest {
  protected:
   ProtoStreamObjectWriterAnyTest() {

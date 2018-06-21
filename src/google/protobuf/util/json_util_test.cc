@@ -284,7 +284,7 @@ TEST_F(JsonUtilTest, ParsePrimitiveMapIn) {
   JsonPrintOptions print_options;
   print_options.always_print_primitive_fields = true;
   JsonParseOptions parse_options;
-  EXPECT_EQ("{\"other\":\"\",\"things\":[],\"mapInput\":{}}",
+  EXPECT_EQ("{\"other\":\"\",\"things\":[],\"mapInput\":{},\"mapAny\":{}}",
             ToJson(message, print_options));
   MapIn other;
   ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
