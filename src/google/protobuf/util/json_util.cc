@@ -127,7 +127,8 @@ class StatusErrorListener : public converter::ErrorListener {
   virtual void InvalidName(const converter::LocationTrackerInterface& loc,
                            StringPiece unknown_name, StringPiece message) {
     status_ = util::Status(util::error::INVALID_ARGUMENT,
-                             loc.ToString() + ": " + string(message));
+                           loc.ToString() + ":invalid name " +
+                               string(unknown_name) + ": " + string(message));
   }
 
   virtual void InvalidValue(const converter::LocationTrackerInterface& loc,
