@@ -370,7 +370,7 @@ CF_EXTERN_C_END
  *
  *@return The JSON representation of the message.
  */
-- (nullable NSData*)JSONData;
+- (nullable NSData*)json;
 
 /**
  * Calculates the size of the object if it were serialized.

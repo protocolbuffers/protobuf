@@ -1579,7 +1579,7 @@ static void JsonToMessage(GPBMessage* msg, id<NSObject> root) {
 }
 
 
-- (nullable NSData*)JSONData {
+- (nullable NSData*)json {
   id<NSObject> obj = MessageToJson(self);
   NSAssert([NSJSONSerialization isValidJSONObject:obj], @"Not Json");
   NSData* data = [NSJSONSerialization dataWithJSONObject:obj options:kNilOptions error:nil];
