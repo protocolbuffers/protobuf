@@ -786,15 +786,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   return self->unknownFields_;
 }
 
-static NSNumber* __REAL(double value) {
-  return [NSNumber numberWithDouble:value];
-}
-static NSNumber* __INTEGER(int64_t value) {
-  return [NSNumber numberWithLongLong:value];
-}
-static NSNumber* __BOOL(bool value) {
-  return [NSNumber numberWithBool:value];
-}
 static id<NSObject> FieldToJson(GPBMessage* msg, GPBFieldDescriptor *field, size_t index);
 static id<NSObject> MessageToJson(GPBMessage* msg);
 static void JsonToMessage(GPBMessage* msg, id<NSObject> root);
@@ -805,7 +796,7 @@ static id<NSObject> FieldToJson(GPBMessage* msg, GPBFieldDescriptor *field, size
   id<NSObject> jf = nil;
   
   switch ([field dataType]) {
-#define __CASE(type, ctype, fmt, arraytype, sfunc)                     \
+#define CASE_NUMBER_TYPE(type, ctype, arraytype, sfunc)                \
 case type: {                                                           \
   ctype value;                                                         \
   if (repeated) {                                                      \
@@ -814,24 +805,24 @@ case type: {                                                           \
   } else {                                                             \
     value = sfunc(msg, field);                                         \
   }                                                                    \
-  jf = fmt(value);                                                     \
+  jf = @(value);                                                       \
   break;                                                               \
 }
       
-      __CASE(GPBDataTypeDouble, double, __REAL,GPBDoubleArray,GPBGetMessageDoubleField);
-      __CASE(GPBDataTypeFloat, double, __REAL,GPBFloatArray,GPBGetMessageFloatField);
-      __CASE(GPBDataTypeInt64, uint64_t, __INTEGER,GPBInt64Array,GPBGetMessageInt64Field);
-      __CASE(GPBDataTypeSFixed64, uint64_t, __INTEGER,GPBInt64Array,GPBGetMessageInt64Field);
-      __CASE(GPBDataTypeSInt64, uint64_t, __INTEGER,GPBInt64Array,GPBGetMessageInt64Field);
-      __CASE(GPBDataTypeUInt64, uint64_t, __INTEGER,GPBUInt64Array,GPBGetMessageUInt64Field);
-      __CASE(GPBDataTypeFixed64, uint64_t, __INTEGER,GPBUInt64Array,GPBGetMessageUInt64Field);
-      __CASE(GPBDataTypeInt32, uint64_t, __INTEGER,GPBInt32Array,GPBGetMessageInt32Field);
-      __CASE(GPBDataTypeSInt32, uint64_t, __INTEGER,GPBInt32Array,GPBGetMessageInt32Field);
-      __CASE(GPBDataTypeSFixed32, uint64_t, __INTEGER,GPBInt32Array,GPBGetMessageInt32Field);
-      __CASE(GPBDataTypeUInt32, uint64_t, __INTEGER,GPBUInt32Array,GPBGetMessageUInt32Field);
-      __CASE(GPBDataTypeFixed32, uint64_t, __INTEGER,GPBUInt32Array,GPBGetMessageUInt32Field);
-      __CASE(GPBDataTypeBool, bool, __BOOL,GPBBoolArray,GPBGetMessageBoolField);
-#undef __CASE
+      CASE_NUMBER_TYPE( GPBDataTypeDouble, double, GPBDoubleArray, GPBGetMessageDoubleField );
+      CASE_NUMBER_TYPE( GPBDataTypeFloat, double, GPBFloatArray, GPBGetMessageFloatField );
+      CASE_NUMBER_TYPE( GPBDataTypeInt64, uint64_t, GPBInt64Array, GPBGetMessageInt64Field );
+      CASE_NUMBER_TYPE( GPBDataTypeSFixed64, uint64_t, GPBInt64Array, GPBGetMessageInt64Field );
+      CASE_NUMBER_TYPE( GPBDataTypeSInt64, uint64_t, GPBInt64Array, GPBGetMessageInt64Field );
+      CASE_NUMBER_TYPE( GPBDataTypeUInt64, uint64_t, GPBUInt64Array, GPBGetMessageUInt64Field );
+      CASE_NUMBER_TYPE( GPBDataTypeFixed64, uint64_t, GPBUInt64Array, GPBGetMessageUInt64Field );
+      CASE_NUMBER_TYPE( GPBDataTypeInt32, uint64_t, GPBInt32Array, GPBGetMessageInt32Field );
+      CASE_NUMBER_TYPE( GPBDataTypeSInt32, uint64_t, GPBInt32Array, GPBGetMessageInt32Field );
+      CASE_NUMBER_TYPE( GPBDataTypeSFixed32, uint64_t, GPBInt32Array, GPBGetMessageInt32Field );
+      CASE_NUMBER_TYPE( GPBDataTypeUInt32, uint64_t, GPBUInt32Array, GPBGetMessageUInt32Field );
+      CASE_NUMBER_TYPE( GPBDataTypeFixed32, uint64_t, GPBUInt32Array, GPBGetMessageUInt32Field );
+      CASE_NUMBER_TYPE( GPBDataTypeBool, bool, GPBBoolArray, GPBGetMessageBoolField );
+#undef CASE_NUMBER_TYPE
     case GPBDataTypeString:
     {
       NSString* value = nil;
@@ -880,9 +871,12 @@ case type: {                                                           \
       } else {
         value = GPBGetMessageEnumField(msg, field);
       }
-      jf = __INTEGER(value);
+      jf = @(value);
     }
       break;
+    case GPBDataTypeGroup: {
+      break;
+    }
     default:
       break;
   }
@@ -900,7 +894,7 @@ static id<NSObject> MessageToJson(GPBMessage* msg) {
       NSArray* array = GPBGetMessageRepeatedField(msg, field);
       if ([array respondsToSelector:@selector(count)]&& [array count]!=0) {
         NSMutableArray* list = [NSMutableArray arrayWithCapacity:[array count]];
-        for (int i = 0; i<[array count]; ++i) {
+        for (NSUInteger i = 0; i<[array count]; ++i) {
           id<NSObject> res = FieldToJson(msg, field, i);
           if (nil!=res) {
             [list addObject:res];
@@ -927,7 +921,7 @@ static void JsonToField(GPBMessage* msg, GPBFieldDescriptor* field, id<NSObject>
   BOOL repeated = ([field fieldType] == GPBFieldTypeRepeated);
   switch ([field dataType]) {
       
-#define __SET_OR_ADD(sfunc, value, arraytype)                             \
+#define SET_OR_ADD_FIELD(sfunc, value, arraytype)                         \
 do {                                                                      \
   if (repeated) {                                                         \
     arraytype *array = GPBGetMessageRepeatedField(msg, field);            \
@@ -940,31 +934,82 @@ do {                                                                      \
     sfunc(msg, field, value);                                             \
   }                                                                       \
 } while (0);
-#define __CASE(type, ctype, fmt, arraytype, sfunc)                        \
+#define CASE_NUMBER_TYPE(type, ctype, fmt, arraytype, sfunc)              \
 case type: {                                                              \
   NSNumber* js = (NSNumber*)jf;                                           \
   ctype value = [js fmt];                                                 \
-  __SET_OR_ADD(sfunc, value, arraytype);                                  \
+  SET_OR_ADD_FIELD(sfunc, value, arraytype);                              \
   break;                                                                  \
 }
       
-      __CASE(GPBDataTypeDouble, double, doubleValue,GPBDoubleArray,GPBSetMessageDoubleField);
-      __CASE(GPBDataTypeFloat, double, doubleValue,GPBFloatArray,GPBSetMessageFloatField);
-      __CASE(GPBDataTypeInt64, int64_t,longLongValue, GPBInt64Array,GPBSetMessageInt64Field);
-      __CASE(GPBDataTypeSFixed64,int64_t, longLongValue, GPBInt64Array,GPBSetMessageInt64Field);
-      __CASE(GPBDataTypeSInt64,int64_t, longLongValue, GPBInt64Array,GPBSetMessageInt64Field);
-      __CASE(GPBDataTypeUInt64,int64_t, longLongValue, GPBUInt64Array,GPBSetMessageUInt64Field);
-      __CASE(GPBDataTypeFixed64,int64_t, longLongValue, GPBUInt64Array,GPBSetMessageUInt64Field);
-      __CASE(GPBDataTypeInt32,int64_t, longLongValue, GPBInt32Array,GPBSetMessageInt32Field);
-      __CASE(GPBDataTypeSInt32,int64_t, longLongValue, GPBInt32Array,GPBSetMessageInt32Field);
-      __CASE(GPBDataTypeSFixed32,int64_t, longLongValue, GPBInt32Array,GPBSetMessageInt32Field);
-      __CASE(GPBDataTypeUInt32,int64_t, longLongValue, GPBUInt32Array,GPBSetMessageUInt32Field);
-      __CASE(GPBDataTypeFixed32,int64_t, longLongValue, GPBUInt32Array,GPBSetMessageUInt32Field);
-      __CASE(GPBDataTypeBool, BOOL, boolValue,GPBBoolArray,GPBSetMessageBoolField);
-#undef __SET_OR_ADD
-#undef __CASE
+      CASE_NUMBER_TYPE(GPBDataTypeDouble,
+                       double,
+                       doubleValue,
+                       GPBDoubleArray,
+                       GPBSetMessageDoubleField);
+      CASE_NUMBER_TYPE(GPBDataTypeFloat,
+                       float,
+                       floatValue,
+                       GPBFloatArray,
+                       GPBSetMessageFloatField);
+      CASE_NUMBER_TYPE(GPBDataTypeInt64,
+                       int64_t,
+                       longLongValue,
+                       GPBInt64Array,
+                       GPBSetMessageInt64Field);
+      CASE_NUMBER_TYPE(GPBDataTypeSFixed64,
+                       int64_t,
+                       longLongValue,
+                       GPBInt64Array,
+                       GPBSetMessageInt64Field);
+      CASE_NUMBER_TYPE(GPBDataTypeSInt64,
+                       int64_t,
+                       longLongValue,
+                       GPBInt64Array,
+                       GPBSetMessageInt64Field);
+      CASE_NUMBER_TYPE(GPBDataTypeUInt64,
+                       int64_t,
+                       longLongValue,
+                       GPBUInt64Array,GPBSetMessageUInt64Field);
+      CASE_NUMBER_TYPE(GPBDataTypeFixed64,
+                       int64_t,
+                       longLongValue,
+                       GPBUInt64Array,
+                       GPBSetMessageUInt64Field);
+      CASE_NUMBER_TYPE(GPBDataTypeInt32,
+                       int32_t,
+                       intValue,
+                       GPBInt32Array,
+                       GPBSetMessageInt32Field);
+      CASE_NUMBER_TYPE(GPBDataTypeSInt32,
+                       int32_t,
+                       intValue,
+                       GPBInt32Array,
+                       GPBSetMessageInt32Field);
+      CASE_NUMBER_TYPE(GPBDataTypeSFixed32,
+                       int32_t,
+                       intValue,
+                       GPBInt32Array,
+                       GPBSetMessageInt32Field);
+      CASE_NUMBER_TYPE(GPBDataTypeUInt32,
+                       uint32_t,
+                       unsignedIntValue,
+                       GPBUInt32Array,
+                       GPBSetMessageUInt32Field);
+      CASE_NUMBER_TYPE(GPBDataTypeFixed32,
+                       uint32_t,
+                       unsignedIntValue,
+                       GPBUInt32Array,
+                       GPBSetMessageUInt32Field);
+      CASE_NUMBER_TYPE(GPBDataTypeBool,
+                       BOOL,
+                       boolValue,
+                       GPBBoolArray,
+                       GPBSetMessageBoolField);
+#undef SET_OR_ADD_FIELD
+#undef CASE_NUMBER_TYPE
 
-#define __SET_OR_ADD(sfunc, value, arraytype)                         \
+#define SET_OR_ADD_FIELD(sfunc, value, arraytype)                     \
 do {                                                                  \
   if (repeated) {                                                     \
     arraytype *array = GPBGetMessageRepeatedField(msg, field);        \
@@ -984,7 +1029,7 @@ do {                                                                  \
         NSCAssert(NO,@"Not a string");
       }
       NSString* string = (NSString*)jf;
-      __SET_OR_ADD(GPBSetMessageStringField, string, NSMutableArray);
+      SET_OR_ADD_FIELD(GPBSetMessageStringField, string, NSMutableArray);
     }
       break;
     case GPBDataTypeBytes:
@@ -994,14 +1039,15 @@ do {                                                                  \
       }
       NSString* string = (NSString*)jf;
       NSData *decodedData = [[NSData alloc] initWithBase64EncodedString:string options:0];
-      __SET_OR_ADD(GPBSetMessageBytesField, decodedData, NSMutableArray);
+      SET_OR_ADD_FIELD(GPBSetMessageBytesField, decodedData, NSMutableArray);
+      [decodedData release];
     }
       break;
     case GPBDataTypeMessage:
     {
       GPBMessage* mf = nil;
       if (repeated) {
-        mf = [[field.msgClass alloc] init];
+        mf = [[[field.msgClass alloc] init] autorelease];
       } else {
         mf = GPBGetMessageMessageField(msg, field);
       }
@@ -1020,10 +1066,11 @@ do {                                                                  \
         NSNumber* js = (NSNumber*)jf;
         value = [js intValue];
       } else if ([jf isKindOfClass:[NSString class]]) {
-        
         BOOL ret = [ed getValue:&value
           forEnumTextFormatName:(NSString*)jf];
-        assert(ret);
+        if (!ret) {
+          NSCAssert(NO,@"string convert to enum fail");
+        }
       } else {
         NSCAssert(NO,@"Not an integer or string");
       }
@@ -1035,6 +1082,9 @@ do {                                                                  \
       }
     }
       break;
+    case GPBDataTypeGroup: {
+      break;
+    }
     default:
       break;
   }
@@ -1067,7 +1117,7 @@ static void JsonToMessage(GPBMessage* msg, id<NSObject> root) {
     if ([field fieldType] == GPBFieldTypeRepeated) {
       if (![jf isKindOfClass:[NSArray class]])
         [NSException exceptionWithName:@"Not array" reason:@"Not array" userInfo:nil];
-      for (NSInteger j = 0; j<[(NSArray*)jf count]; ++j) {
+      for (NSUInteger j = 0; j<[(NSArray*)jf count]; ++j) {
         JsonToField(msg, field, [(NSArray*)jf objectAtIndex:j]);
       }
     } else {
