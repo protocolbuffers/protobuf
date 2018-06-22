@@ -244,7 +244,9 @@ class TextFormat::Parser::ParserImpl {
              bool allow_unknown_enum,
              bool allow_field_number,
              bool allow_relaxed_whitespace,
-             bool allow_partial)
+             bool allow_partial,
+             const FieldValueParser* default_field_value_parser,
+             const CustomParserMap* custom_parsers)
     : error_collector_(error_collector),
       finder_(finder),
       parse_info_tree_(parse_info_tree),
@@ -257,7 +259,9 @@ class TextFormat::Parser::ParserImpl {
       allow_unknown_enum_(allow_unknown_enum),
       allow_field_number_(allow_field_number),
       allow_partial_(allow_partial),
-      had_errors_(false) {
+      had_errors_(false),
+      default_field_value_parser_(default_field_value_parser),
+      custom_parsers_(custom_parsers){
     // For backwards-compatibility with proto1, we need to allow the 'f' suffix
     // for floats.
     tokenizer_.set_allow_f_after_float(true);
@@ -543,7 +547,7 @@ class TextFormat::Parser::ParserImpl {
       if (consumed_semicolon && field->options().weak() && LookingAtType(io::Tokenizer::TYPE_STRING)) {
         // we are getting a bytes string for a weak field.
         string tmp;
-        DO(ConsumeString(&tmp));
+        DO(ConsumeString(&tmp,field));
         reflection->MutableMessage(message, field)->ParseFromString(tmp);
         goto label_skip_parsing;
       }
@@ -676,49 +680,49 @@ label_skip_parsing:
     switch(field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_INT32: {
         int64 value;
-        DO(ConsumeSignedInteger(&value, kint32max));
+        DO(ConsumeSignedInteger(&value, kint32max,field));
         SET_FIELD(Int32, static_cast<int32>(value));
         break;
       }
 
       case FieldDescriptor::CPPTYPE_UINT32: {
         uint64 value;
-        DO(ConsumeUnsignedInteger(&value, kuint32max));
+        DO(ConsumeUnsignedInteger(&value, kuint32max,field));
         SET_FIELD(UInt32, static_cast<uint32>(value));
         break;
       }
 
       case FieldDescriptor::CPPTYPE_INT64: {
         int64 value;
-        DO(ConsumeSignedInteger(&value, kint64max));
+        DO(ConsumeSignedInteger(&value, kint64max,field));
         SET_FIELD(Int64, value);
         break;
       }
 
       case FieldDescriptor::CPPTYPE_UINT64: {
         uint64 value;
-        DO(ConsumeUnsignedInteger(&value, kuint64max));
+        DO(ConsumeUnsignedInteger(&value, kuint64max,field));
         SET_FIELD(UInt64, value);
         break;
       }
 
       case FieldDescriptor::CPPTYPE_FLOAT: {
         double value;
-        DO(ConsumeDouble(&value));
+        DO(ConsumeDouble(&value,field));
         SET_FIELD(Float, io::SafeDoubleToFloat(value));
         break;
       }
 
       case FieldDescriptor::CPPTYPE_DOUBLE: {
         double value;
-        DO(ConsumeDouble(&value));
+        DO(ConsumeDouble(&value,field));
         SET_FIELD(Double, value);
         break;
       }
 
       case FieldDescriptor::CPPTYPE_STRING: {
         string value;
-        DO(ConsumeString(&value));
+        DO(ConsumeString(&value,field));
         SET_FIELD(String, value);
         break;
       }
@@ -726,7 +730,7 @@ label_skip_parsing:
       case FieldDescriptor::CPPTYPE_BOOL: {
         if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           uint64 value;
-          DO(ConsumeUnsignedInteger(&value, 1));
+          DO(ConsumeUnsignedInteger(&value, 1,field));
           SET_FIELD(Bool, value);
         } else {
           string value;
@@ -757,7 +761,7 @@ label_skip_parsing:
         } else if (LookingAt("-") ||
                    LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           int64 int_value;
-          DO(ConsumeSignedInteger(&int_value, kint32max));
+          DO(ConsumeSignedInteger(&int_value, kint32max,field));
           value = SimpleItoa(int_value);        // for error reporting
           enum_value = enum_type->FindValueByNumber(int_value);
         } else {
@@ -916,15 +920,20 @@ label_skip_parsing:
 
   // Consumes a string and saves its value in the text parameter.
   // Returns false if the token is not of type STRING.
-  bool ConsumeString(string* text) {
+  bool ConsumeString(string* text,const FieldDescriptor* value_field) {
     if (!LookingAtType(io::Tokenizer::TYPE_STRING)) {
       ReportError("Expected string, got: " + tokenizer_.current().text);
       return false;
     }
 
     text->clear();
+
+    const FieldValueParser* parser = FindWithDefault(
+      *custom_parsers_, value_field, default_field_value_parser_);
+
     while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
-      io::Tokenizer::ParseStringAppend(tokenizer_.current().text, text);
+
+      parser->ParseStringAppend(tokenizer_.current().text, text);
 
       tokenizer_.Next();
     }
@@ -934,13 +943,17 @@ label_skip_parsing:
 
   // Consumes a uint64 and saves its value in the value parameter.
   // Returns false if the token is not of type INTEGER.
-  bool ConsumeUnsignedInteger(uint64* value, uint64 max_value) {
+  bool ConsumeUnsignedInteger(uint64* value, uint64 max_value,
+      const FieldDescriptor* value_field) {
     if (!LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
       ReportError("Expected integer, got: " + tokenizer_.current().text);
       return false;
     }
 
-    if (!io::Tokenizer::ParseInteger(tokenizer_.current().text,
+    const FieldValueParser* parser = FindWithDefault(
+      *custom_parsers_, value_field, default_field_value_parser_);
+
+    if (!parser->ParseInteger(tokenizer_.current().text,
                                      max_value, value)) {
       ReportError("Integer out of range (" + tokenizer_.current().text + ")");
       return false;
@@ -955,7 +968,8 @@ label_skip_parsing:
   // we actually may consume an additional token (for the minus sign) in this
   // method. Returns false if the token is not an integer
   // (signed or otherwise).
-  bool ConsumeSignedInteger(int64* value, uint64 max_value) {
+  bool ConsumeSignedInteger(int64* value, uint64 max_value,
+      const FieldDescriptor* value_field) {
     bool negative = false;
 
     if (TryConsume("-")) {
@@ -967,7 +981,7 @@ label_skip_parsing:
 
     uint64 unsigned_value;
 
-    DO(ConsumeUnsignedInteger(&unsigned_value, max_value));
+    DO(ConsumeUnsignedInteger(&unsigned_value, max_value,value_field));
 
     if (negative) {
       if ((static_cast<uint64>(kint64max) + 1) == unsigned_value) {
@@ -984,7 +998,8 @@ label_skip_parsing:
 
   // Consumes a uint64 and saves its value in the value parameter.
   // Accepts decimal numbers only, rejects hex or oct numbers.
-  bool ConsumeUnsignedDecimalInteger(uint64* value, uint64 max_value) {
+  bool ConsumeUnsignedDecimalInteger(uint64* value, uint64 max_value,
+      const FieldDescriptor* value_field) {
     if (!LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
       ReportError("Expected integer, got: " + tokenizer_.current().text);
       return false;
@@ -996,7 +1011,10 @@ label_skip_parsing:
       return false;
     }
 
-    if (!io::Tokenizer::ParseInteger(text, max_value, value)) {
+    const FieldValueParser* parser = FindWithDefault(
+      *custom_parsers_, value_field, default_field_value_parser_);
+
+    if (!parser->ParseInteger(text, max_value, value)) {
       ReportError("Integer out of range (" + text + ")");
       return false;
     }
@@ -1010,7 +1028,7 @@ label_skip_parsing:
   // we actually may consume an additional token (for the minus sign) in this
   // method. Returns false if the token is not a double
   // (signed or otherwise).
-  bool ConsumeDouble(double* value) {
+  bool ConsumeDouble(double* value,const FieldDescriptor* value_field) {
     bool negative = false;
 
     if (TryConsume("-")) {
@@ -1022,12 +1040,15 @@ label_skip_parsing:
     if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
       // We have found an integer value for the double.
       uint64 integer_value;
-      DO(ConsumeUnsignedDecimalInteger(&integer_value, kuint64max));
+      DO(ConsumeUnsignedDecimalInteger(&integer_value, kuint64max,value_field));
 
       *value = static_cast<double>(integer_value);
     } else if (LookingAtType(io::Tokenizer::TYPE_FLOAT)) {
+      const FieldValueParser* parser = FindWithDefault(
+        *custom_parsers_, value_field, default_field_value_parser_);
+
       // We have found a float value for the double.
-      *value = io::Tokenizer::ParseFloat(tokenizer_.current().text);
+      *value = parser->ParseFloat(tokenizer_.current().text);
 
       // Mark the current token as consumed.
       tokenizer_.Next();
@@ -1166,6 +1187,8 @@ label_skip_parsing:
   const bool allow_field_number_;
   const bool allow_partial_;
   bool had_errors_;
+  const FieldValueParser* default_field_value_parser_;
+  const CustomParserMap* custom_parsers_;
 };
 
 #undef DO
@@ -1338,9 +1361,12 @@ TextFormat::Parser::Parser()
     allow_field_number_(false),
     allow_relaxed_whitespace_(false),
     allow_singular_overwrites_(false) {
+    SetDefaultFieldValueParser(new FieldValueParser());
 }
 
-TextFormat::Parser::~Parser() {}
+TextFormat::Parser::~Parser() {
+    STLDeleteValues(&custom_parsers_);
+}
 
 bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                                Message* output) {
@@ -1356,7 +1382,9 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                     overwrites_policy,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+                    allow_relaxed_whitespace_, allow_partial_,
+                default_field_value_parser_.get(),
+                &custom_parsers_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1374,7 +1402,9 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                     ParserImpl::ALLOW_SINGULAR_OVERWRITES,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+                    allow_relaxed_whitespace_, allow_partial_,
+                  default_field_value_parser_.get(),
+                &custom_parsers_);
   return MergeUsingImpl(input, output, &parser);
 }
 
@@ -1410,8 +1440,20 @@ bool TextFormat::Parser::ParseFieldValueFromString(
                     ParserImpl::ALLOW_SINGULAR_OVERWRITES,
                     allow_case_insensitive_field_, allow_unknown_field_,
                     allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+                    allow_relaxed_whitespace_, allow_partial_,
+                default_field_value_parser_.get(),
+                &custom_parsers_);
   return parser.ParseField(field, output);
+}
+
+void TextFormat::Parser::SetDefaultFieldValueParser(const FieldValueParser* parser) {
+    default_field_value_parser_.reset(parser);
+}
+
+bool TextFormat::Parser::RegisterFieldValueParser(const FieldDescriptor* field,
+    const FieldValueParser* parser) {
+    return field != NULL && parser != NULL &&
+      custom_parsers_.insert(std::make_pair(field, parser)).second;
 }
 
 /* static */ bool TextFormat::Parse(io::ZeroCopyInputStream* input,
@@ -1628,6 +1670,23 @@ void TextFormat::FastFieldValuePrinter::PrintMessageEnd(
     generator->PrintLiteral("}\n");
   }
 }
+
+TextFormat::FieldValueParser::FieldValueParser() {}
+TextFormat::FieldValueParser::~FieldValueParser() {}
+double TextFormat::FieldValueParser::ParseFloat(const string& text) const{
+    return io::Tokenizer::ParseFloat(text);
+}
+void TextFormat::FieldValueParser::ParseString(const string& text, string* output) const {
+    io::Tokenizer::ParseString(text,output);
+}
+void TextFormat::FieldValueParser::ParseStringAppend(const string& text, string* output) const {
+    io::Tokenizer::ParseStringAppend(text, output);
+}
+bool TextFormat::FieldValueParser::ParseInteger(const string& text, uint64 max_value,
+    uint64* output) const {
+    return io::Tokenizer::ParseInteger(text,max_value, output);
+}
+
 
 namespace {
 

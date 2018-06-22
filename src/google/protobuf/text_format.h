@@ -181,6 +181,23 @@ class LIBPROTOBUF_EXPORT TextFormat {
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldValuePrinter);
   };
 
+  // The default parser that converts fields' string representation,
+  // into their scalar values. 
+  // You can derive from this FastFieldValueParser if you want to have fields
+  // to be parsed in a different way and register it at the Parser.
+  class LIBPROTOBUF_EXPORT FieldValueParser {
+  public:
+      FieldValueParser();
+      virtual ~FieldValueParser();
+      virtual double ParseFloat(const string& text) const;
+      virtual void ParseString(const string& text, string* output) const;
+      virtual void ParseStringAppend(const string& text, string* output) const;
+      virtual bool ParseInteger(const string& text, uint64 max_value,
+        uint64* output) const;
+  private:
+      GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldValueParser);
+  };
+
   class LIBPROTOBUF_EXPORT MessagePrinter {
    public:
     MessagePrinter() {}
@@ -558,6 +575,18 @@ class LIBPROTOBUF_EXPORT TextFormat {
       allow_field_number_ = allow;
     }
 
+    // Set the default FastFieldValueParser that is used for all fields that
+    // don't have a field-specific parser registered.
+    // Takes ownership of the parser.
+    void SetDefaultFieldValueParser(const FieldValueParser* parser);
+    // Register a custom field-specific FastFieldValueParser for fields
+    // with a particular FieldDescriptor.
+    // Returns "true" if the registration succeeded, or "false", if there is
+    // already a parser for that FieldDescriptor.
+    // Takes ownership of the parser on successful registration.
+    bool RegisterFieldValueParser(const FieldDescriptor* field,
+      const FieldValueParser* parser);
+
    private:
     // Forward declaration of an internal class used to parse text
     // representations (see text_format.cc for implementation).
@@ -579,6 +608,10 @@ class LIBPROTOBUF_EXPORT TextFormat {
     bool allow_field_number_;
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
+    std::unique_ptr<const FieldValueParser> default_field_value_parser_;
+    typedef std::map<const FieldDescriptor*, const FieldValueParser*>
+      CustomParserMap;
+    CustomParserMap custom_parsers_;
   };
 
 
