@@ -374,6 +374,9 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   ErrorFormat error_format_;
 
+  // True if we should treat warnings as errors that fail the compilation.
+  bool fatal_warnings_;
+
   std::vector<std::pair<string, string> >
       proto_path_;                   // Search path for proto files.
   std::vector<string> input_files_;  // Names of the input proto files.
