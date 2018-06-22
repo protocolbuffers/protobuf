@@ -201,7 +201,7 @@ struct SerializationTable {
 };
 
 LIBPROTOBUF_EXPORT void SerializeInternal(const uint8* base, const FieldMetadata* table,
-                       int num_fields, ::google::protobuf::io::CodedOutputStream* output);
+                       int32 num_fields, ::google::protobuf::io::CodedOutputStream* output);
 
 inline void TableSerialize(const ::google::protobuf::MessageLite& msg,
                            const SerializationTable* table,
@@ -219,7 +219,7 @@ inline void TableSerialize(const ::google::protobuf::MessageLite& msg,
 }
 
 uint8* SerializeInternalToArray(const uint8* base, const FieldMetadata* table,
-                                int num_fields, bool is_deterministic,
+                                int32 num_fields, bool is_deterministic,
                                 uint8* buffer);
 
 inline uint8* TableSerializeToArray(const ::google::protobuf::MessageLite& msg,
