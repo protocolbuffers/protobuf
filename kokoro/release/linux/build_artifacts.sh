@@ -5,7 +5,7 @@ set -ex
 # change to repo root
 cd $(dirname $0)/../../..
 
-source kokoro/release/linux/prepare_build
+source kokoro/release/linux/prepare_build.sh
 
 # ruby environment
 bash kokoro/release/linux/ruby/ruby_build_environment.sh
