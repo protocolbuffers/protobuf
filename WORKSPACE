@@ -29,11 +29,6 @@ bind(
     actual = "@submodule_gmock//:gtest_main",
 )
 
-bind(
-    name = "six",
-    actual = "@six_archive//:six",
-)
-
 maven_jar(
     name = "guava_maven",
     artifact = "com.google.guava:guava:18.0",

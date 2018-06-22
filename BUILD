@@ -657,6 +657,7 @@ py_library(
     ),
     imports = ["python"],
     srcs_version = "PY2AND3",
+    visibility = ["//visibility:public"],
 )
 
 cc_binary(
@@ -745,7 +746,7 @@ py_proto_library(
     protoc = ":protoc",
     py_libs = [
         ":python_srcs",
-        "//external:six",
+        "@six_archive//:six",
     ],
     py_extra_srcs = glob(["python/**/__init__.py"]),
     srcs_version = "PY2AND3",
