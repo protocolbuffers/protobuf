@@ -36,7 +36,6 @@ use Google\Protobuf\Internal\Uint64;
 
 class CodedInputStream
 {
-
     private $buffer;
     private $buffer_size_after_limit;
     private $buffer_end;
@@ -55,7 +54,7 @@ class CodedInputStream
     public function __construct($buffer)
     {
         $start = 0;
-        $end = strlen($buffer);
+        $end = mb_strlen($buffer, '8bit');
         $this->buffer = $buffer;
         $this->buffer_size_after_limit = 0;
         $this->buffer_end = $end;
@@ -87,7 +86,7 @@ class CodedInputStream
 
     public function substr($start, $end)
     {
-        return substr($this->buffer, $start, $end - $start);
+        return mb_substr($this->buffer, $start, $end - $start, '8bit');
     }
 
     private function recomputeBufferLimits()
@@ -294,12 +293,11 @@ class CodedInputStream
 
     public function readRaw($size, &$buffer)
     {
-        $current_buffer_size = 0;
         if ($this->bufferSize() < $size) {
             return false;
         }
 
-        $buffer = substr($this->buffer, $this->current, $size);
+        $buffer = $this->substr($this->current, $this->current + $size);
         $this->advance($size);
 
         return true;

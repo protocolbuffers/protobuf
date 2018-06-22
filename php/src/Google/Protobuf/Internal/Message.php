@@ -307,7 +307,7 @@ class Message
 
         $bytes = str_repeat(chr(0), CodedOutputStream::MAX_VARINT64_BYTES);
         $size = CodedOutputStream::writeVarintToArray($tag, $bytes, true);
-        $this->unknown .= substr($bytes, 0, $size) . $input->substr($start, $end);
+        $this->unknown .= mb_substr($bytes, 0, $size, '8bit') . $input->substr($start, $end);
     }
 
     /**
@@ -1467,7 +1467,7 @@ class Message
                 break;
             case GPBType::STRING:
             case GPBType::BYTES:
-                $size += strlen($value);
+                $size += mb_strlen($value, '8bit');
                 $size += GPBWire::varint32Size($size);
                 break;
             case GPBType::MESSAGE:
@@ -1734,7 +1734,7 @@ class Message
         foreach ($fields as $field) {
             $size += $this->fieldByteSize($field);
         }
-        $size += strlen($this->unknown);
+        $size += mb_strlen($this->unknown, '8bit');
         return $size;
     }
 
