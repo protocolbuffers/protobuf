@@ -849,6 +849,7 @@ case type: {                                                           \
       jf =  [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     }
       break;
+    case GPBDataTypeGroup:
     case GPBDataTypeMessage:
     {
       GPBMessage* mesg = nil;
@@ -874,9 +875,6 @@ case type: {                                                           \
       jf = @(value);
     }
       break;
-    case GPBDataTypeGroup: {
-      break;
-    }
     default:
       break;
   }
@@ -1043,6 +1041,7 @@ do {                                                                  \
       [decodedData release];
     }
       break;
+    case GPBDataTypeGroup:
     case GPBDataTypeMessage:
     {
       GPBMessage* mf = nil;
@@ -1082,9 +1081,6 @@ do {                                                                  \
       }
     }
       break;
-    case GPBDataTypeGroup: {
-      break;
-    }
     default:
       break;
   }
