@@ -10,10 +10,10 @@ mkdir artifacts
 export ARTIFACT_DIR=$(pwd)/artifacts
 
 # ruby environment
-bash kokoro/release/macos/ruby_build_environment.sh
+bash kokoro/release/macos/ruby/ruby_build_environment.sh
 
 gem install rubygems-update
 update_rubygems
 
 # build artifacts
-bash kokoro/release/macos/ruby_build.sh
+bash kokoro/release/macos/ruby/ruby_build.sh
