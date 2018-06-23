@@ -1,4 +1,4 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <protoc_tools>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)/../tools/'))</protoc_tools>
         <protoc_linux64>$([System.IO.Path]::GetFullPath('$(protoc_tools)/linux_x64/protoc'))</protoc_linux64>
