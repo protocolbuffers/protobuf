@@ -314,16 +314,16 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   virtual void SerializeWithCachedSizes(io::CodedOutputStream* output) const;
 
  private:
-  // This is called only by the default implementation of ByteSize(), to
-  // update the cached size.  If you override ByteSize(), you do not need
-  // to override this.  If you do not override ByteSize(), you MUST override
+  // This is called only by the default implementation of ByteSizeLong(), to
+  // update the cached size.  If you override ByteSizeLong(), you do not need
+  // to override this.  If you do not override ByteSizeLong(), you MUST override
   // this; the default implementation will crash.
   //
   // The method is private because subclasses should never call it; only
   // override it.  Yes, C++ lets you do that.  Crazy, huh?
   virtual void SetCachedSize(int size) const;
 
- public:
+ pub
 
   // Introspection ---------------------------------------------------
 
