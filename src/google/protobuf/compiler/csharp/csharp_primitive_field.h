@@ -46,7 +46,7 @@ struct Options;
 class PrimitiveFieldGenerator : public FieldGeneratorBase {
  public:
   PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                          int fieldOrdinal,
+                          int presenceIndex,
                           const Options *options);
   ~PrimitiveFieldGenerator();
 
@@ -73,7 +73,7 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
 class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
  public:
   PrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
-                               int fieldOrdinal,
+                               int presenceIndex,
                                const Options *options);
   ~PrimitiveOneofFieldGenerator();
 

@@ -49,9 +49,9 @@ namespace compiler {
 namespace csharp {
 
 MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
-                                             int fieldOrdinal,
+                                             int presenceIndex,
                                              const Options *options)
-    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
+    : FieldGeneratorBase(descriptor, presenceIndex, options) {
   if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
     variables_["has_property_check"] = name() + "_ != null";
     variables_["has_not_property_check"] = name() + "_ == null";
@@ -101,7 +101,7 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
     variables_,
     "if (other.$has_property_check$) {\n"
     "  if ($has_not_property_check$) {\n"
-    "    $name$_ = new $type_name$();\n"
+    "    $property_name$ = new $type_name$();\n"
     "  }\n"
     "  $property_name$.MergeFrom(other.$property_name$);\n"
     "}\n");
@@ -111,9 +111,9 @@ void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_not_property_check$) {\n"
-    "  $name$_ = new $type_name$();\n"
+    "  $property_name$ = new $type_name$();\n"
     "}\n"
-    "input.ReadMessage($name$_);\n");
+    "input.ReadMessage($property_name$);\n");
 }
 
 void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
@@ -154,7 +154,7 @@ void MessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) {
     printer->Print(
       variables_,
       "if ($has_property_check$) {\n"
-      "  if (!$name$_.IsInitialized()) {\n"
+      "  if (!$property_name$.IsInitialized()) {\n"
       "    return false;\n"
       "  }\n"
       "}\n");
@@ -184,9 +184,9 @@ void MessageFieldGenerator::GenerateCodecCode(io::Printer* printer) {
 
 MessageOneofFieldGenerator::MessageOneofFieldGenerator(
     const FieldDescriptor* descriptor,
-	  int fieldOrdinal,
+	  int presenceIndex,
     const Options *options)
-    : MessageFieldGenerator(descriptor, fieldOrdinal, options) {
+    : MessageFieldGenerator(descriptor, presenceIndex, options) {
   SetCommonOneofFieldVariables(&variables_);
 }
 
