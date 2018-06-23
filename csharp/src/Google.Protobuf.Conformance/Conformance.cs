@@ -384,7 +384,7 @@ namespace Conformance {
             break;
           }
           case 24: {
-            requestedOutputFormat_ = (global::Conformance.WireFormat) input.ReadEnum();
+            RequestedOutputFormat = (global::Conformance.WireFormat) input.ReadEnum();
             break;
           }
           case 34: {

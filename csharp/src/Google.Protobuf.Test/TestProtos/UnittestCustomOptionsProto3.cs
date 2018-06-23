@@ -1998,7 +1998,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (other.bar_ != null) {
         if (bar_ == null) {
-          bar_ = new global::UnitTest.Issues.TestProtos.ComplexOptionType1();
+          Bar = new global::UnitTest.Issues.TestProtos.ComplexOptionType1();
         }
         Bar.MergeFrom(other.Bar);
       }
@@ -2007,7 +2007,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (other.fred_ != null) {
         if (fred_ == null) {
-          fred_ = new global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4();
+          Fred = new global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4();
         }
         Fred.MergeFrom(other.Fred);
       }
@@ -2025,9 +2025,9 @@ namespace UnitTest.Issues.TestProtos {
             break;
           case 10: {
             if (bar_ == null) {
-              bar_ = new global::UnitTest.Issues.TestProtos.ComplexOptionType1();
+              Bar = new global::UnitTest.Issues.TestProtos.ComplexOptionType1();
             }
-            input.ReadMessage(bar_);
+            input.ReadMessage(Bar);
             break;
           }
           case 16: {
@@ -2036,9 +2036,9 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 26: {
             if (fred_ == null) {
-              fred_ = new global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4();
+              Fred = new global::UnitTest.Issues.TestProtos.ComplexOptionType2.Types.ComplexOptionType4();
             }
-            input.ReadMessage(fred_);
+            input.ReadMessage(Fred);
             break;
           }
           case 34: {
@@ -2642,7 +2642,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (other.sub_ != null) {
         if (sub_ == null) {
-          sub_ = new global::UnitTest.Issues.TestProtos.Aggregate();
+          Sub = new global::UnitTest.Issues.TestProtos.Aggregate();
         }
         Sub.MergeFrom(other.Sub);
       }
@@ -2667,9 +2667,9 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 26: {
             if (sub_ == null) {
-              sub_ = new global::UnitTest.Issues.TestProtos.Aggregate();
+              Sub = new global::UnitTest.Issues.TestProtos.Aggregate();
             }
-            input.ReadMessage(sub_);
+            input.ReadMessage(Sub);
             break;
           }
         }

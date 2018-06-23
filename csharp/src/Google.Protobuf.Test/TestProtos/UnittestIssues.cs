@@ -577,7 +577,7 @@ namespace UnitTest.Issues.TestProtos {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            value_ = (global::UnitTest.Issues.TestProtos.NegativeEnum) input.ReadEnum();
+            Value = (global::UnitTest.Issues.TestProtos.NegativeEnum) input.ReadEnum();
             break;
           }
           case 18:
@@ -939,7 +939,7 @@ namespace UnitTest.Issues.TestProtos {
       primitiveArray_.Add(other.primitiveArray_);
       if (other.messageValue_ != null) {
         if (messageValue_ == null) {
-          messageValue_ = new global::UnitTest.Issues.TestProtos.DeprecatedChild();
+          MessageValue = new global::UnitTest.Issues.TestProtos.DeprecatedChild();
         }
         MessageValue.MergeFrom(other.MessageValue);
       }
@@ -970,9 +970,9 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 26: {
             if (messageValue_ == null) {
-              messageValue_ = new global::UnitTest.Issues.TestProtos.DeprecatedChild();
+              MessageValue = new global::UnitTest.Issues.TestProtos.DeprecatedChild();
             }
-            input.ReadMessage(messageValue_);
+            input.ReadMessage(MessageValue);
             break;
           }
           case 34: {
@@ -980,7 +980,7 @@ namespace UnitTest.Issues.TestProtos {
             break;
           }
           case 40: {
-            enumValue_ = (global::UnitTest.Issues.TestProtos.DeprecatedEnum) input.ReadEnum();
+            EnumValue = (global::UnitTest.Issues.TestProtos.DeprecatedEnum) input.ReadEnum();
             break;
           }
           case 50:

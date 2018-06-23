@@ -789,7 +789,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.testMap_ != null) {
         if (testMap_ == null) {
-          testMap_ = new global::Google.Protobuf.TestProtos.TestMap();
+          TestMap = new global::Google.Protobuf.TestProtos.TestMap();
         }
         TestMap.MergeFrom(other.TestMap);
       }
@@ -806,9 +806,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (testMap_ == null) {
-              testMap_ = new global::Google.Protobuf.TestProtos.TestMap();
+              TestMap = new global::Google.Protobuf.TestProtos.TestMap();
             }
-            input.ReadMessage(testMap_);
+            input.ReadMessage(TestMap);
             break;
           }
         }

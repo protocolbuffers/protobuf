@@ -3155,13 +3155,13 @@ namespace ProtobufTestMessages.Proto3 {
       }
       if (other.optionalNestedMessage_ != null) {
         if (optionalNestedMessage_ == null) {
-          optionalNestedMessage_ = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage();
+          OptionalNestedMessage = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage();
         }
         OptionalNestedMessage.MergeFrom(other.OptionalNestedMessage);
       }
       if (other.optionalForeignMessage_ != null) {
         if (optionalForeignMessage_ == null) {
-          optionalForeignMessage_ = new global::ProtobufTestMessages.Proto3.ForeignMessage();
+          OptionalForeignMessage = new global::ProtobufTestMessages.Proto3.ForeignMessage();
         }
         OptionalForeignMessage.MergeFrom(other.OptionalForeignMessage);
       }
@@ -3179,7 +3179,7 @@ namespace ProtobufTestMessages.Proto3 {
       }
       if (other.recursiveMessage_ != null) {
         if (recursiveMessage_ == null) {
-          recursiveMessage_ = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3();
+          RecursiveMessage = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3();
         }
         RecursiveMessage.MergeFrom(other.RecursiveMessage);
       }
@@ -3279,37 +3279,37 @@ namespace ProtobufTestMessages.Proto3 {
       repeatedBytesWrapper_.Add(other.repeatedBytesWrapper_);
       if (other.optionalDuration_ != null) {
         if (optionalDuration_ == null) {
-          optionalDuration_ = new global::Google.Protobuf.WellKnownTypes.Duration();
+          OptionalDuration = new global::Google.Protobuf.WellKnownTypes.Duration();
         }
         OptionalDuration.MergeFrom(other.OptionalDuration);
       }
       if (other.optionalTimestamp_ != null) {
         if (optionalTimestamp_ == null) {
-          optionalTimestamp_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+          OptionalTimestamp = new global::Google.Protobuf.WellKnownTypes.Timestamp();
         }
         OptionalTimestamp.MergeFrom(other.OptionalTimestamp);
       }
       if (other.optionalFieldMask_ != null) {
         if (optionalFieldMask_ == null) {
-          optionalFieldMask_ = new global::Google.Protobuf.WellKnownTypes.FieldMask();
+          OptionalFieldMask = new global::Google.Protobuf.WellKnownTypes.FieldMask();
         }
         OptionalFieldMask.MergeFrom(other.OptionalFieldMask);
       }
       if (other.optionalStruct_ != null) {
         if (optionalStruct_ == null) {
-          optionalStruct_ = new global::Google.Protobuf.WellKnownTypes.Struct();
+          OptionalStruct = new global::Google.Protobuf.WellKnownTypes.Struct();
         }
         OptionalStruct.MergeFrom(other.OptionalStruct);
       }
       if (other.optionalAny_ != null) {
         if (optionalAny_ == null) {
-          optionalAny_ = new global::Google.Protobuf.WellKnownTypes.Any();
+          OptionalAny = new global::Google.Protobuf.WellKnownTypes.Any();
         }
         OptionalAny.MergeFrom(other.OptionalAny);
       }
       if (other.optionalValue_ != null) {
         if (optionalValue_ == null) {
-          optionalValue_ = new global::Google.Protobuf.WellKnownTypes.Value();
+          OptionalValue = new global::Google.Protobuf.WellKnownTypes.Value();
         }
         OptionalValue.MergeFrom(other.OptionalValue);
       }
@@ -3479,24 +3479,24 @@ namespace ProtobufTestMessages.Proto3 {
           }
           case 146: {
             if (optionalNestedMessage_ == null) {
-              optionalNestedMessage_ = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage();
+              OptionalNestedMessage = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage();
             }
-            input.ReadMessage(optionalNestedMessage_);
+            input.ReadMessage(OptionalNestedMessage);
             break;
           }
           case 154: {
             if (optionalForeignMessage_ == null) {
-              optionalForeignMessage_ = new global::ProtobufTestMessages.Proto3.ForeignMessage();
+              OptionalForeignMessage = new global::ProtobufTestMessages.Proto3.ForeignMessage();
             }
-            input.ReadMessage(optionalForeignMessage_);
+            input.ReadMessage(OptionalForeignMessage);
             break;
           }
           case 168: {
-            optionalNestedEnum_ = (global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum) input.ReadEnum();
+            OptionalNestedEnum = (global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum) input.ReadEnum();
             break;
           }
           case 176: {
-            optionalForeignEnum_ = (global::ProtobufTestMessages.Proto3.ForeignEnum) input.ReadEnum();
+            OptionalForeignEnum = (global::ProtobufTestMessages.Proto3.ForeignEnum) input.ReadEnum();
             break;
           }
           case 194: {
@@ -3509,9 +3509,9 @@ namespace ProtobufTestMessages.Proto3 {
           }
           case 218: {
             if (recursiveMessage_ == null) {
-              recursiveMessage_ = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3();
+              RecursiveMessage = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3();
             }
-            input.ReadMessage(recursiveMessage_);
+            input.ReadMessage(RecursiveMessage);
             break;
           }
           case 250:
@@ -3832,44 +3832,44 @@ namespace ProtobufTestMessages.Proto3 {
           }
           case 2410: {
             if (optionalDuration_ == null) {
-              optionalDuration_ = new global::Google.Protobuf.WellKnownTypes.Duration();
+              OptionalDuration = new global::Google.Protobuf.WellKnownTypes.Duration();
             }
-            input.ReadMessage(optionalDuration_);
+            input.ReadMessage(OptionalDuration);
             break;
           }
           case 2418: {
             if (optionalTimestamp_ == null) {
-              optionalTimestamp_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+              OptionalTimestamp = new global::Google.Protobuf.WellKnownTypes.Timestamp();
             }
-            input.ReadMessage(optionalTimestamp_);
+            input.ReadMessage(OptionalTimestamp);
             break;
           }
           case 2426: {
             if (optionalFieldMask_ == null) {
-              optionalFieldMask_ = new global::Google.Protobuf.WellKnownTypes.FieldMask();
+              OptionalFieldMask = new global::Google.Protobuf.WellKnownTypes.FieldMask();
             }
-            input.ReadMessage(optionalFieldMask_);
+            input.ReadMessage(OptionalFieldMask);
             break;
           }
           case 2434: {
             if (optionalStruct_ == null) {
-              optionalStruct_ = new global::Google.Protobuf.WellKnownTypes.Struct();
+              OptionalStruct = new global::Google.Protobuf.WellKnownTypes.Struct();
             }
-            input.ReadMessage(optionalStruct_);
+            input.ReadMessage(OptionalStruct);
             break;
           }
           case 2442: {
             if (optionalAny_ == null) {
-              optionalAny_ = new global::Google.Protobuf.WellKnownTypes.Any();
+              OptionalAny = new global::Google.Protobuf.WellKnownTypes.Any();
             }
-            input.ReadMessage(optionalAny_);
+            input.ReadMessage(OptionalAny);
             break;
           }
           case 2450: {
             if (optionalValue_ == null) {
-              optionalValue_ = new global::Google.Protobuf.WellKnownTypes.Value();
+              OptionalValue = new global::Google.Protobuf.WellKnownTypes.Value();
             }
-            input.ReadMessage(optionalValue_);
+            input.ReadMessage(OptionalValue);
             break;
           }
           case 2490: {
@@ -4247,7 +4247,7 @@ namespace ProtobufTestMessages.Proto3 {
           }
           if (other.corecursive_ != null) {
             if (corecursive_ == null) {
-              corecursive_ = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3();
+              Corecursive = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3();
             }
             Corecursive.MergeFrom(other.Corecursive);
           }
@@ -4268,9 +4268,9 @@ namespace ProtobufTestMessages.Proto3 {
               }
               case 18: {
                 if (corecursive_ == null) {
-                  corecursive_ = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3();
+                  Corecursive = new global::ProtobufTestMessages.Proto3.TestAllTypesProto3();
                 }
-                input.ReadMessage(corecursive_);
+                input.ReadMessage(Corecursive);
                 break;
               }
             }

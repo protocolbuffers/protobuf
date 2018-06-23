@@ -721,13 +721,13 @@ namespace Google.Protobuf.Reflection {
       extension_.Add(other.extension_);
       if (other.HasOptions) {
         if (!HasOptions) {
-          options_ = new global::Google.Protobuf.Reflection.FileOptions();
+          Options = new global::Google.Protobuf.Reflection.FileOptions();
         }
         Options.MergeFrom(other.Options);
       }
       if (other.HasSourceCodeInfo) {
         if (!HasSourceCodeInfo) {
-          sourceCodeInfo_ = new global::Google.Protobuf.Reflection.SourceCodeInfo();
+          SourceCodeInfo = new global::Google.Protobuf.Reflection.SourceCodeInfo();
         }
         SourceCodeInfo.MergeFrom(other.SourceCodeInfo);
       }
@@ -775,16 +775,16 @@ namespace Google.Protobuf.Reflection {
           }
           case 66: {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.FileOptions();
+              Options = new global::Google.Protobuf.Reflection.FileOptions();
             }
-            input.ReadMessage(options_);
+            input.ReadMessage(Options);
             break;
           }
           case 74: {
             if (!HasSourceCodeInfo) {
-              sourceCodeInfo_ = new global::Google.Protobuf.Reflection.SourceCodeInfo();
+              SourceCodeInfo = new global::Google.Protobuf.Reflection.SourceCodeInfo();
             }
-            input.ReadMessage(sourceCodeInfo_);
+            input.ReadMessage(SourceCodeInfo);
             break;
           }
           case 82:
@@ -820,12 +820,12 @@ namespace Google.Protobuf.Reflection {
         return false;
       }
       if (HasOptions) {
-        if (!options_.IsInitialized()) {
+        if (!Options.IsInitialized()) {
           return false;
         }
       }
       if (HasSourceCodeInfo) {
-        if (!sourceCodeInfo_.IsInitialized()) {
+        if (!SourceCodeInfo.IsInitialized()) {
           return false;
         }
       }
@@ -1120,7 +1120,7 @@ namespace Google.Protobuf.Reflection {
       oneofDecl_.Add(other.oneofDecl_);
       if (other.HasOptions) {
         if (!HasOptions) {
-          options_ = new global::Google.Protobuf.Reflection.MessageOptions();
+          Options = new global::Google.Protobuf.Reflection.MessageOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -1163,9 +1163,9 @@ namespace Google.Protobuf.Reflection {
           }
           case 58: {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.MessageOptions();
+              Options = new global::Google.Protobuf.Reflection.MessageOptions();
             }
-            input.ReadMessage(options_);
+            input.ReadMessage(Options);
             break;
           }
           case 66: {
@@ -1202,7 +1202,7 @@ namespace Google.Protobuf.Reflection {
         return false;
       }
       if (HasOptions) {
-        if (!options_.IsInitialized()) {
+        if (!Options.IsInitialized()) {
           return false;
         }
       }
@@ -1221,6 +1221,7 @@ namespace Google.Protobuf.Reflection {
       internal sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
         private static readonly pb::MessageParser<ExtensionRange> _parser = new pb::MessageParser<ExtensionRange>(() => new ExtensionRange());
         private pb::UnknownFieldSet _unknownFields;
+        private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<ExtensionRange> Parser { get { return _parser; } }
 
@@ -1243,6 +1244,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public ExtensionRange(ExtensionRange other) : this() {
+          _hasBits0 = other._hasBits0;
           start_ = other.start_;
           end_ = other.end_;
           options_ = other.HasOptions ? other.options_.Clone() : null;
@@ -1259,23 +1261,24 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "start" field</summary>
         public const int StartDefaultValue = 0;
 
-        private int? start_;
+        private int start_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Start {
-          get { return start_ ?? StartDefaultValue; }
+          get { if ((_hasBits0 & 1) != 0) { return start_; } else { return StartDefaultValue; } }
           set {
+            _hasBits0 |= 1;
             start_ = value;
           }
         }
         /// <summary>Gets whether the "start" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasStart {
-          get { return start_ != null; }
+          get { return (_hasBits0 & 1) != 0; }
         }
         /// <summary>Clears the value of the "start" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearStart() {
-          start_ = null;
+          _hasBits0 &= ~1;
         }
 
         /// <summary>Field number for the "end" field.</summary>
@@ -1283,23 +1286,24 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "end" field</summary>
         public const int EndDefaultValue = 0;
 
-        private int? end_;
+        private int end_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int End {
-          get { return end_ ?? EndDefaultValue; }
+          get { if ((_hasBits0 & 2) != 0) { return end_; } else { return EndDefaultValue; } }
           set {
+            _hasBits0 |= 2;
             end_ = value;
           }
         }
         /// <summary>Gets whether the "end" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasEnd {
-          get { return end_ != null; }
+          get { return (_hasBits0 & 2) != 0; }
         }
         /// <summary>Clears the value of the "end" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearEnd() {
-          end_ = null;
+          _hasBits0 &= ~2;
         }
 
         /// <summary>Field number for the "options" field.</summary>
@@ -1409,7 +1413,7 @@ namespace Google.Protobuf.Reflection {
           }
           if (other.HasOptions) {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.ExtensionRangeOptions();
+              Options = new global::Google.Protobuf.Reflection.ExtensionRangeOptions();
             }
             Options.MergeFrom(other.Options);
           }
@@ -1434,9 +1438,9 @@ namespace Google.Protobuf.Reflection {
               }
               case 26: {
                 if (!HasOptions) {
-                  options_ = new global::Google.Protobuf.Reflection.ExtensionRangeOptions();
+                  Options = new global::Google.Protobuf.Reflection.ExtensionRangeOptions();
                 }
-                input.ReadMessage(options_);
+                input.ReadMessage(Options);
                 break;
               }
             }
@@ -1446,7 +1450,7 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool IsInitialized() {
           if (HasOptions) {
-            if (!options_.IsInitialized()) {
+            if (!Options.IsInitialized()) {
               return false;
             }
           }
@@ -1462,6 +1466,7 @@ namespace Google.Protobuf.Reflection {
       internal sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
         private pb::UnknownFieldSet _unknownFields;
+        private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<ReservedRange> Parser { get { return _parser; } }
 
@@ -1484,6 +1489,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public ReservedRange(ReservedRange other) : this() {
+          _hasBits0 = other._hasBits0;
           start_ = other.start_;
           end_ = other.end_;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1499,26 +1505,27 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "start" field</summary>
         public const int StartDefaultValue = 0;
 
-        private int? start_;
+        private int start_;
         /// <summary>
         /// Inclusive.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Start {
-          get { return start_ ?? StartDefaultValue; }
+          get { if ((_hasBits0 & 1) != 0) { return start_; } else { return StartDefaultValue; } }
           set {
+            _hasBits0 |= 1;
             start_ = value;
           }
         }
         /// <summary>Gets whether the "start" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasStart {
-          get { return start_ != null; }
+          get { return (_hasBits0 & 1) != 0; }
         }
         /// <summary>Clears the value of the "start" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearStart() {
-          start_ = null;
+          _hasBits0 &= ~1;
         }
 
         /// <summary>Field number for the "end" field.</summary>
@@ -1526,26 +1533,27 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "end" field</summary>
         public const int EndDefaultValue = 0;
 
-        private int? end_;
+        private int end_;
         /// <summary>
         /// Exclusive.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int End {
-          get { return end_ ?? EndDefaultValue; }
+          get { if ((_hasBits0 & 2) != 0) { return end_; } else { return EndDefaultValue; } }
           set {
+            _hasBits0 |= 2;
             end_ = value;
           }
         }
         /// <summary>Gets whether the "end" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasEnd {
-          get { return end_ != null; }
+          get { return (_hasBits0 & 2) != 0; }
         }
         /// <summary>Clears the value of the "end" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearEnd() {
-          end_ = null;
+          _hasBits0 &= ~2;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1794,6 +1802,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FieldDescriptorProto> Parser { get { return _parser; } }
 
@@ -1816,6 +1825,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FieldDescriptorProto(FieldDescriptorProto other) : this() {
+      _hasBits0 = other._hasBits0;
       name_ = other.name_;
       number_ = other.number_;
       label_ = other.label_;
@@ -1863,23 +1873,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "number" field</summary>
     public const int NumberDefaultValue = 0;
 
-    private int? number_;
+    private int number_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Number {
-      get { return number_ ?? NumberDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return number_; } else { return NumberDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         number_ = value;
       }
     }
     /// <summary>Gets whether the "number" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasNumber {
-      get { return number_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "number" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearNumber() {
-      number_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "label" field.</summary>
@@ -1887,23 +1898,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "label" field</summary>
     public const global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label LabelDefaultValue = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.Optional;
 
-    private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label? label_;
+    private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label label_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label Label {
-      get { return label_ ?? LabelDefaultValue; }
+      get { if ((_hasBits0 & 2) != 0) { return label_; } else { return LabelDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         label_ = value;
       }
     }
     /// <summary>Gets whether the "label" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasLabel {
-      get { return label_ != null; }
+      get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "label" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearLabel() {
-      label_ = null;
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "type" field.</summary>
@@ -1911,27 +1923,28 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "type" field</summary>
     public const global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type TypeDefaultValue = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.Double;
 
-    private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type? type_;
+    private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type type_;
     /// <summary>
     /// If type_name is set, this need not be set.  If both this and type_name
     /// are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type Type {
-      get { return type_ ?? TypeDefaultValue; }
+      get { if ((_hasBits0 & 4) != 0) { return type_; } else { return TypeDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         type_ = value;
       }
     }
     /// <summary>Gets whether the "type" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasType {
-      get { return type_ != null; }
+      get { return (_hasBits0 & 4) != 0; }
     }
     /// <summary>Clears the value of the "type" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearType() {
-      type_ = null;
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "type_name" field.</summary>
@@ -2029,27 +2042,28 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "oneof_index" field</summary>
     public const int OneofIndexDefaultValue = 0;
 
-    private int? oneofIndex_;
+    private int oneofIndex_;
     /// <summary>
     /// If set, gives the index of a oneof in the containing type's oneof_decl
     /// list.  This field is a member of that oneof.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OneofIndex {
-      get { return oneofIndex_ ?? OneofIndexDefaultValue; }
+      get { if ((_hasBits0 & 8) != 0) { return oneofIndex_; } else { return OneofIndexDefaultValue; } }
       set {
+        _hasBits0 |= 8;
         oneofIndex_ = value;
       }
     }
     /// <summary>Gets whether the "oneof_index" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasOneofIndex {
-      get { return oneofIndex_ != null; }
+      get { return (_hasBits0 & 8) != 0; }
     }
     /// <summary>Clears the value of the "oneof_index" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearOneofIndex() {
-      oneofIndex_ = null;
+      _hasBits0 &= ~8;
     }
 
     /// <summary>Field number for the "json_name" field.</summary>
@@ -2273,7 +2287,7 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.HasOptions) {
         if (!HasOptions) {
-          options_ = new global::Google.Protobuf.Reflection.FieldOptions();
+          Options = new global::Google.Protobuf.Reflection.FieldOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -2301,11 +2315,11 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 32: {
-            label_ = (global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label) input.ReadEnum();
+            Label = (global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label) input.ReadEnum();
             break;
           }
           case 40: {
-            type_ = (global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type) input.ReadEnum();
+            Type = (global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type) input.ReadEnum();
             break;
           }
           case 50: {
@@ -2318,9 +2332,9 @@ namespace Google.Protobuf.Reflection {
           }
           case 66: {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.FieldOptions();
+              Options = new global::Google.Protobuf.Reflection.FieldOptions();
             }
-            input.ReadMessage(options_);
+            input.ReadMessage(Options);
             break;
           }
           case 72: {
@@ -2338,7 +2352,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsInitialized() {
       if (HasOptions) {
-        if (!options_.IsInitialized()) {
+        if (!Options.IsInitialized()) {
           return false;
         }
       }
@@ -2570,7 +2584,7 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.HasOptions) {
         if (!HasOptions) {
-          options_ = new global::Google.Protobuf.Reflection.OneofOptions();
+          Options = new global::Google.Protobuf.Reflection.OneofOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -2591,9 +2605,9 @@ namespace Google.Protobuf.Reflection {
           }
           case 18: {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.OneofOptions();
+              Options = new global::Google.Protobuf.Reflection.OneofOptions();
             }
-            input.ReadMessage(options_);
+            input.ReadMessage(Options);
             break;
           }
         }
@@ -2603,7 +2617,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsInitialized() {
       if (HasOptions) {
-        if (!options_.IsInitialized()) {
+        if (!Options.IsInitialized()) {
           return false;
         }
       }
@@ -2823,7 +2837,7 @@ namespace Google.Protobuf.Reflection {
       value_.Add(other.value_);
       if (other.HasOptions) {
         if (!HasOptions) {
-          options_ = new global::Google.Protobuf.Reflection.EnumOptions();
+          Options = new global::Google.Protobuf.Reflection.EnumOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -2850,9 +2864,9 @@ namespace Google.Protobuf.Reflection {
           }
           case 26: {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.EnumOptions();
+              Options = new global::Google.Protobuf.Reflection.EnumOptions();
             }
-            input.ReadMessage(options_);
+            input.ReadMessage(Options);
             break;
           }
           case 34: {
@@ -2873,7 +2887,7 @@ namespace Google.Protobuf.Reflection {
         return false;
       }
       if (HasOptions) {
-        if (!options_.IsInitialized()) {
+        if (!Options.IsInitialized()) {
           return false;
         }
       }
@@ -2897,6 +2911,7 @@ namespace Google.Protobuf.Reflection {
       internal sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange> {
         private static readonly pb::MessageParser<EnumReservedRange> _parser = new pb::MessageParser<EnumReservedRange>(() => new EnumReservedRange());
         private pb::UnknownFieldSet _unknownFields;
+        private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<EnumReservedRange> Parser { get { return _parser; } }
 
@@ -2919,6 +2934,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public EnumReservedRange(EnumReservedRange other) : this() {
+          _hasBits0 = other._hasBits0;
           start_ = other.start_;
           end_ = other.end_;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -2934,26 +2950,27 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "start" field</summary>
         public const int StartDefaultValue = 0;
 
-        private int? start_;
+        private int start_;
         /// <summary>
         /// Inclusive.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Start {
-          get { return start_ ?? StartDefaultValue; }
+          get { if ((_hasBits0 & 1) != 0) { return start_; } else { return StartDefaultValue; } }
           set {
+            _hasBits0 |= 1;
             start_ = value;
           }
         }
         /// <summary>Gets whether the "start" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasStart {
-          get { return start_ != null; }
+          get { return (_hasBits0 & 1) != 0; }
         }
         /// <summary>Clears the value of the "start" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearStart() {
-          start_ = null;
+          _hasBits0 &= ~1;
         }
 
         /// <summary>Field number for the "end" field.</summary>
@@ -2961,26 +2978,27 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "end" field</summary>
         public const int EndDefaultValue = 0;
 
-        private int? end_;
+        private int end_;
         /// <summary>
         /// Inclusive.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int End {
-          get { return end_ ?? EndDefaultValue; }
+          get { if ((_hasBits0 & 2) != 0) { return end_; } else { return EndDefaultValue; } }
           set {
+            _hasBits0 |= 2;
             end_ = value;
           }
         }
         /// <summary>Gets whether the "end" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasEnd {
-          get { return end_ != null; }
+          get { return (_hasBits0 & 2) != 0; }
         }
         /// <summary>Clears the value of the "end" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearEnd() {
-          end_ = null;
+          _hasBits0 &= ~2;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3098,6 +3116,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumValueDescriptorProto> Parser { get { return _parser; } }
 
@@ -3120,6 +3139,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumValueDescriptorProto(EnumValueDescriptorProto other) : this() {
+      _hasBits0 = other._hasBits0;
       name_ = other.name_;
       number_ = other.number_;
       options_ = other.HasOptions ? other.options_.Clone() : null;
@@ -3160,23 +3180,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "number" field</summary>
     public const int NumberDefaultValue = 0;
 
-    private int? number_;
+    private int number_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Number {
-      get { return number_ ?? NumberDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return number_; } else { return NumberDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         number_ = value;
       }
     }
     /// <summary>Gets whether the "number" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasNumber {
-      get { return number_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "number" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearNumber() {
-      number_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "options" field.</summary>
@@ -3286,7 +3307,7 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.HasOptions) {
         if (!HasOptions) {
-          options_ = new global::Google.Protobuf.Reflection.EnumValueOptions();
+          Options = new global::Google.Protobuf.Reflection.EnumValueOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -3311,9 +3332,9 @@ namespace Google.Protobuf.Reflection {
           }
           case 26: {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.EnumValueOptions();
+              Options = new global::Google.Protobuf.Reflection.EnumValueOptions();
             }
-            input.ReadMessage(options_);
+            input.ReadMessage(Options);
             break;
           }
         }
@@ -3323,7 +3344,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsInitialized() {
       if (HasOptions) {
-        if (!options_.IsInitialized()) {
+        if (!Options.IsInitialized()) {
           return false;
         }
       }
@@ -3504,7 +3525,7 @@ namespace Google.Protobuf.Reflection {
       method_.Add(other.method_);
       if (other.HasOptions) {
         if (!HasOptions) {
-          options_ = new global::Google.Protobuf.Reflection.ServiceOptions();
+          Options = new global::Google.Protobuf.Reflection.ServiceOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -3529,9 +3550,9 @@ namespace Google.Protobuf.Reflection {
           }
           case 26: {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.ServiceOptions();
+              Options = new global::Google.Protobuf.Reflection.ServiceOptions();
             }
-            input.ReadMessage(options_);
+            input.ReadMessage(Options);
             break;
           }
         }
@@ -3544,7 +3565,7 @@ namespace Google.Protobuf.Reflection {
         return false;
       }
       if (HasOptions) {
-        if (!options_.IsInitialized()) {
+        if (!Options.IsInitialized()) {
           return false;
         }
       }
@@ -3558,6 +3579,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MethodDescriptorProto> Parser { get { return _parser; } }
 
@@ -3580,6 +3602,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MethodDescriptorProto(MethodDescriptorProto other) : this() {
+      _hasBits0 = other._hasBits0;
       name_ = other.name_;
       inputType_ = other.inputType_;
       outputType_ = other.outputType_;
@@ -3696,26 +3719,27 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "client_streaming" field</summary>
     public const bool ClientStreamingDefaultValue = false;
 
-    private bool? clientStreaming_;
+    private bool clientStreaming_;
     /// <summary>
     /// Identifies if client streams multiple client messages
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool ClientStreaming {
-      get { return clientStreaming_ ?? ClientStreamingDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return clientStreaming_; } else { return ClientStreamingDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         clientStreaming_ = value;
       }
     }
     /// <summary>Gets whether the "client_streaming" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasClientStreaming {
-      get { return clientStreaming_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "client_streaming" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearClientStreaming() {
-      clientStreaming_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "server_streaming" field.</summary>
@@ -3723,26 +3747,27 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "server_streaming" field</summary>
     public const bool ServerStreamingDefaultValue = false;
 
-    private bool? serverStreaming_;
+    private bool serverStreaming_;
     /// <summary>
     /// Identifies if server streams multiple server messages
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool ServerStreaming {
-      get { return serverStreaming_ ?? ServerStreamingDefaultValue; }
+      get { if ((_hasBits0 & 2) != 0) { return serverStreaming_; } else { return ServerStreamingDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         serverStreaming_ = value;
       }
     }
     /// <summary>Gets whether the "server_streaming" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasServerStreaming {
-      get { return serverStreaming_ != null; }
+      get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "server_streaming" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearServerStreaming() {
-      serverStreaming_ = null;
+      _hasBits0 &= ~2;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3861,7 +3886,7 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.HasOptions) {
         if (!HasOptions) {
-          options_ = new global::Google.Protobuf.Reflection.MethodOptions();
+          Options = new global::Google.Protobuf.Reflection.MethodOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -3896,9 +3921,9 @@ namespace Google.Protobuf.Reflection {
           }
           case 34: {
             if (!HasOptions) {
-              options_ = new global::Google.Protobuf.Reflection.MethodOptions();
+              Options = new global::Google.Protobuf.Reflection.MethodOptions();
             }
-            input.ReadMessage(options_);
+            input.ReadMessage(Options);
             break;
           }
           case 40: {
@@ -3916,7 +3941,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool IsInitialized() {
       if (HasOptions) {
-        if (!options_.IsInitialized()) {
+        if (!Options.IsInitialized()) {
           return false;
         }
       }
@@ -3927,6 +3952,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class FileOptions : pb::IMessage<FileOptions> {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FileOptions> Parser { get { return _parser; } }
 
@@ -3951,6 +3977,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FileOptions(FileOptions other) : this() {
+      _hasBits0 = other._hasBits0;
       javaPackage_ = other.javaPackage_;
       javaOuterClassname_ = other.javaOuterClassname_;
       javaMultipleFiles_ = other.javaMultipleFiles_;
@@ -4046,7 +4073,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "java_multiple_files" field</summary>
     public const bool JavaMultipleFilesDefaultValue = false;
 
-    private bool? javaMultipleFiles_;
+    private bool javaMultipleFiles_;
     /// <summary>
     /// If set true, then the Java code generator will generate a separate .java
     /// file for each top-level message, enum, and service defined in the .proto
@@ -4057,20 +4084,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool JavaMultipleFiles {
-      get { return javaMultipleFiles_ ?? JavaMultipleFilesDefaultValue; }
+      get { if ((_hasBits0 & 2) != 0) { return javaMultipleFiles_; } else { return JavaMultipleFilesDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         javaMultipleFiles_ = value;
       }
     }
     /// <summary>Gets whether the "java_multiple_files" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasJavaMultipleFiles {
-      get { return javaMultipleFiles_ != null; }
+      get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "java_multiple_files" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearJavaMultipleFiles() {
-      javaMultipleFiles_ = null;
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "java_generate_equals_and_hash" field.</summary>
@@ -4078,15 +4106,16 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "java_generate_equals_and_hash" field</summary>
     public const bool JavaGenerateEqualsAndHashDefaultValue = false;
 
-    private bool? javaGenerateEqualsAndHash_;
+    private bool javaGenerateEqualsAndHash_;
     /// <summary>
     /// This option does nothing.
     /// </summary>
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool JavaGenerateEqualsAndHash {
-      get { return javaGenerateEqualsAndHash_ ?? JavaGenerateEqualsAndHashDefaultValue; }
+      get { if ((_hasBits0 & 32) != 0) { return javaGenerateEqualsAndHash_; } else { return JavaGenerateEqualsAndHashDefaultValue; } }
       set {
+        _hasBits0 |= 32;
         javaGenerateEqualsAndHash_ = value;
       }
     }
@@ -4094,13 +4123,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasJavaGenerateEqualsAndHash {
-      get { return javaGenerateEqualsAndHash_ != null; }
+      get { return (_hasBits0 & 32) != 0; }
     }
     /// <summary>Clears the value of the "java_generate_equals_and_hash" field</summary>
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearJavaGenerateEqualsAndHash() {
-      javaGenerateEqualsAndHash_ = null;
+      _hasBits0 &= ~32;
     }
 
     /// <summary>Field number for the "java_string_check_utf8" field.</summary>
@@ -4108,7 +4137,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "java_string_check_utf8" field</summary>
     public const bool JavaStringCheckUtf8DefaultValue = false;
 
-    private bool? javaStringCheckUtf8_;
+    private bool javaStringCheckUtf8_;
     /// <summary>
     /// If set true, then the Java2 code generator will generate code that
     /// throws an exception whenever an attempt is made to assign a non-UTF-8
@@ -4119,20 +4148,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool JavaStringCheckUtf8 {
-      get { return javaStringCheckUtf8_ ?? JavaStringCheckUtf8DefaultValue; }
+      get { if ((_hasBits0 & 128) != 0) { return javaStringCheckUtf8_; } else { return JavaStringCheckUtf8DefaultValue; } }
       set {
+        _hasBits0 |= 128;
         javaStringCheckUtf8_ = value;
       }
     }
     /// <summary>Gets whether the "java_string_check_utf8" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasJavaStringCheckUtf8 {
-      get { return javaStringCheckUtf8_ != null; }
+      get { return (_hasBits0 & 128) != 0; }
     }
     /// <summary>Clears the value of the "java_string_check_utf8" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearJavaStringCheckUtf8() {
-      javaStringCheckUtf8_ = null;
+      _hasBits0 &= ~128;
     }
 
     /// <summary>Field number for the "optimize_for" field.</summary>
@@ -4140,23 +4170,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "optimize_for" field</summary>
     public const global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode OptimizeForDefaultValue = global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.Speed;
 
-    private global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode? optimizeFor_;
+    private global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode optimizeFor_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode OptimizeFor {
-      get { return optimizeFor_ ?? OptimizeForDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return optimizeFor_; } else { return OptimizeForDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         optimizeFor_ = value;
       }
     }
     /// <summary>Gets whether the "optimize_for" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasOptimizeFor {
-      get { return optimizeFor_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "optimize_for" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearOptimizeFor() {
-      optimizeFor_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "go_package" field.</summary>
@@ -4195,7 +4226,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "cc_generic_services" field</summary>
     public const bool CcGenericServicesDefaultValue = false;
 
-    private bool? ccGenericServices_;
+    private bool ccGenericServices_;
     /// <summary>
     /// Should generic services be generated in each language?  "Generic" services
     /// are not specific to any particular RPC system.  They are generated by the
@@ -4210,20 +4241,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool CcGenericServices {
-      get { return ccGenericServices_ ?? CcGenericServicesDefaultValue; }
+      get { if ((_hasBits0 & 4) != 0) { return ccGenericServices_; } else { return CcGenericServicesDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         ccGenericServices_ = value;
       }
     }
     /// <summary>Gets whether the "cc_generic_services" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasCcGenericServices {
-      get { return ccGenericServices_ != null; }
+      get { return (_hasBits0 & 4) != 0; }
     }
     /// <summary>Clears the value of the "cc_generic_services" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearCcGenericServices() {
-      ccGenericServices_ = null;
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "java_generic_services" field.</summary>
@@ -4231,23 +4263,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "java_generic_services" field</summary>
     public const bool JavaGenericServicesDefaultValue = false;
 
-    private bool? javaGenericServices_;
+    private bool javaGenericServices_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool JavaGenericServices {
-      get { return javaGenericServices_ ?? JavaGenericServicesDefaultValue; }
+      get { if ((_hasBits0 & 8) != 0) { return javaGenericServices_; } else { return JavaGenericServicesDefaultValue; } }
       set {
+        _hasBits0 |= 8;
         javaGenericServices_ = value;
       }
     }
     /// <summary>Gets whether the "java_generic_services" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasJavaGenericServices {
-      get { return javaGenericServices_ != null; }
+      get { return (_hasBits0 & 8) != 0; }
     }
     /// <summary>Clears the value of the "java_generic_services" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearJavaGenericServices() {
-      javaGenericServices_ = null;
+      _hasBits0 &= ~8;
     }
 
     /// <summary>Field number for the "py_generic_services" field.</summary>
@@ -4255,23 +4288,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "py_generic_services" field</summary>
     public const bool PyGenericServicesDefaultValue = false;
 
-    private bool? pyGenericServices_;
+    private bool pyGenericServices_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool PyGenericServices {
-      get { return pyGenericServices_ ?? PyGenericServicesDefaultValue; }
+      get { if ((_hasBits0 & 16) != 0) { return pyGenericServices_; } else { return PyGenericServicesDefaultValue; } }
       set {
+        _hasBits0 |= 16;
         pyGenericServices_ = value;
       }
     }
     /// <summary>Gets whether the "py_generic_services" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasPyGenericServices {
-      get { return pyGenericServices_ != null; }
+      get { return (_hasBits0 & 16) != 0; }
     }
     /// <summary>Clears the value of the "py_generic_services" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearPyGenericServices() {
-      pyGenericServices_ = null;
+      _hasBits0 &= ~16;
     }
 
     /// <summary>Field number for the "php_generic_services" field.</summary>
@@ -4279,23 +4313,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "php_generic_services" field</summary>
     public const bool PhpGenericServicesDefaultValue = false;
 
-    private bool? phpGenericServices_;
+    private bool phpGenericServices_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool PhpGenericServices {
-      get { return phpGenericServices_ ?? PhpGenericServicesDefaultValue; }
+      get { if ((_hasBits0 & 512) != 0) { return phpGenericServices_; } else { return PhpGenericServicesDefaultValue; } }
       set {
+        _hasBits0 |= 512;
         phpGenericServices_ = value;
       }
     }
     /// <summary>Gets whether the "php_generic_services" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasPhpGenericServices {
-      get { return phpGenericServices_ != null; }
+      get { return (_hasBits0 & 512) != 0; }
     }
     /// <summary>Clears the value of the "php_generic_services" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearPhpGenericServices() {
-      phpGenericServices_ = null;
+      _hasBits0 &= ~512;
     }
 
     /// <summary>Field number for the "deprecated" field.</summary>
@@ -4303,7 +4338,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "deprecated" field</summary>
     public const bool DeprecatedDefaultValue = false;
 
-    private bool? deprecated_;
+    private bool deprecated_;
     /// <summary>
     /// Is this file deprecated?
     /// Depending on the target platform, this can emit Deprecated annotations
@@ -4312,20 +4347,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
-      get { return deprecated_ ?? DeprecatedDefaultValue; }
+      get { if ((_hasBits0 & 64) != 0) { return deprecated_; } else { return DeprecatedDefaultValue; } }
       set {
+        _hasBits0 |= 64;
         deprecated_ = value;
       }
     }
     /// <summary>Gets whether the "deprecated" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasDeprecated {
-      get { return deprecated_ != null; }
+      get { return (_hasBits0 & 64) != 0; }
     }
     /// <summary>Clears the value of the "deprecated" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearDeprecated() {
-      deprecated_ = null;
+      _hasBits0 &= ~64;
     }
 
     /// <summary>Field number for the "cc_enable_arenas" field.</summary>
@@ -4333,27 +4369,28 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "cc_enable_arenas" field</summary>
     public const bool CcEnableArenasDefaultValue = false;
 
-    private bool? ccEnableArenas_;
+    private bool ccEnableArenas_;
     /// <summary>
     /// Enables the use of arenas for the proto messages in this file. This applies
     /// only to generated classes for C++.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool CcEnableArenas {
-      get { return ccEnableArenas_ ?? CcEnableArenasDefaultValue; }
+      get { if ((_hasBits0 & 256) != 0) { return ccEnableArenas_; } else { return CcEnableArenasDefaultValue; } }
       set {
+        _hasBits0 |= 256;
         ccEnableArenas_ = value;
       }
     }
     /// <summary>Gets whether the "cc_enable_arenas" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasCcEnableArenas {
-      get { return ccEnableArenas_ != null; }
+      get { return (_hasBits0 & 256) != 0; }
     }
     /// <summary>Clears the value of the "cc_enable_arenas" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearCcEnableArenas() {
-      ccEnableArenas_ = null;
+      _hasBits0 &= ~256;
     }
 
     /// <summary>Field number for the "objc_class_prefix" field.</summary>
@@ -4886,7 +4923,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 72: {
-            optimizeFor_ = (global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) input.ReadEnum();
+            OptimizeFor = (global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) input.ReadEnum();
             break;
           }
           case 80: {
@@ -5002,6 +5039,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class MessageOptions : pb::IMessage<MessageOptions> {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MessageOptions> Parser { get { return _parser; } }
 
@@ -5026,6 +5064,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MessageOptions(MessageOptions other) : this() {
+      _hasBits0 = other._hasBits0;
       messageSetWireFormat_ = other.messageSetWireFormat_;
       noStandardDescriptorAccessor_ = other.noStandardDescriptorAccessor_;
       deprecated_ = other.deprecated_;
@@ -5044,7 +5083,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "message_set_wire_format" field</summary>
     public const bool MessageSetWireFormatDefaultValue = false;
 
-    private bool? messageSetWireFormat_;
+    private bool messageSetWireFormat_;
     /// <summary>
     /// Set true to use the old proto1 MessageSet wire format for extensions.
     /// This is provided for backwards-compatibility with the MessageSet wire
@@ -5067,20 +5106,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool MessageSetWireFormat {
-      get { return messageSetWireFormat_ ?? MessageSetWireFormatDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return messageSetWireFormat_; } else { return MessageSetWireFormatDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         messageSetWireFormat_ = value;
       }
     }
     /// <summary>Gets whether the "message_set_wire_format" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasMessageSetWireFormat {
-      get { return messageSetWireFormat_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "message_set_wire_format" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearMessageSetWireFormat() {
-      messageSetWireFormat_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "no_standard_descriptor_accessor" field.</summary>
@@ -5088,7 +5128,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "no_standard_descriptor_accessor" field</summary>
     public const bool NoStandardDescriptorAccessorDefaultValue = false;
 
-    private bool? noStandardDescriptorAccessor_;
+    private bool noStandardDescriptorAccessor_;
     /// <summary>
     /// Disables the generation of the standard "descriptor()" accessor, which can
     /// conflict with a field of the same name.  This is meant to make migration
@@ -5096,20 +5136,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool NoStandardDescriptorAccessor {
-      get { return noStandardDescriptorAccessor_ ?? NoStandardDescriptorAccessorDefaultValue; }
+      get { if ((_hasBits0 & 2) != 0) { return noStandardDescriptorAccessor_; } else { return NoStandardDescriptorAccessorDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         noStandardDescriptorAccessor_ = value;
       }
     }
     /// <summary>Gets whether the "no_standard_descriptor_accessor" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasNoStandardDescriptorAccessor {
-      get { return noStandardDescriptorAccessor_ != null; }
+      get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "no_standard_descriptor_accessor" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearNoStandardDescriptorAccessor() {
-      noStandardDescriptorAccessor_ = null;
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "deprecated" field.</summary>
@@ -5117,7 +5158,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "deprecated" field</summary>
     public const bool DeprecatedDefaultValue = false;
 
-    private bool? deprecated_;
+    private bool deprecated_;
     /// <summary>
     /// Is this message deprecated?
     /// Depending on the target platform, this can emit Deprecated annotations
@@ -5126,20 +5167,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
-      get { return deprecated_ ?? DeprecatedDefaultValue; }
+      get { if ((_hasBits0 & 4) != 0) { return deprecated_; } else { return DeprecatedDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         deprecated_ = value;
       }
     }
     /// <summary>Gets whether the "deprecated" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasDeprecated {
-      get { return deprecated_ != null; }
+      get { return (_hasBits0 & 4) != 0; }
     }
     /// <summary>Clears the value of the "deprecated" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearDeprecated() {
-      deprecated_ = null;
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "map_entry" field.</summary>
@@ -5147,7 +5189,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "map_entry" field</summary>
     public const bool MapEntryDefaultValue = false;
 
-    private bool? mapEntry_;
+    private bool mapEntry_;
     /// <summary>
     /// Whether the message is an automatically generated map entry type for the
     /// maps field.
@@ -5173,20 +5215,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool MapEntry {
-      get { return mapEntry_ ?? MapEntryDefaultValue; }
+      get { if ((_hasBits0 & 8) != 0) { return mapEntry_; } else { return MapEntryDefaultValue; } }
       set {
+        _hasBits0 |= 8;
         mapEntry_ = value;
       }
     }
     /// <summary>Gets whether the "map_entry" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasMapEntry {
-      get { return mapEntry_ != null; }
+      get { return (_hasBits0 & 8) != 0; }
     }
     /// <summary>Clears the value of the "map_entry" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearMapEntry() {
-      mapEntry_ = null;
+      _hasBits0 &= ~8;
     }
 
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
@@ -5353,6 +5396,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class FieldOptions : pb::IMessage<FieldOptions> {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FieldOptions> Parser { get { return _parser; } }
 
@@ -5377,6 +5421,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FieldOptions(FieldOptions other) : this() {
+      _hasBits0 = other._hasBits0;
       ctype_ = other.ctype_;
       packed_ = other.packed_;
       jstype_ = other.jstype_;
@@ -5397,7 +5442,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "ctype" field</summary>
     public const global::Google.Protobuf.Reflection.FieldOptions.Types.CType CtypeDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.CType.String;
 
-    private global::Google.Protobuf.Reflection.FieldOptions.Types.CType? ctype_;
+    private global::Google.Protobuf.Reflection.FieldOptions.Types.CType ctype_;
     /// <summary>
     /// The ctype option instructs the C++ code generator to use a different
     /// representation of the field than it normally would.  See the specific
@@ -5406,20 +5451,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.FieldOptions.Types.CType Ctype {
-      get { return ctype_ ?? CtypeDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return ctype_; } else { return CtypeDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         ctype_ = value;
       }
     }
     /// <summary>Gets whether the "ctype" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasCtype {
-      get { return ctype_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "ctype" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearCtype() {
-      ctype_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "packed" field.</summary>
@@ -5427,7 +5473,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "packed" field</summary>
     public const bool PackedDefaultValue = false;
 
-    private bool? packed_;
+    private bool packed_;
     /// <summary>
     /// The packed option can be enabled for repeated primitive fields to enable
     /// a more efficient representation on the wire. Rather than repeatedly
@@ -5437,20 +5483,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Packed {
-      get { return packed_ ?? PackedDefaultValue; }
+      get { if ((_hasBits0 & 2) != 0) { return packed_; } else { return PackedDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         packed_ = value;
       }
     }
     /// <summary>Gets whether the "packed" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasPacked {
-      get { return packed_ != null; }
+      get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "packed" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearPacked() {
-      packed_ = null;
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "jstype" field.</summary>
@@ -5458,7 +5505,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "jstype" field</summary>
     public const global::Google.Protobuf.Reflection.FieldOptions.Types.JSType JstypeDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JsNormal;
 
-    private global::Google.Protobuf.Reflection.FieldOptions.Types.JSType? jstype_;
+    private global::Google.Protobuf.Reflection.FieldOptions.Types.JSType jstype_;
     /// <summary>
     /// The jstype option determines the JavaScript type used for values of the
     /// field.  The option is permitted only for 64 bit integral and fixed types
@@ -5474,20 +5521,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.FieldOptions.Types.JSType Jstype {
-      get { return jstype_ ?? JstypeDefaultValue; }
+      get { if ((_hasBits0 & 16) != 0) { return jstype_; } else { return JstypeDefaultValue; } }
       set {
+        _hasBits0 |= 16;
         jstype_ = value;
       }
     }
     /// <summary>Gets whether the "jstype" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasJstype {
-      get { return jstype_ != null; }
+      get { return (_hasBits0 & 16) != 0; }
     }
     /// <summary>Clears the value of the "jstype" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearJstype() {
-      jstype_ = null;
+      _hasBits0 &= ~16;
     }
 
     /// <summary>Field number for the "lazy" field.</summary>
@@ -5495,7 +5543,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "lazy" field</summary>
     public const bool LazyDefaultValue = false;
 
-    private bool? lazy_;
+    private bool lazy_;
     /// <summary>
     /// Should this field be parsed lazily?  Lazy applies only to message-type
     /// fields.  It means that when the outer message is initially parsed, the
@@ -5527,20 +5575,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Lazy {
-      get { return lazy_ ?? LazyDefaultValue; }
+      get { if ((_hasBits0 & 8) != 0) { return lazy_; } else { return LazyDefaultValue; } }
       set {
+        _hasBits0 |= 8;
         lazy_ = value;
       }
     }
     /// <summary>Gets whether the "lazy" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasLazy {
-      get { return lazy_ != null; }
+      get { return (_hasBits0 & 8) != 0; }
     }
     /// <summary>Clears the value of the "lazy" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearLazy() {
-      lazy_ = null;
+      _hasBits0 &= ~8;
     }
 
     /// <summary>Field number for the "deprecated" field.</summary>
@@ -5548,7 +5597,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "deprecated" field</summary>
     public const bool DeprecatedDefaultValue = false;
 
-    private bool? deprecated_;
+    private bool deprecated_;
     /// <summary>
     /// Is this field deprecated?
     /// Depending on the target platform, this can emit Deprecated annotations
@@ -5557,20 +5606,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
-      get { return deprecated_ ?? DeprecatedDefaultValue; }
+      get { if ((_hasBits0 & 4) != 0) { return deprecated_; } else { return DeprecatedDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         deprecated_ = value;
       }
     }
     /// <summary>Gets whether the "deprecated" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasDeprecated {
-      get { return deprecated_ != null; }
+      get { return (_hasBits0 & 4) != 0; }
     }
     /// <summary>Clears the value of the "deprecated" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearDeprecated() {
-      deprecated_ = null;
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "weak" field.</summary>
@@ -5578,26 +5628,27 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "weak" field</summary>
     public const bool WeakDefaultValue = false;
 
-    private bool? weak_;
+    private bool weak_;
     /// <summary>
     /// For Google-internal migration only. Do not use.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Weak {
-      get { return weak_ ?? WeakDefaultValue; }
+      get { if ((_hasBits0 & 32) != 0) { return weak_; } else { return WeakDefaultValue; } }
       set {
+        _hasBits0 |= 32;
         weak_ = value;
       }
     }
     /// <summary>Gets whether the "weak" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasWeak {
-      get { return weak_ != null; }
+      get { return (_hasBits0 & 32) != 0; }
     }
     /// <summary>Clears the value of the "weak" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearWeak() {
-      weak_ = null;
+      _hasBits0 &= ~32;
     }
 
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
@@ -5753,7 +5804,7 @@ namespace Google.Protobuf.Reflection {
             CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);
             break;
           case 8: {
-            ctype_ = (global::Google.Protobuf.Reflection.FieldOptions.Types.CType) input.ReadEnum();
+            Ctype = (global::Google.Protobuf.Reflection.FieldOptions.Types.CType) input.ReadEnum();
             break;
           }
           case 16: {
@@ -5769,7 +5820,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 48: {
-            jstype_ = (global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) input.ReadEnum();
+            Jstype = (global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) input.ReadEnum();
             break;
           }
           case 80: {
@@ -5960,6 +6011,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class EnumOptions : pb::IMessage<EnumOptions> {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumOptions> Parser { get { return _parser; } }
 
@@ -5984,6 +6036,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumOptions(EnumOptions other) : this() {
+      _hasBits0 = other._hasBits0;
       allowAlias_ = other.allowAlias_;
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
@@ -6000,27 +6053,28 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "allow_alias" field</summary>
     public const bool AllowAliasDefaultValue = false;
 
-    private bool? allowAlias_;
+    private bool allowAlias_;
     /// <summary>
     /// Set this option to true to allow mapping different tag names to the same
     /// value.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool AllowAlias {
-      get { return allowAlias_ ?? AllowAliasDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return allowAlias_; } else { return AllowAliasDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         allowAlias_ = value;
       }
     }
     /// <summary>Gets whether the "allow_alias" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasAllowAlias {
-      get { return allowAlias_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "allow_alias" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearAllowAlias() {
-      allowAlias_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "deprecated" field.</summary>
@@ -6028,7 +6082,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "deprecated" field</summary>
     public const bool DeprecatedDefaultValue = false;
 
-    private bool? deprecated_;
+    private bool deprecated_;
     /// <summary>
     /// Is this enum deprecated?
     /// Depending on the target platform, this can emit Deprecated annotations
@@ -6037,20 +6091,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
-      get { return deprecated_ ?? DeprecatedDefaultValue; }
+      get { if ((_hasBits0 & 2) != 0) { return deprecated_; } else { return DeprecatedDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         deprecated_ = value;
       }
     }
     /// <summary>Gets whether the "deprecated" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasDeprecated {
-      get { return deprecated_ != null; }
+      get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "deprecated" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearDeprecated() {
-      deprecated_ = null;
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
@@ -6185,6 +6240,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions> {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<EnumValueOptions> Parser { get { return _parser; } }
 
@@ -6209,6 +6265,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumValueOptions(EnumValueOptions other) : this() {
+      _hasBits0 = other._hasBits0;
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -6224,7 +6281,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "deprecated" field</summary>
     public const bool DeprecatedDefaultValue = false;
 
-    private bool? deprecated_;
+    private bool deprecated_;
     /// <summary>
     /// Is this enum value deprecated?
     /// Depending on the target platform, this can emit Deprecated annotations
@@ -6233,20 +6290,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
-      get { return deprecated_ ?? DeprecatedDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return deprecated_; } else { return DeprecatedDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         deprecated_ = value;
       }
     }
     /// <summary>Gets whether the "deprecated" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasDeprecated {
-      get { return deprecated_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "deprecated" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearDeprecated() {
-      deprecated_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
@@ -6365,6 +6423,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class ServiceOptions : pb::IMessage<ServiceOptions> {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ServiceOptions> Parser { get { return _parser; } }
 
@@ -6389,6 +6448,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ServiceOptions(ServiceOptions other) : this() {
+      _hasBits0 = other._hasBits0;
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -6404,7 +6464,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "deprecated" field</summary>
     public const bool DeprecatedDefaultValue = false;
 
-    private bool? deprecated_;
+    private bool deprecated_;
     /// <summary>
     /// Is this service deprecated?
     /// Depending on the target platform, this can emit Deprecated annotations
@@ -6413,20 +6473,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
-      get { return deprecated_ ?? DeprecatedDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return deprecated_; } else { return DeprecatedDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         deprecated_ = value;
       }
     }
     /// <summary>Gets whether the "deprecated" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasDeprecated {
-      get { return deprecated_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "deprecated" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearDeprecated() {
-      deprecated_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
@@ -6545,6 +6606,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class MethodOptions : pb::IMessage<MethodOptions> {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<MethodOptions> Parser { get { return _parser; } }
 
@@ -6569,6 +6631,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MethodOptions(MethodOptions other) : this() {
+      _hasBits0 = other._hasBits0;
       deprecated_ = other.deprecated_;
       idempotencyLevel_ = other.idempotencyLevel_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
@@ -6585,7 +6648,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "deprecated" field</summary>
     public const bool DeprecatedDefaultValue = false;
 
-    private bool? deprecated_;
+    private bool deprecated_;
     /// <summary>
     /// Is this method deprecated?
     /// Depending on the target platform, this can emit Deprecated annotations
@@ -6594,20 +6657,21 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
-      get { return deprecated_ ?? DeprecatedDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return deprecated_; } else { return DeprecatedDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         deprecated_ = value;
       }
     }
     /// <summary>Gets whether the "deprecated" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasDeprecated {
-      get { return deprecated_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "deprecated" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearDeprecated() {
-      deprecated_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "idempotency_level" field.</summary>
@@ -6615,23 +6679,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "idempotency_level" field</summary>
     public const global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel IdempotencyLevelDefaultValue = global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel.IdempotencyUnknown;
 
-    private global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel? idempotencyLevel_;
+    private global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel idempotencyLevel_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel IdempotencyLevel {
-      get { return idempotencyLevel_ ?? IdempotencyLevelDefaultValue; }
+      get { if ((_hasBits0 & 2) != 0) { return idempotencyLevel_; } else { return IdempotencyLevelDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         idempotencyLevel_ = value;
       }
     }
     /// <summary>Gets whether the "idempotency_level" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasIdempotencyLevel {
-      get { return idempotencyLevel_ != null; }
+      get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "idempotency_level" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearIdempotencyLevel() {
-      idempotencyLevel_ = null;
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
@@ -6743,7 +6808,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 272: {
-            idempotencyLevel_ = (global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) input.ReadEnum();
+            IdempotencyLevel = (global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) input.ReadEnum();
             break;
           }
           case 7994: {
@@ -6798,6 +6863,7 @@ namespace Google.Protobuf.Reflection {
   internal sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<UninterpretedOption> Parser { get { return _parser; } }
 
@@ -6820,6 +6886,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UninterpretedOption(UninterpretedOption other) : this() {
+      _hasBits0 = other._hasBits0;
       name_ = other.name_.Clone();
       identifierValue_ = other.identifierValue_;
       positiveIntValue_ = other.positiveIntValue_;
@@ -6878,23 +6945,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "positive_int_value" field</summary>
     public const ulong PositiveIntValueDefaultValue = 0UL;
 
-    private ulong? positiveIntValue_;
+    private ulong positiveIntValue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong PositiveIntValue {
-      get { return positiveIntValue_ ?? PositiveIntValueDefaultValue; }
+      get { if ((_hasBits0 & 1) != 0) { return positiveIntValue_; } else { return PositiveIntValueDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         positiveIntValue_ = value;
       }
     }
     /// <summary>Gets whether the "positive_int_value" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasPositiveIntValue {
-      get { return positiveIntValue_ != null; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "positive_int_value" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearPositiveIntValue() {
-      positiveIntValue_ = null;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "negative_int_value" field.</summary>
@@ -6902,23 +6970,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "negative_int_value" field</summary>
     public const long NegativeIntValueDefaultValue = 0L;
 
-    private long? negativeIntValue_;
+    private long negativeIntValue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long NegativeIntValue {
-      get { return negativeIntValue_ ?? NegativeIntValueDefaultValue; }
+      get { if ((_hasBits0 & 2) != 0) { return negativeIntValue_; } else { return NegativeIntValueDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         negativeIntValue_ = value;
       }
     }
     /// <summary>Gets whether the "negative_int_value" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasNegativeIntValue {
-      get { return negativeIntValue_ != null; }
+      get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "negative_int_value" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearNegativeIntValue() {
-      negativeIntValue_ = null;
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "double_value" field.</summary>
@@ -6926,23 +6995,24 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Default value for the "double_value" field</summary>
     public const double DoubleValueDefaultValue = 0D;
 
-    private double? doubleValue_;
+    private double doubleValue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double DoubleValue {
-      get { return doubleValue_ ?? DoubleValueDefaultValue; }
+      get { if ((_hasBits0 & 4) != 0) { return doubleValue_; } else { return DoubleValueDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         doubleValue_ = value;
       }
     }
     /// <summary>Gets whether the "double_value" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasDoubleValue {
-      get { return doubleValue_ != null; }
+      get { return (_hasBits0 & 4) != 0; }
     }
     /// <summary>Clears the value of the "double_value" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearDoubleValue() {
-      doubleValue_ = null;
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "string_value" field.</summary>
@@ -7185,6 +7255,7 @@ namespace Google.Protobuf.Reflection {
       internal sealed partial class NamePart : pb::IMessage<NamePart> {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
         private pb::UnknownFieldSet _unknownFields;
+        private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NamePart> Parser { get { return _parser; } }
 
@@ -7207,6 +7278,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public NamePart(NamePart other) : this() {
+          _hasBits0 = other._hasBits0;
           namePart_ = other.namePart_;
           isExtension_ = other.isExtension_;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -7246,23 +7318,24 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "is_extension" field</summary>
         public const bool IsExtensionDefaultValue = false;
 
-        private bool? isExtension_;
+        private bool isExtension_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool IsExtension {
-          get { return isExtension_ ?? IsExtensionDefaultValue; }
+          get { if ((_hasBits0 & 1) != 0) { return isExtension_; } else { return IsExtensionDefaultValue; } }
           set {
+            _hasBits0 |= 1;
             isExtension_ = value;
           }
         }
         /// <summary>Gets whether the "is_extension" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasIsExtension {
-          get { return isExtension_ != null; }
+          get { return (_hasBits0 & 1) != 0; }
         }
         /// <summary>Clears the value of the "is_extension" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearIsExtension() {
-          isExtension_ = null;
+          _hasBits0 &= ~1;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8036,6 +8109,7 @@ namespace Google.Protobuf.Reflection {
       internal sealed partial class Annotation : pb::IMessage<Annotation> {
         private static readonly pb::MessageParser<Annotation> _parser = new pb::MessageParser<Annotation>(() => new Annotation());
         private pb::UnknownFieldSet _unknownFields;
+        private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<Annotation> Parser { get { return _parser; } }
 
@@ -8058,6 +8132,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public Annotation(Annotation other) : this() {
+          _hasBits0 = other._hasBits0;
           path_ = other.path_.Clone();
           sourceFile_ = other.sourceFile_;
           begin_ = other.begin_;
@@ -8116,27 +8191,28 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "begin" field</summary>
         public const int BeginDefaultValue = 0;
 
-        private int? begin_;
+        private int begin_;
         /// <summary>
         /// Identifies the starting offset in bytes in the generated code
         /// that relates to the identified object.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Begin {
-          get { return begin_ ?? BeginDefaultValue; }
+          get { if ((_hasBits0 & 1) != 0) { return begin_; } else { return BeginDefaultValue; } }
           set {
+            _hasBits0 |= 1;
             begin_ = value;
           }
         }
         /// <summary>Gets whether the "begin" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasBegin {
-          get { return begin_ != null; }
+          get { return (_hasBits0 & 1) != 0; }
         }
         /// <summary>Clears the value of the "begin" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearBegin() {
-          begin_ = null;
+          _hasBits0 &= ~1;
         }
 
         /// <summary>Field number for the "end" field.</summary>
@@ -8144,7 +8220,7 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Default value for the "end" field</summary>
         public const int EndDefaultValue = 0;
 
-        private int? end_;
+        private int end_;
         /// <summary>
         /// Identifies the ending offset in bytes in the generated code that
         /// relates to the identified offset. The end offset should be one past
@@ -8152,20 +8228,21 @@ namespace Google.Protobuf.Reflection {
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int End {
-          get { return end_ ?? EndDefaultValue; }
+          get { if ((_hasBits0 & 2) != 0) { return end_; } else { return EndDefaultValue; } }
           set {
+            _hasBits0 |= 2;
             end_ = value;
           }
         }
         /// <summary>Gets whether the "end" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool HasEnd {
-          get { return end_ != null; }
+          get { return (_hasBits0 & 2) != 0; }
         }
         /// <summary>Clears the value of the "end" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void ClearEnd() {
-          end_ = null;
+          _hasBits0 &= ~2;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
