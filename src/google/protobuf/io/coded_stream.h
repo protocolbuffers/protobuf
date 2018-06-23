@@ -114,7 +114,9 @@
 #include <climits>
 #include <string>
 #include <utility>
-#ifdef _MSC_VER
+#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__)
+  #define PROTOBUF_LITTLE_ENDIAN (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#elif defined(_MSC_VER)
   // Assuming windows is always little-endian.
   #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
     #define PROTOBUF_LITTLE_ENDIAN 1
