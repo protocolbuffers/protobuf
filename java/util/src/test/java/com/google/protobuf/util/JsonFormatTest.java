@@ -1168,6 +1168,13 @@ public class JsonFormatTest extends TestCase {
     }
   }
 
+  public void testParserUsingUnrecognizedEnumValues() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    String json = "{\n" + "  \"optionalNestedEnum\": \"XXX\"\n" + "}";
+    JsonFormat.parser().usingUnrecognizedEnumValue().merge(json, builder);
+    assertEquals(NestedEnum.UNRECOGNIZED, builder.getOptionalNestedEnum());
+  }
+
   public void testParserIgnoringUnknownFields() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     String json = "{\n" + "  \"unknownField\": \"XXX\"\n" + "}";
