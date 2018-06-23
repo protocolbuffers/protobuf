@@ -49,8 +49,8 @@ namespace compiler {
 namespace csharp {
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
-    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
+    const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
+    : FieldGeneratorBase(descriptor, presenceIndex, options) {
   // TODO(jonskeet): Make this cleaner...
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
@@ -82,31 +82,37 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
    "$type_name$ $property_name$DefaultValue = $default_value$;\n\n");
 
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
-    printer->Print(
-      variables_,
-      "private $nullable_type_name$ $name_def_message$;\n");
-  }
-  else {
-    printer->Print(
-      variables_,
-      "private $type_name$ $name_def_message$;\n");
-  }
+  printer->Print(
+    variables_,
+    "private $type_name$ $name_def_message$;\n");
+
   WritePropertyDocComment(printer, descriptor_);
   AddPublicMemberAttributes(printer);
   if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
-    printer->Print(
-      variables_,
-      "$access_level$ $type_name$ $property_name$ {\n"
-      "  get { return $name$_ ?? $property_name$DefaultValue; }\n"
-      "  set {\n");
-  }
-  else {
+    if (presenceIndex_ == -1) {
+      printer->Print(
+        variables_,
+        "$access_level$ $type_name$ $property_name$ {\n"
+        "  get { return $name$_ ?? $property_name$DefaultValue; }\n"
+        "  set {\n");
+    } else {
+      printer->Print(
+        variables_,
+        "$access_level$ $type_name$ $property_name$ {\n"
+        "  get { if ($has_field_check$) { return $name$_; } else { return $property_name$DefaultValue; } }\n"
+        "  set {\n");
+    }
+  } else {
     printer->Print(
       variables_,
       "$access_level$ $type_name$ $property_name$ {\n"
       "  get { return $name$_; }\n"
       "  set {\n");
+  }
+  if (presenceIndex_ != -1) {
+    printer->Print(
+      variables_,
+      "    $set_has_field$;\n");
   }
   if (is_value_type) {
     printer->Print(
@@ -126,8 +132,16 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(
       variables_, 
       "$access_level$ bool Has$property_name$ {\n"
-      "  get { return $name$_ != null; }\n"
-      "}\n");
+      "  get { return ");
+    if (IsNullable(descriptor_)) {
+      printer->Print(
+        variables_,
+        "$name$_ != null; }\n}\n");
+    } else {
+      printer->Print(
+        variables_,
+        "$has_field_check$; }\n}\n");
+    }
   }
   printer->Print(variables_, "/// <summary>Clears the value of the \"$descriptor_name$\" field</summary>\n");
   AddPublicMemberAttributes(printer);
@@ -135,7 +149,11 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "$access_level$ void Clear$property_name$() {\n");
   if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
-    printer->Print(variables_, "  $name$_ = null;\n");
+    if (IsNullable(descriptor_)) {
+      printer->Print(variables_, "  $name$_ = null;\n");
+    } else {
+      printer->Print(variables_, "  $clear_has_field$;\n");
+    }
   }
   else {
     printer->Print(variables_, "  $name$_ = $property_name$DefaultValue;\n");
@@ -234,8 +252,8 @@ void PrimitiveFieldGenerator::GenerateIsInitialized(io::Printer* printer) {
 }
 
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
-    : PrimitiveFieldGenerator(descriptor, fieldOrdinal, options) {
+    const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
+    : PrimitiveFieldGenerator(descriptor, presenceIndex, options) {
   SetCommonOneofFieldVariables(&variables_);
 }
 

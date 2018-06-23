@@ -48,8 +48,8 @@ namespace compiler {
 namespace csharp {
 
 WrapperFieldGenerator::WrapperFieldGenerator(const FieldDescriptor* descriptor,
-                                       int fieldOrdinal, const Options *options)
-    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
+                                       int presenceIndex, const Options *options)
+    : FieldGeneratorBase(descriptor, presenceIndex, options) {
   variables_["has_property_check"] = name() + "_ != null";
   variables_["has_not_property_check"] = name() + "_ == null";
   const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
@@ -182,8 +182,8 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
 }
 
 WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
-    : WrapperFieldGenerator(descriptor, fieldOrdinal, options) {
+    const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
+    : WrapperFieldGenerator(descriptor, presenceIndex, options) {
     SetCommonOneofFieldVariables(&variables_);
 }
 

@@ -46,7 +46,7 @@ namespace csharp {
 class RepeatedEnumFieldGenerator : public FieldGeneratorBase {
  public:
   RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
-                             int fieldOrdinal,
+                             int presenceIndex,
                              const Options *options);
   ~RepeatedEnumFieldGenerator();
 

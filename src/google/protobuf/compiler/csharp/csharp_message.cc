@@ -61,20 +61,27 @@ bool CompareFieldNumbers(const FieldDescriptor* d1, const FieldDescriptor* d2) {
 MessageGenerator::MessageGenerator(const Descriptor* descriptor,
                                    const Options* options)
     : SourceGeneratorBase(descriptor->file(), options),
-      descriptor_(descriptor) {
-
-  // sorted field names
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_names_.push_back(descriptor_->field(i)->name());
-  }
-  std::sort(field_names_.begin(), field_names_.end());
-
+      descriptor_(descriptor),
+      has_bit_field_count_(0) {
   // fields by number
   for (int i = 0; i < descriptor_->field_count(); i++) {
     fields_by_number_.push_back(descriptor_->field(i));
   }
   std::sort(fields_by_number_.begin(), fields_by_number_.end(),
             CompareFieldNumbers);
+
+  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+    int primitiveCount = 0;
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* field = descriptor_->field(i);
+      if (!IsNullable(field)) {
+        primitiveCount++;
+        if (has_bit_field_count_ == 0 || (primitiveCount % 32) == 0) {
+          has_bit_field_count_++;
+        }
+      }
+    }
+  }
 }
 
 MessageGenerator::~MessageGenerator() {
@@ -122,6 +129,10 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
       "private pb::UnknownFieldSet _unknownFields;\n");
+
+  for (int i = 0; i < has_bit_field_count_; i++) {
+    printer->Print("private int _hasBits$i$;\n", "i", SimpleItoa(i));
+  }
 
   WriteGeneratedCodeAttributes(printer);
 
@@ -288,6 +299,9 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
     vars,
     "public $class_name$($class_name$ other) : this() {\n");
   printer->Indent();
+  for (int i = 0; i < has_bit_field_count_; i++) {
+    printer->Print("_hasBits$i$ = other._hasBits$i$;\n", "i", SimpleItoa(i));
+  }
   // Clone non-oneof fields first
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (!descriptor_->field(i)->containing_oneof()) {
@@ -571,19 +585,29 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print("}\n");
 }
 
-int MessageGenerator::GetFieldOrdinal(const FieldDescriptor* descriptor) {
-  for (int i = 0; i < field_names().size(); i++) {
-    if (field_names()[i] == descriptor->name()) {
-      return i;
+// it's a waste of space to track presence for all values, so we only track them if they're not nullable
+int MessageGenerator::GetPresenceIndex(const FieldDescriptor* descriptor) {
+  if (IsNullable(descriptor) || descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    return -1;
+  }
+
+  int index = 0;
+  for (int i = 0; i < fields_by_number().size(); i++) {
+    const FieldDescriptor* field = fields_by_number()[i];
+    if (field == descriptor) {
+      return index;
+    }
+    if (!IsNullable(field)) {
+      index++;
     }
   }
-  GOOGLE_LOG(DFATAL)<< "Could not find ordinal for field " << descriptor->name();
+  GOOGLE_LOG(DFATAL)<< "Could not find presence index for field " << descriptor->name();
   return -1;
 }
 
 FieldGeneratorBase* MessageGenerator::CreateFieldGeneratorInternal(
     const FieldDescriptor* descriptor) {
-  return CreateFieldGenerator(descriptor, GetFieldOrdinal(descriptor), this->options());
+  return CreateFieldGenerator(descriptor, GetPresenceIndex(descriptor), this->options());
 }
 
 }  // namespace csharp

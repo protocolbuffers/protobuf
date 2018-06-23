@@ -47,8 +47,8 @@ namespace compiler {
 namespace csharp {
 
 EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
-                                       int fieldOrdinal, const Options *options)
-    : PrimitiveFieldGenerator(descriptor, fieldOrdinal, options) {
+                                       int presenceIndex, const Options *options)
+    : PrimitiveFieldGenerator(descriptor, presenceIndex, options) {
 }
 
 EnumFieldGenerator::~EnumFieldGenerator() {
@@ -56,7 +56,7 @@ EnumFieldGenerator::~EnumFieldGenerator() {
 
 void EnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(variables_,
-    "$name$_ = ($type_name$) input.ReadEnum();\n");
+    "$property_name$ = ($type_name$) input.ReadEnum();\n");
 }
 
 void EnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
@@ -82,8 +82,8 @@ void EnumFieldGenerator::GenerateCodecCode(io::Printer* printer) {
 }
 
 EnumOneofFieldGenerator::EnumOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
-  : PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal, options) {
+    const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
+  : PrimitiveOneofFieldGenerator(descriptor, presenceIndex, options) {
 }
 
 EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {

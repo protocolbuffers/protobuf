@@ -49,8 +49,8 @@ namespace compiler {
 namespace csharp {
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
-    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
+    const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
+    : FieldGeneratorBase(descriptor, presenceIndex, options) {
 }
 
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {
@@ -67,11 +67,11 @@ void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   // function, but it doesn't seem worth it for just this.
   if (IsWrapperType(descriptor_)) {
     std::unique_ptr<FieldGeneratorBase> single_generator(
-      new WrapperFieldGenerator(descriptor_, fieldOrdinal_, this->options()));
+      new WrapperFieldGenerator(descriptor_, presenceIndex_, this->options()));
     single_generator->GenerateCodecCode(printer);
   } else {
     std::unique_ptr<FieldGeneratorBase> single_generator(
-      new MessageFieldGenerator(descriptor_, fieldOrdinal_, this->options()));
+      new MessageFieldGenerator(descriptor_, presenceIndex_, this->options()));
     single_generator->GenerateCodecCode(printer);
   }
   printer->Print(";\n");

@@ -106,8 +106,10 @@ std::string StringToEscapedCSharpString(const std::string& input);
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
-                                         int fieldOrdinal,
+                                         int presenceIndex,
                                          const Options* options);
+
+bool IsNullable(const FieldDescriptor* descriptor);
 
 // Determines whether the given message is a map entry message,
 // i.e. one implicitly created by protoc due to a map<key, value> field.

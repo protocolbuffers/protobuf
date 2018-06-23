@@ -45,7 +45,7 @@ namespace csharp {
 class FieldGeneratorBase : public SourceGeneratorBase {
  public:
   FieldGeneratorBase(const FieldDescriptor* descriptor,
-                     int fieldOrdinal,
+                     int presenceIndex,
                      const Options* options);
   ~FieldGeneratorBase();
 
@@ -66,7 +66,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 
  protected:
   const FieldDescriptor* descriptor_;
-  const int fieldOrdinal_;
+  const int presenceIndex_;
   std::map<string, string> variables_;
 
   void AddDeprecatedFlag(io::Printer* printer);
@@ -85,7 +85,6 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   std::string nullable_type_name();
   std::string nullable_type_name(const FieldDescriptor* descriptor);
   bool has_default_value();
-  bool is_nullable_type();
   std::string default_value();
   std::string default_value(const FieldDescriptor* descriptor);
   std::string number();
