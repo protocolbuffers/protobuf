@@ -176,7 +176,8 @@ void test_json_roundtrip_message(const char* json_src,
   upb::json::Printer* printer = upb::json::Printer::Create(
       env.env(), serialize_handlers, data_sink.Sink());
   upb::json::Parser* parser =
-      upb::json::Parser::Create(env.env(), parser_method, printer->input());
+      upb::json::Parser::Create(
+          env.env(), parser_method, printer->input(), false);
   env.ResetBytesSink(parser->input());
   env.Reset(json_src, strlen(json_src), false, false);
 

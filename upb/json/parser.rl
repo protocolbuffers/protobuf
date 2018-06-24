@@ -94,6 +94,9 @@ struct upb_json_parser {
 
   /* Intermediate result of parsing a unicode escape sequence. */
   uint32_t digit;
+
+  /* Whether to proceed if unknown field is met. */
+  bool ignore_json_unknown;
 };
 
 struct upb_json_parsermethod {
@@ -614,6 +617,11 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
     return false;
   }
 
+  if (p->top->f == NULL) {
+    multipart_end(p);
+    return true;
+  }
+
   return parse_number(p, false);
 }
 
@@ -766,6 +774,10 @@ static bool parse_number(upb_json_parser *p, bool is_quoted) {
 static bool parser_putbool(upb_json_parser *p, bool val) {
   bool ok;
 
+  if (p->top->f == NULL) {
+    return true;
+  }
+
   if (upb_fielddef_type(p->top->f) != UPB_TYPE_BOOL) {
     upb_status_seterrf(&p->status,
                        "Boolean value specified for non-bool field: %s",
@@ -781,7 +793,10 @@ static bool parser_putbool(upb_json_parser *p, bool val) {
 }
 
 static bool start_stringval(upb_json_parser *p) {
-  UPB_ASSERT(p->top->f);
+  if (p->top->f == NULL) {
+    multipart_startaccum(p);
+    return true;
+  }
 
   if (upb_fielddef_isstring(p->top->f)) {
     upb_jsonparser_frame *inner;
@@ -831,6 +846,11 @@ static bool start_stringval(upb_json_parser *p) {
 
 static bool end_stringval(upb_json_parser *p) {
   bool ok = true;
+
+  if (p->top->f == NULL) {
+    multipart_end(p);
+    return true;
+  }
 
   switch (upb_fielddef_type(p->top->f)) {
     case UPB_TYPE_BYTES:
@@ -1023,6 +1043,10 @@ static bool handle_mapentry(upb_json_parser *p) {
 static bool end_membername(upb_json_parser *p) {
   UPB_ASSERT(!p->top->f);
 
+  if (!p->top->m) {
+    return true;
+  }
+
   if (p->top->is_map) {
     return handle_mapentry(p);
   } else {
@@ -1035,9 +1059,10 @@ static bool end_membername(upb_json_parser *p) {
       multipart_end(p);
 
       return true;
+    } else if (p->ignore_json_unknown) {
+      multipart_end(p);
+      return true;
     } else {
-      /* TODO(haberman): Ignore unknown fields if requested/configured to do
-       * so. */
       upb_status_seterrf(&p->status, "No such field: %.*s\n", (int)len, buf);
       upb_env_reporterror(p->env, &p->status);
       return false;
@@ -1069,7 +1094,18 @@ static void end_member(upb_json_parser *p) {
 }
 
 static bool start_subobject(upb_json_parser *p) {
-  UPB_ASSERT(p->top->f);
+  if (p->top->f == NULL) {
+    upb_jsonparser_frame *inner;
+    if (!check_stack(p)) return false;
+
+    inner = p->top + 1;
+    inner->m = NULL;
+    inner->f = NULL;
+    inner->is_map = false;
+    inner->is_mapentry = false;
+    p->top = inner;
+    return true;
+  }
 
   if (upb_fielddef_ismap(p->top->f)) {
     upb_jsonparser_frame *inner;
@@ -1128,9 +1164,12 @@ static void end_subobject(upb_json_parser *p) {
     upb_sink_endseq(&p->top->sink, sel);
   } else {
     upb_selector_t sel;
+    bool is_unknown = p->top->m == NULL;
     p->top--;
-    sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSUBMSG);
-    upb_sink_endsubmsg(&p->top->sink, sel);
+    if (!is_unknown) {
+      sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSUBMSG);
+      upb_sink_endsubmsg(&p->top->sink, sel);
+    }
   }
 }
 
@@ -1457,7 +1496,8 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
 
 upb_json_parser *upb_json_parser_create(upb_env *env,
                                         const upb_json_parsermethod *method,
-                                        upb_sink *output) {
+                                        upb_sink *output,
+                                        bool ignore_json_unknown) {
 #ifndef NDEBUG
   const size_t size_before = upb_env_bytesallocated(env);
 #endif
@@ -1475,6 +1515,8 @@ upb_json_parser *upb_json_parser_create(upb_env *env,
   upb_sink_reset(&p->top->sink, output->handlers, output->closure);
   p->top->m = upb_handlers_msgdef(output->handlers);
   set_name_table(p, p->top);
+
+  p->ignore_json_unknown = ignore_json_unknown;
 
   /* If this fails, uncomment and increase the value in parser.h. */
   /* fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before); */
