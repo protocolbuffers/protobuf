@@ -681,6 +681,12 @@ namespace Google.Protobuf
         {
             switch (field.FieldType)
             {
+                case FieldType.Bool:
+                    if (text.ToLower() == "true" || text == "1")
+                        return true;
+                    if (text.ToLower() == "false" || text == "0")
+                        return false;
+                    throw new InvalidProtocolBufferException($"Invalid boolean value: {text}");
                 case FieldType.String:
                     return text;
                 case FieldType.Bytes:
