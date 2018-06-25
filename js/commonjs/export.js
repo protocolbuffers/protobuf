@@ -19,6 +19,7 @@ goog.require('jspb.Map');
 
 exports.Map = jspb.Map;
 exports.Message = jspb.Message;
+exports.Map = jspb.Map;
 exports.BinaryReader = jspb.BinaryReader;
 exports.BinaryWriter = jspb.BinaryWriter;
 exports.ExtensionFieldInfo = jspb.ExtensionFieldInfo;
