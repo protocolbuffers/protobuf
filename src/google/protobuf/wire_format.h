@@ -41,7 +41,6 @@
 
 #include <string>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -261,12 +260,12 @@ class LIBPROTOBUF_EXPORT UnknownFieldSetFieldSkipper : public FieldSkipper {
  public:
   UnknownFieldSetFieldSkipper(UnknownFieldSet* unknown_fields)
       : unknown_fields_(unknown_fields) {}
-  virtual ~UnknownFieldSetFieldSkipper() {}
+  virtual ~UnknownFieldSetFieldSkipper() override {}
 
   // implements FieldSkipper -----------------------------------------
-  virtual bool SkipField(io::CodedInputStream* input, uint32 tag);
-  virtual bool SkipMessage(io::CodedInputStream* input);
-  virtual void SkipUnknownEnum(int field_number, int value);
+  virtual bool SkipField(io::CodedInputStream* input, uint32 tag) override;
+  virtual bool SkipMessage(io::CodedInputStream* input) override;
+  virtual void SkipUnknownEnum(int field_number, int value) override;
 
  protected:
   UnknownFieldSet* unknown_fields_;

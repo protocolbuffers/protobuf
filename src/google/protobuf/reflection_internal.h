@@ -43,32 +43,32 @@ namespace internal {
 // corresponding random-access methods.
 class RandomAccessRepeatedFieldAccessor : public RepeatedFieldAccessor {
  public:
-  virtual ~RandomAccessRepeatedFieldAccessor() {}
+  virtual ~RandomAccessRepeatedFieldAccessor() override {}
 
-  virtual Iterator* BeginIterator(const Field* data) const {
+  virtual Iterator* BeginIterator(const Field* data) const override {
     return PositionToIterator(0);
   }
-  virtual Iterator* EndIterator(const Field* data) const {
+  virtual Iterator* EndIterator(const Field* data) const override {
     return PositionToIterator(this->Size(data));
   }
   virtual Iterator* CopyIterator(const Field* data,
-                                 const Iterator* iterator) const {
+                         const Iterator* iterator) const override {
     return const_cast<Iterator*>(iterator);
   }
   virtual Iterator* AdvanceIterator(const Field* data,
-                                    Iterator* iterator) const {
+                            Iterator* iterator) const override {
     return PositionToIterator(IteratorToPosition(iterator) + 1);
   }
   virtual bool EqualsIterator(const Field* data,
-                              const Iterator* a,
-                              const Iterator* b) const {
+                      const Iterator* a,
+                      const Iterator* b) const override {
     return a == b;
   }
-  virtual void DeleteIterator(const Field* data, Iterator* iterator) const {
+  virtual void DeleteIterator(const Field* data, Iterator* iterator) const override {
   }
   virtual const Value* GetIteratorValue(const Field* data,
-                                        const Iterator* iterator,
-                                        Value* scratch_space) const {
+                                const Iterator* iterator,
+                                Value* scratch_space) const override {
     return Get(data, static_cast<int>(IteratorToPosition(iterator)),
                scratch_space);
   }
@@ -88,30 +88,30 @@ template<typename T>
 class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
  public:
   RepeatedFieldWrapper() {}
-  virtual ~RepeatedFieldWrapper() {}
-  virtual bool IsEmpty(const Field* data) const {
+  virtual ~RepeatedFieldWrapper() override {}
+  virtual bool IsEmpty(const Field* data) const override {
     return GetRepeatedField(data)->empty();
   }
-  virtual int Size(const Field* data) const {
+  virtual int Size(const Field* data) const override {
     return GetRepeatedField(data)->size();
   }
   virtual const Value* Get(const Field* data, int index,
-                          Value* scratch_space) const {
+                   Value* scratch_space) const override {
     return ConvertFromT(GetRepeatedField(data)->Get(index), scratch_space);
   }
-  virtual void Clear(Field* data) const {
+  virtual void Clear(Field* data) const override {
     MutableRepeatedField(data)->Clear();
   }
-  virtual void Set(Field* data, int index, const Value* value) const {
+  virtual void Set(Field* data, int index, const Value* value) const override {
     MutableRepeatedField(data)->Set(index, ConvertToT(value));
   }
-  virtual void Add(Field* data, const Value* value) const {
+  virtual void Add(Field* data, const Value* value) const override {
     MutableRepeatedField(data)->Add(ConvertToT(value));
   }
-  virtual void RemoveLast(Field* data) const {
+  virtual void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
   }
-  virtual void SwapElements(Field* data, int index1, int index2) const {
+  virtual void SwapElements(Field* data, int index1, int index2) const override {
     MutableRepeatedField(data)->SwapElements(index1, index2);
   }
 
@@ -144,31 +144,31 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
  public:
   RepeatedPtrFieldWrapper() {}
   virtual ~RepeatedPtrFieldWrapper() {}
-  virtual bool IsEmpty(const Field* data) const {
+  virtual bool IsEmpty(const Field* data) const override {
     return GetRepeatedField(data)->empty();
   }
-  virtual int Size(const Field* data) const {
+  virtual int Size(const Field* data) const override {
     return GetRepeatedField(data)->size();
   }
   virtual const Value* Get(const Field* data, int index,
-                           Value* scratch_space) const {
+                   Value* scratch_space) const override {
     return ConvertFromT(GetRepeatedField(data)->Get(index), scratch_space);
   }
-  virtual void Clear(Field* data) const {
+  virtual void Clear(Field* data) const override {
     MutableRepeatedField(data)->Clear();
   }
-  virtual void Set(Field* data, int index, const Value* value) const {
+  virtual void Set(Field* data, int index, const Value* value) const override {
     ConvertToT(value, MutableRepeatedField(data)->Mutable(index));
   }
-  virtual void Add(Field* data, const Value* value) const {
+  virtual void Add(Field* data, const Value* value) const override {
     T* allocated = New(value);
     ConvertToT(value, allocated);
     MutableRepeatedField(data)->AddAllocated(allocated);
   }
-  virtual void RemoveLast(Field* data) const {
+  virtual void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
   }
-  virtual void SwapElements(Field* data, int index1, int index2) const {
+  virtual void SwapElements(Field* data, int index1, int index2) const override {
     MutableRepeatedField(data)->SwapElements(index1, index2);
   }
 
@@ -205,38 +205,38 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
 class MapFieldAccessor : public RandomAccessRepeatedFieldAccessor {
  public:
   MapFieldAccessor() {}
-  virtual ~MapFieldAccessor() {}
-  virtual bool IsEmpty(const Field* data) const {
+  virtual ~MapFieldAccessor() override {}
+  virtual bool IsEmpty(const Field* data) const override {
     return GetRepeatedField(data)->empty();
   }
-  virtual int Size(const Field* data) const {
+  virtual int Size(const Field* data) const override {
     return GetRepeatedField(data)->size();
   }
   virtual const Value* Get(const Field* data, int index,
-                           Value* scratch_space) const {
+                   Value* scratch_space) const override {
     return ConvertFromEntry(GetRepeatedField(data)->Get(index), scratch_space);
   }
-  virtual void Clear(Field* data) const {
+  virtual void Clear(Field* data) const override {
     MutableRepeatedField(data)->Clear();
   }
-  virtual void Set(Field* data, int index, const Value* value) const {
+  virtual void Set(Field* data, int index, const Value* value) const override {
     ConvertToEntry(value, MutableRepeatedField(data)->Mutable(index));
   }
-  virtual void Add(Field* data, const Value* value) const {
+  virtual void Add(Field* data, const Value* value) const override {
     Message* allocated = New(value);
     ConvertToEntry(value, allocated);
     MutableRepeatedField(data)->AddAllocated(allocated);
   }
-  virtual void RemoveLast(Field* data) const {
+  virtual void RemoveLast(Field* data) const override {
     MutableRepeatedField(data)->RemoveLast();
   }
-  virtual void SwapElements(Field* data, int index1, int index2) const {
+  virtual void SwapElements(Field* data, int index1, int index2) const override {
     MutableRepeatedField(data)->SwapElements(index1, index2);
   }
   virtual void Swap(
       Field* data,
       const internal::RepeatedFieldAccessor* other_mutator,
-      Field* other_data) const {
+      Field* other_data) const override {
     GOOGLE_CHECK(this == other_mutator);
     MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
   }
@@ -276,11 +276,11 @@ class RepeatedFieldPrimitiveAccessor : public RepeatedFieldWrapper<T> {
 
  public:
   RepeatedFieldPrimitiveAccessor() {}
-  virtual ~RepeatedFieldPrimitiveAccessor() {}
+  virtual ~RepeatedFieldPrimitiveAccessor() override {}
   virtual void Swap(
       Field* data,
       const internal::RepeatedFieldAccessor* other_mutator,
-      Field* other_data) const {
+      Field* other_data) const override {
     // Currently RepeatedFieldPrimitiveAccessor is the only implementation of
     // RepeatedFieldAccessor for primitive types. As we are using singletons
     // for these accessors, here "other_mutator" must be "this".
@@ -289,11 +289,11 @@ class RepeatedFieldPrimitiveAccessor : public RepeatedFieldWrapper<T> {
   }
 
  protected:
-  virtual T ConvertToT(const Value* value) const {
+  virtual T ConvertToT(const Value* value) const override {
     return *static_cast<const T*>(value);
   }
   virtual const Value* ConvertFromT(const T& value,
-                                    Value* scratch_space) const {
+                            Value* scratch_space) const override {
     return static_cast<const Value*>(&value);
   }
 };
@@ -307,11 +307,11 @@ class RepeatedPtrFieldStringAccessor : public RepeatedPtrFieldWrapper<string> {
 
  public:
   RepeatedPtrFieldStringAccessor() {}
-  virtual ~RepeatedPtrFieldStringAccessor() {}
+  virtual ~RepeatedPtrFieldStringAccessor() override {}
   virtual void Swap(
       Field* data,
       const internal::RepeatedFieldAccessor* other_mutator,
-      Field* other_data) const {
+      Field* other_data) const override {
     if (this == other_mutator) {
       MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
     } else {
@@ -330,14 +330,14 @@ class RepeatedPtrFieldStringAccessor : public RepeatedPtrFieldWrapper<string> {
   }
 
  protected:
-  virtual string* New(const Value*) const {
+  virtual string* New(const Value*) const override {
     return new string();
   }
-  virtual void ConvertToT(const Value* value, string* result) const {
+  virtual void ConvertToT(const Value* value, string* result) const override {
     *result = *static_cast<const string*>(value);
   }
   virtual const Value* ConvertFromT(const string& value,
-                                    Value* scratch_space) const {
+                            Value* scratch_space) const override {
     return static_cast<const Value*>(&value);
   }
 };
@@ -350,24 +350,24 @@ class RepeatedPtrFieldMessageAccessor
 
  public:
   RepeatedPtrFieldMessageAccessor() {}
-  virtual ~RepeatedPtrFieldMessageAccessor() {}
+  virtual ~RepeatedPtrFieldMessageAccessor() override {}
   virtual void Swap(
       Field* data,
       const internal::RepeatedFieldAccessor* other_mutator,
-      Field* other_data) const {
+      Field* other_data) const override {
     GOOGLE_CHECK(this == other_mutator);
     MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
   }
 
  protected:
-  virtual Message* New(const Value* value) const {
+  virtual Message* New(const Value* value) const override {
     return static_cast<const Message*>(value)->New();
   }
-  virtual void ConvertToT(const Value* value, Message* result) const {
+  virtual void ConvertToT(const Value* value, Message* result) const override {
     result->CopyFrom(*static_cast<const Message*>(value));
   }
   virtual const Value* ConvertFromT(const Message& value,
-                                    Value* scratch_space) const {
+                            Value* scratch_space) const override {
     return static_cast<const Value*>(&value);
   }
 };

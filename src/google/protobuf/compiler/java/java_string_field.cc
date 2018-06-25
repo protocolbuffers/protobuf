@@ -405,11 +405,15 @@ GenerateBuildingCode(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
     printer->Print(variables_,
       "if ($get_has_field_bit_from_local$) {\n"
+      "  result.$name$_ = $name$_;\n"
       "  $set_has_field_bit_to_local$;\n"
+      "} else {\n"
+      "  result.$name$_ = $default$;\n"
       "}\n");
+  } else {
+    printer->Print(variables_,
+      "result.$name$_ = $name$_;\n");
   }
-  printer->Print(variables_,
-    "result.$name$_ = $name$_;\n");
 }
 
 void ImmutableStringFieldGenerator::

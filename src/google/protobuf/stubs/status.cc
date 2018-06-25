@@ -124,7 +124,7 @@ string Status::ToString() const {
   }
 }
 
-ostream& operator<<(ostream& os, const Status& x) {
+std::ostream& operator<<(std::ostream& os, const Status& x) {
   os << x.ToString();
   return os;
 }

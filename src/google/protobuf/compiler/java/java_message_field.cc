@@ -255,7 +255,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   bool support_field_presence = SupportFieldPresence(descriptor_->file());
 
   printer->Print(variables_,
-    "private $type$ $name$_ = null;\n");
+    "private $type$ $name$_;\n");
 
   printer->Print(variables_,
       // If this builder is non-null, it is used and the other fields are
@@ -444,15 +444,20 @@ void ImmutableMessageFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
     printer->Print(variables_,
-        "if ($get_has_field_bit_from_local$) {\n"
-        "  $set_has_field_bit_to_local$;\n"
-        "}\n");
+      "if ($get_has_field_bit_from_local$) {\n");
+    printer->Indent();
+    PrintNestedBuilderCondition(printer,
+      "result.$name$_ = $name$_;\n",
+      "result.$name$_ = $name$Builder_.build();\n");
+    printer->Outdent();
+    printer->Print(variables_,
+      "  $set_has_field_bit_to_local$;\n"
+      "}\n");
+  } else {
+    PrintNestedBuilderCondition(printer,
+      "result.$name$_ = $name$_;\n",
+      "result.$name$_ = $name$Builder_.build();\n");
   }
-
-  PrintNestedBuilderCondition(printer,
-    "result.$name$_ = $name$_;\n",
-
-    "result.$name$_ = $name$Builder_.build();\n");
 }
 
 void ImmutableMessageFieldGenerator::

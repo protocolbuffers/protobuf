@@ -32,15 +32,17 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <map>
+#include <queue>
 #include <vector>
-#include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -72,7 +74,7 @@ const char* const kKeywordList[] = {
   "constexpr", "const_cast", "continue", "decltype", "default", "delete", "do",
   "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern",
   "false", "float", "for", "friend", "goto", "if", "inline", "int", "long",
-  "mutable", "namespace", "new", "noexcept", "not", "not_eq", "NULL",
+  "mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr",
   "operator", "or", "or_eq", "private", "protected", "public", "register",
   "reinterpret_cast", "return", "short", "signed", "sizeof", "static",
   "static_assert", "static_cast", "struct", "switch", "template", "this",
@@ -103,6 +105,30 @@ bool HasExtension(const Descriptor* descriptor) {
     }
   }
   return false;
+}
+
+// Encode [0..63] as 'A'-'Z', 'a'-'z', '0'-'9', '_'
+char Base63Char(int value) {
+  GOOGLE_CHECK_GE(value, 0);
+  if (value < 26) return 'A' + value;
+  value -= 26;
+  if (value < 26) return 'a' + value;
+  value -= 26;
+  if (value < 10) return '0' + value;
+  GOOGLE_CHECK_EQ(value, 10);
+  return '_';
+}
+
+// Given a c identifier has 63 legal characters we can't implement base64
+// encoding. So we return the k least significant "digits" in base 63.
+template <typename I>
+string Base63(I n, int k) {
+  string res;
+  while (k-- > 0) {
+    res += Base63Char(static_cast<int>(n % 63));
+    n /= 63;
+  }
+  return res;
 }
 
 }  // namespace
@@ -137,36 +163,51 @@ const char kThickSeparator[] =
 const char kThinSeparator[] =
   "// -------------------------------------------------------------------\n";
 
-string ClassName(const Descriptor* descriptor, bool qualified) {
-
-  // Find "outer", the descriptor of the top-level message in which
-  // "descriptor" is embedded.
-  const Descriptor* outer = descriptor;
-  while (outer->containing_type() != NULL) outer = outer->containing_type();
-
-  const string& outer_name = outer->full_name();
-  string inner_name = descriptor->full_name().substr(outer_name.size());
-
-  if (qualified) {
-    return "::" + DotsToColons(outer_name) + DotsToUnderscores(inner_name);
-  } else {
-    return outer->name() + DotsToUnderscores(inner_name);
+bool CanInitializeByZeroing(const FieldDescriptor* field) {
+  if (field->is_repeated() || field->is_extension()) return false;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() == 0;
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() == 0;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() == 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() == 0;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() == 0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() == 0;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() == 0;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() == false;
+    default:
+      return false;
   }
 }
 
-string ClassName(const EnumDescriptor* enum_descriptor, bool qualified) {
+string ClassName(const Descriptor* descriptor) {
+  const Descriptor* parent = descriptor->containing_type();
+  string res;
+  if (parent) res += ClassName(parent) + "_";
+  res += descriptor->name();
+  if (IsMapEntryMessage(descriptor)) res += "_DoNotUse";
+  return res;
+}
+
+string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == NULL) {
-    if (qualified) {
-      return "::" + DotsToColons(enum_descriptor->full_name());
-    } else {
-      return enum_descriptor->name();
-    }
+    return enum_descriptor->name();
   } else {
-    string result = ClassName(enum_descriptor->containing_type(), qualified);
-    result += '_';
-    result += enum_descriptor->name();
-    return result;
+    return ClassName(enum_descriptor->containing_type()) + "_" +
+           enum_descriptor->name();
   }
+}
+
+string Namespace(const string& package) {
+  if (package.empty()) return "";
+  return "::" + DotsToColons(package);
 }
 
 string DefaultInstanceName(const Descriptor* descriptor) {
@@ -175,22 +216,14 @@ string DefaultInstanceName(const Descriptor* descriptor) {
       ClassName(descriptor, false) + "_default_instance_";
 }
 
-string DependentBaseClassTemplateName(const Descriptor* descriptor) {
-  return ClassName(descriptor, false) + "_InternalBase";
+string ReferenceFunctionName(const Descriptor* descriptor) {
+  return QualifiedClassName(descriptor) + "_ReferenceStrong";
 }
 
 string SuperClassName(const Descriptor* descriptor, const Options& options) {
   return HasDescriptorMethods(descriptor->file(), options)
              ? "::google::protobuf::Message"
              : "::google::protobuf::MessageLite";
-}
-
-string DependentBaseDownCast() {
-  return "reinterpret_cast<T*>(this)->";
-}
-
-string DependentBaseConstDownCast() {
-  return "reinterpret_cast<const T*>(this)->";
 }
 
 string FieldName(const FieldDescriptor* field) {
@@ -210,6 +243,30 @@ string EnumValueName(const EnumValueDescriptor* enum_value) {
   return result;
 }
 
+int EstimateAlignmentSize(const FieldDescriptor* field) {
+  if (field == NULL) return 0;
+  if (field->is_repeated()) return 8;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return 1;
+
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return 4;
+
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_STRING:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return 8;
+  }
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return -1;  // Make compiler happy.
+}
+
 string FieldConstantName(const FieldDescriptor *field) {
   string field_name = UnderscoresToCamelCase(field->name(), true);
   string result = "k" + field_name + "FieldNumber";
@@ -224,60 +281,6 @@ string FieldConstantName(const FieldDescriptor *field) {
   }
 
   return result;
-}
-
-bool IsFieldDependent(const FieldDescriptor* field) {
-  if (field->containing_oneof() != NULL &&
-      field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-    return true;
-  }
-  if (field->is_map()) {
-    const Descriptor* map_descriptor = field->message_type();
-    for (int i = 0; i < map_descriptor->field_count(); i++) {
-      if (IsFieldDependent(map_descriptor->field(i))) {
-        return true;
-      }
-    }
-    return false;
-  }
-  if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    return false;
-  }
-  if (field->containing_oneof() != NULL) {
-    // Oneof fields will always be dependent.
-    //
-    // This is a unique case for field codegen. Field generators are
-    // responsible for generating all the field-specific accessor
-    // functions, except for the clear_*() function; instead, field
-    // generators produce inline clearing code.
-    //
-    // For non-oneof fields, the Message class uses the inline clearing
-    // code to define the field's clear_*() function, as well as in the
-    // destructor. For oneof fields, the Message class generates a much
-    // more complicated clear_*() function, which clears only the oneof
-    // member that is set, in addition to clearing methods for each of the
-    // oneof members individually.
-    //
-    // Since oneofs do not have their own generator class, the Message code
-    // generation logic would be significantly complicated in order to
-    // split dependent and non-dependent manipulation logic based on
-    // whether the oneof truly needs to be dependent; so, for oneof fields,
-    // we just assume it (and its constituents) should be manipulated by a
-    // dependent base class function.
-    //
-    // This is less precise than how dependent message-typed fields are
-    // handled, but the cost is limited to only the generated code for the
-    // oneof field, which seems like an acceptable tradeoff.
-    return true;
-  }
-  if (field->file() == field->message_type()->file()) {
-    return false;
-  }
-  return true;
-}
-
-string DependentTypeName(const FieldDescriptor* field) {
-  return "InternalBase_" + field->name() + "_T";
 }
 
 string FieldMessageTypeName(const FieldDescriptor* field) {
@@ -484,19 +487,6 @@ string SafeFunctionName(const Descriptor* descriptor,
   return function_name;
 }
 
-bool StaticInitializersForced(const FileDescriptor* file,
-                              const Options& options) {
-  if (HasDescriptorMethods(file, options) || file->extension_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < file->message_type_count(); ++i) {
-    if (HasExtension(file->message_type(i))) {
-      return true;
-    }
-  }
-  return false;
-}
-
 
 static bool HasMapFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
@@ -672,13 +662,11 @@ void Flatten(const Descriptor* descriptor,
 
 }  // namespace
 
-std::vector<const Descriptor*> FlattenMessagesInFile(
-    const FileDescriptor* file) {
-  std::vector<const Descriptor*> result;
+void FlattenMessagesInFile(const FileDescriptor* file,
+                           std::vector<const Descriptor*>* result) {
   for (int i = 0; i < file->message_type_count(); i++) {
-    Flatten(file->message_type(i), &result);
+    Flatten(file->message_type(i), result);
   }
-  return result;
 }
 
 bool HasWeakFields(const Descriptor* descriptor) {
@@ -688,6 +676,31 @@ bool HasWeakFields(const Descriptor* descriptor) {
 bool HasWeakFields(const FileDescriptor* file) {
   return false;
 }
+
+bool UsingImplicitWeakFields(const FileDescriptor* file,
+                             const Options& options) {
+  return options.lite_implicit_weak_fields &&
+         GetOptimizeFor(file, options) == FileOptions::LITE_RUNTIME;
+}
+
+bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
+                         SCCAnalyzer* scc_analyzer) {
+  return UsingImplicitWeakFields(field->file(), options) &&
+         field->type() == FieldDescriptor::TYPE_MESSAGE &&
+         !field->is_required() && !field->is_map() &&
+         field->containing_oneof() == NULL &&
+         !IsWellKnownMessage(field->message_type()->file()) &&
+         // We do not support implicit weak fields between messages in the same
+         // strongly-connected component.
+         scc_analyzer->GetSCC(field->containing_type()) !=
+             scc_analyzer->GetSCC(field->message_type());
+}
+
+struct CompareDescriptors {
+  bool operator()(const Descriptor* a, const Descriptor* b) {
+    return a->full_name() < b->full_name();
+  }
+};
 
 SCCAnalyzer::NodeData SCCAnalyzer::DFS(const Descriptor* descriptor) {
   // Must not have visited already.
@@ -728,8 +741,31 @@ SCCAnalyzer::NodeData SCCAnalyzer::DFS(const Descriptor* descriptor) {
 
       if (scc_desc == descriptor) break;
     }
+
+    // The order of descriptors is random and depends how this SCC was
+    // discovered. In-order to ensure maximum stability we sort it by name.
+    std::sort(scc->descriptors.begin(), scc->descriptors.end(),
+              CompareDescriptors());
+    AddChildren(scc);
   }
   return result;
+}
+
+void SCCAnalyzer::AddChildren(SCC* scc) {
+  std::set<const SCC*> seen;
+  for (int i = 0; i < scc->descriptors.size(); i++) {
+    const Descriptor* descriptor = scc->descriptors[i];
+    for (int j = 0; j < descriptor->field_count(); j++) {
+      const Descriptor* child_msg = descriptor->field(j)->message_type();
+      if (child_msg) {
+        const SCC* child = GetSCC(child_msg);
+        if (child == scc) continue;
+        if (seen.insert(child).second) {
+          scc->children.push_back(child);
+        }
+      }
+    }
+  }
 }
 
 MessageAnalysis SCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
@@ -783,6 +819,47 @@ MessageAnalysis SCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
   // we will go in an infinite loop if the SCC is not correct.
   return analysis_cache_[scc] = result;
 }
+
+void ListAllFields(const Descriptor* d,
+                   std::vector<const FieldDescriptor*>* fields) {
+  // Collect sub messages
+  for (int i = 0; i < d->nested_type_count(); i++) {
+    ListAllFields(d->nested_type(i), fields);
+  }
+  // Collect message level extensions.
+  for (int i = 0; i < d->extension_count(); i++) {
+    fields->push_back(d->extension(i));
+  }
+  // Add types of fields necessary
+  for (int i = 0; i < d->field_count(); i++) {
+    fields->push_back(d->field(i));
+  }
+}
+
+void ListAllFields(const FileDescriptor* d,
+                   std::vector<const FieldDescriptor*>* fields) {
+  // Collect file level message.
+  for (int i = 0; i < d->message_type_count(); i++) {
+    ListAllFields(d->message_type(i), fields);
+  }
+  // Collect message level extensions.
+  for (int i = 0; i < d->extension_count(); i++) {
+    fields->push_back(d->extension(i));
+  }
+}
+
+void ListAllTypesForServices(const FileDescriptor* fd,
+                             std::vector<const Descriptor*>* types) {
+  for (int i = 0; i < fd->service_count(); i++) {
+    const ServiceDescriptor* sd = fd->service(i);
+    for (int j = 0; j < sd->method_count(); j++) {
+      const MethodDescriptor* method = sd->method(j);
+      types->push_back(method->input_type());
+      types->push_back(method->output_type());
+    }
+  }
+}
+
 
 }  // namespace cpp
 }  // namespace compiler

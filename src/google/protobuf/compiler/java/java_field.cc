@@ -35,9 +35,6 @@
 #include <google/protobuf/compiler/java/java_field.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -214,8 +211,7 @@ template <>
 FieldGeneratorMap<ImmutableFieldGenerator>::FieldGeneratorMap(
     const Descriptor* descriptor, Context* context)
     : descriptor_(descriptor),
-      field_generators_(new google::protobuf::scoped_ptr<
-          ImmutableFieldGenerator>[descriptor->field_count()]) {
+      field_generators_(descriptor->field_count()) {
 
   // Construct all the FieldGenerators and assign them bit indices for their
   // bit fields.
@@ -237,8 +233,7 @@ template <>
 FieldGeneratorMap<ImmutableFieldLiteGenerator>::FieldGeneratorMap(
     const Descriptor* descriptor, Context* context)
     : descriptor_(descriptor),
-      field_generators_(new google::protobuf::scoped_ptr<
-          ImmutableFieldLiteGenerator>[descriptor->field_count()]) {
+      field_generators_(descriptor->field_count()) {
   // Construct all the FieldGenerators and assign them bit indices for their
   // bit fields.
   int messageBitIndex = 0;

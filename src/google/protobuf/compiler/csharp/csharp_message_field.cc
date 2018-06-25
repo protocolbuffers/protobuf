@@ -133,7 +133,7 @@ void MessageFieldGenerator::WriteToString(io::Printer* printer) {
 
 void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
-    "$property_name$ = other.$has_property_check$ ? other.$property_name$.Clone() : null;\n");
+    "$name$_ = other.$has_property_check$ ? other.$name$_.Clone() : null;\n");
 }
 
 void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
@@ -169,6 +169,14 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"
     "}\n");
+}
+
+void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(variables_, 
+    "if ($property_name$ == null) {\n"
+    "  $property_name$ = new $type_name$();\n"
+    "}\n"
+    "$property_name$.MergeFrom(other.$property_name$);\n");
 }
 
 void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {

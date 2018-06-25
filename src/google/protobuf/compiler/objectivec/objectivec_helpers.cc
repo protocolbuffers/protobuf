@@ -50,11 +50,6 @@
 #include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/strutil.h>
 
-#if defined(_MSC_VER)
-// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
-// them like we do below.
-using google::protobuf::internal::win32::open;
-#endif
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -63,6 +58,16 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
+
+// <io.h> is transitively included in this file. Import the functions explicitly
+// in this port namespace to avoid ambiguous definition.
+namespace posix {
+#ifdef _WIN32
+using ::google::protobuf::internal::win32::open;
+#else
+using ::open;
+#endif
+}  // namespace port
 
 Options::Options() {
   // Default is the value of the env for the package prefixes.
@@ -95,7 +100,7 @@ bool ascii_isnewline(char c) {
 // Do not expose this outside of helpers, stick to having functions for specific
 // cases (ClassName(), FieldName()), so there is always consistent suffix rules.
 string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
-  vector<string> values;
+  std::vector<string> values;
   string current;
 
   bool last_char_was_number = false;
@@ -136,7 +141,7 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
 
   string result;
   bool first_segment_forces_upper = false;
-  for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
+  for (std::vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
     string value = *i;
     bool all_upper = (kUpperSegments.count(value) > 0);
     if (all_upper && (result.length() == 0)) {
@@ -859,7 +864,7 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
 }
 
 string BuildFlagsString(const FlagType flag_type,
-                        const vector<string>& strings) {
+                        const std::vector<string>& strings) {
   if (strings.size() == 0) {
     return GetZeroEnumNameForFlagType(flag_type);
   } else if (strings.size() == 1) {
@@ -881,7 +886,7 @@ string BuildCommentsString(const SourceLocation& location,
   const string& comments = location.leading_comments.empty()
                                ? location.trailing_comments
                                : location.leading_comments;
-  vector<string> lines;
+  std::vector<string> lines;
   SplitStringAllowEmpty(comments, "\n", &lines);
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
@@ -1151,7 +1156,7 @@ bool ValidateObjCClassPrefix(
 
 }  // namespace
 
-bool ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
+bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                string* out_error) {
   // Load the expected package prefixes, if available, to validate against.
@@ -1182,7 +1187,7 @@ TextFormatDecodeData::~TextFormatDecodeData() { }
 void TextFormatDecodeData::AddString(int32 key,
                                      const string& input_for_decode,
                                      const string& desired_output) {
-  for (vector<DataEntry>::const_iterator i = entries_.begin();
+  for (std::vector<DataEntry>::const_iterator i = entries_.begin();
        i != entries_.end(); ++i) {
     if (i->first == key) {
       std::cerr << "error: duplicate key (" << key
@@ -1206,7 +1211,7 @@ string TextFormatDecodeData::Data() const {
     io::CodedOutputStream output_stream(&data_outputstream);
 
     output_stream.WriteVarint32(num_entries());
-    for (vector<DataEntry>::const_iterator i = entries_.begin();
+    for (std::vector<DataEntry>::const_iterator i = entries_.begin();
          i != entries_.end(); ++i) {
       output_stream.WriteVarint32(i->first);
       output_stream.WriteString(i->second);
@@ -1469,7 +1474,7 @@ bool ParseSimpleFile(
     const string& path, LineConsumer* line_consumer, string* out_error) {
   int fd;
   do {
-    fd = open(path.c_str(), O_RDONLY);
+    fd = posix::open(path.c_str(), O_RDONLY);
   } while (fd < 0 && errno == EINTR);
   if (fd < 0) {
     *out_error =
@@ -1499,10 +1504,12 @@ bool ParseSimpleFile(
 
 ImportWriter::ImportWriter(
   const string& generate_for_named_framework,
-  const string& named_framework_to_proto_path_mappings_path)
+  const string& named_framework_to_proto_path_mappings_path,
+  bool include_wkt_imports)
     : generate_for_named_framework_(generate_for_named_framework),
       named_framework_to_proto_path_mappings_path_(
           named_framework_to_proto_path_mappings_path),
+      include_wkt_imports_(include_wkt_imports),
       need_to_parse_mapping_file_(true) {
 }
 
@@ -1513,9 +1520,14 @@ void ImportWriter::AddFile(const FileDescriptor* file,
   const string file_path(FilePath(file));
 
   if (IsProtobufLibraryBundledProtoFile(file)) {
-    protobuf_framework_imports_.push_back(
-        FilePathBasename(file) + header_extension);
-    protobuf_non_framework_imports_.push_back(file_path + header_extension);
+    // The imports of the WKTs are only needed within the library itself,
+    // in other cases, they get skipped because the generated code already
+    // import GPBProtocolBuffers.h and hence proves them.
+    if (include_wkt_imports_) {
+      protobuf_framework_imports_.push_back(
+          FilePathBasename(file) + header_extension);
+      protobuf_non_framework_imports_.push_back(file_path + header_extension);
+    }
     return;
   }
 
@@ -1556,7 +1568,7 @@ void ImportWriter::Print(io::Printer* printer) const {
     printer->Print(
         "#if $cpp_symbol$\n",
         "cpp_symbol", cpp_symbol);
-    for (vector<string>::const_iterator iter = protobuf_framework_imports_.begin();
+    for (std::vector<string>::const_iterator iter = protobuf_framework_imports_.begin();
          iter != protobuf_framework_imports_.end(); ++iter) {
       printer->Print(
           " #import <$framework_name$/$header$>\n",
@@ -1565,7 +1577,7 @@ void ImportWriter::Print(io::Printer* printer) const {
     }
     printer->Print(
         "#else\n");
-    for (vector<string>::const_iterator iter = protobuf_non_framework_imports_.begin();
+    for (std::vector<string>::const_iterator iter = protobuf_non_framework_imports_.begin();
          iter != protobuf_non_framework_imports_.end(); ++iter) {
       printer->Print(
           " #import \"$header$\"\n",
@@ -1582,10 +1594,10 @@ void ImportWriter::Print(io::Printer* printer) const {
       printer->Print("\n");
     }
 
-    for (vector<string>::const_iterator iter = other_framework_imports_.begin();
+    for (std::vector<string>::const_iterator iter = other_framework_imports_.begin();
          iter != other_framework_imports_.end(); ++iter) {
       printer->Print(
-          " #import <$header$>\n",
+          "#import <$header$>\n",
           "header", *iter);
     }
 
@@ -1597,10 +1609,10 @@ void ImportWriter::Print(io::Printer* printer) const {
       printer->Print("\n");
     }
 
-    for (vector<string>::const_iterator iter = other_imports_.begin();
+    for (std::vector<string>::const_iterator iter = other_imports_.begin();
          iter != other_imports_.end(); ++iter) {
       printer->Print(
-          " #import \"$header$\"\n",
+          "#import \"$header$\"\n",
           "header", *iter);
     }
   }

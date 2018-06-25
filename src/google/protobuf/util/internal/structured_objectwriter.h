@@ -32,9 +32,6 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_STRUCTURED_OBJECTWRITER_H__
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
@@ -80,7 +77,7 @@ class LIBPROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
     }
 
     // Returns true if this element is the root.
-    bool is_root() const { return parent_ == NULL; }
+    bool is_root() const { return parent_ == nullptr; }
 
     // Returns the number of hops from this element to the root element.
     int level() const { return level_; }
@@ -91,10 +88,10 @@ class LIBPROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
 
    private:
     // Pointer to the parent Element.
-    google::protobuf::scoped_ptr<BaseElement> parent_;
+    std::unique_ptr<BaseElement> parent_;
 
     // Number of hops to the root Element.
-    // The root Element has NULL parent_ and a level_ of 0.
+    // The root Element has nullptr parent_ and a level_ of 0.
     const int level_;
 
     GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(BaseElement);

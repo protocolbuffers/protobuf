@@ -169,7 +169,7 @@ std::string UnderscoresToCamelCase(const std::string& input,
     }
   }
   // Add a trailing "_" if the name should be altered.
-  if (input[input.size() - 1] == '#') {
+  if (input.size() > 0 && input[input.size() - 1] == '#') {
     result += '_';
   }
   return result;

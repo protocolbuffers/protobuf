@@ -32,19 +32,14 @@ package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.test.UnittestImport;
 import protobuf_unittest.EnumWithNoOuter;
 import protobuf_unittest.MessageWithNoOuter;
 import protobuf_unittest.MultipleFilesTestProto;
 import protobuf_unittest.NestedExtension.MyNestedExtension;
-import protobuf_unittest.NestedExtensionLite.MyNestedExtensionLite;
 import protobuf_unittest.NonNestedExtension;
 import protobuf_unittest.NonNestedExtension.MessageToBeExtended;
 import protobuf_unittest.NonNestedExtension.MyNonNestedExtension;
-import protobuf_unittest.NonNestedExtensionLite;
-import protobuf_unittest.NonNestedExtensionLite.MessageLiteToBeExtended;
-import protobuf_unittest.NonNestedExtensionLite.MyNonNestedExtensionLite;
 import protobuf_unittest.OuterClassNameTest2OuterClass;
 import protobuf_unittest.OuterClassNameTest3OuterClass;
 import protobuf_unittest.OuterClassNameTestOuterClass;
@@ -712,70 +707,6 @@ public class GeneratedMessageTest extends TestCase {
   }
 
   // =================================================================
-  // Lite Extensions.
-
-  // We test lite extensions directly because they have a separate
-  // implementation from full extensions.  In contrast, we do not test
-  // lite fields directly since they are implemented exactly the same as
-  // regular fields.
-
-  public void testLiteExtensionMessageOrBuilder() throws Exception {
-    TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.newBuilder();
-    TestUtilLite.setAllExtensions(builder);
-    TestUtil.assertAllExtensionsSet(builder);
-
-    TestAllExtensionsLite message = builder.build();
-    TestUtil.assertAllExtensionsSet(message);
-  }
-
-  public void testLiteExtensionRepeatedSetters() throws Exception {
-    TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.newBuilder();
-    TestUtilLite.setAllExtensions(builder);
-    TestUtilLite.modifyRepeatedExtensions(builder);
-    TestUtil.assertRepeatedExtensionsModified(builder);
-
-    TestAllExtensionsLite message = builder.build();
-    TestUtil.assertRepeatedExtensionsModified(message);
-  }
-
-  public void testLiteExtensionDefaults() throws Exception {
-    TestUtil.assertExtensionsClear(TestAllExtensionsLite.getDefaultInstance());
-    TestUtil.assertExtensionsClear(TestAllExtensionsLite.newBuilder().build());
-  }
-
-  public void testClearLiteExtension() throws Exception {
-    // clearExtension() is not actually used in TestUtil, so try it manually.
-    assertFalse(
-      TestAllExtensionsLite.newBuilder()
-        .setExtension(UnittestLite.optionalInt32ExtensionLite, 1)
-        .clearExtension(UnittestLite.optionalInt32ExtensionLite)
-        .hasExtension(UnittestLite.optionalInt32ExtensionLite));
-    assertEquals(0,
-      TestAllExtensionsLite.newBuilder()
-        .addExtension(UnittestLite.repeatedInt32ExtensionLite, 1)
-        .clearExtension(UnittestLite.repeatedInt32ExtensionLite)
-        .getExtensionCount(UnittestLite.repeatedInt32ExtensionLite));
-  }
-
-  public void testLiteExtensionCopy() throws Exception {
-    TestAllExtensionsLite original = TestUtilLite.getAllLiteExtensionsSet();
-    TestAllExtensionsLite copy =
-        TestAllExtensionsLite.newBuilder(original).build();
-    TestUtil.assertAllExtensionsSet(copy);
-  }
-
-  public void testLiteExtensionMergeFrom() throws Exception {
-    TestAllExtensionsLite original =
-      TestAllExtensionsLite.newBuilder()
-        .setExtension(UnittestLite.optionalInt32ExtensionLite, 1).build();
-    TestAllExtensionsLite merged =
-        TestAllExtensionsLite.newBuilder().mergeFrom(original).build();
-    assertTrue(merged.hasExtension(UnittestLite.optionalInt32ExtensionLite));
-    assertEquals(
-        1, (int) merged.getExtension(UnittestLite.optionalInt32ExtensionLite));
-  }
-
-  // =================================================================
   // multiple_files_test
 
   // Test that custom options of an file level enum are properly initialized.
@@ -940,16 +871,6 @@ public class GeneratedMessageTest extends TestCase {
                instanceof MessageToBeExtended);
     assertEquals("recursiveExtension",
                  MyNestedExtension.recursiveExtension.getDescriptor().getName());
-  }
-
-  public void testNonNestedExtensionLiteInitialization() {
-    assertTrue(NonNestedExtensionLite.nonNestedExtensionLite
-               .getMessageDefaultInstance() instanceof MyNonNestedExtensionLite);
-  }
-
-  public void testNestedExtensionLiteInitialization() {
-    assertTrue(MyNestedExtensionLite.recursiveExtensionLite
-               .getMessageDefaultInstance() instanceof MessageLiteToBeExtended);
   }
 
   public void testInvalidations() throws Exception {

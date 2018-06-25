@@ -31,13 +31,15 @@
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
+#include <google/protobuf/reflection_ops.h>
 
 #include <string>
 #include <vector>
 
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -45,6 +47,17 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+static const Reflection* GetReflectionOrDie(const Message& m) {
+  const Reflection* r = m.GetReflection();
+  if (r == nullptr) {
+    const Descriptor* d = m.GetDescriptor();
+    const string& mtype = d ? d->name() : "unknown";
+    // RawMessage is one known type for which GetReflection() returns nullptr.
+    GOOGLE_LOG(FATAL) << "Message does not support reflection (type " << mtype << ").";
+  }
+  return r;
+}
 
 void ReflectionOps::Copy(const Message& from, Message* to) {
   if (&from == to) return;
@@ -61,8 +74,8 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
     << "(merge " << descriptor->full_name()
     << " to " << to->GetDescriptor()->full_name() << ")";
 
-  const Reflection* from_reflection = from.GetReflection();
-  const Reflection* to_reflection = to->GetReflection();
+  const Reflection* from_reflection = GetReflectionOrDie(from);
+  const Reflection* to_reflection = GetReflectionOrDie(*to);
 
   std::vector<const FieldDescriptor*> fields;
   from_reflection->ListFields(from, &fields);
@@ -128,7 +141,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
 }
 
 void ReflectionOps::Clear(Message* message) {
-  const Reflection* reflection = message->GetReflection();
+  const Reflection* reflection = GetReflectionOrDie(*message);
 
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
@@ -141,7 +154,7 @@ void ReflectionOps::Clear(Message* message) {
 
 bool ReflectionOps::IsInitialized(const Message& message) {
   const Descriptor* descriptor = message.GetDescriptor();
-  const Reflection* reflection = message.GetReflection();
+  const Reflection* reflection = GetReflectionOrDie(message);
 
   // Check required fields of this message.
   for (int i = 0; i < descriptor->field_count(); i++) {
@@ -201,7 +214,7 @@ bool ReflectionOps::IsInitialized(const Message& message) {
 }
 
 void ReflectionOps::DiscardUnknownFields(Message* message) {
-  const Reflection* reflection = message->GetReflection();
+  const Reflection* reflection = GetReflectionOrDie(*message);
 
   reflection->MutableUnknownFields(message)->Clear();
 
@@ -248,7 +261,7 @@ void ReflectionOps::FindInitializationErrors(
     const string& prefix,
     std::vector<string>* errors) {
   const Descriptor* descriptor = message.GetDescriptor();
-  const Reflection* reflection = message.GetReflection();
+  const Reflection* reflection = GetReflectionOrDie(message);
 
   // Check required fields of this message.
   for (int i = 0; i < descriptor->field_count(); i++) {

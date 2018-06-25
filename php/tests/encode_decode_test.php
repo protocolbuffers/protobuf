@@ -7,7 +7,7 @@ use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
 use Foo\TestEnum;
 use Foo\TestMessage;
-use Foo\TestMessage_Sub;
+use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
@@ -82,7 +82,7 @@ class EncodeDecodeTest extends TestBase
         $n->mergeFromString($data);
         $this->assertSame('abc', $n->getOneofString());
 
-        $sub_m = new TestMessage_Sub();
+        $sub_m = new Sub();
         $sub_m->setA(1);
         $m->setOneofMessage($sub_m);
         $data = $m->serializeToString();
@@ -105,7 +105,7 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("oneof_string", $n->getMyOneof());
         $this->assertSame("", $n->getOneofString());
 
-        $sub_m = new TestMessage_Sub();
+        $sub_m = new Sub();
         $m->setOneofMessage($sub_m);
         $data = $m->serializeToString();
         $n = new TestMessage();
@@ -439,6 +439,78 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestPackedMessage();
         $m->mergeFromString(hex2bin('D205'));
+    }
+
+    public function testUnknown()
+    {
+        // Test preserve unknown for varint.
+        $m = new TestMessage();
+        $from = hex2bin('F80601');  // TODO(teboring): Add a util to encode
+                                    // varint for better readability
+        $m->mergeFromString($from);
+        $to = $m->serializeToString();
+        $this->assertSame(bin2hex($from), bin2hex($to));
+
+        // Test preserve unknown for 64-bit.
+        $m = new TestMessage();
+        $from = hex2bin('F9060000000000000000');
+        $m->mergeFromString($from);
+        $to = $m->serializeToString();
+        $this->assertSame(bin2hex($from), bin2hex($to));
+
+        // Test preserve unknown for length delimited.
+        $m = new TestMessage();
+        $from = hex2bin('FA0600');
+        $m->mergeFromString($from);
+        $to = $m->serializeToString();
+        $this->assertSame(bin2hex($from), bin2hex($to));
+
+        // Test preserve unknown for 32-bit.
+        $m = new TestMessage();
+        $from = hex2bin('FD0600000000');
+        $m->mergeFromString($from);
+        $to = $m->serializeToString();
+        $this->assertSame(bin2hex($from), bin2hex($to));
+
+        // Test discard unknown in message.
+        $m = new TestMessage();
+        $from = hex2bin('F80601');
+        $m->mergeFromString($from);
+        $m->discardUnknownFields();
+        $to = $m->serializeToString();
+        $this->assertSame("", bin2hex($to));
+
+        // Test discard unknown for singular message field.
+        $m = new TestMessage();
+        $from = hex2bin('8A0103F80601');
+        $m->mergeFromString($from);
+        $m->discardUnknownFields();
+        $to = $m->serializeToString();
+        $this->assertSame("8a0100", bin2hex($to));
+
+        // Test discard unknown for repeated message field.
+        $m = new TestMessage();
+        $from = hex2bin('FA0203F80601');
+        $m->mergeFromString($from);
+        $m->discardUnknownFields();
+        $to = $m->serializeToString();
+        $this->assertSame("fa0200", bin2hex($to));
+
+        // Test discard unknown for map message value field.
+        $m = new TestMessage();
+        $from = hex2bin("BA050708011203F80601");
+        $m->mergeFromString($from);
+        $m->discardUnknownFields();
+        $to = $m->serializeToString();
+        $this->assertSame("ba050408011200", bin2hex($to));
+
+        // Test discard unknown for singular message field.
+        $m = new TestMessage();
+        $from = hex2bin('9A0403F80601');
+        $m->mergeFromString($from);
+        $m->discardUnknownFields();
+        $to = $m->serializeToString();
+        $this->assertSame("9a0400", bin2hex($to));
     }
 
     public function testJsonEncode()

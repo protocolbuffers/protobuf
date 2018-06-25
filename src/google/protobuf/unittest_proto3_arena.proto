@@ -187,6 +187,7 @@ message TestUnpackedTypes {
 message NestedTestAllTypes {
   NestedTestAllTypes child = 1;
   TestAllTypes payload = 2;
+  repeated NestedTestAllTypes repeated_child = 3;
 }
 
 // Define these after TestAllTypes to make sure the compiler can handle
@@ -205,4 +206,3 @@ enum ForeignEnum {
 // TestEmptyMessage is used to test behavior of unknown fields.
 message TestEmptyMessage {
 }
-

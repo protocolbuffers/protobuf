@@ -49,8 +49,7 @@ class MapFieldGenerator : public FieldGenerator {
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const;
   void GenerateAccessorDeclarations(io::Printer* printer) const;
-  void GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                         bool is_inline) const;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
@@ -67,7 +66,6 @@ class MapFieldGenerator : public FieldGenerator {
       io::Printer* printer, const std::map<string, string>& variables) const;
 
   const FieldDescriptor* descriptor_;
-  const bool dependent_field_;
   std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);

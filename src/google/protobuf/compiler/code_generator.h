@@ -51,6 +51,7 @@ class FileDescriptor;
 
 namespace compiler {
 class AccessInfoMap;
+
 class Version;
 
 // Defined in this file.

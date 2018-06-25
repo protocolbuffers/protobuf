@@ -20,7 +20,6 @@ function generate_proto() {
   $PROTOC1 --php_out=generated proto/test_include.proto
   $PROTOC2 --php_out=generated proto/test.proto proto/test_no_namespace.proto proto/test_prefix.proto
   pushd ../../src
-  $PROTOC2 --php_out=../php/tests/generated google/protobuf/empty.proto
   $PROTOC2 --php_out=../php/tests/generated -I../php/tests -I. ../php/tests/proto/test_import_descriptor_proto.proto
   popd
 }

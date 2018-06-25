@@ -103,6 +103,8 @@ void Init_protobuf_c() {
   cError = rb_const_get(protobuf, rb_intern("Error"));
   cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
 
+  rb_define_singleton_method(protobuf, "discard_unknown",
+                             Google_Protobuf_discard_unknown, 1);
   rb_define_singleton_method(protobuf, "deep_copy",
                              Google_Protobuf_deep_copy, 1);
 
@@ -110,6 +112,6 @@ void Init_protobuf_c() {
   kRubyStringASCIIEncoding = rb_usascii_encoding();
   kRubyString8bitEncoding = rb_ascii8bit_encoding();
 
-  upb_def_to_ruby_obj_map = rb_hash_new();
   rb_gc_register_address(&upb_def_to_ruby_obj_map);
+  upb_def_to_ruby_obj_map = rb_hash_new();
 }

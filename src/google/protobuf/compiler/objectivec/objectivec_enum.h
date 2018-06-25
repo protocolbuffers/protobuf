@@ -59,8 +59,8 @@ class EnumGenerator {
 
  private:
   const EnumDescriptor* descriptor_;
-  vector<const EnumValueDescriptor*> base_values_;
-  vector<const EnumValueDescriptor*> all_values_;
+  std::vector<const EnumValueDescriptor*> base_values_;
+  std::vector<const EnumValueDescriptor*> all_values_;
   const string name_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);

@@ -57,7 +57,7 @@ namespace protobuf {
 // them like we do below.
 #endif
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 using google::protobuf::internal::win32::access;
 using google::protobuf::internal::win32::chdir;
 using google::protobuf::internal::win32::fopen;
@@ -121,7 +121,7 @@ void File::WriteStringToFileOrDie(const string& contents, const string& name) {
 
 bool File::CreateDir(const string& name, int mode) {
   if (!name.empty()) {
-    GOOGLE_CHECK_OK(name.back() != '.');
+    GOOGLE_CHECK_OK(name[name.size() - 1] != '.');
   }
   return mkdir(name.c_str(), mode) == 0;
 }

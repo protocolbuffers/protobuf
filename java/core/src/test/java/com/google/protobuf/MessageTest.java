@@ -74,6 +74,14 @@ public class MessageTest extends TestCase {
       "repeated_string: \"qux\"\n" +
       "repeated_string: \"bar\"\n";
 
+  public void testParsingWithNullExtensionRegistry() throws Exception {
+    try {
+      TestAllTypes.parseFrom(new byte[] {}, null);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+  }
+
   public void testMergeFrom() throws Exception {
     TestAllTypes result =
       TestAllTypes.newBuilder(MERGE_DEST)

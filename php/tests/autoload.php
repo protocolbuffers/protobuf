@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(E_ALL);
+
 function getGeneratedFiles($dir, &$results = array())
 {
     $files = scandir($dir);

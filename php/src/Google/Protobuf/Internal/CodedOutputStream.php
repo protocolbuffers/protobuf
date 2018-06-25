@@ -101,7 +101,7 @@ class CodedOutputStream
         return true;
     }
 
-    private static function writeVarintToArray($value, &$buffer, $trim = false)
+    public static function writeVarintToArray($value, &$buffer, $trim = false)
     {
         $current = 0;
 

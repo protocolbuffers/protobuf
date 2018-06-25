@@ -226,8 +226,8 @@ void SplitStringToIteratorUsing(const string& full,
 
 void SplitStringUsing(const string& full,
                       const char* delim,
-                      vector<string>* result) {
-  std::back_insert_iterator< vector<string> > it(*result);
+                      std::vector<string>* result) {
+  std::back_insert_iterator< std::vector<string> > it(*result);
   SplitStringToIteratorUsing(full, delim, it);
 }
 
@@ -264,8 +264,8 @@ void SplitStringToIteratorAllowEmpty(const StringType& full,
 }
 
 void SplitStringAllowEmpty(const string& full, const char* delim,
-                           vector<string>* result) {
-  std::back_insert_iterator<vector<string> > it(*result);
+                           std::vector<string>* result) {
+  std::back_insert_iterator<std::vector<string> > it(*result);
   SplitStringToIteratorAllowEmpty(full, delim, 0, it);
 }
 
@@ -303,7 +303,7 @@ static void JoinStringsIterator(const ITERATOR& start,
   }
 }
 
-void JoinStrings(const vector<string>& components,
+void JoinStrings(const std::vector<string>& components,
                  const char* delim,
                  string * result) {
   JoinStringsIterator(components.begin(), components.end(), delim, result);
@@ -332,7 +332,7 @@ int UnescapeCEscapeSequences(const char* source, char* dest) {
 }
 
 int UnescapeCEscapeSequences(const char* source, char* dest,
-                             vector<string> *errors) {
+                             std::vector<string> *errors) {
   GOOGLE_DCHECK(errors == NULL) << "Error reporting not implemented.";
 
   char* d = dest;
@@ -468,8 +468,8 @@ int UnescapeCEscapeString(const string& src, string* dest) {
 }
 
 int UnescapeCEscapeString(const string& src, string* dest,
-                          vector<string> *errors) {
-  scoped_array<char> unescaped(new char[src.size() + 1]);
+                          std::vector<string> *errors) {
+  std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
   int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), errors);
   GOOGLE_CHECK(dest);
   dest->assign(unescaped.get(), len);
@@ -477,7 +477,7 @@ int UnescapeCEscapeString(const string& src, string* dest,
 }
 
 string UnescapeCEscapeString(const string& src) {
-  scoped_array<char> unescaped(new char[src.size() + 1]);
+  std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
   int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), NULL);
   return string(unescaped.get(), len);
 }
@@ -620,7 +620,7 @@ namespace strings {
 
 string Utf8SafeCEscape(const string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
-  scoped_array<char> dest(new char[dest_length]);
+  std::unique_ptr<char[]> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, false, true);
   GOOGLE_DCHECK_GE(len, 0);
@@ -629,7 +629,7 @@ string Utf8SafeCEscape(const string& src) {
 
 string CHexEscape(const string& src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
-  scoped_array<char> dest(new char[dest_length]);
+  std::unique_ptr<char[]> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
                                   dest.get(), dest_length, true, false);
   GOOGLE_DCHECK_GE(len, 0);

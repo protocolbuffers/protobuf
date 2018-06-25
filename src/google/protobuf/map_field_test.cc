@@ -30,9 +30,6 @@
 
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -71,10 +68,18 @@ class MapFieldBaseStub : public MapFieldBase {
   RepeatedPtrField<Message>* InternalRepeatedField() {
     return repeated_field_;
   }
-  bool IsMapClean() { return state_ != 0; }
-  bool IsRepeatedClean() { return state_ != 1; }
-  void SetMapDirty() { state_ = 0; }
-  void SetRepeatedDirty() { state_ = 1; }
+  bool IsMapClean() {
+    return state_.load(std::memory_order_relaxed) != STATE_MODIFIED_MAP;
+  }
+  bool IsRepeatedClean() {
+    return state_.load(std::memory_order_relaxed) != STATE_MODIFIED_REPEATED;
+  }
+  void SetMapDirty() {
+    state_.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
+  }
+  void SetRepeatedDirty() {
+    state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
+  }
   bool ContainsMapKey(const MapKey& map_key) const {
     return false;
   }
@@ -101,7 +106,7 @@ class MapFieldBaseStub : public MapFieldBase {
 
 class MapFieldBasePrimitiveTest : public ::testing::Test {
  protected:
-  typedef unittest::TestMap::TestMap_MapInt32Int32Entry EntryType;
+  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
   typedef MapField<EntryType, int32, int32, WireFormatLite::TYPE_INT32,
                    WireFormatLite::TYPE_INT32, false>
       MapFieldType;
@@ -124,7 +129,7 @@ class MapFieldBasePrimitiveTest : public ::testing::Test {
     EXPECT_EQ(2, map_->size());
   }
 
-  google::protobuf::scoped_ptr<MapFieldType> map_field_;
+  std::unique_ptr<MapFieldType> map_field_;
   MapFieldBase* map_field_base_;
   Map<int32, int32>* map_;
   const Descriptor* map_descriptor_;
@@ -206,7 +211,7 @@ class MapFieldStateTest
     : public testing::TestWithParam<State> {
  public:
  protected:
-  typedef unittest::TestMap::TestMap_MapInt32Int32Entry EntryType;
+  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
   typedef MapField<EntryType, int32, int32, WireFormatLite::TYPE_INT32,
                    WireFormatLite::TYPE_INT32, false>
       MapFieldType;
@@ -291,7 +296,7 @@ class MapFieldStateTest
     }
   }
 
-  google::protobuf::scoped_ptr<MapFieldType> map_field_;
+  std::unique_ptr<MapFieldType> map_field_;
   MapFieldBase* map_field_base_;
   State state_;
 };

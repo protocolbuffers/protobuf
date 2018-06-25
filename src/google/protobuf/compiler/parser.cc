@@ -39,13 +39,14 @@
 #include <limits>
 
 
-#include <google/protobuf/compiler/parser.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/parser.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 
@@ -336,31 +337,42 @@ void Parser::AddError(const string& error) {
 
 Parser::LocationRecorder::LocationRecorder(Parser* parser)
   : parser_(parser),
+    source_code_info_(parser->source_code_info_),
     location_(parser_->source_code_info_->add_location()) {
   location_->add_span(parser_->input_->current().line);
   location_->add_span(parser_->input_->current().column);
 }
 
 Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent) {
-  Init(parent);
+  Init(parent, parent.source_code_info_);
+}
+
+Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent,
+                                           int path1,
+                                           SourceCodeInfo* source_code_info) {
+  Init(parent, source_code_info);
+  AddPath(path1);
 }
 
 Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent,
                                            int path1) {
-  Init(parent);
+  Init(parent, parent.source_code_info_);
   AddPath(path1);
 }
 
 Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent,
                                            int path1, int path2) {
-  Init(parent);
+  Init(parent, parent.source_code_info_);
   AddPath(path1);
   AddPath(path2);
 }
 
-void Parser::LocationRecorder::Init(const LocationRecorder& parent) {
+void Parser::LocationRecorder::Init(const LocationRecorder& parent,
+                                    SourceCodeInfo* source_code_info) {
   parser_ = parent.parser_;
-  location_ = parser_->source_code_info_->add_location();
+  source_code_info_ = source_code_info;
+
+  location_ = source_code_info_->add_location();
   location_->mutable_path()->CopyFrom(parent.location_->path());
 
   location_->add_span(parser_->input_->current().line);
@@ -400,6 +412,10 @@ void Parser::LocationRecorder::RecordLegacyLocation(const Message* descriptor,
     parser_->source_location_table_->Add(
         descriptor, location, location_->span(0), location_->span(1));
   }
+}
+
+int Parser::LocationRecorder::CurrentPathSize() const {
+  return location_->path_size();
 }
 
 void Parser::LocationRecorder::AttachComments(
@@ -1495,27 +1511,49 @@ bool Parser::ParseExtensions(DescriptorProto* message,
     range->set_end(end);
   } while (TryConsume(","));
 
-  if (LookingAt("[")) {
-    LocationRecorder location(
-        extensions_location,
-        DescriptorProto::ExtensionRange::kOptionsFieldNumber);
 
-    DO(Consume("["));
+  if (LookingAt("[")) {
+    int range_number_index = extensions_location.CurrentPathSize();
+    SourceCodeInfo info;
 
     // Parse extension range options in the first range.
     ExtensionRangeOptions* options =
         message->mutable_extension_range(old_range_size)->mutable_options();
-    do {
-      DO(ParseOption(options, location, containing_file, OPTION_ASSIGNMENT));
-    } while (TryConsume(","));
 
-    DO(Consume("]"));
+    {
+      LocationRecorder index_location(
+          extensions_location, 0 /* we fill this in w/ actual index below */,
+          &info);
+      LocationRecorder location(
+          index_location,
+          DescriptorProto::ExtensionRange::kOptionsFieldNumber);
+      DO(Consume("["));
+
+      do {
+        DO(ParseOption(options, location, containing_file, OPTION_ASSIGNMENT));
+      } while (TryConsume(","));
+
+      DO(Consume("]"));
+    }
 
     // Then copy the extension range options to all of the other ranges we've
     // parsed.
     for (int i = old_range_size + 1; i < message->extension_range_size(); i++) {
       message->mutable_extension_range(i)->mutable_options()
           ->CopyFrom(*options);
+    }
+    // and copy source locations to the other ranges, too
+    for (int i = old_range_size; i < message->extension_range_size(); i++) {
+      for (int j = 0; j < info.location_size(); j++) {
+        if (info.location(j).path_size() == range_number_index + 1) {
+          // this location's path is up to the extension range index, but doesn't
+          // include options; so it's redundant with location above
+          continue;
+        }
+        SourceCodeInfo_Location* dest = source_code_info_->add_location();
+        dest->CopyFrom(info.location(j));
+        dest->set_path(range_number_index, i);
+      }
     }
   }
 
@@ -1539,7 +1577,6 @@ bool Parser::ParseReserved(DescriptorProto* message,
     return ParseReservedNumbers(message, location);
   }
 }
-
 
 bool Parser::ParseReservedNames(DescriptorProto* message,
                                 const LocationRecorder& parent_location) {
@@ -1591,6 +1628,77 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
     // Users like to specify inclusive ranges, but in code we like the end
     // number to be exclusive.
     ++end;
+
+    range->set_start(start);
+    range->set_end(end);
+    first = false;
+  } while (TryConsume(","));
+
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReserved(EnumDescriptorProto* message,
+                          const LocationRecorder& message_location) {
+  // Parse the declaration.
+  DO(Consume("reserved"));
+  if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    LocationRecorder location(message_location,
+                              DescriptorProto::kReservedNameFieldNumber);
+    return ParseReservedNames(message, location);
+  } else {
+    LocationRecorder location(message_location,
+                              DescriptorProto::kReservedRangeFieldNumber);
+    return ParseReservedNumbers(message, location);
+  }
+}
+
+bool Parser::ParseReservedNames(EnumDescriptorProto* message,
+                                const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, message->reserved_name_size());
+    DO(ConsumeString(message->add_reserved_name(), "Expected enum value."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedNumbers(EnumDescriptorProto* message,
+                                  const LocationRecorder& parent_location) {
+  bool first = true;
+  do {
+    LocationRecorder location(parent_location, message->reserved_range_size());
+
+    EnumDescriptorProto::EnumReservedRange* range =
+        message->add_reserved_range();
+    int start, end;
+    io::Tokenizer::Token start_token;
+    {
+      LocationRecorder start_location(
+          location, EnumDescriptorProto::EnumReservedRange::kStartFieldNumber);
+      start_token = input_->current();
+      DO(ConsumeSignedInteger(&start, (first ?
+                                 "Expected enum value or number range." :
+                                 "Expected enum number range.")));
+    }
+
+    if (TryConsume("to")) {
+      LocationRecorder end_location(
+          location, EnumDescriptorProto::EnumReservedRange::kEndFieldNumber);
+      if (TryConsume("max")) {
+        // This is in the enum descriptor path, which doesn't have the message
+        // set duality to fix up, so it doesn't integrate with the sentinel.
+        end = INT_MAX;
+      } else {
+        DO(ConsumeSignedInteger(&end, "Expected integer."));
+      }
+    } else {
+      LocationRecorder end_location(
+          location, EnumDescriptorProto::EnumReservedRange::kEndFieldNumber);
+      end_location.StartAt(start_token);
+      end_location.EndAt(start_token);
+      end = start;
+    }
 
     range->set_start(start);
     range->set_end(end);
@@ -1781,6 +1889,8 @@ bool Parser::ParseEnumStatement(EnumDescriptorProto* enum_type,
                               EnumDescriptorProto::kOptionsFieldNumber);
     return ParseOption(enum_type->mutable_options(), location,
                        containing_file, OPTION_STATEMENT);
+  } else if (LookingAt("reserved")) {
+    return ParseReserved(enum_type, enum_location);
   } else {
     LocationRecorder location(enum_location,
         EnumDescriptorProto::kValueFieldNumber, enum_type->value_size());
@@ -2167,4 +2277,5 @@ void SourceLocationTable::Clear() {
 
 }  // namespace compiler
 }  // namespace protobuf
+
 }  // namespace google

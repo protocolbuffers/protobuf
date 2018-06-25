@@ -13,6 +13,8 @@
  #import "GPBProtocolBuffers_RuntimeSupport.h"
 #endif
 
+#import <stdatomic.h>
+
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
  #import <Protobuf/Type.pbobjc.h>
  #import <Protobuf/Any.pbobjc.h>
@@ -54,7 +56,7 @@ static GPBFileDescriptor *GPBTypeRoot_FileDescriptor(void) {
 #pragma mark - Enum GPBSyntax
 
 GPBEnumDescriptor *GPBSyntax_EnumDescriptor(void) {
-  static GPBEnumDescriptor *descriptor = NULL;
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
   if (!descriptor) {
     static const char *valueNames =
         "SyntaxProto2\000SyntaxProto3\000";
@@ -68,7 +70,8 @@ GPBEnumDescriptor *GPBSyntax_EnumDescriptor(void) {
                                            values:values
                                             count:(uint32_t)(sizeof(values) / sizeof(int32_t))
                                      enumVerifier:GPBSyntax_IsValidValue];
-    if (!OSAtomicCompareAndSwapPtrBarrier(nil, worker, (void * volatile *)&descriptor)) {
+    GPBEnumDescriptor *expected = nil;
+    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
       [worker release];
     }
   }
@@ -368,7 +371,7 @@ void SetGPBField_Cardinality_RawValue(GPBField *message, int32_t value) {
 #pragma mark - Enum GPBField_Kind
 
 GPBEnumDescriptor *GPBField_Kind_EnumDescriptor(void) {
-  static GPBEnumDescriptor *descriptor = NULL;
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
   if (!descriptor) {
     static const char *valueNames =
         "TypeUnknown\000TypeDouble\000TypeFloat\000TypeInt"
@@ -404,7 +407,8 @@ GPBEnumDescriptor *GPBField_Kind_EnumDescriptor(void) {
                                            values:values
                                             count:(uint32_t)(sizeof(values) / sizeof(int32_t))
                                      enumVerifier:GPBField_Kind_IsValidValue];
-    if (!OSAtomicCompareAndSwapPtrBarrier(nil, worker, (void * volatile *)&descriptor)) {
+    GPBEnumDescriptor *expected = nil;
+    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
       [worker release];
     }
   }
@@ -441,7 +445,7 @@ BOOL GPBField_Kind_IsValidValue(int32_t value__) {
 #pragma mark - Enum GPBField_Cardinality
 
 GPBEnumDescriptor *GPBField_Cardinality_EnumDescriptor(void) {
-  static GPBEnumDescriptor *descriptor = NULL;
+  static _Atomic(GPBEnumDescriptor*) descriptor = nil;
   if (!descriptor) {
     static const char *valueNames =
         "CardinalityUnknown\000CardinalityOptional\000C"
@@ -458,7 +462,8 @@ GPBEnumDescriptor *GPBField_Cardinality_EnumDescriptor(void) {
                                            values:values
                                             count:(uint32_t)(sizeof(values) / sizeof(int32_t))
                                      enumVerifier:GPBField_Cardinality_IsValidValue];
-    if (!OSAtomicCompareAndSwapPtrBarrier(nil, worker, (void * volatile *)&descriptor)) {
+    GPBEnumDescriptor *expected = nil;
+    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {
       [worker release];
     }
   }

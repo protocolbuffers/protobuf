@@ -72,6 +72,37 @@ function bytesCompare(arr, expected) {
 
 
 describe('proto3Test', function() {
+
+  /**
+   * Test default values don't affect equality test.
+   */
+  it('testEqualsProto3', function() {
+    var msg1 = new proto.jspb.test.TestProto3();
+    var msg2 = new proto.jspb.test.TestProto3();
+    msg2.setOptionalString('');
+
+    assertTrue(jspb.Message.equals(msg1, msg2));
+  });
+
+
+  /**
+   * Test setting when a field has default semantics.
+   */
+  it('testSetProto3ToValueAndBackToDefault', function() {
+    var msg = new proto.jspb.test.TestProto3();
+
+    // Setting should work normally.
+    msg.setOptionalString('optionalString');
+    assertEquals(msg.getOptionalString(), 'optionalString');
+
+    // Clearing should work too ...
+    msg.setOptionalString('');
+    assertEquals(msg.getOptionalString(), '');
+
+    // ... and shouldn't affect the equality with a brand new message.
+    assertTrue(jspb.Message.equals(msg, new proto.jspb.test.TestProto3()));
+  });
+
   /**
    * Test defaults for proto3 message fields.
    */
@@ -225,52 +256,65 @@ describe('proto3Test', function() {
    * Test that oneofs continue to have a notion of field presence.
    */
   it('testOneofs', function() {
+    // Default instance.
     var msg = new proto.jspb.test.TestProto3();
-
     assertEquals(msg.getOneofUint32(), 0);
     assertEquals(msg.getOneofForeignMessage(), undefined);
     assertEquals(msg.getOneofString(), '');
     assertEquals(msg.getOneofBytes(), '');
+
     assertFalse(msg.hasOneofUint32());
+    assertFalse(msg.hasOneofForeignMessage());
     assertFalse(msg.hasOneofString());
     assertFalse(msg.hasOneofBytes());
 
+    // Integer field.
     msg.setOneofUint32(42);
     assertEquals(msg.getOneofUint32(), 42);
     assertEquals(msg.getOneofForeignMessage(), undefined);
     assertEquals(msg.getOneofString(), '');
     assertEquals(msg.getOneofBytes(), '');
+
     assertTrue(msg.hasOneofUint32());
+    assertFalse(msg.hasOneofForeignMessage());
     assertFalse(msg.hasOneofString());
     assertFalse(msg.hasOneofBytes());
 
-
+    // Sub-message field.
     var submsg = new proto.jspb.test.ForeignMessage();
     msg.setOneofForeignMessage(submsg);
     assertEquals(msg.getOneofUint32(), 0);
     assertEquals(msg.getOneofForeignMessage(), submsg);
     assertEquals(msg.getOneofString(), '');
     assertEquals(msg.getOneofBytes(), '');
+
     assertFalse(msg.hasOneofUint32());
+    assertTrue(msg.hasOneofForeignMessage());
     assertFalse(msg.hasOneofString());
     assertFalse(msg.hasOneofBytes());
 
+    // String field.
     msg.setOneofString('hello');
     assertEquals(msg.getOneofUint32(), 0);
     assertEquals(msg.getOneofForeignMessage(), undefined);
     assertEquals(msg.getOneofString(), 'hello');
     assertEquals(msg.getOneofBytes(), '');
+
     assertFalse(msg.hasOneofUint32());
+    assertFalse(msg.hasOneofForeignMessage());
     assertTrue(msg.hasOneofString());
     assertFalse(msg.hasOneofBytes());
 
+    // Bytes field.
     msg.setOneofBytes(goog.crypt.base64.encodeString('\u00FF\u00FF'));
     assertEquals(msg.getOneofUint32(), 0);
     assertEquals(msg.getOneofForeignMessage(), undefined);
     assertEquals(msg.getOneofString(), '');
     assertEquals(msg.getOneofBytes_asB64(),
         goog.crypt.base64.encodeString('\u00FF\u00FF'));
+
     assertFalse(msg.hasOneofUint32());
+    assertFalse(msg.hasOneofForeignMessage());
     assertFalse(msg.hasOneofString());
     assertTrue(msg.hasOneofBytes());
   });

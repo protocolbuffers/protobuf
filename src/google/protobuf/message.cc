@@ -38,20 +38,22 @@
 
 #include <google/protobuf/message.h>
 
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/reflection_internal.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/singleton.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -170,12 +172,12 @@ size_t Message::SpaceUsedLong() const {
 
 bool Message::SerializeToFileDescriptor(int file_descriptor) const {
   io::FileOutputStream output(file_descriptor);
-  return SerializeToZeroCopyStream(&output);
+  return SerializeToZeroCopyStream(&output) && output.Flush();
 }
 
 bool Message::SerializePartialToFileDescriptor(int file_descriptor) const {
   io::FileOutputStream output(file_descriptor);
-  return SerializePartialToZeroCopyStream(&output);
+  return SerializePartialToZeroCopyStream(&output) && output.Flush();
 }
 
 bool Message::SerializeToOstream(std::ostream* output) const {
@@ -270,7 +272,7 @@ class GeneratedMessageFactory : public MessageFactory {
   void RegisterType(const Descriptor* descriptor, const Message* prototype);
 
   // implements MessageFactory ---------------------------------------
-  const Message* GetPrototype(const Descriptor* type);
+  const Message* GetPrototype(const Descriptor* type) override;
 
  private:
   // Only written at static init time, so does not require locking.
@@ -463,7 +465,7 @@ namespace internal {
 template<>
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
 // Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue #240
-GOOGLE_ATTRIBUTE_NOINLINE
+GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
 #endif
 Message* GenericTypeHandler<Message>::NewFromPrototype(
     const Message* prototype, google::protobuf::Arena* arena) {
@@ -472,7 +474,7 @@ Message* GenericTypeHandler<Message>::NewFromPrototype(
 template<>
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
 // Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue #240
-GOOGLE_ATTRIBUTE_NOINLINE
+GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
 #endif
 google::protobuf::Arena* GenericTypeHandler<Message>::GetArena(
     Message* value) {
@@ -481,7 +483,7 @@ google::protobuf::Arena* GenericTypeHandler<Message>::GetArena(
 template<>
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
 // Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue #240
-GOOGLE_ATTRIBUTE_NOINLINE
+GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
 #endif
 void* GenericTypeHandler<Message>::GetMaybeArenaPointer(
     Message* value) {

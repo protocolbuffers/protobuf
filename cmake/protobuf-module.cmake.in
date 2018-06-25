@@ -2,7 +2,10 @@
 # Functions
 
 function(PROTOBUF_GENERATE_CPP SRCS HDRS)
-  if(NOT ARGN)
+  cmake_parse_arguments(protobuf_generate_cpp "" "EXPORT_MACRO" "" ${ARGN})
+
+  set(_proto_files "${protobuf_generate_cpp_UNPARSED_ARGUMENTS}")
+  if(NOT _proto_files)
     message(SEND_ERROR "Error: PROTOBUF_GENERATE_CPP() called without any proto files")
     return()
   endif()
@@ -16,7 +19,7 @@ function(PROTOBUF_GENERATE_CPP SRCS HDRS)
   endif()
 
   set(_outvar)
-  protobuf_generate(${append_arg} LANGUAGE cpp OUT_VAR _outvar ${_import_arg} PROTOS ${ARGN})
+  protobuf_generate(${_append_arg} LANGUAGE cpp EXPORT_MACRO ${protobuf_generate_cpp_EXPORT_MACRO} OUT_VAR _outvar ${_import_arg} PROTOS ${_proto_files})
 
   set(${SRCS})
   set(${HDRS})
@@ -46,7 +49,7 @@ function(PROTOBUF_GENERATE_PYTHON SRCS)
   endif()
 
   set(_outvar)
-  protobuf_generate(${append_arg} LANGUAGE cpp OUT_VAR _outvar ${_import_arg} PROTOS ${ARGN})
+  protobuf_generate(${_append_arg} LANGUAGE python OUT_VAR _outvar ${_import_arg} PROTOS ${ARGN})
   set(${SRCS} ${_outvar} PARENT_SCOPE)
 endfunction()
 
@@ -146,6 +149,10 @@ get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc
 if(NOT EXISTS "${Protobuf_PROTOC_EXECUTABLE}")
   get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc
     IMPORTED_LOCATION_DEBUG)
+endif()
+if(NOT EXISTS "${Protobuf_PROTOC_EXECUTABLE}")
+  get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc
+    IMPORTED_LOCATION_NOCONFIG)
 endif()
 
 # Version info variable

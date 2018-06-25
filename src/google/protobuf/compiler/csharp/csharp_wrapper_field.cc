@@ -120,15 +120,25 @@ void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 }
 
 void WrapperFieldGenerator::WriteHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+  if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
+    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode($property_name$);\n";
+  }
+  else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
+    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode($property_name$);\n";
+  }
+  printer->Print(variables_, text);
 }
 
 void WrapperFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($property_name$ != other.$property_name$) return false;\n");
+  const char *text = "if ($property_name$ != other.$property_name$) return false;\n";
+  if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
+    text = "if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals($property_name$, other.$property_name$)) return false;\n";
+  }
+  else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
+    text = "if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals($property_name$, other.$property_name$)) return false;\n";
+  }
+  printer->Print(variables_, text);
 }
 
 void WrapperFieldGenerator::WriteToString(io::Printer* printer) {
@@ -179,6 +189,10 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"
     "}\n");
+}
+
+void WrapperOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(variables_, "$property_name$ = other.$property_name$;\n");
 }
 
 void WrapperOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {

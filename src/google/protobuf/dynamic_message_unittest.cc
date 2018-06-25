@@ -41,16 +41,13 @@
 // DynamicMessage.
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_no_field_presence.pb.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -60,7 +57,7 @@
 namespace google {
 namespace protobuf {
 
-class DynamicMessageTest : public testing::Test {
+class DynamicMessageTest : public ::testing::TestWithParam<bool> {
  protected:
   DescriptorPool pool_;
   DynamicMessageFactory factory_;
@@ -144,38 +141,54 @@ TEST_F(DynamicMessageTest, Defaults) {
   reflection_tester.ExpectClearViaReflection(*prototype_);
 }
 
-TEST_F(DynamicMessageTest, IndependentOffsets) {
+TEST_P(DynamicMessageTest, IndependentOffsets) {
   // Check that all fields have independent offsets by setting each
   // one to a unique value then checking that they all still have those
   // unique values (i.e. they don't stomp each other).
-  google::protobuf::scoped_ptr<Message> message(prototype_->New());
+  Arena arena;
+  Message* message = prototype_->New(GetParam()? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
+  reflection_tester.SetAllFieldsViaReflection(message);
   reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
-TEST_F(DynamicMessageTest, Extensions) {
+TEST_P(DynamicMessageTest, Extensions) {
   // Check that extensions work.
-  google::protobuf::scoped_ptr<Message> message(extensions_prototype_->New());
+  Arena arena;
+  Message* message = extensions_prototype_->New(GetParam()? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
+  reflection_tester.SetAllFieldsViaReflection(message);
   reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
-TEST_F(DynamicMessageTest, PackedFields) {
+TEST_P(DynamicMessageTest, PackedFields) {
   // Check that packed fields work properly.
-  google::protobuf::scoped_ptr<Message> message(packed_prototype_->New());
+  Arena arena;
+  Message* message = packed_prototype_->New(GetParam()? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
 
-  reflection_tester.SetPackedFieldsViaReflection(message.get());
+  reflection_tester.SetPackedFieldsViaReflection(message);
   reflection_tester.ExpectPackedFieldsSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
-TEST_F(DynamicMessageTest, Oneof) {
+TEST_P(DynamicMessageTest, Oneof) {
   // Check that oneof fields work properly.
-  google::protobuf::scoped_ptr<Message> message(oneof_prototype_->New());
+  Arena arena;
+  Message* message = oneof_prototype_->New(GetParam()? &arena : NULL);
 
   // Check default values.
   const Descriptor* descriptor = message->GetDescriptor();
@@ -226,29 +239,46 @@ TEST_F(DynamicMessageTest, Oneof) {
 
   // Check set functions.
   TestUtil::ReflectionTester reflection_tester(oneof_descriptor_);
-  reflection_tester.SetOneofViaReflection(message.get());
+  reflection_tester.SetOneofViaReflection(message);
   reflection_tester.ExpectOneofSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
-TEST_F(DynamicMessageTest, SpaceUsed) {
+TEST_P(DynamicMessageTest, SpaceUsed) {
   // Test that SpaceUsed() works properly
 
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
 
-  google::protobuf::scoped_ptr<Message> message(prototype_->New());
+  Arena arena;
+  Message* message = prototype_->New(GetParam()? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
   int initial_space_used = message->SpaceUsed();
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
+  reflection_tester.SetAllFieldsViaReflection(message);
   EXPECT_LT(initial_space_used, message->SpaceUsed());
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
 TEST_F(DynamicMessageTest, Arena) {
   Arena arena;
   Message* message = prototype_->New(&arena);
-  (void)message;  // avoid unused-variable error.
+  Message* extension_message = extensions_prototype_->New(&arena);
+  Message* packed_message = packed_prototype_->New(&arena);
+  Message* oneof_message = oneof_prototype_->New(&arena);
+
+  // avoid unused-variable error.
+  (void)message;
+  (void)extension_message;
+  (void)packed_message;
+  (void)oneof_message;
   // Return without freeing: should not leak.
 }
 
@@ -286,6 +316,7 @@ TEST_F(DynamicMessageTest, Proto3) {
   delete message;
 }
 
+INSTANTIATE_TEST_CASE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 
 }  // namespace protobuf
 }  // namespace google

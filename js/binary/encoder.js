@@ -51,7 +51,7 @@ goog.require('jspb.utils');
  * @struct
  */
 jspb.BinaryEncoder = function() {
-  /** @private {!Array.<number>} */
+  /** @private {!Array<number>} */
   this.buffer_ = [];
 };
 
@@ -65,7 +65,7 @@ jspb.BinaryEncoder.prototype.length = function() {
 
 
 /**
- * @return {!Array.<number>}
+ * @return {!Array<number>}
  */
 jspb.BinaryEncoder.prototype.end = function() {
   var buffer = this.buffer_;

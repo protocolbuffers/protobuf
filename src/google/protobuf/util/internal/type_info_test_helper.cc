@@ -31,9 +31,6 @@
 #include <google/protobuf/util/internal/type_info_test_helper.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <vector>
 
 #include <google/protobuf/stubs/logging.h>

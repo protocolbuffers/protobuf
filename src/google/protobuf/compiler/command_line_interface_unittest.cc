@@ -35,13 +35,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <vector>
 
 #include <google/protobuf/stubs/stringprintf.h>
@@ -69,7 +67,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::internal::win32::access;
@@ -83,6 +81,7 @@ using google::protobuf::internal::win32::write;
 // Disable the whole test when we use tcmalloc for "draconian" heap checks, in
 // which case tcmalloc will print warnings that fail the plugin tests.
 #if !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
+
 
 namespace {
 
@@ -342,7 +341,7 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<string> args) {
     }
   }
 
-  google::protobuf::scoped_array<const char * > argv(new const char* [args.size()]);
+  std::unique_ptr<const char * []> argv(new const char* [args.size()]);
 
   for (int i = 0; i < args.size(); i++) {
     args[i] = StringReplace(args[i], "$tmpdir", temp_directory_, true);
@@ -1559,6 +1558,36 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
 }
 #endif  // !_WIN32
 
+TEST_F(CommandLineInterfaceTest, TestArgumentFile) {
+  // Test parsing multiple input files using an argument file.
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n"
+    "message Bar {}\n");
+  CreateTempFile("arguments.txt",
+                 "--test_out=$tmpdir\n"
+                 "--plug_out=$tmpdir\n"
+                 "--proto_path=$tmpdir\n"
+                 "--direct_dependencies_violation_msg=%s is not imported\n"
+                 "foo.proto\n"
+                 "bar.proto");
+
+  Run("protocol_compiler @$tmpdir/arguments.txt");
+
+  ExpectNoErrors();
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+}
+
 
 // -------------------------------------------------------------------
 
@@ -2266,7 +2295,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
         ADD_FAILURE() << "unexpected EncodeDecodeTestMode: " << GetParam();
     }
 
-    google::protobuf::scoped_array<const char * > argv(new const char* [args.size()]);
+    std::unique_ptr<const char * []> argv(new const char* [args.size()]);
     for (int i = 0; i < args.size(); i++) {
       argv[i] = args[i].c_str();
     }

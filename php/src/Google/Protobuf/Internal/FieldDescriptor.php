@@ -181,6 +181,12 @@ class FieldDescriptor
                $this->getMessageType()->getOptions()->getMapEntry();
     }
 
+    public function isTimestamp()
+    {
+        return $this->getType() == GPBType::MESSAGE &&
+            $this->getMessageType()->getClass() === "Google\Protobuf\Timestamp";
+    }
+
     private static function isTypePackable($field_type)
     {
         return ($field_type !== GPBType::STRING  &&

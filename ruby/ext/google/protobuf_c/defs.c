@@ -76,7 +76,7 @@ static upb_enumdef* check_enum_notfrozen(const upb_enumdef* def) {
 // -----------------------------------------------------------------------------
 
 #define DEFINE_CLASS(name, string_name)                             \
-    VALUE c ## name;                                                \
+    VALUE c ## name = Qnil;                                         \
     const rb_data_type_t _ ## name ## _type = {                     \
       string_name,                                                  \
       { name ## _mark, name ## _free, NULL },                       \
@@ -126,11 +126,11 @@ void DescriptorPool_register(VALUE module) {
   rb_define_method(klass, "lookup", DescriptorPool_lookup, 1);
   rb_define_singleton_method(klass, "generated_pool",
                              DescriptorPool_generated_pool, 0);
-  cDescriptorPool = klass;
   rb_gc_register_address(&cDescriptorPool);
+  cDescriptorPool = klass;
 
-  generated_pool = rb_class_new_instance(0, NULL, klass);
   rb_gc_register_address(&generated_pool);
+  generated_pool = rb_class_new_instance(0, NULL, klass);
 }
 
 static void add_descriptor_to_pool(DescriptorPool* self,
@@ -228,7 +228,6 @@ DEFINE_CLASS(Descriptor, "Google::Protobuf::Descriptor");
 void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
-  rb_gc_mark(self->typeclass_references);
 }
 
 void Descriptor_free(void* _self) {
@@ -283,7 +282,6 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->pb_serialize_handlers = NULL;
   self->json_serialize_handlers = NULL;
   self->json_serialize_handlers_preserve = NULL;
-  self->typeclass_references = rb_ary_new();
   return ret;
 }
 
@@ -301,8 +299,8 @@ void Descriptor_register(VALUE module) {
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "name=", Descriptor_name_set, 1);
   rb_include_module(klass, rb_mEnumerable);
-  cDescriptor = klass;
   rb_gc_register_address(&cDescriptor);
+  cDescriptor = klass;
 }
 
 /*
@@ -520,8 +518,8 @@ void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "subtype", FieldDescriptor_subtype, 0);
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
-  cFieldDescriptor = klass;
   rb_gc_register_address(&cFieldDescriptor);
+  cFieldDescriptor = klass;
 }
 
 /*
@@ -918,8 +916,8 @@ void OneofDescriptor_register(VALUE module) {
   rb_define_method(klass, "add_field", OneofDescriptor_add_field, 1);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
   rb_include_module(klass, rb_mEnumerable);
-  cOneofDescriptor = klass;
   rb_gc_register_address(&cOneofDescriptor);
+  cOneofDescriptor = klass;
 }
 
 /*
@@ -1039,8 +1037,8 @@ void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
   rb_define_method(klass, "enummodule", EnumDescriptor_enummodule, 0);
   rb_include_module(klass, rb_mEnumerable);
-  cEnumDescriptor = klass;
   rb_gc_register_address(&cEnumDescriptor);
+  cEnumDescriptor = klass;
 }
 
 /*
@@ -1204,8 +1202,8 @@ void MessageBuilderContext_register(VALUE module) {
   rb_define_method(klass, "repeated", MessageBuilderContext_repeated, -1);
   rb_define_method(klass, "map", MessageBuilderContext_map, -1);
   rb_define_method(klass, "oneof", MessageBuilderContext_oneof, 1);
-  cMessageBuilderContext = klass;
   rb_gc_register_address(&cMessageBuilderContext);
+  cMessageBuilderContext = klass;
 }
 
 /*
@@ -1493,8 +1491,8 @@ void OneofBuilderContext_register(VALUE module) {
   rb_define_method(klass, "initialize",
                    OneofBuilderContext_initialize, 2);
   rb_define_method(klass, "optional", OneofBuilderContext_optional, -1);
-  cOneofBuilderContext = klass;
   rb_gc_register_address(&cOneofBuilderContext);
+  cOneofBuilderContext = klass;
 }
 
 /*
@@ -1571,8 +1569,8 @@ void EnumBuilderContext_register(VALUE module) {
   rb_define_method(klass, "initialize",
                    EnumBuilderContext_initialize, 1);
   rb_define_method(klass, "value", EnumBuilderContext_value, 2);
-  cEnumBuilderContext = klass;
   rb_gc_register_address(&cEnumBuilderContext);
+  cEnumBuilderContext = klass;
 }
 
 /*
@@ -1635,7 +1633,7 @@ VALUE Builder_alloc(VALUE klass) {
   Builder* self = ALLOC(Builder);
   VALUE ret = TypedData_Wrap_Struct(
       klass, &_Builder_type, self);
-  self->pending_list = rb_ary_new();
+  self->pending_list = Qnil;
   self->defs = NULL;
   return ret;
 }
@@ -1645,9 +1643,22 @@ void Builder_register(VALUE module) {
   rb_define_alloc_func(klass, Builder_alloc);
   rb_define_method(klass, "add_message", Builder_add_message, 1);
   rb_define_method(klass, "add_enum", Builder_add_enum, 1);
+  rb_define_method(klass, "initialize", Builder_initialize, 0);
   rb_define_method(klass, "finalize_to_pool", Builder_finalize_to_pool, 1);
-  cBuilder = klass;
   rb_gc_register_address(&cBuilder);
+  cBuilder = klass;
+}
+
+/*
+ * call-seq:
+ *     Builder.new(d) => builder
+ *
+ * Create a new message builder.
+ */
+VALUE Builder_initialize(VALUE _self) {
+  DEFINE_SELF(Builder, self, _self);
+  self->pending_list = rb_ary_new();
+  return Qnil;
 }
 
 /*

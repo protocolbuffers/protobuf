@@ -44,6 +44,7 @@
 
 #include <map>
 
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -97,9 +98,10 @@ class MockGeneratorContext : public GeneratorContext {
         File::GetContents(TestSourceDir() + "/" + physical_filename,
                           &actual_contents, true));
     EXPECT_TRUE(actual_contents == *expected_contents)
-      << physical_filename << " needs to be regenerated.  Please run "
-         "generate_descriptor_proto.sh. Then add this file "
-         "to your CL.";
+        << physical_filename
+        << " needs to be regenerated.  Please run "
+           "generate_descriptor_proto.sh. "
+           "Then add this file to your CL.";
   }
 
   // implements GeneratorContext --------------------------------------
@@ -116,37 +118,50 @@ class MockGeneratorContext : public GeneratorContext {
   std::map<string, string*> files_;
 };
 
-TEST(BootstrapTest, GeneratedDescriptorMatches) {
-  MockErrorCollector error_collector;
+const char kDescriptorParameter[] = "dllexport_decl=LIBPROTOBUF_EXPORT";
+const char kPluginParameter[] = "dllexport_decl=LIBPROTOC_EXPORT";
+const char kNormalParameter[] = "";
+
+const char* test_protos[][2] = {
+    {"google/protobuf/descriptor", kDescriptorParameter},
+    {"google/protobuf/compiler/plugin", kPluginParameter},
+};
+
+TEST(BootstrapTest, GeneratedFilesMatch) {
+  // We need a mapping from the actual file to virtual and actual path
+  // of the data to compare to.
+  std::map<string, string> vpath_map;
+  std::map<string, string> rpath_map;
+  rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto2"] =
+      "net/proto2/z_generated_example/test_messages_proto2";
+  rpath_map["third_party/protobuf/src/google/protobuf/test_messages_proto3"] =
+      "net/proto2/z_generated_example/test_messages_proto3";
+  rpath_map["google/protobuf/proto2_weak"] =
+      "net/proto2/z_generated_example/proto2_weak";
+
   DiskSourceTree source_tree;
   source_tree.MapPath("", TestSourceDir());
-  Importer importer(&source_tree, &error_collector);
-  const FileDescriptor* proto_file =
-    importer.Import("google/protobuf/descriptor.proto");
-  const FileDescriptor* plugin_proto_file =
-    importer.Import("google/protobuf/compiler/plugin.proto");
-  EXPECT_EQ("", error_collector.text_);
-  ASSERT_TRUE(proto_file != NULL);
-  ASSERT_TRUE(plugin_proto_file != NULL);
 
-  CppGenerator generator;
-  MockGeneratorContext context;
-  string error;
-  string parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
-  ASSERT_TRUE(generator.Generate(proto_file, parameter,
-                                 &context, &error));
-  parameter = "dllexport_decl=LIBPROTOC_EXPORT";
-  ASSERT_TRUE(generator.Generate(plugin_proto_file, parameter,
-                                 &context, &error));
+  for (auto file_parameter : test_protos) {
+    MockErrorCollector error_collector;
+    Importer importer(&source_tree, &error_collector);
+    const FileDescriptor* file =
+        importer.Import(file_parameter[0] + string(".proto"));
+    ASSERT_TRUE(file != nullptr)
+        << "Can't import file " << file_parameter[0] + string(".proto") << "\n";
+    EXPECT_EQ("", error_collector.text_);
+    CppGenerator generator;
+    MockGeneratorContext context;
+    string error;
+    ASSERT_TRUE(generator.Generate(file, file_parameter[1], &context, &error));
 
-  context.ExpectFileMatches("google/protobuf/descriptor.pb.h",
-                            "google/protobuf/descriptor.pb.h");
-  context.ExpectFileMatches("google/protobuf/descriptor.pb.cc",
-                            "google/protobuf/descriptor.pb.cc");
-  context.ExpectFileMatches("google/protobuf/compiler/plugin.pb.h",
-                            "google/protobuf/compiler/plugin.pb.h");
-  context.ExpectFileMatches("google/protobuf/compiler/plugin.pb.cc",
-                            "google/protobuf/compiler/plugin.pb.cc");
+    string vpath =
+        FindWithDefault(vpath_map, file_parameter[0], file_parameter[0]);
+    string rpath =
+        FindWithDefault(rpath_map, file_parameter[0], file_parameter[0]);
+    context.ExpectFileMatches(vpath + ".pb.cc", rpath + ".pb.cc");
+    context.ExpectFileMatches(vpath + ".pb.h", rpath + ".pb.h");
+  }
 }
 
 }  // namespace

@@ -37,8 +37,8 @@
 
 #include <string>
 #include <google/protobuf/compiler/java/java_context.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -134,6 +134,13 @@ string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor);
 // package or outer classnames.
 inline string ShortMutableJavaClassName(const Descriptor* descriptor) {
   return descriptor->name();
+}
+
+// Whether the given descriptor is for one of the core descriptor protos. We
+// cannot currently use the new runtime with core protos since there is a
+// bootstrapping problem with obtaining their descriptors.
+inline bool IsDescriptorProto(const Descriptor* descriptor) {
+  return descriptor->file()->name() == "google/protobuf/descriptor.proto";
 }
 
 
@@ -371,6 +378,10 @@ inline bool IsAnyMessage(const Descriptor* descriptor) {
   return descriptor->full_name() == "google.protobuf.Any";
 }
 
+inline bool IsWrappersProtoFile(const FileDescriptor* descriptor) {
+  return descriptor->name() == "google/protobuf/wrappers.proto";
+}
+
 inline bool CheckUtf8(const FieldDescriptor* descriptor) {
   return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
       descriptor->file()->options().java_string_check_utf8();
@@ -379,6 +390,35 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
 inline string GeneratedCodeVersionSuffix() {
   return "V3";
 }
+
+inline bool EnableExperimentalRuntime(Context* context) {
+  return false;
+}
+
+void WriteUInt32ToUtf16CharSequence(uint32 number, std::vector<uint16>* output);
+
+inline void WriteIntToUtf16CharSequence(int value,
+                                        std::vector<uint16>* output) {
+  WriteUInt32ToUtf16CharSequence(static_cast<uint32>(value), output);
+}
+
+// Escape a UTF-16 character so it can be embedded in a Java string literal.
+void EscapeUtf16ToString(uint16 code, string* output);
+
+// Only the lowest two bytes of the return value are used. The lowest byte
+// is the integer value of a j/c/g/protobuf/FieldType enum. For the other
+// byte:
+//    bit 0: whether the field is required.
+//    bit 1: whether the field requires UTF-8 validation.
+//    bit 2: whether the field needs isInitialized check.
+//    bit 3: whether the field is a map field with proto2 enum value.
+//    bits 4-7: unused
+int GetExperimentalJavaFieldType(const FieldDescriptor* field);
+
+// To get the total number of entries need to be built for experimental runtime
+// and the first field number that are not in the table part
+std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
+    const FieldDescriptor** fields, int count);
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

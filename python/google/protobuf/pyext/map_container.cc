@@ -33,9 +33,6 @@
 #include <google/protobuf/pyext/map_container.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -76,7 +73,7 @@ class MapReflectionFriend {
 struct MapIterator {
   PyObject_HEAD;
 
-  google::protobuf::scoped_ptr< ::google::protobuf::MapIterator> iter;
+  std::unique_ptr<::google::protobuf::MapIterator> iter;
 
   // A pointer back to the container, so we can notice changes to the version.
   // We own a ref on this.
@@ -94,7 +91,7 @@ struct MapIterator {
   // as this iterator does.  This is solely for the benefit of the MapIterator
   // destructor -- we should never actually access the iterator in this state
   // except to delete it.
-  shared_ptr<Message> owner;
+  CMessage::OwnerRef owner;
 
   // The version of the map when we took the iterator to it.
   //
@@ -339,6 +336,24 @@ PyObject* GetEntryClass(PyObject* _self) {
   return reinterpret_cast<PyObject*>(message_class);
 }
 
+PyObject* MergeFrom(PyObject* _self, PyObject* arg) {
+  MapContainer* self = GetMap(_self);
+  MapContainer* other_map = GetMap(arg);
+  Message* message = self->GetMutableMessage();
+  const Message* other_message = other_map->message;
+  const Reflection* reflection = message->GetReflection();
+  const Reflection* other_reflection = other_message->GetReflection();
+  int count = other_reflection->FieldSize(
+      *other_message, other_map->parent_field_descriptor);
+  for (int i = 0 ; i < count; i ++) {
+    reflection->AddMessage(message, self->parent_field_descriptor)->MergeFrom(
+        other_reflection->GetRepeatedMessage(
+            *other_message, other_map->parent_field_descriptor, i));
+  }
+  self->version++;
+  Py_RETURN_NONE;
+}
+
 PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
   MapContainer* self = GetMap(_self);
 
@@ -535,6 +550,8 @@ static PyMethodDef ScalarMapMethods[] = {
     "Gets the value for the given key if present, or otherwise a default" },
   { "GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
     "Return the class used to build Entries of (key, value) pairs." },
+  { "MergeFrom", (PyCFunction)MergeFrom, METH_O,
+    "Merges a map into the current map." },
   /*
   { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
     "Makes a deep copy of the class." },
@@ -720,14 +737,17 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
                                        map_key, &value);
     ScopedPyObjectPtr key(PyLong_FromVoidPtr(value.MutableMessageValue()));
 
-    // PyDict_DelItem will have key error if the key is not in the map. We do
-    // not want to call PyErr_Clear() which may clear other errors. Thus
-    // PyDict_Contains() check is called before delete.
-    int contains = PyDict_Contains(self->message_dict, key.get());
-    if (contains < 0) {
-      return -1;
-    }
-    if (contains) {
+    PyObject* cmsg_value = PyDict_GetItem(self->message_dict, key.get());
+    if (cmsg_value) {
+      // Need to keep CMessage stay alive if it is still referenced after
+      // deletion. Makes a new message and swaps values into CMessage
+      // instead of just removing.
+      CMessage* cmsg =  reinterpret_cast<CMessage*>(cmsg_value);
+      Message* msg = cmsg->message;
+      cmsg->owner.reset(msg->New());
+      cmsg->message = cmsg->owner.get();
+      cmsg->parent = NULL;
+      msg->GetReflection()->Swap(msg, cmsg->message);
       if (PyDict_DelItem(self->message_dict, key.get()) < 0) {
         return -1;
       }
@@ -807,6 +827,8 @@ static PyMethodDef MessageMapMethods[] = {
     "Alias for getitem, useful to make explicit that the map is mutated." },
   { "GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
     "Return the class used to build Entries of (key, value) pairs." },
+  { "MergeFrom", (PyCFunction)MergeFrom, METH_O,
+    "Merges a map into the current map." },
   /*
   { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
     "Makes a deep copy of the class." },

@@ -1,5 +1,3 @@
-Required.Proto3.ProtobufInput.RepeatedScalarSelectsLast.INT32.ProtobufOutput
-Required.Proto3.ProtobufInput.RepeatedScalarSelectsLast.UINT32.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.BOOL.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.DOUBLE.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FIXED32.ProtobufOutput
@@ -13,7 +11,3 @@ Required.Proto3.ProtobufInput.ValidDataRepeated.SINT32.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.SINT64.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.UINT32.ProtobufOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.UINT64.ProtobufOutput
-Required.Proto2.ProtobufInput.RepeatedScalarSelectsLast.INT32.ProtobufOutput
-Required.Proto2.ProtobufInput.RepeatedScalarSelectsLast.UINT32.ProtobufOutput
-Required.Proto2.ProtobufInput.ValidDataRepeated.INT32.ProtobufOutput
-Required.Proto2.ProtobufInput.ValidDataRepeated.UINT32.ProtobufOutput

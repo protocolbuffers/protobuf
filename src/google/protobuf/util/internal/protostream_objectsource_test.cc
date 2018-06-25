@@ -31,9 +31,6 @@
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <sstream>
 
 #include <google/protobuf/stubs/casts.h>
@@ -103,6 +100,7 @@ class ProtostreamObjectSourceTest
         ow_(&mock_),
         use_lower_camel_for_enums_(false),
         use_ints_for_enums_(false),
+        use_preserve_proto_field_names_(false),
         add_trailing_zeros_(false),
         render_unknown_enum_values_(true) {
     helper_.ResetTypeInfo(Book::descriptor(), Proto3Message::descriptor());
@@ -122,10 +120,11 @@ class ProtostreamObjectSourceTest
     ArrayInputStream arr_stream(proto.data(), proto.size());
     CodedInputStream in_stream(&arr_stream);
 
-    google::protobuf::scoped_ptr<ProtoStreamObjectSource> os(
+    std::unique_ptr<ProtoStreamObjectSource> os(
         helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor)));
     if (use_lower_camel_for_enums_) os->set_use_lower_camel_for_enums(true);
     if (use_ints_for_enums_) os->set_use_ints_for_enums(true);
+    if (use_preserve_proto_field_names_) os->set_preserve_proto_field_names(true);
     os->set_max_recursion_depth(64);
     return os->WriteTo(&mock_);
   }
@@ -275,6 +274,8 @@ class ProtostreamObjectSourceTest
 
   void UseIntsForEnums() { use_ints_for_enums_ = true; }
 
+  void UsePreserveProtoFieldNames() { use_preserve_proto_field_names_ = true; }
+
   void AddTrailingZeros() { add_trailing_zeros_ = true; }
 
   void SetRenderUnknownEnumValues(bool value) {
@@ -287,6 +288,7 @@ class ProtostreamObjectSourceTest
   ExpectingObjectWriter ow_;
   bool use_lower_camel_for_enums_;
   bool use_ints_for_enums_;
+  bool use_preserve_proto_field_names_;
   bool add_trailing_zeros_;
   bool render_unknown_enum_values_;
 };
@@ -490,13 +492,33 @@ TEST_P(ProtostreamObjectSourceTest,
   DoTest(book, Book::descriptor());
 }
 
-TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputTest) {
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputMacroCase) {
   Book book;
   book.set_type(Book::ACTION_AND_ADVENTURE);
 
   UseLowerCamelForEnums();
 
   ow_.StartObject("")->RenderString("type", "actionAndAdventure")->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputSnakeCase) {
+  Book book;
+  book.set_type(Book::arts_and_photography);
+
+  UseLowerCamelForEnums();
+
+  ow_.StartObject("")->RenderString("type", "artsAndPhotography")->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputWithNumber) {
+  Book book;
+  book.set_type(Book::I18N_Tech);
+
+  UseLowerCamelForEnums();
+
+  ow_.StartObject("")->RenderString("type", "i18nTech")->EndObject();
   DoTest(book, Book::descriptor());
 }
 
@@ -516,6 +538,16 @@ TEST_P(ProtostreamObjectSourceTest, UseIntsForEnumsTest) {
   UseIntsForEnums();
 
   ow_.StartObject("")->RenderInt32("type", 3)->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, UsePreserveProtoFieldNames) {
+  Book book;
+  book.set_snake_field("foo");
+
+  UsePreserveProtoFieldNames();
+
+  ow_.StartObject("")->RenderString("snake_field", "foo")->EndObject();
   DoTest(book, Book::descriptor());
 }
 
@@ -746,6 +778,69 @@ TEST_P(ProtostreamObjectSourceAnysTest, BasicAny) {
       ->RenderString("@type",
                      "type.googleapis.com/google.protobuf.testing.AnyM")
       ->RenderString("foo", "foovalue")
+      ->EndObject()
+      ->EndObject();
+
+  DoTest(out, AnyOut::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceAnysTest, LowerCamelEnumOutputSnakeCase) {
+  AnyOut out;
+  ::google::protobuf::Any* any = out.mutable_any();
+
+  Book book;
+  book.set_type(Book::arts_and_photography);
+  any->PackFrom(book);
+
+  UseLowerCamelForEnums();
+
+  ow_.StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type",
+                     "type.googleapis.com/google.protobuf.testing.Book")
+      ->RenderString("type", "artsAndPhotography")
+      ->EndObject()
+      ->EndObject();
+
+  DoTest(out, AnyOut::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceAnysTest, UseIntsForEnumsTest) {
+  AnyOut out;
+  ::google::protobuf::Any* any = out.mutable_any();
+
+  Book book;
+  book.set_type(Book::ACTION_AND_ADVENTURE);
+  any->PackFrom(book);
+
+  UseIntsForEnums();
+
+  ow_.StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type",
+                     "type.googleapis.com/google.protobuf.testing.Book")
+      ->RenderInt32("type", 3)
+      ->EndObject()
+      ->EndObject();
+
+  DoTest(out, AnyOut::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceAnysTest, UsePreserveProtoFieldNames) {
+  AnyOut out;
+  ::google::protobuf::Any* any = out.mutable_any();
+
+  Book book;
+  book.set_snake_field("foo");
+  any->PackFrom(book);
+
+  UsePreserveProtoFieldNames();
+
+  ow_.StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type",
+                     "type.googleapis.com/google.protobuf.testing.Book")
+      ->RenderString("snake_field", "foo")
       ->EndObject()
       ->EndObject();
 

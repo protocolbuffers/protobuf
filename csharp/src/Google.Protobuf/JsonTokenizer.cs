@@ -138,6 +138,34 @@ namespace Google.Protobuf
         protected abstract JsonToken NextImpl();
 
         /// <summary>
+        /// Skips the value we're about to read. This must only be called immediately after reading a property name.
+        /// If the value is an object or an array, the complete object/array is skipped.
+        /// </summary>
+        internal void SkipValue()
+        {
+            // We'll assume that Next() makes sure that the end objects and end arrays are all valid.
+            // All we care about is the total nesting depth we need to close.
+            int depth = 0;
+
+            // do/while rather than while loop so that we read at least one token.
+            do
+            {
+                var token = Next();
+                switch (token.Type)
+                {
+                    case JsonToken.TokenType.EndArray:
+                    case JsonToken.TokenType.EndObject:
+                        depth--;
+                        break;
+                    case JsonToken.TokenType.StartArray:
+                    case JsonToken.TokenType.StartObject:
+                        depth++;
+                        break;
+                }
+            } while (depth != 0);
+        }
+
+        /// <summary>
         /// Tokenizer which first exhausts a list of tokens, then consults another tokenizer.
         /// </summary>
         private class JsonReplayTokenizer : JsonTokenizer
@@ -217,7 +245,7 @@ namespace Google.Protobuf
                             state = State.ObjectAfterColon;
                             break;
                         case ',':
-                            ValidateState(State.ObjectAfterProperty | State.ArrayAfterValue, "Invalid state to read a colon: ");
+                            ValidateState(State.ObjectAfterProperty | State.ArrayAfterValue, "Invalid state to read a comma: ");
                             state = state == State.ObjectAfterProperty ? State.ObjectAfterComma : State.ArrayAfterComma;
                             break;
                         case '"':

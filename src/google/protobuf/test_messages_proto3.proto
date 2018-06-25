@@ -215,6 +215,9 @@ message TestAllTypesProto3 {
   int32 field__Name16 = 416;
   int32 field_name17__ = 417;
   int32 Field_name18__ = 418;
+
+  // Reserved for testing unknown fields
+  reserved 501 to 510;
 }
 
 message ForeignMessage {

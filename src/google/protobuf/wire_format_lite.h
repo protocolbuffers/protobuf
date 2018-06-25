@@ -41,10 +41,12 @@
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_H__
 
 #include <string>
+
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/message_lite.h>
-#include <google/protobuf/io/coded_stream.h>  // for CodedOutputStream::Varint32Size
+#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/repeated_field.h>
 
 // Do UTF-8 validation on string type in Debug build only
 #ifndef NDEBUG
@@ -149,7 +151,7 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // Helper method to get the CppType for a particular Type.
   static CppType FieldTypeToCppType(FieldType type);
 
-  // Given a FieldSescriptor::Type return its WireType
+  // Given a FieldDescriptor::Type return its WireType
   static inline WireFormatLite::WireType WireTypeForFieldType(
       WireFormatLite::FieldType type) {
     return kWireTypeForFieldType[type];
@@ -256,7 +258,7 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // that file to use these.
 
 #ifdef NDEBUG
-#define INL GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+#define INL GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
 #else
 // Avoid excessive inlining in non-optimized builds. Without other optimizations
 // the inlining is not going to provide benefits anyway and the huge resulting
@@ -334,7 +336,6 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static bool ReadBytes(io::CodedInputStream* input, string* value);
   static bool ReadBytes(io::CodedInputStream* input, string** p);
 
-
   enum Operation {
     PARSE = 0,
     SERIALIZE = 1,
@@ -345,32 +346,27 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
                                Operation op,
                                const char* field_name);
 
+  template <typename MessageType>
   static inline bool ReadGroup(int field_number, io::CodedInputStream* input,
-                               MessageLite* value);
-  static inline bool ReadMessage(io::CodedInputStream* input,
-                                 MessageLite* value);
+                               MessageType* value);
 
-  // Like above, but de-virtualize the call to MergePartialFromCodedStream().
-  // The pointer must point at an instance of MessageType, *not* a subclass (or
-  // the subclass must not override MergePartialFromCodedStream()).
+  template <typename MessageType>
+  static inline bool ReadMessage(io::CodedInputStream* input,
+                                 MessageType* value);
+
+  // Do not use.
   template <typename MessageType>
   static inline bool ReadGroupNoVirtual(int field_number,
                                         io::CodedInputStream* input,
-                                        MessageType* value);
+                                        MessageType* value) {
+    return ReadGroup(field_number, input, value);
+  }
+
   template<typename MessageType>
   static inline bool ReadMessageNoVirtual(io::CodedInputStream* input,
-                                          MessageType* value);
-
-  // The same, but do not modify input's recursion depth.  This is useful
-  // when reading a bunch of groups or messages in a loop, because then the
-  // recursion depth can be incremented before the loop and decremented after.
-  template<typename MessageType>
-  static inline bool ReadGroupNoVirtualNoRecursionDepth(
-      int field_number, io::CodedInputStream* input, MessageType* value);
-
-  template<typename MessageType>
-  static inline bool ReadMessageNoVirtualNoRecursionDepth(
-      io::CodedInputStream* input, MessageType* value);
+                                          MessageType* value) {
+    return ReadMessage(input, value);
+  }
 
   // Write a tag.  The Write*() functions typically include the tag, so
   // normally there's no need to call this unless using the Write*NoTag()
@@ -611,12 +607,14 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // of serialization, the "ToArray" variants may be invoked.  But they don't
   // have a CodedOutputStream available, so they get an additional parameter
   // telling them whether to serialize deterministically.
+  template<typename MessageType>
   INL static uint8* InternalWriteGroupToArray(int field_number,
-                                              const MessageLite& value,
+                                              const MessageType& value,
                                               bool deterministic,
                                               uint8* target);
+  template<typename MessageType>
   INL static uint8* InternalWriteMessageToArray(int field_number,
-                                                const MessageLite& value,
+                                                const MessageType& value,
                                                 bool deterministic,
                                                 uint8* target);
 
@@ -673,13 +671,13 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static inline size_t SInt64Size  ( int64 value);
   static inline size_t EnumSize    (   int value);
 
-  static        size_t Int32Size (const RepeatedField< int32>& value);
-  static inline size_t Int64Size (const RepeatedField< int64>& value);
-  static        size_t UInt32Size(const RepeatedField<uint32>& value);
-  static inline size_t UInt64Size(const RepeatedField<uint64>& value);
-  static        size_t SInt32Size(const RepeatedField< int32>& value);
-  static inline size_t SInt64Size(const RepeatedField< int64>& value);
-  static        size_t EnumSize  (const RepeatedField<   int>& value);
+  static size_t Int32Size (const RepeatedField< int32>& value);
+  static size_t Int64Size (const RepeatedField< int64>& value);
+  static size_t UInt32Size(const RepeatedField<uint32>& value);
+  static size_t UInt64Size(const RepeatedField<uint64>& value);
+  static size_t SInt32Size(const RepeatedField< int32>& value);
+  static size_t SInt64Size(const RepeatedField< int64>& value);
+  static size_t EnumSize  (const RepeatedField<   int>& value);
 
   // These types always have the same size.
   static const size_t kFixed32Size  = 4;
@@ -693,8 +691,10 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static inline size_t StringSize(const string& value);
   static inline size_t BytesSize (const string& value);
 
-  static inline size_t GroupSize  (const MessageLite& value);
-  static inline size_t MessageSize(const MessageLite& value);
+  template<typename MessageType>
+  static inline size_t GroupSize  (const MessageType& value);
+  template<typename MessageType>
+  static inline size_t MessageSize(const MessageType& value);
 
   // Like above, but de-virtualize the call to ByteSize().  The
   // pointer must point at an instance of MessageType, *not* a subclass (or
@@ -712,7 +712,8 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // A helper method for the repeated primitive reader. This method has
   // optimizations for primitive types that have fixed size on the wire, and
   // can be read using potentially faster paths.
-  template <typename CType, enum FieldType DeclaredType> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+  template <typename CType, enum FieldType DeclaredType>
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
   static bool ReadRepeatedFixedSizePrimitive(
       int tag_size,
       uint32 tag,
@@ -721,7 +722,8 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 
   // Like ReadRepeatedFixedSizePrimitive but for packed primitive fields.
   template <typename CType, enum FieldType DeclaredType>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE static bool ReadPackedFixedSizePrimitive(
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  static bool ReadPackedFixedSizePrimitive(
       google::protobuf::io::CodedInputStream* input, RepeatedField<CType>* value);
 
   static const CppType kFieldTypeToCppTypeMap[];
@@ -761,9 +763,9 @@ class LIBPROTOBUF_EXPORT CodedOutputStreamFieldSkipper : public FieldSkipper {
   virtual ~CodedOutputStreamFieldSkipper() {}
 
   // implements FieldSkipper -----------------------------------------
-  virtual bool SkipField(io::CodedInputStream* input, uint32 tag);
-  virtual bool SkipMessage(io::CodedInputStream* input);
-  virtual void SkipUnknownEnum(int field_number, int value);
+  virtual bool SkipField(io::CodedInputStream* input, uint32 tag) override;
+  virtual bool SkipMessage(io::CodedInputStream* input) override;
+  virtual void SkipUnknownEnum(int field_number, int value) override;
 
  protected:
   io::CodedOutputStream* unknown_fields_;
@@ -851,20 +853,24 @@ inline double WireFormatLite::DecodeDouble(uint64 value) {
 
 inline uint32 WireFormatLite::ZigZagEncode32(int32 n) {
   // Note:  the right-shift must be arithmetic
-  return static_cast<uint32>((n << 1) ^ (n >> 31));
+  // Note:  left shift must be unsigned because of overflow
+  return (static_cast<uint32>(n) << 1) ^ static_cast<uint32>(n >> 31);
 }
 
 inline int32 WireFormatLite::ZigZagDecode32(uint32 n) {
-  return static_cast<int32>(n >> 1) ^ -static_cast<int32>(n & 1);
+  // Note:  Using unsigned types prevent undefined behavior
+  return static_cast<int32>((n >> 1) ^ (~(n & 1) + 1));
 }
 
 inline uint64 WireFormatLite::ZigZagEncode64(int64 n) {
   // Note:  the right-shift must be arithmetic
-  return static_cast<uint64>((n << 1) ^ (n >> 63));
+  // Note:  left shift must be unsigned because of overflow
+  return (static_cast<uint64>(n) << 1) ^ static_cast<uint64>(n >> 63);
 }
 
 inline int64 WireFormatLite::ZigZagDecode64(uint64 n) {
-  return static_cast<int64>(n >> 1) ^ -static_cast<int64>(n & 1);
+  // Note:  Using unsigned types prevent undefined behavior
+  return static_cast<int64>((n >> 1) ^ (~(n & 1) + 1));
 }
 
 // String is for UTF-8 text only, but, even so, ReadString() can simply

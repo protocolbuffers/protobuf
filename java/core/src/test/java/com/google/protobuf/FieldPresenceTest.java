@@ -404,34 +404,4 @@ public class FieldPresenceTest extends TestCase {
     assertTrue(builder.buildPartial().isInitialized());
   }
 
-
-  // Test that unknown fields are dropped.
-  public void testUnknownFields() throws Exception {
-    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    builder.setOptionalInt32(1234);
-    builder.addRepeatedInt32(5678);
-    TestAllTypes message = builder.build();
-    ByteString data = message.toByteString();
-
-    TestOptionalFieldsOnly optionalOnlyMessage =
-        TestOptionalFieldsOnly.parseFrom(data);
-    // UnknownFieldSet should be empty.
-    assertEquals(
-        0, optionalOnlyMessage.getUnknownFields().toByteString().size());
-    assertEquals(1234, optionalOnlyMessage.getOptionalInt32());
-    message = TestAllTypes.parseFrom(optionalOnlyMessage.toByteString());
-    assertEquals(1234, message.getOptionalInt32());
-    // The repeated field is discarded because it's unknown to the optional-only
-    // message.
-    assertEquals(0, message.getRepeatedInt32Count());
-
-    DynamicMessage dynamicOptionalOnlyMessage =
-        DynamicMessage.getDefaultInstance(
-            TestOptionalFieldsOnly.getDescriptor())
-        .getParserForType().parseFrom(data);
-    assertEquals(
-        0, dynamicOptionalOnlyMessage.getUnknownFields().toByteString().size());
-    assertEquals(optionalOnlyMessage.toByteString(),
-        dynamicOptionalOnlyMessage.toByteString());
-  }
 }

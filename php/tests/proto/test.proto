@@ -115,6 +115,8 @@ message TestMessage {
   message Empty {
     int32 a = 1;
   }
+
+  reserved 111;
 }
 
 enum TestEnum {

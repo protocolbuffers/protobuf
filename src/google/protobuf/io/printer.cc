@@ -350,10 +350,12 @@ void Printer::CopyToBuffer(const char* data, int size) {
   while (size > buffer_size_) {
     // Data exceeds space in the buffer.  Copy what we can and request a
     // new buffer.
-    memcpy(buffer_, data, buffer_size_);
-    offset_ += buffer_size_;
-    data += buffer_size_;
-    size -= buffer_size_;
+    if (buffer_size_ > 0) {
+      memcpy(buffer_, data, buffer_size_);
+      offset_ += buffer_size_;
+      data += buffer_size_;
+      size -= buffer_size_;
+    }
     void* void_buffer;
     failed_ = !output_->Next(&void_buffer, &buffer_size_);
     if (failed_) return;

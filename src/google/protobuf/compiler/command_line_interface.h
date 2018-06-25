@@ -227,6 +227,9 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Parse all command-line arguments.
   ParseArgumentStatus ParseArguments(int argc, const char* const argv[]);
 
+  // Read an argument file and append the file's content to the list of
+  // arguments. Return false if the file cannot be read.
+  bool ExpandArgumentFile(const string& file, std::vector<string>* arguments);
 
   // Parses a command-line argument into a name/value pair.  Returns
   // true if the next argument in the argv should be used as the value,
@@ -409,11 +412,6 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // If --dependency_out was given, this is the path to the file where the
   // dependency file will be written. Otherwise, empty.
   string dependency_out_name_;
-
-  // Path to a file that contains serialized AccessInfo which provides
-  // relative hotness of fields per message. This helps protoc to generate
-  // better code.
-  string profile_path_;
 
   // True if --include_imports was given, meaning that we should
   // write all transitive dependencies to the DescriptorSet.  Otherwise, only

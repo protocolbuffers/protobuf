@@ -44,6 +44,56 @@ VALUE noleak_rb_str_cat(VALUE rb_str, const char *str, long len) {
   return rb_str;
 }
 
+// The code below also comes from upb's prototype Ruby binding, developed by
+// haberman@.
+
+/* stringsink *****************************************************************/
+
+static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
+  stringsink *sink = _sink;
+  sink->len = 0;
+  return sink;
+}
+
+static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                                size_t len, const upb_bufhandle *handle) {
+  stringsink *sink = _sink;
+  size_t new_size = sink->size;
+
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+
+  while (sink->len + len > new_size) {
+    new_size *= 2;
+  }
+
+  if (new_size != sink->size) {
+    sink->ptr = realloc(sink->ptr, new_size);
+    sink->size = new_size;
+  }
+
+  memcpy(sink->ptr + sink->len, ptr, len);
+  sink->len += len;
+
+  return len;
+}
+
+void stringsink_init(stringsink *sink) {
+  upb_byteshandler_init(&sink->handler);
+  upb_byteshandler_setstartstr(&sink->handler, stringsink_start, NULL);
+  upb_byteshandler_setstring(&sink->handler, stringsink_string, NULL);
+
+  upb_bytessink_reset(&sink->sink, &sink->handler, sink);
+
+  sink->size = 32;
+  sink->ptr = malloc(sink->size);
+  sink->len = 0;
+}
+
+void stringsink_uninit(stringsink *sink) {
+  free(sink->ptr);
+}
+
 // -----------------------------------------------------------------------------
 // Parsing.
 // -----------------------------------------------------------------------------
@@ -613,6 +663,20 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   upb_handlerattr_uninit(&attr);
 }
 
+static bool unknown_field_handler(void* closure, const void* hd,
+                                  const char* buf, size_t size) {
+  UPB_UNUSED(hd);
+
+  MessageHeader* msg = (MessageHeader*)closure;
+  if (msg->unknown_fields == NULL) {
+    msg->unknown_fields = malloc(sizeof(stringsink));
+    stringsink_init(msg->unknown_fields);
+  }
+
+  stringsink_string(msg->unknown_fields, NULL, buf, size, NULL);
+
+  return true;
+}
 
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
@@ -633,6 +697,9 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc->msgdef);
   }
+
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlers_setunknown(h, unknown_field_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
        !upb_msg_field_done(&i);
@@ -831,65 +898,6 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
 // -----------------------------------------------------------------------------
 // Serializing.
 // -----------------------------------------------------------------------------
-//
-// The code below also comes from upb's prototype Ruby binding, developed by
-// haberman@.
-
-/* stringsink *****************************************************************/
-
-// This should probably be factored into a common upb component.
-
-typedef struct {
-  upb_byteshandler handler;
-  upb_bytessink sink;
-  char *ptr;
-  size_t len, size;
-} stringsink;
-
-static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
-  stringsink *sink = _sink;
-  sink->len = 0;
-  return sink;
-}
-
-static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
-                                size_t len, const upb_bufhandle *handle) {
-  stringsink *sink = _sink;
-  size_t new_size = sink->size;
-
-  UPB_UNUSED(hd);
-  UPB_UNUSED(handle);
-
-  while (sink->len + len > new_size) {
-    new_size *= 2;
-  }
-
-  if (new_size != sink->size) {
-    sink->ptr = realloc(sink->ptr, new_size);
-    sink->size = new_size;
-  }
-
-  memcpy(sink->ptr + sink->len, ptr, len);
-  sink->len += len;
-
-  return len;
-}
-
-void stringsink_init(stringsink *sink) {
-  upb_byteshandler_init(&sink->handler);
-  upb_byteshandler_setstartstr(&sink->handler, stringsink_start, NULL);
-  upb_byteshandler_setstring(&sink->handler, stringsink_string, NULL);
-
-  upb_bytessink_reset(&sink->sink, &sink->handler, sink);
-
-  sink->size = 32;
-  sink->ptr = malloc(sink->size);
-  sink->len = 0;
-}
-
-void stringsink_uninit(stringsink *sink) {
-  free(sink->ptr);
-}
 
 /* msgvisitor *****************************************************************/
 
@@ -1171,6 +1179,11 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
     }
   }
 
+  stringsink* unknown = msg->unknown_fields;
+  if (unknown != NULL) {
+    upb_sink_putunknown(sink, unknown->ptr, unknown->len);
+  }
+
   upb_sink_endmsg(sink, &status);
 }
 
@@ -1292,3 +1305,91 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   }
 }
 
+static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
+  MessageHeader* msg;
+  upb_msg_field_iter it;
+
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+
+  stringsink* unknown = msg->unknown_fields;
+  if (unknown != NULL) {
+    stringsink_uninit(unknown);
+    msg->unknown_fields = NULL;
+  }
+
+  for (upb_msg_field_begin(&it, desc->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    upb_fielddef *f = upb_msg_iter_field(&it);
+    uint32_t offset =
+        desc->layout->fields[upb_fielddef_index(f)].offset +
+        sizeof(MessageHeader);
+
+    if (upb_fielddef_containingoneof(f)) {
+      uint32_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          sizeof(MessageHeader);
+      // For a oneof, check that this field is actually present -- skip all the
+      // below if not.
+      if (DEREF(msg, oneof_case_offset, uint32_t) !=
+          upb_fielddef_number(f)) {
+        continue;
+      }
+      // Otherwise, fall through to the appropriate singular-field handler
+      // below.
+    }
+
+    if (!upb_fielddef_issubmsg(f)) {
+      continue;
+    }
+
+    if (is_map_field(f)) {
+      if (!upb_fielddef_issubmsg(map_field_value(f))) continue;
+      VALUE map = DEREF(msg, offset, VALUE);
+      if (map == Qnil) continue;
+      Map_iter map_it;
+      for (Map_begin(map, &map_it); !Map_done(&map_it); Map_next(&map_it)) {
+        VALUE submsg = Map_iter_value(&map_it);
+        VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
+        const Descriptor* subdesc = ruby_to_Descriptor(descriptor);
+        discard_unknown(submsg, subdesc);
+      }
+    } else if (upb_fielddef_isseq(f)) {
+      VALUE ary = DEREF(msg, offset, VALUE);
+      if (ary == Qnil) continue;
+      int size = NUM2INT(RepeatedField_length(ary));
+      for (int i = 0; i < size; i++) {
+        void* memory = RepeatedField_index_native(ary, i);
+        VALUE submsg = *((VALUE *)memory);
+        VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
+        const Descriptor* subdesc = ruby_to_Descriptor(descriptor);
+        discard_unknown(submsg, subdesc);
+      }
+    } else {
+      VALUE submsg = DEREF(msg, offset, VALUE);
+      if (submsg == Qnil) continue;
+      VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
+      const Descriptor* subdesc = ruby_to_Descriptor(descriptor);
+      discard_unknown(submsg, subdesc);
+    }
+  }
+}
+
+/*
+ * call-seq:
+ *     Google::Protobuf.discard_unknown(msg)
+ *
+ * Discard unknown fields in the given message object and recursively discard
+ * unknown fields in submessages.
+ */
+VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
+  VALUE klass = CLASS_OF(msg_rb);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
+  Descriptor* desc = ruby_to_Descriptor(descriptor);
+  if (klass == cRepeatedField || klass == cMap) {
+    rb_raise(rb_eArgError, "Expected proto msg for discard unknown.");
+  } else {
+    discard_unknown(msg_rb, desc);
+  }
+  return Qnil;
+}

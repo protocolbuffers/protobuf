@@ -47,7 +47,7 @@ class JsonObjectWriterTest : public ::testing::Test {
   JsonObjectWriterTest()
       : str_stream_(new StringOutputStream(&output_)),
         out_stream_(new CodedOutputStream(str_stream_)),
-        ow_(NULL) {}
+        ow_(nullptr) {}
 
   virtual ~JsonObjectWriterTest() {
     delete ow_;
@@ -93,6 +93,12 @@ TEST_F(JsonObjectWriterTest, EmptyList) {
       ->EndObject();
   EXPECT_EQ("{\"test\":\"value\",\"empty\":[]}",
             output_.substr(0, out_stream_->ByteCount()));
+}
+
+TEST_F(JsonObjectWriterTest, EmptyObjectKey) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->StartObject("")->RenderString("", "value")->EndObject();
+  EXPECT_EQ("{\"\":\"value\"}", output_.substr(0, out_stream_->ByteCount()));
 }
 
 TEST_F(JsonObjectWriterTest, ObjectInObject) {

@@ -116,10 +116,6 @@ struct Descriptor {
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
   const upb_handlers* json_serialize_handlers_preserve;
-  // Handlers hold type class references for sub-message fields directly in some
-  // cases. We need to keep these rooted because they might otherwise be
-  // collected.
-  VALUE typeclass_references;
 };
 
 struct FieldDescriptor {
@@ -280,6 +276,7 @@ void Builder_free(void* _self);
 VALUE Builder_alloc(VALUE klass);
 void Builder_register(VALUE module);
 Builder* ruby_to_Builder(VALUE value);
+VALUE Builder_initialize(VALUE _self);
 VALUE Builder_add_message(VALUE _self, VALUE name);
 VALUE Builder_add_enum(VALUE _self, VALUE name);
 VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
@@ -478,8 +475,20 @@ VALUE layout_inspect(MessageLayout* layout, void* storage);
 // Message class creation.
 // -----------------------------------------------------------------------------
 
+// This should probably be factored into a common upb component.
+
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} stringsink;
+
+void stringsink_uninit(stringsink *sink);
+
 struct MessageHeader {
-  Descriptor* descriptor;  // kept alive by self.class.descriptor reference.
+  Descriptor* descriptor;      // kept alive by self.class.descriptor reference.
+  stringsink* unknown_fields;  // store unknown fields in decoding.
   // Data comes after this.
 };
 
@@ -506,6 +515,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb);
 VALUE Message_decode_json(VALUE klass, VALUE data);
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
 
+VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
 
 VALUE build_module_from_enumdesc(EnumDescriptor* enumdef);

@@ -91,11 +91,14 @@
 // These #includes are for the byte swap functions declared later on.
 #ifdef _MSC_VER
 #include <stdlib.h>  // NOLINT(build/include)
+#include <intrin.h>
 #elif defined(__APPLE__)
 #include <libkern/OSByteOrder.h>
-#elif defined(__GLIBC__) || defined(__CYGWIN__)
+#elif defined(__GLIBC__) || defined(__BIONIC__) || defined(__CYGWIN__)
 #include <byteswap.h>  // IWYU pragma: export
 #endif
+
+#define PROTOBUF_RUNTIME_DEPRECATED(message)
 
 // ===================================================================
 // from google3/base/port.h
@@ -106,6 +109,18 @@
 // undefined otherwise.  Do NOT define it to 0 -- that causes
 // '#ifdef LANG_CXX11' to behave differently from '#if LANG_CXX11'.
 #define LANG_CXX11 1
+#endif
+
+#if LANG_CXX11 && !defined(__NVCC__)
+#define PROTOBUF_CXX11 1
+#else
+#define PROTOBUF_CXX11 0
+#endif
+
+#if PROTOBUF_CXX11
+#define PROTOBUF_FINAL final
+#else
+#define PROTOBUF_FINAL
 #endif
 
 namespace google {
@@ -177,6 +192,8 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #endif
 #endif
 
+#define GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+
 #ifndef GOOGLE_ATTRIBUTE_NOINLINE
 #if defined(__GNUC__) && (__GNUC__ > 3 ||(__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 // For functions we want to force not inline.
@@ -191,23 +208,20 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #endif
 #endif
 
-#ifndef GOOGLE_ATTRIBUTE_NORETURN
-#ifdef __GNUC__
-// Tell the compiler that a given function never returns.
-#define GOOGLE_ATTRIBUTE_NORETURN __attribute__((noreturn))
+#define GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE GOOGLE_ATTRIBUTE_NOINLINE
+
+#ifndef GOOGLE_ATTRIBUTE_FUNC_ALIGN
+#if defined(__clang__) || \
+    defined(__GNUC__) && (__GNUC__ > 4 ||(__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
+// Function alignment attribute introduced in gcc 4.3
+#define GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes) __attribute__ ((aligned(bytes)))
 #else
-#define GOOGLE_ATTRIBUTE_NORETURN
+#define GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes)
 #endif
 #endif
 
-#ifndef GOOGLE_ATTRIBUTE_DEPRECATED
-#ifdef __GNUC__
-// If the method/variable/type is used anywhere, produce a warning.
-#define GOOGLE_ATTRIBUTE_DEPRECATED __attribute__((deprecated))
-#else
-#define GOOGLE_ATTRIBUTE_DEPRECATED
-#endif
-#endif
+#define GOOGLE_PROTOBUF_ATTRIBUTE_FUNC_ALIGN(bytes) \
+        GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes)
 
 #ifndef GOOGLE_PREDICT_TRUE
 #ifdef __GNUC__
@@ -227,6 +241,13 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #endif
 #endif
 
+#ifndef GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
+#ifdef __GNUC__
+#define GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL \
+    __attribute__((returns_nonnull))
+#endif
+#endif
+
 // Delimits a block of code which may write to memory which is simultaneously
 // written by other threads, but which has been determined to be thread-safe
 // (e.g. because it is an idempotent write).
@@ -237,25 +258,12 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #define GOOGLE_SAFE_CONCURRENT_WRITES_END()
 #endif
 
-#if defined(__clang__) && defined(__has_cpp_attribute) \
-    && !defined(GOOGLE_PROTOBUF_OS_APPLE)
-# if defined(GOOGLE_PROTOBUF_OS_NACL) || defined(EMSCRIPTEN) || \
-     __has_cpp_attribute(clang::fallthrough)
-#  define GOOGLE_FALLTHROUGH_INTENDED [[clang::fallthrough]]
-# endif
-#endif
-
-#ifndef GOOGLE_FALLTHROUGH_INTENDED
-# define GOOGLE_FALLTHROUGH_INTENDED
-#endif
-
 #define GOOGLE_GUARDED_BY(x)
 #define GOOGLE_ATTRIBUTE_COLD
 
 #ifdef GOOGLE_PROTOBUF_DONT_USE_UNALIGNED
 # define GOOGLE_PROTOBUF_USE_UNALIGNED 0
 #else
-// x86 and x86-64 can perform unaligned loads/stores directly.
 # if defined(_M_X64) || defined(__x86_64__) || defined(_M_IX86) || defined(__i386__)
 #  define GOOGLE_PROTOBUF_USE_UNALIGNED 1
 # else
@@ -263,7 +271,49 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 # endif
 #endif
 
-#if GOOGLE_PROTOBUF_USE_UNALIGNED
+#define GOOGLE_PROTOBUF_ATTRIBUTE_COLD GOOGLE_ATTRIBUTE_COLD
+
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||\
+    defined(MEMORY_SANITIZER)
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+uint16_t __sanitizer_unaligned_load16(const void *p);
+uint32_t __sanitizer_unaligned_load32(const void *p);
+uint64_t __sanitizer_unaligned_load64(const void *p);
+void __sanitizer_unaligned_store16(void *p, uint16_t v);
+void __sanitizer_unaligned_store32(void *p, uint32_t v);
+void __sanitizer_unaligned_store64(void *p, uint64_t v);
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+inline uint16 GOOGLE_UNALIGNED_LOAD16(const void *p) {
+  return __sanitizer_unaligned_load16(p);
+}
+
+inline uint32 GOOGLE_UNALIGNED_LOAD32(const void *p) {
+  return __sanitizer_unaligned_load32(p);
+}
+
+inline uint64 GOOGLE_UNALIGNED_LOAD64(const void *p) {
+  return __sanitizer_unaligned_load64(p);
+}
+
+inline void GOOGLE_UNALIGNED_STORE16(void *p, uint16 v) {
+  __sanitizer_unaligned_store16(p, v);
+}
+
+inline void GOOGLE_UNALIGNED_STORE32(void *p, uint32 v) {
+  __sanitizer_unaligned_store32(p, v);
+}
+
+inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
+  __sanitizer_unaligned_store64(p, v);
+}
+
+#elif GOOGLE_PROTOBUF_USE_UNALIGNED
 
 #define GOOGLE_UNALIGNED_LOAD16(_p) (*reinterpret_cast<const uint16 *>(_p))
 #define GOOGLE_UNALIGNED_LOAD32(_p) (*reinterpret_cast<const uint32 *>(_p))
@@ -305,6 +355,13 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 }
 #endif
 
+#if defined(GOOGLE_PROTOBUF_OS_NACL) \
+    || (defined(__ANDROID__) && defined(__clang__) \
+        && (__clang_major__ == 3 && __clang_minor__ == 8) \
+        && (__clang_patchlevel__ < 275480))
+# define GOOGLE_PROTOBUF_USE_PORTABLE_LOG2
+#endif
+
 #if defined(_MSC_VER)
 #define GOOGLE_THREAD_LOCAL __declspec(thread)
 #else
@@ -323,12 +380,16 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #define bswap_32(x) OSSwapInt32(x)
 #define bswap_64(x) OSSwapInt64(x)
 
-#elif !defined(__GLIBC__) && !defined(__CYGWIN__)
+#elif !defined(__GLIBC__) && !defined(__BIONIC__) && !defined(__CYGWIN__)
 
+#ifndef bswap_16
 static inline uint16 bswap_16(uint16 x) {
   return static_cast<uint16>(((x & 0xFF) << 8) | ((x & 0xFF00) >> 8));
 }
 #define bswap_16(x) bswap_16(x)
+#endif
+
+#ifndef bswap_32
 static inline uint32 bswap_32(uint32 x) {
   return (((x & 0xFF) << 24) |
           ((x & 0xFF00) << 8) |
@@ -336,6 +397,9 @@ static inline uint32 bswap_32(uint32 x) {
           ((x & 0xFF000000) >> 24));
 }
 #define bswap_32(x) bswap_32(x)
+#endif
+
+#ifndef bswap_64
 static inline uint64 bswap_64(uint64 x) {
   return (((x & GOOGLE_ULONGLONG(0xFF)) << 56) |
           ((x & GOOGLE_ULONGLONG(0xFF00)) << 40) |
@@ -347,6 +411,7 @@ static inline uint64 bswap_64(uint64 x) {
           ((x & GOOGLE_ULONGLONG(0xFF00000000000000)) >> 56));
 }
 #define bswap_64(x) bswap_64(x)
+#endif
 
 #endif
 
@@ -358,25 +423,28 @@ class Bits {
   static uint32 Log2FloorNonZero(uint32 n) {
 #if defined(__GNUC__)
   return 31 ^ static_cast<uint32>(__builtin_clz(n));
-#elif defined(COMPILER_MSVC) && defined(_M_IX86)
-  _asm {
-    bsr ebx, n
-    mov n, ebx
-  }
-  return n;
+#elif defined(_MSC_VER)
+  unsigned long where;
+  _BitScanReverse(&where, n);
+  return where;
 #else
   return Log2FloorNonZero_Portable(n);
 #endif
   }
 
   static uint32 Log2FloorNonZero64(uint64 n) {
-    // arm-nacl-clang runs into an instruction-selection failure when it
-    // encounters __builtin_clzll:
+    // Older versions of clang run into an instruction-selection failure when
+    // it encounters __builtin_clzll:
     // https://bugs.chromium.org/p/nativeclient/issues/detail?id=4395
-    // To work around this, when we build for NaCl we use the portable
+    // This includes arm-nacl-clang and clang in older Android NDK versions.
+    // To work around this, when we build with those we use the portable
     // implementation instead.
-#if defined(__GNUC__) && !defined(GOOGLE_PROTOBUF_OS_NACL)
+#if defined(__GNUC__) && !defined(GOOGLE_PROTOBUF_USE_PORTABLE_LOG2)
   return 63 ^ static_cast<uint32>(__builtin_clzll(n));
+#elif defined(_MSC_VER) && defined(_M_X64)
+  unsigned long where;
+  _BitScanReverse64(&where, n);
+  return where;
 #else
   return Log2FloorNonZero64_Portable(n);
 #endif
@@ -473,6 +541,8 @@ class BigEndian {
 #ifndef GOOGLE_ATTRIBUTE_SECTION_VARIABLE
 #define GOOGLE_ATTRIBUTE_SECTION_VARIABLE(name)
 #endif
+
+#define GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(name)
 
 }  // namespace protobuf
 }  // namespace google

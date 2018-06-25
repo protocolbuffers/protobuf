@@ -104,9 +104,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 
 MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
                                      const Options& options)
-    : FieldGenerator(options),
-      descriptor_(descriptor),
-      dependent_field_(options.proto_h && IsFieldDependent(descriptor)) {
+    : FieldGenerator(options), descriptor_(descriptor) {
   SetMessageVariables(descriptor, &variables_, options);
 }
 
@@ -114,50 +112,13 @@ MapFieldGenerator::~MapFieldGenerator() {}
 
 void MapFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    printer->Print(
-        variables_,
-        "public:\n"
-        "class $map_classname$ : public "
-        "::google::protobuf::internal::MapEntry<$map_classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    $key_wire_type$,\n"
-        "    $val_wire_type$,\n"
-        "    $default_enum_value$ > {\n"
-        "public:\n"
-        "  typedef ::google::protobuf::internal::MapEntry<$map_classname$, \n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    $key_wire_type$,\n"
-        "    $val_wire_type$,\n"
-        "    $default_enum_value$ > SuperType;\n"
-        "  $map_classname$();\n"
-        "  $map_classname$(::google::protobuf::Arena* arena);\n"
-        "  void MergeFrom(const ::google::protobuf::Message& other) PROTOBUF_FINAL;\n"
-        "  void MergeFrom(const $map_classname$& other);\n"
-        "  static const Message* internal_default_instance() { return "
-        "reinterpret_cast<const "
-        "Message*>(&_$map_classname$_default_instance_); }\n"
-        "  ::google::protobuf::Metadata GetMetadata() const;\n"
-        "};\n");
-  } else {
-    printer->Print(variables_,
-                   "public:\n"
-                   "typedef ::google::protobuf::internal::MapEntryLite<\n"
-                   "    $key_cpp$, $val_cpp$,\n"
-                   "    $key_wire_type$,\n"
-                   "    $val_wire_type$,\n"
-                   "    $default_enum_value$ >\n"
-                   "    $map_classname$;\n");
-  }
   printer->Print(variables_,
-                 "private:\n"
                  "::google::protobuf::internal::MapField$lite$<\n"
                  "    $map_classname$,\n"
                  "    $key_cpp$, $val_cpp$,\n"
                  "    $key_wire_type$,\n"
                  "    $val_wire_type$,\n"
-                 "    $default_enum_value$ > $name$_;\n"
-                 "private:\n");
+                 "    $default_enum_value$ > $name$_;\n");
 }
 
 void MapFieldGenerator::
@@ -174,17 +135,14 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 }
 
 void MapFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer,
-                                  bool is_inline) const {
-  std::map<string, string> variables(variables_);
-  variables["inline"] = is_inline ? "inline" : "";
-  printer->Print(variables,
-      "$inline$ const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+  printer->Print(variables_,
+      "inline const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
       "$classname$::$name$() const {\n"
       "  // @@protoc_insertion_point(field_map:$full_name$)\n"
       "  return $name$_.GetMap();\n"
       "}\n"
-      "$inline$ ::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
+      "inline ::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
       "$classname$::mutable_$name$() {\n"
       "  // @@protoc_insertion_point(field_mutable_map:$full_name$)\n"
       "  return $name$_.MutableMap();\n"
@@ -193,9 +151,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void MapFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  std::map<string, string> variables(variables_);
-  variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
-  printer->Print(variables, "$this_message$$name$_.Clear();\n");
+  printer->Print(variables_, "$name$_.Clear();\n");
 }
 
 void MapFieldGenerator::
@@ -244,7 +200,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     key = "entry->key()";
     value = "entry->value()";
     printer->Print(variables_,
-        "::google::protobuf::scoped_ptr<$map_classname$> entry($name$_.NewEntry());\n");
+        "::std::unique_ptr<$map_classname$> entry($name$_.NewEntry());\n");
     printer->Print(variables_,
         "{\n"
         "  ::std::string data;\n"
@@ -262,7 +218,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       printer->Print(variables_,
           "    unknown_fields_stream.WriteVarint32($tag$u);\n"
           "    unknown_fields_stream.WriteVarint32(\n"
-          "        static_cast<google::protobuf::uint32>(data.size()));\n"
+          "        static_cast< ::google::protobuf::uint32>(data.size()));\n"
           "    unknown_fields_stream.WriteString(data);\n");
     }
 
@@ -300,7 +256,7 @@ static void GenerateSerializationLoop(io::Printer* printer,
                                       const string& ptr,
                                       bool loop_via_iterators) {
   printer->Print(variables,
-      StrCat("::google::protobuf::scoped_ptr<$map_classname$> entry;\n",
+      StrCat("::std::unique_ptr<$map_classname$> entry;\n",
              loop_header, " {\n").c_str());
   printer->Indent();
 
@@ -407,7 +363,7 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(
       "\n"
       "if ($deterministic$ &&\n"
       "    this->$name$().size() > 1) {\n"
-      "  ::google::protobuf::scoped_array<SortItem> items(\n"
+      "  ::std::unique_ptr<SortItem[]> items(\n"
       "      new SortItem[this->$name$().size()]);\n"
       "  typedef ::google::protobuf::Map< $key_cpp$, $val_cpp$ >::size_type size_type;\n"
       "  size_type n = 0;\n"
@@ -444,7 +400,7 @@ GenerateByteSize(io::Printer* printer) const {
       "total_size += $tag_size$ *\n"
       "    ::google::protobuf::internal::FromIntSize(this->$name$_size());\n"
       "{\n"
-      "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
+      "  ::std::unique_ptr<$map_classname$> entry;\n"
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
       "      it = this->$name$().begin();\n"
       "      it != this->$name$().end(); ++it) {\n");

@@ -40,6 +40,7 @@ except ImportError:
   import unittest
 
 from google.protobuf import descriptor_pb2
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf import descriptor_database
@@ -106,8 +107,17 @@ class MessageFactoryTest(unittest.TestCase):
   def testGetMessages(self):
     # performed twice because multiple calls with the same input must be allowed
     for _ in range(2):
-      messages = message_factory.GetMessages([self.factory_test1_fd,
-                                              self.factory_test2_fd])
+      # GetMessage should work regardless of the order the FileDescriptorProto
+      # are provided. In particular, the function should succeed when the files
+      # are not in the topological order of dependencies.
+
+      # Assuming factory_test2_fd depends on factory_test1_fd.
+      self.assertIn(self.factory_test1_fd.name,
+                    self.factory_test2_fd.dependency)
+      # Get messages should work when a file comes before its dependencies:
+      # factory_test2_fd comes before factory_test1_fd.
+      messages = message_factory.GetMessages([self.factory_test2_fd,
+                                              self.factory_test1_fd])
       self.assertTrue(
           set(['google.protobuf.python.internal.Factory2Message',
                'google.protobuf.python.internal.Factory1Message'],
@@ -130,6 +140,21 @@ class MessageFactoryTest(unittest.TestCase):
       msg1.Extensions[ext2] = 'test2'
       self.assertEqual('test1', msg1.Extensions[ext1])
       self.assertEqual('test2', msg1.Extensions[ext2])
+      self.assertEqual(None,
+                       msg1.Extensions._FindExtensionByNumber(12321))
+      if api_implementation.Type() == 'cpp':
+        # TODO(jieluo): Fix len to return the correct value.
+        # self.assertEqual(2, len(msg1.Extensions))
+        self.assertEqual(len(msg1.Extensions), len(msg1.Extensions))
+        self.assertRaises(TypeError,
+                          msg1.Extensions._FindExtensionByName, 0)
+        self.assertRaises(TypeError,
+                          msg1.Extensions._FindExtensionByNumber, '')
+      else:
+        self.assertEqual(None,
+                         msg1.Extensions._FindExtensionByName(0))
+        self.assertEqual(None,
+                         msg1.Extensions._FindExtensionByNumber(''))
 
   def testDuplicateExtensionNumber(self):
     pool = descriptor_pool.DescriptorPool()

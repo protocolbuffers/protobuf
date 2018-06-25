@@ -112,7 +112,7 @@
 
 #include <iosfwd>
 #include <string>
-#include <google/protobuf/stubs/type_traits.h>
+#include <type_traits>
 #include <vector>
 
 #include <google/protobuf/arena.h>
@@ -151,6 +151,9 @@ class CodedOutputStream;       // coded_stream.h
 }
 namespace python {
 class MapReflectionFriend;     // scalar_map_container.h
+}
+namespace expr {
+class CelMapReflectionFriend;  // field_backed_map_impl.cc
 }
 
 
@@ -193,12 +196,12 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.  (This is also defined in MessageLite, but is defined again here
   // for return-type covariance.)
-  virtual Message* New() const = 0;
+  virtual Message* New() const override = 0;
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a NULL. Default implementation allows for API compatibility
   // during the Arena transition.
-  virtual Message* New(::google::protobuf::Arena* arena) const {
+  virtual Message* New(::google::protobuf::Arena* arena) const override {
     Message* message = New();
     if (arena != NULL) {
       arena->Own(message);
@@ -230,7 +233,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
 
   // Like FindInitializationErrors, but joins all the strings, delimited by
   // commas, and returns them.
-  string InitializationErrorString() const;
+  string InitializationErrorString() const override;
 
   // Clears all unknown fields from this message and all embedded messages.
   // Normally, if unknown tag numbers are encountered when parsing a message,
@@ -302,13 +305,13 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
 
-  virtual string GetTypeName() const;
-  virtual void Clear();
-  virtual bool IsInitialized() const;
-  virtual void CheckTypeAndMergeFrom(const MessageLite& other);
-  virtual bool MergePartialFromCodedStream(io::CodedInputStream* input);
-  virtual size_t ByteSizeLong() const;
-  virtual void SerializeWithCachedSizes(io::CodedOutputStream* output) const;
+  virtual string GetTypeName() const override;
+  virtual void Clear() override;
+  virtual bool IsInitialized() const override;
+  virtual void CheckTypeAndMergeFrom(const MessageLite& other) override;
+  virtual bool MergePartialFromCodedStream(io::CodedInputStream* input) override;
+  virtual size_t ByteSizeLong() const override;
+  virtual void SerializeWithCachedSizes(io::CodedOutputStream* output) const override;
 
  private:
   // This is called only by the default implementation of ByteSize(), to
@@ -327,18 +330,19 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // Typedef for backwards-compatibility.
   typedef google::protobuf::Reflection Reflection;
 
-  // Get a Descriptor for this message's type.  This describes what
-  // fields the message contains, the types of those fields, etc.
+  // Get a non-owning pointer to a Descriptor for this message's type.  This
+  // describes what fields the message contains, the types of those fields, etc.
+  // This object remains property of the Message.
   const Descriptor* GetDescriptor() const { return GetMetadata().descriptor; }
 
-  // Get the Reflection interface for this Message, which can be used to
-  // read and modify the fields of the Message dynamically (in other words,
-  // without knowing the message type at compile time).  This object remains
-  // property of the Message.
+  // Get a non-owning pointer to the Reflection interface for this Message,
+  // which can be used to read and modify the fields of the Message dynamically
+  // (in other words, without knowing the message type at compile time).  This
+  // object remains property of the Message.
   //
   // This method remains virtual in case a subclass does not implement
   // reflection and wants to override the default behavior.
-  virtual const Reflection* GetReflection() const {
+  virtual const Reflection* GetReflection() const final {
     return GetMetadata().reflection;
   }
 
@@ -405,9 +409,6 @@ class MutableRepeatedFieldRef;
 // double the message's memory footprint, probably worse.  Allocating the
 // objects on-demand, on the other hand, would be expensive and prone to
 // memory leaks.  So, instead we ended up with this flat interface.
-//
-// TODO(kenton):  Create a utility class which callers can use to read and
-//   write fields from a Reflection without paying attention to the type.
 class LIBPROTOBUF_EXPORT Reflection {
  public:
   inline Reflection() {}
@@ -496,11 +497,14 @@ class LIBPROTOBUF_EXPORT Reflection {
                             int index1,
                             int index2) const = 0;
 
-  // List all fields of the message which are currently set.  This includes
-  // extensions.  Singular fields will only be listed if HasField(field) would
-  // return true and repeated fields will only be listed if FieldSize(field)
-  // would return non-zero.  Fields (both normal fields and extension fields)
-  // will be listed ordered by field number.
+  // List all fields of the message which are currently set, except for unknown
+  // fields, but including extension known to the parser (i.e. compiled in).
+  // Singular fields will only be listed if HasField(field) would return true
+  // and repeated fields will only be listed if FieldSize(field) would return
+  // non-zero.  Fields (both normal fields and extension fields) will be listed
+  // ordered by field number.
+  // Use Reflection::GetUnknownFields() or message.unknown_fields() to also get
+  // access to fields/extensions unknown to the parser.
   virtual void ListFields(
       const Message& message,
       std::vector<const FieldDescriptor*>* output) const = 0;
@@ -811,6 +815,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //
   // for T = Cord and all protobuf scalar types except enums.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetRepeatedFieldRef() instead")
   const RepeatedField<T>& GetRepeatedField(
       const Message&, const FieldDescriptor*) const;
 
@@ -818,6 +823,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //
   // for T = Cord and all protobuf scalar types except enums.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetMutableRepeatedFieldRef() instead")
   RepeatedField<T>* MutableRepeatedField(
       Message*, const FieldDescriptor*) const;
 
@@ -826,6 +832,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // for T = string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetRepeatedFieldRef() instead")
   const RepeatedPtrField<T>& GetRepeatedPtrField(
       const Message&, const FieldDescriptor*) const;
 
@@ -834,6 +841,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // for T = string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetMutableRepeatedFieldRef() instead")
   RepeatedPtrField<T>* MutableRepeatedPtrField(
       Message*, const FieldDescriptor*) const;
 
@@ -922,7 +930,7 @@ class LIBPROTOBUF_EXPORT Reflection {
 
   // Returns a raw pointer to the repeated field
   //
-  // "cpp_type" and "message_type" are decuded from the type parameter T passed
+  // "cpp_type" and "message_type" are deduced from the type parameter T passed
   // to Get(Mutable)RepeatedFieldRef. If T is a generated message type,
   // "message_type" should be set to its descriptor. Otherwise "message_type"
   // should be set to NULL. Implementations of this method should check whether
@@ -945,6 +953,8 @@ class LIBPROTOBUF_EXPORT Reflection {
   template<typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
   friend class ::google::protobuf::python::MapReflectionFriend;
+#define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
+  friend class ::google::protobuf::expr::CelMapReflectionFriend;
   friend class internal::MapFieldReflectionTest;
   friend class internal::MapKeySorter;
   friend class internal::WireFormat;

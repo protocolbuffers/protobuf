@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -43,6 +44,16 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class FileDescriptor : IDescriptor
     {
+        // Prevent linker failures when using IL2CPP with the well-known types.
+        static FileDescriptor()
+        {
+            ForceReflectionInitialization<Syntax>();
+            ForceReflectionInitialization<NullValue>();
+            ForceReflectionInitialization<Field.Types.Cardinality>();
+            ForceReflectionInitialization<Field.Types.Kind>();
+            ForceReflectionInitialization<Value.KindOneofCase>();
+        }
+
         private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
         {
             SerializedData = descriptorData;
@@ -334,5 +345,18 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this file.
         /// </summary>
         public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+
+        /// <summary>
+        /// Performs initialization for the given generic type argument.
+        /// </summary>
+        /// <remarks>
+        /// This method is present for the sake of AOT compilers. It allows code (whether handwritten or generated)
+        /// to make calls into the reflection machinery of this library to express an intention to use that type
+        /// reflectively (e.g. for JSON parsing and formatting). The call itself does almost nothing, but AOT compilers
+        /// attempting to determine which generic type arguments need to be handled will spot the code path and act
+        /// accordingly.
+        /// </remarks>
+        /// <typeparam name="T">The type to force initialization for.</typeparam>
+        public static void ForceReflectionInitialization<T>() => ReflectionUtil.ForceInitialize<T>();
     }
 }
