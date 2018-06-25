@@ -181,10 +181,10 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
  public:
   TypeDefinedMapFieldBase() {}
   explicit TypeDefinedMapFieldBase(Arena* arena) : MapFieldBase(arena) {}
-  ~TypeDefinedMapFieldBase() {}
-  void MapBegin(MapIterator* map_iter) const;
-  void MapEnd(MapIterator* map_iter) const;
-  bool EqualIterator(const MapIterator& a, const MapIterator& b) const;
+  ~TypeDefinedMapFieldBase() override {}
+  void MapBegin(MapIterator* map_iter) const override;
+  void MapEnd(MapIterator* map_iter) const override;
+  bool EqualIterator(const MapIterator& a, const MapIterator& b) const override;
 
   virtual const Map<Key, T>& GetMap() const = 0;
   virtual Map<Key, T>* MutableMap() = 0;
@@ -194,11 +194,11 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
       const MapIterator* map_iter) const;
 
  private:
-  void InitializeIterator(MapIterator* map_iter) const;
-  void DeleteIterator(MapIterator* map_iter) const;
+  void InitializeIterator(MapIterator* map_iter) const override;
+  void DeleteIterator(MapIterator* map_iter) const override;
   void CopyIterator(MapIterator* this_iteratorm,
-                    const MapIterator& that_iterator) const;
-  void IncreaseIterator(MapIterator* map_iter) const;
+                    const MapIterator& that_iterator) const override;
+  void IncreaseIterator(MapIterator* map_iter) const override;
 
   virtual void SetMapIteratorValue(MapIterator* map_iter) const = 0;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TypeDefinedMapFieldBase);
@@ -243,16 +243,16 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
       : TypeDefinedMapFieldBase<Key, T>(arena), impl_(arena) {}
 
   // Implement MapFieldBase
-  bool ContainsMapKey(const MapKey& map_key) const;
-  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val);
-  bool DeleteMapValue(const MapKey& map_key);
+  bool ContainsMapKey(const MapKey& map_key) const override;
+  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) override;
+  bool DeleteMapValue(const MapKey& map_key) override;
 
-  const Map<Key, T>& GetMap() const {
+  const Map<Key, T>& GetMap() const override {
     MapFieldBase::SyncMapWithRepeatedField();
     return impl_.GetMap();
   }
 
-  Map<Key, T>* MutableMap() {
+  Map<Key, T>* MutableMap() override {
     MapFieldBase::SyncMapWithRepeatedField();
     Map<Key, T>* result = impl_.MutableMap();
     MapFieldBase::SetMapDirty();
@@ -260,7 +260,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   }
 
   // Convenient methods for generated message implementation.
-  int size() const;
+  int size() const override;
   void Clear();
   void MergeFrom(const MapField& other);
   void Swap(MapField* other);
@@ -285,12 +285,13 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
-  // Implements MapFieldBase
-  void SyncRepeatedFieldWithMapNoLock() const;
-  void SyncMapWithRepeatedFieldNoLock() const;
-  size_t SpaceUsedExcludingSelfNoLock() const;
 
-  void SetMapIteratorValue(MapIterator* map_iter) const;
+  // Implements MapFieldBase
+  void SyncRepeatedFieldWithMapNoLock() const override;
+  void SyncMapWithRepeatedFieldNoLock() const override;
+  size_t SpaceUsedExcludingSelfNoLock() const override;
+
+  void SetMapIteratorValue(MapIterator* map_iter) const override;
 
   friend class ::google::protobuf::Arena;
   friend class MapFieldStateTest;  // For testing, it needs raw access to impl_
@@ -311,27 +312,27 @@ class LIBPROTOBUF_EXPORT DynamicMapField: public TypeDefinedMapFieldBase<MapKey,
  public:
   explicit DynamicMapField(const Message* default_entry);
   DynamicMapField(const Message* default_entry, Arena* arena);
-  ~DynamicMapField();
+  ~DynamicMapField() override;
 
   // Implement MapFieldBase
-  bool ContainsMapKey(const MapKey& map_key) const;
-  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val);
-  bool DeleteMapValue(const MapKey& map_key);
+  bool ContainsMapKey(const MapKey& map_key) const override;
+  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) override;
+  bool DeleteMapValue(const MapKey& map_key) override;
 
-  const Map<MapKey, MapValueRef>& GetMap() const;
-  Map<MapKey, MapValueRef>* MutableMap();
+  const Map<MapKey, MapValueRef>& GetMap() const override;
+  Map<MapKey, MapValueRef>* MutableMap() override;
 
-  int size() const;
+  int size() const override;
 
  private:
   Map<MapKey, MapValueRef> map_;
   const Message* default_entry_;
 
   // Implements MapFieldBase
-  void SyncRepeatedFieldWithMapNoLock() const;
-  void SyncMapWithRepeatedFieldNoLock() const;
-  size_t SpaceUsedExcludingSelfNoLock() const;
-  void SetMapIteratorValue(MapIterator* map_iter) const;
+  void SyncRepeatedFieldWithMapNoLock() const override;
+  void SyncMapWithRepeatedFieldNoLock() const override;
+  size_t SpaceUsedExcludingSelfNoLock() const override;
+  void SetMapIteratorValue(MapIterator* map_iter) const override;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMapField);
 };
 

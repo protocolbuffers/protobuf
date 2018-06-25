@@ -258,14 +258,14 @@ class DynamicMessage : public Message {
 
   // implements Message ----------------------------------------------
 
-  Message* New() const;
-  Message* New(::google::protobuf::Arena* arena) const;
-  ::google::protobuf::Arena* GetArena() const { return arena_; }
+  Message* New() const override;
+  Message* New(::google::protobuf::Arena* arena) const override;
+  ::google::protobuf::Arena* GetArena() const override { return arena_; }
 
-  int GetCachedSize() const;
-  void SetCachedSize(int size) const;
+  int GetCachedSize() const override;
+  void SetCachedSize(int size) const override;
 
-  Metadata GetMetadata() const;
+  Metadata GetMetadata() const override;
 
   // We actually allocate more memory than sizeof(*this) when this
   // class's memory is allocated via the global operator new. Thus, we need to

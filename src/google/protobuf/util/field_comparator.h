@@ -110,14 +110,14 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // Creates new comparator with float comparison set to EXACT.
   DefaultFieldComparator();
 
-  virtual ~DefaultFieldComparator();
+  ~DefaultFieldComparator() override;
 
-  virtual ComparisonResult Compare(
+  ComparisonResult Compare(
       const google::protobuf::Message& message_1,
       const google::protobuf::Message& message_2,
       const google::protobuf::FieldDescriptor* field,
       int index_1, int index_2,
-      const google::protobuf::util::FieldContext* field_context);
+      const google::protobuf::util::FieldContext* field_context) override;
 
   void set_float_comparison(FloatComparison float_comparison) {
     float_comparison_ = float_comparison;

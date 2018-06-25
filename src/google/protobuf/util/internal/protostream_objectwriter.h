@@ -112,18 +112,18 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
                           strings::ByteSink* output, ErrorListener* listener,
                           const ProtoStreamObjectWriter::Options& options =
                               ProtoStreamObjectWriter::Options::Defaults());
-  virtual ~ProtoStreamObjectWriter();
+  virtual ~ProtoStreamObjectWriter() override;
 
   // ObjectWriter methods.
-  virtual ProtoStreamObjectWriter* StartObject(StringPiece name);
-  virtual ProtoStreamObjectWriter* EndObject();
-  virtual ProtoStreamObjectWriter* StartList(StringPiece name);
-  virtual ProtoStreamObjectWriter* EndList();
+  virtual ProtoStreamObjectWriter* StartObject(StringPiece name) override;
+  virtual ProtoStreamObjectWriter* EndObject() override;
+  virtual ProtoStreamObjectWriter* StartList(StringPiece name) override;
+  virtual ProtoStreamObjectWriter* EndList() override;
 
   // Renders a DataPiece 'value' into a field whose wire type is determined
   // from the given field 'name'.
   virtual ProtoStreamObjectWriter* RenderDataPiece(StringPiece name,
-                                                   const DataPiece& value);
+                                           const DataPiece& value) override;
 
  protected:
   // Function that renders a well known type with modified behavior.
@@ -263,7 +263,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // Constructor for a field of a message.
     Item(Item* parent, ItemType item_type, bool is_placeholder, bool is_list);
 
-    virtual ~Item() {}
+    virtual ~Item() override {}
 
     // These functions return true if the element type is corresponding to the
     // type in function name.
@@ -272,7 +272,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
     AnyWriter* any() const { return any_.get(); }
 
-    virtual Item* parent() const {
+    virtual Item* parent() const override {
       return static_cast<Item*>(BaseElement::parent());
     }
 

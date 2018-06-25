@@ -1138,13 +1138,13 @@ label_skip_parsing:
     explicit ParserErrorCollector(TextFormat::Parser::ParserImpl* parser) :
         parser_(parser) { }
 
-    virtual ~ParserErrorCollector() { }
+    ~ParserErrorCollector() override { }
 
-    virtual void AddError(int line, int column, const string& message) {
+    void AddError(int line, int column, const string& message) override {
       parser_->ReportError(line, column, message);
     }
 
-    virtual void AddWarning(int line, int column, const string& message) {
+    void AddWarning(int line, int column, const string& message) override {
       parser_->ReportWarning(line, column, message);
     }
 
@@ -1444,7 +1444,7 @@ namespace {
 // A BaseTextGenerator that writes to a string.
 class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
  public:
-  void Print(const char* text, size_t size) { output_.append(text, size); }
+  void Print(const char* text, size_t size) override { output_.append(text, size); }
 
 // Some compilers do not support ref-qualifiers even in C++11 mode.
 // Disable the optimization for now and revisit it later.
@@ -1642,37 +1642,37 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
     delegate_.reset(delegate);
   }
 
-  void PrintBool(bool val, TextFormat::BaseTextGenerator* generator) const {
+  void PrintBool(bool val, TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintBool(val));
   }
-  void PrintInt32(int32 val, TextFormat::BaseTextGenerator* generator) const {
+  void PrintInt32(int32 val, TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintInt32(val));
   }
-  void PrintUInt32(uint32 val, TextFormat::BaseTextGenerator* generator) const {
+  void PrintUInt32(uint32 val, TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintUInt32(val));
   }
-  void PrintInt64(int64 val, TextFormat::BaseTextGenerator* generator) const {
+  void PrintInt64(int64 val, TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintInt64(val));
   }
-  void PrintUInt64(uint64 val, TextFormat::BaseTextGenerator* generator) const {
+  void PrintUInt64(uint64 val, TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintUInt64(val));
   }
-  void PrintFloat(float val, TextFormat::BaseTextGenerator* generator) const {
+  void PrintFloat(float val, TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintFloat(val));
   }
-  void PrintDouble(double val, TextFormat::BaseTextGenerator* generator) const {
+  void PrintDouble(double val, TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintDouble(val));
   }
   void PrintString(const string& val,
-                   TextFormat::BaseTextGenerator* generator) const {
+                   TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintString(val));
   }
   void PrintBytes(const string& val,
-                  TextFormat::BaseTextGenerator* generator) const {
+                  TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintBytes(val));
   }
   void PrintEnum(int32 val, const string& name,
-                 TextFormat::BaseTextGenerator* generator) const {
+                 TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintEnum(val, name));
   }
   void PrintFieldName(const Message& message, int field_index, int field_count,
@@ -1684,19 +1684,19 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
   }
   void PrintFieldName(const Message& message, const Reflection* reflection,
                       const FieldDescriptor* field,
-                      TextFormat::BaseTextGenerator* generator) const {
+                      TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(
         delegate_->PrintFieldName(message, reflection, field));
   }
   void PrintMessageStart(const Message& message, int field_index,
                          int field_count, bool single_line_mode,
-                         TextFormat::BaseTextGenerator* generator) const {
+                         TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintMessageStart(
         message, field_index, field_count, single_line_mode));
   }
   void PrintMessageEnd(const Message& message, int field_index, int field_count,
                        bool single_line_mode,
-                       TextFormat::BaseTextGenerator* generator) const {
+                       TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintMessageEnd(
         message, field_index, field_count, single_line_mode));
   }
@@ -1710,13 +1710,13 @@ class FastFieldValuePrinterUtf8Escaping
     : public TextFormat::FastFieldValuePrinter {
  public:
   void PrintString(const string& val,
-                   TextFormat::BaseTextGenerator* generator) const {
+                   TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintLiteral("\"");
     generator->PrintString(strings::Utf8SafeCEscape(val));
     generator->PrintLiteral("\"");
   }
   void PrintBytes(const string& val,
-                  TextFormat::BaseTextGenerator* generator) const {
+                  TextFormat::BaseTextGenerator* generator) const override {
     return FastFieldValuePrinter::PrintString(val, generator);
   }
 };

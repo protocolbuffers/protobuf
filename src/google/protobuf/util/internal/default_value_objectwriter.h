@@ -83,37 +83,37 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   virtual ~DefaultValueObjectWriter();
 
   // ObjectWriter methods.
-  virtual DefaultValueObjectWriter* StartObject(StringPiece name);
+  virtual DefaultValueObjectWriter* StartObject(StringPiece name) override;
 
-  virtual DefaultValueObjectWriter* EndObject();
+  virtual DefaultValueObjectWriter* EndObject() override;
 
-  virtual DefaultValueObjectWriter* StartList(StringPiece name);
+  virtual DefaultValueObjectWriter* StartList(StringPiece name) override;
 
-  virtual DefaultValueObjectWriter* EndList();
+  virtual DefaultValueObjectWriter* EndList() override;
 
-  virtual DefaultValueObjectWriter* RenderBool(StringPiece name, bool value);
+  virtual DefaultValueObjectWriter* RenderBool(StringPiece name, bool value) override;
 
-  virtual DefaultValueObjectWriter* RenderInt32(StringPiece name, int32 value);
+  virtual DefaultValueObjectWriter* RenderInt32(StringPiece name, int32 value) override;
 
   virtual DefaultValueObjectWriter* RenderUint32(StringPiece name,
-                                                 uint32 value);
+                                         uint32 value) override;
 
-  virtual DefaultValueObjectWriter* RenderInt64(StringPiece name, int64 value);
+  virtual DefaultValueObjectWriter* RenderInt64(StringPiece name, int64 value) override;
 
   virtual DefaultValueObjectWriter* RenderUint64(StringPiece name,
-                                                 uint64 value);
+                                         uint64 value) override;
 
   virtual DefaultValueObjectWriter* RenderDouble(StringPiece name,
-                                                 double value);
+                                         double value) override;
 
-  virtual DefaultValueObjectWriter* RenderFloat(StringPiece name, float value);
+  virtual DefaultValueObjectWriter* RenderFloat(StringPiece name, float value) override;
 
   virtual DefaultValueObjectWriter* RenderString(StringPiece name,
-                                                 StringPiece value);
+                                         StringPiece value) override;
   virtual DefaultValueObjectWriter* RenderBytes(StringPiece name,
-                                                StringPiece value);
+                                        StringPiece value) override;
 
-  virtual DefaultValueObjectWriter* RenderNull(StringPiece name);
+  virtual DefaultValueObjectWriter* RenderNull(StringPiece name) override;
 
   // Register the callback for scrubbing of fields. Owership of
   // field_scrub_callback pointer is also transferred to this class

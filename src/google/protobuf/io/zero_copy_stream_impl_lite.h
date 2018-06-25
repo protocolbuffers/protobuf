@@ -70,12 +70,13 @@ class LIBPROTOBUF_EXPORT ArrayInputStream : public ZeroCopyInputStream {
   // useful for testing; in production you would probably never want to set
   // it.
   ArrayInputStream(const void* data, int size, int block_size = -1);
+  ~ArrayInputStream() override = default;
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size);
-  void BackUp(int count);
-  bool Skip(int count);
-  int64 ByteCount() const;
+  bool Next(const void** data, int* size) override;
+  void BackUp(int count) override;
+  bool Skip(int count) override;
+  int64 ByteCount() const override;
 
 
  private:
@@ -103,11 +104,12 @@ class LIBPROTOBUF_EXPORT ArrayOutputStream : public ZeroCopyOutputStream {
   // useful for testing; in production you would probably never want to set
   // it.
   ArrayOutputStream(void* data, int size, int block_size = -1);
+  ~ArrayOutputStream() override = default;
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size);
-  void BackUp(int count);
-  int64 ByteCount() const;
+  bool Next(void** data, int* size) override;
+  void BackUp(int count) override;
+  int64 ByteCount() const override;
 
  private:
   uint8* const data_;        // The byte array.
@@ -136,11 +138,12 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   //   the first call to Next() will return at least n bytes of buffer
   //   space.
   explicit StringOutputStream(string* target);
+  ~StringOutputStream() override = default;
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size);
-  void BackUp(int count);
-  int64 ByteCount() const;
+  bool Next(void** data, int* size) override;
+  void BackUp(int count) override;
+  int64 ByteCount() const override;
 
  protected:
   void SetString(string* target);
@@ -205,17 +208,17 @@ class LIBPROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream 
   // copying_stream unless SetOwnsCopyingStream(true) is called.
   explicit CopyingInputStreamAdaptor(CopyingInputStream* copying_stream,
                                      int block_size = -1);
-  ~CopyingInputStreamAdaptor();
+  ~CopyingInputStreamAdaptor() override;
 
   // Call SetOwnsCopyingStream(true) to tell the CopyingInputStreamAdaptor to
   // delete the underlying CopyingInputStream when it is destroyed.
   void SetOwnsCopyingStream(bool value) { owns_copying_stream_ = value; }
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size);
-  void BackUp(int count);
-  bool Skip(int count);
-  int64 ByteCount() const;
+  bool Next(const void** data, int* size) override;
+  void BackUp(int count) override;
+  bool Skip(int count) override;
+  int64 ByteCount() const override;
 
  private:
   // Insures that buffer_ is not NULL.
@@ -288,7 +291,7 @@ class LIBPROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStrea
   // is used.
   explicit CopyingOutputStreamAdaptor(CopyingOutputStream* copying_stream,
                                       int block_size = -1);
-  ~CopyingOutputStreamAdaptor();
+  ~CopyingOutputStreamAdaptor() override;
 
   // Writes all pending data to the underlying stream.  Returns false if a
   // write error occurred on the underlying stream.  (The underlying
@@ -300,9 +303,9 @@ class LIBPROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStrea
   void SetOwnsCopyingStream(bool value) { owns_copying_stream_ = value; }
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size);
-  void BackUp(int count);
-  int64 ByteCount() const;
+  bool Next(void** data, int* size) override;
+  void BackUp(int count) override;
+  int64 ByteCount() const override;
 
  private:
   // Write the current buffer, if it is present.

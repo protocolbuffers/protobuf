@@ -196,12 +196,12 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.  (This is also defined in MessageLite, but is defined again here
   // for return-type covariance.)
-  virtual Message* New() const = 0;
+  virtual Message* New() const override = 0;
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a NULL. Default implementation allows for API compatibility
   // during the Arena transition.
-  virtual Message* New(::google::protobuf::Arena* arena) const {
+  virtual Message* New(::google::protobuf::Arena* arena) const override {
     Message* message = New();
     if (arena != NULL) {
       arena->Own(message);
@@ -233,7 +233,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
 
   // Like FindInitializationErrors, but joins all the strings, delimited by
   // commas, and returns them.
-  string InitializationErrorString() const;
+  string InitializationErrorString() const override;
 
   // Clears all unknown fields from this message and all embedded messages.
   // Normally, if unknown tag numbers are encountered when parsing a message,
@@ -305,13 +305,13 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
 
-  virtual string GetTypeName() const;
-  virtual void Clear();
-  virtual bool IsInitialized() const;
-  virtual void CheckTypeAndMergeFrom(const MessageLite& other);
-  virtual bool MergePartialFromCodedStream(io::CodedInputStream* input);
-  virtual size_t ByteSizeLong() const;
-  virtual void SerializeWithCachedSizes(io::CodedOutputStream* output) const;
+  virtual string GetTypeName() const override;
+  virtual void Clear() override;
+  virtual bool IsInitialized() const override;
+  virtual void CheckTypeAndMergeFrom(const MessageLite& other) override;
+  virtual bool MergePartialFromCodedStream(io::CodedInputStream* input) override;
+  virtual size_t ByteSizeLong() const override;
+  virtual void SerializeWithCachedSizes(io::CodedOutputStream* output) const override;
 
  private:
   // This is called only by the default implementation of ByteSize(), to
