@@ -31,6 +31,10 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/descriptor.pb.h>
+
+#undef major
+#undef minor
+
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto LIBPROTOC_EXPORT
 #ifdef major
