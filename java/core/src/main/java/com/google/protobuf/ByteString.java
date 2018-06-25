@@ -133,7 +133,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * is safe because of the Java Memory Model's "no out-of-thin-air values"
    * guarantees for ints. A value of 0 implies that the hash has not been set.
    */
-  private int hash = 0;
+  private transient int hash = 0;
 
   // This constructor is here to prevent subclassing outside of this package,
   ByteString() {}
