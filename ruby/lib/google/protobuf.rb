@@ -68,8 +68,8 @@ module Google
       klass.decode(proto)
     end
 
-    def self.decode_json(klass, json)
-      klass.decode_json(json)
+    def self.decode_json(klass, json, options = {})
+      klass.decode_json(json, options)
     end
 
   end

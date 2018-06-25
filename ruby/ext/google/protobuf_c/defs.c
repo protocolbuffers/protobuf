@@ -246,6 +246,10 @@ void Descriptor_free(void* _self) {
     upb_json_parsermethod_unref(self->json_fill_method,
                                 &self->json_fill_method);
   }
+  if (self->json_fill_method_ignore_unknown) {
+    upb_json_parsermethod_unref(self->json_fill_method_ignore_unknown,
+                                &self->json_fill_method_ignore_unknown);
+  }
   if (self->pb_serialize_handlers) {
     upb_handlers_unref(self->pb_serialize_handlers,
                        &self->pb_serialize_handlers);
@@ -279,6 +283,7 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->fill_handlers = NULL;
   self->fill_method = NULL;
   self->json_fill_method = NULL;
+  self->json_fill_method_ignore_unknown = NULL;
   self->pb_serialize_handlers = NULL;
   self->json_serialize_handlers = NULL;
   self->json_serialize_handlers_preserve = NULL;

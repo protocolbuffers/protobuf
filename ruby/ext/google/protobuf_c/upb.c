@@ -12418,6 +12418,9 @@ struct upb_json_parsermethod {
 
   /* Keys are upb_msgdef*, values are upb_strtable (json_name -> fielddef) */
   upb_inttable name_tables;
+
+  /* Configurable value to drop unknown fields instead of returning a parse error */
+  bool ignore_unknown_fields;
 };
 
 #define PARSER_CHECK_RETURN(x) if (!(x)) return false
@@ -13347,11 +13350,13 @@ static bool end_membername(upb_json_parser *p) {
 
       return true;
     } else {
-      /* TODO(haberman): Ignore unknown fields if requested/configured to do
-       * so. */
-      upb_status_seterrf(&p->status, "No such field: %.*s\n", (int)len, buf);
-      upb_env_reporterror(p->env, &p->status);
-      return false;
+      if (p->method->ignore_unknown_fields) {
+        return false;
+      } else {
+        upb_status_seterrf(&p->status, "No such field: %.*s\n", (int)len, buf);
+        upb_env_reporterror(p->env, &p->status);
+        return false;
+      }
     }
   }
 }
@@ -14062,11 +14067,12 @@ upb_bytessink *upb_json_parser_input(upb_json_parser *p) {
 }
 
 upb_json_parsermethod *upb_json_parsermethod_new(const upb_msgdef* md,
-                                                 const void* owner) {
+                                                 const void* owner, bool ignore_unknown_fields) {
   static const struct upb_refcounted_vtbl vtbl = {visit_json_parsermethod,
                                                   free_json_parsermethod};
   upb_json_parsermethod *ret = upb_gmalloc(sizeof(*ret));
   upb_refcounted_init(upb_json_parsermethod_upcast_mutable(ret), &vtbl, owner);
+  ret->ignore_unknown_fields = ignore_unknown_fields;
 
   ret->msg = md;
   upb_ref2(md, ret);
