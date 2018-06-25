@@ -149,10 +149,9 @@ class build_py(_build_py):
 class test_conformance(_build_py):
   target = 'test_python'
   def run(self):
-    if sys.version_info >= (2, 7):
-      # Python 2.6 dodges these extra failures.
-      os.environ["CONFORMANCE_PYTHON_EXTRA_FAILURES"] = (
-          "--failure_list failure_list_python-post26.txt")
+    # Python 2.6 dodges these extra failures.
+    os.environ["CONFORMANCE_PYTHON_EXTRA_FAILURES"] = (
+        "--failure_list failure_list_python-post26.txt")
     cmd = 'cd ../conformance && make %s' % (test_conformance.target)
     status = subprocess.check_call(cmd, shell=True)
 
