@@ -2,7 +2,9 @@
 
 require 'mkmf'
 
-$CFLAGS += " -std=c99 -O3 -DNDEBUG"
+unless RUBY_PLATFORM =~ /mswin|mingw/
+  $CFLAGS += " -std=c99 -O3 -DNDEBUG"
+end
 
 
 if RUBY_PLATFORM =~ /linux/
