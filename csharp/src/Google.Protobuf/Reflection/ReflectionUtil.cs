@@ -34,10 +34,6 @@ using Google.Protobuf.Compatibility;
 using System;
 using System.Reflection;
 
-#if NET35
-using Google.Protobuf.Compatibility;
-#endif
-
 namespace Google.Protobuf.Reflection
 {
     /// <summary>

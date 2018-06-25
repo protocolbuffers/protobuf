@@ -203,11 +203,9 @@ if __name__ == '__main__':
 
     v, _, _ = platform.mac_ver()
     if v:
-      v = float('.'.join(v.split('.')[:2]))
-      if v >= 10.12:
-        extra_compile_args.append('-std=c++11')
+      extra_compile_args.append('-std=c++11')
     elif os.getenv('KOKORO_BUILD_NUMBER') or os.getenv('KOKORO_BUILD_ID'):
-        extra_compile_args.append('-std=c++11')
+      extra_compile_args.append('-std=c++11')
 
     if warnings_as_errors in sys.argv:
       extra_compile_args.append('-Werror')
