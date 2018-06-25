@@ -46,6 +46,7 @@ try:
 except ImportError:
   import unittest
 
+from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -1504,6 +1505,30 @@ class ReflectionTest(BaseTestCase):
     # Merge into message2.  This should not instantiate the field is message2.
     message2.MergeFrom(message1)
     self.assertFalse(message2.HasField('optional_nested_message'))
+
+  def testReflectionDoesntBreakMerging(self):
+    """Test that building a class from reflection doesn't break merging."""
+    # Instantiate a TestMap from the generated class. (We use this class
+    # because copying a MessageMap relies on the map value's descriptor's
+    # concrete class, unlike most other copies, and is especially bug-prone)
+    proto = map_unittest_pb2.TestMap()
+    proto.map_string_nested_message["one"].c = 1234
+
+    print "First: %s" % proto
+
+    # Instantiate one from reflection
+    generated = reflection.MakeClass(proto.DESCRIPTOR)()
+    generated.map_string_nested_message["two"].c = 2345
+
+    print "Second: %s" % generated
+    print "Third: %s" % proto
+
+    # The concrete class of their shared descriptor has changed! Make sure
+    # we can still assign copies.
+    proto2 = map_unittest_pb2.TestMap()
+    proto2.MergeFrom(proto)
+    self.assertEqual(proto.map_string_nested_message["one"],
+                     proto2.map_string_nested_message["one"])
 
   def testCopyFromSingularField(self):
     # Test copy with just a singular field.

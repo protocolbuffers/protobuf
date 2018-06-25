@@ -106,6 +106,9 @@ def MakeClass(descriptor):
   Returns:
     The Message class object described by the descriptor.
   """
+  if hasattr(descriptor, '_concrete_class'):
+      return descriptor._concrete_class
+
   if descriptor in MESSAGE_CLASS_CACHE:
     return MESSAGE_CLASS_CACHE[descriptor]
 
