@@ -1746,6 +1746,10 @@ public class JsonFormat {
           // Fall through. This exception is about invalid int32 value we get from parseInt32() but
           // that's not the exception we want the user to see. Since result == null, we will throw
           // an exception later.
+            
+          if (ignoringUnknownFields) {
+            result = enumDescriptor.getValues().get(0);
+          }            
         }
 
         if (result == null) {
