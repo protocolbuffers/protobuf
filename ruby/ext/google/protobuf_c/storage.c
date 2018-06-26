@@ -177,7 +177,7 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
     }
     case UPB_TYPE_STRING:
       if (CLASS_OF(value) == rb_cSymbol) {
-        value = rb_funcall(value, rb_intern("to_s"), 0, NULL);
+        value = rb_funcall(value, rb_intern("to_s"), 0);
       } else if (CLASS_OF(value) != rb_cString) {
         rb_raise(rb_eTypeError, "Invalid argument for string field.");
       }
@@ -207,7 +207,7 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
     case UPB_TYPE_ENUM: {
       int32_t int_val = 0;
       if (TYPE(value) == T_STRING) {
-        value = rb_funcall(value, rb_intern("to_sym"), 0, NULL);
+        value = rb_funcall(value, rb_intern("to_sym"), 0);
       } else if (!is_ruby_num(value) && TYPE(value) != T_SYMBOL) {
         rb_raise(rb_eTypeError,
                  "Expected number or symbol type for enum field.");
