@@ -335,7 +335,7 @@ build_ruby24() {
 }
 build_ruby25() {
   internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-2.5 && cd ..
+  cd ruby && bash travis-test.sh ruby-2.5.0 && cd ..
 }
 build_jruby() {
   internal_build_cpp  # For conformance tests.
