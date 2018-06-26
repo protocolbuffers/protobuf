@@ -128,7 +128,7 @@ GenerateCopyConstructorCode(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   printer->Print(variables_,
-    "int value;\n"
+    "int value = 0;\n"
     "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
     "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
     "       input, &value)));\n");
@@ -334,7 +334,7 @@ void RepeatedEnumFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   // Don't use ReadRepeatedPrimitive here so that the enum can be validated.
   printer->Print(variables_,
-    "int value;\n"
+    "int value = 0;\n"
     "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
     "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
     "       input, &value)));\n");
@@ -399,7 +399,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
       "::google::protobuf::io::CodedInputStream::Limit limit = "
           "input->PushLimit(static_cast<int>(length));\n"
       "while (input->BytesUntilLimit() > 0) {\n"
-      "  int value;\n"
+      "  int value = 0;\n"
       "  DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
       "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
       "       input, &value)));\n");
