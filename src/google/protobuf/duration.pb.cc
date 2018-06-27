@@ -167,7 +167,7 @@ void Duration::ArenaDtor(void* object) {
   Duration* _this = reinterpret_cast< Duration* >(object);
   (void)_this;
 }
-void Duration::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Duration::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Duration::SetCachedSize(int size) const {
   _cached_size_.Set(size);

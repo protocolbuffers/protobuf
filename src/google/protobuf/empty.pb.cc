@@ -156,7 +156,7 @@ void Empty::ArenaDtor(void* object) {
   Empty* _this = reinterpret_cast< Empty* >(object);
   (void)_this;
 }
-void Empty::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Empty::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Empty::SetCachedSize(int size) const {
   _cached_size_.Set(size);
