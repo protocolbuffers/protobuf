@@ -38,7 +38,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
 class upb::json::Parser {
  public:
   static Parser* Create(Environment* env, const ParserMethod* method,
-                        Sink* output);
+                        Sink* output, bool ignore_json_unknown);
 
   BytesSink* input();
 
@@ -72,7 +72,8 @@ UPB_BEGIN_EXTERN_C
 
 upb_json_parser* upb_json_parser_create(upb_env* e,
                                         const upb_json_parsermethod* m,
-                                        upb_sink* output);
+                                        upb_sink* output,
+                                        bool ignore_json_unknown);
 upb_bytessink *upb_json_parser_input(upb_json_parser *p);
 
 upb_json_parsermethod* upb_json_parsermethod_new(const upb_msgdef* md,
@@ -92,8 +93,8 @@ UPB_END_EXTERN_C
 namespace upb {
 namespace json {
 inline Parser* Parser::Create(Environment* env, const ParserMethod* method,
-                              Sink* output) {
-  return upb_json_parser_create(env, method, output);
+                              Sink* output, bool ignore_json_unknown) {
+  return upb_json_parser_create(env, method, output, ignore_json_unknown);
 }
 inline BytesSink* Parser::input() {
   return upb_json_parser_input(this);
