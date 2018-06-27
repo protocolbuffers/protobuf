@@ -212,6 +212,15 @@ module BasicTest
       assert_equal ['foo', 'bar'], m.repeated_string
     end
 
+    def test_ctor_nil_args
+      m = TestMessage.new(:optional_enum => nil, :optional_int32 => nil, :optional_string => nil, :optional_msg => nil)
+
+      assert_equal :Default, m.optional_enum
+      assert_equal 0, m.optional_int32
+      assert_equal "", m.optional_string
+      assert_nil m.optional_msg
+    end
+
     def test_embeddedmsg_hash_init
       m = TestEmbeddedMessageParent.new(:child_msg => {sub_child: {optional_int32: 1}},
                                         :number => 2,

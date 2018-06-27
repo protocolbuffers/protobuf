@@ -256,6 +256,10 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Unknown field name '%s' in initialization map entry.", name);
   }
 
+  if (TYPE(val) == T_NIL) {
+    return 0;
+  }
+
   if (is_map_field(f)) {
     VALUE map;
 
