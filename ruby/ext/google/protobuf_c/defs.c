@@ -812,7 +812,7 @@ VALUE FieldDescriptor_submsg_name_set(VALUE _self, VALUE value) {
   upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
   const char* str = get_str(value);
   if (!upb_fielddef_hassubdef(self->fielddef)) {
-    rb_raise(rb_eTypeError, "FieldDescriptor does not have subdef.");
+    rb_raise(cTypeError, "FieldDescriptor does not have subdef.");
   }
   CHECK_UPB(upb_fielddef_setsubdefname(mut_def, str, &status),
             "Error setting submessage name");
@@ -854,7 +854,7 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
-    rb_raise(rb_eTypeError, "get method called on wrong message type");
+    rb_raise(cTypeError, "get method called on wrong message type");
   }
   return layout_get(msg->descriptor->layout, Message_data(msg), self->fielddef);
 }
@@ -872,7 +872,7 @@ VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
-    rb_raise(rb_eTypeError, "set method called on wrong message type");
+    rb_raise(cTypeError, "set method called on wrong message type");
   }
   layout_set(msg->descriptor->layout, Message_data(msg), self->fielddef, value);
   return Qnil;
@@ -1713,7 +1713,7 @@ static void validate_msgdef(const upb_msgdef* msgdef) {
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     if (upb_fielddef_label(field) == UPB_LABEL_REQUIRED) {
-      rb_raise(rb_eTypeError, "Required fields are unsupported in proto3.");
+      rb_raise(cTypeError, "Required fields are unsupported in proto3.");
     }
   }
 }
@@ -1723,7 +1723,7 @@ static void validate_enumdef(const upb_enumdef* enumdef) {
   // value.)
   const char* lookup = upb_enumdef_iton(enumdef, 0);
   if (lookup == NULL) {
-    rb_raise(rb_eTypeError,
+    rb_raise(cTypeError,
              "Enum definition does not contain a value for '0'.");
   }
 }

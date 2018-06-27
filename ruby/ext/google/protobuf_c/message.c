@@ -631,7 +631,7 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
     const char* name = upb_enum_iter_name(&it);
     int32_t value = upb_enum_iter_number(&it);
     if (name[0] < 'A' || name[0] > 'Z') {
-      rb_raise(rb_eTypeError,
+      rb_raise(cTypeError,
                "Enum value '%s' does not start with an uppercase letter "
                "as is required for Ruby constants.",
                name);

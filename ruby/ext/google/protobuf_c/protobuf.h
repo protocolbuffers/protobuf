@@ -161,6 +161,7 @@ extern VALUE cBuilder;
 
 extern VALUE cError;
 extern VALUE cParseError;
+extern VALUE cTypeError;
 
 // We forward-declare all of the Ruby method implementations here because we
 // sometimes call the methods directly across .c files, rather than going

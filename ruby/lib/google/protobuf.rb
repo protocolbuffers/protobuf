@@ -37,6 +37,7 @@ module Google
   module Protobuf
     class Error < StandardError; end
     class ParseError < Error; end
+    class TypeError < ::TypeError; end
   end
 end
 
