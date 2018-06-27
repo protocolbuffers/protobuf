@@ -275,7 +275,7 @@ module BasicTest
 
       # strings are immutable so we can't do this, but serialize should catch it.
       m.optional_string = "asdf".encode!('UTF-8')
-      assert_raise RuntimeError do
+      assert_raise do
         m.optional_string.encode!('ASCII-8BIT')
       end
     end
