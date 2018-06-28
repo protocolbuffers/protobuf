@@ -191,6 +191,78 @@ string UpperCase(string str) {
 namespace google {
 namespace protobuf {
 
+ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
+    ConformanceLevel level, conformance::WireFormat input_format,
+    conformance::WireFormat output_format, bool is_proto3,
+    const string& test_name, const string& input)
+    : level_(level), input_format_(input_format),
+      output_format_(output_format), is_proto3_(is_proto3) {
+  auto newTestMessage = [&is_proto3]() {
+    Message* newMessage;
+    if (is_proto3) {
+      newMessage = new TestAllTypesProto3;
+    } else {
+      newMessage = new TestAllTypesProto2;
+    }
+    return newMessage;
+  };
+
+  string input_format_string;
+  string output_format_string;
+  string rname = is_proto3 ? ".Proto3" : ".Proto2";
+
+  switch (input_format) {
+    case conformance::PROTOBUF: {
+      request_.set_protobuf_payload(input);
+      input_format_string = ".ProtobufInput.";
+      break;
+    }
+
+    case conformance::JSON: {
+      request_.set_json_payload(input);
+      input_format_string = ".JsonInput.";
+      break;
+    }
+
+    default:
+      GOOGLE_LOG(FATAL) << "Unspecified input format";
+  }
+
+  switch (output_format) {
+    case conformance::PROTOBUF: {
+      output_format_string = ".ProtobufOutput";
+      break;
+    }
+
+    case conformance::JSON: {
+      output_format_string = ".JsonOutput";
+      break;
+    }
+
+    default:
+      GOOGLE_LOG(FATAL) << "Unspecified output format";
+  }
+
+  test_name_ = ConformanceLevelToString(level) + rname +
+               input_format_string + test_name +
+               output_format_string;
+
+  if (is_proto3) {
+    request_.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
+  } else {
+    request_.set_message_type("protobuf_test_messages.proto2.TestAllTypesProto2");
+  }
+  request_.set_requested_output_format(output_format);
+}
+
+Message* ConformanceTestSuite::ConformanceRequestSetting::GetTestMessage() const {
+  if (is_proto3_) {
+    return new TestAllTypesProto3();
+  } else {
+    return new TestAllTypesProto2();
+  }
+}
+
 void ConformanceTestSuite::ReportSuccess(const string& test_name) {
   if (expected_to_fail_.erase(test_name) != 0) {
     StringAppendF(&output_,
@@ -273,75 +345,36 @@ void ConformanceTestSuite::RunTest(const string& test_name,
 }
 
 void ConformanceTestSuite::RunValidInputTest(
-    const string& test_name, ConformanceLevel level, const string& input,
-    WireFormat input_format, const string& equivalent_text_format,
-    WireFormat requested_output, bool isProto3) {
-  auto newTestMessage = [&isProto3]() {
-    Message* newMessage;
-    if (isProto3) {
-      newMessage = new TestAllTypesProto3;
-    } else {
-      newMessage = new TestAllTypesProto2;
-    }
-    return newMessage;
-  };
-  Message* reference_message = newTestMessage();
+    const ConformanceRequestSetting& setting,
+    const string& equivalent_text_format) {
+  Message* reference_message = setting.GetTestMessage();
   GOOGLE_CHECK(
       TextFormat::ParseFromString(equivalent_text_format, reference_message))
-          << "Failed to parse data for test case: " << test_name
+          << "Failed to parse data for test case: " << setting.GetTestName()
           << ", data: " << equivalent_text_format;
   const string equivalent_wire_format = reference_message->SerializeAsString();
-  RunValidBinaryInputTest(test_name, level, input, input_format,
-                          equivalent_wire_format, requested_output, isProto3);
+  RunValidBinaryInputTest(setting, equivalent_wire_format);
 }
 
 void ConformanceTestSuite::RunValidBinaryInputTest(
-    const string& test_name, ConformanceLevel level, const string& input,
-    WireFormat input_format, const string& equivalent_wire_format,
-    WireFormat requested_output, bool isProto3) {
-  auto newTestMessage = [&isProto3]() {
-    Message* newMessage;
-    if (isProto3) {
-      newMessage = new TestAllTypesProto3;
-    } else {
-      newMessage = new TestAllTypesProto2;
-    }
-    return newMessage;
-  };
-  Message* reference_message = newTestMessage();
+    const ConformanceRequestSetting& setting,
+    const string& equivalent_wire_format) {
+  const string& test_name = setting.GetTestName();
+  ConformanceLevel level = setting.GetLevel();
+
+  Message* reference_message = setting.GetTestMessage();
   GOOGLE_CHECK(
       reference_message->ParseFromString(equivalent_wire_format))
           << "Failed to parse wire data for test case: " << test_name;
 
-  ConformanceRequest request;
+  const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-
-  switch (input_format) {
-    case conformance::PROTOBUF: {
-      request.set_protobuf_payload(input);
-      if (isProto3) {
-        request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
-      } else {
-        request.set_message_type("protobuf_test_messages.proto2.TestAllTypesProto2");
-      }
-      break;
-    }
-
-    case conformance::JSON: {
-      request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
-      request.set_json_payload(input);
-      break;
-    }
-
-    default:
-      GOOGLE_LOG(FATAL) << "Unspecified input format";
-  }
-
-  request.set_requested_output_format(requested_output);
 
   RunTest(test_name, request, &response);
 
-  Message *test_message = newTestMessage();
+  Message* test_message = setting.GetTestMessage();
+
+  WireFormat requested_output = request.requested_output_format();
 
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
@@ -476,56 +509,60 @@ void ConformanceTestSuite::ExpectHardParseFailureForProto(
 void ConformanceTestSuite::RunValidJsonTest(
     const string& test_name, ConformanceLevel level, const string& input_json,
     const string& equivalent_text_format) {
-  RunValidInputTest(
-      ConformanceLevelToString(level) + ".Proto3.JsonInput." + test_name +
-      ".ProtobufOutput", level, input_json, conformance::JSON,
-      equivalent_text_format, conformance::PROTOBUF, true);
-  RunValidInputTest(
-      ConformanceLevelToString(level) + ".Proto3.JsonInput." + test_name +
-      ".JsonOutput", level, input_json, conformance::JSON,
-      equivalent_text_format, conformance::JSON, true);
+  ConformanceRequestSetting setting1(
+      level, conformance::JSON, conformance::PROTOBUF,
+      true, test_name, input_json);
+  RunValidInputTest(setting1, equivalent_text_format);
+
+  ConformanceRequestSetting setting2(
+      level, conformance::JSON, conformance::JSON,
+      true, test_name, input_json);
+  RunValidInputTest(setting2, equivalent_text_format);
 }
 
 void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
     const string& test_name, ConformanceLevel level, const TestAllTypesProto3& input,
     const string& equivalent_text_format) {
-  RunValidInputTest(
-      ConformanceLevelToString(level) + ".Proto3" + ".ProtobufInput." + test_name +
-      ".JsonOutput", level, input.SerializeAsString(), conformance::PROTOBUF,
-      equivalent_text_format, conformance::JSON, true);
+  ConformanceRequestSetting setting(
+      level, conformance::PROTOBUF, conformance::JSON,
+      true, test_name, input.SerializeAsString());
+  RunValidInputTest(setting, equivalent_text_format);
+}
+
+void ConformanceTestSuite::RunValidJsonIgnoreUnknownTest(
+    const string& test_name, ConformanceLevel level, const string& input_json,
+    const string& equivalent_text_format) {
+  ConformanceRequestSetting setting(
+      level, conformance::JSON, conformance::PROTOBUF,
+      true, test_name, input_json);
+  setting.SetIgnoreUnknownJson(true);
+  RunValidInputTest(setting, equivalent_text_format);
 }
 
 void ConformanceTestSuite::RunValidProtobufTest(
     const string& test_name, ConformanceLevel level,
     const string& input_protobuf, const string& equivalent_text_format,
     bool isProto3) {
-  string rname = ".Proto3";
-  if (!isProto3) {
-    rname = ".Proto2";
-  }
-  RunValidInputTest(
-      ConformanceLevelToString(level) + rname + ".ProtobufInput." + test_name +
-      ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
-      equivalent_text_format, conformance::PROTOBUF, isProto3);
+  ConformanceRequestSetting setting1(
+      level, conformance::PROTOBUF, conformance::PROTOBUF,
+      isProto3, test_name, input_protobuf);
+  RunValidInputTest(setting1, equivalent_text_format);
+
   if (isProto3) {
-    RunValidInputTest(
-        ConformanceLevelToString(level) + rname + ".ProtobufInput." +  test_name +
-        ".JsonOutput", level, input_protobuf, conformance::PROTOBUF,
-        equivalent_text_format, conformance::JSON, isProto3);
+    ConformanceRequestSetting setting2(
+        level, conformance::PROTOBUF, conformance::JSON,
+        true, test_name, input_protobuf);
+    RunValidInputTest(setting2, equivalent_text_format);
   }
 }
 
 void ConformanceTestSuite::RunValidBinaryProtobufTest(
     const string& test_name, ConformanceLevel level,
     const string& input_protobuf, bool isProto3) {
-  string rname = ".Proto3";
-  if (!isProto3) {
-    rname = ".Proto2";
-  }
-  RunValidBinaryInputTest(
-      ConformanceLevelToString(level) + rname + ".ProtobufInput." + test_name +
-      ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
-      input_protobuf, conformance::PROTOBUF, isProto3);
+  ConformanceRequestSetting setting(
+      level, conformance::PROTOBUF, conformance::PROTOBUF,
+      isProto3, test_name, input_protobuf);
+  RunValidBinaryInputTest(setting, input_protobuf);
 }
 
 void ConformanceTestSuite::RunValidProtobufTestWithMessage(
@@ -2534,6 +2571,43 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
           }
         }
       )");
+
+  RunValidJsonIgnoreUnknownTest(
+      "IgnoreUnknownJsonNumber", REQUIRED,
+      R"({
+        "unknown": 1
+      })",
+      "");
+  RunValidJsonIgnoreUnknownTest(
+      "IgnoreUnknownJsonString", REQUIRED,
+      R"({
+        "unknown": "a"
+      })",
+      "");
+  RunValidJsonIgnoreUnknownTest(
+      "IgnoreUnknownJsonTrue", REQUIRED,
+      R"({
+        "unknown": true
+      })",
+      "");
+  RunValidJsonIgnoreUnknownTest(
+      "IgnoreUnknownJsonFalse", REQUIRED,
+      R"({
+        "unknown": false
+      })",
+      "");
+  RunValidJsonIgnoreUnknownTest(
+      "IgnoreUnknownJsonNull", REQUIRED,
+      R"({
+        "unknown": null
+      })",
+      "");
+  RunValidJsonIgnoreUnknownTest(
+      "IgnoreUnknownJsonObject", REQUIRED,
+      R"({
+        "unknown": {"a": 1}
+      })",
+      "");
 
   bool ok = true;
   if (!CheckSetEmpty(expected_to_fail_, "nonexistent_tests.txt",
