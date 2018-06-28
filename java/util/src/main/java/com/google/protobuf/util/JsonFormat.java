@@ -1747,7 +1747,7 @@ public class JsonFormat {
           // that's not the exception we want the user to see. Since result == null, we will throw
           // an exception later.
             
-          if (ignoringUnknownFields) {
+          if (ignoringUnknownFields && !ignoringUnknownFields) {
             result = enumDescriptor.getValues().get(0);
           }            
         }

@@ -1179,8 +1179,8 @@ public class JsonFormatTest extends TestCase {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     String json = "{\n" + "  \"optionalNestedEnum\": \"XXX\"\n" + "}";
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
-    assertEquals(NestedEnum.FOO, builder.getOptionalNestedEnum());
-  }  
+    assertEquals(0, builder.getOptionalNestedEnumValue());
+  }
 
   public void testParserIntegerEnumValue() throws Exception {
     TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
