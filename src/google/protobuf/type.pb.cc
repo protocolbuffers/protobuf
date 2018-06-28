@@ -492,7 +492,7 @@ void Type::ArenaDtor(void* object) {
   Type* _this = reinterpret_cast< Type* >(object);
   (void)_this;
 }
-void Type::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Type::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Type::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -609,7 +609,7 @@ bool Type::MergePartialFromCodedStream(
       case 6: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
-          int value;
+          int value = 0;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
@@ -1014,7 +1014,7 @@ void Field::ArenaDtor(void* object) {
   Field* _this = reinterpret_cast< Field* >(object);
   (void)_this;
 }
-void Field::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Field::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Field::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -1061,7 +1061,7 @@ bool Field::MergePartialFromCodedStream(
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
-          int value;
+          int value = 0;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
@@ -1076,7 +1076,7 @@ bool Field::MergePartialFromCodedStream(
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
-          int value;
+          int value = 0;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
@@ -1698,7 +1698,7 @@ void Enum::ArenaDtor(void* object) {
   Enum* _this = reinterpret_cast< Enum* >(object);
   (void)_this;
 }
-void Enum::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Enum::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Enum::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -1797,7 +1797,7 @@ bool Enum::MergePartialFromCodedStream(
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
-          int value;
+          int value = 0;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
@@ -2140,7 +2140,7 @@ void EnumValue::ArenaDtor(void* object) {
   EnumValue* _this = reinterpret_cast< EnumValue* >(object);
   (void)_this;
 }
-void EnumValue::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void EnumValue::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void EnumValue::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -2520,7 +2520,7 @@ void Option::ArenaDtor(void* object) {
   Option* _this = reinterpret_cast< Option* >(object);
   (void)_this;
 }
-void Option::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Option::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Option::SetCachedSize(int size) const {
   _cached_size_.Set(size);
