@@ -414,30 +414,9 @@ public final class Internal {
     }
   }
 
-  private static final boolean isAndroid = looksLikeAndroid();
-
-  /**
-   * Copied from grpc-java
-   */
-  private static boolean looksLikeAndroid() {
-    try {
-      // Specify a class loader instead of null because we may be running under Robolectric
-      Class.forName("android.app.Application", /*initialize=*/ false, 
-          Internal.class.getClassLoader());
-      return true;
-    } catch (Exception e) {
-      // If Application isn't loaded, it might as well not be Android.
-      return false;
-    }
-  }
-
-  static boolean isAndroid() {
-    return isAndroid;
-  }
-
   public static Class<?> getClassForName(String className) throws ClassNotFoundException {
     ClassLoader classLoader;
-    if (isAndroid()) {
+    if (Android.isOnAndroidDevice()) {
       // When android:sharedUserId or android:process is used, Android will setup a dummy
       // ClassLoader for the thread context (http://stackoverflow.com/questions/13407006),
       // instead of letting users to manually set context class loader, we choose the
