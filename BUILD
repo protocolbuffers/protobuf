@@ -43,12 +43,13 @@ COPTS = select({
     "//conditions:default": [
         "-DHAVE_PTHREAD",
         "-Wall",
-        "-Wwrite-strings",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
         "-Wno-unused-function",
         # Prevents ISO C++ const string assignment warnings for pyext sources.
+	# no-write-strings is the standard GCC flag as of at least v5.
         "-Wno-writable-strings",
+        "-Wno-write-strings",
     ],
 })
 
