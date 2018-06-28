@@ -166,7 +166,7 @@ final class ByteBufferWriter {
 
   private static Class<?> safeGetClass(String className) {
     try {
-      return Internal.getClassForName(className);
+      return Class.forName(className);
     } catch (ClassNotFoundException e) {
       return null;
     }

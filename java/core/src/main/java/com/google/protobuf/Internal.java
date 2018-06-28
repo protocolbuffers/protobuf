@@ -414,23 +414,6 @@ public final class Internal {
     }
   }
 
-  public static Class<?> getClassForName(String className) throws ClassNotFoundException {
-    ClassLoader classLoader;
-    if (Android.isOnAndroidDevice()) {
-      // When android:sharedUserId or android:process is used, Android will setup a dummy
-      // ClassLoader for the thread context (http://stackoverflow.com/questions/13407006),
-      // instead of letting users to manually set context class loader, we choose the
-      // correct class loader here.
-      classLoader = Internal.class.getClassLoader();
-    } else {
-      classLoader = Thread.currentThread().getContextClassLoader();
-      if (classLoader == null) {
-        classLoader = Internal.class.getClassLoader();
-      }
-    }
-
-    return Class.forName(className, true, classLoader);
-  }
 
   /** An empty byte array constant used in generated code. */
   public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
