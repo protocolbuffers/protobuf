@@ -421,7 +421,9 @@ public final class Internal {
    */
   private static boolean looksLikeAndroid() {
     try {
-      Class.forName("android.app.Application", /*initialize=*/ false, null);
+      // Specify a class loader instead of null because we may be running under Robolectric
+      Class.forName("android.app.Application", /*initialize=*/ false, 
+          Internal.class.getClassLoader());
       return true;
     } catch (Exception e) {
       // If Application isn't loaded, it might as well not be Android.
