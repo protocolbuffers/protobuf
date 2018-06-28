@@ -1417,6 +1417,7 @@ public abstract class GeneratedMessageLite<
 
     private static final long serialVersionUID = 0L;
 
+    private final Class<?> messageClass;
     private final String messageClassName;
     private final byte[] asBytes;
 
@@ -1425,7 +1426,8 @@ public abstract class GeneratedMessageLite<
      * @param regularForm the message to serialize
      */
     SerializedForm(MessageLite regularForm) {
-      messageClassName = regularForm.getClass().getName();
+      messageClass = regularForm.getClass();
+      messageClassName = messageClass.getName();
       asBytes = regularForm.toByteArray();
     }
 
@@ -1437,7 +1439,7 @@ public abstract class GeneratedMessageLite<
     @SuppressWarnings("unchecked")
     protected Object readResolve() throws ObjectStreamException {
       try {
-        Class<?> messageClass = Class.forName(messageClassName);
+        Class<?> messageClass = resolveMessageClass();
         java.lang.reflect.Field defaultInstanceField =
             messageClass.getDeclaredField("DEFAULT_INSTANCE");
         defaultInstanceField.setAccessible(true);
@@ -1464,7 +1466,7 @@ public abstract class GeneratedMessageLite<
     @Deprecated
     private Object readResolveFallback() throws ObjectStreamException {
       try {
-        Class<?> messageClass = Class.forName(messageClassName);
+        Class<?> messageClass = resolveMessageClass();
         java.lang.reflect.Field defaultInstanceField =
             messageClass.getDeclaredField("defaultInstance");
         defaultInstanceField.setAccessible(true);
@@ -1482,6 +1484,14 @@ public abstract class GeneratedMessageLite<
         throw new RuntimeException("Unable to call parsePartialFrom", e);
       } catch (InvalidProtocolBufferException e) {
         throw new RuntimeException("Unable to understand proto buffer", e);
+      }
+    }
+
+    private Class<?> resolveMessageClass() throws ClassNotFoundException {
+      if (messageClass != null) {
+        return messageClass;
+      } else {
+        return Class.forName(messageClassName);
       }
     }
   }
