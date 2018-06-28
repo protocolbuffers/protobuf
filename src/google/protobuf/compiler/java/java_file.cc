@@ -507,7 +507,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
         // we want the mutable code to be independent from the immutable code
         // at compile time. It is required to implement dual-compile for
         // mutable and immutable API in blaze.
-        "  java.lang.Class immutableClass = com.google.protobuf.Internal.forName(\n"
+        "  java.lang.Class immutableClass = com.google.protobuf.Internal.getClassForName(\n"
         "      \"$immutable_classname$\");\n"
         "} catch (java.lang.ClassNotFoundException e) {\n",
         "immutable_classname", name_resolver_->GetImmutableClassName(file_));
