@@ -213,7 +213,7 @@ LIBPROTOBUF_EXPORT string StringReplace(const string& s, const string& oldsub,
 //    over all of them.
 // ----------------------------------------------------------------------
 LIBPROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
-                                         vector<string>* res);
+                                         std::vector<string>* res);
 
 // Split a string using one or more byte delimiters, presented
 // as a nul-terminated c string. Append the components to 'result'.
@@ -225,15 +225,15 @@ LIBPROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
 // ----------------------------------------------------------------------
 LIBPROTOBUF_EXPORT void SplitStringAllowEmpty(const string& full,
                                               const char* delim,
-                                              vector<string>* result);
+                                              std::vector<string>* result);
 
 // ----------------------------------------------------------------------
 // Split()
 //    Split a string using a character delimiter.
 // ----------------------------------------------------------------------
-inline vector<string> Split(
+inline std::vector<string> Split(
     const string& full, const char* delim, bool skip_empty = true) {
-  vector<string> result;
+  std::vector<string> result;
   if (skip_empty) {
     SplitStringUsing(full, delim, &result);
   } else {
@@ -250,10 +250,10 @@ inline vector<string> Split(
 //    another takes a pointer to the target string. In the latter case the
 //    target string is cleared and overwritten.
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT void JoinStrings(const vector<string>& components,
+LIBPROTOBUF_EXPORT void JoinStrings(const std::vector<string>& components,
                                     const char* delim, string* result);
 
-inline string JoinStrings(const vector<string>& components,
+inline string JoinStrings(const std::vector<string>& components,
                           const char* delim) {
   string result;
   JoinStrings(components, delim, &result);
@@ -285,15 +285,15 @@ inline string JoinStrings(const vector<string>& components,
 //
 //    Errors: In the first form of the call, errors are reported with
 //    LOG(ERROR). The same is true for the second form of the call if
-//    the pointer to the string vector is NULL; otherwise, error
-//    messages are stored in the vector. In either case, the effect on
+//    the pointer to the string std::vector is NULL; otherwise, error
+//    messages are stored in the std::vector. In either case, the effect on
 //    the dest array is not defined, but rest of the source will be
 //    processed.
 //    ----------------------------------------------------------------------
 
 LIBPROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest);
 LIBPROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest,
-                                                vector<string> *errors);
+                                                std::vector<string> *errors);
 
 // ----------------------------------------------------------------------
 // UnescapeCEscapeString()
@@ -312,7 +312,7 @@ LIBPROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest,
 
 LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest);
 LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest,
-                                             vector<string> *errors);
+                                             std::vector<string> *errors);
 LIBPROTOBUF_EXPORT string UnescapeCEscapeString(const string& src);
 
 // ----------------------------------------------------------------------

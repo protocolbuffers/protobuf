@@ -35,14 +35,22 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/message_lite.h>
 
+// This file is logically internal-only and should only be used by protobuf
+// generated code.
+
 namespace google {
 namespace protobuf {
 namespace internal {
 
+// An implementation of MessageLite that treats all data as unknown. This type
+// acts as a placeholder for an implicit weak field in the case where the true
+// message type does not get linked into the binary.
 class LIBPROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
  public:
   ImplicitWeakMessage() : arena_(NULL) {}
   explicit ImplicitWeakMessage(Arena* arena) : arena_(arena) {}
+
+  static const ImplicitWeakMessage* default_instance();
 
   string GetTypeName() const { return ""; }
 
@@ -69,7 +77,7 @@ class LIBPROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     output->WriteString(data_);
   }
 
-  int GetCachedSize() const { return data_.size(); }
+  int GetCachedSize() const { return static_cast<int>(data_.size()); }
 
   typedef void InternalArenaConstructable_;
 
@@ -79,8 +87,46 @@ class LIBPROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImplicitWeakMessage);
 };
 
-extern ::google::protobuf::internal::ExplicitlyConstructed<ImplicitWeakMessage>
-    implicit_weak_message_default_instance;
+// A type handler for use with implicit weak repeated message fields.
+template <typename ImplicitWeakType>
+class ImplicitWeakTypeHandler {
+ public:
+  typedef ImplicitWeakType Type;
+  typedef ::google::protobuf::MessageLite WeakType;
+  static const bool Moveable = false;
+
+  // With implicit weak fields, we need separate NewFromPrototype and
+  // NewFromPrototypeWeak functions. The former is used when we want to create a
+  // strong dependency on the message type, and it just delegates to the
+  // GenericTypeHandler. The latter avoids creating a strong dependency, by
+  // simply calling MessageLite::New.
+  static inline ::google::protobuf::MessageLite* NewFromPrototype(
+      const ::google::protobuf::MessageLite* prototype, ::google::protobuf::Arena* arena = NULL) {
+    return prototype->New(arena);
+  }
+
+  static inline void Delete(::google::protobuf::MessageLite* value, Arena* arena) {
+    if (arena == NULL) {
+      delete value;
+    }
+  }
+  static inline ::google::protobuf::Arena* GetArena(::google::protobuf::MessageLite* value) {
+    return value->GetArena();
+  }
+  static inline void* GetMaybeArenaPointer(::google::protobuf::MessageLite* value) {
+    return value->GetArena();
+  }
+  static inline void Clear(::google::protobuf::MessageLite* value) {
+    value->Clear();
+  }
+  static void Merge(const ::google::protobuf::MessageLite& from,
+                    ::google::protobuf::MessageLite* to) {
+    to->CheckTypeAndMergeFrom(from);
+  }
+  static inline size_t SpaceUsedLong(const Type& value) {
+    return value.SpaceUsedLong();
+  }
+};
 
 }  // namespace internal
 }  // namespace protobuf

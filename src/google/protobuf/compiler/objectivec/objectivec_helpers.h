@@ -190,7 +190,7 @@ string LIBPROTOC_EXPORT GPBGenericValueFieldName(const FieldDescriptor* field);
 string LIBPROTOC_EXPORT DefaultValue(const FieldDescriptor* field);
 bool LIBPROTOC_EXPORT HasNonZeroDefaultValue(const FieldDescriptor* field);
 
-string LIBPROTOC_EXPORT BuildFlagsString(const FlagType type, const vector<string>& strings);
+string LIBPROTOC_EXPORT BuildFlagsString(const FlagType type, const std::vector<string>& strings);
 
 // Builds HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
@@ -210,7 +210,7 @@ bool LIBPROTOC_EXPORT IsProtobufLibraryBundledProtoFile(const FileDescriptor* fi
 // Checks the prefix for the given files and outputs any warnings as needed. If
 // there are flat out errors, then out_error is filled in with the first error
 // and the result is false.
-bool LIBPROTOC_EXPORT ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
+bool LIBPROTOC_EXPORT ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                string* out_error);
 
@@ -233,7 +233,7 @@ class LIBPROTOC_EXPORT TextFormatDecodeData {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormatDecodeData);
 
   typedef std::pair<int32, string> DataEntry;
-  vector<DataEntry> entries_;
+  std::vector<DataEntry> entries_;
 };
 
 // Helper for parsing simple files.
@@ -253,7 +253,8 @@ bool LIBPROTOC_EXPORT ParseSimpleFile(
 class LIBPROTOC_EXPORT ImportWriter {
  public:
   ImportWriter(const string& generate_for_named_framework,
-               const string& named_framework_to_proto_path_mappings_path);
+               const string& named_framework_to_proto_path_mappings_path,
+               bool include_wkt_imports);
   ~ImportWriter();
 
   void AddFile(const FileDescriptor* file, const string& header_extension);
@@ -275,13 +276,14 @@ class LIBPROTOC_EXPORT ImportWriter {
 
   const string generate_for_named_framework_;
   const string named_framework_to_proto_path_mappings_path_;
+  const bool include_wkt_imports_;
   std::map<string, string> proto_file_to_framework_name_;
   bool need_to_parse_mapping_file_;
 
-  vector<string> protobuf_framework_imports_;
-  vector<string> protobuf_non_framework_imports_;
-  vector<string> other_framework_imports_;
-  vector<string> other_imports_;
+  std::vector<string> protobuf_framework_imports_;
+  std::vector<string> protobuf_non_framework_imports_;
+  std::vector<string> other_framework_imports_;
+  std::vector<string> other_imports_;
 };
 
 }  // namespace objectivec

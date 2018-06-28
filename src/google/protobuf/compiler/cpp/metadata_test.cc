@@ -29,9 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
@@ -72,9 +69,7 @@ class CppMetadataTest : public ::testing::Test {
         TestTempDir();
 
     const bool result =
-        atu::CaptureMetadata(filename, cpp_out,
-                             /* meta_file_suffix */ "", &cli, file,
-                             /* outputs */ NULL);
+        atu::RunProtoCompiler(filename, cpp_out, &cli, file);
 
     if (!result) {
       return result;

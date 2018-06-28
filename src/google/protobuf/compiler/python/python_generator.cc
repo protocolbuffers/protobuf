@@ -49,9 +49,6 @@
 #include <limits>
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <string>
 #include <utility>
 #include <vector>
@@ -202,11 +199,6 @@ void PrintTopBoilerplate(
         "from google.protobuf import service_reflection\n");
   }
 
-  // Avoid circular imports if this module is descriptor_pb2.
-  if (!descriptor_proto) {
-    printer->Print(
-        "from google.protobuf import descriptor_pb2\n");
-  }
   printer->Print(
       "# @@protoc_insertion_point(imports)\n\n"
       "_sym_db = _symbol_database.Default()\n");
@@ -338,7 +330,7 @@ bool Generator::Generate(const FileDescriptor* file,
   fdp.SerializeToString(&file_descriptor_serialized_);
 
 
-  google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
+  std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
   GOOGLE_CHECK(output.get());
   io::Printer printer(output.get(), '$');
   printer_ = &printer;
@@ -422,11 +414,13 @@ void Generator::PrintFileDescriptor() const {
   m["name"] = file_->name();
   m["package"] = file_->package();
   m["syntax"] = StringifySyntax(file_->syntax());
+  m["options"] = OptionsValue(file_->options().SerializeAsString());
   const char file_descriptor_template[] =
       "$descriptor_name$ = _descriptor.FileDescriptor(\n"
       "  name='$name$',\n"
       "  package='$package$',\n"
-      "  syntax='$syntax$',\n";
+      "  syntax='$syntax$',\n"
+      "  serialized_options=$options$,\n";
   printer_->Print(m, file_descriptor_template);
   printer_->Indent();
   printer_->Print(
@@ -526,9 +520,9 @@ void Generator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
   printer_->Outdent();
   printer_->Print("],\n");
   printer_->Print("containing_type=None,\n");
-  printer_->Print("options=$options_value$,\n",
+  printer_->Print("serialized_options=$options_value$,\n",
                   "options_value",
-                  OptionsValue("EnumOptions", options_string));
+                  OptionsValue(options_string));
   EnumDescriptorProto edp;
   PrintSerializedPbInterval(enum_descriptor, edp);
   printer_->Outdent();
@@ -606,13 +600,13 @@ void Generator::PrintServiceDescriptor(
   m["full_name"] = descriptor.full_name();
   m["file"] = kDescriptorKey;
   m["index"] = SimpleItoa(descriptor.index());
-  m["options_value"] = OptionsValue("ServiceOptions", options_string);
+  m["options_value"] = OptionsValue(options_string);
   const char required_function_arguments[] =
       "name='$name$',\n"
       "full_name='$full_name$',\n"
       "file=$file$,\n"
       "index=$index$,\n"
-      "options=$options_value$,\n";
+      "serialized_options=$options_value$,\n";
   printer_->Print(m, required_function_arguments);
 
   ServiceDescriptorProto sdp;
@@ -630,7 +624,7 @@ void Generator::PrintServiceDescriptor(
     m["serialized_options"] = CEscape(options_string);
     m["input_type"] = ModuleLevelDescriptorName(*(method->input_type()));
     m["output_type"] = ModuleLevelDescriptorName(*(method->output_type()));
-    m["options_value"] = OptionsValue("MethodOptions", options_string);
+    m["options_value"] = OptionsValue(options_string);
     printer_->Print("_descriptor.MethodDescriptor(\n");
     printer_->Indent();
     printer_->Print(
@@ -641,7 +635,7 @@ void Generator::PrintServiceDescriptor(
         "containing_service=None,\n"
         "input_type=$input_type$,\n"
         "output_type=$output_type$,\n"
-        "options=$options_value$,\n");
+        "serialized_options=$options_value$,\n");
     printer_->Outdent();
     printer_->Print("),\n");
   }
@@ -737,10 +731,10 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
   string options_string;
   message_descriptor.options().SerializeToString(&options_string);
   printer_->Print(
-      "options=$options_value$,\n"
+      "serialized_options=$options_value$,\n"
       "is_extendable=$extendable$,\n"
       "syntax='$syntax$'",
-      "options_value", OptionsValue("MessageOptions", options_string),
+      "options_value", OptionsValue(options_string),
       "extendable", message_descriptor.extension_range_count() > 0 ?
                       "True" : "False",
       "syntax", StringifySyntax(message_descriptor.file()->syntax()));
@@ -765,17 +759,18 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
     m["full_name"] = desc->full_name();
     m["index"] = SimpleItoa(desc->index());
     string options_string =
-        OptionsValue("OneofOptions", desc->options().SerializeAsString());
+        OptionsValue(desc->options().SerializeAsString());
     if (options_string == "None") {
-      m["options"] = "";
+      m["serialized_options"] = "";
     } else {
-      m["options"] = ", options=" + options_string;
+      m["serialized_options"] = ", serialized_options=" + options_string;
     }
     printer_->Print(
         m,
         "_descriptor.OneofDescriptor(\n"
         "  name='$name$', full_name='$full_name$',\n"
-        "  index=$index$, containing_type=None, fields=[]$options$),\n");
+        "  index=$index$, containing_type=None, "
+        "fields=[]$serialized_options$),\n");
   }
   printer_->Outdent();
   printer_->Print("],\n");
@@ -1098,27 +1093,22 @@ void Generator::PrintEnumValueDescriptor(
   m["name"] = descriptor.name();
   m["index"] = SimpleItoa(descriptor.index());
   m["number"] = SimpleItoa(descriptor.number());
-  m["options"] = OptionsValue("EnumValueOptions", options_string);
+  m["options"] = OptionsValue(options_string);
   printer_->Print(
       m,
       "_descriptor.EnumValueDescriptor(\n"
       "  name='$name$', index=$index$, number=$number$,\n"
-      "  options=$options$,\n"
+      "  serialized_options=$options$,\n"
       "  type=None)");
 }
 
-// Returns a Python expression that calls descriptor._ParseOptions using
-// the given descriptor class name and serialized options protobuf string.
-string Generator::OptionsValue(
-    const string& class_name, const string& serialized_options) const {
+// Returns a CEscaped string of serialized_options.
+string Generator::OptionsValue(const string& serialized_options) const {
   if (serialized_options.length() == 0 || GeneratingDescriptorProto()) {
     return "None";
   } else {
-    string full_class_name = "descriptor_pb2." + class_name;
-//##!PY25    return "_descriptor._ParseOptions(" + full_class_name + "(), b'"
-//##!PY25        + CEscape(serialized_options)+ "')";
-    return "_descriptor._ParseOptions(" + full_class_name + "(), _b('"  //##PY25
-        + CEscape(serialized_options)+ "'))";  //##PY25
+//##!PY25    return "b'('" + CEscape(serialized_options)+ "')";
+    return "_b('"+ CEscape(serialized_options) + "')";  //##PY25
   }
 }
 
@@ -1138,7 +1128,7 @@ void Generator::PrintFieldDescriptor(
   m["has_default_value"] = field.has_default_value() ? "True" : "False";
   m["default_value"] = StringifyDefaultValue(field);
   m["is_extension"] = is_extension ? "True" : "False";
-  m["options"] = OptionsValue("FieldOptions", options_string);
+  m["serialized_options"] = OptionsValue(options_string);
   m["json_name"] = field.has_json_name() ?
       ", json_name='" + field.json_name() + "'": "";
   // We always set message_type and enum_type to None at this point, and then
@@ -1151,7 +1141,7 @@ void Generator::PrintFieldDescriptor(
     "  has_default_value=$has_default_value$, default_value=$default_value$,\n"
     "  message_type=None, enum_type=None, containing_type=None,\n"
     "  is_extension=$is_extension$, extension_scope=None,\n"
-    "  options=$options$$json_name$, file=DESCRIPTOR)";
+    "  serialized_options=$serialized_options$$json_name$, file=DESCRIPTOR)";
   printer_->Print(m, field_descriptor_decl);
 }
 
@@ -1280,23 +1270,18 @@ namespace {
 void PrintDescriptorOptionsFixingCode(const string& descriptor,
                                       const string& options,
                                       io::Printer* printer) {
-  // TODO(xiaofeng): I have added a method _SetOptions() to DescriptorBase
-  // in proto2 python runtime but it couldn't be used here because appengine
-  // uses a snapshot version of the library in which the new method is not
-  // yet present. After appengine has synced their runtime library, the code
-  // below should be cleaned up to use _SetOptions().
+  // Reset the _options to None thus DescriptorBase.GetOptions() can
+  // parse _options again after extensions are registered.
   printer->Print(
-      "$descriptor$.has_options = True\n"
-      "$descriptor$._options = $options$\n",
-      "descriptor", descriptor, "options", options);
+      "$descriptor$._options = None\n",
+      "descriptor", descriptor);
 }
 }  // namespace
 
 // Prints expressions that set the options field of all descriptors.
 void Generator::FixAllDescriptorOptions() const {
   // Prints an expression that sets the file descriptor's options.
-  string file_options = OptionsValue(
-      "FileOptions", file_->options().SerializeAsString());
+  string file_options = OptionsValue(file_->options().SerializeAsString());
   if (file_options != "None") {
     PrintDescriptorOptionsFixingCode(kDescriptorKey, file_options, printer_);
   }
@@ -1318,8 +1303,7 @@ void Generator::FixAllDescriptorOptions() const {
 }
 
 void Generator::FixOptionsForOneof(const OneofDescriptor& oneof) const {
-  string oneof_options = OptionsValue(
-      "OneofOptions", oneof.options().SerializeAsString());
+  string oneof_options = OptionsValue(oneof.options().SerializeAsString());
   if (oneof_options != "None") {
     string oneof_name = strings::Substitute(
         "$0.$1['$2']",
@@ -1334,14 +1318,14 @@ void Generator::FixOptionsForOneof(const OneofDescriptor& oneof) const {
 void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor) const {
   string descriptor_name = ModuleLevelDescriptorName(enum_descriptor);
   string enum_options = OptionsValue(
-      "EnumOptions", enum_descriptor.options().SerializeAsString());
+      enum_descriptor.options().SerializeAsString());
   if (enum_options != "None") {
     PrintDescriptorOptionsFixingCode(descriptor_name, enum_options, printer_);
   }
   for (int i = 0; i < enum_descriptor.value_count(); ++i) {
     const EnumValueDescriptor& value_descriptor = *enum_descriptor.value(i);
     string value_options = OptionsValue(
-        "EnumValueOptions", value_descriptor.options().SerializeAsString());
+        value_descriptor.options().SerializeAsString());
     if (value_options != "None") {
       PrintDescriptorOptionsFixingCode(
           StringPrintf("%s.values_by_name[\"%s\"]", descriptor_name.c_str(),
@@ -1355,8 +1339,7 @@ void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor) const {
 // extensions).
 void Generator::FixOptionsForField(
     const FieldDescriptor& field) const {
-  string field_options = OptionsValue(
-      "FieldOptions", field.options().SerializeAsString());
+  string field_options = OptionsValue(field.options().SerializeAsString());
   if (field_options != "None") {
     string field_name;
     if (field.is_extension()) {
@@ -1402,7 +1385,7 @@ void Generator::FixOptionsForMessage(const Descriptor& descriptor) const {
   }
   // Message option for this message.
   string message_options = OptionsValue(
-      "MessageOptions", descriptor.options().SerializeAsString());
+      descriptor.options().SerializeAsString());
   if (message_options != "None") {
     string descriptor_name = ModuleLevelDescriptorName(descriptor);
     PrintDescriptorOptionsFixingCode(descriptor_name,

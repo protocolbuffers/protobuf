@@ -754,7 +754,7 @@ void ConformanceTestSuite::TestValidDataForType(
 }
 
 void ConformanceTestSuite::SetFailureList(const string& filename,
-                                          const vector<string>& failure_list) {
+                                          const std::vector<string>& failure_list) {
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
   std::copy(failure_list.begin(), failure_list.end(),
@@ -1842,6 +1842,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "optionalInt64": null,
         "optionalUint32": null,
         "optionalUint64": null,
+        "optionalSint32": null,
+        "optionalSint64": null,
+        "optionalFixed32": null,
+        "optionalFixed64": null,
+        "optionalSfixed32": null,
+        "optionalSfixed64": null,
+        "optionalFloat": null,
+        "optionalDouble": null,
         "optionalBool": null,
         "optionalString": null,
         "optionalBytes": null,
@@ -1851,6 +1859,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "repeatedInt64": null,
         "repeatedUint32": null,
         "repeatedUint64": null,
+        "repeatedSint32": null,
+        "repeatedSint64": null,
+        "repeatedFixed32": null,
+        "repeatedFixed64": null,
+        "repeatedSfixed32": null,
+        "repeatedSfixed64": null,
+        "repeatedFloat": null,
+        "repeatedDouble": null,
         "repeatedBool": null,
         "repeatedString": null,
         "repeatedBytes": null,
@@ -1894,6 +1910,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   {
     TestAllTypesProto3 messageProto3;
     TestAllTypesProto2 messageProto2;
+    //TODO(yilunchong): update this behavior when unknown field's behavior
+    // changed in open source. Also delete
+    // Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
+    // from failure list of python_cpp python java
     TestUnknownMessage(messageProto3, true);
     TestUnknownMessage(messageProto2, false);
   }
@@ -2300,6 +2320,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
             }
             values: {
               string_value: "hello"
+            }
+          }
+        }
+      )");
+  RunValidJsonTest(
+      "ValueAcceptListWithNull", REQUIRED,
+      R"({"optionalValue": ["x", null, "y"]})",
+      R"(
+        optional_value: {
+          list_value: {
+            values: {
+              string_value: "x"
+            }
+            values: {
+              null_value: NULL_VALUE
+            }
+            values: {
+              string_value: "y"
             }
           }
         }

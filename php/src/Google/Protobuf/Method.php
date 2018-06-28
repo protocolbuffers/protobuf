@@ -58,9 +58,31 @@ class Method extends \Google\Protobuf\Internal\Message
      */
     private $syntax = 0;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type string $name
+     *           The simple name of this method.
+     *     @type string $request_type_url
+     *           A URL of the input message type.
+     *     @type bool $request_streaming
+     *           If true, the request is streamed.
+     *     @type string $response_type_url
+     *           The URL of the output message type.
+     *     @type bool $response_streaming
+     *           If true, the response is streamed.
+     *     @type \Google\Protobuf\Option[]|\Google\Protobuf\Internal\RepeatedField $options
+     *           Any metadata attached to the method.
+     *     @type int $syntax
+     *           The source syntax of this method.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Api::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

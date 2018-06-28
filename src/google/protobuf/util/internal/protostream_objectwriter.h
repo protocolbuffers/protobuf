@@ -112,18 +112,18 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
                           strings::ByteSink* output, ErrorListener* listener,
                           const ProtoStreamObjectWriter::Options& options =
                               ProtoStreamObjectWriter::Options::Defaults());
-  virtual ~ProtoStreamObjectWriter();
+  virtual ~ProtoStreamObjectWriter() override;
 
   // ObjectWriter methods.
-  virtual ProtoStreamObjectWriter* StartObject(StringPiece name);
-  virtual ProtoStreamObjectWriter* EndObject();
-  virtual ProtoStreamObjectWriter* StartList(StringPiece name);
-  virtual ProtoStreamObjectWriter* EndList();
+  virtual ProtoStreamObjectWriter* StartObject(StringPiece name) override;
+  virtual ProtoStreamObjectWriter* EndObject() override;
+  virtual ProtoStreamObjectWriter* StartList(StringPiece name) override;
+  virtual ProtoStreamObjectWriter* EndList() override;
 
   // Renders a DataPiece 'value' into a field whose wire type is determined
   // from the given field 'name'.
   virtual ProtoStreamObjectWriter* RenderDataPiece(StringPiece name,
-                                                   const DataPiece& value);
+                                           const DataPiece& value) override;
 
  protected:
   // Function that renders a well known type with modified behavior.
@@ -216,7 +216,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     ProtoStreamObjectWriter* parent_;
 
     // The nested object writer, used to write events.
-    google::protobuf::scoped_ptr<ProtoStreamObjectWriter> ow_;
+    std::unique_ptr<ProtoStreamObjectWriter> ow_;
 
     // The type_url_ that this Any represents.
     string type_url_;
@@ -263,7 +263,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // Constructor for a field of a message.
     Item(Item* parent, ItemType item_type, bool is_placeholder, bool is_list);
 
-    virtual ~Item() {}
+    virtual ~Item() override {}
 
     // These functions return true if the element type is corresponding to the
     // type in function name.
@@ -272,7 +272,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
     AnyWriter* any() const { return any_.get(); }
 
-    virtual Item* parent() const {
+    virtual Item* parent() const override {
       return static_cast<Item*>(BaseElement::parent());
     }
 
@@ -292,14 +292,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     ProtoStreamObjectWriter* ow_;
 
     // A writer for Any objects, handles all Any-related nonsense.
-    google::protobuf::scoped_ptr<AnyWriter> any_;
+    std::unique_ptr<AnyWriter> any_;
 
     // The type of this element, see enum for permissible types.
     ItemType item_type_;
 
     // Set of map keys already seen for the type_. Used to validate incoming
     // messages so no map key appears more than once.
-    google::protobuf::scoped_ptr<hash_set<string> > map_keys_;
+    std::unique_ptr<hash_set<string> > map_keys_;
 
     // Conveys whether this Item is a placeholder or not. Placeholder items are
     // pushed to stack to account for special types.
@@ -392,7 +392,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   const google::protobuf::Type& master_type_;
 
   // The current element, variable for internal state processing.
-  google::protobuf::scoped_ptr<Item> current_;
+  std::unique_ptr<Item> current_;
 
   // Reference to the options that control this class's behavior.
   const ProtoStreamObjectWriter::Options options_;

@@ -99,7 +99,7 @@ def IsNegInf(val):
 BaseTestCase = testing_refleaks.BaseTestCase
 
 
-@_parameterized.NamedParameters(
+@_parameterized.named_parameters(
     ('_proto2', unittest_pb2),
     ('_proto3', unittest_proto3_arena_pb2))
 class MessageTest(BaseTestCase):
@@ -1480,12 +1480,8 @@ class Proto3Test(BaseTestCase):
 
     submsg = msg.map_int32_foreign_message[5]
     self.assertIs(submsg, msg.map_int32_foreign_message.get(5))
-    # TODO(jieluo): Fix python and cpp extension diff.
-    if api_implementation.Type() == 'cpp':
-      with self.assertRaises(TypeError):
-        msg.map_int32_foreign_message.get('')
-    else:
-      self.assertEqual(None, msg.map_int32_foreign_message.get(''))
+    with self.assertRaises(TypeError):
+      msg.map_int32_foreign_message.get('')
 
   def testScalarMap(self):
     msg = map_unittest_pb2.TestMap()
@@ -1695,12 +1691,35 @@ class Proto3Test(BaseTestCase):
 
     del msg2.map_int32_foreign_message[222]
     self.assertFalse(222 in msg2.map_int32_foreign_message)
-    if api_implementation.Type() == 'cpp':
-      with self.assertRaises(TypeError):
-        del msg2.map_int32_foreign_message['']
-    else:
-      with self.assertRaises(KeyError):
-        del msg2.map_int32_foreign_message['']
+    with self.assertRaises(TypeError):
+      del msg2.map_int32_foreign_message['']
+
+  def testMapMergeFrom(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_int32[12] = 34
+    msg.map_int32_int32[56] = 78
+    msg.map_int64_int64[22] = 33
+    msg.map_int32_foreign_message[111].c = 5
+    msg.map_int32_foreign_message[222].c = 10
+
+    msg2 = map_unittest_pb2.TestMap()
+    msg2.map_int32_int32[12] = 55
+    msg2.map_int64_int64[88] = 99
+    msg2.map_int32_foreign_message[222].c = 15
+    msg2.map_int32_foreign_message[222].d = 20
+
+    msg2.map_int32_int32.MergeFrom(msg.map_int32_int32)
+    self.assertEqual(34, msg2.map_int32_int32[12])
+    self.assertEqual(78, msg2.map_int32_int32[56])
+
+    msg2.map_int64_int64.MergeFrom(msg.map_int64_int64)
+    self.assertEqual(33, msg2.map_int64_int64[22])
+    self.assertEqual(99, msg2.map_int64_int64[88])
+
+    msg2.map_int32_foreign_message.MergeFrom(msg.map_int32_foreign_message)
+    self.assertEqual(5, msg2.map_int32_foreign_message[111].c)
+    self.assertEqual(10, msg2.map_int32_foreign_message[222].c)
+    self.assertFalse(msg2.map_int32_foreign_message[222].HasField('d'))
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()

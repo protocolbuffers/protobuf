@@ -48,6 +48,7 @@ except ImportError:
 
 from google.protobuf.internal import _parameterized
 
+from google.protobuf import any_pb2
 from google.protobuf import any_test_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
@@ -99,7 +100,7 @@ class TextFormatBase(unittest.TestCase):
     return text
 
 
-@_parameterized.Parameters((unittest_pb2), (unittest_proto3_arena_pb2))
+@_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))
 class TextFormatTest(TextFormatBase):
 
   def testPrintExotic(self, message_module):
@@ -369,6 +370,7 @@ class TextFormatTest(TextFormatBase):
   def testParseRepeatedScalarShortFormat(self, message_module):
     message = message_module.TestAllTypes()
     text = ('repeated_int64: [100, 200];\n'
+            'repeated_int64: []\n'
             'repeated_int64: 300,\n'
             'repeated_string: ["one", "two"];\n')
     text_format.Parse(text, message)
@@ -524,20 +526,68 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
 
   def testPrintInIndexOrder(self):
     message = unittest_pb2.TestFieldOrderings()
-    message.my_string = '115'
+    # Fields are listed in index order instead of field number.
+    message.my_string = 'str'
     message.my_int = 101
     message.my_float = 111
     message.optional_nested_message.oo = 0
     message.optional_nested_message.bb = 1
+    message.Extensions[unittest_pb2.my_extension_string] = 'ext_str0'
+    # Extensions are listed based on the order of extension number.
+    # Extension number 12.
+    message.Extensions[unittest_pb2.TestExtensionOrderings2.
+                       test_ext_orderings2].my_string = 'ext_str2'
+    # Extension number 13.
+    message.Extensions[unittest_pb2.TestExtensionOrderings1.
+                       test_ext_orderings1].my_string = 'ext_str1'
+    # Extension number 14.
+    message.Extensions[
+        unittest_pb2.TestExtensionOrderings2.TestExtensionOrderings3.
+        test_ext_orderings3].my_string = 'ext_str3'
+
+    # Print in index order.
     self.CompareToGoldenText(
-        self.RemoveRedundantZeros(text_format.MessageToString(
-            message, use_index_order=True)),
-        'my_string: \"115\"\nmy_int: 101\nmy_float: 111\n'
-        'optional_nested_message {\n  oo: 0\n  bb: 1\n}\n')
+        self.RemoveRedundantZeros(
+            text_format.MessageToString(message, use_index_order=True)),
+        'my_string: "str"\n'
+        'my_int: 101\n'
+        'my_float: 111\n'
+        'optional_nested_message {\n'
+        '  oo: 0\n'
+        '  bb: 1\n'
+        '}\n'
+        '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
+        '  my_string: "ext_str2"\n'
+        '}\n'
+        '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
+        '  my_string: "ext_str1"\n'
+        '}\n'
+        '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
+        '.test_ext_orderings3] {\n'
+        '  my_string: "ext_str3"\n'
+        '}\n'
+        '[protobuf_unittest.my_extension_string]: "ext_str0"\n')
+    # By default, print in field number order.
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_format.MessageToString(message)),
-        'my_int: 101\nmy_string: \"115\"\nmy_float: 111\n'
-        'optional_nested_message {\n  bb: 1\n  oo: 0\n}\n')
+        'my_int: 101\n'
+        'my_string: "str"\n'
+        '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
+        '  my_string: "ext_str2"\n'
+        '}\n'
+        '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
+        '  my_string: "ext_str1"\n'
+        '}\n'
+        '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
+        '.test_ext_orderings3] {\n'
+        '  my_string: "ext_str3"\n'
+        '}\n'
+        '[protobuf_unittest.my_extension_string]: "ext_str0"\n'
+        'my_float: 111\n'
+        'optional_nested_message {\n'
+        '  bb: 1\n'
+        '  oo: 0\n'
+        '}\n')
 
   def testMergeLinesGolden(self):
     opened = self.ReadGolden('text_format_unittest_data_oneof_implemented.txt')
@@ -828,6 +878,10 @@ class Proto2Tests(TextFormatBase):
             '    }\n'
             '  }\n'
             '  [unknown_extension]: 5\n'
+            '  [unknown_extension_with_number_field] {\n'
+            '    1: "some_field"\n'
+            '    2: -0.451\n'
+            '  }\n'
             '}\n')
     text_format.Parse(text, message, allow_unknown_extension=True)
     golden = 'message_set {\n}\n'
@@ -894,7 +948,6 @@ class Proto2Tests(TextFormatBase):
     message = unittest_mset_pb2.TestMessageSetContainer()
     malformed = ('message_set {\n'
                  '  unknown_field: true\n'
-                 '  \n'  # Missing '>' here.
                  '}\n')
     six.assertRaisesRegex(self,
                           text_format.ParseError,
@@ -906,7 +959,7 @@ class Proto2Tests(TextFormatBase):
                           message,
                           allow_unknown_extension=True)
 
-    # Parse known extension correcty.
+    # Parse known extension correctly.
     message = unittest_mset_pb2.TestMessageSetContainer()
     text = ('message_set {\n'
             '  [protobuf_unittest.TestMessageSetExtension1] {\n'
@@ -967,14 +1020,25 @@ class Proto2Tests(TextFormatBase):
         '"protobuf_unittest.optional_int32_extension" extensions.'),
                           text_format.Parse, text, message)
 
-  def testParseDuplicateNestedMessageScalars(self):
+  def testParseDuplicateMessages(self):
     message = unittest_pb2.TestAllTypes()
     text = ('optional_nested_message { bb: 1 } '
             'optional_nested_message { bb: 2 }')
     six.assertRaisesRegex(self, text_format.ParseError, (
-        '1:65 : Message type "protobuf_unittest.TestAllTypes.NestedMessage" '
-        'should not have multiple "bb" fields.'), text_format.Parse, text,
+        '1:59 : Message type "protobuf_unittest.TestAllTypes" '
+        'should not have multiple "optional_nested_message" fields.'),
+                          text_format.Parse, text,
                           message)
+
+  def testParseDuplicateExtensionMessages(self):
+    message = unittest_pb2.TestAllExtensions()
+    text = ('[protobuf_unittest.optional_nested_message_extension]: {} '
+            '[protobuf_unittest.optional_nested_message_extension]: {}')
+    six.assertRaisesRegex(self, text_format.ParseError, (
+        '1:114 : Message type "protobuf_unittest.TestAllExtensions" '
+        'should not have multiple '
+        '"protobuf_unittest.optional_nested_message_extension" extensions.'),
+                          text_format.Parse, text, message)
 
   def testParseDuplicateScalars(self):
     message = unittest_pb2.TestAllTypes()
@@ -1061,6 +1125,14 @@ class Proto3Tests(unittest.TestCase):
         '    data: "string"\n'
         '  }\n'
         '}\n')
+
+  def testTopAnyMessage(self):
+    packed_msg = unittest_pb2.OneString()
+    msg = any_pb2.Any()
+    msg.Pack(packed_msg)
+    text = text_format.MessageToString(msg)
+    other_msg = text_format.Parse(text, any_pb2.Any())
+    self.assertEqual(msg, other_msg)
 
   def testPrintMessageExpandAnyRepeated(self):
     packed_message = unittest_pb2.OneString()
@@ -1486,7 +1558,7 @@ class TokenizerTest(unittest.TestCase):
 
 
 # Tests for pretty printer functionality.
-@_parameterized.Parameters((unittest_pb2), (unittest_proto3_arena_pb2))
+@_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))
 class PrettyPrinterTest(TextFormatBase):
 
   def testPrettyPrintNoMatch(self, message_module):

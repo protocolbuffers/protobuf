@@ -122,8 +122,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
   }
 
-  private static final ByteArrayCopier byteArrayCopier = Internal.isAndroid()
-      ? new SystemByteArrayCopier() : new ArraysByteArrayCopier();
+  private static final ByteArrayCopier byteArrayCopier;
+  static {
+    byteArrayCopier =
+        Android.isOnAndroidDevice() ? new SystemByteArrayCopier() : new ArraysByteArrayCopier();
+  }
 
   /**
    * Cached hash value. Intentionally accessed via a data race, which

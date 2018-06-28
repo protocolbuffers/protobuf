@@ -17,7 +17,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.4.1],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.6.0],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -52,6 +52,16 @@ AC_ARG_WITH([zlib],
     [include classes for streaming compressed data in and out @<:@default=check@:>@])],
   [],[with_zlib=check])
 
+AC_ARG_WITH([zlib-include],
+  [AS_HELP_STRING([--with-zlib-include=PATH],
+    [zlib include directory])],
+  [CPPFLAGS="-I$withval $CPPFLAGS"])
+
+AC_ARG_WITH([zlib-lib],
+  [AS_HELP_STRING([--with-zlib-lib=PATH],
+    [zlib lib directory])],
+  [LDFLAGS="-L$withval $LDFLAGS"])
+
 AC_ARG_WITH([protoc],
   [AS_HELP_STRING([--with-protoc=COMMAND],
     [use the given protoc command instead of building a new one when building tests (useful for cross-compiling)])],
@@ -78,7 +88,7 @@ AS_IF([test "x${ac_cv_env_CXXFLAGS_set}" = "x"],[
   # Protocol Buffers contains several checks that are intended to be used only
   # for debugging and which might hurt performance.  Most users are probably
   # end users who don't want these checks, so add -DNDEBUG by default.
-  CXXFLAGS="$CXXFLAGS -DNDEBUG"
+  CXXFLAGS="$CXXFLAGS -std=c++11 -DNDEBUG"
 
   AC_MSG_RESULT([use default: $PROTOBUF_OPT_FLAG $CXXFLAGS])
 ],[
@@ -174,14 +184,13 @@ AS_IF([test "$with_protoc" != "no"], [
 ])
 AM_CONDITIONAL([USE_EXTERNAL_PROTOC], [test "$with_protoc" != "no"])
 
-ACX_PTHREAD
-AM_CONDITIONAL([HAVE_PTHREAD], [test "x$acx_pthread_ok" = "xyes"])
-
+AX_PTHREAD
+AM_CONDITIONAL([HAVE_PTHREAD], [test "x$ax_pthread_ok" = "xyes"])
 # We still keep this for improving pbconfig.h for unsupported platforms.
 AC_CXX_STL_HASH
 
 case "$target_os" in
-  mingw* | cygwin* | win*)
+  mingw* | cygwin* | win* | aix* | *android* )
     ;;
   *)
     # Need to link against rt on Solaris
@@ -198,14 +207,14 @@ case "$target_os" in
 esac
 AM_CONDITIONAL([OBJC_CONFORMANCE_TEST], [test $OBJC_CONFORMANCE_TEST = 1])
 
-AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
+AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock
 #   too.
 export CFLAGS
 export CXXFLAGS
-AC_CONFIG_SUBDIRS([gmock])
+AC_CONFIG_SUBDIRS([third_party/googletest])
 
 AC_CONFIG_FILES([Makefile src/Makefile benchmarks/Makefile conformance/Makefile protobuf.pc protobuf-lite.pc])
 AC_OUTPUT

@@ -221,7 +221,7 @@ jspb.arith.UInt64.prototype.mul = function(a) {
  * Divide a 64-bit number by a 32-bit number to produce a
  * 64-bit quotient and a 32-bit remainder.
  * @param {number} _divisor
- * @return {Array.<jspb.arith.UInt64>} array of [quotient, remainder],
+ * @return {Array<jspb.arith.UInt64>} array of [quotient, remainder],
  * unless divisor is 0, in which case an empty array is returned.
  */
 jspb.arith.UInt64.prototype.div = function(_divisor) {

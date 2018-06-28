@@ -314,86 +314,6 @@ namespace internal { FunctionClosure0::~FunctionClosure0() {} }
 void DoNothing() {}
 
 // ===================================================================
-// emulates google3/base/mutex.cc
-
-#ifdef _WIN32
-
-struct Mutex::Internal {
-  CRITICAL_SECTION mutex;
-#ifndef NDEBUG
-  // Used only to implement AssertHeld().
-  DWORD thread_id;
-#endif
-};
-
-Mutex::Mutex()
-  : mInternal(new Internal) {
-  InitializeCriticalSection(&mInternal->mutex);
-}
-
-Mutex::~Mutex() {
-  DeleteCriticalSection(&mInternal->mutex);
-  delete mInternal;
-}
-
-void Mutex::Lock() {
-  EnterCriticalSection(&mInternal->mutex);
-#ifndef NDEBUG
-  mInternal->thread_id = GetCurrentThreadId();
-#endif
-}
-
-void Mutex::Unlock() {
-#ifndef NDEBUG
-  mInternal->thread_id = 0;
-#endif
-  LeaveCriticalSection(&mInternal->mutex);
-}
-
-void Mutex::AssertHeld() {
-#ifndef NDEBUG
-  GOOGLE_DCHECK_EQ(mInternal->thread_id, GetCurrentThreadId());
-#endif
-}
-
-#elif defined(HAVE_PTHREAD)
-
-struct Mutex::Internal {
-  pthread_mutex_t mutex;
-};
-
-Mutex::Mutex()
-  : mInternal(new Internal) {
-  pthread_mutex_init(&mInternal->mutex, NULL);
-}
-
-Mutex::~Mutex() {
-  pthread_mutex_destroy(&mInternal->mutex);
-  delete mInternal;
-}
-
-void Mutex::Lock() {
-  int result = pthread_mutex_lock(&mInternal->mutex);
-  if (result != 0) {
-    GOOGLE_LOG(FATAL) << "pthread_mutex_lock: " << strerror(result);
-  }
-}
-
-void Mutex::Unlock() {
-  int result = pthread_mutex_unlock(&mInternal->mutex);
-  if (result != 0) {
-    GOOGLE_LOG(FATAL) << "pthread_mutex_unlock: " << strerror(result);
-  }
-}
-
-void Mutex::AssertHeld() {
-  // pthreads dosn't provide a way to check which thread holds the mutex.
-  // TODO(kenton):  Maybe keep track of locking thread ID like with WIN32?
-}
-
-#endif
-
-// ===================================================================
 // emulates google3/util/endian/endian.h
 //
 // TODO(xiaofeng): PROTOBUF_LITTLE_ENDIAN is unfortunately defined in
@@ -430,9 +350,9 @@ struct ShutdownData {
     }
   }
 
-  vector<void (*)()> functions;
-  vector<const std::string*> strings;
-  vector<const MessageLite*> messages;
+  std::vector<void (*)()> functions;
+  std::vector<const std::string*> strings;
+  std::vector<const MessageLite*> messages;
   Mutex mutex;
 };
 

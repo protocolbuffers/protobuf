@@ -40,9 +40,6 @@
 
 #include <algorithm>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <utility>
 
 #include <google/protobuf/stubs/callback.h>
@@ -93,7 +90,7 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
   virtual bool IsMatch(
       const Message& message1,
       const Message& message2,
-      const std::vector<SpecificField>& parent_fields) const {
+      const std::vector<SpecificField>& parent_fields) const override {
     for (int i = 0; i < key_field_paths_.size(); ++i) {
       if (!IsMatchInternal(message1, message2, parent_fields,
                            key_field_paths_[i], 0)) {
@@ -363,9 +360,6 @@ void MessageDifferencer::TreatAsMapUsingKeyComparator(
     const MapKeyComparator* key_comparator) {
   GOOGLE_CHECK(field->is_repeated()) << "Field must be repeated: "
                                << field->full_name();
-  GOOGLE_CHECK_EQ(FieldDescriptor::CPPTYPE_MESSAGE, field->cpp_type())
-      << "Field has to be message type.  Field name is: "
-      << field->full_name();
   GOOGLE_CHECK(set_fields_.find(field) == set_fields_.end())
       << "Cannot treat this repeated field as both Map and Set for "
       << "comparison.";
@@ -493,8 +487,8 @@ bool MessageDifferencer::Compare(
   }
   // Expand google.protobuf.Any payload if possible.
   if (descriptor1->full_name() == internal::kAnyFullTypeName) {
-    google::protobuf::scoped_ptr<Message> data1;
-    google::protobuf::scoped_ptr<Message> data2;
+    std::unique_ptr<Message> data1;
+    std::unique_ptr<Message> data2;
     if (UnpackAny(message1, &data1) && UnpackAny(message2, &data2)) {
       // Avoid DFATAL for different descriptors in google.protobuf.Any payloads.
       if (data1->GetDescriptor() != data2->GetDescriptor()) {
@@ -1071,7 +1065,7 @@ struct UnknownFieldOrdering {
 }  // namespace
 
 bool MessageDifferencer::UnpackAny(const Message& any,
-                                   google::protobuf::scoped_ptr<Message>* data) {
+                                   std::unique_ptr<Message>* data) {
   const Reflection* reflection = any.GetReflection();
   const FieldDescriptor* type_url_field;
   const FieldDescriptor* value_field;
@@ -1344,7 +1338,7 @@ class MaximumMatcher {
 
   int count1_;
   int count2_;
-  google::protobuf::scoped_ptr<NodeMatchCallback> match_callback_;
+  std::unique_ptr<NodeMatchCallback> match_callback_;
   std::map<std::pair<int, int>, bool> cached_match_results_;
   std::vector<int>* match_list1_;
   std::vector<int>* match_list2_;
@@ -1462,11 +1456,27 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
       if (match_count != count1 && reporter_ == NULL) return false;
       success = success && (match_count == count1);
     } else {
-      for (int i = 0; i < count1; ++i) {
+      int start_offset = 0;
+      // If the two repeated fields are treated as sets, optimize for the case
+      // where both start with same items stored in the same order.
+      if (IsTreatedAsSet(repeated_field)) {
+        start_offset = std::min(count1, count2);
+        for (int i = 0; i < count1 && i < count2; i++) {
+          if (IsMatch(repeated_field, key_comparator, &message1, &message2,
+                      parent_fields, i, i)) {
+            match_list1->at(i) = i;
+            match_list2->at(i) = i;
+          } else {
+            start_offset = i;
+            break;
+          }
+        }
+      }
+      for (int i = start_offset; i < count1; ++i) {
         // Indicates any matched elements for this repeated field.
         bool match = false;
 
-        for (int j = 0; j < count2; j++) {
+        for (int j = start_offset; j < count2; j++) {
           if (match_list2->at(j) != -1) continue;
 
           match = IsMatch(repeated_field, key_comparator,
@@ -1750,6 +1760,13 @@ void MessageDifferencer::StreamReporter::ReportUnknownFieldIgnored(
   }
   printer_->Print("\n");  // Print for newlines.
 }
+
+MessageDifferencer::MapKeyComparator*
+MessageDifferencer::CreateMultipleFieldsMapKeyComparator(
+    const std::vector<std::vector<const FieldDescriptor*> >& key_field_paths) {
+  return new MultipleFieldsMapKeyComparator(this, key_field_paths);
+}
+
 
 }  // namespace util
 }  // namespace protobuf

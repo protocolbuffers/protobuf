@@ -102,6 +102,11 @@ final class FieldSet<FieldDescriptorType extends
   @SuppressWarnings("rawtypes")
   private static final FieldSet DEFAULT_INSTANCE = new FieldSet(true);
 
+  /** Returns {@code true} if empty, {@code false} otherwise. */
+  boolean isEmpty() {
+    return fields.isEmpty();
+  }
+
   /** Make this FieldSet immutable from this point forward. */
   @SuppressWarnings("unchecked")
   public void makeImmutable() {

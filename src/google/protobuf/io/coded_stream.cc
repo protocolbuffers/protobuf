@@ -121,9 +121,9 @@ CodedInputStream::Limit CodedInputStream::PushLimit(int byte_limit) {
   // security: byte_limit is possibly evil, so check for negative values
   // and overflow. Also check that the new requested limit is before the
   // previous limit; otherwise we continue to enforce the previous limit.
-  if GOOGLE_PREDICT_TRUE(byte_limit >= 0 &&
-                  byte_limit <= INT_MAX - current_position &&
-                  byte_limit < current_limit_ - current_position) {
+  if (GOOGLE_PREDICT_TRUE(byte_limit >= 0 &&
+                        byte_limit <= INT_MAX - current_position &&
+                        byte_limit < current_limit_ - current_position)) {
     current_limit_ = current_position + byte_limit;
     RecomputeBufferLimits();
   }
@@ -173,10 +173,7 @@ int CodedInputStream::BytesUntilLimit() const {
   return current_limit_ - current_position;
 }
 
-void CodedInputStream::SetTotalBytesLimit(
-    int total_bytes_limit, int warning_threshold) {
-  (void) warning_threshold;
-
+void CodedInputStream::SetTotalBytesLimit(int total_bytes_limit) {
   // Make sure the limit isn't already past, since this could confuse other
   // code.
   int current_position = CurrentPosition();
@@ -220,8 +217,12 @@ bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
     return false;
   }
 
+  if (!input_->Skip(count)) {
+    total_bytes_read_ = input_->ByteCount();
+    return false;
+  }
   total_bytes_read_ += count;
-  return input_->Skip(count);
+  return true;
 }
 
 bool CodedInputStream::GetDirectBufferPointer(const void** data, int* size) {
@@ -618,23 +619,11 @@ bool CodedInputStream::Refresh() {
 
 // CodedOutputStream =================================================
 
-google::protobuf::internal::AtomicWord CodedOutputStream::default_serialization_deterministic_ = 0;
+std::atomic<bool> CodedOutputStream::default_serialization_deterministic_{
+    false};
 
 CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output)
-  : output_(output),
-    buffer_(NULL),
-    buffer_size_(0),
-    total_bytes_(0),
-    had_error_(false),
-    aliasing_enabled_(false),
-    serialization_deterministic_is_overridden_(false) {
-  // Eagerly Refresh() so buffer space is immediately available.
-  Refresh();
-  // The Refresh() may have failed. If the client doesn't write any data,
-  // though, don't consider this an error. If the client does write data, then
-  // another Refresh() will be attempted and it will set the error once again.
-  had_error_ = false;
-}
+    : CodedOutputStream(output, true) {}
 
 CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output,
                                      bool do_eager_refresh)
@@ -644,7 +633,7 @@ CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output,
     total_bytes_(0),
     had_error_(false),
     aliasing_enabled_(false),
-    serialization_deterministic_is_overridden_(false) {
+    is_serialization_deterministic_(IsDefaultSerializationDeterministic()) {
   if (do_eager_refresh) {
     // Eagerly Refresh() so buffer space is immediately available.
     Refresh();

@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.4.1"
+#define PHP_PROTOBUF_VERSION "3.6.0"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -182,6 +182,8 @@
 #define CACHED_TO_ZVAL_PTR(VALUE) (VALUE)
 #define CACHED_PTR_TO_ZVAL_PTR(VALUE) (*VALUE)
 #define ZVAL_PTR_TO_CACHED_PTR(VALUE) (&VALUE)
+#define ZVAL_PTR_TO_CACHED_VALUE(VALUE) (VALUE)
+#define ZVAL_TO_CACHED_VALUE(VALUE) (&VALUE)
 
 #define CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(zval_ptr, class_type) \
   ZVAL_OBJ(zval_ptr, class_type->create_object(class_type TSRMLS_CC));
@@ -452,6 +454,8 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 #define CACHED_TO_ZVAL_PTR(VALUE) (&VALUE)
 #define CACHED_PTR_TO_ZVAL_PTR(VALUE) (VALUE)
 #define ZVAL_PTR_TO_CACHED_PTR(VALUE) (VALUE)
+#define ZVAL_PTR_TO_CACHED_VALUE(VALUE) (*VALUE)
+#define ZVAL_TO_CACHED_VALUE(VALUE) (VALUE)
 
 #define CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(zval_ptr, class_type) \
   ZVAL_OBJ(zval_ptr, class_type->create_object(class_type));
@@ -608,48 +612,36 @@ typedef struct Api Api;
 typedef struct BoolValue BoolValue;
 typedef struct BytesValue BytesValue;
 typedef struct Descriptor Descriptor;
-typedef struct Descriptor Descriptor;
 typedef struct DescriptorPool DescriptorPool;
 typedef struct DoubleValue DoubleValue;
 typedef struct Duration Duration;
+typedef struct EnumDescriptor EnumDescriptor;
 typedef struct Enum Enum;
-typedef struct EnumDescriptor EnumDescriptor;
-typedef struct EnumDescriptor EnumDescriptor;
+typedef struct EnumValueDescriptor EnumValueDescriptor;
 typedef struct EnumValue EnumValue;
-typedef struct EnumValueDescriptor EnumValueDescriptor;
-typedef struct EnumValueDescriptor EnumValueDescriptor;
-typedef struct Field Field;
-typedef struct FieldDescriptor FieldDescriptor;
-typedef struct FieldDescriptor FieldDescriptor;
-typedef struct FieldMask FieldMask;
 typedef struct Field_Cardinality Field_Cardinality;
+typedef struct FieldDescriptor FieldDescriptor;
+typedef struct Field Field;
 typedef struct Field_Kind Field_Kind;
+typedef struct FieldMask FieldMask;
 typedef struct FloatValue FloatValue;
 typedef struct GPBEmpty GPBEmpty;
 typedef struct Int32Value Int32Value;
 typedef struct Int64Value Int64Value;
 typedef struct InternalDescriptorPool InternalDescriptorPool;
 typedef struct ListValue ListValue;
-typedef struct Map Map;
-typedef struct Map Map;
 typedef struct MapIter MapIter;
-typedef struct MapIter MapIter;
-typedef struct MessageField MessageField;
+typedef struct Map Map;
 typedef struct MessageField MessageField;
 typedef struct MessageHeader MessageHeader;
-typedef struct MessageHeader MessageHeader;
-typedef struct MessageLayout MessageLayout;
 typedef struct MessageLayout MessageLayout;
 typedef struct Method Method;
 typedef struct Mixin Mixin;
 typedef struct NullValue NullValue;
 typedef struct Oneof Oneof;
-typedef struct Oneof Oneof;
 typedef struct Option Option;
-typedef struct RepeatedField RepeatedField;
-typedef struct RepeatedField RepeatedField;
 typedef struct RepeatedFieldIter RepeatedFieldIter;
-typedef struct RepeatedFieldIter RepeatedFieldIter;
+typedef struct RepeatedField RepeatedField;
 typedef struct SourceContext SourceContext;
 typedef struct StringValue StringValue;
 typedef struct Struct Struct;
@@ -969,6 +961,7 @@ PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFromString);
 PHP_METHOD(Message, serializeToJsonString);
 PHP_METHOD(Message, mergeFromJsonString);
+PHP_METHOD(Message, discardUnknownFields);
 
 // -----------------------------------------------------------------------------
 // Type check / conversion.
@@ -1178,6 +1171,17 @@ extern zend_class_entry* oneof_descriptor_type;
 // -----------------------------------------------------------------------------
 // Well Known Type.
 // -----------------------------------------------------------------------------
+
+extern bool is_inited_file_any;
+extern bool is_inited_file_api;
+extern bool is_inited_file_duration;
+extern bool is_inited_file_field_mask;
+extern bool is_inited_file_empty;
+extern bool is_inited_file_source_context;
+extern bool is_inited_file_struct;
+extern bool is_inited_file_timestamp;
+extern bool is_inited_file_type;
+extern bool is_inited_file_wrappers;
 
 PHP_METHOD(GPBMetadata_Any, initOnce);
 PHP_METHOD(GPBMetadata_Api, initOnce);

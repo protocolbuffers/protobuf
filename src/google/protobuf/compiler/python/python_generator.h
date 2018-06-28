@@ -135,8 +135,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
       const ServiceDescriptor& descriptor) const;
 
   void PrintEnumValueDescriptor(const EnumValueDescriptor& descriptor) const;
-  string OptionsValue(const string& class_name,
-                      const string& serialized_options) const;
+  string OptionsValue(const string& serialized_options) const;
   bool GeneratingDescriptorProto() const;
 
   template <typename DescriptorT>

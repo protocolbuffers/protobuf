@@ -40,9 +40,6 @@
 #include <unistd.h>
 #endif
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <vector>
 
 #include <google/protobuf/stubs/stringprintf.h>
@@ -70,7 +67,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::internal::win32::access;
@@ -344,7 +341,7 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<string> args) {
     }
   }
 
-  google::protobuf::scoped_array<const char * > argv(new const char* [args.size()]);
+  std::unique_ptr<const char * []> argv(new const char* [args.size()]);
 
   for (int i = 0; i < args.size(); i++) {
     args[i] = StringReplace(args[i], "$tmpdir", temp_directory_, true);
@@ -2298,7 +2295,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
         ADD_FAILURE() << "unexpected EncodeDecodeTestMode: " << GetParam();
     }
 
-    google::protobuf::scoped_array<const char * > argv(new const char* [args.size()]);
+    std::unique_ptr<const char * []> argv(new const char* [args.size()]);
     for (int i = 0; i < args.size(); i++) {
       argv[i] = args[i].c_str();
     }

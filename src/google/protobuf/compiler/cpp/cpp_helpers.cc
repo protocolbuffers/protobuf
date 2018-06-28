@@ -42,6 +42,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -73,7 +74,7 @@ const char* const kKeywordList[] = {
   "constexpr", "const_cast", "continue", "decltype", "default", "delete", "do",
   "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern",
   "false", "float", "for", "friend", "goto", "if", "inline", "int", "long",
-  "mutable", "namespace", "new", "noexcept", "not", "not_eq", "NULL",
+  "mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr",
   "operator", "or", "or_eq", "private", "protected", "public", "register",
   "reinterpret_cast", "return", "short", "signed", "sizeof", "static",
   "static_assert", "static_cast", "struct", "switch", "template", "this",
@@ -219,22 +220,10 @@ string ReferenceFunctionName(const Descriptor* descriptor) {
   return QualifiedClassName(descriptor) + "_ReferenceStrong";
 }
 
-string DependentBaseClassTemplateName(const Descriptor* descriptor) {
-  return ClassName(descriptor, false) + "_InternalBase";
-}
-
 string SuperClassName(const Descriptor* descriptor, const Options& options) {
   return HasDescriptorMethods(descriptor->file(), options)
              ? "::google::protobuf::Message"
              : "::google::protobuf::MessageLite";
-}
-
-string DependentBaseDownCast() {
-  return "reinterpret_cast<T*>(this)->";
-}
-
-string DependentBaseConstDownCast() {
-  return "reinterpret_cast<const T*>(this)->";
 }
 
 string FieldName(const FieldDescriptor* field) {
@@ -292,60 +281,6 @@ string FieldConstantName(const FieldDescriptor *field) {
   }
 
   return result;
-}
-
-bool IsFieldDependent(const FieldDescriptor* field) {
-  if (field->containing_oneof() != NULL &&
-      field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-    return true;
-  }
-  if (field->is_map()) {
-    const Descriptor* map_descriptor = field->message_type();
-    for (int i = 0; i < map_descriptor->field_count(); i++) {
-      if (IsFieldDependent(map_descriptor->field(i))) {
-        return true;
-      }
-    }
-    return false;
-  }
-  if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    return false;
-  }
-  if (field->containing_oneof() != NULL) {
-    // Oneof fields will always be dependent.
-    //
-    // This is a unique case for field codegen. Field generators are
-    // responsible for generating all the field-specific accessor
-    // functions, except for the clear_*() function; instead, field
-    // generators produce inline clearing code.
-    //
-    // For non-oneof fields, the Message class uses the inline clearing
-    // code to define the field's clear_*() function, as well as in the
-    // destructor. For oneof fields, the Message class generates a much
-    // more complicated clear_*() function, which clears only the oneof
-    // member that is set, in addition to clearing methods for each of the
-    // oneof members individually.
-    //
-    // Since oneofs do not have their own generator class, the Message code
-    // generation logic would be significantly complicated in order to
-    // split dependent and non-dependent manipulation logic based on
-    // whether the oneof truly needs to be dependent; so, for oneof fields,
-    // we just assume it (and its constituents) should be manipulated by a
-    // dependent base class function.
-    //
-    // This is less precise than how dependent message-typed fields are
-    // handled, but the cost is limited to only the generated code for the
-    // oneof field, which seems like an acceptable tradeoff.
-    return true;
-  }
-  if (field->file() == field->message_type()->file()) {
-    return false;
-  }
-  return true;
-}
-
-string DependentTypeName(const FieldDescriptor* field) {
-  return "InternalBase_" + field->name() + "_T";
 }
 
 string FieldMessageTypeName(const FieldDescriptor* field) {
@@ -748,12 +683,17 @@ bool UsingImplicitWeakFields(const FileDescriptor* file,
          GetOptimizeFor(file, options) == FileOptions::LITE_RUNTIME;
 }
 
-
-bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options) {
+bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
+                         SCCAnalyzer* scc_analyzer) {
   return UsingImplicitWeakFields(field->file(), options) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
-         !field->is_required() && !field->is_repeated() && !field->is_map() &&
-         field->containing_oneof() == NULL;
+         !field->is_required() && !field->is_map() &&
+         field->containing_oneof() == NULL &&
+         !IsWellKnownMessage(field->message_type()->file()) &&
+         // We do not support implicit weak fields between messages in the same
+         // strongly-connected component.
+         scc_analyzer->GetSCC(field->containing_type()) !=
+             scc_analyzer->GetSCC(field->message_type());
 }
 
 struct CompareDescriptors {
@@ -919,6 +859,7 @@ void ListAllTypesForServices(const FileDescriptor* fd,
     }
   }
 }
+
 
 }  // namespace cpp
 }  // namespace compiler

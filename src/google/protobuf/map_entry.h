@@ -95,6 +95,19 @@ class MapEntry
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
+  using typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
+                              kValueFieldType,
+                              default_enum_value>::KeyTypeHandler;
+  using typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
+                              kValueFieldType,
+                              default_enum_value>::ValueTypeHandler;
+  size_t SpaceUsedLong() const override {
+    size_t size = sizeof(Derived);
+    size += KeyTypeHandler::SpaceUsedInMapEntryLong(this->key_);
+    size += ValueTypeHandler::SpaceUsedInMapEntryLong(this->value_);
+    return size;
+  }
+
   InternalMetadataWithArena _internal_metadata_;
 
  private:

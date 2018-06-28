@@ -230,9 +230,13 @@ public abstract class GeneratedMessageLite<
    * Called by subclasses to complete parsing. For use by generated code only.
    */
   protected void makeImmutable() {
+    // BEGIN REGULAR
     dynamicMethod(MethodToInvoke.MAKE_IMMUTABLE);
-
     unknownFields.makeImmutable();
+    // END REGULAR
+    // BEGIN EXPERIMENTAL
+    // Protobuf.getInstance().schemaFor(this).makeImmutable(this);
+    // END EXPERIMENTAL
   }
 
   protected final <
@@ -269,15 +273,15 @@ public abstract class GeneratedMessageLite<
    * For use by generated code only.
    */
   public static enum MethodToInvoke {
-    IS_INITIALIZED,
     // BEGIN REGULAR
+    IS_INITIALIZED,
     VISIT,
+    MERGE_FROM_STREAM,
+    MAKE_IMMUTABLE,
     // END REGULAR
     // Rely on/modify instance state
     GET_MEMOIZED_IS_INITIALIZED,
     SET_MEMOIZED_IS_INITIALIZED,
-    MERGE_FROM_STREAM,
-    MAKE_IMMUTABLE,
 
     // Rely on static state
     NEW_MUTABLE_INSTANCE,
@@ -338,6 +342,16 @@ public abstract class GeneratedMessageLite<
     unknownFields = visitor.visitUnknownFields(unknownFields, other.unknownFields);
   }
   // END REGULAR
+
+  @Override
+  int getMemoizedSerializedSize() {
+    return memoizedSerializedSize;
+  }
+
+  @Override
+  void setMemoizedSerializedSize(int size) {
+    memoizedSerializedSize = size;
+  }
 
 
 
@@ -449,13 +463,41 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
+    public BuilderType mergeFrom(byte[] input, int offset, int length)
+        throws InvalidProtocolBufferException {
+      // BEGIN REGULAR
+      return super.mergeFrom(input, offset, length);
+      // END REGULAR
+      // BEGIN EXPERIMENTAL
+      // copyOnWrite();
+      // try {
+      //   Protobuf.getInstance().schemaFor(instance).mergeFrom(
+      //       instance, input, offset, offset + length, new ArrayDecoders.Registers());
+      // } catch (InvalidProtocolBufferException e) {
+      //   throw e;
+      // } catch (IndexOutOfBoundsException e) {
+      //   throw InvalidProtocolBufferException.truncatedMessage();
+      // } catch (IOException e) {
+      //   throw new RuntimeException("Reading from byte array should not throw IOException.", e);
+      // }
+      // return (BuilderType) this;
+      // END EXPERIMENTAL
+    }
+
+    @Override
     public BuilderType mergeFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws IOException {
       copyOnWrite();
       try {
+        // BEGIN REGULAR
         instance.dynamicMethod(MethodToInvoke.MERGE_FROM_STREAM, input, extensionRegistry);
+        // END REGULAR
+        // BEGIN EXPERIMENTAL
+        // Protobuf.getInstance().schemaFor(instance).mergeFrom(
+        //     instance, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
+        // END EXPERIMENTAL
       } catch (RuntimeException e) {
         if (e.getCause() instanceof IOException) {
           throw (IOException) e.getCause();
@@ -504,11 +546,8 @@ public abstract class GeneratedMessageLite<
             extends GeneratedMessageLite<MessageType, BuilderType>
             implements ExtendableMessageOrBuilder<MessageType, BuilderType> {
 
-    /**
-     * Represents the set of extensions on this message. For use by generated
-     * code only.
-     */
-    protected FieldSet<ExtensionDescriptor> extensions = FieldSet.newFieldSet();
+    /** Represents the set of extensions on this message. For use by generated code only. */
+    protected FieldSet<ExtensionDescriptor> extensions = FieldSet.emptySet();
 
     @SuppressWarnings("unchecked")
     protected final void mergeExtensionFields(final MessageType other) {
@@ -578,7 +617,9 @@ public abstract class GeneratedMessageLite<
       if (unknown) {  // Unknown field or wrong wire type.  Skip.
         return parseUnknownField(tag, input);
       }
-      
+
+      ensureExtensionsAreMutable();
+
       if (packed) {
         int length = input.readRawVarint32();
         int limit = input.pushLimit(length);
@@ -793,10 +834,18 @@ public abstract class GeneratedMessageLite<
       if (subBuilder == null) {
         subBuilder = extension.getMessageDefaultInstance().newBuilderForType();
       }
-      rawBytes.newCodedInput().readMessage(subBuilder, extensionRegistry);
+      subBuilder.mergeFrom(rawBytes, extensionRegistry);
       MessageLite value = subBuilder.build();
 
-      extensions.setField(extension.descriptor, extension.singularToFieldSetType(value));
+      ensureExtensionsAreMutable().setField(
+          extension.descriptor, extension.singularToFieldSetType(value));
+    }
+
+    private FieldSet<ExtensionDescriptor> ensureExtensionsAreMutable() {
+      if (extensions.isImmutable()) {
+        extensions = extensions.clone();
+      }
+      return extensions;
     }
 
     private void verifyExtensionContainingType(
@@ -868,9 +917,11 @@ public abstract class GeneratedMessageLite<
     @Override
     protected final void makeImmutable() {
       super.makeImmutable();
-
+      // BEGIN REGULAR
       extensions.makeImmutable();
+      // END REGULAR
     }
+
 
     /**
      * Used by subclasses to serialize extensions.  Extension ranges may be
@@ -942,12 +993,6 @@ public abstract class GeneratedMessageLite<
       implements ExtendableMessageOrBuilder<MessageType, BuilderType> {
     protected ExtendableBuilder(MessageType defaultInstance) {
       super(defaultInstance);
-
-      // TODO(dweis): This is kind of an unnecessary clone since we construct a
-      //     new instance in the parent constructor which makes the extensions
-      //     immutable. This extra allocation shouldn't matter in practice
-      //     though.
-      instance.extensions = instance.extensions.clone();
     }
 
     // For immutable message conversion.
@@ -964,6 +1009,15 @@ public abstract class GeneratedMessageLite<
 
       super.copyOnWrite();
       instance.extensions = instance.extensions.clone();
+    }
+
+    private FieldSet<ExtensionDescriptor> ensureExtensionsAreMutable() {
+      FieldSet<ExtensionDescriptor> extensions = instance.extensions;
+      if (extensions.isImmutable()) {
+        extensions = extensions.clone();
+        instance.extensions = extensions;
+      }
+      return extensions;
     }
 
     @Override
@@ -1024,7 +1078,8 @@ public abstract class GeneratedMessageLite<
 
       verifyExtensionContainingType(extensionLite);
       copyOnWrite();
-      instance.extensions.setField(extensionLite.descriptor, extensionLite.toFieldSetType(value));
+      ensureExtensionsAreMutable()
+          .setField(extensionLite.descriptor, extensionLite.toFieldSetType(value));
       return (BuilderType) this;
     }
 
@@ -1037,8 +1092,9 @@ public abstract class GeneratedMessageLite<
 
       verifyExtensionContainingType(extensionLite);
       copyOnWrite();
-      instance.extensions.setRepeatedField(
-          extensionLite.descriptor, index, extensionLite.singularToFieldSetType(value));
+      ensureExtensionsAreMutable()
+          .setRepeatedField(
+              extensionLite.descriptor, index, extensionLite.singularToFieldSetType(value));
       return (BuilderType) this;
     }
 
@@ -1051,8 +1107,8 @@ public abstract class GeneratedMessageLite<
 
       verifyExtensionContainingType(extensionLite);
       copyOnWrite();
-      instance.extensions.addRepeatedField(
-          extensionLite.descriptor, extensionLite.singularToFieldSetType(value));
+      ensureExtensionsAreMutable()
+          .addRepeatedField(extensionLite.descriptor, extensionLite.singularToFieldSetType(value));
       return (BuilderType) this;
     }
 
@@ -1063,7 +1119,7 @@ public abstract class GeneratedMessageLite<
 
       verifyExtensionContainingType(extensionLite);
       copyOnWrite();
-      instance.extensions.clearField(extensionLite.descriptor);
+      ensureExtensionsAreMutable().clearField(extensionLite.descriptor);
       return (BuilderType) this;
     }
   }
@@ -1462,17 +1518,18 @@ public abstract class GeneratedMessageLite<
     if (memoizedIsInitialized == 0) {
       return false;
     }
+    // BEGIN EXPERIMENTAL
+    // boolean isInitialized = Protobuf.getInstance().schemaFor(message).isInitialized(message);
+    // END EXPERIMENTAL
+    // BEGIN REGULAR
     boolean isInitialized =
         message.dynamicMethod(MethodToInvoke.IS_INITIALIZED, Boolean.FALSE) != null;
+    // END REGULAR
     if (shouldMemoize) {
       message.dynamicMethod(
           MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null);
     }
     return isInitialized;
-  }
-
-  protected static final <T extends GeneratedMessageLite<T, ?>> void makeImmutable(T message) {
-    message.dynamicMethod(MethodToInvoke.MAKE_IMMUTABLE);
   }
 
   protected static IntList emptyIntList() {
@@ -1554,6 +1611,11 @@ public abstract class GeneratedMessageLite<
         throws InvalidProtocolBufferException {
       return GeneratedMessageLite.parsePartialFrom(defaultInstance, input, extensionRegistry);
     }
+
+    @Override
+    public T parsePartialFrom(byte[] input) throws InvalidProtocolBufferException {
+      return GeneratedMessageLite.parsePartialFrom(defaultInstance, input);
+    }
   }
 
   /**
@@ -1567,8 +1629,21 @@ public abstract class GeneratedMessageLite<
     @SuppressWarnings("unchecked") // Guaranteed by protoc
     T result = (T) instance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
     try {
+      // BEGIN REGULAR
       result.dynamicMethod(MethodToInvoke.MERGE_FROM_STREAM, input, extensionRegistry);
+      // END REGULAR
+      // BEGIN EXPERIMENTAL
+      // Protobuf.getInstance().schemaFor(result).mergeFrom(
+      //     result, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
+      // END EXPERIMENTAL
       result.makeImmutable();
+      // BEGIN EXPERIMENTAL
+      // } catch (IOException e) {
+      //   if (e.getCause() instanceof InvalidProtocolBufferException) {
+      //     throw (InvalidProtocolBufferException) e.getCause();
+      //   }
+      //   throw new InvalidProtocolBufferException(e.getMessage()).setUnfinishedMessage(result);
+      // END EXPERIMENTAL
     } catch (RuntimeException e) {
       if (e.getCause() instanceof InvalidProtocolBufferException) {
         throw (InvalidProtocolBufferException) e.getCause();
@@ -1576,6 +1651,34 @@ public abstract class GeneratedMessageLite<
       throw e;
     }
     return result;
+  }
+
+  /** A static helper method for parsing a partial from byte array. */
+  static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(T instance, byte[] input)
+      throws InvalidProtocolBufferException {
+    // BEGIN REGULAR
+    return parsePartialFrom(instance, input, ExtensionRegistryLite.getEmptyRegistry());
+    // END REGULAR
+    // BEGIN EXPERIMENTAL
+    // @SuppressWarnings("unchecked") // Guaranteed by protoc
+    // T result = (T) instance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
+    // try {
+    //   Protobuf.getInstance().schemaFor(result).mergeFrom(
+    //       result, input, 0, input.length, new ArrayDecoders.Registers());
+    //   result.makeImmutable();
+    //   if (result.memoizedHashCode != 0) {
+    //     throw new RuntimeException();
+    //   }
+    // } catch (IOException e) {
+    //   if (e.getCause() instanceof InvalidProtocolBufferException) {
+    //     throw (InvalidProtocolBufferException) e.getCause();
+    //   }
+    //   throw new InvalidProtocolBufferException(e.getMessage()).setUnfinishedMessage(result);
+    // } catch (IndexOutOfBoundsException e) {
+    //   throw InvalidProtocolBufferException.truncatedMessage().setUnfinishedMessage(result);
+    // }
+    // return result;
+    // END EXPERIMENTAL
   }
 
   protected static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
@@ -1674,8 +1777,7 @@ public abstract class GeneratedMessageLite<
   protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
       T defaultInstance, byte[] data)
       throws InvalidProtocolBufferException {
-    return checkMessageInitialized(
-        parsePartialFrom(defaultInstance, data, ExtensionRegistryLite.getEmptyRegistry()));
+    return checkMessageInitialized(parsePartialFrom(defaultInstance, data));
   }
 
   // Validates last tag.

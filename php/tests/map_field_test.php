@@ -5,7 +5,7 @@ require_once('test_util.php');
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
 use Foo\TestMessage;
-use Foo\TestMessage_Sub;
+use Foo\TestMessage\Sub;
 
 class MapFieldTest extends PHPUnit_Framework_TestCase {
 
@@ -408,10 +408,10 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
 
     public function testMessage() {
         $arr = new MapField(GPBType::INT32,
-            GPBType::MESSAGE, TestMessage_Sub::class);
+            GPBType::MESSAGE, Sub::class);
 
         // Test append.
-        $sub_m = new TestMessage_Sub();
+        $sub_m = new Sub();
         $sub_m->setA(1);
         $arr[0] = $sub_m;
         $this->assertSame(1, $arr[0]->getA());
@@ -420,9 +420,9 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
 
         // Test foreach.
         $arr = new MapField(GPBType::INT32,
-            GPBType::MESSAGE, TestMessage_Sub::class);
+            GPBType::MESSAGE, Sub::class);
         for ($i = 0; $i < 3; $i++) {
-          $arr[$i] = new TestMessage_Sub();;
+          $arr[$i] = new Sub();;
           $arr[$i]->setA($i);
         }
         $i = 0;

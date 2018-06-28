@@ -696,6 +696,22 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Value_List_WithNullElement()
+        {
+            var expected = Value.ForList(Value.ForString("x"), Value.ForNull(), Value.ForString("y"));
+            var actual = Value.Parser.ParseJson("[\"x\", null, \"y\"]");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void StructValue_NullElement()
+        {
+            var expected = Value.ForStruct(new Struct { Fields = { { "x", Value.ForNull() } } });
+            var actual = Value.Parser.ParseJson("{ \"x\": null }");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
         public void ParseListValue()
         {
             Assert.AreEqual(new ListValue { Values = { Value.ForNumber(1), Value.ForString("x") } }, ListValue.Parser.ParseJson("[1, \"x\"]"));

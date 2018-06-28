@@ -66,11 +66,11 @@ void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   // "create single field generator for this repeated field"
   // function, but it doesn't seem worth it for just this.
   if (IsWrapperType(descriptor_)) {
-    scoped_ptr<FieldGeneratorBase> single_generator(
+    std::unique_ptr<FieldGeneratorBase> single_generator(
       new WrapperFieldGenerator(descriptor_, fieldOrdinal_, this->options()));
     single_generator->GenerateCodecCode(printer);
   } else {
-    scoped_ptr<FieldGeneratorBase> single_generator(
+    std::unique_ptr<FieldGeneratorBase> single_generator(
       new MessageFieldGenerator(descriptor_, fieldOrdinal_, this->options()));
     single_generator->GenerateCodecCode(printer);
   }

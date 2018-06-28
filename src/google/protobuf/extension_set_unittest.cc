@@ -32,19 +32,20 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/stubs/casts.h>
 
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/extension_set.h>
+#include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
-#include <google/protobuf/test_util.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/extension_set.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -285,7 +286,7 @@ TEST(ExtensionSetTest, CopyFrom) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
-TEST(ExtensioSetTest, CopyFromPacked) {
+TEST(ExtensionSetTest, CopyFromPacked) {
   unittest::TestPackedExtensions message1, message2;
 
   TestUtil::SetPackedExtensions(&message1);
@@ -444,7 +445,7 @@ TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
 
 TEST(ExtensionSetTest, SwapExtensionBothFullWithArena) {
   ::google::protobuf::Arena arena1;
-  google::protobuf::scoped_ptr<google::protobuf::Arena> arena2(new ::google::protobuf::Arena());
+  std::unique_ptr<google::protobuf::Arena> arena2(new ::google::protobuf::Arena());
 
   unittest::TestAllExtensions* message1 =
       Arena::CreateMessage<unittest::TestAllExtensions>(&arena1);
@@ -599,6 +600,26 @@ TEST(ExtensionSetTest, PackedSerializationToStream) {
   }
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectPackedFieldsSet(destination);
+}
+
+TEST(ExtensionSetTest, NestedExtensionGroup) {
+  // Serialize as TestGroup and parse as TestGroupExtension.
+  unittest::TestGroup source;
+  unittest::TestGroupExtension destination;
+  string data;
+
+  source.mutable_optionalgroup()->set_a(117);
+  source.set_optional_foreign_enum(unittest::FOREIGN_BAZ);
+  source.SerializeToString(&data);
+  EXPECT_TRUE(destination.ParseFromString(data));
+  EXPECT_TRUE(destination.GetExtension(
+      unittest::TestNestedExtension::optionalgroup_extension).has_a());
+  EXPECT_EQ(117, destination.GetExtension(
+      unittest::TestNestedExtension::optionalgroup_extension).a());
+  EXPECT_TRUE(destination.HasExtension(
+      unittest::TestNestedExtension::optional_foreign_enum_extension));
+  EXPECT_EQ(unittest::FOREIGN_BAZ, destination.GetExtension(
+      unittest::TestNestedExtension::optional_foreign_enum_extension));
 }
 
 TEST(ExtensionSetTest, Parsing) {
@@ -792,11 +813,16 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     message.AddExtension(unittest::repeated_##type##_extension, value);        \
     EXPECT_EQ(empty_repeated_field_size, message.SpaceUsed()) << #type;        \
     message.ClearExtension(unittest::repeated_##type##_extension);             \
+    const int old_capacity =                                                   \
+        message.GetRepeatedExtension(unittest::repeated_##type##_extension)    \
+        .Capacity();                                                           \
+    EXPECT_GE(old_capacity, kMinRepeatedFieldAllocationSize);                  \
     for (int i = 0; i < 16; ++i) {                                             \
       message.AddExtension(unittest::repeated_##type##_extension, value);      \
     }                                                                          \
-    int expected_size = sizeof(cpptype) * (16 -                                \
-        kMinRepeatedFieldAllocationSize) + empty_repeated_field_size;          \
+    int expected_size = sizeof(cpptype) *                                      \
+        (message.GetRepeatedExtension(unittest::repeated_##type##_extension)   \
+         .Capacity() - old_capacity) + empty_repeated_field_size;              \
     EXPECT_LE(expected_size, message.SpaceUsed()) << #type;                    \
   } while (0)
 
@@ -993,8 +1019,8 @@ TEST(ExtensionSetTest, RepeatedFields) {
   ASSERT_EQ(110, SumAllExtensions<double>(
       message, unittest::repeated_double_extension, 0));
 
-  RepeatedPtrField< ::std::string>::iterator string_iter;
-  RepeatedPtrField< ::std::string>::iterator string_end;
+  RepeatedPtrField<::std::string>::iterator string_iter;
+  RepeatedPtrField<::std::string>::iterator string_end;
   for (string_iter = message.MutableRepeatedExtension(
           unittest::repeated_string_extension)->begin(),
        string_end  = message.MutableRepeatedExtension(
@@ -1002,8 +1028,8 @@ TEST(ExtensionSetTest, RepeatedFields) {
        string_iter != string_end; ++string_iter) {
     *string_iter += "test";
   }
-  RepeatedPtrField< ::std::string>::const_iterator string_const_iter;
-  RepeatedPtrField< ::std::string>::const_iterator string_const_end;
+  RepeatedPtrField<::std::string>::const_iterator string_const_iter;
+  RepeatedPtrField<::std::string>::const_iterator string_const_end;
   for (string_const_iter = message.GetRepeatedExtension(
            unittest::repeated_string_extension).begin(),
        string_const_end  = message.GetRepeatedExtension(

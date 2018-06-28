@@ -58,9 +58,6 @@
 #include <limits.h> //For PATH_MAX
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -100,7 +97,7 @@ namespace compiler {
 #endif
 
 namespace {
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::internal::win32::access;
@@ -171,8 +168,7 @@ bool VerifyDirectoryExists(const string& path) {
 // directories listed in |filename|.
 bool TryCreateParentDirectory(const string& prefix, const string& filename) {
   // Recursively create parent directories to the output file.
-  std::vector<string> parts =
-      Split(filename, "/", true);
+  std::vector<string> parts = Split(filename, "/", true);
   string path_so_far = prefix;
   for (int i = 0; i < parts.size() - 1; i++) {
     path_so_far += parts[i];
@@ -226,7 +222,7 @@ bool IsInstalledProtoPath(const string& path) {
 
 // Add the paths where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
-void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
+void AddDefaultProtoPaths(std::vector<std::pair<string, string> >* paths) {
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.
@@ -242,12 +238,12 @@ void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
   path = path.substr(0, pos);
   // Check the binary's directory.
   if (IsInstalledProtoPath(path)) {
-    paths->push_back(pair<string, string>("", path));
+    paths->push_back(std::pair<string, string>("", path));
     return;
   }
   // Check if there is an include subdirectory.
   if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(pair<string, string>("", path + "/include"));
+    paths->push_back(std::pair<string, string>("", path + "/include"));
     return;
   }
   // Check if the upper level directory has an "include" subdirectory.
@@ -257,7 +253,7 @@ void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
   }
   path = path.substr(0, pos);
   if (IsInstalledProtoPath(path + "/include")) {
-    paths->push_back(pair<string, string>("", path + "/include"));
+    paths->push_back(std::pair<string, string>("", path + "/include"));
     return;
   }
 }
@@ -440,7 +436,7 @@ class CommandLineInterface::MemoryOutputStream
   bool append_mode_;
 
   // StringOutputStream writing to data_.
-  google::protobuf::scoped_ptr<io::StringOutputStream> inner_;
+  std::unique_ptr<io::StringOutputStream> inner_;
 };
 
 // -------------------------------------------------------------------
@@ -835,10 +831,10 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   std::vector<const FileDescriptor*> parsed_files;
   // null unless descriptor_set_in_names_.empty()
-  google::protobuf::scoped_ptr<DiskSourceTree> disk_source_tree;
-  google::protobuf::scoped_ptr<ErrorPrinter> error_collector;
-  google::protobuf::scoped_ptr<DescriptorPool> descriptor_pool;
-  google::protobuf::scoped_ptr<DescriptorDatabase> descriptor_database;
+  std::unique_ptr<DiskSourceTree> disk_source_tree;
+  std::unique_ptr<ErrorPrinter> error_collector;
+  std::unique_ptr<DescriptorPool> descriptor_pool;
+  std::unique_ptr<DescriptorDatabase> descriptor_database;
   if (descriptor_set_in_names_.empty()) {
     disk_source_tree.reset(new DiskSourceTree());
     if (!InitializeDiskSourceTree(disk_source_tree.get())) {
@@ -1395,8 +1391,7 @@ CommandLineInterface::InterpretArgument(const string& name,
     // with colons.  Let's accept that syntax too just to make things more
     // intuitive.
     std::vector<string> parts = Split(
-        value,
-        CommandLineInterface::kPathSeparator,
+        value, CommandLineInterface::kPathSeparator,
         true);
 
     for (int i = 0; i < parts.size(); i++) {
@@ -1421,7 +1416,7 @@ CommandLineInterface::InterpretArgument(const string& name,
 
       // Make sure disk path exists, warn otherwise.
       if (access(disk_path.c_str(), F_OK) < 0) {
-        // Try the original path; it may have just happed to have a '=' in it.
+        // Try the original path; it may have just happened to have a '=' in it.
         if (access(parts[i].c_str(), F_OK) < 0) {
           std::cerr << disk_path << ": warning: directory does not exist."
                     << std::endl;
@@ -1447,8 +1442,7 @@ CommandLineInterface::InterpretArgument(const string& name,
     }
 
     direct_dependencies_explicitly_set_ = true;
-    std::vector<string> direct = Split(
-        value, ":", true);
+    std::vector<string> direct = Split(value, ":", true);
     GOOGLE_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 
@@ -1481,9 +1475,8 @@ CommandLineInterface::InterpretArgument(const string& name,
     }
 
     descriptor_set_in_names_ = Split(
-      value,
-      CommandLineInterface::kPathSeparator,
-      true);
+        value, CommandLineInterface::kPathSeparator,
+        true);
 
   } else if (name == "-o" || name == "--descriptor_set_out") {
     if (!descriptor_set_out_name_.empty()) {
@@ -1629,7 +1622,6 @@ CommandLineInterface::InterpretArgument(const string& name,
     }
     mode_ = MODE_PRINT;
     print_mode_ = PRINT_FREE_FIELDS;
-  } else if (name == "--profile_path") {
   } else {
     // Some other flag.  Look it up in the generators list.
     const GeneratorInfo* generator_info =
@@ -1908,10 +1900,12 @@ bool CommandLineInterface::GeneratePluginOutput(
     string* error) {
   CodeGeneratorRequest request;
   CodeGeneratorResponse response;
+  string processed_parameter = parameter;
+
 
   // Build the request.
-  if (!parameter.empty()) {
-    request.set_parameter(parameter);
+  if (!processed_parameter.empty()) {
+    request.set_parameter(processed_parameter);
   }
 
 
@@ -1948,17 +1942,18 @@ bool CommandLineInterface::GeneratePluginOutput(
 
   // Write the files.  We do this even if there was a generator error in order
   // to match the behavior of a compiled-in generator.
-  google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> current_output;
+  std::unique_ptr<io::ZeroCopyOutputStream> current_output;
   for (int i = 0; i < response.file_size(); i++) {
     const CodeGeneratorResponse::File& output_file = response.file(i);
 
     if (!output_file.insertion_point().empty()) {
+      string filename = output_file.name();
       // Open a file for insert.
       // We reset current_output to NULL first so that the old file is closed
       // before the new one is opened.
       current_output.reset();
       current_output.reset(generator_context->OpenForInsert(
-          output_file.name(), output_file.insertion_point()));
+          filename, output_file.insertion_point()));
     } else if (!output_file.name().empty()) {
       // Starting a new file.  Open it.
       // We reset current_output to NULL first so that the old file is closed
@@ -1997,7 +1992,7 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
   }
 
   DynamicMessageFactory dynamic_factory(pool);
-  google::protobuf::scoped_ptr<Message> message(dynamic_factory.GetPrototype(type)->New());
+  std::unique_ptr<Message> message(dynamic_factory.GetPrototype(type)->New());
 
   if (mode_ == MODE_ENCODE) {
     SetFdToTextMode(STDIN_FILENO);

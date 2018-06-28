@@ -161,6 +161,7 @@ extern VALUE cBuilder;
 
 extern VALUE cError;
 extern VALUE cParseError;
+extern VALUE cTypeError;
 
 // We forward-declare all of the Ruby method implementations here because we
 // sometimes call the methods directly across .c files, rather than going
@@ -515,6 +516,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb);
 VALUE Message_decode_json(VALUE klass, VALUE data);
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
 
+VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
 
 VALUE build_module_from_enumdesc(EnumDescriptor* enumdef);

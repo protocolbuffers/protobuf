@@ -5,7 +5,7 @@
 ##
 # Select Xcode version
 
-export DEVELOPER_DIR=/Applications/Xcode_8.1.app/Contents/Developer
+export DEVELOPER_DIR=/Applications/Xcode_9.1.app/Contents/Developer
 
 ##
 # Select C/C++ compilers

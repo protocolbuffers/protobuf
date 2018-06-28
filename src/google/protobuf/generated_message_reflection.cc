@@ -42,6 +42,7 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format.h>
@@ -290,6 +291,13 @@ size_t GeneratedMessageReflection::SpaceUsedLong(const Message& message) const {
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
+              if (IsInlined(field)) {
+                const string* ptr =
+                    &GetField<InlinedStringField>(message, field).GetNoArena();
+                total_size += StringSpaceUsedExcludingSelfLong(*ptr);
+                break;
+              }
+
               // Initially, the string points to the default value stored in
               // the prototype. Only count the string if it has been changed
               // from the default value.
@@ -424,15 +432,25 @@ void GeneratedMessageReflection::SwapField(
             {
               Arena* arena1 = GetArena(message1);
               Arena* arena2 = GetArena(message2);
+
+              if (IsInlined(field)) {
+                InlinedStringField* string1 =
+                    MutableRaw<InlinedStringField>(message1, field);
+                InlinedStringField* string2 =
+                    MutableRaw<InlinedStringField>(message2, field);
+                string1->Swap(string2);
+                break;
+              }
+
               ArenaStringPtr* string1 =
                   MutableRaw<ArenaStringPtr>(message1, field);
               ArenaStringPtr* string2 =
                   MutableRaw<ArenaStringPtr>(message2, field);
+              const string* default_ptr =
+                  &DefaultRaw<ArenaStringPtr>(field).Get();
               if (arena1 == arena2) {
-                string1->Swap(string2);
+                string1->Swap(string2, default_ptr, arena1);
               } else {
-                const string* default_ptr =
-                    &DefaultRaw<ArenaStringPtr>(field).Get();
                 const string temp = string1->Get();
                 string1->Set(default_ptr, string2->Get(), arena1);
                 string2->Set(default_ptr, temp, arena2);
@@ -738,7 +756,15 @@ int GeneratedMessageReflection::FieldSize(const Message& message,
       case FieldDescriptor::CPPTYPE_STRING:
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
-          return GetRaw<MapFieldBase>(message, field).GetRepeatedField().size();
+          const internal::MapFieldBase& map =
+              GetRaw<MapFieldBase>(message, field);
+          if (map.IsRepeatedFieldValid()) {
+            return map.GetRepeatedField().size();
+          } else {
+            // No need to materialize the repeated field if it is out of sync:
+            // its size will be the same as the map's size.
+            return map.size();
+          }
         } else {
           return GetRaw<RepeatedPtrFieldBase>(message, field).size();
         }
@@ -789,6 +815,14 @@ void GeneratedMessageReflection::ClearField(
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
+              if (IsInlined(field)) {
+                const string* default_ptr =
+                    &DefaultRaw<InlinedStringField>(field).GetNoArena();
+                MutableRaw<InlinedStringField>(message, field)->SetNoArena(
+                    default_ptr, *default_ptr);
+                break;
+              }
+
               const string* default_ptr =
                   &DefaultRaw<ArenaStringPtr>(field).Get();
               MutableRaw<ArenaStringPtr>(message, field)->SetAllocated(
@@ -1121,12 +1155,13 @@ string GeneratedMessageReflection::GetString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
+        if (IsInlined(field)) {
+          return GetField<InlinedStringField>(message, field).GetNoArena();
+        }
+
         return GetField<ArenaStringPtr>(message, field).Get();
       }
     }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -1141,12 +1176,13 @@ const string& GeneratedMessageReflection::GetStringReference(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
+        if (IsInlined(field)) {
+          return GetField<InlinedStringField>(message, field).GetNoArena();
+        }
+
         return GetField<ArenaStringPtr>(message, field).Get();
       }
     }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -1162,6 +1198,12 @@ void GeneratedMessageReflection::SetString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
+        if (IsInlined(field)) {
+          MutableField<InlinedStringField>(message, field)->SetNoArena(
+              NULL, value);
+          break;
+        }
+
         const string* default_ptr = &DefaultRaw<ArenaStringPtr>(field).Get();
         if (field->containing_oneof() && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
@@ -1188,9 +1230,6 @@ string GeneratedMessageReflection::GetRepeatedString(
       case FieldOptions::STRING:
         return GetRepeatedPtrField<string>(message, field, index);
     }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -1206,9 +1245,6 @@ const string& GeneratedMessageReflection::GetRepeatedStringReference(
       case FieldOptions::STRING:
         return GetRepeatedPtrField<string>(message, field, index);
     }
-
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return GetEmptyString();  // Make compiler happy.
   }
 }
 
@@ -1880,6 +1916,10 @@ const Type& GeneratedMessageReflection::GetRaw(
   return GetConstRefAtOffset<Type>(message, schema_.GetFieldOffset(field));
 }
 
+bool GeneratedMessageReflection::IsInlined(const FieldDescriptor* field) const {
+  return schema_.IsFieldInlined(field);
+}
+
 template <typename Type>
 Type* GeneratedMessageReflection::MutableRaw(Message* message,
                                    const FieldDescriptor* field) const {
@@ -1975,6 +2015,10 @@ inline bool GeneratedMessageReflection::HasBit(
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
           default: {
+            if (IsInlined(field)) {
+              return !GetField<InlinedStringField>(message, field)
+                  .GetNoArena().empty();
+            }
             return GetField<ArenaStringPtr>(message, field).Get().size() > 0;
           }
         }
@@ -2319,7 +2363,6 @@ struct MetadataOwner {
 void AssignDescriptors(
     const string& filename, const MigrationSchema* schemas,
     const Message* const* default_instances_, const uint32* offsets,
-    MessageFactory* factory,
     // update the following descriptor arrays.
     Metadata* file_level_metadata,
     const EnumDescriptor** file_level_enum_descriptors,
@@ -2328,7 +2371,7 @@ void AssignDescriptors(
       ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(filename);
   GOOGLE_CHECK(file != NULL);
 
-  if (!factory) factory = MessageFactory::generated_factory();
+  MessageFactory* factory = MessageFactory::generated_factory();
 
   AssignDescriptorsHelper<MigrationSchema> helper(factory, file_level_metadata,
                                  file_level_enum_descriptors, schemas,

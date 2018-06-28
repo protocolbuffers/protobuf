@@ -220,7 +220,7 @@
                              0xa6, 0x01)
                  value:(0x1b << 0) | (0x28 << 7) | (0x79 << 14) | (0x42 << 21) |
                        (0x3bLL << 28) | (0x56LL << 35) | (0x00LL << 42) |
-                       (0x05LL << 49) | (0x26LL << 56) | (0x01LL << 63)];
+                       (0x05LL << 49) | (0x26LL << 56) | (0x01ULL << 63)];
 
   // Failures
   [self assertReadVarintFailure:bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
@@ -261,7 +261,7 @@
     GPBCodedInputStream* input32 = [GPBCodedInputStream streamWithData:data];
     XCTAssertEqual(value32, [input32 readInt32]);
 
-    int64_t value64 = INT64_MIN | (0x01L << 31);
+    int64_t value64 = INT64_MIN | (0x01LL << 31);
     GPBCodedInputStream* input64 = [GPBCodedInputStream streamWithData:data];
     XCTAssertEqual(value64, [input64 readInt64]);
   }

@@ -791,9 +791,6 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, parsed_message, ignore_unknown_fields=True)
 
   def testDuplicateField(self):
-    # Duplicate key check is not supported for python2.6
-    if sys.version_info < (2, 7):
-      return
     self.CheckError('{"int32Value": 1,\n"int32Value":2}',
                     'Failed to load JSON: duplicate key int32Value.')
 
@@ -982,6 +979,18 @@ class JsonFormatTest(JsonFormatBase):
     message.int32_value = 12345
     self.assertEqual('{\n"int32Value": 12345\n}',
                      json_format.MessageToJson(message, indent=0))
+
+  def testFormatEnumsAsInts(self):
+    message = json_format_proto3_pb2.TestMessage()
+    message.enum_value = json_format_proto3_pb2.BAR
+    message.repeated_enum_value.append(json_format_proto3_pb2.FOO)
+    message.repeated_enum_value.append(json_format_proto3_pb2.BAR)
+    self.assertEqual(json.loads('{\n'
+                                '  "enumValue": 1,\n'
+                                '  "repeatedEnumValue": [0, 1]\n'
+                                '}\n'),
+                     json.loads(json_format.MessageToJson(
+                         message, use_integers_for_enums=True)))
 
   def testParseDict(self):
     expected = 12345

@@ -50,7 +50,9 @@ namespace util {
 
 namespace internal {
 ZeroCopyStreamByteSink::~ZeroCopyStreamByteSink() {
-  stream_->BackUp(buffer_size_);
+  if (buffer_size_ > 0) {
+    stream_->BackUp(buffer_size_);
+  }
 }
 
 void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
@@ -95,6 +97,8 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
         resolver, type, &json_writer);
     default_value_writer.set_preserve_proto_field_names(
         options.preserve_proto_field_names);
+    default_value_writer.set_print_enums_as_ints(
+        options.always_print_enums_as_ints);
     return proto_source.WriteTo(&default_value_writer);
   } else {
     return proto_source.WriteTo(&json_writer);
@@ -115,30 +119,32 @@ util::Status BinaryToJsonString(TypeResolver* resolver,
 namespace {
 class StatusErrorListener : public converter::ErrorListener {
  public:
+
   StatusErrorListener() {}
-  virtual ~StatusErrorListener() {}
+  virtual ~StatusErrorListener() override {}
 
   util::Status GetStatus() { return status_; }
 
   virtual void InvalidName(const converter::LocationTrackerInterface& loc,
-                           StringPiece unknown_name, StringPiece message) {
+                   StringPiece unknown_name, StringPiece message) override {
     status_ = util::Status(util::error::INVALID_ARGUMENT,
-                             loc.ToString() + ": " + message.ToString());
+                           loc.ToString() + ": invalid name " +
+                               string(unknown_name) + ": " + string(message));
   }
 
   virtual void InvalidValue(const converter::LocationTrackerInterface& loc,
-                            StringPiece type_name, StringPiece value) {
+                    StringPiece type_name, StringPiece value) override {
     status_ =
         util::Status(util::error::INVALID_ARGUMENT,
-                       loc.ToString() + ": invalid value " + value.ToString() +
-                           " for type " + type_name.ToString());
+                       loc.ToString() + ": invalid value " + string(value) +
+                           " for type " + string(type_name));
   }
 
   virtual void MissingField(const converter::LocationTrackerInterface& loc,
-                            StringPiece missing_name) {
+                    StringPiece missing_name) override {
     status_ = util::Status(
         util::error::INVALID_ARGUMENT,
-        loc.ToString() + ": missing field " + missing_name.ToString());
+        loc.ToString() + ": missing field " + string(missing_name));
   }
 
  private:

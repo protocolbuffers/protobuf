@@ -37,6 +37,7 @@ module Google
   module Protobuf
     class Error < StandardError; end
     class ParseError < Error; end
+    class TypeError < ::TypeError; end
   end
 end
 
@@ -60,8 +61,8 @@ module Google
       msg.to_proto
     end
 
-    def self.encode_json(msg)
-      msg.to_json
+    def self.encode_json(msg, options = {})
+      msg.to_json(options)
     end
 
     def self.decode(klass, proto)

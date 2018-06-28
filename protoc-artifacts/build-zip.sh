@@ -13,12 +13,14 @@ Example:
 This script will download pre-built protoc or protoc plugin binaries from maven
 repository and create .zip packages suitable to be included in the github
 release page. If the target is protoc, well-known type .proto files will also be
-included. Each invocation will create 5 zip packages:
+included. Each invocation will create 7 zip packages:
   dist/<TARGET>-<VERSION_NUMBER>-win32.zip
   dist/<TARGET>-<VERSION_NUMBER>-osx-x86_32.zip
   dist/<TARGET>-<VERSION_NUMBER>-osx-x86_64.zip
   dist/<TARGET>-<VERSION_NUMBER>-linux-x86_32.zip
   dist/<TARGET>-<VERSION_NUMBER>-linux-x86_64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-linux-aarch_64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-linux-ppcle_64.zip
 EOF
   exit 1
 fi
@@ -33,6 +35,8 @@ declare -a FILE_NAMES=( \
   osx-x86_64.zip osx-x86_64.exe \
   linux-x86_32.zip linux-x86_32.exe \
   linux-x86_64.zip linux-x86_64.exe \
+  linux-aarch_64.zip linux-aarch_64.exe \
+  linux-ppcle_64.zip linux-ppcle_64.exe \
 )
 
 # List of all well-known types to be included.

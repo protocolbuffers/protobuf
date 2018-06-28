@@ -191,10 +191,10 @@ class GPBUtil
         $var = boolval($var);
     }
 
-    public static function checkMessage(&$var, $klass)
+    public static function checkMessage(&$var, $klass, $newClass = null)
     {
         if (!$var instanceof $klass && !is_null($var)) {
-            throw new \Exception("Expect message.");
+            throw new \Exception("Expect $klass.");
         }
     }
 
@@ -215,9 +215,10 @@ class GPBUtil
                     "Expect repeated field of different type.");
             }
             if ($var->getType() === GPBType::MESSAGE &&
-                $var->getClass() !== $klass) {
+                $var->getClass() !== $klass &&
+                $var->getLegacyClass() !== $klass) {
                 throw new \Exception(
-                    "Expect repeated field of different message.");
+                    "Expect repeated field of " . $klass . ".");
             }
             return $var;
         }
@@ -242,9 +243,10 @@ class GPBUtil
                 throw new \Exception("Expect map field of value type.");
             }
             if ($var->getValueType() === GPBType::MESSAGE &&
-                $var->getValueClass() !== $klass) {
+                $var->getValueClass() !== $klass &&
+                $var->getLegacyValueClass() !== $klass) {
                 throw new \Exception(
-                    "Expect map field of different value message.");
+                    "Expect map field of " . $klass . ".");
             }
             return $var;
         }
@@ -299,12 +301,26 @@ class GPBUtil
         return "";
     }
 
+    public static function getLegacyClassNameWithoutPackage(
+        $name,
+        $file_proto)
+    {
+        $parts = explode('.', $name);
+        foreach ($parts as $i => $part) {
+            $parts[$i] = static::getClassNamePrefix($parts[$i], $file_proto) . $parts[$i];
+        }
+        return implode('\\', $parts);
+    }
+
     public static function getClassNameWithoutPackage(
         $name,
         $file_proto)
     {
-        $classname = implode('_', explode('.', $name));
-        return static::getClassNamePrefix($classname, $file_proto) . $classname;
+        $parts = explode('.', $name);
+        foreach ($parts as $i => $part) {
+            $parts[$i] = static::getClassNamePrefix($parts[$i], $file_proto) . $parts[$i];
+        }
+        return implode('\\', $parts);
     }
 
     public static function getFullClassName(
@@ -313,6 +329,7 @@ class GPBUtil
         $file_proto,
         &$message_name_without_package,
         &$classname,
+        &$legacy_classname,
         &$fullname)
     {
         // Full name needs to start with '.'.
@@ -331,25 +348,40 @@ class GPBUtil
 
         $class_name_without_package =
             static::getClassNameWithoutPackage($message_name_without_package, $file_proto);
+        $legacy_class_name_without_package =
+            static::getLegacyClassNameWithoutPackage(
+                $message_name_without_package, $file_proto);
 
         $option = $file_proto->getOptions();
         if (!is_null($option) && $option->hasPhpNamespace()) {
             $namespace = $option->getPhpNamespace();
             if ($namespace !== "") {
                 $classname = $namespace . "\\" . $class_name_without_package;
+                $legacy_classname =
+                    $namespace . "\\" . $legacy_class_name_without_package;
                 return;
             } else {
                 $classname = $class_name_without_package;
+                $legacy_classname = $legacy_class_name_without_package;
                 return;
             }
         }
 
         if ($package === "") {
             $classname = $class_name_without_package;
+            $legacy_classname = $legacy_class_name_without_package;
         } else {
+            $parts = array_map('ucwords', explode('.', $package));
+            foreach ($parts as $i => $part) {
+                $parts[$i] = self::getClassNamePrefix($part, $file_proto).$part;
+            }
             $classname =
+                implode('\\', $parts) .
+                "\\".self::getClassNamePrefix($class_name_without_package,$file_proto).
+                $class_name_without_package;
+            $legacy_classname =
                 implode('\\', array_map('ucwords', explode('.', $package))).
-                "\\".$class_name_without_package;
+                "\\".$legacy_class_name_without_package;
         }
     }
 

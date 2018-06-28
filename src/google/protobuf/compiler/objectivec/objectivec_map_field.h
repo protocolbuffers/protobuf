@@ -54,7 +54,7 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
 
  private:
-  scoped_ptr<FieldGenerator> value_field_generator_;
+  std::unique_ptr<FieldGenerator> value_field_generator_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);
 };

@@ -149,6 +149,59 @@ TEST(DateTimeTest, LeapYear) {
             CreateTimestamp(2400, 3, 1) - CreateTimestamp(2400, 2, 29));
 }
 
+TEST(DateTimeTest, WrongDays) {
+  int64 seconds;
+  DateTime time;
+  time.hour = 0;
+  time.minute = 0;
+  time.second = 0;
+  time.month = 2;
+
+  // Non-leap year.
+  time.year = 2015;
+  time.day = 29;
+  ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
+
+  // Leap year.
+  time.year = 2016;
+  time.day = 29;
+  ASSERT_TRUE(DateTimeToSeconds(time, &seconds));
+  time.day = 30;
+  ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
+
+  // Non-leap year.
+  time.year = 2100;
+  time.day = 29;
+  ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
+
+  // Leap year.
+  time.year = 2400;
+  time.day = 29;
+  ASSERT_TRUE(DateTimeToSeconds(time, &seconds));
+  time.day = 30;
+  ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
+
+  // Non-february
+  time.year = 2015;
+  time.month = 1;
+  time.day = 0;
+  ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
+  time.day = 1;
+  ASSERT_TRUE(DateTimeToSeconds(time, &seconds));
+  time.day = 31;
+  ASSERT_TRUE(DateTimeToSeconds(time, &seconds));
+  time.day = 32;
+  ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
+
+  // Bad month
+  time.year = 2015;
+  time.month = 0;
+  time.day = 1;
+  ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
+  time.month = 13;
+  ASSERT_FALSE(DateTimeToSeconds(time, &seconds));
+}
+  
 TEST(DateTimeTest, StringFormat) {
   DateTime start, end;
   start.year = 1;

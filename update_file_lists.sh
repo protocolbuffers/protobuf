@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script copies source file lists from src/Makefile.am to cmake files.
 
@@ -24,7 +24,7 @@ get_header_files() {
 }
 
 get_source_files() {
-  get_variable_value $@ | grep "cc$"
+  get_variable_value $@ | grep "cc$\|inc$"
 }
 
 get_proto_files_blacklisted() {
@@ -55,6 +55,7 @@ PUBLIC_HEADERS=$(sort_files $GZHEADERS $HEADERS)
 LIBPROTOBUF_LITE_SOURCES=$(get_source_files $MAKEFILE libprotobuf_lite_la_SOURCES)
 LIBPROTOBUF_SOURCES=$(get_source_files $MAKEFILE libprotobuf_la_SOURCES)
 LIBPROTOC_SOURCES=$(get_source_files $MAKEFILE libprotoc_la_SOURCES)
+LIBPROTOC_HEADERS=$(get_header_files $MAKEFILE libprotoc_la_SOURCES)
 LITE_PROTOS=$(get_proto_files $MAKEFILE protoc_lite_outputs)
 PROTOS=$(get_proto_files $MAKEFILE protoc_outputs)
 PROTOS_BLACKLISTED=$(get_proto_files_blacklisted $MAKEFILE protoc_outputs)
@@ -116,6 +117,7 @@ CMAKE_PREFIX="\${protobuf_source_dir}/src/"
 set_cmake_value $CMAKE_DIR/libprotobuf-lite.cmake libprotobuf_lite_files $CMAKE_PREFIX $LIBPROTOBUF_LITE_SOURCES
 set_cmake_value $CMAKE_DIR/libprotobuf.cmake libprotobuf_files $CMAKE_PREFIX $LIBPROTOBUF_SOURCES
 set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_files $CMAKE_PREFIX $LIBPROTOC_SOURCES
+set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_headers $CMAKE_PREFIX $LIBPROTOC_HEADERS
 set_cmake_value $CMAKE_DIR/tests.cmake lite_test_protos "" $LITE_PROTOS
 set_cmake_value $CMAKE_DIR/tests.cmake tests_protos "" $PROTOS_BLACKLISTED
 set_cmake_value $CMAKE_DIR/tests.cmake common_test_files $CMAKE_PREFIX $COMMON_TEST_SOURCES
@@ -126,15 +128,15 @@ set_cmake_value $CMAKE_DIR/tests.cmake lite_arena_test_files $CMAKE_PREFIX $LITE
 
 # Generate extract_includes.bat
 echo "mkdir include" > $EXTRACT_INCLUDES_BAT
-for HEADER in $PUBLIC_HEADERS; do
-  HEADER_DIR=$(dirname $HEADER)
-  while [ ! "$HEADER_DIR" = "." ]; do
-    echo $HEADER_DIR | sed "s/\\//\\\\/g"
-    HEADER_DIR=$(dirname $HEADER_DIR)
+for INCLUDE in $PUBLIC_HEADERS $WKT_PROTOS; do
+  INCLUDE_DIR=$(dirname "$INCLUDE")
+  while [ ! "$INCLUDE_DIR" = "." ]; do
+    echo "mkdir include\\${INCLUDE_DIR//\//\\}"
+    INCLUDE_DIR=$(dirname "$INCLUDE_DIR")
   done
-done | sort | uniq | sed "s/^/mkdir include\\\\/" >> $EXTRACT_INCLUDES_BAT
-for HEADER in $PUBLIC_HEADERS; do
-  WINPATH=$(echo $HEADER | sed 's;/;\\;g')
+done | sort | uniq >> $EXTRACT_INCLUDES_BAT
+for INCLUDE in $PUBLIC_HEADERS $WKT_PROTOS; do
+  WINPATH=${INCLUDE//\//\\}
   echo "copy \"\${PROTOBUF_SOURCE_WIN32_PATH}\\..\\src\\$WINPATH\" include\\$WINPATH" >> $EXTRACT_INCLUDES_BAT
 done
 
