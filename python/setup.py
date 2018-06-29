@@ -149,10 +149,9 @@ class build_py(_build_py):
 class test_conformance(_build_py):
   target = 'test_python'
   def run(self):
-    if sys.version_info >= (2, 7):
-      # Python 2.6 dodges these extra failures.
-      os.environ["CONFORMANCE_PYTHON_EXTRA_FAILURES"] = (
-          "--failure_list failure_list_python-post26.txt")
+    # Python 2.6 dodges these extra failures.
+    os.environ["CONFORMANCE_PYTHON_EXTRA_FAILURES"] = (
+        "--failure_list failure_list_python-post26.txt")
     cmd = 'cd ../conformance && make %s' % (test_conformance.target)
     status = subprocess.check_call(cmd, shell=True)
 
@@ -204,11 +203,9 @@ if __name__ == '__main__':
 
     v, _, _ = platform.mac_ver()
     if v:
-      v = float('.'.join(v.split('.')[:2]))
-      if v >= 10.12:
-        extra_compile_args.append('-std=c++11')
+      extra_compile_args.append('-std=c++11')
     elif os.getenv('KOKORO_BUILD_NUMBER') or os.getenv('KOKORO_BUILD_ID'):
-        extra_compile_args.append('-std=c++11')
+      extra_compile_args.append('-std=c++11')
 
     if warnings_as_errors in sys.argv:
       extra_compile_args.append('-Werror')

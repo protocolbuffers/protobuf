@@ -574,6 +574,11 @@ class CompactRepeatedFieldPrinter : public TextFormat::FastFieldValuePrinter {
       generator->PrintString(field->name());
     }
   }
+  // To prevent compiler complaining about Woverloaded-virtual
+  void PrintFieldName(const Message& message,
+                      const Reflection* reflection,
+                      const FieldDescriptor* field,
+                      TextFormat::BaseTextGenerator* generator) const override {}
   void PrintMessageStart(
       const Message& message, int field_index, int field_count,
       bool single_line_mode,

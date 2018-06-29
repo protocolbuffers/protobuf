@@ -59,6 +59,10 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @ignore
      */
     private $klass;
+    /**
+     * @ignore
+     */
+    private $legacy_klass;
 
     /**
      * Constructs an instance of RepeatedField.
@@ -71,7 +75,16 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     {
         $this->container = [];
         $this->type = $type;
-        $this->klass = $klass;
+        if ($this->type == GPBType::MESSAGE) {
+            $pool = DescriptorPool::getGeneratedPool();
+            $desc = $pool->getDescriptorByClassName($klass);
+            if ($desc == NULL) {
+                new $klass;  // No msg class instance has been created before.
+                $desc = $pool->getDescriptorByClassName($klass);
+            }
+            $this->klass = $desc->getClass();
+            $this->legacy_klass = $desc->getLegacyClass();
+        }
     }
 
     /**
@@ -88,6 +101,14 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     public function getClass()
     {
         return $this->klass;
+    }
+
+    /**
+     * @ignore
+     */
+    public function getLegacyClass()
+    {
+        return $this->legacy_klass;
     }
 
     /**

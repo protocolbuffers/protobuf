@@ -35,6 +35,11 @@ goog.require('goog.userAgent');
 goog.require('proto.jspb.test.MapValueEnum');
 goog.require('proto.jspb.test.MapValueMessage');
 goog.require('proto.jspb.test.TestMapFields');
+goog.require('proto.jspb.test.TestMapFieldsOptionalKeys');
+goog.require('proto.jspb.test.MapEntryOptionalKeysStringKey');
+goog.require('proto.jspb.test.MapEntryOptionalKeysInt32Key');
+goog.require('proto.jspb.test.MapEntryOptionalKeysInt64Key');
+goog.require('proto.jspb.test.MapEntryOptionalKeysBoolKey');
 
 // CommonJS-LoadFromFile: test_pb proto.jspb.test
 goog.require('proto.jspb.test.MapValueMessageNoBinary');
@@ -76,7 +81,7 @@ function toArray(iter) {
  * Helper: generate test methods for this TestMapFields class.
  * @param {?} msgInfo
  * @param {?} submessageCtor
- * @param {!string} suffix
+ * @param {string} suffix
  */
 function makeTests(msgInfo, submessageCtor, suffix) {
   /**
@@ -259,6 +264,39 @@ function makeTests(msgInfo, submessageCtor, suffix) {
       serialized = msg.serializeBinary();
       var decoded = msgInfo.deserializeBinary(serialized);
       checkMapFields(decoded);
+    });
+    /**
+     * Tests deserialization of undefined map keys go to default values in binary format.
+     */
+    it('testMapDeserializationForUndefinedKeys', function() {
+      var testMessageOptionalKeys = new proto.jspb.test.TestMapFieldsOptionalKeys();
+      var mapEntryStringKey = new proto.jspb.test.MapEntryOptionalKeysStringKey();
+      mapEntryStringKey.setValue("a");
+      testMessageOptionalKeys.setMapStringString(mapEntryStringKey);
+      var mapEntryInt32Key = new proto.jspb.test.MapEntryOptionalKeysInt32Key();
+      mapEntryInt32Key.setValue("b");
+      testMessageOptionalKeys.setMapInt32String(mapEntryInt32Key);
+      var mapEntryInt64Key = new proto.jspb.test.MapEntryOptionalKeysInt64Key();
+      mapEntryInt64Key.setValue("c");
+      testMessageOptionalKeys.setMapInt64String(mapEntryInt64Key);
+      var mapEntryBoolKey = new proto.jspb.test.MapEntryOptionalKeysBoolKey();
+      mapEntryBoolKey.setValue("d");
+      testMessageOptionalKeys.setMapBoolString(mapEntryBoolKey);
+      var deserializedMessage = msgInfo.deserializeBinary(
+        testMessageOptionalKeys.serializeBinary()
+       );
+      checkMapEquals(deserializedMessage.getMapStringStringMap(), [
+        ['', 'a']
+      ]);
+      checkMapEquals(deserializedMessage.getMapInt32StringMap(), [
+        [0, 'b']
+      ]);
+      checkMapEquals(deserializedMessage.getMapInt64StringMap(), [
+        [0, 'c']
+      ]);
+      checkMapEquals(deserializedMessage.getMapBoolStringMap(), [
+        [false, 'd']
+      ]);
     });
   }
 

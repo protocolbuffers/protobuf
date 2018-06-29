@@ -17,6 +17,12 @@ environment:
       UNICODE: ON
 
     - platform: Win64
+      language: cpp
+      image: Visual Studio 2017
+      BUILD_DLL: OFF
+      UNICODE: ON
+
+    - platform: Win64
       language: csharp
       image: Visual Studio 2017
 

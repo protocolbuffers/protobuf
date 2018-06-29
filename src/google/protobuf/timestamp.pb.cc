@@ -167,7 +167,7 @@ void Timestamp::ArenaDtor(void* object) {
   Timestamp* _this = reinterpret_cast< Timestamp* >(object);
   (void)_this;
 }
-void Timestamp::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Timestamp::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Timestamp::SetCachedSize(int size) const {
   _cached_size_.Set(size);

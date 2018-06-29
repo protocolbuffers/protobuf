@@ -57,7 +57,6 @@
 #include <google/protobuf/stubs/stringpiece.h>
 
 class CordByteSink;
-class MemBlock;
 
 namespace google {
 namespace protobuf {

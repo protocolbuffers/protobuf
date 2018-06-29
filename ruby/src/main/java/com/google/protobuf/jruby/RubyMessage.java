@@ -86,6 +86,8 @@ public class RubyMessage extends RubyObject {
                         throw runtime.newTypeError("Expected string or symbols as hash keys in initialization map.");
                     final Descriptors.FieldDescriptor fieldDescriptor = findField(context, key);
 
+                    if (value.isNil()) return;
+
                     if (Utils.isMapEntry(fieldDescriptor)) {
                         if (!(value instanceof RubyHash))
                             throw runtime.newArgumentError("Expected Hash object as initializer value for map field '" +  key.asJavaString() + "'.");

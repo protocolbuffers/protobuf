@@ -909,7 +909,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     /**
      * @expectedException PHPUnit_Framework_Error
      */
-    public function testMessageSetNullFail()
+    public function testMessageSetNullFailMap()
     {
        $arr =
            new MapField(GPBType::INT32, GPBType::MESSAGE, TestMessage::class);

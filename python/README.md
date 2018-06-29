@@ -30,7 +30,7 @@ join the Protocol Buffers discussion list and let us know!
 Installation
 ============
 
-1) Make sure you have Python 2.6 or newer.  If in doubt, run:
+1) Make sure you have Python 2.7 or newer.  If in doubt, run:
 
        $ python -V
 

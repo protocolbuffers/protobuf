@@ -1,3 +1,91 @@
+2018-06-01 version 3.6.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Starting from this release, we now require C++11. For those we cannot yet
+    upgrade to C++11, we will try to keep the 3.5.x branch updated with
+    critical bug fixes only. If you have any concerns about this, please
+    comment on issue #2780.
+  * Moved to C++11 types like std::atomic and std::unique_ptr and away from our
+    old custom-built equivalents.
+  * Added support for repeated message fields in lite protos using implicit
+    weak fields. This is an experimental feature that allows the linker to
+    strip out more unused messages than previously was possible.
+  * Fixed SourceCodeInfo for interpreted options and extension range options.
+  * Fixed always_print_enums_as_ints option for JSON serialization.
+  * Added support for ignoring unknown enum values when parsing JSON.
+  * Create std::string in Arena memory.
+  * Fixed ValidateDateTime to correctly check the day.
+  * Fixed bug in ZeroCopyStreamByteSink.
+  * Various other cleanups and fixes.
+
+  Java
+  * Dropped support for Java 6.
+  * Added a UTF-8 decoder that uses Unsafe to directly decode a byte buffer.
+  * Added deprecation annotations to generated code for deprecated oneof
+    fields.
+  * Fixed map field serialization in DynamicMessage.
+  * Cleanup and documentation for Java Lite runtime.
+  * Various other fixes and cleanups
+  * Fixed unboxed arraylists to handle an edge case
+  * Improved performance for copying between unboxed arraylists
+  * Fixed lite protobuf to avoid Java compiler warnings
+  * Improved test coverage for lite runtime
+  * Performance improvements for lite runtime
+
+  Python
+  * Fixed bytes/string map key incompatibility between C++ and pure-Python
+    implementations (issue #4029)
+  * Added __init__.py files to compiler and util subpackages
+  * Use /MT for all Windows versions
+  * Fixed an issue affecting the Python-C++ implementation when used with
+    Cython (issue #2896)
+  * Various text format fixes
+  * Various fixes to resolve behavior differences between the pure-Python and
+    Python-C++ implementations
+
+  PHP
+  * Added php_metadata_namespace to control the file path of generated metadata
+    file.
+  * Changed generated classes of nested message/enum. E.g., Foo.Bar, which
+    previously generates Foo_Bar, now generates Foo/Bar
+  * Added array constructor. When creating a message, users can pass a php
+    array whose content is field name to value pairs into constructor. The
+    created message will be initialized according to the array. Note that
+    message field should use a message value instead of a sub-array.
+  * Various bug fixes.
+
+  Objective-C
+  * We removed some helper class methods from GPBDictionary to shrink the size
+    of the library, the functionary is still there, but you may need to do some
+    specific +alloc / -init… methods instead.
+  * Minor improvements in the performance of object field getters/setters by
+    avoiding some memory management overhead.
+  * Fix a memory leak during the raising of some errors.
+  * Make header importing completely order independent.
+  * Small code improvements for things the undefined behaviors compiler option
+    was flagging.
+
+  Ruby
+  * Added ruby_package file option to control the module of generated class.
+  * Various bug fixes.
+
+  Javascript
+  * Allow setting string to int64 field.
+
+  Csharp
+  * Unknown fields are now parsed and then sent back on the wire. They can be
+    discarded at parse time via a CodedInputStream option.
+  * Movement towards working with .NET 3.5 and Unity
+  * Expression trees are no longer used
+  * AOT generics issues in Unity/il2cpp have a workaround (see this commit for
+    details)
+  * Floating point values are now compared bitwise (affects NaN value
+    comparisons)
+  * The default size limit when parsing is now 2GB rather than 64MB
+  * MessageParser now supports parsing from a slice of a byte array
+  * JSON list parsing now accepts null values where the underlying proto
+    representation does
+
 2017-12-20 version 3.5.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Planned Future Changes
   * Make C++ implementation C++11 only: we plan to require C++11 to build
