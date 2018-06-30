@@ -56,7 +56,7 @@
 #elif defined(__aarch64__)
 #define GOOGLE_PROTOBUF_ARCH_AARCH64 1
 #define GOOGLE_PROTOBUF_ARCH_64_BIT 1
-#elif defined(__MIPSEL__)
+#elif defined(__mips__)
 #if defined(__LP64__)
 #define GOOGLE_PROTOBUF_ARCH_MIPS64 1
 #define GOOGLE_PROTOBUF_ARCH_64_BIT 1
