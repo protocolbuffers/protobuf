@@ -825,8 +825,8 @@ VALUE Map_iter_value(Map_iter* iter) {
 void Map_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "Map", rb_cObject);
   rb_define_alloc_func(klass, Map_alloc);
-  cMap = klass;
   rb_gc_register_address(&cMap);
+  cMap = klass;
 
   rb_define_method(klass, "initialize", Map_init, -1);
   rb_define_method(klass, "each", Map_each, 0);

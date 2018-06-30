@@ -57,7 +57,7 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
   return false;
 }
 
-bool ObjectiveCGenerator::GenerateAll(const vector<const FileDescriptor*>& files,
+bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                                       const string& parameter,
                                       GeneratorContext* context,
                                       string* error) const {
@@ -71,7 +71,7 @@ bool ObjectiveCGenerator::GenerateAll(const vector<const FileDescriptor*>& files
 
   Options generation_options;
 
-  vector<pair<string, string> > options;
+  std::vector<std::pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "expected_prefixes_path") {
@@ -142,7 +142,7 @@ bool ObjectiveCGenerator::GenerateAll(const vector<const FileDescriptor*>& files
 
     // Generate header.
     {
-      scoped_ptr<io::ZeroCopyOutputStream> output(
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
           context->Open(filepath + ".pbobjc.h"));
       io::Printer printer(output.get(), '$');
       file_generator.GenerateHeader(&printer);
@@ -150,7 +150,7 @@ bool ObjectiveCGenerator::GenerateAll(const vector<const FileDescriptor*>& files
 
     // Generate m file.
     {
-      scoped_ptr<io::ZeroCopyOutputStream> output(
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
           context->Open(filepath + ".pbobjc.m"));
       io::Printer printer(output.get(), '$');
       file_generator.GenerateSource(&printer);

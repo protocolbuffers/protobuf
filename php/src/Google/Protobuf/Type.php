@@ -52,9 +52,29 @@ class Type extends \Google\Protobuf\Internal\Message
      */
     private $syntax = 0;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type string $name
+     *           The fully qualified message name.
+     *     @type \Google\Protobuf\Field[]|\Google\Protobuf\Internal\RepeatedField $fields
+     *           The list of fields.
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $oneofs
+     *           The list of types appearing in `oneof` definitions in this type.
+     *     @type \Google\Protobuf\Option[]|\Google\Protobuf\Internal\RepeatedField $options
+     *           The protocol buffer options.
+     *     @type \Google\Protobuf\SourceContext $source_context
+     *           The source context.
+     *     @type int $syntax
+     *           The source syntax.
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Type::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**

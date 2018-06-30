@@ -223,9 +223,12 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /**
  * Returns the enum value name for the given raw enum.
  *
+ * Note that there can be more than one name corresponding to a given value
+ * if the allow_alias option is used.
+ *
  * @param number The raw enum value.
  *
- * @return The name of the enum value passed, or nil if not valid.
+ * @return The first name that matches the enum value passed, or nil if not valid.
  **/
 - (nullable NSString *)enumNameForValue:(int32_t)number;
 
@@ -244,7 +247,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  *
  * @param number The raw enum value.
  *
- * @return The text format name for the raw enum value, or nil if not valid.
+ * @return The first text format name which matches the enum value, or nil if not valid.
  **/
 - (nullable NSString *)textFormatNameForValue:(int32_t)number;
 
@@ -257,6 +260,33 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * @return YES if a value was copied into the pointer, NO otherwise.
  **/
 - (BOOL)getValue:(nullable int32_t *)outValue forEnumTextFormatName:(NSString *)textFormatName;
+
+/**
+ * Gets the number of defined enum names.
+ *
+ * @return Count of the number of enum names, including any aliases.
+ */
+@property(nonatomic, readonly) uint32_t enumNameCount;
+
+/**
+ * Gets the enum name corresponding to the given index.
+ *
+ * @param index Index into the available names.  The defined range is from 0
+ *              to self.enumNameCount - 1.
+ *
+ * @returns The enum name at the given index, or nil if the index is out of range.
+ */
+- (nullable NSString *)getEnumNameForIndex:(uint32_t)index;
+
+/**
+ * Gets the enum text format name corresponding to the given index.
+ *
+ * @param index Index into the available names.  The defined range is from 0
+ *              to self.enumNameCount - 1.
+ *
+ * @returns The text format name at the given index, or nil if the index is out of range.
+ */
+- (nullable NSString *)getEnumTextFormatNameForIndex:(uint32_t)index;
 
 @end
 

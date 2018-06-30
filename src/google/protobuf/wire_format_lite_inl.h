@@ -426,48 +426,12 @@ bool WireFormatLite::ReadPackedPrimitiveNoInline(io::CodedInputStream* input,
 }
 
 
-inline bool WireFormatLite::ReadGroup(int field_number,
-                                      io::CodedInputStream* input,
-                                      MessageLite* value) {
+template<typename MessageType>
+inline bool WireFormatLite::ReadGroup(
+    int field_number, io::CodedInputStream* input,
+    MessageType* value) {
   if (!input->IncrementRecursionDepth()) return false;
   if (!value->MergePartialFromCodedStream(input)) return false;
-  input->DecrementRecursionDepth();
-  // Make sure the last thing read was an end tag for this group.
-  if (!input->LastTagWas(MakeTag(field_number, WIRETYPE_END_GROUP))) {
-    return false;
-  }
-  return true;
-}
-inline bool WireFormatLite::ReadMessage(io::CodedInputStream* input,
-                                        MessageLite* value) {
-  int length;
-  if (!input->ReadVarintSizeAsInt(&length)) return false;
-  std::pair<io::CodedInputStream::Limit, int> p =
-      input->IncrementRecursionDepthAndPushLimit(length);
-  if (p.second < 0 || !value->MergePartialFromCodedStream(input)) return false;
-  // Make sure that parsing stopped when the limit was hit, not at an endgroup
-  // tag.
- return input->DecrementRecursionDepthAndPopLimit(p.first);
-}
-
-// We name the template parameter something long and extremely unlikely to occur
-// elsewhere because a *qualified* member access expression designed to avoid
-// virtual dispatch, C++03 [basic.lookup.classref] 3.4.5/4 requires that the
-// name of the qualifying class to be looked up both in the context of the full
-// expression (finding the template parameter) and in the context of the object
-// whose member we are accessing. This could potentially find a nested type
-// within that object. The standard goes on to require these names to refer to
-// the same entity, which this collision would violate. The lack of a safe way
-// to avoid this collision appears to be a defect in the standard, but until it
-// is corrected, we choose the name to avoid accidental collisions.
-template<typename MessageType_WorkAroundCppLookupDefect>
-inline bool WireFormatLite::ReadGroupNoVirtual(
-    int field_number, io::CodedInputStream* input,
-    MessageType_WorkAroundCppLookupDefect* value) {
-  if (!input->IncrementRecursionDepth()) return false;
-  if (!value->
-      MessageType_WorkAroundCppLookupDefect::MergePartialFromCodedStream(input))
-    return false;
   input->UnsafeDecrementRecursionDepth();
   // Make sure the last thing read was an end tag for this group.
   if (!input->LastTagWas(MakeTag(field_number, WIRETYPE_END_GROUP))) {
@@ -475,39 +439,17 @@ inline bool WireFormatLite::ReadGroupNoVirtual(
   }
   return true;
 }
-template<typename MessageType_WorkAroundCppLookupDefect>
-inline bool WireFormatLite::ReadGroupNoVirtualNoRecursionDepth(
-    int field_number, io::CodedInputStream* input,
-    MessageType_WorkAroundCppLookupDefect* value) {
-  return value->MessageType_WorkAroundCppLookupDefect::
-             MergePartialFromCodedStream(input) &&
-         input->LastTagWas(MakeTag(field_number, WIRETYPE_END_GROUP));
-}
-template<typename MessageType_WorkAroundCppLookupDefect>
-inline bool WireFormatLite::ReadMessageNoVirtual(
-    io::CodedInputStream* input, MessageType_WorkAroundCppLookupDefect* value) {
+template<typename MessageType>
+inline bool WireFormatLite::ReadMessage(
+    io::CodedInputStream* input, MessageType* value) {
   int length;
   if (!input->ReadVarintSizeAsInt(&length)) return false;
   std::pair<io::CodedInputStream::Limit, int> p =
       input->IncrementRecursionDepthAndPushLimit(length);
-  if (p.second < 0 || !value->
-      MessageType_WorkAroundCppLookupDefect::MergePartialFromCodedStream(input))
-    return false;
+  if (p.second < 0 || !value->MergePartialFromCodedStream(input)) return false;
   // Make sure that parsing stopped when the limit was hit, not at an endgroup
   // tag.
   return input->DecrementRecursionDepthAndPopLimit(p.first);
-}
-
-template<typename MessageType_WorkAroundCppLookupDefect>
-inline bool WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
-    io::CodedInputStream* input, MessageType_WorkAroundCppLookupDefect* value) {
-  io::CodedInputStream::Limit old_limit = input->ReadLengthAndPushLimit();
-  if (!value->
-      MessageType_WorkAroundCppLookupDefect::MergePartialFromCodedStream(input))
-    return false;
-  // Make sure that parsing stopped when the limit was hit, not at an endgroup
-  // tag.
-  return input->CheckEntireMessageConsumedAndPopLimit(old_limit);
 }
 
 // ===================================================================
@@ -941,15 +883,17 @@ inline uint8* WireFormatLite::WriteBytesToArray(int field_number,
 }
 
 
+template<typename MessageType>
 inline uint8* WireFormatLite::InternalWriteGroupToArray(
-    int field_number, const MessageLite& value, bool deterministic,
+    int field_number, const MessageType& value, bool deterministic,
     uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
   target = value.InternalSerializeWithCachedSizesToArray(deterministic, target);
   return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
 }
+template<typename MessageType>
 inline uint8* WireFormatLite::InternalWriteMessageToArray(
-    int field_number, const MessageLite& value, bool deterministic,
+    int field_number, const MessageType& value, bool deterministic,
     uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
@@ -1013,10 +957,12 @@ inline size_t WireFormatLite::BytesSize(const string& value) {
 }
 
 
-inline size_t WireFormatLite::GroupSize(const MessageLite& value) {
+template<typename MessageType>
+inline size_t WireFormatLite::GroupSize(const MessageType& value) {
   return value.ByteSizeLong();
 }
-inline size_t WireFormatLite::MessageSize(const MessageLite& value) {
+template<typename MessageType>
+inline size_t WireFormatLite::MessageSize(const MessageType& value) {
   return LengthDelimitedSize(value.ByteSizeLong());
 }
 
@@ -1041,33 +987,6 @@ inline size_t WireFormatLite::LengthDelimitedSize(size_t length) {
   // decide to start supporting serialized messages greater than 2 GiB in size.
   return length + io::CodedOutputStream::VarintSize32(
       static_cast<uint32>(length));
-}
-
-size_t WireFormatLite::Int64Size (const RepeatedField< int64>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += Int64Size(value.Get(i));
-  }
-  return out;
-}
-
-size_t WireFormatLite::UInt64Size(const RepeatedField<uint64>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += UInt64Size(value.Get(i));
-  }
-  return out;
-}
-
-size_t WireFormatLite::SInt64Size(const RepeatedField< int64>& value) {
-  size_t out = 0;
-  const int n = value.size();
-  for (int i = 0; i < n; i++) {
-    out += SInt64Size(value.Get(i));
-  }
-  return out;
 }
 
 }  // namespace internal

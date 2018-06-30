@@ -657,7 +657,7 @@ describe('binaryUtilsTest', function() {
     // Converting Uint8Arrays into Uint8Arrays should be a no-op.
     assertEquals(sourceBytes, convert(sourceBytes));
 
-    // Converting Array.<numbers> into Uint8Arrays should work.
+    // Converting Array<numbers> into Uint8Arrays should work.
     check(convert(sourceData));
 
     // Converting ArrayBuffers into Uint8Arrays should work.

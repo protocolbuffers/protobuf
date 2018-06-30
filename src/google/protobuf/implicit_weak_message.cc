@@ -30,6 +30,7 @@
 
 #include <google/protobuf/implicit_weak_message.h>
 
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/wire_format_lite.h>
 
@@ -37,13 +38,24 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-::google::protobuf::internal::ExplicitlyConstructed<ImplicitWeakMessage>
-    implicit_weak_message_default_instance;
-
 bool ImplicitWeakMessage::MergePartialFromCodedStream(io::CodedInputStream* input) {
   io::StringOutputStream string_stream(&data_);
   io::CodedOutputStream coded_stream(&string_stream, false);
   return WireFormatLite::SkipMessage(input, &coded_stream);
+}
+
+::google::protobuf::internal::ExplicitlyConstructed<ImplicitWeakMessage>
+    implicit_weak_message_default_instance;
+GOOGLE_PROTOBUF_DECLARE_ONCE(implicit_weak_message_once_init_);
+
+void InitImplicitWeakMessageDefaultInstance() {
+  implicit_weak_message_default_instance.DefaultConstruct();
+}
+
+const ImplicitWeakMessage* ImplicitWeakMessage::default_instance() {
+  ::google::protobuf::GoogleOnceInit(&implicit_weak_message_once_init_,
+                 &InitImplicitWeakMessageDefaultInstance);
+  return &implicit_weak_message_default_instance.get();
 }
 
 }  // namespace internal

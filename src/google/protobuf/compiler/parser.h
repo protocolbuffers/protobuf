@@ -40,10 +40,10 @@
 #include <map>
 #include <string>
 #include <utility>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/repeated_field.h>
 #include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/repeated_field.h>
 
 namespace google {
 namespace protobuf { class Message; }
@@ -224,6 +224,10 @@ class LIBPROTOBUF_EXPORT Parser {
     LocationRecorder(const LocationRecorder& parent, int path1);
     LocationRecorder(const LocationRecorder& parent, int path1, int path2);
 
+    // Creates a recorder that generates locations into given source code info.
+    LocationRecorder(const LocationRecorder& parent, int path1,
+                    SourceCodeInfo* source_code_info);
+
     ~LocationRecorder();
 
     // Add a path component.  See SourceCodeInfo.Location.path in
@@ -250,6 +254,9 @@ class LIBPROTOBUF_EXPORT Parser {
     void RecordLegacyLocation(const Message* descriptor,
         DescriptorPool::ErrorCollector::ErrorLocation location);
 
+    // Returns the number of path components in the recorder's current location.
+    int CurrentPathSize() const;
+
     // Attaches leading and trailing comments to the location.  The two strings
     // will be swapped into place, so after this is called *leading and
     // *trailing will be empty.
@@ -264,9 +271,10 @@ class LIBPROTOBUF_EXPORT Parser {
     // SourceCodeInfo.location repeated field. For top-level elements,
     // parent_index_ is -1.
     Parser* parser_;
+    SourceCodeInfo* source_code_info_;
     SourceCodeInfo::Location* location_;
 
-    void Init(const LocationRecorder& parent);
+    void Init(const LocationRecorder& parent, SourceCodeInfo* source_code_info);
   };
 
   // =================================================================

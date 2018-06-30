@@ -58,7 +58,7 @@ goog.require('jspb.utils');
  * @param {?jspb.BinaryDecoder=} opt_decoder
  * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
  *     opt_next The decoder method to use for next().
- * @param {?Array.<number|boolean|string>=} opt_elements
+ * @param {?Array<number|boolean|string>=} opt_elements
  * @constructor
  * @struct
  */
@@ -92,7 +92,7 @@ jspb.BinaryIterator = function(opt_decoder, opt_next, opt_elements) {
  * @param {?jspb.BinaryDecoder=} opt_decoder
  * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
  *     opt_next The decoder method to use for next().
- * @param {?Array.<number|boolean|string>=} opt_elements
+ * @param {?Array<number|boolean|string>=} opt_elements
  * @private
  */
 jspb.BinaryIterator.prototype.init_ =
@@ -112,7 +112,7 @@ jspb.BinaryIterator.prototype.init_ =
 
 /**
  * Global pool of BinaryIterator instances.
- * @private {!Array.<!jspb.BinaryIterator>}
+ * @private {!Array<!jspb.BinaryIterator>}
  */
 jspb.BinaryIterator.instanceCache_ = [];
 
@@ -123,7 +123,7 @@ jspb.BinaryIterator.instanceCache_ = [];
  * @param {?jspb.BinaryDecoder=} opt_decoder
  * @param {?function(this:jspb.BinaryDecoder):(number|boolean|string)=}
  *     opt_next The decoder method to use for next().
- * @param {?Array.<number|boolean|string>=} opt_elements
+ * @param {?Array<number|boolean|string>=} opt_elements
  * @return {!jspb.BinaryIterator}
  */
 jspb.BinaryIterator.alloc = function(opt_decoder, opt_next, opt_elements) {
@@ -274,7 +274,7 @@ jspb.BinaryDecoder = function(opt_bytes, opt_start, opt_length) {
 
 /**
  * Global pool of BinaryDecoder instances.
- * @private {!Array.<!jspb.BinaryDecoder>}
+ * @private {!Array<!jspb.BinaryDecoder>}
  */
 jspb.BinaryDecoder.instanceCache_ = [];
 
@@ -986,7 +986,7 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       codeUnits.push(high, low);
     }
 
-    // Avoid exceeding the maximum stack size when calling {@code apply}.
+    // Avoid exceeding the maximum stack size when calling `apply`.
     if (codeUnits.length >= 8192) {
       result += String.fromCharCode.apply(null, codeUnits);
       codeUnits.length = 0;

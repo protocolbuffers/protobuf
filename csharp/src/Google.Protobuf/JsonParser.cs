@@ -264,11 +264,12 @@ namespace Google.Protobuf
                     return;
                 }
                 tokenizer.PushBack(token);
-                if (token.Type == JsonToken.TokenType.Null)
+                object value = ParseSingleValue(field, tokenizer);
+                if (value == null)
                 {
                     throw new InvalidProtocolBufferException("Repeated field elements cannot be null");
                 }
-                list.Add(ParseSingleValue(field, tokenizer));
+                list.Add(value);
             }
         }
 

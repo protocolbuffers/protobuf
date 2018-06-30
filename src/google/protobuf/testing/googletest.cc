@@ -52,7 +52,7 @@
 namespace google {
 namespace protobuf {
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::internal::win32::close;
@@ -132,7 +132,7 @@ string GetTemporaryDirectoryName() {
   // with "\\?\") but these will be degenerate in the sense that you cannot
   // chdir into such directories (or navigate into them with Windows Explorer)
   // nor can you open such files with some programs (e.g. Notepad).
-  if (result.back() == '.') {
+  if (result[result.size() - 1] == '.') {
     result[result.size() - 1] = '_';
   }
   // On Win32, tmpnam() returns a file prefixed with '\', but which is supposed
@@ -263,7 +263,7 @@ ScopedMemoryLog::~ScopedMemoryLog() {
   active_log_ = NULL;
 }
 
-const vector<string>& ScopedMemoryLog::GetMessages(LogLevel level) {
+const std::vector<string>& ScopedMemoryLog::GetMessages(LogLevel level) {
   GOOGLE_CHECK(level == ERROR ||
                level == WARNING);
   return messages_[level];

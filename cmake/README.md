@@ -41,9 +41,16 @@ Good. Now you are ready to continue.
 Getting Sources
 ===============
 
-You can get the latest stable source packages from the
-[releases](https://github.com/google/protobuf/releases) page.
-Or you can type:
+You can get the latest stable source packages from the release page:
+
+    https://github.com/google/protobuf/releases/latest
+
+For example: if you only need C++, download `protobuf-cpp-[VERSION].tar.gz`; if
+you need C++ and Java, download `protobuf-java-[VERSION].tar.gz` (every package
+contains C++ source already); if you need C++ and multiple other languages,
+download `protobuf-all-[VERSION].tar.gz`.
+
+Or you can use git to clone from protobuf git repository.
 
      C:\Path\to> git clone -b [release_tag] https://github.com/google/protobuf.git
 
@@ -55,26 +62,16 @@ Go to the project folder:
      C:\Path\to>cd protobuf
      C:\Path\to\protobuf>
 
-Protobuf unit-tests require gmock to build. If you download protobuf source code
-from the *releases* page, the *gmock* directory should already be there. If you checkout
-the code via `git clone`, this *gmock* directory won't exist and you will have to
-download it manually or skip building protobuf unit-tests.
+Remember to update any submodules if you are using git clone (you can skip this
+step if you are using a release .tar.gz or .zip package):
 
-You can download gmock as follows:
-
-     C:\Path\to\protobuf>git clone -b release-1.7.0 https://github.com/google/googlemock.git gmock
-
-Then go to *gmock* folder and download gtest:
-
-     C:\Path\to\protobuf>cd gmock
-     C:\Path\to\protobuf\gmock>git clone -b release-1.7.0 https://github.com/google/googletest.git gtest
-
-If you absolutely don't want to build and run protobuf unit-tests, skip
-this steps and use protobuf at your own risk.
+```console
+C:\Path\to> git submodule update --init --recursive
+```
 
 Now go to *cmake* folder in protobuf sources:
 
-     C:\Path\to\protobuf\gmock>cd ..\cmake
+     C:\Path\to\protobuf>cd cmake
      C:\Path\to\protobuf\cmake>
 
 Good. Now you are ready to *CMake* configuration.
@@ -124,7 +121,7 @@ It will generate *nmake* *Makefile* in current directory.
 To create *Visual Studio* solution file:
 
      C:\Path\to\protobuf\cmake\build>mkdir solution & cd solution
-     C:\Path\to\protobuf\cmake\build\solution>cmake -G "Visual Studio 12 2013 Win64" ^
+     C:\Path\to\protobuf\cmake\build\solution>cmake -G "Visual Studio 14 2015 Win64" ^
      -DCMAKE_INSTALL_PREFIX=../../../../install ^
      ../..
 
@@ -302,6 +299,11 @@ further disable the option `-Dprotobuf_MSVC_STATIC_RUNTIME=OFF`.
 If it reports NOTFOUND for zlib_include or zlib_lib, you might haven't put
 the headers or the .lib file in the right directory.
 
+If you already have ZLIB library and headers at some other location on your system then alternatively you can define following configuration flags to locate them:
+
+	-DZLIB_INCLUDE_DIR=<path to dir containing zlib headers>
+	-DZLIB_LIB=<path to dir containing zlib>
+	
 Build and testing protobuf as usual.
 
 Notes on Compiler Warnings

@@ -1,8 +1,9 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_CALLBACK_H_
 #define GOOGLE_PROTOBUF_STUBS_CALLBACK_H_
 
+#include <type_traits>
+
 #include <google/protobuf/stubs/macros.h>
-#include <google/protobuf/stubs/type_traits.h>
 
 // ===================================================================
 // emulates google3/base/callback.h
@@ -124,7 +125,7 @@ class LIBPROTOBUF_EXPORT FunctionClosure0 : public Closure {
     : function_(function), self_deleting_(self_deleting) {}
   ~FunctionClosure0();
 
-  void Run() {
+  void Run() override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     function_();
     if (needs_delete) delete this;
@@ -144,7 +145,7 @@ class MethodClosure0 : public Closure {
     : object_(object), method_(method), self_deleting_(self_deleting) {}
   ~MethodClosure0() {}
 
-  void Run() {
+  void Run() override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     (object_->*method_)();
     if (needs_delete) delete this;
@@ -167,7 +168,7 @@ class FunctionClosure1 : public Closure {
       arg1_(arg1) {}
   ~FunctionClosure1() {}
 
-  void Run() {
+  void Run() override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     function_(arg1_);
     if (needs_delete) delete this;
@@ -190,7 +191,7 @@ class MethodClosure1 : public Closure {
       arg1_(arg1) {}
   ~MethodClosure1() {}
 
-  void Run() {
+  void Run() override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     (object_->*method_)(arg1_);
     if (needs_delete) delete this;
@@ -214,7 +215,7 @@ class FunctionClosure2 : public Closure {
       arg1_(arg1), arg2_(arg2) {}
   ~FunctionClosure2() {}
 
-  void Run() {
+  void Run() override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     function_(arg1_, arg2_);
     if (needs_delete) delete this;
@@ -238,7 +239,7 @@ class MethodClosure2 : public Closure {
       arg1_(arg1), arg2_(arg2) {}
   ~MethodClosure2() {}
 
-  void Run() {
+  void Run() override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     (object_->*method_)(arg1_, arg2_);
     if (needs_delete) delete this;
@@ -261,7 +262,7 @@ class FunctionResultCallback_0_0 : public ResultCallback<R> {
       : function_(function), self_deleting_(self_deleting) {}
   ~FunctionResultCallback_0_0() {}
 
-  R Run() {
+  R Run() override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     R result = function_();
     if (needs_delete) delete this;
@@ -283,7 +284,7 @@ class FunctionResultCallback_1_0 : public ResultCallback<R> {
       : function_(function), self_deleting_(self_deleting), p1_(p1) {}
   ~FunctionResultCallback_1_0() {}
 
-  R Run() {
+  R Run() override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     R result = function_(p1_);
     if (needs_delete) delete this;
@@ -305,7 +306,7 @@ class FunctionResultCallback_0_1 : public ResultCallback1<R, Arg1> {
       : function_(function), self_deleting_(self_deleting) {}
   ~FunctionResultCallback_0_1() {}
 
-  R Run(Arg1 a1) {
+  R Run(Arg1 a1) override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     R result = function_(a1);
     if (needs_delete) delete this;
@@ -327,7 +328,7 @@ class FunctionResultCallback_1_1 : public ResultCallback1<R, A1> {
       : function_(function), self_deleting_(self_deleting), p1_(p1) {}
   ~FunctionResultCallback_1_1() {}
 
-  R Run(A1 a1) {
+  R Run(A1 a1) override {
     bool needs_delete = self_deleting_;  // read in case callback deletes
     R result = function_(p1_, a1);
     if (needs_delete) delete this;
@@ -342,7 +343,7 @@ class FunctionResultCallback_1_1 : public ResultCallback1<R, A1> {
 
 template <typename T>
 struct InternalConstRef {
-  typedef typename remove_reference<T>::type base_type;
+  typedef typename std::remove_reference<T>::type base_type;
   typedef const base_type& type;
 };
 
@@ -386,7 +387,7 @@ class MethodResultCallback_5_2 : public ResultCallback2<R, A1, A2> {
         p5_(p5) {}
   ~MethodResultCallback_5_2() {}
 
-  R Run(A1 a1, A2 a2) {
+  R Run(A1 a1, A2 a2) override {
     bool needs_delete = self_deleting_;
     R result = (object_->*method_)(p1_, p2_, p3_, p4_, p5_, a1, a2);
     if (needs_delete) delete this;
@@ -397,11 +398,11 @@ class MethodResultCallback_5_2 : public ResultCallback2<R, A1, A2> {
   T* object_;
   MethodType method_;
   bool self_deleting_;
-  typename remove_reference<P1>::type p1_;
-  typename remove_reference<P2>::type p2_;
-  typename remove_reference<P3>::type p3_;
-  typename remove_reference<P4>::type p4_;
-  typename remove_reference<P5>::type p5_;
+  typename std::remove_reference<P1>::type p1_;
+  typename std::remove_reference<P2>::type p2_;
+  typename std::remove_reference<P3>::type p3_;
+  typename std::remove_reference<P4>::type p4_;
+  typename std::remove_reference<P5>::type p5_;
 };
 
 }  // namespace internal

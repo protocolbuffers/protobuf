@@ -621,7 +621,7 @@ TEST(Lite, AllLite28) {
     google::protobuf::MapLiteTestUtil::SetMapFields(&message1);
     int size = message1.ByteSize();
     data.resize(size);
-    ::google::protobuf::uint8* start = reinterpret_cast< ::google::protobuf::uint8*>(::google::protobuf::string_as_array(&data));
+    ::google::protobuf::uint8* start = reinterpret_cast<::google::protobuf::uint8*>(::google::protobuf::string_as_array(&data));
     ::google::protobuf::uint8* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
@@ -1002,4 +1002,35 @@ TEST(Lite, AllLite45) {
   string serialized = a.SerializeAsString();
   EXPECT_EQ(serialized.substr(0, 2), data);
   EXPECT_EQ(serialized.substr(2), data);
+}
+
+// The following two tests check for wire compatibility between packed and
+// unpacked repeated fields. There used to be a bug in the generated parsing
+// code that caused us to calculate the highest possible tag number without
+// taking into account that a repeated field might not be in the packed (or
+// unpacked) state we expect. These tests specifically check for that issue by
+// making sure we can parse repeated fields when the tag is higher than we would
+// expect.
+TEST(Lite, AllLite46) {
+  protobuf_unittest::PackedInt32 packed;
+  packed.add_repeated_int32(42);
+  string serialized;
+  ASSERT_TRUE(packed.SerializeToString(&serialized));
+
+  protobuf_unittest::NonPackedInt32 non_packed;
+  ASSERT_TRUE(non_packed.ParseFromString(serialized));
+  ASSERT_EQ(1, non_packed.repeated_int32_size());
+  EXPECT_EQ(42, non_packed.repeated_int32(0));
+}
+
+TEST(Lite, AllLite47) {
+  protobuf_unittest::NonPackedFixed32 non_packed;
+  non_packed.add_repeated_fixed32(42);
+  string serialized;
+  ASSERT_TRUE(non_packed.SerializeToString(&serialized));
+
+  protobuf_unittest::PackedFixed32 packed;
+  ASSERT_TRUE(packed.ParseFromString(serialized));
+  ASSERT_EQ(1, packed.repeated_fixed32_size());
+  EXPECT_EQ(42, packed.repeated_fixed32(0));
 }

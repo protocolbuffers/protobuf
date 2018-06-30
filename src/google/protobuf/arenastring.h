@@ -51,6 +51,18 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+template <typename T>
+class TaggedPtr {
+ public:
+  void Set(T* p) { ptr_ = reinterpret_cast<uintptr_t>(p); }
+  T* Get() const { return reinterpret_cast<T*>(ptr_); }
+
+  bool IsNull() { return ptr_ == 0; }
+
+ private:
+  uintptr_t ptr_;
+};
+
 struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   inline void Set(const ::std::string* default_value,
                   const ::std::string& value, ::google::protobuf::Arena* arena) {
@@ -87,6 +99,13 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
     if (ptr_ == default_value) {
       return NULL;
     }
+    return ReleaseNonDefault(default_value, arena);
+  }
+
+  // Similar to Release, but ptr_ cannot be the default_value.
+  inline ::std::string* ReleaseNonDefault(
+      const ::std::string* default_value, ::google::protobuf::Arena* arena) {
+    GOOGLE_DCHECK(!IsDefault(default_value));
     ::std::string* released = NULL;
     if (arena != NULL) {
       // ptr_ is owned by the arena.
@@ -152,6 +171,29 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE void Swap(ArenaStringPtr* other) {
     std::swap(ptr_, other->ptr_);
   }
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE void Swap(
+      ArenaStringPtr* other, const ::std::string* default_value, Arena* arena) {
+#ifndef NDEBUG
+    // For debug builds, we swap the contents of the string, rather than the
+    // string instances themselves.  This invalidates previously taken const
+    // references that are (per our documentation) invalidated by calling Swap()
+    // on the message.
+    //
+    // If both strings are the default_value, swapping is uninteresting.
+    // Otherwise, we use ArenaStringPtr::Mutable() to access the string, to
+    // ensure that we do not try to mutate default_value itself.
+    if (IsDefault(default_value) && other->IsDefault(default_value)) {
+      return;
+    }
+
+    ::std::string* this_ptr = Mutable(default_value, arena);
+    ::std::string* other_ptr = other->Mutable(default_value, arena);
+
+    this_ptr->swap(*other_ptr);
+#else
+    std::swap(ptr_, other->ptr_);
+#endif
+  }
 
   // Frees storage (if not on an arena).
   inline void Destroy(const ::std::string* default_value,
@@ -172,6 +214,15 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
     } else {
       ptr_->clear();
     }
+  }
+
+  // Clears content, assuming that the current value is not the empty string
+  // default.
+  inline void ClearNonDefaultToEmpty() {
+    ptr_->clear();
+  }
+  inline void ClearNonDefaultToEmptyNoArena() {
+    ptr_->clear();
   }
 
   // Clears content, but keeps allocated string if arena != NULL, to avoid the
@@ -241,11 +292,18 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
     if (ptr_ == default_value) {
       return NULL;
     } else {
-      ::std::string* released = ptr_;
-      ptr_ = const_cast< ::std::string* >(default_value);
-      return released;
+      return ReleaseNonDefaultNoArena(default_value);
     }
   }
+
+  inline ::std::string* ReleaseNonDefaultNoArena(
+      const ::std::string* default_value) {
+    GOOGLE_DCHECK(!IsDefault(default_value));
+    ::std::string* released = ptr_;
+    ptr_ = const_cast< ::std::string* >(default_value);
+    return released;
+  }
+
 
   inline void SetAllocatedNoArena(const ::std::string* default_value,
                                   ::std::string* value) {
@@ -294,6 +352,15 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
     return ptr_ == default_value;
   }
 
+  // Internal accessors!!!!
+  void UnsafeSetTaggedPointer(TaggedPtr< ::std::string> value) {
+    ptr_ = value.Get();
+  }
+  // Generated code only! An optimization, in certain cases the generated
+  // code is certain we can obtain a string with no default checks and
+  // tag tests.
+  ::std::string* UnsafeMutablePointer() { return ptr_; }
+
  private:
   ::std::string* ptr_;
 
@@ -301,10 +368,8 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   void CreateInstance(::google::protobuf::Arena* arena,
                       const ::std::string* initial_value) {
     GOOGLE_DCHECK(initial_value != NULL);
-    ptr_ = new ::std::string(*initial_value);
-    if (arena != NULL) {
-      arena->Own(ptr_);
-    }
+    // uses "new ::std::string" when arena is nullptr
+    ptr_ = Arena::Create< ::std::string >(arena, *initial_value);
   }
   GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
   void CreateInstanceNoArena(const ::std::string* initial_value) {

@@ -38,8 +38,9 @@
 #include <map>
 #include <string>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
-#include <google/protobuf/io/printer.h>
+#include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -52,6 +53,7 @@ namespace cpp {
 // of '-'.
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
+
 
 // Name space of the proto file. This namespace is such that the string
 // "<namespace>::some_name" is the correct fully qualified namespace.
@@ -102,18 +104,8 @@ string DefaultInstanceName(const Descriptor* descriptor);
 // fields.
 string ReferenceFunctionName(const Descriptor* descriptor);
 
-// Name of the CRTP class template (for use with proto_h).
-// This is a class name, like "ProtoName_InternalBase".
-string DependentBaseClassTemplateName(const Descriptor* descriptor);
-
-// Name of the base class: either the dependent base class (for use with
-// proto_h) or google::protobuf::Message.
+// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
 string SuperClassName(const Descriptor* descriptor, const Options& options);
-
-// Returns a string that down-casts from the dependent base class to the
-// derived class.
-string DependentBaseDownCast();
-string DependentBaseConstDownCast();
 
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People
@@ -140,20 +132,6 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
   return field->is_extension() ?
     field->extension_scope() : field->containing_type();
 }
-
-// Returns true if the given 'field_descriptor' has a message type that is
-// a dependency of the file where the field is defined (i.e., the field
-// type is defined in a different file than the message holding the field).
-//
-// This only applies to Message-typed fields. Enum-typed fields may refer
-// to an enum in a dependency; however, enums are specified and
-// forward-declared with an enum-base, so the definition is not required to
-// manipulate the field value.
-bool IsFieldDependent(const FieldDescriptor* field_descriptor);
-
-// Returns the name that should be used for forcing dependent lookup from a
-// dependent base class.
-string DependentTypeName(const FieldDescriptor* field);
 
 // Returns the fully-qualified type name field->message_type().  Usually this
 // is just ClassName(field->message_type(), true);
@@ -310,6 +288,15 @@ inline bool IsCrossFileMessage(const FieldDescriptor* field) {
          field->message_type()->file() != field->file();
 }
 
+inline string MessageCreateFunction(const Descriptor* d) {
+  return SupportsArenas(d) ? "CreateMessage" : "Create";
+}
+
+inline string MakeDefaultName(const FieldDescriptor* field) {
+  return "_i_give_permission_to_break_this_code_default_" + FieldName(field) +
+         "_";
+}
+
 bool IsAnyMessage(const FileDescriptor* descriptor);
 bool IsAnyMessage(const Descriptor* descriptor);
 
@@ -345,13 +332,6 @@ inline std::vector<const Descriptor*> FlattenMessagesInFile(
 
 bool HasWeakFields(const Descriptor* desc);
 bool HasWeakFields(const FileDescriptor* desc);
-
-// Indicates whether we should use implicit weak fields for this file.
-bool UsingImplicitWeakFields(const FileDescriptor* file,
-                             const Options& options);
-
-// Indicates whether to treat this field as implicitly weak.
-bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options);
 
 // Returns true if the "required" restriction check should be ignored for the
 // given field.
@@ -458,10 +438,20 @@ class LIBPROTOC_EXPORT SCCAnalyzer {
   void AddChildren(SCC* scc);
 };
 
+void ListAllFields(const Descriptor* d,
+                   std::vector<const FieldDescriptor*>* fields);
 void ListAllFields(const FileDescriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 void ListAllTypesForServices(const FileDescriptor* fd,
                              std::vector<const Descriptor*>* types);
+
+// Indicates whether we should use implicit weak fields for this file.
+bool UsingImplicitWeakFields(const FileDescriptor* file,
+                             const Options& options);
+
+// Indicates whether to treat this field as implicitly weak.
+bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
+                         SCCAnalyzer* scc_analyzer);
 
 }  // namespace cpp
 }  // namespace compiler

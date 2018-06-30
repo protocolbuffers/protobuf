@@ -181,3 +181,9 @@ message TestCustomJsonName {
 message TestExtensions {
   .protobuf_unittest.TestAllExtensions extensions = 1;
 }
+
+message TestEnumValue{
+  EnumType enum_value1 = 1;
+  EnumType enum_value2 = 2;
+  EnumType enum_value3 = 3;
+}

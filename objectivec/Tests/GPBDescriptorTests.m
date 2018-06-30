@@ -190,6 +190,63 @@
   XCTAssertFalse([descriptor getValue:&value forEnumTextFormatName:@"Unknown"]);
 }
 
+- (void)testEnumDescriptorIntrospection {
+  GPBEnumDescriptor *descriptor = TestAllTypes_NestedEnum_EnumDescriptor();
+
+  XCTAssertEqual(descriptor.enumNameCount, 4U);
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:0],
+                        @"TestAllTypes_NestedEnum_Foo");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:0], @"FOO");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:1],
+                 @"TestAllTypes_NestedEnum_Bar");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:1], @"BAR");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:2],
+                 @"TestAllTypes_NestedEnum_Baz");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:2], @"BAZ");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:3],
+                 @"TestAllTypes_NestedEnum_Neg");
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:3], @"NEG");
+}
+
+- (void)testEnumDescriptorIntrospectionWithAlias {
+  GPBEnumDescriptor *descriptor = TestEnumWithDupValue_EnumDescriptor();
+  NSString *enumName;
+  int32_t value;
+
+  XCTAssertEqual(descriptor.enumNameCount, 5U);
+
+  enumName = [descriptor getEnumNameForIndex:0];
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Foo1");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 1);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:0], @"FOO1");
+
+  enumName = [descriptor getEnumNameForIndex:1];
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Bar1");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 2);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:1], @"BAR1");
+
+  enumName = [descriptor getEnumNameForIndex:2];
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Baz");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 3);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:2], @"BAZ");
+
+  enumName = [descriptor getEnumNameForIndex:3];
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Foo2");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 1);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:3], @"FOO2");
+
+  enumName = [descriptor getEnumNameForIndex:4];
+  XCTAssertEqualObjects(enumName, @"TestEnumWithDupValue_Bar2");
+  XCTAssertTrue([descriptor getValue:&value forEnumName:enumName]);
+  XCTAssertEqual(value, 2);
+  XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:4], @"BAR2");
+
+}
+
 - (void)testEnumValueValidator {
   GPBDescriptor *descriptor = [TestAllTypes descriptor];
   GPBFieldDescriptor *fieldDescriptor =

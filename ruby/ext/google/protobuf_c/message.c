@@ -256,6 +256,10 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Unknown field name '%s' in initialization map entry.", name);
   }
 
+  if (TYPE(val) == T_NIL) {
+    return 0;
+  }
+
   if (is_map_field(f)) {
     VALUE map;
 
@@ -540,9 +544,9 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
               get_def_obj(desc->msgdef));
   rb_define_alloc_func(klass, Message_alloc);
   rb_require("google/protobuf/message_exts");
-  rb_include_module(klass, rb_eval_string("Google::Protobuf::MessageExts"));
+  rb_include_module(klass, rb_eval_string("::Google::Protobuf::MessageExts"));
   rb_extend_object(
-      klass, rb_eval_string("Google::Protobuf::MessageExts::ClassMethods"));
+      klass, rb_eval_string("::Google::Protobuf::MessageExts::ClassMethods"));
 
   rb_define_method(klass, "method_missing",
                    Message_method_missing, -1);
@@ -631,7 +635,7 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
     const char* name = upb_enum_iter_name(&it);
     int32_t value = upb_enum_iter_number(&it);
     if (name[0] < 'A' || name[0] > 'Z') {
-      rb_raise(rb_eTypeError,
+      rb_raise(cTypeError,
                "Enum value '%s' does not start with an uppercase letter "
                "as is required for Ruby constants.",
                name);

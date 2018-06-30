@@ -126,6 +126,12 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal false, m.repeated_string.empty?
   end
 
+  def test_reassign
+    m = TestMessage.new
+    m.repeated_msg = Google::Protobuf::RepeatedField.new(:message, TestMessage2, [TestMessage2.new(:foo => 1)])
+    assert_equal m.repeated_msg.first, TestMessage2.new(:foo => 1)
+  end
+
   def test_array_accessor
     m = TestMessage.new
     reference_arr = %w(foo bar baz)
@@ -360,6 +366,15 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
     check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
       arr.delete_at(10)
+    end
+  end
+
+  def test_delete_if
+    m = TestMessage.new
+    reference_arr = %w(foo bar baz)
+    m.repeated_string += reference_arr.clone
+    check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
+      arr.delete_if { |v| v == "bar" }
     end
   end
 

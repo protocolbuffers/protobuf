@@ -64,6 +64,12 @@ public abstract class CodedInputStream {
   // Integer.MAX_VALUE == 0x7FFFFFF == INT_MAX from limits.h
   private static final int DEFAULT_SIZE_LIMIT = Integer.MAX_VALUE;
 
+  /**
+   * Whether to enable our custom UTF-8 decode codepath which does not use {@link StringCoding}.
+   * Currently disabled.
+   */
+  private static final boolean ENABLE_CUSTOM_UTF8_DECODE = false;
+
   /** Visible for subclasses. See setRecursionLimit() */
   int recursionDepth;
 
@@ -825,13 +831,19 @@ public abstract class CodedInputStream {
     public String readStringRequireUtf8() throws IOException {
       final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
-        // TODO(martinrb): We could save a pass by validating while decoding.
-        if (!Utf8.isValidUtf8(buffer, pos, pos + size)) {
-          throw InvalidProtocolBufferException.invalidUtf8();
+        if (ENABLE_CUSTOM_UTF8_DECODE) {
+          String result = Utf8.decodeUtf8(buffer, pos, size);
+          pos += size;
+          return result;
+        } else {
+          // TODO(martinrb): We could save a pass by validating while decoding.
+          if (!Utf8.isValidUtf8(buffer, pos, pos + size)) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          final int tempPos = pos;
+          pos += size;
+          return new String(buffer, tempPos, size, UTF_8);
         }
-        final int tempPos = pos;
-        pos += size;
-        return new String(buffer, tempPos, size, UTF_8);
       }
 
       if (size == 0) {
@@ -1524,6 +1536,8 @@ public abstract class CodedInputStream {
       final int size = readRawVarint32();
       if (size > 0 && size <= remaining()) {
         // TODO(nathanmittler): Is there a way to avoid this copy?
+        // TODO(anuraaga): It might be possible to share the optimized loop with
+        // readStringRequireUtf8 by implementing Java replacement logic there.
         // The same as readBytes' logic
         byte[] bytes = new byte[size];
         UnsafeUtil.copyMemory(pos, bytes, 0, size);
@@ -1544,19 +1558,26 @@ public abstract class CodedInputStream {
     @Override
     public String readStringRequireUtf8() throws IOException {
       final int size = readRawVarint32();
-      if (size >= 0 && size <= remaining()) {
-        // TODO(nathanmittler): Is there a way to avoid this copy?
-        // The same as readBytes' logic
-        byte[] bytes = new byte[size];
-        UnsafeUtil.copyMemory(pos, bytes, 0, size);
-        // TODO(martinrb): We could save a pass by validating while decoding.
-        if (!Utf8.isValidUtf8(bytes)) {
-          throw InvalidProtocolBufferException.invalidUtf8();
-        }
+      if (size > 0 && size <= remaining()) {
+        if (ENABLE_CUSTOM_UTF8_DECODE) {
+          final int bufferPos = bufferPos(pos);
+          String result = Utf8.decodeUtf8(buffer, bufferPos, size);
+          pos += size;
+          return result;
+        } else {
+          // TODO(nathanmittler): Is there a way to avoid this copy?
+          // The same as readBytes' logic
+          byte[] bytes = new byte[size];
+          UnsafeUtil.copyMemory(pos, bytes, 0, size);
+          // TODO(martinrb): We could save a pass by validating while decoding.
+          if (!Utf8.isValidUtf8(bytes)) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
 
-        String result = new String(bytes, UTF_8);
-        pos += size;
-        return result;
+          String result = new String(bytes, UTF_8);
+          pos += size;
+          return result;
+        }
       }
 
       if (size == 0) {
@@ -2324,11 +2345,15 @@ public abstract class CodedInputStream {
         bytes = readRawBytesSlowPath(size);
         tempPos = 0;
       }
-      // TODO(martinrb): We could save a pass by validating while decoding.
-      if (!Utf8.isValidUtf8(bytes, tempPos, tempPos + size)) {
-        throw InvalidProtocolBufferException.invalidUtf8();
+      if (ENABLE_CUSTOM_UTF8_DECODE) {
+        return Utf8.decodeUtf8(bytes, tempPos, size);
+      } else {
+        // TODO(martinrb): We could save a pass by validating while decoding.
+        if (!Utf8.isValidUtf8(bytes, tempPos, tempPos + size)) {
+          throw InvalidProtocolBufferException.invalidUtf8();
+        }
+        return new String(bytes, tempPos, size, UTF_8);
       }
-      return new String(bytes, tempPos, size, UTF_8);
     }
 
     @Override
@@ -3348,23 +3373,34 @@ public abstract class CodedInputStream {
     public String readStringRequireUtf8() throws IOException {
       final int size = readRawVarint32();
       if (size > 0 && size <= currentByteBufferLimit - currentByteBufferPos) {
-        byte[] bytes = new byte[size];
-        UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
-        if (!Utf8.isValidUtf8(bytes)) {
-          throw InvalidProtocolBufferException.invalidUtf8();
+        if (ENABLE_CUSTOM_UTF8_DECODE) {
+          final int bufferPos = (int) (currentByteBufferPos - currentByteBufferStartPos);
+          String result = Utf8.decodeUtf8(currentByteBuffer, bufferPos, size);
+          currentByteBufferPos += size;
+          return result;
+        } else {
+          byte[] bytes = new byte[size];
+          UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
+          if (!Utf8.isValidUtf8(bytes)) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          String result = new String(bytes, UTF_8);
+          currentByteBufferPos += size;
+          return result;
         }
-        String result = new String(bytes, UTF_8);
-        currentByteBufferPos += size;
-        return result;
       }
       if (size >= 0 && size <= remaining()) {
         byte[] bytes = new byte[size];
         readRawBytesTo(bytes, 0, size);
-        if (!Utf8.isValidUtf8(bytes)) {
-          throw InvalidProtocolBufferException.invalidUtf8();
+        if (ENABLE_CUSTOM_UTF8_DECODE) {
+          return Utf8.decodeUtf8(bytes, 0, size);
+        } else {
+          if (!Utf8.isValidUtf8(bytes)) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          String result = new String(bytes, UTF_8);
+          return result;
         }
-        String result = new String(bytes, UTF_8);
-        return result;
       }
 
       if (size == 0) {

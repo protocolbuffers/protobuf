@@ -145,6 +145,21 @@ PHP_PROTO_HASHTABLE_VALUE get_proto_obj(const char* proto) {
 }
 
 // -----------------------------------------------------------------------------
+// Well Known Types.
+// -----------------------------------------------------------------------------
+
+bool is_inited_file_any;
+bool is_inited_file_api;
+bool is_inited_file_duration;
+bool is_inited_file_field_mask;
+bool is_inited_file_empty;
+bool is_inited_file_source_context;
+bool is_inited_file_struct;
+bool is_inited_file_timestamp;
+bool is_inited_file_type;
+bool is_inited_file_wrappers;
+
+// -----------------------------------------------------------------------------
 // Reserved Name.
 // -----------------------------------------------------------------------------
 
@@ -182,8 +197,15 @@ zend_function_entry protobuf_functions[] = {
   ZEND_FE_END
 };
 
+static const zend_module_dep protobuf_deps[] = {
+  ZEND_MOD_OPTIONAL("date")
+  ZEND_MOD_END
+};
+
 zend_module_entry protobuf_module_entry = {
-  STANDARD_MODULE_HEADER,
+  STANDARD_MODULE_HEADER_EX,
+  NULL,
+  protobuf_deps,
   PHP_PROTOBUF_EXTNAME,     // extension name
   protobuf_functions,       // function list
   PHP_MINIT(protobuf),      // process startup
@@ -243,6 +265,17 @@ static PHP_RINIT_FUNCTION(protobuf) {
   generated_pool_php = NULL;
   internal_generated_pool_php = NULL;
 
+  is_inited_file_any = false;
+  is_inited_file_api = false;
+  is_inited_file_duration = false;
+  is_inited_file_field_mask = false;
+  is_inited_file_empty = false;
+  is_inited_file_source_context = false;
+  is_inited_file_struct = false;
+  is_inited_file_timestamp = false;
+  is_inited_file_type = false;
+  is_inited_file_wrappers = false;
+
   return 0;
 }
 
@@ -281,6 +314,17 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   }
 #endif
 
+  is_inited_file_any = true;
+  is_inited_file_api = true;
+  is_inited_file_duration = true;
+  is_inited_file_field_mask = true;
+  is_inited_file_empty = true;
+  is_inited_file_source_context = true;
+  is_inited_file_struct = true;
+  is_inited_file_timestamp = true;
+  is_inited_file_type = true;
+  is_inited_file_wrappers = true;
+
   return 0;
 }
 
@@ -299,6 +343,17 @@ static PHP_MINIT_FUNCTION(protobuf) {
   repeated_field_init(TSRMLS_C);
   repeated_field_iter_init(TSRMLS_C);
   util_init(TSRMLS_C);
+
+  gpb_metadata_any_init(TSRMLS_C);
+  gpb_metadata_api_init(TSRMLS_C);
+  gpb_metadata_duration_init(TSRMLS_C);
+  gpb_metadata_field_mask_init(TSRMLS_C);
+  gpb_metadata_empty_init(TSRMLS_C);
+  gpb_metadata_source_context_init(TSRMLS_C);
+  gpb_metadata_struct_init(TSRMLS_C);
+  gpb_metadata_timestamp_init(TSRMLS_C);
+  gpb_metadata_type_init(TSRMLS_C);
+  gpb_metadata_wrappers_init(TSRMLS_C);
 
   any_init(TSRMLS_C);
   api_init(TSRMLS_C);

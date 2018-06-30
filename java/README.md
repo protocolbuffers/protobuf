@@ -1,17 +1,65 @@
-Protocol Buffers - Google's data interchange format
-===================================================
-
-[![Build Status](https://travis-ci.org/google/protobuf.svg?branch=master)](https://travis-ci.org/google/protobuf)
+# Protocol Buffers - Google's data interchange format
 
 Copyright 2008 Google Inc.
 
-This directory contains the Java Protocol Buffers runtime library.
+https://developers.google.com/protocol-buffers/
 
-Installation - With Maven
-=========================
+## Use Java Protocol Buffers
 
-The Protocol Buffers build is managed using Maven.  If you would
-rather build without Maven, see below.
+To use protobuf in Java, first obtain the protocol compiler (a.k.a., protoc,
+see instructions in the toplevel [README.md](../README.md)) and use it to
+generate Java code for your .proto files:
+
+    $ protoc --java_out=${OUTPUT_DIR} path/to/your/proto/file
+
+Include the generated Java files in your project and add a dependency on the
+protobuf Java runtime. If you are using Maven, use the following:
+
+```xml
+<dependency>
+  <groupId>com.google.protobuf</groupId>
+  <artifactId>protobuf-java</artifactId>
+  <version>3.5.1</version>
+</dependency>
+```
+
+Make sure the version number of the runtime matches (or is newer than) the
+version number of the protoc.
+
+If you want to use features like protobuf JsonFormat, add a dependency on the
+protobuf-java-util package:
+
+```xml
+<dependency>
+  <groupId>com.google.protobuf</groupId>
+  <artifactId>protobuf-java-util</artifactId>
+  <version>3.5.1</version>
+</dependency>
+```
+
+### Use Java Protocol Buffers on Android
+
+For Android users, it's recommended to use protobuf Java Lite runtime because
+of its smaller code size. Java Lite runtime also works better with Proguard
+because it doesn't rely on Java reflection and is optimized to allow as much
+code stripping as possible. You can following these [instructions to use Java
+Lite runtime](lite.md).
+
+### Use Java Protocol Buffers with Bazel
+
+Bazel has native build rules to work with protobuf. For Java, you can use the
+`java_proto_library` rule for server and the `java_lite_proto_library` rule
+for Android. Check out [our build files examples](../examples/BUILD) to learn
+how to use them.
+
+## Build from Source
+
+Most users should follow the instructions above to use protobuf Java runtime.
+If you are contributing code to protobuf or want to use a protobuf version
+that hasn't been officially released yet, you can folllow the instructions
+below to build protobuf from source code.
+
+### Build from Source - With Maven
 
 1) Install Apache Maven if you don't have it:
 
@@ -45,20 +93,15 @@ rather build without Maven, see below.
 
    The .jar will be placed in the "target" directory.
 
-The above instructions will install 3 maven artifacts:
+The above instructions will install 2 maven artifacts:
 
   * protobuf-java: The core Java Protocol Buffers library. Most users only
                    need this artifact.
-  * protobuf-lite: The lite version of core Java Protobuf Buffers library. It
-                   is a subset of the core library and is used together with
-                   the 'lite' code generator flag to reduce generated code size
-                   for mobile.
   * protobuf-java-util: Utilities to work with protos. It contains JSON support
                         as well as utilities to work with proto3 well-known
                         types.
 
-Installation - Without Maven
-============================
+### Build from Source - Without Maven
 
 If you would rather not install Maven to build the library, you may
 follow these instructions instead.  Note that these instructions skip
@@ -83,8 +126,7 @@ library (without the util package).
 
 4) Install the classes wherever you prefer.
 
-Compatibility Notice
-====================
+## Compatibility Notice
 
 * Protobuf minor version releases are backwards-compatible. If your code
   can build/run against the old version, it's expected to build/run against
@@ -118,8 +160,7 @@ Compatibility Notice
 * Protobuf LITE runtime APIs are not stable yet. They are subject to change even
   in minor version releases.
 
-Documentation
-=============
+## Documentation
 
 The complete documentation for Protocol Buffers is available via the
 web at:

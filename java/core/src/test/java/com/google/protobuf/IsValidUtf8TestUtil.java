@@ -273,6 +273,15 @@ final class IsValidUtf8TestUtil {
       assertEquals(isRoundTrippable, Utf8.isValidUtf8(bytes));
       assertEquals(isRoundTrippable, Utf8.isValidUtf8(bytes, 0, numBytes));
 
+      try {
+        assertEquals(s, Utf8.decodeUtf8(bytes, 0, numBytes));
+      } catch (InvalidProtocolBufferException e) {
+        if (isRoundTrippable) {
+          System.out.println("Could not decode utf-8");
+          outputFailure(byteChar, bytes, bytesReencoded);
+        }
+      }
+
       // Test partial sequences.
       // Partition numBytes into three segments (not necessarily non-empty).
       int i = rnd.nextInt(numBytes);

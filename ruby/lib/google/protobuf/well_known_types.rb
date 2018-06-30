@@ -39,6 +39,12 @@ module Google
   module Protobuf
 
     Any.class_eval do
+      def self.pack(msg, type_url_prefix='type.googleapis.com/')
+        any = self.new
+        any.pack(msg, type_url_prefix)
+        any
+      end
+
       def pack(msg, type_url_prefix='type.googleapis.com/')
         if type_url_prefix.empty? or type_url_prefix[-1] != '/' then
           self.type_url = "#{type_url_prefix}/#{msg.class.descriptor.name}"

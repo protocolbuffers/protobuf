@@ -50,7 +50,7 @@ void TestParseCorruptedString(const T& message) {
       s[i] ^= c;
       google::protobuf::Arena arena;
       T* message =
-          google::protobuf::Arena::CreateMessage<T>(use_arena ? &arena : NULL);
+          google::protobuf::Arena::CreateMessage<T>(use_arena ? &arena : nullptr);
       if (message->ParseFromString(s)) {
         ++success_count;
       }

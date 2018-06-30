@@ -30,20 +30,15 @@
 
 #include <string>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <vector>
 
-#include <google/protobuf/test_util.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_proto3_arena_lite.pb.h>
+#include <google/protobuf/unittest_proto3_arena.pb.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
 namespace google {
-using proto3_arena_lite_unittest::TestAllTypes;
+using proto3_arena_unittest::TestAllTypes;
 
 namespace protobuf {
 namespace {
@@ -56,9 +51,9 @@ void SetAllFields(TestAllTypes* m) {
   m->mutable_optional_nested_message()->set_bb(42);
   m->mutable_optional_foreign_message()->set_c(43);
   m->set_optional_nested_enum(
-      proto3_arena_lite_unittest::TestAllTypes_NestedEnum_BAZ);
+      proto3_arena_unittest::TestAllTypes_NestedEnum_BAZ);
   m->set_optional_foreign_enum(
-      proto3_arena_lite_unittest::FOREIGN_BAZ);
+      proto3_arena_unittest::FOREIGN_BAZ);
   m->mutable_optional_lazy_message()->set_bb(45);
   m->add_repeated_int32(100);
   m->add_repeated_string("asdf");
@@ -66,9 +61,9 @@ void SetAllFields(TestAllTypes* m) {
   m->add_repeated_nested_message()->set_bb(46);
   m->add_repeated_foreign_message()->set_c(47);
   m->add_repeated_nested_enum(
-      proto3_arena_lite_unittest::TestAllTypes_NestedEnum_BAZ);
+      proto3_arena_unittest::TestAllTypes_NestedEnum_BAZ);
   m->add_repeated_foreign_enum(
-      proto3_arena_lite_unittest::FOREIGN_BAZ);
+      proto3_arena_unittest::FOREIGN_BAZ);
   m->add_repeated_lazy_message()->set_bb(49);
 
   m->set_oneof_uint32(1);
@@ -84,9 +79,9 @@ void ExpectAllFieldsSet(const TestAllTypes& m) {
   EXPECT_EQ(42, m.optional_nested_message().bb());
   EXPECT_EQ(true, m.has_optional_foreign_message());
   EXPECT_EQ(43, m.optional_foreign_message().c());
-  EXPECT_EQ(proto3_arena_lite_unittest::TestAllTypes_NestedEnum_BAZ,
+  EXPECT_EQ(proto3_arena_unittest::TestAllTypes_NestedEnum_BAZ,
             m.optional_nested_enum());
-  EXPECT_EQ(proto3_arena_lite_unittest::FOREIGN_BAZ,
+  EXPECT_EQ(proto3_arena_unittest::FOREIGN_BAZ,
             m.optional_foreign_enum());
   EXPECT_EQ(true, m.has_optional_lazy_message());
   EXPECT_EQ(45, m.optional_lazy_message().bb());
@@ -102,15 +97,15 @@ void ExpectAllFieldsSet(const TestAllTypes& m) {
   EXPECT_EQ(1, m.repeated_foreign_message_size());
   EXPECT_EQ(47, m.repeated_foreign_message(0).c());
   EXPECT_EQ(1, m.repeated_nested_enum_size());
-  EXPECT_EQ(proto3_arena_lite_unittest::TestAllTypes_NestedEnum_BAZ,
+  EXPECT_EQ(proto3_arena_unittest::TestAllTypes_NestedEnum_BAZ,
             m.repeated_nested_enum(0));
   EXPECT_EQ(1, m.repeated_foreign_enum_size());
-  EXPECT_EQ(proto3_arena_lite_unittest::FOREIGN_BAZ,
+  EXPECT_EQ(proto3_arena_unittest::FOREIGN_BAZ,
             m.repeated_foreign_enum(0));
   EXPECT_EQ(1, m.repeated_lazy_message_size());
   EXPECT_EQ(49, m.repeated_lazy_message(0).bb());
 
-  EXPECT_EQ(proto3_arena_lite_unittest::TestAllTypes::kOneofString,
+  EXPECT_EQ(proto3_arena_unittest::TestAllTypes::kOneofString,
             m.oneof_field_case());
   EXPECT_EQ("test", m.oneof_string());
 }
@@ -154,7 +149,7 @@ TEST(Proto3ArenaLiteTest, ReleaseMessage) {
   Arena arena;
   TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
-  google::protobuf::scoped_ptr<TestAllTypes::NestedMessage> nested(
+  std::unique_ptr<TestAllTypes::NestedMessage> nested(
       arena_message->release_optional_nested_message());
   EXPECT_EQ(118, nested->bb());
 }

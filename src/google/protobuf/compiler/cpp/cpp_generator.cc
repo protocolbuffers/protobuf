@@ -36,17 +36,15 @@
 
 #include <vector>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <utility>
 
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/cpp/cpp_file.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/strutil.h>
+
 
 namespace google {
 namespace protobuf {
@@ -66,12 +64,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   // -----------------------------------------------------------------
   // parse generator options
 
-  // TODO(kenton):  If we ever have more options, we may want to create a
-  //   class that encapsulates them which we can pass down to all the
-  //   generator classes.  Currently we pass dllexport_decl down to all of
-  //   them via the constructors, but we don't want to have to add another
-  //   constructor parameter for every option.
-
   // If the dllexport_decl option is passed to the compiler, we need to write
   // it in front of every symbol that should be exported if this .proto is
   // compiled into a Windows DLL.  E.g., if the user invokes the protocol
@@ -85,7 +77,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   // __declspec(dllimport) depending on what is being compiled.
   //
   Options file_options;
-  bool split_source = false;
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "dllexport_decl") {
       file_options.dllexport_decl = options[i].second;
@@ -101,16 +92,26 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.enforce_lite = true;
     } else if (options[i].first == "lite_implicit_weak_fields") {
       file_options.lite_implicit_weak_fields = true;
+      if (!options[i].second.empty()) {
+        file_options.num_cc_files = strto32(options[i].second.c_str(),
+                                            NULL, 10);
+      }
     } else if (options[i].first == "table_driven_parsing") {
       file_options.table_driven_parsing = true;
     } else if (options[i].first == "table_driven_serialization") {
       file_options.table_driven_serialization = true;
-    } else if (options[i].first == "split_source") {
-      split_source = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
     }
+  }
+
+  // The safe_boundary_check option controls behavior for Google-internal
+  // protobuf APIs.
+  if (file_options.safe_boundary_check) {
+    *error =
+        "The safe_boundary_check option is not supported outside of Google.";
+    return false;
   }
 
   // -----------------------------------------------------------------
@@ -118,11 +119,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   string basename = StripProto(file->name());
 
+
   FileGenerator file_generator(file, file_options);
 
   // Generate header(s).
   if (file_options.proto_h) {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+    std::unique_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(basename + ".proto.h"));
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
@@ -134,14 +136,14 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     file_generator.GenerateProtoHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {
-      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+      std::unique_ptr<io::ZeroCopyOutputStream> info_output(
           generator_context->Open(info_path));
       annotations.SerializeToZeroCopyStream(info_output.get());
     }
   }
 
   {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+    std::unique_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(basename + ".pb.h"));
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
@@ -153,30 +155,44 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     file_generator.GeneratePBHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {
-      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+      std::unique_ptr<io::ZeroCopyOutputStream> info_output(
           generator_context->Open(info_path));
       annotations.SerializeToZeroCopyStream(info_output.get());
     }
   }
 
-  // Generate cc file.
-  if (split_source) {
+  // Generate cc file(s).
+  if (UsingImplicitWeakFields(file, file_options)) {
     {
       // This is the global .cc file, containing enum/services/tables/reflection
-      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
           generator_context->Open(basename + ".pb.cc"));
       io::Printer printer(output.get(), '$');
       file_generator.GenerateGlobalSource(&printer);
     }
-    for (int i = 0; i < file_generator.NumMessages(); i++) {
+
+    int num_cc_files = file_generator.NumMessages();
+
+    // If we're using implicit weak fields then we allow the user to optionally
+    // specify how many files to generate, not counting the global pb.cc file.
+    // If we have more files than messages, then some files will be generated as
+    // empty placeholders.
+    if (file_options.num_cc_files > 0) {
+      GOOGLE_CHECK_LE(file_generator.NumMessages(), file_options.num_cc_files)
+          << "There must be at least as many numbered .cc files as messages.";
+      num_cc_files = file_options.num_cc_files;
+    }
+    for (int i = 0; i < num_cc_files; i++) {
       // TODO(gerbens) Agree on naming scheme.
-      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+      std::unique_ptr<io::ZeroCopyOutputStream> output(
           generator_context->Open(basename + "." + SimpleItoa(i) + ".cc"));
       io::Printer printer(output.get(), '$');
-      file_generator.GenerateSourceForMessage(i, &printer);
+      if (i < file_generator.NumMessages()) {
+        file_generator.GenerateSourceForMessage(i, &printer);
+      }
     }
   } else {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+    std::unique_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(basename + ".pb.cc"));
     io::Printer printer(output.get(), '$');
     file_generator.GenerateSource(&printer);

@@ -33,7 +33,6 @@ package com.google.protobuf;
 import java.lang.reflect.Field;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
@@ -81,6 +80,7 @@ final class UnsafeUtil {
   static boolean hasUnsafeByteBufferOperations() {
     return HAS_UNSAFE_BYTEBUFFER_OPERATIONS;
   }
+
 
   static long objectFieldOffset(Field field) {
     return MEMORY_ACCESSOR.objectFieldOffset(field);
@@ -144,10 +144,6 @@ final class UnsafeUtil {
 
   static Object getObject(Object target, long offset) {
     return MEMORY_ACCESSOR.getObject(target, offset);
-  }
-
-  static void putObject(Object target, long offset, Object value) {
-    MEMORY_ACCESSOR.putObject(target, offset, value);
   }
 
   static byte getByte(byte[] target, long index) {
@@ -266,7 +262,7 @@ final class UnsafeUtil {
   /**
    * Gets the {@code sun.misc.Unsafe} instance, or {@code null} if not available on this platform.
    */
-  private static sun.misc.Unsafe getUnsafe() {
+  static sun.misc.Unsafe getUnsafe() {
     sun.misc.Unsafe unsafe = null;
     try {
       unsafe =
@@ -346,6 +342,10 @@ final class UnsafeUtil {
       clazz.getMethod("objectFieldOffset", Field.class);
       clazz.getMethod("getLong", Object.class, long.class);
 
+      if (bufferAddressField() == null) {
+        return false;
+      }
+
       clazz.getMethod("getByte", long.class);
       clazz.getMethod("putByte", long.class, byte.class);
       clazz.getMethod("getInt", long.class);
@@ -364,18 +364,16 @@ final class UnsafeUtil {
   }
 
 
-  @SuppressWarnings("unchecked")
-  private static <T> Class<T> getClassForName(String name) {
-    try {
-      return (Class<T>) Class.forName(name);
-    } catch (Throwable e) {
-      return null;
-    }
-  }
-
   /** Finds the address field within a direct {@link Buffer}. */
   private static Field bufferAddressField() {
-    return field(Buffer.class, "address");
+    Field field = field(Buffer.class, "address");
+    return field != null && field.getType() == long.class ? field : null;
+  }
+
+  /** Finds the value field within a {@link String}. */
+  private static Field stringValueField() {
+    Field field = field(String.class, "value");
+    return field != null && field.getType() == char[].class ? field : null;
   }
 
   /**

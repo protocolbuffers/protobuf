@@ -17,7 +17,6 @@ if [ ! -z "$@" ]; then
   done
 fi
 
-
 # Check that we're being run from the right directory.
 if test ! -f src/google/protobuf/stubs/common.h; then
   cat >&2 << __EOF__
@@ -25,23 +24,6 @@ Could not find source code.  Make sure you are running this script from the
 root of the distribution tree.
 __EOF__
   exit 1
-fi
-
-# Check that gmock is present.  Usually it is already there since the
-# directory is set up as an SVN external.
-if test ! -e gmock; then
-  echo "Google Mock not present.  Fetching gmock-1.7.0 from the web..."
-  curl $curlopts -L -O https://github.com/google/googlemock/archive/release-1.7.0.zip
-  unzip -q release-1.7.0.zip
-  rm release-1.7.0.zip
-  mv googlemock-release-1.7.0 gmock
-fi
-
-if test ! -e gmock/gtest; then
-  curl $curlopts -L -O https://github.com/google/googletest/archive/release-1.7.0.zip
-  unzip -q release-1.7.0.zip
-  rm release-1.7.0.zip
-  mv googletest-release-1.7.0 gmock/gtest
 fi
 
 set -ex

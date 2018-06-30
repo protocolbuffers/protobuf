@@ -56,6 +56,20 @@ const int32 GOOGLE_PROTOBUF_OBJC_VERSION = 30002;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
+// Checks if a message contains any enums definitions (on the message or
+// a nested message under it).
+bool MessageContainsEnums(const Descriptor* message) {
+  if (message->enum_type_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    if (MessageContainsEnums(message->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Checks if a message contains any extension definitions (on the message or
 // a nested message under it).
 bool MessageContainsExtensions(const Descriptor* message) {
@@ -64,6 +78,20 @@ bool MessageContainsExtensions(const Descriptor* message) {
   }
   for (int i = 0; i < message->nested_type_count(); i++) {
     if (MessageContainsExtensions(message->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Checks if the file contains any enum definitions (at the root or
+// nested under a message).
+bool FileContainsEnums(const FileDescriptor* file) {
+  if (file->enum_type_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < file->message_type_count(); i++) {
+    if (MessageContainsEnums(file->message_type(i))) {
       return true;
     }
   }
@@ -88,9 +116,9 @@ bool FileContainsExtensions(const FileDescriptor* file) {
 // deps as visited and prunes them from the needed files list.
 void PruneFileAndDepsMarkingAsVisited(
     const FileDescriptor* file,
-    vector<const FileDescriptor*>* files,
+    std::vector<const FileDescriptor*>* files,
     std::set<const FileDescriptor*>* files_visited) {
-  vector<const FileDescriptor*>::iterator iter =
+  std::vector<const FileDescriptor*>::iterator iter =
       std::find(files->begin(), files->end(), file);
   if (iter != files->end()) {
     files->erase(iter);
@@ -104,7 +132,7 @@ void PruneFileAndDepsMarkingAsVisited(
 // Helper for CollectMinimalFileDepsContainingExtensions.
 void CollectMinimalFileDepsContainingExtensionsWorker(
     const FileDescriptor* file,
-    vector<const FileDescriptor*>* files,
+    std::vector<const FileDescriptor*>* files,
     std::set<const FileDescriptor*>* files_visited) {
   if (files_visited->find(file) != files_visited->end()) {
     return;
@@ -137,7 +165,7 @@ void CollectMinimalFileDepsContainingExtensionsWorker(
 // specifically).
 void CollectMinimalFileDepsContainingExtensions(
     const FileDescriptor* file,
-    vector<const FileDescriptor*>* files) {
+    std::vector<const FileDescriptor*>* files) {
   std::set<const FileDescriptor*> files_visited;
   for (int i = 0; i < file->dependency_count(); i++) {
     const FileDescriptor* dep = file->dependency(i);
@@ -160,6 +188,7 @@ bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
 FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
     : file_(file),
       root_class_name_(FileClassName(file)),
+      is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)),
       options_(options) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
@@ -186,7 +215,17 @@ FileGenerator::~FileGenerator() {
 }
 
 void FileGenerator::GenerateHeader(io::Printer *printer) {
-  PrintFileRuntimePreamble(printer, "GPBProtocolBuffers.h");
+  std::set<string> headers;
+  // Generated files bundled with the library get minimal imports, everything
+  // else gets the wrapper so everything is usable.
+  if (is_bundled_proto_) {
+    headers.insert("GPBRootObject.h");
+    headers.insert("GPBMessage.h");
+    headers.insert("GPBDescriptor.h");
+  } else {
+    headers.insert("GPBProtocolBuffers.h");
+  }
+  PrintFileRuntimePreamble(printer, headers);
 
   // Add some verification that the generated code matches the source the
   // code is being compiled with.
@@ -208,7 +247,8 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   {
     ImportWriter import_writer(
         options_.generate_for_named_framework,
-        options_.named_framework_to_proto_path_mappings_path);
+        options_.named_framework_to_proto_path_mappings_path,
+        is_bundled_proto_);
     const string header_extension(kHeaderExtension);
     for (int i = 0; i < file_->public_dependency_count(); i++) {
       import_writer.AddFile(file_->public_dependency(i), header_extension);
@@ -230,7 +270,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "\n");
 
   std::set<string> fwd_decls;
-  for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+  for (std::vector<MessageGenerator *>::iterator iter = message_generators_.begin();
        iter != message_generators_.end(); ++iter) {
     (*iter)->DetermineForwardDeclarations(&fwd_decls);
   }
@@ -247,12 +287,12 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "\n");
 
   // need to write out all enums first
-  for (vector<EnumGenerator *>::iterator iter = enum_generators_.begin();
+  for (std::vector<EnumGenerator *>::iterator iter = enum_generators_.begin();
        iter != enum_generators_.end(); ++iter) {
     (*iter)->GenerateHeader(printer);
   }
 
-  for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+  for (std::vector<MessageGenerator *>::iterator iter = message_generators_.begin();
        iter != message_generators_.end(); ++iter) {
     (*iter)->GenerateEnumHeader(printer);
   }
@@ -283,7 +323,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
         "@interface $root_class_name$ (DynamicMethods)\n",
         "root_class_name", root_class_name_);
 
-    for (vector<ExtensionGenerator *>::iterator iter =
+    for (std::vector<ExtensionGenerator *>::iterator iter =
              extension_generators_.begin();
          iter != extension_generators_.end(); ++iter) {
       (*iter)->GenerateMembersHeader(printer);
@@ -292,7 +332,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
     printer->Print("@end\n\n");
   }  // extension_generators_.size() > 0
 
-  for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+  for (std::vector<MessageGenerator *>::iterator iter = message_generators_.begin();
        iter != message_generators_.end(); ++iter) {
     (*iter)->GenerateMessageHeader(printer);
   }
@@ -309,15 +349,25 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
 
 void FileGenerator::GenerateSource(io::Printer *printer) {
   // #import the runtime support.
-  PrintFileRuntimePreamble(printer, "GPBProtocolBuffers_RuntimeSupport.h");
+  std::set<string> headers;
+  headers.insert("GPBProtocolBuffers_RuntimeSupport.h");
+  PrintFileRuntimePreamble(printer, headers);
 
-  vector<const FileDescriptor*> deps_with_extensions;
+  // Enums use atomic in the generated code, so add the system import as needed.
+  if (FileContainsEnums(file_)) {
+    printer->Print(
+        "#import <stdatomic.h>\n"
+        "\n");
+  }
+
+  std::vector<const FileDescriptor*> deps_with_extensions;
   CollectMinimalFileDepsContainingExtensions(file_, &deps_with_extensions);
 
   {
     ImportWriter import_writer(
         options_.generate_for_named_framework,
-        options_.named_framework_to_proto_path_mappings_path);
+        options_.named_framework_to_proto_path_mappings_path,
+        is_bundled_proto_);
     const string header_extension(kHeaderExtension);
 
     // #import the header for this proto file.
@@ -341,7 +391,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     // imported so it can get merged into the root's extensions registry.
     // See the Note by CollectMinimalFileDepsContainingExtensions before
     // changing this.
-    for (vector<const FileDescriptor *>::iterator iter =
+    for (std::vector<const FileDescriptor *>::iterator iter =
              deps_with_extensions.begin();
          iter != deps_with_extensions.end(); ++iter) {
       if (!IsDirectDependency(*iter, file_)) {
@@ -353,7 +403,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   }
 
   bool includes_oneof = false;
-  for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+  for (std::vector<MessageGenerator *>::iterator iter = message_generators_.begin();
        iter != message_generators_.end(); ++iter) {
     if ((*iter)->IncludesOneOfDefinition()) {
       includes_oneof = true;
@@ -406,12 +456,12 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
       printer->Print(
           "static GPBExtensionDescription descriptions[] = {\n");
       printer->Indent();
-      for (vector<ExtensionGenerator *>::iterator iter =
+      for (std::vector<ExtensionGenerator *>::iterator iter =
                extension_generators_.begin();
            iter != extension_generators_.end(); ++iter) {
         (*iter)->GenerateStaticVariablesInitialization(printer);
       }
-      for (vector<MessageGenerator *>::iterator iter =
+      for (std::vector<MessageGenerator *>::iterator iter =
                message_generators_.begin();
            iter != message_generators_.end(); ++iter) {
         (*iter)->GenerateStaticVariablesInitialization(printer);
@@ -435,7 +485,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     } else {
       printer->Print(
           "// Merge in the imports (direct or indirect) that defined extensions.\n");
-      for (vector<const FileDescriptor *>::iterator iter =
+      for (std::vector<const FileDescriptor *>::iterator iter =
                deps_with_extensions.begin();
            iter != deps_with_extensions.end(); ++iter) {
         const string root_class_name(FileClassName((*iter)));
@@ -511,11 +561,11 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
         "\n");
   }
 
-  for (vector<EnumGenerator *>::iterator iter = enum_generators_.begin();
+  for (std::vector<EnumGenerator *>::iterator iter = enum_generators_.begin();
        iter != enum_generators_.end(); ++iter) {
     (*iter)->GenerateSource(printer);
   }
-  for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+  for (std::vector<MessageGenerator *>::iterator iter = message_generators_.begin();
        iter != message_generators_.end(); ++iter) {
     (*iter)->GenerateSource(printer);
   }
@@ -531,7 +581,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
 // files. This currently only supports the runtime coming from a framework
 // as defined by the official CocoaPod.
 void FileGenerator::PrintFileRuntimePreamble(
-    io::Printer* printer, const string& header_to_import) const {
+    io::Printer* printer, const std::set<string>& headers_to_import) const {
   printer->Print(
       "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
       "// source: $filename$\n"
@@ -540,6 +590,7 @@ void FileGenerator::PrintFileRuntimePreamble(
 
   const string framework_name(ProtobufLibraryFrameworkName);
   const string cpp_symbol(ProtobufFrameworkImportSymbol(framework_name));
+
   printer->Print(
       "// This CPP symbol can be defined to use imports that match up to the framework\n"
       "// imports needed when using CocoaPods.\n"
@@ -547,15 +598,31 @@ void FileGenerator::PrintFileRuntimePreamble(
       " #define $cpp_symbol$ 0\n"
       "#endif\n"
       "\n"
-      "#if $cpp_symbol$\n"
-      " #import <$framework_name$/$header$>\n"
-      "#else\n"
-      " #import \"$header$\"\n"
+      "#if $cpp_symbol$\n",
+      "cpp_symbol", cpp_symbol);
+
+
+  for (std::set<string>::const_iterator iter = headers_to_import.begin();
+       iter != headers_to_import.end(); ++iter) {
+    printer->Print(
+        " #import <$framework_name$/$header$>\n",
+        "header", *iter,
+        "framework_name", framework_name);
+  }
+
+  printer->Print(
+      "#else\n");
+
+  for (std::set<string>::const_iterator iter = headers_to_import.begin();
+       iter != headers_to_import.end(); ++iter) {
+    printer->Print(
+        " #import \"$header$\"\n",
+        "header", *iter);
+  }
+
+  printer->Print(
       "#endif\n"
-      "\n",
-      "cpp_symbol", cpp_symbol,
-      "header", header_to_import,
-      "framework_name", framework_name);
+      "\n");
 }
 
 }  // namespace objectivec

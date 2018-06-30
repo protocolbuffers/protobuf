@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static junit.framework.TestCase.assertEquals;
+
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import protobuf_unittest.UnittestProto;
@@ -131,6 +133,25 @@ public class UnknownFieldSetLiteTest extends TestCase {
     instance.mergeFieldFrom(input.readTag(), input);
 
     assertEquals(foo.toByteString().size(), instance.getSerializedSize());
+  }
+
+  public void testHashCodeAfterDeserialization() throws IOException {
+    Foo foo = Foo.newBuilder()
+      .setValue(2)
+      .build();
+
+    Foo fooDeserialized = Foo.parseFrom(foo.toByteArray());
+
+    assertEquals(fooDeserialized, foo);
+    assertEquals(foo.hashCode(), fooDeserialized.hashCode());
+  }
+
+  public void testNewInstanceHashCode() {
+    UnknownFieldSetLite emptyFieldSet = UnknownFieldSetLite.getDefaultInstance();
+    UnknownFieldSetLite paddedFieldSet = UnknownFieldSetLite.newInstance();
+
+    assertEquals(emptyFieldSet, paddedFieldSet);
+    assertEquals(emptyFieldSet.hashCode(), paddedFieldSet.hashCode());
   }
 
   public void testMergeVarintField() throws IOException {

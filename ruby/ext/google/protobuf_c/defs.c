@@ -76,7 +76,7 @@ static upb_enumdef* check_enum_notfrozen(const upb_enumdef* def) {
 // -----------------------------------------------------------------------------
 
 #define DEFINE_CLASS(name, string_name)                             \
-    VALUE c ## name;                                                \
+    VALUE c ## name = Qnil;                                         \
     const rb_data_type_t _ ## name ## _type = {                     \
       string_name,                                                  \
       { name ## _mark, name ## _free, NULL },                       \
@@ -126,11 +126,11 @@ void DescriptorPool_register(VALUE module) {
   rb_define_method(klass, "lookup", DescriptorPool_lookup, 1);
   rb_define_singleton_method(klass, "generated_pool",
                              DescriptorPool_generated_pool, 0);
-  cDescriptorPool = klass;
   rb_gc_register_address(&cDescriptorPool);
+  cDescriptorPool = klass;
 
-  generated_pool = rb_class_new_instance(0, NULL, klass);
   rb_gc_register_address(&generated_pool);
+  generated_pool = rb_class_new_instance(0, NULL, klass);
 }
 
 static void add_descriptor_to_pool(DescriptorPool* self,
@@ -299,8 +299,8 @@ void Descriptor_register(VALUE module) {
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "name=", Descriptor_name_set, 1);
   rb_include_module(klass, rb_mEnumerable);
-  cDescriptor = klass;
   rb_gc_register_address(&cDescriptor);
+  cDescriptor = klass;
 }
 
 /*
@@ -518,8 +518,8 @@ void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "subtype", FieldDescriptor_subtype, 0);
   rb_define_method(klass, "get", FieldDescriptor_get, 1);
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
-  cFieldDescriptor = klass;
   rb_gc_register_address(&cFieldDescriptor);
+  cFieldDescriptor = klass;
 }
 
 /*
@@ -812,7 +812,7 @@ VALUE FieldDescriptor_submsg_name_set(VALUE _self, VALUE value) {
   upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
   const char* str = get_str(value);
   if (!upb_fielddef_hassubdef(self->fielddef)) {
-    rb_raise(rb_eTypeError, "FieldDescriptor does not have subdef.");
+    rb_raise(cTypeError, "FieldDescriptor does not have subdef.");
   }
   CHECK_UPB(upb_fielddef_setsubdefname(mut_def, str, &status),
             "Error setting submessage name");
@@ -854,7 +854,7 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
-    rb_raise(rb_eTypeError, "get method called on wrong message type");
+    rb_raise(cTypeError, "get method called on wrong message type");
   }
   return layout_get(msg->descriptor->layout, Message_data(msg), self->fielddef);
 }
@@ -872,7 +872,7 @@ VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
-    rb_raise(rb_eTypeError, "set method called on wrong message type");
+    rb_raise(cTypeError, "set method called on wrong message type");
   }
   layout_set(msg->descriptor->layout, Message_data(msg), self->fielddef, value);
   return Qnil;
@@ -916,8 +916,8 @@ void OneofDescriptor_register(VALUE module) {
   rb_define_method(klass, "add_field", OneofDescriptor_add_field, 1);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
   rb_include_module(klass, rb_mEnumerable);
-  cOneofDescriptor = klass;
   rb_gc_register_address(&cOneofDescriptor);
+  cOneofDescriptor = klass;
 }
 
 /*
@@ -1037,8 +1037,8 @@ void EnumDescriptor_register(VALUE module) {
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
   rb_define_method(klass, "enummodule", EnumDescriptor_enummodule, 0);
   rb_include_module(klass, rb_mEnumerable);
-  cEnumDescriptor = klass;
   rb_gc_register_address(&cEnumDescriptor);
+  cEnumDescriptor = klass;
 }
 
 /*
@@ -1202,8 +1202,8 @@ void MessageBuilderContext_register(VALUE module) {
   rb_define_method(klass, "repeated", MessageBuilderContext_repeated, -1);
   rb_define_method(klass, "map", MessageBuilderContext_map, -1);
   rb_define_method(klass, "oneof", MessageBuilderContext_oneof, 1);
-  cMessageBuilderContext = klass;
   rb_gc_register_address(&cMessageBuilderContext);
+  cMessageBuilderContext = klass;
 }
 
 /*
@@ -1491,8 +1491,8 @@ void OneofBuilderContext_register(VALUE module) {
   rb_define_method(klass, "initialize",
                    OneofBuilderContext_initialize, 2);
   rb_define_method(klass, "optional", OneofBuilderContext_optional, -1);
-  cOneofBuilderContext = klass;
   rb_gc_register_address(&cOneofBuilderContext);
+  cOneofBuilderContext = klass;
 }
 
 /*
@@ -1569,8 +1569,8 @@ void EnumBuilderContext_register(VALUE module) {
   rb_define_method(klass, "initialize",
                    EnumBuilderContext_initialize, 1);
   rb_define_method(klass, "value", EnumBuilderContext_value, 2);
-  cEnumBuilderContext = klass;
   rb_gc_register_address(&cEnumBuilderContext);
+  cEnumBuilderContext = klass;
 }
 
 /*
@@ -1645,8 +1645,8 @@ void Builder_register(VALUE module) {
   rb_define_method(klass, "add_enum", Builder_add_enum, 1);
   rb_define_method(klass, "initialize", Builder_initialize, 0);
   rb_define_method(klass, "finalize_to_pool", Builder_finalize_to_pool, 1);
-  cBuilder = klass;
   rb_gc_register_address(&cBuilder);
+  cBuilder = klass;
 }
 
 /*
@@ -1713,7 +1713,7 @@ static void validate_msgdef(const upb_msgdef* msgdef) {
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     if (upb_fielddef_label(field) == UPB_LABEL_REQUIRED) {
-      rb_raise(rb_eTypeError, "Required fields are unsupported in proto3.");
+      rb_raise(cTypeError, "Required fields are unsupported in proto3.");
     }
   }
 }
@@ -1723,7 +1723,7 @@ static void validate_enumdef(const upb_enumdef* enumdef) {
   // value.)
   const char* lookup = upb_enumdef_iton(enumdef, 0);
   if (lookup == NULL) {
-    rb_raise(rb_eTypeError,
+    rb_raise(cTypeError,
              "Enum definition does not contain a value for '0'.");
   }
 }

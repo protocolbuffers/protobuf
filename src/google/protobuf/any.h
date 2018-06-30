@@ -92,7 +92,18 @@ extern const char kTypeGoogleProdComPrefix[];  // "type.googleprod.com/".
 // "type.googleapis.com/rpc.QueryOrigin" will return "rpc.QueryOrigin" in
 // *full_type_name. Returns false if the type_url does not have a "/"
 // in the type url separating the full type name.
+//
+// NOTE: this function is available publicly as:
+//   google::protobuf::Any()  // static method on the generated message type.
 bool ParseAnyTypeUrl(const string& type_url, string* full_type_name);
+
+// Get the proto type name and prefix from Any::type_url value. For example,
+// passing "type.googleapis.com/rpc.QueryOrigin" will return
+// "type.googleapis.com/" in *url_prefix and "rpc.QueryOrigin" in
+// *full_type_name. Returns false if the type_url does not have a "/" in the
+// type url separating the full type name.
+bool ParseAnyTypeUrl(const string& type_url, string* url_prefix,
+                     string* full_type_name);
 
 // See if message is of type google.protobuf.Any, if so, return the descriptors
 // for "type_url" and "value" fields.

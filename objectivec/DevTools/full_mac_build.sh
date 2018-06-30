@@ -244,8 +244,7 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
       exit 10
       ;;
     7.* )
-      echo "ERROR: The unittests include Swift code that is now Swift 3.0." 1>&2
-      echo "ERROR: Xcode 8.0 or higher is required to build the test suite, but the library works with Xcode 7.x." 1>&2
+      echo "ERROR: Xcode 7.x no longer supported for building, please use 8.0 or higher." 1>&2
       exit 11
       ;;
     8.0* )
@@ -253,40 +252,36 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=9.0" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 7,OS=10.0" # 64bit
-          -destination "platform=iOS Simulator,name=iPad 2,OS=9.0" # 32bit
-          -destination "platform=iOS Simulator,name=iPad Pro (9.7 inch),OS=10.0" # 64bit
       )
       ;;
-    8.1* )
-      XCODEBUILD_TEST_BASE_IOS+=(
-          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPhone 7,OS=10.1" # 64bit
-          -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPad Pro (9.7 inch),OS=10.1" # 64bit
-      )
-      ;;
-    8.2* )
-      XCODEBUILD_TEST_BASE_IOS+=(
-          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPhone 7,OS=10.2" # 64bit
-          -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPad Pro (9.7 inch),OS=10.2" # 64bit
-      )
-      ;;
-    8.3* )
+    8.[1-3]* )
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
       )
       ;;
-    9.0* )
+    9.[0-2]* )
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
+          # 9.0-9.2 all seem to often fail running destinations in parallel
+          -disable-concurrent-testing
+      )
+      ;;
+    9.3* )
+      XCODEBUILD_TEST_BASE_IOS+=(
+          # Xcode 9.3 chokes targeting iOS 8.x - http://www.openradar.me/39335367
+          -destination "platform=iOS Simulator,name=iPhone 4s,OS=9.0" # 32bit
+          -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
+          # 9.3 also seems to often fail running destinations in parallel
+          -disable-concurrent-testing
       )
       ;;
     * )
-      echo "Time to update the simulator targets for Xcode ${XCODE_VERSION}"
+      echo ""
+      echo "ATTENTION: Time to update the simulator targets for Xcode ${XCODE_VERSION}"
+      echo ""
+      echo "Build aborted!"
       exit 2
       ;;
   esac
@@ -299,7 +294,7 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
     "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Release test
   fi
   # Don't leave the simulator in the developer's face.
-  killall Simulator
+  killall Simulator 2> /dev/null || true
 fi
 if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_OSX=(

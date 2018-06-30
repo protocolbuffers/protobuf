@@ -59,7 +59,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
   }
 
   virtual util::StatusOr<const google::protobuf::Type*> ResolveTypeUrl(
-      StringPiece type_url) const {
+      StringPiece type_url) const override {
     std::map<StringPiece, StatusOrType>::iterator it =
         cached_types_.find(type_url);
     if (it != cached_types_.end()) {
@@ -69,7 +69,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     // cached_types_ map.
     const string& string_type_url =
         *string_storage_.insert(type_url.ToString()).first;
-    google::protobuf::scoped_ptr<google::protobuf::Type> type(new google::protobuf::Type());
+    std::unique_ptr<google::protobuf::Type> type(new google::protobuf::Type());
     util::Status status =
         type_resolver_->ResolveMessageType(string_type_url, type.get());
     StatusOrType result =
@@ -79,13 +79,13 @@ class TypeInfoForTypeResolver : public TypeInfo {
   }
 
   virtual const google::protobuf::Type* GetTypeByTypeUrl(
-      StringPiece type_url) const {
+      StringPiece type_url) const override {
     StatusOrType result = ResolveTypeUrl(type_url);
     return result.ok() ? result.ValueOrDie() : NULL;
   }
 
   virtual const google::protobuf::Enum* GetEnumByTypeUrl(
-      StringPiece type_url) const {
+      StringPiece type_url) const override {
     std::map<StringPiece, StatusOrEnum>::iterator it =
         cached_enums_.find(type_url);
     if (it != cached_enums_.end()) {
@@ -95,7 +95,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     // cached_enums_ map.
     const string& string_type_url =
         *string_storage_.insert(type_url.ToString()).first;
-    google::protobuf::scoped_ptr<google::protobuf::Enum> enum_type(
+    std::unique_ptr<google::protobuf::Enum> enum_type(
         new google::protobuf::Enum());
     util::Status status =
         type_resolver_->ResolveEnumType(string_type_url, enum_type.get());
@@ -105,8 +105,10 @@ class TypeInfoForTypeResolver : public TypeInfo {
     return result.ok() ? result.ValueOrDie() : NULL;
   }
 
+
   virtual const google::protobuf::Field* FindField(
-      const google::protobuf::Type* type, StringPiece camel_case_name) const {
+      const google::protobuf::Type* type,
+      StringPiece camel_case_name) const override {
     std::map<const google::protobuf::Type*, CamelCaseNameTable>::const_iterator
         it = indexed_types_.find(type);
     const CamelCaseNameTable& camel_case_name_table =

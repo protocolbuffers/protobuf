@@ -112,8 +112,14 @@ set(libprotobuf_includes
   ${protobuf_source_dir}/src/google/protobuf/wrappers.pb.h
 )
 
+if (MSVC)
+set(libprotobuf_rc_files
+  ${CMAKE_CURRENT_BINARY_DIR}/version.rc
+)
+endif()
+
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
-  ${libprotobuf_lite_files} ${libprotobuf_files} ${libprotobuf_includes})
+  ${libprotobuf_lite_files} ${libprotobuf_files} ${libprotobuf_includes} ${libprotobuf_rc_files})
 target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT})
 if(protobuf_WITH_ZLIB)
     target_link_libraries(libprotobuf ${ZLIB_LIBRARIES})
@@ -125,5 +131,7 @@ if(MSVC AND protobuf_BUILD_SHARED_LIBS)
     PRIVATE LIBPROTOBUF_EXPORTS)
 endif()
 set_target_properties(libprotobuf PROPERTIES
+    VERSION ${protobuf_VERSION}
     OUTPUT_NAME ${LIB_PREFIX}protobuf
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
+add_library(protobuf::libprotobuf ALIAS libprotobuf)

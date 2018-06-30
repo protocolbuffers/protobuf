@@ -52,6 +52,12 @@ if RUBY_PLATFORM == "java"
   end
 else
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
+    unless RUBY_PLATFORM =~ /darwin/
+      # TODO: also set "no_native to true" for mac if possible. As is,
+      # "no_native" can only be set if the RUBY_PLATFORM doing
+      # cross-compilation is contained in the "ext.cross_platform" array.
+      ext.no_native = true
+    end
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
     ext.cross_compile = true
@@ -64,13 +70,13 @@ else
 
   task 'gem:windows' do
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.4.0:2.3.0:2.2.2:2.1.5:2.0.0"
+    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.5.0:2.4.0:2.3.0:2.2.2:2.1.6:2.0.0"
   end
 
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=2.4.0:2.3.0:2.2.2:2.1.5:2.0.0"
+      system "rake cross native gem RUBY_CC_VERSION=2.5.0:2.4.0:2.3.0:2.2.2:2.1.6:2.0.0"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows']
@@ -81,12 +87,17 @@ end
 # Proto for tests.
 genproto_output << "tests/generated_code.rb"
 genproto_output << "tests/test_import.rb"
+genproto_output << "tests/test_ruby_package.rb"
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
   sh "../src/protoc --ruby_out=. tests/generated_code.proto"
 end
 
 file "tests/test_import.rb" => "tests/test_import.proto" do |file_task|
   sh "../src/protoc --ruby_out=. tests/test_import.proto"
+end
+
+file "tests/test_ruby_package.rb" => "tests/test_ruby_package.proto" do |file_task|
+  sh "../src/protoc --ruby_out=. tests/test_ruby_package.proto"
 end
 
 task :genproto => genproto_output

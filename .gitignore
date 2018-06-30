@@ -19,7 +19,7 @@ m4/lt~obsolete.m4
 autom4te.cache
 
 # downloaded files
-gmock
+/gmock
 
 # in-tree configure-generated files
 Makefile
@@ -47,7 +47,6 @@ any_test.pb.*
 map*unittest.pb.*
 unittest*.pb.*
 cpp_test*.pb.*
-src/google/protobuf/compiler/js/well_known_types_embed.cc
 src/google/protobuf/util/**/*.pb.cc
 src/google/protobuf/util/**/*.pb.h
 
@@ -58,8 +57,6 @@ python/*.egg
 python/.eggs/
 python/.tox
 python/build/
-python/google/protobuf/compiler/
-python/google/protobuf/util/
 
 src/js_embed
 src/protoc
@@ -176,7 +173,16 @@ js/testproto_libs2.js
 ruby/lib/
 ruby/tests/generated_code_pb.rb
 ruby/tests/test_import_pb.rb
+ruby/tests/test_ruby_package_pb.rb
 ruby/Gemfile.lock
 ruby/compatibility_tests/v3.0.0/protoc
 ruby/compatibility_tests/v3.0.0/tests/generated_code_pb.rb
 ruby/compatibility_tests/v3.0.0/tests/test_import_pb.rb
+
+# IntelliJ CLion Config files and build output
+cmake/.idea
+cmake/cmake-build-debug/
+
+# Common build subdirectories.
+./.build/
+./_build/

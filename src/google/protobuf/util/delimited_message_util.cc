@@ -12,7 +12,7 @@ bool SerializeDelimitedToFileDescriptor(const MessageLite& message, int file_des
   return SerializeDelimitedToZeroCopyStream(message, &output);
 }
 
-bool SerializeDelimitedToOstream(const MessageLite& message, ostream* output) {
+bool SerializeDelimitedToOstream(const MessageLite& message, std::ostream* output) {
   {
     io::OstreamOutputStream zero_copy_output(output);
     if (!SerializeDelimitedToZeroCopyStream(message, &zero_copy_output)) return false;

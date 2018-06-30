@@ -128,7 +128,7 @@ GenerateCopyConstructorCode(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   printer->Print(variables_,
-    "int value;\n"
+    "int value = 0;\n"
     "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
     "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
     "       input, &value)));\n");
@@ -195,7 +195,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "inline $type$ $classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  if (has_$name$()) {\n"
-    "    return static_cast< $type$ >($oneof_prefix$$name$_);\n"
+    "    return static_cast< $type$ >($field_member$);\n"
     "  }\n"
     "  return static_cast< $type$ >($default$);\n"
     "}\n"
@@ -209,14 +209,14 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
     "    clear_$oneof_name$();\n"
     "    set_has_$name$();\n"
     "  }\n"
-    "  $oneof_prefix$$name$_ = value;\n"
+    "  $field_member$ = value;\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "}\n");
 }
 
 void EnumOneofFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$oneof_prefix$$name$_ = $default$;\n");
+  printer->Print(variables_, "$field_member$ = $default$;\n");
 }
 
 void EnumOneofFieldGenerator::
@@ -334,7 +334,7 @@ void RepeatedEnumFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   // Don't use ReadRepeatedPrimitive here so that the enum can be validated.
   printer->Print(variables_,
-    "int value;\n"
+    "int value = 0;\n"
     "DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
     "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
     "       input, &value)));\n");
@@ -399,7 +399,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
       "::google::protobuf::io::CodedInputStream::Limit limit = "
           "input->PushLimit(static_cast<int>(length));\n"
       "while (input->BytesUntilLimit() > 0) {\n"
-      "  int value;\n"
+      "  int value = 0;\n"
       "  DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<\n"
       "         int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(\n"
       "       input, &value)));\n");

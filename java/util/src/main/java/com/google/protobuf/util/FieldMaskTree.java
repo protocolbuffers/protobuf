@@ -245,7 +245,7 @@ final class FieldMaskTree {
         }
         if (!source.hasField(field) && !destination.hasField(field)) {
           // If the message field is not present in both source and destination, skip recursing
-          // so we don't create unneccessary empty messages.
+          // so we don't create unnecessary empty messages.
           continue;
         }
         String childPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();

@@ -696,6 +696,22 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Value_List_WithNullElement()
+        {
+            var expected = Value.ForList(Value.ForString("x"), Value.ForNull(), Value.ForString("y"));
+            var actual = Value.Parser.ParseJson("[\"x\", null, \"y\"]");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void StructValue_NullElement()
+        {
+            var expected = Value.ForStruct(new Struct { Fields = { { "x", Value.ForNull() } } });
+            var actual = Value.Parser.ParseJson("{ \"x\": null }");
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
         public void ParseListValue()
         {
             Assert.AreEqual(new ListValue { Values = { Value.ForNumber(1), Value.ForString("x") } }, ListValue.Parser.ParseJson("[1, \"x\"]"));
@@ -809,7 +825,7 @@ namespace Google.Protobuf
             var json = formatter.Format(original); // This is tested in JsonFormatterTest
             var parser = new JsonParser(new JsonParser.Settings(10, registry));
             Assert.AreEqual(original, parser.Parse<Any>(json));
-            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest.TestAllTypes\" }";
+            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest3.TestAllTypes\" }";
             Assert.AreEqual(original, parser.Parse<Any>(valueFirstJson));
         }
 
@@ -820,7 +836,7 @@ namespace Google.Protobuf
             var message = new TestAllTypes { SingleInt32 = 10 };
             var original = Any.Pack(message, "custom.prefix/middle-part");
             var parser = new JsonParser(new JsonParser.Settings(10, registry));
-            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest.TestAllTypes\", \"singleInt32\": 10 }";
+            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest3.TestAllTypes\", \"singleInt32\": 10 }";
             Assert.AreEqual(original, parser.Parse<Any>(json));
         }
 

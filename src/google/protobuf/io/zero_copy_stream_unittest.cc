@@ -56,9 +56,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <sstream>
 
 #include <google/protobuf/testing/file.h>
@@ -83,9 +80,6 @@ namespace {
 
 #ifdef _WIN32
 #define pipe(fds) _pipe(fds, 4096, O_BINARY)
-#endif
-
-#ifdef _MSC_VER
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::internal::win32::access;
@@ -209,7 +203,7 @@ void IoTest::WriteString(ZeroCopyOutputStream* output, const string& str) {
 }
 
 void IoTest::ReadString(ZeroCopyInputStream* input, const string& str) {
-  google::protobuf::scoped_array<char> buffer(new char[str.size() + 1]);
+  std::unique_ptr<char[]> buffer(new char[str.size() + 1]);
   buffer[str.size()] = '\0';
   EXPECT_EQ(ReadFromInput(input, buffer.get(), str.size()), str.size());
   EXPECT_STREQ(str.c_str(), buffer.get());

@@ -110,6 +110,7 @@
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
 #include <assert.h>
+#include <atomic>
 #include <climits>
 #include <string>
 #include <utility>
@@ -131,7 +132,6 @@
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
 #endif
-#include <google/protobuf/stubs/atomicops.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/port.h>
@@ -367,42 +367,32 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Total Bytes Limit -----------------------------------------------
   // To prevent malicious users from sending excessively large messages
-  // and causing integer overflows or memory exhaustion, CodedInputStream
-  // imposes a hard limit on the total number of bytes it will read.
+  // and causing memory exhaustion, CodedInputStream imposes a hard limit on
+  // the total number of bytes it will read.
 
   // Sets the maximum number of bytes that this CodedInputStream will read
-  // before refusing to continue.  To prevent integer overflows in the
-  // protocol buffers implementation, as well as to prevent servers from
-  // allocating enormous amounts of memory to hold parsed messages, the
-  // maximum message length should be limited to the shortest length that
-  // will not harm usability.  The theoretical shortest message that could
-  // cause integer overflows is 512MB.  The default limit is 64MB.  Apps
-  // should set shorter limits if possible.  For backwards compatibility all
-  // negative values get squashed to -1, as other negative values might have
-  // special internal meanings.  An error will always be printed to stderr if
-  // the limit is reached.
+  // before refusing to continue.  To prevent servers from allocating enormous
+  // amounts of memory to hold parsed messages, the maximum message length
+  // should be limited to the shortest length that will not harm usability.
+  // The default limit is INT_MAX (~2GB) and apps should set shorter limits
+  // if possible. An error will always be printed to stderr if the limit is
+  // reached.
+  //
+  // Note: setting a limit less than the current read position is interpreted
+  // as a limit on the current position.
   //
   // This is unrelated to PushLimit()/PopLimit().
-  //
-  // Hint:  If you are reading this because your program is printing a
-  //   warning about dangerously large protocol messages, you may be
-  //   confused about what to do next.  The best option is to change your
-  //   design such that excessively large messages are not necessary.
-  //   For example, try to design file formats to consist of many small
-  //   messages rather than a single large one.  If this is infeasible,
-  //   you will need to increase the limit.  Chances are, though, that
-  //   your code never constructs a CodedInputStream on which the limit
-  //   can be set.  You probably parse messages by calling things like
-  //   Message::ParseFromString().  In this case, you will need to change
-  //   your code to instead construct some sort of ZeroCopyInputStream
-  //   (e.g. an ArrayInputStream), construct a CodedInputStream around
-  //   that, then you can adjust the limit. Then call
-  //   Message::ParseFromCodedStream() instead. Yes, it's more work, but
-  //   you're doing something unusual.
-  void SetTotalBytesLimit(int total_bytes_limit, int warning_threshold);
+  void SetTotalBytesLimit(int total_bytes_limit);
 
-  // The Total Bytes Limit minus the Current Position, or -1 if there
-  // is no Total Bytes Limit.
+  PROTOBUF_RUNTIME_DEPRECATED(
+      "Please use the single parameter version of SetTotalBytesLimit(). The "
+      "second parameter is ignored.")
+  void SetTotalBytesLimit(int total_bytes_limit, int) {
+    SetTotalBytesLimit(total_bytes_limit);
+  }
+
+  // The Total Bytes Limit minus the Current Position, or -1 if the total bytes
+  // limit is INT_MAX.
   int BytesUntilTotalBytesLimit() const;
 
   // Recursion Limit -------------------------------------------------
@@ -579,8 +569,6 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   int recursion_budget_;
   // Recursion depth limit, set by SetRecursionLimit().
   int recursion_limit_;
-
-  bool disable_strict_correctness_enforcement_;
 
   // See SetExtensionRegistry().
   const DescriptorPool* extension_pool_;
@@ -841,7 +829,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // canonicalization specification and implement the serializer using
   // reflection APIs rather than relying on this API.
   //
-  // If determinisitc serialization is requested, the serializer will
+  // If deterministic serialization is requested, the serializer will
   // sort map entries by keys in lexicographical order or numerical order.
   // (This is an implementation detail and may subject to change.)
   //
@@ -852,21 +840,18 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // Otherwise, SetSerializationDeterministic has been called, and the last
   // value passed to it is all that matters.
   void SetSerializationDeterministic(bool value) {
-    serialization_deterministic_is_overridden_ = true;
-    serialization_deterministic_override_ = value;
+    is_serialization_deterministic_ = value;
   }
   // See above.  Also, note that users of this CodedOutputStream may need to
   // call IsSerializationDeterministic() to serialize in the intended way.  This
   // CodedOutputStream cannot enforce a desire for deterministic serialization
   // by itself.
   bool IsSerializationDeterministic() const {
-    return serialization_deterministic_is_overridden_ ?
-        serialization_deterministic_override_ :
-        IsDefaultSerializationDeterministic();
+    return is_serialization_deterministic_;
   }
 
   static bool IsDefaultSerializationDeterministic() {
-    return google::protobuf::internal::NoBarrier_Load(&default_serialization_deterministic_);
+    return default_serialization_deterministic_.load(std::memory_order_relaxed) != 0;
   }
 
  private:
@@ -878,12 +863,8 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   int total_bytes_;  // Sum of sizes of all buffers seen so far.
   bool had_error_;   // Whether an error occurred during output.
   bool aliasing_enabled_;  // See EnableAliasing().
-  // See SetSerializationDeterministic() regarding these three fields.
-  bool serialization_deterministic_is_overridden_;
-  bool serialization_deterministic_override_;
-  // Conceptually, default_serialization_deterministic_ is an atomic bool.
-  // TODO(haberman): replace with std::atomic<bool> when we move to C++11.
-  static google::protobuf::internal::AtomicWord default_serialization_deterministic_;
+  bool is_serialization_deterministic_;
+  static std::atomic<bool> default_serialization_deterministic_;
 
   // Advance the buffer by a given number of bytes.
   void Advance(int amount);
@@ -910,7 +891,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // thread has done so.
   friend void ::google::protobuf::internal::MapTestForceDeterministic();
   static void SetDefaultSerializationDeterministic() {
-    google::protobuf::internal::NoBarrier_Store(&default_serialization_deterministic_, 1);
+    default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
 };
 
@@ -1053,8 +1034,7 @@ inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
     // Other hot case: cutoff >= 0x80, buffer_ has at least two bytes available,
     // and tag is two bytes.  The latter is tested by bitwise-and-not of the
     // first byte and the second byte.
-    if (cutoff >= 0x80 &&
-        GOOGLE_PREDICT_TRUE(buffer_ + 1 < buffer_end_) &&
+    if (cutoff >= 0x80 && GOOGLE_PREDICT_TRUE(buffer_ + 1 < buffer_end_) &&
         GOOGLE_PREDICT_TRUE((buffer_[0] & ~buffer_[1]) >= 0x80)) {
       const uint32 kMax2ByteVarint = (0x7f << 7) + 0x7f;
       uint32 tag = (1u << 7) * buffer_[1] + (buffer_[0] - 0x80);
@@ -1364,7 +1344,6 @@ inline CodedInputStream::CodedInputStream(ZeroCopyInputStream* input)
     total_bytes_limit_(kDefaultTotalBytesLimit),
     recursion_budget_(default_recursion_limit_),
     recursion_limit_(default_recursion_limit_),
-    disable_strict_correctness_enforcement_(true),
     extension_pool_(NULL),
     extension_factory_(NULL) {
   // Eagerly Refresh() so buffer space is immediately available.
@@ -1385,7 +1364,6 @@ inline CodedInputStream::CodedInputStream(const uint8* buffer, int size)
     total_bytes_limit_(kDefaultTotalBytesLimit),
     recursion_budget_(default_recursion_limit_),
     recursion_limit_(default_recursion_limit_),
-    disable_strict_correctness_enforcement_(true),
     extension_pool_(NULL),
     extension_factory_(NULL) {
   // Note that setting current_limit_ == size is important to prevent some

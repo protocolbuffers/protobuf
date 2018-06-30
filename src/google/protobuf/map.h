@@ -37,6 +37,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
 
+#include <initializer_list>
 #include <iterator>
 #include <limits>  // To support Visual Studio 2008
 #include <set>
@@ -142,7 +143,6 @@ class Map {
     insert(other.begin(), other.end());
   }
 
-#if LANG_CXX11
   Map(Map&& other) noexcept : Map() {
     if (other.arena_) {
       *this = other;
@@ -160,7 +160,6 @@ class Map {
     }
     return *this;
   }
-#endif
 
   template <class InputIt>
   Map(const InputIt& first, const InputIt& last)
@@ -741,7 +740,7 @@ class Map {
           return true;
         }
       } else if (GOOGLE_PREDICT_FALSE(new_size <= lo_cutoff &&
-                               num_buckets_ > kMinTableSize)) {
+                                    num_buckets_ > kMinTableSize)) {
         size_type lg2_of_size_reduction_factor = 1;
         // It's possible we want to shrink a lot here... size() could even be 0.
         // So, estimate how much to shrink by making sure we don't shrink so
@@ -1112,6 +1111,9 @@ class Map {
         operator[](it->first) = it->second;
       }
     }
+  }
+  void insert(std::initializer_list<value_type> values) {
+    insert(values.begin(), values.end());
   }
 
   // Erase and clear

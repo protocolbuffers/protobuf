@@ -30,11 +30,12 @@
 
 // Author: laszlocsomor@google.com (Laszlo Csomor)
 //
-// Unit tests for long-path-aware open/mkdir/access on Windows.
+// Unit tests for long-path-aware open/mkdir/access/etc. on Windows, as well as
+// for the supporting utility functions.
 //
 // This file is only used on Windows, it's empty on other platforms.
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 
 #define WIN32_LEAN_AND_MEAN
 #include <errno.h>
@@ -47,8 +48,6 @@
 #include <windows.h>
 
 #include <google/protobuf/stubs/io_win32.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -60,6 +59,27 @@ namespace protobuf {
 namespace internal {
 namespace win32 {
 namespace {
+
+const char kUtf8Text[] = {
+    'h', 'i', ' ',
+    // utf-8: 11010000 10011111, utf-16: 100 0001 1111 = 0x041F
+    0xd0, 0x9f,
+    // utf-8: 11010001 10000000, utf-16: 100 0100 0000 = 0x0440
+    0xd1, 0x80,
+    // utf-8: 11010000 10111000, utf-16: 100 0011 1000 = 0x0438
+    0xd0, 0xb8,
+    // utf-8: 11010000 10110010, utf-16: 100 0011 0010 = 0x0432
+    0xd0, 0xb2,
+    // utf-8: 11010000 10110101, utf-16: 100 0011 0101 = 0x0435
+    0xd0, 0xb5,
+    // utf-8: 11010001 10000010, utf-16: 100 0100 0010 = 0x0442
+    0xd1, 0x82, 0
+};
+
+const wchar_t kUtf16Text[] = {
+  L'h', L'i', L' ',
+  L'\x41f', L'\x440', L'\x438', L'\x432', L'\x435', L'\x442', 0
+};
 
 using std::string;
 using std::wstring;
@@ -73,6 +93,7 @@ class IoWin32Test : public ::testing::Test {
   bool CreateAllUnder(wstring path);
   bool DeleteAllUnder(wstring path);
 
+  WCHAR working_directory[MAX_PATH];
   string test_tmpdir;
   wstring wtest_tmpdir;
 };
@@ -89,71 +110,88 @@ void StripTrailingSlashes(string* str) {
   for (; i >= 0 && ((*str)[i] == '/' || (*str)[i] == '\\'); --i) {}
   str->resize(i+1);
 }
+
+bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
+  DWORD size = ::GetEnvironmentVariableW(name, NULL, 0);
+  if (size > 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) {
+    std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
+    ::GetEnvironmentVariableW(name, wcs.get(), size);
+    // GetEnvironmentVariableA retrieves an Active-Code-Page-encoded text which
+    // we'd first need to convert to UTF-16 then to UTF-8, because there seems
+    // to be no API function to do that conversion directly.
+    // GetEnvironmentVariableW retrieves an UTF-16-encoded text, which we need
+    // to convert to UTF-8.
+    return strings::wcs_to_utf8(wcs.get(), result);
+  } else {
+    return false;
+  }
+}
+
+bool GetCwdAsUtf8(string* result) {
+  DWORD size = ::GetCurrentDirectoryW(0, NULL);
+  if (size > 0) {
+    std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
+    ::GetCurrentDirectoryW(size, wcs.get());
+    // GetCurrentDirectoryA retrieves an Active-Code-Page-encoded text which
+    // we'd first need to convert to UTF-16 then to UTF-8, because there seems
+    // to be no API function to do that conversion directly.
+    // GetCurrentDirectoryW retrieves an UTF-16-encoded text, which we need
+    // to convert to UTF-8.
+    return strings::wcs_to_utf8(wcs.get(), result);
+  } else {
+    return false;
+  }
+}
+
 }  // namespace
 
 void IoWin32Test::SetUp() {
-  test_tmpdir = string(TestTempDir());
+  test_tmpdir.clear();
   wtest_tmpdir.clear();
-  if (test_tmpdir.empty()) {
-    const char* test_tmpdir_env = getenv("TEST_TMPDIR");
-    if (test_tmpdir_env != NULL && *test_tmpdir_env) {
-      test_tmpdir = string(test_tmpdir_env);
-    }
+  EXPECT_GT(::GetCurrentDirectoryW(MAX_PATH, working_directory), 0);
 
-    // Only Bazel defines TEST_TMPDIR, CMake does not, so look for other
-    // suitable environment variables.
-    if (test_tmpdir.empty()) {
-      static const char* names[] = {"TEMP", "TMP"};
-      for (int i = 0; i < sizeof(names)/sizeof(names[0]); ++i) {
-        const char* name = names[i];
-        test_tmpdir_env = getenv(name);
-        if (test_tmpdir_env != NULL && *test_tmpdir_env) {
-          test_tmpdir = string(test_tmpdir_env);
-          break;
-        }
-      }
-    }
-
-    // No other temp directory was found. Use the current director
-    if (test_tmpdir.empty()) {
-      char buffer[MAX_PATH];
-      // Use GetCurrentDirectoryA instead of GetCurrentDirectoryW, because the
-      // current working directory must always be shorter than MAX_PATH, even
-      // with
-      // "\\?\" prefix (except on Windows 10 version 1607 and beyond, after
-      // opting in to long paths by default [1]).
-      //
-      // [1] https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
-      DWORD result = ::GetCurrentDirectoryA(MAX_PATH, buffer);
-      if (result > 0) {
-        test_tmpdir = string(buffer);
-      } else {
-        // Using assertions in SetUp/TearDown seems to confuse the test
-        // framework, so just leave the member variables empty in case of
-        // failure.
-        GOOGLE_CHECK_OK(false);
-        return;
-      }
-    }
+  string tmp;
+  bool ok = false;
+  if (!ok) {
+    // Bazel sets this environment variable when it runs tests.
+    ok = GetEnvVarAsUtf8(L"TEST_TMPDIR", &tmp);
+  }
+  if (!ok) {
+    // Bazel 0.8.0 sets this environment for every build and test action.
+    ok = GetEnvVarAsUtf8(L"TEMP", &tmp);
+  }
+  if (!ok) {
+    // Bazel 0.8.0 sets this environment for every build and test action.
+    ok = GetEnvVarAsUtf8(L"TMP", &tmp);
+  }
+  if (!ok) {
+    // Fall back to using the current directory.
+    ok = GetCwdAsUtf8(&tmp);
+  }
+  if (!ok || tmp.empty()) {
+    FAIL() << "Cannot find a temp directory.";
   }
 
-  StripTrailingSlashes(&test_tmpdir);
-  test_tmpdir += "\\io_win32_unittest.tmp";
-
-  // CreateDirectoryA's limit is 248 chars, see MSDN.
-  // https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
-  wtest_tmpdir = testonly_path_to_winpath(test_tmpdir);
-  if (!DeleteAllUnder(wtest_tmpdir) || !CreateAllUnder(wtest_tmpdir)) {
-    GOOGLE_CHECK_OK(false);
-    test_tmpdir.clear();
-    wtest_tmpdir.clear();
-  }
+  StripTrailingSlashes(&tmp);
+  std::stringstream result;
+  // Deleting files and directories is asynchronous on Windows, and if TearDown
+  // just deleted the previous temp directory, sometimes we cannot recreate the
+  // same directory.
+  // Use a counter so every test method gets its own temp directory.
+  static unsigned int counter = 0;
+  result << tmp << "\\w32tst" << counter++ << ".tmp";
+  test_tmpdir = result.str();
+  wtest_tmpdir = testonly_utf8_to_winpath(test_tmpdir.c_str());
+  ASSERT_FALSE(wtest_tmpdir.empty());
+  ASSERT_TRUE(DeleteAllUnder(wtest_tmpdir));
+  ASSERT_TRUE(CreateAllUnder(wtest_tmpdir));
 }
 
 void IoWin32Test::TearDown() {
   if (!wtest_tmpdir.empty()) {
     DeleteAllUnder(wtest_tmpdir);
   }
+  ::SetCurrentDirectoryW(working_directory);
 }
 
 bool IoWin32Test::CreateAllUnder(wstring path) {
@@ -191,8 +229,8 @@ bool IoWin32Test::DeleteAllUnder(wstring path) {
     path = wstring(L"\\\\?\\") + path;
   }
   // Append "\" if necessary.
-  if (path[path.size() - 1] != '\\') {
-    path.push_back('\\');
+  if (path[path.size() - 1] != L'\\') {
+    path.push_back(L'\\');
   }
 
   WIN32_FIND_DATAW metadata;
@@ -309,13 +347,24 @@ TEST_F(IoWin32Test, MkdirTest) {
   ASSERT_EQ(errno, ENOENT);
 }
 
+TEST_F(IoWin32Test, MkdirTestNonAscii) {
+  ASSERT_INITIALIZED;
+
+  // Create a non-ASCII path.
+  // Ensure that we can create the directory using SetCurrentDirectoryW.
+  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1").c_str(), NULL));
+  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1\\" + kUtf16Text).c_str(), NULL));
+  // Ensure that we can create a very similarly named directory using mkdir.
+  // We don't attemp to delete and recreate the same directory, because on
+  // Windows, deleting files and directories seems to be asynchronous.
+  EXPECT_EQ(mkdir((test_tmpdir + "\\2").c_str(), 0644), 0);
+  EXPECT_EQ(mkdir((test_tmpdir + "\\2\\" + kUtf8Text).c_str(), 0644), 0);
+}
+
 TEST_F(IoWin32Test, ChdirTest) {
-  char owd[MAX_PATH];
-  EXPECT_GT(::GetCurrentDirectoryA(MAX_PATH, owd), 0);
   string path("C:\\");
   EXPECT_EQ(access(path.c_str(), F_OK), 0);
   ASSERT_EQ(chdir(path.c_str()), 0);
-  EXPECT_TRUE(::SetCurrentDirectoryA(owd));
 
   // Do not try to chdir into the test_tmpdir, it may already contain directory
   // names with trailing dots.
@@ -330,17 +379,37 @@ TEST_F(IoWin32Test, ChdirTest) {
   ASSERT_NE(chdir(path.c_str()), 0);
 }
 
+TEST_F(IoWin32Test, ChdirTestNonAscii) {
+  ASSERT_INITIALIZED;
+
+  // Create a directory with a non-ASCII path and ensure we can cd into it.
+  wstring wNonAscii(wtest_tmpdir + L"\\" + kUtf16Text);
+  string nonAscii;
+  EXPECT_TRUE(strings::wcs_to_utf8(wNonAscii.c_str(), &nonAscii));
+  EXPECT_TRUE(CreateDirectoryW(wNonAscii.c_str(), NULL));
+  WCHAR cwd[MAX_PATH];
+  EXPECT_TRUE(GetCurrentDirectoryW(MAX_PATH, cwd));
+  // Ensure that we can cd into the path using SetCurrentDirectoryW.
+  EXPECT_TRUE(SetCurrentDirectoryW(wNonAscii.c_str()));
+  EXPECT_TRUE(SetCurrentDirectoryW(cwd));
+  // Ensure that we can cd into the path using chdir.
+  ASSERT_EQ(chdir(nonAscii.c_str()), 0);
+  // Ensure that the GetCurrentDirectoryW returns the desired path.
+  EXPECT_TRUE(GetCurrentDirectoryW(MAX_PATH, cwd));
+  ASSERT_EQ(wNonAscii, cwd);
+}
+
 TEST_F(IoWin32Test, AsWindowsPathTest) {
   DWORD size = GetCurrentDirectoryW(0, NULL);
-  scoped_array<wchar_t> cwd_str(new wchar_t[size]);
+  std::unique_ptr<wchar_t[]> cwd_str(new wchar_t[size]);
   EXPECT_GT(GetCurrentDirectoryW(size, cwd_str.get()), 0);
   wstring cwd = wstring(L"\\\\?\\") + cwd_str.get();
 
-  ASSERT_EQ(testonly_path_to_winpath("relative_mkdirtest"),
+  ASSERT_EQ(testonly_utf8_to_winpath("relative_mkdirtest"),
             cwd + L"\\relative_mkdirtest");
-  ASSERT_EQ(testonly_path_to_winpath("preserve//\\trailing///"),
+  ASSERT_EQ(testonly_utf8_to_winpath("preserve//\\trailing///"),
             cwd + L"\\preserve\\trailing\\");
-  ASSERT_EQ(testonly_path_to_winpath("./normalize_me\\/../blah"),
+  ASSERT_EQ(testonly_utf8_to_winpath("./normalize_me\\/../blah"),
             cwd + L"\\blah");
   std::ostringstream relpath;
   for (wchar_t* p = cwd_str.get(); *p; ++p) {
@@ -349,18 +418,28 @@ TEST_F(IoWin32Test, AsWindowsPathTest) {
     }
   }
   relpath << ".\\/../\\./beyond-toplevel";
-  ASSERT_EQ(testonly_path_to_winpath(relpath.str()),
+  ASSERT_EQ(testonly_utf8_to_winpath(relpath.str().c_str()),
             wstring(L"\\\\?\\") + cwd_str.get()[0] + L":\\beyond-toplevel");
 
   // Absolute unix paths lack drive letters, driveless absolute windows paths
   // do too. Neither can be converted to a drive-specifying absolute Windows
   // path.
-  ASSERT_EQ(testonly_path_to_winpath("/absolute/unix/path"), L"");
+  ASSERT_EQ(testonly_utf8_to_winpath("/absolute/unix/path"), L"");
   // Though valid on Windows, we also don't support UNC paths (\\UNC\\blah).
-  ASSERT_EQ(testonly_path_to_winpath("\\driveless\\absolute"), L"");
+  ASSERT_EQ(testonly_utf8_to_winpath("\\driveless\\absolute"), L"");
   // Though valid in cmd.exe, drive-relative paths are not supported.
-  ASSERT_EQ(testonly_path_to_winpath("c:foo"), L"");
-  ASSERT_EQ(testonly_path_to_winpath("c:/foo"), L"\\\\?\\c:\\foo");
+  ASSERT_EQ(testonly_utf8_to_winpath("c:foo"), L"");
+  ASSERT_EQ(testonly_utf8_to_winpath("c:/foo"), L"\\\\?\\c:\\foo");
+  ASSERT_EQ(testonly_utf8_to_winpath("\\\\?\\C:\\foo"), L"\\\\?\\C:\\foo");
+}
+
+TEST_F(IoWin32Test, Utf8Utf16ConversionTest) {
+  string mbs;
+  wstring wcs;
+  ASSERT_TRUE(strings::utf8_to_wcs(kUtf8Text, &wcs));
+  ASSERT_TRUE(strings::wcs_to_utf8(kUtf16Text, &mbs));
+  ASSERT_EQ(wcs, kUtf16Text);
+  ASSERT_EQ(mbs, kUtf8Text);
 }
 
 }  // namespace
@@ -369,5 +448,5 @@ TEST_F(IoWin32Test, AsWindowsPathTest) {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // defined(_MSC_VER)
+#endif  // defined(_WIN32)
 
