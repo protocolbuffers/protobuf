@@ -134,7 +134,7 @@ extern "C" {
     // Adds the C++ API
     if (PyObject* api =
             PyCapsule_New(new ApiImplementation(),
-                          proto2::python::PyProtoAPICapsuleName(), NULL)) {
+                          google::protobuf::python::PyProtoAPICapsuleName(), NULL)) {
       PyModule_AddObject(m, "proto_API", api);
     } else {
       return INITFUNC_ERRORVAL;
