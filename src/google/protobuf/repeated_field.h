@@ -705,13 +705,13 @@ void GenericTypeHandler<string>::Merge(const string& from,
 // Declarations of the specialization as we cannot define them here, as the
 // header that defines ProtocolMessage depends on types defined in this header.
 #define DECLARE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES(TypeName)                 \
-    template<>                                                                 \
+    template<> LIBPROTOBUF_EXPORT                                              \
     TypeName* GenericTypeHandler<TypeName>::NewFromPrototype(                  \
         const TypeName* prototype, google::protobuf::Arena* arena);                      \
-    template<>                                                                 \
+    template<> LIBPROTOBUF_EXPORT                                              \
     google::protobuf::Arena* GenericTypeHandler<TypeName>::GetArena(                     \
         TypeName* value);                                                      \
-    template<>                                                                 \
+    template<> LIBPROTOBUF_EXPORT                                              \
     void* GenericTypeHandler<TypeName>::GetMaybeArenaPointer(                  \
         TypeName* value);
 
