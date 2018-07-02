@@ -1868,6 +1868,9 @@ static bool AddIntConstant(PyTypeObject *type, const char* name, int value) {
 
 
 bool InitDescriptor() {
+  if (PyType_Ready(&PyBaseDescriptor_Type) < 0)
+    return false;
+
   if (PyType_Ready(&PyMessageDescriptor_Type) < 0)
     return false;
 
