@@ -18,7 +18,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
     # jRuby additions to the Array class that we can ignore
     arr_methods -= [ :indices, :iter_for_each, :iter_for_each_index,
       :iter_for_each_with_index, :dimensions, :copy_data, :copy_data_simple,
-      :nitems, :iter_for_reverse_each, :indexes]
+      :nitems, :iter_for_reverse_each, :indexes, :append, :prepend]
     arr_methods.each do |method_name|
       assert m.repeated_string.respond_to?(method_name) == true, "does not respond to #{method_name}"
     end

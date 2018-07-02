@@ -222,33 +222,55 @@ module BasicTest
 
     def test_type_errors
       m = TestMessage.new
-      assert_raise TypeError do
+
+      # Use rescue to allow subclasses of error
+      success = false
+      begin
         m.optional_int32 = "hello"
+      rescue TypeError
+        success = true
       end
-      assert_raise TypeError do
-        m.optional_string = 42
-      end
-      assert_raise TypeError do
+      assert(success)
+
+      success = false
+      begin
         m.optional_string = nil
+      rescue TypeError
+        success = true
       end
-      assert_raise TypeError do
+      assert(success)
+
+      success = false
+      begin
         m.optional_bool = 42
+      rescue TypeError
+        success = true
       end
-      assert_raise TypeError do
+      assert(success)
+
+      success = false
+      begin
         m.optional_msg = TestMessage.new  # expects TestMessage2
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
-      assert_raise TypeError do
+      success = false
+      begin
         m.repeated_int32 = []  # needs RepeatedField
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
-      assert_raise TypeError do
-        m.repeated_int32.push "hello"
-      end
-
-      assert_raise TypeError do
+      success = false
+      begin
         m.repeated_msg.push TestMessage.new
+      rescue TypeError
+        success = true
       end
+      assert(success)
     end
 
     def test_string_encoding
@@ -275,7 +297,7 @@ module BasicTest
 
       # strings are immutable so we can't do this, but serialize should catch it.
       m.optional_string = "asdf".encode!('UTF-8')
-      assert_raise RuntimeError do
+      assert_raise do
         m.optional_string.encode!('ASCII-8BIT')
       end
     end
@@ -312,10 +334,14 @@ module BasicTest
       assert l.pop == 9
       assert l == [5, 2, 3, 4, 7, 8]
 
-      assert_raise TypeError do
+      success = false
+      begin
         m = TestMessage.new
         l.push m
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
       m = TestMessage.new
       m.repeated_int32 = l
@@ -362,12 +388,22 @@ module BasicTest
       l = Google::Protobuf::RepeatedField.new(:message, TestMessage)
       l.push TestMessage.new
       assert l.count == 1
-      assert_raise TypeError do
+
+      success = false
+      begin
         l.push TestMessage2.new
+      rescue TypeError
+        success = true
       end
-      assert_raise TypeError do
+      assert(success)
+
+      success = false
+      begin
         l.push 42
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
       l2 = l.dup
       assert l2[0] == l[0]
@@ -493,9 +529,14 @@ module BasicTest
       assert m.length == 0
       assert m == {}
 
-      assert_raise TypeError do
+      success = false
+      begin
         m[1] = 1
+      rescue TypeError
+        success = true
       end
+      assert(success)
+
       assert_raise RangeError do
         m["asdf"] = 0x1_0000_0000
       end
@@ -514,18 +555,28 @@ module BasicTest
       assert_raise RangeError do
         m[0x8000_0000] = 1
       end
-      assert_raise TypeError do
+
+      success = false
+      begin
         m["asdf"] = 1
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
       m = Google::Protobuf::Map.new(:int64, :int32)
       m[0x1000_0000_0000_0000] = 1
       assert_raise RangeError do
         m[0x1_0000_0000_0000_0000] = 1
       end
-      assert_raise TypeError do
+
+      success = false
+      begin
         m["asdf"] = 1
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
       m = Google::Protobuf::Map.new(:uint32, :int32)
       m[0x8000_0000] = 1
@@ -548,18 +599,32 @@ module BasicTest
       m = Google::Protobuf::Map.new(:bool, :int32)
       m[true] = 1
       m[false] = 2
-      assert_raise TypeError do
+
+      success = false
+      begin
         m[1] = 1
+      rescue TypeError
+        success = true
       end
-      assert_raise TypeError do
+      assert(success)
+
+      success = false
+      begin
         m["asdf"] = 1
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
       m = Google::Protobuf::Map.new(:string, :int32)
       m["asdf"] = 1
-      assert_raise TypeError do
+      success = false
+      begin
         m[1] = 1
+      rescue TypeError
+        success = true
       end
+      assert(success)
       assert_raise Encoding::UndefinedConversionError do
         bytestring = ["FFFF"].pack("H*")
         m[bytestring] = 1
@@ -570,17 +635,25 @@ module BasicTest
       m[bytestring] = 1
       # Allowed -- we will automatically convert to ASCII-8BIT.
       m["asdf"] = 1
-      assert_raise TypeError do
+      success = false
+      begin
         m[1] = 1
+      rescue TypeError
+        success = true
       end
+      assert(success)
     end
 
     def test_map_msg_enum_valuetypes
       m = Google::Protobuf::Map.new(:string, :message, TestMessage)
       m["asdf"] = TestMessage.new
-      assert_raise TypeError do
+      success = false
+      begin
         m["jkl;"] = TestMessage2.new
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
       m = Google::Protobuf::Map.new(
         :string, :message, TestMessage,
@@ -645,23 +718,39 @@ module BasicTest
       m.map_string_msg.delete("c")
       assert m.map_string_msg == { "a" => TestMessage2.new(:foo => 1) }
 
-      assert_raise TypeError do
+      success = false
+      begin
         m.map_string_msg["e"] = TestMessage.new # wrong value type
+      rescue TypeError
+        success = true
       end
+      assert(success)
       # ensure nothing was added by the above
       assert m.map_string_msg == { "a" => TestMessage2.new(:foo => 1) }
 
       m.map_string_int32 = Google::Protobuf::Map.new(:string, :int32)
-      assert_raise TypeError do
+      success = false
+      begin
         m.map_string_int32 = Google::Protobuf::Map.new(:string, :int64)
+      rescue TypeError
+        success = true
       end
-      assert_raise TypeError do
+      assert(success)
+      success = false
+      begin
         m.map_string_int32 = {}
+      rescue TypeError
+        success = true
       end
+      assert(success)
 
-      assert_raise TypeError do
+      success = false
+      begin
         m = MapMessage.new(:map_string_int32 => { 1 => "I am not a number" })
+      rescue TypeError
+        success = true
       end
+      assert(success)
     end
 
     def test_map_encode_decode
@@ -922,22 +1011,30 @@ module BasicTest
 
     def test_def_errors
       s = Google::Protobuf::DescriptorPool.new
-      assert_raise TypeError do
+      success = false
+      begin
         s.build do
           # enum with no default (integer value 0)
           add_enum "MyEnum" do
             value :A, 1
           end
         end
+      rescue TypeError
+        success = true
       end
-      assert_raise TypeError do
+      assert(success)
+      success = false
+      begin
         s.build do
           # message with required field (unsupported in proto3)
           add_message "MyMessage" do
             required :foo, :int32, 1
           end
         end
+      rescue TypeError
+        success = true
       end
+      assert(success)
     end
 
     def test_corecursive
