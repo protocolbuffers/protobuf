@@ -325,6 +325,18 @@ build_ruby22() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.2 && cd ..
 }
+build_ruby23() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh ruby-2.3 && cd ..
+}
+build_ruby24() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh ruby-2.4 && cd ..
+}
+build_ruby25() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh ruby-2.5.0 && cd ..
+}
 build_jruby() {
   internal_build_cpp  # For conformance tests.
   # TODO(xiaofeng): Upgrade to jruby-9.x. There are some broken jests to be
@@ -334,6 +346,9 @@ build_jruby() {
 build_ruby_all() {
   build_ruby21
   build_ruby22
+  build_ruby23
+  build_ruby24
+  build_ruby25
   # TODO(teboring): Disable jruby test temperarily for it randomly fails.
   # https://grpc-testing.appspot.com/job/protobuf_pull_request/735/consoleFull.
   # build_jruby
