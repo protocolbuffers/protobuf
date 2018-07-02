@@ -144,6 +144,7 @@ Some examples:
   The `import_style` option is left to the default, which is `closure`.
 - `--js_out=import_style=commonjs,binary:protos`: this contains the options
   `import_style=commonjs` and `binary` and outputs to the directory `protos`.
+  `import_style=commonjs_strict` doesn't expose the output on the global scope.
 
 API
 ===

@@ -41,6 +41,12 @@ var group2Protos = [
   'commonjs/test7/test7.proto',
 ];
 
+var group3Protos = [
+  'test9.proto',
+  'test10.proto'
+];
+
+
 gulp.task('genproto_well_known_types_closure', function (cb) {
   exec(protoc + ' --js_out=one_output_file_per_input_file,binary:. -I ../src -I . ' + wellKnownTypes.join(' '),
        function (err, stdout, stderr) {
@@ -112,6 +118,15 @@ gulp.task('genproto_wellknowntypes', function (cb) {
     cb(err);
   });
 });
+gulp.task('genproto_group3_commonjs_strict', function (cb) {
+  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs_strict,binary:commonjs_out -I ../src -I commonjs -I . ' + group3Protos.join(' '),
+       function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
 
 function getClosureBuilderCommand(exportsFile, outputFile) {
   return './node_modules/google-closure-library/closure/bin/build/closurebuilder.py ' +
@@ -159,7 +174,7 @@ gulp.task('commonjs_testdeps', function (cb) {
   });
 });
 
-gulp.task('make_commonjs_out', ['dist', 'genproto_well_known_types_commonjs', 'genproto_group1_commonjs', 'genproto_group2_commonjs', 'genproto_commonjs_wellknowntypes', 'commonjs_asserts', 'commonjs_testdeps'], function (cb) {
+gulp.task('make_commonjs_out', ['dist', 'genproto_well_known_types_commonjs', 'genproto_group1_commonjs', 'genproto_group2_commonjs', 'genproto_commonjs_wellknowntypes', 'commonjs_asserts', 'commonjs_testdeps', 'genproto_group3_commonjs_strict'], function (cb) {
   // TODO(haberman): minify this more aggressively.
   // Will require proper externs/exports.
   var cmd = "mkdir -p commonjs_out/binary && mkdir -p commonjs_out/test_node_modules && ";
@@ -174,6 +189,7 @@ gulp.task('make_commonjs_out', ['dist', 'genproto_well_known_types_commonjs', 'g
   exec(cmd +
        'cp commonjs/jasmine.json commonjs_out/jasmine.json && ' +
        'cp google-protobuf.js commonjs_out/test_node_modules && ' +
+       'cp commonjs/strict_test.js commonjs_out/strict_test.js &&' +
        'cp commonjs/import_test.js commonjs_out/import_test.js',
        function (err, stdout, stderr) {
     console.log(stdout);
