@@ -68,12 +68,15 @@ struct GeneratorOptions {
     kImportBrowser,   // no import statements
     kImportEs6,       // import { member } from ''
   } import_style;
+  // Preserve field names in toObject?
+  bool preserve_proto_fieldnames;
 
   GeneratorOptions()
       : output_dir("."),
         namespace_prefix(""),
         binary(false),
         import_style(kImportClosure),
+        preserve_proto_fieldnames(false),
         add_require_for_enums(false),
         testonly(false),
         library(""),
