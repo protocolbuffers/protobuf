@@ -1273,6 +1273,10 @@ module BasicTest
       Foo.encode_json(Foo.new(bar: bar, baz: [baz1, baz2]))
     end
 
+    def test_json_empty
+      assert TestMessage.encode_json(TestMessage.new) == '{}'
+    end
+
     def test_json_emit_defaults
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
