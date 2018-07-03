@@ -391,7 +391,7 @@ void DoubleValue::ArenaDtor(void* object) {
   DoubleValue* _this = reinterpret_cast< DoubleValue* >(object);
   (void)_this;
 }
-void DoubleValue::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void DoubleValue::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void DoubleValue::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -642,7 +642,7 @@ void FloatValue::ArenaDtor(void* object) {
   FloatValue* _this = reinterpret_cast< FloatValue* >(object);
   (void)_this;
 }
-void FloatValue::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void FloatValue::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void FloatValue::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -893,7 +893,7 @@ void Int64Value::ArenaDtor(void* object) {
   Int64Value* _this = reinterpret_cast< Int64Value* >(object);
   (void)_this;
 }
-void Int64Value::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Int64Value::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Int64Value::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -1146,7 +1146,7 @@ void UInt64Value::ArenaDtor(void* object) {
   UInt64Value* _this = reinterpret_cast< UInt64Value* >(object);
   (void)_this;
 }
-void UInt64Value::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void UInt64Value::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void UInt64Value::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -1399,7 +1399,7 @@ void Int32Value::ArenaDtor(void* object) {
   Int32Value* _this = reinterpret_cast< Int32Value* >(object);
   (void)_this;
 }
-void Int32Value::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Int32Value::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Int32Value::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -1652,7 +1652,7 @@ void UInt32Value::ArenaDtor(void* object) {
   UInt32Value* _this = reinterpret_cast< UInt32Value* >(object);
   (void)_this;
 }
-void UInt32Value::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void UInt32Value::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void UInt32Value::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -1905,7 +1905,7 @@ void BoolValue::ArenaDtor(void* object) {
   BoolValue* _this = reinterpret_cast< BoolValue* >(object);
   (void)_this;
 }
-void BoolValue::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void BoolValue::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void BoolValue::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -2161,7 +2161,7 @@ void StringValue::ArenaDtor(void* object) {
   StringValue* _this = reinterpret_cast< StringValue* >(object);
   (void)_this;
 }
-void StringValue::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void StringValue::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void StringValue::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -2433,7 +2433,7 @@ void BytesValue::ArenaDtor(void* object) {
   BytesValue* _this = reinterpret_cast< BytesValue* >(object);
   (void)_this;
 }
-void BytesValue::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void BytesValue::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void BytesValue::SetCachedSize(int size) const {
   _cached_size_.Set(size);

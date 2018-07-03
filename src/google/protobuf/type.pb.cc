@@ -492,7 +492,7 @@ void Type::ArenaDtor(void* object) {
   Type* _this = reinterpret_cast< Type* >(object);
   (void)_this;
 }
-void Type::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Type::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Type::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -1014,7 +1014,7 @@ void Field::ArenaDtor(void* object) {
   Field* _this = reinterpret_cast< Field* >(object);
   (void)_this;
 }
-void Field::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Field::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Field::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -1698,7 +1698,7 @@ void Enum::ArenaDtor(void* object) {
   Enum* _this = reinterpret_cast< Enum* >(object);
   (void)_this;
 }
-void Enum::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Enum::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Enum::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -2140,7 +2140,7 @@ void EnumValue::ArenaDtor(void* object) {
   EnumValue* _this = reinterpret_cast< EnumValue* >(object);
   (void)_this;
 }
-void EnumValue::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void EnumValue::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void EnumValue::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -2520,7 +2520,7 @@ void Option::ArenaDtor(void* object) {
   Option* _this = reinterpret_cast< Option* >(object);
   (void)_this;
 }
-void Option::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+void Option::RegisterArenaDtor(::google::protobuf::Arena*) {
 }
 void Option::SetCachedSize(int size) const {
   _cached_size_.Set(size);
