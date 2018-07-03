@@ -1747,12 +1747,12 @@ public class JsonFormat {
           // that's not the exception we want the user to see. Since result == null, we will throw
           // an exception later.
             
-          if (ignoringUnknownFields && !ignoringUnknownFields) {
+          if (ignoringUnknownFields) {
             result = enumDescriptor.getValues().get(0);
           }            
         }
 
-        if (result == null) {
+        if (result == null && !ignoringUnknownFields) {
           throw new InvalidProtocolBufferException(
               "Invalid enum value: " + value + " for enum type: " + enumDescriptor.getFullName());
         }
