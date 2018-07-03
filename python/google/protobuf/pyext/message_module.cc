@@ -130,6 +130,15 @@ extern "C" {
       Py_DECREF(m);
       return INITFUNC_ERRORVAL;
     }
+    
+    // Adds the C++ API
+    if (PyObject* api =
+            PyCapsule_New(new ApiImplementation(),
+                          google::protobuf::python::PyProtoAPICapsuleName(), NULL)) {
+      PyModule_AddObject(m, "proto_API", api);
+    } else {
+      return INITFUNC_ERRORVAL;
+    }
 
 #if PY_MAJOR_VERSION >= 3
     return m;
