@@ -57,6 +57,7 @@ namespace Google.Protobuf.Reflection
             return getValueDelegate(message);
         }
 
+        public abstract bool HasValue(IMessage message);
         public abstract void Clear(IMessage message);
         public abstract void SetValue(IMessage message, object value);
     }
