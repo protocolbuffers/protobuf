@@ -131,6 +131,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "private pb::UnknownFieldSet _unknownFields;\n");
 
   for (int i = 0; i < has_bit_field_count_; i++) {
+    // don't use arrays since all arrays are heap allocated, saving allocations
+    // use ints instead of bytes since bytes lack bitwise operators, saving casts
     printer->Print("private int _hasBits$i$;\n", "i", SimpleItoa(i));
   }
 
