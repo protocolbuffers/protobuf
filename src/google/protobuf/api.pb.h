@@ -548,7 +548,7 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
 
 // ===================================================================
 
-#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
@@ -1147,7 +1147,7 @@ inline void Mixin::set_allocated_root(::std::string* root) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.root)
 }
 
-#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
 // -------------------------------------------------------------------
