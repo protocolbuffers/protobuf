@@ -466,7 +466,7 @@ class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
  protected:
   template <typename TypeHandler>
   void Add(typename TypeHandler::Type&& value,
-           std::enable_if<TypeHandler::Moveable>* dummy = NULL);
+           typename std::enable_if<TypeHandler::Moveable>::type* dummy = NULL);
 
   template <typename TypeHandler>
   void RemoveLast();
@@ -1541,7 +1541,7 @@ inline typename TypeHandler::Type* RepeatedPtrFieldBase::Add(
 template <typename TypeHandler>
 inline void RepeatedPtrFieldBase::Add(
     typename TypeHandler::Type&& value,
-    std::enable_if<TypeHandler::Moveable>*) {
+    typename std::enable_if<TypeHandler::Moveable>::type*) {
   if (rep_ != NULL && current_size_ < rep_->allocated_size) {
     *cast<TypeHandler>(rep_->elements[current_size_++]) = std::move(value);
     return;
