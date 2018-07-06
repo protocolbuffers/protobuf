@@ -150,7 +150,7 @@ checkDependencies ()
       white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libz\.so\.1\|ld64\.so\.2"
     elif [[ "$ARCH" == aarch_64 ]]; then
       dump_cmd='objdump -p '"$1"' | grep NEEDED'
-      white_list="libpthread\.so\.0\|libc\.so\.6\|ld-linux-aarch64\.so\.1"
+      white_list="libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-aarch64\.so\.1"
     fi
   elif [[ "$OS" == osx ]]; then
     dump_cmd='otool -L '"$1"' | fgrep dylib'
