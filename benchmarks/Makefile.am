@@ -109,6 +109,7 @@ cpp_benchmark_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)/cpp -I$(top_srcdir)/thi
 # so a direct "make test_cpp" could fail if parallel enough.
 # See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
 cpp/cpp_benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
+cpp/benchmark-cpp_benchmark.$(OBJEXT): $(benchmarks_protoc_outputs) $(benchmarks_protoc_outputs_proto2) $(benchmarks_protoc_outputs_header) $(benchmarks_protoc_outputs_proto2_header) $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
 nodist_cpp_benchmark_SOURCES =                                             \
 	$(benchmarks_protoc_outputs)                                             \
 	$(benchmarks_protoc_outputs_proto2)                                      \
