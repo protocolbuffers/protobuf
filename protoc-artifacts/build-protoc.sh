@@ -7,10 +7,11 @@
 # <OS> and <ARCH> are ${os.detected.name} and ${os.detected.arch} from os-maven-plugin
 # <TARGET> can be "protoc" or "protoc-gen-javalite"
 #
-# The script now supports cross-compiling windows and linux-arm64 in linux-x86
+# The script now supports cross-compiling windows, linux-arm64, and linux-ppc64le in linux-x86
 # environment. Required packages:
 # - Windows: i686-w64-mingw32-gcc (32bit) and x86_64-w64-mingw32-gcc (64bit)
 # - Arm64: g++-aarch64-linux-gnu
+# - Ppc64le: g++-powerpc64le-linux-gcc
 
 OS=$1
 ARCH=$2
@@ -75,6 +76,7 @@ checkArch ()
     format="$(objdump -f "$1" | grep -o "file format .*$" | grep -o "[^ ]*$")"
     echo Format=$format
     if [[ "$OS" == linux ]]; then
+      host_machine="$(uname -m)";
       if [[ "$ARCH" == x86_32 ]]; then
         assertEq $format "elf32-i386" $LINENO
       elif [[ "$ARCH" == x86_64 ]]; then
@@ -82,7 +84,11 @@ checkArch ()
       elif [[ "$ARCH" == aarch_64 ]]; then
         assertEq $format "elf64-little" $LINENO
       elif [[ "$ARCH" == ppcle_64 ]]; then
-        assertEq $format "elf64-powerpcle" $LINENO
+	if [[ $host_machine == ppc64le ]];then
+	  assertEq $format "elf64-powerpcle" $LINENO	
+	else	
+          assertEq $format "elf64-little" $LINENO
+	fi
       else
         fail "Unsupported arch: $ARCH"
       fi
@@ -121,12 +127,16 @@ checkDependencies ()
     dump_cmd='objdump -x '"$1"' | fgrep "DLL Name"'
     white_list="KERNEL32\.dll\|msvcrt\.dll"
   elif [[ "$OS" == linux ]]; then
+    host_machine="$(uname -m)";
     dump_cmd='ldd '"$1"
     if [[ "$ARCH" == x86_32 ]]; then
       white_list="linux-gate\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux\.so\.2"
     elif [[ "$ARCH" == x86_64 ]]; then
       white_list="linux-vdso\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-x86-64\.so\.2"
     elif [[ "$ARCH" == ppcle_64 ]]; then
+      if [[ $host_machine != ppc64le ]];then      
+        dump_cmd='objdump -p '"$1"' | grep NEEDED'
+      fi
       white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libz\.so\.1\|ld64\.so\.2"
     elif [[ "$ARCH" == aarch_64 ]]; then
       dump_cmd='objdump -p '"$1"' | grep NEEDED'
@@ -199,6 +209,7 @@ elif [[ "$(uname)" == Linux* ]]; then
       CONFIGURE_ARGS="$CONFIGURE_ARGS --host=aarch64-linux-gnu"
     elif [[ "$ARCH" == ppcle_64 ]]; then
       CXXFLAGS="$CXXFLAGS -m64"
+      CONFIGURE_ARGS="$CONFIGURE_ARGS --host=powerpc64le-linux-gnu"
     else
       fail "Unsupported arch: $ARCH"
     fi
