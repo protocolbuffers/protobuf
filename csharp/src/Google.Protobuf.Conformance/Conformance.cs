@@ -24,21 +24,22 @@ namespace Conformance {
     static ConformanceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UiowEKEkNvbmZvcm1h",
+            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UiwAEKEkNvbmZvcm1h",
             "bmNlUmVxdWVzdBIaChBwcm90b2J1Zl9wYXlsb2FkGAEgASgMSAASFgoManNv",
             "bl9wYXlsb2FkGAIgASgJSAASOAoXcmVxdWVzdGVkX291dHB1dF9mb3JtYXQY",
             "AyABKA4yFy5jb25mb3JtYW5jZS5XaXJlRm9ybWF0EhQKDG1lc3NhZ2VfdHlw",
-            "ZRgEIAEoCUIJCgdwYXlsb2FkIrEBChNDb25mb3JtYW5jZVJlc3BvbnNlEhUK",
-            "C3BhcnNlX2Vycm9yGAEgASgJSAASGQoPc2VyaWFsaXplX2Vycm9yGAYgASgJ",
-            "SAASFwoNcnVudGltZV9lcnJvchgCIAEoCUgAEhoKEHByb3RvYnVmX3BheWxv",
-            "YWQYAyABKAxIABIWCgxqc29uX3BheWxvYWQYBCABKAlIABIRCgdza2lwcGVk",
-            "GAUgASgJSABCCAoGcmVzdWx0KjUKCldpcmVGb3JtYXQSDwoLVU5TUEVDSUZJ",
-            "RUQQABIMCghQUk9UT0JVRhABEggKBEpTT04QAkIhCh9jb20uZ29vZ2xlLnBy",
-            "b3RvYnVmLmNvbmZvcm1hbmNlYgZwcm90bzM="));
+            "ZRgEIAEoCRIbChNpZ25vcmVfdW5rbm93bl9qc29uGAUgASgIQgkKB3BheWxv",
+            "YWQisQEKE0NvbmZvcm1hbmNlUmVzcG9uc2USFQoLcGFyc2VfZXJyb3IYASAB",
+            "KAlIABIZCg9zZXJpYWxpemVfZXJyb3IYBiABKAlIABIXCg1ydW50aW1lX2Vy",
+            "cm9yGAIgASgJSAASGgoQcHJvdG9idWZfcGF5bG9hZBgDIAEoDEgAEhYKDGpz",
+            "b25fcGF5bG9hZBgEIAEoCUgAEhEKB3NraXBwZWQYBSABKAlIAEIICgZyZXN1",
+            "bHQqNQoKV2lyZUZvcm1hdBIPCgtVTlNQRUNJRklFRBAAEgwKCFBST1RPQlVG",
+            "EAESCAoESlNPThACQiEKH2NvbS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFu",
+            "Y2ViBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat", "MessageType" }, new[]{ "Payload" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat", "MessageType", "IgnoreUnknownJson" }, new[]{ "Payload" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null)
           }));
     }
@@ -89,6 +90,7 @@ namespace Conformance {
     public ConformanceRequest(ConformanceRequest other) : this() {
       requestedOutputFormat_ = other.requestedOutputFormat_;
       messageType_ = other.messageType_;
+      ignoreUnknownJson_ = other.ignoreUnknownJson_;
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
           ProtobufPayload = other.ProtobufPayload;
@@ -158,6 +160,17 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "ignore_unknown_json" field.</summary>
+    public const int IgnoreUnknownJsonFieldNumber = 5;
+    private bool ignoreUnknownJson_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool IgnoreUnknownJson {
+      get { return ignoreUnknownJson_; }
+      set {
+        ignoreUnknownJson_ = value;
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
@@ -194,6 +207,7 @@ namespace Conformance {
       if (JsonPayload != other.JsonPayload) return false;
       if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
       if (MessageType != other.MessageType) return false;
+      if (IgnoreUnknownJson != other.IgnoreUnknownJson) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -205,6 +219,7 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (RequestedOutputFormat != 0) hash ^= RequestedOutputFormat.GetHashCode();
       if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
+      if (IgnoreUnknownJson != false) hash ^= IgnoreUnknownJson.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -235,6 +250,10 @@ namespace Conformance {
         output.WriteRawTag(34);
         output.WriteString(MessageType);
       }
+      if (IgnoreUnknownJson != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(IgnoreUnknownJson);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -255,6 +274,9 @@ namespace Conformance {
       if (MessageType.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(MessageType);
       }
+      if (IgnoreUnknownJson != false) {
+        size += 1 + 1;
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -271,6 +293,9 @@ namespace Conformance {
       }
       if (other.MessageType.Length != 0) {
         MessageType = other.MessageType;
+      }
+      if (other.IgnoreUnknownJson != false) {
+        IgnoreUnknownJson = other.IgnoreUnknownJson;
       }
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
@@ -306,6 +331,10 @@ namespace Conformance {
           }
           case 34: {
             MessageType = input.ReadString();
+            break;
+          }
+          case 40: {
+            IgnoreUnknownJson = input.ReadBool();
             break;
           }
         }

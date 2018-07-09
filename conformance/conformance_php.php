@@ -6,8 +6,8 @@ require_once("Conformance/ConformanceRequest.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
 require_once("Protobuf_test_messages/Proto3/ForeignEnum.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedMessage.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedEnum.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php");
 
 require_once("GPBMetadata/Conformance.php");
 require_once("GPBMetadata/Google/Protobuf/TestMessagesProto3.php");
@@ -39,8 +39,10 @@ function doTest($request)
         trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
       }
     } elseif ($request->getPayload() == "json_payload") {
+      $ignore_json_unknown = $request->getIgnoreUnknownJson();
       try {
-          $test_message->mergeFromJsonString($request->getJsonPayload());
+          $test_message->mergeFromJsonString($request->getJsonPayload(),
+                                             $ignore_json_unknown);
       } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
