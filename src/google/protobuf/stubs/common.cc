@@ -339,66 +339,42 @@ namespace internal {
 typedef void OnShutdownFunc();
 struct ShutdownData {
   ~ShutdownData() {
-    for (int i = 0; i < functions.size(); i++) {
-      functions[i]();
-    }
-    for (int i = 0; i < strings.size(); i++) {
-      strings[i]->~string();
-    }
-    for (int i = 0; i < messages.size(); i++) {
-      messages[i]->~MessageLite();
-    }
+    std::reverse(functions.begin(), functions.end());
+    for (auto pair : functions) pair.first(pair.second);
   }
 
-  std::vector<void (*)()> functions;
-  std::vector<const std::string*> strings;
-  std::vector<const MessageLite*> messages;
+  static ShutdownData* get() {
+    static auto* data = new ShutdownData;
+    return data;
+  }
+
+  std::vector<std::pair<void (*)(const void*), const void*>> functions;
   Mutex mutex;
 };
 
-ShutdownData* shutdown_data = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(shutdown_functions_init);
-
-void InitShutdownFunctions() {
-  shutdown_data = new ShutdownData;
-}
-
-inline void InitShutdownFunctionsOnce() {
-  GoogleOnceInit(&shutdown_functions_init, &InitShutdownFunctions);
+static void RunZeroArgFunc(const void* arg) {
+  reinterpret_cast<void (*)()>(const_cast<void*>(arg))();
 }
 
 void OnShutdown(void (*func)()) {
-  InitShutdownFunctionsOnce();
-  MutexLock lock(&shutdown_data->mutex);
-  shutdown_data->functions.push_back(func);
+  OnShutdownRun(RunZeroArgFunc, reinterpret_cast<void*>(func));
 }
 
-void OnShutdownDestroyString(const std::string* ptr) {
-  InitShutdownFunctionsOnce();
+void OnShutdownRun(void (*f)(const void*), const void* arg) {
+  auto shutdown_data = ShutdownData::get();
   MutexLock lock(&shutdown_data->mutex);
-  shutdown_data->strings.push_back(ptr);
-}
-
-void OnShutdownDestroyMessage(const void* ptr) {
-  InitShutdownFunctionsOnce();
-  MutexLock lock(&shutdown_data->mutex);
-  shutdown_data->messages.push_back(static_cast<const MessageLite*>(ptr));
+  shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 
 }  // namespace internal
 
 void ShutdownProtobufLibrary() {
-  internal::InitShutdownFunctionsOnce();
-
-  // We don't need to lock shutdown_functions_mutex because it's up to the
-  // caller to make sure that no one is using the library before this is
-  // called.
-
-  // Make it safe to call this multiple times.
-  if (internal::shutdown_data == NULL) return;
-
-  delete internal::shutdown_data;
-  internal::shutdown_data = NULL;
+  // This function should be called only once, but accepts multiple calls.
+  static bool is_shutdown = false;
+  if (!is_shutdown) {
+    delete internal::ShutdownData::get();
+    is_shutdown = true;
+  }
 }
 
 #if PROTOBUF_USE_EXCEPTIONS
