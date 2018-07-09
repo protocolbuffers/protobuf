@@ -46,28 +46,9 @@
 namespace google {
 namespace protobuf {
 
-namespace {
-// This global instance is returned by unknown_fields() on any message class
-// when the object has no unknown fields. This is necessary because we now
-// instantiate the UnknownFieldSet dynamically only when required.
-UnknownFieldSet* default_unknown_field_set_instance_ = NULL;
-
-void DeleteDefaultUnknownFieldSet() {
-  delete default_unknown_field_set_instance_;
-}
-
-void InitDefaultUnknownFieldSet() {
-  default_unknown_field_set_instance_ = new UnknownFieldSet();
-  internal::OnShutdown(&DeleteDefaultUnknownFieldSet);
-}
-
-GOOGLE_PROTOBUF_DECLARE_ONCE(default_unknown_field_set_once_init_);
-}
-
 const UnknownFieldSet* UnknownFieldSet::default_instance() {
-  ::google::protobuf::GoogleOnceInit(&default_unknown_field_set_once_init_,
-                 &InitDefaultUnknownFieldSet);
-  return default_unknown_field_set_instance_;
+  static auto instance = internal::OnShutdownDelete(new UnknownFieldSet());
+  return instance;
 }
 
 void UnknownFieldSet::ClearFallback() {

@@ -57,6 +57,12 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+void DestroyMessage(const void* message) {
+  static_cast<const MessageLite*>(message)->~MessageLite();
+}
+void DestroyString(const void* s) { static_cast<const string*>(s)->~string(); }
+
+ExplicitlyConstructed<std::string> fixed_address_empty_string;
 
 double Infinity() {
   return std::numeric_limits<double>::infinity();
@@ -65,14 +71,15 @@ double NaN() {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
-ExplicitlyConstructed<::std::string> fixed_address_empty_string;
-GOOGLE_PROTOBUF_DECLARE_ONCE(empty_string_once_init_);
-
-void DeleteEmptyString() { fixed_address_empty_string.Destruct(); }
-
-void InitEmptyString() {
+static bool InitProtobufDefaultsImpl() {
   fixed_address_empty_string.DefaultConstruct();
-  OnShutdown(&DeleteEmptyString);
+  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+  return true;
+}
+
+void InitProtobufDefaults() {
+  static bool is_inited = InitProtobufDefaultsImpl();
+  (void)is_inited;
 }
 
 size_t StringSpaceUsedExcludingSelfLong(const string& str) {
@@ -84,12 +91,6 @@ size_t StringSpaceUsedExcludingSelfLong(const string& str) {
   } else {
     return str.capacity();
   }
-}
-
-
-
-void InitProtobufDefaults() {
-  GetEmptyString();
 }
 
 template <typename T>

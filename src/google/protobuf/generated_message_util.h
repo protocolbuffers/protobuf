@@ -109,6 +109,13 @@ namespace internal {
 LIBPROTOBUF_EXPORT double Infinity();
 LIBPROTOBUF_EXPORT double NaN();
 
+LIBPROTOBUF_EXPORT void InitProtobufDefaults();
+
+// This used by proto1
+inline const std::string& GetEmptyString() {
+  InitProtobufDefaults();
+  return GetEmptyStringAlreadyInited();
+}
 
 // True if IsInitialized() is true for all elements of t.  Type is expected
 // to be a RepeatedPtrField<some message type>.  It's useful to have this
@@ -136,8 +143,6 @@ bool AllAreInitializedWeak(const ::google::protobuf::RepeatedPtrField<T>& t) {
   }
   return true;
 }
-
-LIBPROTOBUF_EXPORT void InitProtobufDefaults();
 
 struct LIBPROTOBUF_EXPORT FieldMetadata {
   uint32 offset;  // offset of this field in the struct
@@ -366,6 +371,17 @@ LIBPROTOBUF_EXPORT void InitSCCImpl(SCCInfoBase* scc);
 inline void InitSCC(SCCInfoBase* scc) {
   auto status = scc->visit_status.load(std::memory_order_acquire);
   if (GOOGLE_PREDICT_FALSE(status != SCCInfoBase::kInitialized)) InitSCCImpl(scc);
+}
+
+LIBPROTOBUF_EXPORT void DestroyMessage(const void* message);
+LIBPROTOBUF_EXPORT void DestroyString(const void* s);
+// Destroy (not delete) the message
+inline void OnShutdownDestroyMessage(const void* ptr) {
+  OnShutdownRun(DestroyMessage, ptr);
+}
+// Destroy the string (call string destructor)
+inline void OnShutdownDestroyString(const std::string* ptr) {
+  OnShutdownRun(DestroyString, ptr);
 }
 
 }  // namespace internal

@@ -479,15 +479,8 @@ typedef std::map<DescriptorIntPair, const FieldDescriptor*>
   ExtensionsGroupedByDescriptorMap;
 typedef HASH_MAP<string, const SourceCodeInfo_Location*> LocationsByPathMap;
 
-std::set<string>* allowed_proto3_extendees_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(allowed_proto3_extendees_init_);
-
-void DeleteAllowedProto3Extendee() {
-  delete allowed_proto3_extendees_;
-}
-
-void InitAllowedProto3Extendee() {
-  allowed_proto3_extendees_ = new std::set<string>;
+std::set<string>* NewAllowedProto3Extendee() {
+  auto allowed_proto3_extendees = new std::set<string>;
   const char* kOptionNames[] = {
       "FileOptions",      "MessageOptions", "FieldOptions", "EnumOptions",
       "EnumValueOptions", "ServiceOptions", "MethodOptions", "OneofOptions"};
@@ -495,14 +488,13 @@ void InitAllowedProto3Extendee() {
     // descriptor.proto has a different package name in opensource. We allow
     // both so the opensource protocol compiler can also compile internal
     // proto3 files with custom options. See: b/27567912
-    allowed_proto3_extendees_->insert(string("google.protobuf.") +
+    allowed_proto3_extendees->insert(string("google.protobuf.") +
                                       kOptionNames[i]);
     // Split the word to trick the opensource processing scripts so they
     // will keep the origial package name.
-    allowed_proto3_extendees_->insert(string("proto") + "2." + kOptionNames[i]);
+    allowed_proto3_extendees->insert(string("proto") + "2." + kOptionNames[i]);
   }
-
-  google::protobuf::internal::OnShutdown(&DeleteAllowedProto3Extendee);
+  return allowed_proto3_extendees;
 }
 
 // Checks whether the extendee type is allowed in proto3.
@@ -510,9 +502,10 @@ void InitAllowedProto3Extendee() {
 // instead of comparing the descriptor directly because the extensions may be
 // defined in a different pool.
 bool AllowedExtendeeInProto3(const string& name) {
-  ::google::protobuf::GoogleOnceInit(&allowed_proto3_extendees_init_, &InitAllowedProto3Extendee);
-  return allowed_proto3_extendees_->find(name) !=
-         allowed_proto3_extendees_->end();
+  static auto allowed_proto3_extendees =
+      internal::OnShutdownDelete(NewAllowedProto3Extendee());
+  return allowed_proto3_extendees->find(name) !=
+         allowed_proto3_extendees->end();
 }
 
 }  // anonymous namespace
@@ -829,31 +822,10 @@ FileDescriptorTables::FileDescriptorTables()
 
 FileDescriptorTables::~FileDescriptorTables() {}
 
-namespace {
-
-FileDescriptorTables* file_descriptor_tables_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(file_descriptor_tables_once_init_);
-
-void DeleteFileDescriptorTables() {
-  delete file_descriptor_tables_;
-  file_descriptor_tables_ = NULL;
-}
-
-void InitFileDescriptorTables() {
-  file_descriptor_tables_ = new FileDescriptorTables();
-  internal::OnShutdown(&DeleteFileDescriptorTables);
-}
-
-inline void InitFileDescriptorTablesOnce() {
-  ::google::protobuf::GoogleOnceInit(
-      &file_descriptor_tables_once_init_, &InitFileDescriptorTables);
-}
-
-}  // anonymous namespace
-
 inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
-  InitFileDescriptorTablesOnce();
-  return *file_descriptor_tables_;
+  static auto file_descriptor_tables =
+      internal::OnShutdownDelete(new FileDescriptorTables());
+  return *file_descriptor_tables;
 }
 
 void DescriptorPool::Tables::AddCheckpoint() {
@@ -1335,42 +1307,28 @@ bool DescriptorPool::InternalIsFileLoaded(const string& filename) const {
 
 namespace {
 
-
-EncodedDescriptorDatabase* generated_database_ = NULL;
-DescriptorPool* generated_pool_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(generated_pool_init_);
-
-void DeleteGeneratedPool() {
-  delete generated_database_;
-  generated_database_ = NULL;
-  delete generated_pool_;
-  generated_pool_ = NULL;
+EncodedDescriptorDatabase* GeneratedDatabase() {
+  static auto generated_database =
+      internal::OnShutdownDelete(new EncodedDescriptorDatabase());
+  return generated_database;
 }
 
-static void InitGeneratedPool() {
-  generated_database_ = new EncodedDescriptorDatabase;
-  generated_pool_ = new DescriptorPool(generated_database_);
-  generated_pool_->InternalSetLazilyBuildDependencies();
-
-  internal::OnShutdown(&DeleteGeneratedPool);
-}
-
-inline void InitGeneratedPoolOnce() {
-  ::google::protobuf::GoogleOnceInit(&generated_pool_init_, &InitGeneratedPool);
+DescriptorPool* NewGeneratedPool() {
+  auto generated_pool = new DescriptorPool(GeneratedDatabase());
+  generated_pool->InternalSetLazilyBuildDependencies();
+  return generated_pool;
 }
 
 }  // anonymous namespace
 
-const DescriptorPool* DescriptorPool::generated_pool() {
-  InitGeneratedPoolOnce();
-  return generated_pool_;
+DescriptorPool* DescriptorPool::internal_generated_pool() {
+  static DescriptorPool* generated_pool =
+      internal::OnShutdownDelete(NewGeneratedPool());
+  return generated_pool;
 }
 
-
-
-DescriptorPool* DescriptorPool::internal_generated_pool() {
-  InitGeneratedPoolOnce();
-  return generated_pool_;
+const DescriptorPool* DescriptorPool::generated_pool() {
+  return internal_generated_pool();
 }
 
 void DescriptorPool::InternalAddGeneratedFile(
@@ -1397,8 +1355,7 @@ void DescriptorPool::InternalAddGeneratedFile(
   // Therefore, when we parse one, we have to be very careful to avoid using
   // any descriptor-based operations, since this might cause infinite recursion
   // or deadlock.
-  InitGeneratedPoolOnce();
-  GOOGLE_CHECK(generated_database_->Add(encoded_file_descriptor, size));
+  GOOGLE_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
 }
 
 

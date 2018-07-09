@@ -193,17 +193,22 @@ LIBPROTOBUF_EXPORT char* UTF8CoerceToStructurallyValid(
 //
 // It is safe to call this multiple times.  However, it is not safe to use
 // any other part of the protocol buffers library after
-// ShutdownProtobufLibrary() has been called.
+// ShutdownProtobufLibrary() has been called. Furthermore this call is not
+// thread safe, user needs to synchronize multiple calls.
 LIBPROTOBUF_EXPORT void ShutdownProtobufLibrary();
 
 namespace internal {
 
 // Register a function to be called when ShutdownProtocolBuffers() is called.
 LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
-// Destroy the string (call string destructor)
-LIBPROTOBUF_EXPORT void OnShutdownDestroyString(const std::string* ptr);
-// Destroy (not delete) the message
-LIBPROTOBUF_EXPORT void OnShutdownDestroyMessage(const void* ptr);
+// Run an arbitrary function on an arg
+LIBPROTOBUF_EXPORT void OnShutdownRun(void (*f)(const void*), const void* arg);
+
+template <typename T>
+T* OnShutdownDelete(T* p) {
+  OnShutdownRun([](const void* p) { delete static_cast<const T*>(p); }, p);
+  return p;
+}
 
 }  // namespace internal
 
