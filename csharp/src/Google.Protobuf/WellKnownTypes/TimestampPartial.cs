@@ -36,7 +36,7 @@ using System.Text;
 
 namespace Google.Protobuf.WellKnownTypes
 {
-    public partial class Timestamp : ICustomDiagnosticMessage
+    public partial class Timestamp : ICustomDiagnosticMessage, IComparable<Timestamp>
     {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         // Constants determined programmatically, but then hard-coded so they can be constant expressions.
@@ -220,6 +220,109 @@ namespace Google.Protobuf.WellKnownTypes
             {
                 throw new InvalidOperationException("Non-normalized timestamp value");
             }
+        }
+
+        /// <summary>
+        /// Given another timestamp, returns 0 if the timestamps are equivalent, -1 if this timestamp precedes the other, and 1 otherwise
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="other">Timestamp to compare</param>
+        /// <returns>an integer indicating whether this timestamp precedes or follows the other</returns>
+        public int CompareTo(Timestamp other)
+        {
+            return other == null ? 1
+                : Seconds < other.Seconds ? -1
+                : Seconds > other.Seconds ? 1
+                : Nanos < other.Nanos ? -1
+                : Nanos > other.Nanos ? 1
+                : 0;
+        }
+
+        /// <summary>
+        /// Compares two timestamps and returns whether the first is less than (chronologically precedes) the second
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if a precedes b</returns>
+        public static bool operator <(Timestamp a, Timestamp b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        /// <summary>
+        /// Compares two timestamps and returns whether the first is greater than (chronologically follows) the second
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if a follows b</returns>
+        public static bool operator >(Timestamp a, Timestamp b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        /// <summary>
+        /// Compares two timestamps and returns whether the first is less than (chronologically precedes) the second
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if a precedes b</returns>
+        public static bool operator <=(Timestamp a, Timestamp b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        /// <summary>
+        /// Compares two timestamps and returns whether the first is greater than (chronologically follows) the second
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if a follows b</returns>
+        public static bool operator >=(Timestamp a, Timestamp b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+
+        /// <summary>
+        /// Returns whether two timestamps are equivalent
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if the two timestamps refer to the same nanosecond</returns>
+        public static bool operator ==(Timestamp a, Timestamp b)
+        {
+            return ReferenceEquals(a, b) || (a is null ? (b is null ? true : false) : a.Equals(b));
+        }
+
+        /// <summary>
+        /// Returns whether two timestamps differ
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if the two timestamps differ</returns>
+        public static bool operator !=(Timestamp a, Timestamp b)
+        {
+            return !(a == b);
         }
 
         /// <summary>
