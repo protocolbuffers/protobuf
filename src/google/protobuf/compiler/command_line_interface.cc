@@ -1283,12 +1283,6 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
               << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
-  if (!dependency_out_name_.empty() && input_files_.size() > 1) {
-    std::cerr
-        << "Can only process one input file when using --dependency_out=FILE."
-        << std::endl;
-    return PARSE_ARGUMENT_FAIL;
-  }
   if (imports_in_descriptor_set_ && descriptor_set_out_name_.empty()) {
     std::cerr << "--include_imports only makes sense when combined with "
                  "--descriptor_set_out." << std::endl;

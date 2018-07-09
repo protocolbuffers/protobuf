@@ -1488,21 +1488,33 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
 // TODO(teboring): Figure out how to write test on windows.
 #else
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
-  CreateTempFile("foo.proto",
+  CreateTempFile("common.proto",
     "syntax = \"proto2\";\n"
     "message Foo {}\n");
-  CreateTempFile("bar.proto",
+  CreateTempFile("one.proto",
     "syntax = \"proto2\";\n"
-    "import \"foo.proto\";\n"
+    "import \"common.proto\";\n"
     "message Bar {\n"
     "  optional Foo foo = 1;\n"
     "}\n");
+  CreateTempFile("two.proto",
+    "syntax = \"proto2\";\n"
+    "import \"common.proto\";\n"
+    "message Baz {\n"
+    "  optional Foo foo = 1;\n"
+    "}\n");
 
-  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
-      "--test_out=$tmpdir --proto_path=$tmpdir bar.proto foo.proto");
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest --test_out=$tmpdir "
+      "--proto_path=$tmpdir $tmpdir/one.proto $tmpdir/two.proto");
 
-  ExpectErrorText(
-      "Can only process one input file when using --dependency_out=FILE.\n");
+  ExpectNoErrors();
+
+  ExpectFileContent("manifest",
+                    "$tmpdir/one.proto.MockCodeGenerator.test_generator \\\n"
+                    "$tmpdir/two.proto.MockCodeGenerator.test_generator: "
+                    "$tmpdir/common.proto\\\n"
+                    " $tmpdir/one.proto\\\n"
+                    " $tmpdir/two.proto");
 }
 
 #ifdef PROTOBUF_OPENSOURCE
