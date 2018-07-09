@@ -585,18 +585,4 @@ class ImplementationTest extends TestBase
             [['map_int32_int32' => null]],
         ];
     }
-
-    /**
-     * @expectedException LogicException
-     * @expectedExceptionMessage Classes implementing Google\Protobuf\Internal\EnumTrait must define the static property $valueToName to use this function
-     */
-    public function testBadEnumThrowsException()
-    {
-        BadEnum::name(1);
-    }
-}
-
-class BadEnum
-{
-    use EnumTrait;
 }

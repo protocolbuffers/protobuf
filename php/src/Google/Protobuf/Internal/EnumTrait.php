@@ -39,11 +39,6 @@ trait EnumTrait
 {
     public static function name($value)
     {
-        if (!property_exists(__CLASS__, 'valueToName')) {
-            throw new LogicException(sprintf('Classes implementing %s must '
-                . 'define the static property $valueToName to use this '
-                . 'function', __TRAIT__));
-        }
         if (!isset(self::$valueToName[$value])) {
             throw new UnexpectedValueException(sprintf(
                 'Enum %s has no name defined for value %s', __CLASS__, $value));
