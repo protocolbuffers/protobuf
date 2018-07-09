@@ -1,4 +1,4 @@
-FROM centos:6.6
+FROM centos:6.9
 
 RUN yum install -y git \
                    tar \
