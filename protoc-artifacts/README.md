@@ -52,7 +52,7 @@ and/or architecture. Valid values are defined as the return values of
 [os-maven-plugin](https://github.com/trustin/os-maven-plugin/blob/master/src/main/java/kr/motd/maven/os/Detector.java).
 Frequently used values are:
 - ``os.detected.name``: ``linux``, ``osx``, ``windows``.
-- ``os.detected.arch``: ``x86_32``, ``x86_64``
+- ``os.detected.arch``: ``x86_32``, ``x86_64``, ``ppcle_64``
 
 For example, MinGW32 only ships with 32-bit compilers, but you can still build
 32-bit protoc under 64-bit Windows, with the following command:
@@ -68,7 +68,7 @@ configure GPG and Sonatype account.
 You need to perform the deployment for every platform that you want to
 support. DO NOT close the staging repository until you have done the
 deployment for all platforms. Currently the following platforms are supported:
-- Linux (x86_32, x86_64 and cross compiled aarch_64)
+- Linux (x86_32, x86_64, ppcle_64 and cross compiled aarch_64 or ppcle_64)
 - Windows (x86_32 and x86_64) with
   - Cygwin64 with MinGW compilers (x86_64)
   - MSYS with MinGW32 (x86_32)
@@ -102,6 +102,9 @@ A 32-bit artifact can be deployed from a 64-bit host with
 An arm64 artifact can be deployed from x86 host with
 ``-Dos.detected.arch=aarch_64``
 
+A ppcle_64 artifact can be deployed from x86 host with
+``-Dos.detected.arch=ppcle_64``
+
 A windows artifact can be deployed from a linux machine with
 ``-Dos.detected.name=windows``
 
@@ -115,15 +118,16 @@ build-zip.sh script to bulid zip packages for these protoc binaries
 and upload these zip packages to the download section of the github
 release. For example:
 ```
-$ ./build-zip.sh 3.0.0-beta-4
+$ ./build-zip.sh 3.6.0
 ```
-The above command will create 5 zip files:
+The above command will create 6 zip files:
 ```
-dist/protoc-3.0.0-beta-4-win32.zip
-dist/protoc-3.0.0-beta-4-osx-x86_32.zip
-dist/protoc-3.0.0-beta-4-osx-x86_64.zip
-dist/protoc-3.0.0-beta-4-linux-x86_32.zip
-dist/protoc-3.0.0-beta-4-linux-x86_64.zip
+dist/protoc-3.6.0-win32.zip
+dist/protoc-3.6.0-osx-x86_32.zip
+dist/protoc-3.6.0-osx-x86_64.zip
+dist/protoc-3.6.0-linux-x86_32.zip
+dist/protoc-3.6.0-linux-x86_64.zip
+dist/protoc-3.6.0-linux-ppcle_64.zip
 ```
 Before running the script, make sure the artifacts are accessible from:
 http://repo1.maven.org/maven2/com/google/protobuf/protoc/
@@ -183,6 +187,9 @@ We have successfully built artifacts on the following environments:
 - Linux x86_32 and x86_64:
   - Centos 6.6 (within Docker 1.6.1)
   - Ubuntu 14.04.2 64-bit
+- Linux ppc64le:
+  - Debian 9.4
+  - Cross compiled with `g++-powerpc64le-linux-gnu` on Debian 9.4 x86_64
 - Linux aarch_64: Cross compiled with `g++-aarch64-linux-gnu` on Ubuntu 14.04.2 64-bit
 - Windows x86_32: MSYS with ``mingw32-gcc-g++ 4.8.1-4`` on Windows 7 64-bit
 - Windows x86_32: Cross compile with ``i686-w64-mingw32-g++ 4.8.2`` on Ubuntu 14.04.2 64-bit
