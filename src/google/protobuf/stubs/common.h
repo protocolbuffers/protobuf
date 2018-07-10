@@ -206,7 +206,7 @@ LIBPROTOBUF_EXPORT void OnShutdownRun(void (*f)(const void*), const void* arg);
 
 template <typename T>
 T* OnShutdownDelete(T* p) {
-  OnShutdownRun([](const void* p) { delete static_cast<const T*>(p); }, p);
+  OnShutdownRun([](const void* pp) { delete static_cast<const T*>(pp); }, p);
   return p;
 }
 
