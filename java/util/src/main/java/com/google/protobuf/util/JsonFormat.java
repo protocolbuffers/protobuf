@@ -1539,7 +1539,11 @@ public class JsonFormat {
         Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
         Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
         if (value == null) {
-          throw new InvalidProtocolBufferException("Map value cannot be null.");
+          if(field.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
+            continue;
+          } else {
+            throw new InvalidProtocolBufferException("Map value cannot be null.");
+          }
         }
         entryBuilder.setField(keyField, key);
         entryBuilder.setField(valueField, value);
@@ -1557,8 +1561,12 @@ public class JsonFormat {
       for (int i = 0; i < array.size(); ++i) {
         Object value = parseFieldValue(field, array.get(i), builder);
         if (value == null) {
-          throw new InvalidProtocolBufferException(
-              "Repeated field elements cannot be null in field: " + field.getFullName());
+          if(field.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
+            continue;
+          } else {
+            throw new InvalidProtocolBufferException(
+                  "Repeated field elements cannot be null in field: " + field.getFullName());
+          }
         }
         builder.addRepeatedField(field, value);
       }
@@ -1746,10 +1754,6 @@ public class JsonFormat {
           // Fall through. This exception is about invalid int32 value we get from parseInt32() but
           // that's not the exception we want the user to see. Since result == null, we will throw
           // an exception later.
-            
-          if (ignoringUnknownFields) {
-            result = enumDescriptor.getValues().get(0);
-          }            
         }
 
         if (result == null && !ignoringUnknownFields) {

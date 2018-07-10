@@ -646,7 +646,7 @@ public class JsonFormatTest extends TestCase {
     assertRoundTripEquals(message);
   }
 
-  public void testMapNullValueIsRejected() throws Exception {
+  public void testMapNullKeyIsRejected() throws Exception {
     try {
       TestMap.Builder builder = TestMap.newBuilder();
       mergeFromJson(
@@ -659,7 +659,9 @@ public class JsonFormatTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
     }
+  }
 
+  public void testMapNullValueIsIgnored() throws Exception {
     try {
       TestMap.Builder builder = TestMap.newBuilder();
       mergeFromJson(
@@ -668,7 +670,9 @@ public class JsonFormatTest extends TestCase {
               + "  \"int32ToMessageMap\": {\"2\": null}\n"
               + "}",
           builder);
-      fail();
+      assertEquals(0, builder.getInt32ToEnumMapMap().size());
+      assertEquals(0, builder.getInt32ToMessageMapMap().size());
+        
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
     }
@@ -1174,38 +1178,37 @@ public class JsonFormatTest extends TestCase {
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
   }
   
-  
   public void testParserIgnoringUnknownEnums() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     String json = "{\n" + "  \"optionalNestedEnum\": \"XXX\"\n" + "}";
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
     assertEquals(0, builder.getOptionalNestedEnumValue());
   }
-
+  
   public void testUnknownEnumMap() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     JsonFormat.parser().ignoringUnknownFields().merge(
-        "{\n"
-          + "  \"int32ToEnumMap\": {1: XXX, 2: FOO}"
-          + "}",
-        builder);
-
-    assertEquals(Integer.valueOf(0), builder.getInt32ToEnumMapValueMap().get(1));
-    assertEquals(NestedEnum.FOO, builder.getInt32ToEnumMapMap().get(2));
+      "{\n"
+      + "  \"int32ToEnumMap\": {1: XXX, 2: FOO}"
+      + "}",
+      builder);
+        
+      assertEquals(NestedEnum.FOO, builder.getInt32ToEnumMapMap().get(2));
+      assertEquals(1, builder.getInt32ToEnumMapMap().size());
   }
   
   public void testRepeatedUnknownEnum() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     JsonFormat.parser().ignoringUnknownFields().merge(
-        "{\n"
-          + "  \"repeatedNestedEnum\": [XXX, FOO, BAR, BAZ]"
-          + "}",
-        builder);
-
-        assertEquals(0, builder.getRepeatedNestedEnumValue(0));
-        assertEquals(NestedEnum.FOO, builder.getRepeatedNestedEnum(1));
-        assertEquals(NestedEnum.BAR, builder.getRepeatedNestedEnum(2));
-        assertEquals(NestedEnum.BAZ, builder.getRepeatedNestedEnum(3));
+      "{\n"
+      + "  \"repeatedNestedEnum\": [XXX, FOO, BAR, BAZ]"
+      + "}",
+      builder);
+          
+    assertEquals(NestedEnum.FOO, builder.getRepeatedNestedEnum(0));
+    assertEquals(NestedEnum.BAR, builder.getRepeatedNestedEnum(1));
+    assertEquals(NestedEnum.BAZ, builder.getRepeatedNestedEnum(2));
+    assertEquals(3, builder.getRepeatedNestedEnumList().size());
   }
   
   public void testParserIntegerEnumValue() throws Exception {
