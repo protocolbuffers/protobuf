@@ -226,7 +226,7 @@ class GPBJsonWire
                 $output->writeRaw("\"", 1);
                 break;
             case GPBType::STRING:
-                $value = json_encode($value);
+                $value = json_encode($value, JSON_UNESCAPED_UNICODE);
                 $output->writeRaw($value, strlen($value));
                 break;
             //    case GPBType::GROUP:
