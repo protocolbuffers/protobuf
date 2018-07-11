@@ -46,6 +46,11 @@
 // PHP7 Wrappers
 // ----------------------------------------------------------------------------
 
+#if PHP_VERSION_ID < 70300
+#define GC_ADDREF(h) ++GC_REFCOUNT(h)
+#define GC_DELREF(h) --GC_REFCOUNT(h)
+#endif
+
 #if PHP_MAJOR_VERSION < 7
 
 #define php_proto_zend_literal const zend_literal*
@@ -496,7 +501,7 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
   PHP_PROTO_HASHTABLE_VALUE WRAPPED_OBJ;                                    \
   WRAPPED_OBJ = OBJ_CLASS_ENTRY->create_object(OBJ_CLASS_ENTRY);            \
   OBJ = UNBOX_HASHTABLE_VALUE(OBJ_TYPE, WRAPPED_OBJ);                       \
-  --GC_REFCOUNT(WRAPPED_OBJ);
+  GC_DELREF(WRAPPED_OBJ);
 
 #define PHP_PROTO_CE_DECLARE zend_class_entry*
 #define PHP_PROTO_CE_UNREF(ce) (ce)
