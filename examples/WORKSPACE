@@ -5,8 +5,6 @@ http_archive(
     strip_prefix = "protobuf-master",
     urls = ["https://github.com/google/protobuf/archive/master.zip"],
 )
-load("@com_google_protobuf//:protobuf.bzl", "check_protobuf_required_bazel_version")
-check_protobuf_required_bazel_version()
 
 # This com_google_protobuf_cc repository is required for cc_proto_library
 # rule. It provides protobuf C++ runtime. Note that it actually is the same
@@ -33,3 +31,13 @@ http_archive(
     strip_prefix = "protobuf-javalite",
     urls = ["https://github.com/google/protobuf/archive/javalite.zip"],
 )
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",
+    strip_prefix = "bazel-skylib-2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
+    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz"],
+)
+
+load("@bazel_skylib//:lib.bzl", "versions")
+versions.check(minimum_bazel_version = "0.5.4")
