@@ -85,7 +85,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   NSLog(@"Wrote data file to %@", path);
 #else
   // Kill off the unused variable warning.
-  dataToWrite = dataToWrite;
+  (void)dataToWrite;
 #endif
   return data;
 }
