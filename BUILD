@@ -934,6 +934,9 @@ OBJC_SRCS = [
 objc_library(
     name = "objectivec",
     hdrs = OBJC_HDRS + OBJC_PRIVATE_HDRS,
+    copts = [
+        "-Wno-vla",
+    ],
     includes = [
         "objectivec",
     ],
