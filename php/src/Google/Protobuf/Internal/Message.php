@@ -298,8 +298,10 @@ class Message
                 }
                 break;
             case GPBWireType::START_GROUP:
+                $this->parseFromStream($input);
+                break;
             case GPBWireType::END_GROUP:
-                throw new GPBDecodeException("Unexpected wire type.");
+                break;
             default:
                 throw new GPBDecodeException("Unexpected wire type.");
         }
