@@ -104,7 +104,7 @@ void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value) {
 #if PHP_MAJOR_VERSION < 7
   Z_ADDREF_P(value);
 #else
-  ++GC_REFCOUNT(value);
+  GC_ADDREF(value);
 #endif
   add_to_table(upb_def_to_php_obj_map, def, value);
 }
@@ -117,7 +117,7 @@ void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value) {
 #if PHP_MAJOR_VERSION < 7
   Z_ADDREF_P(value);
 #else
-  ++GC_REFCOUNT(value);
+  GC_ADDREF(value);
 #endif
   add_to_table(ce_to_php_obj_map, ce, value);
 }
@@ -134,7 +134,7 @@ void add_proto_obj(const char* proto, PHP_PROTO_HASHTABLE_VALUE value) {
 #if PHP_MAJOR_VERSION < 7
   Z_ADDREF_P(value);
 #else
-  ++GC_REFCOUNT(value);
+  GC_ADDREF(value);
 #endif
   add_to_strtable(proto_to_php_obj_map, proto, strlen(proto), value);
 }
@@ -235,7 +235,8 @@ static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 static void php_proto_hashtable_descriptor_release(zval* value) {
   void* ptr = Z_PTR_P(value);
   zend_object* object = *(zend_object**)ptr;
-  if(--GC_REFCOUNT(object) == 0) {
+  GC_DELREF(object);
+  if(GC_REFCOUNT(object) == 0) {
     zend_objects_store_del(object);
   }
   efree(ptr);
