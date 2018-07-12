@@ -84,4 +84,14 @@ class EncodeDecodeTest < Test::Unit::TestCase
 
     assert_match 'optional_int32', json
   end
+
+  def test_encode_wrong_msg
+    e = assert_raise Google::Protobuf::TypeError do
+      m = A::B::C::TestMessage.new(
+          :optional_int32 => 1,
+      )
+      Google::Protobuf::Any.encode(m)
+    end
+  end
+
 end
