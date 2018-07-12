@@ -34,7 +34,7 @@ func TestWritePersonWritesPerson(t *testing.T) {
 
 func TestListPeopleWritesList(t *testing.T) {
 	buf := new(bytes.Buffer)
-	in := pb.AddressBook{[]*pb.Person{
+	in := pb.AddressBook{People: []*pb.Person {
 		{
 			Name:  "John Doe",
 			Id:    101,
