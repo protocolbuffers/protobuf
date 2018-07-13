@@ -880,18 +880,17 @@ class RepeatedPrimitiveTypeTraits {
 
 LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_primitive_generic_type_traits_once_init_;
 
-class LIBPROTOBUF_EXPORT RepeatedPrimitiveGenericTypeTraits {
+class LIBPROTOBUF_EXPORT RepeatedPrimitiveDefaults {
  private:
   template<typename Type> friend class RepeatedPrimitiveTypeTraits;
-  static void InitializeDefaultRepeatedFields();
-  static void DestroyDefaultRepeatedFields();
-  static const RepeatedField<int32>* default_repeated_field_int32_;
-  static const RepeatedField<int64>* default_repeated_field_int64_;
-  static const RepeatedField<uint32>* default_repeated_field_uint32_;
-  static const RepeatedField<uint64>* default_repeated_field_uint64_;
-  static const RepeatedField<double>* default_repeated_field_double_;
-  static const RepeatedField<float>* default_repeated_field_float_;
-  static const RepeatedField<bool>* default_repeated_field_bool_;
+  static const RepeatedPrimitiveDefaults* default_instance();
+  RepeatedField<int32> default_repeated_field_int32_;
+  RepeatedField<int64> default_repeated_field_int64_;
+  RepeatedField<uint32> default_repeated_field_uint32_;
+  RepeatedField<uint64> default_repeated_field_uint64_;
+  RepeatedField<double> default_repeated_field_double_;
+  RepeatedField<float> default_repeated_field_float_;
+  RepeatedField<bool> default_repeated_field_bool_;
 };
 
 #define PROTOBUF_DEFINE_PRIMITIVE_TYPE(TYPE, METHOD)                       \
@@ -919,11 +918,8 @@ template<> inline void RepeatedPrimitiveTypeTraits<TYPE>::Add(             \
 }                                                                          \
 template<> inline const RepeatedField<TYPE>*                               \
     RepeatedPrimitiveTypeTraits<TYPE>::GetDefaultRepeatedField() {         \
-  ::google::protobuf::GoogleOnceInit(                                                          \
-      &repeated_primitive_generic_type_traits_once_init_,                  \
-      &RepeatedPrimitiveGenericTypeTraits::InitializeDefaultRepeatedFields); \
-  return RepeatedPrimitiveGenericTypeTraits::                              \
-      default_repeated_field_##TYPE##_;                                    \
+  return &RepeatedPrimitiveDefaults::default_instance()                    \
+              ->default_repeated_field_##TYPE##_;                          \
 }                                                                          \
 template<> inline const RepeatedField<TYPE>&                               \
     RepeatedPrimitiveTypeTraits<TYPE>::GetRepeated(int number,             \
@@ -980,8 +976,6 @@ class LIBPROTOBUF_EXPORT StringTypeTraits {
   }
 };
 
-LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_string_type_traits_once_init_;
-
 class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
  public:
   typedef const string& ConstType;
@@ -1024,11 +1018,7 @@ class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
                                      is_packed, NULL));
   }
 
-  static const RepeatedFieldType* GetDefaultRepeatedField() {
-    ::google::protobuf::GoogleOnceInit(&repeated_string_type_traits_once_init_,
-                   &InitializeDefaultRepeatedFields);
-    return default_repeated_field_;
-  }
+  static const RepeatedFieldType* GetDefaultRepeatedField();
 
   template <typename ExtendeeT>
   static void Register(int number, FieldType type, bool is_packed) {
@@ -1039,7 +1029,6 @@ class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
  private:
   static void InitializeDefaultRepeatedFields();
   static void DestroyDefaultRepeatedFields();
-  static const RepeatedFieldType *default_repeated_field_;
 };
 
 // -------------------------------------------------------------------
@@ -1230,28 +1219,11 @@ class RepeatedMessageTypeTraits {
   }
 };
 
-LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_message_generic_type_traits_once_init_;
-
-// This class exists only to hold a generic default empty repeated field for all
-// message-type repeated field extensions.
-class LIBPROTOBUF_EXPORT RepeatedMessageGenericTypeTraits {
- public:
-  typedef RepeatedPtrField<::google::protobuf::MessageLite*> RepeatedFieldType;
- private:
-  template<typename Type> friend class RepeatedMessageTypeTraits;
-  static void InitializeDefaultRepeatedFields();
-  static void DestroyDefaultRepeatedFields();
-  static const RepeatedFieldType* default_repeated_field_;
-};
-
 template<typename Type> inline
     const typename RepeatedMessageTypeTraits<Type>::RepeatedFieldType*
     RepeatedMessageTypeTraits<Type>::GetDefaultRepeatedField() {
-  ::google::protobuf::GoogleOnceInit(
-      &repeated_message_generic_type_traits_once_init_,
-      &RepeatedMessageGenericTypeTraits::InitializeDefaultRepeatedFields);
-  return reinterpret_cast<const RepeatedFieldType*>(
-      RepeatedMessageGenericTypeTraits::default_repeated_field_);
+  static auto instance = OnShutdownDelete(new RepeatedFieldType);
+  return instance;
 }
 
 // -------------------------------------------------------------------

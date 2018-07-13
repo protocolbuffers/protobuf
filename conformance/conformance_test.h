@@ -44,6 +44,7 @@
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/wire_format_lite.h>
 
+#include "conformance.pb.h"
 #include "third_party/jsoncpp/json.h"
 
 namespace conformance {
@@ -146,7 +147,42 @@ class ConformanceTestSuite {
     REQUIRED = 0,
     RECOMMENDED = 1,
   };
-  string ConformanceLevelToString(ConformanceLevel level);
+
+  class ConformanceRequestSetting {
+   public:
+    ConformanceRequestSetting(
+        ConformanceLevel level, conformance::WireFormat input_format,
+        conformance::WireFormat output_format, bool is_proto3,
+        const string& test_name, const string& input);
+
+   Message* GetTestMessage() const;
+
+   const string& GetTestName() const {
+     return test_name_;
+   }
+
+   const conformance::ConformanceRequest& GetRequest() const {
+     return request_;
+   }
+
+   const ConformanceLevel GetLevel() const {
+     return level_;
+   }
+
+   void SetIgnoreUnknownJson(bool ignore_unknown_json) {
+     request_.set_ignore_unknown_json(ignore_unknown_json);
+   }
+  
+   private:
+    ConformanceLevel level_;
+    conformance::WireFormat input_format_;
+    conformance::WireFormat output_format_;
+    bool is_proto3_;
+    string test_name_;
+    conformance::ConformanceRequest request_;
+  };
+
+  static string ConformanceLevelToString(ConformanceLevel level);
 
   void ReportSuccess(const std::string& test_name);
   void ReportFailure(const string& test_name,
@@ -160,24 +196,17 @@ class ConformanceTestSuite {
   void RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
-  void RunValidInputTest(const string& test_name,
-                         ConformanceLevel level,
-                         const string& input,
-                         conformance::WireFormat input_format,
-                         const string& equivalent_text_format,
-                         conformance::WireFormat requested_output,
-                         bool isProto3);
-  void RunValidBinaryInputTest(const string& test_name,
-                               ConformanceLevel level,
-                               const string& input,
-                               conformance::WireFormat input_format,
-                               const string& equivalent_wire_format,
-                               conformance::WireFormat requested_output,
-                               bool isProto3);
+  void RunValidInputTest(const ConformanceRequestSetting& setting,
+                         const string& equivalent_text_format);
+  void RunValidBinaryInputTest(const ConformanceRequestSetting& setting,
+                               const string& equivalent_wire_format);
   void RunValidJsonTest(const string& test_name,
                         ConformanceLevel level,
                         const string& input_json,
                         const string& equivalent_text_format);
+  void RunValidJsonIgnoreUnknownTest(
+      const string& test_name, ConformanceLevel level, const string& input_json,
+      const string& equivalent_text_format);
   void RunValidJsonTestWithProtobufInput(
       const string& test_name,
       ConformanceLevel level,

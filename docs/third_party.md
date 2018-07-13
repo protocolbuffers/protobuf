@@ -23,6 +23,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C#: https://silentorbit.com/protobuf/
 * C#/.NET/WCF/VB: http://code.google.com/p/protobuf-net/
 * Clojure: http://github.com/ninjudd/clojure-protobuf
+* Clojure: https://github.com/clojusc/protobuf
 * Common Lisp: http://github.com/ndantam/s-protobuf
 * Common Lisp: http://github.com/brown/protobuf
 * D: https://github.com/dcarp/protobuf-d
@@ -127,6 +128,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * https://github.com/johanbrandhorst/protobuf (GopherJS)
 * https://github.com/awakesecurity/gRPC-haskell (Haskell)
 * https://github.com/Yeolar/raster (C++)
+* https://github.com/jnordberg/wsrpc (JavaScript Node.js/Browser)
 
 ## Other Utilities
 

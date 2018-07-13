@@ -82,6 +82,8 @@ message ConformanceRequest {
   // protobuf_test_messages.proto3.TestAllTypesProto3 or
   // protobuf_test_messages.proto2.TestAllTypesProto2.
   string message_type = 4;
+
+  bool ignore_unknown_json = 5;
 }
 
 // Represents a single test case's output.

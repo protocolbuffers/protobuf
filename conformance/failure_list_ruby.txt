@@ -135,3 +135,9 @@ Required.Proto3.ProtobufInput.FloatFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput
 Required.TimestampProtoInputTooLarge.JsonOutput
 Required.TimestampProtoInputTooSmall.JsonOutput
+Required.Proto3.JsonInput.IgnoreUnknownJsonFalse.ProtobufOutput
+Required.Proto3.JsonInput.IgnoreUnknownJsonNull.ProtobufOutput
+Required.Proto3.JsonInput.IgnoreUnknownJsonNumber.ProtobufOutput
+Required.Proto3.JsonInput.IgnoreUnknownJsonObject.ProtobufOutput
+Required.Proto3.JsonInput.IgnoreUnknownJsonString.ProtobufOutput
+Required.Proto3.JsonInput.IgnoreUnknownJsonTrue.ProtobufOutput

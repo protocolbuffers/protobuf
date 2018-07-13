@@ -2327,32 +2327,26 @@ class AssignDescriptorsHelper {
 // automatically delete the allocated reflection. MetadataOwner owns
 // all the allocated reflection instances.
 struct MetadataOwner {
+  ~MetadataOwner() {
+    for (auto range : metadata_arrays_) {
+      for (const Metadata* m = range.first; m < range.second; m++) {
+        delete m->reflection;
+      }
+    }
+  }
+
   void AddArray(const Metadata* begin, const Metadata* end) {
     MutexLock lock(&mu_);
     metadata_arrays_.push_back(std::make_pair(begin, end));
   }
 
   static MetadataOwner* Instance() {
-    static MetadataOwner* res = new MetadataOwner;
+    static MetadataOwner* res = OnShutdownDelete(new MetadataOwner);
     return res;
   }
 
  private:
-  // Use the constructor to register the shutdown code. Because c++ makes sure
-  // this called only once.
-  MetadataOwner() { OnShutdown(&DeleteMetadata); }
-  ~MetadataOwner() {
-    for (int i = 0; i < metadata_arrays_.size(); i++) {
-      for (const Metadata* m = metadata_arrays_[i].first;
-           m < metadata_arrays_[i].second; m++) {
-        delete m->reflection;
-      }
-    }
-  }
-
-  static void DeleteMetadata() {
-    delete Instance();
-  }
+  MetadataOwner() = default;  // private because singleton
 
   Mutex mu_;
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;

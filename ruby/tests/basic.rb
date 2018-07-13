@@ -350,7 +350,9 @@ module BasicTest
 
       # strings are immutable so we can't do this, but serialize should catch it.
       m.optional_string = "asdf".encode!('UTF-8')
-      assert_raise RuntimeError do
+      # Ruby 2.5 changed to raise FrozenError. However, assert_raise don't
+      # accept subclass. Don't specify type here.
+      assert_raise do
         m.optional_string.encode!('ASCII-8BIT')
       end
     end
@@ -1271,6 +1273,10 @@ module BasicTest
       Foo.encode_json(Foo.new)
       Foo.encode_json(Foo.new(bar: bar))
       Foo.encode_json(Foo.new(bar: bar, baz: [baz1, baz2]))
+    end
+
+    def test_json_empty
+      assert TestMessage.encode_json(TestMessage.new) == '{}'
     end
 
     def test_json_emit_defaults

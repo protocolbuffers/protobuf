@@ -1,4 +1,4 @@
-FROM centos:6.6
+FROM centos:6.9
 
 RUN yum install -y git \
                    tar \
@@ -28,15 +28,14 @@ RUN wget -q http://apache.cs.utah.edu/maven/maven-3/3.3.9/binaries/apache-maven-
     tar xz -C /var/local
 ENV PATH /var/local/apache-maven-3.3.9/bin:$PATH
 
-# Install GCC 4.7 to support -static-libstdc++
-RUN wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo -P /etc/yum.repos.d && \
-    bash -c 'echo "enabled=1" >> /etc/yum.repos.d/devtools-1.1.repo' && \
-    bash -c "sed -e 's/\$basearch/i386/g' /etc/yum.repos.d/devtools-1.1.repo > /etc/yum.repos.d/devtools-i386-1.1.repo" && \
-    sed -e 's/testing-/testing-i386-/g' -i /etc/yum.repos.d/devtools-i386-1.1.repo && \
+# Install GCC 4.8 to support -static-libstdc++
+RUN wget http://people.centos.org/tru/devtools-2/devtools-2.repo -P /etc/yum.repos.d && \
+    bash -c 'echo "enabled=1" >> /etc/yum.repos.d/devtools-2.repo' && \
+    bash -c "sed -e 's/\$basearch/i386/g' /etc/yum.repos.d/devtools-2.repo > /etc/yum.repos.d/devtools-i386-2.repo" && \
+    sed -e 's/testing-/testing-i386-/g' -i /etc/yum.repos.d/devtools-i386-2.repo && \
     rpm --rebuilddb && \
-    yum install -y devtoolset-1.1 \
-                   devtoolset-1.1-libstdc++-devel \
-                   devtoolset-1.1-libstdc++-devel.i686 && \
+    yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils devtoolset-2-libstdc++-devel \
+                   devtoolset-2-gcc.i686 devtoolset-2-gcc-c++.i686 devtoolset-2-binutils.i686 devtoolset-2-libstdc++-devel.i686 && \
     yum clean all
 
 COPY scl-enable-devtoolset.sh /var/local/

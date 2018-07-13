@@ -43,12 +43,12 @@ COPTS = select({
     "//conditions:default": [
         "-DHAVE_PTHREAD",
         "-Wall",
-        "-Wwrite-strings",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
         "-Wno-unused-function",
         # Prevents ISO C++ const string assignment warnings for pyext sources.
         "-Wno-writable-strings",
+        "-Wno-write-strings",
     ],
 })
 
@@ -934,9 +934,41 @@ OBJC_SRCS = [
 objc_library(
     name = "objectivec",
     hdrs = OBJC_HDRS + OBJC_PRIVATE_HDRS,
+    copts = [
+        "-Wno-vla",
+    ],
     includes = [
         "objectivec",
     ],
     non_arc_srcs = OBJC_SRCS,
     visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Test generated proto support
+################################################################################
+
+genrule(
+    name = "generated_protos",
+    srcs = ["src/google/protobuf/unittest_import.proto"],
+    outs = ["unittest_gen.proto"],
+    cmd = "cat $(SRCS) | sed 's|google/|src/google/|' >  $(OUTS)"
+)
+
+proto_library(
+    name = "generated_protos_proto",
+    srcs = [
+        "unittest_gen.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
+)
+
+py_proto_library(
+    name = "generated_protos_py",
+    srcs = [
+        "unittest_gen.proto",
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
+    default_runtime = "",
+    protoc = ":protoc",
 )

@@ -279,8 +279,6 @@ $(protoc_outputs): protoc_middleman
 
 $(other_language_protoc_outputs): protoc_middleman
 
-BUILT_SOURCES = $(protoc_outputs) $(other_language_protoc_outputs)
-
 CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java javac_middleman_lite conformance-java-lite conformance-csharp conformance-php conformance-php-c $(other_language_protoc_outputs)
 
 MAINTAINERCLEANFILES =   \
