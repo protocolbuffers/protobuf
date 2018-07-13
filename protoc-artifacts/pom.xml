@@ -33,36 +33,7 @@
     </connection>
   </scm>
   <build>
-    <extensions>
-      <extension>
-        <groupId>kr.motd.maven</groupId>
-        <artifactId>os-maven-plugin</artifactId>
-        <version>1.5.0.Final</version>
-      </extension>
-    </extensions>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.1.1</version>
-        <executions>
-          <execution>
-            <phase>compile</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <executable>bash</executable>
-          <arguments>
-            <argument>build-protoc.sh</argument>
-            <argument>${os.detected.name}</argument>
-            <argument>${os.detected.arch}</argument>
-            <argument>protoc</argument>
-          </arguments>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -77,8 +48,38 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${basedir}/target/protoc.exe</file>
-                  <classifier>${os.detected.name}-${os.detected.arch}</classifier>
+                  <file>${basedir}/target/linux/x86_64/protoc.exe</file>
+                  <classifier>linux-x86_64</classifier>
+                  <type>exe</type>
+                </artifact>
+                <artifact>
+                  <file>${basedir}/target/linux/x86_32/protoc.exe</file>
+                  <classifier>linux-x86_32</classifier>
+                  <type>exe</type>
+                </artifact>
+                <artifact>
+                  <file>${basedir}/target/windows/x86_64/protoc.exe</file>
+                  <classifier>windows-x86_64</classifier>
+                  <type>exe</type>
+                </artifact>
+                <artifact>
+                  <file>${basedir}/target/windows/x86_32/protoc.exe</file>
+                  <classifier>windows-x86_32</classifier>
+                  <type>exe</type>
+                </artifact>
+                <artifact>
+                  <file>${basedir}/target/osx/x86_64/protoc.exe</file>
+                  <classifier>osx-x86_64</classifier>
+                  <type>exe</type>
+                </artifact>
+                <artifact>
+                  <file>${basedir}/target/osx/x86_32/protoc.exe</file>
+                  <classifier>osx-x86_32</classifier>
+                  <type>exe</type>
+                </artifact>
+                <artifact>
+                  <file>${basedir}/target/linux/aarch_64/protoc.exe</file>
+                  <classifier>linux-aarch_64</classifier>
                   <type>exe</type>
                 </artifact>
               </artifacts>
