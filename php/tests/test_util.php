@@ -241,6 +241,7 @@ class TestUtil
         if (PHP_INT_SIZE == 4) {
             assert('-43' === $m->getRepeatedInt64()[0]);
             assert('43'  === $m->getRepeatedUint64()[0]);
+            var_dump($m->getRepeatedSint64()[0]);
             assert('-45' === $m->getRepeatedSint64()[0]);
             assert('47'  === $m->getRepeatedFixed64()[0]);
             assert('-47' === $m->getRepeatedSfixed64()[0]);
