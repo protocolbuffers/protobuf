@@ -35,6 +35,8 @@ echo $git_root
 docker run \
   "$@" \
   -e CCACHE_DIR=$CCACHE_DIR \
+  -e KOKORO_BUILD_NUMBER=$KOKORO_BUILD_NUMBER \
+  -e KOKORO_BUILD_ID=$KOKORO_BUILD_ID \
   -e EXTERNAL_GIT_ROOT="/var/local/kokoro/protobuf" \
   -e TEST_SET="$TEST_SET" \
   -e THIS_IS_REALLY_NEEDED='see https://github.com/docker/docker/issues/14203 for why docker is awful' \

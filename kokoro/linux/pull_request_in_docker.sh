@@ -53,7 +53,7 @@ $TIME_CMD $TEST_SCRIPT cpp > >(tee $CPP_STDOUT) 2> >(tee $CPP_STDERR >&2)
 
 parallel --results $LOG_OUTPUT_DIR --joblog $OUTPUT_DIR/joblog $TEST_SCRIPT ::: \
   $TEST_SET \
-  || true  # Process test results even if tests fail.
+  || FAILED="true"  # Process test results even if tests fail.
 
 cat $OUTPUT_DIR/joblog
 
@@ -67,3 +67,7 @@ TESTOUTPUT_XML_FILE=$COPY_FROM_DOCKER/sponge_log.xml
 python $MY_DIR/make_test_output.py $OUTPUT_DIR > $TESTOUTPUT_XML_FILE
 
 ls -l $TESTOUTPUT_XML_FILE
+
+if [ "$FAILED" == "true" ]; then
+	exit 1
+fi
