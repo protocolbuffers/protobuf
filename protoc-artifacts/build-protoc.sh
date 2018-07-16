@@ -38,7 +38,7 @@ case $MAKE_TARGET in
   protoc)
     ;;
   *)
-    echo "Target ""$TARGET"" invalid."
+    echo "Target ""$MAKE_TARGET"" invalid."
     exit 1
 esac
 
@@ -174,7 +174,7 @@ checkDependencies ()
 }
 ############################################################################
 
-echo "Building protoc, OS=$OS ARCH=$ARCH TARGET=$TARGET"
+echo "Building protoc, OS=$OS ARCH=$ARCH TARGET=$MAKE_TARGET"
 
 CONFIGURE_ARGS="--disable-shared"
 
