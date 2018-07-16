@@ -36,7 +36,7 @@ protoc_middleman2:  make_tmp_dir $(top_srcdir)/src/protoc$(EXEEXT) $(benchmarks_
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd/cpp --java_out=$$oldpwd/tmp/java/src/main/java --python_out=$$oldpwd/tmp $(benchmarks_protoc_inputs_proto2) )
 	touch protoc_middleman2
 
-all_data = $$(find $(srcdir) -type f -name "dataset.*.pb" -not -path "./tmp/*")
+all_data = $$(find $$(cd $(srcdir) && pwd) -type f -name "dataset.*.pb" -not -path "$$(cd $(srcdir) && pwd)/tmp/*")
 
 ############# CPP RULES ##############
 
@@ -492,7 +492,8 @@ proto3_proto_middleman: protoc-gen-proto2_to_proto3
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I$(srcdir) -I$(top_srcdir) --plugin=protoc-gen-proto2_to_proto3 --proto2_to_proto3_out=$$oldpwd/tmp/proto3_proto $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) $(benchmarks_protoc_inputs_proto2) )
 	touch proto3_proto_middleman
 
-proto3_data = $$(for data in $(all_data); do echo "tmp/proto3_data$${data\#$(srcdir)}"; done | xargs)
+full_srcdir = $$(cd $(srcdir) && pwd)
+proto3_data = $$(for data in $(all_data); do echo $(full_srcdir)"/tmp/proto3_data$${data\#$(full_srcdir)}"; done | xargs)
 
 generate_proto3_data: protoc_middleman protoc_middleman2 proto3-data-stripper
 	mkdir -p `dirname $(proto3_data)`
@@ -500,6 +501,51 @@ generate_proto3_data: protoc_middleman protoc_middleman2 proto3-data-stripper
 	touch generate_proto3_data
 
 ############ PROTO3 PREPARATION END #############
+
+############ PHP RULES BEGIN #################
+
+proto3_middleman_php: proto3_proto_middleman
+	mkdir -p "tmp/php"
+	oldpwd=`pwd` && ( cd tmp/proto3_proto && $$oldpwd/../src/protoc$(EXEEXT) -I$(srcdir) -I$(top_srcdir) --php_out=$$oldpwd/tmp/php $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) $(benchmarks_protoc_inputs_proto2) )
+	touch proto3_middleman_php
+
+php-benchmark: proto3_middleman_php generate_proto3_data
+	mkdir -p "tmp/php/Google/Protobuf/Benchmark" && cp php/PhpBenchmark.php "tmp/php/Google/Protobuf/Benchmark"
+	cp php/autoload.php "tmp/php"  
+	@echo "Writing shortcut script php-benchmark..."
+	@echo '#! /bin/bash' > php-benchmark
+	@echo 'export PROTOBUF_PHP_SRCDIR="$$(cd $(top_srcdir) && pwd)/php/src"' >> php-benchmark
+	@echo 'cd tmp/php' >> php-benchmark
+	@echo 'export CURRENT_DIR=$$(pwd)' >> php-benchmark
+	@echo 'php -d auto_prepend_file="autoload.php" -d include_path="$$(pwd)" Google/Protobuf/Benchmark/PhpBenchmark.php $$@' >> php-benchmark
+	@echo 'cd ../..' >> php-benchmark
+	@chmod +x php-benchmark
+
+php: php-benchmark proto3_middleman_php
+	./php-benchmark $(proto3_data)
+
+php_c_extension:
+	cd $(top_srcdir)/php/ext/google/protobuf && ./configure CFLAGS='-O3' && make -j8
+
+php-c-benchmark: proto3_middleman_php generate_proto3_data php_c_extension php_c_extension
+	mkdir -p "tmp/php/Google/Protobuf/Benchmark" && cp php/PhpBenchmark.php "tmp/php/Google/Protobuf/Benchmark" 
+	cp php/autoload.php "tmp/php"  
+	@echo "Writing shortcut script php-c-benchmark..."
+	@echo '#! /bin/bash' > php-c-benchmark
+	@echo 'export PROTOBUF_PHP_SRCDIR="$$(cd $(top_srcdir) && pwd)/php/src"' >> php-c-benchmark
+	@echo 'export PROTOBUF_PHP_EXTDIR="$$PROTOBUF_PHP_SRCDIR/../ext/google/protobuf/modules"' >> php-c-benchmark
+	@echo 'echo "$$PROTOBUF_PHP_EXTDIR/protobuf.so"' >> php-c-benchmark
+	@echo 'cd tmp/php' >> php-c-benchmark
+	@echo 'export CURRENT_DIR=$$(pwd)' >> php-c-benchmark
+	@echo 'php -d auto_prepend_file="autoload.php" -d include_path="$$(pwd)" -d extension="$$PROTOBUF_PHP_EXTDIR/protobuf.so" Google/Protobuf/Benchmark/PhpBenchmark.php $$@' >> php-c-benchmark
+	@echo 'cd ../..' >> php-c-benchmark
+	@chmod +x php-c-benchmark
+
+php_c: php-c-benchmark proto3_middleman_php
+	./php-c-benchmark $(proto3_data)
+
+
+############ PHP RULES END #################
 
 MAINTAINERCLEANFILES =                                                     \
 	Makefile.in
@@ -545,8 +591,12 @@ CLEANFILES =                                                               \
 	gogo-benchmark                                                           \
 	gogo/cpp_no_group/cpp_benchmark.*                                        \
 	proto3_proto_middleman                                                   \
-	generate_proto3_data
+	generate_proto3_data                                                     \
+	php-benchmark                                                            \
+	php-c-benchmark                                                          \
+	proto3_middleman_php
 	
 
 clean-local:
 	-rm -rf tmp/*
+	
