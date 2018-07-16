@@ -58,6 +58,10 @@ $ export PATH=$PATH:$(go env GOPATH)/bin
 The first command installs `protoc-gen-go` into the `bin` directory in your local `GOPATH`.
 The second command adds the `bin` directory to your `PATH` so that `protoc` can locate the plugin later.
 
+### PHP
+PHP benchmark's requirement is the same as PHP protobuf's requirements. The benchmark will automaticly 
+include PHP protobuf's src and build the c extension if required.
+
 ### Big data
 
 There's some optional big testing data which is not included in the directory
@@ -120,6 +124,18 @@ $ make python-cpp-generated-code
 $ make go
 ```
 
+
+### PHP
+We have two version of php protobuf implemention: pure php, php with c extension. To run these version benchmark, you need to:
+#### Pure PHP
+```
+$ make php
+```
+#### PHP with c extension
+```
+$ make php_c
+```
+
 To run a specific dataset or run with specific options:
 
 ### Java:
@@ -165,6 +181,18 @@ $ ./python-cpp-generated-code-benchmark [--json] $(specific generated dataset fi
 ```
 $ make go-benchmark
 $ ./go-benchmark $(specific generated dataset file name) [go testing options]
+```
+
+### PHP
+#### Pure PHP
+```
+$ make php-benchmark
+$ ./php-benchmark $(specific generated dataset file name)
+```
+#### PHP with c extension
+```
+$ make php-c-benchmark
+$ ./php-c-benchmark $(specific generated dataset file name)
 ```
 
 
