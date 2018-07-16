@@ -5,7 +5,7 @@
 
 WORKSPACE_BASE=`pwd`
 MY_DIR="$(dirname "$0")"
-TEST_SCRIPT=$MY_DIR/../../tests.sh
+TEST_SCRIPT=./tests.sh
 BUILD_DIR=/tmp/protobuf
 
 set -e  # exit immediately on error
