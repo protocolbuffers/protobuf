@@ -5,6 +5,12 @@ set -x
 # Change to repo root.
 cd $(dirname $0)/../../../..
 
+# Initialize any submodules.
+git submodule update --init --recursive
+
+# Generate the configure script.
+./autogen.sh
+
 # Use docker image to build linux artifacts.
 DOCKER_IMAGE_NAME=protobuf/protoc_$(sha1sum protoc-artifacts/Dockerfile | cut -f1 -d " ")
 docker pull $DOCKER_IMAGE_NAME
