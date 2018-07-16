@@ -111,7 +111,12 @@ cc_library(
         "src/google/protobuf/stubs/time.cc",
         "src/google/protobuf/wire_format_lite.cc",
     ],
-    hdrs = glob(["src/google/protobuf/**/*.h"]),
+    hdrs = glob(
+        ["src/google/protobuf/**/*.h"],
+        exclude = [
+            "src/google/protobuf/**/*.pb.h",
+        ],
+    ),
     copts = COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
@@ -178,7 +183,12 @@ cc_library(
         "src/google/protobuf/wire_format.cc",
         "src/google/protobuf/wrappers.pb.cc",
     ],
-    hdrs = glob(["src/**/*.h"]),
+    hdrs = glob(
+        ["src/**/*.h"],
+        exclude = [
+            "src/**/*.pb.h",
+        ],
+    ),
     copts = COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
@@ -192,7 +202,12 @@ cc_library(
 # TODO(keveman): Remove this target once the support gets added to Bazel.
 cc_library(
     name = "protobuf_headers",
-    hdrs = glob(["src/**/*.h"]),
+    hdrs = glob(
+        ["src/**/*.h"],
+        exclude = [
+            "src/**/*.pb.h",
+        ],
+    ),
     includes = ["src/"],
     visibility = ["//visibility:public"],
 )
@@ -583,12 +598,17 @@ cc_test(
     copts = COPTS,
     data = [
         ":test_plugin",
-    ] + glob([
-        "src/google/protobuf/**/*",
-        # Files for csharp_bootstrap_unittest.cc.
-        "conformance/**/*",
-        "csharp/src/**/*",
-    ]),
+    ] + glob(
+        [
+            "src/google/protobuf/**/*",
+            # Files for csharp_bootstrap_unittest.cc.
+            "conformance/**/*",
+            "csharp/src/**/*",
+        ],
+        exclude = [
+            "src/**/*.pb.h",
+            "src/**/*.pb.cc",
+        ]),
     includes = [
         "src/",
     ],
@@ -675,10 +695,15 @@ cc_binary(
 
 cc_binary(
     name = "python/google/protobuf/pyext/_message.so",
-    srcs = glob([
-        "python/google/protobuf/pyext/*.cc",
-        "python/google/protobuf/pyext/*.h",
-    ]),
+    srcs = glob(
+        [
+            "python/google/protobuf/pyext/*.cc",
+            "python/google/protobuf/pyext/*.h",
+        ],
+        exclude = [
+            "python/google/protobuf/pyext/*.pb.h",
+            "python/google/protobuf/pyext/*.pb.cc",
+        ]),
     copts = COPTS + [
         "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
     ] + select({
