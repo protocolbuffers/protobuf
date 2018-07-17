@@ -661,7 +661,7 @@ public class JsonFormatTest extends TestCase {
     }
   }
 
-  public void testMapNullValueIsIgnored() throws Exception {
+  public void testMapEnumNullValueIsIgnored() throws Exception {
     try {
       TestMap.Builder builder = TestMap.newBuilder();
       mergeFromJson(

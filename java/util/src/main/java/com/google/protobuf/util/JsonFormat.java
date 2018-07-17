@@ -50,6 +50,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DoubleValue;
@@ -1539,7 +1540,7 @@ public class JsonFormat {
         Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
         Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
         if (value == null) {
-          if(field.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
+          if(valueField.getType() == Type.ENUM && field.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
             continue;
           } else {
             throw new InvalidProtocolBufferException("Map value cannot be null.");
@@ -1561,7 +1562,7 @@ public class JsonFormat {
       for (int i = 0; i < array.size(); ++i) {
         Object value = parseFieldValue(field, array.get(i), builder);
         if (value == null) {
-          if(field.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
+          if(field.getType() == Type.ENUM && field.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
             continue;
           } else {
             throw new InvalidProtocolBufferException(
