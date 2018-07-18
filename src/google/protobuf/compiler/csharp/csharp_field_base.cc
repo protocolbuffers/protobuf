@@ -80,13 +80,13 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   (*variables)["default_value"] = default_value();
   (*variables)["capitalized_type_name"] = capitalized_type_name();
   (*variables)["number"] = number();
-  if (has_default_value() && descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (has_default_value() && !IsProto2(descriptor_->file())) {
     (*variables)["name_def_message"] =
-      (*variables)["name"] + "_ = " + (*variables)["property_name"] + "DefaultValue";
+      (*variables)["name"] + "_ = " + (*variables)["default_value"];
   } else {
     (*variables)["name_def_message"] = (*variables)["name"] + "_";
   }
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
     (*variables)["has_property_check"] = "Has" + (*variables)["property_name"];
     (*variables)["other_has_property_check"] = "other.Has" + (*variables)["property_name"];
     (*variables)["has_not_property_check"] = "!" + (*variables)["has_property_check"];
@@ -98,8 +98,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
       (*variables)["set_has_field"] = "_hasBits" + hasBitsNumber + " |= " + hasBitsMask;
       (*variables)["clear_has_field"] = "_hasBits" + hasBitsNumber + " &= ~" + hasBitsMask;
     }
-  }
-  else {
+  } else {
     (*variables)["has_property_check"] =
       (*variables)["property_name"] + " != " + (*variables)["default_value"];
     (*variables)["other_has_property_check"] = "other." +
@@ -110,10 +109,9 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 void FieldGeneratorBase::SetCommonOneofFieldVariables(
     std::map<string, string>* variables) {
   (*variables)["oneof_name"] = oneof_name();
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
     (*variables)["has_property_check"] = "Has" + property_name();
-  }
-  else {
+  } else {
     (*variables)["has_property_check"] =
       oneof_name() + "Case_ == " + oneof_property_name() +
       "OneofCase." + property_name();
@@ -295,7 +293,7 @@ std::string FieldGeneratorBase::default_value() {
 std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_ENUM:
-      if (descriptor->file()->syntax() == FileDescriptor::Syntax::SYNTAX_PROTO2) {
+      if (IsProto2(descriptor_->file())) {
         return GetClassName(descriptor->default_value_enum()->type()) + "." + 
           GetEnumValueName(descriptor->default_value_enum()->type()->name(), descriptor->default_value_enum()->name());
       }

@@ -52,7 +52,7 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
                                              int presenceIndex,
                                              const Options *options)
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (!IsProto2(descriptor_->file())) {
     variables_["has_property_check"] = name() + "_ != null";
     variables_["has_not_property_check"] = name() + "_ == null";
   }
@@ -76,24 +76,26 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    $name$_ = value;\n"
     "  }\n"
     "}\n");
-  printer->Print(
-    variables_,
-    "/// <summary>Gets whether the $descriptor_name$ field is set</summary>\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ bool Has$property_name$ {\n"
-    "  get { return $name$_ != null; }\n"
-    "}\n");
-  printer->Print( 
-    variables_, 
-    "/// <summary>Clears the value of the $descriptor_name$ field</summary>\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ void Clear$property_name$() {\n"
-    "  $name$_ = null;\n"
-    "}\n");
+  if (IsProto2(descriptor_->file())) {
+    printer->Print(
+      variables_,
+      "/// <summary>Gets whether the $descriptor_name$ field is set</summary>\n");
+    AddPublicMemberAttributes(printer);
+    printer->Print(
+      variables_,
+      "$access_level$ bool Has$property_name$ {\n"
+      "  get { return $name$_ != null; }\n"
+      "}\n");
+    printer->Print( 
+      variables_, 
+      "/// <summary>Clears the value of the $descriptor_name$ field</summary>\n");
+    AddPublicMemberAttributes(printer);
+    printer->Print(
+      variables_,
+      "$access_level$ void Clear$property_name$() {\n"
+      "  $name$_ = null;\n"
+      "}\n");
+  }
 }
 
 void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
@@ -150,7 +152,7 @@ void MessageFieldGenerator::WriteToString(io::Printer* printer) {
     "PrintField(\"$field_name$\", has$property_name$, $name$_, writer);\n");
 }
 void MessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) {
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
     printer->Print(
       variables_,
       "if ($has_property_check$) {\n"
@@ -206,7 +208,7 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"
     "}\n");
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
     printer->Print(
       variables_,
       "/// <summary>Gets whether the \"$descriptor_name$\" field is set</summary>\n");
@@ -216,18 +218,18 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
       "$access_level$ bool Has$property_name$ {\n"
       "  get { return $oneof_name$Case_ == $oneof_property_name$OneofCase.$property_name$; }\n"
       "}\n");
+    printer->Print(
+      variables_,
+      "/// <summary> Clears the value of the oneof if it's currently set to \"$descriptor_name$\" </summary>\n");
+    AddPublicMemberAttributes(printer);
+    printer->Print(
+      variables_,
+      "$access_level$ void Clear$property_name$() {\n"
+      "  if ($has_property_check$) {\n"
+      "    Clear$oneof_property_name$();\n"
+      "  }\n"
+      "}\n");
   }
-  printer->Print(
-    variables_,
-    "/// <summary> Clears the value of the oneof if it's currently set to \"$descriptor_name$\" </summary>\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ void Clear$property_name$() {\n"
-    "  if ($has_property_check$) {\n"
-    "    Clear$oneof_property_name$();\n"
-    "  }\n"
-    "}\n");
 }
 
 void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {

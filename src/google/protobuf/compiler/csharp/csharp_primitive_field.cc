@@ -54,7 +54,7 @@ PrimitiveFieldGenerator::PrimitiveFieldGenerator(
   // TODO(jonskeet): Make this cleaner...
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
-  if (!is_value_type && descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (!is_value_type && !IsProto2(descriptor_->file())) {
     variables_["has_property_check"] = variables_["property_name"] + ".Length != 0";
     variables_["other_has_property_check"] = "other." + variables_["property_name"] + ".Length != 0";
   }
@@ -67,20 +67,11 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   // TODO(jonskeet): Work out whether we want to prevent the fields from ever being
   // null, or whether we just handle it, in the cases of bytes and string.
   // (Basically, should null-handling code be in the getter or the setter?)
-  printer->Print(
-    variables_, 
-    "/// <summary>Default value for the \"$descriptor_name$\" field</summary>\n");
-  printer->Print(variables_, "$access_level$ ");
-  if (descriptor_->type() == FieldDescriptor::TYPE_BYTES) {
-    printer->Print("readonly static ");
+  if (IsProto2(descriptor_->file())) {
+    printer->Print(
+      variables_, 
+      "private readonly static $type_name$ $property_name$DefaultValue = $default_value$;\n\n");
   }
-  else {
-    printer->Print("const ");
-  }
-
-  printer->Print(
-    variables_,
-   "$type_name$ $property_name$DefaultValue = $default_value$;\n\n");
 
   printer->Print(
     variables_,
@@ -88,7 +79,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
 
   WritePropertyDocComment(printer, descriptor_);
   AddPublicMemberAttributes(printer);
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
     if (presenceIndex_ == -1) {
       printer->Print(
         variables_,
@@ -126,7 +117,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     "  }\n"
     "}\n");
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
     printer->Print(variables_, "/// <summary>Gets whether the \"$descriptor_name$\" field is set</summary>\n");
     AddPublicMemberAttributes(printer);
     printer->Print(
@@ -143,22 +134,19 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
         "$has_field_check$; }\n}\n");
     }
   }
-  printer->Print(variables_, "/// <summary>Clears the value of the \"$descriptor_name$\" field</summary>\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ void Clear$property_name$() {\n");
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
+    printer->Print(variables_, "/// <summary>Clears the value of the \"$descriptor_name$\" field</summary>\n");
+    AddPublicMemberAttributes(printer);
+    printer->Print(
+      variables_,
+      "$access_level$ void Clear$property_name$() {\n");
     if (IsNullable(descriptor_)) {
       printer->Print(variables_, "  $name$_ = null;\n");
     } else {
       printer->Print(variables_, "  $clear_has_field$;\n");
     }
+    printer->Print("}\n");
   }
-  else {
-    printer->Print(variables_, "  $name$_ = $property_name$DefaultValue;\n");
-  }
-  printer->Print("}\n");
 }
 
 void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
@@ -282,7 +270,7 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"
     "}\n");
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
     printer->Print(
       variables_,
       "/// <summary>Gets whether the \"$descriptor_name$\" field is set</summary>\n");
@@ -292,18 +280,18 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
       "$access_level$ bool Has$property_name$ {\n"
       "  get { return $oneof_name$Case_ == $oneof_property_name$OneofCase.$property_name$; }\n"
       "}\n");
+    printer->Print(
+      variables_,
+      "/// <summary> Clears the value of the oneof if it's currently set to \"$descriptor_name$\" </summary>\n");
+    AddPublicMemberAttributes(printer);
+    printer->Print(
+      variables_,
+      "$access_level$ void Clear$property_name$() {\n"
+      "  if ($has_property_check$) {\n"
+      "    Clear$oneof_property_name$();\n"
+      "  }\n"
+      "}\n");
   }
-  printer->Print(
-    variables_,
-    "/// <summary> Clears the value of the oneof if it's currently set to \"$descriptor_name$\" </summary>\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ void Clear$property_name$() {\n"
-    "  if ($has_property_check$) {\n"
-    "    Clear$oneof_property_name$();\n"
-    "  }\n"
-    "}\n");
 }
 
 void PrimitiveOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {

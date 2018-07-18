@@ -145,6 +145,10 @@ inline bool IsWrapperType(const FieldDescriptor* descriptor) {
       descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
 }
 
+inline bool IsProto2(const FileDescriptor* descriptor) {
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
