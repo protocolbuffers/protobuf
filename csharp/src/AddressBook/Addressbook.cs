@@ -89,10 +89,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
-
-    private string name_ = NameDefaultValue;
+    private string name_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
       get { return name_; }
@@ -100,17 +97,9 @@ namespace Google.Protobuf.Examples.AddressBook {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
-    /// <summary>Clears the value of the "name" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearName() {
-      name_ = NameDefaultValue;
-    }
 
     /// <summary>Field number for the "id" field.</summary>
     public const int IdFieldNumber = 2;
-    /// <summary>Default value for the "id" field</summary>
-    public const int IdDefaultValue = 0;
-
     private int id_;
     /// <summary>
     /// Unique ID number for this person.
@@ -122,29 +111,16 @@ namespace Google.Protobuf.Examples.AddressBook {
         id_ = value;
       }
     }
-    /// <summary>Clears the value of the "id" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearId() {
-      id_ = IdDefaultValue;
-    }
 
     /// <summary>Field number for the "email" field.</summary>
     public const int EmailFieldNumber = 3;
-    /// <summary>Default value for the "email" field</summary>
-    public const string EmailDefaultValue = "";
-
-    private string email_ = EmailDefaultValue;
+    private string email_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Email {
       get { return email_; }
       set {
         email_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
-    }
-    /// <summary>Clears the value of the "email" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearEmail() {
-      email_ = EmailDefaultValue;
     }
 
     /// <summary>Field number for the "phones" field.</summary>
@@ -166,16 +142,6 @@ namespace Google.Protobuf.Examples.AddressBook {
       set {
         lastUpdated_ = value;
       }
-    }
-    /// <summary>Gets whether the last_updated field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasLastUpdated {
-      get { return lastUpdated_ != null; }
-    }
-    /// <summary>Clears the value of the last_updated field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearLastUpdated() {
-      lastUpdated_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -377,10 +343,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
         /// <summary>Field number for the "number" field.</summary>
         public const int NumberFieldNumber = 1;
-        /// <summary>Default value for the "number" field</summary>
-        public const string NumberDefaultValue = "";
-
-        private string number_ = NumberDefaultValue;
+        private string number_ = "";
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public string Number {
           get { return number_; }
@@ -388,29 +351,16 @@ namespace Google.Protobuf.Examples.AddressBook {
             number_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
           }
         }
-        /// <summary>Clears the value of the "number" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearNumber() {
-          number_ = NumberDefaultValue;
-        }
 
         /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 2;
-        /// <summary>Default value for the "type" field</summary>
-        public const global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType TypeDefaultValue = 0;
-
-        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = TypeDefaultValue;
+        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = 0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
           set {
             type_ = value;
           }
-        }
-        /// <summary>Clears the value of the "type" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearType() {
-          type_ = TypeDefaultValue;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

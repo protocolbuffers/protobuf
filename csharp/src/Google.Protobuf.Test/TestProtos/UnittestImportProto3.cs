@@ -86,9 +86,6 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "d" field.</summary>
     public const int DFieldNumber = 1;
-    /// <summary>Default value for the "d" field</summary>
-    public const int DDefaultValue = 0;
-
     private int d_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int D {
@@ -96,11 +93,6 @@ namespace Google.Protobuf.TestProtos {
       set {
         d_ = value;
       }
-    }
-    /// <summary>Clears the value of the "d" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearD() {
-      d_ = DDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

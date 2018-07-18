@@ -408,9 +408,6 @@ namespace ProtobufTestMessages.Proto3 {
 
     /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
-    /// <summary>Default value for the "optional_int32" field</summary>
-    public const int OptionalInt32DefaultValue = 0;
-
     private int optionalInt32_;
     /// <summary>
     /// Singular
@@ -422,17 +419,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalInt32_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_int32" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalInt32() {
-      optionalInt32_ = OptionalInt32DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_int64" field.</summary>
     public const int OptionalInt64FieldNumber = 2;
-    /// <summary>Default value for the "optional_int64" field</summary>
-    public const long OptionalInt64DefaultValue = 0L;
-
     private long optionalInt64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long OptionalInt64 {
@@ -441,17 +430,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalInt64_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_int64" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalInt64() {
-      optionalInt64_ = OptionalInt64DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_uint32" field.</summary>
     public const int OptionalUint32FieldNumber = 3;
-    /// <summary>Default value for the "optional_uint32" field</summary>
-    public const uint OptionalUint32DefaultValue = 0;
-
     private uint optionalUint32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint OptionalUint32 {
@@ -460,17 +441,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalUint32_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_uint32" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalUint32() {
-      optionalUint32_ = OptionalUint32DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_uint64" field.</summary>
     public const int OptionalUint64FieldNumber = 4;
-    /// <summary>Default value for the "optional_uint64" field</summary>
-    public const ulong OptionalUint64DefaultValue = 0UL;
-
     private ulong optionalUint64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong OptionalUint64 {
@@ -479,17 +452,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalUint64_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_uint64" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalUint64() {
-      optionalUint64_ = OptionalUint64DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_sint32" field.</summary>
     public const int OptionalSint32FieldNumber = 5;
-    /// <summary>Default value for the "optional_sint32" field</summary>
-    public const int OptionalSint32DefaultValue = 0;
-
     private int optionalSint32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OptionalSint32 {
@@ -498,17 +463,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalSint32_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_sint32" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalSint32() {
-      optionalSint32_ = OptionalSint32DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_sint64" field.</summary>
     public const int OptionalSint64FieldNumber = 6;
-    /// <summary>Default value for the "optional_sint64" field</summary>
-    public const long OptionalSint64DefaultValue = 0L;
-
     private long optionalSint64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long OptionalSint64 {
@@ -517,17 +474,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalSint64_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_sint64" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalSint64() {
-      optionalSint64_ = OptionalSint64DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_fixed32" field.</summary>
     public const int OptionalFixed32FieldNumber = 7;
-    /// <summary>Default value for the "optional_fixed32" field</summary>
-    public const uint OptionalFixed32DefaultValue = 0;
-
     private uint optionalFixed32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint OptionalFixed32 {
@@ -536,17 +485,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalFixed32_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_fixed32" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalFixed32() {
-      optionalFixed32_ = OptionalFixed32DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_fixed64" field.</summary>
     public const int OptionalFixed64FieldNumber = 8;
-    /// <summary>Default value for the "optional_fixed64" field</summary>
-    public const ulong OptionalFixed64DefaultValue = 0UL;
-
     private ulong optionalFixed64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong OptionalFixed64 {
@@ -555,17 +496,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalFixed64_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_fixed64" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalFixed64() {
-      optionalFixed64_ = OptionalFixed64DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_sfixed32" field.</summary>
     public const int OptionalSfixed32FieldNumber = 9;
-    /// <summary>Default value for the "optional_sfixed32" field</summary>
-    public const int OptionalSfixed32DefaultValue = 0;
-
     private int optionalSfixed32_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OptionalSfixed32 {
@@ -574,17 +507,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalSfixed32_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_sfixed32" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalSfixed32() {
-      optionalSfixed32_ = OptionalSfixed32DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_sfixed64" field.</summary>
     public const int OptionalSfixed64FieldNumber = 10;
-    /// <summary>Default value for the "optional_sfixed64" field</summary>
-    public const long OptionalSfixed64DefaultValue = 0L;
-
     private long optionalSfixed64_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long OptionalSfixed64 {
@@ -593,17 +518,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalSfixed64_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_sfixed64" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalSfixed64() {
-      optionalSfixed64_ = OptionalSfixed64DefaultValue;
-    }
 
     /// <summary>Field number for the "optional_float" field.</summary>
     public const int OptionalFloatFieldNumber = 11;
-    /// <summary>Default value for the "optional_float" field</summary>
-    public const float OptionalFloatDefaultValue = 0F;
-
     private float optionalFloat_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float OptionalFloat {
@@ -612,17 +529,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalFloat_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_float" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalFloat() {
-      optionalFloat_ = OptionalFloatDefaultValue;
-    }
 
     /// <summary>Field number for the "optional_double" field.</summary>
     public const int OptionalDoubleFieldNumber = 12;
-    /// <summary>Default value for the "optional_double" field</summary>
-    public const double OptionalDoubleDefaultValue = 0D;
-
     private double optionalDouble_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double OptionalDouble {
@@ -631,17 +540,9 @@ namespace ProtobufTestMessages.Proto3 {
         optionalDouble_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_double" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalDouble() {
-      optionalDouble_ = OptionalDoubleDefaultValue;
-    }
 
     /// <summary>Field number for the "optional_bool" field.</summary>
     public const int OptionalBoolFieldNumber = 13;
-    /// <summary>Default value for the "optional_bool" field</summary>
-    public const bool OptionalBoolDefaultValue = false;
-
     private bool optionalBool_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool OptionalBool {
@@ -650,18 +551,10 @@ namespace ProtobufTestMessages.Proto3 {
         optionalBool_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_bool" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalBool() {
-      optionalBool_ = OptionalBoolDefaultValue;
-    }
 
     /// <summary>Field number for the "optional_string" field.</summary>
     public const int OptionalStringFieldNumber = 14;
-    /// <summary>Default value for the "optional_string" field</summary>
-    public const string OptionalStringDefaultValue = "";
-
-    private string optionalString_ = OptionalStringDefaultValue;
+    private string optionalString_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string OptionalString {
       get { return optionalString_; }
@@ -669,29 +562,16 @@ namespace ProtobufTestMessages.Proto3 {
         optionalString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
-    /// <summary>Clears the value of the "optional_string" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalString() {
-      optionalString_ = OptionalStringDefaultValue;
-    }
 
     /// <summary>Field number for the "optional_bytes" field.</summary>
     public const int OptionalBytesFieldNumber = 15;
-    /// <summary>Default value for the "optional_bytes" field</summary>
-    public readonly static pb::ByteString OptionalBytesDefaultValue = pb::ByteString.Empty;
-
-    private pb::ByteString optionalBytes_ = OptionalBytesDefaultValue;
+    private pb::ByteString optionalBytes_ = pb::ByteString.Empty;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString OptionalBytes {
       get { return optionalBytes_; }
       set {
         optionalBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
-    }
-    /// <summary>Clears the value of the "optional_bytes" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalBytes() {
-      optionalBytes_ = OptionalBytesDefaultValue;
     }
 
     /// <summary>Field number for the "optional_nested_message" field.</summary>
@@ -704,16 +584,6 @@ namespace ProtobufTestMessages.Proto3 {
         optionalNestedMessage_ = value;
       }
     }
-    /// <summary>Gets whether the optional_nested_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalNestedMessage {
-      get { return optionalNestedMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_nested_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalNestedMessage() {
-      optionalNestedMessage_ = null;
-    }
 
     /// <summary>Field number for the "optional_foreign_message" field.</summary>
     public const int OptionalForeignMessageFieldNumber = 19;
@@ -725,23 +595,10 @@ namespace ProtobufTestMessages.Proto3 {
         optionalForeignMessage_ = value;
       }
     }
-    /// <summary>Gets whether the optional_foreign_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalForeignMessage {
-      get { return optionalForeignMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_foreign_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalForeignMessage() {
-      optionalForeignMessage_ = null;
-    }
 
     /// <summary>Field number for the "optional_nested_enum" field.</summary>
     public const int OptionalNestedEnumFieldNumber = 21;
-    /// <summary>Default value for the "optional_nested_enum" field</summary>
-    public const global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum OptionalNestedEnumDefaultValue = 0;
-
-    private global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum optionalNestedEnum_ = OptionalNestedEnumDefaultValue;
+    private global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum optionalNestedEnum_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum OptionalNestedEnum {
       get { return optionalNestedEnum_; }
@@ -749,18 +606,10 @@ namespace ProtobufTestMessages.Proto3 {
         optionalNestedEnum_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_nested_enum" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalNestedEnum() {
-      optionalNestedEnum_ = OptionalNestedEnumDefaultValue;
-    }
 
     /// <summary>Field number for the "optional_foreign_enum" field.</summary>
     public const int OptionalForeignEnumFieldNumber = 22;
-    /// <summary>Default value for the "optional_foreign_enum" field</summary>
-    public const global::ProtobufTestMessages.Proto3.ForeignEnum OptionalForeignEnumDefaultValue = 0;
-
-    private global::ProtobufTestMessages.Proto3.ForeignEnum optionalForeignEnum_ = OptionalForeignEnumDefaultValue;
+    private global::ProtobufTestMessages.Proto3.ForeignEnum optionalForeignEnum_ = 0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::ProtobufTestMessages.Proto3.ForeignEnum OptionalForeignEnum {
       get { return optionalForeignEnum_; }
@@ -768,18 +617,10 @@ namespace ProtobufTestMessages.Proto3 {
         optionalForeignEnum_ = value;
       }
     }
-    /// <summary>Clears the value of the "optional_foreign_enum" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalForeignEnum() {
-      optionalForeignEnum_ = OptionalForeignEnumDefaultValue;
-    }
 
     /// <summary>Field number for the "optional_string_piece" field.</summary>
     public const int OptionalStringPieceFieldNumber = 24;
-    /// <summary>Default value for the "optional_string_piece" field</summary>
-    public const string OptionalStringPieceDefaultValue = "";
-
-    private string optionalStringPiece_ = OptionalStringPieceDefaultValue;
+    private string optionalStringPiece_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string OptionalStringPiece {
       get { return optionalStringPiece_; }
@@ -787,29 +628,16 @@ namespace ProtobufTestMessages.Proto3 {
         optionalStringPiece_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
-    /// <summary>Clears the value of the "optional_string_piece" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalStringPiece() {
-      optionalStringPiece_ = OptionalStringPieceDefaultValue;
-    }
 
     /// <summary>Field number for the "optional_cord" field.</summary>
     public const int OptionalCordFieldNumber = 25;
-    /// <summary>Default value for the "optional_cord" field</summary>
-    public const string OptionalCordDefaultValue = "";
-
-    private string optionalCord_ = OptionalCordDefaultValue;
+    private string optionalCord_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string OptionalCord {
       get { return optionalCord_; }
       set {
         optionalCord_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
-    }
-    /// <summary>Clears the value of the "optional_cord" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalCord() {
-      optionalCord_ = OptionalCordDefaultValue;
     }
 
     /// <summary>Field number for the "recursive_message" field.</summary>
@@ -821,16 +649,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         recursiveMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the recursive_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasRecursiveMessage {
-      get { return recursiveMessage_ != null; }
-    }
-    /// <summary>Clears the value of the recursive_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearRecursiveMessage() {
-      recursiveMessage_ = null;
     }
 
     /// <summary>Field number for the "repeated_int32" field.</summary>
@@ -1249,13 +1067,6 @@ namespace ProtobufTestMessages.Proto3 {
         oneofFieldCase_ = OneofFieldOneofCase.OneofUint32;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_uint32" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofUint32() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
-        ClearOneofField();
-      }
-    }
 
     /// <summary>Field number for the "oneof_nested_message" field.</summary>
     public const int OneofNestedMessageFieldNumber = 112;
@@ -1265,13 +1076,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.OneofNestedMessage;
-      }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_nested_message" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofNestedMessage() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-        ClearOneofField();
       }
     }
 
@@ -1285,13 +1089,6 @@ namespace ProtobufTestMessages.Proto3 {
         oneofFieldCase_ = OneofFieldOneofCase.OneofString;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_string" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofString() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
-        ClearOneofField();
-      }
-    }
 
     /// <summary>Field number for the "oneof_bytes" field.</summary>
     public const int OneofBytesFieldNumber = 114;
@@ -1301,13 +1098,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
-      }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_bytes" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofBytes() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
-        ClearOneofField();
       }
     }
 
@@ -1321,13 +1111,6 @@ namespace ProtobufTestMessages.Proto3 {
         oneofFieldCase_ = OneofFieldOneofCase.OneofBool;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_bool" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofBool() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBool) {
-        ClearOneofField();
-      }
-    }
 
     /// <summary>Field number for the "oneof_uint64" field.</summary>
     public const int OneofUint64FieldNumber = 116;
@@ -1337,13 +1120,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         oneofField_ = value;
         oneofFieldCase_ = OneofFieldOneofCase.OneofUint64;
-      }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_uint64" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofUint64() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint64) {
-        ClearOneofField();
       }
     }
 
@@ -1357,13 +1133,6 @@ namespace ProtobufTestMessages.Proto3 {
         oneofFieldCase_ = OneofFieldOneofCase.OneofFloat;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_float" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofFloat() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofFloat) {
-        ClearOneofField();
-      }
-    }
 
     /// <summary>Field number for the "oneof_double" field.</summary>
     public const int OneofDoubleFieldNumber = 118;
@@ -1375,13 +1144,6 @@ namespace ProtobufTestMessages.Proto3 {
         oneofFieldCase_ = OneofFieldOneofCase.OneofDouble;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_double" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofDouble() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofDouble) {
-        ClearOneofField();
-      }
-    }
 
     /// <summary>Field number for the "oneof_enum" field.</summary>
     public const int OneofEnumFieldNumber = 119;
@@ -1391,13 +1153,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         oneofField_ = value;
         oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
-      }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_enum" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofEnum() {
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
-        ClearOneofField();
       }
     }
 
@@ -1416,17 +1171,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_bool_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalBoolWrapper {
-      get { return optionalBoolWrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_bool_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalBoolWrapper() {
-      optionalBoolWrapper_ = null;
-    }
 
     /// <summary>Field number for the "optional_int32_wrapper" field.</summary>
     public const int OptionalInt32WrapperFieldNumber = 202;
@@ -1440,17 +1184,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_int32_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalInt32Wrapper {
-      get { return optionalInt32Wrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_int32_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalInt32Wrapper() {
-      optionalInt32Wrapper_ = null;
-    }
 
     /// <summary>Field number for the "optional_int64_wrapper" field.</summary>
     public const int OptionalInt64WrapperFieldNumber = 203;
@@ -1464,17 +1197,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_int64_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalInt64Wrapper {
-      get { return optionalInt64Wrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_int64_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalInt64Wrapper() {
-      optionalInt64Wrapper_ = null;
-    }
 
     /// <summary>Field number for the "optional_uint32_wrapper" field.</summary>
     public const int OptionalUint32WrapperFieldNumber = 204;
@@ -1488,17 +1210,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_uint32_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalUint32Wrapper {
-      get { return optionalUint32Wrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_uint32_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalUint32Wrapper() {
-      optionalUint32Wrapper_ = null;
-    }
 
     /// <summary>Field number for the "optional_uint64_wrapper" field.</summary>
     public const int OptionalUint64WrapperFieldNumber = 205;
@@ -1512,17 +1223,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_uint64_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalUint64Wrapper {
-      get { return optionalUint64Wrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_uint64_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalUint64Wrapper() {
-      optionalUint64Wrapper_ = null;
-    }
 
     /// <summary>Field number for the "optional_float_wrapper" field.</summary>
     public const int OptionalFloatWrapperFieldNumber = 206;
@@ -1536,17 +1236,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_float_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalFloatWrapper {
-      get { return optionalFloatWrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_float_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalFloatWrapper() {
-      optionalFloatWrapper_ = null;
-    }
 
     /// <summary>Field number for the "optional_double_wrapper" field.</summary>
     public const int OptionalDoubleWrapperFieldNumber = 207;
@@ -1560,17 +1249,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_double_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalDoubleWrapper {
-      get { return optionalDoubleWrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_double_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalDoubleWrapper() {
-      optionalDoubleWrapper_ = null;
-    }
 
     /// <summary>Field number for the "optional_string_wrapper" field.</summary>
     public const int OptionalStringWrapperFieldNumber = 208;
@@ -1584,17 +1262,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_string_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalStringWrapper {
-      get { return optionalStringWrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_string_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalStringWrapper() {
-      optionalStringWrapper_ = null;
-    }
 
     /// <summary>Field number for the "optional_bytes_wrapper" field.</summary>
     public const int OptionalBytesWrapperFieldNumber = 209;
@@ -1608,17 +1275,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    /// <summary>Gets whether the optional_bytes_wrapper field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalBytesWrapper {
-      get { return optionalBytesWrapper_ != null; }
-    }
-
-    /// <summary>Clears the value of the optional_bytes_wrapper field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalBytesWrapper() {
-      optionalBytesWrapper_ = null;
-    }
 
     /// <summary>Field number for the "repeated_bool_wrapper" field.</summary>
     public const int RepeatedBoolWrapperFieldNumber = 211;
@@ -1720,16 +1376,6 @@ namespace ProtobufTestMessages.Proto3 {
         optionalDuration_ = value;
       }
     }
-    /// <summary>Gets whether the optional_duration field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalDuration {
-      get { return optionalDuration_ != null; }
-    }
-    /// <summary>Clears the value of the optional_duration field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalDuration() {
-      optionalDuration_ = null;
-    }
 
     /// <summary>Field number for the "optional_timestamp" field.</summary>
     public const int OptionalTimestampFieldNumber = 302;
@@ -1740,16 +1386,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         optionalTimestamp_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_timestamp field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalTimestamp {
-      get { return optionalTimestamp_ != null; }
-    }
-    /// <summary>Clears the value of the optional_timestamp field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalTimestamp() {
-      optionalTimestamp_ = null;
     }
 
     /// <summary>Field number for the "optional_field_mask" field.</summary>
@@ -1762,16 +1398,6 @@ namespace ProtobufTestMessages.Proto3 {
         optionalFieldMask_ = value;
       }
     }
-    /// <summary>Gets whether the optional_field_mask field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalFieldMask {
-      get { return optionalFieldMask_ != null; }
-    }
-    /// <summary>Clears the value of the optional_field_mask field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalFieldMask() {
-      optionalFieldMask_ = null;
-    }
 
     /// <summary>Field number for the "optional_struct" field.</summary>
     public const int OptionalStructFieldNumber = 304;
@@ -1782,16 +1408,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         optionalStruct_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_struct field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalStruct {
-      get { return optionalStruct_ != null; }
-    }
-    /// <summary>Clears the value of the optional_struct field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalStruct() {
-      optionalStruct_ = null;
     }
 
     /// <summary>Field number for the "optional_any" field.</summary>
@@ -1804,16 +1420,6 @@ namespace ProtobufTestMessages.Proto3 {
         optionalAny_ = value;
       }
     }
-    /// <summary>Gets whether the optional_any field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalAny {
-      get { return optionalAny_ != null; }
-    }
-    /// <summary>Clears the value of the optional_any field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalAny() {
-      optionalAny_ = null;
-    }
 
     /// <summary>Field number for the "optional_value" field.</summary>
     public const int OptionalValueFieldNumber = 306;
@@ -1824,16 +1430,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         optionalValue_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_value field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalValue {
-      get { return optionalValue_ != null; }
-    }
-    /// <summary>Clears the value of the optional_value field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalValue() {
-      optionalValue_ = null;
     }
 
     /// <summary>Field number for the "repeated_duration" field.</summary>
@@ -1898,9 +1494,6 @@ namespace ProtobufTestMessages.Proto3 {
 
     /// <summary>Field number for the "fieldname1" field.</summary>
     public const int Fieldname1FieldNumber = 401;
-    /// <summary>Default value for the "fieldname1" field</summary>
-    public const int Fieldname1DefaultValue = 0;
-
     private int fieldname1_;
     /// <summary>
     /// Test field-name-to-JSON-name convention.
@@ -1913,17 +1506,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldname1_ = value;
       }
     }
-    /// <summary>Clears the value of the "fieldname1" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldname1() {
-      fieldname1_ = Fieldname1DefaultValue;
-    }
 
     /// <summary>Field number for the "field_name2" field.</summary>
     public const int FieldName2FieldNumber = 402;
-    /// <summary>Default value for the "field_name2" field</summary>
-    public const int FieldName2DefaultValue = 0;
-
     private int fieldName2_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName2 {
@@ -1932,17 +1517,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName2_ = value;
       }
     }
-    /// <summary>Clears the value of the "field_name2" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName2() {
-      fieldName2_ = FieldName2DefaultValue;
-    }
 
     /// <summary>Field number for the "_field_name3" field.</summary>
     public const int FieldName3FieldNumber = 403;
-    /// <summary>Default value for the "_field_name3" field</summary>
-    public const int FieldName3DefaultValue = 0;
-
     private int FieldName3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName3 {
@@ -1951,17 +1528,9 @@ namespace ProtobufTestMessages.Proto3 {
         FieldName3_ = value;
       }
     }
-    /// <summary>Clears the value of the "_field_name3" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName3() {
-      FieldName3_ = FieldName3DefaultValue;
-    }
 
     /// <summary>Field number for the "field__name4_" field.</summary>
     public const int FieldName4FieldNumber = 404;
-    /// <summary>Default value for the "field__name4_" field</summary>
-    public const int FieldName4DefaultValue = 0;
-
     private int fieldName4_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName4 {
@@ -1970,17 +1539,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName4_ = value;
       }
     }
-    /// <summary>Clears the value of the "field__name4_" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName4() {
-      fieldName4_ = FieldName4DefaultValue;
-    }
 
     /// <summary>Field number for the "field0name5" field.</summary>
     public const int Field0Name5FieldNumber = 405;
-    /// <summary>Default value for the "field0name5" field</summary>
-    public const int Field0Name5DefaultValue = 0;
-
     private int field0Name5_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Field0Name5 {
@@ -1989,17 +1550,9 @@ namespace ProtobufTestMessages.Proto3 {
         field0Name5_ = value;
       }
     }
-    /// <summary>Clears the value of the "field0name5" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearField0Name5() {
-      field0Name5_ = Field0Name5DefaultValue;
-    }
 
     /// <summary>Field number for the "field_0_name6" field.</summary>
     public const int Field0Name6FieldNumber = 406;
-    /// <summary>Default value for the "field_0_name6" field</summary>
-    public const int Field0Name6DefaultValue = 0;
-
     private int field0Name6_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Field0Name6 {
@@ -2008,17 +1561,9 @@ namespace ProtobufTestMessages.Proto3 {
         field0Name6_ = value;
       }
     }
-    /// <summary>Clears the value of the "field_0_name6" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearField0Name6() {
-      field0Name6_ = Field0Name6DefaultValue;
-    }
 
     /// <summary>Field number for the "fieldName7" field.</summary>
     public const int FieldName7FieldNumber = 407;
-    /// <summary>Default value for the "fieldName7" field</summary>
-    public const int FieldName7DefaultValue = 0;
-
     private int fieldName7_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName7 {
@@ -2027,17 +1572,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName7_ = value;
       }
     }
-    /// <summary>Clears the value of the "fieldName7" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName7() {
-      fieldName7_ = FieldName7DefaultValue;
-    }
 
     /// <summary>Field number for the "FieldName8" field.</summary>
     public const int FieldName8FieldNumber = 408;
-    /// <summary>Default value for the "FieldName8" field</summary>
-    public const int FieldName8DefaultValue = 0;
-
     private int fieldName8_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName8 {
@@ -2046,17 +1583,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName8_ = value;
       }
     }
-    /// <summary>Clears the value of the "FieldName8" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName8() {
-      fieldName8_ = FieldName8DefaultValue;
-    }
 
     /// <summary>Field number for the "field_Name9" field.</summary>
     public const int FieldName9FieldNumber = 409;
-    /// <summary>Default value for the "field_Name9" field</summary>
-    public const int FieldName9DefaultValue = 0;
-
     private int fieldName9_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName9 {
@@ -2065,17 +1594,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName9_ = value;
       }
     }
-    /// <summary>Clears the value of the "field_Name9" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName9() {
-      fieldName9_ = FieldName9DefaultValue;
-    }
 
     /// <summary>Field number for the "Field_Name10" field.</summary>
     public const int FieldName10FieldNumber = 410;
-    /// <summary>Default value for the "Field_Name10" field</summary>
-    public const int FieldName10DefaultValue = 0;
-
     private int fieldName10_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName10 {
@@ -2084,17 +1605,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName10_ = value;
       }
     }
-    /// <summary>Clears the value of the "Field_Name10" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName10() {
-      fieldName10_ = FieldName10DefaultValue;
-    }
 
     /// <summary>Field number for the "FIELD_NAME11" field.</summary>
     public const int FIELDNAME11FieldNumber = 411;
-    /// <summary>Default value for the "FIELD_NAME11" field</summary>
-    public const int FIELDNAME11DefaultValue = 0;
-
     private int fIELDNAME11_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FIELDNAME11 {
@@ -2103,17 +1616,9 @@ namespace ProtobufTestMessages.Proto3 {
         fIELDNAME11_ = value;
       }
     }
-    /// <summary>Clears the value of the "FIELD_NAME11" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFIELDNAME11() {
-      fIELDNAME11_ = FIELDNAME11DefaultValue;
-    }
 
     /// <summary>Field number for the "FIELD_name12" field.</summary>
     public const int FIELDName12FieldNumber = 412;
-    /// <summary>Default value for the "FIELD_name12" field</summary>
-    public const int FIELDName12DefaultValue = 0;
-
     private int fIELDName12_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FIELDName12 {
@@ -2122,17 +1627,9 @@ namespace ProtobufTestMessages.Proto3 {
         fIELDName12_ = value;
       }
     }
-    /// <summary>Clears the value of the "FIELD_name12" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFIELDName12() {
-      fIELDName12_ = FIELDName12DefaultValue;
-    }
 
     /// <summary>Field number for the "__field_name13" field.</summary>
     public const int FieldName13FieldNumber = 413;
-    /// <summary>Default value for the "__field_name13" field</summary>
-    public const int FieldName13DefaultValue = 0;
-
     private int FieldName13_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName13 {
@@ -2141,17 +1638,9 @@ namespace ProtobufTestMessages.Proto3 {
         FieldName13_ = value;
       }
     }
-    /// <summary>Clears the value of the "__field_name13" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName13() {
-      FieldName13_ = FieldName13DefaultValue;
-    }
 
     /// <summary>Field number for the "__Field_name14" field.</summary>
     public const int FieldName14FieldNumber = 414;
-    /// <summary>Default value for the "__Field_name14" field</summary>
-    public const int FieldName14DefaultValue = 0;
-
     private int FieldName14_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName14 {
@@ -2160,17 +1649,9 @@ namespace ProtobufTestMessages.Proto3 {
         FieldName14_ = value;
       }
     }
-    /// <summary>Clears the value of the "__Field_name14" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName14() {
-      FieldName14_ = FieldName14DefaultValue;
-    }
 
     /// <summary>Field number for the "field__name15" field.</summary>
     public const int FieldName15FieldNumber = 415;
-    /// <summary>Default value for the "field__name15" field</summary>
-    public const int FieldName15DefaultValue = 0;
-
     private int fieldName15_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName15 {
@@ -2179,17 +1660,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName15_ = value;
       }
     }
-    /// <summary>Clears the value of the "field__name15" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName15() {
-      fieldName15_ = FieldName15DefaultValue;
-    }
 
     /// <summary>Field number for the "field__Name16" field.</summary>
     public const int FieldName16FieldNumber = 416;
-    /// <summary>Default value for the "field__Name16" field</summary>
-    public const int FieldName16DefaultValue = 0;
-
     private int fieldName16_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName16 {
@@ -2198,17 +1671,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName16_ = value;
       }
     }
-    /// <summary>Clears the value of the "field__Name16" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName16() {
-      fieldName16_ = FieldName16DefaultValue;
-    }
 
     /// <summary>Field number for the "field_name17__" field.</summary>
     public const int FieldName17FieldNumber = 417;
-    /// <summary>Default value for the "field_name17__" field</summary>
-    public const int FieldName17DefaultValue = 0;
-
     private int fieldName17_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName17 {
@@ -2217,17 +1682,9 @@ namespace ProtobufTestMessages.Proto3 {
         fieldName17_ = value;
       }
     }
-    /// <summary>Clears the value of the "field_name17__" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName17() {
-      fieldName17_ = FieldName17DefaultValue;
-    }
 
     /// <summary>Field number for the "Field_name18__" field.</summary>
     public const int FieldName18FieldNumber = 418;
-    /// <summary>Default value for the "Field_name18__" field</summary>
-    public const int FieldName18DefaultValue = 0;
-
     private int fieldName18_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName18 {
@@ -2235,11 +1692,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         fieldName18_ = value;
       }
-    }
-    /// <summary>Clears the value of the "Field_name18__" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldName18() {
-      fieldName18_ = FieldName18DefaultValue;
     }
 
     private object oneofField_;
@@ -4135,9 +3587,6 @@ namespace ProtobufTestMessages.Proto3 {
 
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 1;
-        /// <summary>Default value for the "a" field</summary>
-        public const int ADefaultValue = 0;
-
         private int a_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int A {
@@ -4145,11 +3594,6 @@ namespace ProtobufTestMessages.Proto3 {
           set {
             a_ = value;
           }
-        }
-        /// <summary>Clears the value of the "a" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearA() {
-          a_ = ADefaultValue;
         }
 
         /// <summary>Field number for the "corecursive" field.</summary>
@@ -4161,16 +3605,6 @@ namespace ProtobufTestMessages.Proto3 {
           set {
             corecursive_ = value;
           }
-        }
-        /// <summary>Gets whether the corecursive field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool HasCorecursive {
-          get { return corecursive_ != null; }
-        }
-        /// <summary>Clears the value of the corecursive field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearCorecursive() {
-          corecursive_ = null;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4324,9 +3758,6 @@ namespace ProtobufTestMessages.Proto3 {
 
     /// <summary>Field number for the "c" field.</summary>
     public const int CFieldNumber = 1;
-    /// <summary>Default value for the "c" field</summary>
-    public const int CDefaultValue = 0;
-
     private int c_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int C {
@@ -4334,11 +3765,6 @@ namespace ProtobufTestMessages.Proto3 {
       set {
         c_ = value;
       }
-    }
-    /// <summary>Clears the value of the "c" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearC() {
-      c_ = CDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

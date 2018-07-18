@@ -225,21 +225,13 @@ namespace UnitTest.Issues.TestProtos {
 
     /// <summary>Field number for the "field1" field.</summary>
     public const int Field1FieldNumber = 1;
-    /// <summary>Default value for the "field1" field</summary>
-    public const string Field1DefaultValue = "";
-
-    private string field1_ = Field1DefaultValue;
+    private string field1_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Field1 {
       get { return field1_; }
       set {
         field1_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
-    }
-    /// <summary>Clears the value of the "field1" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearField1() {
-      field1_ = Field1DefaultValue;
     }
 
     /// <summary>Field number for the "oneof_field" field.</summary>
@@ -250,13 +242,6 @@ namespace UnitTest.Issues.TestProtos {
       set {
         anOneof_ = value;
         anOneofCase_ = AnOneofOneofCase.OneofField;
-      }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_field" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofField() {
-      if (anOneofCase_ == AnOneofOneofCase.OneofField) {
-        ClearAnOneof();
       }
     }
 
@@ -1611,9 +1596,6 @@ namespace UnitTest.Issues.TestProtos {
 
     /// <summary>Field number for the "foo" field.</summary>
     public const int FooFieldNumber = 1;
-    /// <summary>Default value for the "foo" field</summary>
-    public const int FooDefaultValue = 0;
-
     private int foo_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Foo {
@@ -1622,17 +1604,9 @@ namespace UnitTest.Issues.TestProtos {
         foo_ = value;
       }
     }
-    /// <summary>Clears the value of the "foo" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFoo() {
-      foo_ = FooDefaultValue;
-    }
 
     /// <summary>Field number for the "foo2" field.</summary>
     public const int Foo2FieldNumber = 2;
-    /// <summary>Default value for the "foo2" field</summary>
-    public const int Foo2DefaultValue = 0;
-
     private int foo2_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Foo2 {
@@ -1641,17 +1615,9 @@ namespace UnitTest.Issues.TestProtos {
         foo2_ = value;
       }
     }
-    /// <summary>Clears the value of the "foo2" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFoo2() {
-      foo2_ = Foo2DefaultValue;
-    }
 
     /// <summary>Field number for the "foo3" field.</summary>
     public const int Foo3FieldNumber = 3;
-    /// <summary>Default value for the "foo3" field</summary>
-    public const int Foo3DefaultValue = 0;
-
     private int foo3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Foo3 {
@@ -1659,11 +1625,6 @@ namespace UnitTest.Issues.TestProtos {
       set {
         foo3_ = value;
       }
-    }
-    /// <summary>Clears the value of the "foo3" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFoo3() {
-      foo3_ = Foo3DefaultValue;
     }
 
     /// <summary>Field number for the "foo4" field.</summary>
@@ -1853,22 +1814,9 @@ namespace UnitTest.Issues.TestProtos {
         bar_ = value;
       }
     }
-    /// <summary>Gets whether the bar field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasBar {
-      get { return bar_ != null; }
-    }
-    /// <summary>Clears the value of the bar field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearBar() {
-      bar_ = null;
-    }
 
     /// <summary>Field number for the "baz" field.</summary>
     public const int BazFieldNumber = 2;
-    /// <summary>Default value for the "baz" field</summary>
-    public const int BazDefaultValue = 0;
-
     private int baz_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Baz {
@@ -1876,11 +1824,6 @@ namespace UnitTest.Issues.TestProtos {
       set {
         baz_ = value;
       }
-    }
-    /// <summary>Clears the value of the "baz" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearBaz() {
-      baz_ = BazDefaultValue;
     }
 
     /// <summary>Field number for the "fred" field.</summary>
@@ -1892,16 +1835,6 @@ namespace UnitTest.Issues.TestProtos {
       set {
         fred_ = value;
       }
-    }
-    /// <summary>Gets whether the fred field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasFred {
-      get { return fred_ != null; }
-    }
-    /// <summary>Clears the value of the fred field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFred() {
-      fred_ = null;
     }
 
     /// <summary>Field number for the "barney" field.</summary>
@@ -2096,9 +2029,6 @@ namespace UnitTest.Issues.TestProtos {
 
         /// <summary>Field number for the "waldo" field.</summary>
         public const int WaldoFieldNumber = 1;
-        /// <summary>Default value for the "waldo" field</summary>
-        public const int WaldoDefaultValue = 0;
-
         private int waldo_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Waldo {
@@ -2106,11 +2036,6 @@ namespace UnitTest.Issues.TestProtos {
           set {
             waldo_ = value;
           }
-        }
-        /// <summary>Clears the value of the "waldo" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearWaldo() {
-          waldo_ = WaldoDefaultValue;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2242,9 +2167,6 @@ namespace UnitTest.Issues.TestProtos {
 
     /// <summary>Field number for the "qux" field.</summary>
     public const int QuxFieldNumber = 1;
-    /// <summary>Default value for the "qux" field</summary>
-    public const int QuxDefaultValue = 0;
-
     private int qux_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Qux {
@@ -2252,11 +2174,6 @@ namespace UnitTest.Issues.TestProtos {
       set {
         qux_ = value;
       }
-    }
-    /// <summary>Clears the value of the "qux" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearQux() {
-      qux_ = QuxDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2496,9 +2413,6 @@ namespace UnitTest.Issues.TestProtos {
 
     /// <summary>Field number for the "i" field.</summary>
     public const int IFieldNumber = 1;
-    /// <summary>Default value for the "i" field</summary>
-    public const int IDefaultValue = 0;
-
     private int i_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int I {
@@ -2507,29 +2421,16 @@ namespace UnitTest.Issues.TestProtos {
         i_ = value;
       }
     }
-    /// <summary>Clears the value of the "i" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearI() {
-      i_ = IDefaultValue;
-    }
 
     /// <summary>Field number for the "s" field.</summary>
     public const int SFieldNumber = 2;
-    /// <summary>Default value for the "s" field</summary>
-    public const string SDefaultValue = "";
-
-    private string s_ = SDefaultValue;
+    private string s_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string S {
       get { return s_; }
       set {
         s_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
-    }
-    /// <summary>Clears the value of the "s" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearS() {
-      s_ = SDefaultValue;
     }
 
     /// <summary>Field number for the "sub" field.</summary>
@@ -2544,16 +2445,6 @@ namespace UnitTest.Issues.TestProtos {
       set {
         sub_ = value;
       }
-    }
-    /// <summary>Gets whether the sub field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasSub {
-      get { return sub_ != null; }
-    }
-    /// <summary>Clears the value of the sub field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearSub() {
-      sub_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2718,9 +2609,6 @@ namespace UnitTest.Issues.TestProtos {
 
     /// <summary>Field number for the "fieldname" field.</summary>
     public const int FieldnameFieldNumber = 1;
-    /// <summary>Default value for the "fieldname" field</summary>
-    public const int FieldnameDefaultValue = 0;
-
     private int fieldname_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Fieldname {
@@ -2728,11 +2616,6 @@ namespace UnitTest.Issues.TestProtos {
       set {
         fieldname_ = value;
       }
-    }
-    /// <summary>Clears the value of the "fieldname" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFieldname() {
-      fieldname_ = FieldnameDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2974,9 +2857,6 @@ namespace UnitTest.Issues.TestProtos {
 
         /// <summary>Field number for the "nested_field" field.</summary>
         public const int NestedFieldFieldNumber = 1;
-        /// <summary>Default value for the "nested_field" field</summary>
-        public const int NestedFieldDefaultValue = 0;
-
         private int nestedField_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int NestedField {
@@ -2984,11 +2864,6 @@ namespace UnitTest.Issues.TestProtos {
           set {
             nestedField_ = value;
           }
-        }
-        /// <summary>Clears the value of the "nested_field" field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearNestedField() {
-          nestedField_ = NestedFieldDefaultValue;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
