@@ -1,24 +1,34 @@
 #!/bin/bash
 
-# Builds protoc executable into target/protoc.exe; optionally build protoc
-# plugins into target/protoc-gen-*.exe
-# To be run from Maven.
-# Usage: build-protoc.sh <OS> <ARCH> <TARGET>
-# <OS> and <ARCH> are ${os.detected.name} and ${os.detected.arch} from os-maven-plugin
-# <TARGET> can be "protoc" or "protoc-gen-javalite"
+# Builds protoc executable into target/<OS>/<ARCH>/protoc.exe; optionally builds
+# protoc plugins into target/<OS>/<ARCH>/protoc-gen-*.exe
 #
-# The script now supports cross-compiling windows, linux-arm64, and linux-ppc64le in linux-x86
-# environment. Required packages:
-# - Windows: i686-w64-mingw32-gcc (32bit) and x86_64-w64-mingw32-gcc (64bit)
-# - Arm64: g++-aarch64-linux-gnu
-# - Ppc64le: g++-powerpc64le-linux-gcc
+# Usage: ./build-protoc.sh <OS> <ARCH> <TARGET>
+#
+# <TARGET> can be "protoc" or "protoc-gen-javalite". Supported <OS> <ARCH>
+# combinations:
+#   HOST   <OS>    <ARCH>   <COMMENT>
+#   cygwin windows x86_32   Requires: i686-w64-mingw32-gcc
+#   cygwin windows x86_64   Requires: x86_64-w64-mingw32-gcc
+#   linux  linux   aarch_64 Requires: g++-aarch64-linux-gnu
+#   linux  linux   x86_32
+#   linux  linux   x86_64
+#   linux  windows x86_32   Requires: i686-w64-mingw32-gcc
+#   linux  windows x86_64   Requires: x86_64-w64-mingw32-gcc
+#   macos  osx     x86_32
+#   macos  osx     x86_64
+#   mingw  windows x86_32
+#   mingw  windows x86_64
+#
+# Before running this script, make sure you have generated the configure script
+# in the parent directory (i.e., run ./autogen.sh there).
 
 OS=$1
 ARCH=$2
 MAKE_TARGET=$3
 
 if [[ $# < 3 ]]; then
-  echo "No arguments provided. This script is intended to be run from Maven."
+  echo "Not enough arguments provided."
   exit 1
 fi
 
@@ -28,7 +38,7 @@ case $MAKE_TARGET in
   protoc)
     ;;
   *)
-    echo "Target ""$TARGET"" invalid."
+    echo "Target ""$MAKE_TARGET"" invalid."
     exit 1
 esac
 
@@ -140,7 +150,7 @@ checkDependencies ()
       white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libz\.so\.1\|ld64\.so\.2"
     elif [[ "$ARCH" == aarch_64 ]]; then
       dump_cmd='objdump -p '"$1"' | grep NEEDED'
-      white_list="libpthread\.so\.0\|libc\.so\.6\|ld-linux-aarch64\.so\.1"
+      white_list="libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-aarch64\.so\.1"
     fi
   elif [[ "$OS" == osx ]]; then
     dump_cmd='otool -L '"$1"' | fgrep dylib'
@@ -164,15 +174,10 @@ checkDependencies ()
 }
 ############################################################################
 
-echo "Building protoc, OS=$OS ARCH=$ARCH TARGET=$TARGET"
+echo "Building protoc, OS=$OS ARCH=$ARCH TARGET=$MAKE_TARGET"
 
-# Nested double quotes are unintuitive, but it works.
-cd "$(dirname "$0")"
-
-WORKING_DIR=$(pwd)
 CONFIGURE_ARGS="--disable-shared"
 
-TARGET_FILE=target/$MAKE_TARGET.exe
 if [[ "$OS" == windows ]]; then
   MAKE_TARGET="${MAKE_TARGET}.exe"
 fi
@@ -253,10 +258,18 @@ fi
 
 export CXXFLAGS LDFLAGS
 
-cd "$WORKING_DIR"/.. && ./configure $CONFIGURE_ARGS &&
-  cd src && make clean && make $MAKE_TARGET &&
-  cd "$WORKING_DIR" && mkdir -p target &&
-  cp ../src/$MAKE_TARGET $TARGET_FILE ||
+# Nested double quotes are unintuitive, but it works.
+cd "$(dirname "$0")"
+
+WORKING_DIR="$(pwd)"
+BUILD_DIR="build/$OS/$ARCH"
+TARGET_FILE="target/$OS/$ARCH/$MAKE_TARGET.exe"
+
+mkdir -p "$BUILD_DIR" && cd "$BUILD_DIR" &&
+  ../../../../configure $CONFIGURE_ARGS &&
+  cd src && make $MAKE_TARGET -j8 &&
+  cd "$WORKING_DIR" && mkdir -p $(dirname $TARGET_FILE) &&
+  cp $BUILD_DIR/src/$MAKE_TARGET $TARGET_FILE ||
   exit 1
 
 if [[ "$OS" == osx ]]; then

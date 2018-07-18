@@ -283,6 +283,7 @@ void build_class_from_descriptor(
 // -----------------------------------------------------------------------------
 
 void Message_construct(zval* msg, zval* array_wrapper) {
+  TSRMLS_FETCH();
   zend_class_entry* ce = Z_OBJCE_P(msg);
   MessageHeader* intern = NULL;
   if (EXPECTED(class_added(ce))) {

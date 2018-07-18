@@ -10,4 +10,4 @@ quote() {
   done
 }
 
-exec scl enable devtoolset-1.1 "$(quote "$@")"
+exec scl enable devtoolset-2 "$(quote "$@")"

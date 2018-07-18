@@ -6,8 +6,8 @@ require_once("Conformance/ConformanceRequest.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
 require_once("Protobuf_test_messages/Proto3/ForeignEnum.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedMessage.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedEnum.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php");
 
 require_once("GPBMetadata/Conformance.php");
 require_once("GPBMetadata/Google/Protobuf/TestMessagesProto3.php");
