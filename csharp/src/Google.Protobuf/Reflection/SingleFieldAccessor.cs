@@ -57,16 +57,24 @@ namespace Google.Protobuf.Reflection
                 throw new ArgumentException("Not all required properties/methods available");
             }
             setValueDelegate = ReflectionUtil.CreateActionIMessageObject(property.GetSetMethod());
-            MethodInfo clearMethod = property.DeclaringType.GetRuntimeMethod("Clear" + property.Name, ReflectionUtil.EmptyTypes);
-            clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod ?? throw new ArgumentException("Not all required properties/methods are available"));
             if (descriptor.File.Proto.Syntax == "proto2")
             {
                 MethodInfo hasMethod = property.DeclaringType.GetRuntimeProperty("Has" + property.Name).GetMethod;
                 hasDelegate = ReflectionUtil.CreateFuncIMessageBool(hasMethod ?? throw new ArgumentException("Not all required properties/methods are available"));
+                MethodInfo clearMethod = property.DeclaringType.GetRuntimeMethod("Clear" + property.Name, ReflectionUtil.EmptyTypes);
+                clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod ?? throw new ArgumentException("Not all required properties/methods are available"));
             }
             else
             {
-                hasDelegate = (_) => throw new InvalidOperationException("HasValue is not implemented for proto3 fields");
+                hasDelegate = (_) => throw new InvalidOperationException("HasValue is not implemented for proto3 fields"); var clrType = property.PropertyType;
+
+                // TODO: Validate that this is a reasonable single field? (Should be a value type, a message type, or string/ByteString.) 
+                object defaultValue =
+                    descriptor.FieldType == FieldType.Message ? null
+                    : clrType == typeof(string) ? ""
+                    : clrType == typeof(ByteString) ? ByteString.Empty
+                    : Activator.CreateInstance(clrType);
+                clearDelegate = message => SetValue(message, defaultValue);
             }
         }
 
