@@ -716,16 +716,6 @@ namespace Google.Protobuf.TestProtos {
         testMap_ = value;
       }
     }
-    /// <summary>Gets whether the test_map field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasTestMap {
-      get { return testMap_ != null; }
-    }
-    /// <summary>Clears the value of the test_map field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearTestMap() {
-      testMap_ = null;
-    }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {

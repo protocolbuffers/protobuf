@@ -116,13 +116,6 @@ namespace Conformance {
         payloadCase_ = PayloadOneofCase.ProtobufPayload;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "protobuf_payload" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearProtobufPayload() {
-      if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
-        ClearPayload();
-      }
-    }
 
     /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 2;
@@ -134,20 +127,10 @@ namespace Conformance {
         payloadCase_ = PayloadOneofCase.JsonPayload;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "json_payload" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearJsonPayload() {
-      if (payloadCase_ == PayloadOneofCase.JsonPayload) {
-        ClearPayload();
-      }
-    }
 
     /// <summary>Field number for the "requested_output_format" field.</summary>
     public const int RequestedOutputFormatFieldNumber = 3;
-    /// <summary>Default value for the "requested_output_format" field</summary>
-    public const global::Conformance.WireFormat RequestedOutputFormatDefaultValue = 0;
-
-    private global::Conformance.WireFormat requestedOutputFormat_ = RequestedOutputFormatDefaultValue;
+    private global::Conformance.WireFormat requestedOutputFormat_ = 0;
     /// <summary>
     /// Which format should the testee serialize its message to?
     /// </summary>
@@ -158,18 +141,10 @@ namespace Conformance {
         requestedOutputFormat_ = value;
       }
     }
-    /// <summary>Clears the value of the "requested_output_format" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearRequestedOutputFormat() {
-      requestedOutputFormat_ = RequestedOutputFormatDefaultValue;
-    }
 
     /// <summary>Field number for the "message_type" field.</summary>
     public const int MessageTypeFieldNumber = 4;
-    /// <summary>Default value for the "message_type" field</summary>
-    public const string MessageTypeDefaultValue = "";
-
-    private string messageType_ = MessageTypeDefaultValue;
+    private string messageType_ = "";
     /// <summary>
     /// The full name for the test message to use; for the moment, either:
     /// protobuf_test_messages.proto3.TestAllTypesProto3 or
@@ -181,11 +156,6 @@ namespace Conformance {
       set {
         messageType_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
-    }
-    /// <summary>Clears the value of the "message_type" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearMessageType() {
-      messageType_ = MessageTypeDefaultValue;
     }
 
     private object payload_;
@@ -422,13 +392,6 @@ namespace Conformance {
         resultCase_ = ResultOneofCase.ParseError;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "parse_error" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearParseError() {
-      if (resultCase_ == ResultOneofCase.ParseError) {
-        ClearResult();
-      }
-    }
 
     /// <summary>Field number for the "serialize_error" field.</summary>
     public const int SerializeErrorFieldNumber = 6;
@@ -443,13 +406,6 @@ namespace Conformance {
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.SerializeError;
-      }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "serialize_error" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearSerializeError() {
-      if (resultCase_ == ResultOneofCase.SerializeError) {
-        ClearResult();
       }
     }
 
@@ -468,13 +424,6 @@ namespace Conformance {
         resultCase_ = ResultOneofCase.RuntimeError;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "runtime_error" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearRuntimeError() {
-      if (resultCase_ == ResultOneofCase.RuntimeError) {
-        ClearResult();
-      }
-    }
 
     /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 3;
@@ -488,13 +437,6 @@ namespace Conformance {
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.ProtobufPayload;
-      }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "protobuf_payload" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearProtobufPayload() {
-      if (resultCase_ == ResultOneofCase.ProtobufPayload) {
-        ClearResult();
       }
     }
 
@@ -512,13 +454,6 @@ namespace Conformance {
         resultCase_ = ResultOneofCase.JsonPayload;
       }
     }
-    /// <summary> Clears the value of the oneof if it's currently set to "json_payload" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearJsonPayload() {
-      if (resultCase_ == ResultOneofCase.JsonPayload) {
-        ClearResult();
-      }
-    }
 
     /// <summary>Field number for the "skipped" field.</summary>
     public const int SkippedFieldNumber = 5;
@@ -532,13 +467,6 @@ namespace Conformance {
       set {
         result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.Skipped;
-      }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "skipped" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearSkipped() {
-      if (resultCase_ == ResultOneofCase.Skipped) {
-        ClearResult();
       }
     }
 

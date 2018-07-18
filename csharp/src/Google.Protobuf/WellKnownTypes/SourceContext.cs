@@ -80,10 +80,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "file_name" field.</summary>
     public const int FileNameFieldNumber = 1;
-    /// <summary>Default value for the "file_name" field</summary>
-    public const string FileNameDefaultValue = "";
-
-    private string fileName_ = FileNameDefaultValue;
+    private string fileName_ = "";
     /// <summary>
     /// The path-qualified name of the .proto file that contained the associated
     /// protobuf element.  For example: `"google/protobuf/source_context.proto"`.
@@ -94,11 +91,6 @@ namespace Google.Protobuf.WellKnownTypes {
       set {
         fileName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
-    }
-    /// <summary>Clears the value of the "file_name" field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFileName() {
-      fileName_ = FileNameDefaultValue;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

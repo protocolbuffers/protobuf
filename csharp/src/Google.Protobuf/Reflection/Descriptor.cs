@@ -371,8 +371,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
+    private readonly static string NameDefaultValue = "";
 
     private string name_;
     /// <summary>
@@ -398,8 +397,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "package" field.</summary>
     public const int PackageFieldNumber = 2;
-    /// <summary>Default value for the "package" field</summary>
-    public const string PackageDefaultValue = "";
+    private readonly static string PackageDefaultValue = "";
 
     private string package_;
     /// <summary>
@@ -556,8 +554,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 12;
-    /// <summary>Default value for the "syntax" field</summary>
-    public const string SyntaxDefaultValue = "";
+    private readonly static string SyntaxDefaultValue = "";
 
     private string syntax_;
     /// <summary>
@@ -881,8 +878,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
+    private readonly static string NameDefaultValue = "";
 
     private string name_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1258,8 +1254,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "start" field.</summary>
         public const int StartFieldNumber = 1;
-        /// <summary>Default value for the "start" field</summary>
-        public const int StartDefaultValue = 0;
+        private readonly static int StartDefaultValue = 0;
 
         private int start_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1283,8 +1278,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "end" field.</summary>
         public const int EndFieldNumber = 2;
-        /// <summary>Default value for the "end" field</summary>
-        public const int EndDefaultValue = 0;
+        private readonly static int EndDefaultValue = 0;
 
         private int end_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1502,8 +1496,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "start" field.</summary>
         public const int StartFieldNumber = 1;
-        /// <summary>Default value for the "start" field</summary>
-        public const int StartDefaultValue = 0;
+        private readonly static int StartDefaultValue = 0;
 
         private int start_;
         /// <summary>
@@ -1530,8 +1523,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "end" field.</summary>
         public const int EndFieldNumber = 2;
-        /// <summary>Default value for the "end" field</summary>
-        public const int EndDefaultValue = 0;
+        private readonly static int EndDefaultValue = 0;
 
         private int end_;
         /// <summary>
@@ -1846,8 +1838,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
+    private readonly static string NameDefaultValue = "";
 
     private string name_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1870,8 +1861,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "number" field.</summary>
     public const int NumberFieldNumber = 3;
-    /// <summary>Default value for the "number" field</summary>
-    public const int NumberDefaultValue = 0;
+    private readonly static int NumberDefaultValue = 0;
 
     private int number_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1895,8 +1885,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "label" field.</summary>
     public const int LabelFieldNumber = 4;
-    /// <summary>Default value for the "label" field</summary>
-    public const global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label LabelDefaultValue = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.Optional;
+    private readonly static global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label LabelDefaultValue = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.Optional;
 
     private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label label_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1920,8 +1909,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "type" field.</summary>
     public const int TypeFieldNumber = 5;
-    /// <summary>Default value for the "type" field</summary>
-    public const global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type TypeDefaultValue = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.Double;
+    private readonly static global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type TypeDefaultValue = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.Double;
 
     private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type type_;
     /// <summary>
@@ -1949,8 +1937,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "type_name" field.</summary>
     public const int TypeNameFieldNumber = 6;
-    /// <summary>Default value for the "type_name" field</summary>
-    public const string TypeNameDefaultValue = "";
+    private readonly static string TypeNameDefaultValue = "";
 
     private string typeName_;
     /// <summary>
@@ -1980,8 +1967,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "extendee" field.</summary>
     public const int ExtendeeFieldNumber = 2;
-    /// <summary>Default value for the "extendee" field</summary>
-    public const string ExtendeeDefaultValue = "";
+    private readonly static string ExtendeeDefaultValue = "";
 
     private string extendee_;
     /// <summary>
@@ -2008,8 +1994,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "default_value" field.</summary>
     public const int DefaultValueFieldNumber = 7;
-    /// <summary>Default value for the "default_value" field</summary>
-    public const string DefaultValueDefaultValue = "";
+    private readonly static string DefaultValueDefaultValue = "";
 
     private string defaultValue_;
     /// <summary>
@@ -2039,8 +2024,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "oneof_index" field.</summary>
     public const int OneofIndexFieldNumber = 9;
-    /// <summary>Default value for the "oneof_index" field</summary>
-    public const int OneofIndexDefaultValue = 0;
+    private readonly static int OneofIndexDefaultValue = 0;
 
     private int oneofIndex_;
     /// <summary>
@@ -2068,8 +2052,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "json_name" field.</summary>
     public const int JsonNameFieldNumber = 10;
-    /// <summary>Default value for the "json_name" field</summary>
-    public const string JsonNameDefaultValue = "";
+    private readonly static string JsonNameDefaultValue = "";
 
     private string jsonName_;
     /// <summary>
@@ -2467,8 +2450,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
+    private readonly static string NameDefaultValue = "";
 
     private string name_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2668,8 +2650,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
+    private readonly static string NameDefaultValue = "";
 
     private string name_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2947,8 +2928,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "start" field.</summary>
         public const int StartFieldNumber = 1;
-        /// <summary>Default value for the "start" field</summary>
-        public const int StartDefaultValue = 0;
+        private readonly static int StartDefaultValue = 0;
 
         private int start_;
         /// <summary>
@@ -2975,8 +2955,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "end" field.</summary>
         public const int EndFieldNumber = 2;
-        /// <summary>Default value for the "end" field</summary>
-        public const int EndDefaultValue = 0;
+        private readonly static int EndDefaultValue = 0;
 
         private int end_;
         /// <summary>
@@ -3153,8 +3132,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
+    private readonly static string NameDefaultValue = "";
 
     private string name_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3177,8 +3155,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "number" field.</summary>
     public const int NumberFieldNumber = 2;
-    /// <summary>Default value for the "number" field</summary>
-    public const int NumberDefaultValue = 0;
+    private readonly static int NumberDefaultValue = 0;
 
     private int number_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3393,8 +3370,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
+    private readonly static string NameDefaultValue = "";
 
     private string name_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3619,8 +3595,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
-    /// <summary>Default value for the "name" field</summary>
-    public const string NameDefaultValue = "";
+    private readonly static string NameDefaultValue = "";
 
     private string name_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3643,8 +3618,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "input_type" field.</summary>
     public const int InputTypeFieldNumber = 2;
-    /// <summary>Default value for the "input_type" field</summary>
-    public const string InputTypeDefaultValue = "";
+    private readonly static string InputTypeDefaultValue = "";
 
     private string inputType_;
     /// <summary>
@@ -3671,8 +3645,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "output_type" field.</summary>
     public const int OutputTypeFieldNumber = 3;
-    /// <summary>Default value for the "output_type" field</summary>
-    public const string OutputTypeDefaultValue = "";
+    private readonly static string OutputTypeDefaultValue = "";
 
     private string outputType_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3716,8 +3689,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "client_streaming" field.</summary>
     public const int ClientStreamingFieldNumber = 5;
-    /// <summary>Default value for the "client_streaming" field</summary>
-    public const bool ClientStreamingDefaultValue = false;
+    private readonly static bool ClientStreamingDefaultValue = false;
 
     private bool clientStreaming_;
     /// <summary>
@@ -3744,8 +3716,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "server_streaming" field.</summary>
     public const int ServerStreamingFieldNumber = 6;
-    /// <summary>Default value for the "server_streaming" field</summary>
-    public const bool ServerStreamingDefaultValue = false;
+    private readonly static bool ServerStreamingDefaultValue = false;
 
     private bool serverStreaming_;
     /// <summary>
@@ -4009,8 +3980,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "java_package" field.</summary>
     public const int JavaPackageFieldNumber = 1;
-    /// <summary>Default value for the "java_package" field</summary>
-    public const string JavaPackageDefaultValue = "";
+    private readonly static string JavaPackageDefaultValue = "";
 
     private string javaPackage_;
     /// <summary>
@@ -4039,8 +4009,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "java_outer_classname" field.</summary>
     public const int JavaOuterClassnameFieldNumber = 8;
-    /// <summary>Default value for the "java_outer_classname" field</summary>
-    public const string JavaOuterClassnameDefaultValue = "";
+    private readonly static string JavaOuterClassnameDefaultValue = "";
 
     private string javaOuterClassname_;
     /// <summary>
@@ -4070,8 +4039,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "java_multiple_files" field.</summary>
     public const int JavaMultipleFilesFieldNumber = 10;
-    /// <summary>Default value for the "java_multiple_files" field</summary>
-    public const bool JavaMultipleFilesDefaultValue = false;
+    private readonly static bool JavaMultipleFilesDefaultValue = false;
 
     private bool javaMultipleFiles_;
     /// <summary>
@@ -4103,8 +4071,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "java_generate_equals_and_hash" field.</summary>
     public const int JavaGenerateEqualsAndHashFieldNumber = 20;
-    /// <summary>Default value for the "java_generate_equals_and_hash" field</summary>
-    public const bool JavaGenerateEqualsAndHashDefaultValue = false;
+    private readonly static bool JavaGenerateEqualsAndHashDefaultValue = false;
 
     private bool javaGenerateEqualsAndHash_;
     /// <summary>
@@ -4134,8 +4101,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "java_string_check_utf8" field.</summary>
     public const int JavaStringCheckUtf8FieldNumber = 27;
-    /// <summary>Default value for the "java_string_check_utf8" field</summary>
-    public const bool JavaStringCheckUtf8DefaultValue = false;
+    private readonly static bool JavaStringCheckUtf8DefaultValue = false;
 
     private bool javaStringCheckUtf8_;
     /// <summary>
@@ -4167,8 +4133,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "optimize_for" field.</summary>
     public const int OptimizeForFieldNumber = 9;
-    /// <summary>Default value for the "optimize_for" field</summary>
-    public const global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode OptimizeForDefaultValue = global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.Speed;
+    private readonly static global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode OptimizeForDefaultValue = global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.Speed;
 
     private global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode optimizeFor_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4192,8 +4157,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "go_package" field.</summary>
     public const int GoPackageFieldNumber = 11;
-    /// <summary>Default value for the "go_package" field</summary>
-    public const string GoPackageDefaultValue = "";
+    private readonly static string GoPackageDefaultValue = "";
 
     private string goPackage_;
     /// <summary>
@@ -4223,8 +4187,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "cc_generic_services" field.</summary>
     public const int CcGenericServicesFieldNumber = 16;
-    /// <summary>Default value for the "cc_generic_services" field</summary>
-    public const bool CcGenericServicesDefaultValue = false;
+    private readonly static bool CcGenericServicesDefaultValue = false;
 
     private bool ccGenericServices_;
     /// <summary>
@@ -4260,8 +4223,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "java_generic_services" field.</summary>
     public const int JavaGenericServicesFieldNumber = 17;
-    /// <summary>Default value for the "java_generic_services" field</summary>
-    public const bool JavaGenericServicesDefaultValue = false;
+    private readonly static bool JavaGenericServicesDefaultValue = false;
 
     private bool javaGenericServices_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4285,8 +4247,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "py_generic_services" field.</summary>
     public const int PyGenericServicesFieldNumber = 18;
-    /// <summary>Default value for the "py_generic_services" field</summary>
-    public const bool PyGenericServicesDefaultValue = false;
+    private readonly static bool PyGenericServicesDefaultValue = false;
 
     private bool pyGenericServices_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4310,8 +4271,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "php_generic_services" field.</summary>
     public const int PhpGenericServicesFieldNumber = 42;
-    /// <summary>Default value for the "php_generic_services" field</summary>
-    public const bool PhpGenericServicesDefaultValue = false;
+    private readonly static bool PhpGenericServicesDefaultValue = false;
 
     private bool phpGenericServices_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4335,8 +4295,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "deprecated" field.</summary>
     public const int DeprecatedFieldNumber = 23;
-    /// <summary>Default value for the "deprecated" field</summary>
-    public const bool DeprecatedDefaultValue = false;
+    private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
     /// <summary>
@@ -4366,8 +4325,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "cc_enable_arenas" field.</summary>
     public const int CcEnableArenasFieldNumber = 31;
-    /// <summary>Default value for the "cc_enable_arenas" field</summary>
-    public const bool CcEnableArenasDefaultValue = false;
+    private readonly static bool CcEnableArenasDefaultValue = false;
 
     private bool ccEnableArenas_;
     /// <summary>
@@ -4395,8 +4353,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "objc_class_prefix" field.</summary>
     public const int ObjcClassPrefixFieldNumber = 36;
-    /// <summary>Default value for the "objc_class_prefix" field</summary>
-    public const string ObjcClassPrefixDefaultValue = "";
+    private readonly static string ObjcClassPrefixDefaultValue = "";
 
     private string objcClassPrefix_;
     /// <summary>
@@ -4423,8 +4380,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "csharp_namespace" field.</summary>
     public const int CsharpNamespaceFieldNumber = 37;
-    /// <summary>Default value for the "csharp_namespace" field</summary>
-    public const string CsharpNamespaceDefaultValue = "";
+    private readonly static string CsharpNamespaceDefaultValue = "";
 
     private string csharpNamespace_;
     /// <summary>
@@ -4450,8 +4406,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "swift_prefix" field.</summary>
     public const int SwiftPrefixFieldNumber = 39;
-    /// <summary>Default value for the "swift_prefix" field</summary>
-    public const string SwiftPrefixDefaultValue = "";
+    private readonly static string SwiftPrefixDefaultValue = "";
 
     private string swiftPrefix_;
     /// <summary>
@@ -4480,8 +4435,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "php_class_prefix" field.</summary>
     public const int PhpClassPrefixFieldNumber = 40;
-    /// <summary>Default value for the "php_class_prefix" field</summary>
-    public const string PhpClassPrefixDefaultValue = "";
+    private readonly static string PhpClassPrefixDefaultValue = "";
 
     private string phpClassPrefix_;
     /// <summary>
@@ -4508,8 +4462,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "php_namespace" field.</summary>
     public const int PhpNamespaceFieldNumber = 41;
-    /// <summary>Default value for the "php_namespace" field</summary>
-    public const string PhpNamespaceDefaultValue = "";
+    private readonly static string PhpNamespaceDefaultValue = "";
 
     private string phpNamespace_;
     /// <summary>
@@ -4537,8 +4490,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "php_metadata_namespace" field.</summary>
     public const int PhpMetadataNamespaceFieldNumber = 44;
-    /// <summary>Default value for the "php_metadata_namespace" field</summary>
-    public const string PhpMetadataNamespaceDefaultValue = "";
+    private readonly static string PhpMetadataNamespaceDefaultValue = "";
 
     private string phpMetadataNamespace_;
     /// <summary>
@@ -4566,8 +4518,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "ruby_package" field.</summary>
     public const int RubyPackageFieldNumber = 45;
-    /// <summary>Default value for the "ruby_package" field</summary>
-    public const string RubyPackageDefaultValue = "";
+    private readonly static string RubyPackageDefaultValue = "";
 
     private string rubyPackage_;
     /// <summary>
@@ -5080,8 +5031,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "message_set_wire_format" field.</summary>
     public const int MessageSetWireFormatFieldNumber = 1;
-    /// <summary>Default value for the "message_set_wire_format" field</summary>
-    public const bool MessageSetWireFormatDefaultValue = false;
+    private readonly static bool MessageSetWireFormatDefaultValue = false;
 
     private bool messageSetWireFormat_;
     /// <summary>
@@ -5125,8 +5075,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "no_standard_descriptor_accessor" field.</summary>
     public const int NoStandardDescriptorAccessorFieldNumber = 2;
-    /// <summary>Default value for the "no_standard_descriptor_accessor" field</summary>
-    public const bool NoStandardDescriptorAccessorDefaultValue = false;
+    private readonly static bool NoStandardDescriptorAccessorDefaultValue = false;
 
     private bool noStandardDescriptorAccessor_;
     /// <summary>
@@ -5155,8 +5104,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "deprecated" field.</summary>
     public const int DeprecatedFieldNumber = 3;
-    /// <summary>Default value for the "deprecated" field</summary>
-    public const bool DeprecatedDefaultValue = false;
+    private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
     /// <summary>
@@ -5186,8 +5134,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "map_entry" field.</summary>
     public const int MapEntryFieldNumber = 7;
-    /// <summary>Default value for the "map_entry" field</summary>
-    public const bool MapEntryDefaultValue = false;
+    private readonly static bool MapEntryDefaultValue = false;
 
     private bool mapEntry_;
     /// <summary>
@@ -5439,8 +5386,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "ctype" field.</summary>
     public const int CtypeFieldNumber = 1;
-    /// <summary>Default value for the "ctype" field</summary>
-    public const global::Google.Protobuf.Reflection.FieldOptions.Types.CType CtypeDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.CType.String;
+    private readonly static global::Google.Protobuf.Reflection.FieldOptions.Types.CType CtypeDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.CType.String;
 
     private global::Google.Protobuf.Reflection.FieldOptions.Types.CType ctype_;
     /// <summary>
@@ -5470,8 +5416,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "packed" field.</summary>
     public const int PackedFieldNumber = 2;
-    /// <summary>Default value for the "packed" field</summary>
-    public const bool PackedDefaultValue = false;
+    private readonly static bool PackedDefaultValue = false;
 
     private bool packed_;
     /// <summary>
@@ -5502,8 +5447,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "jstype" field.</summary>
     public const int JstypeFieldNumber = 6;
-    /// <summary>Default value for the "jstype" field</summary>
-    public const global::Google.Protobuf.Reflection.FieldOptions.Types.JSType JstypeDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JsNormal;
+    private readonly static global::Google.Protobuf.Reflection.FieldOptions.Types.JSType JstypeDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JsNormal;
 
     private global::Google.Protobuf.Reflection.FieldOptions.Types.JSType jstype_;
     /// <summary>
@@ -5540,8 +5484,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "lazy" field.</summary>
     public const int LazyFieldNumber = 5;
-    /// <summary>Default value for the "lazy" field</summary>
-    public const bool LazyDefaultValue = false;
+    private readonly static bool LazyDefaultValue = false;
 
     private bool lazy_;
     /// <summary>
@@ -5594,8 +5537,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "deprecated" field.</summary>
     public const int DeprecatedFieldNumber = 3;
-    /// <summary>Default value for the "deprecated" field</summary>
-    public const bool DeprecatedDefaultValue = false;
+    private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
     /// <summary>
@@ -5625,8 +5567,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "weak" field.</summary>
     public const int WeakFieldNumber = 10;
-    /// <summary>Default value for the "weak" field</summary>
-    public const bool WeakDefaultValue = false;
+    private readonly static bool WeakDefaultValue = false;
 
     private bool weak_;
     /// <summary>
@@ -6050,8 +5991,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "allow_alias" field.</summary>
     public const int AllowAliasFieldNumber = 2;
-    /// <summary>Default value for the "allow_alias" field</summary>
-    public const bool AllowAliasDefaultValue = false;
+    private readonly static bool AllowAliasDefaultValue = false;
 
     private bool allowAlias_;
     /// <summary>
@@ -6079,8 +6019,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "deprecated" field.</summary>
     public const int DeprecatedFieldNumber = 3;
-    /// <summary>Default value for the "deprecated" field</summary>
-    public const bool DeprecatedDefaultValue = false;
+    private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
     /// <summary>
@@ -6278,8 +6217,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "deprecated" field.</summary>
     public const int DeprecatedFieldNumber = 1;
-    /// <summary>Default value for the "deprecated" field</summary>
-    public const bool DeprecatedDefaultValue = false;
+    private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
     /// <summary>
@@ -6461,8 +6399,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "deprecated" field.</summary>
     public const int DeprecatedFieldNumber = 33;
-    /// <summary>Default value for the "deprecated" field</summary>
-    public const bool DeprecatedDefaultValue = false;
+    private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
     /// <summary>
@@ -6645,8 +6582,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "deprecated" field.</summary>
     public const int DeprecatedFieldNumber = 33;
-    /// <summary>Default value for the "deprecated" field</summary>
-    public const bool DeprecatedDefaultValue = false;
+    private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
     /// <summary>
@@ -6676,8 +6612,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "idempotency_level" field.</summary>
     public const int IdempotencyLevelFieldNumber = 34;
-    /// <summary>Default value for the "idempotency_level" field</summary>
-    public const global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel IdempotencyLevelDefaultValue = global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel.IdempotencyUnknown;
+    private readonly static global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel IdempotencyLevelDefaultValue = global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel.IdempotencyUnknown;
 
     private global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel idempotencyLevel_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6914,8 +6849,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "identifier_value" field.</summary>
     public const int IdentifierValueFieldNumber = 3;
-    /// <summary>Default value for the "identifier_value" field</summary>
-    public const string IdentifierValueDefaultValue = "";
+    private readonly static string IdentifierValueDefaultValue = "";
 
     private string identifierValue_;
     /// <summary>
@@ -6942,8 +6876,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "positive_int_value" field.</summary>
     public const int PositiveIntValueFieldNumber = 4;
-    /// <summary>Default value for the "positive_int_value" field</summary>
-    public const ulong PositiveIntValueDefaultValue = 0UL;
+    private readonly static ulong PositiveIntValueDefaultValue = 0UL;
 
     private ulong positiveIntValue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6967,8 +6900,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "negative_int_value" field.</summary>
     public const int NegativeIntValueFieldNumber = 5;
-    /// <summary>Default value for the "negative_int_value" field</summary>
-    public const long NegativeIntValueDefaultValue = 0L;
+    private readonly static long NegativeIntValueDefaultValue = 0L;
 
     private long negativeIntValue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6992,8 +6924,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "double_value" field.</summary>
     public const int DoubleValueFieldNumber = 6;
-    /// <summary>Default value for the "double_value" field</summary>
-    public const double DoubleValueDefaultValue = 0D;
+    private readonly static double DoubleValueDefaultValue = 0D;
 
     private double doubleValue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7017,8 +6948,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "string_value" field.</summary>
     public const int StringValueFieldNumber = 7;
-    /// <summary>Default value for the "string_value" field</summary>
-    public readonly static pb::ByteString StringValueDefaultValue = pb::ByteString.Empty;
+    private readonly static pb::ByteString StringValueDefaultValue = pb::ByteString.Empty;
 
     private pb::ByteString stringValue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7041,8 +6971,7 @@ namespace Google.Protobuf.Reflection {
 
     /// <summary>Field number for the "aggregate_value" field.</summary>
     public const int AggregateValueFieldNumber = 8;
-    /// <summary>Default value for the "aggregate_value" field</summary>
-    public const string AggregateValueDefaultValue = "";
+    private readonly static string AggregateValueDefaultValue = "";
 
     private string aggregateValue_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7291,8 +7220,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "name_part" field.</summary>
         public const int NamePart_FieldNumber = 1;
-        /// <summary>Default value for the "name_part" field</summary>
-        public const string NamePart_DefaultValue = "";
+        private readonly static string NamePart_DefaultValue = "";
 
         private string namePart_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7315,8 +7243,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "is_extension" field.</summary>
         public const int IsExtensionFieldNumber = 2;
-        /// <summary>Default value for the "is_extension" field</summary>
-        public const bool IsExtensionDefaultValue = false;
+        private readonly static bool IsExtensionDefaultValue = false;
 
         private bool isExtension_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7724,8 +7651,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "leading_comments" field.</summary>
         public const int LeadingCommentsFieldNumber = 3;
-        /// <summary>Default value for the "leading_comments" field</summary>
-        public const string LeadingCommentsDefaultValue = "";
+        private readonly static string LeadingCommentsDefaultValue = "";
 
         private string leadingComments_;
         /// <summary>
@@ -7797,8 +7723,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "trailing_comments" field.</summary>
         public const int TrailingCommentsFieldNumber = 4;
-        /// <summary>Default value for the "trailing_comments" field</summary>
-        public const string TrailingCommentsDefaultValue = "";
+        private readonly static string TrailingCommentsDefaultValue = "";
 
         private string trailingComments_;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8161,8 +8086,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "source_file" field.</summary>
         public const int SourceFileFieldNumber = 2;
-        /// <summary>Default value for the "source_file" field</summary>
-        public const string SourceFileDefaultValue = "";
+        private readonly static string SourceFileDefaultValue = "";
 
         private string sourceFile_;
         /// <summary>
@@ -8188,8 +8112,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "begin" field.</summary>
         public const int BeginFieldNumber = 3;
-        /// <summary>Default value for the "begin" field</summary>
-        public const int BeginDefaultValue = 0;
+        private readonly static int BeginDefaultValue = 0;
 
         private int begin_;
         /// <summary>
@@ -8217,8 +8140,7 @@ namespace Google.Protobuf.Reflection {
 
         /// <summary>Field number for the "end" field.</summary>
         public const int EndFieldNumber = 4;
-        /// <summary>Default value for the "end" field</summary>
-        public const int EndDefaultValue = 0;
+        private readonly static int EndDefaultValue = 0;
 
         private int end_;
         /// <summary>
