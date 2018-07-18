@@ -70,7 +70,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
   std::sort(fields_by_number_.begin(), fields_by_number_.end(),
             CompareFieldNumbers);
 
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+  if (IsProto2(descriptor_->file())) {
     int primitiveCount = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
@@ -589,7 +589,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
 
 // it's a waste of space to track presence for all values, so we only track them if they're not nullable
 int MessageGenerator::GetPresenceIndex(const FieldDescriptor* descriptor) {
-  if (IsNullable(descriptor) || descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+  if (IsNullable(descriptor) || !IsProto2(descriptor_->file())) {
     return -1;
   }
 
