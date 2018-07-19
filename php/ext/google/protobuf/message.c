@@ -222,8 +222,30 @@ static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
 }
 
 static HashTable* message_get_properties(zval* object TSRMLS_DC) {
-  // User cannot get property directly (e.g., $a = $m->a)
-  zend_error(E_USER_ERROR, "Cannot access private properties.");
+  // Make sure singular fields' cache is updated.
+  MessageHeader* self = UNBOX(MessageHeader, object);
+  upb_msg_field_iter i;
+  PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(object));
+  for(upb_msg_field_begin(&i, self->descriptor->msgdef);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
+    upb_fielddef* f = upb_msg_iter_field(&i);
+    if (upb_fielddef_containingoneof(f) ||
+        upb_fielddef_label(f) == UPB_LABEL_REPEATED ||
+        upb_fielddef_type(f) == UPB_TYPE_MESSAGE ||
+        upb_fielddef_type(f) == UPB_TYPE_STRING ||
+        upb_fielddef_type(f) == UPB_TYPE_BYTES) {
+      continue;
+    }
+
+    zend_property_info* property_info;
+    zval member;
+    PHP_PROTO_ZVAL_STRING(&member, upb_fielddef_fullname(f), 1);
+    message_get_property_internal(object, &member);
+    zval_dtor(&member);
+  }
+  PHP_PROTO_FAKE_SCOPE_END;
+
 #if PHP_MAJOR_VERSION < 7
   return zend_std_get_properties(object TSRMLS_CC);
 #else
