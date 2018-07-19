@@ -124,6 +124,7 @@ sed -i.bak '/php_implementation_test.php/d' phpunit.xml
 sed -i.bak '/generated_phpdoc_test.php/d' phpunit.xml
 sed -i.bak 's/generated_phpdoc_test.php//g' tests/test.sh
 sed -i.bak '/memory_leak_test.php/d' tests/test.sh
+sed -i.bak '/^    public function testTimestamp()$/,/^    }$/d' tests/well_known_test.php
 for t in "${tests[@]}"
 do
   remove_error_test tests/$t
