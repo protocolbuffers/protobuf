@@ -243,7 +243,7 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
      __has_cpp_attribute(clang::fallthrough)
 #  define GOOGLE_FALLTHROUGH_INTENDED [[clang::fallthrough]]
 # endif
-#elif defined(__GNUC__) && __GNUC__ > 6
+#elif defined(__GNUC__) && __GNUC__ > 6 && __cpp_attributes >= 200809
 # define GOOGLE_FALLTHROUGH_INTENDED [[gnu::fallthrough]]
 #endif
 
