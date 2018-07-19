@@ -152,7 +152,7 @@ date_default_timezone_set('UTC');
 $from = new DateTime('2011-01-01T15:03:01.012345UTC');
 $timestamp->fromDateTime($from);
 assert($from->format('U') == $timestamp->getSeconds());
-assert(0 == $timestamp->getNanos());
+assert(1000 * $from->format('u') == $timestamp->getNanos());
 
 $to = $timestamp->toDateTime();
 assert(\DateTime::class == get_class($to));
