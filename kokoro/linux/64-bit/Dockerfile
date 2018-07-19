@@ -218,10 +218,11 @@ RUN apt-get install -y \
   npm
 
 ##################
-# Python 3.5 3.6 dependencies.
+# Python 3.5 3.6 3.7 dependencies.
 RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   python3.5-dev \
   python3.6-dev \
+  python3.7-dev \
   && apt-get clean
 
 # On Debian/Ubuntu, nodejs binary is named 'nodejs' because the name 'node'

@@ -212,7 +212,7 @@ build_python() {
   internal_build_cpp
   cd python
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{27,33,34,35,36\}-python
+    envlist=py\{27,33,34,35,36,37\}-python
   else
     envlist=py27-python
   fi
@@ -226,7 +226,7 @@ build_python_cpp() {
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{27,33,34,35,36\}-cpp
+    envlist=py\{27,33,34,35,36,37\}-cpp
   else
     envlist=py27-cpp
   fi
