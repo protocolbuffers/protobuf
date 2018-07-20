@@ -551,4 +551,19 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $end = memory_get_usage();
         $this->assertLessThan($start, $end);
     }
+
+    public function testEquals()
+    {
+        $arr1 = new RepeatedField(GPBType::INT32);
+        $arr1[] = 1;
+        $arr2 = new RepeatedField(GPBType::INT32);
+        $arr2[] = 1;
+        $this->assertEquals($arr1, $arr2);
+
+        $arr3 = new RepeatedField(GPBType::INT32);
+        $arr3[] = 1;
+        $arr4 = new RepeatedField(GPBType::INT32);
+        $arr4[] = 11;
+        $this->assertNotEquals($arr3, $arr4);
+    }
 }

@@ -76,6 +76,7 @@ static void repeated_field_write_dimension(zval *object, zval *offset,
 static int repeated_field_has_dimension(zval *object, zval *offset TSRMLS_DC);
 static HashTable *repeated_field_get_gc(zval *object, CACHED_VALUE **table,
                                         int *n TSRMLS_DC);
+static HashTable* repeated_field_get_properties(zval* object TSRMLS_DC);
 #if PHP_MAJOR_VERSION < 7
 static zend_object_value repeated_field_create(zend_class_entry *ce TSRMLS_DC);
 static zend_object_value repeated_field_iter_create(zend_class_entry *ce TSRMLS_DC);
@@ -121,6 +122,7 @@ zend_class_implements(repeated_field_type TSRMLS_CC, 3, spl_ce_ArrayAccess,
                       zend_ce_aggregate, spl_ce_Countable);
 repeated_field_handlers->write_dimension = repeated_field_write_dimension;
 repeated_field_handlers->get_gc = repeated_field_get_gc;
+repeated_field_handlers->get_properties = repeated_field_get_properties;
 PHP_PROTO_INIT_CLASS_END
 
 // Define array element free function.
@@ -222,6 +224,62 @@ static HashTable *repeated_field_get_gc(zval *object, zval **table, int *n) {
   *n = 0;
   RepeatedField *intern = UNBOX(RepeatedField, object);
   return PHP_PROTO_HASH_OF(intern->array);
+}
+
+static void repeated_field_offset_get(HashTable* table, long index,
+                                      upb_fieldtype_t type,
+                                      zval* return_value) {
+  void *memory;
+
+  if (type == UPB_TYPE_MESSAGE) {
+    if (php_proto_zend_hash_index_find_zval(table, index, (void **)&memory) ==
+        FAILURE) {
+      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
+      return;
+    }
+  } else {
+    if (php_proto_zend_hash_index_find_mem(table, index, (void **)&memory) ==
+        FAILURE) {
+      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
+      return;
+    }
+  }
+  native_slot_get_by_array(type, memory,
+                           ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+}
+
+static HashTable* repeated_field_build_properties(zval* object TSRMLS_DC) {
+  RepeatedField* intern = UNBOX(RepeatedField, object);
+  HashTable* table = PHP_PROTO_HASH_OF(intern->array);
+
+  // if (intern->type == UPB_TYPE_MESSAGE) {
+  //   return table;
+  // }
+
+  zend_object* zobj = Z_OBJ_P(object);
+  if (zobj->properties) {
+    zend_hash_destroy(zobj->properties);
+    FREE_HASHTABLE(zobj->properties);
+  }
+
+  ALLOC_HASHTABLE(zobj->properties);
+  zend_hash_init(zobj->properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+
+  for (int i = 0; i < zend_hash_num_elements(table); i++) {
+    zval* new_entry;
+    MAKE_STD_ZVAL(new_entry);
+    repeated_field_offset_get(table, i, intern->type, new_entry);
+    // if (intern->type == UPB_TYPE_MESSAGE) {
+    //   Z_ADDREF_P(new_entry);
+    // }
+    php_proto_zend_hash_index_update_zval(zobj->properties, i, new_entry);
+  }
+
+  return zobj->properties;
+}
+
+static HashTable* repeated_field_get_properties(zval* object TSRMLS_DC) {
+  return repeated_field_build_properties(object TSRMLS_CC);
 }
 
 // -----------------------------------------------------------------------------
@@ -369,7 +427,6 @@ PHP_METHOD(RepeatedField, offsetExists) {
  */
 PHP_METHOD(RepeatedField, offsetGet) {
   long index;
-  void *memory;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
       FAILURE) {
@@ -378,22 +435,9 @@ PHP_METHOD(RepeatedField, offsetGet) {
 
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
   HashTable *table = PHP_PROTO_HASH_OF(intern->array);
+  void *memory;
 
-  if (intern->type == UPB_TYPE_MESSAGE) {
-    if (php_proto_zend_hash_index_find_zval(table, index, (void **)&memory) ==
-        FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
-      return;
-    }
-  } else {
-    if (php_proto_zend_hash_index_find_mem(table, index, (void **)&memory) ==
-        FAILURE) {
-      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
-      return;
-    }
-  }
-  native_slot_get_by_array(intern->type, memory,
-                           ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+  repeated_field_offset_get(table, index, intern->type, return_value);
 }
 
 /**

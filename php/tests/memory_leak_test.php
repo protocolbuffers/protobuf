@@ -191,3 +191,23 @@ $to = new TestMessage();
 TestUtil::setTestMessage($from);
 $to->mergeFrom($from);
 TestUtil::assertTestMessage($to);
+
+// Test casting to array
+$m = new TestMessage();
+TestUtil::setTestMessage($m);
+(array) $m;
+(array) $m->getOptionalMessage();
+(array) $m->getRepeatedMessage();
+(array) $m->getRepeatedMessage()[0];
+
+
+ $m = new TestMessage();
+ TestUtil::setTestMessage($m);
+ $n = new TestMessage();
+ TestUtil::setTestMessage($n);
+(array) $m;
+(array) $n;
+(array) $m->getOptionalMessage();
+(array) $n->getOptionalMessage();
+(array) $m->getOptionalMessage()[0];
+(array) $n->getOptionalMessage()[0];
