@@ -312,11 +312,12 @@ class WellKnownTest extends TestBase {
         $from = new DateTime('2011-01-01T15:03:01.012345UTC');
         $timestamp->fromDateTime($from);
         $this->assertEquals($from->format('U'), $timestamp->getSeconds());
-        $this->assertSame(0, $timestamp->getNanos());
+        $this->assertEquals(1000 * $from->format('u'), $timestamp->getNanos());
 
         $to = $timestamp->toDateTime();
         $this->assertSame(\DateTime::class, get_class($to));
         $this->assertSame($from->format('U'), $to->format('U'));
+        $this->assertSame($from->format('u'), $to->format('u'));
     }
 
     public function testType()

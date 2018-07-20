@@ -42,6 +42,10 @@
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
 
+/* From Chromium. */
+#define ARRAY_SIZE(x) \
+    ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
 // -----------------------------------------------------------------------------
 // PHP7 Wrappers
 // ----------------------------------------------------------------------------
