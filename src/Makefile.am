@@ -367,10 +367,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_generator_factory.h       \
   google/protobuf/compiler/java/java_helpers.cc                \
   google/protobuf/compiler/java/java_helpers.h                 \
-  google/protobuf/compiler/java/java_lazy_message_field.cc     \
-  google/protobuf/compiler/java/java_lazy_message_field.h      \
-  google/protobuf/compiler/java/java_lazy_message_field_lite.cc\
-  google/protobuf/compiler/java/java_lazy_message_field_lite.h \
   google/protobuf/compiler/java/java_map_field.cc              \
   google/protobuf/compiler/java/java_map_field.h               \
   google/protobuf/compiler/java/java_map_field_lite.cc         \
