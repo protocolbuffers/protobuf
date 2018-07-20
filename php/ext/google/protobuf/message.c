@@ -221,6 +221,36 @@ static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
   return NULL;
 }
 
+#if PHP_MAJOR_VERSION < 7
+static HashTable* message_build_properties(zval* object) {
+  zend_object* zobj = Z_OBJ_P(object);
+  if (zobj->properties) {
+    zend_hash_destroy(zobj->properties);
+    FREE_HASHTABLE(zobj->properties);
+  }
+
+  HashPosition pos; 
+  zend_property_info *prop_info;
+  zend_class_entry *ce = zobj->ce;
+
+  ALLOC_HASHTABLE(zobj->properties);
+  zend_hash_init(zobj->properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+  if (ce->default_properties_count) {
+    for (zend_hash_internal_pointer_reset_ex(&ce->properties_info, &pos);
+         zend_hash_get_current_data_ex(&ce->properties_info,
+                                       (void**)&prop_info, &pos) == SUCCESS;
+         zend_hash_move_forward_ex(&ce->properties_info, &pos)) {
+      zend_hash_quick_add(zobj->properties, prop_info->name,
+                          prop_info->name_length + 1, prop_info->h,
+                          (void**)&zobj->properties_table[prop_info->offset],
+                          sizeof(zval*), NULL);
+    }
+  }
+
+  return zobj->properties;
+}
+#endif
+
 static HashTable* message_get_properties(zval* object TSRMLS_DC) {
   // Make sure singular fields' cache is updated.
   MessageHeader* self = UNBOX(MessageHeader, object);
@@ -247,10 +277,25 @@ static HashTable* message_get_properties(zval* object TSRMLS_DC) {
   PHP_PROTO_FAKE_SCOPE_END;
 
 #if PHP_MAJOR_VERSION < 7
-  return zend_std_get_properties(object TSRMLS_CC);
+  return message_build_properties(object);
 #else
-  return zend_std_get_properties(object);
+  return zend_std_get_properties(object TSRMLS_CC);
 #endif
+
+  // zend_object* zobj = Z_OBJ_P(object);
+  // if (zobj->properties) {
+  //   zend_hash_destroy(zobj->properties);
+  //   FREE_HASHTABLE(zobj->properties);
+  // }
+  // rebuild_object_properties(zobj);
+
+  // return zobj->properties;
+
+// #if PHP_MAJOR_VERSION < 7
+//   return zend_std_get_properties(object TSRMLS_CC);
+// #else
+//   return zend_std_get_properties(object);
+// #endif
 }
 
 static HashTable* message_get_gc(zval* object, CACHED_VALUE** table,
