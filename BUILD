@@ -322,8 +322,6 @@ cc_library(
         "src/google/protobuf/compiler/java/java_generator.cc",
         "src/google/protobuf/compiler/java/java_generator_factory.cc",
         "src/google/protobuf/compiler/java/java_helpers.cc",
-        "src/google/protobuf/compiler/java/java_lazy_message_field.cc",
-        "src/google/protobuf/compiler/java/java_lazy_message_field_lite.cc",
         "src/google/protobuf/compiler/java/java_map_field.cc",
         "src/google/protobuf/compiler/java/java_map_field_lite.cc",
         "src/google/protobuf/compiler/java/java_message.cc",

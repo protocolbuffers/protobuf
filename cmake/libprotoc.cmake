@@ -44,8 +44,6 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator_factory.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_helpers.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_lazy_message_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_lazy_message_field_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message.cc
@@ -128,8 +126,6 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_file.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator_factory.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_helpers.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_lazy_message_field.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_lazy_message_field_lite.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field_lite.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message.h
