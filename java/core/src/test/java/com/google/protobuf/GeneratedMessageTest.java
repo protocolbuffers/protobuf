@@ -855,6 +855,9 @@ public class GeneratedMessageTest extends TestCase {
   }
 
   public void testDeserializeWithoutClassField() throws Exception {
+    // serialized form for version <=3.6.0
+    // just includes messageClassName and asBytes
+
     // Int32Value.newBuilder().setValue(123).build()
     byte[] int32ValueBytes = new byte[]{
         -84, -19, 0, 5, 115, 114, 0, 55, 99, 111, 109, 46, 103, 111, 111,
@@ -879,6 +882,9 @@ public class GeneratedMessageTest extends TestCase {
   }
 
   public void testDeserializeWithClassField() throws Exception {
+    // serialized form for version > 3.6.0
+    // includes messageClass, messageClassName (for compatibility), and asBytes
+
     // Int32Value.newBuilder().setValue(123).build()
     byte[] int32ValueBytes = new byte[]{
         -84, -19, 0, 5, 115, 114, 0, 55, 99, 111, 109, 46, 103, 111, 111,
