@@ -222,13 +222,7 @@ static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
 }
 
 static HashTable* message_get_properties(zval* object TSRMLS_DC) {
-  // User cannot get property directly (e.g., $a = $m->a)
-  zend_error(E_USER_ERROR, "Cannot access private properties.");
-#if PHP_MAJOR_VERSION < 7
-  return zend_std_get_properties(object TSRMLS_CC);
-#else
-  return zend_std_get_properties(object);
-#endif
+  return NULL;
 }
 
 static HashTable* message_get_gc(zval* object, CACHED_VALUE** table,
