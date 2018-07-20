@@ -1624,10 +1624,14 @@ static void JsonToMessage(GPBMessage* msg, id<NSObject> root) {
   return data;
 }
 
-
-- (nullable NSData*)json {
+- (nullable id<NSObject>)jsonObject {
   id<NSObject> obj = MessageToJson(self);
   NSAssert([NSJSONSerialization isValidJSONObject:obj], @"Not Json");
+  return obj;
+}
+
+- (nullable NSData*)json {
+  id<NSObject> obj = [self jsonObject];
   NSData* data = [NSJSONSerialization dataWithJSONObject:obj options:kNilOptions error:nil];
   return data;
 }

@@ -365,6 +365,13 @@ CF_EXTERN_C_END
  **/
 - (NSData *)delimitedData;
 
+
+/**
+ *Serializes the message to an JSON Object(NSDictionary,NSArray,NSString,NSNumber,NSNull,etc)
+ *
+ *@return The JSON representation of the message.
+ */
+- (nullable id<NSObject>)jsonObject;
 /**
  *Serializes the message to an NSData.
  *
