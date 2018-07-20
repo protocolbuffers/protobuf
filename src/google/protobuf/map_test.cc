@@ -3183,7 +3183,7 @@ TEST(TextFormatMapTest, Sorted) {
   tester.SetMapFieldsViaReflection(&message);
 
   string expected_text;
-  GOOGLE_CHECK_OK(File::GetContents(
+  GOOGLE_CHECK_OK(File::GetContentsAsText(
       TestSourceDir() +
           "/google/protobuf/"
           "testdata/map_test_data.txt",
