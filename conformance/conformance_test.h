@@ -165,6 +165,10 @@ class ConformanceTestSuite {
      return request_;
    }
 
+   void SetOptionalTestName(const string& optional_test_name) {
+     request_.set_optional_test_name(optional_test_name);
+   }
+
    const ConformanceLevel GetLevel() const {
      return level_;
    }
@@ -196,6 +200,9 @@ class ConformanceTestSuite {
   void RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
+  void RunOptionalValidInputTest(
+      const ConformanceRequestSetting& setting,
+      const string& equivalent_text_format);
   void RunValidInputTest(const ConformanceRequestSetting& setting,
                          const string& equivalent_text_format);
   void RunValidBinaryInputTest(const ConformanceRequestSetting& setting,
