@@ -32,6 +32,7 @@ package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Int32Value;
 import com.google.protobuf.test.UnittestImport;
 import protobuf_unittest.EnumWithNoOuter;
 import protobuf_unittest.MessageWithNoOuter;
@@ -851,6 +852,75 @@ public class GeneratedMessageTest extends TestCase {
     ObjectInputStream in = new ObjectInputStream(bais);
     TestAllTypes actual = (TestAllTypes) in.readObject();
     assertEquals(expected, actual);
+  }
+
+  public void testDeserializeWithoutClassField() throws Exception {
+    // serialized form for version <=3.6.0
+    // just includes messageClassName and asBytes
+
+    // Int32Value.newBuilder().setValue(123).build()
+    byte[] int32ValueBytes = new byte[]{
+        -84, -19, 0, 5, 115, 114, 0, 55, 99, 111, 109, 46, 103, 111, 111,
+        103, 108, 101, 46, 112, 114, 111, 116, 111, 98, 117, 102, 46, 71,
+        101, 110, 101, 114, 97, 116, 101, 100, 77, 101, 115, 115, 97, 103,
+        101, 76, 105, 116, 101, 36, 83, 101, 114, 105, 97, 108, 105, 122,
+        101, 100, 70, 111, 114, 109, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 91,
+        0, 7, 97, 115, 66, 121, 116, 101, 115, 116, 0, 2, 91, 66, 76, 0,
+        16, 109, 101, 115, 115, 97, 103, 101, 67, 108, 97, 115, 115, 78,
+        97, 109, 101, 116, 0, 18, 76, 106, 97, 118, 97, 47, 108, 97, 110,
+        103, 47, 83, 116, 114, 105, 110, 103, 59, 120, 112, 117, 114, 0,
+        2, 91, 66, -84, -13, 23, -8, 6, 8, 84, -32, 2, 0, 0, 120, 112, 0,
+        0, 0, 2, 8, 123, 116, 0, 30, 99, 111, 109, 46, 103, 111, 111, 103,
+        108, 101, 46, 112, 114, 111, 116, 111, 98, 117, 102, 46, 73, 110,
+        116, 51, 50, 86, 97, 108, 117, 101
+    };
+
+    ByteArrayInputStream bais = new ByteArrayInputStream(int32ValueBytes);
+    ObjectInputStream in = new ObjectInputStream(bais);
+    Int32Value int32Value = (Int32Value) in.readObject();
+    assertEquals(123, int32Value.getValue());
+  }
+
+  public void testDeserializeWithClassField() throws Exception {
+    // serialized form for version > 3.6.0
+    // includes messageClass, messageClassName (for compatibility), and asBytes
+
+    // Int32Value.newBuilder().setValue(123).build()
+    byte[] int32ValueBytes = new byte[]{
+        -84, -19, 0, 5, 115, 114, 0, 55, 99, 111, 109, 46, 103, 111, 111,
+        103, 108, 101, 46, 112, 114, 111, 116, 111, 98, 117, 102, 46, 71,
+        101, 110, 101, 114, 97, 116, 101, 100, 77, 101, 115, 115, 97, 103,
+        101, 76, 105, 116, 101, 36, 83, 101, 114, 105, 97, 108, 105, 122,
+        101, 100, 70, 111, 114, 109, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 91,
+        0, 7, 97, 115, 66, 121, 116, 101, 115, 116, 0, 2, 91, 66, 76, 0,
+        12, 109, 101, 115, 115, 97, 103, 101, 67, 108, 97, 115, 115, 116,
+        0, 17, 76, 106, 97, 118, 97, 47, 108, 97, 110, 103, 47, 67, 108,
+        97, 115, 115, 59, 76, 0, 16, 109, 101, 115, 115, 97, 103, 101, 67,
+        108, 97, 115, 115, 78, 97, 109, 101, 116, 0, 18, 76, 106, 97, 118,
+        97, 47, 108, 97, 110, 103, 47, 83, 116, 114, 105, 110, 103, 59,
+        120, 112, 117, 114, 0, 2, 91, 66, -84, -13, 23, -8, 6, 8, 84, -32,
+        2, 0, 0, 120, 112, 0, 0, 0, 2, 8, 123, 118, 114, 0, 30, 99, 111,
+        109, 46, 103, 111, 111, 103, 108, 101, 46, 112, 114, 111, 116, 111,
+        98, 117, 102, 46, 73, 110, 116, 51, 50, 86, 97, 108, 117, 101, 0, 0,
+        0, 0, 0, 0, 0, 0, 2, 0, 2, 66, 0, 21, 109, 101, 109, 111, 105, 122,
+        101, 100, 73, 115, 73, 110, 105, 116, 105, 97, 108, 105, 122, 101,
+        100, 73, 0, 6, 118, 97, 108, 117, 101, 95, 120, 114, 0, 38, 99, 111,
+        109, 46, 103, 111, 111, 103, 108, 101, 46, 112, 114, 111, 116, 111,
+        98, 117, 102, 46, 71, 101, 110, 101, 114, 97, 116, 101, 100, 77,
+        101, 115, 115, 97, 103, 101, 86, 51, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0,
+        1, 76, 0, 13, 117, 110, 107, 110, 111, 119, 110, 70, 105, 101, 108,
+        100, 115, 116, 0, 37, 76, 99, 111, 109, 47, 103, 111, 111, 103, 108,
+        101, 47, 112, 114, 111, 116, 111, 98, 117, 102, 47, 85, 110, 107,
+        110, 111, 119, 110, 70, 105, 101, 108, 100, 83, 101, 116, 59, 120,
+        112, 116, 0, 30, 99, 111, 109, 46, 103, 111, 111, 103, 108, 101, 46,
+        112, 114, 111, 116, 111, 98, 117, 102, 46, 73, 110, 116, 51, 50, 86,
+        97, 108, 117, 101
+    };
+
+    ByteArrayInputStream bais = new ByteArrayInputStream(int32ValueBytes);
+    ObjectInputStream in = new ObjectInputStream(bais);
+    Int32Value int32Value = (Int32Value) in.readObject();
+    assertEquals(123, int32Value.getValue());
   }
 
   public void testEnumValues() {
