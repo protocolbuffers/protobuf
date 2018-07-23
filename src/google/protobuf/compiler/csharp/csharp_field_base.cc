@@ -347,7 +347,10 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
         return "false";
       }
     case FieldDescriptor::TYPE_STRING:
-      return "\"" + StringToEscapedCSharpString(descriptor->default_value_string()) +  "\"";
+      if (descriptor->default_value_string().empty())
+        return "\"\"";
+      else
+        return "global::System.Encoding.UTF8.GetString(global::System.Convert.FromBase64String(\" +" + StringToBase64(descriptor->default_value_string()) + " +\"))";
     case FieldDescriptor::TYPE_BYTES:
       if (descriptor->default_value_string().empty())
         return "pb::ByteString.Empty";

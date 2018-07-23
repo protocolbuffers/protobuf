@@ -104,8 +104,6 @@ std::string PROTOC_EXPORT GetEnumValueName(const std::string& enum_name,
 // TODO(jtattermusch): perhaps we could move this to strutil
 std::string StringToBase64(const std::string& input);
 
-std::string StringToEscapedCSharpString(const std::string& input);
-
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
