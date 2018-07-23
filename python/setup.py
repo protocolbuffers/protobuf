@@ -185,6 +185,7 @@ if __name__ == '__main__':
         extra_compile_args.append('-Wno-write-strings')
         extra_compile_args.append('-Wno-invalid-offsetof')
         extra_compile_args.append('-Wno-sign-compare')
+        extra_compile_args.append('-std=c++11')
 
     # https://github.com/Theano/Theano/issues/4926
     if sys.platform == 'win32':
@@ -200,12 +201,6 @@ if __name__ == '__main__':
 
     if "clang" in os.popen('$CC --version 2> /dev/null').read():
       extra_compile_args.append('-Wno-shorten-64-to-32')
-
-    v, _, _ = platform.mac_ver()
-    if v:
-      extra_compile_args.append('-std=c++11')
-    elif os.getenv('KOKORO_BUILD_NUMBER') or os.getenv('KOKORO_BUILD_ID'):
-      extra_compile_args.append('-std=c++11')
 
     if warnings_as_errors in sys.argv:
       extra_compile_args.append('-Werror')
