@@ -39,9 +39,7 @@ my_proto_instance = message_classes['some.proto.package.MessageName']()
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-from google.protobuf import descriptor_pool
-from google.protobuf import message
-from google.protobuf import reflection
+from google.protobuf import descriptor_pool, message, reflection
 
 
 class MessageFactory(object):
@@ -70,11 +68,14 @@ class MessageFactory(object):
       descriptor_name = descriptor.name
       if str is bytes:  # PY2
         descriptor_name = descriptor.name.encode('ascii', 'ignore')
-      result_class = reflection.GeneratedProtocolMessageType(
-          descriptor_name,
-          (message.Message,),
-          {'DESCRIPTOR': descriptor, '__module__': None})
-          # If module not set, it wrongly points to the reflection.py module.
+      if hasattr(descriptor, '_concrete_class'):
+        result_class = descriptor._concrete_class
+      else:
+        result_class = reflection.GeneratedProtocolMessageType(
+            descriptor_name,
+            (message.Message,),
+            {'DESCRIPTOR': descriptor, '__module__': None})
+            # If module not set, it wrongly points to the reflection.py module.
       self._classes[descriptor] = result_class
       for field in descriptor.fields:
         if field.message_type:
