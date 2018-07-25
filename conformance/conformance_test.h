@@ -152,7 +152,9 @@ class ConformanceTestSuite {
    public:
     ConformanceRequestSetting(
         ConformanceLevel level, conformance::WireFormat input_format,
-        conformance::WireFormat output_format, bool is_proto3,
+        conformance::WireFormat output_format,
+        conformance::TestCategory test_category,
+        bool is_proto3,
         const string& test_name, const string& input);
 
    Message* GetTestMessage() const;
@@ -169,14 +171,8 @@ class ConformanceTestSuite {
      return level_;
    }
 
-   void SetIgnoreUnknownJson(bool ignore_unknown_json) {
-     request_.set_ignore_unknown_json(ignore_unknown_json);
-   }
-  
    private:
     ConformanceLevel level_;
-    conformance::WireFormat input_format_;
-    conformance::WireFormat output_format_;
     bool is_proto3_;
     string test_name_;
     conformance::ConformanceRequest request_;
