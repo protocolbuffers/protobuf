@@ -236,7 +236,8 @@ class ConformanceJava {
           TestMessagesProto3.TestAllTypesProto3.Builder builder = 
               TestMessagesProto3.TestAllTypesProto3.newBuilder();
           JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(typeRegistry);
-          if (request.getTestCategory() == JSON_IGNORE_UNKNOWN_PARSING_TEST) {
+          if (request.getTestCategory()
+              == Conformance.TestCategory.JSON_IGNORE_UNKNOWN_PARSING_TEST) {
             parser = parser.ignoringUnknownFields();
           }
           parser.merge(request.getJsonPayload(), builder);
