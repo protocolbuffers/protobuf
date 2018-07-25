@@ -38,26 +38,32 @@ pure-Python protocol compiler.
 import copy
 import gc
 import operator
-import struct
-
 import six
-
-from google.protobuf import (descriptor, descriptor_pb2, map_unittest_pb2,
-                             message, reflection, text_format,
-                             unittest_import_pb2, unittest_mset_pb2,
-                             unittest_pb2)
-from google.protobuf.descriptor_pool import Default as defaultDescriptorPool
-from google.protobuf.internal import (api_implementation, decoder,
-                                      message_set_extensions_pb2,
-                                      more_extensions_pb2, more_messages_pb2,
-                                      test_util, testing_refleaks, wire_format)
-from google.protobuf.message_factory import MessageFactory
+import struct
 
 try:
   import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
 
+from google.protobuf import unittest_import_pb2
+from google.protobuf import unittest_mset_pb2
+from google.protobuf import unittest_pb2
+from google.protobuf import descriptor_pb2
+from google.protobuf import descriptor
+from google.protobuf import message
+from google.protobuf import reflection
+from google.protobuf import text_format
+from google.protobuf.descriptor_pool import Default as defaultDescriptorPool
+from google.protobuf.internal import api_implementation
+from google.protobuf.internal import more_extensions_pb2
+from google.protobuf.internal import more_messages_pb2
+from google.protobuf.internal import message_set_extensions_pb2
+from google.protobuf.internal import wire_format
+from google.protobuf.internal import test_util
+from google.protobuf.internal import testing_refleaks
+from google.protobuf.internal import decoder
+from google.protobuf.message_factory import MessageFactory
 
 
 BaseTestCase = testing_refleaks.BaseTestCase
