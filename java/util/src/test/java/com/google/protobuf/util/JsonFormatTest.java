@@ -30,18 +30,6 @@
 
 package com.google.protobuf.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
 import com.google.protobuf.Any;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.ByteString;
@@ -74,7 +62,17 @@ import com.google.protobuf.util.JsonTestProto.TestRecursive;
 import com.google.protobuf.util.JsonTestProto.TestStruct;
 import com.google.protobuf.util.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.JsonTestProto.TestWrappers;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import junit.framework.TestCase;
 
 public class JsonFormatTest extends TestCase {
