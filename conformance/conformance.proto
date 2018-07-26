@@ -84,6 +84,14 @@ message ConformanceRequest {
   string message_type = 4;
 
   bool ignore_unknown_json = 5;
+
+  // The name of optional test, e.g.,
+  // Required.Proto3.JsonInput.IgnoreUnknownJsonFalse.ProtobufOutput. If this
+  // name is set in the ConformanceRequest, testee program should set true to
+  // the optional_test_needed in the returned ConformanceResponse if the test
+  // is needed. The test runner will only run the optional test if the
+  // optional_test_needed is true in the returned ConformanceResponse. 
+  string optional_test_name = 6;
 }
 
 // Represents a single test case's output.
@@ -117,5 +125,8 @@ message ConformanceResponse {
     // For when the testee skipped the test, likely because a certain feature
     // wasn't supported, like JSON input/output.
     string skipped = 5;
+
+    // See optional_test_name in ConformanceRequest.
+    bool optional_test_needed = 7;
   }
 }

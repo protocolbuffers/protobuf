@@ -39,6 +39,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/util/json_util.h>
@@ -344,6 +345,25 @@ void ConformanceTestSuite::RunTest(const string& test_name,
   }
 }
 
+void ConformanceTestSuite::RunOptionalValidInputTest(
+    const ConformanceRequestSetting& setting,
+    const string& equivalent_text_format) {
+  ConformanceRequestSetting handshake_setting(
+      RECOMMENDED, conformance::PROTOBUF, conformance::PROTOBUF,
+      true, StrCat(setting.GetTestName(), "HandShake"), "");
+  handshake_setting.SetOptionalTestName(setting.GetTestName());
+
+  ConformanceResponse handshake_response;
+
+  RunTest(handshake_setting.GetTestName(),
+          handshake_setting.GetRequest(),
+          &handshake_response);
+
+  if (handshake_response.optional_test_needed()) {
+    RunValidInputTest(setting, equivalent_text_format);
+  }
+}
+
 void ConformanceTestSuite::RunValidInputTest(
     const ConformanceRequestSetting& setting,
     const string& equivalent_text_format) {
@@ -536,7 +556,7 @@ void ConformanceTestSuite::RunValidJsonIgnoreUnknownTest(
       level, conformance::JSON, conformance::PROTOBUF,
       true, test_name, input_json);
   setting.SetIgnoreUnknownJson(true);
-  RunValidInputTest(setting, equivalent_text_format);
+  RunOptionalValidInputTest(setting, equivalent_text_format);
 }
 
 void ConformanceTestSuite::RunValidProtobufTest(

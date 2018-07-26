@@ -19,6 +19,14 @@ if (!ini_get("date.timezone")) {
 }
 
 $test_count = 0;
+$supported_optional_tests = array(
+    "Required.Proto3.JsonInput.IgnoreUnknownJsonFalse.ProtobufOutput" => 1,
+    "Required.Proto3.JsonInput.IgnoreUnknownJsonNull.ProtobufOutput" => 1,
+    "Required.Proto3.JsonInput.IgnoreUnknownJsonNumber.ProtobufOutput" => 1,
+    "Required.Proto3.JsonInput.IgnoreUnknownJsonObject.ProtobufOutput" => 1,
+    "Required.Proto3.JsonInput.IgnoreUnknownJsonString.ProtobufOutput" => 1,
+    "Required.Proto3.JsonInput.IgnoreUnknownJsonTrue.ProtobufOutput" => 1,
+);
 
 function doTest($request)
 {
@@ -51,7 +59,11 @@ function doTest($request)
       trigger_error("Request didn't have payload.", E_USER_ERROR);
     }
 
-    if ($request->getRequestedOutputFormat() == WireFormat::UNSPECIFIED) {
+    if (!empty($request->getOptionalTestName()) &&
+        isset($GLOBALS['supported_optional_tests'][
+            $request->getOptionalTestName()])) {
+      $response->setOptionalTestNeeded(true);
+    } elseif ($request->getRequestedOutputFormat() == WireFormat::UNSPECIFIED) {
       trigger_error("Unspecified output format.", E_USER_ERROR);
     } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
       $response->setProtobufPayload($test_message->serializeToString());

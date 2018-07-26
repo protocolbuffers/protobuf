@@ -24,23 +24,24 @@ namespace Conformance {
     static ConformanceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UiwAEKEkNvbmZvcm1h",
+            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2Ui3AEKEkNvbmZvcm1h",
             "bmNlUmVxdWVzdBIaChBwcm90b2J1Zl9wYXlsb2FkGAEgASgMSAASFgoManNv",
             "bl9wYXlsb2FkGAIgASgJSAASOAoXcmVxdWVzdGVkX291dHB1dF9mb3JtYXQY",
             "AyABKA4yFy5jb25mb3JtYW5jZS5XaXJlRm9ybWF0EhQKDG1lc3NhZ2VfdHlw",
-            "ZRgEIAEoCRIbChNpZ25vcmVfdW5rbm93bl9qc29uGAUgASgIQgkKB3BheWxv",
-            "YWQisQEKE0NvbmZvcm1hbmNlUmVzcG9uc2USFQoLcGFyc2VfZXJyb3IYASAB",
-            "KAlIABIZCg9zZXJpYWxpemVfZXJyb3IYBiABKAlIABIXCg1ydW50aW1lX2Vy",
-            "cm9yGAIgASgJSAASGgoQcHJvdG9idWZfcGF5bG9hZBgDIAEoDEgAEhYKDGpz",
-            "b25fcGF5bG9hZBgEIAEoCUgAEhEKB3NraXBwZWQYBSABKAlIAEIICgZyZXN1",
-            "bHQqNQoKV2lyZUZvcm1hdBIPCgtVTlNQRUNJRklFRBAAEgwKCFBST1RPQlVG",
-            "EAESCAoESlNPThACQiEKH2NvbS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFu",
-            "Y2ViBnByb3RvMw=="));
+            "ZRgEIAEoCRIbChNpZ25vcmVfdW5rbm93bl9qc29uGAUgASgIEhoKEm9wdGlv",
+            "bmFsX3Rlc3RfbmFtZRgGIAEoCUIJCgdwYXlsb2FkItEBChNDb25mb3JtYW5j",
+            "ZVJlc3BvbnNlEhUKC3BhcnNlX2Vycm9yGAEgASgJSAASGQoPc2VyaWFsaXpl",
+            "X2Vycm9yGAYgASgJSAASFwoNcnVudGltZV9lcnJvchgCIAEoCUgAEhoKEHBy",
+            "b3RvYnVmX3BheWxvYWQYAyABKAxIABIWCgxqc29uX3BheWxvYWQYBCABKAlI",
+            "ABIRCgdza2lwcGVkGAUgASgJSAASHgoUb3B0aW9uYWxfdGVzdF9uZWVkZWQY",
+            "ByABKAhIAEIICgZyZXN1bHQqNQoKV2lyZUZvcm1hdBIPCgtVTlNQRUNJRklF",
+            "RBAAEgwKCFBST1RPQlVGEAESCAoESlNPThACQiEKH2NvbS5nb29nbGUucHJv",
+            "dG9idWYuY29uZm9ybWFuY2ViBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat", "MessageType", "IgnoreUnknownJson" }, new[]{ "Payload" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat", "MessageType", "IgnoreUnknownJson", "OptionalTestName" }, new[]{ "Payload" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "OptionalTestNeeded" }, new[]{ "Result" }, null, null)
           }));
     }
     #endregion
@@ -91,6 +92,7 @@ namespace Conformance {
       requestedOutputFormat_ = other.requestedOutputFormat_;
       messageType_ = other.messageType_;
       ignoreUnknownJson_ = other.ignoreUnknownJson_;
+      optionalTestName_ = other.optionalTestName_;
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
           ProtobufPayload = other.ProtobufPayload;
@@ -171,6 +173,25 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_test_name" field.</summary>
+    public const int OptionalTestNameFieldNumber = 6;
+    private string optionalTestName_ = "";
+    /// <summary>
+    /// The name of optional test, e.g.,
+    /// Required.Proto3.JsonInput.IgnoreUnknownJsonFalse.ProtobufOutput. If this
+    /// name is set in the ConformanceRequest, testee program should set true to
+    /// the optional_test_needed in the returned ConformanceResponse if the test
+    /// is needed. The test runner will only run the optional test if the
+    /// optional_test_needed is true in the returned ConformanceResponse. 
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string OptionalTestName {
+      get { return optionalTestName_; }
+      set {
+        optionalTestName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
@@ -208,6 +229,7 @@ namespace Conformance {
       if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
       if (MessageType != other.MessageType) return false;
       if (IgnoreUnknownJson != other.IgnoreUnknownJson) return false;
+      if (OptionalTestName != other.OptionalTestName) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -220,6 +242,7 @@ namespace Conformance {
       if (RequestedOutputFormat != 0) hash ^= RequestedOutputFormat.GetHashCode();
       if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
       if (IgnoreUnknownJson != false) hash ^= IgnoreUnknownJson.GetHashCode();
+      if (OptionalTestName.Length != 0) hash ^= OptionalTestName.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -254,6 +277,10 @@ namespace Conformance {
         output.WriteRawTag(40);
         output.WriteBool(IgnoreUnknownJson);
       }
+      if (OptionalTestName.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(OptionalTestName);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -277,6 +304,9 @@ namespace Conformance {
       if (IgnoreUnknownJson != false) {
         size += 1 + 1;
       }
+      if (OptionalTestName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(OptionalTestName);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -296,6 +326,9 @@ namespace Conformance {
       }
       if (other.IgnoreUnknownJson != false) {
         IgnoreUnknownJson = other.IgnoreUnknownJson;
+      }
+      if (other.OptionalTestName.Length != 0) {
+        OptionalTestName = other.OptionalTestName;
       }
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
@@ -335,6 +368,10 @@ namespace Conformance {
           }
           case 40: {
             IgnoreUnknownJson = input.ReadBool();
+            break;
+          }
+          case 50: {
+            OptionalTestName = input.ReadString();
             break;
           }
         }
@@ -389,6 +426,9 @@ namespace Conformance {
           break;
         case ResultOneofCase.Skipped:
           Skipped = other.Skipped;
+          break;
+        case ResultOneofCase.OptionalTestNeeded:
+          OptionalTestNeeded = other.OptionalTestNeeded;
           break;
       }
 
@@ -495,6 +535,20 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_test_needed" field.</summary>
+    public const int OptionalTestNeededFieldNumber = 7;
+    /// <summary>
+    /// See optional_test_name in ConformanceRequest.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool OptionalTestNeeded {
+      get { return resultCase_ == ResultOneofCase.OptionalTestNeeded ? (bool) result_ : false; }
+      set {
+        result_ = value;
+        resultCase_ = ResultOneofCase.OptionalTestNeeded;
+      }
+    }
+
     private object result_;
     /// <summary>Enum of possible cases for the "result" oneof.</summary>
     public enum ResultOneofCase {
@@ -505,6 +559,7 @@ namespace Conformance {
       ProtobufPayload = 3,
       JsonPayload = 4,
       Skipped = 5,
+      OptionalTestNeeded = 7,
     }
     private ResultOneofCase resultCase_ = ResultOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -537,6 +592,7 @@ namespace Conformance {
       if (ProtobufPayload != other.ProtobufPayload) return false;
       if (JsonPayload != other.JsonPayload) return false;
       if (Skipped != other.Skipped) return false;
+      if (OptionalTestNeeded != other.OptionalTestNeeded) return false;
       if (ResultCase != other.ResultCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -550,6 +606,7 @@ namespace Conformance {
       if (resultCase_ == ResultOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.Skipped) hash ^= Skipped.GetHashCode();
+      if (resultCase_ == ResultOneofCase.OptionalTestNeeded) hash ^= OptionalTestNeeded.GetHashCode();
       hash ^= (int) resultCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -588,6 +645,10 @@ namespace Conformance {
         output.WriteRawTag(50);
         output.WriteString(SerializeError);
       }
+      if (resultCase_ == ResultOneofCase.OptionalTestNeeded) {
+        output.WriteRawTag(56);
+        output.WriteBool(OptionalTestNeeded);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -613,6 +674,9 @@ namespace Conformance {
       }
       if (resultCase_ == ResultOneofCase.Skipped) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Skipped);
+      }
+      if (resultCase_ == ResultOneofCase.OptionalTestNeeded) {
+        size += 1 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -643,6 +707,9 @@ namespace Conformance {
           break;
         case ResultOneofCase.Skipped:
           Skipped = other.Skipped;
+          break;
+        case ResultOneofCase.OptionalTestNeeded:
+          OptionalTestNeeded = other.OptionalTestNeeded;
           break;
       }
 
@@ -679,6 +746,10 @@ namespace Conformance {
           }
           case 50: {
             SerializeError = input.ReadString();
+            break;
+          }
+          case 56: {
+            OptionalTestNeeded = input.ReadBool();
             break;
           }
         }
