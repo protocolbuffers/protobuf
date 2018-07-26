@@ -67,17 +67,7 @@ class MessageFactory(object):
       A class describing the passed in descriptor.
     """
     if descriptor not in self._classes:
-      descriptor_name = descriptor.name
-      if str is bytes:  # PY2
-        descriptor_name = descriptor.name.encode('ascii', 'ignore')
-      if hasattr(descriptor, '_concrete_class'):
-        result_class = descriptor._concrete_class
-      else:
-        result_class = reflection.GeneratedProtocolMessageType(
-            descriptor_name,
-            (message.Message,),
-            {'DESCRIPTOR': descriptor, '__module__': None})
-            # If module not set, it wrongly points to the reflection.py module.
+      result_class = self._GetPrototypeClass(descriptor)
       self._classes[descriptor] = result_class
       for field in descriptor.fields:
         if field.message_type:
@@ -125,6 +115,32 @@ class MessageFactory(object):
         extended_class.RegisterExtension(extension)
     return result
 
+  def ClearCache(self):
+    """Clear the MessageFactory's cache of which classes it knows about. This
+    is typically only something you need to do if you've been programmatically
+    importing _pb2.py files and want to make sure the factory understands them
+    correctly.
+    """
+    self._classes = {}
+
+  def _GetPrototypeClass(self, descriptor):
+    try:
+      if hasattr(descriptor, '_concrete_class'):
+        return descriptor._concrete_class
+    except TypeError:
+      # The wrapped C++ implementation of descriptor will raise a TypeError if
+      # you try to access the _concrete_class field of a descriptor created
+      # from anything but the generated Python code, even from hasattr!
+      pass
+
+    descriptor_name = descriptor.name
+    if str is bytes:  # PY2
+      descriptor_name = descriptor.name.encode('ascii', 'ignore')
+    return reflection.GeneratedProtocolMessageType(
+        descriptor_name,
+        (message.Message,),
+        {'DESCRIPTOR': descriptor, '__module__': None})
+        # If module not set, it wrongly points to the reflection.py module.
 
 _FACTORY = MessageFactory()
 
