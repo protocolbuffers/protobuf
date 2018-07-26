@@ -507,8 +507,7 @@ build_php7.1() {
   phpunit
   popd
   pushd conformance
-  # TODO(teboring): Add it back
-  # make test_php
+  make test_php
   popd
 }
 
@@ -517,7 +516,7 @@ build_php7.1_c() {
   wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 7.1 && cd ../..
   pushd conformance
-  # make test_php_c
+  make test_php_c
   popd
 }
 
