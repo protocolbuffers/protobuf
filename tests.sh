@@ -521,7 +521,7 @@ build_php7.1_c() {
     pushd conformance
     make test_php_c
     popd
-  if
+  fi
 }
 
 build_php7.1_zts_c() {
