@@ -512,12 +512,16 @@ build_php7.1() {
 }
 
 build_php7.1_c() {
+  ENABLE_CONFORMANCE_TEST=$1
   use_php 7.1
   wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 7.1 && cd ../..
-  pushd conformance
-  make test_php_c
-  popd
+  if [ "$ENABLE_CONFORMANCE_TEST" = "true" ]
+  then
+    pushd conformance
+    make test_php_c
+    popd
+  if
 }
 
 build_php7.1_zts_c() {
@@ -537,7 +541,7 @@ build_php_all_32() {
   build_php5.5_c
   build_php5.6_c
   build_php7.0_c
-  build_php7.1_c
+  build_php7.1_c $1
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
@@ -545,7 +549,7 @@ build_php_all_32() {
 }
 
 build_php_all() {
-  build_php_all_32
+  build_php_all_32 true
   build_php_compatibility
 }
 
