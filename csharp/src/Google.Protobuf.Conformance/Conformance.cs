@@ -65,7 +65,11 @@ namespace Conformance {
     /// </summary>
     [pbr::OriginalName("JSON_TEST")] JsonTest = 1,
     /// <summary>
-    /// Similar to JSON_TEST. However,
+    /// Similar to JSON_TEST. However, during parsing json, testee should ignore
+    /// unknown fields. This feature is optional. Each implementation can descide
+    /// whether to support it.  See
+    /// https://developers.google.com/protocol-buffers/docs/proto3#json_options
+    /// for more detail.
     /// </summary>
     [pbr::OriginalName("JSON_IGNORE_UNKNOWN_PARSING_TEST")] JsonIgnoreUnknownParsingTest = 2,
   }
@@ -181,7 +185,7 @@ namespace Conformance {
     public const int TestCategoryFieldNumber = 5;
     private global::Conformance.TestCategory testCategory_ = 0;
     /// <summary>
-    /// Each test is given a unique test category. Some category may need spedific
+    /// Each test is given a specific test category. Some category may need spedific
     /// support in testee programs. Refer to the defintion of TestCategory for
     /// more information.
     /// </summary>
