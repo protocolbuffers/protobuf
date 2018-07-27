@@ -29,11 +29,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.7.6" PrivateAssets="All" />
     <PackageReference Include="System.Memory" Version="4.5.1"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.7.6" PrivateAssets="All" /> 
   </ItemGroup>
 
 </Project>
