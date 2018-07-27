@@ -46,7 +46,6 @@ try:
 except ImportError:
   import unittest
 
-from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -55,7 +54,6 @@ from google.protobuf import descriptor
 from google.protobuf import message
 from google.protobuf import reflection
 from google.protobuf import text_format
-from google.protobuf.descriptor_pool import Default as defaultDescriptorPool
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
@@ -64,7 +62,6 @@ from google.protobuf.internal import wire_format
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import decoder
-from google.protobuf.message_factory import MessageFactory
 
 
 BaseTestCase = testing_refleaks.BaseTestCase
@@ -1507,24 +1504,6 @@ class ReflectionTest(BaseTestCase):
     # Merge into message2.  This should not instantiate the field is message2.
     message2.MergeFrom(message1)
     self.assertFalse(message2.HasField('optional_nested_message'))
-
-  def testReflectionDoesntBreakMerging(self):
-    # Test that building a class from reflection doesn't break merging.
-    # Instantiate a TestMap from the protoc-generated class. (We use this class
-    # because copying a MessageMap relies on the map value's descriptor's
-    # concrete class, unlike most other copies, and so is especially bug-prone)
-    generated = map_unittest_pb2.TestMap()
-    generated.map_string_nested_message['one'].c = 1234
-
-    # Instantiate the same using a MessageFactory.
-    pool = defaultDescriptorPool()
-    descriptor = pool.FindMessageTypeByName('protobuf_unittest.TestMap')
-    factory = MessageFactory(pool)
-    reflected = factory.GetPrototype(descriptor)()
-
-    reflected.MergeFrom(generated)
-    self.assertEqual(generated.map_string_nested_message['one'].c,
-                     reflected.map_string_nested_message['one'].c)
 
   def testCopyFromSingularField(self):
     # Test copy with just a singular field.
