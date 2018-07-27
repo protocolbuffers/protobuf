@@ -193,10 +193,11 @@ namespace protobuf {
 
 ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     ConformanceLevel level, conformance::WireFormat input_format,
-    conformance::WireFormat output_format, bool is_proto3,
+    conformance::WireFormat output_format,
+    conformance::TestCategory test_category,
+    bool is_proto3,
     const string& test_name, const string& input)
-    : level_(level), input_format_(input_format),
-      output_format_(output_format), is_proto3_(is_proto3) {
+    : level_(level), is_proto3_(is_proto3) {
   auto newTestMessage = [&is_proto3]() {
     Message* newMessage;
     if (is_proto3) {
@@ -242,6 +243,8 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     default:
       GOOGLE_LOG(FATAL) << "Unspecified output format";
   }
+
+  request_.set_test_category(test_category);
 
   test_name_ = ConformanceLevelToString(level) + rname +
                input_format_string + test_name +
@@ -465,6 +468,7 @@ void ConformanceTestSuite::ExpectParseFailureForProtoWithProtoVersion (
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(proto);
+  request.set_test_category(conformance::BINARY_TEST);
   if (isProto3) {
     request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
   } else {
@@ -511,11 +515,13 @@ void ConformanceTestSuite::RunValidJsonTest(
     const string& equivalent_text_format) {
   ConformanceRequestSetting setting1(
       level, conformance::JSON, conformance::PROTOBUF,
+      conformance::JSON_TEST,
       true, test_name, input_json);
   RunValidInputTest(setting1, equivalent_text_format);
 
   ConformanceRequestSetting setting2(
       level, conformance::JSON, conformance::JSON,
+      conformance::JSON_TEST,
       true, test_name, input_json);
   RunValidInputTest(setting2, equivalent_text_format);
 }
@@ -525,6 +531,7 @@ void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
     const string& equivalent_text_format) {
   ConformanceRequestSetting setting(
       level, conformance::PROTOBUF, conformance::JSON,
+      conformance::JSON_TEST,
       true, test_name, input.SerializeAsString());
   RunValidInputTest(setting, equivalent_text_format);
 }
@@ -534,8 +541,8 @@ void ConformanceTestSuite::RunValidJsonIgnoreUnknownTest(
     const string& equivalent_text_format) {
   ConformanceRequestSetting setting(
       level, conformance::JSON, conformance::PROTOBUF,
+      conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST,
       true, test_name, input_json);
-  setting.SetIgnoreUnknownJson(true);
   RunValidInputTest(setting, equivalent_text_format);
 }
 
@@ -545,12 +552,14 @@ void ConformanceTestSuite::RunValidProtobufTest(
     bool isProto3) {
   ConformanceRequestSetting setting1(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
+      conformance::BINARY_TEST,
       isProto3, test_name, input_protobuf);
   RunValidInputTest(setting1, equivalent_text_format);
 
   if (isProto3) {
     ConformanceRequestSetting setting2(
         level, conformance::PROTOBUF, conformance::JSON,
+        conformance::BINARY_TEST,
         true, test_name, input_protobuf);
     RunValidInputTest(setting2, equivalent_text_format);
   }
@@ -561,6 +570,7 @@ void ConformanceTestSuite::RunValidBinaryProtobufTest(
     const string& input_protobuf, bool isProto3) {
   ConformanceRequestSetting setting(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
+      conformance::BINARY_TEST,
       isProto3, test_name, input_protobuf);
   RunValidBinaryInputTest(setting, input_protobuf);
 }
