@@ -30,6 +30,16 @@
 
 #define UPB_JSON_MAX_DEPTH 64
 
+static const char *kDoubleValueFullMessageName = "google.protobuf.DoubleValue";
+static const char *kFloatValueFullMessageName = "google.protobuf.FloatValue";
+static const char *kInt64ValueFullMessageName = "google.protobuf.Int64Value";
+static const char *kUInt64ValueFullMessageName = "google.protobuf.UInt64Value";
+static const char *kInt32ValueFullMessageName = "google.protobuf.Int32Value";
+static const char *kUInt32ValueFullMessageName = "google.protobuf.UInt32Value";
+static const char *kBoolValueFullMessageName = "google.protobuf.BoolValue";
+static const char *kStringValueFullMessageName = "google.protobuf.StringValue";
+static const char *kBytesValueFullMessageName = "google.protobuf.BytesValue";
+
 typedef struct {
   upb_sink sink;
 
@@ -1229,6 +1239,102 @@ static void end_object(upb_json_parser *p) {
   }
 }
 
+static bool is_double_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kDoubleValueFullMessageName) == 0;
+}
+
+static bool is_float_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kFloatValueFullMessageName) == 0;
+}
+
+static bool is_int64_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kInt64ValueFullMessageName) == 0;
+}
+
+static bool is_uint64_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kUInt64ValueFullMessageName) == 0;
+}
+
+static bool is_int32_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kInt32ValueFullMessageName) == 0;
+}
+
+static bool is_uint32_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kUInt32ValueFullMessageName) == 0;
+}
+
+static bool is_bool_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kBoolValueFullMessageName) == 0;
+}
+
+static bool is_string_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kStringValueFullMessageName) == 0;
+}
+
+static bool is_bytes_value(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kBytesValueFullMessageName) == 0;
+}
+
+static bool is_number_wrapper(const upb_msgdef *m) {
+  return is_double_value(m) ||
+         is_float_value(m) ||
+         is_int64_value(m) ||
+         is_uint64_value(m) ||
+         is_int32_value(m) ||
+         is_uint32_value(m);
+}
+
+static bool is_string_wrapper(const upb_msgdef *m) {
+  return is_string_value(m) ||
+         is_bytes_value(m);
+}
+
+static void start_wrapper_object(upb_json_parser *p) {
+  const char *membername = "value";
+
+  start_object(p);
+
+  /* Set up context for parsing value */
+  start_member(p);
+  capture_begin(p, membername);
+  capture_end(p, membername + 5);
+  end_membername(p);
+}
+
+static void end_wrapper_object(upb_json_parser *p) {
+  end_member(p);
+  end_object(p);
+}
+
+static bool does_number_wrapper_start(upb_json_parser *p) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         is_number_wrapper(upb_fielddef_msgsubdef(p->top->f));
+}
+
+static bool does_number_wrapper_end(upb_json_parser *p) {
+  return p->top->m != NULL && is_number_wrapper(p->top->m);
+}
+
+static bool does_string_wrapper_start(upb_json_parser *p) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         is_string_wrapper(upb_fielddef_msgsubdef(p->top->f));
+}
+
+static bool does_string_wrapper_end(upb_json_parser *p) {
+  return p->top->m != NULL && is_string_wrapper(p->top->m);
+}
+
+static bool does_boolean_wrapper_start(upb_json_parser *p) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         is_bool_value(upb_fielddef_msgsubdef(p->top->f));
+}
+
+static bool does_boolean_wrapper_end(upb_json_parser *p) {
+  return p->top->m != NULL && is_bool_value(p->top->m);
+}
 
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
 
@@ -1261,7 +1367,9 @@ static void end_object(upb_json_parser *p) {
 
   number_machine :=
       ("-"? integer decimal? exponent?)
-      <: any >{ fhold; fret; };
+      <: any
+        >{ fhold; fret; }
+      ;
   number  = /[0-9\-]/ >{ fhold; fcall number_machine; };
 
   text =
@@ -1325,15 +1433,63 @@ static void end_object(upb_json_parser *p) {
 
   value =
     number
-      >{ start_number(parser, p); }
-      %{ CHECK_RETURN_TOP(end_number(parser, p)); }
+      >{
+         if (does_number_wrapper_start(parser)) {
+           CHECK_RETURN_TOP(start_subobject(parser));
+           start_wrapper_object(parser);
+         }
+         start_number(parser, p);
+       }
+      %{
+         CHECK_RETURN_TOP(end_number(parser, p));
+         if (does_number_wrapper_end(parser)) {
+           end_wrapper_object(parser);
+           end_subobject(parser);
+         }
+       }
     | string
-      >{ CHECK_RETURN_TOP(start_stringval(parser)); }
-      @{ CHECK_RETURN_TOP(end_stringval(parser)); }
+      >{
+         if (does_string_wrapper_start(parser)) {
+           CHECK_RETURN_TOP(start_subobject(parser));
+           start_wrapper_object(parser);
+         }
+         CHECK_RETURN_TOP(start_stringval(parser));
+       }
+      @{
+         CHECK_RETURN_TOP(end_stringval(parser));
+         if (does_string_wrapper_end(parser)) {
+           end_wrapper_object(parser);
+           end_subobject(parser);
+         }
+       }
     | "true"
-      %{ CHECK_RETURN_TOP(parser_putbool(parser, true)); }
+      >{
+         if (does_boolean_wrapper_start(parser)) {
+           CHECK_RETURN_TOP(start_subobject(parser));
+           start_wrapper_object(parser);
+         }
+       }
+      %{
+         CHECK_RETURN_TOP(parser_putbool(parser, true));
+         if (does_boolean_wrapper_end(parser)) {
+           end_wrapper_object(parser);
+           end_subobject(parser);
+         }
+       }
     | "false"
-      %{ CHECK_RETURN_TOP(parser_putbool(parser, false)); }
+      >{
+         if (does_boolean_wrapper_start(parser)) {
+           CHECK_RETURN_TOP(start_subobject(parser));
+           start_wrapper_object(parser);
+         }
+       }
+      %{
+         CHECK_RETURN_TOP(parser_putbool(parser, false));
+         if (does_boolean_wrapper_end(parser)) {
+           end_wrapper_object(parser);
+           end_subobject(parser);
+         }
+       }
     | "null"
       %{ /* null value */ }
     | object
@@ -1361,6 +1517,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
 
   const char *p = buf;
   const char *pe = buf + size;
+  const char *eof = pe;
 
   parser->handle = handle;
 
