@@ -119,7 +119,9 @@ target directory layout:
           protoc.exe
         + x86_32
           protoc.exe
-      + macos
+        + aarch_64
+          protoc.exe
+      + osx
         + x86_64
           protoc.exe
         + x86_32
@@ -137,7 +139,7 @@ Use the following command to deploy artifacts for the host platform to a
 staging repository.
 
 ```
-$ mvn clean deploy -P release
+$ mvn deploy -P release
 ```
 
 It creates a new staging repository. Go to
