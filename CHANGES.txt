@@ -1,3 +1,15 @@
+2018-07-27 version 3.6.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Introduced workaround for Windows issue with std::atomic and std::once_flag
+    initialization (#4777, #4773).
+
+  PHP
+  * Added compatibility with PHP 7.3 (#4898).
+
+  Ruby
+  * Fixed Ruby crash involving Any encoding (#4718).
+
 2018-06-01 version 3.6.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
