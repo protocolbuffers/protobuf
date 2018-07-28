@@ -233,7 +233,7 @@ namespace ProtobufTestMessages.Proto3 {
   /// could trigger bugs that occur in any message type in this file.  We verify
   /// this stays true in a unit test.
   /// </summary>
-  public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3> {
+  public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3>, pb::IMessage2 {
     private static readonly pb::MessageParser<TestAllTypesProto3> _parser = new pb::MessageParser<TestAllTypesProto3>(() => new TestAllTypesProto3());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3550,7 +3550,7 @@ namespace ProtobufTestMessages.Proto3 {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, pb::IMessage2 {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3722,7 +3722,7 @@ namespace ProtobufTestMessages.Proto3 {
 
   }
 
-  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
+  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage>, pb::IMessage2 {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

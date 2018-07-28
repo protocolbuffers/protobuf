@@ -100,7 +100,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// be expressed in JSON format as "3.000000001s", and 3 seconds and 1
   /// microsecond should be expressed in JSON format as "3.000001s".
   /// </summary>
-  public sealed partial class Duration : pb::IMessage<Duration> {
+  public sealed partial class Duration : pb::IMessage<Duration>, pb::IMessage2 {
     private static readonly pb::MessageParser<Duration> _parser = new pb::MessageParser<Duration>(() => new Duration());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

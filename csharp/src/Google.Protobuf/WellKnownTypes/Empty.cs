@@ -50,7 +50,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Empty` is empty JSON object `{}`.
   /// </summary>
-  public sealed partial class Empty : pb::IMessage<Empty> {
+  public sealed partial class Empty : pb::IMessage<Empty>, pb::IMessage2 {
     private static readonly pb::MessageParser<Empty> _parser = new pb::MessageParser<Empty>(() => new Empty());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
