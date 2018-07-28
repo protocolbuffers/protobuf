@@ -119,7 +119,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     vars,
-    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
+    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$>, pb::IMessage2 {\n");
   printer->Indent();
 
   // All static fields and properties
