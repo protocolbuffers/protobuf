@@ -290,7 +290,7 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public bool IsInitialized()
         {
-            return list.All(kvp => kvp.Value is IMessage message ? message.IsInitialized() : true);
+            return list.All(kvp => kvp.Value is IMessage2 message ? message.IsInitialized() : true);
         }
 
         /// <summary>
@@ -686,8 +686,6 @@ namespace Google.Protobuf.Collections
                 }
 
                 MessageDescriptor IMessage.Descriptor { get { return null; } }
-
-                bool IMessage.IsInitialized() => Value is IMessage message ? message.IsInitialized() : true;
             }
         }
 

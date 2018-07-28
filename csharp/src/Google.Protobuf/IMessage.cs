@@ -67,7 +67,14 @@ namespace Google.Protobuf
         /// same value as the static property declared on the type.
         /// </summary>
         MessageDescriptor Descriptor { get; }
+    }
 
+    /// <summary>
+    /// Interface for a Protocol Buffers message, supporting 
+    /// proto2 operations required for serialization
+    /// </summary>
+    public interface IMessage2 : IMessage
+    {
         /// <summary>
         /// Checks if all required fields have values set
         /// </summary>

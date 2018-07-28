@@ -300,7 +300,7 @@ namespace Google.Protobuf.Collections
             for (int i = 0; i < count; i++)
             {
                 T value = array[i];
-                if (value is IMessage message)
+                if (value is IMessage2 message)
                 {
                     if (!message.IsInitialized())
                         return false;
