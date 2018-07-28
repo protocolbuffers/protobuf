@@ -62,7 +62,7 @@ namespace Conformance {
   ///   2. parse the protobuf or JSON payload in "payload" (which may fail)
   ///   3. if the parse succeeded, serialize the message in the requested format.
   /// </summary>
-  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
+  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest>, pb::IMessage2 {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -321,7 +321,7 @@ namespace Conformance {
   /// <summary>
   /// Represents a single test case's output.
   /// </summary>
-  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
+  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse>, pb::IMessage2 {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

@@ -49,7 +49,7 @@ namespace Google.Protobuf.Examples.AddressBook {
   /// <summary>
   /// [START messages]
   /// </summary>
-  public sealed partial class Person : pb::IMessage<Person> {
+  public sealed partial class Person : pb::IMessage<Person>, pb::IMessage2 {
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -306,7 +306,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         [pbr::OriginalName("WORK")] Work = 2,
       }
 
-      public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber> {
+      public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber>, pb::IMessage2 {
         private static readonly pb::MessageParser<PhoneNumber> _parser = new pb::MessageParser<PhoneNumber>(() => new PhoneNumber());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -475,7 +475,7 @@ namespace Google.Protobuf.Examples.AddressBook {
   /// <summary>
   /// Our address book file is just one of these.
   /// </summary>
-  public sealed partial class AddressBook : pb::IMessage<AddressBook> {
+  public sealed partial class AddressBook : pb::IMessage<AddressBook>, pb::IMessage2 {
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

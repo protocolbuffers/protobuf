@@ -77,7 +77,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Struct` is JSON object.
   /// </summary>
-  public sealed partial class Struct : pb::IMessage<Struct> {
+  public sealed partial class Struct : pb::IMessage<Struct>, pb::IMessage2 {
     private static readonly pb::MessageParser<Struct> _parser = new pb::MessageParser<Struct>(() => new Struct());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -216,7 +216,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Value` is JSON value.
   /// </summary>
-  public sealed partial class Value : pb::IMessage<Value> {
+  public sealed partial class Value : pb::IMessage<Value>, pb::IMessage2 {
     private static readonly pb::MessageParser<Value> _parser = new pb::MessageParser<Value>(() => new Value());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -572,7 +572,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `ListValue` is JSON array.
   /// </summary>
-  public sealed partial class ListValue : pb::IMessage<ListValue> {
+  public sealed partial class ListValue : pb::IMessage<ListValue>, pb::IMessage2 {
     private static readonly pb::MessageParser<ListValue> _parser = new pb::MessageParser<ListValue>(() => new ListValue());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

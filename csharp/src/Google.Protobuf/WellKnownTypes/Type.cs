@@ -94,7 +94,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// <summary>
   /// A protocol buffer message type.
   /// </summary>
-  public sealed partial class Type : pb::IMessage<Type> {
+  public sealed partial class Type : pb::IMessage<Type>, pb::IMessage2 {
     private static readonly pb::MessageParser<Type> _parser = new pb::MessageParser<Type>(() => new Type());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -376,7 +376,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// <summary>
   /// A single field of a message type.
   /// </summary>
-  public sealed partial class Field : pb::IMessage<Field> {
+  public sealed partial class Field : pb::IMessage<Field>, pb::IMessage2 {
     private static readonly pb::MessageParser<Field> _parser = new pb::MessageParser<Field>(() => new Field());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -902,7 +902,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// <summary>
   /// Enum type definition.
   /// </summary>
-  public sealed partial class Enum : pb::IMessage<Enum> {
+  public sealed partial class Enum : pb::IMessage<Enum>, pb::IMessage2 {
     private static readonly pb::MessageParser<Enum> _parser = new pb::MessageParser<Enum>(() => new Enum());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1161,7 +1161,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// <summary>
   /// Enum value definition.
   /// </summary>
-  public sealed partial class EnumValue : pb::IMessage<EnumValue> {
+  public sealed partial class EnumValue : pb::IMessage<EnumValue>, pb::IMessage2 {
     private static readonly pb::MessageParser<EnumValue> _parser = new pb::MessageParser<EnumValue>(() => new EnumValue());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1358,7 +1358,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// A protocol buffer option, which can be attached to a message, field,
   /// enumeration, etc.
   /// </summary>
-  public sealed partial class Option : pb::IMessage<Option> {
+  public sealed partial class Option : pb::IMessage<Option>, pb::IMessage2 {
     private static readonly pb::MessageParser<Option> _parser = new pb::MessageParser<Option>(() => new Option());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

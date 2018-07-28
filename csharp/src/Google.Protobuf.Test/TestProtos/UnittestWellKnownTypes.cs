@@ -179,7 +179,7 @@ namespace Google.Protobuf.TestProtos {
   /// Each wrapper type is included separately, as languages
   /// map handle different wrappers in different ways.
   /// </summary>
-  public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes> {
+  public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes>, pb::IMessage2 {
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -936,7 +936,7 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// A repeated field for each well-known type.
   /// </summary>
-  public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes> {
+  public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes>, pb::IMessage2 {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1458,7 +1458,7 @@ namespace Google.Protobuf.TestProtos {
     }
   }
 
-  public sealed partial class OneofWellKnownTypes : pb::IMessage<OneofWellKnownTypes> {
+  public sealed partial class OneofWellKnownTypes : pb::IMessage<OneofWellKnownTypes>, pb::IMessage2 {
     private static readonly pb::MessageParser<OneofWellKnownTypes> _parser = new pb::MessageParser<OneofWellKnownTypes>(() => new OneofWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2223,7 +2223,7 @@ namespace Google.Protobuf.TestProtos {
   /// need to worry about the value part of the map being the
   /// well-known types, as messages can't be map keys.
   /// </summary>
-  public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes> {
+  public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes>, pb::IMessage2 {
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

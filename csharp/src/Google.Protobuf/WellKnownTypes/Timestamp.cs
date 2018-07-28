@@ -119,7 +119,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime--
   /// ) to obtain a formatter capable of generating timestamps in this format.
   /// </summary>
-  public sealed partial class Timestamp : pb::IMessage<Timestamp> {
+  public sealed partial class Timestamp : pb::IMessage<Timestamp>, pb::IMessage2 {
     private static readonly pb::MessageParser<Timestamp> _parser = new pb::MessageParser<Timestamp>(() => new Timestamp());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
