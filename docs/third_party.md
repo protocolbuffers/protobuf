@@ -129,6 +129,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * https://github.com/awakesecurity/gRPC-haskell (Haskell)
 * https://github.com/Yeolar/raster (C++)
 * https://github.com/jnordberg/wsrpc (JavaScript Node.js/Browser)
+* https://github.com/ppissias/xsrpcj (Java)
 
 ## Other Utilities
 
