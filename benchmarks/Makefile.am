@@ -90,8 +90,7 @@ $(benchmarks_protoc_outputs_proto2_header): protoc_middleman2
 
 initialize_submodule:
 	oldpwd=`pwd`
-	cd $(top_srcdir)/third_party
-	git submodule update --init -r
+	cd $(top_srcdir) && git submodule update --init -r third_party/benchmark
 	cd $(top_srcdir)/third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make
 	cd $$oldpwd
 	touch initialize_submodule
