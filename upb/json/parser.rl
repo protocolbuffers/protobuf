@@ -1316,6 +1316,10 @@ static bool does_number_wrapper_end(upb_json_parser *p) {
   return p->top->m != NULL && is_number_wrapper(p->top->m);
 }
 
+static bool is_number_wrapper_object(upb_json_parser *p) {
+  return p->top->m != NULL && is_number_wrapper(p->top->m);
+}
+
 static bool does_string_wrapper_start(upb_json_parser *p) {
   return p->top->f != NULL &&
          upb_fielddef_issubmsg(p->top->f) &&
@@ -1326,6 +1330,10 @@ static bool does_string_wrapper_end(upb_json_parser *p) {
   return p->top->m != NULL && is_string_wrapper(p->top->m);
 }
 
+static bool is_string_wrapper_object(upb_json_parser *p) {
+  return p->top->m != NULL && is_string_wrapper(p->top->m);
+}
+
 static bool does_boolean_wrapper_start(upb_json_parser *p) {
   return p->top->f != NULL &&
          upb_fielddef_issubmsg(p->top->f) &&
@@ -1333,6 +1341,10 @@ static bool does_boolean_wrapper_start(upb_json_parser *p) {
 }
 
 static bool does_boolean_wrapper_end(upb_json_parser *p) {
+  return p->top->m != NULL && is_bool_value(p->top->m);
+}
+
+static bool is_boolean_wrapper_object(upb_json_parser *p) {
   return p->top->m != NULL && is_bool_value(p->top->m);
 }
 
@@ -1366,10 +1378,10 @@ static bool does_boolean_wrapper_end(upb_json_parser *p) {
   exponent = /[eE]/ /[+\-]/? /[0-9]/+;
 
   number_machine :=
-      ("-"? integer decimal? exponent?)
-      <: any
-        >{ fhold; fret; }
-      ;
+    ("-"? integer decimal? exponent?)
+    <: any
+      >{ fhold; fret; }
+    ;
   number  = /[0-9\-]/ >{ fhold; fcall number_machine; };
 
   text =
@@ -1420,6 +1432,67 @@ static bool does_boolean_wrapper_end(upb_json_parser *p) {
     "}"
       >{ end_object(parser); }
     ;
+
+  true_object =
+    "true"
+      >{
+         CHECK_RETURN_TOP(is_boolean_wrapper_object(parser));
+         start_wrapper_object(parser);
+       }
+      %{
+         CHECK_RETURN_TOP(parser_putbool(parser, true));
+         end_wrapper_object(parser);
+       }
+     ;
+
+  false_object =
+    "false"
+      >{
+         CHECK_RETURN_TOP(is_boolean_wrapper_object(parser));
+         start_wrapper_object(parser);
+       }
+      %{
+         CHECK_RETURN_TOP(parser_putbool(parser, false));
+         end_wrapper_object(parser);
+       }
+     ;
+
+  number_object_machine :=
+    ("-"? integer decimal? exponent?)
+      >{
+        CHECK_RETURN_TOP(is_number_wrapper_object(parser));
+        start_wrapper_object(parser);
+        start_number(parser, p);
+      }
+      </{
+        CHECK_RETURN_TOP(end_number(parser, p));
+        end_wrapper_object(parser);
+        fhold; fret;
+      }
+    ;
+  number_object  =
+    /[0-9\-]/
+      >{
+        fhold; fcall number_object_machine;
+      }
+    ;
+
+  string_object_machine :=
+    (text | unicode_char | escape_char)**
+      >{
+        CHECK_RETURN_TOP(is_string_wrapper_object(parser));
+        start_wrapper_object(parser);
+        CHECK_RETURN_TOP(start_stringval(parser));
+      }
+    '"'
+      </{
+        CHECK_RETURN_TOP(end_stringval(parser));
+        end_wrapper_object(parser);
+        fhold; fret;
+      }
+    ;
+
+  string_object = '"' @{ fcall string_object_machine; } '"';
 
   element = ws value2 ws;
   array   =
@@ -1501,7 +1574,10 @@ static bool does_boolean_wrapper_end(upb_json_parser *p) {
     value
     <: any >{ fhold; fret; } ;
 
-  main := ws object ws;
+  main :=
+    ws
+    (object | number_object | true_object | false_object | string_object)
+    ws;
 }%%
 
 %% write data noerror nofinal;
