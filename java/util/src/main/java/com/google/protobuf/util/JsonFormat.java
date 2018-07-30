@@ -50,6 +50,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DoubleValue;
@@ -1539,7 +1540,11 @@ public class JsonFormat {
         Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
         Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
         if (value == null) {
-          throw new InvalidProtocolBufferException("Map value cannot be null.");
+          if(ignoringUnknownFields && valueField.getType() == Type.ENUM) {
+            continue;
+          } else {
+            throw new InvalidProtocolBufferException("Map value cannot be null.");
+          }
         }
         entryBuilder.setField(keyField, key);
         entryBuilder.setField(valueField, value);
@@ -1557,8 +1562,12 @@ public class JsonFormat {
       for (int i = 0; i < array.size(); ++i) {
         Object value = parseFieldValue(field, array.get(i), builder);
         if (value == null) {
-          throw new InvalidProtocolBufferException(
-              "Repeated field elements cannot be null in field: " + field.getFullName());
+          if(ignoringUnknownFields && field.getType() == Type.ENUM) {
+            continue;
+          } else {
+            throw new InvalidProtocolBufferException(
+                  "Repeated field elements cannot be null in field: " + field.getFullName());
+          }
         }
         builder.addRepeatedField(field, value);
       }
@@ -1748,7 +1757,7 @@ public class JsonFormat {
           // an exception later.
         }
 
-        if (result == null) {
+        if (result == null && !ignoringUnknownFields) {
           throw new InvalidProtocolBufferException(
               "Invalid enum value: " + value + " for enum type: " + enumDescriptor.getFullName());
         }
