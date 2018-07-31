@@ -680,6 +680,7 @@ describe('binaryReaderTest', function() {
     var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
     writer.writeGroup(5, dummyMessage, function() {
       writer.writeInt64(42, 42);
+      writer.writeInt64(44, 44);
       writer.writeString(43, 'The quick brown fox jumps over the lazy dog');
       writer.writeGroup(6, dummyMessage, function() {
         writer.writeInt64(84, 42);

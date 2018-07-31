@@ -388,7 +388,6 @@ jspb.BinaryReader.prototype.skipFixed64Field = function() {
  * Skips over the next group field in the binary stream.
  */
 jspb.BinaryReader.prototype.skipGroup = function() {
-  // Keep a stack of start-group tags that must be matched by end-group tags.
   var previousField = this.nextField_;
   do {
     if (!this.nextField()) {
