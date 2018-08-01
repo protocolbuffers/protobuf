@@ -86,7 +86,7 @@ class EncodeDecodeTest < Test::Unit::TestCase
   end
 
   def test_encode_wrong_msg
-    e = assert_raise Google::Protobuf::TypeError do
+    e = assert_raise ::ArgumentError do
       m = A::B::C::TestMessage.new(
           :optional_int32 => 1,
       )
