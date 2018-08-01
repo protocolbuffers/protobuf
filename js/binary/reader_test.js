@@ -679,8 +679,13 @@ describe('binaryReaderTest', function() {
     writer.writeInt32(5, sentinel);
     var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
     writer.writeGroup(5, dummyMessage, function() {
-      writer.writeInt64(42, 42);
+      // Previously the skipGroup implementation was wrong, which only consume 
+      // the decoder by nextField. This case is for making the previous 
+      // implementation failed in skipGroup by an early end group tag.
       writer.writeInt64(44, 44);
+      writer.writeInt64(42, 42);
+      // This is for making the previous implementation failed by an invalid 
+      // varint.
       writer.writeBytes(43, [255, 255, 255, 255, 255, 255, 255, 255, 255, 255]);
       writer.writeGroup(6, dummyMessage, function() {
         writer.writeInt64(84, 42);
