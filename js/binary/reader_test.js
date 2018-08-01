@@ -682,10 +682,15 @@ describe('binaryReaderTest', function() {
       // Previously the skipGroup implementation was wrong, which only consume 
       // the decoder by nextField. This case is for making the previous 
       // implementation failed in skipGroup by an early end group tag.
+      // The reason is 44 = 5 * 8 + 4, this will be translated in to a field 
+      // with number 5 and with type 4 (end group)
       writer.writeInt64(44, 44);
+      // This will make previous implementation failed by invalid tag (7).
+      writer.writeInt64(42, 47);
       writer.writeInt64(42, 42);
       // This is for making the previous implementation failed by an invalid 
-      // varint.
+      // varint. The bytes have at least 9 consecutive minus byte, which will 
+      // fail in this.nextField for previous implementation.
       writer.writeBytes(43, [255, 255, 255, 255, 255, 255, 255, 255, 255, 255]);
       writer.writeGroup(6, dummyMessage, function() {
         writer.writeInt64(84, 42);
