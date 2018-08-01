@@ -160,11 +160,12 @@ $ ./build-zip.sh 3.6.0
 The above command will create 5 zip files:
 
 ```
-dist/protoc-3.0.0-beta-4-win32.zip
-dist/protoc-3.0.0-beta-4-osx-x86_32.zip
-dist/protoc-3.0.0-beta-4-osx-x86_64.zip
-dist/protoc-3.0.0-beta-4-linux-x86_32.zip
-dist/protoc-3.0.0-beta-4-linux-x86_64.zip
+dist/protoc-3.6.0-win32.zip
+dist/protoc-3.6.0-osx-x86_32.zip
+dist/protoc-3.6.0-osx-x86_64.zip
+dist/protoc-3.6.0-linux-x86_32.zip
+dist/protoc-3.6.0-linux-x86_64.zip
+dist/protoc-3.6.0-linux-ppcle_64.zip
 ```
 
 Before running the script, make sure the artifacts are accessible from:

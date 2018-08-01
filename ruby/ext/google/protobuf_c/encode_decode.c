@@ -1109,7 +1109,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
   if (desc != msg->descriptor) {
-    rb_raise(cTypeError,
+    rb_raise(rb_eArgError,
              "The type of given msg is '%s', expect '%s'.",
              upb_msgdef_fullname(msg->descriptor->msgdef),
              upb_msgdef_fullname(desc->msgdef));
