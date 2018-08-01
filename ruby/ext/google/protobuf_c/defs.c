@@ -124,6 +124,7 @@ void DescriptorPool_register(VALUE module) {
   rb_define_method(klass, "add", DescriptorPool_add, 1);
   rb_define_method(klass, "build", DescriptorPool_build, 0);
   rb_define_method(klass, "lookup", DescriptorPool_lookup, 1);
+  rb_define_method(klass, "clear", DescriptorPool_clear, 0);
   rb_define_singleton_method(klass, "generated_pool",
                              DescriptorPool_generated_pool, 0);
   rb_gc_register_address(&cDescriptorPool);
@@ -204,6 +205,21 @@ VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
     return Qnil;
   }
   return get_def_obj(def);
+}
+
+/*
+ * call-seq:
+ *     DescriptorPool.clear()
+ *
+ * Clear all registered Descriptor.
+ */
+VALUE DescriptorPool_clear(VALUE _self) {
+  DEFINE_SELF(DescriptorPool, self, _self);
+
+  upb_symtab_free(self->symtab);
+  self->symtab = upb_symtab_new();
+
+  return Qnil;
 }
 
 /*
