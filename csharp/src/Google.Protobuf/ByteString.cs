@@ -34,6 +34,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 using System.Text;
 #if !NET35
 using System.Threading;
@@ -207,6 +208,17 @@ namespace Google.Protobuf
         public static ByteString CopyFrom(params byte[] bytes)
         {
             return new ByteString((byte[]) bytes.Clone());
+        }
+
+        /// <summary>
+        /// Constructs a <see cref="ByteString" /> from the read only span. The contents
+        /// are copied, so further modifications to the span will not
+        /// be reflected in the returned ByteString.
+        /// </summary>
+        [SecurityCritical]
+        public static ByteString CopyFrom(ReadOnlySpan<byte> bytes)
+        {
+            return new ByteString(bytes.ToArray());
         }
 
         /// <summary>
