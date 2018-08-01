@@ -1988,7 +1988,9 @@ bool end(void *closure, const void *hd) {
   /* Prevent compile warning on unused static constants. */
   UPB_UNUSED(json_start);
   UPB_UNUSED(json_en_number_machine);
+  UPB_UNUSED(json_en_number_object_machine);
   UPB_UNUSED(json_en_string_machine);
+  UPB_UNUSED(json_en_string_object_machine);
   UPB_UNUSED(json_en_value_machine);
   UPB_UNUSED(json_en_main);
   return true;
@@ -2005,13 +2007,13 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 2009 "upb/json/parser.c"
+#line 2011 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 1646 "upb/json/parser.rl"
+#line 1648 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);

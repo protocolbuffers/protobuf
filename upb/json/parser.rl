@@ -1626,7 +1626,9 @@ bool end(void *closure, const void *hd) {
   /* Prevent compile warning on unused static constants. */
   UPB_UNUSED(json_start);
   UPB_UNUSED(json_en_number_machine);
+  UPB_UNUSED(json_en_number_object_machine);
   UPB_UNUSED(json_en_string_machine);
+  UPB_UNUSED(json_en_string_object_machine);
   UPB_UNUSED(json_en_value_machine);
   UPB_UNUSED(json_en_main);
   return true;
