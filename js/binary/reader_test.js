@@ -681,10 +681,12 @@ describe('binaryReaderTest', function() {
     writer.writeGroup(5, dummyMessage, function() {
       writer.writeInt64(42, 42);
       writer.writeInt64(44, 44);
-      writer.writeString(43, 'The quick brown fox jumps over the lazy dog');
+      writer.writeBytes(43, [255, 255, 255, 255, 255, 255, 255, 255, 255, 255]);
       writer.writeGroup(6, dummyMessage, function() {
         writer.writeInt64(84, 42);
-        writer.writeString(85, 'The quick brown fox jumps over the lazy dog');
+        writer.writeInt64(84, 44);
+        writer.writeBytes(
+          43, [255, 255, 255, 255, 255, 255, 255, 255, 255, 255]);
       });
     });
 
