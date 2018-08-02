@@ -362,7 +362,7 @@ namespace Conformance {
             break;
           }
           case 40: {
-            testCategory_ = (global::Conformance.TestCategory) input.ReadEnum();
+            TestCategory = (global::Conformance.TestCategory) input.ReadEnum();
             break;
           }
         }
