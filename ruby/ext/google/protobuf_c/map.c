@@ -681,9 +681,6 @@ VALUE Map_to_h(VALUE _self) {
                                   self->value_type_class,
                                   mem);
 
-    if (self->value_type == UPB_TYPE_MESSAGE) {
-      value = Message_to_h(value);
-    }
     rb_hash_aset(hash, key, value);
   }
   return hash;
