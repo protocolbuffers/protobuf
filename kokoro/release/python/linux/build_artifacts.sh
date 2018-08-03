@@ -15,6 +15,10 @@ export PLAT=x86_64
 export UNICODE_WIDTH=32
 export MACOSX_DEPLOYMENT_TARGET=10.9
 
+sed -i '/Wno-sign-compare/a \ \ \ \ \ \ \ extra_compile_args.append(\'-std=c++11\')' python/setup.py
+cat python/setup.py
+
+
 build_artifact_version() {
   MB_PYTHON_VERSION=$1
 
