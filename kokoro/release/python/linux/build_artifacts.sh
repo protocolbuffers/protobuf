@@ -21,6 +21,7 @@ export ARTIFACT_DIR=$(pwd)/artifacts
 build_artifact_version() {
   MB_PYTHON_VERSION=$1
 
+  rm -rf venv
   source multibuild/common_utils.sh
   source multibuild/travis_steps.sh
   before_install
