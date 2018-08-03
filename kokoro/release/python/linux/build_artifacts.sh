@@ -21,7 +21,11 @@ export ARTIFACT_DIR=$(pwd)/artifacts
 build_artifact_version() {
   MB_PYTHON_VERSION=$1
 
+  # Clean up env
   rm -rf venv
+  sudo rm -rf protobuf
+  git clone https://github.com/google/protobuf.git
+
   source multibuild/common_utils.sh
   source multibuild/travis_steps.sh
   before_install
