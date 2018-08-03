@@ -6,6 +6,7 @@ set -ex
 cd $(dirname $0)/../../../..
 
 git checkout python-wheel
+git submodule update --init --recursive
 
 export REPO_DIR=protobuf
 export BUILD_COMMIT=v3.6.1
