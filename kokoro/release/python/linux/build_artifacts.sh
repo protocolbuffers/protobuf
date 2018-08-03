@@ -31,7 +31,7 @@ build_artifact_version() {
 
   build_wheel $REPO_DIR/python $PLAT
 
-  mv /io/wheelhouse/* $ARTIFACT_DIR
+  mv wheelhouse/* $ARTIFACT_DIR
 }
 
 build_artifact_version 2.7
