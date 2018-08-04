@@ -5,6 +5,7 @@ set -ex
 # change to repo root
 cd $(dirname $0)/../../../..
 
+export BUILD_VERSION=`grep -i "version" python/google/protobuf/__init__.py | grep -o "'.*'" | tr -d "'"`
 echo $BUILD_VERSION
 
 # git checkout python-wheel
