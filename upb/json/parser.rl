@@ -107,6 +107,12 @@ struct upb_json_parser {
 
   /* Whether to proceed if unknown field is met. */
   bool ignore_json_unknown;
+
+  /* Whether to end parsing. */
+  bool ready_to_end;
+
+  /* Indicate whehter last paring ended while parsing number */
+  bool parsing_number;
 };
 
 struct upb_json_parsermethod {
@@ -616,6 +622,7 @@ static bool end_text(upb_json_parser *p, const char *ptr) {
 }
 
 static void start_number(upb_json_parser *p, const char *ptr) {
+  p->parsing_number = true;
   multipart_startaccum(p);
   capture_begin(p, ptr);
 }
@@ -623,6 +630,7 @@ static void start_number(upb_json_parser *p, const char *ptr) {
 static bool parse_number(upb_json_parser *p, bool is_quoted);
 
 static bool end_number(upb_json_parser *p, const char *ptr) {
+  p->parsing_number = false;
   if (!capture_end(p, ptr)) {
     return false;
   }
@@ -1306,6 +1314,10 @@ static void end_wrapper_object(upb_json_parser *p) {
   end_object(p);
 }
 
+static bool is_top_level(upb_json_parser *p) {
+  return p->top == p->stack && p->top->f == NULL;
+}
+
 static bool does_number_wrapper_start(upb_json_parser *p) {
   return p->top->f != NULL &&
          upb_fielddef_issubmsg(p->top->f) &&
@@ -1379,6 +1391,11 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
 
   number_machine :=
     ("-"? integer decimal? exponent?)
+      %/{
+          if (parser->ready_to_end) {
+            fhold; fret;
+          }
+        }
     <: any
       >{ fhold; fret; }
     ;
@@ -1433,67 +1450,6 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
       >{ end_object(parser); }
     ;
 
-  true_object =
-    "true"
-      >{
-         CHECK_RETURN_TOP(is_boolean_wrapper_object(parser));
-         start_wrapper_object(parser);
-       }
-      %{
-         CHECK_RETURN_TOP(parser_putbool(parser, true));
-         end_wrapper_object(parser);
-       }
-     ;
-
-  false_object =
-    "false"
-      >{
-         CHECK_RETURN_TOP(is_boolean_wrapper_object(parser));
-         start_wrapper_object(parser);
-       }
-      %{
-         CHECK_RETURN_TOP(parser_putbool(parser, false));
-         end_wrapper_object(parser);
-       }
-     ;
-
-  number_object_machine :=
-    ("-"? integer decimal? exponent?)
-      >{
-        CHECK_RETURN_TOP(is_number_wrapper_object(parser));
-        start_wrapper_object(parser);
-        start_number(parser, p);
-      }
-      </{
-        CHECK_RETURN_TOP(end_number(parser, p));
-        end_wrapper_object(parser);
-        fhold; fret;
-      }
-    ;
-  number_object  =
-    /[0-9\-]/
-      >{
-        fhold; fcall number_object_machine;
-      }
-    ;
-
-  string_object_machine :=
-    (text | unicode_char | escape_char)**
-      >{
-        CHECK_RETURN_TOP(is_string_wrapper_object(parser));
-        start_wrapper_object(parser);
-        CHECK_RETURN_TOP(start_stringval(parser));
-      }
-    '"'
-      </{
-        CHECK_RETURN_TOP(end_stringval(parser));
-        end_wrapper_object(parser);
-        fhold; fret;
-      }
-    ;
-
-  string_object = '"' @{ fcall string_object_machine; } '"';
-
   element = ws value2 ws;
   array   =
     "["
@@ -1507,7 +1463,10 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
   value =
     number
       >{
-         if (does_number_wrapper_start(parser)) {
+         if (is_top_level(parser)) {
+           CHECK_RETURN_TOP(is_number_wrapper_object(parser));
+           start_wrapper_object(parser);
+         } else if (does_number_wrapper_start(parser)) {
            CHECK_RETURN_TOP(start_subobject(parser));
            start_wrapper_object(parser);
          }
@@ -1517,12 +1476,17 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
          CHECK_RETURN_TOP(end_number(parser, p));
          if (does_number_wrapper_end(parser)) {
            end_wrapper_object(parser);
-           end_subobject(parser);
+           if (!is_top_level(parser)) {
+             end_subobject(parser);
+           }
          }
        }
     | string
       >{
-         if (does_string_wrapper_start(parser)) {
+         if (is_top_level(parser)) {
+           CHECK_RETURN_TOP(is_string_wrapper_object(parser));
+           start_wrapper_object(parser);
+         } else if (does_string_wrapper_start(parser)) {
            CHECK_RETURN_TOP(start_subobject(parser));
            start_wrapper_object(parser);
          }
@@ -1532,12 +1496,17 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
          CHECK_RETURN_TOP(end_stringval(parser));
          if (does_string_wrapper_end(parser)) {
            end_wrapper_object(parser);
-           end_subobject(parser);
+           if (!is_top_level(parser)) {
+             end_subobject(parser);
+           }
          }
        }
     | "true"
       >{
-         if (does_boolean_wrapper_start(parser)) {
+         if (is_top_level(parser)) {
+           CHECK_RETURN_TOP(is_boolean_wrapper_object(parser));
+           start_wrapper_object(parser);
+         } else if (does_boolean_wrapper_start(parser)) {
            CHECK_RETURN_TOP(start_subobject(parser));
            start_wrapper_object(parser);
          }
@@ -1546,12 +1515,17 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
          CHECK_RETURN_TOP(parser_putbool(parser, true));
          if (does_boolean_wrapper_end(parser)) {
            end_wrapper_object(parser);
-           end_subobject(parser);
+           if (!is_top_level(parser)) {
+             end_subobject(parser);
+           }
          }
        }
     | "false"
       >{
-         if (does_boolean_wrapper_start(parser)) {
+         if (is_top_level(parser)) {
+           CHECK_RETURN_TOP(is_boolean_wrapper_object(parser));
+           start_wrapper_object(parser);
+         } else if (does_boolean_wrapper_start(parser)) {
            CHECK_RETURN_TOP(start_subobject(parser));
            start_wrapper_object(parser);
          }
@@ -1560,24 +1534,31 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
          CHECK_RETURN_TOP(parser_putbool(parser, false));
          if (does_boolean_wrapper_end(parser)) {
            end_wrapper_object(parser);
-           end_subobject(parser);
+           if (!is_top_level(parser)) {
+             end_subobject(parser);
+           }
          }
        }
     | "null"
       %{ /* null value */ }
     | object
-      >{ CHECK_RETURN_TOP(start_subobject(parser)); }
-      %{ end_subobject(parser); }
+      >{
+         if (!is_top_level(parser)) {
+           CHECK_RETURN_TOP(start_subobject(parser));
+         }
+       }
+      %{
+         if (!is_top_level(parser)) {
+           end_subobject(parser);
+         }
+       }
     | array;
 
   value_machine :=
     value
     <: any >{ fhold; fret; } ;
 
-  main :=
-    ws
-    (object | number_object | true_object | false_object | string_object)
-    ws;
+  main := ws value ws;
 }%%
 
 %% write data noerror nofinal;
@@ -1620,18 +1601,17 @@ error:
 }
 
 bool end(void *closure, const void *hd) {
-  UPB_UNUSED(closure);
-  UPB_UNUSED(hd);
+  upb_json_parser *parser = closure;
 
   /* Prevent compile warning on unused static constants. */
   UPB_UNUSED(json_start);
-  UPB_UNUSED(json_en_number_machine);
-  UPB_UNUSED(json_en_number_object_machine);
-  UPB_UNUSED(json_en_string_machine);
-  UPB_UNUSED(json_en_string_object_machine);
   UPB_UNUSED(json_en_value_machine);
   UPB_UNUSED(json_en_main);
-  return true;
+
+  parser->ready_to_end = true;
+  parse(parser, hd, NULL, 0, NULL);
+
+  return parser->current_state >= %%{ write first_final; }%%;
 }
 
 static void json_parser_reset(upb_json_parser *p) {
@@ -1652,6 +1632,7 @@ static void json_parser_reset(upb_json_parser *p) {
   p->capture = NULL;
   p->accumulated = NULL;
   upb_status_clear(&p->status);
+  p->parsing_number = false;
 }
 
 static void visit_json_parsermethod(const upb_refcounted *r,
@@ -1752,6 +1733,7 @@ upb_json_parser *upb_json_parser_create(upb_env *env,
   set_name_table(p, p->top);
 
   p->ignore_json_unknown = ignore_json_unknown;
+  p->ready_to_end = false;
 
   /* If this fails, uncomment and increase the value in parser.h. */
   /* fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before); */
