@@ -110,9 +110,6 @@ struct upb_json_parser {
 
   /* Whether to end parsing. */
   bool ready_to_end;
-
-  /* Indicate whehter last paring ended while parsing number */
-  bool parsing_number;
 };
 
 struct upb_json_parsermethod {
@@ -622,7 +619,6 @@ static bool end_text(upb_json_parser *p, const char *ptr) {
 }
 
 static void start_number(upb_json_parser *p, const char *ptr) {
-  p->parsing_number = true;
   multipart_startaccum(p);
   capture_begin(p, ptr);
 }
@@ -630,7 +626,6 @@ static void start_number(upb_json_parser *p, const char *ptr) {
 static bool parse_number(upb_json_parser *p, bool is_quoted);
 
 static bool end_number(upb_json_parser *p, const char *ptr) {
-  p->parsing_number = false;
   if (!capture_end(p, ptr)) {
     return false;
   }
@@ -1605,6 +1600,8 @@ bool end(void *closure, const void *hd) {
 
   /* Prevent compile warning on unused static constants. */
   UPB_UNUSED(json_start);
+  UPB_UNUSED(json_en_number_machine);
+  UPB_UNUSED(json_en_string_machine);
   UPB_UNUSED(json_en_value_machine);
   UPB_UNUSED(json_en_main);
 
@@ -1632,7 +1629,6 @@ static void json_parser_reset(upb_json_parser *p) {
   p->capture = NULL;
   p->accumulated = NULL;
   upb_status_clear(&p->status);
-  p->parsing_number = false;
 }
 
 static void visit_json_parsermethod(const upb_refcounted *r,
