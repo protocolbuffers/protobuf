@@ -38,5 +38,24 @@ namespace Google.Protobuf.WellKnownTypes
         /// Field number for the single "value" field in all wrapper types.
         /// </summary>
         internal const int WrapperValueFieldNumber = Int32Value.ValueFieldNumber;
+
+
+        internal static readonly uint WrapperValueVarintTag = WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint);
+
+        internal static readonly uint WrapperValueFixed32Tag = WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Fixed32);
+
+        internal static readonly uint WrapperValueFixed64Tag = WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Fixed64);
+
+        internal static readonly uint WrapperValueLengthDelimitedTag = WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited);
+
+
+
+        internal static readonly byte WrapperValueVarintTagByte = (byte)WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint);
+
+        internal static readonly byte WrapperValueFixed32TagByte = (byte)WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Fixed32);
+
+        internal static readonly byte WrapperValueFixed64TagByte = (byte)WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Fixed64);
+
+        internal static readonly byte WrapperValueLengthDelimitedTagByte = (byte)WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited);
     }
 }
