@@ -86,12 +86,12 @@ class LIBPROTOBUF_EXPORT MutexLock {
 typedef MutexLock ReaderMutexLock;
 typedef MutexLock WriterMutexLock;
 
-// MutexLockMaybe is like MutexLock, but is a no-op when mu is NULL.
+// MutexLockMaybe is like MutexLock, but is a no-op when mu is nullptr.
 class LIBPROTOBUF_EXPORT MutexLockMaybe {
  public:
   explicit MutexLockMaybe(Mutex *mu) :
-    mu_(mu) { if (this->mu_ != NULL) { this->mu_->Lock(); } }
-  ~MutexLockMaybe() { if (this->mu_ != NULL) { this->mu_->Unlock(); } }
+    mu_(mu) { if (this->mu_ != nullptr) { this->mu_->Lock(); } }
+  ~MutexLockMaybe() { if (this->mu_ != nullptr) { this->mu_->Unlock(); } }
  private:
   Mutex *const mu_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLockMaybe);
@@ -109,7 +109,7 @@ class ThreadLocalStorage {
   }
   T* Get() {
     T* result = static_cast<T*>(pthread_getspecific(key_));
-    if (result == NULL) {
+    if (result == nullptr) {
       result = new T();
       pthread_setspecific(key_, result);
     }

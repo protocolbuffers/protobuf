@@ -82,7 +82,7 @@ inline void STLStringResizeUninitialized(string* s, size_t new_size) {
 // already work on all current implementations.
 inline char* string_as_array(string* str) {
   // DO NOT USE const_cast<char*>(str->data())! See the unittest for why.
-  return str->empty() ? NULL : &*str->begin();
+  return str->empty() ? nullptr : &*str->begin();
 }
 
 // STLDeleteElements() deletes all the elements in an STL container and clears
@@ -90,7 +90,7 @@ inline char* string_as_array(string* str) {
 // hash_set, or any other STL container which defines sensible begin(), end(),
 // and clear() methods.
 //
-// If container is NULL, this function is a no-op.
+// If container is nullptr, this function is a no-op.
 //
 // As an alternative to calling STLDeleteElements() directly, consider
 // ElementDeleter (defined below), which ensures that your container's elements
@@ -104,7 +104,7 @@ void STLDeleteElements(T *container) {
 
 // Given an STL container consisting of (key, value) pairs, STLDeleteValues
 // deletes all the "value" components and clears the container.  Does nothing
-// in the case it's given a NULL pointer.
+// in the case it's given a null pointer.
 
 template <class T>
 void STLDeleteValues(T *v) {

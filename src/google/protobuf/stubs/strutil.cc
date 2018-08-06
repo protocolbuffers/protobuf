@@ -87,7 +87,7 @@ void StripString(string* s, const char* remove, char replacewith) {
   const char * str_start = s->c_str();
   const char * str = str_start;
   for (str = strpbrk(str, remove);
-       str != NULL;
+       str != nullptr;
        str = strpbrk(str + 1, remove)) {
     (*s)[str - str_start] = replacewith;
   }
@@ -102,7 +102,7 @@ void ReplaceCharacters(string *s, const char *remove, char replacewith) {
   const char *str_start = s->c_str();
   const char *str = str_start;
   for (str = strpbrk(str, remove);
-       str != NULL;
+       str != nullptr;
        str = strpbrk(str + 1, remove)) {
     (*s)[str - str_start] = replacewith;
   }
@@ -280,7 +280,7 @@ static void JoinStringsIterator(const ITERATOR& start,
                                 const ITERATOR& end,
                                 const char* delim,
                                 string* result) {
-  GOOGLE_CHECK(result != NULL);
+  GOOGLE_CHECK(result != nullptr);
   result->clear();
   int delim_length = strlen(delim);
 
@@ -318,7 +318,7 @@ void JoinStrings(const std::vector<string>& components,
 //    result is truncated to 8 bits.
 //
 //    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is NULL, it reports the errors with LOG().
+//    If the string vector pointer is nullptr, it reports the errors with LOG().
 // ----------------------------------------------------------------------
 
 #define IS_OCTAL_DIGIT(c) (((c) >= '0') && ((c) <= '7'))
@@ -328,12 +328,12 @@ void JoinStrings(const std::vector<string>& components,
 #define LOG_STRING(LEVEL, VECTOR) GOOGLE_LOG_IF(LEVEL, false)
 
 int UnescapeCEscapeSequences(const char* source, char* dest) {
-  return UnescapeCEscapeSequences(source, dest, NULL);
+  return UnescapeCEscapeSequences(source, dest, nullptr);
 }
 
 int UnescapeCEscapeSequences(const char* source, char* dest,
                              std::vector<string> *errors) {
-  GOOGLE_DCHECK(errors == NULL) << "Error reporting not implemented.";
+  GOOGLE_DCHECK(errors == nullptr) << "Error reporting not implemented.";
 
   char* d = dest;
   const char* p = source;
@@ -458,13 +458,13 @@ int UnescapeCEscapeSequences(const char* source, char* dest,
 //    to be the same.
 //
 //    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is NULL, it reports the errors with LOG().
+//    If the string vector pointer is nullptr, it reports the errors with LOG().
 //
 //    In the first and second calls, the length of dest is returned. In the
 //    the third call, the new string is returned.
 // ----------------------------------------------------------------------
 int UnescapeCEscapeString(const string& src, string* dest) {
-  return UnescapeCEscapeString(src, dest, NULL);
+  return UnescapeCEscapeString(src, dest, nullptr);
 }
 
 int UnescapeCEscapeString(const string& src, string* dest,
@@ -478,7 +478,7 @@ int UnescapeCEscapeString(const string& src, string* dest,
 
 string UnescapeCEscapeString(const string& src) {
   std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
-  int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), NULL);
+  int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), nullptr);
   return string(unescaped.get(), len);
 }
 
@@ -982,7 +982,7 @@ static const char two_ASCII_digits[100][2] = {
 
 char* FastUInt32ToBufferLeft(uint32 u, char* buffer) {
   uint32 digits;
-  const char *ASCII_digits = NULL;
+  const char *ASCII_digits = nullptr;
   // The idea of this implementation is to trim the number of divides to as few
   // as possible by using multiplication and subtraction rather than mod (%),
   // and by outputting two digits at a time rather than one.
@@ -1073,7 +1073,7 @@ char* FastInt32ToBufferLeft(int32 i, char* buffer) {
 
 char* FastUInt64ToBufferLeft(uint64 u64, char* buffer) {
   int digits;
-  const char *ASCII_digits = NULL;
+  const char *ASCII_digits = nullptr;
 
   uint32 u = static_cast<uint32>(u64);
   if (u == u64) return FastUInt32ToBufferLeft(u, buffer);
@@ -1231,7 +1231,7 @@ static inline bool IsValidFloatChar(char c) {
 void DelocalizeRadix(char* buffer) {
   // Fast check:  if the buffer has a normal decimal point, assume no
   // translation is needed.
-  if (strchr(buffer, '.') != NULL) return;
+  if (strchr(buffer, '.') != nullptr) return;
 
   // Find the first unknown character.
   while (IsValidFloatChar(*buffer)) ++buffer;
@@ -1286,7 +1286,7 @@ char* DoubleToBuffer(double value, char* buffer) {
   // of a double.  This long double may have extra bits that make it compare
   // unequal to "value" even though it would be exactly equal if it were
   // truncated to a double.
-  volatile double parsed_value = strtod(buffer, NULL);
+  volatile double parsed_value = strtod(buffer, nullptr);
   if (parsed_value != value) {
     int snprintf_result =
       snprintf(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG+2, value);
@@ -1318,7 +1318,7 @@ inline bool CaseEqual(StringPiece s1, StringPiece s2) {
 }
 
 bool safe_strtob(StringPiece str, bool* value) {
-  GOOGLE_CHECK(value != NULL) << "NULL output boolean given.";
+  GOOGLE_CHECK(value != nullptr) << "nullptr output boolean given.";
   if (CaseEqual(str, "true") || CaseEqual(str, "t") ||
       CaseEqual(str, "yes") || CaseEqual(str, "y") ||
       CaseEqual(str, "1")) {
@@ -1619,7 +1619,7 @@ void StrAppend(string *result,
 int GlobalReplaceSubstring(const string& substring,
                            const string& replacement,
                            string* s) {
-  GOOGLE_CHECK(s != NULL);
+  GOOGLE_CHECK(s != nullptr);
   if (s->empty() || substring.empty())
     return 0;
   string tmp;
@@ -1969,7 +1969,7 @@ int Base64UnescapeInternal(const char *src_param, int szsrc,
 //   for (i = 0; i < 255; i += 8) {
 //     for (j = i; j < i + 8; j++) {
 //       pos = strchr(Base64, j);
-//       if ((pos == NULL) || (j == 0))
+//       if ((pos == nullptr) || (j == 0))
 //         idx = -1;
 //       else
 //         idx = pos - Base64;

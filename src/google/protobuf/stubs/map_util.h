@@ -131,7 +131,7 @@ FindWithDefault(const Collection& collection,
 }
 
 // Returns a pointer to the const value associated with the given key if it
-// exists, or NULL otherwise.
+// exists, or nullptr otherwise.
 template <class Collection>
 const typename Collection::value_type::second_type*
 FindOrNull(const Collection& collection,
@@ -156,11 +156,11 @@ FindOrNull(Collection& collection,  // NOLINT
 }
 
 // Returns the pointer value associated with the given key. If none is found,
-// NULL is returned. The function is designed to be used with a map of keys to
+// nullptr is returned. The function is designed to be used with a map of keys to
 // pointers.
 //
 // This function does not distinguish between a missing key and a key mapped
-// to a NULL value.
+// to nullptr.
 template <class Collection>
 typename Collection::value_type::second_type
 FindPtrOrNull(const Collection& collection,
@@ -188,7 +188,7 @@ FindPtrOrNull(Collection& collection,  // NOLINT
 }
 
 // Finds the pointer value associated with the given key in a map whose values
-// are linked_ptrs. Returns NULL if key is not found.
+// are linked_ptrs. Returns nullptr if key is not found.
 template <class Collection>
 typename Collection::value_type::second_type::element_type*
 FindLinkedPtrOrNull(const Collection& collection,
@@ -215,7 +215,7 @@ FindLinkedPtrOrDie(const Collection& collection,
 }
 
 // Finds the value associated with the given key and copies it to *value (if not
-// NULL). Returns false if the key was not found, true otherwise.
+// nullptr). Returns false if the key was not found, true otherwise.
 template <class Collection, class Key, class Value>
 bool FindCopy(const Collection& collection,
               const Key& key,
@@ -447,7 +447,7 @@ LookupOrInsertNew(Collection* const collection,
   std::pair<typename Collection::iterator, bool> ret =
       collection->insert(typename Collection::value_type(
           key,
-          static_cast<typename Collection::value_type::second_type>(NULL)));
+          static_cast<typename Collection::value_type::second_type>(nullptr)));
   if (ret.second) {
     ret.first->second = new Element();
   }
@@ -466,7 +466,7 @@ LookupOrInsertNew(Collection* const collection,
   std::pair<typename Collection::iterator, bool> ret =
       collection->insert(typename Collection::value_type(
           key,
-          static_cast<typename Collection::value_type::second_type>(NULL)));
+          static_cast<typename Collection::value_type::second_type>(nullptr)));
   if (ret.second) {
     ret.first->second = new Element(arg);
   }
@@ -612,7 +612,7 @@ bool UpdateReturnCopy(Collection* const collection,
   return false;
 }
 
-// Tries to insert the given key-value pair into the collection. Returns NULL if
+// Tries to insert the given key-value pair into the collection. Returns nullptr if
 // the insert succeeds. Otherwise, returns a pointer to the existing value.
 //
 // This complements UpdateReturnCopy in that it allows to update only after
@@ -625,7 +625,7 @@ InsertOrReturnExisting(Collection* const collection,
                        const typename Collection::value_type& vt) {
   std::pair<typename Collection::iterator, bool> ret = collection->insert(vt);
   if (ret.second) {
-    return NULL;  // Inserted, no existing previous value.
+    return nullptr;  // Inserted, no existing previous value.
   } else {
     return &ret.first->second;  // Return address of already existing value.
   }
@@ -644,7 +644,7 @@ InsertOrReturnExisting(
 
 // Erases the collection item identified by the given key, and returns the value
 // associated with that key. It is assumed that the value (i.e., the
-// mapped_type) is a pointer. Returns NULL if the key was not found in the
+// mapped_type) is a pointer. Returns nullptr if the key was not found in the
 // collection.
 //
 // Examples:
@@ -665,7 +665,7 @@ typename Collection::value_type::second_type EraseKeyReturnValuePtr(
     const typename Collection::value_type::first_type& key) {
   typename Collection::iterator it = collection->find(key);
   if (it == collection->end()) {
-    return NULL;
+    return nullptr;
   }
   typename Collection::value_type::second_type v = it->second;
   collection->erase(it);
@@ -679,7 +679,7 @@ typename Collection::value_type::second_type EraseKeyReturnValuePtr(
 template <class MapContainer, class KeyContainer>
 void InsertKeysFromMap(const MapContainer& map_container,
                        KeyContainer* key_container) {
-  GOOGLE_CHECK(key_container != NULL);
+  GOOGLE_CHECK(key_container != nullptr);
   for (typename MapContainer::const_iterator it = map_container.begin();
        it != map_container.end(); ++it) {
     key_container->insert(it->first);
@@ -693,7 +693,7 @@ void InsertKeysFromMap(const MapContainer& map_container,
 template <class MapContainer, class KeyContainer>
 void AppendKeysFromMap(const MapContainer& map_container,
                        KeyContainer* key_container) {
-  GOOGLE_CHECK(key_container != NULL);
+  GOOGLE_CHECK(key_container != nullptr);
   for (typename MapContainer::const_iterator it = map_container.begin();
        it != map_container.end(); ++it) {
     key_container->push_back(it->first);
@@ -710,7 +710,7 @@ void AppendKeysFromMap(const MapContainer& map_container,
 template <class MapContainer, class KeyType>
 void AppendKeysFromMap(const MapContainer& map_container,
                        std::vector<KeyType>* key_container) {
-  GOOGLE_CHECK(key_container != NULL);
+  GOOGLE_CHECK(key_container != nullptr);
   // We now have the opportunity to call reserve(). Calling reserve() every
   // time is a bad idea for some use cases: libstdc++'s implementation of
   // vector<>::reserve() resizes the vector's backing store to exactly the
@@ -737,7 +737,7 @@ void AppendKeysFromMap(const MapContainer& map_container,
 template <class MapContainer, class ValueContainer>
 void AppendValuesFromMap(const MapContainer& map_container,
                          ValueContainer* value_container) {
-  GOOGLE_CHECK(value_container != NULL);
+  GOOGLE_CHECK(value_container != nullptr);
   for (typename MapContainer::const_iterator it = map_container.begin();
        it != map_container.end(); ++it) {
     value_container->push_back(it->second);
@@ -754,7 +754,7 @@ void AppendValuesFromMap(const MapContainer& map_container,
 template <class MapContainer, class ValueType>
 void AppendValuesFromMap(const MapContainer& map_container,
                          std::vector<ValueType>* value_container) {
-  GOOGLE_CHECK(value_container != NULL);
+  GOOGLE_CHECK(value_container != nullptr);
   // See AppendKeysFromMap for why this is done.
   if (value_container->empty()) {
     value_container->reserve(map_container.size());

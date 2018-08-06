@@ -33,7 +33,7 @@
 // usable value, or an error Status explaining why such a value is
 // not present. To this end, StatusOr<T> does not allow its Status
 // value to be Status::OK. Further, StatusOr<T*> does not allow the
-// contained pointer to be NULL.
+// contained pointer to be nullptr.
 //
 // The primary use-case for StatusOr<T> is as the return value of a
 // function which may fail.
@@ -114,15 +114,15 @@ class StatusOr {
   StatusOr(const Status& status);  // NOLINT
 
   // Construct a new StatusOr with the given value. If T is a plain pointer,
-  // value must not be NULL. After calling this constructor, calls to
+  // value must not be nullptr. After calling this constructor, calls to
   // ValueOrDie() will succeed, and calls to status() will return OK.
   //
   // NOTE: Not explicit - we want to use StatusOr<T> as a return type
   // so it is convenient and sensible to be able to do 'return T()'
   // when when the return type is StatusOr<T>.
   //
-  // REQUIRES: if T is a plain pointer, value != NULL. This requirement is
-  // DCHECKed. In optimized builds, passing a NULL pointer here will have
+  // REQUIRES: if T is a plain pointer, value != nullptr. This requirement is
+  // DCHECKed. In optimized builds, passing a null pointer here will have
   // the effect of passing PosixErrorSpace::EINVAL as a fallback.
   StatusOr(const T& value);  // NOLINT
 
@@ -174,13 +174,13 @@ class LIBPROTOBUF_EXPORT StatusOrHelper {
 
 template<typename T>
 struct StatusOrHelper::Specialize {
-  // For non-pointer T, a reference can never be NULL.
+  // For non-pointer T, a reference can never be nullptr.
   static inline bool IsValueNull(const T& t) { return false; }
 };
 
 template<typename T>
 struct StatusOrHelper::Specialize<T*> {
-  static inline bool IsValueNull(const T* t) { return t == NULL; }
+  static inline bool IsValueNull(const T* t) { return t == nullptr; }
 };
 
 }  // namespace internal
@@ -202,7 +202,7 @@ inline StatusOr<T>::StatusOr(const Status& status) {
 template<typename T>
 inline StatusOr<T>::StatusOr(const T& value) {
   if (internal::StatusOrHelper::Specialize<T>::IsValueNull(value)) {
-    status_ = Status(error::INTERNAL, "NULL is not a vaild argument.");
+    status_ = Status(error::INTERNAL, "nullptr is not a vaild argument.");
   } else {
     status_ = Status::OK;
     value_ = value;
