@@ -68,15 +68,6 @@ namespace Google.Protobuf
             {
                 return new ByteString(bytes);
             }
-
-            /// <summary>
-            /// Provides direct, unrestricted access to the bytes contained in this instance.
-            /// You must not modify or resize the byte array returned by this method.
-            /// </summary>
-            internal static byte[] GetBuffer(ByteString bytes)
-            {
-                return bytes.bytes;
-            }
         }
 
         /// <summary>
@@ -119,6 +110,12 @@ namespace Google.Protobuf
         {
             get { return Length == 0; }
         }
+
+        /// <summary>
+        /// Provides read-only access to the data of this <see cref="ByteString"/>.
+        /// No data is copied so this is the most efficient way of accessing.
+        /// </summary>
+        public ReadOnlySpan<byte> Span => new ReadOnlySpan<byte>(bytes);
 
         /// <summary>
         /// Converts this <see cref="ByteString"/> into a byte array.
@@ -229,6 +226,16 @@ namespace Google.Protobuf
             byte[] portion = new byte[count];
             ByteArray.Copy(bytes, offset, portion, 0, count);
             return new ByteString(portion);
+        }
+
+        /// <summary>
+        /// Constructs a <see cref="ByteString" /> from a read only span. The contents
+        /// are copied, so further modifications to the span will not
+        /// be reflected in the returned <see cref="ByteString" />.
+        /// </summary>
+        public static ByteString CopyFrom(ReadOnlySpan<byte> bytes)
+        {
+            return new ByteString(bytes.ToArray());
         }
 
         /// <summary>
