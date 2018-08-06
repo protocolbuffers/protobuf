@@ -208,17 +208,6 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Constructs a <see cref="ByteString" /> from the read only span. The contents
-        /// are copied, so further modifications to the span will not
-        /// be reflected in the returned ByteString.
-        /// </summary>
-        [SecurityCritical]
-        public static ByteString CopyFrom(ReadOnlySpan<byte> bytes)
-        {
-            return new ByteString(bytes.ToArray());
-        }
-
-        /// <summary>
         /// Constructs a <see cref="ByteString" /> from a portion of a byte array.
         /// </summary>
         public static ByteString CopyFrom(byte[] bytes, int offset, int count)
@@ -233,6 +222,7 @@ namespace Google.Protobuf
         /// are copied, so further modifications to the span will not
         /// be reflected in the returned <see cref="ByteString" />.
         /// </summary>
+        [SecurityCritical]
         public static ByteString CopyFrom(ReadOnlySpan<byte> bytes)
         {
             return new ByteString(bytes.ToArray());
