@@ -11,6 +11,7 @@ export BUILD_COMMIT=v$BUILD_VERSION
 export PLAT=x86_64
 export UNICODE_WIDTH=32
 export MACOSX_DEPLOYMENT_TARGET=10.9
+export TRAVIS_OS_NAME="osx"
 
 mkdir artifacts
 export ARTIFACT_DIR=$(pwd)/artifacts
