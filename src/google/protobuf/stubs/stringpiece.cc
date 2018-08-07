@@ -115,7 +115,7 @@ stringpiece_ssize_type StringPiece::find(char c, size_type pos) const {
   }
   const char* result = static_cast<const char*>(
       memchr(ptr_ + pos, c, length_ - pos));
-  return result != NULL ? result - ptr_ : npos;
+  return result != nullptr ? result - ptr_ : npos;
 }
 
 stringpiece_ssize_type StringPiece::rfind(StringPiece s, size_type pos) const {

@@ -285,7 +285,7 @@ inline string JoinStrings(const std::vector<string>& components,
 //
 //    Errors: In the first form of the call, errors are reported with
 //    LOG(ERROR). The same is true for the second form of the call if
-//    the pointer to the string std::vector is NULL; otherwise, error
+//    the pointer to the string std::vector is nullptr; otherwise, error
 //    messages are stored in the std::vector. In either case, the effect on
 //    the dest array is not defined, but rest of the source will be
 //    processed.
@@ -304,7 +304,7 @@ LIBPROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest,
 //    to be the same.
 //
 //    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is NULL, it reports the errors with LOG().
+//    If the string vector pointer is nullptr, it reports the errors with LOG().
 //
 //    In the first and second calls, the length of dest is returned. In the
 //    the third call, the new string is returned.

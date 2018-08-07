@@ -112,7 +112,7 @@ void StripTrailingSlashes(string* str) {
 }
 
 bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
-  DWORD size = ::GetEnvironmentVariableW(name, NULL, 0);
+  DWORD size = ::GetEnvironmentVariableW(name, nullptr, 0);
   if (size > 0 && GetLastError() != ERROR_ENVVAR_NOT_FOUND) {
     std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
     ::GetEnvironmentVariableW(name, wcs.get(), size);
@@ -128,7 +128,7 @@ bool GetEnvVarAsUtf8(const WCHAR* name, string* result) {
 }
 
 bool GetCwdAsUtf8(string* result) {
-  DWORD size = ::GetCurrentDirectoryW(0, NULL);
+  DWORD size = ::GetCurrentDirectoryW(0, nullptr);
   if (size > 0) {
     std::unique_ptr<WCHAR[]> wcs(new WCHAR[size]);
     ::GetCurrentDirectoryW(size, wcs.get());
@@ -201,7 +201,7 @@ bool IoWin32Test::CreateAllUnder(wstring path) {
   if (path.find(L"\\\\?\\") != 0) {
     path = wstring(L"\\\\?\\") + path;
   }
-  if (::CreateDirectoryW(path.c_str(), NULL) ||
+  if (::CreateDirectoryW(path.c_str(), nullptr) ||
       GetLastError() == ERROR_ALREADY_EXISTS ||
       GetLastError() == ERROR_ACCESS_DENIED) {
     return true;
@@ -210,7 +210,7 @@ bool IoWin32Test::CreateAllUnder(wstring path) {
     size_t pos = path.find_last_of(L'\\');
     if (pos != wstring::npos) {
       wstring parent(path, 0, pos);
-      if (CreateAllUnder(parent) && CreateDirectoryW(path.c_str(), NULL)) {
+      if (CreateAllUnder(parent) && CreateDirectoryW(path.c_str(), nullptr)) {
         return true;
       }
     }
@@ -352,8 +352,8 @@ TEST_F(IoWin32Test, MkdirTestNonAscii) {
 
   // Create a non-ASCII path.
   // Ensure that we can create the directory using SetCurrentDirectoryW.
-  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1").c_str(), NULL));
-  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1\\" + kUtf16Text).c_str(), NULL));
+  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1").c_str(), nullptr));
+  EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1\\" + kUtf16Text).c_str(), nullptr));
   // Ensure that we can create a very similarly named directory using mkdir.
   // We don't attemp to delete and recreate the same directory, because on
   // Windows, deleting files and directories seems to be asynchronous.
@@ -386,7 +386,7 @@ TEST_F(IoWin32Test, ChdirTestNonAscii) {
   wstring wNonAscii(wtest_tmpdir + L"\\" + kUtf16Text);
   string nonAscii;
   EXPECT_TRUE(strings::wcs_to_utf8(wNonAscii.c_str(), &nonAscii));
-  EXPECT_TRUE(CreateDirectoryW(wNonAscii.c_str(), NULL));
+  EXPECT_TRUE(CreateDirectoryW(wNonAscii.c_str(), nullptr));
   WCHAR cwd[MAX_PATH];
   EXPECT_TRUE(GetCurrentDirectoryW(MAX_PATH, cwd));
   // Ensure that we can cd into the path using SetCurrentDirectoryW.
@@ -400,7 +400,7 @@ TEST_F(IoWin32Test, ChdirTestNonAscii) {
 }
 
 TEST_F(IoWin32Test, AsWindowsPathTest) {
-  DWORD size = GetCurrentDirectoryW(0, NULL);
+  DWORD size = GetCurrentDirectoryW(0, nullptr);
   std::unique_ptr<wchar_t[]> cwd_str(new wchar_t[size]);
   EXPECT_GT(GetCurrentDirectoryW(size, cwd_str.get()), 0);
   wstring cwd = wstring(L"\\\\?\\") + cwd_str.get();

@@ -91,7 +91,7 @@ struct CharTraits<wchar_t> {
 
 template <typename char_type>
 bool null_or_empty(const char_type* s) {
-  return s == NULL || *s == 0;
+  return s == nullptr || *s == 0;
 }
 
 // Returns true if the path starts with a drive letter, e.g. "c:".
@@ -225,7 +225,7 @@ bool as_windows_path(const char* path, wstring* result) {
 
 
   if (!is_path_absolute(wpath.c_str())) {
-    int size = ::GetCurrentDirectoryW(0, NULL);
+    int size = ::GetCurrentDirectoryW(0, nullptr);
     if (size == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
       return false;
     }
@@ -316,17 +316,17 @@ FILE* fopen(const char* path, const char* mode) {
 #ifdef SUPPORT_LONGPATHS
   if (null_or_empty(path)) {
     errno = EINVAL;
-    return NULL;
+    return nullptr;
   }
   wstring wpath;
   if (!as_windows_path(path, &wpath)) {
     errno = ENOENT;
-    return NULL;
+    return nullptr;
   }
   wstring wmode;
   if (!strings::utf8_to_wcs(mode, &wmode)) {
     errno = EINVAL;
-    return NULL;
+    return nullptr;
   }
   return ::_wfopen(wpath.c_str(), wmode.c_str());
 #else
@@ -365,15 +365,15 @@ bool wcs_to_mbs(const WCHAR* s, string* out, bool outUtf8) {
   BOOL usedDefaultChar = FALSE;
   SetLastError(0);
   int size = WideCharToMultiByte(
-      outUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, NULL, 0, NULL,
-      outUtf8 ? NULL : &usedDefaultChar);
+      outUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, nullptr, 0, nullptr,
+      outUtf8 ? nullptr : &usedDefaultChar);
   if ((size == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
       || usedDefaultChar) {
     return false;
   }
   std::unique_ptr<CHAR[]> astr(new CHAR[size]);
   WideCharToMultiByte(
-      outUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, astr.get(), size, NULL, NULL);
+      outUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, astr.get(), size, nullptr, nullptr);
   out->assign(astr.get());
   return true;
 }
@@ -386,7 +386,7 @@ bool mbs_to_wcs(const char* s, wstring* out, bool inUtf8) {
 
   SetLastError(0);
   int size =
-      MultiByteToWideChar(inUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, NULL, 0);
+      MultiByteToWideChar(inUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, nullptr, 0);
   if (size == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
     return false;
   }
