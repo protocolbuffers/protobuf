@@ -851,6 +851,13 @@ inline double WireFormatLite::DecodeDouble(uint64 value) {
 //        >> encode >>
 //        << decode <<
 
+
+#if defined(_MSC_VER) && _MSC_VER >= 1400 // VC++ 8.0
+// Disable warning about negating unsigned
+#pragma warning( push )
+#pragma warning( disable : 4146 )
+#endif
+
 inline uint32 WireFormatLite::ZigZagEncode32(int32 n) {
   // Note:  the right-shift must be arithmetic
   // Note:  left shift must be unsigned because of overflow
@@ -872,6 +879,10 @@ inline int64 WireFormatLite::ZigZagDecode64(uint64 n) {
   // Note:  Using unsigned types prevent undefined behavior
   return static_cast<int64>((n >> 1) ^ (~(n & 1) + 1));
 }
+
+#if defined(_MSC_VER) && _MSC_VER >= 1400 // VC++ 8.0
+#pragma warning( pop )
+#endif
 
 // String is for UTF-8 text only, but, even so, ReadString() can simply
 // call ReadBytes().
