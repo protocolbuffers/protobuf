@@ -371,8 +371,25 @@ namespace Google.Protobuf.Collections
         /// </returns>
         public IEnumerator<T> GetEnumerator()
         {
+            return Enumerate(count);
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection throwing when collection change size
+        /// </summary>
+        /// <param name="size">The original size of the collection.</param>
+        /// <returns>
+        /// An enumerator that can be used to iterate through the collection.
+        /// </returns>
+        private IEnumerator<T> Enumerate(int size)
+        {
             for (int i = 0; i < count; i++)
             {
+                if (size != count)
+                {
+                    throw new InvalidOperationException("RepeatedField was modified; enumeration operation may not execute.");
+                }
+
                 yield return array[i];
             }
         }

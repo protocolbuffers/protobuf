@@ -304,6 +304,19 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void Throw_InvalidOperation_Exception_if_modified()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            using (var enumerator = list.GetEnumerator())
+            {
+                list.RemoveAt(0);
+                var ex = Assert.Throws<InvalidOperationException>(() => { enumerator.MoveNext(); });
+                Assert.AreEqual("RepeatedField was modified; enumeration operation may not execute.", ex.Message);
+            }
+        }
+
+
+        [Test]
         public void AddEntriesFrom_PackedInt32()
         {
             uint packedTag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
