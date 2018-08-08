@@ -26,13 +26,15 @@ build_artifact_version() {
   rm -rf venv/*
   sudo rm -rf protobuf
   git clone https://github.com/google/protobuf.git
+  which python
+  echo $PATH
+  python --version
 
   source multibuild/common_utils.sh
   source multibuild/travis_steps.sh
   before_install
 
   clean_code $REPO_DIR $BUILD_COMMIT
-  cat $REPO_DIR/python/setup.py
 
   build_wheel $REPO_DIR/python $PLAT
 
