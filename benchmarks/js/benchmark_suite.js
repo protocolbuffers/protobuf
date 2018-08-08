@@ -1,4 +1,4 @@
-var benchmark = require("./node_modules/benchmark");
+var benchmark = require("benchmark");
 
 function newBenchmark(messageName, filename, language) {
   var benches = [];

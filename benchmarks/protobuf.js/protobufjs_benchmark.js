@@ -1,7 +1,7 @@
-var root = require("./GeneratedBundleCode.js");
+var root = require("./generated_bundle_code.js");
 var fs = require('fs');
 var benchmark = require("./node_modules/benchmark");
-var benchmarkSuite = require("./BenchmarkSuite.js");
+var benchmarkSuite = require("./benchmark_suite.js");
 
 
 function getNewPrototype(name) {
@@ -63,3 +63,4 @@ process.argv.forEach(function(filename, index) {
   console.log("");
 });
 console.log("#####################################################");
+

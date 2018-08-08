@@ -6,7 +6,7 @@ require('./datasets/google_message4/benchmark_message4_pb.js');
 require('./benchmarks_pb.js');
 
 var fs = require('fs');
-var benchmarkSuite = require("./BenchmarkSuite.js");
+var benchmarkSuite = require("./benchmark_suite.js");
 
 
 function getNewPrototype(name) {
@@ -67,3 +67,4 @@ process.argv.forEach(function(filename, index) {
   console.log("");
 });
 console.log("#####################################################");
+

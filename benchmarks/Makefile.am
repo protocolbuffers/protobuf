@@ -555,18 +555,18 @@ pbjs_preparation:
 			cd protobuf.js && npm install && npm run build
 	cd tmp/protobuf.js && npm install benchmark
 	cp protobuf.js/* tmp/protobuf.js
-	cp js/BenchmarkSuite.js tmp/protobuf.js
+	cp js/benchmark_suite.js tmp/protobuf.js
 	touch pbjs_preparation
 
 pbjs_middleman: pbjs_preparation
-	export OLDDIR=$$(pwd) && cd tmp/protobuf.js && node GeneratePbjsFiles.js --target static-module --include_path=$$OLDDIR -o GeneratedBundleCode.js $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) $(benchmarks_protoc_inputs_proto2)
+	export OLDDIR=$$(pwd) && cd tmp/protobuf.js && node generate_pbjs_files.js --target static-module --include_path=$$OLDDIR -o generated_bundle_code.js $(benchmarks_protoc_inputs) $(benchmarks_protoc_inputs_benchmark_wrapper) $(benchmarks_protoc_inputs_proto2)
 	touch pbjs_middleman
 
 pbjs-benchmark: pbjs_middleman
 	@echo '#! /bin/bash' > pbjs-benchmark
 	@echo 'cd tmp/protobuf.js' >> pbjs-benchmark
-	@echo 'sed -i "s/protobufjs/.\/protobuf.js/g" GeneratedBundleCode.js' >> pbjs-benchmark
-	@echo 'node ProtobufJsBenchmark.js $$@' >> pbjs-benchmark
+	@echo 'sed -i "s/protobufjs/.\/protobuf.js/g" generated_bundle_code.js' >> pbjs-benchmark
+	@echo 'env NODE_PATH=".:./node_modules:$$NODE_PATH" node protobufjs_benchmark.js $$@' >> pbjs-benchmark
 	@chmod +x pbjs-benchmark
 
 pbjs: pbjs-benchmark
@@ -591,7 +591,7 @@ js-benchmark: js_middleman
 	@echo '#! /bin/bash' > js-benchmark
 	@echo 'export TOP_JS_SRCDIR=$$(cd $(top_srcdir)/js && pwd)' >> js-benchmark
 	@echo 'cd tmp/js' >> js-benchmark
-	@echo 'env NODE_PATH="$$TOP_JS_SRCDIR:." node --max-old-space-size=4096 JsBenchmark.js $$@' >> js-benchmark
+	@echo 'env NODE_PATH="$$TOP_JS_SRCDIR:.:./node_modules:$$NODE_PATH" node --max-old-space-size=4096 js_benchmark.js $$@' >> js-benchmark
 	@chmod +x js-benchmark
 
 js: js-benchmark
