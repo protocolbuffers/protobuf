@@ -388,8 +388,7 @@ jspb.BinaryReader.prototype.skipFixed64Field = function() {
  * Skips over the next group field in the binary stream.
  */
 jspb.BinaryReader.prototype.skipGroup = function() {
-  // Keep a stack of start-group tags that must be matched by end-group tags.
-  var nestedGroups = [this.nextField_];
+  var previousField = this.nextField_;
   do {
     if (!this.nextField()) {
       goog.asserts.fail('Unmatched start-group tag: stream EOF');
@@ -397,19 +396,17 @@ jspb.BinaryReader.prototype.skipGroup = function() {
       return;
     }
     if (this.nextWireType_ ==
-        jspb.BinaryConstants.WireType.START_GROUP) {
-      // Nested group start.
-      nestedGroups.push(this.nextField_);
-    } else if (this.nextWireType_ ==
                jspb.BinaryConstants.WireType.END_GROUP) {
       // Group end: check that it matches top-of-stack.
-      if (this.nextField_ != nestedGroups.pop()) {
+      if (this.nextField_ != previousField) {
         goog.asserts.fail('Unmatched end-group tag');
         this.error_ = true;
         return;
       }
+      return;
     }
-  } while (nestedGroups.length > 0);
+    this.skipField();
+  } while (true);
 };
 
 
