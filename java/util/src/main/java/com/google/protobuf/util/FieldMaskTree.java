@@ -240,7 +240,7 @@ final class FieldMaskTree {
               "Field \""
                   + field.getFullName()
                   + "\" is not a "
-                  + "singluar message field and cannot have sub-fields.");
+                  + "singular message field and cannot have sub-fields.");
           continue;
         }
         if (!source.hasField(field) && !destination.hasField(field)) {
