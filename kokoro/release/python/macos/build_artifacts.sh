@@ -23,7 +23,7 @@ build_artifact_version() {
   MB_PYTHON_VERSION=$1
 
   # Clean up env
-  rm -rf venv
+  rm -rf venv/*
   sudo rm -rf protobuf
   git clone https://github.com/google/protobuf.git
 
