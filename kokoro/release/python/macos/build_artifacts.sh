@@ -19,16 +19,16 @@ export ARTIFACT_DIR=$(pwd)/artifacts
 git clone https://github.com/matthew-brett/multibuild.git
 cp kokoro/release/python/linux/config.sh config.sh
 
+OLD_PATH=$PATH
+
 build_artifact_version() {
   MB_PYTHON_VERSION=$1
 
   # Clean up env
-  rm -rf venv/*
+  rm -rf venv
   sudo rm -rf protobuf
   git clone https://github.com/google/protobuf.git
-  which python
-  echo $PATH
-  python --version
+  export PATH=$OLD_PATH
 
   source multibuild/common_utils.sh
   source multibuild/travis_steps.sh
