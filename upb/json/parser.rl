@@ -40,6 +40,27 @@ static const char *kBoolValueFullMessageName = "google.protobuf.BoolValue";
 static const char *kStringValueFullMessageName = "google.protobuf.StringValue";
 static const char *kBytesValueFullMessageName = "google.protobuf.BytesValue";
 
+/* Forward declare */
+static bool is_top_level(upb_json_parser *p);
+
+static bool is_number_wrapper_object(upb_json_parser *p);
+static bool does_number_wrapper_start(upb_json_parser *p);
+static bool does_number_wrapper_end(upb_json_parser *p);
+
+static bool is_string_wrapper_object(upb_json_parser *p);
+static bool does_string_wrapper_start(upb_json_parser *p);
+static bool does_string_wrapper_end(upb_json_parser *p);
+
+static bool is_boolean_wrapper_object(upb_json_parser *p);
+static bool does_boolean_wrapper_start(upb_json_parser *p);
+static bool does_boolean_wrapper_end(upb_json_parser *p);
+
+static void start_wrapper_object(upb_json_parser *p);
+static void end_wrapper_object(upb_json_parser *p);
+
+static bool start_subobject(upb_json_parser *p);
+static void end_subobject(upb_json_parser *p);
+
 typedef struct {
   upb_sink sink;
 
@@ -618,14 +639,27 @@ static bool end_text(upb_json_parser *p, const char *ptr) {
   return capture_end(p, ptr);
 }
 
-static void start_number(upb_json_parser *p, const char *ptr) {
+static bool start_number(upb_json_parser *p, const char *ptr) {
+  if (is_top_level(p)) {
+    if (!is_number_wrapper_object(p)) {
+      return false;
+    }
+    start_wrapper_object(p);
+  } else if (does_number_wrapper_start(p)) {
+    if (!start_subobject(p)) {
+      return false;
+    }
+    start_wrapper_object(p);
+  }
+
   multipart_startaccum(p);
   capture_begin(p, ptr);
+  return true;
 }
 
 static bool parse_number(upb_json_parser *p, bool is_quoted);
 
-static bool end_number(upb_json_parser *p, const char *ptr) {
+static bool end_number_nontop(upb_json_parser *p, const char *ptr) {
   if (!capture_end(p, ptr)) {
     return false;
   }
@@ -636,6 +670,21 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
   }
 
   return parse_number(p, false);
+}
+
+static bool end_number(upb_json_parser *p, const char *ptr) {
+  if (!end_number_nontop(p, ptr)) {
+    return false;
+  }
+
+  if (does_number_wrapper_end(p)) {
+    end_wrapper_object(p);
+    if (!is_top_level(p)) {
+      end_subobject(p);
+    }
+  }
+
+  return true;
 }
 
 /* |buf| is NULL-terminated. |buf| itself will never include quotes;
@@ -805,7 +854,46 @@ static bool parser_putbool(upb_json_parser *p, bool val) {
   return true;
 }
 
+static bool end_bool(upb_json_parser *p, bool val) {
+  if (is_top_level(p)) {
+    if (!is_boolean_wrapper_object(p)) {
+      return false;
+    }
+    start_wrapper_object(p);
+  } else if (does_boolean_wrapper_start(p)) {
+    if (!start_subobject(p)) {
+      return false;
+    }
+    start_wrapper_object(p);
+  }
+
+  if (!parser_putbool(p, val)) {
+    return false;
+  }
+
+  if (does_boolean_wrapper_end(p)) {
+    end_wrapper_object(p);
+    if (!is_top_level(p)) {
+      end_subobject(p);
+    }
+  }
+
+  return true;
+}
+
 static bool start_stringval(upb_json_parser *p) {
+  if (is_top_level(p)) {
+    if (!is_string_wrapper_object(p)) {
+      return false;
+    }
+    start_wrapper_object(p);
+  } else if (does_string_wrapper_start(p)) {
+    if (!start_subobject(p)) {
+      return false;
+    }
+    start_wrapper_object(p);
+  }
+
   if (p->top->f == NULL) {
     multipart_startaccum(p);
     return true;
@@ -857,7 +945,7 @@ static bool start_stringval(upb_json_parser *p) {
   }
 }
 
-static bool end_stringval(upb_json_parser *p) {
+static bool end_stringval_nontop(upb_json_parser *p) {
   bool ok = true;
 
   if (p->top->f == NULL) {
@@ -922,6 +1010,21 @@ static bool end_stringval(upb_json_parser *p) {
   multipart_end(p);
 
   return ok;
+}
+
+static bool end_stringval(upb_json_parser *p) {
+  if (!end_stringval_nontop(p)) {
+    return false;
+  }
+
+  if (does_string_wrapper_end(p)) {
+    end_wrapper_object(p);
+    if (!is_top_level(p)) {
+      end_subobject(p);
+    }
+  }
+
+  return true;
 }
 
 static void start_member(upb_json_parser *p) {
@@ -1107,6 +1210,10 @@ static void end_member(upb_json_parser *p) {
 }
 
 static bool start_subobject(upb_json_parser *p) {
+  if (is_top_level(p)) {
+    return true;
+  }
+
   if (p->top->f == NULL) {
     upb_jsonparser_frame *inner;
     if (!check_stack(p)) return false;
@@ -1170,6 +1277,10 @@ static bool start_subobject(upb_json_parser *p) {
 }
 
 static void end_subobject(upb_json_parser *p) {
+  if (is_top_level(p)) {
+    return;
+  }
+
   if (p->top->is_map) {
     upb_selector_t sel;
     p->top--;
@@ -1457,96 +1568,20 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
 
   value =
     number
-      >{
-         if (is_top_level(parser)) {
-           CHECK_RETURN_TOP(is_number_wrapper_object(parser));
-           start_wrapper_object(parser);
-         } else if (does_number_wrapper_start(parser)) {
-           CHECK_RETURN_TOP(start_subobject(parser));
-           start_wrapper_object(parser);
-         }
-         start_number(parser, p);
-       }
-      %{
-         CHECK_RETURN_TOP(end_number(parser, p));
-         if (does_number_wrapper_end(parser)) {
-           end_wrapper_object(parser);
-           if (!is_top_level(parser)) {
-             end_subobject(parser);
-           }
-         }
-       }
+      >{ CHECK_RETURN_TOP(start_number(parser, p)); }
+      %{ CHECK_RETURN_TOP(end_number(parser, p)); }
     | string
-      >{
-         if (is_top_level(parser)) {
-           CHECK_RETURN_TOP(is_string_wrapper_object(parser));
-           start_wrapper_object(parser);
-         } else if (does_string_wrapper_start(parser)) {
-           CHECK_RETURN_TOP(start_subobject(parser));
-           start_wrapper_object(parser);
-         }
-         CHECK_RETURN_TOP(start_stringval(parser));
-       }
-      @{
-         CHECK_RETURN_TOP(end_stringval(parser));
-         if (does_string_wrapper_end(parser)) {
-           end_wrapper_object(parser);
-           if (!is_top_level(parser)) {
-             end_subobject(parser);
-           }
-         }
-       }
+      >{ CHECK_RETURN_TOP(start_stringval(parser)); }
+      @{ CHECK_RETURN_TOP(end_stringval(parser)); }
     | "true"
-      >{
-         if (is_top_level(parser)) {
-           CHECK_RETURN_TOP(is_boolean_wrapper_object(parser));
-           start_wrapper_object(parser);
-         } else if (does_boolean_wrapper_start(parser)) {
-           CHECK_RETURN_TOP(start_subobject(parser));
-           start_wrapper_object(parser);
-         }
-       }
-      %{
-         CHECK_RETURN_TOP(parser_putbool(parser, true));
-         if (does_boolean_wrapper_end(parser)) {
-           end_wrapper_object(parser);
-           if (!is_top_level(parser)) {
-             end_subobject(parser);
-           }
-         }
-       }
+      %{ CHECK_RETURN_TOP(end_bool(parser, true)); }
     | "false"
-      >{
-         if (is_top_level(parser)) {
-           CHECK_RETURN_TOP(is_boolean_wrapper_object(parser));
-           start_wrapper_object(parser);
-         } else if (does_boolean_wrapper_start(parser)) {
-           CHECK_RETURN_TOP(start_subobject(parser));
-           start_wrapper_object(parser);
-         }
-       }
-      %{
-         CHECK_RETURN_TOP(parser_putbool(parser, false));
-         if (does_boolean_wrapper_end(parser)) {
-           end_wrapper_object(parser);
-           if (!is_top_level(parser)) {
-             end_subobject(parser);
-           }
-         }
-       }
+      %{ CHECK_RETURN_TOP(end_bool(parser, false)); }
     | "null"
       %{ /* null value */ }
     | object
-      >{
-         if (!is_top_level(parser)) {
-           CHECK_RETURN_TOP(start_subobject(parser));
-         }
-       }
-      %{
-         if (!is_top_level(parser)) {
-           end_subobject(parser);
-         }
-       }
+      >{ CHECK_RETURN_TOP(start_subobject(parser)); }
+      %{ end_subobject(parser); }
     | array;
 
   value_machine :=
