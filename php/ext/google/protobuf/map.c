@@ -192,7 +192,8 @@ static inline void php_proto_map_string_release(void *value) {
 }
 static inline void php_proto_map_object_release(void *value) {
   zend_object* object = *(zend_object**)value;
-  if(--GC_REFCOUNT(object) == 0) {
+  GC_DELREF(object);
+  if(GC_REFCOUNT(object) == 0) {
     zend_objects_store_del(object);
   }
 }
@@ -302,7 +303,8 @@ static bool map_index_unset(Map *intern, const char* keyval, int length) {
         zval_ptr_dtor(upb_value_memory(&old_value));
 #else
         zend_object* object = *(zend_object**)upb_value_memory(&old_value);
-        if(--GC_REFCOUNT(object) == 0) {
+        GC_DELREF(object);
+        if(GC_REFCOUNT(object) == 0) {
           zend_objects_store_del(object);
         }
 #endif

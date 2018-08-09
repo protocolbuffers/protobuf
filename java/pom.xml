@@ -11,7 +11,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.6.0</version>
+  <version>3.6.1</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -92,7 +92,7 @@
       <plugins>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.6.0</version>
+          <version>3.6.1</version>
           <configuration>
             <source>1.7</source>
             <target>1.7</target>

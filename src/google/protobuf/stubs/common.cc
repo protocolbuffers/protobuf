@@ -175,12 +175,12 @@ void NullLogHandler(LogLevel /* level */, const char* /* filename */,
 static LogHandler* log_handler_ = &DefaultLogHandler;
 static int log_silencer_count_ = 0;
 
-static Mutex* log_silencer_count_mutex_ = NULL;
+static Mutex* log_silencer_count_mutex_ = nullptr;
 GOOGLE_PROTOBUF_DECLARE_ONCE(log_silencer_count_init_);
 
 void DeleteLogSilencerCount() {
   delete log_silencer_count_mutex_;
-  log_silencer_count_mutex_ = NULL;
+  log_silencer_count_mutex_ = nullptr;
 }
 void InitLogSilencerCount() {
   log_silencer_count_mutex_ = new Mutex;
@@ -281,9 +281,9 @@ void LogFinisher::operator=(LogMessage& other) {
 LogHandler* SetLogHandler(LogHandler* new_func) {
   LogHandler* old = internal::log_handler_;
   if (old == &internal::NullLogHandler) {
-    old = NULL;
+    old = nullptr;
   }
-  if (new_func == NULL) {
+  if (new_func == nullptr) {
     internal::log_handler_ = &internal::NullLogHandler;
   } else {
     internal::log_handler_ = new_func;

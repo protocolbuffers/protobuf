@@ -24,22 +24,24 @@ namespace Conformance {
     static ConformanceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UiwAEKEkNvbmZvcm1h",
+            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2Ui1QEKEkNvbmZvcm1h",
             "bmNlUmVxdWVzdBIaChBwcm90b2J1Zl9wYXlsb2FkGAEgASgMSAASFgoManNv",
             "bl9wYXlsb2FkGAIgASgJSAASOAoXcmVxdWVzdGVkX291dHB1dF9mb3JtYXQY",
             "AyABKA4yFy5jb25mb3JtYW5jZS5XaXJlRm9ybWF0EhQKDG1lc3NhZ2VfdHlw",
-            "ZRgEIAEoCRIbChNpZ25vcmVfdW5rbm93bl9qc29uGAUgASgIQgkKB3BheWxv",
-            "YWQisQEKE0NvbmZvcm1hbmNlUmVzcG9uc2USFQoLcGFyc2VfZXJyb3IYASAB",
-            "KAlIABIZCg9zZXJpYWxpemVfZXJyb3IYBiABKAlIABIXCg1ydW50aW1lX2Vy",
-            "cm9yGAIgASgJSAASGgoQcHJvdG9idWZfcGF5bG9hZBgDIAEoDEgAEhYKDGpz",
-            "b25fcGF5bG9hZBgEIAEoCUgAEhEKB3NraXBwZWQYBSABKAlIAEIICgZyZXN1",
-            "bHQqNQoKV2lyZUZvcm1hdBIPCgtVTlNQRUNJRklFRBAAEgwKCFBST1RPQlVG",
-            "EAESCAoESlNPThACQiEKH2NvbS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFu",
-            "Y2ViBnByb3RvMw=="));
+            "ZRgEIAEoCRIwCg10ZXN0X2NhdGVnb3J5GAUgASgOMhkuY29uZm9ybWFuY2Uu",
+            "VGVzdENhdGVnb3J5QgkKB3BheWxvYWQisQEKE0NvbmZvcm1hbmNlUmVzcG9u",
+            "c2USFQoLcGFyc2VfZXJyb3IYASABKAlIABIZCg9zZXJpYWxpemVfZXJyb3IY",
+            "BiABKAlIABIXCg1ydW50aW1lX2Vycm9yGAIgASgJSAASGgoQcHJvdG9idWZf",
+            "cGF5bG9hZBgDIAEoDEgAEhYKDGpzb25fcGF5bG9hZBgEIAEoCUgAEhEKB3Nr",
+            "aXBwZWQYBSABKAlIAEIICgZyZXN1bHQqNQoKV2lyZUZvcm1hdBIPCgtVTlNQ",
+            "RUNJRklFRBAAEgwKCFBST1RPQlVGEAESCAoESlNPThACKlQKDFRlc3RDYXRl",
+            "Z29yeRIPCgtCSU5BUllfVEVTVBAAEg0KCUpTT05fVEVTVBABEiQKIEpTT05f",
+            "SUdOT1JFX1VOS05PV05fUEFSU0lOR19URVNUEAJCIQofY29tLmdvb2dsZS5w",
+            "cm90b2J1Zi5jb25mb3JtYW5jZWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat", "MessageType", "IgnoreUnknownJson" }, new[]{ "Payload" }, null, null),
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat", "MessageType", "TestCategory" }, new[]{ "Payload" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null)
           }));
     }
@@ -51,6 +53,25 @@ namespace Conformance {
     [pbr::OriginalName("UNSPECIFIED")] Unspecified = 0,
     [pbr::OriginalName("PROTOBUF")] Protobuf = 1,
     [pbr::OriginalName("JSON")] Json = 2,
+  }
+
+  public enum TestCategory {
+    /// <summary>
+    /// Test binary wire format.
+    /// </summary>
+    [pbr::OriginalName("BINARY_TEST")] BinaryTest = 0,
+    /// <summary>
+    /// Test json wire format.
+    /// </summary>
+    [pbr::OriginalName("JSON_TEST")] JsonTest = 1,
+    /// <summary>
+    /// Similar to JSON_TEST. However, during parsing json, testee should ignore
+    /// unknown fields. This feature is optional. Each implementation can descide
+    /// whether to support it.  See
+    /// https://developers.google.com/protocol-buffers/docs/proto3#json_options
+    /// for more detail.
+    /// </summary>
+    [pbr::OriginalName("JSON_IGNORE_UNKNOWN_PARSING_TEST")] JsonIgnoreUnknownParsingTest = 2,
   }
 
   #endregion
@@ -90,7 +111,7 @@ namespace Conformance {
     public ConformanceRequest(ConformanceRequest other) : this() {
       requestedOutputFormat_ = other.requestedOutputFormat_;
       messageType_ = other.messageType_;
-      ignoreUnknownJson_ = other.ignoreUnknownJson_;
+      testCategory_ = other.testCategory_;
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
           ProtobufPayload = other.ProtobufPayload;
@@ -160,14 +181,19 @@ namespace Conformance {
       }
     }
 
-    /// <summary>Field number for the "ignore_unknown_json" field.</summary>
-    public const int IgnoreUnknownJsonFieldNumber = 5;
-    private bool ignoreUnknownJson_;
+    /// <summary>Field number for the "test_category" field.</summary>
+    public const int TestCategoryFieldNumber = 5;
+    private global::Conformance.TestCategory testCategory_ = 0;
+    /// <summary>
+    /// Each test is given a specific test category. Some category may need spedific
+    /// support in testee programs. Refer to the defintion of TestCategory for
+    /// more information.
+    /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IgnoreUnknownJson {
-      get { return ignoreUnknownJson_; }
+    public global::Conformance.TestCategory TestCategory {
+      get { return testCategory_; }
       set {
-        ignoreUnknownJson_ = value;
+        testCategory_ = value;
       }
     }
 
@@ -207,7 +233,7 @@ namespace Conformance {
       if (JsonPayload != other.JsonPayload) return false;
       if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
       if (MessageType != other.MessageType) return false;
-      if (IgnoreUnknownJson != other.IgnoreUnknownJson) return false;
+      if (TestCategory != other.TestCategory) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -219,7 +245,7 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (RequestedOutputFormat != 0) hash ^= RequestedOutputFormat.GetHashCode();
       if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
-      if (IgnoreUnknownJson != false) hash ^= IgnoreUnknownJson.GetHashCode();
+      if (TestCategory != 0) hash ^= TestCategory.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -250,9 +276,9 @@ namespace Conformance {
         output.WriteRawTag(34);
         output.WriteString(MessageType);
       }
-      if (IgnoreUnknownJson != false) {
+      if (TestCategory != 0) {
         output.WriteRawTag(40);
-        output.WriteBool(IgnoreUnknownJson);
+        output.WriteEnum((int) TestCategory);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -274,8 +300,8 @@ namespace Conformance {
       if (MessageType.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(MessageType);
       }
-      if (IgnoreUnknownJson != false) {
-        size += 1 + 1;
+      if (TestCategory != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) TestCategory);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -294,8 +320,8 @@ namespace Conformance {
       if (other.MessageType.Length != 0) {
         MessageType = other.MessageType;
       }
-      if (other.IgnoreUnknownJson != false) {
-        IgnoreUnknownJson = other.IgnoreUnknownJson;
+      if (other.TestCategory != 0) {
+        TestCategory = other.TestCategory;
       }
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
@@ -334,7 +360,7 @@ namespace Conformance {
             break;
           }
           case 40: {
-            IgnoreUnknownJson = input.ReadBool();
+            testCategory_ = (global::Conformance.TestCategory) input.ReadEnum();
             break;
           }
         }

@@ -162,7 +162,7 @@ namespace internal {
 template<typename T>
 T* CheckNotNull(const char* /* file */, int /* line */,
                 const char* name, T* val) {
-  if (val == NULL) {
+  if (val == nullptr) {
     GOOGLE_LOG(FATAL) << name;
   }
   return val;
@@ -170,7 +170,7 @@ T* CheckNotNull(const char* /* file */, int /* line */,
 }  // namespace internal
 #define GOOGLE_CHECK_NOTNULL(A) \
   ::google::protobuf::internal::CheckNotNull(\
-      __FILE__, __LINE__, "'" #A "' must not be NULL", (A))
+      __FILE__, __LINE__, "'" #A "' must not be nullptr", (A))
 
 #ifdef NDEBUG
 
@@ -208,7 +208,7 @@ typedef void LogHandler(LogLevel level, const char* filename, int line,
 // also help end users figure out a problem.  If you would prefer that
 // these messages be sent somewhere other than stderr, call SetLogHandler()
 // to set your own handler.  This returns the old handler.  Set the handler
-// to NULL to ignore log messages (but see also LogSilencer, below).
+// to nullptr to ignore log messages (but see also LogSilencer, below).
 //
 // Obviously, SetLogHandler is not thread-safe.  You should only call it
 // at initialization time, and probably not from library code.  If you

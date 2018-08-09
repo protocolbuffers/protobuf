@@ -184,3 +184,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. API client generators
    * Website: ???
    * Extensions: 1048-1056
+
+1. Netifi Proteus
+   * Website: https://github.com/netifi-proteus
+   * Extensions: 1057

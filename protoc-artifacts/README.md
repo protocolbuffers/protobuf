@@ -119,7 +119,9 @@ target directory layout:
           protoc.exe
         + x86_32
           protoc.exe
-      + macos
+        + aarch_64
+          protoc.exe
+      + osx
         + x86_64
           protoc.exe
         + x86_32
@@ -137,7 +139,7 @@ Use the following command to deploy artifacts for the host platform to a
 staging repository.
 
 ```
-$ mvn clean deploy -P release
+$ mvn deploy -P release
 ```
 
 It creates a new staging repository. Go to
@@ -152,17 +154,19 @@ and upload these zip packages to the download section of the github
 release. For example:
 
 ```
-$ ./build-zip.sh 3.6.0
+$ ./build-zip.sh protoc 3.6.0
 ```
 
-The above command will create 5 zip files:
+The above command will create 7 zip files:
 
 ```
-dist/protoc-3.0.0-beta-4-win32.zip
-dist/protoc-3.0.0-beta-4-osx-x86_32.zip
-dist/protoc-3.0.0-beta-4-osx-x86_64.zip
-dist/protoc-3.0.0-beta-4-linux-x86_32.zip
-dist/protoc-3.0.0-beta-4-linux-x86_64.zip
+dist/protoc-3.6.0-win32.zip
+dist/protoc-3.6.0-osx-x86_32.zip
+dist/protoc-3.6.0-osx-x86_64.zip
+dist/protoc-3.6.0-linux-x86_32.zip
+dist/protoc-3.6.0-linux-x86_64.zip
+dist/protoc-3.6.0-linux-aarch_64.zip
+dist/protoc-3.6.0-linux-ppcle_64.zip
 ```
 
 Before running the script, make sure the artifacts are accessible from:

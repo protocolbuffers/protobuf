@@ -1,6 +1,6 @@
 {
   "name": "google-protobuf",
-  "version": "3.6.0",
+  "version": "3.6.1",
   "description": "Protocol Buffers for JavaScript",
   "main": "google-protobuf.js",
   "files": [
@@ -22,5 +22,5 @@
     "url": "https://github.com/google/protobuf/tree/master/js"
   },
   "author": "Google Protocol Buffers Team",
-  "license" : "BSD-3-Clause"
+  "license": "BSD-3-Clause"
 }

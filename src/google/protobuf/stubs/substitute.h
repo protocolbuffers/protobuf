@@ -93,7 +93,7 @@ class SubstituteArg {
 
   // Indicates that no argument was given.
   inline explicit SubstituteArg()
-    : text_(NULL), size_(-1) {}
+    : text_(nullptr), size_(-1) {}
 
   // Primitives
   // We don't overload for signed and unsigned char because if people are
