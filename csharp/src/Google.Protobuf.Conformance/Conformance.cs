@@ -34,10 +34,11 @@ namespace Conformance {
             "BiABKAlIABIXCg1ydW50aW1lX2Vycm9yGAIgASgJSAASGgoQcHJvdG9idWZf",
             "cGF5bG9hZBgDIAEoDEgAEhYKDGpzb25fcGF5bG9hZBgEIAEoCUgAEhEKB3Nr",
             "aXBwZWQYBSABKAlIAEIICgZyZXN1bHQqNQoKV2lyZUZvcm1hdBIPCgtVTlNQ",
-            "RUNJRklFRBAAEgwKCFBST1RPQlVGEAESCAoESlNPThACKlQKDFRlc3RDYXRl",
-            "Z29yeRIPCgtCSU5BUllfVEVTVBAAEg0KCUpTT05fVEVTVBABEiQKIEpTT05f",
-            "SUdOT1JFX1VOS05PV05fUEFSU0lOR19URVNUEAJCIQofY29tLmdvb2dsZS5w",
-            "cm90b2J1Zi5jb25mb3JtYW5jZWIGcHJvdG8z"));
+            "RUNJRklFRBAAEgwKCFBST1RPQlVGEAESCAoESlNPThACKmoKDFRlc3RDYXRl",
+            "Z29yeRIUChBVTlNQRUNJRklFRF9URVNUEAASDwoLQklOQVJZX1RFU1QQARIN",
+            "CglKU09OX1RFU1QQAhIkCiBKU09OX0lHTk9SRV9VTktOT1dOX1BBUlNJTkdf",
+            "VEVTVBADQiEKH2NvbS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFuY2ViBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, new pbr::GeneratedClrTypeInfo[] {
@@ -56,14 +57,15 @@ namespace Conformance {
   }
 
   public enum TestCategory {
+    [pbr::OriginalName("UNSPECIFIED_TEST")] UnspecifiedTest = 0,
     /// <summary>
     /// Test binary wire format.
     /// </summary>
-    [pbr::OriginalName("BINARY_TEST")] BinaryTest = 0,
+    [pbr::OriginalName("BINARY_TEST")] BinaryTest = 1,
     /// <summary>
     /// Test json wire format.
     /// </summary>
-    [pbr::OriginalName("JSON_TEST")] JsonTest = 1,
+    [pbr::OriginalName("JSON_TEST")] JsonTest = 2,
     /// <summary>
     /// Similar to JSON_TEST. However, during parsing json, testee should ignore
     /// unknown fields. This feature is optional. Each implementation can descide
@@ -71,7 +73,7 @@ namespace Conformance {
     /// https://developers.google.com/protocol-buffers/docs/proto3#json_options
     /// for more detail.
     /// </summary>
-    [pbr::OriginalName("JSON_IGNORE_UNKNOWN_PARSING_TEST")] JsonIgnoreUnknownParsingTest = 2,
+    [pbr::OriginalName("JSON_IGNORE_UNKNOWN_PARSING_TEST")] JsonIgnoreUnknownParsingTest = 3,
   }
 
   #endregion
@@ -185,9 +187,9 @@ namespace Conformance {
     public const int TestCategoryFieldNumber = 5;
     private global::Conformance.TestCategory testCategory_ = 0;
     /// <summary>
-    /// Each test is given a specific test category. Some category may need spedific
-    /// support in testee programs. Refer to the defintion of TestCategory for
-    /// more information.
+    /// Each test is given a specific test category. Some category may need
+    /// spedific support in testee programs. Refer to the defintion of TestCategory
+    /// for more information.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.TestCategory TestCategory {
