@@ -184,6 +184,11 @@ namespace Google.Protobuf.Reflection
         public bool IsRepeated => Proto.Label == FieldDescriptorProto.Types.Label.Repeated;
 
         /// <summary>
+        /// Returns <c>true</c> if this field is a required field; <c>false</c> otherwise.
+        /// </summary>
+        public bool IsRequired => Proto.Label == FieldDescriptorProto.Types.Label.Required;
+
+        /// <summary>
         /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.
         /// </summary>
         public bool IsMap => fieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry;

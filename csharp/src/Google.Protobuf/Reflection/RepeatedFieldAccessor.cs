@@ -53,7 +53,7 @@ namespace Google.Protobuf.Reflection
 
         public override bool HasValue(IMessage message)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException("HasValue is not implemented for repeated fields");
         }
 
         public override void SetValue(IMessage message, object value)

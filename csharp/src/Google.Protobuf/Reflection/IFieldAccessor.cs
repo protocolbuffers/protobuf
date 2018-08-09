@@ -52,7 +52,7 @@ namespace Google.Protobuf.Reflection
         void Clear(IMessage message);
 
         /// <summary>
-        /// Indicates whether the field in the specified message is set. For proto3 fields and repeated fields, this throws an <see cref="InvalidOperationException"/>
+        /// Indicates whether the field in the specified message is set. For proto3 fields, this throws an <see cref="InvalidOperationException"/>
         /// </summary>
         bool HasValue(IMessage message);
 

@@ -70,18 +70,6 @@ namespace Google.Protobuf
     }
 
     /// <summary>
-    /// Interface for a Protocol Buffers message, supporting 
-    /// proto2 operations required for serialization
-    /// </summary>
-    public interface IMessage2 : IMessage
-    {
-        /// <summary>
-        /// Checks if all required fields have values set
-        /// </summary>
-        bool IsInitialized();
-    }
-
-    /// <summary>
     /// Generic interface for a Protocol Buffers message,
     /// where the type parameter is expected to be the same type as
     /// the implementation class.

@@ -175,7 +175,7 @@ namespace Google.Protobuf
 
         internal static void CheckMergedRequiredFields(IMessage message)
         {
-            if (message is IMessage2 proto2 && !proto2.IsInitialized())
+            if (!message.IsInitialized())
                 throw new InvalidOperationException("Parsed message does not contain all required fields");
         }
 

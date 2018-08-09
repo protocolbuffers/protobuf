@@ -30,7 +30,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Reflection;
+using System.Collections;
 using System.IO;
+using System.Linq;
 
 namespace Google.Protobuf
 {
@@ -138,6 +141,75 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             return ByteString.AttachBytes(message.ToByteArray());
+        }
+
+        /// <summary>
+        /// Checks if all required fields in a message have values set. For proto3 messages, this returns true
+        /// </summary>
+        public static bool IsInitialized(this IMessage message)
+        {
+            if (message.Descriptor.File.Proto.Syntax != "proto2")
+            {
+                return true;
+            }
+
+            return message.Descriptor
+                .Fields
+                .InDeclarationOrder()
+                .Where(f => f.IsRequired || f.IsRepeated || f.IsMap || f.MessageType != null)
+                .All(f =>
+                {
+                    if (f.MessageType != null)
+                    {
+                        if (f.Accessor.HasValue(message))
+                        {
+                            var field = (IMessage)f.Accessor.GetValue(message);
+                            return field.IsInitialized();
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else if (f.IsRepeated)
+                    {
+                        IList list = (IList)f.Accessor.GetValue(message);
+                        foreach (IMessage item in list)
+                        {
+                            if (item is null)
+                            {
+                                return true;
+                            }
+                            else if (!item.IsInitialized())
+                            {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    }
+                    else if (f.IsMap)
+                    {
+                        IDictionary list = (IDictionary)f.Accessor.GetValue(message);
+                        foreach (IMessage item in list.Values)
+                        {
+                            if (item is null)
+                            {
+                                return true;
+                            }
+                            else if (!item.IsInitialized())
+                            {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    }
+                    else
+                    {
+                        return f.Accessor.HasValue(message);
+                    }
+                });
         }
 
         // Implementations allowing unknown fields to be discarded.
