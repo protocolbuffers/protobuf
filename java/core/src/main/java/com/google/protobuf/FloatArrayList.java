@@ -42,7 +42,8 @@ import java.util.RandomAccess;
  *
  * @author dweis@google.com (Daniel Weis)
  */
-final class FloatArrayList extends AbstractProtobufList<Float>
+final class FloatArrayList
+    extends AbstractProtobufList<Float>
     implements FloatList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final FloatArrayList EMPTY_LIST = new FloatArrayList();

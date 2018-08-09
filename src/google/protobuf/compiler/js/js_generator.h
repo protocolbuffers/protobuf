@@ -329,6 +329,6 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
 }  // namespace js
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__

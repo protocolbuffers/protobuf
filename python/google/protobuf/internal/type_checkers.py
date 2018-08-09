@@ -185,6 +185,14 @@ class UnicodeValueChecker(object):
                          'encoding. Non-UTF-8 strings must be converted to '
                          'unicode objects before being added.' %
                          (proposed_value))
+    else:
+      try:
+        proposed_value.encode('utf8')
+      except UnicodeEncodeError:
+        raise ValueError('%.1024r isn\'t a valid unicode string and '
+                         'can\'t be encoded in UTF-8.'%
+                         (proposed_value))
+
     return proposed_value
 
   def DefaultValue(self):

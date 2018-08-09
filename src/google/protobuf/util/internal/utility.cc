@@ -43,13 +43,15 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/mathlimits.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
 
 bool GetBoolOptionOrDefault(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, bool default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
@@ -59,7 +61,7 @@ bool GetBoolOptionOrDefault(
 }
 
 int64 GetInt64OptionOrDefault(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, int64 default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
@@ -69,7 +71,7 @@ int64 GetInt64OptionOrDefault(
 }
 
 double GetDoubleOptionOrDefault(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, double default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
@@ -79,7 +81,7 @@ double GetDoubleOptionOrDefault(
 }
 
 string GetStringOptionOrDefault(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, const string& default_value) {
   const google::protobuf::Option* opt = FindOptionOrNull(options, option_name);
   if (opt == nullptr) {
@@ -136,7 +138,7 @@ const string GetFullTypeWithUrl(StringPiece simple_type) {
 }
 
 const google::protobuf::Option* FindOptionOrNull(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name) {
   for (int i = 0; i < options.size(); ++i) {
     const google::protobuf::Option& opt = options.Get(i);
@@ -325,7 +327,7 @@ string ToSnakeCase(StringPiece input) {
 }
 
 std::set<string>* well_known_types_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(well_known_types_init_);
+GOOGLE_PROTOBUF_NAMESPACE_ID::internal::once_flag well_known_types_init_;
 const char* well_known_types_name_array_[] = {
     "google.protobuf.Timestamp",   "google.protobuf.Duration",
     "google.protobuf.DoubleValue", "google.protobuf.FloatValue",
@@ -345,7 +347,8 @@ void InitWellKnownTypes() {
 }
 
 bool IsWellKnownType(const string& type_name) {
-  InitWellKnownTypes();
+  GOOGLE_PROTOBUF_NAMESPACE_ID::internal::call_once(well_known_types_init_,
+                                                     InitWellKnownTypes);
   return ContainsKey(*well_known_types_, type_name);
 }
 

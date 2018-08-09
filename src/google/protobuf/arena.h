@@ -49,8 +49,14 @@ using type_info = ::type_info;
 #endif
 
 #include <google/protobuf/arena_impl.h>
-#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/port.h>
 #include <type_traits>
+
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -58,13 +64,10 @@ namespace protobuf {
 struct ArenaOptions;  // defined below
 
 }  // namespace protobuf
+}  // namespace google
 
-namespace quality_webanswers {
 
-void TempPrivateWorkAround(::google::protobuf::ArenaOptions* arena_options);
-
-}  // namespace quality_webanswers
-
+namespace google {
 namespace protobuf {
 
 class Arena;          // defined below
@@ -73,7 +76,7 @@ class MessageLite;
 
 namespace arena_metrics {
 
-void EnableArenaMetrics(::google::protobuf::ArenaOptions* options);
+void EnableArenaMetrics(ArenaOptions* options);
 
 }  // namespace arena_metrics
 
@@ -177,15 +180,14 @@ struct ArenaOptions {
   static const size_t kDefaultStartBlockSize = 256;
   static const size_t kDefaultMaxBlockSize = 8192;
 
-  friend void ::google::protobuf::arena_metrics::EnableArenaMetrics(ArenaOptions*);
-  friend void quality_webanswers::TempPrivateWorkAround(ArenaOptions*);
+  friend void arena_metrics::EnableArenaMetrics(ArenaOptions*);
   friend class Arena;
   friend class ArenaOptionsTestFriend;
 };
 
 // Support for non-RTTI environments. (The metrics hooks API uses type
 // information.)
-#ifndef GOOGLE_PROTOBUF_NO_RTTI
+#if GOOGLE_PROTOBUF_RTTI
 #define RTTI_TYPE_ID(type) (&typeid(type))
 #else
 #define RTTI_TYPE_ID(type) (NULL)
@@ -216,7 +218,7 @@ struct ArenaOptions {
 //
 // - The type T must have (at least) two constructors: a constructor with no
 //   arguments, called when a T is allocated on the heap; and a constructor with
-//   a google::protobuf::Arena* argument, called when a T is allocated on an arena. If the
+//   a Arena* argument, called when a T is allocated on an arena. If the
 //   second constructor is called with a NULL arena pointer, it must be
 //   equivalent to invoking the first (no-argument) constructor.
 //
@@ -237,7 +239,9 @@ struct ArenaOptions {
 //   arg1, arg2).
 //
 // This protocol is implemented by all arena-enabled proto2 message classes as
-// well as RepeatedPtrField.
+// well as protobuf container types like RepeatedPtrField and Map. The protocol
+// is internal to protobuf and is not guaranteed to be stable. Non-proto types
+// should not rely on this protocol.
 //
 // Do NOT subclass Arena. This class will be marked as final when C++11 is
 // enabled.
@@ -319,7 +323,7 @@ class LIBPROTOBUF_EXPORT Arena {
   // is obtained from the arena).
   template <typename T, typename... Args>
   GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE static T* Create(Arena* arena,
-                                                           Args&&... args) {
+                                                            Args&&... args) {
     return CreateNoMessage<T>(arena, is_arena_constructable<T>(),
                               std::forward<Args>(args)...);
   }
@@ -359,7 +363,8 @@ class LIBPROTOBUF_EXPORT Arena {
   //
   // Combines SpaceAllocated and SpaceUsed. Returns a pair of
   // <space_allocated, space_used>.
-  PROTOBUF_RUNTIME_DEPRECATED("Please use SpaceAllocated() and SpaceUsed()")
+  GOOGLE_PROTOBUF_DEPRECATED_MSG(
+      "Please use SpaceAllocated() and SpaceUsed()")
   std::pair<uint64, uint64> SpaceAllocatedAndUsed() const {
     return std::make_pair(SpaceAllocated(), SpaceUsed());
   }
@@ -602,8 +607,8 @@ class LIBPROTOBUF_EXPORT Arena {
   }
 
   // CreateInArenaStorage is used to implement map field. Without it,
-  // google::protobuf::Map need to call generated message's protected arena constructor,
-  // which needs to declare google::protobuf::Map as friend of generated message.
+  // Map need to call generated message's protected arena constructor,
+  // which needs to declare Map as friend of generated message.
   template <typename T>
   static void CreateInArenaStorage(T* ptr, Arena* arena) {
     CreateInArenaStorageInternal(ptr, arena,
@@ -635,19 +640,19 @@ class LIBPROTOBUF_EXPORT Arena {
 
   // These implement Own(), which registers an object for deletion (destructor
   // call and operator delete()). The second parameter has type 'true_type' if T
-  // is a subtype of ::google::protobuf::Message and 'false_type' otherwise. Collapsing
+  // is a subtype of Message and 'false_type' otherwise. Collapsing
   // all template instantiations to one for generic Message reduces code size,
   // using the virtual destructor instead.
   template <typename T>
   GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE void OwnInternal(T* object,
-                                                           std::true_type) {
+                                                            std::true_type) {
     if (object != NULL) {
       impl_.AddCleanup(object, &internal::arena_delete_object<Message>);
     }
   }
   template <typename T>
   GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE void OwnInternal(T* object,
-                                                           std::false_type) {
+                                                            std::false_type) {
     if (object != NULL) {
       impl_.AddCleanup(object, &internal::arena_delete_object<T>);
     }
@@ -698,6 +703,8 @@ class LIBPROTOBUF_EXPORT Arena {
 #undef RTTI_TYPE_ID
 
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_ARENA_H__

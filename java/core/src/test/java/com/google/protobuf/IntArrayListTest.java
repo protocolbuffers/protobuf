@@ -299,20 +299,22 @@ public class IntArrayListTest extends TestCase {
   }
 
   public void testRemoveEndOfCapacity() {
-    IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(1);
+    IntList toRemove =
+        IntArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addInt(3);
     toRemove.remove(0);
     assertEquals(0, toRemove.size());
   }
 
   public void testSublistRemoveEndOfCapacity() {
-    IntList toRemove = IntArrayList.emptyList().mutableCopyWithCapacity(1);
+    IntList toRemove =
+        IntArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addInt(3);
     toRemove.subList(0, 1).clear();
     assertEquals(0, toRemove.size());
   }
 
-  private void assertImmutable(IntArrayList list) {
+  private void assertImmutable(IntList list) {
     if (list.contains(1)) {
       throw new RuntimeException("Cannot test the immutability of lists that contain 1.");
     }

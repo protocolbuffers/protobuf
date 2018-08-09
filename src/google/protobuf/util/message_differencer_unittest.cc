@@ -1936,6 +1936,45 @@ TEST(MessageDifferencerTest, IgnoreField_TrumpsCompareWithFields) {
   EXPECT_TRUE(differencer.CompareWithFields(msg1, msg2, fields, fields));
 }
 
+TEST(MessageDifferencerTest, IgnoreField_SetReportIgnoresFalse) {
+  protobuf_unittest::TestField msg1;
+  protobuf_unittest::TestField msg2;
+
+  msg1.set_a(1);
+  msg1.set_b(2);
+  msg1.set_c(3);
+  msg1.add_rc(1);
+  msg1.add_rc(2);
+
+  msg2.set_a(1);
+  msg2.set_b(1);
+
+  const FieldDescriptor* a = GetFieldDescriptor(msg1, "a");
+  const FieldDescriptor* b = GetFieldDescriptor(msg1, "b");
+  const FieldDescriptor* c = GetFieldDescriptor(msg1, "c");
+  const FieldDescriptor* rc = GetFieldDescriptor(msg1, "rc");
+
+  std::vector<const FieldDescriptor*> fields;
+  fields.push_back(a);
+  fields.push_back(b);
+  fields.push_back(c);
+  fields.push_back(rc);
+
+  string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.set_report_ignores(false);
+  differencer.set_report_matches(true);
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.IgnoreField(c);
+  differencer.IgnoreField(rc);
+  differencer.set_scope(util::MessageDifferencer::FULL);
+  EXPECT_FALSE(differencer.CompareWithFields(msg1, msg2, fields, fields));
+
+  EXPECT_EQ(diff_report,
+            "matched: a : 1\n"
+            "modified: b: 2 -> 1\n");
+}
+
 
 // Test class to save a copy of the last field_context.parent_fields() vector
 // passed to the comparison function.
@@ -1943,12 +1982,11 @@ class ParentSavingFieldComparator : public util::FieldComparator {
  public:
   ParentSavingFieldComparator() {}
 
-  virtual ComparisonResult Compare(
-      const google::protobuf::Message& message_1,
-      const google::protobuf::Message& message_2,
-      const google::protobuf::FieldDescriptor* field,
-      int index_1, int index_2,
-      const google::protobuf::util::FieldContext* field_context) {
+  virtual ComparisonResult Compare(const Message& message_1,
+                                   const Message& message_2,
+                                   const FieldDescriptor* field, int index_1,
+                                   int index_2,
+                                   const util::FieldContext* field_context) {
     if (field_context)
       parent_fields_ = *(field_context->parent_fields());
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -1958,12 +1996,12 @@ class ParentSavingFieldComparator : public util::FieldComparator {
     }
   }
 
-  std::vector<google::protobuf::util::MessageDifferencer::SpecificField> parent_fields() {
+  std::vector<util::MessageDifferencer::SpecificField> parent_fields() {
     return parent_fields_;
   }
 
  private:
-  std::vector<google::protobuf::util::MessageDifferencer::SpecificField> parent_fields_;
+  std::vector<util::MessageDifferencer::SpecificField> parent_fields_;
 };
 
 // Tests if MessageDifferencer sends the parent fields in the FieldContext
@@ -2894,7 +2932,7 @@ TEST_F(ComparisonTest, MapIgnoreKeyTest) {
 }
 
 TEST_F(ComparisonTest, MapRoundTripSyncTest) {
-  google::protobuf::TextFormat::Parser parser;
+  TextFormat::Parser parser;
   unittest::TestMap map_reflection1;
 
   // By setting via reflection, data exists in repeated field.
@@ -2910,7 +2948,7 @@ TEST_F(ComparisonTest, MapRoundTripSyncTest) {
 }
 
 TEST_F(ComparisonTest, MapEntryPartialTest) {
-  google::protobuf::TextFormat::Parser parser;
+  TextFormat::Parser parser;
   unittest::TestMap map1;
   unittest::TestMap map2;
 
@@ -2932,7 +2970,7 @@ TEST_F(ComparisonTest, MapEntryPartialTest) {
 }
 
 TEST_F(ComparisonTest, MapEntryPartialEmptyKeyTest) {
-  google::protobuf::TextFormat::Parser parser;
+  TextFormat::Parser parser;
   unittest::TestMap map1;
   unittest::TestMap map2;
   ASSERT_TRUE(parser.ParseFromString("map_int32_foreign_message {}", &map1));
@@ -2961,7 +2999,7 @@ class LengthMapKeyComparator
 };
 
 TEST_F(ComparisonTest, MapEntryCustomMapKeyComparator) {
-  google::protobuf::TextFormat::Parser parser;
+  TextFormat::Parser parser;
   protobuf_unittest::TestMap msg1;
   protobuf_unittest::TestMap msg2;
 

@@ -32,7 +32,6 @@ package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor.Syntax;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.Internal.EnumLite;
 import java.io.IOException;
@@ -446,10 +445,7 @@ public abstract class AbstractMessage
         final CodedInputStream input,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      boolean discardUnknown =
-          getDescriptorForType().getFile().getSyntax() == Syntax.PROTO3
-              ? input.shouldDiscardUnknownFieldsProto3()
-              : input.shouldDiscardUnknownFields();
+      boolean discardUnknown = input.shouldDiscardUnknownFields();
       final UnknownFieldSet.Builder unknownFields =
           discardUnknown ? null : UnknownFieldSet.newBuilder(getUnknownFields());
       while (true) {

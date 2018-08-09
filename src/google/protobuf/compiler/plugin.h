@@ -85,6 +85,6 @@ bool GenerateCode(const CodeGeneratorRequest& request,
 
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__

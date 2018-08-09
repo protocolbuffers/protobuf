@@ -628,3 +628,130 @@ class MessageMap(MutableMapping):
 
   def GetEntryClass(self):
     return self._entry_descriptor._concrete_class
+
+
+class _UnknownField(object):
+
+  """A parsed unknown field."""
+
+  # Disallows assignment to other attributes.
+  __slots__ = ['_field_number', '_wire_type', '_data']
+
+  def __init__(self, field_number, wire_type, data):
+    self._field_number = field_number
+    self._wire_type = wire_type
+    self._data = data
+    return
+
+  def __lt__(self, other):
+    # pylint: disable=protected-access
+    return self._field_number < other._field_number
+
+  def __eq__(self, other):
+    if self is other:
+      return True
+    # pylint: disable=protected-access
+    return (self._field_number == other._field_number and
+            self._wire_type == other._wire_type and
+            self._data == other._data)
+
+
+class UnknownFieldRef(object):
+
+  def __init__(self, parent, index):
+    self._parent = parent
+    self._index = index
+    return
+
+  def _check_valid(self):
+    if not self._parent:
+      raise ValueError('UnknownField does not exist. '
+                       'The parent message might be cleared.')
+    if self._index >= len(self._parent):
+      raise ValueError('UnknownField does not exist. '
+                       'The parent message might be cleared.')
+
+  @property
+  def field_number(self):
+    self._check_valid()
+    # pylint: disable=protected-access
+    return self._parent._internal_get(self._index)._field_number
+
+  @property
+  def wire_type(self):
+    self._check_valid()
+    # pylint: disable=protected-access
+    return self._parent._internal_get(self._index)._wire_type
+
+  @property
+  def data(self):
+    self._check_valid()
+    # pylint: disable=protected-access
+    return self._parent._internal_get(self._index)._data
+
+
+class UnknownFieldSet(object):
+
+  """UnknownField container"""
+
+  # Disallows assignment to other attributes.
+  __slots__ = ['_values']
+
+  def __init__(self):
+    self._values = []
+
+  def __getitem__(self, index):
+    if self._values is None:
+      raise ValueError('UnknownFields does not exist. '
+                       'The parent message might be cleared.')
+    size = len(self._values)
+    if index < 0:
+      index += size
+    if index < 0 or index >= size:
+      raise IndexError('index %d out of range'.index)
+
+    return UnknownFieldRef(self, index)
+
+  def _internal_get(self, index):
+    return self._values[index]
+
+  def __len__(self):
+    if self._values is None:
+      raise ValueError('UnknownFields does not exist. '
+                       'The parent message might be cleared.')
+    return len(self._values)
+
+  def _add(self, field_number, wire_type, data):
+    unknown_field = _UnknownField(field_number, wire_type, data)
+    self._values.append(unknown_field)
+    return unknown_field
+
+  def __iter__(self):
+    for i in range(len(self)):
+      yield UnknownFieldRef(self, i)
+
+  def _extend(self, other):
+    if other is None:
+      return
+    # pylint: disable=protected-access
+    self._values.extend(other._values)
+
+  def __eq__(self, other):
+    if self is other:
+      return True
+    # Sort unknown fields because their order shouldn't
+    # affect equality test.
+    values = list(self._values)
+    if other is None:
+      return not values
+    values.sort()
+    # pylint: disable=protected-access
+    other_values = sorted(other._values)
+    return values == other_values
+
+  def _clear(self):
+    for value in self._values:
+      # pylint: disable=protected-access
+      if isinstance(value._data, UnknownFieldSet):
+        value._data._clear()  # pylint: disable=protected-access
+    self._values = None

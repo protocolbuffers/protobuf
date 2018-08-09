@@ -57,6 +57,8 @@ import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -2377,5 +2379,64 @@ public class LiteTest extends TestCase {
       fail();
     } catch (NullPointerException expected) {
     }
+  }
+
+  public void testSerializeToOutputStreamThrowsIOException() {
+    try {
+      TestAllTypesLite.newBuilder()
+          .setOptionalBytes(ByteString.copyFromUtf8("hello"))
+          .build()
+          .writeTo(
+              new OutputStream() {
+
+                @Override
+                public void write(int b) throws IOException {
+                  throw new IOException();
+                }
+              });
+      fail();
+    } catch (IOException expected) {
+    }
+  }
+
+  public void testUnpairedSurrogatesReplacedByQuestionMark() throws InvalidProtocolBufferException {
+    String testString = "foo \ud83d bar";
+    String expectedString = "foo ? bar";
+
+    TestAllTypesLite testMessage =
+        TestAllTypesLite.newBuilder().setOptionalString(testString).build();
+    ByteString serializedMessage = testMessage.toByteString();
+
+    // Behavior is compatible with String.getBytes("UTF-8"), which replaces
+    // unpaired surrogates with a question mark.
+    TestAllTypesLite parsedMessage = TestAllTypesLite.parseFrom(serializedMessage);
+    assertEquals(expectedString, parsedMessage.getOptionalString());
+
+    // Conversion happens during serialization.
+    ByteString expectedBytes = ByteString.copyFromUtf8(expectedString);
+    assertTrue(
+        String.format(
+            "Expected serializedMessage (%s) to contain \"%s\" (%s).",
+            encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes)),
+        contains(serializedMessage, expectedBytes));
+  }
+
+  private String encodeHex(ByteString bytes) {
+    String hexDigits = "0123456789abcdef";
+    StringBuilder stringBuilder = new StringBuilder(bytes.size() * 2);
+    for (byte b : bytes) {
+      stringBuilder.append(hexDigits.charAt((b & 0xf0) >> 4));
+      stringBuilder.append(hexDigits.charAt(b & 0x0f));
+    }
+    return stringBuilder.toString();
+  }
+
+  private boolean contains(ByteString a, ByteString b) {
+    for (int i = 0; i <= a.size() - b.size(); ++i) {
+      if (a.substring(i, i + b.size()).equals(b)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

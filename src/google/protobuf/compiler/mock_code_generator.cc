@@ -36,9 +36,9 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-
-
 #include <google/protobuf/stubs/strutil.h>
+
+
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -179,7 +179,7 @@ bool MockCodeGenerator::Generate(
   for (int i = 0; i < file->message_type_count(); i++) {
     if (HasPrefixString(file->message_type(i)->name(), "MockCodeGenerator_")) {
       string command = StripPrefixString(file->message_type(i)->name(),
-                                         "MockCodeGenerator_");
+                                                  "MockCodeGenerator_");
       if (command == "Error") {
         *error = "Saw message type MockCodeGenerator_Error.";
         return false;
@@ -223,8 +223,8 @@ bool MockCodeGenerator::Generate(
 
   if (HasPrefixString(parameter, "insert=")) {
     std::vector<string> insert_into;
-    SplitStringUsing(StripPrefixString(parameter, "insert="),
-                     ",", &insert_into);
+    SplitStringUsing(StripPrefixString(parameter, "insert="), ",",
+                     &insert_into);
 
     for (size_t i = 0; i < insert_into.size(); i++) {
       {

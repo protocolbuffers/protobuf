@@ -96,6 +96,6 @@ class TestUtilLite {
 };
 
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_TEST_UTIL_LITE_H__

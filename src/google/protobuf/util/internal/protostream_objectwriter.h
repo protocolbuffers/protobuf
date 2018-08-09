@@ -32,8 +32,9 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTWRITER_H__
 
 #include <deque>
-#include <google/protobuf/stubs/hash.h>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -46,6 +47,7 @@
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
@@ -53,14 +55,16 @@ namespace io {
 class CodedOutputStream;
 }  // namespace io
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 class Type;
 class Field;
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
@@ -94,10 +98,15 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // the field name.
     bool use_lower_camel_for_enums;
 
+    // If true, skips rendering the map entry if map value is null unless the
+    // value type is google.protobuf.NullType.
+    bool ignore_null_value_map_entry;
+
     Options()
         : struct_integers_as_strings(false),
           ignore_unknown_fields(false),
-          use_lower_camel_for_enums(false) {}
+          use_lower_camel_for_enums(false),
+          ignore_null_value_map_entry(false) {}
 
     // Default instance of Options with all options set to defaults.
     static const Options& Defaults() {
@@ -112,18 +121,18 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
                           strings::ByteSink* output, ErrorListener* listener,
                           const ProtoStreamObjectWriter::Options& options =
                               ProtoStreamObjectWriter::Options::Defaults());
-  virtual ~ProtoStreamObjectWriter() override;
+  ~ProtoStreamObjectWriter() override;
 
   // ObjectWriter methods.
-  virtual ProtoStreamObjectWriter* StartObject(StringPiece name) override;
-  virtual ProtoStreamObjectWriter* EndObject() override;
-  virtual ProtoStreamObjectWriter* StartList(StringPiece name) override;
-  virtual ProtoStreamObjectWriter* EndList() override;
+  ProtoStreamObjectWriter* StartObject(StringPiece name) override;
+  ProtoStreamObjectWriter* EndObject() override;
+  ProtoStreamObjectWriter* StartList(StringPiece name) override;
+  ProtoStreamObjectWriter* EndList() override;
 
   // Renders a DataPiece 'value' into a field whose wire type is determined
   // from the given field 'name'.
-  virtual ProtoStreamObjectWriter* RenderDataPiece(StringPiece name,
-                                           const DataPiece& value) override;
+  ProtoStreamObjectWriter* RenderDataPiece(StringPiece name,
+                                           const DataPiece& data) override;
 
  protected:
   // Function that renders a well known type with modified behavior.
@@ -171,13 +180,11 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
       // Constructor for START_OBJECT and START_LIST events.
       explicit Event(Type type, StringPiece name)
-          : type_(type),
-            name_(name.ToString()),
-            value_(DataPiece::NullData()) {}
+          : type_(type), name_(name), value_(DataPiece::NullData()) {}
 
       // Constructor for RENDER_DATA_PIECE events.
       explicit Event(StringPiece name, const DataPiece& value)
-          : type_(RENDER_DATA_PIECE), name_(name.ToString()), value_(value) {
+          : type_(RENDER_DATA_PIECE), name_(name), value_(value) {
         DeepCopy();
       }
 
@@ -263,7 +270,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // Constructor for a field of a message.
     Item(Item* parent, ItemType item_type, bool is_placeholder, bool is_list);
 
-    virtual ~Item() override {}
+    ~Item() override {}
 
     // These functions return true if the element type is corresponding to the
     // type in function name.
@@ -272,7 +279,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
     AnyWriter* any() const { return any_.get(); }
 
-    virtual Item* parent() const override {
+    Item* parent() const override {
       return static_cast<Item*>(BaseElement::parent());
     }
 
@@ -299,7 +306,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
     // Set of map keys already seen for the type_. Used to validate incoming
     // messages so no map key appears more than once.
-    std::unique_ptr<hash_set<string> > map_keys_;
+    std::unique_ptr<std::unordered_set<string> > map_keys_;
 
     // Conveys whether this Item is a placeholder or not. Placeholder items are
     // pushed to stack to account for special types.
@@ -371,8 +378,8 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // is_placeholder conveys whether the item is a placeholder item or not.
   // Placeholder items are pushed when adding auxillary types' StartObject or
   // StartList calls.
-  void Push(StringPiece name, Item::ItemType item_type, bool is_placeholder,
-            bool is_list);
+  void Push(StringPiece name, Item::ItemType item_type,
+            bool is_placeholder, bool is_list);
 
   // Pops items from the stack. All placeholder items are popped until a
   // non-placeholder item is found.
@@ -385,7 +392,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
  private:
   // Helper functions to create the map and find functions responsible for
   // rendering well known types, keyed by type URL.
-  static hash_map<string, TypeRenderer>* renderers_;
+  static std::unordered_map<string, TypeRenderer>* renderers_;
 
   // Variables for describing the structure of the input tree:
   // master_type_: descriptor for the whole protobuf message.
@@ -403,6 +410,6 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTWRITER_H__

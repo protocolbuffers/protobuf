@@ -234,6 +234,11 @@ public final class Internal {
     T findValueByNumber(int number);
   }
 
+  /** Interface for an object which verifies integers are in range. */
+  public interface EnumVerifier {
+    boolean isInRange(int number);
+  }
+
   /**
    * Helper method for implementing {@link Message#hashCode()} for longs.
    * @see Long#hashCode()

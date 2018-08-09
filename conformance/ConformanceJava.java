@@ -233,10 +233,14 @@ class ConformanceJava {
       }
       case JSON_PAYLOAD: {
         try {
-          TestMessagesProto3.TestAllTypesProto3.Builder builder = 
+          TestMessagesProto3.TestAllTypesProto3.Builder builder =
               TestMessagesProto3.TestAllTypesProto3.newBuilder();
-          JsonFormat.parser().usingTypeRegistry(typeRegistry)
-              .merge(request.getJsonPayload(), builder);
+          JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(typeRegistry);
+          if (request.getTestCategory()
+              == Conformance.TestCategory.JSON_IGNORE_UNKNOWN_PARSING_TEST) {
+            parser = parser.ignoringUnknownFields();
+          }
+          parser.merge(request.getJsonPayload(), builder);
           testMessage = builder.build();
         } catch (InvalidProtocolBufferException e) {
           return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();

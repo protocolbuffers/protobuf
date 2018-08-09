@@ -63,17 +63,17 @@ namespace {
 const char kUtf8Text[] = {
     'h', 'i', ' ',
     // utf-8: 11010000 10011111, utf-16: 100 0001 1111 = 0x041F
-    0xd0, 0x9f,
+    static_cast<char>(0xd0), static_cast<char>(0x9f),
     // utf-8: 11010001 10000000, utf-16: 100 0100 0000 = 0x0440
-    0xd1, 0x80,
+    static_cast<char>(0xd1), static_cast<char>(0x80),
     // utf-8: 11010000 10111000, utf-16: 100 0011 1000 = 0x0438
-    0xd0, 0xb8,
+    static_cast<char>(0xd0), static_cast<char>(0xb8),
     // utf-8: 11010000 10110010, utf-16: 100 0011 0010 = 0x0432
-    0xd0, 0xb2,
+    static_cast<char>(0xd0), static_cast<char>(0xb2),
     // utf-8: 11010000 10110101, utf-16: 100 0011 0101 = 0x0435
-    0xd0, 0xb5,
+    static_cast<char>(0xd0), static_cast<char>(0xb5),
     // utf-8: 11010001 10000010, utf-16: 100 0100 0010 = 0x0442
-    0xd1, 0x82, 0
+    static_cast<char>(0xd1), static_cast<char>(0x82), 0
 };
 
 const wchar_t kUtf16Text[] = {

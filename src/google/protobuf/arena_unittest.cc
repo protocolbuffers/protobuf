@@ -52,18 +52,19 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/unknown_field_set.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <gtest/gtest.h>
 
 
-namespace google {
+
 using proto2_arena_unittest::ArenaMessage;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestAllExtensions;
 using protobuf_unittest::TestOneof2;
 using protobuf_unittest::TestEmptyMessage;
 
+namespace google {
 namespace protobuf {
 
 class Notifier {
@@ -279,7 +280,7 @@ TEST(ArenaTest, InitialBlockTooSmall) {
   options.initial_block_size = arena_block.size();
   Arena arena(options);
 
-  char* p = ::google::protobuf::Arena::CreateArray<char>(&arena, 96);
+  char* p = Arena::CreateArray<char>(&arena, 96);
   uintptr_t allocation = reinterpret_cast<uintptr_t>(p);
 
   // Ensure that the arena allocator did not return memory pointing into the
@@ -585,7 +586,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageMakesCopy) {
   delete nested_string;
 }
 
-#ifndef GOOGLE_PROTOBUF_NO_RTTI
+#if GOOGLE_PROTOBUF_RTTI
 TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
   TestAllTypes::NestedMessage* nested_msg = NULL;
   // Note: no string: reflection API only supports releasing submessages.
@@ -602,7 +603,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
   EXPECT_EQ(42, nested_msg->bb());
   delete nested_msg;
 }
-#endif  // !GOOGLE_PROTOBUF_NO_RTTI
+#endif  // GOOGLE_PROTOBUF_RTTI
 
 TEST(ArenaTest, SetAllocatedAcrossArenas) {
   Arena arena1;
@@ -1128,7 +1129,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
 }
 
 
-#ifndef GOOGLE_PROTOBUF_NO_RTTI
+#if GOOGLE_PROTOBUF_RTTI
 TEST(ArenaTest, MutableMessageReflection) {
   Arena arena;
   TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
@@ -1152,7 +1153,7 @@ TEST(ArenaTest, MutableMessageReflection) {
   EXPECT_EQ(submessage_expected, submessage);
   EXPECT_EQ(&arena, submessage->GetArena());
 }
-#endif  // !GOOGLE_PROTOBUF_NO_RTTI
+#endif  // GOOGLE_PROTOBUF_RTTI
 
 
 void FillArenaAwareFields(TestAllTypes* message) {
@@ -1198,7 +1199,7 @@ TEST(ArenaTest, ParseCorruptedString) {
   TestParseCorruptedString<TestAllTypes, false>(message);
 }
 
-#ifndef GOOGLE_PROTOBUF_NO_RTTI
+#if GOOGLE_PROTOBUF_RTTI
 // Test construction on an arena via generic MessageLite interface. We should be
 // able to successfully deserialize on the arena without incurring heap
 // allocations, i.e., everything should still be arena-allocation-aware.
@@ -1208,7 +1209,7 @@ TEST(ArenaTest, MessageLiteOnArena) {
   options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena(options);
-  const google::protobuf::MessageLite* prototype = &TestAllTypes::default_instance();
+  const MessageLite* prototype = &TestAllTypes::default_instance();
 
   TestAllTypes initial_message;
   FillArenaAwareFields(&initial_message);
@@ -1217,7 +1218,7 @@ TEST(ArenaTest, MessageLiteOnArena) {
 
   {
 
-    google::protobuf::MessageLite* generic_message = prototype->New(&arena);
+    MessageLite* generic_message = prototype->New(&arena);
     EXPECT_TRUE(generic_message != NULL);
     EXPECT_EQ(&arena, generic_message->GetArena());
     EXPECT_TRUE(generic_message->ParseFromString(serialized));
@@ -1227,7 +1228,7 @@ TEST(ArenaTest, MessageLiteOnArena) {
 
   arena.Reset();
 }
-#endif  // !GOOGLE_PROTOBUF_NO_RTTI
+#endif  // GOOGLE_PROTOBUF_RTTI
 
 
 // RepeatedField should support non-POD types, and invoke constructors and
@@ -1260,7 +1261,7 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   EXPECT_EQ(0, arena_1.SpaceAllocated());
   EXPECT_EQ(0, arena_1.SpaceUsed());
   EXPECT_EQ(0, arena_1.Reset());
-  ::google::protobuf::Arena::CreateArray<char>(&arena_1, 320);
+  Arena::CreateArray<char>(&arena_1, 320);
   // Arena will allocate slightly more than 320 for the block headers.
   EXPECT_LE(320, arena_1.SpaceAllocated());
   EXPECT_EQ(Align8(320), arena_1.SpaceUsed());
@@ -1274,7 +1275,7 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   EXPECT_EQ(1024, arena_2.SpaceAllocated());
   EXPECT_EQ(0, arena_2.SpaceUsed());
   EXPECT_EQ(1024, arena_2.Reset());
-  ::google::protobuf::Arena::CreateArray<char>(&arena_2, 55);
+  Arena::CreateArray<char>(&arena_2, 55);
   EXPECT_EQ(1024, arena_2.SpaceAllocated());
   EXPECT_EQ(Align8(55), arena_2.SpaceUsed());
   EXPECT_EQ(1024, arena_2.Reset());
@@ -1284,41 +1285,41 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   options.initial_block_size = 0;
   Arena arena_3(options);
   EXPECT_EQ(0, arena_3.SpaceUsed());
-  ::google::protobuf::Arena::CreateArray<char>(&arena_3, 160);
+  Arena::CreateArray<char>(&arena_3, 160);
   EXPECT_EQ(256, arena_3.SpaceAllocated());
   EXPECT_EQ(Align8(160), arena_3.SpaceUsed());
-  ::google::protobuf::Arena::CreateArray<char>(&arena_3, 70);
+  Arena::CreateArray<char>(&arena_3, 70);
   EXPECT_EQ(256 + 512, arena_3.SpaceAllocated());
   EXPECT_EQ(Align8(160) + Align8(70), arena_3.SpaceUsed());
   EXPECT_EQ(256 + 512, arena_3.Reset());
 }
 
 TEST(ArenaTest, Alignment) {
-  ::google::protobuf::Arena arena;
+  Arena arena;
   for (int i = 0; i < 200; i++) {
-    void* p = ::google::protobuf::Arena::CreateArray<char>(&arena, i);
+    void* p = Arena::CreateArray<char>(&arena, i);
     GOOGLE_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
   }
 }
 
 TEST(ArenaTest, BlockSizeSmallerThanAllocation) {
   for (size_t i = 0; i <= 8; ++i) {
-    ::google::protobuf::ArenaOptions opt;
+    ArenaOptions opt;
     opt.start_block_size = opt.max_block_size = i;
-    ::google::protobuf::Arena arena(opt);
+    Arena arena(opt);
 
-    *::google::protobuf::Arena::Create<int64>(&arena) = 42;
+    *Arena::Create<int64>(&arena) = 42;
     EXPECT_GE(arena.SpaceAllocated(), 8);
     EXPECT_EQ(8, arena.SpaceUsed());
 
-    *::google::protobuf::Arena::Create<int64>(&arena) = 42;
+    *Arena::Create<int64>(&arena) = 42;
     EXPECT_GE(arena.SpaceAllocated(), 16);
     EXPECT_EQ(16, arena.SpaceUsed());
   }
 }
 
 TEST(ArenaTest, GetArenaShouldReturnTheArenaForArenaAllocatedMessages) {
-  ::google::protobuf::Arena arena;
+  Arena arena;
   ArenaMessage* message = Arena::CreateMessage<ArenaMessage>(&arena);
   const ArenaMessage* const_pointer_to_message = message;
   EXPECT_EQ(&arena, Arena::GetArena(message));
@@ -1333,14 +1334,14 @@ TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaAllocatedMessages) {
 }
 
 TEST(ArenaTest, AddCleanup) {
-  ::google::protobuf::Arena arena;
+  Arena arena;
   for (int i = 0; i < 100; i++) {
     arena.Own(new int);
   }
 }
 
 TEST(ArenaTest, UnsafeSetAllocatedOnArena) {
-  ::google::protobuf::Arena arena;
+  Arena arena;
   TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
   EXPECT_FALSE(message->has_optional_string());
 
@@ -1357,7 +1358,7 @@ TEST(ArenaTest, UnsafeSetAllocatedOnArena) {
 // value to be verified.
 class ArenaHooksTestUtil {
  public:
-  static void* on_init(::google::protobuf::Arena* arena) {
+  static void* on_init(Arena* arena) {
     ++num_init;
     int* cookie = new int(kCookieValue);
     return static_cast<void*>(cookie);
@@ -1370,15 +1371,13 @@ class ArenaHooksTestUtil {
     EXPECT_EQ(kCookieValue, cookie_value);
   }
 
-  static void on_reset(::google::protobuf::Arena* arena, void* cookie,
-                       uint64 space_used) {
+  static void on_reset(Arena* arena, void* cookie, uint64 space_used) {
     ++num_reset;
     int cookie_value = *static_cast<int*>(cookie);
     EXPECT_EQ(kCookieValue, cookie_value);
   }
 
-  static void on_destruction(::google::protobuf::Arena* arena, void* cookie,
-                             uint64 space_used) {
+  static void on_destruction(Arena* arena, void* cookie, uint64 space_used) {
     ++num_destruct;
     int cookie_value = *static_cast<int*>(cookie);
     EXPECT_EQ(kCookieValue, cookie_value);
@@ -1399,7 +1398,7 @@ const int ArenaHooksTestUtil::kCookieValue;
 
 class ArenaOptionsTestFriend {
  public:
-  static void Set(::google::protobuf::ArenaOptions* options) {
+  static void Set(ArenaOptions* options) {
     options->on_arena_init = ArenaHooksTestUtil::on_init;
     options->on_arena_allocation = ArenaHooksTestUtil::on_allocation;
     options->on_arena_reset = ArenaHooksTestUtil::on_reset;
@@ -1409,15 +1408,15 @@ class ArenaOptionsTestFriend {
 
 // Test the hooks are correctly called and that the cookie is passed.
 TEST(ArenaTest, ArenaHooksSanity) {
-  ::google::protobuf::ArenaOptions options;
+  ArenaOptions options;
   ArenaOptionsTestFriend::Set(&options);
 
   // Scope for defining the arena
   {
-    ::google::protobuf::Arena arena(options);
+    Arena arena(options);
     EXPECT_EQ(1, ArenaHooksTestUtil::num_init);
     EXPECT_EQ(0, ArenaHooksTestUtil::num_allocations);
-    ::google::protobuf::Arena::Create<uint64>(&arena);
+    Arena::Create<uint64>(&arena);
     if (std::is_trivially_destructible<uint64>::value) {
       EXPECT_EQ(1, ArenaHooksTestUtil::num_allocations);
     } else {

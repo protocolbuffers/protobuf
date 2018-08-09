@@ -70,7 +70,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
   const Descriptor* filedescriptor_descriptor =
       FileDescriptorProto::default_instance().GetDescriptor();
   CMessage* message = reinterpret_cast<CMessage*>(py_descriptor);
-  if (PyObject_TypeCheck(py_descriptor, &CMessage_Type) &&
+  if (PyObject_TypeCheck(py_descriptor, CMessage_Type) &&
       message->message->GetDescriptor() == filedescriptor_descriptor) {
     // Fast path: Just use the pointer.
     FileDescriptorProto* file_proto =
@@ -141,6 +141,43 @@ bool PyDescriptorDatabase::FindFileContainingExtension(
       PyObject_CallFunction(py_method.get(), "s#i", containing_type.c_str(),
                             containing_type.size(), field_number));
   return GetFileDescriptorProto(py_descriptor.get(), output);
+}
+
+// Finds the tag numbers used by all known extensions of
+// containing_type, and appends them to output in an undefined
+// order.
+// Python DescriptorDatabases are not required to implement this method.
+bool PyDescriptorDatabase::FindAllExtensionNumbers(
+    const string& containing_type, std::vector<int>* output) {
+  ScopedPyObjectPtr py_method(
+      PyObject_GetAttrString(py_database_, "FindAllExtensionNumbers"));
+  if (py_method == NULL) {
+    // This method is not implemented, returns without error.
+    PyErr_Clear();
+    return false;
+  }
+  ScopedPyObjectPtr py_list(
+      PyObject_CallFunction(py_method.get(), "s#", containing_type.c_str(),
+                            containing_type.size()));
+  if (py_list == NULL) {
+    PyErr_Print();
+    return false;
+  }
+  Py_ssize_t size = PyList_Size(py_list.get());
+  int64 item_value;
+  for (Py_ssize_t i = 0 ; i < size; ++i) {
+    ScopedPyObjectPtr item(PySequence_GetItem(py_list.get(), i));
+    item_value = PyLong_AsLong(item.get());
+    if (item_value < 0) {
+      GOOGLE_LOG(ERROR)
+          << "FindAllExtensionNumbers method did not return "
+          << "valid extension numbers.";
+      PyErr_Print();
+      return false;
+    }
+    output->push_back(item_value);
+  }
+  return true;
 }
 
 }  // namespace python

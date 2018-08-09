@@ -46,7 +46,6 @@
 namespace google {
 namespace protobuf {
 namespace io {
-namespace {
 
 // Each test repeats over several block sizes in order to test both cases
 // where particular writes cross a buffer boundary and cases where they do
@@ -195,7 +194,7 @@ class MockDescriptor {
 
  private:
   // Allows access to GetLocationPath.
-  friend class ::google::protobuf::io::Printer;
+  friend class Printer;
 
   // Copies the pre-stored path to output.
   void GetLocationPath(std::vector<int>* output) const { *output = path_; }
@@ -594,7 +593,136 @@ TEST(Printer, WriteFailureExact) {
   EXPECT_EQ("0123456789abcdef", string(buffer, sizeof(buffer)));
 }
 
-}  // namespace
+TEST(Printer, FormatInternal) {
+  std::vector<string> args{"arg1", "arg2"};
+  std::map<string, string> vars{{"foo", "bar"}, {"baz", "bla"}, {"empty", ""}};
+  // Substitution tests
+  {
+    // Direct arg substitution
+    string s;
+    {
+      StringOutputStream output(&s);
+      Printer printer(&output, '$');
+      printer.FormatInternal(args, vars, "$1$ $2$");
+    }
+    EXPECT_EQ("arg1 arg2", s);
+  }
+  {
+    // Variable substitution including spaces left
+    string s;
+    {
+      StringOutputStream output(&s);
+      Printer printer(&output, '$');
+      printer.FormatInternal({}, vars, "$foo$$ baz$$ empty$");
+    }
+    EXPECT_EQ("bar bla", s);
+  }
+  {
+    // Variable substitution including spaces right
+    string s;
+    {
+      StringOutputStream output(&s);
+      Printer printer(&output, '$');
+      printer.FormatInternal({}, vars, "$empty $$foo $$baz$");
+    }
+    EXPECT_EQ("bar bla", s);
+  }
+  {
+    // Mixed variable substitution
+    string s;
+    {
+      StringOutputStream output(&s);
+      Printer printer(&output, '$');
+      printer.FormatInternal(args, vars, "$empty $$1$ $foo $$2$ $baz$");
+    }
+    EXPECT_EQ("arg1 bar arg2 bla", s);
+  }
+
+  // Indentation tests
+  {
+    // Empty lines shouldn't indent.
+    string s;
+    {
+      StringOutputStream output(&s);
+      Printer printer(&output, '$');
+      printer.Indent();
+      printer.FormatInternal(args, vars, "$empty $\n\n$1$ $foo $$2$\n$baz$");
+      printer.Outdent();
+    }
+    EXPECT_EQ("\n\n  arg1 bar arg2\n  bla", s);
+  }
+  {
+    // Annotations should respect indentation.
+    string s;
+    GeneratedCodeInfo info;
+    {
+      StringOutputStream output(&s);
+      AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+      Printer printer(&output, '$', &info_collector);
+      printer.Indent();
+      GeneratedCodeInfo::Annotation annotation;
+      annotation.set_source_file("file.proto");
+      annotation.add_path(33);
+      std::vector<string> args{annotation.SerializeAsString(), "arg1", "arg2"};
+      printer.FormatInternal(args, vars, "$empty $\n\n${1$$2$$}$ $3$\n$baz$");
+      printer.Outdent();
+    }
+    EXPECT_EQ("\n\n  arg1 arg2\n  bla", s);
+    ASSERT_EQ(1, info.annotation_size());
+    const GeneratedCodeInfo::Annotation* arg1 = &info.annotation(0);
+    ASSERT_EQ(1, arg1->path_size());
+    EXPECT_EQ(33, arg1->path(0));
+    EXPECT_EQ("file.proto", arg1->source_file());
+    EXPECT_EQ(4, arg1->begin());
+    EXPECT_EQ(8, arg1->end());
+  }
+#ifdef PROTOBUF_HAS_DEATH_TEST
+  // Death tests in case of illegal format strings.
+  {
+    // Unused arguments
+    string s;
+    StringOutputStream output(&s);
+    Printer printer(&output, '$');
+    EXPECT_DEATH(printer.FormatInternal(args, vars, "$empty $$1$"), "Unused");
+  }
+  {
+    // Wrong order arguments
+    string s;
+    StringOutputStream output(&s);
+    Printer printer(&output, '$');
+    EXPECT_DEATH(printer.FormatInternal(args, vars, "$2$ $1$"), "order");
+  }
+  {
+    // Zero is illegal argument
+    string s;
+    StringOutputStream output(&s);
+    Printer printer(&output, '$');
+    EXPECT_DEATH(printer.FormatInternal(args, vars, "$0$"), "failed");
+  }
+  {
+    // Argument out of bounds
+    string s;
+    StringOutputStream output(&s);
+    Printer printer(&output, '$');
+    EXPECT_DEATH(printer.FormatInternal(args, vars, "$1$ $2$ $3$"), "bounds");
+  }
+  {
+    // Unknown variable
+    string s;
+    StringOutputStream output(&s);
+    Printer printer(&output, '$');
+    EXPECT_DEATH(printer.FormatInternal(args, vars, "$huh$ $1$$2$"), "Unknown");
+  }
+  {
+    // Illegal variable
+    string s;
+    StringOutputStream output(&s);
+    Printer printer(&output, '$');
+    EXPECT_DEATH(printer.FormatInternal({}, vars, "$ $"), "Empty");
+  }
+#endif  // PROTOBUF_HAS_DEATH_TEST
+}
+
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google

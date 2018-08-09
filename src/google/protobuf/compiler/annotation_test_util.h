@@ -77,7 +77,7 @@ bool RunProtoCompiler(const string& filename,
 bool DecodeMetadata(const string& path, GeneratedCodeInfo* info);
 
 // Finds all of the Annotations for a given source file and path.
-// See Location.path in http://google/protobuf/descriptor.proto for
+// See Location.path in http://google3/net/proto2/proto/descriptor.proto for
 // explanation of what path vector is.
 void FindAnnotationsOnPath(
     const GeneratedCodeInfo& info, const string& source_file,
@@ -87,7 +87,7 @@ void FindAnnotationsOnPath(
 // Finds the Annotation for a given source file and path (or returns null if it
 // couldn't). If there are several annotations for given path, returns the first
 // one. See Location.path in
-// http://google/protobuf/descriptor.proto for explanation of what path
+// http://google3/net/proto2/proto/descriptor.proto for explanation of what path
 // vector is.
 const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
     const GeneratedCodeInfo& info, const string& source_file,
@@ -109,6 +109,6 @@ bool AnnotationMatchesSubstring(const string& file_content,
 }  // namespace annotation_test_util
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_ANNOTATION_TEST_UTIL_H__

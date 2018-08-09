@@ -132,7 +132,7 @@ public class WireFormatTest extends TestCase {
     TestAllTypes message = TestUtil.getAllSet();
     ByteString rawBytes = message.toByteString();
 
-    ExtensionRegistry registry = TestUtil.getExtensionRegistry();
+    ExtensionRegistryLite registry = TestUtil.getExtensionRegistry();
 
     TestAllExtensions message2 =
       TestAllExtensions.parseFrom(rawBytes, registry);
@@ -145,7 +145,7 @@ public class WireFormatTest extends TestCase {
     TestPackedExtensions message = TestUtil.getPackedExtensionsSet();
     ByteString rawBytes = message.toByteString();
 
-    ExtensionRegistry registry = TestUtil.getExtensionRegistry();
+    ExtensionRegistryLite registry = TestUtil.getExtensionRegistry();
 
     TestPackedExtensions message2 =
         TestPackedExtensions.parseFrom(rawBytes, registry);

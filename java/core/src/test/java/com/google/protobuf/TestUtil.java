@@ -130,8 +130,6 @@ import static protobuf_unittest.UnittestProto.defaultFixed64Extension;
 import static protobuf_unittest.UnittestProto.defaultFloatExtension;
 import static protobuf_unittest.UnittestProto.defaultForeignEnumExtension;
 import static protobuf_unittest.UnittestProto.defaultImportEnumExtension;
-// The static imports are to avoid 100+ char lines.  The following is roughly equivalent to
-// import static protobuf_unittest.UnittestProto.*;
 import static protobuf_unittest.UnittestProto.defaultInt32Extension;
 import static protobuf_unittest.UnittestProto.defaultInt64Extension;
 import static protobuf_unittest.UnittestProto.defaultNestedEnumExtension;
@@ -263,12 +261,14 @@ public final class TestUtil {
     return ByteString.copyFrom(str.getBytes(Internal.UTF_8));
   }
 
+  // BEGIN FULL-RUNTIME
   /**
    * Dirties the message by resetting the momoized serialized size.
    */
   public static void resetMemoizedSize(AbstractMessage message) {
     message.memoizedSize = -1;
   }
+  // END FULL-RUNTIME
 
   /**
    * Get a {@code TestAllTypes} with all fields set as they would be by
@@ -1201,17 +1201,29 @@ public final class TestUtil {
    * Get an unmodifiable {@link ExtensionRegistry} containing all the
    * extensions of {@code TestAllExtensions}.
    */
-  public static ExtensionRegistry getExtensionRegistry() {
+  public static ExtensionRegistryLite getExtensionRegistry() {
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    registerAllExtensions(registry);
+    return registry.getUnmodifiable();
+  }
+
+  // BEGIN FULL-RUNTIME
+  /**
+   * Get an unmodifiable {@link ExtensionRegistry} containing all the
+   * extensions of {@code TestAllExtensions}.
+   */
+  public static ExtensionRegistry getFullExtensionRegistry() {
     ExtensionRegistry registry = ExtensionRegistry.newInstance();
     registerAllExtensions(registry);
     return registry.getUnmodifiable();
   }
+  // END FULL-RUNTIME
 
   /**
    * Register all of {@code TestAllExtensions}'s extensions with the
    * given {@link ExtensionRegistry}.
    */
-  public static void registerAllExtensions(ExtensionRegistry registry) {
+  public static void registerAllExtensions(ExtensionRegistryLite registry) {
     UnittestProto.registerAllExtensions(registry);
     TestUtilLite.registerAllExtensionsLite(registry);
   }
@@ -2634,6 +2646,7 @@ public final class TestUtil {
   }
 
   // =================================================================
+  // BEGIN FULL-RUNTIME
 
   /**
    * Performs the same things that the methods of {@code TestUtil} do, but
@@ -3819,6 +3832,16 @@ public final class TestUtil {
         "Couldn't read file: " + fullPath.getPath(), e);
     }
   }
+  // END FULL-RUNTIME
+
+  private static ByteString readBytesFromResource(String name) {
+    try {
+      return ByteString.copyFrom(
+          com.google.common.io.ByteStreams.toByteArray(TestUtil.class.getResourceAsStream(name)));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * Get the bytes of the "golden message".  This is a serialized TestAllTypes
@@ -3829,7 +3852,7 @@ public final class TestUtil {
    */
   public static ByteString getGoldenMessage() {
     if (goldenMessage == null) {
-      goldenMessage = readBytesFromFile("golden_message_oneof_implemented");
+      goldenMessage = readBytesFromResource("/google/protobuf/testdata/golden_message_oneof_implemented");
     }
     return goldenMessage;
   }
@@ -3846,12 +3869,13 @@ public final class TestUtil {
   public static ByteString getGoldenPackedFieldsMessage() {
     if (goldenPackedFieldsMessage == null) {
       goldenPackedFieldsMessage =
-          readBytesFromFile("golden_packed_fields_message");
+          readBytesFromResource("/google/protobuf/testdata/golden_packed_fields_message");
     }
     return goldenPackedFieldsMessage;
   }
   private static ByteString goldenPackedFieldsMessage = null;
 
+  // BEGIN FULL-RUNTIME
   /**
    * Mock implementation of {@link GeneratedMessage.BuilderParent} for testing.
    *
@@ -3871,4 +3895,5 @@ public final class TestUtil {
       return invalidations;
     }
   }
+  // END FULL-RUNTIME
 }

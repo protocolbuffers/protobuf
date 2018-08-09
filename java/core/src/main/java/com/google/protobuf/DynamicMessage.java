@@ -608,20 +608,12 @@ public final class DynamicMessage extends AbstractMessage {
 
     @Override
     public Builder setUnknownFields(UnknownFieldSet unknownFields) {
-      if (getDescriptorForType().getFile().getSyntax() == Descriptors.FileDescriptor.Syntax.PROTO3
-          && CodedInputStream.getProto3DiscardUnknownFieldsDefault()) {
-        return this;
-      }
       this.unknownFields = unknownFields;
       return this;
     }
 
     @Override
     public Builder mergeUnknownFields(UnknownFieldSet unknownFields) {
-      if (getDescriptorForType().getFile().getSyntax() == Descriptors.FileDescriptor.Syntax.PROTO3
-          && CodedInputStream.getProto3DiscardUnknownFieldsDefault()) {
-        return this;
-      }
       this.unknownFields =
         UnknownFieldSet.newBuilder(this.unknownFields)
                        .mergeFrom(unknownFields)

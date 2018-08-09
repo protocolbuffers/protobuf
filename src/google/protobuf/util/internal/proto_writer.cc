@@ -45,16 +45,18 @@
 #include <google/protobuf/stubs/statusor.h>
 
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
 
-using google::protobuf::internal::WireFormatLite;
-using google::protobuf::io::CodedOutputStream;
-using util::error::INVALID_ARGUMENT;
+using ::GOOGLE_PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
+using io::CodedOutputStream;
 using util::Status;
 using util::StatusOr;
+using util::error::INVALID_ARGUMENT;
 
 
 ProtoWriter::ProtoWriter(TypeResolver* type_resolver,
@@ -263,19 +265,6 @@ inline Status WriteString(int field_number, const DataPiece& data,
   return s.status();
 }
 
-// Writes an ENUM field, including tag, to the stream.
-inline Status WriteEnum(int field_number, const DataPiece& data,
-                        const google::protobuf::Enum* enum_type,
-                        CodedOutputStream* stream,
-                        bool use_lower_camel_for_enums,
-                        bool ignore_unknown_values) {
-  StatusOr<int> e = data.ToEnum(enum_type, use_lower_camel_for_enums, ignore_unknown_values);
-  if (e.ok()) {
-    WireFormatLite::WriteEnum(field_number, e.ValueOrDie(), stream);
-  }
-  return e.status();
-}
-
 // Given a google::protobuf::Type, returns the set of all required fields.
 std::set<const google::protobuf::Field*> GetRequiredFields(
     const google::protobuf::Type& type) {
@@ -426,11 +415,13 @@ void ProtoWriter::ProtoElement::TakeOneofIndex(int32 index) {
   oneof_indices_[index] = true;
 }
 
-void ProtoWriter::InvalidName(StringPiece unknown_name, StringPiece message) {
+void ProtoWriter::InvalidName(StringPiece unknown_name,
+                              StringPiece message) {
   listener_->InvalidName(location(), ToSnakeCase(unknown_name), message);
 }
 
-void ProtoWriter::InvalidValue(StringPiece type_name, StringPiece value) {
+void ProtoWriter::InvalidValue(StringPiece type_name,
+                               StringPiece value) {
   listener_->InvalidValue(location(), type_name, value);
 }
 
@@ -462,8 +453,8 @@ ProtoWriter* ProtoWriter::StartObject(StringPiece name) {
   const google::protobuf::Type* type = LookupType(field);
   if (type == nullptr) {
     ++invalid_depth_;
-    InvalidName(name,
-                StrCat("Missing descriptor for field: ", field->type_url()));
+    InvalidName(name, StrCat("Missing descriptor for field: ",
+                                   field->type_url()));
     return this;
   }
 
@@ -501,8 +492,8 @@ ProtoWriter* ProtoWriter::StartList(StringPiece name) {
   const google::protobuf::Type* type = LookupType(field);
   if (type == nullptr) {
     ++invalid_depth_;
-    InvalidName(name,
-                StrCat("Missing descriptor for field: ", field->type_url()));
+    InvalidName(name, StrCat("Missing descriptor for field: ",
+                                   field->type_url()));
     return this;
   }
 
@@ -530,8 +521,8 @@ ProtoWriter* ProtoWriter::RenderDataPiece(StringPiece name,
 
   const google::protobuf::Type* type = LookupType(field);
   if (type == nullptr) {
-    InvalidName(name,
-                StrCat("Missing descriptor for field: ", field->type_url()));
+    InvalidName(name, StrCat("Missing descriptor for field: ",
+                                   field->type_url()));
     return this;
   }
 
@@ -546,9 +537,9 @@ bool ProtoWriter::ValidOneof(const google::protobuf::Field& field,
     if (element_->IsOneofIndexTaken(field.oneof_index())) {
       InvalidValue(
           "oneof",
-          StrCat("oneof field '",
-                 element_->type().oneofs(field.oneof_index() - 1),
-                 "' is already set. Cannot set '", unnormalized_name, "'"));
+          StrCat(
+              "oneof field '", element_->type().oneofs(field.oneof_index() - 1),
+              "' is already set. Cannot set '", unnormalized_name, "'"));
       return false;
     }
     element_->TakeOneofIndex(field.oneof_index());
@@ -572,6 +563,20 @@ ProtoWriter* ProtoWriter::StartListField(const google::protobuf::Field& field,
                                          const google::protobuf::Type& type) {
   element_.reset(new ProtoElement(element_.release(), &field, type, true));
   return this;
+}
+
+Status ProtoWriter::WriteEnum(int field_number, const DataPiece& data,
+                              const google::protobuf::Enum* enum_type,
+                              CodedOutputStream* stream,
+                              bool use_lower_camel_for_enums,
+                              bool ignore_unknown_values) {
+  bool is_unknown_enum_value = false;
+  StatusOr<int> e = data.ToEnum(enum_type, use_lower_camel_for_enums,
+                                ignore_unknown_values, &is_unknown_enum_value);
+  if (e.ok() && !is_unknown_enum_value) {
+    WireFormatLite::WriteEnum(field_number, e.ValueOrDie(), stream);
+  }
+  return e.status();
 }
 
 ProtoWriter* ProtoWriter::RenderPrimitiveField(
@@ -664,10 +669,9 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
       break;
     }
     case google::protobuf::Field_Kind_TYPE_ENUM: {
-      status = WriteEnum(field.number(), data,
-                         typeinfo_->GetEnumByTypeUrl(field.type_url()),
-                         stream_.get(), use_lower_camel_for_enums_,
-                         ignore_unknown_fields_);
+      status = WriteEnum(
+          field.number(), data, typeinfo_->GetEnumByTypeUrl(field.type_url()),
+          stream_.get(), use_lower_camel_for_enums_, ignore_unknown_fields_);
       break;
     }
     default:  // TYPE_GROUP or TYPE_MESSAGE
@@ -751,7 +755,7 @@ void ProtoWriter::WriteRootMessage() {
   stream_.reset(nullptr);
   const void* data;
   int length;
-  google::protobuf::io::ArrayInputStream input_stream(buffer_.data(), buffer_.size());
+  io::ArrayInputStream input_stream(buffer_.data(), buffer_.size());
   while (input_stream.Next(&data, &length)) {
     if (length == 0) continue;
     int num_bytes = length;

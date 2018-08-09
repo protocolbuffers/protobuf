@@ -56,6 +56,6 @@ class MessageLayoutHelper {
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_LAYOUT_HELPER_H__

@@ -71,6 +71,6 @@ class ImmutableExtensionLiteGenerator : public ExtensionGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_EXTENSION_LITE_H__

@@ -120,6 +120,6 @@ extern PyObject* NewMessageMapContainer(
 
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__

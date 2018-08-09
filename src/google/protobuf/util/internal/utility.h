@@ -44,7 +44,6 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
-
 namespace google {
 namespace protobuf {
 class Method;
@@ -56,8 +55,9 @@ class Type;
 class Enum;
 class EnumValue;
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
@@ -69,25 +69,25 @@ static const int64 kTypeUrlSize = 19;
 // returns it.
 // When the option with the given name is not found, default_value is returned.
 LIBPROTOBUF_EXPORT bool GetBoolOptionOrDefault(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, bool default_value);
 
 // Returns int64 option value. If the option isn't found, returns the
 // default_value.
 LIBPROTOBUF_EXPORT int64 GetInt64OptionOrDefault(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, int64 default_value);
 
 // Returns double option value. If the option isn't found, returns the
 // default_value.
 LIBPROTOBUF_EXPORT double GetDoubleOptionOrDefault(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, double default_value);
 
 // Returns string option value. If the option isn't found, returns the
 // default_value.
 LIBPROTOBUF_EXPORT string GetStringOptionOrDefault(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, const string& default_value);
 
 // Returns a boolean value contained in Any type.
@@ -120,7 +120,7 @@ LIBPROTOBUF_EXPORT const string GetFullTypeWithUrl(StringPiece simple_type);
 // Finds and returns option identified by name and option_name within the
 // provided map. Returns nullptr if none found.
 const google::protobuf::Option* FindOptionOrNull(
-    const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
+    const RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name);
 
 // Finds and returns the field identified by field_name in the passed tech Type
@@ -209,6 +209,6 @@ bool StringEndsWith(StringPiece text, StringPiece suffix);
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_UTILITY_H__

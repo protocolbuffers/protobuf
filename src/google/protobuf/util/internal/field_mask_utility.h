@@ -67,6 +67,6 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_FIELD_MASK_UTILITY_H__

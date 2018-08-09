@@ -41,13 +41,20 @@
 
 #include <string>
 
+#include <google/protobuf/port.h>
 #include <google/protobuf/generated_enum_util.h>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
   class EnumDescriptor;
 }  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 
 // Returns the EnumDescriptor for enum type E, which must be a
@@ -82,6 +89,6 @@ LIBPROTOBUF_EXPORT const string& NameOfEnum(const EnumDescriptor* descriptor, in
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_GENERATED_ENUM_REFLECTION_H__

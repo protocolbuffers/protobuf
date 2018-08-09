@@ -31,14 +31,14 @@
 // from google3/strings/strutil.cc
 
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/mathlimits.h>
 
 #include <errno.h>
 #include <float.h>    // FLT_DIG and DBL_DIG
-#include <limits>
 #include <limits.h>
 #include <stdio.h>
+#include <cmath>
 #include <iterator>
+#include <limits>
 
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -1268,7 +1268,7 @@ char* DoubleToBuffer(double value, char* buffer) {
   } else if (value == -std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "-inf");
     return buffer;
-  } else if (MathLimits<double>::IsNaN(value)) {
+  } else if (std::isnan(value)) {
     strcpy(buffer, "nan");
     return buffer;
   }
@@ -1386,7 +1386,7 @@ char* FloatToBuffer(float value, char* buffer) {
   } else if (value == -std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "-inf");
     return buffer;
-  } else if (MathLimits<float>::IsNaN(value)) {
+  } else if (std::isnan(value)) {
     strcpy(buffer, "nan");
     return buffer;
   }
@@ -2298,6 +2298,111 @@ int UTF8FirstLetterNumBytes(const char* src, int len) {
     return 0;
   }
   return kUTF8LenTbl[*reinterpret_cast<const uint8*>(src)];
+}
+
+// ----------------------------------------------------------------------
+// CleanStringLineEndings()
+//   Clean up a multi-line string to conform to Unix line endings.
+//   Reads from src and appends to dst, so usually dst should be empty.
+//
+//   If there is no line ending at the end of a non-empty string, it can
+//   be added automatically.
+//
+//   Four different types of input are correctly handled:
+//
+//     - Unix/Linux files: line ending is LF: pass through unchanged
+//
+//     - DOS/Windows files: line ending is CRLF: convert to LF
+//
+//     - Legacy Mac files: line ending is CR: convert to LF
+//
+//     - Garbled files: random line endings: convert gracefully
+//                      lonely CR, lonely LF, CRLF: convert to LF
+//
+//   @param src The multi-line string to convert
+//   @param dst The converted string is appended to this string
+//   @param auto_end_last_line Automatically terminate the last line
+//
+//   Limitations:
+//
+//     This does not do the right thing for CRCRLF files created by
+//     broken programs that do another Unix->DOS conversion on files
+//     that are already in CRLF format.  For this, a two-pass approach
+//     brute-force would be needed that
+//
+//       (1) determines the presence of LF (first one is ok)
+//       (2) if yes, removes any CR, else convert every CR to LF
+
+void CleanStringLineEndings(const string &src, string *dst,
+                            bool auto_end_last_line) {
+  if (dst->empty()) {
+    dst->append(src);
+    CleanStringLineEndings(dst, auto_end_last_line);
+  } else {
+    string tmp = src;
+    CleanStringLineEndings(&tmp, auto_end_last_line);
+    dst->append(tmp);
+  }
+}
+
+void CleanStringLineEndings(string *str, bool auto_end_last_line) {
+  ptrdiff_t output_pos = 0;
+  bool r_seen = false;
+  ptrdiff_t len = str->size();
+
+  char *p = &(*str)[0];
+
+  for (ptrdiff_t input_pos = 0; input_pos < len;) {
+    if (!r_seen && input_pos + 8 < len) {
+      uint64_t v = GOOGLE_UNALIGNED_LOAD64(p + input_pos);
+      // Loop over groups of 8 bytes at a time until we come across
+      // a word that has a byte whose value is less than or equal to
+      // '\r' (i.e. could contain a \n (0x0a) or a \r (0x0d) ).
+      //
+      // We use a has_less macro that quickly tests a whole 64-bit
+      // word to see if any of the bytes has a value < N.
+      //
+      // For more details, see:
+      //   http://graphics.stanford.edu/~seander/bithacks.html#HasLessInWord
+#define has_less(x, n) (((x) - ~0ULL / 255 * (n)) & ~(x) & ~0ULL / 255 * 128)
+      if (!has_less(v, '\r' + 1)) {
+#undef has_less
+        // No byte in this word has a value that could be a \r or a \n
+        if (output_pos != input_pos) {
+          GOOGLE_UNALIGNED_STORE64(p + output_pos, v);
+        }
+        input_pos += 8;
+        output_pos += 8;
+        continue;
+      }
+    }
+    string::const_reference in = p[input_pos];
+    if (in == '\r') {
+      if (r_seen) p[output_pos++] = '\n';
+      r_seen = true;
+    } else if (in == '\n') {
+      if (input_pos != output_pos)
+        p[output_pos++] = '\n';
+      else
+        output_pos++;
+      r_seen = false;
+    } else {
+      if (r_seen) p[output_pos++] = '\n';
+      r_seen = false;
+      if (input_pos != output_pos)
+        p[output_pos++] = in;
+      else
+        output_pos++;
+    }
+    input_pos++;
+  }
+  if (r_seen ||
+      (auto_end_last_line && output_pos > 0 && p[output_pos - 1] != '\n')) {
+    str->resize(output_pos + 1);
+    str->operator[](output_pos) = '\n';
+  } else if (output_pos < len) {
+    str->resize(output_pos);
+  }
 }
 
 }  // namespace protobuf

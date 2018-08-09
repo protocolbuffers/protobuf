@@ -77,6 +77,21 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   // __declspec(dllimport) depending on what is being compiled.
   //
   Options file_options;
+
+  switch (runtime_) {
+    case Runtime::kGoogle3:
+      file_options.opensource_runtime = false;
+      break;
+    case Runtime::kOpensource:
+      file_options.opensource_runtime = true;
+      file_options.opensource_include_paths = true;
+      break;
+    case Runtime::kOpensourceGoogle3:
+      file_options.opensource_runtime = true;
+      file_options.opensource_include_paths = false;
+      break;
+  }
+
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "dllexport_decl") {
       file_options.dllexport_decl = options[i].second;
@@ -108,7 +123,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   // The safe_boundary_check option controls behavior for Google-internal
   // protobuf APIs.
-  if (file_options.safe_boundary_check) {
+  if (file_options.safe_boundary_check && file_options.opensource_runtime) {
     *error =
         "The safe_boundary_check option is not supported outside of Google.";
     return false;
@@ -119,6 +134,10 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   string basename = StripProto(file->name());
 
+  if (MaybeBootstrap(file_options, generator_context, file_options.bootstrap,
+                     &basename)) {
+    return true;
+  }
 
   FileGenerator file_generator(file, file_options);
 
@@ -184,8 +203,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     }
     for (int i = 0; i < num_cc_files; i++) {
       // TODO(gerbens) Agree on naming scheme.
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          generator_context->Open(basename + "." + SimpleItoa(i) + ".cc"));
+      std::unique_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(
+          basename + ".out/" + SimpleItoa(i) + ".cc"));
       io::Printer printer(output.get(), '$');
       if (i < file_generator.NumMessages()) {
         file_generator.GenerateSourceForMessage(i, &printer);

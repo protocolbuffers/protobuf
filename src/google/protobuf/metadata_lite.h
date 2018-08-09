@@ -31,10 +31,17 @@
 #ifndef GOOGLE_PROTOBUF_METADATA_LITE_H__
 #define GOOGLE_PROTOBUF_METADATA_LITE_H__
 
+#include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/message_lite.h>
-#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/port.h>
+
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -103,7 +110,8 @@ class InternalMetadataWithArenaBase {
     }
   }
 
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE void MergeFrom(const Derived& other) {
+  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE void MergeFrom(
+      const Derived& other) {
     if (other.have_unknown_fields()) {
       static_cast<Derived*>(this)->DoMergeFrom(other.unknown_fields());
     }
@@ -219,6 +227,8 @@ class LIBPROTOBUF_EXPORT LiteUnknownFieldSetter {
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_METADATA_LITE_H__

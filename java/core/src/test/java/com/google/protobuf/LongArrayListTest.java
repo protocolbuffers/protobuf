@@ -299,20 +299,22 @@ public class LongArrayListTest extends TestCase {
   }
 
   public void testRemoveEndOfCapacity() {
-    LongList toRemove = LongArrayList.emptyList().mutableCopyWithCapacity(1);
+    LongList toRemove =
+        LongArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addLong(3);
     toRemove.remove(0);
     assertEquals(0, toRemove.size());
   }
 
   public void testSublistRemoveEndOfCapacity() {
-    LongList toRemove = LongArrayList.emptyList().mutableCopyWithCapacity(1);
+    LongList toRemove =
+        LongArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addLong(3);
     toRemove.subList(0, 1).clear();
     assertEquals(0, toRemove.size());
   }
 
-  private void assertImmutable(LongArrayList list) {
+  private void assertImmutable(LongList list) {
     if (list.contains(1L)) {
       throw new RuntimeException("Cannot test the immutability of lists that contain 1.");
     }

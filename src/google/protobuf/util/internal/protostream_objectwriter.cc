@@ -32,28 +32,33 @@
 
 #include <functional>
 #include <stack>
+#include <unordered_map>
+#include <unordered_set>
 
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/time.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
 #include <google/protobuf/util/internal/object_location_tracker.h>
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
 
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
 
-using google::protobuf::internal::WireFormatLite;
-using util::error::INVALID_ARGUMENT;
+using ::GOOGLE_PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using util::Status;
 using util::StatusOr;
+using util::error::INVALID_ARGUMENT;
 
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -120,7 +125,7 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
   // "0." + s_nanos.ToString() seconds. An int32 is used for the
   // conversion to 'nanos', rather than a double, so that there is no
   // loss of precision.
-  if (!s_nanos.empty() && !safe_strto32(s_nanos.ToString(), &i_nanos)) {
+  if (!s_nanos.empty() && !safe_strto32(s_nanos, &i_nanos)) {
     return Status(INVALID_ARGUMENT, parse_failure_message);
   }
   if (i_nanos > kNanosPerSecond || i_nanos < 0) {
@@ -305,7 +310,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
   // Figure out the type url. This is a copy-paste from WriteString but we also
   // need the value, so we can't just call through to that.
   if (value.type() == DataPiece::TYPE_STRING) {
-    type_url_ = value.str().ToString();
+    type_url_ = string(value.str());
   } else {
     StatusOr<string> s = value.ToString();
     if (!s.ok()) {
@@ -368,8 +373,9 @@ void ProtoStreamObjectWriter::AnyWriter::WriteAny() {
     } else {
       // There are uninterpreted data, but we never got a "@type" field.
       if (!invalid_) {
-        parent_->InvalidValue("Any", StrCat("Missing @type for any field in ",
-                                            parent_->master_type_.name()));
+        parent_->InvalidValue("Any",
+                              StrCat("Missing @type for any field in ",
+                                           parent_->master_type_.name()));
         invalid_ = true;
       }
       return;
@@ -431,7 +437,7 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter* enclosing,
     any_.reset(new AnyWriter(ow_));
   }
   if (item_type == MAP) {
-    map_keys_.reset(new hash_set<string>);
+    map_keys_.reset(new std::unordered_set<string>);
   }
 }
 
@@ -448,13 +454,13 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
     any_.reset(new AnyWriter(ow_));
   }
   if (item_type == MAP) {
-    map_keys_.reset(new hash_set<string>);
+    map_keys_.reset(new std::unordered_set<string>);
   }
 }
 
 bool ProtoStreamObjectWriter::Item::InsertMapKeyIfNotPresent(
     StringPiece map_key) {
-  return InsertIfNotPresent(map_keys_.get(), map_key.ToString());
+  return InsertIfNotPresent(map_keys_.get(), string(map_key));
 }
 
 ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
@@ -534,7 +540,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     Push("", Item::MESSAGE, false, false);
     ProtoWriter::RenderDataPiece("key",
                                  DataPiece(name, use_strict_base64_decoding()));
-    Push("value", IsAny(*Lookup("value")) ? Item::ANY : Item::MESSAGE, true, false);
+    Push("value", IsAny(*Lookup("value")) ? Item::ANY : Item::MESSAGE, true,
+         false);
 
     // Make sure we are valid so far after starting map fields.
     if (invalid_depth() > 0) return this;
@@ -618,7 +625,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndObject() {
   return this;
 }
 
-ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
+ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
+    StringPiece name) {
   if (invalid_depth() > 0) {
     IncrementInvalidDepth();
     return this;
@@ -727,7 +735,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
 
     // Report an error.
     InvalidValue("Map", StrCat("Cannot have repeated items ('", name,
-                               "') within a map."));
+                                     "') within a map."));
     return this;
   }
 
@@ -818,8 +826,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
   }
 
   if (IsMap(*field)) {
-    InvalidValue("Map",
-                 StrCat("Cannot bind a list to map for field '", name, "'."));
+    InvalidValue("Map", StrCat("Cannot bind a list to map for field '",
+                                     name, "'."));
     IncrementInvalidDepth();
     return this;
   }
@@ -924,7 +932,7 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(INVALID_ARGUMENT,
                   StrCat("Invalid data type for timestamp, value is ",
-                         data.ValueAsStringOrDefault("")));
+                               data.ValueAsStringOrDefault("")));
   }
 
   StringPiece value(data.str());
@@ -955,13 +963,13 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(INVALID_ARGUMENT,
                   StrCat("Invalid data type for field mask, value is ",
-                         data.ValueAsStringOrDefault("")));
+                               data.ValueAsStringOrDefault("")));
   }
 
 // TODO(tsun): figure out how to do proto descriptor based snake case
 // conversions as much as possible. Because ToSnakeCase sometimes returns the
 // wrong value.
-  std::unique_ptr<ResultCallback1<util::Status, StringPiece> > callback(
+  std::unique_ptr<ResultCallback1<util::Status, StringPiece>> callback(
       ::google::protobuf::NewPermanentCallback(&RenderOneFieldPath, ow));
   return DecodeCompactFieldMaskPaths(data.str(), callback.get());
 }
@@ -972,7 +980,7 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(INVALID_ARGUMENT,
                   StrCat("Invalid data type for duration, value is ",
-                         data.ValueAsStringOrDefault("")));
+                               data.ValueAsStringOrDefault("")));
   }
 
   StringPiece value(data.str());
@@ -1042,8 +1050,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     ProtoWriter::StartObject(name);
     status = (*type_renderer)(this, data);
     if (!status.ok()) {
-      InvalidValue(master_type_.name(),
-                   StrCat("Field '", name, "', ", status.error_message()));
+      InvalidValue(master_type_.name(), StrCat("Field '", name, "', ",
+                                                     status.error_message()));
     }
     ProtoWriter::EndObject();
     return this;
@@ -1058,17 +1066,26 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
   if (current_->IsMap()) {
     if (!ValidMapKey(name)) return this;
 
+    field = Lookup("value");
+    if (field == nullptr) {
+      GOOGLE_LOG(DFATAL) << "Map does not have a value field.";
+      return this;
+    }
+
+    if (options_.ignore_null_value_map_entry) {
+      // If we are rendering explicit null values and the backend proto field is
+      // not of the google.protobuf.NullType type, interpret null as absence.
+      if (data.type() == DataPiece::TYPE_NULL &&
+          field->type_url() != kStructNullValueTypeUrl) {
+        return this;
+      }
+    }
+
     // Render an item in repeated map list.
     // { "key": "<name>", "value":
     Push("", Item::MESSAGE, false, false);
     ProtoWriter::RenderDataPiece("key",
                                  DataPiece(name, use_strict_base64_decoding()));
-    field = Lookup("value");
-    if (field == nullptr) {
-      Pop();
-      GOOGLE_LOG(DFATAL) << "Map does not have a value field.";
-      return this;
-    }
 
     const TypeRenderer* type_renderer = FindTypeRenderer(field->type_url());
     if (type_renderer != nullptr) {
@@ -1079,8 +1096,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
       Push("value", Item::MESSAGE, true, false);
       status = (*type_renderer)(this, data);
       if (!status.ok()) {
-        InvalidValue(field->type_url(),
-                     StrCat("Field '", name, "', ", status.error_message()));
+        InvalidValue(field->type_url(), StrCat("Field '", name, "', ",
+                                                     status.error_message()));
       }
       Pop();
       return this;
@@ -1113,8 +1130,8 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
       Push(name, Item::MESSAGE, false, false);
       status = (*type_renderer)(this, data);
       if (!status.ok()) {
-        InvalidValue(field->type_url(),
-                     StrCat("Field '", name, "', ", status.error_message()));
+        InvalidValue(field->type_url(), StrCat("Field '", name, "', ",
+                                                     status.error_message()));
       }
       Pop();
     }
@@ -1134,12 +1151,13 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
 
 // Map of functions that are responsible for rendering well known type
 // represented by the key.
-hash_map<string, ProtoStreamObjectWriter::TypeRenderer>*
+std::unordered_map<string, ProtoStreamObjectWriter::TypeRenderer>*
     ProtoStreamObjectWriter::renderers_ = NULL;
-GOOGLE_PROTOBUF_DECLARE_ONCE(writer_renderers_init_);
+GOOGLE_PROTOBUF_NAMESPACE_ID::internal::once_flag writer_renderers_init_;
 
 void ProtoStreamObjectWriter::InitRendererMap() {
-  renderers_ = new hash_map<string, ProtoStreamObjectWriter::TypeRenderer>();
+  renderers_ =
+      new std::unordered_map<string, ProtoStreamObjectWriter::TypeRenderer>();
   (*renderers_)["type.googleapis.com/google.protobuf.Timestamp"] =
       &ProtoStreamObjectWriter::RenderTimestamp;
   (*renderers_)["type.googleapis.com/google.protobuf.Duration"] =
@@ -1194,7 +1212,8 @@ void ProtoStreamObjectWriter::DeleteRendererMap() {
 
 ProtoStreamObjectWriter::TypeRenderer*
 ProtoStreamObjectWriter::FindTypeRenderer(const string& type_url) {
-  ::google::protobuf::GoogleOnceInit(&writer_renderers_init_, &InitRendererMap);
+  GOOGLE_PROTOBUF_NAMESPACE_ID::internal::call_once(writer_renderers_init_,
+                                                     InitRendererMap);
   return FindOrNull(*renderers_, type_url);
 }
 
@@ -1204,14 +1223,16 @@ bool ProtoStreamObjectWriter::ValidMapKey(StringPiece unnormalized_name) {
   if (!current_->InsertMapKeyIfNotPresent(unnormalized_name)) {
     listener()->InvalidName(
         location(), unnormalized_name,
-        StrCat("Repeated map key: '", unnormalized_name, "' is already set."));
+        StrCat("Repeated map key: '", unnormalized_name,
+                     "' is already set."));
     return false;
   }
 
   return true;
 }
 
-void ProtoStreamObjectWriter::Push(StringPiece name, Item::ItemType item_type,
+void ProtoStreamObjectWriter::Push(StringPiece name,
+                                   Item::ItemType item_type,
                                    bool is_placeholder, bool is_list) {
   is_list ? ProtoWriter::StartList(name) : ProtoWriter::StartObject(name);
 
@@ -1247,7 +1268,7 @@ bool ProtoStreamObjectWriter::IsMap(const google::protobuf::Field& field) {
   const google::protobuf::Type* field_type =
       typeinfo()->GetTypeByTypeUrl(field.type_url());
 
-  return google::protobuf::util::converter::IsMap(field, *field_type);
+  return converter::IsMap(field, *field_type);
 }
 
 bool ProtoStreamObjectWriter::IsAny(const google::protobuf::Field& field) {

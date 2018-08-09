@@ -42,7 +42,6 @@ import static java.lang.Character.isSurrogatePair;
 import static java.lang.Character.toCodePoint;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 /**
  * A set of low-level, high-performance static utility methods related
@@ -87,7 +86,9 @@ final class Utf8 {
    * delegate for which all methods are delegated directly to.
    */
   private static final Processor processor =
-      UnsafeProcessor.isAvailable() ? new UnsafeProcessor() : new SafeProcessor();
+      (UnsafeProcessor.isAvailable() && !Android.isOnAndroidDevice())
+          ? new UnsafeProcessor()
+          : new SafeProcessor();
 
   /**
    * A mask used when performing unsafe reads to determine if a long value contains any non-ASCII

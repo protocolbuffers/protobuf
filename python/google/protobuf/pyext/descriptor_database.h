@@ -63,6 +63,13 @@ class PyDescriptorDatabase : public DescriptorDatabase {
                                    int field_number,
                                    FileDescriptorProto* output);
 
+  // Finds the tag numbers used by all known extensions of
+  // containing_type, and appends them to output in an undefined
+  // order.
+  // Python objects are not required to implement this method.
+  bool FindAllExtensionNumbers(const string& containing_type,
+                               std::vector<int>* output);
+
  private:
   // The python object that implements the database. The reference is owned.
   PyObject* py_database_;
@@ -70,6 +77,6 @@ class PyDescriptorDatabase : public DescriptorDatabase {
 
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_DATABASE_H__

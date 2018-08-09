@@ -382,17 +382,14 @@ public class TextFormatTest extends TestCase {
 
   public void testMergeExtensions() throws Exception {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
-    TextFormat.merge(allExtensionsSetText,
-                     TestUtil.getExtensionRegistry(),
-                     builder);
+    TextFormat.merge(allExtensionsSetText, TestUtil.getFullExtensionRegistry(), builder);
     TestUtil.assertAllExtensionsSet(builder.build());
   }
 
   public void testParseExtensions() throws Exception {
     TestUtil.assertAllExtensionsSet(
-        TextFormat.parse(allExtensionsSetText,
-                         TestUtil.getExtensionRegistry(),
-                         TestAllExtensions.class));
+        TextFormat.parse(
+            allExtensionsSetText, TestUtil.getFullExtensionRegistry(), TestAllExtensions.class));
   }
 
   public void testMergeAndParseCompatibility() throws Exception {
@@ -523,7 +520,7 @@ public class TextFormatTest extends TestCase {
     // Test merge().
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     try {
-      TextFormat.merge(text, TestUtil.getExtensionRegistry(), builder);
+      TextFormat.merge(text, TestUtil.getFullExtensionRegistry(), builder);
       fail("Expected parse exception.");
     } catch (TextFormat.ParseException e) {
       assertEquals(error, e.getMessage());
@@ -531,8 +528,7 @@ public class TextFormatTest extends TestCase {
 
     // Test parse().
     try {
-      TextFormat.parse(
-          text, TestUtil.getExtensionRegistry(), TestAllTypes.class);
+      TextFormat.parse(text, TestUtil.getFullExtensionRegistry(), TestAllTypes.class);
       fail("Expected parse exception.");
     } catch (TextFormat.ParseException e) {
       assertEquals(error, e.getMessage());
@@ -544,8 +540,7 @@ public class TextFormatTest extends TestCase {
       String text) {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     try {
-      parserWithOverwriteForbidden.merge(
-          text, TestUtil.getExtensionRegistry(), builder);
+      parserWithOverwriteForbidden.merge(text, TestUtil.getFullExtensionRegistry(), builder);
       fail("Expected parse exception.");
     } catch (TextFormat.ParseException e) {
       assertEquals(error, e.getMessage());
@@ -555,8 +550,7 @@ public class TextFormatTest extends TestCase {
   private TestAllTypes assertParseSuccessWithOverwriteForbidden(
       String text) throws TextFormat.ParseException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    parserWithOverwriteForbidden.merge(
-        text, TestUtil.getExtensionRegistry(), builder);
+    parserWithOverwriteForbidden.merge(text, TestUtil.getFullExtensionRegistry(), builder);
     return builder.build();
   }
 
@@ -1118,8 +1112,7 @@ public class TextFormatTest extends TestCase {
     String input = "foo_string: \"stringvalue\" foo_int: 123";
     TestOneof2.Builder builder = TestOneof2.newBuilder();
     try {
-      parserWithOverwriteForbidden.merge(
-          input, TestUtil.getExtensionRegistry(), builder);
+      parserWithOverwriteForbidden.merge(input, TestUtil.getFullExtensionRegistry(), builder);
       fail("Expected parse exception.");
     } catch (TextFormat.ParseException e) {
       assertEquals("1:36: Field \"protobuf_unittest.TestOneof2.foo_int\""
@@ -1131,7 +1124,7 @@ public class TextFormatTest extends TestCase {
   public void testOneofOverwriteAllowed() throws Exception {
     String input = "foo_string: \"stringvalue\" foo_int: 123";
     TestOneof2.Builder builder = TestOneof2.newBuilder();
-    defaultParser.merge(input, TestUtil.getExtensionRegistry(), builder);
+    defaultParser.merge(input, TestUtil.getFullExtensionRegistry(), builder);
     // Only the last value sticks.
     TestOneof2 oneof = builder.build();
     assertFalse(oneof.hasFooString());

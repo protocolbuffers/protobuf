@@ -37,9 +37,9 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-namespace google {
 using proto3_arena_unittest::TestAllTypes;
 
+namespace google {
 namespace protobuf {
 namespace {
 // We selectively set/check a few representative fields rather than all fields

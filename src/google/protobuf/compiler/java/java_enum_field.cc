@@ -66,10 +66,10 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->enum_type());
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
-  (*variables)["default_number"] = SimpleItoa(
-      descriptor->default_value_enum()->number());
-  (*variables)["tag"] =
-      SimpleItoa(static_cast<int32>(internal::WireFormat::MakeTag(descriptor)));
+  (*variables)["default_number"] =
+      SimpleItoa(descriptor->default_value_enum()->number());
+  (*variables)["tag"] = SimpleItoa(
+      static_cast<int32>(internal::WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = SimpleItoa(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
@@ -305,15 +305,11 @@ GenerateBuildingCode(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
     printer->Print(variables_,
       "if ($get_has_field_bit_from_local$) {\n"
-      "  result.$name$_ = $name$_;\n"
       "  $set_has_field_bit_to_local$;\n"
-      "} else {\n"
-      "  result.$name$_ = $default_number$;\n"
       "}\n");
-  } else {
-    printer->Print(variables_,
-      "result.$name$_ = $name$_;\n");
   }
+  printer->Print(variables_,
+    "result.$name$_ = $name$_;\n");
 }
 
 void ImmutableEnumFieldGenerator::

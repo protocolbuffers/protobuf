@@ -872,6 +872,47 @@ LIBPROTOBUF_EXPORT int EncodeAsUTF8Char(uint32 code_point, char* output);
 // ----------------------------------------------------------------------
 LIBPROTOBUF_EXPORT int UTF8FirstLetterNumBytes(const char* src, int len);
 
+// From google3/third_party/absl/strings/escaping.h
+
+// ----------------------------------------------------------------------
+// CleanStringLineEndings()
+//   Clean up a multi-line string to conform to Unix line endings.
+//   Reads from src and appends to dst, so usually dst should be empty.
+//
+//   If there is no line ending at the end of a non-empty string, it can
+//   be added automatically.
+//
+//   Four different types of input are correctly handled:
+//
+//     - Unix/Linux files: line ending is LF: pass through unchanged
+//
+//     - DOS/Windows files: line ending is CRLF: convert to LF
+//
+//     - Legacy Mac files: line ending is CR: convert to LF
+//
+//     - Garbled files: random line endings: convert gracefully
+//                      lonely CR, lonely LF, CRLF: convert to LF
+//
+//   @param src The multi-line string to convert
+//   @param dst The converted string is appended to this string
+//   @param auto_end_last_line Automatically terminate the last line
+//
+//   Limitations:
+//
+//     This does not do the right thing for CRCRLF files created by
+//     broken programs that do another Unix->DOS conversion on files
+//     that are already in CRLF format.  For this, a two-pass approach
+//     brute-force would be needed that
+//
+//       (1) determines the presence of LF (first one is ok)
+//       (2) if yes, removes any CR, else convert every CR to LF
+LIBPROTOBUF_EXPORT void CleanStringLineEndings(const string& src, string* dst,
+                                               bool auto_end_last_line);
+
+// Same as above, but transforms the argument in place.
+LIBPROTOBUF_EXPORT void CleanStringLineEndings(string* str,
+                                               bool auto_end_last_line);
+
 }  // namespace protobuf
 }  // namespace google
 

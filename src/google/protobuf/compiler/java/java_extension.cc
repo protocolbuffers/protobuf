@@ -151,8 +151,8 @@ int ImmutableExtensionGenerator::GenerateNonNestedInitializationCode(
     // Only applies to non-nested extensions.
     printer->Print(
         "$name$.internalInit(descriptor.getExtensions().get($index$));\n",
-        "name", UnderscoresToCamelCase(descriptor_),
-        "index", SimpleItoa(descriptor_->index()));
+        "name", UnderscoresToCamelCase(descriptor_), "index",
+        SimpleItoa(descriptor_->index()));
     bytecode_estimate += 21;
   }
   return bytecode_estimate;

@@ -43,6 +43,8 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -316,6 +318,134 @@ uint8* UnknownField::SerializeLengthDelimitedNoTagToArray(uint8* target) const {
   target = io::CodedOutputStream::WriteStringToArray(data, target);
   return target;
 }
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+namespace internal {
+
+const char* PackedValidEnumParser(const char* begin, const char* end,
+                                  void* object, ParseContext* ctx) {
+  auto repeated_field = static_cast<RepeatedField<int>*>(object);
+  auto ptr = begin;
+  while (ptr < end) {
+    uint64 varint;
+    ptr = Varint::Parse64(ptr, &varint);
+    int val = varint;
+    if (ctx->extra_parse_data().ValidateEnum<UnknownFieldSet>(val))
+      repeated_field->Add(val);
+  }
+  return ptr;
+}
+
+const char* PackedValidEnumParserArg(const char* begin, const char* end,
+                                     void* object, ParseContext* ctx) {
+  auto repeated_field = static_cast<RepeatedField<int>*>(object);
+  auto ptr = begin;
+  while (ptr < end) {
+    uint64 varint;
+    ptr = Varint::Parse64(ptr, &varint);
+    int val = varint;
+    if (ctx->extra_parse_data().ValidateEnumArg<UnknownFieldSet>(val))
+      repeated_field->Add(val);
+  }
+  return ptr;
+}
+
+const char* UnknownGroupParse(const char* begin, const char* end, void* object,
+                              ParseContext* ctx) {
+  auto unknown = static_cast<UnknownFieldSet*>(object);
+
+  auto ptr = begin;
+  while (ptr < end) {
+    uint32 tag;
+    ptr = Varint::Parse32Inline(ptr, &tag);
+    if ((tag >> 3) == 0) return nullptr;
+
+    auto res = UnknownFieldParse(tag, {UnknownGroupParse, unknown}, ptr, end,
+                                 unknown, ctx);
+    ptr = res.first;
+    if (res.second) break;
+  }
+  return ptr;
+}
+
+std::pair<const char*, bool> UnknownFieldParse(uint32 tag, ParseClosure parent,
+                                               const char* begin,
+                                               const char* end,
+                                               UnknownFieldSet* unknown,
+                                               ParseContext* ctx) {
+  uint32 size;
+  int depth;
+  void* object;
+  auto ptr = begin;
+
+  GOOGLE_DCHECK(tag >> 3);
+
+  uint32 field_num = tag >> 3;
+  switch (tag & 7) {
+    case 0: {
+      uint64 val;
+      ptr = Varint::Parse64(ptr, &val);
+      if (!ptr) goto error;
+      unknown->AddVarint(field_num, val);
+      break;
+    }
+    case 1: {
+      uint64 val = UNALIGNED_LOAD64(ptr);
+      ptr = ptr + 8;
+      unknown->AddFixed64(field_num, val);
+      break;
+    }
+    case 2: {
+      ptr = Varint::Parse32Inline(ptr, &size);
+      if (!ptr) goto error;
+      object = unknown->AddLengthDelimited(field_num);
+      if (size > end - ptr) goto len_delim_till_end;
+      auto newend = ptr + size;
+      if (!ctx->ParseExactRange({StringParser, object}, ptr, newend)) {
+        goto error;
+      }
+      ptr = newend;
+      break;
+    }
+    case 3: {
+      object = unknown->AddGroup(field_num);
+      if (!ctx->PrepareGroup(tag, &depth)) goto error;
+      ptr = UnknownGroupParse(ptr, end, object, ctx);
+      if (!ptr) goto error;
+      if (ctx->GroupContinues(depth)) goto group_continues;
+      break;
+    }
+    case 4: {
+      if (!ctx->ValidEndGroup(tag)) goto error;
+      return std::make_pair(ptr, true);
+    }
+    case 5: {
+      uint32 val = UNALIGNED_LOAD32(ptr);
+      ptr = ptr + 4;
+      unknown->AddFixed32(field_num, val);
+      break;
+    }
+    default:
+      goto error;
+  }
+  return std::make_pair(ptr, false);
+error:
+  return std::make_pair(nullptr, true);
+len_delim_till_end:
+  // Length delimited field crosses end
+  return std::make_pair(
+      ctx->StoreAndTailCall(ptr, end, parent, {StringParser, object}, size),
+      true);
+group_continues:
+  GOOGLE_DCHECK(ptr >= end);
+  // Group crossed end and must be continued. Either this a parse failure
+  // or we need to resume on the next chunk and thus save the state.
+  ctx->StoreGroup(parent, {UnknownGroupParse, object}, depth);
+  return std::make_pair(ptr, true);
+}
+
+}  // namespace internal
+#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 }  // namespace protobuf
 }  // namespace google

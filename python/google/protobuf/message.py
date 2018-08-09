@@ -268,6 +268,10 @@ class Message(object):
   def ClearExtension(self, extension_handle):
     raise NotImplementedError
 
+  def UnknownFields(self):
+    """Returns the UnknownFieldSet."""
+    raise NotImplementedError
+
   def DiscardUnknownFields(self):
     raise NotImplementedError
 

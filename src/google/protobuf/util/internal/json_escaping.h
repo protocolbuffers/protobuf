@@ -86,6 +86,6 @@ class JsonEscaping {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__

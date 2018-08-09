@@ -36,9 +36,9 @@
 #include <gtest/gtest.h>
 
 
-namespace google {
 namespace protobuf_unittest {}  // forward declaration
 
+namespace google {
 namespace protobuf {
 
 namespace unittest = ::protobuf_unittest;
@@ -480,6 +480,6 @@ void MapTestUtilImpl::ExpectMapFieldsModified(
 }
 
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__

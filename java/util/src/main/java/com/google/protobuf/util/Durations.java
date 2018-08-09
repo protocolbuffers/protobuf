@@ -61,6 +61,9 @@ public final class Durations {
   public static final Duration MAX_VALUE =
       Duration.newBuilder().setSeconds(DURATION_SECONDS_MAX).setNanos(999999999).build();
 
+  /** A constant holding the duration of zero. */
+  public static final Duration ZERO = Duration.newBuilder().setSeconds(0L).setNanos(0).build();
+
   private Durations() {}
 
   private static final Comparator<Duration> COMPARATOR =

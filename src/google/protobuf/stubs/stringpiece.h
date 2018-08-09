@@ -463,6 +463,9 @@ struct StringPiecePod {
   std::string ToString() const {
     return std::string(data_, static_cast<size_t>(size_));
   }
+
+  operator string() const { return ToString(); }
+
  private:
   const char* data_;
   stringpiece_ssize_type size_;

@@ -68,6 +68,6 @@ struct Options {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_OPTIONS_H__

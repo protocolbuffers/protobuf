@@ -32,9 +32,16 @@
 #define GOOGLE_PROTOBUF_INLINED_STRING_FIELD_H__
 
 #include <string>
+#include <utility>
 
-#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/stringpiece.h>
+
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -53,16 +60,15 @@ namespace internal {
 // the generated binary.
 class LIBPROTOBUF_EXPORT InlinedStringField {
  public:
-  InlinedStringField()
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  InlinedStringField() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
   explicit InlinedStringField(const ::std::string& default_value);
 
   void AssignWithDefault(const ::std::string* default_value,
                          const InlinedStringField& from)
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 
-  void ClearToEmpty(const ::std::string* default_value, Arena* arena)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void ClearToEmpty(const ::std::string* default_value,
+                    Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     ClearToEmptyNoArena(default_value);
   }
   void ClearNonDefaultToEmpty() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
@@ -72,34 +78,33 @@ class LIBPROTOBUF_EXPORT InlinedStringField {
       GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     ClearNonDefaultToEmptyNoArena();
   }
-  void ClearNonDefaultToEmptyNoArena()
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void ClearNonDefaultToEmptyNoArena() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 
-  void ClearToDefault(const ::std::string* default_value, Arena* arena)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void ClearToDefault(const ::std::string* default_value,
+                      Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     ClearToDefaultNoArena(default_value);
   }
   void ClearToDefaultNoArena(const ::std::string* default_value)
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 
-  void Destroy(const ::std::string* default_value, Arena* arena)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void Destroy(const ::std::string* default_value,
+               Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     DestroyNoArena(default_value);
   }
   void DestroyNoArena(const ::std::string* default_value)
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 
   const ::std::string& Get() const GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     return GetNoArena();
   }
   const ::std::string& GetNoArena() const GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 
-  ::std::string* Mutable(const ::std::string* default_value, Arena* arena)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  ::std::string* Mutable(const ::std::string* default_value,
+                    Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     return MutableNoArena(default_value);
   }
   ::std::string* MutableNoArena(const ::std::string* default_value)
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 
   ::std::string* Release(const ::std::string* default_value, Arena* arena) {
     return ReleaseNoArena(default_value);
@@ -112,37 +117,31 @@ class LIBPROTOBUF_EXPORT InlinedStringField {
   }
   ::std::string* ReleaseNonDefaultNoArena(const ::std::string* default_value);
 
-  void Set(const ::std::string* default_value,
-           StringPiece value,
+  void Set(const ::std::string* default_value, StringPiece value,
            Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetLite(const ::std::string* default_value,
-               StringPiece value,
+  void SetLite(const ::std::string* default_value, StringPiece value,
                Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetNoArena(const ::std::string* default_value,
-                  StringPiece value) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void SetNoArena(const ::std::string* default_value, StringPiece value)
+      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 
-  void Set(const ::std::string* default_value,
-           const ::std::string& value,
+  void Set(const ::std::string* default_value, const ::std::string& value,
            Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetLite(const ::std::string* default_value,
-               const ::std::string& value,
+  void SetLite(const ::std::string* default_value, const ::std::string& value,
                Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetNoArena(const ::std::string* default_value,
-                  const ::std::string& value)
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void SetNoArena(const ::std::string* default_value, const ::std::string& value)
+      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 
 #if LANG_CXX11
   void SetNoArena(const ::std::string* default_value,
-                  ::std::string&& value)
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+                  ::std::string&& value) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
 #endif
   void SetAllocated(const ::std::string* default_value,
                     ::std::string* value,
@@ -151,8 +150,7 @@ class LIBPROTOBUF_EXPORT InlinedStringField {
   }
   void SetAllocatedNoArena(const ::std::string* default_value,
                            ::std::string* value);
-  void Swap(InlinedStringField* from)
-    GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void Swap(InlinedStringField* from) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
   ::std::string* UnsafeMutablePointer();
   void UnsafeSetDefault(const ::std::string* default_value);
   ::std::string* UnsafeArenaRelease(const ::std::string* default_value, Arena* arena);
@@ -220,8 +218,8 @@ inline ::std::string* InlinedStringField::ReleaseNonDefaultNoArena(
   return released;
 }
 
-inline void InlinedStringField::SetNoArena(
-    const ::std::string* default_value, StringPiece value) {
+inline void InlinedStringField::SetNoArena(const ::std::string* default_value,
+                                           StringPiece value) {
   value_.assign(value.data(), value.length());
 }
 
@@ -266,6 +264,8 @@ inline void InlinedStringField::UnsafeArenaSetAllocated(
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_INLINED_STRING_FIELD_H__

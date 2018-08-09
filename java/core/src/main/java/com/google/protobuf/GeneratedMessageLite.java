@@ -33,7 +33,6 @@ package com.google.protobuf;
 import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
 import com.google.protobuf.Internal.BooleanList;
 import com.google.protobuf.Internal.DoubleList;
-import com.google.protobuf.Internal.EnumLiteMap;
 import com.google.protobuf.Internal.FloatList;
 import com.google.protobuf.Internal.IntList;
 import com.google.protobuf.Internal.LongList;
@@ -1600,7 +1599,7 @@ public abstract class GeneratedMessageLite<
   protected static class DefaultInstanceBasedParser<T extends GeneratedMessageLite<T, ?>>
       extends AbstractParser<T> {
 
-    private T defaultInstance;
+    private final T defaultInstance;
 
     public DefaultInstanceBasedParser(T defaultInstance) {
       this.defaultInstance = defaultInstance;

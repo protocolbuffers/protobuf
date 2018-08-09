@@ -38,14 +38,14 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/status.h>
 
-
 namespace google {
 namespace protobuf {
 class Type;
 class Enum;
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 class DescriptorPool;
 namespace util {
@@ -72,6 +72,6 @@ class LIBPROTOBUF_EXPORT TypeResolver {
 
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_TYPE_RESOLVER_H__

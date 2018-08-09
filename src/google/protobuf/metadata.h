@@ -32,7 +32,7 @@
 // metadata (Unknown-field set, Arena pointer, ...) and allows its
 // representation to be made more space-efficient via various optimizations.
 //
-// Note that this is distinct from google::protobuf::Metadata, which encapsulates
+// Note that this is distinct from proto2::Metadata, which encapsulates
 // Descriptor and Reflection pointers.
 
 #ifndef GOOGLE_PROTOBUF_METADATA_H__
@@ -40,6 +40,10 @@
 
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/unknown_field_set.h>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -73,6 +77,6 @@ class InternalMetadataWithArena
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_METADATA_H__

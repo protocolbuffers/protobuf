@@ -381,6 +381,6 @@ inline std::pair<char*, bool> as_string_data(string* s) {
 
 }  // namespace io
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__

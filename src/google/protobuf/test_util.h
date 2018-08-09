@@ -1296,6 +1296,6 @@ inline void ExpectAllFieldsAndExtensionsInOrder(
 
 }  // namespace TestUtil
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_TEST_UTIL_H__

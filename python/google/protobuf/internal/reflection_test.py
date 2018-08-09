@@ -64,6 +64,10 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import decoder
 
 
+if six.PY3:
+  long = int  # pylint: disable=redefined-builtin,invalid-name
+
+
 BaseTestCase = testing_refleaks.BaseTestCase
 
 
@@ -647,10 +651,7 @@ class ReflectionTest(BaseTestCase):
     TestGetAndDeserialize('optional_int32', 1, int)
     TestGetAndDeserialize('optional_int32', 1 << 30, int)
     TestGetAndDeserialize('optional_uint32', 1 << 30, int)
-    try:
-      integer_64 = long
-    except NameError:  # Python3
-      integer_64 = int
+    integer_64 = long
     if struct.calcsize('L') == 4:
       # Python only has signed ints, so 32-bit python can't fit an uint32
       # in an int.
@@ -1103,6 +1104,7 @@ class ReflectionTest(BaseTestCase):
     self.assertEqual(23, myproto_instance.foo_field)
     self.assertTrue(myproto_instance.HasField('foo_field'))
 
+  @testing_refleaks.SkipReferenceLeakChecker('MakeDescriptor is not repeatable')
   def testDescriptorProtoSupport(self):
     # Hand written descriptors/reflection are only supported by the pure-Python
     # implementation of the API.
@@ -1141,7 +1143,8 @@ class ReflectionTest(BaseTestCase):
     self.assertTrue('price' in desc.fields_by_name)
     self.assertTrue('owners' in desc.fields_by_name)
 
-    class CarMessage(six.with_metaclass(reflection.GeneratedProtocolMessageType, message.Message)):
+    class CarMessage(six.with_metaclass(reflection.GeneratedProtocolMessageType,
+                                        message.Message)):
       DESCRIPTOR = desc
 
     prius = CarMessage()
@@ -2435,7 +2438,7 @@ class SerializationTest(BaseTestCase):
 
     first_proto = unittest_pb2.TestAllTypes()
     test_util.SetAllFields(first_proto)
-    serialized = first_proto.SerializeToString()
+    serialized = memoryview(first_proto.SerializeToString())
 
     for truncation_point in range(len(serialized) + 1):
       try:
@@ -2857,6 +2860,38 @@ class SerializationTest(BaseTestCase):
     self.assertEqual(unittest_pb2.REPEATED_NESTED_ENUM_EXTENSION_FIELD_NUMBER,
       51)
 
+  def testFieldProperties(self):
+    cls = unittest_pb2.TestAllTypes
+    self.assertIs(cls.optional_int32.DESCRIPTOR,
+                  cls.DESCRIPTOR.fields_by_name['optional_int32'])
+    self.assertEqual(cls.OPTIONAL_INT32_FIELD_NUMBER,
+                     cls.optional_int32.DESCRIPTOR.number)
+    self.assertIs(cls.optional_nested_message.DESCRIPTOR,
+                  cls.DESCRIPTOR.fields_by_name['optional_nested_message'])
+    self.assertEqual(cls.OPTIONAL_NESTED_MESSAGE_FIELD_NUMBER,
+                     cls.optional_nested_message.DESCRIPTOR.number)
+    self.assertIs(cls.repeated_int32.DESCRIPTOR,
+                  cls.DESCRIPTOR.fields_by_name['repeated_int32'])
+    self.assertEqual(cls.REPEATED_INT32_FIELD_NUMBER,
+                     cls.repeated_int32.DESCRIPTOR.number)
+
+  def testFieldDataDescriptor(self):
+    msg = unittest_pb2.TestAllTypes()
+    msg.optional_int32 = 42
+    self.assertEqual(unittest_pb2.TestAllTypes.optional_int32.__get__(msg), 42)
+    unittest_pb2.TestAllTypes.optional_int32.__set__(msg, 25)
+    self.assertEqual(msg.optional_int32, 25)
+    with self.assertRaises(AttributeError):
+      del msg.optional_int32
+    try:
+      unittest_pb2.ForeignMessage.c.__get__(msg)
+    except TypeError:
+      pass  # The cpp implementation cannot mix fields from other messages.
+            # This test exercises a specific check that avoids a crash.
+    else:
+      pass  # The python implementation allows fields from other messages.
+            # This is useless, but works.
+
   def testInitKwargs(self):
     proto = unittest_pb2.TestAllTypes(
         optional_int32=1,
@@ -2963,6 +2998,7 @@ class ClassAPITest(BaseTestCase):
   @unittest.skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
       'C++ implementation requires a call to MakeDescriptor()')
+  @testing_refleaks.SkipReferenceLeakChecker('MakeClass is not repeatable')
   def testMakeClassWithNestedDescriptor(self):
     leaf_desc = descriptor.Descriptor('leaf', 'package.parent.child.leaf', '',
                                       containing_type=None, fields=[],
@@ -2980,10 +3016,7 @@ class ClassAPITest(BaseTestCase):
                                         containing_type=None, fields=[],
                                         nested_types=[child_desc, sibling_desc],
                                         enum_types=[], extensions=[])
-    message_class = reflection.MakeClass(parent_desc)
-    self.assertIn('child', message_class.__dict__)
-    self.assertIn('sibling', message_class.__dict__)
-    self.assertIn('leaf', message_class.child.__dict__)
+    reflection.MakeClass(parent_desc)
 
   def _GetSerializedFileDescriptor(self, name):
     """Get a serialized representation of a test FileDescriptorProto.

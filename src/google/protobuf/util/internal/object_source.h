@@ -74,6 +74,6 @@ class LIBPROTOBUF_EXPORT ObjectSource {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_SOURCE_H__

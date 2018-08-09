@@ -39,14 +39,14 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 
-#include <google/protobuf/stubs/port.h>
-
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
 #endif  // ADDRESS_SANITIZER
 
-namespace google {
+#include <google/protobuf/port_def.inc>
 
+
+namespace google {
 namespace protobuf {
 namespace internal {
 
@@ -316,6 +316,8 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_ARENA_IMPL_H__

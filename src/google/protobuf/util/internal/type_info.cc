@@ -58,7 +58,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     DeleteCachedTypes(&cached_enums_);
   }
 
-  virtual util::StatusOr<const google::protobuf::Type*> ResolveTypeUrl(
+  util::StatusOr<const google::protobuf::Type*> ResolveTypeUrl(
       StringPiece type_url) const override {
     std::map<StringPiece, StatusOrType>::iterator it =
         cached_types_.find(type_url);
@@ -68,7 +68,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     // Stores the string value so it can be referenced using StringPiece in the
     // cached_types_ map.
     const string& string_type_url =
-        *string_storage_.insert(type_url.ToString()).first;
+        *string_storage_.insert(string(type_url)).first;
     std::unique_ptr<google::protobuf::Type> type(new google::protobuf::Type());
     util::Status status =
         type_resolver_->ResolveMessageType(string_type_url, type.get());
@@ -78,13 +78,13 @@ class TypeInfoForTypeResolver : public TypeInfo {
     return result;
   }
 
-  virtual const google::protobuf::Type* GetTypeByTypeUrl(
+  const google::protobuf::Type* GetTypeByTypeUrl(
       StringPiece type_url) const override {
     StatusOrType result = ResolveTypeUrl(type_url);
     return result.ok() ? result.ValueOrDie() : NULL;
   }
 
-  virtual const google::protobuf::Enum* GetEnumByTypeUrl(
+  const google::protobuf::Enum* GetEnumByTypeUrl(
       StringPiece type_url) const override {
     std::map<StringPiece, StatusOrEnum>::iterator it =
         cached_enums_.find(type_url);
@@ -94,7 +94,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     // Stores the string value so it can be referenced using StringPiece in the
     // cached_enums_ map.
     const string& string_type_url =
-        *string_storage_.insert(type_url.ToString()).first;
+        *string_storage_.insert(string(type_url)).first;
     std::unique_ptr<google::protobuf::Enum> enum_type(
         new google::protobuf::Enum());
     util::Status status =
@@ -105,8 +105,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     return result.ok() ? result.ValueOrDie() : NULL;
   }
 
-
-  virtual const google::protobuf::Field* FindField(
+  const google::protobuf::Field* FindField(
       const google::protobuf::Type* type,
       StringPiece camel_case_name) const override {
     std::map<const google::protobuf::Type*, CamelCaseNameTable>::const_iterator
@@ -115,8 +114,8 @@ class TypeInfoForTypeResolver : public TypeInfo {
         (it == indexed_types_.end())
             ? PopulateNameLookupTable(type, &indexed_types_[type])
             : it->second;
-    StringPiece name =
-        FindWithDefault(camel_case_name_table, camel_case_name, StringPiece());
+    StringPiece name = FindWithDefault(
+        camel_case_name_table, camel_case_name, StringPiece());
     if (name.empty()) {
       // Didn't find a mapping. Use whatever provided.
       name = camel_case_name;
@@ -131,7 +130,8 @@ class TypeInfoForTypeResolver : public TypeInfo {
 
   template <typename T>
   static void DeleteCachedTypes(std::map<StringPiece, T>* cached_types) {
-    for (typename std::map<StringPiece, T>::iterator it = cached_types->begin();
+    for (typename std::map<StringPiece, T>::iterator it =
+             cached_types->begin();
          it != cached_types->end(); ++it) {
       if (it->second.ok()) {
         delete it->second.ValueOrDie();
@@ -146,8 +146,8 @@ class TypeInfoForTypeResolver : public TypeInfo {
       const google::protobuf::Field& field = type->fields(i);
       StringPiece name = field.name();
       StringPiece camel_case_name = field.json_name();
-      const StringPiece* existing =
-          InsertOrReturnExisting(camel_case_name_table, camel_case_name, name);
+      const StringPiece* existing = InsertOrReturnExisting(
+          camel_case_name_table, camel_case_name, name);
       if (existing && *existing != name) {
         GOOGLE_LOG(WARNING) << "Field '" << name << "' and '" << *existing
                      << "' map to the same camel case name '" << camel_case_name

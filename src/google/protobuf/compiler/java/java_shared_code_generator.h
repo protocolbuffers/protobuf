@@ -44,18 +44,20 @@
 
 namespace google {
 namespace protobuf {
-  class FileDescriptor;        // descriptor.h
-  namespace compiler {
-    class GeneratorContext;    // code_generator.h
-    namespace java {
-      class ClassNameResolver;       // name_resolver.h
-    }
-  }
-  namespace io {
-    class Printer;             // printer.h
-  }
+class FileDescriptor;  // descriptor.h
+namespace compiler {
+class GeneratorContext;  // code_generator.h
+namespace java {
+class ClassNameResolver;  // name_resolver.h
 }
+}  // namespace compiler
+namespace io {
+class Printer;  // printer.h
+}
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
@@ -84,6 +86,6 @@ class SharedCodeGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_SHARED_CODE_GENERATOR_H__

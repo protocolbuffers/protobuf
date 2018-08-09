@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -222,6 +223,67 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   // =================================================================
+  // Comparison
+
+  private static final int UNSIGNED_BYTE_MASK = 0xFF;
+
+  /**
+   * Returns the value of the given byte as an integer, interpreting the byte as an unsigned value.
+   * That is, returns {@code value + 256} if {@code value} is negative; {@code value} itself
+   * otherwise.
+   *
+   * <p>Note: This code was copied from {@link com.google.common.primitives.UnsignedBytes#toInt}, as
+   * Guava libraries cannot be used in the {@code com.google.protobuf} package.
+   */
+  private static int toInt(byte value) {
+    return value & UNSIGNED_BYTE_MASK;
+  }
+
+  /**
+   * Compares two {@link ByteString}s lexicographically, treating their contents as unsigned byte
+   * values between 0 and 255 (inclusive).
+   *
+   * <p>For example, {@code (byte) -1} is considered to be greater than {@code (byte) 1} because
+   * it is interpreted as an unsigned value, {@code 255}.
+   */
+  private static final Comparator<ByteString> UNSIGNED_LEXICOGRAPHICAL_COMPARATOR =
+      new Comparator<ByteString>() {
+        @Override
+        public int compare(ByteString former, ByteString latter) {
+          ByteIterator formerBytes = former.iterator();
+          ByteIterator latterBytes = latter.iterator();
+
+          while (formerBytes.hasNext() && latterBytes.hasNext()) {
+            // Note: This code was copied from com.google.common.primitives.UnsignedBytes#compare,
+            // as Guava libraries cannot be used in the {@code com.google.protobuf} package.
+            int result =
+                Integer.compare(toInt(formerBytes.nextByte()), toInt(latterBytes.nextByte()));
+            if (result != 0) {
+              return result;
+            }
+          }
+
+          return Integer.compare(former.size(), latter.size());
+        }
+      };
+
+  /**
+   * Returns a {@link Comparator<ByteString>} which compares {@link ByteString}-s lexicographically
+   * as sequences of unsigned bytes (i.e. values between 0 and 255, inclusive).
+   *
+   * <p>For example, {@code (byte) -1} is considered to be greater than {@code (byte) 1} because
+   * it is interpreted as an unsigned value, {@code 255}:
+   *
+   * <ul>
+   * <li>{@code `-1` -> 0b11111111 (two's complement) -> 255}
+   * <li>{@code `1` -> 0b00000001 -> 1}
+   * </ul>
+   */
+  public static Comparator<ByteString> unsignedLexicographicalComparator() {
+    return UNSIGNED_LEXICOGRAPHICAL_COMPARATOR;
+  }
+
+  // =================================================================
   // ByteString -> substring
 
   /**
@@ -287,8 +349,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param offset offset in source array
    * @param size number of bytes to copy
    * @return new {@code ByteString}
+   * @throws IndexOutOfBoundsException if {@code offset} or {@code size} are out of bounds
    */
   public static ByteString copyFrom(byte[] bytes, int offset, int size) {
+    checkRange(offset, offset + size, bytes.length);
     return new LiteralByteString(byteArrayCopier.copyFrom(bytes, offset, size));
   }
 
@@ -339,8 +403,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param bytes source buffer
    * @param size number of bytes to copy
    * @return new {@code ByteString}
+   * @throws IndexOutOfBoundsException if {@code size > bytes.remaining()}
    */
   public static ByteString copyFrom(ByteBuffer bytes, int size) {
+    checkRange(0, size, bytes.remaining());
     byte[] copy = new byte[size];
     bytes.get(copy);
     return new LiteralByteString(copy);
@@ -578,6 +644,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /**
    * Copies bytes into a buffer at the given offset.
    *
+   * <p>To copy a subset of bytes, you call this method on the return value of {@link
+   * #substring(int, int)}. Example: {@code byteString.substring(start, end).copyTo(target, offset)}
+   *
    * @param target buffer to copy into
    * @param offset in the target buffer
    * @throws IndexOutOfBoundsException if the offset is negative or too large
@@ -589,15 +658,16 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /**
    * Copies bytes into a buffer.
    *
-   * @param target       buffer to copy into
+   * @param target buffer to copy into
    * @param sourceOffset offset within these bytes
    * @param targetOffset offset within the target buffer
    * @param numberToCopy number of bytes to copy
-   * @throws IndexOutOfBoundsException if an offset or size is negative or too
-   *     large
+   * @throws IndexOutOfBoundsException if an offset or size is negative or too large
+   * @deprecation Instead, call {@code byteString.substring(sourceOffset, sourceOffset +
+   *     numberToCopy).copyTo(target, targetOffset)}
    */
-  public final void copyTo(byte[] target, int sourceOffset, int targetOffset,
-      int numberToCopy) {
+  @Deprecated
+  public final void copyTo(byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
     checkRange(sourceOffset, sourceOffset + numberToCopy, size());
     checkRange(targetOffset, targetOffset + numberToCopy, target.length);
     if (numberToCopy > 0) {
@@ -617,10 +687,13 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /**
    * Copies bytes into a ByteBuffer.
    *
+   * <p>To copy a subset of bytes, you call this method on the return value of {@link
+   * #substring(int, int)}. Example: {@code byteString.substring(start, end).copyTo(target)}
+   *
    * @param target ByteBuffer to copy into.
    * @throws java.nio.ReadOnlyBufferException if the {@code target} is read-only
-   * @throws java.nio.BufferOverflowException if the {@code target}'s
-   *     remaining() space is not large enough to hold the data.
+   * @throws java.nio.BufferOverflowException if the {@code target}'s remaining() space is not large
+   *     enough to hold the data.
    */
   public abstract void copyTo(ByteBuffer target);
 
@@ -1258,6 +1331,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      * @param bytes array to wrap
      */
     LiteralByteString(byte[] bytes) {
+      if (bytes == null) {
+        throw new NullPointerException();
+      }
       this.bytes = bytes;
     }
 

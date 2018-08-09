@@ -102,6 +102,6 @@ class LIBPROTOC_EXPORT Subprocess {
 
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__

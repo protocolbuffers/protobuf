@@ -663,6 +663,10 @@ static PyObject* ToStr(PyObject* pself) {
   return PyObject_Repr(list.get());
 }
 
+static PyObject* MergeFrom(PyObject* pself, PyObject* arg) {
+  return Extend(reinterpret_cast<RepeatedScalarContainer*>(pself), arg);
+}
+
 // The private constructor of RepeatedScalarContainer objects.
 PyObject *NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor) {
@@ -776,6 +780,8 @@ static PyMethodDef Methods[] = {
     "Removes an object from the repeated container." },
   { "sort", (PyCFunction)Sort, METH_VARARGS | METH_KEYWORDS,
     "Sorts the repeated container."},
+  { "MergeFrom", (PyCFunction)MergeFrom, METH_O,
+    "Merges a repeated container into the current container." },
   { NULL, NULL }
 };
 

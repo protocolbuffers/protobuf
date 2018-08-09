@@ -34,17 +34,26 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <climits>
+#include <string>
 
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
-#include <string>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/stubs/stl_util.h>
+
+#include <google/protobuf/port_def.inc>
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+#include <google/protobuf/parse_context.h>
+#include "util/utf8/public/unilib.h"
+#include "util/utf8/public/unilib_utf8_utils.h"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -96,6 +105,180 @@ string InitializationErrorMessage(const char* action,
   return result;
 }
 
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+// This is wrapper to turn a ZeroCopyInputStream (ZCIS) into a
+// InputStreamWithOverlap. This is done by copying data around the seams,
+// pictorially if ZCIS presents a stream in chunks like so
+// [---------------------------------------------------------------]
+// [---------------------] chunk 1
+//                      [----------------------------] chunk 2
+//                                          chunk 3 [--------------]
+// this class will convert this into chunks
+// [-----------------....] chunk 1
+//                  [----....] patch
+//                      [------------------------....] chunk 2
+//                                              [----....] patch
+//                                          chunk 3 [----------....]
+//                                                      patch [----****]
+// by using a fixed size buffer to patch over the seams. This requires
+// copying of an "epsilon" neighboorhood around the seams.
+
+template <int kSlopBytes>
+class EpsCopyInputStream {
+ public:
+  EpsCopyInputStream(io::CodedInputStream* input) : input_(input) {}
+  ~EpsCopyInputStream() {
+    if (skip_) input_->Skip(skip_);
+  }
+
+  StringPiece NextWithOverlap() {
+    switch (next_state_) {
+      case kEOS:
+        // End of stream
+        return nullptr;
+      case kChunk:
+        // chunk_ contains a buffer of sufficient size (> kSlopBytes).
+        // To parse the last kSlopBytes we need to copy the bytes into the
+        // buffer. Hence we set,
+        next_state_ = kBuffer;
+        return {chunk_.begin(), chunk_.size() - kSlopBytes};
+      case kBuffer:
+        // We have to parse the last kSlopBytes of chunk_, which could alias
+        // buffer_ so we have to memmove.
+        std::memmove(buffer_, chunk_.end() - kSlopBytes, kSlopBytes);
+        chunk_ = GetChunk();
+        if (chunk_.size() > kSlopBytes) {
+          next_state_ = kChunk;
+          std::memcpy(buffer_ + kSlopBytes, chunk_.begin(), kSlopBytes);
+          return {buffer_, kSlopBytes};
+        } else if (chunk_.empty()) {
+          next_state_ = kEOS;
+          return {buffer_, kSlopBytes};
+        } else {
+          auto size = chunk_.size();
+          // The next chunk is not big enough. So we copy it in the current
+          // after the current buffer. Resulting in a buffer with
+          // size + kSlopBytes bytes.
+          std::memcpy(buffer_ + kSlopBytes, chunk_.begin(), size);
+          chunk_ = {buffer_, size + kSlopBytes};
+          return {buffer_, size};
+        }
+      case kStart: {
+        size_t i = 0;
+        do {
+          chunk_ = GetChunk();
+          if (chunk_.size() > kSlopBytes) {
+            if (i == 0) {
+              next_state_ = kBuffer;
+              return {chunk_.begin(), chunk_.size() - kSlopBytes};
+            }
+            std::memcpy(buffer_ + i, chunk_.begin(), kSlopBytes);
+            next_state_ = kChunk;
+            return {buffer_, i};
+          }
+          if (chunk_.empty()) {
+            next_state_ = kEOS;
+            return {buffer_, i};
+          }
+          std::memcpy(buffer_ + i, chunk_.begin(), chunk_.size());
+          i += chunk_.size();
+        } while (i <= kSlopBytes);
+        chunk_ = {buffer_, i};
+        next_state_ = kBuffer;
+        return {buffer_, i - kSlopBytes};
+      }
+    }
+  }
+
+  StringPiece NextWithOverlapEndingSafe(const char* ptr, int nesting) {
+    switch (next_state_) {
+      case kEOS:
+        // End of stream
+        return nullptr;
+      case kChunk:
+        // chunk_ contains a buffer of sufficient size (> kSlopBytes).
+        // To parse the last kSlopBytes we need to copy the bytes into the
+        // buffer. Hence we set,
+        next_state_ = kBuffer;
+        return {chunk_.begin(), chunk_.size() - kSlopBytes};
+      case kBuffer:
+        // We have to parse the last kSlopBytes of chunk_, which could alias
+        // buffer_ so we have to memmove.
+        if (!SafeCopy(buffer_, chunk_.end() - kSlopBytes, nesting)) {
+          // We will terminate
+        }
+        chunk_ = GetChunk();
+        if (chunk_.size() > kSlopBytes) {
+          next_state_ = kChunk;
+          std::memcpy(buffer_ + kSlopBytes, chunk_.begin(), kSlopBytes);
+          return {buffer_, kSlopBytes};
+        } else if (chunk_.empty()) {
+          next_state_ = kEOS;
+          return {buffer_, kSlopBytes};
+        } else {
+          auto size = chunk_.size();
+          // The next chunk is not big enough. So we copy it in the current
+          // after the current buffer. Resulting in a buffer with
+          // size + kSlopBytes bytes.
+          std::memcpy(buffer_ + kSlopBytes, chunk_.begin(), size);
+          chunk_ = {buffer_, size + kSlopBytes};
+          return {buffer_, size};
+        }
+      case kStart: {
+        size_t i = 0;
+        do {
+          chunk_ = GetChunk();
+          if (chunk_.size() > kSlopBytes) {
+            if (i == 0) {
+              next_state_ = kBuffer;
+              return {chunk_.begin(), chunk_.size() - kSlopBytes};
+            }
+            std::memcpy(buffer_ + i, chunk_.begin(), kSlopBytes);
+            next_state_ = kChunk;
+            return {buffer_, i};
+          }
+          if (chunk_.empty()) {
+            next_state_ = kEOS;
+            return {buffer_, i};
+          }
+          std::memcpy(buffer_ + i, chunk_.begin(), chunk_.size());
+          i += chunk_.size();
+        } while (i <= kSlopBytes);
+        chunk_ = {buffer_, i};
+        next_state_ = kBuffer;
+        return {buffer_, i - kSlopBytes};
+      }
+    }
+  }
+
+  void Backup(const char* ptr) { skip_ = ptr - chunk_.data(); }
+
+ private:
+  io::CodedInputStream* input_;
+  StringPiece chunk_;
+  char buffer_[2 * kSlopBytes];
+  enum State {
+    kEOS = 0,     // -> end of stream.
+    kChunk = 1,   // -> chunk_ contains the data for Next.
+    kBuffer = 2,  // -> We need to copy the left over from previous chunk_ and
+                  //    load and patch the start of the next chunk in the
+                  //    local buffer.
+    kStart = 3,
+  };
+  State next_state_ = kStart;
+  int skip_ = 0;
+
+  StringPiece GetChunk() {
+    const void* ptr;
+    if (skip_) input_->Skip(skip_);
+    if (!input_->GetDirectBufferPointer(&ptr, &skip_)) {
+      return nullptr;
+    }
+    return StringPiece(static_cast<const char*>(ptr), skip_);
+  }
+};
+#endif
+
 // Several of the Parse methods below just do one thing and then call another
 // method.  In a naive implementation, we might have ParseFromString() call
 // ParseFromArray() which would call ParseFromZeroCopyStream() which would call
@@ -103,25 +286,41 @@ string InitializationErrorMessage(const char* action,
 // call MergePartialFromCodedStream().  However, when parsing very small
 // messages, every function call introduces significant overhead.  To avoid
 // this without reproducing code, we use these forced-inline helpers.
-GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineMergeFromCodedStream(
-    io::CodedInputStream* input, MessageLite* message);
-GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineParseFromCodedStream(
-    io::CodedInputStream* input, MessageLite* message);
-GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineParsePartialFromCodedStream(
-    io::CodedInputStream* input, MessageLite* message);
-GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineParseFromArray(
-    const void* data, int size, MessageLite* message);
-GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool InlineParsePartialFromArray(
-    const void* data, int size, MessageLite* message);
+
+inline bool InlineMergePartialFromCodedStream(io::CodedInputStream* input,
+                                              MessageLite* message) {
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  EpsCopyInputStream<internal::ParseContext::kSlopBytes> eps_input(input);
+  internal::ParseContext ctx;
+  auto res = ctx.ParseNoLimit({message->_ParseFunc(), message}, &eps_input);
+  if (res == 1) {
+    input->SetConsumed();
+    return true;
+  } else if (res == 2) {
+    return false;
+  } else {
+    input->SetLastTag(res);
+    return true;
+  }
+#else
+  return message->MergePartialFromCodedStream(input);
+#endif
+}
 
 inline bool InlineMergeFromCodedStream(io::CodedInputStream* input,
                                        MessageLite* message) {
-  if (!message->MergePartialFromCodedStream(input)) return false;
+  if (!InlineMergePartialFromCodedStream(input, message)) return false;
   if (!message->IsInitialized()) {
     GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *message);
     return false;
   }
   return true;
+}
+
+inline bool InlineParsePartialFromCodedStream(io::CodedInputStream* input,
+                                              MessageLite* message) {
+  message->Clear();
+  return InlineMergePartialFromCodedStream(input, message);
 }
 
 inline bool InlineParseFromCodedStream(io::CodedInputStream* input,
@@ -130,36 +329,81 @@ inline bool InlineParseFromCodedStream(io::CodedInputStream* input,
   return InlineMergeFromCodedStream(input, message);
 }
 
-inline bool InlineParsePartialFromCodedStream(io::CodedInputStream* input,
-                                              MessageLite* message) {
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+template <int kSlopBytes>
+class ArrayInput {
+ public:
+  ArrayInput(StringPiece chunk) : chunk_(chunk) {}
+  StringPiece NextWithOverlap() {
+    auto res = chunk_;
+    chunk_ = nullptr;
+    return res;
+  }
+
+  void Backup(const char*) { GOOGLE_CHECK(false) << "Can't backup arrayinput"; }
+
+ private:
+  StringPiece chunk_;
+};
+#endif
+
+inline bool InlineMergePartialFromArray(const void* data, int size,
+                                        MessageLite* message,
+                                        bool aliasing = false) {
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  internal::ParseContext ctx;
+  ArrayInput<internal::ParseContext::kSlopBytes> input(
+      StringPiece(static_cast<const char*>(data), size));
+  return ctx.Parse({message->_ParseFunc(), message}, size, &input);
+#else
+  io::CodedInputStream input(static_cast<const uint8*>(data), size);
+  return message->MergePartialFromCodedStream(&input) &&
+         input.ConsumedEntireMessage();
+#endif
+}
+
+inline bool InlineMergeFromArray(const void* data, int size,
+                                 MessageLite* message, bool aliasing = false) {
+  if (!InlineMergePartialFromArray(data, size, message, aliasing)) return false;
+  if (!message->IsInitialized()) {
+    GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *message);
+    return false;
+  }
+  return true;
+}
+
+inline bool InlineParsePartialFromArray(const void* data, int size,
+                                        MessageLite* message,
+                                        bool aliasing = false) {
   message->Clear();
-  return message->MergePartialFromCodedStream(input);
+  return InlineMergePartialFromArray(data, size, message, aliasing);
 }
 
-inline bool InlineParseFromArray(
-    const void* data, int size, MessageLite* message) {
-  io::CodedInputStream input(reinterpret_cast<const uint8*>(data), size);
-  return InlineParseFromCodedStream(&input, message) &&
-         input.ConsumedEntireMessage();
-}
-
-inline bool InlineParsePartialFromArray(
-    const void* data, int size, MessageLite* message) {
-  io::CodedInputStream input(reinterpret_cast<const uint8*>(data), size);
-  return InlineParsePartialFromCodedStream(&input, message) &&
-         input.ConsumedEntireMessage();
+inline bool InlineParseFromArray(const void* data, int size,
+                                 MessageLite* message, bool aliasing = false) {
+  if (!InlineParsePartialFromArray(data, size, message, aliasing)) return false;
+  if (!message->IsInitialized()) {
+    GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *message);
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
 
-
-MessageLite* MessageLite::New(::google::protobuf::Arena* arena) const {
+MessageLite* MessageLite::New(Arena* arena) const {
   MessageLite* message = New();
   if (arena != NULL) {
     arena->Own(message);
   }
   return message;
 }
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
+  return InlineMergePartialFromCodedStream(input, this);
+}
+#endif
 
 bool MessageLite::MergeFromCodedStream(io::CodedInputStream* input) {
   return InlineMergeFromCodedStream(input, this);
@@ -236,7 +480,8 @@ bool MessageLite::SerializePartialToCodedStream(
     io::CodedOutputStream* output) const {
   const size_t size = ByteSizeLong();  // Force size to be cached.
   if (size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
+    GOOGLE_LOG(ERROR) << GetTypeName() << " exceeded maximum protobuf size of 2GB: "
+               << size;
     return false;
   }
 
@@ -286,7 +531,8 @@ bool MessageLite::AppendPartialToString(string* output) const {
   size_t old_size = output->size();
   size_t byte_size = ByteSizeLong();
   if (byte_size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << byte_size;
+    GOOGLE_LOG(ERROR) << GetTypeName() << " exceeded maximum protobuf size of 2GB: "
+               << byte_size;
     return false;
   }
 
@@ -316,9 +562,10 @@ bool MessageLite::SerializeToArray(void* data, int size) const {
 }
 
 bool MessageLite::SerializePartialToArray(void* data, int size) const {
-  size_t byte_size = ByteSizeLong();
+  const size_t byte_size = ByteSizeLong();
   if (byte_size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
+    GOOGLE_LOG(ERROR) << GetTypeName() << " exceeded maximum protobuf size of 2GB: "
+               << byte_size;
     return false;
   }
   if (size < byte_size) return false;
@@ -382,9 +629,10 @@ uint8* MessageLite::InternalSerializeWithCachedSizesToArray(
 }
 
 namespace internal {
-template<>
+
+template <>
 MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
-    const MessageLite* prototype, google::protobuf::Arena* arena) {
+    const MessageLite* prototype, Arena* arena) {
   return prototype->New(arena);
 }
 template <>
@@ -397,13 +645,6 @@ void GenericTypeHandler<string>::Merge(const string& from,
                                               string* to) {
   *to = from;
 }
-
-bool proto3_preserve_unknown_ = true;
-
-void SetProto3PreserveUnknownsDefault(bool preserve) {
-  proto3_preserve_unknown_ = preserve;
-}
-
 
 }  // namespace internal
 

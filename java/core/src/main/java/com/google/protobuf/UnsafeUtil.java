@@ -33,6 +33,7 @@ package com.google.protobuf;
 import java.lang.reflect.Field;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
@@ -144,6 +145,10 @@ final class UnsafeUtil {
 
   static Object getObject(Object target, long offset) {
     return MEMORY_ACCESSOR.getObject(target, offset);
+  }
+
+  static void putObject(Object target, long offset, Object value) {
+    MEMORY_ACCESSOR.putObject(target, offset, value);
   }
 
   static byte getByte(byte[] target, long index) {
@@ -368,12 +373,6 @@ final class UnsafeUtil {
   private static Field bufferAddressField() {
     Field field = field(Buffer.class, "address");
     return field != null && field.getType() == long.class ? field : null;
-  }
-
-  /** Finds the value field within a {@link String}. */
-  private static Field stringValueField() {
-    Field field = field(String.class, "value");
-    return field != null && field.getType() == char[].class ? field : null;
   }
 
   /**

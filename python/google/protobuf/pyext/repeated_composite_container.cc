@@ -61,9 +61,9 @@ namespace repeated_composite_container {
 
 // TODO(tibell): We might also want to check:
 //   GOOGLE_CHECK_NOTNULL((self)->owner.get());
-#define GOOGLE_CHECK_ATTACHED(self)             \
-  do {                                   \
-    GOOGLE_CHECK_NOTNULL((self)->message);      \
+#define GOOGLE_CHECK_ATTACHED(self)                           \
+  do {                                                 \
+    GOOGLE_CHECK_NOTNULL((self)->message);                 \
     GOOGLE_CHECK_NOTNULL((self)->parent_field_descriptor); \
   } while (0);
 
@@ -152,6 +152,8 @@ static PyObject* AddToAttached(RepeatedCompositeContainer* self,
   cmsg->message = sub_message;
   cmsg->parent = self->parent;
   if (cmessage::InitAttributes(cmsg, args, kwargs) < 0) {
+    message->GetReflection()->RemoveLast(
+        message, self->parent_field_descriptor);
     Py_DECREF(cmsg);
     return NULL;
   }
@@ -210,7 +212,7 @@ PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
   }
   ScopedPyObjectPtr next;
   while ((next.reset(PyIter_Next(iter.get()))) != NULL) {
-    if (!PyObject_TypeCheck(next.get(), &CMessage_Type)) {
+    if (!PyObject_TypeCheck(next.get(), CMessage_Type)) {
       PyErr_SetString(PyExc_TypeError, "Not a cmessage");
       return NULL;
     }
@@ -487,9 +489,9 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
 void ReleaseLastTo(CMessage* parent,
                    const FieldDescriptor* field,
                    CMessage* target) {
-  GOOGLE_CHECK_NOTNULL(parent);
-  GOOGLE_CHECK_NOTNULL(field);
-  GOOGLE_CHECK_NOTNULL(target);
+  GOOGLE_CHECK(parent != nullptr);
+  GOOGLE_CHECK(field != nullptr);
+  GOOGLE_CHECK(target != nullptr);
 
   CMessage::OwnerRef released_message(
       parent->message->GetReflection()->ReleaseLast(parent->message, field));

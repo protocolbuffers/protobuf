@@ -52,6 +52,6 @@ Message* MutableCProtoInsidePyProto(PyObject* msg);
 
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__

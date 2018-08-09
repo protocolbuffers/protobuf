@@ -56,3 +56,17 @@ message Factory1Message {
 
   extensions 1000 to max;
 }
+
+message Factory1MethodRequest {
+  optional string argument = 1;
+}
+
+message Factory1MethodResponse {
+  optional string result = 1;
+}
+
+service Factory1Service {
+  // Dummy method for this dummy service.
+  rpc Factory1Method(Factory1MethodRequest) returns (Factory1MethodResponse) {
+  }
+}

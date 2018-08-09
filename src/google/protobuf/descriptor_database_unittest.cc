@@ -44,6 +44,7 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -77,7 +78,7 @@ static void ExpectContainsType(const FileDescriptorProto& proto,
 // three nearly-identical sets of tests, we use parameterized tests to apply
 // the same code to all three.
 
-// The parameterized test runs against a DescriptarDatabaseTestCase.  We have
+// The parameterized test runs against a DescriptorDatabaseTestCase.  We have
 // implementations for each of the three classes we want to test.
 class DescriptorDatabaseTestCase {
  public:
@@ -517,6 +518,21 @@ TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   EXPECT_FALSE(db.FindNameOfFileContainingSymbol("foo", &filename));
   EXPECT_FALSE(db.FindNameOfFileContainingSymbol("bar", &filename));
   EXPECT_FALSE(db.FindNameOfFileContainingSymbol("baz.Baz", &filename));
+}
+
+TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
+  FileDescriptorProto f;
+  f.set_name("foo.proto");
+  f.set_package("foo");
+  f.add_message_type()->set_name("Foo");
+
+  SimpleDescriptorDatabase db;
+  db.Add(f);
+
+  // Test!
+  std::vector<string> all_files;
+  db.FindAllFileNames(&all_files);
+  EXPECT_THAT(all_files, testing::ElementsAre("foo.proto"));
 }
 
 // ===================================================================

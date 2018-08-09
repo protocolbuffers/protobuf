@@ -43,7 +43,19 @@
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/port.h>
+
+#include <google/protobuf/port_def.inc>
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+#include <google/protobuf/parse_context.h>
+#endif
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -180,6 +192,60 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   std::vector<UnknownField>* fields_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
 };
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+namespace internal {
+inline void WriteVarint(uint32 num, uint64 val, UnknownFieldSet* unknown) {
+  unknown->AddVarint(num, val);
+}
+
+const char* PackedValidEnumParser(const char* begin, const char* end,
+                                  void* object, ParseContext* ctx);
+const char* PackedValidEnumParserArg(const char* begin, const char* end,
+                                     void* object, ParseContext* ctx);
+
+const char* UnknownGroupParse(const char* begin, const char* end, void* object,
+                              ParseContext* ctx);
+std::pair<const char*, bool> UnknownFieldParse(uint32 tag, ParseClosure parent,
+                                               const char* begin,
+                                               const char* end,
+                                               UnknownFieldSet* unknown,
+                                               ParseContext* ctx);
+template <typename Msg>
+const char* ParseMessageSet(const char* begin, const char* end, Msg* msg,
+                            internal::ParseContext* ctx) {
+  auto ptr = begin;
+  int depth;
+  (void)depth;
+  while (ptr < end) {
+    uint32 tag;
+    ptr = Varint::Parse32Inline(ptr, &tag);
+    if (!ptr) goto error;
+    if (tag == 11) {
+      if (!ctx->PrepareGroup(tag, &depth)) goto error;
+      ctx->extra_parse_data().payload.clear();
+      ptr = Msg::InternalParseMessageSetItem(ptr, end, msg, ctx);
+      if (!ptr) goto error;
+      if (ctx->GroupContinues(depth)) goto group_continues;
+    } else {
+      auto res = UnknownFieldParse(tag, {Msg::_InternalParse, msg}, begin, end,
+                                   msg->mutable_unknown_fields(), ctx);
+      ptr = res.first;
+      if (res.second) break;
+    }
+  }
+  return ptr;
+error:
+  return nullptr;
+group_continues:
+  GOOGLE_DCHECK(ptr >= end);
+  ctx->StoreGroup({Msg::_InternalParse, msg},
+                  {Msg::InternalParseMessageSetItem, msg}, depth);
+  return ptr;
+}
+
+}  // namespace internal
+#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 // Represents one field in an UnknownFieldSet.
 class LIBPROTOBUF_EXPORT UnknownField {
@@ -358,6 +424,7 @@ inline void UnknownField::SetType(Type type) {
 
 
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 #endif  // GOOGLE_PROTOBUF_UNKNOWN_FIELD_SET_H__

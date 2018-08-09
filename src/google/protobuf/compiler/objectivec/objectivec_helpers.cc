@@ -38,6 +38,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdlib.h>
+#include <unordered_set>
 #include <vector>
 
 #include <google/protobuf/stubs/hash.h>
@@ -79,8 +80,8 @@ Options::Options() {
 
 namespace {
 
-hash_set<string> MakeWordsMap(const char* const words[], size_t num_words) {
-  hash_set<string> result;
+std::unordered_set<string> MakeWordsMap(const char* const words[], size_t num_words) {
+  std::unordered_set<string> result;
   for (int i = 0; i < num_words; i++) {
     result.insert(words[i]);
   }
@@ -89,7 +90,7 @@ hash_set<string> MakeWordsMap(const char* const words[], size_t num_words) {
 
 const char* const kUpperSegmentsList[] = {"url", "http", "https"};
 
-hash_set<string> kUpperSegments =
+std::unordered_set<string> kUpperSegments =
     MakeWordsMap(kUpperSegmentsList, GOOGLE_ARRAYSIZE(kUpperSegmentsList));
 
 bool ascii_isnewline(char c) {
@@ -217,7 +218,7 @@ const char* const kReservedWordList[] = {
     "StyleParameter", "StyleField", "TimeScale", "TimeBase", "TimeRecord",
 };
 
-hash_set<string> kReservedWords =
+std::unordered_set<string> kReservedWords =
     MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
 
 string SanitizeNameForObjC(const string& input,

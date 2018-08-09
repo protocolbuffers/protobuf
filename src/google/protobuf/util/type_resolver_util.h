@@ -49,6 +49,6 @@ LIBPROTOBUF_EXPORT TypeResolver* NewTypeResolverForDescriptorPool(
 
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_TYPE_RESOLVER_UTIL_H__

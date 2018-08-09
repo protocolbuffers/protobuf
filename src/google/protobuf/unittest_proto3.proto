@@ -206,3 +206,17 @@ enum ForeignEnum {
 message TestEmptyMessage {
 }
 
+// Same layout as TestOneof2 in unittest.proto to test unknown enum value
+// parsing behavior in oneof.
+message TestOneof2 {
+  oneof foo {
+    NestedEnum foo_enum = 6;
+  }
+
+  enum NestedEnum {
+    UNKNOWN = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+  }
+}

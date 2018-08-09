@@ -120,8 +120,6 @@ Required.Proto3.JsonInput.ValueAcceptInteger.JsonOutput
 Required.Proto3.JsonInput.ValueAcceptInteger.ProtobufOutput
 Required.Proto3.JsonInput.ValueAcceptList.JsonOutput
 Required.Proto3.JsonInput.ValueAcceptList.ProtobufOutput
-Required.Proto3.JsonInput.ValueAcceptListWithNull.JsonOutput
-Required.Proto3.JsonInput.ValueAcceptListWithNull.ProtobufOutput
 Required.Proto3.JsonInput.ValueAcceptNull.JsonOutput
 Required.Proto3.JsonInput.ValueAcceptNull.ProtobufOutput
 Required.Proto3.JsonInput.ValueAcceptObject.JsonOutput
@@ -135,9 +133,3 @@ Required.Proto3.ProtobufInput.FloatFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput
 Required.TimestampProtoInputTooLarge.JsonOutput
 Required.TimestampProtoInputTooSmall.JsonOutput
-Required.Proto3.JsonInput.IgnoreUnknownJsonFalse.ProtobufOutput
-Required.Proto3.JsonInput.IgnoreUnknownJsonNull.ProtobufOutput
-Required.Proto3.JsonInput.IgnoreUnknownJsonNumber.ProtobufOutput
-Required.Proto3.JsonInput.IgnoreUnknownJsonObject.ProtobufOutput
-Required.Proto3.JsonInput.IgnoreUnknownJsonString.ProtobufOutput
-Required.Proto3.JsonInput.IgnoreUnknownJsonTrue.ProtobufOutput

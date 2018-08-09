@@ -36,7 +36,6 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
-option optimize_for = LITE_RUNTIME;
 
 message MessageLiteToBeExtended {
   extensions 1 to max;

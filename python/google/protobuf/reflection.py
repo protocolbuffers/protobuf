@@ -48,24 +48,22 @@ this file*.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 
-from google.protobuf.internal import api_implementation
-from google.protobuf import message
-
-
-if api_implementation.Type() == 'cpp':
-  from google.protobuf.pyext import cpp_message as message_impl
-else:
-  from google.protobuf.internal import python_message as message_impl
+from google.protobuf import message_factory
+from google.protobuf import symbol_database
 
 # The type of all Message classes.
 # Part of the public interface, but normally only used by message factories.
-GeneratedProtocolMessageType = message_impl.GeneratedProtocolMessageType
+GeneratedProtocolMessageType = message_factory._GENERATED_PROTOCOL_MESSAGE_TYPE
 
 MESSAGE_CLASS_CACHE = {}
 
 
+# Deprecated. Please NEVER use reflection.ParseMessage().
 def ParseMessage(descriptor, byte_str):
   """Generate a new Message instance from this Descriptor and a byte string.
+
+  DEPRECATED: ParseMessage is deprecated because it is using MakeClass().
+  Please use MessageFactory.GetPrototype() instead.
 
   Args:
     descriptor: Protobuf Descriptor object
@@ -80,42 +78,18 @@ def ParseMessage(descriptor, byte_str):
   return new_msg
 
 
+# Deprecated. Please NEVER use reflection.MakeClass().
 def MakeClass(descriptor):
   """Construct a class object for a protobuf described by descriptor.
 
-  Composite descriptors are handled by defining the new class as a member of the
-  parent class, recursing as deep as necessary.
-  This is the dynamic equivalent to:
-
-  class Parent(message.Message):
-    __metaclass__ = GeneratedProtocolMessageType
-    DESCRIPTOR = descriptor
-    class Child(message.Message):
-      __metaclass__ = GeneratedProtocolMessageType
-      DESCRIPTOR = descriptor.nested_types[0]
-
-  Sample usage:
-    file_descriptor = descriptor_pb2.FileDescriptorProto()
-    file_descriptor.ParseFromString(proto2_string)
-    msg_descriptor = descriptor.MakeDescriptor(file_descriptor.message_type[0])
-    msg_class = reflection.MakeClass(msg_descriptor)
-    msg = msg_class()
+  DEPRECATED: use MessageFactory.GetPrototype() instead.
 
   Args:
     descriptor: A descriptor.Descriptor object describing the protobuf.
   Returns:
     The Message class object described by the descriptor.
   """
-  if descriptor in MESSAGE_CLASS_CACHE:
-    return MESSAGE_CLASS_CACHE[descriptor]
-
-  attributes = {}
-  for name, nested_type in descriptor.nested_types_by_name.items():
-    attributes[name] = MakeClass(nested_type)
-
-  attributes[GeneratedProtocolMessageType._DESCRIPTOR_KEY] = descriptor
-
-  result = GeneratedProtocolMessageType(
-      str(descriptor.name), (message.Message,), attributes)
-  MESSAGE_CLASS_CACHE[descriptor] = result
-  return result
+  # Original implementation leads to duplicate message classes, which won't play
+  # well with extensions. Message factory info is also missing.
+  # Redirect to message_factory.
+  return symbol_database.Default().GetPrototype(descriptor)

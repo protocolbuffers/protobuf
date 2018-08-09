@@ -113,6 +113,6 @@ bool GetAnyFieldDescriptors(const Message& message,
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_ANY_H__

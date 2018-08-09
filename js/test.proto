@@ -165,6 +165,13 @@ message TestClone {
   extensions 10 to max;
 }
 
+message TestCloneExtension {
+  extend TestClone {
+    optional TestCloneExtension low_ext = 11;
+  }
+  optional int32 f = 1;
+}
+
 message CloneExtension {
   extend TestClone {
     optional CloneExtension ext_field = 100;

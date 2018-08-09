@@ -33,6 +33,10 @@
 
 #include <type_traits>
 
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
+
 namespace google {
 namespace protobuf {
 
@@ -41,6 +45,6 @@ namespace protobuf {
 template <typename T> struct is_proto_enum : ::std::false_type {};
 
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__

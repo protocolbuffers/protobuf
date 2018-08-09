@@ -54,6 +54,20 @@ class LIBPROTOC_EXPORT CppGenerator : public CodeGenerator {
   CppGenerator();
   ~CppGenerator();
 
+  enum class LIBPROTOC_EXPORT Runtime {
+    kGoogle3,     // Use the internal google3 runtime.
+    kOpensource,  // Use the open-source runtime.
+
+    // Use the open-source runtime with google3 #include paths.  We make these
+    // absolute to avoid ambiguity, so the runtime will be #included like:
+    //   #include "third_party/protobuf/<...>/google/protobuf/message.h"
+    kOpensourceGoogle3
+  };
+
+  void set_runtime(Runtime runtime) {
+    runtime_ = runtime;
+  }
+
   // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file,
                 const string& parameter,
@@ -61,12 +75,13 @@ class LIBPROTOC_EXPORT CppGenerator : public CodeGenerator {
                 string* error) const;
 
  private:
+  Runtime runtime_ = Runtime::kOpensource;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CppGenerator);
 };
 
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__

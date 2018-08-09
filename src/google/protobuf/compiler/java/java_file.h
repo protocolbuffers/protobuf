@@ -43,22 +43,24 @@
 
 namespace google {
 namespace protobuf {
-  class FileDescriptor;          // descriptor.h
-  namespace io {
-    class Printer;               // printer.h
-  }
-  namespace compiler {
-    class GeneratorContext;      // code_generator.h
-    namespace java {
-      class Context;             // context.h
-      class MessageGenerator;    // message.h
-      class GeneratorFactory;    // generator_factory.h
-      class ExtensionGenerator;  // extension.h
-      class ClassNameResolver;   // name_resolver.h
-    }
+class FileDescriptor;          // descriptor.h
+namespace io {
+  class Printer;               // printer.h
+}
+namespace compiler {
+  class GeneratorContext;      // code_generator.h
+  namespace java {
+    class Context;             // context.h
+    class MessageGenerator;    // message.h
+    class GeneratorFactory;    // generator_factory.h
+    class ExtensionGenerator;  // extension.h
+    class ClassNameResolver;   // name_resolver.h
   }
 }
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
@@ -85,7 +87,7 @@ class FileGenerator {
                         std::vector<string>* annotation_list);
 
   const string& java_package() { return java_package_; }
-  const string& classname()    { return classname_;    }
+  const string& classname() { return classname_; }
 
  private:
   void GenerateDescriptorInitializationCodeForImmutable(io::Printer* printer);
@@ -112,6 +114,6 @@ class FileGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__

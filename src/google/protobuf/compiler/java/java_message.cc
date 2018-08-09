@@ -35,7 +35,6 @@
 #include <google/protobuf/compiler/java/java_message.h>
 
 #include <algorithm>
-#include <google/protobuf/stubs/hash.h>
 #include <map>
 #include <memory>
 #include <vector>
@@ -53,8 +52,8 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
 
 
 namespace google {
@@ -377,10 +376,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     "}\n");
 
   if (context_->HasGeneratedMethods(descriptor_)) {
-    if (!EnableExperimentalRuntime(context_) ||
-        IsDescriptorProto(descriptor_)) {
-      GenerateParsingConstructor(printer);
-    }
+    GenerateParsingConstructor(printer);
   }
 
   GenerateDescriptorMethods(printer);
@@ -421,7 +417,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         descriptor_->oneof_decl(i))->name;
     vars["oneof_capitalized_name"] = context_->GetOneofGeneratorInfo(
         descriptor_->oneof_decl(i))->capitalized_name;
-    vars["oneof_index"] = SimpleItoa(descriptor_->oneof_decl(i)->index());
+    vars["oneof_index"] =
+        SimpleItoa(descriptor_->oneof_decl(i)->index());
     // oneofCase_ and oneof_
     printer->Print(vars,
       "private int $oneof_name$Case_ = 0;\n"
@@ -434,11 +431,10 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print(
-        "$deprecation$$field_name$($field_number$),\n",
-        "deprecation",
-        field->options().deprecated() ? "@java.lang.Deprecated " : "",
-        "field_name", ToUpper(field->name()),
-        "field_number", SimpleItoa(field->number()));
+          "$deprecation$$field_name$($field_number$),\n", "deprecation",
+          field->options().deprecated() ? "@java.lang.Deprecated " : "",
+          "field_name", ToUpper(field->name()), "field_number",
+          SimpleItoa(field->number()));
     }
     printer->Print(
       "$cap_oneof_name$_NOT_SET(0);\n",
@@ -462,12 +458,9 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       "  switch (value) {\n");
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
-      printer->Print(
-        "    case $field_number$: return $field_name$;\n",
-        "field_number",
-        SimpleItoa(field->number()),
-        "field_name",
-        ToUpper(field->name()));
+      printer->Print("    case $field_number$: return $field_name$;\n",
+                     "field_number", SimpleItoa(field->number()),
+                     "field_name", ToUpper(field->name()));
     }
     printer->Print(
       "    case 0: return $cap_oneof_name$_NOT_SET;\n"
@@ -497,8 +490,9 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   // Fields
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print("public static final int $constant_name$ = $number$;\n",
-      "constant_name", FieldConstantName(descriptor_->field(i)),
-      "number", SimpleItoa(descriptor_->field(i)->number()));
+                   "constant_name", FieldConstantName(descriptor_->field(i)),
+                   "number",
+                   SimpleItoa(descriptor_->field(i)->number()));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
     printer->Print("\n");
   }
@@ -591,56 +585,52 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
     "                    throws java.io.IOException {\n");
   printer->Indent();
 
-  if (EnableExperimentalRuntime(context_) && !IsDescriptorProto(descriptor_)) {
-    printer->Print("writeToInternal(output);\n");
-  } else {
-    if (HasPackedFields(descriptor_)) {
-      // writeTo(CodedOutputStream output) might be invoked without
-      // getSerializedSize() ever being called, but we need the memoized
-      // sizes in case this message has packed fields. Rather than emit checks
-      // for each packed field, just call getSerializedSize() up front. In most
-      // cases, getSerializedSize() will have already been called anyway by one
-      // of the wrapper writeTo() methods, making this call cheap.
-      printer->Print("getSerializedSize();\n");
-    }
+  if (HasPackedFields(descriptor_)) {
+    // writeTo(CodedOutputStream output) might be invoked without
+    // getSerializedSize() ever being called, but we need the memoized
+    // sizes in case this message has packed fields. Rather than emit checks
+    // for each packed field, just call getSerializedSize() up front. In most
+    // cases, getSerializedSize() will have already been called anyway by one
+    // of the wrapper writeTo() methods, making this call cheap.
+    printer->Print("getSerializedSize();\n");
+  }
 
-    if (descriptor_->extension_range_count() > 0) {
-      if (descriptor_->options().message_set_wire_format()) {
-        printer->Print(
-            "com.google.protobuf.GeneratedMessage$ver$\n"
-            "  .ExtendableMessage<$classname$>.ExtensionWriter\n"
-            "    extensionWriter = newMessageSetExtensionWriter();\n",
-            "classname", name_resolver_->GetImmutableClassName(descriptor_),
-            "ver", GeneratedCodeVersionSuffix());
-      } else {
-        printer->Print(
-            "com.google.protobuf.GeneratedMessage$ver$\n"
-            "  .ExtendableMessage<$classname$>.ExtensionWriter\n"
-            "    extensionWriter = newExtensionWriter();\n",
-            "classname", name_resolver_->GetImmutableClassName(descriptor_),
-            "ver", GeneratedCodeVersionSuffix());
-      }
-    }
-
-    // Merge the fields and the extension ranges, both sorted by field number.
-    for (int i = 0, j = 0;
-         i < descriptor_->field_count() || j < sorted_extensions.size();) {
-      if (i == descriptor_->field_count()) {
-        GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++]);
-      } else if (j == sorted_extensions.size()) {
-        GenerateSerializeOneField(printer, sorted_fields[i++]);
-      } else if (sorted_fields[i]->number() < sorted_extensions[j]->start) {
-        GenerateSerializeOneField(printer, sorted_fields[i++]);
-      } else {
-        GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++]);
-      }
-    }
-
+  if (descriptor_->extension_range_count() > 0) {
     if (descriptor_->options().message_set_wire_format()) {
-      printer->Print("unknownFields.writeAsMessageSetTo(output);\n");
+      printer->Print(
+          "com.google.protobuf.GeneratedMessage$ver$\n"
+          "  .ExtendableMessage<$classname$>.ExtensionWriter\n"
+          "    extensionWriter = newMessageSetExtensionWriter();\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_),
+          "ver", GeneratedCodeVersionSuffix());
     } else {
-      printer->Print("unknownFields.writeTo(output);\n");
+      printer->Print(
+          "com.google.protobuf.GeneratedMessage$ver$\n"
+          "  .ExtendableMessage<$classname$>.ExtensionWriter\n"
+          "    extensionWriter = newExtensionWriter();\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_),
+          "ver", GeneratedCodeVersionSuffix());
     }
+  }
+
+  // Merge the fields and the extension ranges, both sorted by field number.
+  for (int i = 0, j = 0;
+       i < descriptor_->field_count() || j < sorted_extensions.size();) {
+    if (i == descriptor_->field_count()) {
+      GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++]);
+    } else if (j == sorted_extensions.size()) {
+      GenerateSerializeOneField(printer, sorted_fields[i++]);
+    } else if (sorted_fields[i]->number() < sorted_extensions[j]->start) {
+      GenerateSerializeOneField(printer, sorted_fields[i++]);
+    } else {
+      GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++]);
+    }
+  }
+
+  if (descriptor_->options().message_set_wire_format()) {
+    printer->Print("unknownFields.writeAsMessageSetTo(output);\n");
+  } else {
+    printer->Print("unknownFields.writeTo(output);\n");
   }
 
   printer->Outdent();
@@ -653,38 +643,32 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
       "  if (size != -1) return size;\n"
       "\n");
   printer->Indent();
-  if (EnableExperimentalRuntime(context_) && !IsDescriptorProto(descriptor_)) {
-    printer->Print(
-        "memoizedSize = getSerializedSizeInternal();\n"
-        "return memoizedSize;\n");
-  } else {
 
-    printer->Print("size = 0;\n");
+  printer->Print("size = 0;\n");
 
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      field_generators_.get(sorted_fields[i])
-          .GenerateSerializedSizeCode(printer);
-    }
-
-    if (descriptor_->extension_range_count() > 0) {
-      if (descriptor_->options().message_set_wire_format()) {
-        printer->Print("size += extensionsSerializedSizeAsMessageSet();\n");
-      } else {
-        printer->Print("size += extensionsSerializedSize();\n");
-      }
-    }
-
-    if (descriptor_->options().message_set_wire_format()) {
-      printer->Print(
-          "size += unknownFields.getSerializedSizeAsMessageSet();\n");
-    } else {
-      printer->Print("size += unknownFields.getSerializedSize();\n");
-    }
-
-    printer->Print(
-        "memoizedSize = size;\n"
-        "return size;\n");
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    field_generators_.get(sorted_fields[i])
+        .GenerateSerializedSizeCode(printer);
   }
+
+  if (descriptor_->extension_range_count() > 0) {
+    if (descriptor_->options().message_set_wire_format()) {
+      printer->Print("size += extensionsSerializedSizeAsMessageSet();\n");
+    } else {
+      printer->Print("size += extensionsSerializedSize();\n");
+    }
+  }
+
+  if (descriptor_->options().message_set_wire_format()) {
+    printer->Print(
+        "size += unknownFields.getSerializedSizeAsMessageSet();\n");
+  } else {
+    printer->Print("size += unknownFields.getSerializedSize();\n");
+  }
+
+  printer->Print(
+      "memoizedSize = size;\n"
+      "return size;\n");
 
   printer->Outdent();
   printer->Print(
@@ -779,9 +763,8 @@ void ImmutableMessageGenerator::GenerateSerializeOneField(
 
 void ImmutableMessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range) {
-  printer->Print(
-    "extensionWriter.writeUntil($end$, output);\n",
-    "end", SimpleItoa(range->end));
+  printer->Print("extensionWriter.writeUntil($end$, output);\n", "end",
+                 SimpleItoa(range->end));
 }
 
 // ===================================================================
@@ -853,10 +836,10 @@ GenerateDescriptorMethods(io::Printer* printer) {
       const FieldDescriptor* field = map_fields[i];
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print(
-        "case $number$:\n"
-        "  return internalGet$capitalized_name$();\n",
-        "number", SimpleItoa(field->number()),
-        "capitalized_name", info->capitalized_name);
+          "case $number$:\n"
+          "  return internalGet$capitalized_name$();\n",
+          "number", SimpleItoa(field->number()), "capitalized_name",
+          info->capitalized_name);
     }
     printer->Print(
         "default:\n"
@@ -944,10 +927,9 @@ void ImmutableMessageGenerator::GenerateIsInitialized(
             const OneofDescriptor* oneof = field->containing_oneof();
             const OneofGeneratorInfo* oneof_info =
                 context_->GetOneofGeneratorInfo(oneof);
-            printer->Print(
-              "if ($oneof_name$Case_ == $field_number$) {\n",
-              "oneof_name", oneof_info->name,
-              "field_number", SimpleItoa(field->number()));
+            printer->Print("if ($oneof_name$Case_ == $field_number$) {\n",
+                           "oneof_name", oneof_info->name, "field_number",
+                           SimpleItoa(field->number()));
           } else {
             printer->Print(
               "if (has$name$()) {\n",
@@ -1080,10 +1062,8 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
     printer->Indent();
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
-      printer->Print(
-        "case $field_number$:\n",
-        "field_number",
-        SimpleItoa(field->number()));
+      printer->Print("case $field_number$:\n", "field_number",
+                     SimpleItoa(field->number()));
       printer->Indent();
       field_generators_.get(field).GenerateEqualsCode(printer);
       printer->Print("break;\n");
@@ -1164,10 +1144,8 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
     printer->Indent();
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
-      printer->Print(
-        "case $field_number$:\n",
-        "field_number",
-        SimpleItoa(field->number()));
+      printer->Print("case $field_number$:\n", "field_number",
+                     SimpleItoa(field->number()));
       printer->Indent();
       field_generators_.get(field).GenerateHashCode(printer);
       printer->Print("break;\n");
@@ -1273,9 +1251,8 @@ GenerateParsingConstructor(io::Printer* printer) {
     uint32 tag = WireFormatLite::MakeTag(field->number(),
       WireFormat::WireTypeForFieldType(field->type()));
 
-    printer->Print(
-      "case $tag$: {\n",
-      "tag", SimpleItoa(static_cast<int32>(tag)));
+    printer->Print("case $tag$: {\n", "tag",
+                   SimpleItoa(static_cast<int32>(tag)));
     printer->Indent();
 
     field_generators_.get(field).GenerateParsingCode(printer);
@@ -1290,9 +1267,8 @@ GenerateParsingConstructor(io::Printer* printer) {
       // packed version of this field regardless of field->options().packed().
       uint32 packed_tag = WireFormatLite::MakeTag(field->number(),
         WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-      printer->Print(
-        "case $tag$: {\n",
-        "tag", SimpleItoa(static_cast<int32>(packed_tag)));
+      printer->Print("case $tag$: {\n", "tag",
+                     SimpleItoa(static_cast<int32>(packed_tag)));
       printer->Indent();
 
       field_generators_.get(field).GenerateParsingCodeFromPacked(printer);
@@ -1306,15 +1282,12 @@ GenerateParsingConstructor(io::Printer* printer) {
 
   printer->Print(
       "default: {\n"
-      "  if (!parseUnknownField$suffix$(\n"
+      "  if (!parseUnknownField(\n"
       "      input, unknownFields, extensionRegistry, tag)) {\n"
       "    done = true;\n"  // it's an endgroup tag
       "  }\n"
       "  break;\n"
-      "}\n",
-      "suffix",
-      descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ? "Proto3"
-                                                                     : "");
+      "}\n");
 
   printer->Outdent();
   printer->Outdent();
@@ -1369,16 +1342,7 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
       "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
       "    throws com.google.protobuf.InvalidProtocolBufferException {\n",
       "classname", descriptor_->name());
-  if (EnableExperimentalRuntime(context_) && !IsDescriptorProto(descriptor_)) {
-    printer->Indent();
-    printer->Print(
-        "$classname$ msg = new $classname$();\n"
-        "msg.mergeFromInternal(input, extensionRegistry);\n"
-        "msg.makeImmutableInternal();\n"
-        "return msg;\n",
-        "classname", descriptor_->name());
-    printer->Outdent();
-  } else if (context_->HasGeneratedMethods(descriptor_)) {
+  if (context_->HasGeneratedMethods(descriptor_)) {
     printer->Print("  return new $classname$(input, extensionRegistry);\n",
                    "classname", descriptor_->name());
   } else {

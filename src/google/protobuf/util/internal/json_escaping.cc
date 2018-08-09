@@ -134,8 +134,8 @@ inline uint16 ToHighSurrogate(uint32 cp) {
 // Returns false if we encounter an invalid UTF-8 string. Returns true
 // otherwise, including the case when we reach the end of the input (str)
 // before a complete unicode code point is read.
-bool ReadCodePoint(StringPiece str, int index,
-                   uint32 *cp, int* num_left, int *num_read) {
+bool ReadCodePoint(StringPiece str, int index, uint32* cp, int* num_left,
+                   int* num_read) {
   if (*num_left == 0) {
     // Last read was complete. Start reading a new unicode code point.
     *cp = static_cast<uint8>(str[index++]);

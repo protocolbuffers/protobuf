@@ -110,6 +110,6 @@ class LIBPROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_STRUCTURED_OBJECTWRITER_H__

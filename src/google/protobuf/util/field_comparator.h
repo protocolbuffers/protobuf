@@ -82,12 +82,11 @@ class LIBPROTOBUF_EXPORT FieldComparator {
   // FieldContext contains information about the specific instances of the
   // fields being compared, versus FieldDescriptor which only contains general
   // type information about the fields.
-  virtual ComparisonResult Compare(
-      const google::protobuf::Message& message_1,
-      const google::protobuf::Message& message_2,
-      const google::protobuf::FieldDescriptor* field,
-      int index_1, int index_2,
-      const google::protobuf::util::FieldContext* field_context) = 0;
+  virtual ComparisonResult Compare(const Message& message_1,
+                                   const Message& message_2,
+                                   const FieldDescriptor* field, int index_1,
+                                   int index_2,
+                                   const util::FieldContext* field_context) = 0;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldComparator);
@@ -112,12 +111,10 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
 
   ~DefaultFieldComparator() override;
 
-  ComparisonResult Compare(
-      const google::protobuf::Message& message_1,
-      const google::protobuf::Message& message_2,
-      const google::protobuf::FieldDescriptor* field,
-      int index_1, int index_2,
-      const google::protobuf::util::FieldContext* field_context) override;
+  ComparisonResult Compare(const Message& message_1, const Message& message_2,
+                           const FieldDescriptor* field, int index_1,
+                           int index_2,
+                           const util::FieldContext* field_context) override;
 
   void set_float_comparison(FloatComparison float_comparison) {
     float_comparison_ = float_comparison;
@@ -159,10 +156,9 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // Compare using the provided message_differencer. For example, a subclass can
   // use this method to compare some field in a certain way using the same
   // message_differencer instance and the field context.
-  bool Compare(MessageDifferencer* differencer,
-               const google::protobuf::Message& message1,
-               const google::protobuf::Message& message2,
-               const google::protobuf::util::FieldContext* field_context);
+  bool Compare(MessageDifferencer* differencer, const Message& message1,
+               const Message& message2,
+               const util::FieldContext* field_context);
 
  private:
   // Defines the tolerance for floating point comparison (fraction and margin).
@@ -184,56 +180,53 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // basic types (instead of submessages). They return true on success. One
   // can use ResultFromBoolean() to convert that boolean to a ComparisonResult
   // value.
-  bool CompareBool(const google::protobuf::FieldDescriptor& field,
-                   bool value_1, bool value_2) {
+  bool CompareBool(const FieldDescriptor& field, bool value_1, bool value_2) {
     return value_1 == value_2;
   }
 
   // Uses CompareDoubleOrFloat, a helper function used by both CompareDouble and
   // CompareFloat.
-  bool CompareDouble(const google::protobuf::FieldDescriptor& field,
-                     double value_1, double value_2);
+  bool CompareDouble(const FieldDescriptor& field, double value_1,
+                     double value_2);
 
-  bool CompareEnum(const google::protobuf::FieldDescriptor& field,
+  bool CompareEnum(const FieldDescriptor& field,
                    const EnumValueDescriptor* value_1,
                    const EnumValueDescriptor* value_2);
 
   // Uses CompareDoubleOrFloat, a helper function used by both CompareDouble and
   // CompareFloat.
-  bool CompareFloat(const google::protobuf::FieldDescriptor& field,
-                    float value_1, float value_2);
+  bool CompareFloat(const FieldDescriptor& field, float value_1, float value_2);
 
-  bool CompareInt32(const google::protobuf::FieldDescriptor& field,
-                    int32 value_1, int32 value_2) {
+  bool CompareInt32(const FieldDescriptor& field, int32 value_1,
+                    int32 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareInt64(const google::protobuf::FieldDescriptor& field,
-                    int64 value_1, int64 value_2) {
+  bool CompareInt64(const FieldDescriptor& field, int64 value_1,
+                    int64 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareString(const google::protobuf::FieldDescriptor& field,
-                     const string& value_1, const string& value_2) {
+  bool CompareString(const FieldDescriptor& field, const string& value_1,
+                     const string& value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt32(const google::protobuf::FieldDescriptor& field,
-                     uint32 value_1, uint32 value_2) {
+  bool CompareUInt32(const FieldDescriptor& field, uint32 value_1,
+                     uint32 value_2) {
     return value_1 == value_2;
   }
 
-  bool CompareUInt64(const google::protobuf::FieldDescriptor& field,
-                     uint64 value_1, uint64 value_2) {
+  bool CompareUInt64(const FieldDescriptor& field, uint64 value_1,
+                     uint64 value_2) {
     return value_1 == value_2;
   }
 
   // This function is used by CompareDouble and CompareFloat to avoid code
   // duplication. There are no checks done against types of the values passed,
   // but it's likely to fail if passed non-numeric arguments.
-  template<typename T>
-  bool CompareDoubleOrFloat(const google::protobuf::FieldDescriptor& field,
-                            T value_1, T value_2);
+  template <typename T>
+  bool CompareDoubleOrFloat(const FieldDescriptor& field, T value_1, T value_2);
 
   // Returns FieldComparator::SAME if boolean_result is true and
   // FieldComparator::DIFFERENT otherwise.
@@ -265,6 +258,6 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
 
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__

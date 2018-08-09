@@ -171,6 +171,6 @@ LIBPROTOC_EXPORT void ParseGeneratorParameter(
 
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CODE_GENERATOR_H__

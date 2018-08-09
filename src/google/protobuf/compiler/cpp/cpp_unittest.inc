@@ -33,7 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // To test the code generator, we actually use it to generate code for
-// google/protobuf/unittest.proto, then test that.  This means that we
+// net/proto2/internal/unittest.proto, then test that.  This means that we
 // are actually testing the parser and other parts of the system at the same
 // time, and that problems in the generator may show up as compile-time errors
 // rather than unittest failures, which may be surprising.  However, testing
@@ -50,6 +50,7 @@
 #include <vector>
 
 #include <google/protobuf/unittest_no_arena.pb.h>
+
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
 // We exclude this large proto from cmake build because it's too large for
 // visual studio to compile (report internal errors).
@@ -57,7 +58,9 @@
 #endif
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h>
+#include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/compiler/importer.h>
+#include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest_no_generic_services.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -72,6 +75,7 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -101,7 +105,7 @@ class MockErrorCollector : public MultiFileErrorCollector {
 #ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 
 // Test that generated code has proper descriptors:
-// Parse a descriptor directly (using google::protobuf::compiler::Importer) and
+// Parse a descriptor directly (using proto2::compiler::Importer) and
 // compare it to the one that was produced by generated code.
 TEST(GENERATED_DESCRIPTOR_TEST_NAME, IdenticalDescriptors) {
   const FileDescriptor* generated_descriptor =
@@ -110,12 +114,12 @@ TEST(GENERATED_DESCRIPTOR_TEST_NAME, IdenticalDescriptors) {
   // Set up the Importer.
   MockErrorCollector error_collector;
   DiskSourceTree source_tree;
-  source_tree.MapPath("", TestSourceDir());
+  source_tree.MapPath("", TestUtil::TestSourceDir());
   Importer importer(&source_tree, &error_collector);
 
   // Import (parse) unittest.proto.
   const FileDescriptor* parsed_descriptor =
-    importer.Import(UNITTEST_PROTO_PATH);
+      importer.Import(TestUtil::MaybeTranslatePath(UNITTEST_PROTO_PATH));
   EXPECT_EQ("", error_collector.text_);
   ASSERT_TRUE(parsed_descriptor != NULL);
 
@@ -164,21 +168,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, Defaults) {
   EXPECT_EQ(&UNITTEST_IMPORT::ImportMessage::default_instance(),
             &message.optional_import_message());
 }
-
-#ifndef PROTOBUF_USE_DLLS
-TEST(GENERATED_MESSAGE_TEST_NAME, Int32StringConversion) {
-  EXPECT_EQ("971", Int32ToString(971));
-  EXPECT_EQ("(~0x7fffffff)", Int32ToString(kint32min));
-  EXPECT_EQ("2147483647", Int32ToString(kint32max));
-}
-
-TEST(GENERATED_MESSAGE_TEST_NAME, Int64StringConversion) {
-  EXPECT_EQ("GOOGLE_LONGLONG(971)", Int64ToString(971));
-  EXPECT_EQ("GOOGLE_LONGLONG(-2147483648)", Int64ToString(kint32min));
-  EXPECT_EQ("GOOGLE_LONGLONG(~0x7fffffffffffffff)", Int64ToString(kint64min));
-  EXPECT_EQ("GOOGLE_LONGLONG(9223372036854775807)", Int64ToString(kint64max));
-}
-#endif  // !PROTOBUF_USE_DLLS
 
 TEST(GENERATED_MESSAGE_TEST_NAME, FloatingPointDefaults) {
   const UNITTEST::TestExtremeDefaultValues& extreme_default =
@@ -667,8 +656,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyAssignmentOperator) {
   TestUtil::ExpectAllFieldsSet(message2);
 }
 
-#if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
-    !defined(GOOGLE_PROTOBUF_NO_RTTI)
+#if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || GOOGLE_PROTOBUF_RTTI
 TEST(GENERATED_MESSAGE_TEST_NAME, UpcastCopyFrom) {
   // Test the CopyFrom method that takes in the generic const Message&
   // parameter.
@@ -676,7 +664,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, UpcastCopyFrom) {
 
   TestUtil::SetAllFields(&message1);
 
-  const Message* source = implicit_cast<const Message*>(&message1);
+  const Message* source = ::google::protobuf::implicit_cast<const Message*>(&message1);
   message2.CopyFrom(*source);
 
   TestUtil::ExpectAllFieldsSet(message2);
@@ -709,7 +697,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, DynamicMessageCopyFrom) {
 
 TEST(GENERATED_MESSAGE_TEST_NAME, NonEmptyMergeFrom) {
   // Test merging with a non-empty message. Code is a modified form
-  // of that found in google/protobuf/reflection_ops_unittest.cc.
+  // of that found in net/proto2/internal/reflection_ops_unittest.cc.
   UNITTEST::TestAllTypes message1, message2;
 
   TestUtil::SetAllFields(&message1);
@@ -741,7 +729,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SerializationToArray) {
   TestUtil::SetAllFields(&message1);
   int size = message1.ByteSizeLong();
   data.resize(size);
-  uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+  uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
   uint8* end = message1.SerializeWithCachedSizesToArray(start);
   EXPECT_EQ(size, end - start);
   EXPECT_TRUE(message2.ParseFromString(data));
@@ -755,7 +743,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, PackedFieldsSerializationToArray) {
   TestUtil::SetPackedFields(&packed_message1);
   int packed_size = packed_message1.ByteSizeLong();
   packed_data.resize(packed_size);
-  uint8* start = reinterpret_cast<uint8*>(string_as_array(&packed_data));
+  uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&packed_data));
   uint8* end = packed_message1.SerializeWithCachedSizesToArray(start);
   EXPECT_EQ(packed_size, end - start);
   EXPECT_TRUE(packed_message2.ParseFromString(packed_data));
@@ -772,7 +760,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SerializationToStream) {
   data.resize(size);
   {
     // Allow the output stream to buffer only one byte at a time.
-    io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
     io::CodedOutputStream output_stream(&array_stream);
     message1.SerializeWithCachedSizes(&output_stream);
     EXPECT_FALSE(output_stream.HadError());
@@ -791,7 +779,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, PackedFieldsSerializationToStream) {
   data.resize(size);
   {
     // Allow the output stream to buffer only one byte at a time.
-    io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
     io::CodedOutputStream output_stream(&array_stream);
     message1.SerializeWithCachedSizes(&output_stream);
     EXPECT_FALSE(output_stream.HadError());
@@ -1872,7 +1860,7 @@ TEST_F(OneofTest, CopyAssignmentOperator) {
   EXPECT_EQ(message2.foo_message().qux_int(), 123);
 
   // Make sure that self-assignment does something sane.
-  message2 = message2;
+  message2 = *&message2;  // Avoid -Wself-assign.
   EXPECT_EQ(message2.foo_message().qux_int(), 123);
 }
 
@@ -1883,7 +1871,7 @@ TEST_F(OneofTest, UpcastCopyFrom) {
   message1.mutable_foogroup()->set_a(123);
   EXPECT_TRUE(message1.has_foogroup());
 
-  const Message* source = implicit_cast<const Message*>(&message1);
+  const Message* source = ::google::protobuf::implicit_cast<const Message*>(&message1);
   message2.CopyFrom(*source);
 
   EXPECT_TRUE(message2.has_foogroup());
@@ -1902,7 +1890,7 @@ TEST_F(OneofTest, SerializationToArray) {
     message1.set_foo_int(123);
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
     uint8* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
@@ -1916,7 +1904,7 @@ TEST_F(OneofTest, SerializationToArray) {
     message1.set_foo_string("foo");
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
     uint8* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
@@ -1931,7 +1919,7 @@ TEST_F(OneofTest, SerializationToArray) {
     message1.set_foo_bytes("qux");
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
     uint8* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
@@ -1945,7 +1933,7 @@ TEST_F(OneofTest, SerializationToArray) {
     message1.set_foo_enum(UNITTEST::TestOneof2::FOO);
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
     uint8* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
@@ -1959,7 +1947,7 @@ TEST_F(OneofTest, SerializationToArray) {
     message1.mutable_foo_message()->set_qux_int(234);
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
     uint8* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
@@ -1973,7 +1961,7 @@ TEST_F(OneofTest, SerializationToArray) {
     message1.mutable_foogroup()->set_a(345);
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(string_as_array(&data));
+    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
     uint8* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
@@ -1998,7 +1986,7 @@ TEST_F(OneofTest, SerializationToStream) {
 
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -2019,7 +2007,7 @@ TEST_F(OneofTest, SerializationToStream) {
 
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -2041,7 +2029,7 @@ TEST_F(OneofTest, SerializationToStream) {
 
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -2062,7 +2050,7 @@ TEST_F(OneofTest, SerializationToStream) {
 
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -2083,7 +2071,7 @@ TEST_F(OneofTest, SerializationToStream) {
 
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -2104,7 +2092,7 @@ TEST_F(OneofTest, SerializationToStream) {
 
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -2161,7 +2149,7 @@ TEST_F(OneofTest, MergeFrom) {
 
 TEST(HELPERS_TEST_NAME, TestSCC) {
   UNITTEST::TestMutualRecursionA a;
-  SCCAnalyzer scc_analyzer((Options()));
+  MessageSCCAnalyzer scc_analyzer((Options()));
   const SCC* scc = scc_analyzer.GetSCC(a.GetDescriptor());
   std::vector<string> names;
   for (int i = 0; i < scc->descriptors.size(); i++) {
@@ -2185,7 +2173,7 @@ TEST(HELPERS_TEST_NAME, TestSCC) {
 TEST(HELPERS_TEST_NAME, TestSCCAnalysis) {
   {
     UNITTEST::TestRecursiveMessage msg;
-    SCCAnalyzer scc_analyzer((Options()));
+    MessageSCCAnalyzer scc_analyzer((Options()));
     const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
     MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
     EXPECT_EQ(result.is_recursive, true);
@@ -2195,7 +2183,7 @@ TEST(HELPERS_TEST_NAME, TestSCCAnalysis) {
   }
   {
     UNITTEST::TestAllExtensions msg;
-    SCCAnalyzer scc_analyzer((Options()));
+    MessageSCCAnalyzer scc_analyzer((Options()));
     const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
     MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
     EXPECT_EQ(result.is_recursive, false);
@@ -2205,7 +2193,7 @@ TEST(HELPERS_TEST_NAME, TestSCCAnalysis) {
   }
   {
     UNITTEST::TestRequired msg;
-    SCCAnalyzer scc_analyzer((Options()));
+    MessageSCCAnalyzer scc_analyzer((Options()));
     const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
     MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
     EXPECT_EQ(result.is_recursive, false);
@@ -2269,8 +2257,8 @@ TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
 #endif
 
   EXPECT_EQ(should_have_descriptors,
-    DescriptorPool::generated_pool()->InternalIsFileLoaded(
-      UNITTEST_PROTO_PATH));
+            DescriptorPool::generated_pool()->InternalIsFileLoaded(
+                TestUtil::MaybeTranslatePath(UNITTEST_PROTO_PATH)));
 }
 
 }  // namespace cpp_unittest

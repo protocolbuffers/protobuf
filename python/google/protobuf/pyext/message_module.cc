@@ -31,46 +31,23 @@
 #include <Python.h>
 
 #include <google/protobuf/pyext/message.h>
-#include <google/protobuf/proto_api.h>
+#include <google/protobuf/python/proto_api.h>
 
 #include <google/protobuf/message_lite.h>
 
 namespace {
 
 // C++ API.  Clients get at this via proto_api.h
-struct ApiImplementation : google::protobuf::python::PyProto_API {
-  const google::protobuf::Message*
-      GetMessagePointer(PyObject* msg) const override {
-    return google::protobuf::python::PyMessage_GetMessagePointer(msg);
+struct ApiImplementation : proto2::python::PyProto_API {
+  const proto2::Message* GetMessagePointer(PyObject* msg) const override {
+    return proto2::python::PyMessage_GetMessagePointer(msg);
   }
-  google::protobuf::Message*
-      GetMutableMessagePointer(PyObject* msg) const override {
-    return google::protobuf::python::PyMessage_GetMutableMessagePointer(msg);
+  proto2::Message* GetMutableMessagePointer(PyObject* msg) const override {
+    return proto2::python::PyMessage_GetMutableMessagePointer(msg);
   }
 };
 
 }  // namespace
-
-static PyObject* GetPythonProto3PreserveUnknownsDefault(
-    PyObject* /*m*/, PyObject* /*args*/) {
-  if (google::protobuf::internal::GetProto3PreserveUnknownsDefault()) {
-    Py_RETURN_TRUE;
-  } else {
-    Py_RETURN_FALSE;
-  }
-}
-
-static PyObject* SetPythonProto3PreserveUnknownsDefault(
-    PyObject* /*m*/, PyObject* arg) {
-  if (!arg || !PyBool_Check(arg)) {
-    PyErr_SetString(
-        PyExc_TypeError,
-        "Argument to SetPythonProto3PreserveUnknownsDefault must be boolean");
-    return NULL;
-  }
-  google::protobuf::internal::SetProto3PreserveUnknownsDefault(PyObject_IsTrue(arg));
-  Py_RETURN_NONE;
-}
 
 static const char module_docstring[] =
 "python-proto2 is a module that can be used to enhance proto2 Python API\n"
@@ -81,16 +58,9 @@ static const char module_docstring[] =
 
 static PyMethodDef ModuleMethods[] = {
   {"SetAllowOversizeProtos",
-    (PyCFunction)google::protobuf::python::cmessage::SetAllowOversizeProtos,
+    (PyCFunction)proto2::python::cmessage::SetAllowOversizeProtos,
     METH_O, "Enable/disable oversize proto parsing."},
   // DO NOT USE: For migration and testing only.
-  {"GetPythonProto3PreserveUnknownsDefault",
-    (PyCFunction)GetPythonProto3PreserveUnknownsDefault,
-    METH_NOARGS, "Get Proto3 preserve unknowns default."},
-  // DO NOT USE: For migration and testing only.
-  {"SetPythonProto3PreserveUnknownsDefault",
-    (PyCFunction)SetPythonProto3PreserveUnknownsDefault,
-    METH_O, "Enable/disable proto3 unknowns preservation."},
   { NULL, NULL}
 };
 
@@ -113,35 +83,32 @@ static struct PyModuleDef _module = {
 #define INITFUNC_ERRORVAL
 #endif
 
-extern "C" {
-  PyMODINIT_FUNC INITFUNC(void) {
-    PyObject* m;
+PyMODINIT_FUNC INITFUNC() {
+  PyObject* m;
 #if PY_MAJOR_VERSION >= 3
-    m = PyModule_Create(&_module);
+  m = PyModule_Create(&_module);
 #else
-    m = Py_InitModule3("_message", ModuleMethods,
-                       module_docstring);
+  m = Py_InitModule3("_message", ModuleMethods, module_docstring);
 #endif
-    if (m == NULL) {
-      return INITFUNC_ERRORVAL;
-    }
+  if (m == NULL) {
+    return INITFUNC_ERRORVAL;
+  }
 
-    if (!google::protobuf::python::InitProto2MessageModule(m)) {
-      Py_DECREF(m);
-      return INITFUNC_ERRORVAL;
-    }
-    
-    // Adds the C++ API
-    if (PyObject* api =
-            PyCapsule_New(new ApiImplementation(),
-                          google::protobuf::python::PyProtoAPICapsuleName(), NULL)) {
-      PyModule_AddObject(m, "proto_API", api);
-    } else {
-      return INITFUNC_ERRORVAL;
-    }
+  if (!proto2::python::InitProto2MessageModule(m)) {
+    Py_DECREF(m);
+    return INITFUNC_ERRORVAL;
+  }
+
+  // Adds the C++ API
+  if (PyObject* api =
+          PyCapsule_New(new ApiImplementation(),
+                        proto2::python::PyProtoAPICapsuleName(), NULL)) {
+    PyModule_AddObject(m, "proto_API", api);
+  } else {
+    return INITFUNC_ERRORVAL;
+  }
 
 #if PY_MAJOR_VERSION >= 3
-    return m;
+  return m;
 #endif
-  }
 }

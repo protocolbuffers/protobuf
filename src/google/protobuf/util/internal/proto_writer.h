@@ -46,6 +46,7 @@
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/hash.h>
+#include <google/protobuf/stubs/status.h>
 
 namespace google {
 namespace protobuf {
@@ -53,14 +54,16 @@ namespace io {
 class CodedOutputStream;
 }  // namespace io
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 class Type;
 class Field;
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
@@ -78,7 +81,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 // Constructor. Does not take ownership of any parameter passed in.
   ProtoWriter(TypeResolver* type_resolver, const google::protobuf::Type& type,
               strings::ByteSink* output, ErrorListener* listener);
-  virtual ~ProtoWriter() override;
+  ~ProtoWriter() override;
 
   // ObjectWriter methods.
   ProtoWriter* StartObject(StringPiece name) override;
@@ -106,7 +109,8 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   ProtoWriter* RenderFloat(StringPiece name, float value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderString(StringPiece name, StringPiece value) override {
+  ProtoWriter* RenderString(StringPiece name,
+                            StringPiece value) override {
     return RenderDataPiece(name,
                            DataPiece(value, use_strict_base64_decoding()));
   }
@@ -133,7 +137,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   bool done() override { return done_; }
 
   // Returns the proto stream object.
-  google::protobuf::io::CodedOutputStream* stream() { return stream_.get(); }
+  io::CodedOutputStream* stream() { return stream_.get(); }
 
   // Getters and mutators of invalid_depth_.
   void IncrementInvalidDepth() { ++invalid_depth_; }
@@ -163,7 +167,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     ProtoElement(ProtoElement* parent, const google::protobuf::Field* field,
                  const google::protobuf::Type& type, bool is_list);
 
-    virtual ~ProtoElement() override {}
+    ~ProtoElement() override {}
 
     // Called just before the destructor for clean up:
     //   - reports any missing required fields
@@ -183,9 +187,9 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     void RegisterField(const google::protobuf::Field* field);
 
     // To report location on error messages.
-    virtual string ToString() const override;
+    string ToString() const override;
 
-    virtual ProtoElement* parent() const override {
+    ProtoElement* parent() const override {
       return static_cast<ProtoElement*>(BaseElement::parent());
     }
 
@@ -251,7 +255,8 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // Common code for BeginObject() and BeginList() that does invalid_depth_
   // bookkeeping associated with name lookup.
-  const google::protobuf::Field* BeginNamed(StringPiece name, bool is_list);
+  const google::protobuf::Field* BeginNamed(StringPiece name,
+                                            bool is_list);
 
   // Lookup the field in the current element. Looks in the base descriptor
   // and in any extension. This will report an error if the field cannot be
@@ -298,6 +303,13 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
                                     const DataPiece& value);
 
  private:
+  // Writes an ENUM field, including tag, to the stream.
+  static util::Status WriteEnum(int field_number, const DataPiece& data,
+                                  const google::protobuf::Enum* enum_type,
+                                  io::CodedOutputStream* stream,
+                                  bool use_lower_camel_for_enums,
+                                  bool ignore_unknown_values);
+
   // Variables for describing the structure of the input tree:
   // master_type_: descriptor for the whole protobuf message.
   // typeinfo_ : the TypeInfo object to lookup types.
@@ -331,8 +343,8 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   // stream_  : wrapper for writing tags and other encodings in wire format.
   strings::ByteSink* output_;
   string buffer_;
-  google::protobuf::io::StringOutputStream adapter_;
-  std::unique_ptr<google::protobuf::io::CodedOutputStream> stream_;
+  io::StringOutputStream adapter_;
+  std::unique_ptr<io::CodedOutputStream> stream_;
 
   // Variables for error tracking and reporting:
   // listener_     : a place to report any errors found.
@@ -348,6 +360,6 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTO_WRITER_H__

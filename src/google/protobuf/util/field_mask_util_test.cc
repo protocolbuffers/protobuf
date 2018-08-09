@@ -747,6 +747,75 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   EXPECT_EQ(11, oneof_msg.oneof_uint32());
 }
 
+TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
+  FieldMask mask;
+  TestAllTypes trimed_msg;
+  TestAllTypes default_msg;
+
+  // Field mask on optional field.
+  FieldMaskUtil::FromString("optional_int32", &mask);
+
+  // Verify that if a message is updted by FieldMaskUtil::TrimMessage(), the
+  // function returns true.
+  // Test on primary field.
+  trimed_msg.set_optional_string("abc");
+  EXPECT_TRUE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));
+  EXPECT_EQ(trimed_msg.DebugString(), default_msg.DebugString());
+  trimed_msg.Clear();
+
+  // Test on repeated primary field.
+  trimed_msg.add_repeated_string("abc");
+  trimed_msg.add_repeated_string("def");
+  EXPECT_TRUE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));
+  EXPECT_EQ(trimed_msg.DebugString(), default_msg.DebugString());
+  trimed_msg.Clear();
+
+  // Test on nested message.
+  trimed_msg.mutable_optional_nested_message()->set_bb(123);
+  EXPECT_TRUE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));
+  EXPECT_EQ(trimed_msg.DebugString(), default_msg.DebugString());
+  trimed_msg.Clear();
+
+  // Test on repeated nested message.
+  trimed_msg.add_repeated_nested_message()->set_bb(123);
+  trimed_msg.add_repeated_nested_message()->set_bb(456);
+  EXPECT_TRUE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));
+  EXPECT_EQ(trimed_msg.DebugString(), default_msg.DebugString());
+  trimed_msg.Clear();
+
+  // Test on oneof field.
+  trimed_msg.set_oneof_uint32(123);
+  EXPECT_TRUE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));
+  EXPECT_EQ(trimed_msg.DebugString(), default_msg.DebugString());
+  trimed_msg.Clear();
+
+  // If there is no field set other then those whitelisted,
+  // FieldMaskUtil::TrimMessage() should return false.
+  trimed_msg.set_optional_int32(123);
+  EXPECT_FALSE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));
+  EXPECT_EQ(trimed_msg.optional_int32(), 123);
+  trimed_msg.Clear();
+
+  // Field mask on repated field.
+  FieldMaskUtil::FromString("repeated_string", &mask);
+  trimed_msg.add_repeated_string("abc");
+  trimed_msg.add_repeated_string("def");
+  EXPECT_FALSE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));
+  EXPECT_EQ(trimed_msg.repeated_string(0), "abc");
+  EXPECT_EQ(trimed_msg.repeated_string(1), "def");
+  trimed_msg.Clear();
+
+  // Field mask on nested message.
+  FieldMaskUtil::FromString("optional_nested_message.bb", &mask);
+  trimed_msg.mutable_optional_nested_message()->set_bb(123);
+  EXPECT_FALSE(FieldMaskUtil::TrimMessage(mask, &trimed_msg));
+  EXPECT_EQ(trimed_msg.optional_nested_message().bb(), 123);
+  trimed_msg.Clear();
+
+  // TODO(b/32443320): field mask on repeated nested message is not yet
+  // supported.
+}
+
 
 }  // namespace
 }  // namespace util

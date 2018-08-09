@@ -40,17 +40,19 @@
 
 namespace google {
 namespace protobuf {
-  namespace compiler {
-    namespace java {
-      class Context;            // context.h
-      class ClassNameResolver;  // name_resolver.h
-    }
-  }
-  namespace io {
-    class Printer;              // printer.h
-  }
+namespace compiler {
+namespace java {
+class Context;            // context.h
+class ClassNameResolver;  // name_resolver.h
+}  // namespace java
+}  // namespace compiler
+namespace io {
+class Printer;  // printer.h
 }
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
@@ -133,6 +135,6 @@ class ImmutableServiceGenerator : public ServiceGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
+}  // namespace google
 
 #endif  // NET_PROTO2_COMPILER_JAVA_SERVICE_H__
-}  // namespace google

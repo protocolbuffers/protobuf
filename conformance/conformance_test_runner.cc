@@ -66,9 +66,9 @@
 #include "conformance.pb.h"
 #include "conformance_test.h"
 
-using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using google::protobuf::StringAppendF;
+using google::protobuf::ConformanceTestSuite;
 using std::string;
 using std::vector;
 
@@ -287,7 +287,8 @@ void ParseFailureList(const char *filename, std::vector<string>* failure_list) {
 
 int main(int argc, char *argv[]) {
   char *program;
-  google::protobuf::ConformanceTestSuite suite;
+  const std::set<ConformanceTestSuite*>& test_suite_set =
+      ::google::protobuf::GetTestSuiteSet();
 
   string failure_list_filename;
   std::vector<string> failure_list;
@@ -298,9 +299,13 @@ int main(int argc, char *argv[]) {
       failure_list_filename = argv[arg];
       ParseFailureList(argv[arg], &failure_list);
     } else if (strcmp(argv[arg], "--verbose") == 0) {
-      suite.SetVerbose(true);
+      for (auto *suite : test_suite_set) {
+        suite->SetVerbose(true);
+      }
     } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
-      suite.SetEnforceRecommended(true);
+      for (auto suite : test_suite_set) {
+        suite->SetEnforceRecommended(true);
+      }
     } else if (argv[arg][0] == '-') {
       fprintf(stderr, "Unknown option: %s\n", argv[arg]);
       UsageError();
@@ -313,11 +318,16 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  suite.SetFailureList(failure_list_filename, failure_list);
+  for (auto suite : test_suite_set) {
+    suite->SetFailureList(failure_list_filename, failure_list);
+  }
   ForkPipeRunner runner(program);
 
   std::string output;
-  bool ok = suite.RunSuite(&runner, &output);
+  bool ok = true;
+  for (auto suite : test_suite_set) {
+    ok &= suite->RunSuite(&runner, &output);
+  }
 
   fwrite(output.c_str(), 1, output.size(), stderr);
 

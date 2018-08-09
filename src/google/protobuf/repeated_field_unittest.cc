@@ -45,10 +45,10 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -1651,8 +1651,8 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, Sort) {
 
 // -----------------------------------------------------------------------------
 // Unit-tests for the insert iterators
-// google::protobuf::RepeatedFieldBackInserter,
-// google::protobuf::AllocatedRepeatedPtrFieldBackInserter
+// proto2::RepeatedFieldBackInserter,
+// proto2::AllocatedRepeatedPtrFieldBackInserter
 // Ported from util/gtl/proto-array-iterators_unittest.
 
 class RepeatedFieldInsertionIteratorsTest : public testing::Test {

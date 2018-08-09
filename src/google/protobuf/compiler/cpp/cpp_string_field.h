@@ -75,8 +75,6 @@ class StringFieldGenerator : public FieldGenerator {
   bool MergeFromCodedStreamNeedsArena() const;
 
  protected:
-  const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
   const bool lite_;
   bool inlined_;
 
@@ -127,15 +125,12 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
   void GenerateByteSize(io::Printer* printer) const;
 
  private:
-  const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
-
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedStringFieldGenerator);
 };
 
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_STRING_FIELD_H__

@@ -41,6 +41,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -84,6 +85,40 @@ public class ByteStringTest extends TestCase {
   // Returns true only if the given two arrays have identical contents.
   private boolean isArray(byte[] left, byte[] right) {
     return left.length == right.length && isArrayRange(left, right, 0, left.length);
+  }
+
+  public void testCompare_equalByteStrings_compareEqual() throws Exception {
+    byte[] referenceBytes = getTestBytes();
+    ByteString string1 = ByteString.copyFrom(referenceBytes);
+    ByteString string2 = ByteString.copyFrom(referenceBytes);
+
+    assertEquals(
+        "ByteString instances containing the same data must compare equal.",
+        0,
+        ByteString.unsignedLexicographicalComparator().compare(string1, string2));
+  }
+
+  public void testCompare_byteStringsSortLexicographically() throws Exception {
+    ByteString app = ByteString.copyFromUtf8("app");
+    ByteString apple = ByteString.copyFromUtf8("apple");
+    ByteString banana = ByteString.copyFromUtf8("banana");
+
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    assertTrue("ByteString(app) < ByteString(apple)", comparator.compare(app, apple) < 0);
+    assertTrue("ByteString(app) < ByteString(banana)", comparator.compare(app, banana) < 0);
+    assertTrue("ByteString(apple) < ByteString(banana)", comparator.compare(apple, banana) < 0);
+  }
+
+  public void testCompare_interpretsByteValuesAsUnsigned() throws Exception {
+    // Two's compliment of `-1` == 0b11111111 == 255
+    ByteString twoHundredFiftyFive = ByteString.copyFrom(new byte[] {-1});
+    // 0b00000001 == 1
+    ByteString one = ByteString.copyFrom(new byte[] {1});
+
+    assertTrue(
+        "ByteString comparison treats bytes as unsigned values",
+        ByteString.unsignedLexicographicalComparator().compare(one, twoHundredFiftyFive) < 0);
   }
 
   public void testSubstring_BeginIndex() {
@@ -159,6 +194,34 @@ public class ByteStringTest extends TestCase {
     });
     assertEquals("copyFrom from an Iteration must contain the expected bytes",
         byteString, byteStringAlt);
+  }
+
+  public void testCopyFrom_LengthTooBig() {
+    byte[] testBytes = getTestBytes(100);
+    try {
+      ByteString.copyFrom(testBytes, 0, 200);
+      fail("Should throw");
+    } catch (IndexOutOfBoundsException expected) {
+    }
+
+    try {
+      ByteString.copyFrom(testBytes, 99, 2);
+      fail();
+    } catch (IndexOutOfBoundsException expected) {
+    }
+
+    ByteBuffer buf = ByteBuffer.wrap(testBytes);
+    try {
+      ByteString.copyFrom(buf, 101);
+      fail();
+    } catch (IndexOutOfBoundsException expected) {
+    }
+
+    try {
+      ByteString.copyFrom(testBytes, -1, 10);
+      fail("Should throw");
+    } catch (IndexOutOfBoundsException expected) {
+    }
   }
 
   public void testCopyTo_TargetOffset() {
@@ -761,6 +824,9 @@ public class ByteStringTest extends TestCase {
    * Tests ByteString uses Arrays based byte copier when running under Hotstop VM.
    */
   public void testByteArrayCopier() throws Exception {
+    if (Android.isOnAndroidDevice()) {
+      return;
+    }
     Field field = ByteString.class.getDeclaredField("byteArrayCopier");
     field.setAccessible(true);
     Object byteArrayCopier = field.get(null);

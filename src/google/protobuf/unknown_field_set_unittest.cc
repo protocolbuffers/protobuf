@@ -35,6 +35,7 @@
 // This test is testing a lot more than just the UnknownFieldSet class.  It
 // tests handling of unknown fields throughout the system.
 
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -46,9 +47,9 @@
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+
 
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -195,13 +196,14 @@ TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
   slow_buffer.resize(size);
   fast_buffer.resize(size);
 
-  uint8* target = reinterpret_cast<uint8*>(string_as_array(&fast_buffer));
+  uint8* target = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&fast_buffer));
   uint8* result = WireFormat::SerializeUnknownFieldsToArray(
           empty_message_.unknown_fields(), target);
   EXPECT_EQ(size, result - target);
 
   {
-    io::ArrayOutputStream raw_stream(string_as_array(&slow_buffer), size, 1);
+    io::ArrayOutputStream raw_stream(::google::protobuf::string_as_array(&slow_buffer), size,
+                                     1);
     io::CodedOutputStream output_stream(&raw_stream);
     WireFormat::SerializeUnknownFields(empty_message_.unknown_fields(),
                                        &output_stream);

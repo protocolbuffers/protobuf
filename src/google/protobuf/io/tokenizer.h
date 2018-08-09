@@ -406,6 +406,6 @@ inline void Tokenizer::ParseString(const string& text, string* output) {
 
 }  // namespace io
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_IO_TOKENIZER_H__

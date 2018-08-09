@@ -786,6 +786,23 @@ public final class UnknownFieldSet implements MessageLite {
     }
 
     /**
+     * Serializes the message to a {@code ByteString} and returns it. This is just a trivial wrapper
+     * around {@link #writeTo(int, CodedOutputStream)}.
+     */
+    public ByteString toByteString(int fieldNumber) {
+      try {
+        // TODO(lukes): consider caching serialized size in a volatile long
+        final ByteString.CodedBuilder out =
+            ByteString.newCodedBuilder(getSerializedSize(fieldNumber));
+        writeTo(fieldNumber, out.getCodedOutput());
+        return out.build();
+      } catch (IOException e) {
+        throw new RuntimeException(
+            "Serializing to a ByteString should never fail with an IOException", e);
+      }
+    }
+
+    /**
      * Serializes the field, including field number, and writes it to
      * {@code output}.
      */

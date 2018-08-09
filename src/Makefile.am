@@ -311,6 +311,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/command_line_interface.cc           \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
+  google/protobuf/compiler/scc.cc                              \
+  google/protobuf/compiler/scc.h                               \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \
   google/protobuf/compiler/zip_writer.cc                       \
@@ -499,6 +501,7 @@ protoc_inputs =                                                   \
   google/protobuf/unittest_preserve_unknown_enum2.proto           \
   google/protobuf/unittest_preserve_unknown_enum.proto            \
   google/protobuf/unittest.proto                                  \
+  google/protobuf/unittest_proto3.proto                           \
   google/protobuf/unittest_proto3_arena.proto                     \
   google/protobuf/unittest_proto3_arena_lite.proto                \
   google/protobuf/unittest_proto3_lite.proto                      \
@@ -514,6 +517,7 @@ protoc_inputs =                                                   \
   google/protobuf/util/internal/testdata/struct.proto             \
   google/protobuf/util/internal/testdata/timestamp_duration.proto \
   google/protobuf/util/internal/testdata/wrappers.proto           \
+  google/protobuf/util/json_format.proto                          \
   google/protobuf/util/json_format_proto3.proto                   \
   google/protobuf/util/message_differencer_unittest.proto         \
   google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
@@ -522,7 +526,6 @@ EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
   $(js_well_known_types_sources)                               \
   solaris/libstdc++.la                                         \
-  google/protobuf/unittest_proto3.proto                        \
   google/protobuf/test_messages_proto3.proto                   \
   google/protobuf/test_messages_proto2.proto                   \
   google/protobuf/io/gzip_stream.h                             \
@@ -620,6 +623,8 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_preserve_unknown_enum2.pb.h            \
   google/protobuf/unittest_preserve_unknown_enum.pb.cc            \
   google/protobuf/unittest_preserve_unknown_enum.pb.h             \
+  google/protobuf/unittest_proto3.pb.cc                           \
+  google/protobuf/unittest_proto3.pb.h                            \
   google/protobuf/unittest_proto3_arena.pb.cc                     \
   google/protobuf/unittest_proto3_arena.pb.h                      \
   google/protobuf/unittest_proto3_arena_lite.pb.cc                \
@@ -650,6 +655,8 @@ protoc_outputs =                                                  \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.h  \
   google/protobuf/util/internal/testdata/wrappers.pb.cc           \
   google/protobuf/util/internal/testdata/wrappers.pb.h            \
+  google/protobuf/util/json_format.pb.cc                          \
+  google/protobuf/util/json_format.pb.h                           \
   google/protobuf/util/json_format_proto3.pb.cc                   \
   google/protobuf/util/json_format_proto3.pb.h                    \
   google/protobuf/util/message_differencer_unittest.pb.cc         \

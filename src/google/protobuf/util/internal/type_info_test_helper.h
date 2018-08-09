@@ -90,6 +90,6 @@ class TypeInfoTestHelper {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_TEST_HELPER_H__

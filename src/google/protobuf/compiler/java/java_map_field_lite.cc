@@ -142,22 +142,18 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 ImmutableMapFieldLiteGenerator::
 ImmutableMapFieldLiteGenerator(const FieldDescriptor* descriptor,
                                        int messageBitIndex,
-                                       int builderBitIndex,
                                        Context* context)
-  : descriptor_(descriptor), name_resolver_(context->GetNameResolver())  {
-  SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
-                      context->GetFieldGeneratorInfo(descriptor),
-                      context, &variables_);
+  : descriptor_(descriptor), context_(context),
+    name_resolver_(context->GetNameResolver()){
+  SetMessageVariables(descriptor, messageBitIndex, 0,
+                      context->GetFieldGeneratorInfo(descriptor), context,
+                      &variables_);
 }
 
 ImmutableMapFieldLiteGenerator::
 ~ImmutableMapFieldLiteGenerator() {}
 
 int ImmutableMapFieldLiteGenerator::GetNumBitsForMessage() const {
-  return 0;
-}
-
-int ImmutableMapFieldLiteGenerator::GetNumBitsForBuilder() const {
   return 0;
 }
 

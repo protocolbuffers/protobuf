@@ -78,6 +78,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/scc.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
 )
@@ -153,6 +154,7 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_message_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_oneof.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/scc.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.h
 )
@@ -177,3 +179,4 @@ set_target_properties(libprotoc PROPERTIES
     OUTPUT_NAME ${LIB_PREFIX}protoc
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotoc ALIAS libprotoc)
+

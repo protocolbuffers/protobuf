@@ -60,6 +60,6 @@ class LIBPROTOBUF_EXPORT LocationTrackerInterface {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_LOCATION_TRACKER_H__

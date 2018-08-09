@@ -75,6 +75,6 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_H__

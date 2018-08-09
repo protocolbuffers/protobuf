@@ -439,9 +439,19 @@ jspb.Message.isArray_ = function(o) {
  * @private
  */
 jspb.Message.initPivotAndExtensionObject_ = function(msg, suggestedPivot) {
-  if (msg.array.length) {
-    var foundIndex = msg.array.length - 1;
-    var obj = msg.array[foundIndex];
+  // There are 3 variants that need to be dealt with which are the
+  // combination of whether there exists an extension object (EO) and
+  // whether there is a suggested pivot (SP).
+  //
+  // EO,    ?    : pivot is the index of the EO
+  // no-EO, no-SP: pivot is MAX_INT
+  // no-EO, SP   : pivot is the max(lastindex + 1, SP)
+
+  var msgLength = msg.array.length;
+  var lastIndex = -1;
+  if (msgLength) {
+    lastIndex = msgLength - 1;
+    var obj = msg.array[lastIndex];
     // Normal fields are never objects, so we can be sure that if we find an
     // object here, then it's the extension object. However, we must ensure that
     // the object is not an array, since arrays are valid field values.
@@ -449,14 +459,17 @@ jspb.Message.initPivotAndExtensionObject_ = function(msg, suggestedPivot) {
     // in Safari on iOS 8. See the description of CL/86511464 for details.
     if (obj && typeof obj == 'object' && !jspb.Message.isArray_(obj) &&
         !(jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array)) {
-      msg.pivot_ = jspb.Message.getFieldNumber_(msg, foundIndex);
+      msg.pivot_ = jspb.Message.getFieldNumber_(msg, lastIndex);
       msg.extensionObject_ = obj;
       return;
     }
   }
 
   if (suggestedPivot > -1) {
-    msg.pivot_ = suggestedPivot;
+    // If a extension object is not present, set the pivot value as being
+    // after the last value in the array to avoid overwriting values, etc.
+    msg.pivot_ = Math.max(
+        suggestedPivot, jspb.Message.getFieldNumber_(msg, lastIndex + 1));
     // Avoid changing the shape of the proto with an empty extension object by
     // deferring the materialization of the extension object until the first
     // time a field set into it (may be due to getting a repeated proto field
@@ -923,17 +936,6 @@ jspb.Message.setProto3IntField = function(msg, fieldNumber, value) {
 
 
 /**
- * Sets the value of a non-extension integer, handled as string, field of a proto3
- * @param {!jspb.Message} msg A jspb proto.
- * @param {number} fieldNumber The field number.
- * @param {number} value New value
- * @protected
- */
-jspb.Message.setProto3StringIntField = function(msg, fieldNumber, value) {
-  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, '0');
-};
-
-/**
  * Sets the value of a non-extension floating point field of a proto3
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
@@ -993,12 +995,22 @@ jspb.Message.setProto3EnumField = function(msg, fieldNumber, value) {
 };
 
 
+/**
+ * Sets the value of a non-extension int field of a proto3 that has jstype set
+ * to String.
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {string} value New value
+ * @protected
+ */
+jspb.Message.setProto3StringIntField = function(msg, fieldNumber, value) {
+  jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, "0");
+};
 
 /**
  * Sets the value of a non-extension primitive field, with proto3 (non-nullable
  * primitives) semantics of ignoring values that are equal to the type's
  * default.
- * @template T
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {!Uint8Array|string|number|boolean|undefined} value New value
@@ -1007,7 +1019,7 @@ jspb.Message.setProto3EnumField = function(msg, fieldNumber, value) {
  */
 jspb.Message.setFieldIgnoringDefault_ = function(
     msg, fieldNumber, value, defaultValue) {
-  if (value != defaultValue) {
+  if (value !== defaultValue) {
     jspb.Message.setField(msg, fieldNumber, value);
   } else {
     msg.array[jspb.Message.getIndex_(msg, fieldNumber)] = null;
@@ -1127,7 +1139,7 @@ jspb.Message.getWrapperField = function(msg, ctor, fieldNumber, opt_required) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {function(new:jspb.Message, Array)} ctor Constructor for the field.
  * @param {number} fieldNumber The field number.
- * @return {Array<!jspb.Message>} The repeated field as an array of protos.
+ * @return {!Array<!jspb.Message>} The repeated field as an array of protos.
  * @protected
  */
 jspb.Message.getRepeatedWrapperField = function(msg, ctor, fieldNumber) {

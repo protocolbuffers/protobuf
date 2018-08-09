@@ -33,6 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
+#include <climits>
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -44,12 +45,12 @@
 
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/any.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/repeated_field.h>
@@ -58,8 +59,11 @@
 #include <google/protobuf/stubs/strutil.h>
 
 
+
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
+
 
 namespace google {
 namespace protobuf {
@@ -212,7 +216,7 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
 // ===========================================================================
 // Internal class for parsing an ASCII representation of a Protocol Message.
 // This class makes use of the Protocol Message compiler's tokenizer found
-// in //google/protobuf/io/tokenizer.h. Note that class's Parse
+// in //net/proto2/io/public/tokenizer.h. Note that class's Parse
 // method is *not* thread-safe and should only be used in a single thread at
 // a time.
 
@@ -241,6 +245,7 @@ class TextFormat::Parser::ParserImpl {
              SingularOverwritePolicy singular_overwrite_policy,
              bool allow_case_insensitive_field,
              bool allow_unknown_field,
+             bool allow_unknown_extension,
              bool allow_unknown_enum,
              bool allow_field_number,
              bool allow_relaxed_whitespace,
@@ -254,6 +259,7 @@ class TextFormat::Parser::ParserImpl {
       singular_overwrite_policy_(singular_overwrite_policy),
       allow_case_insensitive_field_(allow_case_insensitive_field),
       allow_unknown_field_(allow_unknown_field),
+      allow_unknown_extension_(allow_unknown_extension),
       allow_unknown_enum_(allow_unknown_enum),
       allow_field_number_(allow_field_number),
       allow_partial_(allow_partial),
@@ -433,7 +439,7 @@ class TextFormat::Parser::ParserImpl {
                       : DefaultFinderFindExtension(message, field_name);
 
       if (field == NULL) {
-        if (!allow_unknown_field_) {
+        if (!allow_unknown_field_ && !allow_unknown_extension_) {
           ReportError("Extension \"" + field_name + "\" is not defined or "
                       "is not an extension of \"" +
                       descriptor->full_name() + "\".");
@@ -448,7 +454,8 @@ class TextFormat::Parser::ParserImpl {
       DO(ConsumeIdentifier(&field_name));
 
       int32 field_number;
-      if (allow_field_number_ && safe_strto32(field_name, &field_number)) {
+      if (allow_field_number_ &&
+          safe_strto32(field_name, &field_number)) {
         if (descriptor->IsExtensionNumber(field_number)) {
           field = reflection->FindKnownExtensionByNumber(field_number);
         } else if (descriptor->IsReservedNumber(field_number)) {
@@ -501,7 +508,7 @@ class TextFormat::Parser::ParserImpl {
 
     // Skips unknown or reserved fields.
     if (field == NULL) {
-      GOOGLE_CHECK(allow_unknown_field_ || reserved_field);
+      GOOGLE_CHECK(allow_unknown_field_ || allow_unknown_extension_ || reserved_field);
 
       // Try to guess the type of this field.
       // If this field is not a message, there should be a ":" between the
@@ -758,7 +765,7 @@ label_skip_parsing:
                    LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           int64 int_value;
           DO(ConsumeSignedInteger(&int_value, kint32max));
-          value = SimpleItoa(int_value);        // for error reporting
+          value = SimpleItoa(int_value);  // for error reporting
           enum_value = enum_type->FindValueByNumber(int_value);
         } else {
           ReportError("Expected integer or identifier, got: " +
@@ -882,8 +889,9 @@ label_skip_parsing:
 
     // If allow_field_numer_ or allow_unknown_field_ is true, we should able
     // to parse integer identifiers.
-    if ((allow_field_number_ || allow_unknown_field_)
-        && LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
+    if ((allow_field_number_ || allow_unknown_field_ ||
+         allow_unknown_extension_) &&
+        LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
       *identifier = tokenizer_.current().text;
       tokenizer_.Next();
       return true;
@@ -1138,7 +1146,7 @@ label_skip_parsing:
     explicit ParserErrorCollector(TextFormat::Parser::ParserImpl* parser) :
         parser_(parser) { }
 
-    ~ParserErrorCollector() override { }
+    ~ParserErrorCollector() override {}
 
     void AddError(int line, int column, const string& message) override {
       parser_->ReportError(line, column, message);
@@ -1162,17 +1170,16 @@ label_skip_parsing:
   SingularOverwritePolicy singular_overwrite_policy_;
   const bool allow_case_insensitive_field_;
   const bool allow_unknown_field_;
+  const bool allow_unknown_extension_;
   const bool allow_unknown_enum_;
   const bool allow_field_number_;
   const bool allow_partial_;
   bool had_errors_;
 };
 
-#undef DO
-
 // ===========================================================================
 // Internal class for writing text to the io::ZeroCopyOutputStream. Adapted
-// from the Printer found in //google/protobuf/io/printer.h
+// from the Printer found in //net/proto2/io/public/printer.h
 class TextFormat::Printer::TextGenerator
     : public TextFormat::BaseTextGenerator {
  public:
@@ -1334,6 +1341,7 @@ TextFormat::Parser::Parser()
     allow_partial_(false),
     allow_case_insensitive_field_(false),
     allow_unknown_field_(false),
+    allow_unknown_extension_(false),
     allow_unknown_enum_(false),
     allow_field_number_(false),
     allow_relaxed_whitespace_(false),
@@ -1341,6 +1349,21 @@ TextFormat::Parser::Parser()
 }
 
 TextFormat::Parser::~Parser() {}
+
+namespace {
+
+bool CheckParseInputSize(StringPiece input,
+                         io::ErrorCollector* error_collector) {
+  if (input.size() > INT_MAX) {
+    error_collector->AddError(
+        -1, 0, StrCat("Input size too large: ", input.size(), " bytes",
+                            " > ", INT_MAX, " bytes."));
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
 
 bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                                Message* output) {
@@ -1351,17 +1374,17 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
       ? ParserImpl::ALLOW_SINGULAR_OVERWRITES
       : ParserImpl::FORBID_SINGULAR_OVERWRITES;
 
-  ParserImpl parser(output->GetDescriptor(), input, error_collector_,
-                    finder_, parse_info_tree_,
-                    overwrites_policy,
-                    allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+  ParserImpl parser(
+      output->GetDescriptor(), input, error_collector_, finder_,
+      parse_info_tree_, overwrites_policy, allow_case_insensitive_field_,
+      allow_unknown_field_, allow_unknown_extension_, allow_unknown_enum_,
+      allow_field_number_, allow_relaxed_whitespace_, allow_partial_);
   return MergeUsingImpl(input, output, &parser);
 }
 
 bool TextFormat::Parser::ParseFromString(const string& input,
                                          Message* output) {
+  DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
   return Parse(&input_stream, output);
 }
@@ -1369,17 +1392,18 @@ bool TextFormat::Parser::ParseFromString(const string& input,
 
 bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
                                Message* output) {
-  ParserImpl parser(output->GetDescriptor(), input, error_collector_,
-                    finder_, parse_info_tree_,
-                    ParserImpl::ALLOW_SINGULAR_OVERWRITES,
+  ParserImpl parser(output->GetDescriptor(), input, error_collector_, finder_,
+                    parse_info_tree_, ParserImpl::ALLOW_SINGULAR_OVERWRITES,
                     allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+                    allow_unknown_extension_, allow_unknown_enum_,
+                    allow_field_number_, allow_relaxed_whitespace_,
+                    allow_partial_);
   return MergeUsingImpl(input, output, &parser);
 }
 
 bool TextFormat::Parser::MergeFromString(const string& input,
                                          Message* output) {
+  DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
   return Merge(&input_stream, output);
 }
@@ -1405,12 +1429,12 @@ bool TextFormat::Parser::ParseFieldValueFromString(
     const FieldDescriptor* field,
     Message* output) {
   io::ArrayInputStream input_stream(input.data(), input.size());
-  ParserImpl parser(output->GetDescriptor(), &input_stream, error_collector_,
-                    finder_, parse_info_tree_,
-                    ParserImpl::ALLOW_SINGULAR_OVERWRITES,
-                    allow_case_insensitive_field_, allow_unknown_field_,
-                    allow_unknown_enum_, allow_field_number_,
-                    allow_relaxed_whitespace_, allow_partial_);
+  ParserImpl parser(
+      output->GetDescriptor(), &input_stream, error_collector_, finder_,
+      parse_info_tree_, ParserImpl::ALLOW_SINGULAR_OVERWRITES,
+      allow_case_insensitive_field_, allow_unknown_field_,
+      allow_unknown_extension_, allow_unknown_enum_, allow_field_number_,
+      allow_relaxed_whitespace_, allow_partial_);
   return parser.ParseField(field, output);
 }
 
@@ -1435,6 +1459,8 @@ bool TextFormat::Parser::ParseFieldValueFromString(
 }
 
 
+#undef DO
+
 // ===========================================================================
 
 TextFormat::BaseTextGenerator::~BaseTextGenerator() {}
@@ -1444,7 +1470,9 @@ namespace {
 // A BaseTextGenerator that writes to a string.
 class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
  public:
-  void Print(const char* text, size_t size) override { output_.append(text, size); }
+  void Print(const char* text, size_t size) override {
+    output_.append(text, size);
+  }
 
 // Some compilers do not support ref-qualifiers even in C++11 mode.
 // Disable the optimization for now and revisit it later.
@@ -1642,25 +1670,32 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
     delegate_.reset(delegate);
   }
 
-  void PrintBool(bool val, TextFormat::BaseTextGenerator* generator) const override {
+  void PrintBool(bool val,
+                 TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintBool(val));
   }
-  void PrintInt32(int32 val, TextFormat::BaseTextGenerator* generator) const override {
+  void PrintInt32(int32 val,
+                  TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintInt32(val));
   }
-  void PrintUInt32(uint32 val, TextFormat::BaseTextGenerator* generator) const override {
+  void PrintUInt32(uint32 val,
+                   TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintUInt32(val));
   }
-  void PrintInt64(int64 val, TextFormat::BaseTextGenerator* generator) const override {
+  void PrintInt64(int64 val,
+                  TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintInt64(val));
   }
-  void PrintUInt64(uint64 val, TextFormat::BaseTextGenerator* generator) const override {
+  void PrintUInt64(uint64 val,
+                   TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintUInt64(val));
   }
-  void PrintFloat(float val, TextFormat::BaseTextGenerator* generator) const override {
+  void PrintFloat(float val,
+                  TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintFloat(val));
   }
-  void PrintDouble(double val, TextFormat::BaseTextGenerator* generator) const override {
+  void PrintDouble(double val,
+                   TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintDouble(val));
   }
   void PrintString(const string& val,
@@ -1688,15 +1723,17 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
     generator->PrintString(
         delegate_->PrintFieldName(message, reflection, field));
   }
-  void PrintMessageStart(const Message& message, int field_index,
-                         int field_count, bool single_line_mode,
-                         TextFormat::BaseTextGenerator* generator) const override {
+  void PrintMessageStart(
+      const Message& message, int field_index, int field_count,
+      bool single_line_mode,
+      TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintMessageStart(
         message, field_index, field_count, single_line_mode));
   }
-  void PrintMessageEnd(const Message& message, int field_index, int field_count,
-                       bool single_line_mode,
-                       TextFormat::BaseTextGenerator* generator) const override {
+  void PrintMessageEnd(
+      const Message& message, int field_index, int field_count,
+      bool single_line_mode,
+      TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintMessageEnd(
         message, field_index, field_count, single_line_mode));
   }
@@ -1867,7 +1904,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
   }
 
   // Print the "value" in text.
-  const google::protobuf::Descriptor* value_descriptor =
+  const Descriptor* value_descriptor =
       finder_ ? finder_->FindAnyType(message, url_prefix, full_type_name)
               : DefaultFinderFindAnyType(message, url_prefix, full_type_name);
   if (value_descriptor == NULL) {
@@ -1875,7 +1912,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
     return false;
   }
   DynamicMessageFactory factory;
-  std::unique_ptr<google::protobuf::Message> value_message(
+  std::unique_ptr<Message> value_message(
       factory.GetPrototype(value_descriptor)->New());
   string serialized_value = reflection->GetString(message, value_field);
   if (!value_message->ParseFromString(serialized_value)) {

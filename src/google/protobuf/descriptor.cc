@@ -34,19 +34,17 @@
 
 #include <algorithm>
 #include <functional>
-#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/mutex.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -62,15 +60,17 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/stubs/casts.h>
 
 
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/stubs/hash.h>
 
 #undef PACKAGE  // autoheader #defines this.  :(
 
-namespace google {
 
+namespace google {
 namespace protobuf {
 
 struct Symbol {
@@ -399,8 +399,8 @@ struct PointerStringPairEqual {
 typedef std::pair<const Descriptor*, int> DescriptorIntPair;
 typedef std::pair<const EnumDescriptor*, int> EnumIntPair;
 
-#define HASH_MAP hash_map
-#define HASH_SET hash_set
+#define HASH_MAP std::unordered_map
+#define HASH_SET std::unordered_set
 #define HASH_FXN hash
 
 template<typename PairType>
@@ -489,7 +489,7 @@ std::set<string>* NewAllowedProto3Extendee() {
     // both so the opensource protocol compiler can also compile internal
     // proto3 files with custom options. See: b/27567912
     allowed_proto3_extendees->insert(string("google.protobuf.") +
-                                      kOptionNames[i]);
+                                     kOptionNames[i]);
     // Split the word to trick the opensource processing scripts so they
     // will keep the origial package name.
     allowed_proto3_extendees->insert(string("proto") + "2." + kOptionNames[i]);
@@ -626,9 +626,9 @@ class DescriptorPool::Tables {
   // The string is initialized to the given value for convenience.
   string* AllocateString(const string& value);
 
-  // Allocate a GoogleOnceDynamic which will be destroyed when the pool is
+  // Allocate a internal::call_once which will be destroyed when the pool is
   // destroyed.
-  GoogleOnceDynamic* AllocateOnceDynamic();
+  internal::once_flag* AllocateOnceDynamic();
 
   // Allocate a protocol message object.  Some older versions of GCC have
   // trouble understanding explicit template instantiations in some cases, so
@@ -642,8 +642,8 @@ class DescriptorPool::Tables {
  private:
   std::vector<string*> strings_;    // All strings in the pool.
   std::vector<Message*> messages_;  // All messages in the pool.
-  std::vector<GoogleOnceDynamic*>
-      once_dynamics_;  // All GoogleOnceDynamics in the pool.
+  std::vector<internal::once_flag*>
+      once_dynamics_;  // All internal::call_onces in the pool.
   std::vector<FileDescriptorTables*>
       file_tables_;                 // All file tables in the pool.
   std::vector<void*> allocations_;  // All other memory allocated in the pool.
@@ -742,7 +742,7 @@ class FileDescriptorTables {
   void AddFieldByStylizedNames(const FieldDescriptor* field);
 
   // Populates p->first->locations_by_path_ from p->second.
-  // Unusual signature dictated by GoogleOnceDynamic.
+  // Unusual signature dictated by internal::call_once.
   static void BuildLocationsByPath(
       std::pair<const FileDescriptorTables*, const SourceCodeInfo*>* p);
 
@@ -769,22 +769,22 @@ class FileDescriptorTables {
   SymbolsByParentMap symbols_by_parent_;
   mutable FieldsByNameMap fields_by_lowercase_name_;
   std::unique_ptr<FieldsByNameMap> fields_by_lowercase_name_tmp_;
-  mutable GoogleOnceDynamic fields_by_lowercase_name_once_;
+  mutable internal::once_flag fields_by_lowercase_name_once_;
   mutable FieldsByNameMap fields_by_camelcase_name_;
   std::unique_ptr<FieldsByNameMap> fields_by_camelcase_name_tmp_;
-  mutable GoogleOnceDynamic fields_by_camelcase_name_once_;
+  mutable internal::once_flag fields_by_camelcase_name_once_;
   FieldsByNumberMap fields_by_number_;  // Not including extensions.
   EnumValuesByNumberMap enum_values_by_number_;
   mutable EnumValuesByNumberMap unknown_enum_values_by_number_
       GOOGLE_GUARDED_BY(unknown_enum_values_mu_);
 
   // Populated on first request to save space, hence constness games.
-  mutable GoogleOnceDynamic locations_by_path_once_;
+  mutable internal::once_flag locations_by_path_once_;
   mutable LocationsByPathMap locations_by_path_;
 
   // Mutex to protect the unknown-enum-value map due to dynamic
   // EnumValueDescriptor creation on unknown values.
-  mutable Mutex unknown_enum_values_mu_;
+  mutable internal::WrappedMutex unknown_enum_values_mu_;
 };
 
 DescriptorPool::Tables::Tables()
@@ -908,8 +908,8 @@ inline Symbol DescriptorPool::Tables::FindSymbol(const string& key) const {
 
 inline Symbol FileDescriptorTables::FindNestedSymbol(
     const void* parent, const string& name) const {
-  const Symbol* result =
-    FindOrNull(symbols_by_parent_, PointerStringPair(parent, name.c_str()));
+  const Symbol* result = FindOrNull(
+      symbols_by_parent_, PointerStringPair(parent, name.c_str()));
   if (result == NULL) {
     return kNullSymbol;
   } else {
@@ -982,16 +982,18 @@ void FileDescriptorTables::FieldsByLowercaseNamesLazyInitInternal() const {
        it != fields_by_number_.end(); it++) {
     PointerStringPair lowercase_key(FindParentForFieldsByMap(it->second),
                                     it->second->lowercase_name().c_str());
-    InsertIfNotPresent(&fields_by_lowercase_name_, lowercase_key, it->second);
+    InsertIfNotPresent(&fields_by_lowercase_name_, lowercase_key,
+                            it->second);
   }
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByLowercaseName(
     const void* parent, const string& lowercase_name) const {
-  fields_by_lowercase_name_once_.Init(
+  internal::call_once(
+      fields_by_lowercase_name_once_,
       &FileDescriptorTables::FieldsByLowercaseNamesLazyInitStatic, this);
   return FindPtrOrNull(fields_by_lowercase_name_,
-                       PointerStringPair(parent, lowercase_name.c_str()));
+                            PointerStringPair(parent, lowercase_name.c_str()));
 }
 
 void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic(
@@ -1004,21 +1006,24 @@ void FileDescriptorTables::FieldsByCamelcaseNamesLazyInitInternal() const {
        it != fields_by_number_.end(); it++) {
     PointerStringPair camelcase_key(FindParentForFieldsByMap(it->second),
                                     it->second->camelcase_name().c_str());
-    InsertIfNotPresent(&fields_by_camelcase_name_, camelcase_key, it->second);
+    InsertIfNotPresent(&fields_by_camelcase_name_, camelcase_key,
+                            it->second);
   }
 }
 
 inline const FieldDescriptor* FileDescriptorTables::FindFieldByCamelcaseName(
     const void* parent, const string& camelcase_name) const {
-  fields_by_camelcase_name_once_.Init(
-      &FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic, this);
+  internal::call_once(
+      fields_by_camelcase_name_once_,
+      FileDescriptorTables::FieldsByCamelcaseNamesLazyInitStatic, this);
   return FindPtrOrNull(fields_by_camelcase_name_,
-                       PointerStringPair(parent, camelcase_name.c_str()));
+                            PointerStringPair(parent, camelcase_name.c_str()));
 }
 
 inline const EnumValueDescriptor* FileDescriptorTables::FindEnumValueByNumber(
     const EnumDescriptor* parent, int number) const {
-  return FindPtrOrNull(enum_values_by_number_, std::make_pair(parent, number));
+  return FindPtrOrNull(enum_values_by_number_,
+                            std::make_pair(parent, number));
 }
 
 inline const EnumValueDescriptor*
@@ -1026,8 +1031,8 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     const EnumDescriptor* parent, int number) const {
   // First try, with map of compiled-in values.
   {
-    const EnumValueDescriptor* desc =
-        FindPtrOrNull(enum_values_by_number_, std::make_pair(parent, number));
+    const EnumValueDescriptor* desc = FindPtrOrNull(
+        enum_values_by_number_, std::make_pair(parent, number));
     if (desc != NULL) {
       return desc;
     }
@@ -1068,7 +1073,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     result->type_ = parent;
     result->options_ = &EnumValueOptions::default_instance();
     InsertIfNotPresent(&unknown_enum_values_by_number_,
-                       std::make_pair(parent, number), result);
+                            std::make_pair(parent, number), result);
     return result;
   }
 }
@@ -1134,16 +1139,16 @@ void FileDescriptorTables::AddFieldByStylizedNames(
   // entries from fields_by_number_.
 
   PointerStringPair lowercase_key(parent, field->lowercase_name().c_str());
-  if (!InsertIfNotPresent(fields_by_lowercase_name_tmp_.get(), lowercase_key,
-                          field)) {
+  if (!InsertIfNotPresent(fields_by_lowercase_name_tmp_.get(),
+                               lowercase_key, field)) {
     InsertIfNotPresent(
         &fields_by_lowercase_name_, lowercase_key,
         FindPtrOrNull(*fields_by_lowercase_name_tmp_, lowercase_key));
   }
 
   PointerStringPair camelcase_key(parent, field->camelcase_name().c_str());
-  if (!InsertIfNotPresent(fields_by_camelcase_name_tmp_.get(), camelcase_key,
-                          field)) {
+  if (!InsertIfNotPresent(fields_by_camelcase_name_tmp_.get(),
+                               camelcase_key, field)) {
     InsertIfNotPresent(
         &fields_by_camelcase_name_, camelcase_key,
         FindPtrOrNull(*fields_by_camelcase_name_tmp_, camelcase_key));
@@ -1189,8 +1194,8 @@ string* DescriptorPool::Tables::AllocateString(const string& value) {
   return result;
 }
 
-GoogleOnceDynamic* DescriptorPool::Tables::AllocateOnceDynamic() {
-  GoogleOnceDynamic* result = new GoogleOnceDynamic();
+internal::once_flag* DescriptorPool::Tables::AllocateOnceDynamic() {
+  internal::once_flag* result = new internal::once_flag();
   once_dynamics_.push_back(result);
   return result;
 }
@@ -1232,7 +1237,8 @@ const SourceCodeInfo_Location* FileDescriptorTables::GetSourceLocation(
     const std::vector<int>& path, const SourceCodeInfo* info) const {
   std::pair<const FileDescriptorTables*, const SourceCodeInfo*> p(
       std::make_pair(this, info));
-  locations_by_path_once_.Init(&FileDescriptorTables::BuildLocationsByPath, &p);
+  internal::call_once(locations_by_path_once_,
+                      FileDescriptorTables::BuildLocationsByPath, &p);
   return FindPtrOrNull(locations_by_path_, Join(path, ","));
 }
 
@@ -1255,7 +1261,7 @@ DescriptorPool::DescriptorPool()
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
-  : mutex_(new Mutex),
+  : mutex_(new internal::WrappedMutex),
     fallback_database_(fallback_database),
     default_error_collector_(error_collector),
     underlay_(NULL),
@@ -1307,6 +1313,7 @@ bool DescriptorPool::InternalIsFileLoaded(const string& filename) const {
 
 namespace {
 
+
 EncodedDescriptorDatabase* GeneratedDatabase() {
   static auto generated_database =
       internal::OnShutdownDelete(new EncodedDescriptorDatabase());
@@ -1330,6 +1337,8 @@ DescriptorPool* DescriptorPool::internal_generated_pool() {
 const DescriptorPool* DescriptorPool::generated_pool() {
   return internal_generated_pool();
 }
+
+
 
 void DescriptorPool::InternalAddGeneratedFile(
     const void* encoded_file_descriptor, int size) {
@@ -1760,7 +1769,7 @@ void Descriptor::ExtensionRange::CopyTo(
     DescriptorProto_ExtensionRange* proto) const {
   proto->set_start(this->start);
   proto->set_end(this->end);
-  if (options_ != &google::protobuf::ExtensionRangeOptions::default_instance()) {
+  if (options_ != &ExtensionRangeOptions::default_instance()) {
     *proto->mutable_options() = *options_;
   }
 }
@@ -2079,9 +2088,9 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
   // Some compilers do not allow static_cast directly between two enum types,
   // so we must cast to int first.
   proto->set_label(static_cast<FieldDescriptorProto::Label>(
-                     implicit_cast<int>(label())));
+      ::google::protobuf::implicit_cast<int>(label())));
   proto->set_type(static_cast<FieldDescriptorProto::Type>(
-                    implicit_cast<int>(type())));
+      ::google::protobuf::implicit_cast<int>(type())));
 
   if (is_extension()) {
     if (!containing_type()->is_unqualified_placeholder_) {
@@ -2257,9 +2266,8 @@ bool RetrieveOptions(int depth, const Message& options,
     const Descriptor* option_descriptor =
         pool->FindMessageTypeByName(options.GetDescriptor()->full_name());
     if (option_descriptor == NULL) {
-      // google/protobuf/descriptor.proto is not in the pool. This means no
-      // custom options are used so we are safe to proceed with the compiled
-      // options message type.
+      // descriptor.proto is not in the pool. This means no custom options are
+      // used so we are safe to proceed with the compiled options message type.
       return RetrieveOptionsAssumingRightPool(depth, options, option_entries);
     }
     DynamicMessageFactory factory;
@@ -2919,7 +2927,7 @@ void MethodDescriptor::DebugString(int depth, string *contents,
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
                                        SourceLocation* out_location) const {
-  GOOGLE_CHECK_NOTNULL(out_location);
+  GOOGLE_CHECK(out_location != nullptr);
   if (source_code_info_) {
     if (const SourceCodeInfo_Location* loc =
         tables_->GetSourceLocation(path, source_code_info_)) {
@@ -3071,17 +3079,14 @@ namespace {
 // pointers in the original options, not the mutable copy). The Message must be
 // one of the Options messages in descriptor.proto.
 struct OptionsToInterpret {
-  OptionsToInterpret(const string& ns,
-                     const string& el,
-                     std::vector<int>& path,
-                     const Message* orig_opt,
+  OptionsToInterpret(const string& ns, const string& el,
+                     const std::vector<int>& path, const Message* orig_opt,
                      Message* opt)
       : name_scope(ns),
         element_name(el),
         element_path(path),
         original_options(orig_opt),
-        options(opt) {
-  }
+        options(opt) {}
   string name_scope;
   string element_name;
   std::vector<int> element_path;
@@ -3249,20 +3254,19 @@ class DescriptorBuilder {
   // descriptor. Remembers its uninterpreted options, to be interpreted
   // later. DescriptorT must be one of the Descriptor messages from
   // descriptor.proto.
-  template<class DescriptorT> void AllocateOptions(
-      const typename DescriptorT::OptionsType& orig_options,
-      DescriptorT* descriptor, int options_field_tag);
+  template <class DescriptorT>
+  void AllocateOptions(const typename DescriptorT::OptionsType& orig_options,
+                       DescriptorT* descriptor, int options_field_tag);
   // Specialization for FileOptions.
   void AllocateOptions(const FileOptions& orig_options,
                        FileDescriptor* descriptor);
 
   // Implementation for AllocateOptions(). Don't call this directly.
-  template<class DescriptorT> void AllocateOptionsImpl(
-      const string& name_scope,
-      const string& element_name,
+  template <class DescriptorT>
+  void AllocateOptionsImpl(
+      const string& name_scope, const string& element_name,
       const typename DescriptorT::OptionsType& orig_options,
-      DescriptorT* descriptor,
-      std::vector<int>& options_path);
+      DescriptorT* descriptor, const std::vector<int>& options_path);
 
   // These methods all have the same signature for the sake of the BUILD_ARRAY
   // macro, below.
@@ -3364,8 +3368,9 @@ class DescriptorBuilder {
     // location path to the uninterpreted option, and options_path is the
     // source location path to the options message. The location paths are
     // recorded and then used in UpdateSourceCodeInfo.
-    bool InterpretSingleOption(Message* options, std::vector<int>& src_path,
-                               std::vector<int>& options_path);
+    bool InterpretSingleOption(Message* options,
+                               const std::vector<int>& src_path,
+                               const std::vector<int>& options_path);
 
     // Adds the uninterpreted_option to the given options message verbatim.
     // Used when AllowUnknownDependencies() is in effect and we can't find
@@ -4065,7 +4070,8 @@ void DescriptorBuilder::ValidateSymbolName(
 
 // This generic implementation is good for all descriptors except
 // FileDescriptor.
-template<class DescriptorT> void DescriptorBuilder::AllocateOptions(
+template <class DescriptorT>
+void DescriptorBuilder::AllocateOptions(
     const typename DescriptorT::OptionsType& orig_options,
     DescriptorT* descriptor, int options_field_tag) {
   std::vector<int> options_path;
@@ -4085,18 +4091,25 @@ void DescriptorBuilder::AllocateOptions(const FileOptions& orig_options,
                       orig_options, descriptor, options_path);
 }
 
-template<class DescriptorT> void DescriptorBuilder::AllocateOptionsImpl(
-    const string& name_scope,
-    const string& element_name,
+template <class DescriptorT>
+void DescriptorBuilder::AllocateOptionsImpl(
+    const string& name_scope, const string& element_name,
     const typename DescriptorT::OptionsType& orig_options,
-    DescriptorT* descriptor,
-    std::vector<int>& options_path) {
+    DescriptorT* descriptor, const std::vector<int>& options_path) {
   // We need to use a dummy pointer to work around a bug in older versions of
   // GCC.  Otherwise, the following two lines could be replaced with:
   //   typename DescriptorT::OptionsType* options =
   //       tables_->AllocateMessage<typename DescriptorT::OptionsType>();
   typename DescriptorT::OptionsType* const dummy = NULL;
   typename DescriptorT::OptionsType* options = tables_->AllocateMessage(dummy);
+
+  if (!orig_options.IsInitialized()) {
+    AddError(name_scope + "." + element_name, orig_options,
+             DescriptorPool::ErrorCollector::OPTION_NAME,
+             "Uninterpreted option is missing name or value.");
+    return;
+  }
+
   // Avoid using MergeFrom()/CopyFrom() in this class to make it -fno-rtti
   // friendly. Without RTTI, MergeFrom() and CopyFrom() will fallback to the
   // reflection based method, which requires the Descriptor. However, we are in
@@ -4112,12 +4125,10 @@ template<class DescriptorT> void DescriptorBuilder::AllocateOptionsImpl(
   // OptionsType::GetDescriptor() to be called which may then deadlock since
   // we're still trying to build it.
   if (options->uninterpreted_option_size() > 0) {
-    options_to_interpret_.push_back(
-        OptionsToInterpret(name_scope, element_name, options_path,
-            &orig_options, options));
+    options_to_interpret_.push_back(OptionsToInterpret(
+        name_scope, element_name, options_path, &orig_options, options));
   }
 }
-
 
 // A common pattern:  We want to convert a repeated field in the descriptor
 // to an array of values, calling some method to build each value.
@@ -4252,7 +4263,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
   result->is_placeholder_ = false;
   result->finished_building_ = false;
-  SourceCodeInfo *info = NULL;
+  SourceCodeInfo* info = nullptr;
   if (proto.has_source_code_info()) {
     info = tables_->AllocateMessage<SourceCodeInfo>();
     info->CopyFrom(proto.source_code_info());
@@ -4452,8 +4463,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.InterpretOptions(&(*iter));
     }
     options_to_interpret_.clear();
-
-    if (info != NULL) {
+    if (info != nullptr) {
       option_interpreter.UpdateSourceCodeInfo(info);
     }
   }
@@ -4528,7 +4538,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
     AllocateOptions(proto.options(), result,
-        DescriptorProto::kOptionsFieldNumber);
+                    DescriptorProto::kOptionsFieldNumber);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -4669,10 +4679,10 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
 
   // Some compilers do not allow static_cast directly between two enum types,
   // so we must cast to int first.
-  result->type_  = static_cast<FieldDescriptor::Type>(
-                     implicit_cast<int>(proto.type()));
+  result->type_ = static_cast<FieldDescriptor::Type>(
+      ::google::protobuf::implicit_cast<int>(proto.type()));
   result->label_ = static_cast<FieldDescriptor::Label>(
-                     implicit_cast<int>(proto.label()));
+      ::google::protobuf::implicit_cast<int>(proto.label()));
 
   // An extension cannot have a required field (b/13365836).
   if (result->is_extension_ &&
@@ -4909,7 +4919,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
     AllocateOptions(proto.options(), result,
-        FieldDescriptorProto::kOptionsFieldNumber);
+                    FieldDescriptorProto::kOptionsFieldNumber);
   }
 
 
@@ -4948,7 +4958,8 @@ void DescriptorBuilder::BuildExtensionRange(
     options_path.push_back(DescriptorProto::kExtensionRangeFieldNumber);
     // find index of this extension range in order to compute path
     int index;
-    for (index = 0; parent->extension_ranges_ + index != result; index++);
+    for (index = 0; parent->extension_ranges_ + index != result; index++) {
+    }
     options_path.push_back(index);
     options_path.push_back(DescriptorProto_ExtensionRange::kOptionsFieldNumber);
     AllocateOptionsImpl(parent->full_name(), parent->full_name(),
@@ -5005,7 +5016,7 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
     AllocateOptions(proto.options(), result,
-        OneofDescriptorProto::kOptionsFieldNumber);
+                    OneofDescriptorProto::kOptionsFieldNumber);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -5041,13 +5052,12 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
   //     NAME_TYPE_LAST_NAME = 2,
   //   }
   PrefixRemover remover(result->name());
-  std::map<string, const google::protobuf::EnumValueDescriptor*> values;
+  std::map<string, const EnumValueDescriptor*> values;
   for (int i = 0; i < result->value_count(); i++) {
-    const google::protobuf::EnumValueDescriptor* value = result->value(i);
+    const EnumValueDescriptor* value = result->value(i);
     string stripped =
         EnumValueToPascalCase(remover.MaybeRemove(value->name()));
-    std::pair<std::map<string, const google::protobuf::EnumValueDescriptor*>::iterator,
-              bool>
+    std::pair<std::map<string, const EnumValueDescriptor*>::iterator, bool>
         insert_result = values.insert(std::make_pair(stripped, value));
     bool inserted = insert_result.second;
 
@@ -5123,7 +5133,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
     AllocateOptions(proto.options(), result,
-        EnumDescriptorProto::kOptionsFieldNumber);
+                    EnumDescriptorProto::kOptionsFieldNumber);
   }
 
   AddSymbol(result->full_name(), parent, result->name(),
@@ -5201,7 +5211,7 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
     AllocateOptions(proto.options(), result,
-        EnumValueDescriptorProto::kOptionsFieldNumber);
+                    EnumValueDescriptorProto::kOptionsFieldNumber);
   }
 
   // Again, enum values are weird because we makes them appear as siblings
@@ -5269,7 +5279,7 @@ void DescriptorBuilder::BuildService(const ServiceDescriptorProto& proto,
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
     AllocateOptions(proto.options(), result,
-        ServiceDescriptorProto::kOptionsFieldNumber);
+                    ServiceDescriptorProto::kOptionsFieldNumber);
   }
 
   AddSymbol(result->full_name(), NULL, result->name(),
@@ -5298,7 +5308,7 @@ void DescriptorBuilder::BuildMethod(const MethodDescriptorProto& proto,
     result->options_ = NULL;  // Will set to default_instance later.
   } else {
     AllocateOptions(proto.options(), result,
-        MethodDescriptorProto::kOptionsFieldNumber);
+                    MethodDescriptorProto::kOptionsFieldNumber);
   }
 
   result->client_streaming_ = proto.client_streaming();
@@ -6017,6 +6027,23 @@ void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
 
   ValidateJSType(field, proto);
 
+  // json_name option is not allowed on extension fields. Note that the
+  // json_name field in FieldDescriptorProto is always populated by protoc
+  // when it sends descriptor data to plugins (caculated from field name if
+  // the option is not explicitly set) so we can't rely on its presence to
+  // determine whether the json_name option is set on the field. Here we
+  // compare it against the default calculated json_name value and consider
+  // the option set if they are different. This won't catch the case when
+  // an user explicitly sets json_name to the default value, but should be
+  // good enough to catch common misuses.
+  if (field->is_extension() &&
+      (field->has_json_name() &&
+       field->json_name() != ToJsonName(field->name()))) {
+    AddError(field->full_name(), proto,
+             DescriptorPool::ErrorCollector::OPTION_NAME,
+             "option json_name is not allowed on extension fields.");
+  }
+
 }
 
 void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
@@ -6308,25 +6335,31 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
     // If they are not known, that's OK too. They will get reparsed into the
     // UnknownFieldSet and wait there until the message is parsed by something
     // that does know about the options.
+
+    // Keep the unparsed options around in case the reparsing fails.
+    std::unique_ptr<Message> unparsed_options(options->New());
+    options->GetReflection()->Swap(unparsed_options.get(), options);
+
     string buf;
-    GOOGLE_CHECK(options->AppendPartialToString(&buf))
-        << "Protocol message could not be serialized.";
-    GOOGLE_CHECK(options->ParsePartialFromString(buf))
-        << "Protocol message serialized itself in invalid fashion.";
-    if (!options->IsInitialized()) {
-      builder_->AddWarning(
+    if (!unparsed_options->AppendToString(&buf) ||
+        !options->ParseFromString(buf)) {
+      builder_->AddError(
           options_to_interpret->element_name, *original_options,
           DescriptorPool::ErrorCollector::OTHER,
-          "Options could not be fully parsed using the proto descriptors "
-          "compiled into this binary. Missing required fields: " +
-          options->InitializationErrorString());
+          "Some options could not be correctly parsed using the proto "
+          "descriptors compiled into this binary.\n"
+          "Unparsed options: " + unparsed_options->ShortDebugString() + "\n"
+          "Parsing attempt:  " + options->ShortDebugString());
+      // Restore the unparsed options.
+      options->GetReflection()->Swap(unparsed_options.get(), options);
     }
   }
   return !failed;
 }
 
 bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
-    Message* options, std::vector<int>& src_path, std::vector<int>& opts_path) {
+    Message* options, const std::vector<int>& src_path,
+    const std::vector<int>& options_path) {
   // First do some basic validation.
   if (uninterpreted_option_->name_size() == 0) {
     // This should never happen unless the parser has gone seriously awry or
@@ -6340,9 +6373,9 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
   const Descriptor* options_descriptor = NULL;
   // Get the options message's descriptor from the builder's pool, so that we
-  // get the version that knows about any extension options declared in the
-  // file we're currently building. The descriptor should be there as long as
-  // the file we're building imported "google/protobuf/descriptors.proto".
+  // get the version that knows about any extension options declared in the file
+  // we're currently building. The descriptor should be there as long as the
+  // file we're building imported descriptor.proto.
 
   // Note that we use DescriptorBuilder::FindSymbolNotEnforcingDeps(), not
   // DescriptorPool::FindMessageTypeByName() because we're already holding the
@@ -6372,7 +6405,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   std::vector<const FieldDescriptor*> intermediate_fields;
   string debug_msg_name = "";
 
-  std::vector<int> dest_path = opts_path;
+  std::vector<int> dest_path = options_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
     const string& name_part = uninterpreted_option_->name(i).name_part();
@@ -6417,7 +6450,9 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
             debug_msg_name.substr(1) +
             "\") to start from the outermost scope.");
       } else {
-        return AddNameError("Option \"" + debug_msg_name + "\" unknown.");
+        return AddNameError(
+          "Option \"" + debug_msg_name + "\" unknown. Ensure that your proto" +
+          " definition file imports the proto which defines the option.");
       }
     } else if (field->containing_type() != descriptor) {
       if (get_is_placeholder(field->containing_type())) {
@@ -6442,7 +6477,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
       if (i < uninterpreted_option_->name_size() - 1) {
         if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-          return AddNameError("Option \"" +  debug_msg_name +
+          return AddNameError("Option \"" + debug_msg_name +
                               "\" is an atomic type, not a message.");
         } else if (field->is_repeated()) {
           return AddNameError("Option field \"" + debug_msg_name +
@@ -6531,7 +6566,6 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
 void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     SourceCodeInfo* info) {
-
   if (interpreted_paths_.empty()) {
     // nothing to do!
     return;
@@ -6556,7 +6590,6 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
 
   for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
        loc != locs->end(); loc++) {
-
     if (matched) {
       // see if this location is in the range to remove
       bool loc_matches = true;
@@ -6590,7 +6623,7 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     if (entry == interpreted_paths_.end()) {
       // not a match
       if (copying) {
-        new_locs.Add()->CopyFrom(*loc);
+        *new_locs.Add() = *loc;
       }
       continue;
     }
@@ -6602,14 +6635,15 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
       copying = true;
       new_locs.Reserve(locs->size());
       for (RepeatedPtrField<SourceCodeInfo_Location>::iterator it =
-           locs->begin(); it != loc; it++) {
-        new_locs.Add()->CopyFrom(*it);
+               locs->begin();
+           it != loc; it++) {
+        *new_locs.Add() = *it;
       }
     }
 
     // add replacement and update its path
     SourceCodeInfo_Location* replacement = new_locs.Add();
-    replacement->CopyFrom(*loc);
+    *replacement = *loc;
     replacement->clear_path();
     for (std::vector<int>::iterator rit = entry->second.begin();
          rit != entry->second.end(); rit++) {
@@ -6789,7 +6823,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                              option_field->full_name() + "\".");
       }
       unknown_fields->AddFixed32(option_field->number(),
-          google::protobuf::internal::WireFormatLite::EncodeFloat(value));
+                                 internal::WireFormatLite::EncodeFloat(value));
       break;
     }
 
@@ -6806,7 +6840,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                              option_field->full_name() + "\".");
       }
       unknown_fields->AddFixed64(option_field->number(),
-          google::protobuf::internal::WireFormatLite::EncodeDouble(value));
+                                 internal::WireFormatLite::EncodeDouble(value));
       break;
     }
 
@@ -6905,8 +6939,8 @@ class DescriptorBuilder::OptionInterpreter::AggregateOptionFinder
  public:
   DescriptorBuilder* builder_;
 
-  virtual const FieldDescriptor* FindExtension(
-      Message* message, const string& name) const override {
+  const FieldDescriptor* FindExtension(Message* message,
+                                       const string& name) const override {
     assert_mutex_held(builder_->pool_);
     const Descriptor* descriptor = message->GetDescriptor();
     Symbol result = builder_->LookupSymbolNoPlaceholder(
@@ -6943,7 +6977,7 @@ class AggregateErrorCollector : public io::ErrorCollector {
  public:
   string error_;
 
-  virtual void AddError(int /* line */, int /* column */,
+  void AddError(int /* line */, int /* column */,
                 const string& message) override {
     if (!error_.empty()) {
       error_ += "; ";
@@ -6951,12 +6985,12 @@ class AggregateErrorCollector : public io::ErrorCollector {
     error_ += message;
   }
 
-  virtual void AddWarning(int /* line */, int /* column */,
+  void AddWarning(int /* line */, int /* column */,
                   const string& /* message */) override {
     // Ignore warnings
   }
 };
-}
+}  // namespace
 
 // We construct a dynamic message of the type corresponding to
 // option_field, parse the supplied text-format string into this
@@ -7017,8 +7051,8 @@ void DescriptorBuilder::OptionInterpreter::SetInt32(int number, int32 value,
       break;
 
     case FieldDescriptor::TYPE_SINT32:
-      unknown_fields->AddVarint(number,
-          google::protobuf::internal::WireFormatLite::ZigZagEncode32(value));
+      unknown_fields->AddVarint(
+          number, internal::WireFormatLite::ZigZagEncode32(value));
       break;
 
     default:
@@ -7039,8 +7073,8 @@ void DescriptorBuilder::OptionInterpreter::SetInt64(int number, int64 value,
       break;
 
     case FieldDescriptor::TYPE_SINT64:
-      unknown_fields->AddVarint(number,
-          google::protobuf::internal::WireFormatLite::ZigZagEncode64(value));
+      unknown_fields->AddVarint(
+          number, internal::WireFormatLite::ZigZagEncode64(value));
       break;
 
     default:
@@ -7177,25 +7211,25 @@ void FieldDescriptor::TypeOnceInit(const FieldDescriptor* to_init) {
 }
 
 // message_type(), enum_type(), default_value_enum(), and type()
-// all share the same GoogleOnceDynamic init path to do lazy
+// all share the same internal::call_once init path to do lazy
 // import building and cross linking of a field of a message.
 const Descriptor* FieldDescriptor::message_type() const {
   if (type_once_) {
-    type_once_->Init(&FieldDescriptor::TypeOnceInit, this);
+    internal::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
   }
   return message_type_;
 }
 
 const EnumDescriptor* FieldDescriptor::enum_type() const {
   if (type_once_) {
-    type_once_->Init(&FieldDescriptor::TypeOnceInit, this);
+    internal::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
   }
   return enum_type_;
 }
 
 const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {
   if (type_once_) {
-    type_once_->Init(&FieldDescriptor::TypeOnceInit, this);
+    internal::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
   }
   return default_value_enum_;
 }
@@ -7216,8 +7250,9 @@ void FileDescriptor::DependenciesOnceInit(const FileDescriptor* to_init) {
 const FileDescriptor* FileDescriptor::dependency(int index) const {
   if (dependencies_once_) {
     // Do once init for all indicies, as it's unlikely only a single index would
-    // be called, and saves on GoogleOnceDynamic allocations.
-    dependencies_once_->Init(&FileDescriptor::DependenciesOnceInit, this);
+    // be called, and saves on internal::call_once allocations.
+    internal::call_once(*dependencies_once_,
+                        FileDescriptor::DependenciesOnceInit, this);
   }
   return dependencies_[index];
 }
@@ -7255,7 +7290,7 @@ void LazyDescriptor::SetLazy(const string& name, const FileDescriptor* file) {
 
 void LazyDescriptor::Once() {
   if (once_) {
-    once_->Init(&LazyDescriptor::OnceStatic, this);
+    internal::call_once(*once_, LazyDescriptor::OnceStatic, this);
   }
 }
 

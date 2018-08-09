@@ -99,6 +99,7 @@
 #endif
 
 #define PROTOBUF_RUNTIME_DEPRECATED(message)
+#define GOOGLE_PROTOBUF_RUNTIME_DEPRECATED(message)
 
 // ===================================================================
 // from google3/base/port.h
@@ -174,6 +175,9 @@ static const int64 kint64max = GOOGLE_LONGLONG(0x7FFFFFFFFFFFFFFF);
 static const int64 kint64min = -kint64max - 1;
 static const uint32 kuint32max = 0xFFFFFFFFu;
 static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
+
+#define GOOGLE_PROTOBUF_NAMESPACE "google::protobuf"
+#define GOOGLE_PROTOBUF_NAMESPACE_ID google::protobuf
 
 // -------------------------------------------------------------------
 // Annotations:  Some parts of the code have been annotated in ways that might

@@ -33,23 +33,30 @@
 
 #include <atomic>
 
-#include <google/protobuf/stubs/mutex.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/map_entry.h>
 #include <google/protobuf/map_field_lite.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 
+
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
 class DynamicMessage;
 class MapKey;
+class MapIterator;
 namespace internal {
 
 class ContendedMapCleanTest;
@@ -76,7 +83,7 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   virtual ~MapFieldBase();
 
   // Returns reference to internal repeated field. Data written using
-  // google::protobuf::Map's api prior to calling this function is guarantted to be
+  // Map's api prior to calling this function is guarantted to be
   // included in repeated field.
   const RepeatedPtrFieldBase& GetRepeatedField() const;
 
@@ -96,6 +103,7 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
                              const MapIterator& b) const = 0;
   virtual void MapBegin(MapIterator* map_iter) const = 0;
   virtual void MapEnd(MapIterator* map_iter) const = 0;
+  virtual void Swap(MapFieldBase* other) = 0;
   // Sync Map with repeated field and returns the size of map.
   virtual int size() const = 0;
 
@@ -141,7 +149,7 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   Arena* arena_;
   mutable RepeatedPtrField<Message>* repeated_field_;
 
-  mutable Mutex mutex_;  // The thread to synchronize map and repeated field
+  mutable internal::WrappedMutex mutex_;  // The thread to synchronize map and repeated field
                          // needs to get lock first;
   mutable std::atomic<State> state_;
 
@@ -149,13 +157,13 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   friend class ContendedMapCleanTest;
   friend class GeneratedMessageReflection;
   friend class MapFieldAccessor;
-  friend class ::google::protobuf::DynamicMessage;
+  friend class DynamicMessage;
 
   // Virtual helper methods for MapIterator. MapIterator doesn't have the
   // type helper for key and value. Call these help methods to deal with
   // different types. Real helper methods are implemented in
   // TypeDefinedMapFieldBase.
-  friend class ::google::protobuf::MapIterator;
+  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapIterator;
   // Allocate map<...>::iterator for MapIterator.
   virtual void InitializeIterator(MapIterator* map_iter) const = 0;
 
@@ -228,7 +236,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
       MapFieldLiteType;
 
   // Enum needs to be handled differently from other types because it has
-  // different exposed type in google::protobuf::Map's api and repeated field's api. For
+  // different exposed type in Map's api and repeated field's api. For
   // details see the comment in the implementation of
   // SyncMapWithRepeatedFieldNoLock.
   static const bool kIsValueEnum = ValueTypeHandler::kIsEnum;
@@ -263,7 +271,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   int size() const override;
   void Clear();
   void MergeFrom(const MapField& other);
-  void Swap(MapField* other);
+  void Swap(MapFieldBase* other) override;
 
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is NULL.
@@ -285,7 +293,6 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
-
   // Implements MapFieldBase
   void SyncRepeatedFieldWithMapNoLock() const override;
   void SyncMapWithRepeatedFieldNoLock() const override;
@@ -293,7 +300,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
   void SetMapIteratorValue(MapIterator* map_iter) const override;
 
-  friend class ::google::protobuf::Arena;
+  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::Arena;
   friend class MapFieldStateTest;  // For testing, it needs raw access to impl_
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapField);
 };
@@ -318,6 +325,7 @@ class LIBPROTOBUF_EXPORT DynamicMapField: public TypeDefinedMapFieldBase<MapKey,
   bool ContainsMapKey(const MapKey& map_key) const override;
   bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) override;
   bool DeleteMapValue(const MapKey& map_key) override;
+  void Swap(MapFieldBase* other) override;
 
   const Map<MapKey, MapValueRef>& GetMap() const override;
   Map<MapKey, MapValueRef>* MutableMap() override;
@@ -526,7 +534,7 @@ class LIBPROTOBUF_EXPORT MapKey {
  private:
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
-  friend class MapIterator;
+  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapIterator;
   friend class internal::DynamicMapField;
 
   union KeyValue {
@@ -672,7 +680,7 @@ class LIBPROTOBUF_EXPORT MapValueRef {
   friend class internal::MapField;
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
-  friend class MapIterator;
+  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapIterator;
   friend class internal::GeneratedMessageReflection;
   friend class internal::DynamicMapField;
 
@@ -698,11 +706,11 @@ class LIBPROTOBUF_EXPORT MapValueRef {
   // Only used in DynamicMapField
   void DeleteData() {
     switch (type_) {
-#define HANDLE_TYPE(CPPTYPE, TYPE)                              \
-      case google::protobuf::FieldDescriptor::CPPTYPE_##CPPTYPE: {        \
-        delete reinterpret_cast<TYPE*>(data_);                  \
-        break;                                                  \
-      }
+#define HANDLE_TYPE(CPPTYPE, TYPE)           \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE: { \
+    delete reinterpret_cast<TYPE*>(data_);   \
+    break;                                   \
+  }
       HANDLE_TYPE(INT32, int32);
       HANDLE_TYPE(INT64, int64);
       HANDLE_TYPE(UINT32, uint32);
@@ -721,7 +729,6 @@ class LIBPROTOBUF_EXPORT MapValueRef {
   void* data_;
   // type_ is 0 or a valid FieldDescriptor::CppType.
   int type_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapValueRef);
 };
 
 #undef TYPE_CHECK
@@ -802,39 +809,41 @@ class LIBPROTOBUF_EXPORT MapIterator {
 }  // namespace google
 
 GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
-template<>
-struct hash<google::protobuf::MapKey> {
-  size_t
-  operator()(const google::protobuf::MapKey& map_key) const {
+template <>
+struct hash<::GOOGLE_PROTOBUF_NAMESPACE_ID::MapKey> {
+  size_t operator()(
+      const ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapKey& map_key) const {
     switch (map_key.type()) {
-      case google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      case google::protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_DOUBLE:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_FLOAT:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_ENUM:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_MESSAGE:
         GOOGLE_LOG(FATAL) << "Unsupported";
         break;
-      case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
         return hash<string>()(map_key.GetStringValue());
-      case google::protobuf::FieldDescriptor::CPPTYPE_INT64:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64:
         return hash<::google::protobuf::int64>()(map_key.GetInt64Value());
-      case google::protobuf::FieldDescriptor::CPPTYPE_INT32:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32:
         return hash<::google::protobuf::int32>()(map_key.GetInt32Value());
-      case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64:
         return hash<::google::protobuf::uint64>()(map_key.GetUInt64Value());
-      case google::protobuf::FieldDescriptor::CPPTYPE_UINT32:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32:
         return hash<::google::protobuf::uint32>()(map_key.GetUInt32Value());
-      case google::protobuf::FieldDescriptor::CPPTYPE_BOOL:
+      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL:
         return hash<bool>()(map_key.GetBoolValue());
     }
     GOOGLE_LOG(FATAL) << "Can't get here.";
     return 0;
   }
-  bool
-  operator()(const google::protobuf::MapKey& map_key1,
-             const google::protobuf::MapKey& map_key2) const {
+  bool operator()(
+      const ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapKey& map_key1,
+      const ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapKey& map_key2) const {
     return map_key1 < map_key2;
   }
 };
 GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_H__

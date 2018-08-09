@@ -69,7 +69,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   static {
     EMPTY_LIST.makeImmutable();
   }
-  
+
   static LazyStringArrayList emptyList() {
     return EMPTY_LIST;
   }
@@ -83,8 +83,8 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     this(DEFAULT_CAPACITY);
   }
 
-  public LazyStringArrayList(int intialCapacity) {
-    this(new ArrayList<Object>(intialCapacity));
+  public LazyStringArrayList(int initialCapacity) {
+    this(new ArrayList<Object>(initialCapacity));
   }
 
   public LazyStringArrayList(LazyStringList from) {
@@ -95,7 +95,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   public LazyStringArrayList(List<String> from) {
     this(new ArrayList<Object>(from));
   }
-  
+
   private LazyStringArrayList(ArrayList<Object> list) {
     this.list = list;
   }
@@ -150,13 +150,13 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     list.add(index, element);
     modCount++;
   }
-  
+
   private void add(int index, ByteString element) {
     ensureIsMutable();
     list.add(index, element);
     modCount++;
   }
-  
+
   private void add(int index, byte[] element) {
     ensureIsMutable();
     list.add(index, element);
@@ -221,7 +221,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     list.add(element);
     modCount++;
   }
-  
+
   @Override
   public void add(byte[] element) {
     ensureIsMutable();
@@ -233,7 +233,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   public Object getRaw(int index) {
     return list.get(index);
   }
-  
+
   @Override
   public ByteString getByteString(int index) {
     Object o = list.get(index);
@@ -243,7 +243,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     }
     return b;
   }
-  
+
   @Override
   public byte[] getByteArray(int index) {
     Object o = list.get(index);
@@ -258,7 +258,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   public void set(int index, ByteString s) {
     setAndReturn(index, s);
   }
-  
+
   private Object setAndReturn(int index, ByteString s) {
     ensureIsMutable();
     return list.set(index, s);
@@ -268,7 +268,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   public void set(int index, byte[] s) {
     setAndReturn(index, s);
   }
-  
+
   private Object setAndReturn(int index, byte[] s) {
     ensureIsMutable();
     return list.set(index, s);
@@ -283,7 +283,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
       return Internal.toStringUtf8((byte[]) o);
     }
   }
-  
+
   private static ByteString asByteString(Object o) {
     if (o instanceof ByteString) {
       return (ByteString) o;
@@ -293,7 +293,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
       return ByteString.copyFrom((byte[]) o);
     }
   }
-  
+
   private static byte[] asByteArray(Object o) {
     if (o instanceof byte[]) {
       return (byte[]) o;
@@ -327,11 +327,11 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   private static class ByteArrayListView extends AbstractList<byte[]>
       implements RandomAccess {
     private final LazyStringArrayList list;
-    
+
     ByteArrayListView(LazyStringArrayList list) {
       this.list = list;
     }
-    
+
     @Override
     public byte[] get(int index) {
       return list.getByteArray(index);
@@ -362,7 +362,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
       return asByteArray(o);
     }
   }
-  
+
   @Override
   public List<byte[]> asByteArrayList() {
     return new ByteArrayListView(this);

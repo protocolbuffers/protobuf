@@ -35,9 +35,16 @@
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/metadata.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite_inl.h>
+
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -48,13 +55,15 @@ template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 class MapField;
 }
-}
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace internal {
 
-// MapEntry is the returned google::protobuf::Message when calling AddMessage of
-// google::protobuf::Reflection. In order to let it work with generated message
+// MapEntry is the returned proto2::Message when calling AddMessage of
+// proto2::Reflection. In order to let it work with generated message
 // reflection, its in-memory type is the same as generated message with the same
 // fields. However, in order to decide the in-memory type of key/value, we need
 // to know both their cpp type in generated api and proto type. In
@@ -95,9 +104,10 @@ class MapEntry
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
-  typedef typename MapEntryImpl<
-      Derived, Message, Key, Value, kKeyFieldType, kValueFieldType,
-      default_enum_value>::KeyTypeHandler KeyTypeHandler;
+  typedef
+      typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
+                            kValueFieldType, default_enum_value>::KeyTypeHandler
+          KeyTypeHandler;
   typedef typename MapEntryImpl<
       Derived, Message, Key, Value, kKeyFieldType, kValueFieldType,
       default_enum_value>::ValueTypeHandler ValueTypeHandler;
@@ -111,7 +121,7 @@ class MapEntry
   InternalMetadataWithArena _internal_metadata_;
 
  private:
-  friend class ::google::protobuf::Arena;
+  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::Arena;
   template <typename C, typename K, typename V,
             WireFormatLite::FieldType k_wire_type, WireFormatLite::FieldType,
             int default_enum>
@@ -148,6 +158,8 @@ struct DeconstructMapEntry<MapEntry<Derived, K, V, key, value, default_enum> > {
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_MAP_ENTRY_H__

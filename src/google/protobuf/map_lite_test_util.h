@@ -75,6 +75,6 @@ class MapLiteTestUtil {
 };
 
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_MAP_LITE_TEST_UTIL_H__

@@ -45,13 +45,14 @@
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/unittest_mset_wire_format.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-
 #include <google/protobuf/stubs/strutil.h>
+
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -77,11 +78,12 @@ const string kEscapeTestStringEscaped =
 class TextFormatTest : public testing::Test {
  public:
   static void SetUpTestCase() {
-    GOOGLE_CHECK_OK(File::GetContentsAsText(
-        TestSourceDir() +
-            "/google/protobuf/"
-            "testdata/text_format_unittest_data_oneof_implemented.txt",
+    GOOGLE_CHECK_OK(File::GetContents(
+        TestUtil::GetTestDataPath(
+            "net/proto2/internal/"
+            "testdata/text_format_unittest_data_oneof_implemented.txt"),
         &static_proto_debug_string_, true));
+    CleanStringLineEndings(&static_proto_debug_string_, false);
   }
 
   TextFormatTest() : proto_debug_string_(static_proto_debug_string_) {}
@@ -99,10 +101,11 @@ string TextFormatTest::static_proto_debug_string_;
 class TextFormatExtensionsTest : public testing::Test {
  public:
   static void SetUpTestCase() {
-    GOOGLE_CHECK_OK(File::GetContentsAsText(TestSourceDir() +
-                                   "/google/protobuf/testdata/"
-                                   "text_format_unittest_extensions_data.txt",
-                               &static_proto_debug_string_, true));
+    GOOGLE_CHECK_OK(File::GetContents(
+        TestUtil::GetTestDataPath("net/proto2/internal/testdata/"
+                                  "text_format_unittest_extensions_data.txt"),
+        &static_proto_debug_string_, true));
+    CleanStringLineEndings(&static_proto_debug_string_, false);
   }
 
   TextFormatExtensionsTest()
@@ -484,7 +487,8 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
 class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
   virtual string PrintInt32(int32 v) const {
-    return StrCat(FieldValuePrinter::PrintInt32(v), "  # x", strings::Hex(v));
+    return StrCat(FieldValuePrinter::PrintInt32(v), "  # x",
+                        strings::Hex(v));
   }
 
   virtual string PrintMessageStart(const Message& message,
@@ -494,8 +498,8 @@ class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
     if (single_line_mode) {
       return " { ";
     }
-    return StrCat(
-        " {  # ", message.GetDescriptor()->name(), ": ", field_index, "\n");
+    return StrCat(" {  # ", message.GetDescriptor()->name(), ": ",
+                        field_index, "\n");
   }
 };
 
@@ -575,10 +579,10 @@ class CompactRepeatedFieldPrinter : public TextFormat::FastFieldValuePrinter {
     }
   }
   // To prevent compiler complaining about Woverloaded-virtual
-  void PrintFieldName(const Message& message,
-                      const Reflection* reflection,
+  void PrintFieldName(const Message& message, const Reflection* reflection,
                       const FieldDescriptor* field,
-                      TextFormat::BaseTextGenerator* generator) const override {}
+                      TextFormat::BaseTextGenerator* generator) const override {
+  }
   void PrintMessageStart(
       const Message& message, int field_index, int field_count,
       bool single_line_mode,
@@ -996,6 +1000,7 @@ TEST_F(TextFormatTest, PrintExotic) {
 TEST_F(TextFormatTest, PrintFloatPrecision) {
   unittest::TestAllTypes message;
 
+  message.add_repeated_float(1.0);
   message.add_repeated_float(1.2);
   message.add_repeated_float(1.23);
   message.add_repeated_float(1.234);
@@ -1036,6 +1041,7 @@ TEST_F(TextFormatTest, PrintFloatPrecision) {
   message.add_repeated_double(1.23456789876543e100);
 
   EXPECT_EQ(
+    "repeated_float: 1\n"
     "repeated_float: 1.2\n"
     "repeated_float: 1.23\n"
     "repeated_float: 1.234\n"
@@ -1272,7 +1278,8 @@ class TextFormatParserTest : public testing::Test {
     parser.RecordErrorsTo(&error_collector);
     EXPECT_EQ(expected_result, parser.ParseFromString(input, proto))
         << input << " -> " << proto->DebugString();
-    EXPECT_EQ(SimpleItoa(line) + ":" + SimpleItoa(col) + ": " + message + "\n",
+    EXPECT_EQ(SimpleItoa(line) + ":" + SimpleItoa(col) +
+                  ": " + message + "\n",
               error_collector.text_);
   }
 

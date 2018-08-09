@@ -54,11 +54,13 @@ class LIBPROTOBUF_EXPORT ErrorListener {
 
   // Reports an invalid name at the given location.
   virtual void InvalidName(const LocationTrackerInterface& loc,
-                           StringPiece invalid_name, StringPiece message) = 0;
+                           StringPiece invalid_name,
+                           StringPiece message) = 0;
 
   // Reports an invalid value for a field.
   virtual void InvalidValue(const LocationTrackerInterface& loc,
-                            StringPiece type_name, StringPiece value) = 0;
+                            StringPiece type_name,
+                            StringPiece value) = 0;
 
   // Reports a missing required field.
   virtual void MissingField(const LocationTrackerInterface& loc,
@@ -76,15 +78,17 @@ class LIBPROTOBUF_EXPORT ErrorListener {
 class LIBPROTOBUF_EXPORT NoopErrorListener : public ErrorListener {
  public:
   NoopErrorListener() {}
-  virtual ~NoopErrorListener() override {}
+  ~NoopErrorListener() override {}
 
-  virtual void InvalidName(const LocationTrackerInterface& loc,
-                           StringPiece invalid_name, StringPiece message) override {}
+  void InvalidName(const LocationTrackerInterface& loc,
+                   StringPiece invalid_name,
+                   StringPiece message) override {}
 
-  virtual void InvalidValue(const LocationTrackerInterface &loc, StringPiece type_name,
+  void InvalidValue(const LocationTrackerInterface& loc,
+                    StringPiece type_name,
                     StringPiece value) override {}
 
-  virtual void MissingField(const LocationTrackerInterface &loc,
+  void MissingField(const LocationTrackerInterface& loc,
                     StringPiece missing_name) override {}
 
  private:
@@ -95,6 +99,6 @@ class LIBPROTOBUF_EXPORT NoopErrorListener : public ErrorListener {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_ERROR_LISTENER_H__

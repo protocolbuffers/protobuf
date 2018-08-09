@@ -482,7 +482,7 @@ TEST_F(DefaultFieldComparatorTest, RepeatedFieldComparison) {
             comparator_.Compare(message_1_, message_2_, field, 1, 0, NULL));
 }
 
+}  // namespace
 }  // namespace util
 }  // namespace protobuf
-}  // namespace
 }  // namespace google

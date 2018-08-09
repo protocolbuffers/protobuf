@@ -33,7 +33,7 @@
 
 #include <Python.h>
 
-#include <google/protobuf/stubs/hash.h>
+#include <unordered_map>
 #include <google/protobuf/descriptor.h>
 
 namespace google {
@@ -77,7 +77,7 @@ typedef struct PyDescriptorPool {
   // Cache the options for any kind of descriptor.
   // Descriptor pointers are owned by the DescriptorPool above.
   // Python objects are owned by the map.
-  hash_map<const void*, PyObject*>* descriptor_options;
+  std::unordered_map<const void*, PyObject*>* descriptor_options;
 } PyDescriptorPool;
 
 
@@ -140,6 +140,6 @@ bool InitDescriptorPool();
 
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__

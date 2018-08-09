@@ -49,6 +49,8 @@
 #include <google/protobuf/stubs/stl_util.h>
 
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace io {
@@ -191,7 +193,7 @@ void CodedInputStream::PrintTotalBytesLimitError() {
                 "big (more than " << total_bytes_limit_
              << " bytes).  To increase the limit (or to disable these "
                 "warnings), see CodedInputStream::SetTotalBytesLimit() "
-                "in google/protobuf/io/coded_stream.h.";
+                "in net/proto2/io/public/coded_stream.h.";
 }
 
 bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {

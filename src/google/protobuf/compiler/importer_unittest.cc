@@ -34,8 +34,8 @@
 
 #include <google/protobuf/compiler/importer.h>
 
-#include <google/protobuf/stubs/hash.h>
 #include <memory>
+#include <unordered_map>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -112,7 +112,7 @@ class MockSourceTree : public SourceTree {
   }
 
  private:
-  hash_map<string, const char*> files_;
+  std::unordered_map<string, const char*> files_;
 };
 
 // ===================================================================

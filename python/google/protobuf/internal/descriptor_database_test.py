@@ -43,6 +43,7 @@ import warnings
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test2_pb2
+from google.protobuf.internal import no_package_pb2
 from google.protobuf import descriptor_database
 
 
@@ -52,7 +53,10 @@ class DescriptorDatabaseTest(unittest.TestCase):
     db = descriptor_database.DescriptorDatabase()
     file_desc_proto = descriptor_pb2.FileDescriptorProto.FromString(
         factory_test2_pb2.DESCRIPTOR.serialized_pb)
+    file_desc_proto2 = descriptor_pb2.FileDescriptorProto.FromString(
+        no_package_pb2.DESCRIPTOR.serialized_pb)
     db.Add(file_desc_proto)
+    db.Add(file_desc_proto2)
 
     self.assertEqual(file_desc_proto, db.FindFileByName(
         'google/protobuf/internal/factory_test2.proto'))
@@ -76,6 +80,10 @@ class DescriptorDatabaseTest(unittest.TestCase):
     # Can find enum value.
     self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Enum.FACTORY_2_VALUE_0'))
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
+        'google.protobuf.python.internal.FACTORY_2_VALUE_0'))
+    self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
+        '.NO_PACKAGE_VALUE_0'))
     # Can find top level extension.
     self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.another_field'))

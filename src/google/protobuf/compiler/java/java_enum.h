@@ -41,17 +41,19 @@
 
 namespace google {
 namespace protobuf {
-  namespace compiler {
-    namespace java {
-      class Context;           // context.h
-      class ClassNameResolver; // name_resolver.h
-    }
-  }
-  namespace io {
-    class Printer;             // printer.h
+namespace compiler {
+  namespace java {
+    class Context;           // context.h
+    class ClassNameResolver; // name_resolver.h
   }
 }
+namespace io {
+  class Printer;             // printer.h
+}
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
@@ -67,9 +69,9 @@ class EnumGenerator {
  private:
   const EnumDescriptor* descriptor_;
 
-  // The proto language allows multiple enum constants to have the same numeric
-  // value.  Java, however, does not allow multiple enum constants to be
-  // considered equivalent.  We treat the first defined constant for any
+  // The proto language allows multiple enum constants to have the same
+  // numeric value.  Java, however, does not allow multiple enum constants to
+  // be considered equivalent.  We treat the first defined constant for any
   // given numeric value as "canonical" and the rest as aliases of that
   // canonical value.
   std::vector<const EnumValueDescriptor*> canonical_values_;
@@ -93,6 +95,6 @@ class EnumGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_H__

@@ -42,7 +42,8 @@ import java.util.RandomAccess;
  *
  * @author dweis@google.com (Daniel Weis)
  */
-final class BooleanArrayList extends AbstractProtobufList<Boolean>
+final class BooleanArrayList
+    extends AbstractProtobufList<Boolean>
     implements BooleanList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList();

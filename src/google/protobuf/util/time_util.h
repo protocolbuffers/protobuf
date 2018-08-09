@@ -45,6 +45,8 @@
 #include <google/protobuf/duration.pb.h>
 #include <google/protobuf/timestamp.pb.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace util {
@@ -156,8 +158,9 @@ class LIBPROTOBUF_EXPORT TimeUtil {
 
 }  // namespace util
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 // Overloaded operators for Duration.
 //
@@ -238,7 +241,7 @@ inline Duration operator%(const Duration& d1, const Duration& d2) {
 }
 
 inline std::ostream& operator<<(std::ostream& out, const Duration& d) {
-  out << google::protobuf::util::TimeUtil::ToString(d);
+  out << ::GOOGLE_PROTOBUF_NAMESPACE_ID::util::TimeUtil::ToString(d);
   return out;
 }
 
@@ -285,12 +288,13 @@ inline Timestamp operator-(const Timestamp& t, const Duration& d) {
 LIBPROTOBUF_EXPORT Duration operator-(const Timestamp& t1, const Timestamp& t2);
 
 inline std::ostream& operator<<(std::ostream& out, const Timestamp& t) {
-  out << google::protobuf::util::TimeUtil::ToString(t);
+  out << ::GOOGLE_PROTOBUF_NAMESPACE_ID::util::TimeUtil::ToString(t);
   return out;
 }
 
 }  // namespace protobuf
-
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_UTIL_TIME_UTIL_H__

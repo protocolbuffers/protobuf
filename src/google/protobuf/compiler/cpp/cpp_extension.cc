@@ -84,86 +84,88 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
       break;
     default:
       type_traits_.append("PrimitiveTypeTraits< ");
-      type_traits_.append(PrimitiveTypeName(descriptor_->cpp_type()));
+      type_traits_.append(PrimitiveTypeName(options_, descriptor_->cpp_type()));
       type_traits_.append(" >");
       break;
   }
+  SetCommonVars(options, &variables_);
+  variables_["extendee"] = ExtendeeClassName(descriptor_);
+  variables_["type_traits"] = type_traits_;
+  string name = descriptor_->name();
+  variables_["name"] = name;
+  variables_["constant_name"] = FieldConstantName(descriptor_);
+  variables_["field_type"] =
+      SimpleItoa(static_cast<int>(descriptor_->type()));
+  variables_["packed"] = descriptor_->options().packed() ? "true" : "false";
+
+  string scope =
+      IsScoped() ? ClassName(descriptor_->extension_scope(), false) + "::" : "";
+  variables_["scope"] = scope;
+  string scoped_name = scope + name;
+  variables_["scoped_name"] = scoped_name;
+  variables_["number"] = SimpleItoa(descriptor_->number());
 }
 
 ExtensionGenerator::~ExtensionGenerator() {}
 
-void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) {
-  std::map<string, string> vars;
-  vars["extendee"     ] = ExtendeeClassName(descriptor_);
-  vars["number"       ] = SimpleItoa(descriptor_->number());
-  vars["type_traits"  ] = type_traits_;
-  vars["name"         ] = descriptor_->name();
-  vars["field_type"   ] = SimpleItoa(static_cast<int>(descriptor_->type()));
-  vars["packed"       ] = descriptor_->options().packed() ? "true" : "false";
-  vars["constant_name"] = FieldConstantName(descriptor_);
+bool ExtensionGenerator::IsScoped() const {
+  return descriptor_->extension_scope() != nullptr;
+}
+
+void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) const {
+  Formatter format(printer, variables_);
 
   // If this is a class member, it needs to be declared "static".  Otherwise,
   // it needs to be "extern".  In the latter case, it also needs the DLL
   // export/import specifier.
-  if (descriptor_->extension_scope() == NULL) {
-    vars["qualifier"] = "extern";
+  string qualifier;
+  if (!IsScoped()) {
+    qualifier = "extern";
     if (!options_.dllexport_decl.empty()) {
-      vars["qualifier"] = options_.dllexport_decl + " " + vars["qualifier"];
+      qualifier = options_.dllexport_decl + " " + qualifier;
     }
   } else {
-    vars["qualifier"] = "static";
+    qualifier = "static";
   }
 
-  printer->Print(vars,
-    "static const int $constant_name$ = $number$;\n"
-    "$qualifier$ ::google::protobuf::internal::ExtensionIdentifier< $extendee$,\n"
-    "    ::google::protobuf::internal::$type_traits$, $field_type$, $packed$ >\n"
-    "  $name$;\n"
-    );
+  format(
+      "static const int $constant_name$ = $number$;\n"
+      "$1$ ::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
+      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
+      "  $name$;\n",
+      qualifier);
 }
 
 void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
+  Formatter format(printer, variables_);
+  string default_str;
   // If this is a class member, it needs to be declared in its class scope.
-  string scope = (descriptor_->extension_scope() == NULL) ? "" :
-    ClassName(descriptor_->extension_scope(), false) + "::";
-  string name = scope + descriptor_->name();
-
-  std::map<string, string> vars;
-  vars["extendee"     ] = ExtendeeClassName(descriptor_);
-  vars["type_traits"  ] = type_traits_;
-  vars["name"         ] = name;
-  vars["constant_name"] = FieldConstantName(descriptor_);
-  vars["default"      ] = DefaultValue(descriptor_);
-  vars["field_type"   ] = SimpleItoa(static_cast<int>(descriptor_->type()));
-  vars["packed"       ] = descriptor_->options().packed() ? "true" : "false";
-  vars["scope"        ] = scope;
-
   if (descriptor_->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     // We need to declare a global string which will contain the default value.
     // We cannot declare it at class scope because that would require exposing
     // it in the header which would be annoying for other reasons.  So we
     // replace :: with _ in the name and declare it as a global.
-    string global_name = StringReplace(name, "::", "_", true);
-    vars["global_name"] = global_name;
-    printer->Print(vars,
-      "const ::std::string $global_name$_default($default$);\n");
-
-    // Update the default to refer to the string global.
-    vars["default"] = global_name + "_default";
+    default_str =
+        StringReplace(variables_["scoped_name"], "::", "_", true) + "_default";
+    format("const ::std::string $1$($2$);\n", default_str,
+           DefaultValue(options_, descriptor_));
+  } else {
+    default_str = DefaultValue(options_, descriptor_);
   }
 
   // Likewise, class members need to declare the field constant variable.
-  if (descriptor_->extension_scope() != NULL) {
-    printer->Print(vars,
-      "#if !defined(_MSC_VER) || _MSC_VER >= 1900\n"
-      "const int $scope$$constant_name$;\n"
-      "#endif\n");
+  if (IsScoped()) {
+    format(
+        "#if !defined(_MSC_VER) || _MSC_VER >= 1900\n"
+        "const int $scope$$constant_name$;\n"
+        "#endif\n");
   }
 
-  printer->Print(vars,
-    "::google::protobuf::internal::ExtensionIdentifier< $extendee$,\n"
-    "    ::google::protobuf::internal::$type_traits$, $field_type$, $packed$ >\n"
-    "  $name$($constant_name$, $default$);\n");
+  format(
+      "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
+      "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
+      "  $scoped_name$($constant_name$, $1$);\n",
+      default_str);
 }
 
 }  // namespace cpp

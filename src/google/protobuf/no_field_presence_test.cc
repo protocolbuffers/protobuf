@@ -280,19 +280,19 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // behaves properly for message fields.
 
   proto2_nofieldpresence_unittest::TestAllTypes message;
-  const google::protobuf::Reflection* r = message.GetReflection();
-  const google::protobuf::Descriptor* desc = message.GetDescriptor();
+  const Reflection* r = message.GetReflection();
+  const Descriptor* desc = message.GetDescriptor();
 
   // Check initial state: scalars not present (due to need to be consistent with
   // MergeFrom()), message fields not present, oneofs not present.
   for (int i = 0; i < desc->field_count(); i++) {
-    const google::protobuf::FieldDescriptor* field = desc->field(i);
+    const FieldDescriptor* field = desc->field(i);
     if (field->is_repeated()) continue;
     EXPECT_EQ(false, r->HasField(message, field));
   }
 
   // Test field presence of a message field on the default instance.
-  const google::protobuf::FieldDescriptor* msg_field =
+  const FieldDescriptor* msg_field =
       desc->FindFieldByName("optional_nested_message");
   EXPECT_EQ(false, r->HasField(
       proto2_nofieldpresence_unittest::TestAllTypes::
@@ -301,11 +301,11 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // Fill all fields, expect everything to report true (check oneofs below).
   FillValues(&message);
   for (int i = 0; i < desc->field_count(); i++) {
-    const google::protobuf::FieldDescriptor* field = desc->field(i);
+    const FieldDescriptor* field = desc->field(i);
     if (field->is_repeated() || field->containing_oneof()) {
       continue;
     }
-    if (field->options().ctype() != google::protobuf::FieldOptions::STRING) {
+    if (field->options().ctype() != FieldOptions::STRING) {
       continue;
     }
     EXPECT_EQ(true, r->HasField(message, field));
@@ -314,12 +314,11 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   message.Clear();
 
   // Check zero/empty-means-not-present semantics.
-  const google::protobuf::FieldDescriptor* field_int32 = desc->FindFieldByName(
-      "optional_int32");
-  const google::protobuf::FieldDescriptor* field_double = desc->FindFieldByName(
-      "optional_double");
-  const google::protobuf::FieldDescriptor* field_string = desc->FindFieldByName(
-      "optional_string");
+  const FieldDescriptor* field_int32 = desc->FindFieldByName("optional_int32");
+  const FieldDescriptor* field_double =
+      desc->FindFieldByName("optional_double");
+  const FieldDescriptor* field_string =
+      desc->FindFieldByName("optional_string");
 
   EXPECT_EQ(false, r->HasField(message, field_int32));
   EXPECT_EQ(false, r->HasField(message, field_double));
@@ -344,19 +343,18 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
 TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
   proto2_nofieldpresence_unittest::TestAllTypes message;
 
-  const google::protobuf::Reflection* r = message.GetReflection();
-  const google::protobuf::Descriptor* desc = message.GetDescriptor();
+  const Reflection* r = message.GetReflection();
+  const Descriptor* desc = message.GetDescriptor();
 
-  const google::protobuf::FieldDescriptor* field_int32 = desc->FindFieldByName(
-      "optional_int32");
-  const google::protobuf::FieldDescriptor* field_double = desc->FindFieldByName(
-      "optional_double");
-  const google::protobuf::FieldDescriptor* field_string = desc->FindFieldByName(
-      "optional_string");
-  const google::protobuf::FieldDescriptor* field_message = desc->FindFieldByName(
-      "optional_nested_message");
-  const google::protobuf::FieldDescriptor* field_lazy = desc->FindFieldByName(
-      "optional_lazy_message");
+  const FieldDescriptor* field_int32 = desc->FindFieldByName("optional_int32");
+  const FieldDescriptor* field_double =
+      desc->FindFieldByName("optional_double");
+  const FieldDescriptor* field_string =
+      desc->FindFieldByName("optional_string");
+  const FieldDescriptor* field_message =
+      desc->FindFieldByName("optional_nested_message");
+  const FieldDescriptor* field_lazy =
+      desc->FindFieldByName("optional_lazy_message");
 
   message.set_optional_int32(42);
   r->ClearField(&message, field_int32);
@@ -385,17 +383,17 @@ TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
   // check that HasField behaves properly for oneofs.
   proto2_nofieldpresence_unittest::TestAllTypes message;
 
-  const google::protobuf::Reflection* r = message.GetReflection();
-  const google::protobuf::Descriptor* desc = message.GetDescriptor();
-  const google::protobuf::FieldDescriptor* desc_oneof_uint32 =
+  const Reflection* r = message.GetReflection();
+  const Descriptor* desc = message.GetDescriptor();
+  const FieldDescriptor* desc_oneof_uint32 =
       desc->FindFieldByName("oneof_uint32");
-  const google::protobuf::FieldDescriptor* desc_oneof_nested_message =
+  const FieldDescriptor* desc_oneof_nested_message =
       desc->FindFieldByName("oneof_nested_message");
-  const google::protobuf::FieldDescriptor* desc_oneof_string =
+  const FieldDescriptor* desc_oneof_string =
       desc->FindFieldByName("oneof_string");
-  GOOGLE_CHECK_NOTNULL(desc_oneof_uint32);
-  GOOGLE_CHECK_NOTNULL(desc_oneof_nested_message);
-  GOOGLE_CHECK_NOTNULL(desc_oneof_string);
+  GOOGLE_CHECK(desc_oneof_uint32 != nullptr);
+  GOOGLE_CHECK(desc_oneof_nested_message != nullptr);
+  GOOGLE_CHECK(desc_oneof_string != nullptr);
 
   EXPECT_EQ(false, r->HasField(message, desc_oneof_uint32));
   EXPECT_EQ(false, r->HasField(message, desc_oneof_nested_message));
@@ -498,11 +496,10 @@ TEST(NoFieldPresenceTest, LazyMessageFieldHasBit) {
   // Check that has-bit interaction with lazy message works (has-bit before and
   // after lazy decode).
   proto2_nofieldpresence_unittest::TestAllTypes message;
-  const google::protobuf::Reflection* r = message.GetReflection();
-  const google::protobuf::Descriptor* desc = message.GetDescriptor();
-  const google::protobuf::FieldDescriptor* field = desc->FindFieldByName(
-      "optional_lazy_message");
-  GOOGLE_CHECK_NOTNULL(field);
+  const Reflection* r = message.GetReflection();
+  const Descriptor* desc = message.GetDescriptor();
+  const FieldDescriptor* field = desc->FindFieldByName("optional_lazy_message");
+  GOOGLE_CHECK(field != nullptr);
 
   EXPECT_EQ(false, message.has_optional_lazy_message());
   EXPECT_EQ(false, r->HasField(message, field));
@@ -573,5 +570,5 @@ TEST(NoFieldPresenceTest, OneofPresence) {
 
 }  // namespace
 }  // namespace protobuf
-
 }  // namespace google
+

@@ -44,6 +44,8 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/map_field.h>
+#include <google/protobuf/map_field_inl.h>
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format.h>
 
@@ -101,7 +103,7 @@ void ReportReflectionUsageError(
     const char* method, const char* description) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : google::protobuf::Reflection::" << method << "\n"
+       "  Method      : proto2::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : " << description;
@@ -127,7 +129,7 @@ static void ReportReflectionUsageTypeError(
     FieldDescriptor::CppType expected_type) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : google::protobuf::Reflection::" << method << "\n"
+       "  Method      : proto2::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : Field is not the right type for this message:\n"
@@ -140,7 +142,7 @@ static void ReportReflectionUsageEnumTypeError(
     const char* method, const EnumValueDescriptor* value) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : google::protobuf::Reflection::" << method << "\n"
+       "  Method      : proto2::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : Enum value did not match field type:\n"
@@ -200,15 +202,7 @@ GeneratedMessageReflection::~GeneratedMessageReflection() {}
 
 const UnknownFieldSet& GeneratedMessageReflection::GetUnknownFields(
     const Message& message) const {
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
-      !GetProto3PreserveUnknownsDefault()) {
-    // We have to ensure that any mutations made to the return value of
-    // MutableUnknownFields() are not reflected here when Proto3 defaults to
-    // discard unknowns.
-    return *UnknownFieldSet::default_instance();
-  } else {
-    return GetInternalMetadataWithArena(message).unknown_fields();
-  }
+  return GetInternalMetadataWithArena(message).unknown_fields();
 }
 
 UnknownFieldSet* GeneratedMessageReflection::MutableUnknownFields(
@@ -369,15 +363,12 @@ void GeneratedMessageReflection::SwapField(
         break;
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
-          MutableRaw<MapFieldBase>(message1, field)->
-            MutableRepeatedField()->
-              Swap<GenericTypeHandler<google::protobuf::Message> >(
-                MutableRaw<MapFieldBase>(message2, field)->
-                  MutableRepeatedField());
+          MutableRaw<MapFieldBase>(message1, field)->Swap(
+              MutableRaw<MapFieldBase>(message2, field));
         } else {
-          MutableRaw<RepeatedPtrFieldBase>(message1, field)->
-            Swap<GenericTypeHandler<google::protobuf::Message> >(
-              MutableRaw<RepeatedPtrFieldBase>(message2, field));
+          MutableRaw<RepeatedPtrFieldBase>(message1, field)
+              ->Swap<GenericTypeHandler<Message> >(
+                  MutableRaw<RepeatedPtrFieldBase>(message2, field));
         }
         break;
 
@@ -1035,8 +1026,6 @@ void GeneratedMessageReflection::ListFields(
   const uint32* const has_bits =
       schema_.HasHasbits() ? GetHasBits(message) : NULL;
   const uint32* const has_bits_indices = schema_.has_bit_indices_;
-  const uint32* const oneof_case_array =
-      GetConstPointerAtOffset<uint32>(&message, schema_.oneof_case_offset_);
   output->reserve(descriptor_->field_count());
   for (int i = 0; i <= last_non_weak_field_index_; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
@@ -1047,6 +1036,8 @@ void GeneratedMessageReflection::ListFields(
     } else {
       const OneofDescriptor* containing_oneof = field->containing_oneof();
       if (containing_oneof) {
+        const uint32* const oneof_case_array = GetConstPointerAtOffset<uint32>(
+            &message, schema_.oneof_case_offset_);
         // Equivalent to: HasOneofField(message, field)
         if (oneof_case_array[containing_oneof->index()] == field->number()) {
           output->push_back(field);
@@ -1330,11 +1321,8 @@ void GeneratedMessageReflection::SetEnumValue(
     const EnumValueDescriptor* value_desc =
         field->enum_type()->FindValueByNumber(value);
     if (value_desc == NULL) {
-      GOOGLE_LOG(DFATAL) << "SetEnumValue accepts only valid integer values: value "
-                  << value << " unexpected for field " << field->full_name();
-      // In production builds, DFATAL will not terminate the program, so we have
-      // to do something reasonable: just set the default value.
-      value = field->default_value_enum()->number();
+      MutableUnknownFields(message)->AddVarint(field->number(), value);
+      return;
     }
   }
   SetEnumValueInternal(message, field, value);
@@ -1391,12 +1379,8 @@ void GeneratedMessageReflection::SetRepeatedEnumValue(
     const EnumValueDescriptor* value_desc =
         field->enum_type()->FindValueByNumber(value);
     if (value_desc == NULL) {
-      GOOGLE_LOG(DFATAL) << "SetRepeatedEnumValue accepts only valid integer values: "
-                  << "value " << value << " unexpected for field "
-                  << field->full_name();
-      // In production builds, DFATAL will not terminate the program, so we have
-      // to do something reasonable: just set the default value.
-      value = field->default_value_enum()->number();
+      MutableUnknownFields(message)->AddVarint(field->number(), value);
+      return;
     }
   }
   SetRepeatedEnumValueInternal(message, field, index, value);
@@ -1432,11 +1416,8 @@ void GeneratedMessageReflection::AddEnumValue(
     const EnumValueDescriptor* value_desc =
         field->enum_type()->FindValueByNumber(value);
     if (value_desc == NULL) {
-      GOOGLE_LOG(DFATAL) << "AddEnumValue accepts only valid integer values: value "
-                  << value << " unexpected for field " << field->full_name();
-      // In production builds, DFATAL will not terminate the program, so we have
-      // to do something reasonable: just set the default value.
-      value = field->default_value_enum()->number();
+      MutableUnknownFields(message)->AddVarint(field->number(), value);
+      return;
     }
   }
   AddEnumValueInternal(message, field, value);
@@ -2298,7 +2279,7 @@ class AssignDescriptorsHelper {
         descriptor,
         MigrationToReflectionSchema(default_instance_data_, offsets_,
                                     *schemas_),
-        ::google::protobuf::DescriptorPool::generated_pool(), factory_);
+        DescriptorPool::generated_pool(), factory_);
     for (int i = 0; i < descriptor->enum_type_count(); i++) {
       AssignEnumDescriptor(descriptor->enum_type(i));
     }
@@ -2336,8 +2317,9 @@ struct MetadataOwner {
   }
 
   void AddArray(const Metadata* begin, const Metadata* end) {
-    MutexLock lock(&mu_);
+    mu_.Lock();
     metadata_arrays_.push_back(std::make_pair(begin, end));
+    mu_.Unlock();
   }
 
   static MetadataOwner* Instance() {
@@ -2348,28 +2330,30 @@ struct MetadataOwner {
  private:
   MetadataOwner() = default;  // private because singleton
 
-  Mutex mu_;
+  WrappedMutex mu_;
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
-}  // namespace
-
-void AssignDescriptors(
-    const string& filename, const MigrationSchema* schemas,
-    const Message* const* default_instances_, const uint32* offsets,
-    // update the following descriptor arrays.
-    Metadata* file_level_metadata,
-    const EnumDescriptor** file_level_enum_descriptors,
-    const ServiceDescriptor** file_level_service_descriptors) {
-  const ::google::protobuf::FileDescriptor* file =
-      ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(filename);
+void AssignDescriptorsImpl(const AssignDescriptorsTable* table) {
+  // Ensure the file descriptor is added to the pool.
+  {
+    // This only happens once per proto file. So a global mutex to serialize
+    // calls to AddDescriptors.
+    static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
+    mu.Lock();
+    table->add_descriptors();
+    mu.Unlock();
+  }
+  // Fill the arrays with pointers to descriptors and reflection classes.
+  const FileDescriptor* file =
+      DescriptorPool::generated_pool()->FindFileByName(table->filename);
   GOOGLE_CHECK(file != NULL);
 
   MessageFactory* factory = MessageFactory::generated_factory();
 
-  AssignDescriptorsHelper<MigrationSchema> helper(factory, file_level_metadata,
-                                 file_level_enum_descriptors, schemas,
-                                 default_instances_, offsets);
+  AssignDescriptorsHelper<MigrationSchema> helper(
+      factory, table->file_level_metadata, table->file_level_enum_descriptors,
+      table->schemas, table->default_instances, table->offsets);
 
   for (int i = 0; i < file->message_type_count(); i++) {
     helper.AssignMessageDescriptor(file->message_type(i));
@@ -2380,13 +2364,48 @@ void AssignDescriptors(
   }
   if (file->options().cc_generic_services()) {
     for (int i = 0; i < file->service_count(); i++) {
-      file_level_service_descriptors[i] = file->service(i);
+      table->file_level_service_descriptors[i] = file->service(i);
     }
   }
-  MetadataOwner::Instance()->AddArray(
-      file_level_metadata, helper.GetCurrentMetadataPtr());
+  MetadataOwner::Instance()->AddArray(table->file_level_metadata,
+                                      helper.GetCurrentMetadataPtr());
 }
 
+void AddDescriptorsImpl(const DescriptorTable* table, const InitFunc* deps,
+                        int num_deps) {
+  // Ensure default instances of this proto file are initialized.
+  table->init_defaults();
+  // Ensure all dependent descriptors are registered to the generated descriptor
+  // pool and message factory.
+  for (int i = 0; i < num_deps; i++) {
+    // In case of weak fields deps[i] could be null.
+    if (deps[i]) deps[i]();
+  }
+  // Register the descriptor of this file.
+  DescriptorPool::InternalAddGeneratedFile(table->descriptor, table->size);
+  MessageFactory::InternalRegisterGeneratedFile(
+      table->filename, table->assign_descriptors_table);
+}
+
+}  // namespace
+
+void AssignDescriptors(AssignDescriptorsTable* table) {
+  call_once(table->once, AssignDescriptorsImpl, table);
+}
+
+void AddDescriptors(DescriptorTable* table, const InitFunc* deps,
+                    int num_deps) {
+  // AddDescriptors is not thread safe. Callers need to ensure calls are
+  // properly serialized. This function is only called pre-main by global
+  // descriptors and we can assume single threaded access or it's called
+  // by AssignDescriptorImpl which uses a mutex to sequence calls.
+  if (table->is_initialized) return;
+  table->is_initialized = true;
+  AddDescriptorsImpl(table, deps, num_deps);
+}
+
+// Separate function because it needs to be a friend of
+// GeneratedMessageReflection
 void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
   for (int i = 0; i < size; i++) {
     const GeneratedMessageReflection* reflection =
@@ -2394,26 +2413,28 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
            file_level_metadata[i].reflection);
     if (reflection) {
       // It's not a map type
-      ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      MessageFactory::InternalRegisterGeneratedMessage(
           file_level_metadata[i].descriptor,
           reflection->schema_.default_instance_);
     }
   }
 }
 
-void RegisterAllTypes(const Metadata* file_level_metadata, int size) {
-  RegisterAllTypesInternal(file_level_metadata, size);
+void RegisterFileLevelMetadata(void* assign_descriptors_table) {
+  auto table = static_cast<AssignDescriptorsTable*>(assign_descriptors_table);
+  AssignDescriptors(table);
+  RegisterAllTypesInternal(table->file_level_metadata, table->num_messages);
 }
 
 void UnknownFieldSetSerializer(const uint8* base, uint32 offset, uint32 tag,
                                uint32 has_offset,
-                               ::google::protobuf::io::CodedOutputStream* output) {
+                               io::CodedOutputStream* output) {
   const void* ptr = base + offset;
   const InternalMetadataWithArena* metadata =
       static_cast<const InternalMetadataWithArena*>(ptr);
   if (metadata->have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        metadata->unknown_fields(), output);
+    internal::WireFormat::SerializeUnknownFields(metadata->unknown_fields(),
+                                                 output);
   }
 }
 

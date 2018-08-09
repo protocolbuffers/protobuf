@@ -33,7 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // To test the code generator, we actually use it to generate code for
-// google/protobuf/unittest.proto, then test that.  This means that we
+// net/proto2/internal/unittest.proto, then test that.  This means that we
 // are actually testing the parser and other parts of the system at the same
 // time, and that problems in the generator may show up as compile-time errors
 // rather than unittest failures, which may be surprising.  However, testing
@@ -60,7 +60,7 @@
 #define HELPERS_TEST_NAME HelpersTest
 #define DESCRIPTOR_INIT_TEST_NAME DescriptorInitializationTest
 
-#define UNITTEST_PROTO_PATH "google/protobuf/unittest.proto"
+#define UNITTEST_PROTO_PATH "net/proto2/internal/unittest.proto"
 #define UNITTEST ::protobuf_unittest
 #define UNITTEST_IMPORT ::protobuf_unittest_import
 

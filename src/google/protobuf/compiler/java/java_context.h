@@ -51,7 +51,9 @@ namespace protobuf {
     }
   }
 }  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
@@ -106,6 +108,6 @@ class Context {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_CONTEXT_H__

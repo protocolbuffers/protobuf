@@ -39,11 +39,13 @@
 
 namespace google {
 namespace protobuf {
-  namespace io {
-    class Printer;             // printer.h
-  }
+namespace io {
+class Printer;  // printer.h
 }
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
@@ -64,6 +66,6 @@ LIBPROTOC_EXPORT string EscapeJavadoc(const string& input);
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_DOC_COMMENT_H__

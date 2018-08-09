@@ -43,6 +43,7 @@
 #include <google/protobuf/io/coded_stream_inl.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/port_def.inc>
 
 
 namespace google {
@@ -301,8 +302,7 @@ bool WireFormatLite::ReadPackedEnumNoInline(io::CodedInputStream* input,
   io::CodedInputStream::Limit limit = input->PushLimit(length);
   while (input->BytesUntilLimit() > 0) {
     int value;
-    if (!google::protobuf::internal::WireFormatLite::ReadPrimitive<
-        int, WireFormatLite::TYPE_ENUM>(input, &value)) {
+    if (!ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(input, &value)) {
       return false;
     }
     if (is_valid == NULL || is_valid(value)) {
@@ -324,8 +324,7 @@ bool WireFormatLite::ReadPackedEnumPreserveUnknowns(
   io::CodedInputStream::Limit limit = input->PushLimit(length);
   while (input->BytesUntilLimit() > 0) {
     int value;
-    if (!google::protobuf::internal::WireFormatLite::ReadPrimitive<
-        int, WireFormatLite::TYPE_ENUM>(input, &value)) {
+    if (!ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(input, &value)) {
       return false;
     }
     if (is_valid == NULL || is_valid(value)) {
@@ -597,7 +596,7 @@ bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string* value) {
 }
 
 bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string** p) {
-  if (*p == &::google::protobuf::internal::GetEmptyStringAlreadyInited()) {
+  if (*p == &GetEmptyStringAlreadyInited()) {
     *p = new ::std::string();
   }
   return ReadBytesToString(input, *p);

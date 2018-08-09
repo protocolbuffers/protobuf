@@ -37,6 +37,7 @@
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <gtest/gtest.h>
+
 #include <google/protobuf/stubs/status.h>
 
 
@@ -88,8 +89,8 @@ class JsonStreamParserTest : public ::testing::Test {
   JsonStreamParserTest() : mock_(), ow_(&mock_) {}
   virtual ~JsonStreamParserTest() {}
 
-  util::Status RunTest(StringPiece json, int split, bool coerce_utf8 = false,
-                       bool allow_empty_null = false,
+  util::Status RunTest(StringPiece json, int split,
+                       bool coerce_utf8 = false, bool allow_empty_null = false,
                        bool loose_float_number_conversion = false) {
     JsonStreamParser parser(&mock_);
 
@@ -117,6 +118,9 @@ class JsonStreamParserTest : public ::testing::Test {
         result = parser.FinishParse();
       }
     }
+    if (result.ok()){
+      EXPECT_EQ(parser.recursion_depth(), 0);
+    }
     return result;
   }
 
@@ -131,8 +135,9 @@ class JsonStreamParserTest : public ::testing::Test {
     EXPECT_OK(result);
   }
 
-  void DoErrorTest(StringPiece json, int split, StringPiece error_prefix,
-                   bool coerce_utf8 = false, bool allow_empty_null = false) {
+  void DoErrorTest(StringPiece json, int split,
+                   StringPiece error_prefix, bool coerce_utf8 = false,
+                   bool allow_empty_null = false) {
     util::Status result =
         RunTest(json, split, coerce_utf8, allow_empty_null);
     EXPECT_EQ(util::error::INVALID_ARGUMENT, result.error_code());
@@ -836,6 +841,49 @@ TEST_F(JsonStreamParserTest, UnknownCharactersInObject) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected a value.");
   }
+}
+
+TEST_F(JsonStreamParserTest, DeepNestJsonNotExceedLimit) {
+  int count = 99;
+  string str;
+  for (int i = 0; i < count; ++i) {
+    StrAppend(&str, "{'a':");
+  }
+  StrAppend(&str, "{'nest64':'v1', 'nest64': false, 'nest64': ['v2']}");
+  for (int i = 0; i < count; ++i) {
+    StrAppend(&str, "}");
+  }
+  ow_.StartObject("");
+  for (int i = 0; i < count; ++i) {
+    ow_.StartObject("a");
+  }
+  ow_.RenderString("nest64", "v1")
+      ->RenderBool("nest64", false)
+      ->StartList("nest64")
+      ->RenderString("", "v2")
+      ->EndList();
+  for (int i = 0; i < count; ++i) {
+    ow_.EndObject();
+  }
+  ow_.EndObject();
+  DoTest(str, 0);
+}
+
+TEST_F(JsonStreamParserTest, DeepNestJsonExceedLimit) {
+  int count = 98;
+  string str;
+  for (int i = 0; i < count; ++i) {
+    StrAppend(&str, "{'a':");
+  }
+  // Supports trailing commas.
+  StrAppend(&str,
+                  "{'nest11' : [{'nest12' : null,},],"
+                  "'nest21' : {'nest22' : {'nest23' : false}}}");
+  for (int i = 0; i < count; ++i) {
+    StrAppend(&str, "}");
+  }
+  DoErrorTest(str, 0,
+              "Message too deep. Max recursion depth reached for key 'nest22'");
 }
 
 }  // namespace converter

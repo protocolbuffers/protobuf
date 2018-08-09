@@ -30,7 +30,6 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/message_lite.h>  // TODO(gerbens) ideally remove this.
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status.h>

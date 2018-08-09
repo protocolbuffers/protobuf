@@ -161,6 +161,6 @@ class MapReflectionTester {
 };
 
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_MAP_TEST_UTIL_H__

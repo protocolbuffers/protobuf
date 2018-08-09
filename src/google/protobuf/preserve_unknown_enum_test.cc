@@ -119,9 +119,12 @@ TEST(PreserveUnknownEnumTest, PreserveParseAndSerializeDynamicMessage) {
   FillMessage(&orig_message);
   string serialized = orig_message.SerializeAsString();
 
-  google::protobuf::DynamicMessageFactory factory;
-  std::unique_ptr<google::protobuf::Message> message(factory.GetPrototype(
-      proto3_preserve_unknown_enum_unittest::MyMessage::descriptor())->New());
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> message(
+      factory
+          .GetPrototype(
+              proto3_preserve_unknown_enum_unittest::MyMessage::descriptor())
+          ->New());
   EXPECT_EQ(true, message->ParseFromString(serialized));
   message->DiscardUnknownFields();
 
@@ -160,9 +163,12 @@ TEST(PreserveUnknownEnumTest, DynamicProto2HidesUnknownValues) {
   string serialized;
   orig_message.SerializeToString(&serialized);
 
-  google::protobuf::DynamicMessageFactory factory;
-  std::unique_ptr<google::protobuf::Message> message(factory.GetPrototype(
-      proto2_preserve_unknown_enum_unittest::MyMessage::descriptor())->New());
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> message(
+      factory
+          .GetPrototype(
+              proto2_preserve_unknown_enum_unittest::MyMessage::descriptor())
+          ->New());
   EXPECT_EQ(true, message->ParseFromString(serialized));
   // The intermediate message has everything in its "unknown fields".
   proto2_preserve_unknown_enum_unittest::MyMessage message2;
@@ -188,23 +194,21 @@ TEST(PreserveUnknownEnumTest, DynamicEnumValueDescriptors) {
   EXPECT_EQ(true, message.ParseFromString(serialized));
   CheckMessage(message);
 
-  const google::protobuf::Reflection* r = message.GetReflection();
-  const google::protobuf::Descriptor* d = message.GetDescriptor();
-  const google::protobuf::FieldDescriptor* field = d->FindFieldByName("e");
+  const Reflection* r = message.GetReflection();
+  const Descriptor* d = message.GetDescriptor();
+  const FieldDescriptor* field = d->FindFieldByName("e");
 
   // This should dynamically create an EnumValueDescriptor.
-  const google::protobuf::EnumValueDescriptor* enum_value = r->GetEnum(message, field);
+  const EnumValueDescriptor* enum_value = r->GetEnum(message, field);
   EXPECT_EQ(enum_value->number(),
             static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA));
 
   // Fetching value for a second time should return the same pointer.
-  const google::protobuf::EnumValueDescriptor* enum_value_second =
-      r->GetEnum(message, field);
+  const EnumValueDescriptor* enum_value_second = r->GetEnum(message, field);
   EXPECT_EQ(enum_value, enum_value_second);
 
   // Check the repeated case too.
-  const google::protobuf::FieldDescriptor* repeated_field =
-      d->FindFieldByName("repeated_e");
+  const FieldDescriptor* repeated_field = d->FindFieldByName("repeated_e");
   enum_value = r->GetRepeatedEnum(message, repeated_field, 0);
   EXPECT_EQ(enum_value->number(),
             static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA));
@@ -213,7 +217,7 @@ TEST(PreserveUnknownEnumTest, DynamicEnumValueDescriptors) {
 
   // We should be able to use the returned value descriptor to set a value on
   // another message.
-  google::protobuf::Message* m = message.New();
+  Message* m = message.New();
   r->SetEnum(m, field, enum_value);
   EXPECT_EQ(enum_value, r->GetEnum(*m, field));
   delete m;
@@ -222,12 +226,11 @@ TEST(PreserveUnknownEnumTest, DynamicEnumValueDescriptors) {
 // Test that the new integer-based enum reflection API works.
 TEST(PreserveUnknownEnumTest, IntegerEnumReflectionAPI) {
   proto3_preserve_unknown_enum_unittest::MyMessage message;
-  const google::protobuf::Reflection* r = message.GetReflection();
-  const google::protobuf::Descriptor* d = message.GetDescriptor();
+  const Reflection* r = message.GetReflection();
+  const Descriptor* d = message.GetDescriptor();
 
-  const google::protobuf::FieldDescriptor* singular_field = d->FindFieldByName("e");
-  const google::protobuf::FieldDescriptor* repeated_field =
-      d->FindFieldByName("repeated_e");
+  const FieldDescriptor* singular_field = d->FindFieldByName("e");
+  const FieldDescriptor* repeated_field = d->FindFieldByName("repeated_e");
 
   r->SetEnumValue(&message, singular_field, 42);
   EXPECT_EQ(42, r->GetEnumValue(message, singular_field));
@@ -236,51 +239,58 @@ TEST(PreserveUnknownEnumTest, IntegerEnumReflectionAPI) {
   EXPECT_EQ(42, r->GetRepeatedEnumValue(message, repeated_field, 0));
   r->SetRepeatedEnumValue(&message, repeated_field, 1, 84);
   EXPECT_EQ(84, r->GetRepeatedEnumValue(message, repeated_field, 1));
-  const google::protobuf::EnumValueDescriptor* enum_value = r->GetEnum(message,
-                                                             singular_field);
+  const EnumValueDescriptor* enum_value = r->GetEnum(message, singular_field);
   EXPECT_EQ(42, enum_value->number());
 }
 
 // Test that the EnumValue API works properly for proto2 messages as well.
 TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
   protobuf_unittest::TestAllTypes message;  // proto2 message
-  const google::protobuf::Reflection* r = message.GetReflection();
-  const google::protobuf::Descriptor* d = message.GetDescriptor();
-  const google::protobuf::FieldDescriptor* repeated_field =
+  const Reflection* r = message.GetReflection();
+  const Descriptor* d = message.GetDescriptor();
+  const FieldDescriptor* repeated_field =
       d->FindFieldByName("repeated_nested_enum");
   // Add one element to the repeated field so that we can test
   // SetRepeatedEnumValue.
-  const google::protobuf::EnumValueDescriptor* enum_value =
+  const EnumValueDescriptor* enum_value =
       repeated_field->enum_type()->FindValueByName("BAR");
   EXPECT_TRUE(enum_value != NULL);
   r->AddEnum(&message, repeated_field, enum_value);
 
-#ifdef PROTOBUF_HAS_DEATH_TEST
-  const google::protobuf::FieldDescriptor* singular_field =
+  const FieldDescriptor* singular_field =
       d->FindFieldByName("optional_nested_enum");
-  // Enum-field integer-based setters GOOGLE_DCHECK-fail on invalid values, in order to
-  // remain consistent with proto2 generated code.
-  EXPECT_DEBUG_DEATH({
-    r->SetEnumValue(&message, singular_field, 4242);
-    r->GetEnum(message, singular_field)->number();
-  }, "SetEnumValue accepts only valid integer values");
-  EXPECT_DEBUG_DEATH({
-    r->SetRepeatedEnumValue(&message, repeated_field, 0, 4242);
-    r->GetRepeatedEnum(message, repeated_field, 0);
-  }, "SetRepeatedEnumValue accepts only valid integer values");
-  EXPECT_DEBUG_DEATH({
-    r->AddEnumValue(&message, repeated_field, 4242);
-    r->GetRepeatedEnum(message, repeated_field, 1);
-  }, "AddEnumValue accepts only valid integer values");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+  // Enum-field integer-based setters treat as unknown integer values as
+  // unknown fields.
+  r->SetEnumValue(&message, singular_field, 4242);
+  EXPECT_EQ(r->GetEnum(message, singular_field)->number(),
+            protobuf_unittest::TestAllTypes::FOO);
+  r->SetRepeatedEnumValue(&message, repeated_field, 0, 4242);
+  // repeated_nested_enum was set to bar above, this should not have changed.
+  EXPECT_EQ(r->GetRepeatedEnum(message, repeated_field, 0)->number(),
+            protobuf_unittest::TestAllTypes::BAR);
+  r->AddEnumValue(&message, repeated_field, 4242);
+  // No element should be added
+  EXPECT_EQ(message.repeated_nested_enum_size(), 1);
+
+  // We require the enums to end up in unknown field set
+  ASSERT_EQ(message.unknown_fields().field_count(), 3);
+  EXPECT_EQ(message.unknown_fields().field(0).number(),
+            singular_field->number());
+  EXPECT_EQ(message.unknown_fields().field(0).varint(), 4242);
+  EXPECT_EQ(message.unknown_fields().field(1).number(),
+            repeated_field->number());
+  EXPECT_EQ(message.unknown_fields().field(1).varint(), 4242);
+  EXPECT_EQ(message.unknown_fields().field(2).number(),
+            repeated_field->number());
+  EXPECT_EQ(message.unknown_fields().field(2).varint(), 4242);
 }
 
 TEST(PreserveUnknownEnumTest, SupportsUnknownEnumValuesAPI) {
   protobuf_unittest::TestAllTypes proto2_message;
   proto3_preserve_unknown_enum_unittest::MyMessage new_message;
 
-  const google::protobuf::Reflection* proto2_reflection = proto2_message.GetReflection();
-  const google::protobuf::Reflection* new_reflection = new_message.GetReflection();
+  const Reflection* proto2_reflection = proto2_message.GetReflection();
+  const Reflection* new_reflection = new_message.GetReflection();
 
   EXPECT_FALSE(proto2_reflection->SupportsUnknownEnumValues());
   EXPECT_TRUE(new_reflection->SupportsUnknownEnumValues());

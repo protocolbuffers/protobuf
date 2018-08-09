@@ -164,6 +164,8 @@ class LIBPROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   bool FindAllExtensionNumbers(const string& extendee_type,
                                std::vector<int>* output) override;
 
+  bool FindAllFileNames(std::vector<string>* output);
+
  private:
   // So that it can use DescriptorIndex.
   friend class EncodedDescriptorDatabase;
@@ -188,6 +190,7 @@ class LIBPROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
     Value FindExtension(const string& containing_type, int field_number);
     bool FindAllExtensionNumbers(const string& containing_type,
                                  std::vector<int>* output);
+    void FindAllFileNames(std::vector<string>* output);
 
    private:
     std::map<string, Value> by_name_;
@@ -378,6 +381,6 @@ class LIBPROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
 };
 
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_DESCRIPTOR_DATABASE_H__

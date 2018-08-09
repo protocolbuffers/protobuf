@@ -32,7 +32,13 @@
 #define GOOGLE_PROTOBUF_HAS_BITS_H__
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/port.h>
+
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -52,7 +58,7 @@ class HasBits {
   }
 
   const ::google::protobuf::uint32& operator[](int index) const
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
     return has_bits_[index];
   }
 
@@ -100,6 +106,8 @@ inline bool HasBits<doublewords>::empty() const {
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_HAS_BITS_H__

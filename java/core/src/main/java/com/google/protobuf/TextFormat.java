@@ -1444,8 +1444,8 @@ public final class TextFormat {
           logger.warning(msg.toString());
       } else {
         String[] lineColumn = unknownFields.get(0).split(":");
-        throw new ParseException(Integer.valueOf(lineColumn[0]),
-            Integer.valueOf(lineColumn[1]), msg.toString());
+        throw new ParseException(
+            Integer.parseInt(lineColumn[0]), Integer.parseInt(lineColumn[1]), msg.toString());
       }
     }
 

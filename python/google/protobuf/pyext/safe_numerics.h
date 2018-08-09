@@ -159,6 +159,6 @@ inline Dest checked_numeric_cast(Source source) {
 
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_SAFE_NUMERICS_H__

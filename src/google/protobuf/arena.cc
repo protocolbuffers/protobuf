@@ -38,12 +38,12 @@
 #include <sanitizer/asan_interface.h>
 #endif  // ADDRESS_SANITIZER
 
-#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/port_def.inc>
 
-namespace google {
 static const size_t kMinCleanupListElements = 8;
 static const size_t kMaxCleanupListElements = 64;  // 1kB on 64-bit.
 
+namespace google {
 namespace protobuf {
 namespace internal {
 
@@ -187,8 +187,8 @@ void ArenaImpl::AddCleanupFallback(void* elem, void (*cleanup)(void*)) {
   GetSerialArena()->AddCleanup(elem, cleanup);
 }
 
-inline GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
-bool ArenaImpl::GetSerialArenaFast(ArenaImpl::SerialArena** arena) {
+inline GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool
+ArenaImpl::GetSerialArenaFast(ArenaImpl::SerialArena** arena) {
   // If this thread already owns a block in this arena then try to use that.
   // This fast path optimizes the case where multiple threads allocate from the
   // same arena.

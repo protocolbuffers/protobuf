@@ -42,12 +42,12 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/js/well_known_types_embed.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/strutil.h>
 
 
 namespace google {
@@ -220,8 +220,8 @@ string GetNestedMessageName(const Descriptor* descriptor) {
   if (descriptor == NULL) {
     return "";
   }
-  string result =
-      StripPrefixString(descriptor->full_name(), descriptor->file()->package());
+  string result = StripPrefixString(descriptor->full_name(),
+                                             descriptor->file()->package());
   // Add a leading dot if one is not already present.
   if (!result.empty() && result[0] != '.') {
     result = "." + result;
@@ -439,9 +439,10 @@ string GetMessageId(const Descriptor* desc) {
 bool IgnoreExtensionField(const FieldDescriptor* field) {
   // Exclude descriptor extensions from output "to avoid clutter" (from original
   // codegen).
-  return field->is_extension() &&
-         field->containing_type()->file()->name() ==
-             "google/protobuf/descriptor.proto";
+  if (!field->is_extension()) return false;
+  const FileDescriptor* file = field->containing_type()->file();
+  return file->name() == "net/proto2/proto/descriptor.proto" ||
+         file->name() == "google/protobuf/descriptor.proto";
 }
 
 
@@ -453,19 +454,9 @@ bool IgnoreField(const FieldDescriptor* field) {
 }
 
 
-// Used inside Google only -- do not remove.
-bool ShouldTreatMapsAsRepeatedFields(const FileDescriptor& descriptor) {
-  return false;
-}
-
 // Do we ignore this message type?
-bool IgnoreMessage(const GeneratorOptions& options, const Descriptor* d) {
-  return d->options().map_entry() &&
-         !ShouldTreatMapsAsRepeatedFields(*d->file());
-}
-
-bool IsMap(const GeneratorOptions& options, const FieldDescriptor* field) {
-  return field->is_map() && !ShouldTreatMapsAsRepeatedFields(*field->file());
+bool IgnoreMessage(const Descriptor* d) {
+  return d->options().map_entry();
 }
 
 // Does JSPB ignore this entire oneof? True only if all fields are ignored.
@@ -490,7 +481,7 @@ string JSIdent(const GeneratorOptions& options, const FieldDescriptor* field,
         ToUpperCamel(ParseLowerUnderscore(field->name())) :
         ToLowerCamel(ParseLowerUnderscore(field->name()));
   }
-  if (is_map || IsMap(options, field)) {
+  if (is_map || field->is_map()) {
     // JSPB-style or proto3-style map.
     result += "Map";
   } else if (!drop_list && field->is_repeated()) {
@@ -569,7 +560,8 @@ string JSFieldIndex(const FieldDescriptor* field) {
     for (int i = 0; i < parent_type->field_count(); i++) {
       if (parent_type->field(i)->type() == FieldDescriptor::TYPE_GROUP &&
           parent_type->field(i)->message_type() == containing_type) {
-        return SimpleItoa(field->number() - parent_type->field(i)->number());
+        return SimpleItoa(field->number() -
+                                   parent_type->field(i)->number());
       }
     }
   }
@@ -781,7 +773,7 @@ bool IsIntegralFieldWithStringJSType(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_UINT64:
       // The default value of JSType is JS_NORMAL, which behaves the same as
       // JS_NUMBER.
-      return field->options().jstype() == google::protobuf::FieldOptions::JS_STRING;
+      return field->options().jstype() == FieldOptions::JS_STRING;
     default:
       return false;
   }
@@ -804,15 +796,15 @@ string JSFieldDefault(const FieldDescriptor* field) {
       // The original codegen is in Java, and Java protobufs store unsigned
       // integer values as signed integer values. In order to exactly match the
       // output, we need to reinterpret as base-2 signed. Ugh.
-      return MaybeNumberString(
-          field, SimpleItoa(static_cast<int32>(field->default_value_uint32())));
+      return MaybeNumberString(field, SimpleItoa(static_cast<int32>(
+                                          field->default_value_uint32())));
     case FieldDescriptor::CPPTYPE_INT64:
       return MaybeNumberString(
           field, SimpleItoa(field->default_value_int64()));
     case FieldDescriptor::CPPTYPE_UINT64:
       // See above note for uint32 -- reinterpreting as signed.
-      return MaybeNumberString(
-          field, SimpleItoa(static_cast<int64>(field->default_value_uint64())));
+      return MaybeNumberString(field, SimpleItoa(static_cast<int64>(
+                                          field->default_value_uint64())));
     case FieldDescriptor::CPPTYPE_ENUM:
       return SimpleItoa(field->default_value_enum()->number());
     case FieldDescriptor::CPPTYPE_BOOL:
@@ -1014,11 +1006,11 @@ string JSFieldTypeAnnotation(const GeneratorOptions& options,
                              bool is_setter_argument,
                              bool force_present,
                              bool singular_if_not_packed,
-                             BytesMode bytes_mode = BYTES_DEFAULT) {
-  GOOGLE_CHECK(!(is_setter_argument && force_present));
+                             BytesMode bytes_mode = BYTES_DEFAULT,
+                             bool force_singular = false) {
   string jstype = JSTypeName(options, field, bytes_mode);
 
-  if (field->is_repeated() &&
+  if (!force_singular && field->is_repeated() &&
       (field->is_packed() || !singular_if_not_packed)) {
     if (field->type() == FieldDescriptor::TYPE_BYTES &&
         bytes_mode == BYTES_DEFAULT) {
@@ -1136,7 +1128,7 @@ string JSReturnDoc(const GeneratorOptions& options,
 bool HasRepeatedFields(const GeneratorOptions& options,
                        const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (desc->field(i)->is_repeated() && !IsMap(options, desc->field(i))) {
+    if (desc->field(i)->is_repeated() && !desc->field(i)->is_map()) {
       return true;
     }
   }
@@ -1174,7 +1166,7 @@ string RepeatedFieldNumberList(const GeneratorOptions& options,
                                const Descriptor* desc) {
   std::vector<string> numbers;
   for (int i = 0; i < desc->field_count(); i++) {
-    if (desc->field(i)->is_repeated() && !IsMap(options, desc->field(i))) {
+    if (desc->field(i)->is_repeated() && !desc->field(i)->is_map()) {
       numbers.push_back(JSFieldIndex(desc->field(i)));
     }
   }
@@ -1260,7 +1252,7 @@ const FieldDescriptor* MapFieldValue(const FieldDescriptor* field) {
 
 string FieldDefinition(const GeneratorOptions& options,
                        const FieldDescriptor* field) {
-  if (IsMap(options, field)) {
+  if (field->is_map()) {
     const FieldDescriptor* key_field = MapFieldKey(field);
     const FieldDescriptor* value_field = MapFieldValue(field);
     string key_type = ProtoTypeName(options, key_field);
@@ -1352,7 +1344,7 @@ bool HasExtensions(const FileDescriptor* file) {
 
 bool HasMap(const GeneratorOptions& options, const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (IsMap(options, desc->field(i))) {
+    if (desc->field(i)->is_map()) {
       return true;
     }
   }
@@ -1618,7 +1610,7 @@ void Generator::FindProvidesForMessage(
     io::Printer* printer,
     const Descriptor* desc,
     std::set<string>* provided) const {
-  if (IgnoreMessage(options, desc)) {
+  if (IgnoreMessage(desc)) {
     return;
   }
 
@@ -1681,13 +1673,13 @@ void Generator::GenerateProvides(const GeneratorOptions& options,
       if (options.import_style == GeneratorOptions::kImportCommonJsStrict) {
         string namespaceObject = *it;
         // Remove "proto." from the namespace object
-        GOOGLE_CHECK(namespaceObject.compare(0, 6, "proto.") == 0);
+        GOOGLE_CHECK_EQ(0, namespaceObject.compare(0, 6, "proto."));
         namespaceObject.erase(0, 6);
         printer->Print("goog.exportSymbol('$name$', null, proto);\n", "name",
-                namespaceObject);
+                       namespaceObject);
       } else {
         printer->Print("goog.exportSymbol('$name$', null, global);\n", "name",
-                *it);
+                       *it);
       }
     }
   }
@@ -1724,7 +1716,7 @@ void Generator::GenerateRequiresForLibrary(
   for (int i = 0; i < files.size(); i++) {
     for (int j = 0; j < files[i]->message_type_count(); j++) {
       const Descriptor* desc = files[i]->message_type(j);
-      if (!IgnoreMessage(options, desc)) {
+      if (!IgnoreMessage(desc)) {
         FindRequiresForMessage(options, desc, &required, &forwards,
                                &have_message);
       }
@@ -1869,7 +1861,7 @@ void Generator::FindRequiresForField(const GeneratorOptions& options,
         forwards->insert(GetEnumPath(options, field->enum_type()));
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      if (!IgnoreMessage(options, field->message_type())) {
+      if (!IgnoreMessage(field->message_type())) {
         required->insert(GetMessagePath(options, field->message_type()));
       }
     }
@@ -1907,7 +1899,7 @@ void Generator::GenerateClassesAndEnums(const GeneratorOptions& options,
 void Generator::GenerateClass(const GeneratorOptions& options,
                               io::Printer* printer,
                               const Descriptor* desc) const {
-  if (IgnoreMessage(options, desc)) {
+  if (IgnoreMessage(desc)) {
     return;
   }
 
@@ -2229,7 +2221,7 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
   printer->Print("$fieldname$: ",
                  "fieldname", JSObjectFieldName(options, field));
 
-  if (IsMap(options, field)) {
+  if (field->is_map()) {
     const FieldDescriptor* value_field = MapFieldValue(field);
     // If the map values are of a message type, we must provide their static
     // toObject() method; otherwise we pass undefined for that argument.
@@ -2297,7 +2289,7 @@ void Generator::GenerateClassFromObject(const GeneratorOptions& options,
       " * @return {!$classname$}\n"
       " */\n"
       "$classname$.fromObject = function(obj) {\n"
-      "  var f, msg = new $classname$();\n",
+      "  var msg = new $classname$();\n",
       "classname", GetMessagePath(options, desc));
 
   for (int i = 0; i < desc->field_count(); i++) {
@@ -2315,7 +2307,7 @@ void Generator::GenerateClassFieldFromObject(
     const GeneratorOptions& options,
     io::Printer* printer,
     const FieldDescriptor* field) const {
-  if (IsMap(options, field)) {
+  if (field->is_map()) {
     const FieldDescriptor* value_field = MapFieldValue(field);
     if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
       // Since the map values are of message type, we have to do some extra work
@@ -2427,7 +2419,7 @@ void GenerateBytesWrapper(const GeneratorOptions& options,
 void Generator::GenerateClassField(const GeneratorOptions& options,
                                    io::Printer* printer,
                                    const FieldDescriptor* field) const {
-  if (IsMap(options, field)) {
+  if (field->is_map()) {
     const FieldDescriptor* key_field = MapFieldKey(field);
     const FieldDescriptor* value_field = MapFieldValue(field);
     // Map field: special handling to instantiate the map object on demand.
@@ -2707,7 +2699,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
 
   // Generate clearFoo() method for map fields, repeated fields, and other
   // fields with presence.
-  if (IsMap(options, field)) {
+  if (field->is_map()) {
     printer->Print(
         "$class$.prototype.$clearername$ = function() {\n"
         "  this.$gettername$().clear();$returnvalue$\n"
@@ -2762,7 +2754,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
     printer->Print(
         "/**\n"
         " * Returns whether this field is set.\n"
-        " * @return {!boolean}\n"
+        " * @return {boolean}\n"
         " */\n"
         "$class$.prototype.$hasername$ = function() {\n"
         "  return jspb.Message.getField(this, $index$) != null;\n"
@@ -2782,7 +2774,7 @@ void Generator::GenerateRepeatedPrimitiveHelperMethods(
   // clang-format off
   printer->Print(
       "/**\n"
-      " * @param {!$optionaltype$} value\n"
+      " * @param {$optionaltype$} value\n"
       " * @param {number=} opt_index$returndoc$\n"
       " */\n"
       "$class$.prototype.$addername$ = function(value, opt_index) {\n"
@@ -2790,7 +2782,14 @@ void Generator::GenerateRepeatedPrimitiveHelperMethods(
       "class", GetMessagePath(options, field->containing_type()), "addername",
       "add" + JSGetterName(options, field, BYTES_DEFAULT,
                            /* drop_list = */ true),
-      "optionaltype", JSTypeName(options, field, BYTES_DEFAULT),
+      "optionaltype",
+          JSFieldTypeAnnotation(
+                                options, field,
+                                /* is_setter_argument = */ false,
+                                /* force_present = */ true,
+                                /* singular_if_not_packed = */ false,
+                                BYTES_DEFAULT,
+                                /* force_singular = */ true),
       "index", JSFieldIndex(field),
       "returndoc", JSReturnDoc(options, field));
   printer->Annotate("addername", field);
@@ -2954,11 +2953,10 @@ void Generator::GenerateClassDeserializeBinaryField(
     const GeneratorOptions& options,
     io::Printer* printer,
     const FieldDescriptor* field) const {
+  printer->Print("    case $num$:\n", "num",
+                 SimpleItoa(field->number()));
 
-  printer->Print("    case $num$:\n",
-                 "num", SimpleItoa(field->number()));
-
-  if (IsMap(options, field)) {
+  if (field->is_map()) {
     const FieldDescriptor* key_field = MapFieldKey(field);
     const FieldDescriptor* value_field = MapFieldValue(field);
     printer->Print(
@@ -2988,11 +2986,12 @@ void Generator::GenerateClassDeserializeBinaryField(
           "      var value = new $fieldclass$;\n"
           "      reader.read$msgOrGroup$($grpfield$value,"
           "$fieldclass$.deserializeBinaryFromReader);\n",
-        "fieldclass", SubmessageTypeRef(options, field),
-          "msgOrGroup", (field->type() == FieldDescriptor::TYPE_GROUP) ?
-                        "Group" : "Message",
-          "grpfield", (field->type() == FieldDescriptor::TYPE_GROUP) ?
-                      (SimpleItoa(field->number()) + ", ") : "");
+          "fieldclass", SubmessageTypeRef(options, field), "msgOrGroup",
+          (field->type() == FieldDescriptor::TYPE_GROUP) ? "Group" : "Message",
+          "grpfield",
+          (field->type() == FieldDescriptor::TYPE_GROUP)
+              ? (SimpleItoa(field->number()) + ", ")
+              : "");
     } else {
       printer->Print(
           "      var value = /** @type {$fieldtype$} */ "
@@ -3090,12 +3089,12 @@ void Generator::GenerateClassSerializeBinaryField(
         "  f = message.get$name$($nolazy$);\n",
         "name", JSGetterName(options, field, BYTES_U8),
         // No lazy creation for maps containers -- fastpath the empty case.
-        "nolazy", IsMap(options, field) ? "true" : "");
+        "nolazy", field->is_map() ? "true" : "");
   }
 
   // Print an `if (condition)` statement that evaluates to true if the field
   // goes on the wire.
-  if (IsMap(options, field)) {
+  if (field->is_map()) {
     printer->Print(
         "  if (f && f.getLength() > 0) {\n");
   } else if (field->is_repeated()) {
@@ -3148,15 +3147,15 @@ void Generator::GenerateClassSerializeBinaryField(
   }
 
   // Write the field on the wire.
-  if (IsMap(options, field)) {
+  if (field->is_map()) {
     const FieldDescriptor* key_field = MapFieldKey(field);
     const FieldDescriptor* value_field = MapFieldValue(field);
     printer->Print(
         "    f.serializeBinary($index$, writer, "
-                              "$keyWriterFn$, $valueWriterFn$",
-        "index", SimpleItoa(field->number()),
-        "keyWriterFn", JSBinaryWriterMethodName(options, key_field),
-        "valueWriterFn", JSBinaryWriterMethodName(options, value_field));
+        "$keyWriterFn$, $valueWriterFn$",
+        "index", SimpleItoa(field->number()), "keyWriterFn",
+        JSBinaryWriterMethodName(options, key_field), "valueWriterFn",
+        JSBinaryWriterMethodName(options, value_field));
 
     if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
       printer->Print(", $messageType$.serializeBinaryToWriter",
@@ -3173,7 +3172,7 @@ void Generator::GenerateClassSerializeBinaryField(
         "index", SimpleItoa(field->number()));
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !IsMap(options, field)) {
+        !field->is_map()) {
       printer->Print(
           ",\n"
           "      $submsg$.serializeBinaryToWriter\n",
@@ -3205,11 +3204,10 @@ void Generator::GenerateEnum(const GeneratorOptions& options,
 
   for (int i = 0; i < enumdesc->value_count(); i++) {
     const EnumValueDescriptor* value = enumdesc->value(i);
-    printer->Print(
-        "  $name$: $value$$comma$\n",
-        "name", ToEnumCase(value->name()),
-        "value", SimpleItoa(value->number()),
-        "comma", (i == enumdesc->value_count() - 1) ? "" : ",");
+    printer->Print("  $name$: $value$$comma$\n", "name",
+                   ToEnumCase(value->name()), "value",
+                   SimpleItoa(value->number()), "comma",
+                   (i == enumdesc->value_count() - 1) ? "" : ",");
     printer->Annotate("name", value);
   }
 
@@ -3252,13 +3250,15 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "!Object} */ (\n"
       "         $toObject$),\n"
       "    $repeated$);\n",
-      "index", SimpleItoa(field->number()),
-      "name", extension_object_name,
-      "ctor", (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ?
-               SubmessageTypeRef(options, field) : string("null")),
-      "toObject", (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ?
-                   (SubmessageTypeRef(options, field) + ".toObject") :
-                   string("null")),
+      "index", SimpleItoa(field->number()), "name",
+      extension_object_name, "ctor",
+      (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
+           ? SubmessageTypeRef(options, field)
+           : string("null")),
+      "toObject",
+      (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
+           ? (SubmessageTypeRef(options, field) + ".toObject")
+           : string("null")),
       "repeated", (field->is_repeated() ? "1" : "0"));
 
   printer->Print(
@@ -3271,8 +3271,8 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "    $binaryMessageDeserializeFn$,\n",
       "extendName",
       JSExtensionsObjectName(options, field->file(), field->containing_type()),
-      "index", SimpleItoa(field->number()), "class", extension_scope, "name",
-      extension_object_name, "binaryReaderFn",
+      "index", SimpleItoa(field->number()), "class", extension_scope,
+      "name", extension_object_name, "binaryReaderFn",
       JSBinaryReaderMethodName(options, field), "binaryWriterFn",
       JSBinaryWriterMethodName(options, field), "binaryMessageSerializeFn",
       (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE)
@@ -3291,10 +3291,9 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "// toObject() will function correctly.\n"
       "$extendName$[$index$] = $class$.$name$;\n"
       "\n",
-      "extendName", JSExtensionsObjectName(options, field->file(),
-                                           field->containing_type()),
-      "index", SimpleItoa(field->number()),
-      "class", extension_scope,
+      "extendName",
+      JSExtensionsObjectName(options, field->file(), field->containing_type()),
+      "index", SimpleItoa(field->number()), "class", extension_scope,
       "name", extension_object_name);
 }
 
@@ -3465,8 +3464,7 @@ void Generator::GenerateFile(const GeneratorOptions& options,
       printer->Print(
           "var $alias$ = require('$file$');\n"
           "goog.object.extend(proto, $alias$);\n",
-          "alias", ModuleAlias(name),
-          "file",
+          "alias", ModuleAlias(name), "file",
           GetRootPath(file->name(), name) + GetJSFilename(options, name));
     }
   }
@@ -3504,12 +3502,13 @@ void Generator::GenerateFile(const GeneratorOptions& options,
   }
 
   // if provided is empty, do not export anything
-  if (options.import_style == GeneratorOptions::kImportCommonJs && !provided.empty()) {
+  if (options.import_style == GeneratorOptions::kImportCommonJs &&
+      !provided.empty()) {
     printer->Print("goog.object.extend(exports, $package$);\n",
                    "package", GetFilePath(options, file));
-  } else if(options.import_style == GeneratorOptions::kImportCommonJsStrict) {
-    printer->Print("goog.object.extend(exports, proto);\n",
-                   "package", GetFilePath(options, file));
+  } else if (options.import_style == GeneratorOptions::kImportCommonJsStrict) {
+    printer->Print("goog.object.extend(exports, proto);\n", "package",
+                   GetFilePath(options, file));
   }
 
   // Emit well-known type methods.
@@ -3667,7 +3666,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     // Generate one output file per input (.proto) file.
 
     for (int i = 0; i < files.size(); i++) {
-      const google::protobuf::FileDescriptor* file = files[i];
+      const FileDescriptor* file = files[i];
 
       string filename =
           options.output_dir + "/" + GetJSFilename(options, file->name());

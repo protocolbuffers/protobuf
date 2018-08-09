@@ -59,6 +59,6 @@ class ObjectLocationTracker : public LocationTrackerInterface {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_OBJECT_LOCATION_TRACKER_H__

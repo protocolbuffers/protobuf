@@ -38,6 +38,7 @@
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/util/internal/testdata/maps.pb.h>
+#include <google/protobuf/util/json_format.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
@@ -49,12 +50,12 @@ namespace util {
 namespace {
 
 using google::protobuf::testing::MapIn;
-using proto3::FOO;
 using proto3::BAR;
-using proto3::TestMessage;
-using proto3::TestMap;
-using proto3::TestOneof;
+using proto3::FOO;
 using proto3::TestEnumValue;
+using proto3::TestMap;
+using proto3::TestMessage;
+using proto3::TestOneof;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -220,7 +221,7 @@ TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
 
 TEST_F(JsonUtilTest, TestPrintEnumsAsIntsWithDefaultValue) {
   TestEnumValue orig;
-  //orig.set_enum_value1(proto3::FOO)
+  // orig.set_enum_value1(proto3::FOO)
   orig.set_enum_value2(proto3::FOO);
   orig.set_enum_value3(proto3::BAR);
 
@@ -238,7 +239,6 @@ TEST_F(JsonUtilTest, TestPrintEnumsAsIntsWithDefaultValue) {
   EXPECT_EQ(proto3::FOO, parsed.enum_value1());
   EXPECT_EQ(proto3::FOO, parsed.enum_value2());
   EXPECT_EQ(proto3::BAR, parsed.enum_value3());
-
 }
 
 TEST_F(JsonUtilTest, ParseMessage) {
@@ -357,30 +357,44 @@ TEST_F(JsonUtilTest, TestDynamicMessage) {
   EXPECT_EQ(ToJson(generated, options), ToJson(*message, options));
 }
 
-TEST_F(JsonUtilTest, TestParsingUnknownEnumsAs0) {
+TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto2) {
+  string input =
+      "{\n"
+      "  \"a\": \"UNKNOWN_VALUE\"\n"
+      "}";
+  TestNumbers m;
+  JsonParseOptions options;
+  EXPECT_FALSE(FromJson(input, &m, options));
+
+  options.ignore_unknown_fields = true;
+  EXPECT_TRUE(FromJson(input, &m, options));
+  EXPECT_FALSE(m.has_a());
+}
+
+TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto3) {
   TestMessage m;
   {
     JsonParseOptions options;
     ASSERT_FALSE(options.ignore_unknown_fields);
     string input =
-      "{\n"
-      "  \"enum_value\":\"UNKNOWN_VALUE\"\n"
-      "}";
+        "{\n"
+        "  \"enum_value\":\"UNKNOWN_VALUE\"\n"
+        "}";
     m.set_enum_value(proto3::BAR);
     EXPECT_FALSE(FromJson(input, &m, options));
-    ASSERT_EQ(proto3::BAR, m.enum_value()); // Keep previous value
+    ASSERT_EQ(proto3::BAR, m.enum_value());  // Keep previous value
 
     options.ignore_unknown_fields = true;
     EXPECT_TRUE(FromJson(input, &m, options));
-    EXPECT_EQ(0, m.enum_value()); // Unknown enum value must be decoded as 0
+    EXPECT_EQ(0, m.enum_value());  // Unknown enum value must be decoded as 0
   }
   // Integer values are read as usual
   {
     JsonParseOptions options;
     string input =
-      "{\n"
-      "  \"enum_value\":12345\n"
-      "}";
+        "{\n"
+        "  \"enum_value\":12345\n"
+        "}";
     m.set_enum_value(proto3::BAR);
     EXPECT_TRUE(FromJson(input, &m, options));
     ASSERT_EQ(12345, m.enum_value());
@@ -390,25 +404,27 @@ TEST_F(JsonUtilTest, TestParsingUnknownEnumsAs0) {
     EXPECT_EQ(12345, m.enum_value());
   }
 
-  // Trying to pass an object as an enum field value is always treated as an error
+  // Trying to pass an object as an enum field value is always treated as an
+  // error
   {
     JsonParseOptions options;
     string input =
-      "{\n"
-      "  \"enum_value\":{}\n"
-      "}";
+        "{\n"
+        "  \"enum_value\":{}\n"
+        "}";
     options.ignore_unknown_fields = true;
     EXPECT_FALSE(FromJson(input, &m, options));
     options.ignore_unknown_fields = false;
     EXPECT_FALSE(FromJson(input, &m, options));
   }
-  // Trying to pass an array as an enum field value is always treated as an error
+  // Trying to pass an array as an enum field value is always treated as an
+  // error
   {
     JsonParseOptions options;
     string input =
-      "{\n"
-      "  \"enum_value\":[]\n"
-      "}";
+        "{\n"
+        "  \"enum_value\":[]\n"
+        "}";
     EXPECT_FALSE(FromJson(input, &m, options));
     options.ignore_unknown_fields = true;
     EXPECT_FALSE(FromJson(input, &m, options));
@@ -557,6 +573,13 @@ TEST_F(JsonUtilTest, TestWrongJsonInput) {
   EXPECT_FALSE(result_status.ok());
   EXPECT_EQ(result_status.error_code(),
             util::error::INVALID_ARGUMENT);
+}
+
+TEST_F(JsonUtilTest, HtmlEscape) {
+  TestMessage m;
+  m.set_string_value("</script>");
+  JsonPrintOptions options;
+  EXPECT_EQ("{\"stringValue\":\"\\u003c/script\\u003e\"}", ToJson(m, options));
 }
 
 }  // namespace

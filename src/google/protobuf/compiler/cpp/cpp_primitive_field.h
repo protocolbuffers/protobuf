@@ -64,10 +64,6 @@ class PrimitiveFieldGenerator : public FieldGenerator {
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
 
- protected:
-  const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
-
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
 };
@@ -111,15 +107,12 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
   void GenerateByteSize(io::Printer* printer) const;
 
  private:
-  const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
-
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPrimitiveFieldGenerator);
 };
 
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_PRIMITIVE_FIELD_H__

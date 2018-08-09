@@ -142,10 +142,8 @@ class MessageFactoryTest(unittest.TestCase):
       self.assertEqual('test2', msg1.Extensions[ext2])
       self.assertEqual(None,
                        msg1.Extensions._FindExtensionByNumber(12321))
+      self.assertRaises(TypeError, len, msg1.Extensions)
       if api_implementation.Type() == 'cpp':
-        # TODO(jieluo): Fix len to return the correct value.
-        # self.assertEqual(2, len(msg1.Extensions))
-        self.assertEqual(len(msg1.Extensions), len(msg1.Extensions))
         self.assertRaises(TypeError,
                           msg1.Extensions._FindExtensionByName, 0)
         self.assertRaises(TypeError,
