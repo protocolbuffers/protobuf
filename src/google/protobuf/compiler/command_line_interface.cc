@@ -168,7 +168,12 @@ bool VerifyDirectoryExists(const string& path) {
 // directories listed in |filename|.
 bool TryCreateParentDirectory(const string& prefix, const string& filename) {
   // Recursively create parent directories to the output file.
+#if defined(_WIN32)
+  // on Windows, both '/' and '\' are valid path separators
+  std::vector<string> parts = Split(filename, "/\\", true);
+#else
   std::vector<string> parts = Split(filename, "/", true);
+#endif
   string path_so_far = prefix;
   for (int i = 0; i < parts.size() - 1; i++) {
     path_so_far += parts[i];
