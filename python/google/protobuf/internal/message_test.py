@@ -1766,12 +1766,6 @@ class Proto3Test(BaseTestCase):
     msg.map_int32_foreign_message[19].c = 128
     self.assertEqual(msg.ByteSize(), size + 1)
 
-  def testMapFieldConstruction(self):
-    msg1 = map_unittest_pb2.TestMap()
-    msg1.map_string_foreign_message['test'].c = 42
-    msg2 = map_unittest_pb2.TestMap(map_string_foreign_message=msg1.map_string_foreign_message)
-    self.assertEqual(42, msg2.map_string_foreign_message['test'].c)
-
   def testMergeFrom(self):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_int32[12] = 34
@@ -2122,6 +2116,19 @@ class Proto3Test(BaseTestCase):
     msg = map_unittest_pb2.TestMap(
         map_int32_foreign_message={3: unittest_pb2.ForeignMessage(c=5)})
     self.assertEqual(5, msg.map_int32_foreign_message[3].c)
+
+  def testMapScalarFieldConstruction(self):
+    msg1 = map_unittest_pb2.TestMap()
+    msg1.map_int32_int32[1] = 42
+    msg2 = map_unittest_pb2.TestMap(map_int32_int32=msg1.map_int32_int32)
+    self.assertEqual(42, msg2.map_int32_int32[1])
+
+  def testMapMessageFieldConstruction(self):
+    msg1 = map_unittest_pb2.TestMap()
+    msg1.map_string_foreign_message['test'].c = 42
+    msg2 = map_unittest_pb2.TestMap(
+      map_string_foreign_message=msg1.map_string_foreign_message)
+    self.assertEqual(42, msg2.map_string_foreign_message['test'].c)
 
   def testMapValidAfterFieldCleared(self):
     # Map needs to work even if field is cleared.
