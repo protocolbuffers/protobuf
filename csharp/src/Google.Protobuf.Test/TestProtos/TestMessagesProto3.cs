@@ -233,7 +233,7 @@ namespace ProtobufTestMessages.Proto3 {
   /// could trigger bugs that occur in any message type in this file.  We verify
   /// this stays true in a unit test.
   /// </summary>
-  public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3>, pb::IMessage2 {
+  public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3> {
     private static readonly pb::MessageParser<TestAllTypesProto3> _parser = new pb::MessageParser<TestAllTypesProto3>(() => new TestAllTypesProto3());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3424,118 +3424,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!repeatedNestedMessage_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedForeignMessage_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Int32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt64Int64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapUint32Uint32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapUint64Uint64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSint32Sint32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSint64Sint64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapFixed32Fixed32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapFixed64Fixed64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSfixed32Sfixed32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSfixed64Sfixed64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Float_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Double_.IsInitialized()) {
-        return false;
-      }
-      if (!mapBoolBool_.IsInitialized()) {
-        return false;
-      }
-      if (!mapStringString_.IsInitialized()) {
-        return false;
-      }
-      if (!mapStringBytes_.IsInitialized()) {
-        return false;
-      }
-      if (!mapStringNestedMessage_.IsInitialized()) {
-        return false;
-      }
-      if (!mapStringForeignMessage_.IsInitialized()) {
-        return false;
-      }
-      if (!mapStringNestedEnum_.IsInitialized()) {
-        return false;
-      }
-      if (!mapStringForeignEnum_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedBoolWrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedInt32Wrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedInt64Wrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedUint32Wrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedUint64Wrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedFloatWrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedDoubleWrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedStringWrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedBytesWrapper_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedDuration_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedTimestamp_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedFieldmask_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedAny_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedValue_.IsInitialized()) {
-        return false;
-      }
-      if (!repeatedStruct_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the TestAllTypesProto3 message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3550,7 +3438,7 @@ namespace ProtobufTestMessages.Proto3 {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, pb::IMessage2 {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3711,10 +3599,6 @@ namespace ProtobufTestMessages.Proto3 {
           }
         }
 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool IsInitialized() {
-          return true;
-        }
       }
 
     }
@@ -3722,7 +3606,7 @@ namespace ProtobufTestMessages.Proto3 {
 
   }
 
-  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage>, pb::IMessage2 {
+  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3849,10 +3733,6 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      return true;
-    }
   }
 
   #endregion

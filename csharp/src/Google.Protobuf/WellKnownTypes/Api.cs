@@ -64,7 +64,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// this message itself. See https://cloud.google.com/apis/design/glossary for
   /// detailed terminology.
   /// </summary>
-  public sealed partial class Api : pb::IMessage<Api>, pb::IMessage2 {
+  public sealed partial class Api : pb::IMessage<Api> {
     private static readonly pb::MessageParser<Api> _parser = new pb::MessageParser<Api>(() => new Api());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -382,25 +382,12 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!methods_.IsInitialized()) {
-        return false;
-      }
-      if (!options_.IsInitialized()) {
-        return false;
-      }
-      if (!mixins_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Method represents a method of an API interface.
   /// </summary>
-  public sealed partial class Method : pb::IMessage<Method>, pb::IMessage2 {
+  public sealed partial class Method : pb::IMessage<Method> {
     private static readonly pb::MessageParser<Method> _parser = new pb::MessageParser<Method>(() => new Method());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -708,13 +695,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!options_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
   /// <summary>
@@ -797,7 +777,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///       ...
   ///     }
   /// </summary>
-  public sealed partial class Mixin : pb::IMessage<Mixin>, pb::IMessage2 {
+  public sealed partial class Mixin : pb::IMessage<Mixin> {
     private static readonly pb::MessageParser<Mixin> _parser = new pb::MessageParser<Mixin>(() => new Mixin());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -959,10 +939,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      return true;
-    }
   }
 
   #endregion

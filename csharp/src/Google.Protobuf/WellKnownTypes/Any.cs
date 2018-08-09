@@ -119,7 +119,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///       "value": "1.212s"
   ///     }
   /// </summary>
-  public sealed partial class Any : pb::IMessage<Any>, pb::IMessage2 {
+  public sealed partial class Any : pb::IMessage<Any> {
     private static readonly pb::MessageParser<Any> _parser = new pb::MessageParser<Any>(() => new Any());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -306,10 +306,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      return true;
-    }
   }
 
   #endregion

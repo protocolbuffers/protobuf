@@ -176,7 +176,7 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// Tests maps.
   /// </summary>
-  public sealed partial class TestMap : pb::IMessage<TestMap>, pb::IMessage2 {
+  public sealed partial class TestMap : pb::IMessage<TestMap> {
     private static readonly pb::MessageParser<TestMap> _parser = new pb::MessageParser<TestMap>(() => new TestMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -615,64 +615,9 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!mapInt32Int32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt64Int64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapUint32Uint32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapUint64Uint64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSint32Sint32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSint64Sint64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapFixed32Fixed32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapFixed64Fixed64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSfixed32Sfixed32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSfixed64Sfixed64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Float_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Double_.IsInitialized()) {
-        return false;
-      }
-      if (!mapBoolBool_.IsInitialized()) {
-        return false;
-      }
-      if (!mapStringString_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Bytes_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Enum_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32ForeignMessage_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
-  public sealed partial class TestMapSubmessage : pb::IMessage<TestMapSubmessage>, pb::IMessage2 {
+  public sealed partial class TestMapSubmessage : pb::IMessage<TestMapSubmessage> {
     private static readonly pb::MessageParser<TestMapSubmessage> _parser = new pb::MessageParser<TestMapSubmessage>(() => new TestMapSubmessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -805,13 +750,9 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      return true;
-    }
   }
 
-  public sealed partial class TestMessageMap : pb::IMessage<TestMessageMap>, pb::IMessage2 {
+  public sealed partial class TestMessageMap : pb::IMessage<TestMessageMap> {
     private static readonly pb::MessageParser<TestMessageMap> _parser = new pb::MessageParser<TestMessageMap>(() => new TestMessageMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -930,19 +871,12 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!mapInt32Message_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Two map fields share the same entry default instance.
   /// </summary>
-  public sealed partial class TestSameTypeMap : pb::IMessage<TestSameTypeMap>, pb::IMessage2 {
+  public sealed partial class TestSameTypeMap : pb::IMessage<TestSameTypeMap> {
     private static readonly pb::MessageParser<TestSameTypeMap> _parser = new pb::MessageParser<TestSameTypeMap>(() => new TestSameTypeMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1081,19 +1015,9 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!map1_.IsInitialized()) {
-        return false;
-      }
-      if (!map2_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
-  public sealed partial class TestArenaMap : pb::IMessage<TestArenaMap>, pb::IMessage2 {
+  public sealed partial class TestArenaMap : pb::IMessage<TestArenaMap> {
     private static readonly pb::MessageParser<TestArenaMap> _parser = new pb::MessageParser<TestArenaMap>(() => new TestArenaMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1492,62 +1416,13 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!mapInt32Int32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt64Int64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapUint32Uint32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapUint64Uint64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSint32Sint32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSint64Sint64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapFixed32Fixed32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapFixed64Fixed64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSfixed32Sfixed32_.IsInitialized()) {
-        return false;
-      }
-      if (!mapSfixed64Sfixed64_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Float_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Double_.IsInitialized()) {
-        return false;
-      }
-      if (!mapBoolBool_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32Enum_.IsInitialized()) {
-        return false;
-      }
-      if (!mapInt32ForeignMessage_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Previously, message containing enum called Type cannot be used as value of
   /// map field.
   /// </summary>
-  public sealed partial class MessageContainingEnumCalledType : pb::IMessage<MessageContainingEnumCalledType>, pb::IMessage2 {
+  public sealed partial class MessageContainingEnumCalledType : pb::IMessage<MessageContainingEnumCalledType> {
     private static readonly pb::MessageParser<MessageContainingEnumCalledType> _parser = new pb::MessageParser<MessageContainingEnumCalledType>(() => new MessageContainingEnumCalledType());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1666,13 +1541,6 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!type_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the MessageContainingEnumCalledType message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1689,7 +1557,7 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// Previously, message cannot contain map field called "entry".
   /// </summary>
-  public sealed partial class MessageContainingMapCalledEntry : pb::IMessage<MessageContainingMapCalledEntry>, pb::IMessage2 {
+  public sealed partial class MessageContainingMapCalledEntry : pb::IMessage<MessageContainingMapCalledEntry> {
     private static readonly pb::MessageParser<MessageContainingMapCalledEntry> _parser = new pb::MessageParser<MessageContainingMapCalledEntry>(() => new MessageContainingMapCalledEntry());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1808,13 +1676,6 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!entry_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
   #endregion

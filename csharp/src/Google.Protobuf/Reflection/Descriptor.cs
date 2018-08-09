@@ -193,7 +193,7 @@ namespace Google.Protobuf.Reflection {
   /// The protocol compiler can output a FileDescriptorSet containing the .proto
   /// files it parses.
   /// </summary>
-  internal sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet>, pb::IMessage2 {
+  internal sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -312,19 +312,12 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!file_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Describes a complete .proto file.
   /// </summary>
-  internal sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto>, pb::IMessage2 {
+  internal sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
     private static readonly pb::MessageParser<FileDescriptorProto> _parser = new pb::MessageParser<FileDescriptorProto>(() => new FileDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -802,38 +795,12 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!messageType_.IsInitialized()) {
-        return false;
-      }
-      if (!enumType_.IsInitialized()) {
-        return false;
-      }
-      if (!service_.IsInitialized()) {
-        return false;
-      }
-      if (!extension_.IsInitialized()) {
-        return false;
-      }
-      if (HasOptions) {
-        if (!Options.IsInitialized()) {
-          return false;
-        }
-      }
-      if (HasSourceCodeInfo) {
-        if (!SourceCodeInfo.IsInitialized()) {
-          return false;
-        }
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Describes a message type.
   /// </summary>
-  internal sealed partial class DescriptorProto : pb::IMessage<DescriptorProto>, pb::IMessage2 {
+  internal sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
     private static readonly pb::MessageParser<DescriptorProto> _parser = new pb::MessageParser<DescriptorProto>(() => new DescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1180,41 +1147,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!field_.IsInitialized()) {
-        return false;
-      }
-      if (!nestedType_.IsInitialized()) {
-        return false;
-      }
-      if (!enumType_.IsInitialized()) {
-        return false;
-      }
-      if (!extensionRange_.IsInitialized()) {
-        return false;
-      }
-      if (!extension_.IsInitialized()) {
-        return false;
-      }
-      if (HasOptions) {
-        if (!Options.IsInitialized()) {
-          return false;
-        }
-      }
-      if (!oneofDecl_.IsInitialized()) {
-        return false;
-      }
-      if (!reservedRange_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the DescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      internal sealed partial class ExtensionRange : pb::IMessage<ExtensionRange>, pb::IMessage2 {
+      internal sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
         private static readonly pb::MessageParser<ExtensionRange> _parser = new pb::MessageParser<ExtensionRange>(() => new ExtensionRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -1441,15 +1378,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool IsInitialized() {
-          if (HasOptions) {
-            if (!Options.IsInitialized()) {
-              return false;
-            }
-          }
-          return true;
-        }
       }
 
       /// <summary>
@@ -1457,7 +1385,7 @@ namespace Google.Protobuf.Reflection {
       /// fields or extension ranges in the same message. Reserved ranges may
       /// not overlap.
       /// </summary>
-      internal sealed partial class ReservedRange : pb::IMessage<ReservedRange>, pb::IMessage2 {
+      internal sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -1646,10 +1574,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool IsInitialized() {
-          return true;
-        }
       }
 
     }
@@ -1657,7 +1581,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class ExtensionRangeOptions : pb::IMessage<ExtensionRangeOptions>, pb::IMessage2 {
+  internal sealed partial class ExtensionRangeOptions : pb::IMessage<ExtensionRangeOptions> {
     private static readonly pb::MessageParser<ExtensionRangeOptions> _parser = new pb::MessageParser<ExtensionRangeOptions>(() => new ExtensionRangeOptions());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1779,19 +1703,12 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Describes a field within a message.
   /// </summary>
-  internal sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto>, pb::IMessage2 {
+  internal sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -2332,15 +2249,6 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (HasOptions) {
-        if (!Options.IsInitialized()) {
-          return false;
-        }
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the FieldDescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2413,7 +2321,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a oneof.
   /// </summary>
-  internal sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto>, pb::IMessage2 {
+  internal sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
     private static readonly pb::MessageParser<OneofDescriptorProto> _parser = new pb::MessageParser<OneofDescriptorProto>(() => new OneofDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2596,21 +2504,12 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (HasOptions) {
-        if (!Options.IsInitialized()) {
-          return false;
-        }
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Describes an enum type.
   /// </summary>
-  internal sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto>, pb::IMessage2 {
+  internal sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
     private static readonly pb::MessageParser<EnumDescriptorProto> _parser = new pb::MessageParser<EnumDescriptorProto>(() => new EnumDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2862,21 +2761,6 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!value_.IsInitialized()) {
-        return false;
-      }
-      if (HasOptions) {
-        if (!Options.IsInitialized()) {
-          return false;
-        }
-      }
-      if (!reservedRange_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the EnumDescriptorProto message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2889,7 +2773,7 @@ namespace Google.Protobuf.Reflection {
       /// is inclusive such that it can appropriately represent the entire int32
       /// domain.
       /// </summary>
-      internal sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange>, pb::IMessage2 {
+      internal sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange> {
         private static readonly pb::MessageParser<EnumReservedRange> _parser = new pb::MessageParser<EnumReservedRange>(() => new EnumReservedRange());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -3078,10 +2962,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool IsInitialized() {
-          return true;
-        }
       }
 
     }
@@ -3092,7 +2972,7 @@ namespace Google.Protobuf.Reflection {
   /// <summary>
   /// Describes a value within an enum.
   /// </summary>
-  internal sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto>, pb::IMessage2 {
+  internal sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -3318,21 +3198,12 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (HasOptions) {
-        if (!Options.IsInitialized()) {
-          return false;
-        }
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Describes a service.
   /// </summary>
-  internal sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto>, pb::IMessage2 {
+  internal sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
     private static readonly pb::MessageParser<ServiceDescriptorProto> _parser = new pb::MessageParser<ServiceDescriptorProto>(() => new ServiceDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3535,24 +3406,12 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!method_.IsInitialized()) {
-        return false;
-      }
-      if (HasOptions) {
-        if (!Options.IsInitialized()) {
-          return false;
-        }
-      }
-      return true;
-    }
   }
 
   /// <summary>
   /// Describes a method of a service.
   /// </summary>
-  internal sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto>, pb::IMessage2 {
+  internal sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -3909,18 +3768,9 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (HasOptions) {
-        if (!Options.IsInitialized()) {
-          return false;
-        }
-      }
-      return true;
-    }
   }
 
-  internal sealed partial class FileOptions : pb::IMessage<FileOptions>, pb::IMessage2 {
+  internal sealed partial class FileOptions : pb::IMessage<FileOptions> {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -4953,13 +4803,6 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the FileOptions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4987,7 +4830,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class MessageOptions : pb::IMessage<MessageOptions>, pb::IMessage2 {
+  internal sealed partial class MessageOptions : pb::IMessage<MessageOptions> {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -5331,16 +5174,9 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
-  internal sealed partial class FieldOptions : pb::IMessage<FieldOptions>, pb::IMessage2 {
+  internal sealed partial class FieldOptions : pb::IMessage<FieldOptions> {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -5776,13 +5612,6 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the FieldOptions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5816,7 +5645,7 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  internal sealed partial class OneofOptions : pb::IMessage<OneofOptions>, pb::IMessage2 {
+  internal sealed partial class OneofOptions : pb::IMessage<OneofOptions> {
     private static readonly pb::MessageParser<OneofOptions> _parser = new pb::MessageParser<OneofOptions>(() => new OneofOptions());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5940,16 +5769,9 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
-  internal sealed partial class EnumOptions : pb::IMessage<EnumOptions>, pb::IMessage2 {
+  internal sealed partial class EnumOptions : pb::IMessage<EnumOptions> {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -6167,16 +5989,9 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
-  internal sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions>, pb::IMessage2 {
+  internal sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions> {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -6349,16 +6164,9 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
-  internal sealed partial class ServiceOptions : pb::IMessage<ServiceOptions>, pb::IMessage2 {
+  internal sealed partial class ServiceOptions : pb::IMessage<ServiceOptions> {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -6531,16 +6339,9 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
   }
 
-  internal sealed partial class MethodOptions : pb::IMessage<MethodOptions>, pb::IMessage2 {
+  internal sealed partial class MethodOptions : pb::IMessage<MethodOptions> {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -6754,13 +6555,6 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!uninterpretedOption_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the MethodOptions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6795,7 +6589,7 @@ namespace Google.Protobuf.Reflection {
   /// or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
   /// in them.
   /// </summary>
-  internal sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption>, pb::IMessage2 {
+  internal sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -7163,13 +6957,6 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!name_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the UninterpretedOption message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7181,7 +6968,7 @@ namespace Google.Protobuf.Reflection {
       /// E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
       /// "foo.(bar.baz).qux".
       /// </summary>
-      internal sealed partial class NamePart : pb::IMessage<NamePart>, pb::IMessage2 {
+      internal sealed partial class NamePart : pb::IMessage<NamePart> {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -7363,16 +7150,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool IsInitialized() {
-          if (!!HasNamePart_) {
-            return false;
-          }
-          if (!!HasIsExtension) {
-            return false;
-          }
-          return true;
-        }
       }
 
     }
@@ -7384,7 +7161,7 @@ namespace Google.Protobuf.Reflection {
   /// Encapsulates information about the original source file from which a
   /// FileDescriptorProto was generated.
   /// </summary>
-  internal sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo>, pb::IMessage2 {
+  internal sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7548,18 +7325,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!location_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the SourceCodeInfo message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      internal sealed partial class Location : pb::IMessage<Location>, pb::IMessage2 {
+      internal sealed partial class Location : pb::IMessage<Location> {
         private static readonly pb::MessageParser<Location> _parser = new pb::MessageParser<Location>(() => new Location());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7881,10 +7651,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool IsInitialized() {
-          return true;
-        }
       }
 
     }
@@ -7897,7 +7663,7 @@ namespace Google.Protobuf.Reflection {
   /// file. A GeneratedCodeInfo message is associated with only one generated
   /// source file, but may contain references to different source .proto files.
   /// </summary>
-  internal sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo>, pb::IMessage2 {
+  internal sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo> {
     private static readonly pb::MessageParser<GeneratedCodeInfo> _parser = new pb::MessageParser<GeneratedCodeInfo>(() => new GeneratedCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8020,18 +7786,11 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      if (!annotation_.IsInitialized()) {
-        return false;
-      }
-      return true;
-    }
     #region Nested types
     /// <summary>Container for nested types declared in the GeneratedCodeInfo message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      internal sealed partial class Annotation : pb::IMessage<Annotation>, pb::IMessage2 {
+      internal sealed partial class Annotation : pb::IMessage<Annotation> {
         private static readonly pb::MessageParser<Annotation> _parser = new pb::MessageParser<Annotation>(() => new Annotation());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -8291,10 +8050,6 @@ namespace Google.Protobuf.Reflection {
           }
         }
 
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool IsInitialized() {
-          return true;
-        }
       }
 
     }

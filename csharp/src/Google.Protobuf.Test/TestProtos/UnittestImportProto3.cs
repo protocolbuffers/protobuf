@@ -50,7 +50,7 @@ namespace Google.Protobuf.TestProtos {
   #endregion
 
   #region Messages
-  public sealed partial class ImportMessage : pb::IMessage<ImportMessage>, pb::IMessage2 {
+  public sealed partial class ImportMessage : pb::IMessage<ImportMessage> {
     private static readonly pb::MessageParser<ImportMessage> _parser = new pb::MessageParser<ImportMessage>(() => new ImportMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -177,10 +177,6 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool IsInitialized() {
-      return true;
-    }
   }
 
   #endregion
