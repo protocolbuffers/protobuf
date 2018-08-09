@@ -18,12 +18,12 @@ internal_build_cpp() {
   ./autogen.sh
   ./configure CXXFLAGS="-fPIC"  # -fPIC is needed for python cpp test.
                                 # See python/setup.py for more details
-  make -j2
+  make -j4
 }
 
 build_cpp() {
   internal_build_cpp
-  make check -j2 || (cat src/test-suite.log; false)
+  make check -j4 || (cat src/test-suite.log; false)
   cd conformance && make test_cpp && cd ..
 
   # The benchmark code depends on cmake, so test if it is installed before
@@ -68,7 +68,7 @@ build_cpp_distcheck() {
   fi
 
   # Do the regular dist-check for C++.
-  make distcheck -j2
+  make distcheck -j4
 }
 
 build_csharp() {

@@ -1055,7 +1055,7 @@ TEST(ExtensionSetTest, RepeatedFields) {
            unittest::repeated_nested_enum_extension).begin(),
        enum_const_end  = message.GetRepeatedExtension(
            unittest::repeated_nested_enum_extension).end();
-       enum_iter != enum_end; ++enum_iter) {
+       enum_const_iter != enum_const_end; ++enum_const_iter) {
     ASSERT_EQ(*enum_const_iter, unittest::TestAllTypes::NestedEnum_MAX);
   }
 
