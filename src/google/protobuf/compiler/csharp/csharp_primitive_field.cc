@@ -229,16 +229,6 @@ void PrimitiveFieldGenerator::GenerateCodecCode(io::Printer* printer) {
     "pb::FieldCodec.For$capitalized_type_name$($tag$)");
 }
 
-void PrimitiveFieldGenerator::GenerateIsInitialized(io::Printer* printer) {
-  if (descriptor_->is_required()) {
-    printer->Print(
-      variables_,
-      "if (!$has_not_property_check$) {\n"
-      "  return false;\n"
-      "}\n");
-  }
-}
-
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
     const FieldDescriptor* descriptor, int presenceIndex, const Options *options)
     : PrimitiveFieldGenerator(descriptor, presenceIndex, options) {

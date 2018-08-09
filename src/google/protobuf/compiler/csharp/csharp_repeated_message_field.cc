@@ -138,14 +138,6 @@ void RepeatedMessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
 void RepeatedMessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
 }
 
-void RepeatedMessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if (!$name$_.IsInitialized()) {\n"
-    "  return false;\n"
-    "}\n");
-}
-
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

@@ -119,7 +119,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     vars,
-    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$>, pb::IMessage2 {\n");
+    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
   printer->Indent();
 
   // All static fields and properties
@@ -573,18 +573,6 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print("}\n"); // while
   printer->Outdent();
   printer->Print("}\n\n"); // method
-
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print("public bool IsInitialized() {\n");
-  printer->Indent();
-  for (int i = 0; i < fields_by_number().size(); i++) {
-    std::unique_ptr<FieldGeneratorBase> generator(
-      CreateFieldGeneratorInternal(fields_by_number()[i]));
-    generator->GenerateIsInitialized(printer);
-  }
-  printer->Print("return true;\n");
-  printer->Outdent();
-  printer->Print("}\n");
 }
 
 // it's a waste of space to track presence for all values, so we only track them if they're not nullable

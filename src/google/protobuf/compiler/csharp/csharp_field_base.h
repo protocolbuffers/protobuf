@@ -64,7 +64,6 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   virtual void WriteEquals(io::Printer* printer) = 0;
   // Currently unused, as we use reflection to generate JSON
   virtual void WriteToString(io::Printer* printer) = 0;
-  virtual void GenerateIsInitialized(io::Printer* printer);
 
  protected:
   const FieldDescriptor* descriptor_;
