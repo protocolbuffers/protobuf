@@ -13,7 +13,7 @@ mkdir src\.libs
 mkdir vcprojects
 pushd vcprojects
 cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% -Dprotobuf_BUILD_TESTS=OFF ../cmake
-msbuild protobuf.sln /p:Platform=%vcplatform% /p:Configuration=Release /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+msbuild protobuf.sln /p:Platform=%vcplatform% /p:Configuration=Release
 dir /s /b
 popd
 copy vcprojects\Release\libprotobuf.lib src\.libs\libprotobuf.a

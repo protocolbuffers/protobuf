@@ -9,6 +9,7 @@ set OTHER_TEST_DEP="setuptools==38.5.1"
 set OLD_PATH=%PATH%
 
 REM Move scripts to root
+echo %cd%
 dir
 copy kokoro\release\python\windows\build_wheel.bat build_wheel.bat
 copy kokoro\release\python\windows\build_python_env.bat build_python_env.bat
