@@ -61,6 +61,8 @@ static void end_wrapper_object(upb_json_parser *p);
 static bool start_subobject(upb_json_parser *p);
 static void end_subobject(upb_json_parser *p);
 
+static const char eof_ch = 'e';
+
 typedef struct {
   upb_sink sink;
 
@@ -128,9 +130,6 @@ struct upb_json_parser {
 
   /* Whether to proceed if unknown field is met. */
   bool ignore_json_unknown;
-
-  /* Whether to end parsing. */
-  bool ready_to_end;
 };
 
 struct upb_json_parsermethod {
@@ -1497,11 +1496,7 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
 
   number_machine :=
     ("-"? integer decimal? exponent?)
-      %/{
-          if (parser->ready_to_end) {
-            fhold; fret;
-          }
-        }
+      %/{ fhold; fret; }
     <: any
       >{ fhold; fret; }
     ;
@@ -1604,7 +1599,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
 
   const char *p = buf;
   const char *pe = buf + size;
-  const char *eof = pe;
+  const char *eof = &eof_ch;
 
   parser->handle = handle;
 
@@ -1640,8 +1635,7 @@ bool end(void *closure, const void *hd) {
   UPB_UNUSED(json_en_value_machine);
   UPB_UNUSED(json_en_main);
 
-  parser->ready_to_end = true;
-  parse(parser, hd, NULL, 0, NULL);
+  parse(parser, hd, &eof_ch, 0, NULL);
 
   return parser->current_state >= %%{ write first_final; }%%;
 }
@@ -1764,7 +1758,6 @@ upb_json_parser *upb_json_parser_create(upb_env *env,
   set_name_table(p, p->top);
 
   p->ignore_json_unknown = ignore_json_unknown;
-  p->ready_to_end = false;
 
   /* If this fails, uncomment and increase the value in parser.h. */
   /* fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before); */
