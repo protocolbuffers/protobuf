@@ -8,22 +8,13 @@ set PB_TEST_DEP="six==1.9"
 set OTHER_TEST_DEP="setuptools==38.5.1"
 set OLD_PATH=%PATH%
 
+REM Move scripts to root
+copy kokoro\release\python\windows\build_wheel.bat build_wheel.bat
+copy kokoro\release\python\windows\build_python_env.bat build_python_env.bat
+copy kokoro\release\python\windows\build.bat build.bat
+
 REM Fetch multibuild
 git clone https://github.com/matthew-brett/multibuild.git
-
-REM Fix MSVC builds for 64-bit Python. See:
-REM http://stackoverflow.com/questions/32091593/cannot-install-windows-sdk-7-1-on-windows-10
-echo "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 > "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64/vcvars64.bat"
-
-REM Fix MSVC builds for 64-bit Python2.7. See:
-REM https://help.appveyor.com/discussions/kb/38-visual-studio-2008-64-bit-builds
-curl -L -o vs2008_patch.zip https://github.com/menpo/condaci/raw/master/vs2008_patch.zip
-7z x vs2008_patch.zip -ovs2008_patch
-cd vs2008_patch
-CALL setup_x64.bat
-dir "C:\Program Files (x86)\"
-copy "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars64.bat" "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\amd64\vcvarsamd64.bat"
-cd ..
 
 REM Install zlib
 mkdir zlib
