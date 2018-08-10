@@ -62,6 +62,9 @@ The second command adds the `bin` directory to your `PATH` so that `protoc` can 
 PHP benchmark's requirement is the same as PHP protobuf's requirements. The benchmark will automaticly 
 include PHP protobuf's src and build the c extension if required.
 
+### Node.js
+Node.js benchmark need [node](https://nodejs.org/en/)(higher than V6) and [npm](https://www.npmjs.com/) package manager installed. This benchmark is using the [benchmark](https://www.npmjs.com/package/benchmark) framework to test, which needn't to manually install. And another prerequisite is [protobuf js](https://github.com/google/protobuf/tree/master/js), which needn't to manually install either
+
 ### Big data
 
 There's some optional big testing data which is not included in the directory
@@ -136,6 +139,11 @@ $ make php
 $ make php_c
 ```
 
+### Node.js
+```
+$ make js
+```
+
 To run a specific dataset or run with specific options:
 
 ### Java:
@@ -195,6 +203,11 @@ $ make php-c-benchmark
 $ ./php-c-benchmark $(specific generated dataset file name)
 ```
 
+### Node.js
+```
+$ make js-benchmark
+$ ./js-benchmark $(specific generated dataset file name)
+```
 
 ## Benchmark datasets
 
