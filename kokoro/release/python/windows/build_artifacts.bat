@@ -29,6 +29,10 @@ SET ZLIB_ROOT=%cd%\zlib
 del /Q zlib.zip
 del /Q zlib-src.zip
 
+REM Create directory for artifacts
+SET ARTIFACT_DIR=%cd%/artifacts
+mkdir %ARTIFACT_DIR%
+
 REM Build wheel
 
 SET PYTHON=C:\python35_32bit

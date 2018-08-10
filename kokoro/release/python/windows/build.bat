@@ -31,4 +31,5 @@ REM sed -i 's/\ extra_compile_args\ =\ \[\]/\ extra_compile_args\ =\ \[\'\/MT\'\
 
 python setup.py bdist_wheel --cpp_implementation --compile_static_extension
 dir dist
+copy dist\* %ARTIFACT_DIR%
 cd ..\..
