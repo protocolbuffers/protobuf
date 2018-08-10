@@ -6,7 +6,7 @@ set BUILD_DLL=OFF
 set UNICODE=ON
 set PB_TEST_DEP="six==1.9"
 set OTHER_TEST_DEP="setuptools==38.5.1"
-set OLD_PATH=%PATH%
+set OLD_PATH=C:\Program Files (x86)\MSBuild\14.0\bin\;%PATH%
 
 REM Move scripts to root
 cd github\protobuf
