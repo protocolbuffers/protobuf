@@ -30,4 +30,5 @@ cd python
 REM sed -i 's/\ extra_compile_args\ =\ \[\]/\ extra_compile_args\ =\ \[\'\/MT\'\]/g' setup.py
 
 python setup.py bdist_wheel --cpp_implementation --compile_static_extension
+dir dist
 cd ..\..
