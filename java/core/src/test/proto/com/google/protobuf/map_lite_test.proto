@@ -30,9 +30,10 @@
 
 syntax = "proto3";
 
-package map_test;
+package map_lite_test;
 
-option java_package = "map_test";
+option optimize_for = LITE_RUNTIME;
+option java_package = "map_lite_test";
 option java_outer_classname = "MapTestProto";
 
 message TestMap {

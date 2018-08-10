@@ -689,6 +689,18 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/SourceCodeInfo/Location.php        \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php   \
+  php/src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php \
+  php/src/Google/Protobuf/Internal/DescriptorProto_ReservedRange.php  \
+  php/src/Google/Protobuf/Internal/EnumDescriptorProto_EnumReservedRange.php \
+  php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
+  php/src/Google/Protobuf/Internal/FieldDescriptorProto_Type.php      \
+  php/src/Google/Protobuf/Internal/FieldOptions_CType.php             \
+  php/src/Google/Protobuf/Internal/FieldOptions_JSType.php            \
+  php/src/Google/Protobuf/Internal/FileOptions_OptimizeMode.php       \
+  php/src/Google/Protobuf/Internal/GeneratedCodeInfo_Annotation.php   \
+  php/src/Google/Protobuf/Internal/MethodOptions_IdempotencyLevel.php \
+  php/src/Google/Protobuf/Internal/SourceCodeInfo_Location.php        \
+  php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
   php/src/Google/Protobuf/ListValue.php                               \
   php/src/Google/Protobuf/Method.php                                  \
   php/src/Google/Protobuf/Mixin.php                                   \
@@ -804,7 +816,6 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/json_format.py                                      \
   python/google/protobuf/message.py                                          \
   python/google/protobuf/message_factory.py                                  \
-  python/google/protobuf/python_api.h                                        \
   python/google/protobuf/python_protobuf.h                                   \
   python/google/protobuf/proto_api.h                                         \
   python/google/protobuf/proto_builder.py                                    \
@@ -825,6 +836,10 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/map_container.h                               \
   python/google/protobuf/pyext/message.cc                                    \
   python/google/protobuf/pyext/message.h                                     \
+  python/google/protobuf/pyext/field.cc                                      \
+  python/google/protobuf/pyext/field.h                                       \
+  python/google/protobuf/pyext/unknown_fields.cc                             \
+  python/google/protobuf/pyext/unknown_fields.h                              \
   python/google/protobuf/pyext/message_factory.cc                            \
   python/google/protobuf/pyext/message_factory.h                             \
   python/google/protobuf/pyext/message_module.cc                             \

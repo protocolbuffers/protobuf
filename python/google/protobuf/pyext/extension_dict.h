@@ -37,7 +37,6 @@
 #include <Python.h>
 
 #include <memory>
-#include <hash_map>
 
 #include <google/protobuf/pyext/message.h>
 

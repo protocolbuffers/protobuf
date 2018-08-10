@@ -164,7 +164,7 @@ class LIBPROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   bool FindAllExtensionNumbers(const string& extendee_type,
                                std::vector<int>* output) override;
 
-  bool FindAllFileNames(std::vector<string>* output);
+  bool FindAllFileNames(std::vector<string>* output) override;
 
  private:
   // So that it can use DescriptorIndex.

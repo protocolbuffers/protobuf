@@ -56,10 +56,10 @@ build_cpp_distcheck() {
   # Check if every file exists in the dist tar file.
   FILES_MISSING=""
   for FILE in $(<../dist.lst); do
-    if ! file $FILE &>/dev/null; then
+    [ -f "$FILE" ] || {
       echo "$FILE is not found!"
       FILES_MISSING="$FILE $FILES_MISSING"
-    fi
+    }
   done
   cd ..
   if [ ! -z "$FILES_MISSING" ]; then

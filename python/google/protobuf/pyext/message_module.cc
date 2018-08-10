@@ -31,19 +31,19 @@
 #include <Python.h>
 
 #include <google/protobuf/pyext/message.h>
-#include <google/protobuf/python/proto_api.h>
+#include <google/protobuf/proto_api.h>
 
 #include <google/protobuf/message_lite.h>
 
 namespace {
 
 // C++ API.  Clients get at this via proto_api.h
-struct ApiImplementation : proto2::python::PyProto_API {
-  const proto2::Message* GetMessagePointer(PyObject* msg) const override {
-    return proto2::python::PyMessage_GetMessagePointer(msg);
+struct ApiImplementation : google::protobuf::python::PyProto_API {
+  const google::protobuf::Message* GetMessagePointer(PyObject* msg) const override {
+    return google::protobuf::python::PyMessage_GetMessagePointer(msg);
   }
-  proto2::Message* GetMutableMessagePointer(PyObject* msg) const override {
-    return proto2::python::PyMessage_GetMutableMessagePointer(msg);
+  google::protobuf::Message* GetMutableMessagePointer(PyObject* msg) const override {
+    return google::protobuf::python::PyMessage_GetMutableMessagePointer(msg);
   }
 };
 
@@ -58,7 +58,7 @@ static const char module_docstring[] =
 
 static PyMethodDef ModuleMethods[] = {
   {"SetAllowOversizeProtos",
-    (PyCFunction)proto2::python::cmessage::SetAllowOversizeProtos,
+    (PyCFunction)google::protobuf::python::cmessage::SetAllowOversizeProtos,
     METH_O, "Enable/disable oversize proto parsing."},
   // DO NOT USE: For migration and testing only.
   { NULL, NULL}
@@ -94,7 +94,7 @@ PyMODINIT_FUNC INITFUNC() {
     return INITFUNC_ERRORVAL;
   }
 
-  if (!proto2::python::InitProto2MessageModule(m)) {
+  if (!google::protobuf::python::InitProto2MessageModule(m)) {
     Py_DECREF(m);
     return INITFUNC_ERRORVAL;
   }
@@ -102,7 +102,7 @@ PyMODINIT_FUNC INITFUNC() {
   // Adds the C++ API
   if (PyObject* api =
           PyCapsule_New(new ApiImplementation(),
-                        proto2::python::PyProtoAPICapsuleName(), NULL)) {
+                        google::protobuf::python::PyProtoAPICapsuleName(), NULL)) {
     PyModule_AddObject(m, "proto_API", api);
   } else {
     return INITFUNC_ERRORVAL;

@@ -34,6 +34,11 @@
       <artifactId>easymockclassextension</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -57,6 +62,15 @@
         </includes>
       </resource>
     </resources>
+    <testResources>
+      <testResource>
+        <directory>${protobuf.source.dir}</directory>
+        <includes>
+          <include>google/protobuf/testdata/golden_message_oneof_implemented</include>
+          <include>google/protobuf/testdata/golden_packed_fields_message</include>
+        </includes>
+      </testResource>
+    </testResources>
 
     <plugins>
       <!-- Use Antrun plugin to generate sources with protoc -->
