@@ -28,24 +28,32 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: Darick Tong (darick@google.com)
-//
-// A proto file with extensions for a MessageLite messages.
+#ifndef GOOGLE_PROTOBUF_PYTHON_CPP_FIELD_H__
+#define GOOGLE_PROTOBUF_PYTHON_CPP_FIELD_H__
 
-syntax = "proto2";
+#include <Python.h>
 
-package protobuf_unittest;
+namespace google {
+namespace protobuf {
 
-option optimize_for = LITE_RUNTIME;
+class FieldDescriptor;
 
-message MessageLiteToBeExtended {
-  extensions 1 to max;
-}
+namespace python {
 
-message MyNonNestedExtensionLite {
-}
+// A data descriptor that represents a field in a Message class.
+struct PyMessageFieldProperty {
+  PyObject_HEAD;
 
-extend MessageLiteToBeExtended {
-  optional MyNonNestedExtensionLite nonNestedExtensionLite = 1;
-}
+  // This pointer is owned by the same pool as the Message class it belongs to.
+  const FieldDescriptor* field_descriptor;
+};
 
+extern PyTypeObject* CFieldProperty_Type;
+
+PyObject* NewFieldProperty(const FieldDescriptor* field_descriptor);
+
+}  // namespace python
+}  // namespace protobuf
+}  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_PYTHON_CPP_FIELD_H__

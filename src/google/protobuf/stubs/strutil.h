@@ -913,6 +913,15 @@ LIBPROTOBUF_EXPORT void CleanStringLineEndings(const string& src, string* dst,
 LIBPROTOBUF_EXPORT void CleanStringLineEndings(string* str,
                                                bool auto_end_last_line);
 
+namespace strings {
+inline bool EndsWith(StringPiece text, StringPiece suffix) {
+  return suffix.empty() ||
+      (text.size() >= suffix.size() &&
+       memcmp(text.data() + (text.size() - suffix.size()), suffix.data(),
+              suffix.size()) == 0);
+}
+}  // namespace strings
+
 }  // namespace protobuf
 }  // namespace google
 

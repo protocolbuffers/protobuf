@@ -1356,8 +1356,9 @@ bool CheckParseInputSize(StringPiece input,
                          io::ErrorCollector* error_collector) {
   if (input.size() > INT_MAX) {
     error_collector->AddError(
-        -1, 0, StrCat("Input size too large: ", input.size(), " bytes",
-                            " > ", INT_MAX, " bytes."));
+        -1, 0, StrCat("Input size too large: ",
+                      static_cast<int64>(input.size()), " bytes",
+                      " > ", INT_MAX, " bytes."));
     return false;
   }
   return true;

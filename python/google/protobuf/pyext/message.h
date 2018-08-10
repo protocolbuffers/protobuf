@@ -38,7 +38,7 @@
 
 #include <memory>
 #include <string>
-#include <hash_map>
+#include <unordered_map>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/pyext/thread_unsafe_shared_ptr.h>
@@ -105,7 +105,7 @@ typedef struct CMessage {
   // Also cache extension fields.
   // The FieldDescriptor is owned by the message's pool; PyObject references
   // are owned.
-  typedef __gnu_cxx::hash_map<const FieldDescriptor*, PyObject*>
+  typedef std::unordered_map<const FieldDescriptor*, PyObject*>
       CompositeFieldsMap;
   CompositeFieldsMap* composite_fields;
 

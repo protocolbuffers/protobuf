@@ -75,7 +75,7 @@ class MapReflectionFriend {
 struct MapIterator {
   PyObject_HEAD;
 
-  std::unique_ptr<::proto2::MapIterator> iter;
+  std::unique_ptr<google::protobuf::MapIterator> iter;
 
   // A pointer back to the container, so we can notice changes to the version.
   // We own a ref on this.
@@ -314,7 +314,7 @@ static MapContainer* GetMap(PyObject* obj) {
 
 Py_ssize_t MapReflectionFriend::Length(PyObject* _self) {
   MapContainer* self = GetMap(_self);
-  const proto2::Message* message = self->message;
+  const Message* message = self->message;
   return message->GetReflection()->MapSize(*message,
                                            self->parent_field_descriptor);
 }
@@ -423,7 +423,7 @@ int MapContainer::Release() {
 // ScalarMap ///////////////////////////////////////////////////////////////////
 
 PyObject *NewScalarMapContainer(
-    CMessage* parent, const proto2::FieldDescriptor* parent_field_descriptor) {
+    CMessage* parent, const FieldDescriptor* parent_field_descriptor) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
   }
@@ -548,7 +548,7 @@ PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
   MapContainer* self = GetMap(_self);
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
-  for (proto2::MapIterator it = reflection->MapBegin(
+  for (google::protobuf::MapIterator it = reflection->MapBegin(
            message, self->parent_field_descriptor);
        it != reflection->MapEnd(message, self->parent_field_descriptor);
        ++it) {
@@ -704,7 +704,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, Message* message,
 }
 
 PyObject* NewMessageMapContainer(
-    CMessage* parent, const proto2::FieldDescriptor* parent_field_descriptor,
+    CMessage* parent, const FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
@@ -837,7 +837,7 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   MessageMapContainer* self = GetMessageMap(_self);
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
-  for (proto2::MapIterator it = reflection->MapBegin(
+  for (google::protobuf::MapIterator it = reflection->MapBegin(
            message, self->parent_field_descriptor);
        it != reflection->MapEnd(message, self->parent_field_descriptor);
        ++it) {
@@ -1011,7 +1011,7 @@ PyObject* MapReflectionFriend::GetIterator(PyObject *_self) {
     Message* message = self->GetMutableMessage();
     const Reflection* reflection = message->GetReflection();
 
-    iter->iter.reset(new ::proto2::MapIterator(
+    iter->iter.reset(new google::protobuf::MapIterator(
         reflection->MapBegin(message, self->parent_field_descriptor)));
   }
 

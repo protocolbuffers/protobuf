@@ -112,6 +112,9 @@ nobase_include_HEADERS =                                         \
   google/protobuf/message_lite.h                                 \
   google/protobuf/metadata.h                                     \
   google/protobuf/metadata_lite.h                                \
+  google/protobuf/port.h                                         \
+  google/protobuf/port_def.inc                                   \
+  google/protobuf/port_undef.inc                                 \
   google/protobuf/reflection.h                                   \
   google/protobuf/reflection_ops.h                               \
   google/protobuf/repeated_field.h                               \
@@ -690,6 +693,7 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/test_util.cc                                 \
   google/protobuf/test_util.h                                  \
   google/protobuf/test_util.inc                                \
+  google/protobuf/test_util2.h                                 \
   google/protobuf/testing/googletest.cc                        \
   google/protobuf/testing/googletest.h                         \
   google/protobuf/testing/file.cc                              \
@@ -743,6 +747,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/proto3_arena_lite_unittest.cc                \
   google/protobuf/proto3_arena_unittest.cc                     \
   google/protobuf/proto3_lite_unittest.cc                      \
+  google/protobuf/proto3_lite_unittest.inc                     \
   google/protobuf/reflection_ops_unittest.cc                   \
   google/protobuf/repeated_field_reflection_unittest.cc        \
   google/protobuf/repeated_field_unittest.cc                   \
