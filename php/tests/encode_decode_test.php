@@ -11,9 +11,90 @@ use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
+use Google\Protobuf\DoubleValue;
+use Google\Protobuf\FloatValue;
+use Google\Protobuf\Int32Value;
+use Google\Protobuf\UInt32Value;
+use Google\Protobuf\Int64Value;
+use Google\Protobuf\UInt64Value;
+use Google\Protobuf\BoolValue;
+use Google\Protobuf\StringValue;
+use Google\Protobuf\BytesValue;
 
 class EncodeDecodeTest extends TestBase
 {
+    public function testDecodeJsonSimple()
+    {
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"optionalInt32\":1}");
+    }
+
+    public function testDecodeTopLevelBoolValue()
+    {
+        $m = new BoolValue();
+
+        $m->mergeFromJsonString("true");
+        $this->assertEquals(true, $m->getValue());
+
+        $m->mergeFromJsonString("false");
+        $this->assertEquals(false, $m->getValue());
+    }
+
+    public function testDecodeTopLevelDoubleValue()
+    {
+        $m = new DoubleValue();
+        $m->mergeFromJsonString("1.5");
+        $this->assertEquals(1.5, $m->getValue());
+    }
+
+    public function testDecodeTopLevelFloatValue()
+    {
+        $m = new FloatValue();
+        $m->mergeFromJsonString("1.5");
+        $this->assertEquals(1.5, $m->getValue());
+    }
+
+    public function testDecodeTopLevelInt32Value()
+    {
+        $m = new Int32Value();
+        $m->mergeFromJsonString("1");
+        $this->assertEquals(1, $m->getValue());
+    }
+
+    public function testDecodeTopLevelUInt32Value()
+    {
+        $m = new UInt32Value();
+        $m->mergeFromJsonString("1");
+        $this->assertEquals(1, $m->getValue());
+    }
+
+    public function testDecodeTopLevelInt64Value()
+    {
+        $m = new Int64Value();
+        $m->mergeFromJsonString("1");
+        $this->assertEquals(1, $m->getValue());
+    }
+
+    public function testDecodeTopLevelUInt64Value()
+    {
+        $m = new UInt64Value();
+        $m->mergeFromJsonString("1");
+        $this->assertEquals(1, $m->getValue());
+    }
+
+    public function testDecodeTopLevelStringValue()
+    {
+        $m = new StringValue();
+        $m->mergeFromJsonString("\"a\"");
+        $this->assertSame("a", $m->getValue());
+    }
+
+    public function testDecodeTopLevelBytesValue()
+    {
+        $m = new BytesValue();
+        $m->mergeFromJsonString("\"YQ==\"");
+        $this->assertSame("a", $m->getValue());
+    }
 
     public function testEncode()
     {
