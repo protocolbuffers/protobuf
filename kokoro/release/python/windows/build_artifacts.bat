@@ -1,8 +1,6 @@
 REM Move scripts to root
 cd github\protobuf
-copy kokoro\release\python\windows\build_wheel.bat build_wheel.bat
-copy kokoro\release\python\windows\build_python_env.bat build_python_env.bat
-copy kokoro\release\python\windows\build.bat build.bat
+copy kokoro\release\python\windows\build_single_artifact.bat build_single_artifact.bat
 
 REM Set environment variables
 set REPO_DIR=protobuf
@@ -37,19 +35,19 @@ REM Build wheel
 SET PYTHON=C:\python35_32bit
 SET PYTHON_VERSION=3.5
 SET PYTHON_ARCH=32
-CALL build_wheel.bat
+CALL build_single_artifact.bat
 
 SET PYTHON=C:\python35
 SET PYTHON_VERSION=3.5
 SET PYTHON_ARCH=64
-CALL build_wheel.bat
+CALL build_single_artifact.bat
 
 SET PYTHON=C:\python36_32bit
 SET PYTHON_VERSION=3.6
 SET PYTHON_ARCH=32
-CALL build_wheel.bat
+CALL build_single_artifact.bat
 
 SET PYTHON=C:\python36
 SET PYTHON_VERSION=3.6
 SET PYTHON_ARCH=64
-CALL build_wheel.bat
+CALL build_single_artifact.bat

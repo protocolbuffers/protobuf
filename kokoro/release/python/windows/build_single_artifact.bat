@@ -1,5 +1,31 @@
 setlocal
 
+if %PYTHON%==C:\python35_32bit set generator=Visual Studio 14
+if %PYTHON%==C:\python35_32bit set vcplatform=Win32
+
+if %PYTHON%==C:\python35 set generator=Visual Studio 14 Win64
+if %PYTHON%==C:\python35 set vcplatform=x64
+
+if %PYTHON%==C:\python36_32bit set generator=Visual Studio 14
+if %PYTHON%==C:\python36_32bit set vcplatform=Win32
+
+if %PYTHON%==C:\python36 set generator=Visual Studio 14 Win64
+if %PYTHON%==C:\python36 set vcplatform=x64
+
+REM Prepend newly installed Python to the PATH of this build (this cannot be
+REM done from inside the powershell script as it would require to restart
+REM the parent CMD process).
+SET PATH=%PYTHON%;%PYTHON%\Scripts;%OLD_PATH%
+python -m pip install -U pip
+pip install wheel
+
+REM Check that we have the expected version and architecture for Python
+python --version
+python -c "import struct; print(struct.calcsize('P') * 8)"
+
+rmdir /s/q protobuf
+git clone https://github.com/google/protobuf.git
+
 REM Checkout release commit
 cd %REPO_DIR%
 git checkout %BUILD_COMMIT%
