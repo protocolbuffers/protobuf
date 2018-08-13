@@ -72,6 +72,9 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\message.h" include\go
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\message_lite.h" include\google\protobuf\message_lite.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\metadata.h" include\google\protobuf\metadata.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\metadata_lite.h" include\google\protobuf\metadata_lite.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\port.h" include\google\protobuf\port.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\port_def.inc" include\google\protobuf\port_def.inc
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\port_undef.inc" include\google\protobuf\port_undef.inc
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\reflection.h" include\google\protobuf\reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\reflection_ops.h" include\google\protobuf\reflection_ops.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\repeated_field.h" include\google\protobuf\repeated_field.h
