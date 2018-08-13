@@ -802,7 +802,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //   CPPTYPE_BOOL         bool
   //   CPPTYPE_ENUM         generated enum type or int32
   //   CPPTYPE_STRING       string
-  //   CPPTYPE_MESSAGE      generated message type or proto2::Message
+  //   CPPTYPE_MESSAGE      generated message type or google::protobuf::Message
   //
   // A RepeatedFieldRef object can be copied and the resulted object will point
   // to the same repeated field in the same message. The object can be used as
@@ -855,8 +855,8 @@ class LIBPROTOBUF_EXPORT Reflection {
 
   // DEPRECATED. Please use GetRepeatedFieldRef().
   //
-  // for T = string, proto2::internal::StringPieceField
-  //         proto2::Message & descendants.
+  // for T = string, google::protobuf::internal::StringPieceField
+  //         google::protobuf::Message & descendants.
   template <typename T>
   GOOGLE_PROTOBUF_DEPRECATED_MSG(
       "Please use GetRepeatedFieldRef() instead")
@@ -865,8 +865,8 @@ class LIBPROTOBUF_EXPORT Reflection {
 
   // DEPRECATED. Please use GetMutableRepeatedFieldRef().
   //
-  // for T = string, proto2::internal::StringPieceField
-  //         proto2::Message & descendants.
+  // for T = string, google::protobuf::internal::StringPieceField
+  //         google::protobuf::Message & descendants.
   template <typename T>
   GOOGLE_PROTOBUF_DEPRECATED_MSG(
       "Please use GetMutableRepeatedFieldRef() instead")
@@ -921,7 +921,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // useful for determining if a message is a generated message or not, for
   // example:
   //   if (message->GetReflection()->GetMessageFactory() ==
-  //       proto2::MessageFactory::generated_factory()) {
+  //       google::protobuf::MessageFactory::generated_factory()) {
   //     // This is a generated message.
   //   }
   // It can also be used to create more messages of this type, though
@@ -1155,7 +1155,7 @@ const T* DynamicCastToGenerated(const Message* from) {
   const T&(*get_default_instance)() = &T::default_instance;
   (void)get_default_instance;
 
-  // Compile-time assert that T is a subclass of proto2::Message.
+  // Compile-time assert that T is a subclass of google::protobuf::Message.
   const Message* unused = static_cast<T*>(nullptr);
   (void)unused;
 
@@ -1192,8 +1192,8 @@ T dynamic_cast_if_available(Message* from) {
 // Implementation details for {Get,Mutable}RawRepeatedPtrField.  We provide
 // specializations for <string>, <StringPieceField> and <Message> and handle
 // everything else with the default template which will match any type having
-// a method with signature "static const proto2::Descriptor* descriptor()".
-// Such a type presumably is a descendant of proto2::Message.
+// a method with signature "static const google::protobuf::Descriptor* descriptor()".
+// Such a type presumably is a descendant of google::protobuf::Message.
 
 template<>
 inline const RepeatedPtrField<string>& Reflection::GetRepeatedPtrField<string>(

@@ -154,28 +154,28 @@ namespace internal {
 
 class ReflectionAccessor {
  public:
-  static void* GetOffset(void* msg, const proto2::FieldDescriptor* f,
-                         const proto2::Reflection* r) {
+  static void* GetOffset(void* msg, const google::protobuf::FieldDescriptor* f,
+                         const google::protobuf::Reflection* r) {
     auto gr =
-        dynamic_cast<const proto2::internal::GeneratedMessageReflection*>(r);
+        dynamic_cast<const google::protobuf::internal::GeneratedMessageReflection*>(r);
     GOOGLE_CHECK(gr != nullptr);
     return static_cast<char*>(msg) + gr->schema_.GetFieldOffset(f);
   }
 
-  static proto2::internal::ExtensionSet* GetExtensionSet(
-      void* msg, const proto2::Reflection* r) {
+  static google::protobuf::internal::ExtensionSet* GetExtensionSet(
+      void* msg, const google::protobuf::Reflection* r) {
     auto gr =
-        dynamic_cast<const proto2::internal::GeneratedMessageReflection*>(r);
+        dynamic_cast<const google::protobuf::internal::GeneratedMessageReflection*>(r);
     GOOGLE_CHECK(gr != nullptr);
-    return reinterpret_cast<proto2::internal::ExtensionSet*>(
+    return reinterpret_cast<google::protobuf::internal::ExtensionSet*>(
         static_cast<char*>(msg) + gr->schema_.GetExtensionSetOffset());
   }
-  static proto2::internal::InternalMetadataWithArena* GetMetadata(
-      void* msg, const proto2::Reflection* r) {
+  static google::protobuf::internal::InternalMetadataWithArena* GetMetadata(
+      void* msg, const google::protobuf::Reflection* r) {
     auto gr =
-        dynamic_cast<const proto2::internal::GeneratedMessageReflection*>(r);
+        dynamic_cast<const google::protobuf::internal::GeneratedMessageReflection*>(r);
     GOOGLE_CHECK(gr != nullptr);
-    return reinterpret_cast<proto2::internal::InternalMetadataWithArena*>(
+    return reinterpret_cast<google::protobuf::internal::InternalMetadataWithArena*>(
         static_cast<char*>(msg) + gr->schema_.GetMetadataOffset());
   }
 };

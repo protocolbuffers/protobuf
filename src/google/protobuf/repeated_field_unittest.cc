@@ -1651,8 +1651,8 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, Sort) {
 
 // -----------------------------------------------------------------------------
 // Unit-tests for the insert iterators
-// proto2::RepeatedFieldBackInserter,
-// proto2::AllocatedRepeatedPtrFieldBackInserter
+// google::protobuf::RepeatedFieldBackInserter,
+// google::protobuf::AllocatedRepeatedPtrFieldBackInserter
 // Ported from util/gtl/proto-array-iterators_unittest.
 
 class RepeatedFieldInsertionIteratorsTest : public testing::Test {

@@ -1241,7 +1241,7 @@ class RepeatedMessageTypeTraits {
     // See notes above in RepeatedEnumTypeTraits::GetRepeated(): same
     // casting hack applies here, because a RepeatedPtrField<MessageLite>
     // cannot naturally become a RepeatedPtrType<Type> even though Type is
-    // presumably a message. proto2::Message goes through similar contortions
+    // presumably a message. google::protobuf::Message goes through similar contortions
     // with a reinterpret_cast<>.
     return *reinterpret_cast<const RepeatedPtrField<Type>*>(
         set.GetRawRepeatedField(number, GetDefaultRepeatedField()));

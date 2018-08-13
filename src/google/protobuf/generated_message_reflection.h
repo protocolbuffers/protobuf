@@ -138,7 +138,7 @@ class WeakFieldMap;             // weak_field_map.h
 //                  -1.
 struct ReflectionSchema {
  public:
-  // Size of a proto2::Message object of this type.
+  // Size of a google::protobuf::Message object of this type.
   uint32 GetObjectSize() const { return static_cast<uint32>(object_size_); }
 
   // Offset of a non-oneof field.  Getting a field offset is slightly more

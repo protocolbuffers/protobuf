@@ -73,10 +73,10 @@ class DiskSourceTree;    // importer.h
 // then write a main() procedure like this:
 //
 //   int main(int argc, char* argv[]) {
-//     proto2::compiler::CommandLineInterface cli;
+//     google::protobuf::compiler::CommandLineInterface cli;
 //
 //     // Support generation of C++ source and headers.
-//     proto2::compiler::cpp::CppGenerator cpp_generator;
+//     google::protobuf::compiler::cpp::CppGenerator cpp_generator;
 //     cli.RegisterGenerator("--cpp_out", &cpp_generator,
 //       "Generate C++ source and header.");
 //

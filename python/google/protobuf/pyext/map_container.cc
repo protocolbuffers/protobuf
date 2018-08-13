@@ -75,7 +75,7 @@ class MapReflectionFriend {
 struct MapIterator {
   PyObject_HEAD;
 
-  std::unique_ptr<google::protobuf::MapIterator> iter;
+  std::unique_ptr<::google::protobuf::MapIterator> iter;
 
   // A pointer back to the container, so we can notice changes to the version.
   // We own a ref on this.
@@ -314,7 +314,7 @@ static MapContainer* GetMap(PyObject* obj) {
 
 Py_ssize_t MapReflectionFriend::Length(PyObject* _self) {
   MapContainer* self = GetMap(_self);
-  const Message* message = self->message;
+  const google::protobuf::Message* message = self->message;
   return message->GetReflection()->MapSize(*message,
                                            self->parent_field_descriptor);
 }
@@ -423,7 +423,7 @@ int MapContainer::Release() {
 // ScalarMap ///////////////////////////////////////////////////////////////////
 
 PyObject *NewScalarMapContainer(
-    CMessage* parent, const FieldDescriptor* parent_field_descriptor) {
+    CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
   }
@@ -704,7 +704,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, Message* message,
 }
 
 PyObject* NewMessageMapContainer(
-    CMessage* parent, const FieldDescriptor* parent_field_descriptor,
+    CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
@@ -1011,7 +1011,7 @@ PyObject* MapReflectionFriend::GetIterator(PyObject *_self) {
     Message* message = self->GetMutableMessage();
     const Reflection* reflection = message->GetReflection();
 
-    iter->iter.reset(new google::protobuf::MapIterator(
+    iter->iter.reset(new ::google::protobuf::MapIterator(
         reflection->MapBegin(message, self->parent_field_descriptor)));
   }
 

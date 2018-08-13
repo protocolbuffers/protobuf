@@ -32,7 +32,7 @@
 // metadata (Unknown-field set, Arena pointer, ...) and allows its
 // representation to be made more space-efficient via various optimizations.
 //
-// Note that this is distinct from proto2::Metadata, which encapsulates
+// Note that this is distinct from google::protobuf::Metadata, which encapsulates
 // Descriptor and Reflection pointers.
 
 #ifndef GOOGLE_PROTOBUF_METADATA_H__
