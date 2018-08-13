@@ -85,6 +85,7 @@ import struct
 import six
 import sys
 
+_UCS2_MAXUNICODE = 65535
 if six.PY3:
   long = int
 else:
@@ -551,7 +552,7 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
       e.reason = '%s in field: %s' % (e, key.full_name)
       raise
 
-    if is_strict_utf8 and six.PY2 and sys.maxunicode > 65535:
+    if is_strict_utf8 and six.PY2 and sys.maxunicode > _UCS2_MAXUNICODE:
       # Only do the check for python2 ucs4 when is_strict_utf8 enabled
       if _SURROGATE_PATTERN.search(value):
         reason = ('String field %s contains invalid UTF-8 data when parsing'
