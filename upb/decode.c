@@ -172,6 +172,7 @@ static bool upb_array_grow(upb_array *arr, size_t elements) {
   size_t new_bytes;
   size_t old_bytes;
   void *new_data;
+  upb_alloc *alloc = upb_arena_alloc(arr->arena);
 
   while (new_size < needed) {
     new_size *= 2;
@@ -179,7 +180,7 @@ static bool upb_array_grow(upb_array *arr, size_t elements) {
 
   old_bytes = arr->len * arr->element_size;
   new_bytes = new_size * arr->element_size;
-  new_data = upb_realloc(arr->alloc, arr->data, old_bytes, new_bytes);
+  new_data = upb_realloc(alloc, arr->data, old_bytes, new_bytes);
   CHK(new_data);
 
   arr->data = new_data;
@@ -212,12 +213,11 @@ static upb_array *upb_getorcreatearr(upb_decstate *d,
   upb_array *arr = upb_getarr(frame, field);
 
   if (!arr) {
-    arr = upb_env_malloc(d->env, sizeof(*arr));
+    upb_fieldtype_t type = upb_desctype_to_fieldtype[field->descriptortype];
+    arr = upb_array_new(type, upb_env_arena(d->env));
     if (!arr) {
       return NULL;
     }
-    upb_array_init(arr, upb_desctype_to_fieldtype[field->descriptortype],
-                   upb_arena_alloc(upb_env_arena(d->env)));
     *(upb_array**)&frame->msg[field->offset] = arr;
   }
 
@@ -278,10 +278,8 @@ static bool upb_decode_submsg(upb_decstate *d,
   UPB_ASSERT(subm);
 
   if (!submsg) {
-    submsg = upb_env_malloc(d->env, upb_msg_sizeof((upb_msglayout *)subm));
+    submsg = upb_msg_new((upb_msglayout *)subm, upb_env_arena(d->env));
     CHK(submsg);
-    submsg = upb_msg_init(
-        submsg, (upb_msglayout*)subm, upb_arena_alloc(upb_env_arena(d->env)));
     *(void**)submsg_slot = submsg;
   }
 
@@ -460,10 +458,8 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
       subm = frame->m->submsgs[field->submsg_index];
       UPB_ASSERT(subm);
 
-      submsg = upb_env_malloc(d->env, upb_msg_sizeof((upb_msglayout *)subm));
+      submsg = upb_msg_new((upb_msglayout *)subm, upb_env_arena(d->env));
       CHK(submsg);
-      submsg = upb_msg_init(submsg, (upb_msglayout*)subm,
-                            upb_arena_alloc(upb_env_arena(d->env)));
 
       field_mem = upb_array_add(arr, 1);
       CHK(field_mem);

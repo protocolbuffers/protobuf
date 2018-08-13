@@ -27,25 +27,13 @@ local symtab = upb.SymbolTable{
 local factory = upb.MessageFactory(symtab);
 local TestMessage = factory:get_message_class("TestMessage")
 
-function test_decodermethod()
-  local decoder = pb.MakeStringToMessageDecoder(TestMessage)
-
-  assert_error(
-    function()
-      -- Needs at least one argument to construct.
-      pb.MakeStringToMessageDecoder()
-    end)
-end
-
 function test_parse_primitive()
   local binary_pb =
          "\008\128\128\128\128\002\016\128\128\128\128\004\024\128\128"
       .. "\128\128\128\128\128\002\032\128\128\128\128\128\128\128\001\041\000"
       .. "\000\000\000\000\000\248\063\053\000\000\096\064\056\001"
-  local decoder = pb.MakeStringToMessageDecoder(TestMessage)
-  local encoder = pb.MakeMessageToStringEncoder(TestMessage)
-  collectgarbage()  -- ensure encoder/decoder GC-anchor what they need.
-  local msg = decoder(binary_pb)
+  local msg = TestMessage()
+  pb.decode(msg, binary_pb)
   assert_equal(536870912, msg.i32)
   assert_equal(1073741824, msg.u32)
   assert_equal(1125899906842624, msg.i64)
@@ -54,8 +42,9 @@ function test_parse_primitive()
   assert_equal(3.5, msg.flt)
   assert_equal(true, msg.bool)
 
-  local encoded = encoder(msg)
-  local msg2 = decoder(encoded)
+  local encoded = pb.encode(msg)
+  local msg2 = TestMessage()
+  pb.decode(msg2, encoded)
   assert_equal(536870912, msg.i32)
   assert_equal(1073741824, msg.u32)
   assert_equal(1125899906842624, msg.i64)
@@ -77,8 +66,8 @@ function test_parse_string()
   local TestMessage = factory:get_message_class("TestMessage")
 
   local binary_pb = "\010\005Hello"
-  local decoder = pb.MakeStringToMessageDecoder(TestMessage)
-  msg = decoder(binary_pb)
+  msg = TestMessage()
+  pb.decode(msg, binary_pb)
   assert_equal("Hello", msg.str)
 end
 

@@ -4,21 +4,16 @@
 ** However it differs from other common representations like
 ** google::protobuf::Message in one key way: it does not prescribe any
 ** ownership between messages and submessages, and it relies on the
-** client to delete each message/submessage/array/map at the appropriate
-** time.
+** client to ensure that each submessage/array/map outlives its parent.
+**
+** All messages, arrays, and maps live in an Arena.  If the entire message
+** tree is in the same arena, ensuring proper lifetimes is simple.  However
+** the client can mix arenas as long as they ensure that there are no
+** dangling pointers.
 **
 ** A client can access a upb::Message without knowing anything about
 ** ownership semantics, but to create or mutate a message a user needs
 ** to implement the memory management themselves.
-**
-** Currently all messages, arrays, and maps store a upb_alloc* internally.
-** Mutating operations use this when they require dynamically-allocated
-** memory.  We could potentially eliminate this size overhead later by
-** letting the user flip a bit on the factory that prevents this from
-** being stored.  The user would then need to use separate functions where
-** the upb_alloc* is passed explicitly.  However for handlers to populate
-** such structures, they would need a place to store this upb_alloc* during
-** parsing; upb_handlers don't currently have a good way to accommodate this.
 **
 ** TODO: UTF-8 checking?
 **/
@@ -66,16 +61,6 @@ typedef void upb_msg;
  * msglayout. */
 
 
-/** upb_visitor ***************************************************************/
-
-/* upb_visitor will visit all the fields of a message and its submessages.  It
- * uses a upb_visitorplan which you can obtain from a upb_msgfactory. */
-
-upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
-                                upb_sink *output);
-bool upb_visitor_visitmsg(upb_visitor *v, const upb_msg *msg);
-
-
 /** upb_msgfactory ************************************************************/
 
 /* A upb_msgfactory contains a cache of upb_msglayout, upb_handlers, and
@@ -104,10 +89,6 @@ const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
  * upb_msgfactory. */
 const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
                                               const upb_msgdef *m);
-const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
-                                                    const upb_msgdef *m);
-const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
-                                                     const upb_handlers *h);
 
 
 /** upb_stringview ************************************************************/
@@ -183,52 +164,13 @@ UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
 /** upb_msg *******************************************************************/
 
 /* A upb_msg represents a protobuf message.  It always corresponds to a specific
- * upb_msglayout, which describes how it is laid out in memory.
- *
- * The message will have a fixed size, as returned by upb_msg_sizeof(), which
- * will be used to store fixed-length fields.  The upb_msg may also allocate
- * dynamic memory internally to store data such as:
- *
- * - extensions
- * - unknown fields
- */
+ * upb_msglayout, which describes how it is laid out in memory.  */
 
-/* Returns the size of a message given this layout. */
-size_t upb_msg_sizeof(const upb_msglayout *l);
+/* Creates a new message of the given type/layout in this arena. */
+upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
 
-/* upb_msg_init() / upb_msg_uninit() allow the user to use a pre-allocated
- * block of memory as a message.  The block's size should be upb_msg_sizeof().
- * upb_msg_uninit() must be called to release internally-allocated memory
- * unless the allocator is an arena that does not require freeing.
- *
- * Please note that upb_msg_init() may return a value that is different than
- * |msg|, so you must assign the return value and not cast your memory block
- * to upb_msg* directly!
- *
- * Please note that upb_msg_uninit() does *not* free any submessages, maps,
- * or arrays referred to by this message's fields.  You must free them manually
- * yourself.
- *
- * upb_msg_uninit returns the original memory block, which may be useful if
- * you dynamically allocated it (though upb_msg_new() would normally be more
- * appropriate in this case). */
-upb_msg *upb_msg_init(void *msg, const upb_msglayout *l, upb_alloc *a);
-void *upb_msg_uninit(upb_msg *msg, const upb_msglayout *l);
-
-/* Like upb_msg_init() / upb_msg_uninit(), except the message's memory is
- * allocated / freed from the given upb_alloc. */
-upb_msg *upb_msg_new(const upb_msglayout *l, upb_alloc *a);
-void upb_msg_free(upb_msg *msg, const upb_msglayout *l);
-
-/* Returns the upb_alloc for the given message.
- * TODO(haberman): get rid of this?  Not sure we want to be storing this
- * for every message. */
-upb_alloc *upb_msg_alloc(const upb_msg *msg);
-
-/* Packs the tree of messages rooted at "msg" into a single hunk of memory,
- * allocated from the given allocator. */
-void *upb_msg_pack(const upb_msg *msg, const upb_msglayout *l,
-                   void *p, size_t *ofs, size_t size);
+/* Returns the arena for the given message. */
+upb_arena *upb_msg_arena(const upb_msg *msg);
 
 /* Read-only message API.  Can be safely called by anyone. */
 
@@ -282,16 +224,12 @@ bool upb_msg_clearfield(upb_msg *msg,
  * semantics are the same as upb_msg.  A upb_array allocates dynamic
  * memory internally for the array elements. */
 
-size_t upb_array_sizeof(upb_fieldtype_t type);
-void upb_array_init(upb_array *arr, upb_fieldtype_t type, upb_alloc *a);
-void upb_array_uninit(upb_array *arr);
-upb_array *upb_array_new(upb_fieldtype_t type, upb_alloc *a);
-void upb_array_free(upb_array *arr);
+upb_array *upb_array_new(upb_fieldtype_t type, upb_arena *a);
+upb_fieldtype_t upb_array_type(const upb_array *arr);
 
 /* Read-only interface.  Safe for anyone to call. */
 
 size_t upb_array_size(const upb_array *arr);
-upb_fieldtype_t upb_array_type(const upb_array *arr);
 upb_msgval upb_array_get(const upb_array *arr, size_t i);
 
 /* Write interface.  May only be called by the message's owner who can enforce
@@ -308,12 +246,8 @@ bool upb_array_set(upb_array *arr, size_t i, upb_msgval val);
  * So you must ensure that any string or message values outlive the map, and you
  * must delete them manually when they are no longer required. */
 
-size_t upb_map_sizeof(upb_fieldtype_t ktype, upb_fieldtype_t vtype);
-bool upb_map_init(upb_map *map, upb_fieldtype_t ktype, upb_fieldtype_t vtype,
-                  upb_alloc *a);
-void upb_map_uninit(upb_map *map);
-upb_map *upb_map_new(upb_fieldtype_t ktype, upb_fieldtype_t vtype, upb_alloc *a);
-void upb_map_free(upb_map *map);
+upb_map *upb_map_new(upb_fieldtype_t ktype, upb_fieldtype_t vtype,
+                     upb_arena *a);
 
 /* Read-only interface.  Safe for anyone to call. */
 

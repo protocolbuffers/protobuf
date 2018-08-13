@@ -94,56 +94,6 @@ static void *lupb_newuserdata(lua_State *L, size_t size, const char *type) {
 }
 
 
-/* lupb_alloc *****************************************************************/
-
-typedef struct {
-  upb_alloc alloc;
-  lua_State *L;
-} lupb_alloc;
-
-char lupb_alloc_cache_key;
-
-static void *lupb_alloc_func(upb_alloc *alloc, void *ptr, size_t oldsize,
-                             size_t size) {
-  lupb_alloc *lalloc = (lupb_alloc*)alloc;
-  void *ud;
-
-  /* We read this every time in case the user changes the Lua alloc function. */
-  lua_Alloc func = lua_getallocf(lalloc->L, &ud);
-
-  return func(ud, ptr, oldsize, size);
-}
-
-static void lupb_alloc_pushnew(lua_State *L) {
-  lupb_alloc *lalloc = lua_newuserdata(L, sizeof(lupb_alloc));
-
-  lalloc->alloc.func = &lupb_alloc_func;
-  lalloc->L = L;
-}
-
-/* Returns the global lupb_alloc func that was created in our luaopen().
- * Callers can be guaranteed that it will be alive as long as |L| is. */
-static upb_alloc *lupb_alloc_get(lua_State *L) {
-  lupb_alloc *lalloc;
-
-  lua_pushlightuserdata(L, &lupb_alloc_cache_key);
-  lua_gettable(L, LUA_REGISTRYINDEX);
-  lalloc = lua_touserdata(L, -1);
-  UPB_ASSERT(lalloc);
-  lua_pop(L, 1);
-
-  return &lalloc->alloc;
-}
-
-static void lupb_alloc_initsingleton(lua_State *L) {
-  lua_pushlightuserdata(L, &lupb_alloc_cache_key);
-  lupb_alloc_pushnew(L);
-  lua_settable(L, LUA_REGISTRYINDEX);
-}
-
-#define ADD_BYTES(ptr, bytes) ((void*)((char*)ptr + bytes))
-
-
 /* lupb_arena *****************************************************************/
 
 /* lupb_arena only exists to wrap a upb_arena.  It is never exposed to users;
@@ -162,6 +112,30 @@ int lupb_arena_new(lua_State *L) {
   upb_arena_init(a);
 
   return 1;
+}
+
+char lupb_arena_cache_key;
+
+/* Returns the global lupb_arena func that was created in our luaopen().
+ * Callers can be guaranteed that it will be alive as long as |L| is.
+ * TODO(haberman): we shouldn't use a global arena!  We should have
+ * one arena for a parse, or per independently-created message. */
+static upb_arena *lupb_arena_get(lua_State *L) {
+  upb_arena *arena;
+
+  lua_pushlightuserdata(L, &lupb_arena_cache_key);
+  lua_gettable(L, LUA_REGISTRYINDEX);
+  arena = lua_touserdata(L, -1);
+  UPB_ASSERT(arena);
+  lua_pop(L, 1);
+
+  return arena;
+}
+
+static void lupb_arena_initsingleton(lua_State *L) {
+  lua_pushlightuserdata(L, &lupb_arena_cache_key);
+  lupb_arena_new(L);
+  lua_settable(L, LUA_REGISTRYINDEX);
 }
 
 static int lupb_arena_gc(lua_State *L) {
@@ -312,12 +286,6 @@ const lupb_msgclass *lupb_msgclass_check(lua_State *L, int narg) {
 
 const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg) {
   return lupb_msgclass_check(L, narg)->layout;
-}
-
-const upb_handlers *lupb_msgclass_getmergehandlers(lua_State *L, int narg) {
-  const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, narg);
-  return upb_msgfactory_getmergehandlers(
-      lmsgclass->lfactory->factory, lmsgclass->msgdef);
 }
 
 const upb_msgdef *lupb_msgclass_getmsgdef(const lupb_msgclass *lmsgclass) {
@@ -547,12 +515,6 @@ static int lupb_array_checkindex(lua_State *L, int narg, uint32_t max) {
   return n - 1;  /* Lua uses 1-based indexing. :( */
 }
 
-static int lupb_array_gc(lua_State *L) {
-  lupb_array *larray = lupb_array_check(L, 1);
-  upb_array_uninit(larray->arr);
-  return 0;
-}
-
 /* lupb_array Public API */
 
 static int lupb_array_new(lua_State *L) {
@@ -568,11 +530,9 @@ static int lupb_array_new(lua_State *L) {
     lupb_uservalseti(L, -1, ARRAY_MSGCLASS_INDEX, 1);  /* GC-root lmsgclass. */
   }
 
-  larray =
-      lupb_newuserdata(L, sizeof(*larray) + upb_array_sizeof(type), LUPB_ARRAY);
+  larray = lupb_newuserdata(L, sizeof(*larray), LUPB_ARRAY);
   larray->lmsgclass = lmsgclass;
-  larray->arr = ADD_BYTES(larray, sizeof(*larray));
-  upb_array_init(larray->arr, type, lupb_alloc_get(L));
+  larray->arr = upb_array_new(type, lupb_arena_get(L));
 
   return 1;
 }
@@ -614,7 +574,6 @@ static int lupb_array_len(lua_State *L) {
 }
 
 static const struct luaL_Reg lupb_array_mm[] = {
-  {"__gc", lupb_array_gc},
   {"__index", lupb_array_index},
   {"__len", lupb_array_len},
   {"__newindex", lupb_array_newindex},
@@ -681,12 +640,6 @@ static upb_msgval lupb_map_typecheck(lua_State *L, int narg, int msg,
   return upb_msgval_map(map);
 }
 
-static int lupb_map_gc(lua_State *L) {
-  lupb_map *lmap = lupb_map_check(L, 1);
-  upb_map_uninit(lmap->map);
-  return 0;
-}
-
 /* lupb_map Public API */
 
 /**
@@ -707,9 +660,7 @@ static int lupb_map_new(lua_State *L) {
     value_type = UPB_TYPE_MESSAGE;
   }
 
-  lmap = lupb_newuserdata(
-      L, sizeof(*lmap) + upb_map_sizeof(key_type, value_type), LUPB_MAP);
-  lmap->map = ADD_BYTES(lmap, sizeof(*lmap));
+  lmap = lupb_newuserdata(L, sizeof(*lmap), LUPB_MAP);
 
   if (value_type == UPB_TYPE_MESSAGE) {
     value_lmsgclass = lupb_msgclass_check(L, 2);
@@ -717,7 +668,7 @@ static int lupb_map_new(lua_State *L) {
   }
 
   lmap->value_lmsgclass = value_lmsgclass;
-  upb_map_init(lmap->map, key_type, value_type, lupb_alloc_get(L));
+  lmap->map = upb_map_new(key_type, value_type, lupb_arena_get(L));
 
   return 1;
 }
@@ -858,7 +809,6 @@ static int lupb_map_pairs(lua_State *L) {
 /* upb_mapiter ]]] */
 
 static const struct luaL_Reg lupb_map_mm[] = {
-  {"__gc", lupb_map_gc},
   {"__index", lupb_map_index},
   {"__len", lupb_map_len},
   {"__newindex", lupb_map_newindex},
@@ -912,6 +862,13 @@ const upb_msg *lupb_msg_checkmsg(lua_State *L, int narg,
   return lmsg->msg;
 }
 
+upb_msg *lupb_msg_checkmsg2(lua_State *L, int narg,
+                            const upb_msglayout **layout) {
+  lupb_msg *lmsg = lupb_msg_check(L, narg);
+  *layout = lmsg->lmsgclass->layout;
+  return lmsg->msg;
+}
+
 const upb_msgdef *lupb_msg_checkdef(lua_State *L, int narg) {
   return lupb_msg_check(L, narg)->lmsgclass->msgdef;
 }
@@ -958,12 +915,6 @@ int lupb_msg_pushref(lua_State *L, int msgclass, upb_msg *msg) {
   return 1;
 }
 
-static int lupb_msg_gc(lua_State *L) {
-  lupb_msg *lmsg = lupb_msg_check(L, 1);
-  upb_msg_uninit(lmsg->msg, lmsg->lmsgclass->layout);
-  return 0;
-}
-
 /* lupb_msg Public API */
 
 /**
@@ -974,12 +925,10 @@ static int lupb_msg_gc(lua_State *L) {
  */
 static int lupb_msg_pushnew(lua_State *L, int narg) {
   const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, narg);
-  size_t size = sizeof(lupb_msg) + upb_msg_sizeof(lmsgclass->layout);
-  lupb_msg *lmsg = lupb_newuserdata(L, size, LUPB_MSG);
+  lupb_msg *lmsg = lupb_newuserdata(L, sizeof(lupb_msg), LUPB_MSG);
 
   lmsg->lmsgclass = lmsgclass;
-  lmsg->msg = upb_msg_init(
-      ADD_BYTES(lmsg, sizeof(*lmsg)), lmsgclass->layout, lupb_alloc_get(L));
+  lmsg->msg = upb_msg_new(lmsgclass->layout, lupb_arena_get(L));
 
   lupb_uservalseti(L, -1, LUPB_MSG_MSGCLASSINDEX, narg);
 
@@ -1070,7 +1019,6 @@ static int lupb_msg_newindex(lua_State *L) {
 }
 
 static const struct luaL_Reg lupb_msg_mm[] = {
-  {"__gc", lupb_msg_gc},
   {"__index", lupb_msg_index},
   {"__newindex", lupb_msg_newindex},
   {NULL, NULL}
@@ -1096,5 +1044,5 @@ void lupb_msg_registertypes(lua_State *L) {
   lupb_register_type(L, LUPB_MAP,        NULL,              lupb_map_mm);
   lupb_register_type(L, LUPB_MSG,        NULL,              lupb_msg_mm);
 
-  lupb_alloc_initsingleton(L);
+  lupb_arena_initsingleton(L);
 }
