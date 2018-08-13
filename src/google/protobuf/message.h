@@ -1160,7 +1160,7 @@ const T* DynamicCastToGenerated(const Message* from) {
   (void)unused;
 
 #ifdef GOOGLE_PROTOBUF_NO_RTTI
-  bool ok = &T::default_instance()->GetReflection() == from->GetReflection();
+  bool ok = T::default_instance().GetReflection() == from->GetReflection();
   return ok ? down_cast<const T*>(from) : nullptr;
 #else
   return dynamic_cast<const T*>(from);
