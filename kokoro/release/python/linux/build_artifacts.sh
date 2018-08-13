@@ -43,3 +43,24 @@ build_artifact_version 2.7
 build_artifact_version 3.4
 build_artifact_version 3.5
 build_artifact_version 3.6
+
+# Build source package
+
+# Clean up env
+rm -rf venv
+sudo rm -rf protobuf
+git clone https://github.com/google/protobuf.git
+cd protobuf
+git checkout $BUILD_COMMIT
+
+# Make sure all files are world-readable.
+find python -type d -exec chmod a+r,a+x {} +
+find python -type f -exec chmod a+r {} +
+umask 0022
+
+cd python
+
+# Be sure to run build before sdist, because otherwise sdist will not include
+# well-known types.
+python setup.py clean build sdist
+ls
