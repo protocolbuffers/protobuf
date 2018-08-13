@@ -135,7 +135,7 @@ string DefaultInstanceName(const Descriptor* descriptor);
 // fields.
 string ReferenceFunctionName(const Descriptor* descriptor);
 
-// Name of the base class: proto2::Message or proto2::MessageLite.
+// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
 string SuperClassName(const Descriptor* descriptor, const Options& options);
 
 // Get the (unqualified) name that should be used for this field in C++ code.

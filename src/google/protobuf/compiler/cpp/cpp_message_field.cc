@@ -48,7 +48,7 @@ namespace {
 // When we are generating code for implicit weak fields, we need to insert some
 // additional casts. These functions return the casted expression if
 // implicit_weak_field is true but otherwise return the original expression.
-// Ordinarily a static_cast is enough to cast proto2::MessageLite* to a class
+// Ordinarily a static_cast is enough to cast google::protobuf::MessageLite* to a class
 // deriving from it, but we need a reinterpret_cast in cases where the generated
 // message is forward-declared but its full definition is not visible.
 string StaticCast(const string& type, const string& expression,

@@ -376,7 +376,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -516,7 +516,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -845,7 +845,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -1001,7 +1001,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protob
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -1144,7 +1144,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -1426,7 +1426,7 @@ class LIBPROTOBUF_EXPORT ExtensionRangeOptions : public ::google::protobuf::Mess
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -1569,7 +1569,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -1952,7 +1952,7 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -2117,7 +2117,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange : public ::google
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -2260,7 +2260,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -2476,7 +2476,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -2649,7 +2649,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -2827,7 +2827,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -3058,7 +3058,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -3559,7 +3559,7 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* 
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -3734,7 +3734,7 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -3981,7 +3981,7 @@ class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -4124,7 +4124,7 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@p
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -4283,7 +4283,7 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -4434,7 +4434,7 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* 
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -4585,7 +4585,7 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -4772,7 +4772,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -4935,7 +4935,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -5176,7 +5176,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -5404,7 +5404,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* 
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -5546,7 +5546,7 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(
@@ -5728,7 +5728,7 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(

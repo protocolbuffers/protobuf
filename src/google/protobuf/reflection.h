@@ -337,8 +337,8 @@ namespace internal {
 //   CPPTYPE_BOOL         bool                    bool
 //   CPPTYPE_ENUM         generated enum type     int32
 //   CPPTYPE_STRING       string                  string
-//   CPPTYPE_MESSAGE      generated message type  proto2::Message
-//                        or proto2::Message
+//   CPPTYPE_MESSAGE      generated message type  google::protobuf::Message
+//                        or google::protobuf::Message
 //
 // Note that for enums we use int32 in the interface.
 //

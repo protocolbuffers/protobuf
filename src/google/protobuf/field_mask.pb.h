@@ -129,7 +129,7 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
 
   size_t ByteSizeLong() const final;
   #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  static const char* _InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx);
+  static const char* _InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);
   ::google::protobuf::internal::ParseFunc _ParseFunc() const final { return _InternalParse; }
   #else
   bool MergePartialFromCodedStream(

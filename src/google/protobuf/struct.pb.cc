@@ -207,7 +207,7 @@ void Struct_FieldsEntry_DoNotUse::MergeFrom(
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* Struct_FieldsEntry_DoNotUse::_InternalParse(const char* begin, const char* end, void* object, ::proto2::internal::ParseContext* ctx) { return end; }
+const char* Struct_FieldsEntry_DoNotUse::_InternalParse(const char* begin, const char* end, void* object, ::google::protobuf::internal::ParseContext* ctx) { return end; }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 

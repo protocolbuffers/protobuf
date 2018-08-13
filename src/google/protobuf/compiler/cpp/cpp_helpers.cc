@@ -1324,7 +1324,7 @@ void GenerateCaseBody(internal::WireFormatLite::WireType wiretype,
                 format(
                     "object = "
                     "CastToBase(&msg->$1$_)->AddWeak(reinterpret_cast<const "
-                    "::proto2::MessageLite*>(&$2$::_$3$_default_instance_));\n",
+                    "::google::protobuf::MessageLite*>(&$2$::_$3$_default_instance_));\n",
                     FieldName(field), Namespace(field->message_type()),
                     ClassName(field->message_type()));
               }

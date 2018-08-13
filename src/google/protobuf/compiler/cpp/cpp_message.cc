@@ -941,7 +941,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "public:\n"
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "  static const char* _InternalParse(const char* begin, const char* "
-        "end, void* object, ::proto2::internal::ParseContext* ctx);\n"
+        "end, void* object, ::$proto_ns$::internal::ParseContext* ctx);\n"
         "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
@@ -1158,7 +1158,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "size_t ByteSizeLong() const final;\n"
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "static const char* _InternalParse(const char* begin, const char* end, "
-        "void* object, ::proto2::internal::ParseContext* ctx);\n"
+        "void* object, ::$proto_ns$::internal::ParseContext* ctx);\n"
         "::$proto_ns$::internal::ParseFunc _ParseFunc() const final { return "
         "_InternalParse; }\n"
         "#else\n"
@@ -1170,7 +1170,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       format(
           "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
           "static const char* InternalParseMessageSetItem(const char* begin, "
-          "const char* end, void* object, ::proto2::internal::ParseContext* "
+          "const char* end, void* object, "
+          "::$proto_ns$::internal::ParseContext* "
           "ctx);\n"
           "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n");
     }
@@ -1879,7 +1880,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     format(
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "const char* $classname$::_InternalParse(const char* begin, const "
-        "char* end, void* object, ::proto2::internal::ParseContext* ctx) { "
+        "char* end, void* object, ::$proto_ns$::internal::ParseContext* ctx) { "
         "return end; }\n"
         "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n");
     format("\n");

@@ -103,7 +103,7 @@ void ReportReflectionUsageError(
     const char* method, const char* description) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : proto2::Reflection::" << method << "\n"
+       "  Method      : google::protobuf::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : " << description;
@@ -129,7 +129,7 @@ static void ReportReflectionUsageTypeError(
     FieldDescriptor::CppType expected_type) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : proto2::Reflection::" << method << "\n"
+       "  Method      : google::protobuf::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : Field is not the right type for this message:\n"
@@ -142,7 +142,7 @@ static void ReportReflectionUsageEnumTypeError(
     const char* method, const EnumValueDescriptor* value) {
   GOOGLE_LOG(FATAL)
     << "Protocol Buffer reflection usage error:\n"
-       "  Method      : proto2::Reflection::" << method << "\n"
+       "  Method      : google::protobuf::Reflection::" << method << "\n"
        "  Message type: " << descriptor->full_name() << "\n"
        "  Field       : " << field->full_name() << "\n"
        "  Problem     : Enum value did not match field type:\n"
