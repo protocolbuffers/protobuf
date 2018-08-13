@@ -65,6 +65,10 @@ struct JsonPrintOptions {
   // Whether to always print enums as ints. By default they are rendered as
   // strings.
   bool always_print_enums_as_ints;
+  // Whether to always print 64-bit ints as ints. By default they are rendered
+  // as strings. Note that JavaScript parses numbers as 64-bit float thus int64
+  // and uint64 would lose precision if rendered as numbers.
+  bool always_print_int64s_as_ints;
   // Whether to preserve proto field names
   bool preserve_proto_field_names;
 
@@ -72,6 +76,7 @@ struct JsonPrintOptions {
       : add_whitespace(false),
         always_print_primitive_fields(false),
         always_print_enums_as_ints(false),
+        always_print_int64s_as_ints(false),
         preserve_proto_field_names(false) {}
 };
 

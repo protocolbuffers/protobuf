@@ -241,6 +241,85 @@ TEST_F(JsonUtilTest, TestPrintEnumsAsIntsWithDefaultValue) {
   EXPECT_EQ(proto3::BAR, parsed.enum_value3());
 }
 
+TEST_F(JsonUtilTest, TestAlwaysPrintInt64sAsInts) {
+  JsonPrintOptions print_options;
+  print_options.always_print_int64s_as_ints = true;
+  JsonParseOptions parse_options;
+
+  TestMessage msg1;
+  msg1.set_int64_value(-1);
+  msg1.set_uint64_value(10);
+  msg1.add_repeated_int64_value(9223372036854775807LL);
+  msg1.add_repeated_int64_value(-100);
+  string expected_json1 = "{\"int64Value\":-1,"
+                          "\"uint64Value\":10,"
+                          "\"repeatedInt64Value\":[9223372036854775807,-100]}";
+  EXPECT_EQ(expected_json1, ToJson(msg1, print_options));
+  TestMessage parsed1;
+  ASSERT_TRUE(FromJson(expected_json1, &parsed1, parse_options));
+  EXPECT_EQ(-1, parsed1.int64_value());
+  EXPECT_EQ(10, parsed1.uint64_value());
+  EXPECT_EQ(2, parsed1.repeated_int64_value_size());
+  EXPECT_EQ(9223372036854775807LL, parsed1.repeated_int64_value(0));
+  EXPECT_EQ(-100, parsed1.repeated_int64_value(1));
+
+  TestMap msg2;
+  (*msg2.mutable_string_int64_map())["test-text"] = 9223372036854775807LL;
+  string expected_json2 = "{\"stringInt64Map\":"
+                          "{\"test-text\":9223372036854775807}}";
+  EXPECT_EQ(expected_json2, ToJson(msg2, print_options));
+  TestMap parsed2;
+  ASSERT_TRUE(FromJson(expected_json2, &parsed2, parse_options));
+  EXPECT_EQ(parsed2.string_int64_map().at("test-text"), 9223372036854775807LL);
+
+  TestOneof msg3;
+  msg3.set_oneof_int64_value(9223372036854775807LL);
+  string expected_json3 = "{\"oneofInt64Value\":9223372036854775807}";
+  EXPECT_EQ(expected_json3, ToJson(msg3, print_options));
+  TestOneof parsed3;
+  ASSERT_TRUE(FromJson(expected_json3, &parsed3, parse_options));
+  EXPECT_EQ(parsed3.oneof_int64_value(), 9223372036854775807LL);
+}
+
+TEST_F(JsonUtilTest, TestPrintInt64sAsIntsWithDefaultValue) {
+  TestMessage orig;
+  orig.set_uint64_value(0);
+
+  JsonPrintOptions print_options;
+  print_options.always_print_int64s_as_ints = true;
+  print_options.always_print_primitive_fields = true;
+  string expected_json =
+      "{\"boolValue\":false,"
+      "\"int32Value\":0,"
+      "\"int64Value\":0,"
+      "\"uint32Value\":0,"
+      "\"uint64Value\":0,"
+      "\"floatValue\":0,"
+      "\"doubleValue\":0,"
+      "\"stringValue\":\"\","
+      "\"bytesValue\":\"\","
+      "\"enumValue\":\"FOO\","
+      "\"repeatedBoolValue\":[],"
+      "\"repeatedInt32Value\":[],"
+      "\"repeatedInt64Value\":[],"
+      "\"repeatedUint32Value\":[],"
+      "\"repeatedUint64Value\":[],"
+      "\"repeatedFloatValue\":[],"
+      "\"repeatedDoubleValue\":[],"
+      "\"repeatedStringValue\":[],"
+      "\"repeatedBytesValue\":[],"
+      "\"repeatedEnumValue\":[],"
+      "\"repeatedMessageValue\":[]"
+      "}";
+  EXPECT_EQ(expected_json, ToJson(orig, print_options));
+
+  TestMessage parsed;
+  JsonParseOptions parse_options;
+  ASSERT_TRUE(FromJson(expected_json, &parsed, parse_options));
+  EXPECT_EQ(0, parsed.int64_value());
+  EXPECT_EQ(0, parsed.uint64_value());
+}
+
 TEST_F(JsonUtilTest, ParseMessage) {
   // Some random message but good enough to verify that the parsing warpper
   // functions are working properly.

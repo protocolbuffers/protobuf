@@ -91,6 +91,7 @@ message TestOneof {
     bytes oneof_bytes_value = 3;
     EnumType oneof_enum_value = 4;
     MessageType oneof_message_value = 5;
+    int64 oneof_int64_value = 6;
   }
 }
 
@@ -101,6 +102,7 @@ message TestMap {
   map<uint32, int32> uint32_map = 4;
   map<uint64, int32> uint64_map = 5;
   map<string, int32> string_map = 6;
+  map<string, int64> string_int64_map = 7;
 }
 
 message TestNestedMap {

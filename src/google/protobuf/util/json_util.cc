@@ -97,6 +97,7 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
   io::CodedOutputStream out_stream(json_output);
   converter::JsonObjectWriter json_writer(options.add_whitespace ? " " : "",
                                           &out_stream);
+  json_writer.set_print_int64_as_integer(options.always_print_int64s_as_ints);
   if (options.always_print_primitive_fields) {
     converter::DefaultValueObjectWriter default_value_writer(
         resolver, type, &json_writer);
