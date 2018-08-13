@@ -89,7 +89,8 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
         stream_(out),
         sink_(out),
         indent_string_(indent_string),
-        use_websafe_base64_for_bytes_(false) {}
+        use_websafe_base64_for_bytes_(false),
+        print_int64_as_integer_(false) {}
   virtual ~JsonObjectWriter();
 
   // ObjectWriter methods.
@@ -112,6 +113,10 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
 
   void set_use_websafe_base64_for_bytes(bool value) {
     use_websafe_base64_for_bytes_ = value;
+  }
+
+  void set_print_int64_as_integer(bool value) {
+    print_int64_as_integer_ = value;
   }
 
  protected:
@@ -207,6 +212,13 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Writes an individual character to the output.
   void WriteChar(const char c) { stream_->WriteRaw(&c, sizeof(c)); }
 
+  // If integers are rendered as strings, this will write a quote to the output.
+  void WriteInt64Quote() {
+    if (!print_int64_as_integer_) {
+        WriteChar('"');
+    }
+  }
+
   std::unique_ptr<Element> element_;
   io::CodedOutputStream* stream_;
   ByteSinkWrapper sink_;
@@ -215,6 +227,10 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Whether to use regular or websafe base64 encoding for byte fields. Defaults
   // to regular base64 encoding.
   bool use_websafe_base64_for_bytes_;
+
+  // Whether to render int64 and uint64 integers. Default value is false, where
+  // they are rendered as strings.
+  bool print_int64_as_integer_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonObjectWriter);
 };

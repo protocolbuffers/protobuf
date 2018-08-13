@@ -100,18 +100,18 @@ JsonObjectWriter* JsonObjectWriter::RenderUint32(StringPiece name,
 JsonObjectWriter* JsonObjectWriter::RenderInt64(StringPiece name,
                                                 int64 value) {
   WritePrefix(name);
-  WriteChar('"');
+  WriteInt64Quote();
   stream_->WriteString(SimpleItoa(value));
-  WriteChar('"');
+  WriteInt64Quote();
   return this;
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderUint64(StringPiece name,
                                                  uint64 value) {
   WritePrefix(name);
-  WriteChar('"');
+  WriteInt64Quote();
   stream_->WriteString(SimpleItoa(value));
-  WriteChar('"');
+  WriteInt64Quote();
   return this;
 }
 

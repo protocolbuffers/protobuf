@@ -174,6 +174,19 @@ TEST_F(JsonObjectWriterTest, RenderPrimitives) {
       output_.substr(0, out_stream_->ByteCount()));
 }
 
+TEST_F(JsonObjectWriterTest, RenderInt64AsInteger) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->set_print_int64_as_integer(true);
+  ow_->StartObject("")
+      ->RenderInt64("long", std::numeric_limits<int64>::min())
+      ->RenderUint64("unsignedlong", std::numeric_limits<uint64>::max())
+      ->EndObject();
+  EXPECT_EQ(
+      "{\"long\":-9223372036854775808,"
+      "\"unsignedlong\":18446744073709551615}",
+      output_.substr(0, out_stream_->ByteCount()));
+}
+
 TEST_F(JsonObjectWriterTest, BytesEncodesAsNonWebSafeBase64) {
   string s;
   s.push_back('\377');
