@@ -2209,7 +2209,7 @@ class RepeatedPtrIterator {
  public:
   typedef RepeatedPtrIterator<Element> iterator;
   typedef std::random_access_iterator_tag iterator_category;
-  typedef Element value_type;
+  typedef typename std::remove_const<Element>::type value_type;
   typedef std::ptrdiff_t difference_type;
   typedef Element* pointer;
   typedef Element& reference;
@@ -2296,7 +2296,7 @@ class RepeatedPtrOverPtrsIterator {
  public:
   typedef RepeatedPtrOverPtrsIterator<Element, VoidPtr> iterator;
   typedef std::random_access_iterator_tag iterator_category;
-  typedef Element value_type;
+  typedef typename std::remove_const<Element>::type value_type;
   typedef std::ptrdiff_t difference_type;
   typedef Element* pointer;
   typedef Element& reference;
