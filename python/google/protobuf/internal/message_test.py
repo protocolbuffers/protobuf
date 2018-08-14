@@ -81,6 +81,7 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf import message
 from google.protobuf.internal import _parameterized
 
+UCS2_MAXUNICODE = 65535
 if six.PY3:
   long = int
 
@@ -2209,7 +2210,9 @@ class Proto3Test(BaseTestCase):
     msg.map_int32_int32[35] = 64
     msg.map_string_foreign_message['foo'].c = 5
     self.assertEqual(0, len(msg.FindInitializationErrors()))
-
+ 
+  @unittest.skipIf(sys.maxunicode == UCS2_MAXUNICODE,
+                   'Skip for ucs2')
   def testStrictUtf8Check(self):
     # Test u'\ud801' is rejected at parser in both python2 and python3.
     serialized = (b'r\x03\xed\xa0\x81')
@@ -2259,7 +2262,8 @@ class Proto3Test(BaseTestCase):
       unittest_proto3_arena_pb2.TestAllTypes(
           optional_string=u'\ud801\ud801')
 
-  @unittest.skipIf(six.PY3, 'Surrogates are rejected at setters in Python3')
+  @unittest.skipIf(six.PY3 or sys.maxunicode == UCS2_MAXUNICODE,
+                   'Surrogates are rejected at setters in Python3')
   def testSurrogatesInPython2(self):
     # Test optional_string=u'\ud801\udc01'.
     # surrogate pair is acceptable in python2.
