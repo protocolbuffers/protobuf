@@ -35,15 +35,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using Google.Protobuf.Util;
 
 namespace Google.Protobuf.WellKnownTypes
 {
     // Manually-written partial class for the FieldMask well-known type.
     public partial class FieldMask : ICustomDiagnosticMessage
     {
+
         /// <summary>
-        /// Converts a timestamp  specified in seconds/nanoseconds to a string.
+        /// Converts a timestamp specified in seconds/nanoseconds to a string.
         /// </summary>
         /// <remarks>
         /// If the value is a normalized duration in the range described in <c>field_mask.proto</c>,
@@ -123,6 +124,62 @@ namespace Google.Protobuf.WellKnownTypes
         public string ToDiagnosticString()
         {
             return ToJson(Paths, true);
+        }
+
+        /// <summary>
+        /// Converts this FieldMask to its canonical form. In the canonical form of a
+        /// FieldMask, all field paths are sorted alphabetically and redundant field
+        /// paths are removed.
+        /// </summary>
+        public FieldMask Normalize()
+        {
+            return new FieldMaskTree(this).ToFieldMask();
+        }
+
+        /// <summary>
+        /// Creates a union of two or more FieldMasks.
+        /// </summary>
+        public FieldMask Union(params FieldMask[] otherMasks)
+        {
+            var maskTree = new FieldMaskTree(this);
+            foreach (var mask in otherMasks)
+            {
+                maskTree.MergeFromFieldMask(mask);
+            }
+
+            return maskTree.ToFieldMask();
+        }
+
+        /// <summary>
+        /// Calculates the intersection of two FieldMasks.
+        /// </summary>
+        public FieldMask Intersection(FieldMask additionalMask)
+        {
+            var tree = new FieldMaskTree(this);
+            var result = new FieldMaskTree();
+            foreach (var path in additionalMask.Paths)
+            {
+                tree.IntersectFieldPath(path, result);
+            }
+
+            return result.ToFieldMask();
+        }
+
+        /// <summary>
+        /// Merges fields specified by this FieldMask from one message to another with the
+        /// specified merge options.
+        /// </summary>
+        public void Merge(IMessage source, IMessage destination, FieldMaskUtil.MergeOptions options)
+        {
+            new FieldMaskTree(this).Merge(source, destination, options);
+        }
+
+        /// <summary>
+        /// Merges fields specified by this FieldMask from one message to another.
+        /// </summary>
+        public void Merge(IMessage source, IMessage destination)
+        {
+            Merge(source, destination, new FieldMaskUtil.MergeOptions());
         }
     }
 }
