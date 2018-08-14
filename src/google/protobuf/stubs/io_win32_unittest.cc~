@@ -581,7 +581,7 @@ TEST_F(IoWin32Test, ExpandWildcardsFailsIfNoFileMatchesTest) {
   EXPECT_EQ(result, ExpandWildcardsResult::kSuccess);
 
   // Actual test: should not match anything.
-  result = expand_wildcards(
+  int result = expand_wildcards(
       string(kUtf8Text) + "\\bar*.proto", [](const string&) {});
   ASSERT_EQ(result, ExpandWildcardsResult::kErrorNoMatchingFile);
 }
