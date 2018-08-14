@@ -177,6 +177,7 @@ DescriptorPool* ruby_to_DescriptorPool(VALUE value);
 VALUE DescriptorPool_add(VALUE _self, VALUE def);
 VALUE DescriptorPool_build(VALUE _self);
 VALUE DescriptorPool_lookup(VALUE _self, VALUE name);
+VALUE DescriptorPool_clear(VALUE _self);
 VALUE DescriptorPool_generated_pool(VALUE _self);
 
 void Descriptor_mark(void* _self);
