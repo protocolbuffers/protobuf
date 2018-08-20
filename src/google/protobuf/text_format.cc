@@ -1714,7 +1714,7 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
   void PrintFieldName(const Message& message, int field_index, int field_count,
                       const Reflection* reflection,
                       const FieldDescriptor* field,
-                      TextFormat::BaseTextGenerator* generator) const {
+                      TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintString(delegate_->PrintFieldName(
         message, reflection, field));
   }
