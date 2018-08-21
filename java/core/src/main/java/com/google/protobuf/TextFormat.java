@@ -329,14 +329,7 @@ public final class TextFormat {
 
     private void printField(final FieldDescriptor field, final Object value,
         final TextGenerator generator) throws IOException {
-      if (field.isRepeated()) {
-        // Repeated field.  Print each element.
-        for (Object element : (List<?>) value) {
-          printSingleField(field, element, generator);
-        }
-      } else {
-        printSingleField(field, value, generator);
-      }
+      printSingleField(field, value, generator);
     }
 
     private void printSingleField(final FieldDescriptor field,
@@ -373,12 +366,34 @@ public final class TextFormat {
         generator.print(": ");
       }
 
-      printFieldValue(field, value, generator);
+      if (field.isRepeated()) {
+          generator.print("[");
+      }
+
+      if (field.isRepeated()) {
+          boolean first = true;
+          for (Object object : (List<?>) value) {
+              if (!first) {
+                  generator.print(", ");
+              } else {
+                  first = false;
+              }
+
+              printFieldValue(field, object, generator);
+          }
+      } else {
+          printFieldValue(field, value, generator);
+      }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         generator.outdent();
         generator.print("}");
       }
+
+      if (field.isRepeated()) {
+        generator.print("]");
+      }
+
       generator.eol();
     }
 
