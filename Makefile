@@ -384,83 +384,6 @@ tests/conformance_upb: tests/conformance_upb.c lib/libupb.a obj/conformance_prot
 	$(CC) -o tests/conformance_upb tests/conformance_upb.c -Iobj -I. $(CPPFLAGS) $(CFLAGS) obj/conformance.upb.c obj/google/protobuf/*.upb.c lib/libupb.a
 
 
-# Google protobuf binding ######################################################
-
-upb_bindings_googlepb_SRCS = \
-  upb/bindings/googlepb/bridge.cc \
-  upb/bindings/googlepb/proto2.cc \
-
-GOOGLEPB_TESTS = \
-  tests/bindings/googlepb/test_vs_proto2.googlemessage1 \
-  tests/bindings/googlepb/test_vs_proto2.googlemessage2 \
-
-GOOGLEPB_LIB=lib/libupb.bindings.googlepb.a
-
-.PHONY: googlepb clean_googlepb googlepbtest
-
-clean: clean_googlepb
-clean_googlepb:
-	@rm -f tests/bindings/googlepb/test_vs_proto2.googlemessage*
-	@rm -f tests/googlemessage?.h
-	@rm -f $(GOOGLEPB_LIB)
-
-googlepb: default $(GOOGLEPB_LIB)
-googlepbtests: googlepb $(GOOGLEPB_TESTS)
-
-lib/libupb.bindings.googlepb.a: $(upb_bindings_googlepb_SRCS:upb/%.cc=obj/upb/%.o)
-	$(E) AR $@
-	$(Q) mkdir -p lib && $(AR) rcs $@ $^
-
-# Generate C++ with Google's protobuf compiler, to test and benchmark against.
-tests/google_messages.proto.pb: tests/google_messages.proto
-	@# TODO: replace with upbc.
-	protoc tests/google_messages.proto -otests/google_messages.proto.pb
-tests/google_messages.pb.cc: tests/google_messages.proto
-	protoc tests/google_messages.proto --cpp_out=.
-
-tests/google_message1.h:
-	$(E) XXD tests/google_message1.dat
-	$(Q) xxd -i < tests/google_message1.dat > tests/google_message1.h
-
-tests/google_message2.h:
-	$(E) XXD tests/google_message2.dat
-	$(Q) xxd -i < tests/google_message2.dat > tests/google_message2.h
-
-GOOGLEPB_TEST_LIBS = \
-  lib/libupb.bindings.googlepb.a \
-  lib/libupb.pb.a \
-  lib/libupb.descriptor.a \
-  lib/libupb.a \
-  $(EXTRA_LIBS)
-
-GOOGLEPB_TEST_DEPS = \
-  tests/bindings/googlepb/test_vs_proto2.cc \
-  tests/google_messages.proto.pb \
-  tests/google_messages.pb.cc \
-  tests/testmain.o \
-  $(GOOGLEPB_TEST_LIBS)
-
-tests/bindings/googlepb/test_vs_proto2.googlemessage1: $(GOOGLEPB_TEST_DEPS) \
-    tests/google_message1.h \
-    tests/google_message2.h
-	$(E) CXX $< '(benchmarks::SpeedMessage1)'
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
-	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
-	  -DMESSAGE_DATA_IDENT=message1_data \
-	  tests/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
-	  $(GOOGLEPB_TEST_LIBS)
-
-tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
-    tests/google_message1.h \
-    tests/google_message2.h
-	$(E) CXX $< '(benchmarks::SpeedMessage2)'
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
-	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
-	  -DMESSAGE_DATA_IDENT=message2_data \
-	  tests/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
-	  $(GOOGLEPB_TEST_LIBS)
-
-
 # Lua extension ##################################################################
 
 ifeq ($(shell uname), Darwin)
@@ -514,38 +437,6 @@ upb/bindings/lua/upb/table_c.so: upb/bindings/lua/upb/table.c lib/libupb_pic.a
 upb/bindings/lua/upb/pb_c.so: upb/bindings/lua/upb/pb.c $(LUA_LIB_DEPS)
 	$(E) CC upb/bindings/lua/upb/pb.c
 	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $^ $(LUA_LDFLAGS)
-
-
-# Python extension #############################################################
-
-PYTHON=python
-PYTHONEXT=bindings/python/build/install/lib/python/upb/__init__.so
-python: $(PYTHONEXT)
-$(PYTHONEXT): $(LIBUPB_PIC) bindings/python/upb.c
-	$(E) PYTHON bindings/python/upb.c
-	$(Q) cd bindings/python && $(PYTHON) setup.py build --debug install --home=build/install
-
-pythontest: $(PYTHONEXT)
-	cd bindings/python && cp test.py build/install/lib/python && valgrind $(PYTHON) ./build/install/lib/python/test.py
-
-# Ruby extension ###############################################################
-
-RUBY=ruby
-RUBYEXT=upb/bindings/ruby/upb.so
-ruby: $(RUBYEXT)
-
-# We pass our important flags to Ruby, but leave the warning flags out.
-# Some uses of the Ruby/C API trigger the warnings we normally use, so
-# we let Ruby decide the set of warning options to use.
-upb/bindings/ruby/Makefile: upb/bindings/ruby/extconf.rb lib/libupb_pic.a lib/libupb.pb_pic.a lib/libupb.descriptor_pic.a
-	$(E) RUBY upb/bindings/ruby/extconf.rb
-	$(Q) cd upb/bindings/ruby && ruby extconf.rb "$(OPT) $(CPPFLAGS) $(CFLAGS)"
-$(RUBYEXT): upb/bindings/ruby/upb.c upb/bindings/ruby/Makefile
-	$(E) CC upb/bindings/ruby/upb.c
-	$(Q) cd upb/bindings/ruby && make
-
-rubytest: $(RUBYEXT) upb/descriptor/descriptor.pb
-	RUBYLIB="upb/bindings/ruby" ruby tests/bindings/ruby/upb.rb
 
 # Amalgamated source (upb.c/upb.h) ############################################
 

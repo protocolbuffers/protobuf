@@ -23,17 +23,6 @@ barejit_script() {
   make test
 }
 
-# Build with Google protobuf support and tests (with JIT).
-withprotobuf_install() {
-  sudo apt-get update -qq
-  sudo apt-get install libprotobuf-dev
-  install_protoc
-}
-withprotobuf_script() {
-  make -j12 tests googlepbtests WITH_JIT=yes
-  make test
-}
-
 # Build with strict warnings.
 warnings_install() {
   :
@@ -103,7 +92,7 @@ ndebug_install() {
 ndebug_script() {
   # Override of USER_CPPFLAGS removes -UNDEBUG.
   export USER_CPPFLAGS="`pkg-config lua5.2 --cflags` -g -fomit-frame-pointer"
-  make -j12 tests googlepbtests testlua WITH_JIT=yes
+  make -j12 tests testlua WITH_JIT=yes
   make test
 }
 
@@ -127,7 +116,7 @@ coverage_install() {
 }
 coverage_script() {
   export USER_CPPFLAGS="--coverage -O0 `pkg-config lua5.2 --cflags`"
-  make -j12 tests googlepbtests testlua WITH_JIT=yes
+  make -j12 tests testlua WITH_JIT=yes
   make test
 }
 coverage_after_success() {
@@ -152,7 +141,6 @@ if [ "$1" == "local" ]; then
   run_config "bare"
   run_config "barejit"
   run_config "core32"
-  run_config "withprotobuf"
   run_config "lua"
   run_config "ndebug"
   run_config "genfiles"
