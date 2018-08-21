@@ -437,3 +437,17 @@ upb/bindings/lua/upb/table_c.so: upb/bindings/lua/upb/table.c lib/libupb_pic.a
 upb/bindings/lua/upb/pb_c.so: upb/bindings/lua/upb/pb.c $(LUA_LIB_DEPS)
 	$(E) CC upb/bindings/lua/upb/pb.c
 	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $^ $(LUA_LDFLAGS)
+
+# Amalgamated source (upb.c/upb.h) ############################################
+
+AMALGAMATE_SRCS=$(upb_SRCS) $(upb_descriptor_SRCS) $(upb_pb_SRCS) $(upb_json_SRCS)
+
+amalgamate: upb.c upb.h
+
+upb.c upb.h: $(AMALGAMATE_SRCS)
+	$(E) AMALGAMATE $@
+	$(Q) ./tools/amalgamate.py "" "" $^
+
+amalgamated: upb.c upb.h
+	$(E) CC upb.c
+	$(Q) $(CC) -o upb.o -c upb.c $(WARNFLAGS)
