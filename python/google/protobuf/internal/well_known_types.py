@@ -142,7 +142,8 @@ class Timestamp(object):
       timezone_offset = value.find('+')
     if timezone_offset == -1:
       timezone_offset = value.rfind('-')
-    if timezone_offset == -1:
+    # Don't match '-' in date (YYYY-MM-DD)
+    if timezone_offset == -1 or timezone_offset < 10:
       raise ParseError(
           'Failed to parse timestamp: missing valid timezone offset.')
     time_value = value[0:timezone_offset]
