@@ -131,11 +131,12 @@ int lupb_arena_new(lua_State *L);
 int lupb_msg_pushref(lua_State *L, int msgclass, void *msg);
 const upb_msg *lupb_msg_checkmsg(lua_State *L, int narg,
                                  const lupb_msgclass *lmsgclass);
+upb_msg *lupb_msg_checkmsg2(lua_State *L, int narg,
+                            const upb_msglayout **layout);
 
 const lupb_msgclass *lupb_msgclass_check(lua_State *L, int narg);
 const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg);
 const upb_msgdef *lupb_msgclass_getmsgdef(const lupb_msgclass *lmsgclass);
-const upb_handlers *lupb_msgclass_getmergehandlers(lua_State *L, int narg);
 upb_msgfactory *lupb_msgclass_getfactory(const lupb_msgclass *lmsgclass);
 void lupb_msg_registertypes(lua_State *L);
 

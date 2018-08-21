@@ -799,6 +799,34 @@ UPB_INLINE upb_selector_t upb_handlers_getendselector(upb_selector_t start) {
 uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f);
 uint32_t upb_handlers_selectorcount(const upb_fielddef *f);
 
+
+/** Message handlers ******************************************************************/
+
+/* These are the handlers used internally by upb_msgfactory_getmergehandlers().
+ * They write scalar data to a known offset from the message pointer.
+ *
+ * These would be trivial for anyone to implement themselves, but it's better
+ * to use these because some JITs will recognize and specialize these instead
+ * of actually calling the function. */
+
+/* Sets a handler for the given primitive field that will write the data at the
+ * given offset.  If hasbit > 0, also sets a hasbit at the given bit offset
+ * (addressing each byte low to high). */
+bool upb_msg_setscalarhandler(upb_handlers *h,
+                              const upb_fielddef *f,
+                              size_t offset,
+                              int32_t hasbit);
+
+/* If the given handler is a msghandlers_primitive field, returns true and sets
+ * *type, *offset and *hasbit.  Otherwise returns false. */
+bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
+                                  upb_selector_t s,
+                                  upb_fieldtype_t *type,
+                                  size_t *offset,
+                                  int32_t *hasbit);
+
+
+
 UPB_END_EXTERN_C
 
 #include "upb/handlers-inl.h"

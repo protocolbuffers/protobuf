@@ -702,3 +702,99 @@ bool upb_byteshandler_setendstr(upb_byteshandler *h,
   h->table[UPB_ENDSTR_SELECTOR].attr.handler_data_ = d;
   return true;
 }
+
+
+/** Handlers for upb_msg ******************************************************/
+
+typedef struct {
+  size_t offset;
+  int32_t hasbit;
+} upb_msg_handlerdata;
+
+/* Fallback implementation if the handler is not specialized by the producer. */
+#define MSG_WRITER(type, ctype)                                               \
+  bool upb_msg_set ## type (void *c, const void *hd, ctype val) {             \
+    uint8_t *m = c;                                                           \
+    const upb_msg_handlerdata *d = hd;                                        \
+    if (d->hasbit > 0)                                                        \
+      *(uint8_t*)&m[d->hasbit / 8] |= 1 << (d->hasbit % 8);                   \
+    *(ctype*)&m[d->offset] = val;                                             \
+    return true;                                                              \
+  }                                                                           \
+
+MSG_WRITER(double, double)
+MSG_WRITER(float,  float)
+MSG_WRITER(int32,  int32_t)
+MSG_WRITER(int64,  int64_t)
+MSG_WRITER(uint32, uint32_t)
+MSG_WRITER(uint64, uint64_t)
+MSG_WRITER(bool,   bool)
+
+bool upb_msg_setscalarhandler(upb_handlers *h, const upb_fielddef *f,
+                              size_t offset, int32_t hasbit) {
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  bool ok;
+
+  upb_msg_handlerdata *d = upb_gmalloc(sizeof(*d));
+  if (!d) return false;
+  d->offset = offset;
+  d->hasbit = hasbit;
+
+  upb_handlerattr_sethandlerdata(&attr, d);
+  upb_handlerattr_setalwaysok(&attr, true);
+  upb_handlers_addcleanup(h, d, upb_gfree);
+
+#define TYPE(u, l) \
+  case UPB_TYPE_##u: \
+    ok = upb_handlers_set##l(h, f, upb_msg_set##l, &attr); break;
+
+  ok = false;
+
+  switch (upb_fielddef_type(f)) {
+    TYPE(INT64,  int64);
+    TYPE(INT32,  int32);
+    TYPE(ENUM,   int32);
+    TYPE(UINT64, uint64);
+    TYPE(UINT32, uint32);
+    TYPE(DOUBLE, double);
+    TYPE(FLOAT,  float);
+    TYPE(BOOL,   bool);
+    default: UPB_ASSERT(false); break;
+  }
+#undef TYPE
+
+  upb_handlerattr_uninit(&attr);
+  return ok;
+}
+
+bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
+                                  upb_selector_t s,
+                                  upb_fieldtype_t *type,
+                                  size_t *offset,
+                                  int32_t *hasbit) {
+  const upb_msg_handlerdata *d;
+  upb_func *f = upb_handlers_gethandler(h, s);
+
+  if ((upb_int64_handlerfunc*)f == upb_msg_setint64) {
+    *type = UPB_TYPE_INT64;
+  } else if ((upb_int32_handlerfunc*)f == upb_msg_setint32) {
+    *type = UPB_TYPE_INT32;
+  } else if ((upb_uint64_handlerfunc*)f == upb_msg_setuint64) {
+    *type = UPB_TYPE_UINT64;
+  } else if ((upb_uint32_handlerfunc*)f == upb_msg_setuint32) {
+    *type = UPB_TYPE_UINT32;
+  } else if ((upb_double_handlerfunc*)f == upb_msg_setdouble) {
+    *type = UPB_TYPE_DOUBLE;
+  } else if ((upb_float_handlerfunc*)f == upb_msg_setfloat) {
+    *type = UPB_TYPE_FLOAT;
+  } else if ((upb_bool_handlerfunc*)f == upb_msg_setbool) {
+    *type = UPB_TYPE_BOOL;
+  } else {
+    return false;
+  }
+
+  d = upb_handlers_gethandlerdata(h, s);
+  *offset = d->offset;
+  *hasbit = d->hasbit;
+  return true;
+}

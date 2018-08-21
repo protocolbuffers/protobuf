@@ -22,9 +22,6 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
          type == UPB_TYPE_UINT64 || type == UPB_TYPE_STRING;
 }
 
-void *upb_array_pack(const upb_array *arr, void *p, size_t *ofs, size_t size);
-void *upb_map_pack(const upb_map *map, void *p, size_t *ofs, size_t size);
-
 #define PTR_AT(msg, ofs, type) (type*)((char*)msg + ofs)
 #define VOIDPTR_AT(msg, ofs) PTR_AT(msg, ofs, void)
 #define ENCODE_MAX_NESTING 64
@@ -174,16 +171,6 @@ static size_t upb_msglayout_place(upb_msglayout *l, size_t size) {
   ret = l->data.size;
   l->data.size += size;
   return ret;
-}
-
-static uint32_t upb_msglayout_offset(const upb_msglayout *l,
-                                     const upb_fielddef *f) {
-  return l->data.fields[upb_fielddef_index(f)].offset;
-}
-
-static uint32_t upb_msglayout_hasbit(const upb_msglayout *l,
-                                     const upb_fielddef *f) {
-  return l->data.fields[upb_fielddef_index(f)].hasbit;
 }
 
 static bool upb_msglayout_initdefault(upb_msglayout *l, const upb_msgdef *m) {
@@ -420,229 +407,6 @@ const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
   }
 }
 
-/* Our handlers that we don't expose externally. */
-
-void *upb_msg_startstr(void *msg, const void *hd, size_t size_hint) {
-  uint32_t ofs = (uintptr_t)hd;
-  upb_alloc *alloc = upb_msg_alloc(msg);
-  upb_msgval val;
-  UPB_UNUSED(size_hint);
-
-  val = upb_msgval_read(msg, ofs, upb_msgval_sizeof(UPB_TYPE_STRING));
-
-  upb_free(alloc, (void*)val.str.data);
-  val.str.data = NULL;
-  val.str.size = 0;
-
-  upb_msgval_write(msg, ofs, val, upb_msgval_sizeof(UPB_TYPE_STRING));
-  return msg;
-}
-
-size_t upb_msg_str(void *msg, const void *hd, const char *ptr, size_t size,
-                   const upb_bufhandle *handle) {
-  uint32_t ofs = (uintptr_t)hd;
-  upb_alloc *alloc = upb_msg_alloc(msg);
-  upb_msgval val;
-  size_t newsize;
-  UPB_UNUSED(handle);
-
-  val = upb_msgval_read(msg, ofs, upb_msgval_sizeof(UPB_TYPE_STRING));
-
-  newsize = val.str.size + size;
-  val.str.data = upb_realloc(alloc, (void*)val.str.data, val.str.size, newsize);
-
-  if (!val.str.data) {
-    return false;
-  }
-
-  memcpy((char*)val.str.data + val.str.size, ptr, size);
-  val.str.size = newsize;
-  upb_msgval_write(msg, ofs, val, upb_msgval_sizeof(UPB_TYPE_STRING));
-  return size;
-}
-
-static void callback(const void *closure, upb_handlers *h) {
-  upb_msgfactory *factory = (upb_msgfactory*)closure;
-  const upb_msgdef *md = upb_handlers_msgdef(h);
-  const upb_msglayout* layout = upb_msgfactory_getlayout(factory, md);
-  upb_msg_field_iter i;
-  UPB_UNUSED(factory);
-
-  for(upb_msg_field_begin(&i, md);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    const upb_fielddef *f = upb_msg_iter_field(&i);
-    size_t offset = upb_msglayout_offset(layout, f);
-    upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-    upb_handlerattr_sethandlerdata(&attr, (void*)offset);
-
-    if (upb_fielddef_isseq(f)) {
-    } else if (upb_fielddef_isstring(f)) {
-      upb_handlers_setstartstr(h, f, upb_msg_startstr, &attr);
-      upb_handlers_setstring(h, f, upb_msg_str, &attr);
-    } else {
-      upb_msg_setscalarhandler(
-          h, f, offset, upb_msglayout_hasbit(layout, f));
-    }
-  }
-}
-
-const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
-                                                    const upb_msgdef *m) {
-  upb_msgfactory *mutable_f = (void*)f;
-
-  /* TODO(haberman): properly cache these. */
-  const upb_handlers *ret = upb_handlers_newfrozen(m, f, callback, f);
-  upb_inttable_push(&mutable_f->mergehandlers, upb_value_constptr(ret));
-
-  return ret;
-}
-
-const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
-                                                     const upb_handlers *h) {
-  const upb_msgdef *md = upb_handlers_msgdef(h);
-  return (const upb_visitorplan*)upb_msgfactory_getlayout(f, md);
-}
-
-
-/** upb_visitor ***************************************************************/
-
-struct upb_visitor {
-  const upb_msglayout *layout;
-  upb_sink *sink;
-};
-
-static upb_selector_t getsel2(const upb_fielddef *f, upb_handlertype_t type) {
-  upb_selector_t ret;
-  bool ok = upb_handlers_getselector(f, type, &ret);
-  UPB_ASSERT(ok);
-  return ret;
-}
-
-static bool upb_visitor_hasfield(const upb_msg *msg, const upb_fielddef *f,
-                                 const upb_msglayout *layout) {
-  int field_index = upb_fielddef_index(f);
-  if (upb_fielddef_isseq(f)) {
-    return upb_msgval_getarr(upb_msg_get(msg, field_index, layout)) != NULL;
-  } else if (upb_msgdef_syntax(upb_fielddef_containingtype(f)) ==
-             UPB_SYNTAX_PROTO2) {
-    return upb_msg_has(msg, field_index, layout);
-  } else {
-    upb_msgval val = upb_msg_get(msg, field_index, layout);
-    switch (upb_fielddef_type(f)) {
-      case UPB_TYPE_FLOAT:
-        return upb_msgval_getfloat(val) != 0;
-      case UPB_TYPE_DOUBLE:
-        return upb_msgval_getdouble(val) != 0;
-      case UPB_TYPE_BOOL:
-        return upb_msgval_getbool(val);
-      case UPB_TYPE_ENUM:
-      case UPB_TYPE_INT32:
-        return upb_msgval_getint32(val) != 0;
-      case UPB_TYPE_UINT32:
-        return upb_msgval_getuint32(val) != 0;
-      case UPB_TYPE_INT64:
-        return upb_msgval_getint64(val) != 0;
-      case UPB_TYPE_UINT64:
-        return upb_msgval_getuint64(val) != 0;
-      case UPB_TYPE_STRING:
-      case UPB_TYPE_BYTES:
-        return upb_msgval_getstr(val).size > 0;
-      case UPB_TYPE_MESSAGE:
-        return upb_msgval_getmsg(val) != NULL;
-    }
-    UPB_UNREACHABLE();
-  }
-}
-
-static bool upb_visitor_visitmsg2(const upb_msg *msg,
-                                  const upb_msglayout *layout, upb_sink *sink,
-                                  int depth) {
-  const upb_msgdef *md = upb_handlers_msgdef(sink->handlers);
-  upb_msg_field_iter i;
-  upb_status status;
-
-  upb_sink_startmsg(sink);
-
-  /* Protect against cycles (possible because users may freely reassign message
-   * and repeated fields) by imposing a maximum recursion depth. */
-  if (depth > ENCODE_MAX_NESTING) {
-    return false;
-  }
-
-  for (upb_msg_field_begin(&i, md);
-       !upb_msg_field_done(&i);
-       upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_msg_iter_field(&i);
-    upb_msgval val;
-
-    if (!upb_visitor_hasfield(msg, f, layout)) {
-      continue;
-    }
-
-    val = upb_msg_get(msg, upb_fielddef_index(f), layout);
-
-    if (upb_fielddef_isseq(f)) {
-      const upb_array *arr = upb_msgval_getarr(val);
-      UPB_ASSERT(arr);
-      /* TODO: putary(ary, f, sink, depth);*/
-    } else if (upb_fielddef_issubmsg(f)) {
-      const upb_map *map = upb_msgval_getmap(val);
-      UPB_ASSERT(map);
-      /* TODO: putmap(map, f, sink, depth);*/
-    } else if (upb_fielddef_isstring(f)) {
-      /* TODO putstr(); */
-    } else {
-      upb_selector_t sel = getsel2(f, upb_handlers_getprimitivehandlertype(f));
-      UPB_ASSERT(upb_fielddef_isprimitive(f));
-
-      switch (upb_fielddef_type(f)) {
-        case UPB_TYPE_FLOAT:
-          CHECK_TRUE(upb_sink_putfloat(sink, sel, upb_msgval_getfloat(val)));
-          break;
-        case UPB_TYPE_DOUBLE:
-          CHECK_TRUE(upb_sink_putdouble(sink, sel, upb_msgval_getdouble(val)));
-          break;
-        case UPB_TYPE_BOOL:
-          CHECK_TRUE(upb_sink_putbool(sink, sel, upb_msgval_getbool(val)));
-          break;
-        case UPB_TYPE_ENUM:
-        case UPB_TYPE_INT32:
-          CHECK_TRUE(upb_sink_putint32(sink, sel, upb_msgval_getint32(val)));
-          break;
-        case UPB_TYPE_UINT32:
-          CHECK_TRUE(upb_sink_putuint32(sink, sel, upb_msgval_getuint32(val)));
-          break;
-        case UPB_TYPE_INT64:
-          CHECK_TRUE(upb_sink_putint64(sink, sel, upb_msgval_getint64(val)));
-          break;
-        case UPB_TYPE_UINT64:
-          CHECK_TRUE(upb_sink_putuint64(sink, sel, upb_msgval_getuint64(val)));
-          break;
-        case UPB_TYPE_STRING:
-        case UPB_TYPE_BYTES:
-        case UPB_TYPE_MESSAGE:
-          UPB_UNREACHABLE();
-      }
-    }
-  }
-
-  upb_sink_endmsg(sink, &status);
-  return true;
-}
-
-upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
-                                upb_sink *output) {
-  upb_visitor *visitor = upb_env_malloc(e, sizeof(*visitor));
-  visitor->layout = (const upb_msglayout*)vp;
-  visitor->sink = output;
-  return visitor;
-}
-
-bool upb_visitor_visitmsg(upb_visitor *visitor, const upb_msg *msg) {
-  return upb_visitor_visitmsg2(msg, visitor->layout, visitor->sink, 0);
-}
-
 
 /** upb_msg *******************************************************************/
 
@@ -658,7 +422,7 @@ bool upb_visitor_visitmsg(upb_visitor *visitor, const upb_msg *msg) {
 /* Used when a message is not extendable. */
 typedef struct {
   /* TODO(haberman): add unknown fields. */
-  upb_alloc *alloc;
+  upb_arena *arena;
 } upb_msg_internal;
 
 /* Used when a message is extendable. */
@@ -702,12 +466,20 @@ static uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
   return PTR_AT(msg, l->data.oneofs[field->oneof_index].case_offset, uint32_t);
 }
 
-size_t upb_msg_sizeof(const upb_msglayout *l) {
+static size_t upb_msg_sizeof(const upb_msglayout *l) {
   return l->data.size + upb_msg_internalsize(l);
 }
 
-upb_msg *upb_msg_init(void *mem, const upb_msglayout *l, upb_alloc *a) {
-  upb_msg *msg = VOIDPTR_AT(mem, upb_msg_internalsize(l));
+upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a) {
+  upb_alloc *alloc = upb_arena_alloc(a);
+  void *mem = upb_malloc(alloc, upb_msg_sizeof(l));
+  upb_msg *msg;
+
+  if (!mem) {
+    return NULL;
+  }
+
+  msg = VOIDPTR_AT(mem, upb_msg_internalsize(l));
 
   /* Initialize normal members. */
   if (l->data.default_msg) {
@@ -717,7 +489,7 @@ upb_msg *upb_msg_init(void *mem, const upb_msglayout *l, upb_alloc *a) {
   }
 
   /* Initialize internal members. */
-  upb_msg_getinternal(msg)->alloc = a;
+  upb_msg_getinternal(msg)->arena = a;
 
   if (l->data.extendable) {
     upb_msg_getinternalwithext(msg, l)->extdict = NULL;
@@ -726,29 +498,8 @@ upb_msg *upb_msg_init(void *mem, const upb_msglayout *l, upb_alloc *a) {
   return msg;
 }
 
-void *upb_msg_uninit(upb_msg *msg, const upb_msglayout *l) {
-  if (l->data.extendable) {
-    upb_inttable *ext_dict = upb_msg_getinternalwithext(msg, l)->extdict;
-    if (ext_dict) {
-      upb_inttable_uninit2(ext_dict, upb_msg_alloc(msg));
-      upb_free(upb_msg_alloc(msg), ext_dict);
-    }
-  }
-
-  return VOIDPTR_AT(msg, -upb_msg_internalsize(l));
-}
-
-upb_msg *upb_msg_new(const upb_msglayout *l, upb_alloc *a) {
-  void *mem = upb_malloc(a, upb_msg_sizeof(l));
-  return mem ? upb_msg_init(mem, l, a) : NULL;
-}
-
-void upb_msg_free(upb_msg *msg, const upb_msglayout *l) {
-  upb_free(upb_msg_alloc(msg), upb_msg_uninit(msg, l));
-}
-
-upb_alloc *upb_msg_alloc(const upb_msg *msg) {
-  return upb_msg_getinternal_const(msg)->alloc;
+upb_arena *upb_msg_arena(const upb_msg *msg) {
+  return upb_msg_getinternal_const(msg)->arena;
 }
 
 bool upb_msg_has(const upb_msg *msg,
@@ -805,37 +556,22 @@ void upb_msg_set(upb_msg *msg, int field_index, upb_msgval val,
 
 #define DEREF_ARR(arr, i, type) ((type*)arr->data)[i]
 
-size_t upb_array_sizeof(upb_fieldtype_t type) {
-  UPB_UNUSED(type);
-  return sizeof(upb_array);
-}
+upb_array *upb_array_new(upb_fieldtype_t type, upb_arena *a) {
+  upb_alloc *alloc = upb_arena_alloc(a);
+  upb_array *ret = upb_malloc(alloc, sizeof(upb_array));
 
-void upb_array_init(upb_array *arr, upb_fieldtype_t type, upb_alloc *alloc) {
-  arr->type = type;
-  arr->data = NULL;
-  arr->len = 0;
-  arr->size = 0;
-  arr->element_size = upb_msgval_sizeof(type);
-  arr->alloc = alloc;
-}
-
-void upb_array_uninit(upb_array *arr) {
-  upb_free(arr->alloc, arr->data);
-}
-
-upb_array *upb_array_new(upb_fieldtype_t type, upb_alloc *a) {
-  upb_array *ret = upb_malloc(a, upb_array_sizeof(type));
-
-  if (ret) {
-    upb_array_init(ret, type, a);
+  if (!ret) {
+    return NULL;
   }
 
-  return ret;
-}
+  ret->type = type;
+  ret->data = NULL;
+  ret->len = 0;
+  ret->size = 0;
+  ret->element_size = upb_msgval_sizeof(type);
+  ret->arena = a;
 
-void upb_array_free(upb_array *arr) {
-  upb_array_uninit(arr);
-  upb_free(arr->alloc, arr);
+  return ret;
 }
 
 size_t upb_array_size(const upb_array *arr) {
@@ -862,8 +598,9 @@ bool upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
       size_t new_size = UPB_MAX(arr->size * 2, 8);
       size_t new_bytes = new_size * arr->element_size;
       size_t old_bytes = arr->size * arr->element_size;
+      upb_alloc *alloc = upb_arena_alloc(arr->arena);
       upb_msgval *new_data =
-          upb_realloc(arr->alloc, arr->data, old_bytes, new_bytes);
+          upb_realloc(alloc, arr->data, old_bytes, new_bytes);
 
       if (!new_data) {
         return false;
@@ -889,7 +626,7 @@ struct upb_map {
   /* We may want to optimize this to use inttable where possible, for greater
    * efficiency and lower memory footprint. */
   upb_strtable strtab;
-  upb_alloc *alloc;
+  upb_arena *arena;
 };
 
 static void upb_map_tokey(upb_fieldtype_t type, upb_msgval *key,
@@ -940,50 +677,26 @@ static upb_msgval upb_map_fromkey(upb_fieldtype_t type, const char *key,
   UPB_UNREACHABLE();
 }
 
-size_t upb_map_sizeof(upb_fieldtype_t ktype, upb_fieldtype_t vtype) {
-  /* Size does not currently depend on key/value type. */
-  UPB_UNUSED(ktype);
-  UPB_UNUSED(vtype);
-  return sizeof(upb_map);
-}
-
-bool upb_map_init(upb_map *map, upb_fieldtype_t ktype, upb_fieldtype_t vtype,
-                  upb_alloc *a) {
-  upb_ctype_t vtabtype = upb_fieldtotabtype(vtype);
-  UPB_ASSERT(upb_fieldtype_mapkeyok(ktype));
-  map->key_type = ktype;
-  map->val_type = vtype;
-  map->alloc = a;
-
-  if (!upb_strtable_init2(&map->strtab, vtabtype, a)) {
-    return false;
-  }
-
-  return true;
-}
-
-void upb_map_uninit(upb_map *map) {
-  upb_strtable_uninit2(&map->strtab, map->alloc);
-}
-
 upb_map *upb_map_new(upb_fieldtype_t ktype, upb_fieldtype_t vtype,
-                     upb_alloc *a) {
-  upb_map *map = upb_malloc(a, upb_map_sizeof(ktype, vtype));
+                     upb_arena *a) {
+  upb_ctype_t vtabtype = upb_fieldtotabtype(vtype);
+  upb_alloc *alloc = upb_arena_alloc(a);
+  upb_map *map = upb_malloc(alloc, sizeof(upb_map));
 
   if (!map) {
     return NULL;
   }
 
-  if (!upb_map_init(map, ktype, vtype, a)) {
+  UPB_ASSERT(upb_fieldtype_mapkeyok(ktype));
+  map->key_type = ktype;
+  map->val_type = vtype;
+  map->arena = a;
+
+  if (!upb_strtable_init2(&map->strtab, vtabtype, alloc)) {
     return NULL;
   }
 
   return map;
-}
-
-void upb_map_free(upb_map *map) {
-  upb_map_uninit(map);
-  upb_free(map->alloc, map);
 }
 
 size_t upb_map_size(const upb_map *map) {
@@ -1019,7 +732,7 @@ bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
   size_t key_len;
   upb_value tabval = upb_toval(val);
   upb_value removedtabval;
-  upb_alloc *a = map->alloc;
+  upb_alloc *a = upb_arena_alloc(map->arena);
 
   upb_map_tokey(map->key_type, &key, &key_str, &key_len);
 
@@ -1035,7 +748,7 @@ bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
 bool upb_map_del(upb_map *map, upb_msgval key) {
   const char *key_str;
   size_t key_len;
-  upb_alloc *a = map->alloc;
+  upb_alloc *a = upb_arena_alloc(map->arena);
 
   upb_map_tokey(map->key_type, &key, &key_str, &key_len);
   return upb_strtable_remove3(&map->strtab, key_str, key_len, NULL, a);
@@ -1096,100 +809,4 @@ void upb_mapiter_setdone(upb_mapiter *i) {
 
 bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2) {
   return upb_strtable_iter_isequal(&i1->iter, &i2->iter);
-}
-
-
-/** Handlers for upb_msg ******************************************************/
-
-typedef struct {
-  size_t offset;
-  int32_t hasbit;
-} upb_msg_handlerdata;
-
-/* Fallback implementation if the handler is not specialized by the producer. */
-#define MSG_WRITER(type, ctype)                                               \
-  bool upb_msg_set ## type (void *c, const void *hd, ctype val) {             \
-    uint8_t *m = c;                                                           \
-    const upb_msg_handlerdata *d = hd;                                        \
-    if (d->hasbit > 0)                                                        \
-      *(uint8_t*)&m[d->hasbit / 8] |= 1 << (d->hasbit % 8);                   \
-    *(ctype*)&m[d->offset] = val;                                             \
-    return true;                                                              \
-  }                                                                           \
-
-MSG_WRITER(double, double)
-MSG_WRITER(float,  float)
-MSG_WRITER(int32,  int32_t)
-MSG_WRITER(int64,  int64_t)
-MSG_WRITER(uint32, uint32_t)
-MSG_WRITER(uint64, uint64_t)
-MSG_WRITER(bool,   bool)
-
-bool upb_msg_setscalarhandler(upb_handlers *h, const upb_fielddef *f,
-                              size_t offset, int32_t hasbit) {
-  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-  bool ok;
-
-  upb_msg_handlerdata *d = upb_gmalloc(sizeof(*d));
-  if (!d) return false;
-  d->offset = offset;
-  d->hasbit = hasbit;
-
-  upb_handlerattr_sethandlerdata(&attr, d);
-  upb_handlerattr_setalwaysok(&attr, true);
-  upb_handlers_addcleanup(h, d, upb_gfree);
-
-#define TYPE(u, l) \
-  case UPB_TYPE_##u: \
-    ok = upb_handlers_set##l(h, f, upb_msg_set##l, &attr); break;
-
-  ok = false;
-
-  switch (upb_fielddef_type(f)) {
-    TYPE(INT64,  int64);
-    TYPE(INT32,  int32);
-    TYPE(ENUM,   int32);
-    TYPE(UINT64, uint64);
-    TYPE(UINT32, uint32);
-    TYPE(DOUBLE, double);
-    TYPE(FLOAT,  float);
-    TYPE(BOOL,   bool);
-    default: UPB_ASSERT(false); break;
-  }
-#undef TYPE
-
-  upb_handlerattr_uninit(&attr);
-  return ok;
-}
-
-bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
-                                  upb_selector_t s,
-                                  upb_fieldtype_t *type,
-                                  size_t *offset,
-                                  int32_t *hasbit) {
-  const upb_msg_handlerdata *d;
-  upb_func *f = upb_handlers_gethandler(h, s);
-
-  if ((upb_int64_handlerfunc*)f == upb_msg_setint64) {
-    *type = UPB_TYPE_INT64;
-  } else if ((upb_int32_handlerfunc*)f == upb_msg_setint32) {
-    *type = UPB_TYPE_INT32;
-  } else if ((upb_uint64_handlerfunc*)f == upb_msg_setuint64) {
-    *type = UPB_TYPE_UINT64;
-  } else if ((upb_uint32_handlerfunc*)f == upb_msg_setuint32) {
-    *type = UPB_TYPE_UINT32;
-  } else if ((upb_double_handlerfunc*)f == upb_msg_setdouble) {
-    *type = UPB_TYPE_DOUBLE;
-  } else if ((upb_float_handlerfunc*)f == upb_msg_setfloat) {
-    *type = UPB_TYPE_FLOAT;
-  } else if ((upb_bool_handlerfunc*)f == upb_msg_setbool) {
-    *type = UPB_TYPE_BOOL;
-  } else {
-    return false;
-  }
-
-  d = upb_handlers_gethandlerdata(h, s);
-  *offset = d->offset;
-  *hasbit = d->hasbit;
-  return true;
 }

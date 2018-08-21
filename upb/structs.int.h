@@ -11,7 +11,7 @@ struct upb_array {
   void *data;   /* Each element is element_size. */
   size_t len;   /* Measured in elements. */
   size_t size;  /* Measured in elements. */
-  upb_alloc *alloc;
+  upb_arena *arena;
 };
 
 #endif  /* UPB_STRUCTS_H_ */
