@@ -96,7 +96,7 @@ RUN php -r "unlink('composer-setup.php');"
 RUN composer config -g -- disable-tls true
 RUN composer config -g -- secure-http false
 RUN cd /tmp && \
-  git clone https://github.com/google/protobuf.git && \
+  git clone https://github.com/protocolbuffers/protobuf.git && \
   cd protobuf/php && \
   git reset --hard 49b44bff2b6257a119f9c6a342d6151c736586b8 && \
   ln -sfn /usr/local/php-5.5/bin/php /usr/bin/php && \

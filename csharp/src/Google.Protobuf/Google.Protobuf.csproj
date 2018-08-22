@@ -13,10 +13,10 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageTags>Protocol;Buffers;Binary;Serialization;Format;Google;proto;proto3</PackageTags>
     <PackageReleaseNotes>C# proto3 support</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/google/protobuf</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/google/protobuf/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/protocolbuffers/protobuf</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/protocolbuffers/protobuf/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/google/protobuf.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/protocolbuffers/protobuf.git</RepositoryUrl>
   </PropertyGroup>
 
   <!-- 

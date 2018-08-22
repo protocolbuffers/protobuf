@@ -8,8 +8,8 @@
     <version>3.6.1</version>
     <authors>Google Inc.</authors>
     <owners>protobuf-packages</owners>
-    <licenseUrl>https://github.com/google/protobuf/blob/master/LICENSE</licenseUrl>
-    <projectUrl>https://github.com/google/protobuf</projectUrl>
+    <licenseUrl>https://github.com/protocolbuffers/protobuf/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/protocolbuffers/protobuf</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <releaseNotes>Tools for Protocol Buffers</releaseNotes>
     <copyright>Copyright 2015, Google Inc.</copyright>

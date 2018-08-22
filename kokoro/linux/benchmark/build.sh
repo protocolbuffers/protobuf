@@ -68,8 +68,8 @@ cd $oldpwd
 export PATH="`pwd`/src:$PATH"
 export GOPATH="$HOME/gocode"
 mkdir -p "$GOPATH/src/github.com/google"
-rm -f "$GOPATH/src/github.com/google/protobuf"
-ln -s "`pwd`" "$GOPATH/src/github.com/google/protobuf"
+rm -f "$GOPATH/src/github.com/protocolbuffers/protobuf"
+ln -s "`pwd`" "$GOPATH/src/github.com/protocolbuffers/protobuf"
 export PATH="$GOPATH/bin:$PATH"
 go get github.com/golang/protobuf/protoc-gen-go
 

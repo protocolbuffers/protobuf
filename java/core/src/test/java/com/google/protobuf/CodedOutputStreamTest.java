@@ -562,7 +562,7 @@ public class CodedOutputStreamTest extends TestCase {
     }
   }
 
-  /** Regression test for https://github.com/google/protobuf/issues/292 */
+  /** Regression test for https://github.com/protocolbuffers/protobuf/issues/292 */
   public void testCorrectExceptionThrowWhenEncodingStringsWithoutEnoughSpace() throws Exception {
     String testCase = "Foooooooo";
     assertEquals(

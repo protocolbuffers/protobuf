@@ -7,8 +7,8 @@ extension numbers.
 
 If you need an extension number for your custom option (see [custom options](
 https://developers.google.com/protocol-buffers/docs/proto#customoptions)),
-please [send us a pull request](https://github.com/google/protobuf/pulls) to
-add an entry to this doc, or [create an issue](https://github.com/google/protobuf/issues)
+please [send us a pull request](https://github.com/protocolbuffers/protobuf/pulls) to
+add an entry to this doc, or [create an issue](https://github.com/protocolbuffers/protobuf/issues)
 with info about your project (name and website) so we can add an entry for you.
 
 ## Existing Registered Extensions

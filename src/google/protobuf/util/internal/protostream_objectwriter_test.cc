@@ -270,7 +270,7 @@ TEST_P(ProtoStreamObjectWriterTest, CustomJsonName) {
 }
 
 // Test that two messages can have different fields mapped to the same JSON
-// name. See: https://github.com/google/protobuf/issues/1415
+// name. See: https://github.com/protocolbuffers/protobuf/issues/1415
 TEST_P(ProtoStreamObjectWriterTest, ConflictingJsonName) {
   ResetTypeInfo(TestJsonName1::descriptor());
   TestJsonName1 message1;

@@ -1,5 +1,5 @@
 // Adapted from the patch of kenton@google.com (Kenton Varda)
-// See https://github.com/google/protobuf/pull/710 for details.
+// See https://github.com/protocolbuffers/protobuf/pull/710 for details.
 
 #include <google/protobuf/util/delimited_message_util.h>
 

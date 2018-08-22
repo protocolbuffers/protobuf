@@ -33,7 +33,7 @@
 // On x86-64 Linux with glibc, we link against the 2.2.5 version of memcpy so
 // that we avoid depending on the 2.14 version of the symbol. This way,
 // distributions that are using pre-2.14 versions of glibc can successfully use
-// the gem we distribute (https://github.com/google/protobuf/issues/2783).
+// the gem we distribute (https://github.com/protocolbuffers/protobuf/issues/2783).
 //
 // This wrapper is enabled by passing the linker flags -Wl,-wrap,memcpy in
 // extconf.rb.

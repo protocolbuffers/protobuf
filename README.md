@@ -26,7 +26,7 @@ with the C++ runtime.
 For non-C++ users, the simplest way to install the protocol compiler is to
 download a pre-built binary from our release page:
 
-  [https://github.com/google/protobuf/releases](https://github.com/google/protobuf/releases)
+  [https://github.com/protocolbuffers/protobuf/releases](https://github.com/protocolbuffers/protobuf/releases)
 
 In the downloads section of each release, you can find pre-built binaries in
 zip packages: protoc-$VERSION-$PLATFORM.zip. It contains the protoc binary
