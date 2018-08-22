@@ -860,16 +860,34 @@ VALUE Message_decode(VALUE klass, VALUE data) {
  * format) under the interpretration given by this message class's definition
  * and returns a message object with the corresponding field values.
  */
-VALUE Message_decode_json(VALUE klass, VALUE data) {
+VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   VALUE msgklass = Descriptor_msgclass(descriptor);
   VALUE msg_rb;
+  VALUE data;
   MessageHeader* msg;
+
+  VALUE ignore_unknown_fields = Qfalse;
+  if (argc < 1 || argc > 2) {
+    rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
+  }
+
+  data = argv[0];
 
   if (TYPE(data) != T_STRING) {
     rb_raise(rb_eArgError, "Expected string for JSON data.");
   }
+
+  if (argc == 2) {
+    VALUE hash_args = argv[1];
+    if (TYPE(hash_args) != T_HASH) {
+      rb_raise(rb_eArgError, "Expected hash arguments.");
+    }
+    ignore_unknown_fields = rb_hash_lookup2(
+      hash_args, ID2SYM(rb_intern("ignore_unknown_fields")), Qfalse);
+  }
+
   // TODO(cfallin): Check and respect string encoding. If not UTF-8, we need to
   // convert, because string handlers pass data directly to message string
   // fields.
@@ -885,7 +903,7 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
     stackenv_init(&se, "Error occurred during parsing: %s");
 
     upb_sink_reset(&sink, get_fill_handlers(desc), msg);
-    parser = upb_json_parser_create(&se.env, method, &sink);
+    parser = upb_json_parser_create(&se.env, method, &sink, ignore_unknown_fields);
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
                       upb_json_parser_input(parser));
 
