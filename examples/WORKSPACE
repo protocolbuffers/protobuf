@@ -3,7 +3,7 @@
 http_archive(
     name = "com_google_protobuf",
     strip_prefix = "protobuf-master",
-    urls = ["https://github.com/google/protobuf/archive/master.zip"],
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/master.zip"],
 )
 
 # This com_google_protobuf_cc repository is required for cc_proto_library
@@ -13,14 +13,14 @@ http_archive(
 http_archive(
     name = "com_google_protobuf_cc",
     strip_prefix = "protobuf-master",
-    urls = ["https://github.com/google/protobuf/archive/master.zip"],
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/master.zip"],
 )
 
 # Similar to com_google_protobuf_cc but for Java (i.e., java_proto_library).
 http_archive(
     name = "com_google_protobuf_java",
     strip_prefix = "protobuf-master",
-    urls = ["https://github.com/google/protobuf/archive/master.zip"],
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/master.zip"],
 )
 
 # Similar to com_google_protobuf_cc but for Java lite. If you are building
@@ -29,7 +29,7 @@ http_archive(
 http_archive(
     name = "com_google_protobuf_javalite",
     strip_prefix = "protobuf-javalite",
-    urls = ["https://github.com/google/protobuf/archive/javalite.zip"],
+    urls = ["https://github.com/protocolbuffers/protobuf/archive/javalite.zip"],
 )
 
 http_archive(

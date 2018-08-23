@@ -29,7 +29,7 @@ install them before proceeding.
 To get the source, download one of the release .tar.gz or .zip packages in the
 release page:
 
-    https://github.com/google/protobuf/releases/latest
+    https://github.com/protocolbuffers/protobuf/releases/latest
 
 For example: if you only need C++, download `protobuf-cpp-[VERSION].tar.gz`; if
 you need C++ and Java, download `protobuf-java-[VERSION].tar.gz` (every package
@@ -40,7 +40,7 @@ You can also get the source by "git clone" our git repository. Make sure you
 have also cloned the submodules and generated the configure script (skip this
 if you are using a release .tar.gz or .zip package):
 
-    $ git clone https://github.com/google/protobuf.git
+    $ git clone https://github.com/protocolbuffers/protobuf.git
     $ cd protobuf
     $ git submodule update --init --recursive
     $ ./autogen.sh
@@ -184,7 +184,7 @@ C++ Installation - Windows
 If you only need the protoc binary, you can download it from the release
 page:
 
-    https://github.com/google/protobuf/releases/latest
+    https://github.com/protocolbuffers/protobuf/releases/latest
 
 In the downloads section, download the zip file protoc-$VERSION-win32.zip.
 It contains the protoc binary as well as public proto files of protobuf

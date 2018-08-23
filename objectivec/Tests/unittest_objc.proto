@@ -433,7 +433,7 @@ message EnumTestMsg {
   repeated MyEnum mumble = 4;
 }
 
-// Test case for https://github.com/google/protobuf/issues/1453
+// Test case for https://github.com/protocolbuffers/protobuf/issues/1453
 // Message with no explicit defaults, but a non zero default for an enum.
 message MessageWithOneBasedEnum {
   enum OneBasedEnum {

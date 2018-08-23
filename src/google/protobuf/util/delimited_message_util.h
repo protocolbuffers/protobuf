@@ -1,5 +1,5 @@
 // Adapted from the patch of kenton@google.com (Kenton Varda)
-// See https://github.com/google/protobuf/pull/710 for details.
+// See https://github.com/protocolbuffers/protobuf/pull/710 for details.
 
 #ifndef GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__

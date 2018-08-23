@@ -43,7 +43,7 @@ Getting Sources
 
 You can get the latest stable source packages from the release page:
 
-    https://github.com/google/protobuf/releases/latest
+    https://github.com/protocolbuffers/protobuf/releases/latest
 
 For example: if you only need C++, download `protobuf-cpp-[VERSION].tar.gz`; if
 you need C++ and Java, download `protobuf-java-[VERSION].tar.gz` (every package
@@ -52,7 +52,7 @@ download `protobuf-all-[VERSION].tar.gz`.
 
 Or you can use git to clone from protobuf git repository.
 
-     C:\Path\to> git clone -b [release_tag] https://github.com/google/protobuf.git
+     C:\Path\to> git clone -b [release_tag] https://github.com/protocolbuffers/protobuf.git
 
 Where *[release_tag]* is a git tag like *v3.0.0-beta-1* or a branch name like *master*
 if you want to get the latest code.

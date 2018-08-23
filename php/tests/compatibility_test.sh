@@ -92,7 +92,7 @@ echo "Running compatibility tests between $VERSION_NUMBER and $OLD_VERSION"
 
 # Download old test.
 rm -rf protobuf
-git clone https://github.com/google/protobuf.git
+git clone https://github.com/protocolbuffers/protobuf.git
 pushd protobuf
 git checkout v$OLD_VERSION
 popd

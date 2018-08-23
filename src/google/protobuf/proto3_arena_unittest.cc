@@ -178,7 +178,7 @@ TEST(Proto3ArenaTest, ReleaseMessage) {
 }
 
 TEST(Proto3ArenaTest, MessageFieldClear) {
-  // GitHub issue #310: https://github.com/google/protobuf/issues/310
+  // GitHub issue #310: https://github.com/protocolbuffers/protobuf/issues/310
   Arena arena;
   TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);

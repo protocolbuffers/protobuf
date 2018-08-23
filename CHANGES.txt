@@ -102,7 +102,7 @@
   Planned Future Changes
   * Make C++ implementation C++11 only: we plan to require C++11 to build
     protobuf code starting from 3.6.0 release. Please join this github issue:
-    https://github.com/google/protobuf/issues/2780 to provide your feedback.
+    https://github.com/protocolbuffers/protobuf/issues/2780 to provide your feedback.
 
   protoc
   * Fixed a bug introduced in 3.5.0 and protoc in Windows now accepts non-ascii
@@ -133,7 +133,7 @@
   Planned Future Changes
   * Make C++ implementation C++11 only: we plan to require C++11 to build
     protobuf code starting from 3.6.0 release. Please join this github issue:
-    https://github.com/google/protobuf/issues/2780 to provide your feedback.
+    https://github.com/protocolbuffers/protobuf/issues/2780 to provide your feedback.
 
   General
   * Unknown fields are now preserved in proto3 for most of the language
@@ -220,14 +220,14 @@
 
         For issues and discussions:
 
-          https://github.com/google/protobuf/issues/272
+          https://github.com/protocolbuffers/protobuf/issues/272
 
       - Make C++ implementation C++11 only: we plan to require C++11 to build
         protobuf code starting from 3.5.0 or 3.6.0 release, after unknown fields
         semantic changes are finished. Please join this
         github issue:
 
-          https://github.com/google/protobuf/issues/2780
+          https://github.com/protocolbuffers/protobuf/issues/2780
 
         to provide your feedback.
 
@@ -347,14 +347,14 @@
 
         for the timeline and follow up this github issue:
 
-          https://github.com/google/protobuf/issues/272
+          https://github.com/protocolbuffers/protobuf/issues/272
 
         for discussion.
       - Make C++ implementation C++11 only: we plan to require C++11 to build
         protobuf code starting from 3.4.0 or 3.5.0 release. Please join this
         github issue:
 
-          https://github.com/google/protobuf/issues/2780
+          https://github.com/protocolbuffers/protobuf/issues/2780
 
         to provide your feedback.
 

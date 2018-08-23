@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/google/protobuf/tree/master/js"
+    "url": "https://github.com/protocolbuffers/protobuf/tree/master/js"
   },
   "author": "Google Protocol Buffers Team",
   "license": "BSD-3-Clause"

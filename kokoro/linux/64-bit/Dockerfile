@@ -127,7 +127,7 @@ ENV MAVEN_REPO /var/maven_local_repository
 ENV MVN mvn --batch-mode
 
 RUN cd /tmp && \
-  git clone https://github.com/google/protobuf.git && \
+  git clone https://github.com/protocolbuffers/protobuf.git && \
   cd protobuf && \
   git reset --hard 129a6e2aca95dcfb6c3e717d7b9cca1f104fde39 && \
   ./autogen.sh && \
@@ -180,7 +180,7 @@ RUN composer config -g -- disable-tls true
 RUN composer config -g -- secure-http false
 RUN cd /tmp && \
   rm -rf protobuf && \
-  git clone https://github.com/google/protobuf.git && \
+  git clone https://github.com/protocolbuffers/protobuf.git && \
   cd protobuf && \
   git reset --hard 49b44bff2b6257a119f9c6a342d6151c736586b8 && \
   cd php && \

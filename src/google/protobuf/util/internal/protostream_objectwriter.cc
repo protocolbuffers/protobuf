@@ -483,7 +483,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     // stream, we write those values.
     if (master_type_.name() == kStructType) {
       // Struct has a map<string, Value> field called "fields".
-      // https://github.com/google/protobuf/blob/master/src/google/protobuf/struct.proto
+      // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/struct.proto
       // "fields": [
       Push("fields", Item::MAP, true, true);
       return this;
@@ -494,7 +494,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
       // object within that type is a struct type. So start a struct.
       //
       // The struct field in Value type is named "struct_value"
-      // https://github.com/google/protobuf/blob/master/src/google/protobuf/struct.proto
+      // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/struct.proto
       // Also start the map field "fields" within the struct.
       // "struct_value": {
       //   "fields": [
@@ -649,7 +649,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
       // we have to start the "list_value" within google.protobuf.Value.
       //
       // See
-      // https://github.com/google/protobuf/blob/master/src/google/protobuf/struct.proto
+      // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/struct.proto
       //
       // Render
       // "<name>": {

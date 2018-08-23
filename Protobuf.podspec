@@ -7,12 +7,12 @@ Pod::Spec.new do |s|
   s.name     = 'Protobuf'
   s.version  = '3.6.1'
   s.summary  = 'Protocol Buffers v.3 runtime library for Objective-C.'
-  s.homepage = 'https://github.com/google/protobuf'
+  s.homepage = 'https://github.com/protocolbuffers/protobuf'
   s.license  = '3-Clause BSD License'
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
   s.cocoapods_version = '>= 1.0'
 
-  s.source = { :git => 'https://github.com/google/protobuf.git',
+  s.source = { :git => 'https://github.com/protocolbuffers/protobuf.git',
                :tag => "v#{s.version}" }
 
   s.source_files = 'objectivec/*.{h,m}',

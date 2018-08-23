@@ -65,7 +65,7 @@ echo "Running compatibility tests between $VERSION_NUMBER and $OLD_VERSION"
 
 # Download old version source for the compatibility test
 [ -d protobuf ] || {
-  git clone https://github.com/google/protobuf.git
+  git clone https://github.com/protocolbuffers/protobuf.git
   cd protobuf
   git reset --hard v$TEST_VERSION
   cd ..
