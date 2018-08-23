@@ -31,21 +31,14 @@ namespace upb {
 class Array;
 class Map;
 class MapIterator;
-class MessageFactory;
 class MessageLayout;
-class Visitor;
-class VisitorPlan;
 }
 
 #endif
 
-UPB_DECLARE_TYPE(upb::MessageFactory, upb_msgfactory)
-UPB_DECLARE_TYPE(upb::MessageLayout, upb_msglayout)
 UPB_DECLARE_TYPE(upb::Array, upb_array)
 UPB_DECLARE_TYPE(upb::Map, upb_map)
 UPB_DECLARE_TYPE(upb::MapIterator, upb_mapiter)
-UPB_DECLARE_TYPE(upb::Visitor, upb_visitor)
-UPB_DECLARE_TYPE(upb::VisitorPlan, upb_visitorplan)
 
 /* TODO(haberman): C++ accessors */
 
@@ -56,39 +49,45 @@ typedef void upb_msg;
 
 /** upb_msglayout *************************************************************/
 
-/* upb_msglayout represents the memory layout of a given upb_msgdef.  You get
- * instances of this from a upb_msgfactory, and the factory always owns the
- * msglayout. */
+/* upb_msglayout represents the memory layout of a given upb_msgdef.  The
+ * members are public so generated code can initialize them, but users MUST NOT
+ * read or write any of its members. */
 
+#define UPB_NOT_IN_ONEOF UINT16_MAX
+#define UPB_NO_HASBIT UINT16_MAX
+#define UPB_NO_SUBMSG UINT16_MAX
 
-/** upb_msgfactory ************************************************************/
+typedef struct {
+  uint32_t number;
+  uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
+  uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
+  uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
+  uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
+  uint8_t descriptortype;
+  uint8_t label;
+} upb_msglayout_field;
 
-/* A upb_msgfactory contains a cache of upb_msglayout, upb_handlers, and
- * upb_visitorplan objects.  These are the objects necessary to represent,
- * populate, and and visit upb_msg objects.
- *
- * These caches are all populated by upb_msgdef, and lazily created on demand.
- */
+typedef struct {
+  uint32_t data_offset;
+  uint32_t case_offset;
+} upb_msglayout_oneof;
 
-/* Creates and destroys a msgfactory, respectively.  The messages for this
- * msgfactory must come from |symtab| (which should outlive the msgfactory). */
-upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab);
-void upb_msgfactory_free(upb_msgfactory *f);
+typedef struct upb_msglayout {
+  const struct upb_msglayout *const* submsgs;
+  const upb_msglayout_field *fields;
+  const upb_msglayout_oneof *oneofs;
+  void *default_msg;
+  /* Must be aligned to sizeof(void*).  Doesn't include internal members like
+   * unknown fields, extension dict, pointer to msglayout, etc. */
+  uint32_t size;
+  uint16_t field_count;
+  uint16_t oneof_count;
+  bool extendable;
+  bool is_proto2;
+} upb_msglayout;
 
-const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
-
-/* The functions to get cached objects, lazily creating them on demand.  These
- * all require:
- *
- * - m is in upb_msgfactory_symtab(f)
- * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
- *
- * The returned objects will live for as long as the msgfactory does.
- *
- * TODO(haberman): consider making this thread-safe and take a const
- * upb_msgfactory. */
-const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
-                                              const upb_msgdef *m);
+#define UPB_ALIGN_UP_TO(val, align) ((val + (align - 1)) & -align)
+#define UPB_ALIGNED_SIZEOF(type) UPB_ALIGN_UP_TO(sizeof(type), sizeof(void*))
 
 
 /** upb_stringview ************************************************************/
@@ -290,52 +289,6 @@ upb_msgval upb_mapiter_key(const upb_mapiter *i);
 upb_msgval upb_mapiter_value(const upb_mapiter *i);
 void upb_mapiter_setdone(upb_mapiter *i);
 bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2);
-
-
-/** Interfaces for generated code *********************************************/
-
-#define UPB_NOT_IN_ONEOF UINT16_MAX
-#define UPB_NO_HASBIT UINT16_MAX
-#define UPB_NO_SUBMSG UINT16_MAX
-
-typedef struct {
-  uint32_t number;
-  uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
-  uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
-  uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
-  uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
-  uint8_t descriptortype;
-  uint8_t label;
-} upb_msglayout_fieldinit_v1;
-
-typedef struct {
-  uint32_t data_offset;
-  uint32_t case_offset;
-} upb_msglayout_oneofinit_v1;
-
-typedef struct upb_msglayout_msginit_v1 {
-  const struct upb_msglayout_msginit_v1 *const* submsgs;
-  const upb_msglayout_fieldinit_v1 *fields;
-  const upb_msglayout_oneofinit_v1 *oneofs;
-  void *default_msg;
-  /* Must be aligned to sizeof(void*).  Doesn't include internal members like
-   * unknown fields, extension dict, pointer to msglayout, etc. */
-  uint32_t size;
-  uint16_t field_count;
-  uint16_t oneof_count;
-  bool extendable;
-  bool is_proto2;
-} upb_msglayout_msginit_v1;
-
-#define UPB_ALIGN_UP_TO(val, align) ((val + (align - 1)) & -align)
-#define UPB_ALIGNED_SIZEOF(type) UPB_ALIGN_UP_TO(sizeof(type), sizeof(void*))
-
-/* Initialize/uninitialize a msglayout from a msginit.  If upb uses v1
- * internally, this will not allocate any memory.  Should only be used by
- * generated code. */
-upb_msglayout *upb_msglayout_frominit_v1(
-    const upb_msglayout_msginit_v1 *init, upb_alloc *a);
-void upb_msglayout_uninit_v1(upb_msglayout *layout, upb_alloc *a);
 
 UPB_END_EXTERN_C
 

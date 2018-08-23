@@ -126,15 +126,14 @@ static bool upb_put_float(upb_encstate *e, float d) {
   return upb_put_fixed32(e, u32);
 }
 
-static uint32_t upb_readcase(const char *msg, const upb_msglayout_msginit_v1 *m,
+static uint32_t upb_readcase(const char *msg, const upb_msglayout *m,
                              int oneof_index) {
   uint32_t ret;
   memcpy(&ret, msg + m->oneofs[oneof_index].case_offset, sizeof(ret));
   return ret;
 }
 
-static bool upb_readhasbit(const char *msg,
-                           const upb_msglayout_fieldinit_v1 *f) {
+static bool upb_readhasbit(const char *msg, const upb_msglayout_field *f) {
   UPB_ASSERT(f->hasbit != UPB_NO_HASBIT);
   return msg[f->hasbit / 8] & (1 << (f->hasbit % 8));
 }
@@ -150,12 +149,11 @@ static bool upb_put_fixedarray(upb_encstate *e, const upb_array *arr,
 }
 
 bool upb_encode_message(upb_encstate *e, const char *msg,
-                        const upb_msglayout_msginit_v1 *m,
-                        size_t *size);
+                        const upb_msglayout *m, size_t *size);
 
 static bool upb_encode_array(upb_encstate *e, const char *field_mem,
-                             const upb_msglayout_msginit_v1 *m,
-                             const upb_msglayout_fieldinit_v1 *f) {
+                             const upb_msglayout *m,
+                             const upb_msglayout_field *f) {
   const upb_array *arr = *(const upb_array**)field_mem;
 
   if (arr == NULL || arr->len == 0) {
@@ -221,7 +219,7 @@ do { ; } while(0)
     case UPB_DESCRIPTOR_TYPE_GROUP: {
       void **start = arr->data;
       void **ptr = start + arr->len;
-      const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
+      const upb_msglayout *subm = m->submsgs[f->submsg_index];
       do {
         size_t size;
         ptr--;
@@ -234,7 +232,7 @@ do { ; } while(0)
     case UPB_DESCRIPTOR_TYPE_MESSAGE: {
       void **start = arr->data;
       void **ptr = start + arr->len;
-      const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
+      const upb_msglayout *subm = m->submsgs[f->submsg_index];
       do {
         size_t size;
         ptr--;
@@ -254,8 +252,8 @@ do { ; } while(0)
 }
 
 static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
-                                   const upb_msglayout_msginit_v1 *m,
-                                   const upb_msglayout_fieldinit_v1 *f,
+                                   const upb_msglayout *m,
+                                   const upb_msglayout_field *f,
                                    bool is_proto3) {
   bool skip_zero_value = is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF;
 
@@ -305,8 +303,8 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
     }
     case UPB_DESCRIPTOR_TYPE_GROUP: {
       size_t size;
-      void *submsg = *(void**)field_mem;
-      const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
+      void *submsg = *(void **)field_mem;
+      const upb_msglayout *subm = m->submsgs[f->submsg_index];
       if (skip_zero_value && submsg == NULL) {
         return true;
       }
@@ -316,8 +314,8 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
     }
     case UPB_DESCRIPTOR_TYPE_MESSAGE: {
       size_t size;
-      void *submsg = *(void**)field_mem;
-      const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
+      void *submsg = *(void **)field_mem;
+      const upb_msglayout *subm = m->submsgs[f->submsg_index];
       if (skip_zero_value && submsg == NULL) {
         return true;
       }
@@ -330,9 +328,8 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
   UPB_UNREACHABLE();
 }
 
-bool upb_encode_hasscalarfield(const char *msg,
-                               const upb_msglayout_msginit_v1 *m,
-                               const upb_msglayout_fieldinit_v1 *f) {
+bool upb_encode_hasscalarfield(const char *msg, const upb_msglayout *m,
+                               const upb_msglayout_field *f) {
   if (f->oneof_index != UPB_NOT_IN_ONEOF) {
     return upb_readcase(msg, m, f->oneof_index) == f->number;
   } else if (m->is_proto2) {
@@ -343,9 +340,8 @@ bool upb_encode_hasscalarfield(const char *msg,
   }
 }
 
-bool upb_encode_message(upb_encstate* e, const char *msg,
-                        const upb_msglayout_msginit_v1 *m,
-                        size_t *size) {
+bool upb_encode_message(upb_encstate *e, const char *msg,
+                        const upb_msglayout *m, size_t *size) {
   int i;
   size_t pre_len = e->limit - e->ptr;
 
@@ -354,7 +350,7 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
   }
 
   for (i = m->field_count - 1; i >= 0; i--) {
-    const upb_msglayout_fieldinit_v1 *f = &m->fields[i];
+    const upb_msglayout_field *f = &m->fields[i];
 
     if (f->label == UPB_LABEL_REPEATED) {
       CHK(upb_encode_array(e, msg + f->offset, m, f));
@@ -363,7 +359,7 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
         if (f->oneof_index == UPB_NOT_IN_ONEOF) {
           CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
         } else {
-          const upb_msglayout_oneofinit_v1 *o = &m->oneofs[f->oneof_index];
+          const upb_msglayout_oneof *o = &m->oneofs[f->oneof_index];
           CHK(upb_encode_scalarfield(e, msg + o->data_offset,
                                      m, f, !m->is_proto2));
         }
@@ -375,8 +371,8 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
   return true;
 }
 
-char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *m,
-                 upb_env *env, size_t *size) {
+char *upb_encode(const void *msg, const upb_msglayout *m, upb_env *env,
+                 size_t *size) {
   upb_encstate e;
   e.env = env;
   e.buf = NULL;
