@@ -154,6 +154,7 @@ upb_SRCS = \
   upb/encode.c \
   upb/handlers.c \
   upb/msg.c \
+  upb/msgfactory.c \
   upb/refcounted.c \
   upb/sink.c \
   upb/table.c \

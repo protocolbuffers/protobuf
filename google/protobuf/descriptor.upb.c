@@ -18,15 +18,15 @@ struct google_protobuf_FileDescriptorSet {
   upb_array* file;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_FileDescriptorSet_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_FileDescriptorSet_submsgs[1] = {
   &google_protobuf_FileDescriptorProto_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_FileDescriptorSet__fields[1] = {
+static const upb_msglayout_field google_protobuf_FileDescriptorSet__fields[1] = {
   {1, offsetof(google_protobuf_FileDescriptorSet, file), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_FileDescriptorSet_msginit = {
+const upb_msglayout google_protobuf_FileDescriptorSet_msginit = {
   &google_protobuf_FileDescriptorSet_submsgs[0],
   &google_protobuf_FileDescriptorSet__fields[0],
   NULL,
@@ -71,7 +71,7 @@ struct google_protobuf_FileDescriptorProto {
   upb_array* weak_dependency;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_FileDescriptorProto_submsgs[6] = {
+static const upb_msglayout *const google_protobuf_FileDescriptorProto_submsgs[6] = {
   &google_protobuf_DescriptorProto_msginit,
   &google_protobuf_EnumDescriptorProto_msginit,
   &google_protobuf_FieldDescriptorProto_msginit,
@@ -80,7 +80,7 @@ static const upb_msglayout_msginit_v1 *const google_protobuf_FileDescriptorProto
   &google_protobuf_SourceCodeInfo_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_FileDescriptorProto__fields[12] = {
+static const upb_msglayout_field google_protobuf_FileDescriptorProto__fields[12] = {
   {1, offsetof(google_protobuf_FileDescriptorProto, name), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {2, offsetof(google_protobuf_FileDescriptorProto, package), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {3, offsetof(google_protobuf_FileDescriptorProto, dependency), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 3},
@@ -95,7 +95,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_FileDescriptorProto__fie
   {12, offsetof(google_protobuf_FileDescriptorProto, syntax), 2, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_FileDescriptorProto_msginit = {
+const upb_msglayout google_protobuf_FileDescriptorProto_msginit = {
   &google_protobuf_FileDescriptorProto_submsgs[0],
   &google_protobuf_FileDescriptorProto__fields[0],
   NULL,
@@ -204,7 +204,7 @@ struct google_protobuf_DescriptorProto {
   upb_array* reserved_name;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_DescriptorProto_submsgs[8] = {
+static const upb_msglayout *const google_protobuf_DescriptorProto_submsgs[8] = {
   &google_protobuf_DescriptorProto_msginit,
   &google_protobuf_DescriptorProto_ExtensionRange_msginit,
   &google_protobuf_DescriptorProto_ReservedRange_msginit,
@@ -214,7 +214,7 @@ static const upb_msglayout_msginit_v1 *const google_protobuf_DescriptorProto_sub
   &google_protobuf_OneofDescriptorProto_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_DescriptorProto__fields[10] = {
+static const upb_msglayout_field google_protobuf_DescriptorProto__fields[10] = {
   {1, offsetof(google_protobuf_DescriptorProto, name), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {2, offsetof(google_protobuf_DescriptorProto, field), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 4, 11, 3},
   {3, offsetof(google_protobuf_DescriptorProto, nested_type), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
@@ -227,7 +227,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_DescriptorProto__fields[
   {10, offsetof(google_protobuf_DescriptorProto, reserved_name), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_msginit = {
+const upb_msglayout google_protobuf_DescriptorProto_msginit = {
   &google_protobuf_DescriptorProto_submsgs[0],
   &google_protobuf_DescriptorProto__fields[0],
   NULL,
@@ -317,17 +317,17 @@ struct google_protobuf_DescriptorProto_ExtensionRange {
   google_protobuf_ExtensionRangeOptions* options;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_DescriptorProto_ExtensionRange_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_DescriptorProto_ExtensionRange_submsgs[1] = {
   &google_protobuf_ExtensionRangeOptions_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_DescriptorProto_ExtensionRange__fields[3] = {
+static const upb_msglayout_field google_protobuf_DescriptorProto_ExtensionRange__fields[3] = {
   {1, offsetof(google_protobuf_DescriptorProto_ExtensionRange, start), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
   {2, offsetof(google_protobuf_DescriptorProto_ExtensionRange, end), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
   {3, offsetof(google_protobuf_DescriptorProto_ExtensionRange, options), 2, UPB_NOT_IN_ONEOF, 0, 11, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_ExtensionRange_msginit = {
+const upb_msglayout google_protobuf_DescriptorProto_ExtensionRange_msginit = {
   &google_protobuf_DescriptorProto_ExtensionRange_submsgs[0],
   &google_protobuf_DescriptorProto_ExtensionRange__fields[0],
   NULL,
@@ -374,12 +374,12 @@ struct google_protobuf_DescriptorProto_ReservedRange {
   int32_t end;
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_DescriptorProto_ReservedRange__fields[2] = {
+static const upb_msglayout_field google_protobuf_DescriptorProto_ReservedRange__fields[2] = {
   {1, offsetof(google_protobuf_DescriptorProto_ReservedRange, start), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
   {2, offsetof(google_protobuf_DescriptorProto_ReservedRange, end), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_ReservedRange_msginit = {
+const upb_msglayout google_protobuf_DescriptorProto_ReservedRange_msginit = {
   NULL,
   &google_protobuf_DescriptorProto_ReservedRange__fields[0],
   NULL,
@@ -419,15 +419,15 @@ struct google_protobuf_ExtensionRangeOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_ExtensionRangeOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_ExtensionRangeOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_ExtensionRangeOptions__fields[1] = {
+static const upb_msglayout_field google_protobuf_ExtensionRangeOptions__fields[1] = {
   {999, offsetof(google_protobuf_ExtensionRangeOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_ExtensionRangeOptions_msginit = {
+const upb_msglayout google_protobuf_ExtensionRangeOptions_msginit = {
   &google_protobuf_ExtensionRangeOptions_submsgs[0],
   &google_protobuf_ExtensionRangeOptions__fields[0],
   NULL,
@@ -470,11 +470,11 @@ struct google_protobuf_FieldDescriptorProto {
   google_protobuf_FieldOptions* options;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_FieldDescriptorProto_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_FieldDescriptorProto_submsgs[1] = {
   &google_protobuf_FieldOptions_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_FieldDescriptorProto__fields[10] = {
+static const upb_msglayout_field google_protobuf_FieldDescriptorProto__fields[10] = {
   {1, offsetof(google_protobuf_FieldDescriptorProto, name), 4, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {2, offsetof(google_protobuf_FieldDescriptorProto, extendee), 5, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {3, offsetof(google_protobuf_FieldDescriptorProto, number), 2, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
@@ -487,7 +487,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_FieldDescriptorProto__fi
   {10, offsetof(google_protobuf_FieldDescriptorProto, json_name), 8, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_FieldDescriptorProto_msginit = {
+const upb_msglayout google_protobuf_FieldDescriptorProto_msginit = {
   &google_protobuf_FieldDescriptorProto_submsgs[0],
   &google_protobuf_FieldDescriptorProto__fields[0],
   NULL,
@@ -576,16 +576,16 @@ struct google_protobuf_OneofDescriptorProto {
   google_protobuf_OneofOptions* options;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_OneofDescriptorProto_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_OneofDescriptorProto_submsgs[1] = {
   &google_protobuf_OneofOptions_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_OneofDescriptorProto__fields[2] = {
+static const upb_msglayout_field google_protobuf_OneofDescriptorProto__fields[2] = {
   {1, offsetof(google_protobuf_OneofDescriptorProto, name), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {2, offsetof(google_protobuf_OneofDescriptorProto, options), 1, UPB_NOT_IN_ONEOF, 0, 11, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_OneofDescriptorProto_msginit = {
+const upb_msglayout google_protobuf_OneofDescriptorProto_msginit = {
   &google_protobuf_OneofDescriptorProto_submsgs[0],
   &google_protobuf_OneofDescriptorProto__fields[0],
   NULL,
@@ -629,13 +629,13 @@ struct google_protobuf_EnumDescriptorProto {
   upb_array* reserved_name;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_EnumDescriptorProto_submsgs[3] = {
+static const upb_msglayout *const google_protobuf_EnumDescriptorProto_submsgs[3] = {
   &google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit,
   &google_protobuf_EnumOptions_msginit,
   &google_protobuf_EnumValueDescriptorProto_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_EnumDescriptorProto__fields[5] = {
+static const upb_msglayout_field google_protobuf_EnumDescriptorProto__fields[5] = {
   {1, offsetof(google_protobuf_EnumDescriptorProto, name), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {2, offsetof(google_protobuf_EnumDescriptorProto, value), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 2, 11, 3},
   {3, offsetof(google_protobuf_EnumDescriptorProto, options), 1, UPB_NOT_IN_ONEOF, 1, 11, 1},
@@ -643,7 +643,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_EnumDescriptorProto__fie
   {5, offsetof(google_protobuf_EnumDescriptorProto, reserved_name), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_EnumDescriptorProto_msginit = {
+const upb_msglayout google_protobuf_EnumDescriptorProto_msginit = {
   &google_protobuf_EnumDescriptorProto_submsgs[0],
   &google_protobuf_EnumDescriptorProto__fields[0],
   NULL,
@@ -702,12 +702,12 @@ struct google_protobuf_EnumDescriptorProto_EnumReservedRange {
   int32_t end;
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[2] = {
+static const upb_msglayout_field google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[2] = {
   {1, offsetof(google_protobuf_EnumDescriptorProto_EnumReservedRange, start), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
   {2, offsetof(google_protobuf_EnumDescriptorProto_EnumReservedRange, end), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit = {
+const upb_msglayout google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit = {
   NULL,
   &google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[0],
   NULL,
@@ -749,17 +749,17 @@ struct google_protobuf_EnumValueDescriptorProto {
   google_protobuf_EnumValueOptions* options;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_EnumValueDescriptorProto_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_EnumValueDescriptorProto_submsgs[1] = {
   &google_protobuf_EnumValueOptions_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_EnumValueDescriptorProto__fields[3] = {
+static const upb_msglayout_field google_protobuf_EnumValueDescriptorProto__fields[3] = {
   {1, offsetof(google_protobuf_EnumValueDescriptorProto, name), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {2, offsetof(google_protobuf_EnumValueDescriptorProto, number), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
   {3, offsetof(google_protobuf_EnumValueDescriptorProto, options), 2, UPB_NOT_IN_ONEOF, 0, 11, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_EnumValueDescriptorProto_msginit = {
+const upb_msglayout google_protobuf_EnumValueDescriptorProto_msginit = {
   &google_protobuf_EnumValueDescriptorProto_submsgs[0],
   &google_protobuf_EnumValueDescriptorProto__fields[0],
   NULL,
@@ -807,18 +807,18 @@ struct google_protobuf_ServiceDescriptorProto {
   upb_array* method;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_ServiceDescriptorProto_submsgs[2] = {
+static const upb_msglayout *const google_protobuf_ServiceDescriptorProto_submsgs[2] = {
   &google_protobuf_MethodDescriptorProto_msginit,
   &google_protobuf_ServiceOptions_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_ServiceDescriptorProto__fields[3] = {
+static const upb_msglayout_field google_protobuf_ServiceDescriptorProto__fields[3] = {
   {1, offsetof(google_protobuf_ServiceDescriptorProto, name), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {2, offsetof(google_protobuf_ServiceDescriptorProto, method), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
   {3, offsetof(google_protobuf_ServiceDescriptorProto, options), 1, UPB_NOT_IN_ONEOF, 1, 11, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_ServiceDescriptorProto_msginit = {
+const upb_msglayout google_protobuf_ServiceDescriptorProto_msginit = {
   &google_protobuf_ServiceDescriptorProto_submsgs[0],
   &google_protobuf_ServiceDescriptorProto__fields[0],
   NULL,
@@ -869,11 +869,11 @@ struct google_protobuf_MethodDescriptorProto {
   google_protobuf_MethodOptions* options;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_MethodDescriptorProto_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_MethodDescriptorProto_submsgs[1] = {
   &google_protobuf_MethodOptions_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_MethodDescriptorProto__fields[6] = {
+static const upb_msglayout_field google_protobuf_MethodDescriptorProto__fields[6] = {
   {1, offsetof(google_protobuf_MethodDescriptorProto, name), 2, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {2, offsetof(google_protobuf_MethodDescriptorProto, input_type), 3, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {3, offsetof(google_protobuf_MethodDescriptorProto, output_type), 4, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
@@ -882,7 +882,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_MethodDescriptorProto__f
   {6, offsetof(google_protobuf_MethodDescriptorProto, server_streaming), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_MethodDescriptorProto_msginit = {
+const upb_msglayout google_protobuf_MethodDescriptorProto_msginit = {
   &google_protobuf_MethodDescriptorProto_submsgs[0],
   &google_protobuf_MethodDescriptorProto__fields[0],
   NULL,
@@ -964,11 +964,11 @@ struct google_protobuf_FileOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_FileOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_FileOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_FileOptions__fields[19] = {
+static const upb_msglayout_field google_protobuf_FileOptions__fields[19] = {
   {1, offsetof(google_protobuf_FileOptions, java_package), 10, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {8, offsetof(google_protobuf_FileOptions, java_outer_classname), 11, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {9, offsetof(google_protobuf_FileOptions, optimize_for), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 14, 1},
@@ -990,7 +990,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_FileOptions__fields[19] 
   {999, offsetof(google_protobuf_FileOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_FileOptions_msginit = {
+const upb_msglayout google_protobuf_FileOptions_msginit = {
   &google_protobuf_FileOptions_submsgs[0],
   &google_protobuf_FileOptions__fields[0],
   NULL,
@@ -1136,11 +1136,11 @@ struct google_protobuf_MessageOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_MessageOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_MessageOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_MessageOptions__fields[5] = {
+static const upb_msglayout_field google_protobuf_MessageOptions__fields[5] = {
   {1, offsetof(google_protobuf_MessageOptions, message_set_wire_format), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
   {2, offsetof(google_protobuf_MessageOptions, no_standard_descriptor_accessor), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
   {3, offsetof(google_protobuf_MessageOptions, deprecated), 2, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
@@ -1148,7 +1148,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_MessageOptions__fields[5
   {999, offsetof(google_protobuf_MessageOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_MessageOptions_msginit = {
+const upb_msglayout google_protobuf_MessageOptions_msginit = {
   &google_protobuf_MessageOptions_submsgs[0],
   &google_protobuf_MessageOptions__fields[0],
   NULL,
@@ -1212,11 +1212,11 @@ struct google_protobuf_FieldOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_FieldOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_FieldOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_FieldOptions__fields[7] = {
+static const upb_msglayout_field google_protobuf_FieldOptions__fields[7] = {
   {1, offsetof(google_protobuf_FieldOptions, ctype), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 14, 1},
   {2, offsetof(google_protobuf_FieldOptions, packed), 2, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
   {3, offsetof(google_protobuf_FieldOptions, deprecated), 3, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
@@ -1226,7 +1226,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_FieldOptions__fields[7] 
   {999, offsetof(google_protobuf_FieldOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_FieldOptions_msginit = {
+const upb_msglayout google_protobuf_FieldOptions_msginit = {
   &google_protobuf_FieldOptions_submsgs[0],
   &google_protobuf_FieldOptions__fields[0],
   NULL,
@@ -1296,15 +1296,15 @@ struct google_protobuf_OneofOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_OneofOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_OneofOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_OneofOptions__fields[1] = {
+static const upb_msglayout_field google_protobuf_OneofOptions__fields[1] = {
   {999, offsetof(google_protobuf_OneofOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_OneofOptions_msginit = {
+const upb_msglayout google_protobuf_OneofOptions_msginit = {
   &google_protobuf_OneofOptions_submsgs[0],
   &google_protobuf_OneofOptions__fields[0],
   NULL,
@@ -1340,17 +1340,17 @@ struct google_protobuf_EnumOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_EnumOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_EnumOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_EnumOptions__fields[3] = {
+static const upb_msglayout_field google_protobuf_EnumOptions__fields[3] = {
   {2, offsetof(google_protobuf_EnumOptions, allow_alias), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
   {3, offsetof(google_protobuf_EnumOptions, deprecated), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
   {999, offsetof(google_protobuf_EnumOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_EnumOptions_msginit = {
+const upb_msglayout google_protobuf_EnumOptions_msginit = {
   &google_protobuf_EnumOptions_submsgs[0],
   &google_protobuf_EnumOptions__fields[0],
   NULL,
@@ -1397,16 +1397,16 @@ struct google_protobuf_EnumValueOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_EnumValueOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_EnumValueOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_EnumValueOptions__fields[2] = {
+static const upb_msglayout_field google_protobuf_EnumValueOptions__fields[2] = {
   {1, offsetof(google_protobuf_EnumValueOptions, deprecated), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
   {999, offsetof(google_protobuf_EnumValueOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_EnumValueOptions_msginit = {
+const upb_msglayout google_protobuf_EnumValueOptions_msginit = {
   &google_protobuf_EnumValueOptions_submsgs[0],
   &google_protobuf_EnumValueOptions__fields[0],
   NULL,
@@ -1447,16 +1447,16 @@ struct google_protobuf_ServiceOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_ServiceOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_ServiceOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_ServiceOptions__fields[2] = {
+static const upb_msglayout_field google_protobuf_ServiceOptions__fields[2] = {
   {33, offsetof(google_protobuf_ServiceOptions, deprecated), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
   {999, offsetof(google_protobuf_ServiceOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_ServiceOptions_msginit = {
+const upb_msglayout google_protobuf_ServiceOptions_msginit = {
   &google_protobuf_ServiceOptions_submsgs[0],
   &google_protobuf_ServiceOptions__fields[0],
   NULL,
@@ -1498,17 +1498,17 @@ struct google_protobuf_MethodOptions {
   upb_array* uninterpreted_option;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_MethodOptions_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_MethodOptions_submsgs[1] = {
   &google_protobuf_UninterpretedOption_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_MethodOptions__fields[3] = {
+static const upb_msglayout_field google_protobuf_MethodOptions__fields[3] = {
   {33, offsetof(google_protobuf_MethodOptions, deprecated), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 1},
   {34, offsetof(google_protobuf_MethodOptions, idempotency_level), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 14, 1},
   {999, offsetof(google_protobuf_MethodOptions, uninterpreted_option), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_MethodOptions_msginit = {
+const upb_msglayout google_protobuf_MethodOptions_msginit = {
   &google_protobuf_MethodOptions_submsgs[0],
   &google_protobuf_MethodOptions__fields[0],
   NULL,
@@ -1560,11 +1560,11 @@ struct google_protobuf_UninterpretedOption {
   upb_array* name;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_UninterpretedOption_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_UninterpretedOption_submsgs[1] = {
   &google_protobuf_UninterpretedOption_NamePart_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_UninterpretedOption__fields[7] = {
+static const upb_msglayout_field google_protobuf_UninterpretedOption__fields[7] = {
   {2, offsetof(google_protobuf_UninterpretedOption, name), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
   {3, offsetof(google_protobuf_UninterpretedOption, identifier_value), 3, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {4, offsetof(google_protobuf_UninterpretedOption, positive_int_value), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 4, 1},
@@ -1574,7 +1574,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_UninterpretedOption__fie
   {8, offsetof(google_protobuf_UninterpretedOption, aggregate_value), 5, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_UninterpretedOption_msginit = {
+const upb_msglayout google_protobuf_UninterpretedOption_msginit = {
   &google_protobuf_UninterpretedOption_submsgs[0],
   &google_protobuf_UninterpretedOption__fields[0],
   NULL,
@@ -1645,12 +1645,12 @@ struct google_protobuf_UninterpretedOption_NamePart {
   upb_stringview name_part;
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_UninterpretedOption_NamePart__fields[2] = {
+static const upb_msglayout_field google_protobuf_UninterpretedOption_NamePart__fields[2] = {
   {1, offsetof(google_protobuf_UninterpretedOption_NamePart, name_part), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 2},
   {2, offsetof(google_protobuf_UninterpretedOption_NamePart, is_extension), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 8, 2},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_UninterpretedOption_NamePart_msginit = {
+const upb_msglayout google_protobuf_UninterpretedOption_NamePart_msginit = {
   NULL,
   &google_protobuf_UninterpretedOption_NamePart__fields[0],
   NULL,
@@ -1690,15 +1690,15 @@ struct google_protobuf_SourceCodeInfo {
   upb_array* location;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_SourceCodeInfo_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_SourceCodeInfo_submsgs[1] = {
   &google_protobuf_SourceCodeInfo_Location_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_SourceCodeInfo__fields[1] = {
+static const upb_msglayout_field google_protobuf_SourceCodeInfo__fields[1] = {
   {1, offsetof(google_protobuf_SourceCodeInfo, location), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_SourceCodeInfo_msginit = {
+const upb_msglayout google_protobuf_SourceCodeInfo_msginit = {
   &google_protobuf_SourceCodeInfo_submsgs[0],
   &google_protobuf_SourceCodeInfo__fields[0],
   NULL,
@@ -1736,7 +1736,7 @@ struct google_protobuf_SourceCodeInfo_Location {
   upb_array* leading_detached_comments;
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_SourceCodeInfo_Location__fields[5] = {
+static const upb_msglayout_field google_protobuf_SourceCodeInfo_Location__fields[5] = {
   {1, offsetof(google_protobuf_SourceCodeInfo_Location, path), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 3},
   {2, offsetof(google_protobuf_SourceCodeInfo_Location, span), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 3},
   {3, offsetof(google_protobuf_SourceCodeInfo_Location, leading_comments), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
@@ -1744,7 +1744,7 @@ static const upb_msglayout_fieldinit_v1 google_protobuf_SourceCodeInfo_Location_
   {6, offsetof(google_protobuf_SourceCodeInfo_Location, leading_detached_comments), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_SourceCodeInfo_Location_msginit = {
+const upb_msglayout google_protobuf_SourceCodeInfo_Location_msginit = {
   NULL,
   &google_protobuf_SourceCodeInfo_Location__fields[0],
   NULL,
@@ -1802,15 +1802,15 @@ struct google_protobuf_GeneratedCodeInfo {
   upb_array* annotation;
 };
 
-static const upb_msglayout_msginit_v1 *const google_protobuf_GeneratedCodeInfo_submsgs[1] = {
+static const upb_msglayout *const google_protobuf_GeneratedCodeInfo_submsgs[1] = {
   &google_protobuf_GeneratedCodeInfo_Annotation_msginit,
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_GeneratedCodeInfo__fields[1] = {
+static const upb_msglayout_field google_protobuf_GeneratedCodeInfo__fields[1] = {
   {1, offsetof(google_protobuf_GeneratedCodeInfo, annotation), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, 0, 11, 3},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_GeneratedCodeInfo_msginit = {
+const upb_msglayout google_protobuf_GeneratedCodeInfo_msginit = {
   &google_protobuf_GeneratedCodeInfo_submsgs[0],
   &google_protobuf_GeneratedCodeInfo__fields[0],
   NULL,
@@ -1847,14 +1847,14 @@ struct google_protobuf_GeneratedCodeInfo_Annotation {
   upb_array* path;
 };
 
-static const upb_msglayout_fieldinit_v1 google_protobuf_GeneratedCodeInfo_Annotation__fields[4] = {
+static const upb_msglayout_field google_protobuf_GeneratedCodeInfo_Annotation__fields[4] = {
   {1, offsetof(google_protobuf_GeneratedCodeInfo_Annotation, path), UPB_NO_HASBIT, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 3},
   {2, offsetof(google_protobuf_GeneratedCodeInfo_Annotation, source_file), 2, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 9, 1},
   {3, offsetof(google_protobuf_GeneratedCodeInfo_Annotation, begin), 0, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
   {4, offsetof(google_protobuf_GeneratedCodeInfo_Annotation, end), 1, UPB_NOT_IN_ONEOF, UPB_NO_SUBMSG, 5, 1},
 };
 
-const upb_msglayout_msginit_v1 google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
+const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
   NULL,
   &google_protobuf_GeneratedCodeInfo_Annotation__fields[0],
   NULL,

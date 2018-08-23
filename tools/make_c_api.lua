@@ -223,7 +223,7 @@ local function write_h_file(filedef, append)
   for msg in filedef:defs(upb.DEF_MSG) do
     local msgname = to_cident(msg:full_name())
     append('/* %s */\n', msgname)
-    append('extern const upb_msglayout_msginit_v1 %s_msginit;\n', msgname)
+    append('extern const upb_msglayout %s_msginit;\n', msgname)
     append('%s *%s_new(upb_env *env);\n', msgname, msgname)
     append('%s *%s_parsenew(upb_stringview buf, upb_env *env);\n',
            msgname, msgname)
@@ -378,7 +378,7 @@ local function write_c_file(filedef, hfilename, append)
     if oneof_count > 0 then
       local oneofs_array_name = msgname .. "_oneofs"
       oneofs_array_ref = "&" .. oneofs_array_name .. "[0]"
-      append('static const upb_msglayout_oneofinit_v1 %s[%s] = {\n',
+      append('static const upb_msglayout_oneof %s[%s] = {\n',
              oneofs_array_name, oneof_count)
       for _, oneof in ipairs(oneofs_layout_order) do
         append('  {offsetof(%s, %s), offsetof(%s, %s_case)},\n',
@@ -392,7 +392,7 @@ local function write_c_file(filedef, hfilename, append)
       -- "submsgs" array for every strongly-connected component.
       local submsgs_array_name = msgname .. "_submsgs"
       submsgs_array_ref = "&" .. submsgs_array_name .. "[0]"
-      append('static const upb_msglayout_msginit_v1 *const %s[%s] = {\n',
+      append('static const upb_msglayout *const %s[%s] = {\n',
              submsgs_array_name, submsg_count)
 
       -- Create a deterministically-sorted array of submessage entries.
@@ -415,7 +415,7 @@ local function write_c_file(filedef, hfilename, append)
     if field_count > 0 then
       local fields_array_name = msgname .. "__fields"
       fields_array_ref = "&" .. fields_array_name .. "[0]"
-      append('static const upb_msglayout_fieldinit_v1 %s[%s] = {\n',
+      append('static const upb_msglayout_field %s[%s] = {\n',
              fields_array_name, field_count)
       for _, field in ipairs(fields_number_order) do
         local submsg_index = "UPB_NO_SUBMSG"
@@ -439,7 +439,7 @@ local function write_c_file(filedef, hfilename, append)
       append('};\n\n')
     end
 
-    append('const upb_msglayout_msginit_v1 %s_msginit = {\n', msgname)
+    append('const upb_msglayout %s_msginit = {\n', msgname)
     append('  %s,\n', submsgs_array_ref)
     append('  %s,\n', fields_array_ref)
     append('  %s,\n', oneofs_array_ref)

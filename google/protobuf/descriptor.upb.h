@@ -121,7 +121,7 @@ typedef enum {
 } google_protobuf_MethodOptions_IdempotencyLevel;
 
 /* google_protobuf_FileDescriptorSet */
-extern const upb_msglayout_msginit_v1 google_protobuf_FileDescriptorSet_msginit;
+extern const upb_msglayout google_protobuf_FileDescriptorSet_msginit;
 google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_new(upb_env *env);
 google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FileDescriptorSet_serialize(google_protobuf_FileDescriptorSet *msg, upb_env *env, size_t *len);
@@ -135,7 +135,7 @@ void google_protobuf_FileDescriptorSet_set_file(google_protobuf_FileDescriptorSe
 
 
 /* google_protobuf_FileDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_FileDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_FileDescriptorProto_msginit;
 google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_new(upb_env *env);
 google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FileDescriptorProto_serialize(google_protobuf_FileDescriptorProto *msg, upb_env *env, size_t *len);
@@ -171,7 +171,7 @@ void google_protobuf_FileDescriptorProto_set_syntax(google_protobuf_FileDescript
 
 
 /* google_protobuf_DescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_DescriptorProto_msginit;
 google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_new(upb_env *env);
 google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_DescriptorProto_serialize(google_protobuf_DescriptorProto *msg, upb_env *env, size_t *len);
@@ -203,7 +203,7 @@ void google_protobuf_DescriptorProto_set_reserved_name(google_protobuf_Descripto
 
 
 /* google_protobuf_DescriptorProto_ExtensionRange */
-extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_ExtensionRange_msginit;
+extern const upb_msglayout google_protobuf_DescriptorProto_ExtensionRange_msginit;
 google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_DescriptorProto_ExtensionRange_new(upb_env *env);
 google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_DescriptorProto_ExtensionRange_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_DescriptorProto_ExtensionRange_serialize(google_protobuf_DescriptorProto_ExtensionRange *msg, upb_env *env, size_t *len);
@@ -221,7 +221,7 @@ void google_protobuf_DescriptorProto_ExtensionRange_set_options(google_protobuf_
 
 
 /* google_protobuf_DescriptorProto_ReservedRange */
-extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_ReservedRange_msginit;
+extern const upb_msglayout google_protobuf_DescriptorProto_ReservedRange_msginit;
 google_protobuf_DescriptorProto_ReservedRange *google_protobuf_DescriptorProto_ReservedRange_new(upb_env *env);
 google_protobuf_DescriptorProto_ReservedRange *google_protobuf_DescriptorProto_ReservedRange_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_DescriptorProto_ReservedRange_serialize(google_protobuf_DescriptorProto_ReservedRange *msg, upb_env *env, size_t *len);
@@ -237,7 +237,7 @@ void google_protobuf_DescriptorProto_ReservedRange_set_end(google_protobuf_Descr
 
 
 /* google_protobuf_ExtensionRangeOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_ExtensionRangeOptions_msginit;
+extern const upb_msglayout google_protobuf_ExtensionRangeOptions_msginit;
 google_protobuf_ExtensionRangeOptions *google_protobuf_ExtensionRangeOptions_new(upb_env *env);
 google_protobuf_ExtensionRangeOptions *google_protobuf_ExtensionRangeOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_ExtensionRangeOptions_serialize(google_protobuf_ExtensionRangeOptions *msg, upb_env *env, size_t *len);
@@ -251,7 +251,7 @@ void google_protobuf_ExtensionRangeOptions_set_uninterpreted_option(google_proto
 
 
 /* google_protobuf_FieldDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_FieldDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_FieldDescriptorProto_msginit;
 google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProto_new(upb_env *env);
 google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FieldDescriptorProto_serialize(google_protobuf_FieldDescriptorProto *msg, upb_env *env, size_t *len);
@@ -283,7 +283,7 @@ void google_protobuf_FieldDescriptorProto_set_json_name(google_protobuf_FieldDes
 
 
 /* google_protobuf_OneofDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_OneofDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_OneofDescriptorProto_msginit;
 google_protobuf_OneofDescriptorProto *google_protobuf_OneofDescriptorProto_new(upb_env *env);
 google_protobuf_OneofDescriptorProto *google_protobuf_OneofDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_OneofDescriptorProto_serialize(google_protobuf_OneofDescriptorProto *msg, upb_env *env, size_t *len);
@@ -299,7 +299,7 @@ void google_protobuf_OneofDescriptorProto_set_options(google_protobuf_OneofDescr
 
 
 /* google_protobuf_EnumDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_EnumDescriptorProto_msginit;
 google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_new(upb_env *env);
 google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumDescriptorProto_serialize(google_protobuf_EnumDescriptorProto *msg, upb_env *env, size_t *len);
@@ -321,7 +321,7 @@ void google_protobuf_EnumDescriptorProto_set_reserved_name(google_protobuf_EnumD
 
 
 /* google_protobuf_EnumDescriptorProto_EnumReservedRange */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit;
+extern const upb_msglayout google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit;
 google_protobuf_EnumDescriptorProto_EnumReservedRange *google_protobuf_EnumDescriptorProto_EnumReservedRange_new(upb_env *env);
 google_protobuf_EnumDescriptorProto_EnumReservedRange *google_protobuf_EnumDescriptorProto_EnumReservedRange_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumDescriptorProto_EnumReservedRange_serialize(google_protobuf_EnumDescriptorProto_EnumReservedRange *msg, upb_env *env, size_t *len);
@@ -337,7 +337,7 @@ void google_protobuf_EnumDescriptorProto_EnumReservedRange_set_end(google_protob
 
 
 /* google_protobuf_EnumValueDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumValueDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_EnumValueDescriptorProto_msginit;
 google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescriptorProto_new(upb_env *env);
 google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumValueDescriptorProto_serialize(google_protobuf_EnumValueDescriptorProto *msg, upb_env *env, size_t *len);
@@ -355,7 +355,7 @@ void google_protobuf_EnumValueDescriptorProto_set_options(google_protobuf_EnumVa
 
 
 /* google_protobuf_ServiceDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_ServiceDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_ServiceDescriptorProto_msginit;
 google_protobuf_ServiceDescriptorProto *google_protobuf_ServiceDescriptorProto_new(upb_env *env);
 google_protobuf_ServiceDescriptorProto *google_protobuf_ServiceDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_ServiceDescriptorProto_serialize(google_protobuf_ServiceDescriptorProto *msg, upb_env *env, size_t *len);
@@ -373,7 +373,7 @@ void google_protobuf_ServiceDescriptorProto_set_options(google_protobuf_ServiceD
 
 
 /* google_protobuf_MethodDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_MethodDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_MethodDescriptorProto_msginit;
 google_protobuf_MethodDescriptorProto *google_protobuf_MethodDescriptorProto_new(upb_env *env);
 google_protobuf_MethodDescriptorProto *google_protobuf_MethodDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_MethodDescriptorProto_serialize(google_protobuf_MethodDescriptorProto *msg, upb_env *env, size_t *len);
@@ -397,7 +397,7 @@ void google_protobuf_MethodDescriptorProto_set_server_streaming(google_protobuf_
 
 
 /* google_protobuf_FileOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_FileOptions_msginit;
+extern const upb_msglayout google_protobuf_FileOptions_msginit;
 google_protobuf_FileOptions *google_protobuf_FileOptions_new(upb_env *env);
 google_protobuf_FileOptions *google_protobuf_FileOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FileOptions_serialize(google_protobuf_FileOptions *msg, upb_env *env, size_t *len);
@@ -447,7 +447,7 @@ void google_protobuf_FileOptions_set_uninterpreted_option(google_protobuf_FileOp
 
 
 /* google_protobuf_MessageOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_MessageOptions_msginit;
+extern const upb_msglayout google_protobuf_MessageOptions_msginit;
 google_protobuf_MessageOptions *google_protobuf_MessageOptions_new(upb_env *env);
 google_protobuf_MessageOptions *google_protobuf_MessageOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_MessageOptions_serialize(google_protobuf_MessageOptions *msg, upb_env *env, size_t *len);
@@ -469,7 +469,7 @@ void google_protobuf_MessageOptions_set_uninterpreted_option(google_protobuf_Mes
 
 
 /* google_protobuf_FieldOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_FieldOptions_msginit;
+extern const upb_msglayout google_protobuf_FieldOptions_msginit;
 google_protobuf_FieldOptions *google_protobuf_FieldOptions_new(upb_env *env);
 google_protobuf_FieldOptions *google_protobuf_FieldOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FieldOptions_serialize(google_protobuf_FieldOptions *msg, upb_env *env, size_t *len);
@@ -495,7 +495,7 @@ void google_protobuf_FieldOptions_set_uninterpreted_option(google_protobuf_Field
 
 
 /* google_protobuf_OneofOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_OneofOptions_msginit;
+extern const upb_msglayout google_protobuf_OneofOptions_msginit;
 google_protobuf_OneofOptions *google_protobuf_OneofOptions_new(upb_env *env);
 google_protobuf_OneofOptions *google_protobuf_OneofOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_OneofOptions_serialize(google_protobuf_OneofOptions *msg, upb_env *env, size_t *len);
@@ -509,7 +509,7 @@ void google_protobuf_OneofOptions_set_uninterpreted_option(google_protobuf_Oneof
 
 
 /* google_protobuf_EnumOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumOptions_msginit;
+extern const upb_msglayout google_protobuf_EnumOptions_msginit;
 google_protobuf_EnumOptions *google_protobuf_EnumOptions_new(upb_env *env);
 google_protobuf_EnumOptions *google_protobuf_EnumOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumOptions_serialize(google_protobuf_EnumOptions *msg, upb_env *env, size_t *len);
@@ -527,7 +527,7 @@ void google_protobuf_EnumOptions_set_uninterpreted_option(google_protobuf_EnumOp
 
 
 /* google_protobuf_EnumValueOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumValueOptions_msginit;
+extern const upb_msglayout google_protobuf_EnumValueOptions_msginit;
 google_protobuf_EnumValueOptions *google_protobuf_EnumValueOptions_new(upb_env *env);
 google_protobuf_EnumValueOptions *google_protobuf_EnumValueOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumValueOptions_serialize(google_protobuf_EnumValueOptions *msg, upb_env *env, size_t *len);
@@ -543,7 +543,7 @@ void google_protobuf_EnumValueOptions_set_uninterpreted_option(google_protobuf_E
 
 
 /* google_protobuf_ServiceOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_ServiceOptions_msginit;
+extern const upb_msglayout google_protobuf_ServiceOptions_msginit;
 google_protobuf_ServiceOptions *google_protobuf_ServiceOptions_new(upb_env *env);
 google_protobuf_ServiceOptions *google_protobuf_ServiceOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_ServiceOptions_serialize(google_protobuf_ServiceOptions *msg, upb_env *env, size_t *len);
@@ -559,7 +559,7 @@ void google_protobuf_ServiceOptions_set_uninterpreted_option(google_protobuf_Ser
 
 
 /* google_protobuf_MethodOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_MethodOptions_msginit;
+extern const upb_msglayout google_protobuf_MethodOptions_msginit;
 google_protobuf_MethodOptions *google_protobuf_MethodOptions_new(upb_env *env);
 google_protobuf_MethodOptions *google_protobuf_MethodOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_MethodOptions_serialize(google_protobuf_MethodOptions *msg, upb_env *env, size_t *len);
@@ -577,7 +577,7 @@ void google_protobuf_MethodOptions_set_uninterpreted_option(google_protobuf_Meth
 
 
 /* google_protobuf_UninterpretedOption */
-extern const upb_msglayout_msginit_v1 google_protobuf_UninterpretedOption_msginit;
+extern const upb_msglayout google_protobuf_UninterpretedOption_msginit;
 google_protobuf_UninterpretedOption *google_protobuf_UninterpretedOption_new(upb_env *env);
 google_protobuf_UninterpretedOption *google_protobuf_UninterpretedOption_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_UninterpretedOption_serialize(google_protobuf_UninterpretedOption *msg, upb_env *env, size_t *len);
@@ -603,7 +603,7 @@ void google_protobuf_UninterpretedOption_set_aggregate_value(google_protobuf_Uni
 
 
 /* google_protobuf_UninterpretedOption_NamePart */
-extern const upb_msglayout_msginit_v1 google_protobuf_UninterpretedOption_NamePart_msginit;
+extern const upb_msglayout google_protobuf_UninterpretedOption_NamePart_msginit;
 google_protobuf_UninterpretedOption_NamePart *google_protobuf_UninterpretedOption_NamePart_new(upb_env *env);
 google_protobuf_UninterpretedOption_NamePart *google_protobuf_UninterpretedOption_NamePart_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_UninterpretedOption_NamePart_serialize(google_protobuf_UninterpretedOption_NamePart *msg, upb_env *env, size_t *len);
@@ -619,7 +619,7 @@ void google_protobuf_UninterpretedOption_NamePart_set_is_extension(google_protob
 
 
 /* google_protobuf_SourceCodeInfo */
-extern const upb_msglayout_msginit_v1 google_protobuf_SourceCodeInfo_msginit;
+extern const upb_msglayout google_protobuf_SourceCodeInfo_msginit;
 google_protobuf_SourceCodeInfo *google_protobuf_SourceCodeInfo_new(upb_env *env);
 google_protobuf_SourceCodeInfo *google_protobuf_SourceCodeInfo_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_SourceCodeInfo_serialize(google_protobuf_SourceCodeInfo *msg, upb_env *env, size_t *len);
@@ -633,7 +633,7 @@ void google_protobuf_SourceCodeInfo_set_location(google_protobuf_SourceCodeInfo 
 
 
 /* google_protobuf_SourceCodeInfo_Location */
-extern const upb_msglayout_msginit_v1 google_protobuf_SourceCodeInfo_Location_msginit;
+extern const upb_msglayout google_protobuf_SourceCodeInfo_Location_msginit;
 google_protobuf_SourceCodeInfo_Location *google_protobuf_SourceCodeInfo_Location_new(upb_env *env);
 google_protobuf_SourceCodeInfo_Location *google_protobuf_SourceCodeInfo_Location_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_SourceCodeInfo_Location_serialize(google_protobuf_SourceCodeInfo_Location *msg, upb_env *env, size_t *len);
@@ -655,7 +655,7 @@ void google_protobuf_SourceCodeInfo_Location_set_leading_detached_comments(googl
 
 
 /* google_protobuf_GeneratedCodeInfo */
-extern const upb_msglayout_msginit_v1 google_protobuf_GeneratedCodeInfo_msginit;
+extern const upb_msglayout google_protobuf_GeneratedCodeInfo_msginit;
 google_protobuf_GeneratedCodeInfo *google_protobuf_GeneratedCodeInfo_new(upb_env *env);
 google_protobuf_GeneratedCodeInfo *google_protobuf_GeneratedCodeInfo_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_GeneratedCodeInfo_serialize(google_protobuf_GeneratedCodeInfo *msg, upb_env *env, size_t *len);
@@ -669,7 +669,7 @@ void google_protobuf_GeneratedCodeInfo_set_annotation(google_protobuf_GeneratedC
 
 
 /* google_protobuf_GeneratedCodeInfo_Annotation */
-extern const upb_msglayout_msginit_v1 google_protobuf_GeneratedCodeInfo_Annotation_msginit;
+extern const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit;
 google_protobuf_GeneratedCodeInfo_Annotation *google_protobuf_GeneratedCodeInfo_Annotation_new(upb_env *env);
 google_protobuf_GeneratedCodeInfo_Annotation *google_protobuf_GeneratedCodeInfo_Annotation_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_GeneratedCodeInfo_Annotation_serialize(google_protobuf_GeneratedCodeInfo_Annotation *msg, upb_env *env, size_t *len);
