@@ -199,9 +199,10 @@ cc_library(
 
 objc_library(
     name = "protobuf_objc",
-    hdrs = ["objectivec/GPBProtocolBuffers.h"],
+    hdrs = glob(["objectivec/**/*.h"]),
     includes = ["objectivec"],
     non_arc_srcs = ["objectivec/GPBProtocolBuffers.m"],
+    textual_hdrs = glob(["objectivec/**/*.m"]),
     visibility = ["//visibility:public"],
 )
 
