@@ -14,7 +14,7 @@ with info about your project (name and website) so we can add an entry for you.
 ## Existing Registered Extensions
 
 1. C# port of protocol buffers
-   * Website: http://github.com/jskeet/dotnet-protobufs
+   * Website: https://github.com/jskeet/protobuf-csharp-port
    * Extensions: 1000
 
 1. Perl/XS port of protocol buffers
