@@ -23,8 +23,15 @@
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* Need to define __USE_XOPEN before including time.h to make strptime work. */
+#ifndef __USE_XOPEN
+#define __USE_XOPEN
+#endif
+#include <time.h>
 
 #include "upb/json/parser.h"
 
@@ -55,11 +62,22 @@ static bool is_boolean_wrapper_object(upb_json_parser *p);
 static bool does_boolean_wrapper_start(upb_json_parser *p);
 static bool does_boolean_wrapper_end(upb_json_parser *p);
 
+static bool is_timestamp_object(upb_json_parser *p);
+static bool does_timestamp_start(upb_json_parser *p);
+static bool does_timestamp_end(upb_json_parser *p);
+
 static void start_wrapper_object(upb_json_parser *p);
 static void end_wrapper_object(upb_json_parser *p);
 
+static void start_object(upb_json_parser *p);
+static void end_object(upb_json_parser *p);
+
 static bool start_subobject(upb_json_parser *p);
 static void end_subobject(upb_json_parser *p);
+
+static void start_member(upb_json_parser *p);
+static void end_member(upb_json_parser *p);
+static bool end_membername(upb_json_parser *p);
 
 static const char eof_ch = 'e';
 
@@ -130,6 +148,10 @@ struct upb_json_parser {
 
   /* Whether to proceed if unknown field is met. */
   bool ignore_json_unknown;
+
+  /* Cache for parsing timestamp due to base and zone are handled in different
+   * handlers. */
+  struct tm tm;
 };
 
 struct upb_json_parsermethod {
@@ -882,15 +904,23 @@ static bool end_bool(upb_json_parser *p, bool val) {
 
 static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
-    if (!is_string_wrapper_object(p)) {
+    if (is_string_wrapper_object(p)) {
+      start_wrapper_object(p);
+    } else if (is_timestamp_object(p)) {
+      start_object(p);
+    } else {
       return false;
     }
-    start_wrapper_object(p);
   } else if (does_string_wrapper_start(p)) {
     if (!start_subobject(p)) {
       return false;
     }
     start_wrapper_object(p);
+  } else if (does_timestamp_start(p)) {
+    if (!start_subobject(p)) {
+      return false;
+    }
+    start_object(p);
   }
 
   if (p->top->f == NULL) {
@@ -946,6 +976,11 @@ static bool start_stringval(upb_json_parser *p) {
 
 static bool end_stringval_nontop(upb_json_parser *p) {
   bool ok = true;
+
+  if (is_timestamp_object(p)) {
+    multipart_end(p);
+    return true;
+  }
 
   if (p->top->f == NULL) {
     multipart_end(p);
@@ -1022,6 +1057,160 @@ static bool end_stringval(upb_json_parser *p) {
       end_subobject(p);
     }
   }
+
+  if (does_timestamp_end(p)) {
+    end_object(p);
+    if (!is_top_level(p)) {
+      end_subobject(p);
+    }
+  }
+
+  return true;
+}
+
+static void start_timestamp_base(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_timestamp_base(upb_json_parser *p, const char *ptr) {
+  size_t len;
+  const char *buf;
+
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+
+  buf = accumulate_getptr(p, &len);
+
+  /* Parse seconds */
+  if (strptime(buf, "%FT%H:%M:%S", &p->tm) == NULL) {
+    upb_status_seterrf(&p->status, "error parsing timestamp: %s", buf);
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  /* Clean up buffer */
+  multipart_end(p);
+  multipart_startaccum(p);
+
+  return true;
+}
+
+static void start_timestamp_fraction(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_timestamp_fraction(upb_json_parser *p, const char *ptr) {
+  size_t len;
+  const char *buf;
+  char nanos_buf[12];
+  char *end;
+  double val = 0.0;
+  int32_t nanos;
+  const char *nanos_membername = "nanos";
+
+  memset(nanos_buf, 0, 12);
+
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+
+  buf = accumulate_getptr(p, &len);
+
+  if (len > 10) {
+    upb_status_seterrf(&p->status,
+        "error parsing timestamp: at most 9-digit fraction.");
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  /* Parse nanos */
+  nanos_buf[0] = '0';
+  memcpy(nanos_buf + 1, buf, len);
+  val = strtod(nanos_buf, &end);
+
+  if (errno == ERANGE || end != nanos_buf + len + 1) {
+    upb_status_seterrf(&p->status, "error parsing timestamp nanos: %s",
+                       nanos_buf);
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  nanos = val * 1000000000;
+
+  /* Clean up previous environment */
+  multipart_end(p);
+
+  /* Set nanos */
+  start_member(p);
+  capture_begin(p, nanos_membername);
+  capture_end(p, nanos_membername + 5);
+  end_membername(p);
+  upb_sink_putint32(&p->top->sink, parser_getsel(p), nanos);
+  end_member(p);
+
+  /* Continue previous environment */
+  multipart_startaccum(p);
+
+  return true;
+}
+
+static void start_timestamp_zone(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_timestamp_zone(upb_json_parser *p, const char *ptr) {
+  size_t len;
+  const char *buf;
+  int hours;
+  int64_t seconds;
+  const char *seconds_membername = "seconds";
+
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+
+  buf = accumulate_getptr(p, &len);
+
+  if (buf[0] != 'Z') {
+    if (sscanf(buf + 1, "%2d:00", &hours) != 1) {
+      upb_status_seterrf(&p->status, "error parsing timestamp offset");
+      upb_env_reporterror(p->env, &p->status);
+      return false;
+    }
+
+    if (buf[0] == '+') {
+      hours = -hours;
+    }
+
+    p->tm.tm_hour += hours;
+  }
+
+  /* Normalize tm */
+  seconds = mktime(&p->tm);
+
+  /* Check timestamp boundary */
+  if (seconds < -62135596800) {
+    upb_status_seterrf(&p->status, "error parsing timestamp: "
+                                   "minimum acceptable value is "
+                                   "0001-01-01T00:00:00Z");
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  /* Clean up previous environment */
+  multipart_end(p);
+
+  /* Set seconds */
+  start_member(p);
+  capture_begin(p, seconds_membername);
+  capture_end(p, seconds_membername + 7);
+  end_membername(p);
+  upb_sink_putint64(&p->top->sink, parser_getsel(p), seconds);
+  end_member(p);
+
+  /* Continue previous environment */
+  multipart_startaccum(p);
 
   return true;
 }
@@ -1465,6 +1654,20 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
   return p->top->m != NULL && is_bool_value(p->top->m);
 }
 
+static bool does_timestamp_start(upb_json_parser *p) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         upb_msgdef_timestamp(upb_fielddef_msgsubdef(p->top->f));
+}
+
+static bool does_timestamp_end(upb_json_parser *p) {
+  return p->top->m != NULL && upb_msgdef_timestamp(p->top->m);
+}
+
+static bool is_timestamp_object(upb_json_parser *p) {
+  return p->top->m != NULL && upb_msgdef_timestamp(p->top->m);
+}
+
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
 
 
@@ -1528,7 +1731,37 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
       @{ fhold; fret; }
     ;
 
-  string       = '"' @{ fcall string_machine; } '"';
+  year = digit digit digit digit;
+  month = digit digit;
+  day = digit digit;
+  hour = digit digit;
+  minute = digit digit;
+  second = digit digit;
+
+  timestamp_machine :=
+    (year "-" month "-" day "T" hour ":" minute ":" second)
+      >{ start_timestamp_base(parser, p); }
+      %{ CHECK_RETURN_TOP(end_timestamp_base(parser, p)); }
+    ("." digit+)?
+      >{ start_timestamp_fraction(parser, p); }
+      %{ CHECK_RETURN_TOP(end_timestamp_fraction(parser, p)); }
+    ([+\-] hour ":00" | "Z")
+      >{ start_timestamp_zone(parser, p); }
+      %{ CHECK_RETURN_TOP(end_timestamp_zone(parser, p)); }
+    '"'
+      @{ fhold; fret; }
+    ;
+
+  string =
+    '"'
+      @{
+        if (is_timestamp_object(parser)) {
+          fcall timestamp_machine;
+        } else {
+          fcall string_machine;
+        }
+      }
+    '"';
 
   value2 = ^(space | "]" | "}") >{ fhold; fcall value_machine; } ;
 
@@ -1632,6 +1865,7 @@ bool end(void *closure, const void *hd) {
   UPB_UNUSED(json_start);
   UPB_UNUSED(json_en_number_machine);
   UPB_UNUSED(json_en_string_machine);
+  UPB_UNUSED(json_en_timestamp_machine);
   UPB_UNUSED(json_en_value_machine);
   UPB_UNUSED(json_en_main);
 

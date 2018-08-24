@@ -7,6 +7,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <time.h>
 
 struct upb_json_printer {
   upb_sink input_;
@@ -27,6 +28,12 @@ struct upb_json_printer {
    * repeated fields and messages (maps), and the worst case is a
    * message->repeated field->submessage->repeated field->... nesting. */
   bool first_elem_[UPB_MAX_HANDLER_DEPTH * 2];
+
+  /* To print timestamp, printer needs to cache its seconds and nanos values
+   * and convert them when ending timestamp message. See comments of
+   * printer_sethandlers_timestamp for more detail. */
+  int64_t seconds;
+  int32_t nanos;
 };
 
 /* StringPiece; a pointer plus a length. */
@@ -685,6 +692,117 @@ void printer_sethandlers_mapentry(const void *closure, bool preserve_fieldnames,
   upb_handlerattr_uninit(&empty_attr);
 }
 
+static bool puttimestamp_seconds(void *closure, const void *handler_data,
+                                 int64_t seconds) {
+  upb_json_printer *p = closure;
+  p->seconds = seconds;
+  UPB_UNUSED(handler_data);
+  return true;
+}
+
+static bool puttimestamp_nanos(void *closure, const void *handler_data,
+                               int32_t nanos) {
+  upb_json_printer *p = closure;
+  p->nanos = nanos;
+  UPB_UNUSED(handler_data);
+  return true;
+}
+
+static bool printer_starttimestampmsg(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  if (p->depth_ == 0) {
+    upb_bytessink_start(p->output_, 0, &p->subc_);
+  }
+  return true;
+}
+
+#define UPB_TIMESTAMP_MAX_JSON_LEN 31
+#define UPB_TIMESTAMP_BEFORE_NANO_LEN 19
+#define UPB_TIMESTAMP_MAX_NANO_LEN 9
+
+static bool printer_endtimestampmsg(void *closure, const void *handler_data,
+                                    upb_status *s) {
+  upb_json_printer *p = closure;
+  char buffer[UPB_TIMESTAMP_MAX_JSON_LEN];
+  time_t time = p->seconds;
+  size_t curr;
+  size_t i;
+  size_t year_length =
+      strftime(buffer, UPB_TIMESTAMP_MAX_JSON_LEN, "%Y", gmtime(&time));
+
+  if (p->seconds < -62135596800) {
+    upb_status_seterrf(s, "error parsing timestamp: "
+                          "minimum acceptable value is "
+                          "0001-01-01T00:00:00Z");
+    return false;
+  }
+
+  if (p->seconds > 253402300799) {
+    upb_status_seterrf(s, "error parsing timestamp: "
+                          "maximum acceptable value is "
+                          "9999-12-31T23:59:59Z");
+    return false;
+  }
+
+  /* strftime doesn't guarantee 4 digits for year. Prepend 0 by ourselves. */
+  for (i = 0; i < 4 - year_length; i++) {
+    buffer[i] = '0';
+  }
+
+  strftime(buffer + (4 - year_length), UPB_TIMESTAMP_MAX_JSON_LEN,
+           "%Y-%m-%dT%H:%M:%S", gmtime(&time));
+  if (p->nanos != 0) {
+    char nanos_buffer[UPB_TIMESTAMP_MAX_NANO_LEN + 3];
+    _upb_snprintf(nanos_buffer, sizeof(nanos_buffer), "%.9f",
+                  p->nanos / 1000000000.0);
+    /* Remove trailing 0. */
+    for (i = UPB_TIMESTAMP_MAX_NANO_LEN + 2;
+         nanos_buffer[i] == '0'; i--) {
+      nanos_buffer[i] = 0;
+    }
+    strcpy(buffer + UPB_TIMESTAMP_BEFORE_NANO_LEN, nanos_buffer + 1);
+  }
+
+  curr = strlen(buffer);
+  strcpy(buffer + curr, "Z");
+
+  p->seconds = 0;
+  p->nanos = 0;
+
+  print_data(p, "\"", 1);
+  print_data(p, buffer, strlen(buffer));
+  print_data(p, "\"", 1);
+
+  if (p->depth_ == 0) {
+    upb_bytessink_end(p->output_);
+  }
+
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(s);
+  return true;
+}
+
+/* Set up handlers for a timestamp submessage. Instead of printing fields
+ * separately, the json representation of timestamp follows RFC 3339 */
+void printer_sethandlers_timestamp(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+
+  const upb_fielddef* seconds_field =
+      upb_msgdef_itof(md, UPB_TIMESTAMP_SECONDS);
+  const upb_fielddef* nanos_field =
+      upb_msgdef_itof(md, UPB_TIMESTAMP_NANOS);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartmsg(h, printer_starttimestampmsg, &empty_attr);
+  upb_handlers_setint64(h, seconds_field, puttimestamp_seconds, &empty_attr);
+  upb_handlers_setint32(h, nanos_field, puttimestamp_nanos, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endtimestampmsg, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
 void printer_sethandlers(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   bool is_mapentry = upb_msgdef_mapentry(md);
@@ -697,6 +815,11 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     /* mapentry messages are sufficiently different that we handle them
      * separately. */
     printer_sethandlers_mapentry(closure, preserve_fieldnames, h);
+    return;
+  }
+
+  if (upb_msgdef_timestamp(md)) {
+    printer_sethandlers_timestamp(closure, h);
     return;
   }
 
@@ -807,6 +930,8 @@ upb_json_printer *upb_json_printer_create(upb_env *e, const upb_handlers *h,
   p->output_ = output;
   json_printer_reset(p);
   upb_sink_reset(&p->input_, h, p);
+  p->seconds = 0;
+  p->nanos = 0;
 
   /* If this fails, increase the value in printer.h. */
   UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(e) - size_before <=

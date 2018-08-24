@@ -1337,6 +1337,8 @@ bool upb_fielddef_checkdescriptortype(int32_t type) {
 
 /* upb_msgdef *****************************************************************/
 
+static const char *kTimestampFullMessageName = "google.protobuf.Timestamp";
+
 static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
                      void *closure) {
   upb_msg_oneof_iter o;
@@ -1591,6 +1593,10 @@ void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry) {
 
 bool upb_msgdef_mapentry(const upb_msgdef *m) {
   return m->map_entry;
+}
+
+bool upb_msgdef_timestamp(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kTimestampFullMessageName) == 0;
 }
 
 void upb_msg_field_begin(upb_msg_field_iter *iter, const upb_msgdef *m) {

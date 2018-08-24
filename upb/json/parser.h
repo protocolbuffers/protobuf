@@ -29,7 +29,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the parser library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_JSON_PARSER_SIZE 4112
+#define UPB_JSON_PARSER_SIZE 4160
 
 #ifdef __cplusplus
 

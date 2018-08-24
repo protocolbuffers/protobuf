@@ -22,7 +22,7 @@ UPB_DECLARE_TYPE(upb::json::Printer, upb_json_printer)
 
 /* upb::json::Printer *********************************************************/
 
-#define UPB_JSON_PRINTER_SIZE 176
+#define UPB_JSON_PRINTER_SIZE 192
 
 #ifdef __cplusplus
 
