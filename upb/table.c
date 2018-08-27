@@ -272,7 +272,8 @@ static size_t begin(const upb_table *t) {
 static upb_tabkey strcopy(lookupkey_t k2, upb_alloc *a) {
   char *str = upb_malloc(a, k2.str.len + sizeof(uint32_t) + 1);
   if (str == NULL) return 0;
-  memcpy(str, &k2.str.len, sizeof(uint32_t));
+  uint32_t len = (uint32_t) k2.str.len;
+  memcpy(str, &len, sizeof(uint32_t));
   memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len + 1);
   return (uintptr_t)str;
 }
