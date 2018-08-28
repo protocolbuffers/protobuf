@@ -19,7 +19,7 @@ protobuf Java runtime. If you are using Maven, use the following:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>3.5.1</version>
+  <version>3.6.1</version>
 </dependency>
 ```
 
@@ -33,7 +33,7 @@ protobuf-java-util package:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java-util</artifactId>
-  <version>3.5.1</version>
+  <version>3.6.1</version>
 </dependency>
 ```
 
