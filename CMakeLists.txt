@@ -16,10 +16,10 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Check out Git submodules.
-if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.gitmodules")
-  execute_process (COMMAND git submodule update --init --recursive
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
+#if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.gitmodules")
+#  execute_process (COMMAND git submodule update --init --recursive
+#                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+#endif()
 
 set(protobuf_BUILD_TESTS OFF CACHE BOOL "enable tests for proto2" FORCE)
 set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "enable shared libs for proto2" FORCE)
@@ -45,8 +45,10 @@ endif()
 
 include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_CXX_FLAGS "-std=c++11 -W -Wall -Wno-sign-compare")
 
 if(APPLE)
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup -flat_namespace")
 elseif(UNIX)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--build-id")
 endif()
@@ -78,12 +80,14 @@ if(LUA_FOUND)
 
   set_target_properties(upb_c
     PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "lua"
-    PREFIX "")
+    LIBRARY_OUTPUT_DIRECTORY "upb/bindings/lua"
+    PREFIX ""
+    SUFFIX ".so")
   set_target_properties(table_c pb_c
     PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "lua/upb"
-    PREFIX "")
+    LIBRARY_OUTPUT_DIRECTORY "upb/bindings/lua/upb"
+    PREFIX ""
+    SUFFIX ".so")
 
   add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
@@ -111,7 +115,7 @@ if(LUA_FOUND)
         DEPENDS ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
-                ${CMAKE_CURRENT_BINARY_DIR}/lua)
+                ${CMAKE_CURRENT_BINARY_DIR}/upb/bindings/lua)
   add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
         DEPENDS ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
@@ -119,7 +123,7 @@ if(LUA_FOUND)
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
-                ${CMAKE_CURRENT_BINARY_DIR}/lua/upb)
+                ${CMAKE_CURRENT_BINARY_DIR}/upb/bindings/lua/upb)
   add_custom_target(
     upbc ALL
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
@@ -129,6 +133,14 @@ if(LUA_FOUND)
 
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.h
+           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.h
+           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.c
+           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/any.upb.c
+           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/duration.upb.c
+           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/field_mask.upb.c
+           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/struct.upb.c
+           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/timestamp.upb.c
+           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/wrappers.upb.c
            ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.c
     DEPENDS upbc ${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/conformance/conformance.proto
     COMMAND protoc --include_imports
@@ -156,6 +168,21 @@ if(LUA_FOUND)
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.h
             ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/descriptor.upb.h
   )
+
+  add_executable(conformance_upb
+    tests/conformance_upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/any.upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/duration.upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/field_mask.upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/struct.upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/timestamp.upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/wrappers.upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.c
+    )
+  target_link_libraries(conformance_upb LINK_PRIVATE
+    upb
+)
 endif()
 
 set(UPB_SRCS
@@ -211,18 +238,3 @@ set_property(TARGET upbhandlers_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET upbpb_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET upbjson_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-add_executable(conformance_upb
-  tests/conformance_upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/any.upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/duration.upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/field_mask.upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/struct.upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/timestamp.upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/wrappers.upb.c
-  ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.c
-  )
-target_link_libraries(conformance_upb LINK_PRIVATE
-  upb
-)
