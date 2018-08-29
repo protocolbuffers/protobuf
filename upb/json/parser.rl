@@ -62,6 +62,10 @@ static bool is_boolean_wrapper_object(upb_json_parser *p);
 static bool does_boolean_wrapper_start(upb_json_parser *p);
 static bool does_boolean_wrapper_end(upb_json_parser *p);
 
+static bool is_duration_object(upb_json_parser *p);
+static bool does_duration_start(upb_json_parser *p);
+static bool does_duration_end(upb_json_parser *p);
+
 static bool is_timestamp_object(upb_json_parser *p);
 static bool does_timestamp_start(upb_json_parser *p);
 static bool does_timestamp_end(upb_json_parser *p);
@@ -906,7 +910,7 @@ static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
     if (is_string_wrapper_object(p)) {
       start_wrapper_object(p);
-    } else if (is_timestamp_object(p)) {
+    } else if (is_timestamp_object(p) || is_duration_object(p)) {
       start_object(p);
     } else {
       return false;
@@ -916,7 +920,7 @@ static bool start_stringval(upb_json_parser *p) {
       return false;
     }
     start_wrapper_object(p);
-  } else if (does_timestamp_start(p)) {
+  } else if (does_timestamp_start(p) || does_duration_start(p)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -977,7 +981,7 @@ static bool start_stringval(upb_json_parser *p) {
 static bool end_stringval_nontop(upb_json_parser *p) {
   bool ok = true;
 
-  if (is_timestamp_object(p)) {
+  if (is_timestamp_object(p) || is_duration_object(p)) {
     multipart_end(p);
     return true;
   }
@@ -1058,12 +1062,109 @@ static bool end_stringval(upb_json_parser *p) {
     }
   }
 
-  if (does_timestamp_end(p)) {
+  if (does_timestamp_end(p) || does_duration_end(p)) {
     end_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
     }
   }
+
+  return true;
+}
+
+static void start_duration_base(upb_json_parser *p, const char *ptr) {
+  capture_begin(p, ptr);
+}
+
+static bool end_duration_base(upb_json_parser *p, const char *ptr) {
+  size_t len;
+  const char *buf;
+  char seconds_buf[14];
+  char nanos_buf[12];
+  char *end;
+  int64_t seconds = 0;
+  int32_t nanos = 0;
+  double val = 0.0;
+  const char *seconds_membername = "seconds";
+  const char *nanos_membername = "nanos";
+  size_t fraction_start;
+
+  if (!capture_end(p, ptr)) {
+    return false;
+  }
+
+  buf = accumulate_getptr(p, &len);
+
+  memset(seconds_buf, 0, 14);
+  memset(nanos_buf, 0, 12);
+
+  /* Find out base end. The maximus duration is 315576000000, which cannot be
+   * represented by double without losing precision. Thus, we need to handle
+   * fraction and base separately. */
+  for (fraction_start = 0; fraction_start < len && buf[fraction_start] != '.';
+       fraction_start++);
+
+  /* Parse base */
+  memcpy(seconds_buf, buf, fraction_start);
+  seconds = strtol(seconds_buf, &end, 10);
+  if (errno == ERANGE || end != seconds_buf + fraction_start) {
+    upb_status_seterrf(&p->status, "error parsing duration: %s",
+                       seconds_buf);
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  if (seconds > 315576000000) {
+    upb_status_seterrf(&p->status, "error parsing duration: "
+                                   "maximum acceptable value is "
+                                   "315576000000");
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  if (seconds < -315576000000) {
+    upb_status_seterrf(&p->status, "error parsing duration: "
+                                   "minimum acceptable value is "
+                                   "-315576000000");
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  /* Parse fraction */
+  nanos_buf[0] = '0';
+  memcpy(nanos_buf + 1, buf + fraction_start, len - fraction_start);
+  val = strtod(nanos_buf, &end);
+  if (errno == ERANGE || end != nanos_buf + len - fraction_start + 1) {
+    upb_status_seterrf(&p->status, "error parsing duration: %s",
+                       nanos_buf);
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  nanos = val * 1000000000;
+  if (seconds < 0) nanos = -nanos;
+
+  /* Clean up buffer */
+  multipart_end(p);
+
+  /* Set seconds */
+  start_member(p);
+  capture_begin(p, seconds_membername);
+  capture_end(p, seconds_membername + 7);
+  end_membername(p);
+  upb_sink_putint64(&p->top->sink, parser_getsel(p), seconds);
+  end_member(p);
+
+  /* Set nanos */
+  start_member(p);
+  capture_begin(p, nanos_membername);
+  capture_end(p, nanos_membername + 5);
+  end_membername(p);
+  upb_sink_putint32(&p->top->sink, parser_getsel(p), nanos);
+  end_member(p);
+
+  /* Continue previous environment */
+  multipart_startaccum(p);
 
   return true;
 }
@@ -1654,6 +1755,20 @@ static bool is_boolean_wrapper_object(upb_json_parser *p) {
   return p->top->m != NULL && is_bool_value(p->top->m);
 }
 
+static bool does_duration_start(upb_json_parser *p) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         upb_msgdef_duration(upb_fielddef_msgsubdef(p->top->f));
+}
+
+static bool does_duration_end(upb_json_parser *p) {
+  return p->top->m != NULL && upb_msgdef_duration(p->top->m);
+}
+
+static bool is_duration_object(upb_json_parser *p) {
+  return p->top->m != NULL && upb_msgdef_duration(p->top->m);
+}
+
 static bool does_timestamp_start(upb_json_parser *p) {
   return p->top->f != NULL &&
          upb_fielddef_issubmsg(p->top->f) &&
@@ -1738,6 +1853,14 @@ static bool is_timestamp_object(upb_json_parser *p) {
   minute = digit digit;
   second = digit digit;
 
+  duration_machine :=
+    ("-"? integer decimal?)
+      >{ start_duration_base(parser, p); }
+      %{ CHECK_RETURN_TOP(end_duration_base(parser, p)); }
+    's"'
+      @{ fhold; fret; }
+    ;
+
   timestamp_machine :=
     (year "-" month "-" day "T" hour ":" minute ":" second)
       >{ start_timestamp_base(parser, p); }
@@ -1757,6 +1880,8 @@ static bool is_timestamp_object(upb_json_parser *p) {
       @{
         if (is_timestamp_object(parser)) {
           fcall timestamp_machine;
+        } else if (is_duration_object(parser)) {
+          fcall duration_machine;
         } else {
           fcall string_machine;
         }
@@ -1863,6 +1988,7 @@ bool end(void *closure, const void *hd) {
 
   /* Prevent compile warning on unused static constants. */
   UPB_UNUSED(json_start);
+  UPB_UNUSED(json_en_duration_machine);
   UPB_UNUSED(json_en_number_machine);
   UPB_UNUSED(json_en_string_machine);
   UPB_UNUSED(json_en_timestamp_machine);

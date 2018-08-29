@@ -692,18 +692,87 @@ void printer_sethandlers_mapentry(const void *closure, bool preserve_fieldnames,
   upb_handlerattr_uninit(&empty_attr);
 }
 
-static bool puttimestamp_seconds(void *closure, const void *handler_data,
-                                 int64_t seconds) {
+static bool putseconds(void *closure, const void *handler_data,
+                       int64_t seconds) {
   upb_json_printer *p = closure;
   p->seconds = seconds;
   UPB_UNUSED(handler_data);
   return true;
 }
 
-static bool puttimestamp_nanos(void *closure, const void *handler_data,
-                               int32_t nanos) {
+static bool putnanos(void *closure, const void *handler_data,
+                     int32_t nanos) {
   upb_json_printer *p = closure;
   p->nanos = nanos;
+  UPB_UNUSED(handler_data);
+  return true;
+}
+
+static bool printer_startdurationmsg(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  if (p->depth_ == 0) {
+    upb_bytessink_start(p->output_, 0, &p->subc_);
+  }
+  return true;
+}
+
+#define UPB_DURATION_MAX_JSON_LEN 23
+#define UPB_DURATION_MAX_NANO_LEN 9
+
+static bool printer_enddurationmsg(void *closure, const void *handler_data,
+                                   upb_status *s) {
+  upb_json_printer *p = closure;
+  char buffer[UPB_DURATION_MAX_JSON_LEN];
+  size_t base_len;
+  size_t curr;
+  size_t i;
+
+  memset(buffer, 0, UPB_DURATION_MAX_JSON_LEN);
+
+  if (p->seconds < -315576000000) {
+    upb_status_seterrf(s, "error parsing duration: "
+                          "minimum acceptable value is "
+                          "-315576000000");
+    return false;
+  }
+
+  if (p->seconds > 315576000000) {
+    upb_status_seterrf(s, "error serializing duration: "
+                          "maximum acceptable value is "
+                          "315576000000");
+    return false;
+  }
+
+  _upb_snprintf(buffer, sizeof(buffer), "%ld", (long)p->seconds);
+  base_len = strlen(buffer);
+
+  if (p->nanos != 0) {
+    char nanos_buffer[UPB_DURATION_MAX_NANO_LEN + 3];
+    _upb_snprintf(nanos_buffer, sizeof(nanos_buffer), "%.9f",
+                  p->nanos / 1000000000.0);
+    /* Remove trailing 0. */
+    for (i = UPB_DURATION_MAX_NANO_LEN + 2;
+         nanos_buffer[i] == '0'; i--) {
+      nanos_buffer[i] = 0;
+    }
+    strcpy(buffer + base_len, nanos_buffer + 1);
+  }
+
+  curr = strlen(buffer);
+  strcpy(buffer + curr, "s");
+
+  p->seconds = 0;
+  p->nanos = 0;
+
+  print_data(p, "\"", 1);
+  print_data(p, buffer, strlen(buffer));
+  print_data(p, "\"", 1);
+
+  if (p->depth_ == 0) {
+    upb_bytessink_end(p->output_);
+  }
+
   UPB_UNUSED(handler_data);
   return true;
 }
@@ -783,6 +852,25 @@ static bool printer_endtimestampmsg(void *closure, const void *handler_data,
   return true;
 }
 
+/* Set up handlers for a duration submessage. */
+void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+
+  const upb_fielddef* seconds_field =
+      upb_msgdef_itof(md, UPB_DURATION_SECONDS);
+  const upb_fielddef* nanos_field =
+      upb_msgdef_itof(md, UPB_DURATION_NANOS);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartmsg(h, printer_startdurationmsg, &empty_attr);
+  upb_handlers_setint64(h, seconds_field, putseconds, &empty_attr);
+  upb_handlers_setint32(h, nanos_field, putnanos, &empty_attr);
+  upb_handlers_setendmsg(h, printer_enddurationmsg, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
 /* Set up handlers for a timestamp submessage. Instead of printing fields
  * separately, the json representation of timestamp follows RFC 3339 */
 void printer_sethandlers_timestamp(const void *closure, upb_handlers *h) {
@@ -796,8 +884,8 @@ void printer_sethandlers_timestamp(const void *closure, upb_handlers *h) {
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
 
   upb_handlers_setstartmsg(h, printer_starttimestampmsg, &empty_attr);
-  upb_handlers_setint64(h, seconds_field, puttimestamp_seconds, &empty_attr);
-  upb_handlers_setint32(h, nanos_field, puttimestamp_nanos, &empty_attr);
+  upb_handlers_setint64(h, seconds_field, putseconds, &empty_attr);
+  upb_handlers_setint32(h, nanos_field, putnanos, &empty_attr);
   upb_handlers_setendmsg(h, printer_endtimestampmsg, &empty_attr);
 
   UPB_UNUSED(closure);
@@ -815,6 +903,11 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     /* mapentry messages are sufficiently different that we handle them
      * separately. */
     printer_sethandlers_mapentry(closure, preserve_fieldnames, h);
+    return;
+  }
+
+  if (upb_msgdef_duration(md)) {
+    printer_sethandlers_duration(closure, h);
     return;
   }
 

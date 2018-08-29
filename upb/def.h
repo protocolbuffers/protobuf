@@ -664,6 +664,10 @@ typedef upb_strtable_iter upb_msg_oneof_iter;
 #define UPB_MAPENTRY_VALUE 2
 
 /* Well-known field tag numbers for timestamp messages. */
+#define UPB_DURATION_SECONDS 1
+#define UPB_DURATION_NANOS 2
+
+/* Well-known field tag numbers for duration messages. */
 #define UPB_TIMESTAMP_SECONDS 1
 #define UPB_TIMESTAMP_NANOS 2
 
@@ -780,6 +784,9 @@ class upb::MessageDef {
   /* Is this message a map entry? */
   void setmapentry(bool map_entry);
   bool mapentry() const;
+
+  /* Is this message a duration? */
+  bool duration() const;
 
   /* Is this message a timestamp? */
   bool timestamp() const;
@@ -925,6 +932,7 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
+bool upb_msgdef_duration(const upb_msgdef *m);
 bool upb_msgdef_timestamp(const upb_msgdef *m);
 bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 
@@ -1864,6 +1872,9 @@ inline void MessageDef::setmapentry(bool map_entry) {
 }
 inline bool MessageDef::mapentry() const {
   return upb_msgdef_mapentry(this);
+}
+inline bool MessageDef::duration() const {
+  return upb_msgdef_duration(this);
 }
 inline bool MessageDef::timestamp() const {
   return upb_msgdef_timestamp(this);
