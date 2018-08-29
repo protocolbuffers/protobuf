@@ -344,6 +344,7 @@ namespace Google.Protobuf.Reflection
                 FileDescriptor descriptor = new FileDescriptor(
                     data, proto, dependencies, pool,
                     allowUnknownDependencies: false, generatedCodeInfo: null);
+                descriptor.CrossLink();
                 descriptors.Add(descriptor);
                 if (descriptorsByName.ContainsKey(descriptor.Name))
                 {
