@@ -32,6 +32,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Google.Protobuf.Reflection
 {
@@ -57,6 +58,17 @@ namespace Google.Protobuf.Reflection
         /// The brief name of the descriptor's target.
         /// </summary>
         public override string Name { get { return proto.Name; } }
+
+        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
+        {
+            switch (fieldNumber)
+            {
+                case ServiceDescriptorProto.MethodFieldNumber:
+                    return (IReadOnlyList<DescriptorBase>) methods;
+                default:
+                    return null;
+            }
+        }
 
         internal ServiceDescriptorProto Proto { get { return proto; } }
 

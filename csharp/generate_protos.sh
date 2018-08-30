@@ -43,6 +43,9 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # Test protos
 $PROTOC -Isrc -Icsharp/protos \
     --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
+    --include_source_info \
+    --include_imports \
     csharp/protos/map_unittest_proto3.proto \
     csharp/protos/unittest_issues.proto \
     csharp/protos/unittest_custom_options_proto3.proto \
