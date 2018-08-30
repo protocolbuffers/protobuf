@@ -19,21 +19,16 @@
 ** However it differs from other common representations like
 ** google::protobuf::Message in one key way: it does not prescribe any
 ** ownership between messages and submessages, and it relies on the
-** client to delete each message/submessage/array/map at the appropriate
-** time.
+** client to ensure that each submessage/array/map outlives its parent.
+**
+** All messages, arrays, and maps live in an Arena.  If the entire message
+** tree is in the same arena, ensuring proper lifetimes is simple.  However
+** the client can mix arenas as long as they ensure that there are no
+** dangling pointers.
 **
 ** A client can access a upb::Message without knowing anything about
 ** ownership semantics, but to create or mutate a message a user needs
 ** to implement the memory management themselves.
-**
-** Currently all messages, arrays, and maps store a upb_alloc* internally.
-** Mutating operations use this when they require dynamically-allocated
-** memory.  We could potentially eliminate this size overhead later by
-** letting the user flip a bit on the factory that prevents this from
-** being stored.  The user would then need to use separate functions where
-** the upb_alloc* is passed explicitly.  However for handlers to populate
-** such structures, they would need a place to store this upb_alloc* during
-** parsing; upb_handlers don't currently have a good way to accommodate this.
 **
 ** TODO: UTF-8 checking?
 **/
@@ -2386,6 +2381,14 @@ typedef upb_strtable_iter upb_msg_oneof_iter;
 #define UPB_MAPENTRY_KEY   1
 #define UPB_MAPENTRY_VALUE 2
 
+/* Well-known field tag numbers for timestamp messages. */
+#define UPB_DURATION_SECONDS 1
+#define UPB_DURATION_NANOS 2
+
+/* Well-known field tag numbers for duration messages. */
+#define UPB_TIMESTAMP_SECONDS 1
+#define UPB_TIMESTAMP_NANOS 2
+
 #ifdef __cplusplus
 
 /* Structure that describes a single .proto message type.
@@ -2499,6 +2502,12 @@ class upb::MessageDef {
   /* Is this message a map entry? */
   void setmapentry(bool map_entry);
   bool mapentry() const;
+
+  /* Is this message a duration? */
+  bool duration() const;
+
+  /* Is this message a timestamp? */
+  bool timestamp() const;
 
   /* Iteration over fields.  The order is undefined. */
   class field_iterator
@@ -2641,6 +2650,8 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
+bool upb_msgdef_duration(const upb_msgdef *m);
+bool upb_msgdef_timestamp(const upb_msgdef *m);
 bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 
 /* Field lookup in a couple of different variations:
@@ -3579,6 +3590,12 @@ inline void MessageDef::setmapentry(bool map_entry) {
 }
 inline bool MessageDef::mapentry() const {
   return upb_msgdef_mapentry(this);
+}
+inline bool MessageDef::duration() const {
+  return upb_msgdef_duration(this);
+}
+inline bool MessageDef::timestamp() const {
+  return upb_msgdef_timestamp(this);
 }
 inline MessageDef::field_iterator MessageDef::field_begin() {
   return field_iterator(this);
@@ -4706,6 +4723,34 @@ UPB_INLINE upb_selector_t upb_handlers_getendselector(upb_selector_t start) {
 /* Internal-only. */
 uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f);
 uint32_t upb_handlers_selectorcount(const upb_fielddef *f);
+
+
+/** Message handlers ******************************************************************/
+
+/* These are the handlers used internally by upb_msgfactory_getmergehandlers().
+ * They write scalar data to a known offset from the message pointer.
+ *
+ * These would be trivial for anyone to implement themselves, but it's better
+ * to use these because some JITs will recognize and specialize these instead
+ * of actually calling the function. */
+
+/* Sets a handler for the given primitive field that will write the data at the
+ * given offset.  If hasbit > 0, also sets a hasbit at the given bit offset
+ * (addressing each byte low to high). */
+bool upb_msg_setscalarhandler(upb_handlers *h,
+                              const upb_fielddef *f,
+                              size_t offset,
+                              int32_t hasbit);
+
+/* If the given handler is a msghandlers_primitive field, returns true and sets
+ * *type, *offset and *hasbit.  Otherwise returns false. */
+bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
+                                  upb_selector_t s,
+                                  upb_fieldtype_t *type,
+                                  size_t *offset,
+                                  int32_t *hasbit);
+
+
 
 UPB_END_EXTERN_C
 
@@ -6391,21 +6436,14 @@ namespace upb {
 class Array;
 class Map;
 class MapIterator;
-class MessageFactory;
 class MessageLayout;
-class Visitor;
-class VisitorPlan;
 }
 
 #endif
 
-UPB_DECLARE_TYPE(upb::MessageFactory, upb_msgfactory)
-UPB_DECLARE_TYPE(upb::MessageLayout, upb_msglayout)
 UPB_DECLARE_TYPE(upb::Array, upb_array)
 UPB_DECLARE_TYPE(upb::Map, upb_map)
 UPB_DECLARE_TYPE(upb::MapIterator, upb_mapiter)
-UPB_DECLARE_TYPE(upb::Visitor, upb_visitor)
-UPB_DECLARE_TYPE(upb::VisitorPlan, upb_visitorplan)
 
 /* TODO(haberman): C++ accessors */
 
@@ -6416,53 +6454,45 @@ typedef void upb_msg;
 
 /** upb_msglayout *************************************************************/
 
-/* upb_msglayout represents the memory layout of a given upb_msgdef.  You get
- * instances of this from a upb_msgfactory, and the factory always owns the
- * msglayout. */
+/* upb_msglayout represents the memory layout of a given upb_msgdef.  The
+ * members are public so generated code can initialize them, but users MUST NOT
+ * read or write any of its members. */
 
+#define UPB_NOT_IN_ONEOF UINT16_MAX
+#define UPB_NO_HASBIT UINT16_MAX
+#define UPB_NO_SUBMSG UINT16_MAX
 
-/** upb_visitor ***************************************************************/
+typedef struct {
+  uint32_t number;
+  uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
+  uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
+  uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
+  uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
+  uint8_t descriptortype;
+  uint8_t label;
+} upb_msglayout_field;
 
-/* upb_visitor will visit all the fields of a message and its submessages.  It
- * uses a upb_visitorplan which you can obtain from a upb_msgfactory. */
+typedef struct {
+  uint32_t data_offset;
+  uint32_t case_offset;
+} upb_msglayout_oneof;
 
-upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
-                                upb_sink *output);
-bool upb_visitor_visitmsg(upb_visitor *v, const upb_msg *msg);
+typedef struct upb_msglayout {
+  const struct upb_msglayout *const* submsgs;
+  const upb_msglayout_field *fields;
+  const upb_msglayout_oneof *oneofs;
+  void *default_msg;
+  /* Must be aligned to sizeof(void*).  Doesn't include internal members like
+   * unknown fields, extension dict, pointer to msglayout, etc. */
+  uint32_t size;
+  uint16_t field_count;
+  uint16_t oneof_count;
+  bool extendable;
+  bool is_proto2;
+} upb_msglayout;
 
-
-/** upb_msgfactory ************************************************************/
-
-/* A upb_msgfactory contains a cache of upb_msglayout, upb_handlers, and
- * upb_visitorplan objects.  These are the objects necessary to represent,
- * populate, and and visit upb_msg objects.
- *
- * These caches are all populated by upb_msgdef, and lazily created on demand.
- */
-
-/* Creates and destroys a msgfactory, respectively.  The messages for this
- * msgfactory must come from |symtab| (which should outlive the msgfactory). */
-upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab);
-void upb_msgfactory_free(upb_msgfactory *f);
-
-const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
-
-/* The functions to get cached objects, lazily creating them on demand.  These
- * all require:
- *
- * - m is in upb_msgfactory_symtab(f)
- * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
- *
- * The returned objects will live for as long as the msgfactory does.
- *
- * TODO(haberman): consider making this thread-safe and take a const
- * upb_msgfactory. */
-const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
-                                              const upb_msgdef *m);
-const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
-                                                    const upb_msgdef *m);
-const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
-                                                     const upb_handlers *h);
+#define UPB_ALIGN_UP_TO(val, align) ((val + (align - 1)) & -align)
+#define UPB_ALIGNED_SIZEOF(type) UPB_ALIGN_UP_TO(sizeof(type), sizeof(void*))
 
 
 /** upb_stringview ************************************************************/
@@ -6538,52 +6568,13 @@ UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
 /** upb_msg *******************************************************************/
 
 /* A upb_msg represents a protobuf message.  It always corresponds to a specific
- * upb_msglayout, which describes how it is laid out in memory.
- *
- * The message will have a fixed size, as returned by upb_msg_sizeof(), which
- * will be used to store fixed-length fields.  The upb_msg may also allocate
- * dynamic memory internally to store data such as:
- *
- * - extensions
- * - unknown fields
- */
+ * upb_msglayout, which describes how it is laid out in memory.  */
 
-/* Returns the size of a message given this layout. */
-size_t upb_msg_sizeof(const upb_msglayout *l);
+/* Creates a new message of the given type/layout in this arena. */
+upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
 
-/* upb_msg_init() / upb_msg_uninit() allow the user to use a pre-allocated
- * block of memory as a message.  The block's size should be upb_msg_sizeof().
- * upb_msg_uninit() must be called to release internally-allocated memory
- * unless the allocator is an arena that does not require freeing.
- *
- * Please note that upb_msg_init() may return a value that is different than
- * |msg|, so you must assign the return value and not cast your memory block
- * to upb_msg* directly!
- *
- * Please note that upb_msg_uninit() does *not* free any submessages, maps,
- * or arrays referred to by this message's fields.  You must free them manually
- * yourself.
- *
- * upb_msg_uninit returns the original memory block, which may be useful if
- * you dynamically allocated it (though upb_msg_new() would normally be more
- * appropriate in this case). */
-upb_msg *upb_msg_init(void *msg, const upb_msglayout *l, upb_alloc *a);
-void *upb_msg_uninit(upb_msg *msg, const upb_msglayout *l);
-
-/* Like upb_msg_init() / upb_msg_uninit(), except the message's memory is
- * allocated / freed from the given upb_alloc. */
-upb_msg *upb_msg_new(const upb_msglayout *l, upb_alloc *a);
-void upb_msg_free(upb_msg *msg, const upb_msglayout *l);
-
-/* Returns the upb_alloc for the given message.
- * TODO(haberman): get rid of this?  Not sure we want to be storing this
- * for every message. */
-upb_alloc *upb_msg_alloc(const upb_msg *msg);
-
-/* Packs the tree of messages rooted at "msg" into a single hunk of memory,
- * allocated from the given allocator. */
-void *upb_msg_pack(const upb_msg *msg, const upb_msglayout *l,
-                   void *p, size_t *ofs, size_t size);
+/* Returns the arena for the given message. */
+upb_arena *upb_msg_arena(const upb_msg *msg);
 
 /* Read-only message API.  Can be safely called by anyone. */
 
@@ -6637,16 +6628,12 @@ bool upb_msg_clearfield(upb_msg *msg,
  * semantics are the same as upb_msg.  A upb_array allocates dynamic
  * memory internally for the array elements. */
 
-size_t upb_array_sizeof(upb_fieldtype_t type);
-void upb_array_init(upb_array *arr, upb_fieldtype_t type, upb_alloc *a);
-void upb_array_uninit(upb_array *arr);
-upb_array *upb_array_new(upb_fieldtype_t type, upb_alloc *a);
-void upb_array_free(upb_array *arr);
+upb_array *upb_array_new(upb_fieldtype_t type, upb_arena *a);
+upb_fieldtype_t upb_array_type(const upb_array *arr);
 
 /* Read-only interface.  Safe for anyone to call. */
 
 size_t upb_array_size(const upb_array *arr);
-upb_fieldtype_t upb_array_type(const upb_array *arr);
 upb_msgval upb_array_get(const upb_array *arr, size_t i);
 
 /* Write interface.  May only be called by the message's owner who can enforce
@@ -6663,12 +6650,8 @@ bool upb_array_set(upb_array *arr, size_t i, upb_msgval val);
  * So you must ensure that any string or message values outlive the map, and you
  * must delete them manually when they are no longer required. */
 
-size_t upb_map_sizeof(upb_fieldtype_t ktype, upb_fieldtype_t vtype);
-bool upb_map_init(upb_map *map, upb_fieldtype_t ktype, upb_fieldtype_t vtype,
-                  upb_alloc *a);
-void upb_map_uninit(upb_map *map);
-upb_map *upb_map_new(upb_fieldtype_t ktype, upb_fieldtype_t vtype, upb_alloc *a);
-void upb_map_free(upb_map *map);
+upb_map *upb_map_new(upb_fieldtype_t ktype, upb_fieldtype_t vtype,
+                     upb_arena *a);
 
 /* Read-only interface.  Safe for anyone to call. */
 
@@ -6712,86 +6695,14 @@ upb_msgval upb_mapiter_value(const upb_mapiter *i);
 void upb_mapiter_setdone(upb_mapiter *i);
 bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2);
 
-
-/** Handlers ******************************************************************/
-
-/* These are the handlers used internally by upb_msgfactory_getmergehandlers().
- * They write scalar data to a known offset from the message pointer.
- *
- * These would be trivial for anyone to implement themselves, but it's better
- * to use these because some JITs will recognize and specialize these instead
- * of actually calling the function. */
-
-/* Sets a handler for the given primitive field that will write the data at the
- * given offset.  If hasbit > 0, also sets a hasbit at the given bit offset
- * (addressing each byte low to high). */
-bool upb_msg_setscalarhandler(upb_handlers *h,
-                              const upb_fielddef *f,
-                              size_t offset,
-                              int32_t hasbit);
-
-/* If the given handler is a msghandlers_primitive field, returns true and sets
- * *type, *offset and *hasbit.  Otherwise returns false. */
-bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
-                                  upb_selector_t s,
-                                  upb_fieldtype_t *type,
-                                  size_t *offset,
-                                  int32_t *hasbit);
-
-
-/** Interfaces for generated code *********************************************/
-
-#define UPB_NOT_IN_ONEOF UINT16_MAX
-#define UPB_NO_HASBIT UINT16_MAX
-#define UPB_NO_SUBMSG UINT16_MAX
-
-typedef struct {
-  uint32_t number;
-  uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
-  uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
-  uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
-  uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
-  uint8_t descriptortype;
-  uint8_t label;
-} upb_msglayout_fieldinit_v1;
-
-typedef struct {
-  uint32_t data_offset;
-  uint32_t case_offset;
-} upb_msglayout_oneofinit_v1;
-
-typedef struct upb_msglayout_msginit_v1 {
-  const struct upb_msglayout_msginit_v1 *const* submsgs;
-  const upb_msglayout_fieldinit_v1 *fields;
-  const upb_msglayout_oneofinit_v1 *oneofs;
-  void *default_msg;
-  /* Must be aligned to sizeof(void*).  Doesn't include internal members like
-   * unknown fields, extension dict, pointer to msglayout, etc. */
-  uint32_t size;
-  uint16_t field_count;
-  uint16_t oneof_count;
-  bool extendable;
-  bool is_proto2;
-} upb_msglayout_msginit_v1;
-
-#define UPB_ALIGN_UP_TO(val, align) ((val + (align - 1)) & -align)
-#define UPB_ALIGNED_SIZEOF(type) UPB_ALIGN_UP_TO(sizeof(type), sizeof(void*))
-
-/* Initialize/uninitialize a msglayout from a msginit.  If upb uses v1
- * internally, this will not allocate any memory.  Should only be used by
- * generated code. */
-upb_msglayout *upb_msglayout_frominit_v1(
-    const upb_msglayout_msginit_v1 *init, upb_alloc *a);
-void upb_msglayout_uninit_v1(upb_msglayout *layout, upb_alloc *a);
-
 UPB_END_EXTERN_C
 
 #endif /* UPB_MSG_H_ */
 
 UPB_BEGIN_EXTERN_C
 
-bool upb_decode(upb_stringview buf, void *msg,
-                const upb_msglayout_msginit_v1 *l, upb_env *env);
+bool upb_decode(upb_stringview buf, void *msg, const upb_msglayout *l,
+                upb_env *env);
 
 UPB_END_EXTERN_C
 
@@ -6806,8 +6717,8 @@ UPB_END_EXTERN_C
 
 UPB_BEGIN_EXTERN_C
 
-char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *l,
-                 upb_env *env, size_t *size);
+char *upb_encode(const void *msg, const upb_msglayout *l, upb_env *env,
+                 size_t *size);
 
 UPB_END_EXTERN_C
 
@@ -6934,7 +6845,7 @@ typedef enum {
 } google_protobuf_MethodOptions_IdempotencyLevel;
 
 /* google_protobuf_FileDescriptorSet */
-extern const upb_msglayout_msginit_v1 google_protobuf_FileDescriptorSet_msginit;
+extern const upb_msglayout google_protobuf_FileDescriptorSet_msginit;
 google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_new(upb_env *env);
 google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FileDescriptorSet_serialize(google_protobuf_FileDescriptorSet *msg, upb_env *env, size_t *len);
@@ -6948,7 +6859,7 @@ void google_protobuf_FileDescriptorSet_set_file(google_protobuf_FileDescriptorSe
 
 
 /* google_protobuf_FileDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_FileDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_FileDescriptorProto_msginit;
 google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_new(upb_env *env);
 google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FileDescriptorProto_serialize(google_protobuf_FileDescriptorProto *msg, upb_env *env, size_t *len);
@@ -6984,7 +6895,7 @@ void google_protobuf_FileDescriptorProto_set_syntax(google_protobuf_FileDescript
 
 
 /* google_protobuf_DescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_DescriptorProto_msginit;
 google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_new(upb_env *env);
 google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_DescriptorProto_serialize(google_protobuf_DescriptorProto *msg, upb_env *env, size_t *len);
@@ -7016,7 +6927,7 @@ void google_protobuf_DescriptorProto_set_reserved_name(google_protobuf_Descripto
 
 
 /* google_protobuf_DescriptorProto_ExtensionRange */
-extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_ExtensionRange_msginit;
+extern const upb_msglayout google_protobuf_DescriptorProto_ExtensionRange_msginit;
 google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_DescriptorProto_ExtensionRange_new(upb_env *env);
 google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_DescriptorProto_ExtensionRange_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_DescriptorProto_ExtensionRange_serialize(google_protobuf_DescriptorProto_ExtensionRange *msg, upb_env *env, size_t *len);
@@ -7034,7 +6945,7 @@ void google_protobuf_DescriptorProto_ExtensionRange_set_options(google_protobuf_
 
 
 /* google_protobuf_DescriptorProto_ReservedRange */
-extern const upb_msglayout_msginit_v1 google_protobuf_DescriptorProto_ReservedRange_msginit;
+extern const upb_msglayout google_protobuf_DescriptorProto_ReservedRange_msginit;
 google_protobuf_DescriptorProto_ReservedRange *google_protobuf_DescriptorProto_ReservedRange_new(upb_env *env);
 google_protobuf_DescriptorProto_ReservedRange *google_protobuf_DescriptorProto_ReservedRange_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_DescriptorProto_ReservedRange_serialize(google_protobuf_DescriptorProto_ReservedRange *msg, upb_env *env, size_t *len);
@@ -7050,7 +6961,7 @@ void google_protobuf_DescriptorProto_ReservedRange_set_end(google_protobuf_Descr
 
 
 /* google_protobuf_ExtensionRangeOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_ExtensionRangeOptions_msginit;
+extern const upb_msglayout google_protobuf_ExtensionRangeOptions_msginit;
 google_protobuf_ExtensionRangeOptions *google_protobuf_ExtensionRangeOptions_new(upb_env *env);
 google_protobuf_ExtensionRangeOptions *google_protobuf_ExtensionRangeOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_ExtensionRangeOptions_serialize(google_protobuf_ExtensionRangeOptions *msg, upb_env *env, size_t *len);
@@ -7064,7 +6975,7 @@ void google_protobuf_ExtensionRangeOptions_set_uninterpreted_option(google_proto
 
 
 /* google_protobuf_FieldDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_FieldDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_FieldDescriptorProto_msginit;
 google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProto_new(upb_env *env);
 google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FieldDescriptorProto_serialize(google_protobuf_FieldDescriptorProto *msg, upb_env *env, size_t *len);
@@ -7096,7 +7007,7 @@ void google_protobuf_FieldDescriptorProto_set_json_name(google_protobuf_FieldDes
 
 
 /* google_protobuf_OneofDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_OneofDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_OneofDescriptorProto_msginit;
 google_protobuf_OneofDescriptorProto *google_protobuf_OneofDescriptorProto_new(upb_env *env);
 google_protobuf_OneofDescriptorProto *google_protobuf_OneofDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_OneofDescriptorProto_serialize(google_protobuf_OneofDescriptorProto *msg, upb_env *env, size_t *len);
@@ -7112,7 +7023,7 @@ void google_protobuf_OneofDescriptorProto_set_options(google_protobuf_OneofDescr
 
 
 /* google_protobuf_EnumDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_EnumDescriptorProto_msginit;
 google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_new(upb_env *env);
 google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumDescriptorProto_serialize(google_protobuf_EnumDescriptorProto *msg, upb_env *env, size_t *len);
@@ -7134,7 +7045,7 @@ void google_protobuf_EnumDescriptorProto_set_reserved_name(google_protobuf_EnumD
 
 
 /* google_protobuf_EnumDescriptorProto_EnumReservedRange */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit;
+extern const upb_msglayout google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit;
 google_protobuf_EnumDescriptorProto_EnumReservedRange *google_protobuf_EnumDescriptorProto_EnumReservedRange_new(upb_env *env);
 google_protobuf_EnumDescriptorProto_EnumReservedRange *google_protobuf_EnumDescriptorProto_EnumReservedRange_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumDescriptorProto_EnumReservedRange_serialize(google_protobuf_EnumDescriptorProto_EnumReservedRange *msg, upb_env *env, size_t *len);
@@ -7150,7 +7061,7 @@ void google_protobuf_EnumDescriptorProto_EnumReservedRange_set_end(google_protob
 
 
 /* google_protobuf_EnumValueDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumValueDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_EnumValueDescriptorProto_msginit;
 google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescriptorProto_new(upb_env *env);
 google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumValueDescriptorProto_serialize(google_protobuf_EnumValueDescriptorProto *msg, upb_env *env, size_t *len);
@@ -7168,7 +7079,7 @@ void google_protobuf_EnumValueDescriptorProto_set_options(google_protobuf_EnumVa
 
 
 /* google_protobuf_ServiceDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_ServiceDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_ServiceDescriptorProto_msginit;
 google_protobuf_ServiceDescriptorProto *google_protobuf_ServiceDescriptorProto_new(upb_env *env);
 google_protobuf_ServiceDescriptorProto *google_protobuf_ServiceDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_ServiceDescriptorProto_serialize(google_protobuf_ServiceDescriptorProto *msg, upb_env *env, size_t *len);
@@ -7186,7 +7097,7 @@ void google_protobuf_ServiceDescriptorProto_set_options(google_protobuf_ServiceD
 
 
 /* google_protobuf_MethodDescriptorProto */
-extern const upb_msglayout_msginit_v1 google_protobuf_MethodDescriptorProto_msginit;
+extern const upb_msglayout google_protobuf_MethodDescriptorProto_msginit;
 google_protobuf_MethodDescriptorProto *google_protobuf_MethodDescriptorProto_new(upb_env *env);
 google_protobuf_MethodDescriptorProto *google_protobuf_MethodDescriptorProto_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_MethodDescriptorProto_serialize(google_protobuf_MethodDescriptorProto *msg, upb_env *env, size_t *len);
@@ -7210,7 +7121,7 @@ void google_protobuf_MethodDescriptorProto_set_server_streaming(google_protobuf_
 
 
 /* google_protobuf_FileOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_FileOptions_msginit;
+extern const upb_msglayout google_protobuf_FileOptions_msginit;
 google_protobuf_FileOptions *google_protobuf_FileOptions_new(upb_env *env);
 google_protobuf_FileOptions *google_protobuf_FileOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FileOptions_serialize(google_protobuf_FileOptions *msg, upb_env *env, size_t *len);
@@ -7260,7 +7171,7 @@ void google_protobuf_FileOptions_set_uninterpreted_option(google_protobuf_FileOp
 
 
 /* google_protobuf_MessageOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_MessageOptions_msginit;
+extern const upb_msglayout google_protobuf_MessageOptions_msginit;
 google_protobuf_MessageOptions *google_protobuf_MessageOptions_new(upb_env *env);
 google_protobuf_MessageOptions *google_protobuf_MessageOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_MessageOptions_serialize(google_protobuf_MessageOptions *msg, upb_env *env, size_t *len);
@@ -7282,7 +7193,7 @@ void google_protobuf_MessageOptions_set_uninterpreted_option(google_protobuf_Mes
 
 
 /* google_protobuf_FieldOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_FieldOptions_msginit;
+extern const upb_msglayout google_protobuf_FieldOptions_msginit;
 google_protobuf_FieldOptions *google_protobuf_FieldOptions_new(upb_env *env);
 google_protobuf_FieldOptions *google_protobuf_FieldOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_FieldOptions_serialize(google_protobuf_FieldOptions *msg, upb_env *env, size_t *len);
@@ -7308,7 +7219,7 @@ void google_protobuf_FieldOptions_set_uninterpreted_option(google_protobuf_Field
 
 
 /* google_protobuf_OneofOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_OneofOptions_msginit;
+extern const upb_msglayout google_protobuf_OneofOptions_msginit;
 google_protobuf_OneofOptions *google_protobuf_OneofOptions_new(upb_env *env);
 google_protobuf_OneofOptions *google_protobuf_OneofOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_OneofOptions_serialize(google_protobuf_OneofOptions *msg, upb_env *env, size_t *len);
@@ -7322,7 +7233,7 @@ void google_protobuf_OneofOptions_set_uninterpreted_option(google_protobuf_Oneof
 
 
 /* google_protobuf_EnumOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumOptions_msginit;
+extern const upb_msglayout google_protobuf_EnumOptions_msginit;
 google_protobuf_EnumOptions *google_protobuf_EnumOptions_new(upb_env *env);
 google_protobuf_EnumOptions *google_protobuf_EnumOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumOptions_serialize(google_protobuf_EnumOptions *msg, upb_env *env, size_t *len);
@@ -7340,7 +7251,7 @@ void google_protobuf_EnumOptions_set_uninterpreted_option(google_protobuf_EnumOp
 
 
 /* google_protobuf_EnumValueOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_EnumValueOptions_msginit;
+extern const upb_msglayout google_protobuf_EnumValueOptions_msginit;
 google_protobuf_EnumValueOptions *google_protobuf_EnumValueOptions_new(upb_env *env);
 google_protobuf_EnumValueOptions *google_protobuf_EnumValueOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_EnumValueOptions_serialize(google_protobuf_EnumValueOptions *msg, upb_env *env, size_t *len);
@@ -7356,7 +7267,7 @@ void google_protobuf_EnumValueOptions_set_uninterpreted_option(google_protobuf_E
 
 
 /* google_protobuf_ServiceOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_ServiceOptions_msginit;
+extern const upb_msglayout google_protobuf_ServiceOptions_msginit;
 google_protobuf_ServiceOptions *google_protobuf_ServiceOptions_new(upb_env *env);
 google_protobuf_ServiceOptions *google_protobuf_ServiceOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_ServiceOptions_serialize(google_protobuf_ServiceOptions *msg, upb_env *env, size_t *len);
@@ -7372,7 +7283,7 @@ void google_protobuf_ServiceOptions_set_uninterpreted_option(google_protobuf_Ser
 
 
 /* google_protobuf_MethodOptions */
-extern const upb_msglayout_msginit_v1 google_protobuf_MethodOptions_msginit;
+extern const upb_msglayout google_protobuf_MethodOptions_msginit;
 google_protobuf_MethodOptions *google_protobuf_MethodOptions_new(upb_env *env);
 google_protobuf_MethodOptions *google_protobuf_MethodOptions_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_MethodOptions_serialize(google_protobuf_MethodOptions *msg, upb_env *env, size_t *len);
@@ -7390,7 +7301,7 @@ void google_protobuf_MethodOptions_set_uninterpreted_option(google_protobuf_Meth
 
 
 /* google_protobuf_UninterpretedOption */
-extern const upb_msglayout_msginit_v1 google_protobuf_UninterpretedOption_msginit;
+extern const upb_msglayout google_protobuf_UninterpretedOption_msginit;
 google_protobuf_UninterpretedOption *google_protobuf_UninterpretedOption_new(upb_env *env);
 google_protobuf_UninterpretedOption *google_protobuf_UninterpretedOption_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_UninterpretedOption_serialize(google_protobuf_UninterpretedOption *msg, upb_env *env, size_t *len);
@@ -7416,7 +7327,7 @@ void google_protobuf_UninterpretedOption_set_aggregate_value(google_protobuf_Uni
 
 
 /* google_protobuf_UninterpretedOption_NamePart */
-extern const upb_msglayout_msginit_v1 google_protobuf_UninterpretedOption_NamePart_msginit;
+extern const upb_msglayout google_protobuf_UninterpretedOption_NamePart_msginit;
 google_protobuf_UninterpretedOption_NamePart *google_protobuf_UninterpretedOption_NamePart_new(upb_env *env);
 google_protobuf_UninterpretedOption_NamePart *google_protobuf_UninterpretedOption_NamePart_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_UninterpretedOption_NamePart_serialize(google_protobuf_UninterpretedOption_NamePart *msg, upb_env *env, size_t *len);
@@ -7432,7 +7343,7 @@ void google_protobuf_UninterpretedOption_NamePart_set_is_extension(google_protob
 
 
 /* google_protobuf_SourceCodeInfo */
-extern const upb_msglayout_msginit_v1 google_protobuf_SourceCodeInfo_msginit;
+extern const upb_msglayout google_protobuf_SourceCodeInfo_msginit;
 google_protobuf_SourceCodeInfo *google_protobuf_SourceCodeInfo_new(upb_env *env);
 google_protobuf_SourceCodeInfo *google_protobuf_SourceCodeInfo_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_SourceCodeInfo_serialize(google_protobuf_SourceCodeInfo *msg, upb_env *env, size_t *len);
@@ -7446,7 +7357,7 @@ void google_protobuf_SourceCodeInfo_set_location(google_protobuf_SourceCodeInfo 
 
 
 /* google_protobuf_SourceCodeInfo_Location */
-extern const upb_msglayout_msginit_v1 google_protobuf_SourceCodeInfo_Location_msginit;
+extern const upb_msglayout google_protobuf_SourceCodeInfo_Location_msginit;
 google_protobuf_SourceCodeInfo_Location *google_protobuf_SourceCodeInfo_Location_new(upb_env *env);
 google_protobuf_SourceCodeInfo_Location *google_protobuf_SourceCodeInfo_Location_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_SourceCodeInfo_Location_serialize(google_protobuf_SourceCodeInfo_Location *msg, upb_env *env, size_t *len);
@@ -7468,7 +7379,7 @@ void google_protobuf_SourceCodeInfo_Location_set_leading_detached_comments(googl
 
 
 /* google_protobuf_GeneratedCodeInfo */
-extern const upb_msglayout_msginit_v1 google_protobuf_GeneratedCodeInfo_msginit;
+extern const upb_msglayout google_protobuf_GeneratedCodeInfo_msginit;
 google_protobuf_GeneratedCodeInfo *google_protobuf_GeneratedCodeInfo_new(upb_env *env);
 google_protobuf_GeneratedCodeInfo *google_protobuf_GeneratedCodeInfo_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_GeneratedCodeInfo_serialize(google_protobuf_GeneratedCodeInfo *msg, upb_env *env, size_t *len);
@@ -7482,7 +7393,7 @@ void google_protobuf_GeneratedCodeInfo_set_annotation(google_protobuf_GeneratedC
 
 
 /* google_protobuf_GeneratedCodeInfo_Annotation */
-extern const upb_msglayout_msginit_v1 google_protobuf_GeneratedCodeInfo_Annotation_msginit;
+extern const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit;
 google_protobuf_GeneratedCodeInfo_Annotation *google_protobuf_GeneratedCodeInfo_Annotation_new(upb_env *env);
 google_protobuf_GeneratedCodeInfo_Annotation *google_protobuf_GeneratedCodeInfo_Annotation_parsenew(upb_stringview buf, upb_env *env);
 char *google_protobuf_GeneratedCodeInfo_Annotation_serialize(google_protobuf_GeneratedCodeInfo_Annotation *msg, upb_env *env, size_t *len);
@@ -7517,7 +7428,7 @@ struct upb_array {
   void *data;   /* Each element is element_size. */
   size_t len;   /* Measured in elements. */
   size_t size;  /* Measured in elements. */
-  upb_alloc *alloc;
+  upb_arena *arena;
 };
 
 #endif  /* UPB_STRUCTS_H_ */
@@ -7712,6 +7623,44 @@ struct upb_filedef {
 extern const struct upb_refcounted_vtbl upb_filedef_vtbl;
 
 #endif  /* UPB_STATICINIT_H_ */
+
+
+#ifndef UPB_MSGFACTORY_H_
+#define UPB_MSGFACTORY_H_
+
+UPB_DECLARE_TYPE(upb::MessageFactory, upb_msgfactory)
+
+/** upb_msgfactory ************************************************************/
+
+/* A upb_msgfactory contains a cache of upb_msglayout, upb_handlers, and
+ * upb_visitorplan objects.  These are the objects necessary to represent,
+ * populate, and and visit upb_msg objects.
+ *
+ * These caches are all populated by upb_msgdef, and lazily created on demand.
+ */
+
+/* Creates and destroys a msgfactory, respectively.  The messages for this
+ * msgfactory must come from |symtab| (which should outlive the msgfactory). */
+upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab);
+void upb_msgfactory_free(upb_msgfactory *f);
+
+const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
+
+/* The functions to get cached objects, lazily creating them on demand.  These
+ * all require:
+ *
+ * - m is in upb_msgfactory_symtab(f)
+ * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
+ *
+ * The returned objects will live for as long as the msgfactory does.
+ *
+ * TODO(haberman): consider making this thread-safe and take a const
+ * upb_msgfactory. */
+const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
+                                              const upb_msgdef *m);
+
+
+#endif /* UPB_MSGFACTORY_H_ */
 /*
 ** upb::descriptor::Reader (upb_descreader)
 **
@@ -9448,7 +9397,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the parser library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_JSON_PARSER_SIZE 4112
+#define UPB_JSON_PARSER_SIZE 4160
 
 #ifdef __cplusplus
 
@@ -9562,7 +9511,7 @@ UPB_DECLARE_TYPE(upb::json::Printer, upb_json_printer)
 
 /* upb::json::Printer *********************************************************/
 
-#define UPB_JSON_PRINTER_SIZE 176
+#define UPB_JSON_PRINTER_SIZE 192
 
 #ifdef __cplusplus
 

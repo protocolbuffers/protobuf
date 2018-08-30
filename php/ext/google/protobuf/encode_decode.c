@@ -31,6 +31,12 @@
 #include "protobuf.h"
 #include "utf8.h"
 
+static size_t TIMESTAMP_MAX_LEN = 31;
+static const char *kTimestampFullMessageName = "google.protobuf.Timestamp";
+static bool is_timestamp(const upb_msgdef *m) {
+  return strcmp(upb_msgdef_fullname(m), kTimestampFullMessageName) == 0;
+}
+
 /* stringsink *****************************************************************/
 
 typedef struct {
@@ -1079,9 +1085,9 @@ static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
 // Serializing.
 // -----------------------------------------------------------------------------
 
-static void putmsg(zval* msg, const Descriptor* desc, upb_sink* sink,
+static bool putmsg(zval* msg, const Descriptor* desc, upb_sink* sink,
                    int depth TSRMLS_DC);
-static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
+static bool putrawmsg(MessageHeader* msg, const Descriptor* desc,
                       upb_sink* sink, int depth TSRMLS_DC);
 
 static void putstr(zval* str, const upb_fielddef* f, upb_sink* sink);
@@ -1224,13 +1230,13 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
   upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
 }
 
-static void putmsg(zval* msg_php, const Descriptor* desc, upb_sink* sink,
+static bool putmsg(zval* msg_php, const Descriptor* desc, upb_sink* sink,
                    int depth TSRMLS_DC) {
   MessageHeader* msg = UNBOX(MessageHeader, msg_php);
-  putrawmsg(msg, desc, sink, depth TSRMLS_CC);
+  return putrawmsg(msg, desc, sink, depth TSRMLS_CC);
 }
 
-static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
+static bool putrawmsg(MessageHeader* msg, const Descriptor* desc,
                       upb_sink* sink, int depth TSRMLS_DC) {
   upb_msg_field_iter i;
   upb_status status;
@@ -1322,7 +1328,16 @@ static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
     upb_sink_putunknown(sink, unknown->ptr, unknown->len);
   }
 
-  upb_sink_endmsg(sink, &status);
+  if (!upb_sink_endmsg(sink, &status)) {
+    char err_msg[200] = "";
+    sprintf(err_msg, "Error occurred during encoding: %s",
+            upb_status_errmsg(&status));
+    TSRMLS_FETCH();
+    zend_throw_exception(NULL, err_msg, 0 TSRMLS_CC);
+    return false;
+  }
+
+  return true;
 }
 
 static void putstr(zval* str, const upb_fielddef *f, upb_sink *sink) {
