@@ -363,7 +363,8 @@ TEST_F(JsonUtilTest, TestParsingUnknownAnyFields) {
       "{\n"
       "  \"value\": {\n"
       "    \"@type\": \"type.googleapis.com/proto3.TestMessage\",\n"
-      "    \"unknown_field\": \"UNKOWN_VALUE\"\n"
+      "    \"unknown_field\": \"UNKOWN_VALUE\",\n"
+      "    \"string_value\": \"expected_value\"\n"
       "  }\n"
       "}";
       
@@ -373,6 +374,10 @@ TEST_F(JsonUtilTest, TestParsingUnknownAnyFields) {
 
   options.ignore_unknown_fields = true;
   EXPECT_TRUE(FromJson(input, &m, options));
+
+  TestMessage t;
+  EXPECT_TRUE(m.value().UnpackTo(&t));
+  EXPECT_EQ("expected_value", t.string_value());
 }
 
 TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto2) {
