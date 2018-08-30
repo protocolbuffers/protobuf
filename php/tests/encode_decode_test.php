@@ -522,4 +522,38 @@ class EncodeDecodeTest extends TestBase
         $to->mergeFromJsonString($data);
         $this->expectFields($to);
     }
+
+    public function testDecodeDuration()
+    {
+        $m = new Google\Protobuf\Duration();
+        $m->mergeFromJsonString("\"1234.5678s\"");
+        $this->assertEquals(1234, $m->getSeconds());
+        $this->assertEquals(567800000, $m->getNanos());
+    }
+
+    public function testEncodeDuration()
+    {
+        $m = new Google\Protobuf\Duration();
+        $m->setSeconds(1234);
+        $m->setNanos(999999999);
+        $this->assertEquals("\"1234.999999999s\"", $m->serializeToJsonString());
+    }
+
+    public function testDecodeTimestamp()
+    {
+        $m = new Google\Protobuf\Timestamp();
+        $m->mergeFromJsonString("\"2000-01-01T00:00:00.123456789Z\"");
+        $this->assertEquals(946684800, $m->getSeconds());
+        $this->assertEquals(123456789, $m->getNanos());
+    }
+
+    public function testEncodeTimestamp()
+    {
+        $m = new Google\Protobuf\Timestamp();
+        $m->setSeconds(946684800);
+        $m->setNanos(123456789);
+        $this->assertEquals("\"2000-01-01T00:00:00.123456789Z\"",
+                            $m->serializeToJsonString());
+    }
+
 }
