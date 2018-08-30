@@ -31,12 +31,6 @@
 #include "protobuf.h"
 #include "utf8.h"
 
-static size_t TIMESTAMP_MAX_LEN = 31;
-static const char *kTimestampFullMessageName = "google.protobuf.Timestamp";
-static bool is_timestamp(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kTimestampFullMessageName) == 0;
-}
-
 /* stringsink *****************************************************************/
 
 typedef struct {
