@@ -438,8 +438,8 @@ class GPBUtil
                 $nanoseconds = intval($nanoseconds);
 
                 // remove the nanoseconds and preceding period from the timestamp
-                $date = substr($timestamp, 0, $periodIndex - 1);
-                $timezone = substr($timestamp, $periodIndex + $nanosecondsLength);
+                $date = substr($timestamp, 0, $periodIndex);
+                $timezone = substr($timestamp, $periodIndex + $nanosecondsLength + 1);
                 $timestamp = $date.$timezone;
             }
         }
