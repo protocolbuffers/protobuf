@@ -42,6 +42,7 @@ class WellKnownTest extends TestBase {
     public function testEmpty()
     {
         $msg = new GPBEmpty();
+        $this->assertTrue($msg instanceof \Google\Protobuf\Internal\Message);
     }
 
     public function testImportDescriptorProto()
