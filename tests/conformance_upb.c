@@ -39,17 +39,34 @@ void CheckedWrite(int fd, const void *buf, size_t len) {
   }
 }
 
+bool stringview_eql(upb_stringview view, const char *str) {
+  return view.size == strlen(str) && memcmp(view.data, str, view.size) == 0;
+}
+
+static const char *proto3_msg =
+    "protobuf_test_messages.proto3.TestAllTypesProto3";
+
 void DoTest(
     const conformance_ConformanceRequest* request,
     conformance_ConformanceResponse *response,
     upb_env *env) {
-      conformance_ConformanceResponse_new(env);
-  protobuf_test_messages_proto3_TestAllTypes *test_message;
+  upb_stringview message_type =
+      conformance_ConformanceRequest_message_type(request);
+  if (!stringview_eql(message_type, proto3_msg)) {
+    static const char msg[] = "Only proto3 for now.";
+    conformance_ConformanceResponse_set_skipped(
+        response, upb_stringview_make(msg, sizeof(msg)));
+    return;
+  }
+
+  protobuf_test_messages_proto3_TestAllTypesProto3 *test_message;
 
   switch (conformance_ConformanceRequest_payload_case(request)) {
-    case conformance_ConformanceRequest_payload_protobuf_payload:
-      test_message = protobuf_test_messages_proto3_TestAllTypes_parsenew(
-          conformance_ConformanceRequest_protobuf_payload(request), env);
+    case conformance_ConformanceRequest_payload_protobuf_payload: {
+      upb_stringview payload =
+          conformance_ConformanceRequest_protobuf_payload(request);
+      test_message = protobuf_test_messages_proto3_TestAllTypesProto3_parsenew(
+          payload, env);
 
       if (!test_message) {
         /* TODO(haberman): return details. */
@@ -59,6 +76,7 @@ void DoTest(
         return;
       }
       break;
+    }
 
     case conformance_ConformanceRequest_payload_json_payload: {
       static const char msg[] = "JSON support not yet implemented.";
@@ -79,8 +97,9 @@ void DoTest(
 
     case conformance_PROTOBUF: {
       size_t serialized_len;
-      char *serialized = protobuf_test_messages_proto3_TestAllTypes_serialize(
-          test_message, env, &serialized_len);
+      char *serialized =
+          protobuf_test_messages_proto3_TestAllTypesProto3_serialize(
+              test_message, env, &serialized_len);
       if (!serialized) {
         static const char msg[] = "Error serializing.";
         conformance_ConformanceResponse_set_serialize_error(
