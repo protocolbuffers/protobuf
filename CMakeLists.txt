@@ -1,4 +1,12 @@
 
+cmake_minimum_required(VERSION 3.1)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+else()
+    cmake_policy(VERSION 3.12)
+endif()
+
 cmake_minimum_required (VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
 project (upb)
@@ -14,16 +22,6 @@ if(NOT CMAKE_BUILD_TYPE)
       "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
 endif()
-
-# Check out Git submodules.
-#if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.gitmodules")
-#  execute_process (COMMAND git submodule update --init --recursive
-#                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-#endif()
-
-set(protobuf_BUILD_TESTS OFF CACHE BOOL "enable tests for proto2" FORCE)
-set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "enable shared libs for proto2" FORCE)
-add_subdirectory(third_party/protobuf/cmake)
 
 # When using Ninja, compiler output won't be colorized without this.
 include(CheckCXXCompilerFlag)
@@ -54,6 +52,10 @@ elseif(UNIX)
 endif()
 
 FIND_PACKAGE(Lua)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/Makefile.am")
+  set(PROTOBUF_FOUND TRUE)
+endif()
+find_program(RAGEL NAMES ragel)
 
 if(LUA_FOUND)
   include_directories(${LUA_INCLUDE_DIR})
@@ -106,9 +108,6 @@ if(LUA_FOUND)
                 ${CMAKE_SOURCE_DIR}/tools/upbc.lua
                 ${CMAKE_SOURCE_DIR}/tools/dump_cinit.lua
                 ${CMAKE_SOURCE_DIR}/tools/make_c_api.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
                 ${CMAKE_CURRENT_BINARY_DIR}/tools)
   add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lua/upb.lua
@@ -124,6 +123,29 @@ if(LUA_FOUND)
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
                 ${CMAKE_CURRENT_BINARY_DIR}/upb/bindings/lua/upb)
+
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
+    DEPENDS upb/pb/compile_decoder_x64.dasc
+    COMMAND
+        cd ${CMAKE_CURRENT_SOURCE_DIR} &&
+        lua third_party/dynasm/dynasm.lua
+        -c upb/pb/compile_decoder_x64.dasc
+        > ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
+  )
+
+  add_custom_target(
+    genfiles2 ALL
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
+  )
+endif()
+
+if(LUA_FOUND AND PROTOBUF_FOUND)
+  set(protobuf_BUILD_TESTS OFF CACHE BOOL "enable tests for proto2" FORCE)
+  set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "enable shared libs for proto2" FORCE)
+  set(protobuf_BUILD_CONFORMANCE ON CACHE BOOL "Build conformance tests" FORCE)
+  add_subdirectory(third_party/protobuf/cmake)
+
   add_custom_target(
     upbc ALL
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
@@ -164,13 +186,14 @@ if(LUA_FOUND)
   )
 
   add_custom_target(
-    genfiles
+    genfiles ALL
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.h
             ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/descriptor.upb.h
   )
 
   add_executable(conformance_upb
     tests/conformance_upb.c
+    ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.c
     ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.c
     ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/any.upb.c
     ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/duration.upb.c
@@ -178,12 +201,29 @@ if(LUA_FOUND)
     ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/struct.upb.c
     ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/timestamp.upb.c
     ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/wrappers.upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.c
-    )
+  )
   target_link_libraries(conformance_upb LINK_PRIVATE
     upb
-)
+  )
+
+  add_custom_target(
+    conformance
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conformance_upb
+            ${CMAKE_CURRENT_BINARY_DIR}/third_party/protobuf/cmake/conformance_test_runner
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/third_party/protobuf/cmake/conformance_test_runner ${CMAKE_CURRENT_BINARY_DIR}/conformance_upb
+  )
+
 endif()
+
+if (RAGEL)
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/upb/json/parser.c
+    DEPENDS upb/json/parser.rl
+    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && RAGEL -C -o ${CMAKE_CURRENT_BINARY_DIR}/upb/json/parser.c upb/json/parser.rl
+  )
+endif()
+
+configure_file(tools/copy_genfiles.sh.in tools/copy_genfiles.sh)
 
 set(UPB_SRCS
     upb/decode.c

@@ -39,6 +39,10 @@ void CheckedWrite(int fd, const void *buf, size_t len) {
   }
 }
 
+bool stringview_eql(upb_stringview view, const char *str) {
+  return view.size == strlen(str) && memcmp(view.data, str, view.size) == 0;
+}
+
 static const char *proto3_msg =
     "protobuf_test_messages.proto3.TestAllTypesProto3";
 
@@ -48,7 +52,7 @@ void DoTest(
     upb_env *env) {
   upb_stringview message_type =
       conformance_ConformanceRequest_message_type(request);
-  if (strcmp(message_type.data, proto3_msg) != 0) {
+  if (!stringview_eql(message_type, proto3_msg)) {
     static const char msg[] = "Only proto3 for now.";
     conformance_ConformanceResponse_set_skipped(
         response, upb_stringview_make(msg, sizeof(msg)));

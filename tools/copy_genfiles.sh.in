@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e
+
+BINDIR=`dirname "$0"`/..
+SRCDIR=${CMAKE_CURRENT_SOURCE_DIR}
+EXIT=0
+
+function try_copy() {
+  if [ ! -f $1 ]; then
+    echo "Can't find $1, skipping..."
+    EXIT=1
+  else
+    cp $1 $2
+    echo $1
+  fi
+}
+
+try_copy $BINDIR/google/protobuf/descriptor.upb.c $SRCDIR/google/protobuf
+try_copy $BINDIR/google/protobuf/descriptor.upb.h $SRCDIR/google/protobuf
+try_copy $BINDIR/upb/json/parser.c $SRCDIR/upb/json
+try_copy $BINDIR/upb/pb/compile_decoder_x64.h $SRCDIR/upb/pb
