@@ -21,6 +21,7 @@ add_custom_command(
 add_executable(conformance_test_runner
   ${protobuf_source_dir}/conformance/conformance.pb.cc
   ${protobuf_source_dir}/conformance/conformance_test.cc
+  ${protobuf_source_dir}/conformance/conformance_test_impl.cc
   ${protobuf_source_dir}/conformance/conformance_test_runner.cc
   ${protobuf_source_dir}/conformance/third_party/jsoncpp/json.h
   ${protobuf_source_dir}/conformance/third_party/jsoncpp/jsoncpp.cpp
