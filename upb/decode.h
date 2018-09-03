@@ -9,8 +9,7 @@
 
 UPB_BEGIN_EXTERN_C
 
-bool upb_decode(upb_stringview buf, void *msg, const upb_msglayout *l,
-                upb_env *env);
+bool upb_decode(upb_stringview buf, upb_msg *msg, const upb_msglayout *l);
 
 UPB_END_EXTERN_C
 

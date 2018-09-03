@@ -148,7 +148,9 @@ if(LUA_FOUND AND PROTOBUF_FOUND)
 
   add_custom_target(
     upbc ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_c_api.lua
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/upbc.lua
+            ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
             ${CMAKE_CURRENT_BINARY_DIR}/lua/upb.lua
             ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
   )

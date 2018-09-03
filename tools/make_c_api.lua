@@ -186,12 +186,80 @@ local function field_layout_rank(field)
   return (rank * 2^29) + field:number()
 end
 
+local function get_layout_order(msg)
+  local ret = {}
+
+  for field in msg:fields() do
+    table.insert(ret, field)
+  end
+  table.sort(ret, function(a, b)
+    return field_layout_rank(a) < field_layout_rank(b)
+  end)
+
+  return ret
+end
+
 local function has_hasbit(field)
   if field:containing_type():file():syntax() == upb.SYNTAX_PROTO2 then
     return field:label() ~= upb.LABEL_REPEATED and not field:containing_oneof()
   else
     return false
   end
+end
+
+local function get_hasbit_indexes(msg)
+  local hasbit_count = 0
+  local ret = {}
+
+  for _, field in ipairs(get_layout_order(msg)) do
+    if has_hasbit(field) then
+      ret[field] = hasbit_count
+      hasbit_count = hasbit_count + 1
+    end
+  end
+
+  return ret
+end
+
+local function generate_struct(msg, append)
+  -- Create a layout order for fields.  We use this order for the struct and
+  -- for offsets, but our list of fields we keep in field number order.
+  local fields_layout_order = get_layout_order(msg)
+  local hasbit_indexes = get_hasbit_indexes(msg)
+  local has_hasbits = next(hasbit_indexes) ~= nil
+
+  append('struct %s {\n', to_cident(msg:full_name()))
+
+  -- Hasbits
+  if has_hasbits then
+    append('  struct {\n')
+    for _, field in ipairs(fields_layout_order) do
+      if has_hasbit(field) then
+        append('    bool %s:1;\n', field:name())
+      end
+    end
+    append('  } has;\n')
+  end
+
+  -- Non-oneof fields.
+  for _, field in ipairs(fields_layout_order) do
+    if not field:containing_oneof() then
+      append('  %s %s;\n', ctype(field), field:name())
+    end
+  end
+
+  -- Oneof fields.
+  for oneof in msg:oneofs() do
+    local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
+    append('  union {\n')
+    for field in oneof:fields() do
+      append('    %s %s;\n', ctype(field), field:name())
+    end
+    append('  } %s;\n', oneof:name())
+    append('  %s_oneofcases %s_case;\n', fullname, oneof:name())
+  end
+
+  append('};\n\n')
 end
 
 local function write_h_file(filedef, append)
@@ -201,15 +269,29 @@ local function write_h_file(filedef, append)
   append('#define %s_UPB_H_\n\n', basename_preproc)
 
   append('#include "upb/msg.h"\n\n')
+  append('#include "upb/decode.h"\n')
+  append('#include "upb/encode.h"\n')
 
   append('UPB_BEGIN_EXTERN_C\n\n')
 
+  -- Forward-declare types defined in this file.
   for msg in filedef:defs(upb.DEF_MSG) do
     -- TODO(haberman): forward declare C++ type names so we can use
     -- UPB_DECLARE_TYPE().
     local msgname = to_cident(msg:full_name())
     append('struct %s;\n', msgname)
     append('typedef struct %s %s;\n', msgname, msgname)
+  end
+
+  -- Forward-declare types not in this file, but used as submessages.
+  for msg in filedef:defs(upb.DEF_MSG) do
+    for field in msg:fields() do
+      if field:type() == upb.TYPE_MESSAGE and
+          field:subdef():file() ~= filedef then
+        -- Forward declaration for message type declared in another file.
+        append('struct %s;\n', to_cident(field:subdef():full_name()))
+      end
+    end
   end
 
   append("/* Enums */\n\n")
@@ -221,32 +303,6 @@ local function write_h_file(filedef, append)
   end
 
   for msg in filedef:defs(upb.DEF_MSG) do
-    local msgname = to_cident(msg:full_name())
-    append('/* %s */\n', msgname)
-    append('extern const upb_msglayout %s_msginit;\n', msgname)
-    append('%s *%s_new(upb_env *env);\n', msgname, msgname)
-    append('%s *%s_parsenew(upb_stringview buf, upb_env *env);\n',
-           msgname, msgname)
-    append('char *%s_serialize(%s *msg, upb_env *env, size_t *len);\n',
-           msgname, msgname)
-    append('void %s_free(%s *msg, upb_env *env);\n', msgname, msgname)
-    append('\n')
-
-    append('/* getters. */\n')
-    local setters, get_setters = dump_cinit.str_appender()
-    for field in msg:fields() do
-      local fieldname = to_cident(field:name())
-      if field:type() == upb.TYPE_MESSAGE and
-          field:subdef():file() ~= filedef then
-        -- Forward declaration for message type declared in another file.
-        append('struct %s;\n', to_cident(field:subdef():full_name()))
-      end
-      append('%s %s_%s(const %s *msg);\n',
-             ctype(field, true), msgname, fieldname, msgname)
-      setters('void %s_set_%s(%s *msg, %s value);\n',
-              msgname, fieldname, msgname, ctype(field))
-    end
-
     for oneof in msg:oneofs() do
       local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
       append('typedef enum {\n')
@@ -255,14 +311,25 @@ local function write_h_file(filedef, append)
       end
       append('  %s_NOT_SET = 0,\n', fullname)
       append('} %s_oneofcases;\n', fullname)
-      append('%s_oneofcases %s_case(const %s *msg);\n', fullname, fullname, msgname)
+      append('\n')
     end
 
-    append('\n')
-    append('/* setters. */\n')
-    append(get_setters())
+    generate_struct(msg, append)
 
-    append('\n')
+    local msgname = to_cident(msg:full_name())
+    append('extern const upb_msglayout %s_msginit;\n', msgname)
+    append('UPB_INLINE %s *%s_new(upb_arena *arena) {\n', msgname, msgname)
+    append('  return upb_msg_new(&%s_msginit, arena);\n', msgname)
+    append('}\n')
+    append('UPB_INLINE %s *%s_parsenew(upb_stringview buf, upb_arena *arena) {\n',
+           msgname, msgname)
+    append('  %s *ret = %s_new(arena);\n', msgname, msgname)
+    append('  return (ret && upb_decode(buf, ret, &%s_msginit)) ? ret : NULL;\n', msgname)
+    append('}\n')
+    append('UPB_INLINE char *%s_serialize(const %s *msg, upb_arena *arena, size_t *len) {\n',
+           msgname, msgname)
+    append('  return upb_encode(msg, &%s_msginit, arena, len);\n', msgname)
+    append('}\n')
     append('\n')
   end
 
@@ -278,10 +345,7 @@ local function write_c_file(filedef, hfilename, append)
   emit_file_warning(filedef, append)
 
   append('#include <stddef.h>\n')
-  append('#include "upb/decode.h"\n')
-  append('#include "upb/encode.h"\n')
   append('#include "upb/msg.h"\n')
-  append('#include "upb/upb.h"\n')
   append('#include "%s"\n\n', hfilename)
 
   for dep in filedef:dependencies() do
@@ -301,16 +365,32 @@ local function write_c_file(filedef, hfilename, append)
     local submsg_count = 0
     local submsg_set = {}
     local submsg_indexes = {}
-    local hasbit_count = 0
-    local hasbit_indexes = {}
+    local hasbit_indexes = get_hasbit_indexes(msg)
     local oneof_count = 0
     local oneof_indexes = {}
+
+    -- Another sorted array in field number order.
+    local fields_number_order = {}
+
+    for field in msg:fields() do
+      field_count = field_count + 1
+      table.insert(fields_number_order, field)
+      if field:type() == upb.TYPE_MESSAGE then
+        submsg_count = submsg_count + 1
+        submsg_set[field:subdef()] = true
+      end
+    end
+
+    table.sort(fields_number_order, function(a, b)
+      return a:number() < b:number()
+    end)
 
     -- Create a layout order for oneofs.
     local oneofs_layout_order = {}
     for oneof in msg:oneofs() do
       table.insert(oneofs_layout_order, oneof)
     end
+
     table.sort(oneofs_layout_order, function(a, b)
       return a:name() < b:name()
     end)
@@ -319,61 +399,6 @@ local function write_c_file(filedef, hfilename, append)
       oneof_indexes[oneof] = oneof_count
       oneof_count = oneof_count + 1
     end
-
-    -- Create a layout order for fields.  We use this order for the struct and
-    -- for offsets, but our list of fields we keep in field number order.
-    local fields_layout_order = {}
-    for field in msg:fields() do
-      table.insert(fields_layout_order, field)
-    end
-    table.sort(fields_layout_order, function(a, b)
-      return field_layout_rank(a) < field_layout_rank(b)
-    end)
-
-    -- Another sorted array in field number order.
-    local fields_number_order = {}
-    for field in msg:fields() do
-      table.insert(fields_number_order, field)
-    end
-    table.sort(fields_number_order, function(a, b)
-      return a:number() < b:number()
-    end)
-
-    append('struct %s {\n', msgname)
-
-    -- Non-oneof fields.
-    for _, field in ipairs(fields_layout_order) do
-      field_count = field_count + 1
-
-      if field:type() == upb.TYPE_MESSAGE then
-        submsg_count = submsg_count + 1
-        submsg_set[field:subdef()] = true
-      end
-
-      if field:containing_oneof() then
-        -- Handled below.
-      else
-        if has_hasbit(field) then
-          hasbit_indexes[field] = hasbit_count
-          hasbit_count = hasbit_count + 1
-        end
-
-        append('  %s %s;\n', ctype(field), field:name())
-      end
-    end
-
-    -- Oneof fields.
-    for oneof in msg:oneofs() do
-      local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
-      append('  union {\n')
-      for field in oneof:fields() do
-        append('    %s %s;\n', ctype(field), field:name())
-      end
-      append('  } %s;\n', oneof:name())
-      append('  %s_oneofcases %s_case;\n', fullname, oneof:name())
-    end
-
-    append('};\n\n')
 
     if oneof_count > 0 then
       local oneofs_array_name = msgname .. "_oneofs"
@@ -451,59 +476,6 @@ local function write_c_file(filedef, hfilename, append)
           msg:file():syntax() == upb.SYNTAX_PROTO2
           )
     append('};\n\n')
-
-    append('%s *%s_new(upb_env *env) {\n', msgname, msgname)
-    append('  %s *msg = upb_env_malloc(env, sizeof(*msg));\n',
-           msgname)
-    append('  memset(msg, 0, sizeof(*msg));  /* TODO: defaults */\n')
-    append('  return msg;\n')
-    append('}\n')
-
-    append('%s *%s_parsenew(upb_stringview buf, upb_env *env) {\n',
-           msgname, msgname)
-    append('  %s *msg = %s_new(env);\n', msgname, msgname)
-    append('  if (upb_decode(buf, msg, &%s_msginit, env)) {\n', msgname)
-    append('    return msg;\n')
-    append('  } else {\n')
-    append('    return NULL;\n')
-    append('  }\n')
-    append('}\n')
-
-    append('char *%s_serialize(%s *msg, upb_env *env, size_t *size) {\n',
-           msgname, msgname)
-    append('  return upb_encode(msg, &%s_msginit, env, size);\n', msgname)
-    append('}\n')
-
-    for field in msg:fields() do
-      append('%s %s_%s(const %s *msg) {\n',
-             ctype(field, true), msgname, field:name(), msgname);
-      if field:containing_oneof() then
-        local oneof = field:containing_oneof()
-        append('  return msg->%s_case == %s ? msg->%s.%s : %s;\n',
-               oneof:name(), field:number(), oneof:name(), field:name(),
-               field_default(field))
-      else
-        append('  return msg->%s;\n', field:name())
-      end
-      append('}\n')
-      append('void %s_set_%s(%s *msg, %s value) {\n',
-             msgname, field:name(), msgname, ctype(field));
-      if field:containing_oneof() then
-        local oneof = field:containing_oneof()
-        append('  msg->%s.%s = value;\n', oneof:name(), field:name())
-        append('  msg->%s_case = %s;\n', oneof:name(), field:number())
-      else
-        append('  msg->%s = value;\n', field:name())
-      end
-      append('}\n')
-    end
-
-    for oneof in msg:oneofs() do
-      local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
-      append('%s_oneofcases %s_case(const %s *msg) {\n', fullname, fullname, msgname)
-      append('  return msg->%s_case;\n', oneof:name())
-      append('}\n')
-    end
   end
 end
 

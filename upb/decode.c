@@ -28,7 +28,6 @@ const uint8_t upb_desctype_to_fieldtype[] = {
 
 /* Data pertaining to the parse. */
 typedef struct {
-  upb_env *env;
   /* Current decoding pointer.  Points to the beginning of a field until we
    * have finished decoding the whole field. */
   const char *ptr;
@@ -213,7 +212,7 @@ static upb_array *upb_getorcreatearr(upb_decstate *d, upb_decframe *frame,
 
   if (!arr) {
     upb_fieldtype_t type = upb_desctype_to_fieldtype[field->descriptortype];
-    arr = upb_array_new(type, upb_env_arena(d->env));
+    arr = upb_array_new(type, upb_msg_arena(frame->msg));
     if (!arr) {
       return NULL;
     }
@@ -275,7 +274,7 @@ static bool upb_decode_submsg(upb_decstate *d, upb_decframe *frame,
   UPB_ASSERT(subm);
 
   if (!submsg) {
-    submsg = upb_msg_new((upb_msglayout *)subm, upb_env_arena(d->env));
+    submsg = upb_msg_new(subm, upb_msg_arena(frame->msg));
     CHK(submsg);
     *(void**)submsg_slot = submsg;
   }
@@ -455,7 +454,7 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
       subm = frame->m->submsgs[field->submsg_index];
       UPB_ASSERT(subm);
 
-      submsg = upb_msg_new((upb_msglayout *)subm, upb_env_arena(d->env));
+      submsg = upb_msg_new(subm, upb_msg_arena(frame->msg));
       CHK(submsg);
 
       field_mem = upb_array_add(arr, 1);
@@ -587,11 +586,9 @@ static bool upb_decode_message(upb_decstate *d, const char *limit,
   return true;
 }
 
-bool upb_decode(upb_stringview buf, void *msg, const upb_msglayout *l,
-                upb_env *env) {
+bool upb_decode(upb_stringview buf, void *msg, const upb_msglayout *l) {
   upb_decstate state;
   state.ptr = buf.data;
-  state.env = env;
 
   return upb_decode_message(&state, buf.data + buf.size, 0, msg, l);
 }
