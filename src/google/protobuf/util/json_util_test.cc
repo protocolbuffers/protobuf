@@ -56,6 +56,7 @@ using proto3::TestEnumValue;
 using proto3::TestMap;
 using proto3::TestMessage;
 using proto3::TestOneof;
+using proto3::TestAny;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -355,6 +356,28 @@ TEST_F(JsonUtilTest, TestDynamicMessage) {
 
   JsonOptions options;
   EXPECT_EQ(ToJson(generated, options), ToJson(*message, options));
+}
+
+TEST_F(JsonUtilTest, TestParsingUnknownAnyFields) {
+  string input =
+      "{\n"
+      "  \"value\": {\n"
+      "    \"@type\": \"type.googleapis.com/proto3.TestMessage\",\n"
+      "    \"unknown_field\": \"UNKOWN_VALUE\",\n"
+      "    \"string_value\": \"expected_value\"\n"
+      "  }\n"
+      "}";
+      
+  TestAny m;
+  JsonParseOptions options;
+  EXPECT_FALSE(FromJson(input, &m, options));
+
+  options.ignore_unknown_fields = true;
+  EXPECT_TRUE(FromJson(input, &m, options));
+
+  TestMessage t;
+  EXPECT_TRUE(m.value().UnpackTo(&t));
+  EXPECT_EQ("expected_value", t.string_value());
 }
 
 TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto2) {

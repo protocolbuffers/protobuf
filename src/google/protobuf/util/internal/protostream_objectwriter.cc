@@ -75,6 +75,18 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
     const TypeInfo* typeinfo, const google::protobuf::Type& type,
+    strings::ByteSink* output, ErrorListener* listener,
+    const ProtoStreamObjectWriter::Options& options)
+    : ProtoWriter(typeinfo, type, output, listener),
+      master_type_(type),
+      current_(nullptr),
+      options_(options) {
+  set_ignore_unknown_fields(options_.ignore_unknown_fields);
+  set_use_lower_camel_for_enums(options.use_lower_camel_for_enums);
+}
+
+ProtoStreamObjectWriter::ProtoStreamObjectWriter(
+    const TypeInfo* typeinfo, const google::protobuf::Type& type,
     strings::ByteSink* output, ErrorListener* listener)
     : ProtoWriter(typeinfo, type, output, listener),
       master_type_(type),
@@ -342,7 +354,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
   // Create our object writer and initialize it with the first StartObject
   // call.
   ow_.reset(new ProtoStreamObjectWriter(parent_->typeinfo(), *type, &output_,
-                                        parent_->listener()));
+                                        parent_->listener(), parent_->options_));
 
   // Don't call StartObject() for well-known types yet. Depending on the
   // type of actual data, we may not need to call StartObject(). For
