@@ -785,7 +785,7 @@ message SourceCodeInfo {
     // This is because FileDescriptorProto.message_type has field number 4:
     //   repeated DescriptorProto message_type = 4;
     // and DescriptorProto.field has field number 2:
-    //   repeated FieldDescriptorProto field = 2;
+    //   repeated FieldDescriptorProto field = 7;
     // and FieldDescriptorProto.name has field number 1:
     //   optional string name = 1;
     //
