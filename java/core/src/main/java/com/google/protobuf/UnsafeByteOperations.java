@@ -39,23 +39,24 @@ import java.nio.ByteBuffer;
  * potentially expose the backing buffer of a {@link ByteString} to the application.
  *
  * <p><strong>DISCLAIMER:</strong> The methods in this class should only be called if it is
- * guaranteed that the buffer backing the {@link ByteString} will never change! Mutation of a
- * {@link ByteString} can lead to unexpected and undesirable consequences in your application,
- * and will likely be difficult to debug. Proceed with caution!
+ * guaranteed that the buffer backing the {@link ByteString} will never change! Mutation of a {@link
+ * ByteString} can lead to unexpected and undesirable consequences in your application, and will
+ * likely be difficult to debug. Proceed with caution!
  *
- * <p>This can have a number of significant side affects that have
- * spooky-action-at-a-distance-like behavior. In particular, if the bytes value changes out from
- * under a Protocol Buffer:
+ * <p>This can have a number of significant side affects that have spooky-action-at-a-distance-like
+ * behavior. In particular, if the bytes value changes out from under a Protocol Buffer:
+ *
  * <ul>
- * <li>serialization may throw
- * <li>serialization may succeed but the wrong bytes may be written out
- * <li>messages are no longer threadsafe
- * <li>hashCode may be incorrect
- *   <ul>
- *   <li>can result in a permanent memory leak when used as a key in a long-lived HashMap
- *   <li> the semantics of many programs may be violated if this is the case
- *   </ul>
+ *   <li>serialization may throw
+ *   <li>serialization may succeed but the wrong bytes may be written out
+ *   <li>messages are no longer threadsafe
+ *   <li>hashCode may be incorrect
+ *       <ul>
+ *         <li>can result in a permanent memory leak when used as a key in a long-lived HashMap
+ *         <li>the semantics of many programs may be violated if this is the case
+ *       </ul>
  * </ul>
+ *
  * Each of these issues will occur in parts of the code base that are entirely distinct from the
  * parts of the code base modifying the buffer. In fact, both parts of the code base may be correct
  * - it is the bridging with the unsafe operations that was in error!
@@ -99,19 +100,19 @@ public final class UnsafeByteOperations {
 
   /**
    * Writes the given {@link ByteString} to the provided {@link ByteOutput}. Calling this method may
-   * result in multiple operations on the target {@link ByteOutput}
-   * (i.e. for roped {@link ByteString}s).
+   * result in multiple operations on the target {@link ByteOutput} (i.e. for roped {@link
+   * ByteString}s).
    *
    * <p>This method exposes the internal backing buffer(s) of the {@link ByteString} to the {@link
    * ByteOutput} in order to avoid additional copying overhead. It would be possible for a malicious
    * {@link ByteOutput} to corrupt the {@link ByteString}. Use with caution!
    *
-   * <p> NOTE: The {@link ByteOutput} <strong>MUST NOT</strong> modify the provided buffers. Doing
-   * so may result in corrupted data, which would be difficult to debug.
+   * <p>NOTE: The {@link ByteOutput} <strong>MUST NOT</strong> modify the provided buffers. Doing so
+   * may result in corrupted data, which would be difficult to debug.
    *
    * @param bytes the {@link ByteString} to be written
-   * @param  output  the output to receive the bytes
-   * @throws IOException  if an I/O error occurs
+   * @param output the output to receive the bytes
+   * @throws IOException if an I/O error occurs
    */
   public static void unsafeWriteTo(ByteString bytes, ByteOutput output) throws IOException {
     bytes.writeTo(output);

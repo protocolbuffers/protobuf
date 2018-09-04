@@ -1051,10 +1051,14 @@ TEST(ExtensionSetTest, RepeatedFields) {
       enum_const_iter;
   RepeatedField<unittest::TestAllTypes_NestedEnum>::const_iterator
       enum_const_end;
-  for (enum_const_iter = message.GetRepeatedExtension(
-           unittest::repeated_nested_enum_extension).begin(),
-       enum_const_end  = message.GetRepeatedExtension(
-           unittest::repeated_nested_enum_extension).end();
+  for (enum_const_iter =
+           message
+               .GetRepeatedExtension(unittest::repeated_nested_enum_extension)
+               .begin(),
+      enum_const_end =
+           message
+               .GetRepeatedExtension(unittest::repeated_nested_enum_extension)
+               .end();
        enum_const_iter != enum_const_end; ++enum_const_iter) {
     ASSERT_EQ(*enum_const_iter, unittest::TestAllTypes::NestedEnum_MAX);
   }
@@ -1271,7 +1275,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     const Message& sub_message =
         message.GetReflection()->GetMessage(message, message_extension);
     const unittest::ForeignMessage* typed_sub_message =
-#if GOOGLE_PROTOBUF_RTTI
+#if PROTOBUF_RTTI
         dynamic_cast<const unittest::ForeignMessage*>(&sub_message);
 #else
         static_cast<const unittest::ForeignMessage*>(&sub_message);

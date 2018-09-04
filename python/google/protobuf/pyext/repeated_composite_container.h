@@ -154,7 +154,7 @@ int SetOwner(RepeatedCompositeContainer* self,
 // Message to 'target'.
 //
 // Corresponds to reflection api method ReleaseMessage.
-void ReleaseLastTo(CMessage* parent,
+void ReleaseLastTo(Message* message,
                    const FieldDescriptor* field,
                    CMessage* target);
 

@@ -160,7 +160,7 @@ bool FieldMaskUtil::GetFieldDescriptors(
   return true;
 }
 
-void FieldMaskUtil::InternalGetFieldMaskForAllFields(
+void FieldMaskUtil::GetFieldMaskForAllFields(
     const Descriptor* descriptor, FieldMask* out) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     out->add_paths(descriptor->field(i)->name());
@@ -644,9 +644,9 @@ void FieldMaskUtil::Intersect(const FieldMask& mask1, const FieldMask& mask2,
   intersection.MergeToFieldMask(out);
 }
 
-void FieldMaskUtil::InternalSubtract(const Descriptor* descriptor,
-                                     const FieldMask& mask1,
-                                     const FieldMask& mask2, FieldMask* out) {
+void FieldMaskUtil::Subtract(const Descriptor* descriptor,
+                             const FieldMask& mask1, const FieldMask& mask2,
+                             FieldMask* out) {
   if (mask1.paths().empty()) {
     out->Clear();
     return;

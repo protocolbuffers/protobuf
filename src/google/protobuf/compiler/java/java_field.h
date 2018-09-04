@@ -87,7 +87,7 @@ class ImmutableFieldGenerator {
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
 
-  virtual string GetBoxedType() const = 0;
+  virtual std::string GetBoxedType() const = 0;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableFieldGenerator);
@@ -118,7 +118,7 @@ class ImmutableFieldLiteGenerator {
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
 
 
-  virtual string GetBoxedType() const = 0;
+  virtual std::string GetBoxedType() const = 0;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableFieldLiteGenerator);
@@ -171,29 +171,29 @@ FieldGeneratorMap<ImmutableFieldLiteGenerator>::~FieldGeneratorMap();
 
 // Field information used in FieldGeneartors.
 struct FieldGeneratorInfo {
-  string name;
-  string capitalized_name;
-  string disambiguated_reason;
+  std::string name;
+  std::string capitalized_name;
+  std::string disambiguated_reason;
 };
 
 // Oneof information used in OneofFieldGenerators.
 struct OneofGeneratorInfo {
-  string name;
-  string capitalized_name;
+  std::string name;
+  std::string capitalized_name;
 };
 
 // Set some common variables used in variable FieldGenerators.
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              const FieldGeneratorInfo* info,
-                             std::map<string, string>* variables);
+                             std::map<std::string, std::string>* variables);
 
 // Set some common oneof variables used in OneofFieldGenerators.
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,
                              const OneofGeneratorInfo* info,
-                             std::map<string, string>* variables);
+                             std::map<std::string, std::string>* variables);
 
 // Print useful comments before a field's accessors.
-void PrintExtraFieldInfo(const std::map<string, string>& variables,
+void PrintExtraFieldInfo(const std::map<std::string, std::string>& variables,
                          io::Printer* printer);
 
 }  // namespace java

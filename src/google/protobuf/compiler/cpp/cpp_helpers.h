@@ -55,19 +55,16 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-inline string ProtobufNamespace(const Options& options) {
+inline std::string ProtobufNamespace(const Options& options) {
   return options.opensource_runtime ? "google::protobuf" : "proto2";
 }
 
-inline string MacroPrefix(const Options& options) {
+inline std::string MacroPrefix(const Options& options) {
   return options.opensource_runtime ? "GOOGLE_PROTOBUF" : "GOOGLE_PROTOBUF";
 }
 
-inline string DeprecatedAttribute(const Options& options, bool deprecated) {
-  if (!deprecated) {
-    return "";
-  }
-  return MacroPrefix(options) + "_DEPRECATED ";
+inline std::string DeprecatedAttribute(const Options& options, bool deprecated) {
+  return deprecated ? "PROTOBUF_DEPRECATED " : "";
 }
 
 // Commonly-used separator comments.  Thick is a line of '=', thin is a line
@@ -79,35 +76,35 @@ inline bool IsProto1(const FileDescriptor* file, const Options& options) {
   return false;
 }
 
-void SetCommonVars(const Options& options, std::map<string, string>* variables);
+void SetCommonVars(const Options& options, std::map<std::string, std::string>* variables);
 
-bool GetBootstrapBasename(const Options& options, const string& basename,
-                          string* bootstrap_basename);
+bool GetBootstrapBasename(const Options& options, const std::string& basename,
+                          std::string* bootstrap_basename);
 bool MaybeBootstrap(const Options& options, GeneratorContext* generator_context,
-                    bool bootstrap_flag, string* basename);
+                    bool bootstrap_flag, std::string* basename);
 bool IsBootstrapProto(const Options& options, const FileDescriptor* file);
 
 // Name space of the proto file. This namespace is such that the string
 // "<namespace>::some_name" is the correct fully qualified namespace.
 // This means if the package is empty the namespace is "", and otherwise
 // the namespace is "::foo::bar::...::baz" without trailing semi-colons.
-string Namespace(const string& package);
-inline string Namespace(const FileDescriptor* d) {
+std::string Namespace(const std::string& package);
+inline std::string Namespace(const FileDescriptor* d) {
   return Namespace(d->package());
 }
 
-string Namespace(const Descriptor* d);
-string Namespace(const FieldDescriptor* d);
-string Namespace(const EnumDescriptor* d);
+std::string Namespace(const Descriptor* d);
+std::string Namespace(const FieldDescriptor* d);
+std::string Namespace(const EnumDescriptor* d);
 
 // Returns true if it's safe to reset "field" to zero.
 bool CanInitializeByZeroing(const FieldDescriptor* field);
 
-string ClassName(const Descriptor* descriptor);
-string ClassName(const EnumDescriptor* enum_descriptor);
+std::string ClassName(const Descriptor* descriptor);
+std::string ClassName(const EnumDescriptor* enum_descriptor);
 
-string QualifiedClassName(const Descriptor* d);
-string QualifiedClassName(const EnumDescriptor* d);
+std::string QualifiedClassName(const Descriptor* d);
+std::string QualifiedClassName(const EnumDescriptor* d);
 
 // DEPRECATED just use ClassName or QualifiedClassName, a boolean is very
 // unreadable at the callsite.
@@ -119,33 +116,33 @@ string QualifiedClassName(const EnumDescriptor* d);
 //   ::foo::bar::Baz_Qux
 // While the non-qualified version would be:
 //   Baz_Qux
-inline string ClassName(const Descriptor* descriptor, bool qualified) {
+inline std::string ClassName(const Descriptor* descriptor, bool qualified) {
   return qualified ? QualifiedClassName(descriptor) : ClassName(descriptor);
 }
 
-inline string ClassName(const EnumDescriptor* descriptor, bool qualified) {
+inline std::string ClassName(const EnumDescriptor* descriptor, bool qualified) {
   return qualified ? QualifiedClassName(descriptor) : ClassName(descriptor);
 }
 
 // Fully qualified name of the default_instance of this message.
-string DefaultInstanceName(const Descriptor* descriptor);
+std::string DefaultInstanceName(const Descriptor* descriptor);
 
 // Returns the name of a no-op function that we can call to introduce a linker
 // dependency on the given message type. This is used to implement implicit weak
 // fields.
-string ReferenceFunctionName(const Descriptor* descriptor);
+std::string ReferenceFunctionName(const Descriptor* descriptor);
 
 // Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
-string SuperClassName(const Descriptor* descriptor, const Options& options);
+std::string SuperClassName(const Descriptor* descriptor, const Options& options);
 
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People
 // should be using lowercase-with-underscores style for proto field names
 // anyway, so normally this just returns field->name().
-string FieldName(const FieldDescriptor* field);
+std::string FieldName(const FieldDescriptor* field);
 
 // Get the sanitized name that should be used for the given enum in C++ code.
-string EnumValueName(const EnumValueDescriptor* enum_value);
+std::string EnumValueName(const EnumValueDescriptor* enum_value);
 
 // Returns an estimate of the compiler's alignment for the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
@@ -155,7 +152,7 @@ int EstimateAlignmentSize(const FieldDescriptor* field);
 
 // Get the unqualified name that should be used for a field's field
 // number constant.
-string FieldConstantName(const FieldDescriptor *field);
+std::string FieldConstantName(const FieldDescriptor *field);
 
 // Returns the scope where the field was defined (for extensions, this is
 // different from the message type to which the field applies).
@@ -166,51 +163,51 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
 
 // Returns the fully-qualified type name field->message_type().  Usually this
 // is just ClassName(field->message_type(), true);
-string FieldMessageTypeName(const FieldDescriptor* field);
+std::string FieldMessageTypeName(const FieldDescriptor* field);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-LIBPROTOC_EXPORT string StripProto(const string& filename);
+PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
 // Get the C++ type name for a primitive type (e.g. "double", "::google::protobuf::int32", etc.).
 const char* PrimitiveTypeName(FieldDescriptor::CppType type);
-string PrimitiveTypeName(const Options& options, FieldDescriptor::CppType type);
+std::string PrimitiveTypeName(const Options& options, FieldDescriptor::CppType type);
 
 // Get the declared type name in CamelCase format, as is used e.g. for the
 // methods of WireFormat.  For example, TYPE_INT32 becomes "Int32".
 const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 
 // Return the code that evaluates to the number when compiled.
-string Int32ToString(int number);
+std::string Int32ToString(int number);
 
 // Return the code that evaluates to the number when compiled.
-string Int64ToString(const Options& options, int64 number);
+std::string Int64ToString(const Options& options, int64 number);
 
 // Get code that evaluates to the field's default value.
-string DefaultValue(const Options& options, const FieldDescriptor* field);
+std::string DefaultValue(const Options& options, const FieldDescriptor* field);
 
 // Compatibility function for callers outside proto2.
-string DefaultValue(const FieldDescriptor* field);
+std::string DefaultValue(const FieldDescriptor* field);
 
 // Convert a file name into a valid identifier.
-string FilenameIdentifier(const string& filename);
+std::string FilenameIdentifier(const std::string& filename);
 
 // For each .proto file generates a unique name. To prevent collisions of
 // symbols in the global namespace
-string UniqueName(const string& name, const string& filename,
+std::string UniqueName(const std::string& name, const std::string& filename,
                   const Options& options);
-inline string UniqueName(const string& name, const FileDescriptor* d,
+inline std::string UniqueName(const std::string& name, const FileDescriptor* d,
                          const Options& options) {
   return UniqueName(name, d->name(), options);
 }
-inline string UniqueName(const string& name, const Descriptor* d,
+inline std::string UniqueName(const std::string& name, const Descriptor* d,
                          const Options& options) {
   return UniqueName(name, d->file(), options);
 }
-inline string UniqueName(const string& name, const EnumDescriptor* d,
+inline std::string UniqueName(const std::string& name, const EnumDescriptor* d,
                          const Options& options) {
   return UniqueName(name, d->file(), options);
 }
-inline string UniqueName(const string& name, const ServiceDescriptor* d,
+inline std::string UniqueName(const std::string& name, const ServiceDescriptor* d,
                          const Options& options) {
   return UniqueName(name, d->file(), options);
 }
@@ -222,32 +219,32 @@ inline Options InternalRuntimeOptions() {
   options.opensource_runtime = false;
   return options;
 }
-inline string UniqueName(const string& name, const string& filename) {
+inline std::string UniqueName(const std::string& name, const std::string& filename) {
   return UniqueName(name, filename, InternalRuntimeOptions());
 }
-inline string UniqueName(const string& name, const FileDescriptor* d) {
+inline std::string UniqueName(const std::string& name, const FileDescriptor* d) {
   return UniqueName(name, d->name(), InternalRuntimeOptions());
 }
-inline string UniqueName(const string& name, const Descriptor* d) {
+inline std::string UniqueName(const std::string& name, const Descriptor* d) {
   return UniqueName(name, d->file(), InternalRuntimeOptions());
 }
-inline string UniqueName(const string& name, const EnumDescriptor* d) {
+inline std::string UniqueName(const std::string& name, const EnumDescriptor* d) {
   return UniqueName(name, d->file(), InternalRuntimeOptions());
 }
-inline string UniqueName(const string& name, const ServiceDescriptor* d) {
+inline std::string UniqueName(const std::string& name, const ServiceDescriptor* d) {
   return UniqueName(name, d->file(), InternalRuntimeOptions());
 }
 
 // Return the qualified C++ name for a file level symbol.
-string QualifiedFileLevelSymbol(const string& package, const string& name);
+std::string QualifiedFileLevelSymbol(const std::string& package, const std::string& name);
 
 // Escape C++ trigraphs by escaping question marks to \?
-string EscapeTrigraphs(const string& to_escape);
+std::string EscapeTrigraphs(const std::string& to_escape);
 
 // Escaped function name to eliminate naming conflict.
-string SafeFunctionName(const Descriptor* descriptor,
+std::string SafeFunctionName(const Descriptor* descriptor,
                         const FieldDescriptor* field,
-                        const string& prefix);
+                        const std::string& prefix);
 
 // Returns true if generated messages have public unknown fields accessors
 inline bool PublicUnknownFieldsAccessors(const Descriptor* message) {
@@ -355,6 +352,8 @@ inline bool HasFastArraySerialization(const FileDescriptor* file,
 inline bool IsProto2MessageSet(const Descriptor* descriptor,
                                const Options& options) {
   return !options.opensource_runtime &&
+         !options.enforce_lite &&
+         !options.lite_implicit_weak_fields &&
          descriptor->options().message_set_wire_format() &&
          descriptor->full_name() == "google.protobuf.bridge.MessageSet";
 }
@@ -362,6 +361,8 @@ inline bool IsProto2MessageSet(const Descriptor* descriptor,
 inline bool IsProto2MessageSetFile(const FileDescriptor* file,
                                    const Options& options) {
   return !options.opensource_runtime &&
+         !options.enforce_lite &&
+         !options.lite_implicit_weak_fields &&
          file->name() == "net/proto2/bridge/proto/message_set.proto";
 }
 
@@ -372,7 +373,7 @@ inline bool IsMapEntryMessage(const Descriptor* descriptor) {
 // Returns true if the field's CPPTYPE is string or message.
 bool IsStringOrMessage(const FieldDescriptor* field);
 
-string UnderscoresToCamelCase(const string& input, bool cap_next_letter);
+std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter);
 
 inline bool HasFieldPresence(const FileDescriptor* file) {
   return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
@@ -401,11 +402,11 @@ inline bool IsCrossFileMessage(const FieldDescriptor* field) {
          field->message_type()->file() != field->file();
 }
 
-inline string MessageCreateFunction(const Descriptor* d) {
+inline std::string MessageCreateFunction(const Descriptor* d) {
   return SupportsArenas(d) ? "CreateMessage" : "Create";
 }
 
-inline string MakeDefaultName(const FieldDescriptor* field) {
+inline std::string MakeDefaultName(const FieldDescriptor* field) {
   return "_i_give_permission_to_break_this_code_default_" + FieldName(field) +
          "_";
 }
@@ -455,7 +456,7 @@ struct MessageAnalysis {
 // quadratic performance, if we do this per message we would get O(V*(V+E)).
 // Logically this is just only used in message.cc, but in the header for
 // FileGenerator to help share it.
-class LIBPROTOC_EXPORT MessageSCCAnalyzer {
+class PROTOC_EXPORT MessageSCCAnalyzer {
  public:
   explicit MessageSCCAnalyzer(const Options& options) : options_(options) {}
 
@@ -528,18 +529,18 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
 //                                            "__declspec(export) void fun();"
 //
 // which is convenient to prevent double, leading or trailing spaces.
-class LIBPROTOC_EXPORT Formatter {
+class PROTOC_EXPORT Formatter {
  public:
   explicit Formatter(io::Printer* printer) : printer_(printer) {}
-  Formatter(io::Printer* printer, const std::map<string, string>& vars)
+  Formatter(io::Printer* printer, const std::map<std::string, std::string>& vars)
       : printer_(printer), vars_(vars) {}
 
   template <typename T>
-  void Set(const string& key, const T& value) {
+  void Set(const std::string& key, const T& value) {
     vars_[key] = ToString(value);
   }
 
-  void AddMap(const std::map<string, string>& vars) {
+  void AddMap(const std::map<std::string, std::string>& vars) {
     for (const auto& keyval : vars) vars_[keyval.first] = keyval.second;
   }
 
@@ -552,7 +553,7 @@ class LIBPROTOC_EXPORT Formatter {
   void Outdent() const { printer_->Outdent(); }
   io::Printer* printer() const { return printer_; }
 
-  class LIBPROTOC_EXPORT SaveState {
+  class PROTOC_EXPORT SaveState {
    public:
     explicit SaveState(Formatter* format)
         : format_(format), vars_(format->vars_) {}
@@ -560,28 +561,28 @@ class LIBPROTOC_EXPORT Formatter {
 
    private:
     Formatter* format_;
-    std::map<string, string> vars_;
+    std::map<std::string, std::string> vars_;
   };
 
  private:
   io::Printer* printer_;
-  std::map<string, string> vars_;
+  std::map<std::string, std::string> vars_;
 
   // Convenience overloads to accept different types as arguments.
-  static string ToString(const string& s) { return s; }
+  static std::string ToString(const std::string& s) { return s; }
   template <typename I, typename = typename std::enable_if<
                             std::is_integral<I>::value>::type>
-  static string ToString(I x) {
+  static std::string ToString(I x) {
     return SimpleItoa(x);
   }
-  static string ToString(strings::Hex x) { return StrCat(x); }
-  static string ToString(const FieldDescriptor* d) { return Payload(d); }
-  static string ToString(const Descriptor* d) { return Payload(d); }
-  static string ToString(const EnumDescriptor* d) { return Payload(d); }
-  static string ToString(const EnumValueDescriptor* d) { return Payload(d); }
+  static std::string ToString(strings::Hex x) { return StrCat(x); }
+  static std::string ToString(const FieldDescriptor* d) { return Payload(d); }
+  static std::string ToString(const Descriptor* d) { return Payload(d); }
+  static std::string ToString(const EnumDescriptor* d) { return Payload(d); }
+  static std::string ToString(const EnumValueDescriptor* d) { return Payload(d); }
 
   template <typename Descriptor>
-  static string Payload(const Descriptor* descriptor) {
+  static std::string Payload(const Descriptor* descriptor) {
     std::vector<int> path;
     descriptor->GetLocationPath(&path);
     GeneratedCodeInfo::Annotation annotation;
@@ -593,18 +594,18 @@ class LIBPROTOC_EXPORT Formatter {
   }
 };
 
-class LIBPROTOC_EXPORT NamespaceOpener {
+class PROTOC_EXPORT NamespaceOpener {
  public:
   explicit NamespaceOpener(const Formatter& format)
       : printer_(format.printer()) {}
-  NamespaceOpener(const string& name, const Formatter& format)
+  NamespaceOpener(const std::string& name, const Formatter& format)
       : NamespaceOpener(format) {
     ChangeTo(name);
   }
   ~NamespaceOpener() { ChangeTo(""); }
 
-  void ChangeTo(const string& name) {
-    std::vector<string> new_stack_ =
+  void ChangeTo(const std::string& name) {
+    std::vector<std::string> new_stack_ =
         Split(name, "::", true);
     int len = std::min(name_stack_.size(), new_stack_.size());
     int common_idx = 0;
@@ -623,10 +624,10 @@ class LIBPROTOC_EXPORT NamespaceOpener {
 
  private:
   io::Printer* printer_;
-  std::vector<string> name_stack_;
+  std::vector<std::string> name_stack_;
 };
 
-string GetUtf8Suffix(const FieldDescriptor* field, const Options& options);
+std::string GetUtf8Suffix(const FieldDescriptor* field, const Options& options);
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
                                     const char* parameters,

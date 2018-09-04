@@ -582,7 +582,7 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   }
 }
 
-GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE static bool ReadBytesToString(
+PROTOBUF_ALWAYS_INLINE static bool ReadBytesToString(
     io::CodedInputStream* input, string* value);
 inline static bool ReadBytesToString(io::CodedInputStream* input,
                                      string* value) {
@@ -602,6 +602,19 @@ bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string** p) {
   return ReadBytesToString(input, *p);
 }
 
+void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
+                       bool emit_stacktrace) {
+  string stacktrace;
+  string quoted_field_name = "";
+  if (field_name != nullptr) {
+    quoted_field_name = StringPrintf(" '%s'", field_name);
+  }
+  GOOGLE_LOG(ERROR) << "String field" << quoted_field_name << " contains invalid "
+             << "UTF-8 data when " << operation_str << " a protocol "
+             << "buffer. Use the 'bytes' type if you intend to send raw "
+             << "bytes. " << stacktrace;
+}
+
 bool WireFormatLite::VerifyUtf8String(const char* data,
                                       int size,
                                       Operation op,
@@ -617,15 +630,7 @@ bool WireFormatLite::VerifyUtf8String(const char* data,
         break;
       // no default case: have the compiler warn if a case is not covered.
     }
-    string quoted_field_name = "";
-    if (field_name != NULL) {
-      quoted_field_name = StringPrintf(" '%s'", field_name);
-    }
-    // no space below to avoid double space when the field name is missing.
-    GOOGLE_LOG(ERROR) << "String field" << quoted_field_name << " contains invalid "
-               << "UTF-8 data when " << operation_str << " a protocol "
-               << "buffer. Use the 'bytes' type if you intend to send raw "
-               << "bytes. ";
+    PrintUTF8ErrorLog(field_name, operation_str, false);
     return false;
   }
   return true;

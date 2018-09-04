@@ -49,10 +49,12 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/casts.h>
 
+#include <google/protobuf/port_def.inc>
+
 // This declares an unsigned long long integer literal in a portable way.
 // (The original macro is way too big and ruins my formatting.)
 #undef ULL
-#define ULL(x) GOOGLE_ULONGLONG(x)
+#define ULL(x) PROTOBUF_ULONGLONG(x)
 
 
 namespace google {

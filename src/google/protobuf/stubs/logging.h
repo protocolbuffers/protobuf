@@ -34,6 +34,8 @@
 #include <google/protobuf/stubs/macros.h>
 #include <google/protobuf/stubs/port.h>
 
+#include <google/protobuf/port_def.inc>
+
 // ===================================================================
 // emulates google3/base/logging.h
 
@@ -70,7 +72,7 @@ namespace internal {
 
 class LogFinisher;
 
-class LIBPROTOBUF_EXPORT LogMessage {
+class PROTOBUF_EXPORT LogMessage {
  public:
   LogMessage(LogLevel level, const char* filename, int line);
   ~LogMessage();
@@ -102,7 +104,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
 
 // Used to make the entire "LOG(BLAH) << etc." expression have a void return
 // type and print a newline after each message.
-class LIBPROTOBUF_EXPORT LogFinisher {
+class PROTOBUF_EXPORT LogFinisher {
  public:
   void operator=(LogMessage& other);
 };
@@ -216,7 +218,7 @@ typedef void LogHandler(LogLevel level, const char* filename, int line,
 // have some code that tends to trigger them frequently and you know
 // the warnings are not important to you), use the LogSilencer class
 // below.
-LIBPROTOBUF_EXPORT LogHandler* SetLogHandler(LogHandler* new_func);
+PROTOBUF_EXPORT LogHandler* SetLogHandler(LogHandler* new_func);
 
 // Create a LogSilencer if you want to temporarily suppress all log
 // messages.  As long as any LogSilencer objects exist, non-fatal
@@ -225,7 +227,7 @@ LIBPROTOBUF_EXPORT LogHandler* SetLogHandler(LogHandler* new_func);
 // accidentally suppress log messages occurring in another thread, but
 // since messages are generally for debugging purposes only, this isn't
 // a big deal.  If you want to intercept log messages, use SetLogHandler().
-class LIBPROTOBUF_EXPORT LogSilencer {
+class PROTOBUF_EXPORT LogSilencer {
  public:
   LogSilencer();
   ~LogSilencer();
@@ -233,5 +235,7 @@ class LIBPROTOBUF_EXPORT LogSilencer {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_LOGGING_H_

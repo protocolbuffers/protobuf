@@ -45,10 +45,8 @@ import junit.framework.TestCase;
  */
 public class DoubleArrayListTest extends TestCase {
 
-  private static final DoubleArrayList UNARY_LIST =
-      newImmutableDoubleArrayList(1);
-  private static final DoubleArrayList TERTIARY_LIST =
-      newImmutableDoubleArrayList(1, 2, 3);
+  private static final DoubleArrayList UNARY_LIST = newImmutableDoubleArrayList(1);
+  private static final DoubleArrayList TERTIARY_LIST = newImmutableDoubleArrayList(1, 2, 3);
 
   private DoubleArrayList list;
 
@@ -225,9 +223,7 @@ public class DoubleArrayListTest extends TestCase {
     for (int i = 0; i < 6; i++) {
       list.add(Double.valueOf(5 + i));
     }
-    assertEquals(
-        asList(0D, 1D, 4D, 2D, 3D, 5D, 6D, 7D, 8D, 9D, 10D),
-        list);
+    assertEquals(asList(0D, 1D, 4D, 2D, 3D, 5D, 6D, 7D, 8D, 9D, 10D), list);
 
     try {
       list.add(-1, 5D);
@@ -299,16 +295,14 @@ public class DoubleArrayListTest extends TestCase {
   }
 
   public void testRemoveEndOfCapacity() {
-    DoubleList toRemove =
-        DoubleArrayList.emptyList().mutableCopyWithCapacity(1);
+    DoubleList toRemove = DoubleArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addDouble(3);
     toRemove.remove(0);
     assertEquals(0, toRemove.size());
   }
 
   public void testSublistRemoveEndOfCapacity() {
-    DoubleList toRemove =
-        DoubleArrayList.emptyList().mutableCopyWithCapacity(1);
+    DoubleList toRemove = DoubleArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addDouble(3);
     toRemove.subList(0, 1).clear();
     assertEquals(0, toRemove.size());

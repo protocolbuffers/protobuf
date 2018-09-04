@@ -31,21 +31,21 @@
 package com.google.protobuf;
 
 /**
- * <p>Abstract interface for a blocking RPC channel.  {@code BlockingRpcChannel}
- * is the blocking equivalent to {@link RpcChannel}.
+ * Abstract interface for a blocking RPC channel. {@code BlockingRpcChannel} is the blocking
+ * equivalent to {@link RpcChannel}.
  *
  * @author kenton@google.com Kenton Varda
  * @author cpovirk@google.com Chris Povirk
  */
 public interface BlockingRpcChannel {
   /**
-   * Call the given method of the remote service and blocks until it returns.
-   * {@code callBlockingMethod()} is the blocking equivalent to
-   * {@link RpcChannel#callMethod}.
+   * Call the given method of the remote service and blocks until it returns. {@code
+   * callBlockingMethod()} is the blocking equivalent to {@link RpcChannel#callMethod}.
    */
   Message callBlockingMethod(
       Descriptors.MethodDescriptor method,
       RpcController controller,
       Message request,
-      Message responsePrototype) throws ServiceException;
+      Message responsePrototype)
+      throws ServiceException;
 }

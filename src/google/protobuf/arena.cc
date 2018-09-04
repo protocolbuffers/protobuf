@@ -125,7 +125,7 @@ ArenaImpl::Block* ArenaImpl::NewBlock(Block* last_block, size_t min_bytes) {
 ArenaImpl::Block::Block(size_t size, Block* next)
     : next_(next), pos_(kBlockHeaderSize), size_(size) {}
 
-GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
+PROTOBUF_NOINLINE
 void ArenaImpl::SerialArena::AddCleanupFallback(void* elem,
                                                 void (*cleanup)(void*)) {
   size_t size = cleanup_ ? cleanup_->size * 2 : kMinCleanupListElements;
@@ -142,10 +142,10 @@ void ArenaImpl::SerialArena::AddCleanupFallback(void* elem,
   AddCleanup(elem, cleanup);
 }
 
-GOOGLE_PROTOBUF_ATTRIBUTE_FUNC_ALIGN(32)
+PROTOBUF_FUNC_ALIGN(32)
 void* ArenaImpl::AllocateAligned(size_t n) {
   SerialArena* arena;
-  if (GOOGLE_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
     return arena->AllocateAligned(n);
   } else {
     return AllocateAlignedFallback(n);
@@ -155,7 +155,7 @@ void* ArenaImpl::AllocateAligned(size_t n) {
 void* ArenaImpl::AllocateAlignedAndAddCleanup(size_t n,
                                               void (*cleanup)(void*)) {
   SerialArena* arena;
-  if (GOOGLE_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
     return arena->AllocateAlignedAndAddCleanup(n, cleanup);
   } else {
     return AllocateAlignedAndAddCleanupFallback(n, cleanup);
@@ -164,36 +164,36 @@ void* ArenaImpl::AllocateAlignedAndAddCleanup(size_t n,
 
 void ArenaImpl::AddCleanup(void* elem, void (*cleanup)(void*)) {
   SerialArena* arena;
-  if (GOOGLE_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
     arena->AddCleanup(elem, cleanup);
   } else {
     return AddCleanupFallback(elem, cleanup);
   }
 }
 
-GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
+PROTOBUF_NOINLINE
 void* ArenaImpl::AllocateAlignedFallback(size_t n) {
   return GetSerialArena()->AllocateAligned(n);
 }
 
-GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
+PROTOBUF_NOINLINE
 void* ArenaImpl::AllocateAlignedAndAddCleanupFallback(size_t n,
                                                       void (*cleanup)(void*)) {
   return GetSerialArena()->AllocateAlignedAndAddCleanup(n, cleanup);
 }
 
-GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
+PROTOBUF_NOINLINE
 void ArenaImpl::AddCleanupFallback(void* elem, void (*cleanup)(void*)) {
   GetSerialArena()->AddCleanup(elem, cleanup);
 }
 
-inline GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool
-ArenaImpl::GetSerialArenaFast(ArenaImpl::SerialArena** arena) {
+inline PROTOBUF_ALWAYS_INLINE bool ArenaImpl::GetSerialArenaFast(
+    ArenaImpl::SerialArena** arena) {
   // If this thread already owns a block in this arena then try to use that.
   // This fast path optimizes the case where multiple threads allocate from the
   // same arena.
   ThreadCache* tc = &thread_cache();
-  if (GOOGLE_PREDICT_TRUE(tc->last_lifecycle_id_seen == lifecycle_id_)) {
+  if (PROTOBUF_PREDICT_TRUE(tc->last_lifecycle_id_seen == lifecycle_id_)) {
     *arena = tc->last_serial_arena;
     return true;
   }
@@ -201,7 +201,7 @@ ArenaImpl::GetSerialArenaFast(ArenaImpl::SerialArena** arena) {
   // Check whether we own the last accessed SerialArena on this arena.  This
   // fast path optimizes the case where a single thread uses multiple arenas.
   SerialArena* serial = hint_.load(std::memory_order_acquire);
-  if (GOOGLE_PREDICT_TRUE(serial != NULL && serial->owner() == tc)) {
+  if (PROTOBUF_PREDICT_TRUE(serial != NULL && serial->owner() == tc)) {
     *arena = serial;
     return true;
   }
@@ -211,14 +211,14 @@ ArenaImpl::GetSerialArenaFast(ArenaImpl::SerialArena** arena) {
 
 ArenaImpl::SerialArena* ArenaImpl::GetSerialArena() {
   SerialArena* arena;
-  if (GOOGLE_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
     return arena;
   } else {
     return GetSerialArenaFallback(&thread_cache());
   }
 }
 
-GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
+PROTOBUF_NOINLINE
 void* ArenaImpl::SerialArena::AllocateAlignedFallback(size_t n) {
   // Sync back to current's pos.
   head_->set_pos(head_->size() - (limit_ - ptr_));
@@ -362,7 +362,7 @@ ArenaImpl::SerialArena* ArenaImpl::SerialArena::New(Block* b, void* owner,
   return serial;
 }
 
-GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
+PROTOBUF_NOINLINE
 ArenaImpl::SerialArena* ArenaImpl::GetSerialArenaFallback(void* me) {
   // Look for this SerialArena in our linked list.
   SerialArena* serial = threads_.load(std::memory_order_acquire);

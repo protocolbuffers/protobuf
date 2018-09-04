@@ -86,7 +86,7 @@ class UnknownField;                 // below
 //
 // This class is necessarily tied to the protocol buffer wire format, unlike
 // the Reflection interface which is independent of any serialization scheme.
-class LIBPROTOBUF_EXPORT UnknownFieldSet {
+class PROTOBUF_EXPORT UnknownFieldSet {
  public:
   UnknownFieldSet();
   ~UnknownFieldSet();
@@ -147,8 +147,8 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   void AddVarint(int number, uint64 value);
   void AddFixed32(int number, uint32 value);
   void AddFixed64(int number, uint64 value);
-  void AddLengthDelimited(int number, const string& value);
-  string* AddLengthDelimited(int number);
+  void AddLengthDelimited(int number, const std::string& value);
+  std::string* AddLengthDelimited(int number);
   UnknownFieldSet* AddGroup(int number);
 
   // Adds an unknown field from another set.
@@ -170,7 +170,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSet {
   bool ParseFromCodedStream(io::CodedInputStream* input);
   bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
   bool ParseFromArray(const void* data, int size);
-  inline bool ParseFromString(const string& data) {
+  inline bool ParseFromString(const std::string& data) {
     return ParseFromArray(data.data(), static_cast<int>(data.size()));
   }
 
@@ -198,6 +198,10 @@ namespace internal {
 inline void WriteVarint(uint32 num, uint64 val, UnknownFieldSet* unknown) {
   unknown->AddVarint(num, val);
 }
+inline void WriteLengthDelimited(uint32 num, StringPiece val,
+                                 UnknownFieldSet* unknown) {
+  unknown->AddLengthDelimited(num)->assign(val.data(), val.size());
+}
 
 const char* PackedValidEnumParser(const char* begin, const char* end,
                                   void* object, ParseContext* ctx);
@@ -206,49 +210,17 @@ const char* PackedValidEnumParserArg(const char* begin, const char* end,
 
 const char* UnknownGroupParse(const char* begin, const char* end, void* object,
                               ParseContext* ctx);
-std::pair<const char*, bool> UnknownFieldParse(uint32 tag, ParseClosure parent,
+std::pair<const char*, bool> UnknownFieldParse(uint64 tag, ParseClosure parent,
                                                const char* begin,
                                                const char* end,
                                                UnknownFieldSet* unknown,
                                                ParseContext* ctx);
-template <typename Msg>
-const char* ParseMessageSet(const char* begin, const char* end, Msg* msg,
-                            internal::ParseContext* ctx) {
-  auto ptr = begin;
-  int depth;
-  (void)depth;
-  while (ptr < end) {
-    uint32 tag;
-    ptr = Varint::Parse32Inline(ptr, &tag);
-    if (!ptr) goto error;
-    if (tag == 11) {
-      if (!ctx->PrepareGroup(tag, &depth)) goto error;
-      ctx->extra_parse_data().payload.clear();
-      ptr = Msg::InternalParseMessageSetItem(ptr, end, msg, ctx);
-      if (!ptr) goto error;
-      if (ctx->GroupContinues(depth)) goto group_continues;
-    } else {
-      auto res = UnknownFieldParse(tag, {Msg::_InternalParse, msg}, begin, end,
-                                   msg->mutable_unknown_fields(), ctx);
-      ptr = res.first;
-      if (res.second) break;
-    }
-  }
-  return ptr;
-error:
-  return nullptr;
-group_continues:
-  GOOGLE_DCHECK(ptr >= end);
-  ctx->StoreGroup({Msg::_InternalParse, msg},
-                  {Msg::InternalParseMessageSetItem, msg}, depth);
-  return ptr;
-}
 
 }  // namespace internal
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 // Represents one field in an UnknownFieldSet.
-class LIBPROTOBUF_EXPORT UnknownField {
+class PROTOBUF_EXPORT UnknownField {
  public:
   enum Type {
     TYPE_VARINT,
@@ -270,14 +242,14 @@ class LIBPROTOBUF_EXPORT UnknownField {
   inline uint64 varint() const;
   inline uint32 fixed32() const;
   inline uint64 fixed64() const;
-  inline const string& length_delimited() const;
+  inline const std::string& length_delimited() const;
   inline const UnknownFieldSet& group() const;
 
   inline void set_varint(uint64 value);
   inline void set_fixed32(uint32 value);
   inline void set_fixed64(uint64 value);
-  inline void set_length_delimited(const string& value);
-  inline string* mutable_length_delimited();
+  inline void set_length_delimited(const std::string& value);
+  inline std::string* mutable_length_delimited();
   inline UnknownFieldSet* mutable_group();
 
   // Serialization API.
@@ -305,7 +277,7 @@ class LIBPROTOBUF_EXPORT UnknownField {
   inline void SetType(Type type);
 
   union LengthDelimited {
-    string* string_value_;
+    std::string* string_value_;
   };
 
   uint32 number_;
@@ -355,7 +327,7 @@ inline UnknownField* UnknownFieldSet::mutable_field(int index) {
 }
 
 inline void UnknownFieldSet::AddLengthDelimited(
-    int number, const string& value) {
+    int number, const std::string& value) {
   AddLengthDelimited(number)->assign(value);
 }
 
@@ -379,7 +351,7 @@ inline uint64 UnknownField::fixed64() const {
   assert(type() == TYPE_FIXED64);
   return data_.fixed64_;
 }
-inline const string& UnknownField::length_delimited() const {
+inline const std::string& UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
   return *data_.length_delimited_.string_value_;
 }
@@ -400,11 +372,11 @@ inline void UnknownField::set_fixed64(uint64 value) {
   assert(type() == TYPE_FIXED64);
   data_.fixed64_ = value;
 }
-inline void UnknownField::set_length_delimited(const string& value) {
+inline void UnknownField::set_length_delimited(const std::string& value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
   data_.length_delimited_.string_value_->assign(value);
 }
-inline string* UnknownField::mutable_length_delimited() {
+inline std::string* UnknownField::mutable_length_delimited() {
   assert(type() == TYPE_LENGTH_DELIMITED);
   return data_.length_delimited_.string_value_;
 }

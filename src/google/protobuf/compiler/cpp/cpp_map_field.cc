@@ -177,54 +177,49 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       descriptor_->message_type()->FindFieldByName("key");
   const FieldDescriptor* value_field =
       descriptor_->message_type()->FindFieldByName("value");
-  bool using_entry = false;
   string key;
   string value;
+  format(
+      "$map_classname$::Parser< ::$proto_ns$::internal::MapField$lite$<\n"
+      "    $map_classname$,\n"
+      "    $key_cpp$, $val_cpp$,\n"
+      "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
+      "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
+      "    $default_enum_value$ >,\n"
+      "  ::$proto_ns$::Map< $key_cpp$, $val_cpp$ > >"
+      " parser(&$name$_);\n");
   if (IsProto3Field(descriptor_) ||
       value_field->type() != FieldDescriptor::TYPE_ENUM) {
     format(
-        "$map_classname$::Parser< ::$proto_ns$::internal::MapField$lite$<\n"
-        "    $map_classname$,\n"
-        "    $key_cpp$, $val_cpp$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
-        "    $default_enum_value$ >,\n"
-        "  ::$proto_ns$::Map< $key_cpp$, $val_cpp$ > >"
-        " parser(&$name$_);\n"
         "DO_(::$proto_ns$::internal::WireFormatLite::ReadMessageNoVirtual(\n"
         "    input, &parser));\n");
     key = "parser.key()";
     value = "parser.value()";
   } else {
-    using_entry = true;
     key = "entry->key()";
     value = "entry->value()";
-    format("::std::unique_ptr<$map_classname$> entry($name$_.NewEntry());\n");
+    format("auto entry = parser.NewEntry();\n");
     format(
-        "{\n"
-        "  ::std::string data;\n"
-        "  DO_(::$proto_ns$::internal::WireFormatLite::ReadString(input, "
+        "::std::string data;\n"
+        "DO_(::$proto_ns$::internal::WireFormatLite::ReadString(input, "
         "&data));\n"
-        "  DO_(entry->ParseFromString(data));\n"
-        "  if ($val_cpp$_IsValid(*entry->mutable_value())) {\n"
-        "    (*mutable_$name$())[entry->key()] =\n"
-        "        static_cast< $val_cpp$ >(*entry->mutable_value());\n"
-        "  } else {\n");
+        "DO_(entry->ParseFromString(data));\n"
+        "if ($val_cpp$_IsValid(*entry->mutable_value())) {\n"
+        "  (*mutable_$name$())[entry->key()] =\n"
+        "      static_cast< $val_cpp$ >(*entry->mutable_value());\n"
+        "} else {\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
-          "    mutable_unknown_fields()"
+          "  mutable_unknown_fields()"
           "->AddLengthDelimited($number$, data);\n");
     } else {
       format(
-          "    unknown_fields_stream.WriteVarint32($tag$u);\n"
-          "    unknown_fields_stream.WriteVarint32(\n"
-          "        static_cast< ::google::protobuf::uint32>(data.size()));\n"
-          "    unknown_fields_stream.WriteString(data);\n");
+          "  unknown_fields_stream.WriteVarint32($tag$u);\n"
+          "  unknown_fields_stream.WriteVarint32(\n"
+          "      static_cast< ::google::protobuf::uint32>(data.size()));\n"
+          "  unknown_fields_stream.WriteString(data);\n");
     }
-
-    format(
-        "  }\n"
-        "}\n");
+    format("}\n");
   }
 
   if (key_field->type() == FieldDescriptor::TYPE_STRING) {
@@ -241,11 +236,6 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
                      ".length()),\n")
             .data(),
         format);
-  }
-
-  // If entry is allocated by arena, its desctructor should be avoided.
-  if (using_entry && SupportsArenas(descriptor_)) {
-    format("if (entry->GetArena() != NULL) entry.release();\n");
   }
 }
 

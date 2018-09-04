@@ -18,14 +18,6 @@ __EOF__
   exit 1
 fi
 
-if test ! -e src/Makefile; then
-  cat >&2 << __EOF__
-Could not find src/Makefile.  You must run ./configure (and perhaps
-./autogen.sh) first.
-__EOF__
-  exit 1
-fi
-
 cd src
 
 declare -a RUNTIME_PROTO_FILES=(\
@@ -51,7 +43,7 @@ while [ $# -gt 0 ]; do
   case $1 in
     --bootstrap_protoc)
       BOOTSTRAP_PROTOC=$2
-      shift
+      shift 2
       ;;
     *)
       break
@@ -78,8 +70,8 @@ do
     PROTOC="./protoc"
   fi
 
-  $PROTOC --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
-  $PROTOC --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP ${COMPILER_PROTO_FILES[@]}
+  $PROTOC --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
+  $PROTOC --cpp_out=dllexport_decl=PROTOC_EXPORT:$TMP ${COMPILER_PROTO_FILES[@]}
 
   for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]} ${COMPILER_PROTO_FILES[@]}; do
     BASE_NAME=${PROTO_FILE%.*}

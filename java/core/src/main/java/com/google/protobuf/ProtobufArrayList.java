@@ -31,31 +31,29 @@
 package com.google.protobuf;
 
 import com.google.protobuf.Internal.ProtobufList;
-
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implements {@link ProtobufList} for non-primitive and {@link String} types.
- */
+/** Implements {@link ProtobufList} for non-primitive and {@link String} types. */
 final class ProtobufArrayList<E> extends AbstractProtobufList<E> {
 
   private static final ProtobufArrayList<Object> EMPTY_LIST = new ProtobufArrayList<Object>();
+
   static {
     EMPTY_LIST.makeImmutable();
   }
-  
+
   @SuppressWarnings("unchecked") // Guaranteed safe by runtime.
   public static <E> ProtobufArrayList<E> emptyList() {
     return (ProtobufArrayList<E>) EMPTY_LIST;
   }
-  
+
   private final List<E> list;
 
   ProtobufArrayList() {
     this(new ArrayList<E>(DEFAULT_CAPACITY));
   }
-  
+
   private ProtobufArrayList(List<E> list) {
     this.list = list;
   }
@@ -69,7 +67,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> {
     newList.addAll(list);
     return new ProtobufArrayList<E>(newList);
   }
-  
+
   @Override
   public void add(int index, E element) {
     ensureIsMutable();
@@ -81,7 +79,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> {
   public E get(int index) {
     return list.get(index);
   }
-  
+
   @Override
   public E remove(int index) {
     ensureIsMutable();
@@ -89,7 +87,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> {
     modCount++;
     return toReturn;
   }
-  
+
   @Override
   public E set(int index, E element) {
     ensureIsMutable();

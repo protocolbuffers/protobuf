@@ -35,16 +35,15 @@ import static com.google.protobuf.ExtensionRegistryLite.EMPTY_REGISTRY_LITE;
 /**
  * A factory object to create instances of {@link ExtensionRegistryLite}.
  *
- * <p>
- * This factory detects (via reflection) if the full (non-Lite) protocol buffer libraries
- * are available, and if so, the instances returned are actually {@link ExtensionRegistry}.
+ * <p>This factory detects (via reflection) if the full (non-Lite) protocol buffer libraries are
+ * available, and if so, the instances returned are actually {@link ExtensionRegistry}.
  */
 final class ExtensionRegistryFactory {
 
   static final String FULL_REGISTRY_CLASS_NAME = "com.google.protobuf.ExtensionRegistry";
 
   /* Visible for Testing
-     @Nullable */
+  @Nullable */
   static final Class<?> EXTENSION_REGISTRY_CLASS = reflectExtensionRegistry();
 
   /* @Nullable */
@@ -90,7 +89,7 @@ final class ExtensionRegistryFactory {
 
   private static final ExtensionRegistryLite invokeSubclassFactory(String methodName)
       throws Exception {
-    return (ExtensionRegistryLite) EXTENSION_REGISTRY_CLASS
-        .getDeclaredMethod(methodName).invoke(null);
+    return (ExtensionRegistryLite)
+        EXTENSION_REGISTRY_CLASS.getDeclaredMethod(methodName).invoke(null);
   }
 }

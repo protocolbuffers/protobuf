@@ -110,9 +110,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
   }
 
   public void testMergeFieldFrom() throws IOException {
-    Foo foo = Foo.newBuilder()
-      .setValue(2)
-      .build();
+    Foo foo = Foo.newBuilder().setValue(2).build();
 
     CodedInputStream input = CodedInputStream.newInstance(foo.toByteArray());
 
@@ -123,9 +121,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
   }
 
   public void testSerializedSize() throws IOException {
-    Foo foo = Foo.newBuilder()
-      .setValue(2)
-      .build();
+    Foo foo = Foo.newBuilder().setValue(2).build();
 
     CodedInputStream input = CodedInputStream.newInstance(foo.toByteArray());
 
@@ -136,9 +132,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
   }
 
   public void testHashCodeAfterDeserialization() throws IOException {
-    Foo foo = Foo.newBuilder()
-      .setValue(2)
-      .build();
+    Foo foo = Foo.newBuilder().setValue(2).build();
 
     Foo fooDeserialized = Foo.parseFrom(foo.toByteArray());
 
@@ -172,8 +166,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     UnknownFieldSetLite builder = UnknownFieldSetLite.newInstance();
     builder.mergeVarintField(10, -6);
 
-    CodedInputStream input =
-        CodedInputStream.newInstance(toByteString(builder).toByteArray());
+    CodedInputStream input = CodedInputStream.newInstance(toByteString(builder).toByteArray());
 
     int tag = input.readTag();
     assertEquals(10, WireFormat.getTagFieldNumber(tag));
@@ -217,8 +210,9 @@ public class UnknownFieldSetLiteTest extends TestCase {
   }
 
   public void testMutableCopyOf_empty() {
-    UnknownFieldSetLite unknownFields = UnknownFieldSetLite.mutableCopyOf(
-        UnknownFieldSetLite.getDefaultInstance(), UnknownFieldSetLite.getDefaultInstance());
+    UnknownFieldSetLite unknownFields =
+        UnknownFieldSetLite.mutableCopyOf(
+            UnknownFieldSetLite.getDefaultInstance(), UnknownFieldSetLite.getDefaultInstance());
     unknownFields.checkMutable();
 
     assertEquals(0, unknownFields.getSerializedSize());
@@ -226,18 +220,17 @@ public class UnknownFieldSetLiteTest extends TestCase {
   }
 
   public void testRoundTrips() throws InvalidProtocolBufferException {
-    Foo foo = Foo.newBuilder()
-        .setValue(1)
-        .setExtension(Bar.fooExt, Bar.newBuilder()
-            .setName("name")
-            .build())
-        .setExtension(LiteEqualsAndHash.varint, 22)
-        .setExtension(LiteEqualsAndHash.fixed32, 44)
-        .setExtension(LiteEqualsAndHash.fixed64, 66L)
-        .setExtension(LiteEqualsAndHash.myGroup, LiteEqualsAndHash.MyGroup.newBuilder()
-            .setGroupValue("value")
-            .build())
-        .build();
+    Foo foo =
+        Foo.newBuilder()
+            .setValue(1)
+            .setExtension(Bar.fooExt, Bar.newBuilder().setName("name").build())
+            .setExtension(LiteEqualsAndHash.varint, 22)
+            .setExtension(LiteEqualsAndHash.fixed32, 44)
+            .setExtension(LiteEqualsAndHash.fixed64, 66L)
+            .setExtension(
+                LiteEqualsAndHash.myGroup,
+                LiteEqualsAndHash.MyGroup.newBuilder().setGroupValue("value").build())
+            .build();
 
     Foo copy = Foo.parseFrom(foo.toByteArray());
 
@@ -310,16 +303,15 @@ public class UnknownFieldSetLiteTest extends TestCase {
   }
 
   public void testTruncatedInput() {
-    Foo foo = Foo.newBuilder()
-        .setValue(1)
-        .setExtension(Bar.fooExt, Bar.newBuilder()
-            .setName("name")
-            .build())
-        .setExtension(LiteEqualsAndHash.varint, 22)
-        .setExtension(LiteEqualsAndHash.myGroup, LiteEqualsAndHash.MyGroup.newBuilder()
-            .setGroupValue("value")
-            .build())
-        .build();
+    Foo foo =
+        Foo.newBuilder()
+            .setValue(1)
+            .setExtension(Bar.fooExt, Bar.newBuilder().setName("name").build())
+            .setExtension(LiteEqualsAndHash.varint, 22)
+            .setExtension(
+                LiteEqualsAndHash.myGroup,
+                LiteEqualsAndHash.MyGroup.newBuilder().setGroupValue("value").build())
+            .build();
 
     try {
       Foo.parseFrom(foo.toByteString().substring(0, foo.toByteString().size() - 10));
@@ -328,63 +320,72 @@ public class UnknownFieldSetLiteTest extends TestCase {
       // Expected.
     }
   }
-  
+
   public void testMakeImmutable() throws Exception {
     UnknownFieldSetLite unknownFields = UnknownFieldSetLite.newInstance();
     unknownFields.makeImmutable();
-    
+
     try {
       unknownFields.mergeVarintField(1, 1);
       fail();
-    } catch (UnsupportedOperationException expected) {}
-    
+    } catch (UnsupportedOperationException expected) {
+    }
+
     try {
       unknownFields.mergeLengthDelimitedField(2, ByteString.copyFromUtf8("hello"));
       fail();
-    } catch (UnsupportedOperationException expected) {}
-    
+    } catch (UnsupportedOperationException expected) {
+    }
+
     try {
       unknownFields.mergeFieldFrom(1, CodedInputStream.newInstance(new byte[0]));
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+    }
   }
-  
+
   public void testEndToEnd() throws Exception {
     TestAllTypesLite testAllTypes = TestAllTypesLite.getDefaultInstance();
     try {
       testAllTypes.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
-    
+    } catch (UnsupportedOperationException expected) {
+    }
+
     testAllTypes = TestAllTypesLite.parseFrom(new byte[0]);
     try {
       testAllTypes.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
-    
+    } catch (UnsupportedOperationException expected) {
+    }
+
     testAllTypes = TestAllTypesLite.newBuilder().build();
     try {
       testAllTypes.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
-    
-    testAllTypes = TestAllTypesLite.newBuilder()
-        .setDefaultBool(true)
-        .build();
+    } catch (UnsupportedOperationException expected) {
+    }
+
+    testAllTypes = TestAllTypesLite.newBuilder().setDefaultBool(true).build();
     try {
       testAllTypes.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
-    
-    TestAllExtensionsLite testAllExtensions = TestAllExtensionsLite.newBuilder()
-        .mergeFrom(TestAllExtensionsLite.newBuilder()
-            .setExtension(UnittestLite.optionalInt32ExtensionLite, 2)
-            .build().toByteArray())
-        .build();
+    } catch (UnsupportedOperationException expected) {
+    }
+
+    TestAllExtensionsLite testAllExtensions =
+        TestAllExtensionsLite.newBuilder()
+            .mergeFrom(
+                TestAllExtensionsLite.newBuilder()
+                    .setExtension(UnittestLite.optionalInt32ExtensionLite, 2)
+                    .build()
+                    .toByteArray())
+            .build();
     try {
       testAllExtensions.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+    }
   }
 
   private ByteString toByteString(UnknownFieldSetLite unknownFields) {

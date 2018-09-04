@@ -30,44 +30,42 @@
 
 package com.google.protobuf;
 
-
 import protobuf_unittest.UnittestProto;
 import java.io.IOException;
 import junit.framework.TestCase;
 
 /**
- * Tests to make sure the lazy conversion of UTF8-encoded byte arrays to
- * strings works correctly.
+ * Tests to make sure the lazy conversion of UTF8-encoded byte arrays to strings works correctly.
  *
  * @author jonp@google.com (Jon Perlow)
  */
 public class LazyStringEndToEndTest extends TestCase {
 
-  private static ByteString TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8 =
-      ByteString.copyFrom(new byte[] {
-          114, 4, -1, 0, -1, 0, -30, 2, 4, -1,
-          0, -1, 0, -30, 2, 4, -1, 0, -1, 0, });
+  private static final ByteString TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8 =
+      ByteString.copyFrom(
+          new byte[] {
+            114, 4, -1, 0, -1, 0, -30, 2, 4, -1,
+            0, -1, 0, -30, 2, 4, -1, 0, -1, 0,
+          });
 
   private ByteString encodedTestAllTypes;
 
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    this.encodedTestAllTypes = UnittestProto.TestAllTypes.newBuilder()
-        .setOptionalString("foo")
-        .addRepeatedString("bar")
-        .addRepeatedString("baz")
-        .build()
-        .toByteString();
+    this.encodedTestAllTypes =
+        UnittestProto.TestAllTypes.newBuilder()
+            .setOptionalString("foo")
+            .addRepeatedString("bar")
+            .addRepeatedString("baz")
+            .build()
+            .toByteString();
   }
 
-  /**
-   * Tests that an invalid UTF8 string will roundtrip through a parse
-   * and serialization.
-   */
+  /** Tests that an invalid UTF8 string will roundtrip through a parse and serialization. */
   public void testParseAndSerialize() throws InvalidProtocolBufferException {
-    UnittestProto.TestAllTypes tV2 = UnittestProto.TestAllTypes.parseFrom(
-        TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8);
+    UnittestProto.TestAllTypes tV2 =
+        UnittestProto.TestAllTypes.parseFrom(TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8);
     ByteString bytes = tV2.toByteString();
     assertEquals(TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8, bytes);
 
@@ -77,32 +75,30 @@ public class LazyStringEndToEndTest extends TestCase {
   }
 
   public void testParseAndWrite() throws IOException {
-    UnittestProto.TestAllTypes tV2 = UnittestProto.TestAllTypes.parseFrom(
-        TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8);
+    UnittestProto.TestAllTypes tV2 =
+        UnittestProto.TestAllTypes.parseFrom(TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8);
     byte[] sink = new byte[TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8.size()];
     CodedOutputStream outputStream = CodedOutputStream.newInstance(sink);
     tV2.writeTo(outputStream);
     outputStream.flush();
-    assertEquals(
-        TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8,
-        ByteString.copyFrom(sink));
+    assertEquals(TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8, ByteString.copyFrom(sink));
   }
-  
+
   public void testCaching() {
     String a = "a";
     String b = "b";
     String c = "c";
-    UnittestProto.TestAllTypes proto = UnittestProto.TestAllTypes.newBuilder()
-        .setOptionalString(a)
-        .addRepeatedString(b)
-        .addRepeatedString(c)
-        .build();
+    UnittestProto.TestAllTypes proto =
+        UnittestProto.TestAllTypes.newBuilder()
+            .setOptionalString(a)
+            .addRepeatedString(b)
+            .addRepeatedString(c)
+            .build();
 
     // String should be the one we passed it.
     assertSame(a, proto.getOptionalString());
     assertSame(b, proto.getRepeatedString(0));
     assertSame(c, proto.getRepeatedString(1));
-
 
     // Ensure serialization keeps strings cached.
     proto.toByteString();
@@ -114,8 +110,7 @@ public class LazyStringEndToEndTest extends TestCase {
   }
 
   public void testNoStringCachingIfOnlyBytesAccessed() throws Exception {
-    UnittestProto.TestAllTypes proto =
-        UnittestProto.TestAllTypes.parseFrom(encodedTestAllTypes);
+    UnittestProto.TestAllTypes proto = UnittestProto.TestAllTypes.parseFrom(encodedTestAllTypes);
     ByteString optional = proto.getOptionalStringBytes();
     assertSame(optional, proto.getOptionalStringBytes());
     assertSame(optional, proto.toBuilder().getOptionalStringBytes());

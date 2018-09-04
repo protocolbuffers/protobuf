@@ -835,6 +835,29 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         '  }\n'
         '}\n')
 
+  # In cpp implementation, __str__ calls the cpp implementation of text format.
+  def testPrintMapUsingCppImplementation(self):
+    message = map_unittest_pb2.TestMap()
+    inner_msg = message.map_int32_foreign_message[111]
+    inner_msg.c = 1
+    self.assertEqual(
+        str(message),
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 1\n'
+        '  }\n'
+        '}\n')
+    inner_msg.c = 2
+    self.assertEqual(
+        str(message),
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 2\n'
+        '  }\n'
+        '}\n')
+
   def testMapOrderEnforcement(self):
     message = map_unittest_pb2.TestMap()
     for letter in string.ascii_uppercase[13:26]:
@@ -1397,6 +1420,24 @@ class Proto3Tests(unittest.TestCase):
         ' < data: "string" > '
         '>')
 
+  def testPrintAndParseMessageInvalidAny(self):
+    packed_message = unittest_pb2.OneString()
+    packed_message.data = 'string'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    # Only include string after last '/' in type_url.
+    message.any_value.type_url = message.any_value.TypeName()
+    text = text_format.MessageToString(message)
+    self.assertEqual(
+        text, 'any_value {\n'
+        '  type_url: "protobuf_unittest.OneString"\n'
+        '  value: "\\n\\006string"\n'
+        '}\n')
+
+    parsed_message = any_test_pb2.TestAny()
+    text_format.Parse(text, parsed_message)
+    self.assertEqual(message, parsed_message)
+
   def testUnknownEnums(self):
     message = unittest_proto3_arena_pb2.TestAllTypes()
     message2 = unittest_proto3_arena_pb2.TestAllTypes()
@@ -1865,6 +1906,65 @@ class PrettyPrinterTest(TextFormatBase):
          'optional_nested_message { My lucky number is 1 } '
          'repeated_nested_message { My lucky number is 42 } '
          'repeated_nested_message { My lucky number is 99 }'))
+
+
+class WhitespaceTest(TextFormatBase):
+
+  def setUp(self):
+    self.out = text_format.TextWriter(False)
+    self.addCleanup(self.out.close)
+    self.message = unittest_pb2.NestedTestAllTypes()
+    self.message.child.payload.optional_string = 'value'
+    self.field = self.message.DESCRIPTOR.fields_by_name['child']
+    self.value = self.message.child
+
+  def testMessageToString(self):
+    self.CompareToGoldenText(
+        text_format.MessageToString(self.message),
+        textwrap.dedent("""\
+            child {
+              payload {
+                optional_string: "value"
+              }
+            }
+            """))
+
+  def testPrintMessage(self):
+    text_format.PrintMessage(self.message, self.out)
+    self.CompareToGoldenText(
+        self.out.getvalue(),
+        textwrap.dedent("""\
+            child {
+              payload {
+                optional_string: "value"
+              }
+            }
+            """))
+
+  def testPrintField(self):
+    text_format.PrintField(self.field, self.value, self.out)
+    self.CompareToGoldenText(
+        self.out.getvalue(),
+        textwrap.dedent("""\
+            child {
+              payload {
+                optional_string: "value"
+              }
+            }
+            """))
+
+  def testPrintFieldValue(self):
+    text_format.PrintFieldValue(
+        self.field, self.value, self.out)
+    self.CompareToGoldenText(
+        self.out.getvalue(),
+        textwrap.dedent("""\
+            {
+              payload {
+                optional_string: "value"
+              }
+            }"""))
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -37,9 +37,9 @@ import java.nio.ByteBuffer;
  * An output target for raw bytes. This interface provides semantics that support two types of
  * writing:
  *
- * <p><b>Traditional write operations:</b>
- * (as defined by {@link java.io.OutputStream}) where the target method is responsible for either
- * copying the data or completing the write before returning from the method call.
+ * <p><b>Traditional write operations:</b> (as defined by {@link java.io.OutputStream}) where the
+ * target method is responsible for either copying the data or completing the write before returning
+ * from the method call.
  *
  * <p><b>Lazy write operations:</b> where the caller guarantees that it will never modify the
  * provided buffer and it can therefore be considered immutable. The target method is free to
@@ -57,9 +57,9 @@ public abstract class ByteOutput {
   public abstract void write(byte value) throws IOException;
 
   /**
-   * Writes a sequence of bytes. The {@link ByteOutput} must copy {@code value} if it will
-   * not be processed prior to the return of this method call, since {@code value} may be
-   * reused/altered by the caller.
+   * Writes a sequence of bytes. The {@link ByteOutput} must copy {@code value} if it will not be
+   * processed prior to the return of this method call, since {@code value} may be reused/altered by
+   * the caller.
    *
    * <p>NOTE: This method <strong>MUST NOT</strong> modify the {@code value}. Doing so is a
    * programming error and will lead to data corruption which will be difficult to debug.
@@ -87,15 +87,15 @@ public abstract class ByteOutput {
   public abstract void writeLazy(byte[] value, int offset, int length) throws IOException;
 
   /**
-   * Writes a sequence of bytes. The {@link ByteOutput} must copy {@code value} if it will
-   * not be processed prior to the return of this method call, since {@code value} may be
-   * reused/altered by the caller.
+   * Writes a sequence of bytes. The {@link ByteOutput} must copy {@code value} if it will not be
+   * processed prior to the return of this method call, since {@code value} may be reused/altered by
+   * the caller.
    *
    * <p>NOTE: This method <strong>MUST NOT</strong> modify the {@code value}. Doing so is a
    * programming error and will lead to data corruption which will be difficult to debug.
    *
    * @param value the bytes to be written. Upon returning from this call, the {@code position} of
-   * this buffer will be set to the {@code limit}
+   *     this buffer will be set to the {@code limit}
    * @throws IOException thrown if an error occurred while writing
    */
   public abstract void write(ByteBuffer value) throws IOException;
@@ -109,7 +109,7 @@ public abstract class ByteOutput {
    * programming error and will lead to data corruption which will be difficult to debug.
    *
    * @param value the bytes to be written. Upon returning from this call, the {@code position} of
-   * this buffer will be set to the {@code limit}
+   *     this buffer will be set to the {@code limit}
    * @throws IOException thrown if an error occurred while writing
    */
   public abstract void writeLazy(ByteBuffer value) throws IOException;

@@ -146,15 +146,15 @@ class ExplicitlyConstructed {
 
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
-LIBPROTOBUF_EXPORT extern ExplicitlyConstructed<::std::string>
+PROTOBUF_EXPORT extern ExplicitlyConstructed<::std::string>
     fixed_address_empty_string;
 
 
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
+PROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
 
-LIBPROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const string& str);
+PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 
 }  // namespace internal
 
@@ -181,7 +181,7 @@ LIBPROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const string& str);
 // is best when you only have a small number of message types linked
 // into your binary, in which case the size of the protocol buffers
 // runtime itself is the biggest problem.
-class LIBPROTOBUF_EXPORT MessageLite {
+class PROTOBUF_EXPORT MessageLite {
  public:
   inline MessageLite() {}
   virtual ~MessageLite() {}
@@ -189,7 +189,7 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  virtual string GetTypeName() const = 0;
+  virtual std::string GetTypeName() const = 0;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
@@ -230,7 +230,7 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // This is not implemented for Lite messages -- it just returns "(cannot
   // determine missing fields for lite message)".  However, it is implemented
   // for full messages.  See message.h.
-  virtual string InitializationErrorString() const;
+  virtual std::string InitializationErrorString() const;
 
   // If |other| is the exact same class as this, calls MergeFrom(). Otherwise,
   // results are undefined (probably crash).
@@ -269,10 +269,10 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // format, matching the encoding output by MessageLite::SerializeToString().
   // If you'd like to convert a human-readable string into a protocol buffer
   // object, see google::protobuf::TextFormat::ParseFromString().
-  bool ParseFromString(const string& data);
+  bool ParseFromString(const std::string& data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromString(const string& data);
+  bool ParsePartialFromString(const std::string& data);
   // Parse a protocol buffer contained in an array of bytes.
   bool ParseFromArray(const void* data, int size);
   // Like ParseFromArray(), but accepts messages that are missing
@@ -305,7 +305,7 @@ class LIBPROTOBUF_EXPORT MessageLite {
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
   // Merge a protocol buffer contained in a string.
-  bool MergeFromString(const string& data);
+  bool MergeFromString(const std::string& data);
 
 
   // Serialization ---------------------------------------------------
@@ -325,9 +325,9 @@ class LIBPROTOBUF_EXPORT MessageLite {
   bool SerializePartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
   // Serialize the message and store it in the given string.  All required
   // fields must be set.
-  bool SerializeToString(string* output) const;
+  bool SerializeToString(std::string* output) const;
   // Like SerializeToString(), but allows missing required fields.
-  bool SerializePartialToString(string* output) const;
+  bool SerializePartialToString(std::string* output) const;
   // Serialize the message and store it in the given byte array.  All required
   // fields must be set.
   bool SerializeToArray(void* data, int size) const;
@@ -340,15 +340,15 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // Note: If you intend to generate many such strings, you may
   // reduce heap fragmentation by instead re-using the same string
   // object with calls to SerializeToString().
-  string SerializeAsString() const;
+  std::string SerializeAsString() const;
   // Like SerializeAsString(), but allows missing required fields.
-  string SerializePartialAsString() const;
+  std::string SerializePartialAsString() const;
 
   // Like SerializeToString(), but appends to the data to the string's existing
   // contents.  All required fields must be set.
-  bool AppendToString(string* output) const;
+  bool AppendToString(std::string* output) const;
   // Like AppendToString(), but allows missing required fields.
-  bool AppendPartialToString(string* output) const;
+  bool AppendPartialToString(std::string* output) const;
 
   // Computes the serialized size of the message.  This recursively calls
   // ByteSizeLong() on all embedded messages.
@@ -358,7 +358,7 @@ class LIBPROTOBUF_EXPORT MessageLite {
   virtual size_t ByteSizeLong() const = 0;
 
   // Legacy ByteSize() API.
-  GOOGLE_PROTOBUF_DEPRECATED_MSG("Please use ByteSizeLong() instead")
+  PROTOBUF_DEPRECATED_MSG("Please use ByteSizeLong() instead")
   int ByteSize() const {
     return internal::ToIntSize(ByteSizeLong());
   }
@@ -399,6 +399,8 @@ class LIBPROTOBUF_EXPORT MessageLite {
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
   virtual internal::ParseFunc _ParseFunc() const {
+    GOOGLE_LOG(FATAL) << "Type " << typeid(*this).name()
+               << " doesn't implement _InternalParse";
     return nullptr;
   }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER

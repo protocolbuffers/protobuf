@@ -42,6 +42,8 @@
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/io/printer.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -96,7 +98,8 @@ std::string UnderscoresToPascalCase(const std::string& input);
 
 // Note that we wouldn't normally want to export this (we're not expecting
 // it to be used outside libprotoc itself) but this exposes it for testing.
-std::string LIBPROTOC_EXPORT GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name);
+std::string PROTOC_EXPORT GetEnumValueName(const std::string& enum_name,
+                                           const std::string& enum_value_name);
 
 // TODO(jtattermusch): perhaps we could move this to strutil
 std::string StringToBase64(const std::string& input);
@@ -145,4 +148,7 @@ inline bool IsWrapperType(const FieldDescriptor* descriptor) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__

@@ -69,7 +69,7 @@ inline bool UnwrapMapKey<bool>(const MapKey& map_key) {
   return map_key.GetBoolValue();
 }
 template<>
-inline string UnwrapMapKey<string>(const MapKey& map_key) {
+inline std::string UnwrapMapKey<std::string>(const MapKey& map_key) {
   return map_key.GetStringValue();
 }
 
@@ -97,7 +97,7 @@ inline void SetMapKey<bool>(MapKey* map_key, const bool& value) {
   map_key->SetBoolValue(value);
 }
 template<>
-inline void SetMapKey<string>(MapKey* map_key, const string& value) {
+inline void SetMapKey<std::string>(MapKey* map_key, const std::string& value) {
   map_key->SetStringValue(value);
 }
 

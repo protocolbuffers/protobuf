@@ -50,6 +50,7 @@
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -98,6 +99,13 @@ class MockGeneratorContext : public GeneratorContext {
                           &actual_contents, true))
         << physical_filename;
     CleanStringLineEndings(&actual_contents, false);
+
+#ifdef WRITE_FILES // Define to debug mismatched files.
+    GOOGLE_CHECK_OK(
+        File::SetContents("/tmp/1.cc", *expected_contents, true));
+    GOOGLE_CHECK_OK(File::SetContents("/tmp/2.cc", actual_contents, true));
+#endif
+
     EXPECT_EQ(*expected_contents, actual_contents)
         << physical_filename
         << " needs to be regenerated.  Please run "
@@ -119,8 +127,8 @@ class MockGeneratorContext : public GeneratorContext {
   std::map<string, string*> files_;
 };
 
-const char kDescriptorParameter[] = "dllexport_decl=LIBPROTOBUF_EXPORT";
-const char kPluginParameter[] = "dllexport_decl=LIBPROTOC_EXPORT";
+const char kDescriptorParameter[] = "dllexport_decl=PROTOBUF_EXPORT";
+const char kPluginParameter[] = "dllexport_decl=PROTOC_EXPORT";
 const char kNormalParameter[] = "";
 
 const char* test_protos[][2] = {

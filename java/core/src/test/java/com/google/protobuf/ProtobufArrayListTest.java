@@ -38,9 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 import junit.framework.TestCase;
 
-/**
- * Tests for {@link ProtobufArrayList}.
- */
+/** Tests for {@link ProtobufArrayList}. */
 public class ProtobufArrayListTest extends TestCase {
 
   private static final ProtobufArrayList<Integer> UNARY_LIST = newImmutableProtoArrayList(1);

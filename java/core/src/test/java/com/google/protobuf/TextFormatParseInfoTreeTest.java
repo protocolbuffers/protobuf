@@ -33,12 +33,9 @@ package com.google.protobuf;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-
 import junit.framework.TestCase;
 
-/**
- * Test @{link TextFormatParseInfoTree}.
- */
+/** Test @{link TextFormatParseInfoTree}. */
 public class TextFormatParseInfoTreeTest extends TestCase {
 
   private static final Descriptor DESCRIPTOR = TestAllTypes.getDescriptor();
@@ -75,7 +72,7 @@ public class TextFormatParseInfoTreeTest extends TestCase {
     TextFormatParseInfoTree root = rootBuilder.build();
     assertEquals(LOC0, root.getLocation(OPTIONAL_INT32, 0));
     assertEquals(1, root.getLocations(OPTIONAL_INT32).size());
-    }
+  }
 
   public void testGetLocationsReturnsNoParseLocationsForUnknownField() {
     assertTrue(rootBuilder.build().getLocations(OPTIONAL_INT32).isEmpty());

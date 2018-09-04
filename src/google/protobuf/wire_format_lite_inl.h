@@ -51,6 +51,8 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -870,7 +872,7 @@ inline uint8* WireFormatLite::WriteEnumToArray(
   return WritePrimitiveToArray(field_number, value, WriteEnumToArray, target);
 }
 inline uint8* WireFormatLite::WriteStringToArray(int field_number,
-                                                 const string& value,
+                                                 const std::string& value,
                                                  uint8* target) {
   // String is for UTF-8 text only
   // WARNING:  In wire_format.cc, both strings and bytes are handled by
@@ -880,7 +882,7 @@ inline uint8* WireFormatLite::WriteStringToArray(int field_number,
   return io::CodedOutputStream::WriteStringWithSizeToArray(value, target);
 }
 inline uint8* WireFormatLite::WriteBytesToArray(int field_number,
-                                                const string& value,
+                                                const std::string& value,
                                                 uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   return io::CodedOutputStream::WriteStringWithSizeToArray(value, target);
@@ -953,10 +955,10 @@ inline size_t WireFormatLite::EnumSize(int value) {
   return io::CodedOutputStream::VarintSize32SignExtended(value);
 }
 
-inline size_t WireFormatLite::StringSize(const string& value) {
+inline size_t WireFormatLite::StringSize(const std::string& value) {
   return LengthDelimitedSize(value.size());
 }
-inline size_t WireFormatLite::BytesSize(const string& value) {
+inline size_t WireFormatLite::BytesSize(const std::string& value) {
   return LengthDelimitedSize(value.size());
 }
 
@@ -1003,7 +1005,7 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
 
   // If we see message data before the type_id, we'll append it to this so
   // we can parse it later.
-  string message_data;
+  std::string message_data;
 
   while (true) {
     const uint32 tag = input->ReadTagNoLastTag();
@@ -1066,5 +1068,7 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_INL_H__

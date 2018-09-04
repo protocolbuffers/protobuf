@@ -39,6 +39,8 @@
 
 #include <google/protobuf/stubs/common.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -55,7 +57,7 @@ class MessageDifferencer;
 // Regular users should consider using or subclassing DefaultFieldComparator
 // rather than this interface.
 // Currently, this does not support comparing unknown fields.
-class LIBPROTOBUF_EXPORT FieldComparator {
+class PROTOBUF_EXPORT FieldComparator {
  public:
   FieldComparator();
   virtual ~FieldComparator();
@@ -95,7 +97,7 @@ class LIBPROTOBUF_EXPORT FieldComparator {
 // Basic implementation of FieldComparator.  Supports three modes of floating
 // point value comparison: exact, approximate using MathUtil::AlmostEqual
 // method, and arbitrarily precise using MathUtil::WithinFractionOrMargin.
-class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
+class PROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
  public:
   enum FloatComparison {
      EXACT,               // Floats and doubles are compared exactly.
@@ -207,8 +209,8 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
     return value_1 == value_2;
   }
 
-  bool CompareString(const FieldDescriptor& field, const string& value_1,
-                     const string& value_2) {
+  bool CompareString(const FieldDescriptor& field, const std::string& value_1,
+                     const std::string& value_2) {
     return value_1 == value_2;
   }
 
@@ -259,5 +261,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__

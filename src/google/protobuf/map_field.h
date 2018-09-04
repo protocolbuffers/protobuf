@@ -66,7 +66,7 @@ class MapFieldAccessor;
 // This class provides access to map field using reflection, which is the same
 // as those provided for RepeatedPtrField<Message>. It is used for internal
 // reflection implentation only. Users should never use this directly.
-class LIBPROTOBUF_EXPORT MapFieldBase {
+class PROTOBUF_EXPORT MapFieldBase {
  public:
   MapFieldBase()
       : arena_(NULL),
@@ -163,7 +163,7 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   // type helper for key and value. Call these help methods to deal with
   // different types. Real helper methods are implemented in
   // TypeDefinedMapFieldBase.
-  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapIterator;
+  friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
   // Allocate map<...>::iterator for MapIterator.
   virtual void InitializeIterator(MapIterator* map_iter) const = 0;
 
@@ -300,7 +300,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
   void SetMapIteratorValue(MapIterator* map_iter) const override;
 
-  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::Arena;
+  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
   friend class MapFieldStateTest;  // For testing, it needs raw access to impl_
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapField);
 };
@@ -315,7 +315,8 @@ struct MapEntryToMapField<MapEntry<T, Key, Value, kKeyFieldType,
       MapFieldType;
 };
 
-class LIBPROTOBUF_EXPORT DynamicMapField: public TypeDefinedMapFieldBase<MapKey, MapValueRef> {
+class PROTOBUF_EXPORT DynamicMapField
+    : public TypeDefinedMapFieldBase<MapKey, MapValueRef> {
  public:
   explicit DynamicMapField(const Message* default_entry);
   DynamicMapField(const Message* default_entry, Arena* arena);
@@ -359,7 +360,7 @@ class LIBPROTOBUF_EXPORT DynamicMapField: public TypeDefinedMapFieldBase<MapKey,
 
 // MapKey is an union type for representing any possible
 // map key.
-class LIBPROTOBUF_EXPORT MapKey {
+class PROTOBUF_EXPORT MapKey {
  public:
   MapKey() : type_(0) {
   }
@@ -407,7 +408,7 @@ class LIBPROTOBUF_EXPORT MapKey {
     SetType(FieldDescriptor::CPPTYPE_BOOL);
     val_.bool_value_ = value;
   }
-  void SetStringValue(const string& val) {
+  void SetStringValue(const std::string& val) {
     SetType(FieldDescriptor::CPPTYPE_STRING);
     *val_.string_value_ = val;
   }
@@ -437,7 +438,7 @@ class LIBPROTOBUF_EXPORT MapKey {
                "MapKey::GetBoolValue");
     return val_.bool_value_;
   }
-  const string& GetStringValue() const {
+  const std::string& GetStringValue() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING,
                "MapKey::GetStringValue");
     return *val_.string_value_;
@@ -534,12 +535,12 @@ class LIBPROTOBUF_EXPORT MapKey {
  private:
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
-  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapIterator;
+  friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
   friend class internal::DynamicMapField;
 
   union KeyValue {
     KeyValue() {}
-    string* string_value_;
+    std::string* string_value_;
     int64 int64_value_;
     int32 int32_value_;
     uint64 uint64_value_;
@@ -554,7 +555,7 @@ class LIBPROTOBUF_EXPORT MapKey {
     }
     type_ = type;
     if (type_ == FieldDescriptor::CPPTYPE_STRING) {
-      val_.string_value_ = new string;
+      val_.string_value_ = new std::string;
     }
   }
 
@@ -563,7 +564,7 @@ class LIBPROTOBUF_EXPORT MapKey {
 };
 
 // MapValueRef points to a map value.
-class LIBPROTOBUF_EXPORT MapValueRef {
+class PROTOBUF_EXPORT MapValueRef {
  public:
   MapValueRef() : data_(NULL), type_(0) {}
 
@@ -598,10 +599,10 @@ class LIBPROTOBUF_EXPORT MapValueRef {
                "MapValueRef::SetEnumValue");
     *reinterpret_cast<int*>(data_) = value;
   }
-  void SetStringValue(const string& value) {
+  void SetStringValue(const std::string& value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING,
                "MapValueRef::SetStringValue");
-    *reinterpret_cast<string*>(data_) = value;
+    *reinterpret_cast<std::string*>(data_) = value;
   }
   void SetFloatValue(float value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_FLOAT,
@@ -644,10 +645,10 @@ class LIBPROTOBUF_EXPORT MapValueRef {
                "MapValueRef::GetEnumValue");
     return *reinterpret_cast<int*>(data_);
   }
-  const string& GetStringValue() const {
+  const std::string& GetStringValue() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING,
                "MapValueRef::GetStringValue");
-    return *reinterpret_cast<string*>(data_);
+    return *reinterpret_cast<std::string*>(data_);
   }
   float GetFloatValue() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_FLOAT,
@@ -680,7 +681,7 @@ class LIBPROTOBUF_EXPORT MapValueRef {
   friend class internal::MapField;
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
-  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapIterator;
+  friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
   friend class internal::GeneratedMessageReflection;
   friend class internal::DynamicMapField;
 
@@ -718,7 +719,7 @@ class LIBPROTOBUF_EXPORT MapValueRef {
       HANDLE_TYPE(DOUBLE, double);
       HANDLE_TYPE(FLOAT, float);
       HANDLE_TYPE(BOOL, bool);
-      HANDLE_TYPE(STRING, string);
+      HANDLE_TYPE(STRING, std::string);
       HANDLE_TYPE(ENUM, int32);
       HANDLE_TYPE(MESSAGE, Message);
 #undef HANDLE_TYPE
@@ -733,7 +734,7 @@ class LIBPROTOBUF_EXPORT MapValueRef {
 
 #undef TYPE_CHECK
 
-class LIBPROTOBUF_EXPORT MapIterator {
+class PROTOBUF_EXPORT MapIterator {
  public:
   MapIterator(Message* message, const FieldDescriptor* field) {
     const Reflection* reflection = message->GetReflection();
@@ -810,35 +811,33 @@ class LIBPROTOBUF_EXPORT MapIterator {
 
 GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
 template <>
-struct hash<::GOOGLE_PROTOBUF_NAMESPACE_ID::MapKey> {
-  size_t operator()(
-      const ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapKey& map_key) const {
+struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
+  size_t operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key) const {
     switch (map_key.type()) {
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_DOUBLE:
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_FLOAT:
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_ENUM:
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_MESSAGE:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_DOUBLE:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_FLOAT:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_ENUM:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_MESSAGE:
         GOOGLE_LOG(FATAL) << "Unsupported";
         break;
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
-        return hash<string>()(map_key.GetStringValue());
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
+        return hash<std::string>()(map_key.GetStringValue());
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64:
         return hash<::google::protobuf::int64>()(map_key.GetInt64Value());
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32:
         return hash<::google::protobuf::int32>()(map_key.GetInt32Value());
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64:
         return hash<::google::protobuf::uint64>()(map_key.GetUInt64Value());
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32:
         return hash<::google::protobuf::uint32>()(map_key.GetUInt32Value());
-      case ::GOOGLE_PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL:
         return hash<bool>()(map_key.GetBoolValue());
     }
     GOOGLE_LOG(FATAL) << "Can't get here.";
     return 0;
   }
-  bool operator()(
-      const ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapKey& map_key1,
-      const ::GOOGLE_PROTOBUF_NAMESPACE_ID::MapKey& map_key2) const {
+  bool operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key1,
+                  const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key2) const {
     return map_key1 < map_key2;
   }
 };

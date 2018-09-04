@@ -53,6 +53,8 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -626,7 +628,7 @@ class Map {
       }
       DestroyNode(item);
       --num_elements_;
-      if (GOOGLE_PREDICT_FALSE(b == index_of_first_non_null_)) {
+      if (PROTOBUF_PREDICT_FALSE(b == index_of_first_non_null_)) {
         while (index_of_first_non_null_ < num_buckets_ &&
                table_[index_of_first_non_null_] == NULL) {
           ++index_of_first_non_null_;
@@ -683,7 +685,7 @@ class Map {
       if (TableEntryIsEmpty(b)) {
         result = InsertUniqueInList(b, node);
       } else if (TableEntryIsNonEmptyList(b)) {
-        if (GOOGLE_PREDICT_FALSE(TableEntryIsTooLong(b))) {
+        if (PROTOBUF_PREDICT_FALSE(TableEntryIsTooLong(b))) {
           TreeConvert(b);
           result = InsertUniqueInTree(b, node);
           GOOGLE_DCHECK_EQ(result.bucket_index_, b & ~static_cast<size_type>(1));
@@ -738,13 +740,13 @@ class Map {
       // We don't care how many elements are in trees.  If a lot are,
       // we may resize even though there are many empty buckets.  In
       // practice, this seems fine.
-      if (GOOGLE_PREDICT_FALSE(new_size >= hi_cutoff)) {
+      if (PROTOBUF_PREDICT_FALSE(new_size >= hi_cutoff)) {
         if (num_buckets_ <= max_size() / 2) {
           Resize(num_buckets_ * 2);
           return true;
         }
-      } else if (GOOGLE_PREDICT_FALSE(new_size <= lo_cutoff &&
-                                    num_buckets_ > kMinTableSize)) {
+      } else if (PROTOBUF_PREDICT_FALSE(new_size <= lo_cutoff &&
+                                        num_buckets_ > kMinTableSize)) {
         size_type lg2_of_size_reduction_factor = 1;
         // It's possible we want to shrink a lot here... size() could even be 0.
         // So, estimate how much to shrink by making sure we don't shrink so
@@ -1218,5 +1220,7 @@ class Map {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_MAP_H__

@@ -46,6 +46,8 @@
 
 #include <google/protobuf/stubs/platform_macros.h>
 
+#include <google/protobuf/port_def.inc>
+
 #undef PROTOBUF_LITTLE_ENDIAN
 #ifdef _WIN32
   // Assuming windows is always little-endian.
@@ -72,6 +74,19 @@
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
 #endif
+
+// These #includes are for the byte swap functions declared later on.
+#ifdef _MSC_VER
+#include <stdlib.h>  // NOLINT(build/include)
+#include <intrin.h>
+#elif defined(__APPLE__)
+#include <libkern/OSByteOrder.h>
+#elif defined(__GLIBC__) || defined(__BIONIC__) || defined(__CYGWIN__)
+#include <byteswap.h>  // IWYU pragma: export
+#endif
+
+// Legacy: some users reference these (internal-only) macros even though we
+// don't need them any more.
 #if defined(_MSC_VER) && defined(PROTOBUF_USE_DLLS)
   #ifdef LIBPROTOBUF_EXPORTS
     #define LIBPROTOBUF_EXPORT __declspec(dllexport)
@@ -86,16 +101,6 @@
 #else
   #define LIBPROTOBUF_EXPORT
   #define LIBPROTOC_EXPORT
-#endif
-
-// These #includes are for the byte swap functions declared later on.
-#ifdef _MSC_VER
-#include <stdlib.h>  // NOLINT(build/include)
-#include <intrin.h>
-#elif defined(__APPLE__)
-#include <libkern/OSByteOrder.h>
-#elif defined(__GLIBC__) || defined(__BIONIC__) || defined(__CYGWIN__)
-#include <byteswap.h>  // IWYU pragma: export
 #endif
 
 #define PROTOBUF_RUNTIME_DEPRECATED(message)
@@ -151,131 +156,12 @@ typedef uint32_t uint32;
 typedef uint64_t uint64;
 #endif
 
-// long long macros to be used because gcc and vc++ use different suffixes,
-// and different size specifiers in format strings
-#undef GOOGLE_LONGLONG
-#undef GOOGLE_ULONGLONG
-#undef GOOGLE_LL_FORMAT
-
-#ifdef _MSC_VER
-#define GOOGLE_LONGLONG(x) x##I64
-#define GOOGLE_ULONGLONG(x) x##UI64
-#define GOOGLE_LL_FORMAT "I64"  // As in printf("%I64d", ...)
-#else
-// By long long, we actually mean int64.
-#define GOOGLE_LONGLONG(x) x##LL
-#define GOOGLE_ULONGLONG(x) x##ULL
-// Used to format real long long integers.
-#define GOOGLE_LL_FORMAT "ll"  // As in "%lld". Note that "q" is poor form also.
-#endif
-
 static const int32 kint32max = 0x7FFFFFFF;
 static const int32 kint32min = -kint32max - 1;
-static const int64 kint64max = GOOGLE_LONGLONG(0x7FFFFFFFFFFFFFFF);
+static const int64 kint64max = PROTOBUF_LONGLONG(0x7FFFFFFFFFFFFFFF);
 static const int64 kint64min = -kint64max - 1;
 static const uint32 kuint32max = 0xFFFFFFFFu;
-static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
-
-#define GOOGLE_PROTOBUF_NAMESPACE "google::protobuf"
-#define GOOGLE_PROTOBUF_NAMESPACE_ID google::protobuf
-
-// -------------------------------------------------------------------
-// Annotations:  Some parts of the code have been annotated in ways that might
-//   be useful to some compilers or tools, but are not supported universally.
-//   You can #define these annotations yourself if the default implementation
-//   is not right for you.
-
-#ifndef GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-#if defined(__GNUC__) && (__GNUC__ > 3 ||(__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
-// For functions we want to force inline.
-// Introduced in gcc 3.1.
-#define GOOGLE_ATTRIBUTE_ALWAYS_INLINE __attribute__ ((always_inline))
-#else
-// Other compilers will have to figure it out for themselves.
-#define GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-#endif
-#endif
-
-#define GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-
-#ifndef GOOGLE_ATTRIBUTE_NOINLINE
-#if defined(__GNUC__) && (__GNUC__ > 3 ||(__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
-// For functions we want to force not inline.
-// Introduced in gcc 3.1.
-#define GOOGLE_ATTRIBUTE_NOINLINE __attribute__ ((noinline))
-#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
-// Seems to have been around since at least Visual Studio 2005
-#define GOOGLE_ATTRIBUTE_NOINLINE __declspec(noinline)
-#else
-// Other compilers will have to figure it out for themselves.
-#define GOOGLE_ATTRIBUTE_NOINLINE
-#endif
-#endif
-
-#define GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE GOOGLE_ATTRIBUTE_NOINLINE
-
-#ifndef GOOGLE_ATTRIBUTE_FUNC_ALIGN
-#if defined(__clang__) || \
-    defined(__GNUC__) && (__GNUC__ > 4 ||(__GNUC__ == 4 && __GNUC_MINOR__ >= 3))
-// Function alignment attribute introduced in gcc 4.3
-#define GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes) __attribute__ ((aligned(bytes)))
-#else
-#define GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes)
-#endif
-#endif
-
-#define GOOGLE_PROTOBUF_ATTRIBUTE_FUNC_ALIGN(bytes) \
-        GOOGLE_ATTRIBUTE_FUNC_ALIGN(bytes)
-
-#ifndef GOOGLE_PREDICT_TRUE
-#ifdef __GNUC__
-// Provided at least since GCC 3.0.
-#define GOOGLE_PREDICT_TRUE(x) (__builtin_expect(!!(x), 1))
-#else
-#define GOOGLE_PREDICT_TRUE(x) (x)
-#endif
-#endif
-
-#ifndef GOOGLE_PREDICT_FALSE
-#ifdef __GNUC__
-// Provided at least since GCC 3.0.
-#define GOOGLE_PREDICT_FALSE(x) (__builtin_expect(x, 0))
-#else
-#define GOOGLE_PREDICT_FALSE(x) (x)
-#endif
-#endif
-
-#ifndef GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
-#ifdef __GNUC__
-#define GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL \
-    __attribute__((returns_nonnull))
-#endif
-#endif
-
-// Delimits a block of code which may write to memory which is simultaneously
-// written by other threads, but which has been determined to be thread-safe
-// (e.g. because it is an idempotent write).
-#ifndef GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN
-#define GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN()
-#endif
-#ifndef GOOGLE_SAFE_CONCURRENT_WRITES_END
-#define GOOGLE_SAFE_CONCURRENT_WRITES_END()
-#endif
-
-#define GOOGLE_GUARDED_BY(x)
-#define GOOGLE_ATTRIBUTE_COLD
-
-#ifdef GOOGLE_PROTOBUF_DONT_USE_UNALIGNED
-# define GOOGLE_PROTOBUF_USE_UNALIGNED 0
-#else
-# if defined(_M_X64) || defined(__x86_64__) || defined(_M_IX86) || defined(__i386__)
-#  define GOOGLE_PROTOBUF_USE_UNALIGNED 1
-# else
-#  define GOOGLE_PROTOBUF_USE_UNALIGNED 0
-# endif
-#endif
-
-#define GOOGLE_PROTOBUF_ATTRIBUTE_COLD GOOGLE_ATTRIBUTE_COLD
+static const uint64 kuint64max = PROTOBUF_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||\
     defined(MEMORY_SANITIZER)
@@ -405,14 +291,14 @@ static inline uint32 bswap_32(uint32 x) {
 
 #ifndef bswap_64
 static inline uint64 bswap_64(uint64 x) {
-  return (((x & GOOGLE_ULONGLONG(0xFF)) << 56) |
-          ((x & GOOGLE_ULONGLONG(0xFF00)) << 40) |
-          ((x & GOOGLE_ULONGLONG(0xFF0000)) << 24) |
-          ((x & GOOGLE_ULONGLONG(0xFF000000)) << 8) |
-          ((x & GOOGLE_ULONGLONG(0xFF00000000)) >> 8) |
-          ((x & GOOGLE_ULONGLONG(0xFF0000000000)) >> 24) |
-          ((x & GOOGLE_ULONGLONG(0xFF000000000000)) >> 40) |
-          ((x & GOOGLE_ULONGLONG(0xFF00000000000000)) >> 56));
+  return (((x & PROTOBUF_ULONGLONG(0xFF)) << 56) |
+          ((x & PROTOBUF_ULONGLONG(0xFF00)) << 40) |
+          ((x & PROTOBUF_ULONGLONG(0xFF0000)) << 24) |
+          ((x & PROTOBUF_ULONGLONG(0xFF000000)) << 8) |
+          ((x & PROTOBUF_ULONGLONG(0xFF00000000)) >> 8) |
+          ((x & PROTOBUF_ULONGLONG(0xFF0000000000)) >> 24) |
+          ((x & PROTOBUF_ULONGLONG(0xFF000000000000)) >> 40) |
+          ((x & PROTOBUF_ULONGLONG(0xFF00000000000000)) >> 56));
 }
 #define bswap_64(x) bswap_64(x)
 #endif
@@ -484,7 +370,7 @@ class Bits {
 
 // ===================================================================
 // from google3/util/endian/endian.h
-LIBPROTOBUF_EXPORT uint32 ghtonl(uint32 x);
+PROTOBUF_EXPORT uint32 ghtonl(uint32 x);
 
 class BigEndian {
  public:
@@ -542,13 +428,11 @@ class BigEndian {
   }
 };
 
-#ifndef GOOGLE_ATTRIBUTE_SECTION_VARIABLE
-#define GOOGLE_ATTRIBUTE_SECTION_VARIABLE(name)
-#endif
-
-#define GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(name)
-
 }  // namespace protobuf
 }  // namespace google
+
+#define GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER 0
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_PORT_H_

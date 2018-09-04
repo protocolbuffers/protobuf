@@ -45,9 +45,10 @@ __results = []
 #   "benchmarks": [
 #     {
 #       "bytes_per_second": int,
-#       "cpu_time": int,
+#       "cpu_time_ns": double,
+#       "iterations": int,
 #       "name: string,
-#       "time_unit: string,
+#       "real_time_ns: double,
 #       ...
 #     },
 #     ...
@@ -72,6 +73,36 @@ def __parse_cpp_result(filename):
         "dataFilename": data_filename,
         "behavior": behavior,
         "throughput": benchmark["bytes_per_second"] / 2.0 ** 20
+      })
+
+
+# Synthetic benchmark results example:
+# [
+#   "benchmarks": [
+#     {
+#       "cpu_time_ns": double,
+#       "iterations": int,
+#       "name: string,
+#       "real_time_ns: double,
+#       ...
+#     },
+#     ...
+#   ],
+#   ...
+# ]
+def __parse_synthetic_result(filename):
+  if filename == "":
+    return
+  if filename[0] != "/":
+    filename = os.path.dirname(os.path.abspath(__file__)) + "/" + filename
+  with open(filename) as f:
+    results = json.loads(f.read())
+    for benchmark in results["benchmarks"]:
+      __results.append({
+          "language": "cpp",
+          "dataFilename": "",
+          "behavior": "synthetic",
+          "throughput": 10.0**9 / benchmark["cpu_time_ns"]
       })
 
 
@@ -204,7 +235,12 @@ def __parse_go_result(filename):
         "language": "go"
       })
 
-def get_result_from_file(cpp_file="", java_file="", python_file="", go_file=""):
+
+def get_result_from_file(cpp_file="",
+                         java_file="",
+                         python_file="",
+                         go_file="",
+                         synthetic_file=""):
   results = {}
   if cpp_file != "":
     __parse_cpp_result(cpp_file)
@@ -214,5 +250,7 @@ def get_result_from_file(cpp_file="", java_file="", python_file="", go_file=""):
     __parse_python_result(python_file)
   if go_file != "":
     __parse_go_result(go_file)
+  if synthetic_file != "":
+    __parse_synthetic_result(synthetic_file)
 
   return __results

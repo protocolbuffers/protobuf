@@ -39,26 +39,22 @@ import java.util.List;
 import java.util.RandomAccess;
 
 /**
- * An implementation of {@link LazyStringList} that wraps an ArrayList. Each
- * element is one of String, ByteString, or byte[]. It caches the last one
- * requested which is most likely the one needed next. This minimizes memory
- * usage while satisfying the most common use cases.
- * <p>
- * <strong>Note that this implementation is not synchronized.</strong>
- * If multiple threads access an <tt>ArrayList</tt> instance concurrently,
- * and at least one of the threads modifies the list structurally, it
- * <i>must</i> be synchronized externally.  (A structural modification is
- * any operation that adds or deletes one or more elements, or explicitly
- * resizes the backing array; merely setting the value of an element is not
- * a structural modification.)  This is typically accomplished by
- * synchronizing on some object that naturally encapsulates the list.
- * <p>
- * If the implementation is accessed via concurrent reads, this is thread safe.
- * Conversions are done in a thread safe manner. It's possible that the
- * conversion may happen more than once if two threads attempt to access the
- * same element and the modifications were not visible to each other, but this
- * will not result in any corruption of the list or change in behavior other
- * than performance.
+ * An implementation of {@link LazyStringList} that wraps an ArrayList. Each element is one of
+ * String, ByteString, or byte[]. It caches the last one requested which is most likely the one
+ * needed next. This minimizes memory usage while satisfying the most common use cases.
+ *
+ * <p><strong>Note that this implementation is not synchronized.</strong> If multiple threads access
+ * an <tt>ArrayList</tt> instance concurrently, and at least one of the threads modifies the list
+ * structurally, it <i>must</i> be synchronized externally. (A structural modification is any
+ * operation that adds or deletes one or more elements, or explicitly resizes the backing array;
+ * merely setting the value of an element is not a structural modification.) This is typically
+ * accomplished by synchronizing on some object that naturally encapsulates the list.
+ *
+ * <p>If the implementation is accessed via concurrent reads, this is thread safe. Conversions are
+ * done in a thread safe manner. It's possible that the conversion may happen more than once if two
+ * threads attempt to access the same element and the modifications were not visible to each other,
+ * but this will not result in any corruption of the list or change in behavior other than
+ * performance.
  *
  * @author jonp@google.com (Jon Perlow)
  */
@@ -66,6 +62,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     implements LazyStringList, RandomAccess {
 
   private static final LazyStringArrayList EMPTY_LIST = new LazyStringArrayList();
+
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -177,8 +174,8 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     ensureIsMutable();
     // When copying from another LazyStringList, directly copy the underlying
     // elements rather than forcing each element to be decoded to a String.
-    Collection<?> collection = c instanceof LazyStringList
-        ? ((LazyStringList) c).getUnderlyingElements() : c;
+    Collection<?> collection =
+        c instanceof LazyStringList ? ((LazyStringList) c).getUnderlyingElements() : c;
     boolean ret = list.addAll(index, collection);
     modCount++;
     return ret;
@@ -324,8 +321,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     }
   }
 
-  private static class ByteArrayListView extends AbstractList<byte[]>
-      implements RandomAccess {
+  private static class ByteArrayListView extends AbstractList<byte[]> implements RandomAccess {
     private final LazyStringArrayList list;
 
     ByteArrayListView(LazyStringArrayList list) {
@@ -368,8 +364,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     return new ByteArrayListView(this);
   }
 
-  private static class ByteStringListView extends AbstractList<ByteString>
-      implements RandomAccess {
+  private static class ByteStringListView extends AbstractList<ByteString> implements RandomAccess {
     private final LazyStringArrayList list;
 
     ByteStringListView(LazyStringArrayList list) {
@@ -419,5 +414,4 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     }
     return this;
   }
-
 }

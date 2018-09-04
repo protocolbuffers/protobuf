@@ -1540,7 +1540,7 @@ public class JsonFormat {
         Object key = parseFieldValue(keyField, new JsonPrimitive(entry.getKey()), entryBuilder);
         Object value = parseFieldValue(valueField, entry.getValue(), entryBuilder);
         if (value == null) {
-          if(ignoringUnknownFields && valueField.getType() == Type.ENUM) {
+          if (ignoringUnknownFields && valueField.getType() == Type.ENUM) {
             continue;
           } else {
             throw new InvalidProtocolBufferException("Map value cannot be null.");
@@ -1562,11 +1562,11 @@ public class JsonFormat {
       for (int i = 0; i < array.size(); ++i) {
         Object value = parseFieldValue(field, array.get(i), builder);
         if (value == null) {
-          if(ignoringUnknownFields && field.getType() == Type.ENUM) {
+          if (ignoringUnknownFields && field.getType() == Type.ENUM) {
             continue;
           } else {
             throw new InvalidProtocolBufferException(
-                  "Repeated field elements cannot be null in field: " + field.getFullName());
+                "Repeated field elements cannot be null in field: " + field.getFullName());
           }
         }
         builder.addRepeatedField(field, value);

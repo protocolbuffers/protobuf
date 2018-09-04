@@ -46,41 +46,35 @@ import java.util.NoSuchElementException;
 import java.util.Stack;
 
 /**
- * Class to represent {@code ByteStrings} formed by concatenation of other
- * ByteStrings, without copying the data in the pieces. The concatenation is
- * represented as a tree whose leaf nodes are each a
- * {@link com.google.protobuf.ByteString.LeafByteString}.
+ * Class to represent {@code ByteStrings} formed by concatenation of other ByteStrings, without
+ * copying the data in the pieces. The concatenation is represented as a tree whose leaf nodes are
+ * each a {@link com.google.protobuf.ByteString.LeafByteString}.
  *
  * <p>Most of the operation here is inspired by the now-famous paper <a
  * href="https://web.archive.org/web/20060202015456/http://www.cs.ubc.ca/local/reading/proceedings/spe91-95/spe/vol25/issue12/spe986.pdf">
- * BAP95 </a> Ropes: an Alternative to Strings hans-j. boehm, russ atkinson and
- * michael plass
+ * BAP95 </a> Ropes: an Alternative to Strings hans-j. boehm, russ atkinson and michael plass
  *
- * <p>The algorithms described in the paper have been implemented for character
- * strings in {@code com.google.common.string.Rope} and in the c++ class {@code
- * cord.cc}.
+ * <p>The algorithms described in the paper have been implemented for character strings in {@code
+ * com.google.common.string.Rope} and in the c++ class {@code cord.cc}.
  *
- * <p>Fundamentally the Rope algorithm represents the collection of pieces as a
- * binary tree. BAP95 uses a Fibonacci bound relating depth to a minimum
- * sequence length, sequences that are too short relative to their depth cause a
- * tree rebalance.  More precisely, a tree of depth d is "balanced" in the
- * terminology of BAP95 if its length is at least F(d+2), where F(n) is the
- * n-the Fibonacci number. Thus for depths 0, 1, 2, 3, 4, 5,... we have minimum
- * lengths 1, 2, 3, 5, 8, 13,...
+ * <p>Fundamentally the Rope algorithm represents the collection of pieces as a binary tree. BAP95
+ * uses a Fibonacci bound relating depth to a minimum sequence length, sequences that are too short
+ * relative to their depth cause a tree rebalance. More precisely, a tree of depth d is "balanced"
+ * in the terminology of BAP95 if its length is at least F(d+2), where F(n) is the n-the Fibonacci
+ * number. Thus for depths 0, 1, 2, 3, 4, 5,... we have minimum lengths 1, 2, 3, 5, 8, 13,...
  *
  * @author carlanton@google.com (Carl Haverl)
  */
 final class RopeByteString extends ByteString {
 
   /**
-   * BAP95. Let Fn be the nth Fibonacci number. A {@link RopeByteString} of
-   * depth n is "balanced", i.e flat enough, if its length is at least Fn+2,
-   * e.g. a "balanced" {@link RopeByteString} of depth 1 must have length at
-   * least 2, of depth 4 must have length >= 8, etc.
+   * BAP95. Let Fn be the nth Fibonacci number. A {@link RopeByteString} of depth n is "balanced",
+   * i.e flat enough, if its length is at least Fn+2, e.g. a "balanced" {@link RopeByteString} of
+   * depth 1 must have length at least 2, of depth 4 must have length >= 8, etc.
    *
-   * <p>There's nothing special about using the Fibonacci numbers for this, but
-   * they are a reasonable sequence for encapsulating the idea that we are OK
-   * with longer strings being encoded in deeper binary trees.
+   * <p>There's nothing special about using the Fibonacci numbers for this, but they are a
+   * reasonable sequence for encapsulating the idea that we are OK with longer strings being encoded
+   * in deeper binary trees.
    *
    * <p>For 32-bit integers, this array has length 46.
    */
@@ -121,13 +115,11 @@ final class RopeByteString extends ByteString {
   private final int treeDepth;
 
   /**
-   * Create a new RopeByteString, which can be thought of as a new tree node, by
-   * recording references to the two given strings.
+   * Create a new RopeByteString, which can be thought of as a new tree node, by recording
+   * references to the two given strings.
    *
-   * @param left  string on the left of this node, should have {@code size() >
-   *              0}
-   * @param right string on the right of this node, should have {@code size() >
-   *              0}
+   * @param left string on the left of this node, should have {@code size() > 0}
+   * @param right string on the right of this node, should have {@code size() > 0}
    */
   private RopeByteString(ByteString left, ByteString right) {
     this.left = left;
@@ -138,17 +130,15 @@ final class RopeByteString extends ByteString {
   }
 
   /**
-   * Concatenate the given strings while performing various optimizations to
-   * slow the growth rate of tree depth and tree node count. The result is
-   * either a {@link com.google.protobuf.ByteString.LeafByteString} or a
-   * {@link RopeByteString} depending on which optimizations, if any, were
-   * applied.
+   * Concatenate the given strings while performing various optimizations to slow the growth rate of
+   * tree depth and tree node count. The result is either a {@link
+   * com.google.protobuf.ByteString.LeafByteString} or a {@link RopeByteString} depending on which
+   * optimizations, if any, were applied.
    *
-   * <p>Small pieces of length less than {@link
-   * ByteString#CONCATENATE_BY_COPY_SIZE} may be copied by value here, as in
-   * BAP95.  Large pieces are referenced without copy.
+   * <p>Small pieces of length less than {@link ByteString#CONCATENATE_BY_COPY_SIZE} may be copied
+   * by value here, as in BAP95. Large pieces are referenced without copy.
    *
-   * @param left  string on the left
+   * @param left string on the left
    * @param right string on the right
    * @return concatenation representing the same sequence as the given strings
    */
@@ -208,31 +198,29 @@ final class RopeByteString extends ByteString {
   }
 
   /**
-   * Concatenates two strings by copying data values. This is called in a few
-   * cases in order to reduce the growth of the number of tree nodes.
+   * Concatenates two strings by copying data values. This is called in a few cases in order to
+   * reduce the growth of the number of tree nodes.
    *
-   * @param left  string on the left
+   * @param left string on the left
    * @param right string on the right
    * @return string formed by copying data bytes
    */
-  private static ByteString concatenateBytes(ByteString left,
-      ByteString right) {
+  private static ByteString concatenateBytes(ByteString left, ByteString right) {
     int leftSize = left.size();
     int rightSize = right.size();
     byte[] bytes = new byte[leftSize + rightSize];
     left.copyTo(bytes, 0, 0, leftSize);
     right.copyTo(bytes, 0, leftSize, rightSize);
-    return ByteString.wrap(bytes);  // Constructor wraps bytes
+    return ByteString.wrap(bytes); // Constructor wraps bytes
   }
 
   /**
-   * Create a new RopeByteString for testing only while bypassing all the
-   * defenses of {@link #concatenate(ByteString, ByteString)}. This allows
-   * testing trees of specific structure. We are also able to insert empty
-   * leaves, though these are dis-allowed, so that we can make sure the
+   * Create a new RopeByteString for testing only while bypassing all the defenses of {@link
+   * #concatenate(ByteString, ByteString)}. This allows testing trees of specific structure. We are
+   * also able to insert empty leaves, though these are dis-allowed, so that we can make sure the
    * implementation can withstand their presence.
    *
-   * @param left  string on the left of this node
+   * @param left string on the left of this node
    * @param right string on the right of this node
    * @return an unsafe instance for testing only
    */
@@ -241,9 +229,8 @@ final class RopeByteString extends ByteString {
   }
 
   /**
-   * Gets the byte at the given index.
-   * Throws {@link ArrayIndexOutOfBoundsException} for backwards-compatibility
-   * reasons although it would more properly be {@link
+   * Gets the byte at the given index. Throws {@link ArrayIndexOutOfBoundsException} for
+   * backwards-compatibility reasons although it would more properly be {@link
    * IndexOutOfBoundsException}.
    *
    * @param index index of byte
@@ -276,10 +263,9 @@ final class RopeByteString extends ByteString {
   }
 
   /**
-   * Determines if the tree is balanced according to BAP95, which means the tree
-   * is flat-enough with respect to the bounds. Note that this definition of
-   * balanced is one where sub-trees of balanced trees are not necessarily
-   * balanced.
+   * Determines if the tree is balanced according to BAP95, which means the tree is flat-enough with
+   * respect to the bounds. Note that this definition of balanced is one where sub-trees of balanced
+   * trees are not necessarily balanced.
    *
    * @return true if the tree is balanced
    */
@@ -289,17 +275,16 @@ final class RopeByteString extends ByteString {
   }
 
   /**
-   * Takes a substring of this one. This involves recursive descent along the
-   * left and right edges of the substring, and referencing any wholly contained
-   * segments in between. Any leaf nodes entirely uninvolved in the substring
-   * will not be referenced by the substring.
+   * Takes a substring of this one. This involves recursive descent along the left and right edges
+   * of the substring, and referencing any wholly contained segments in between. Any leaf nodes
+   * entirely uninvolved in the substring will not be referenced by the substring.
    *
-   * <p>Substrings of {@code length < 2} should result in at most a single
-   * recursive call chain, terminating at a leaf node. Thus the result will be a
-   * {@link com.google.protobuf.ByteString.LeafByteString}.
+   * <p>Substrings of {@code length < 2} should result in at most a single recursive call chain,
+   * terminating at a leaf node. Thus the result will be a {@link
+   * com.google.protobuf.ByteString.LeafByteString}.
    *
    * @param beginIndex start at this index
-   * @param endIndex   the last character is the one before this index
+   * @param endIndex the last character is the one before this index
    * @return substring leaf node or tree
    */
   @Override
@@ -340,18 +325,16 @@ final class RopeByteString extends ByteString {
   // ByteString -> byte[]
 
   @Override
-  protected void copyToInternal(byte[] target, int sourceOffset,
-      int targetOffset, int numberToCopy) {
-   if (sourceOffset + numberToCopy <= leftLength) {
+  protected void copyToInternal(
+      byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
+    if (sourceOffset + numberToCopy <= leftLength) {
       left.copyToInternal(target, sourceOffset, targetOffset, numberToCopy);
     } else if (sourceOffset >= leftLength) {
-      right.copyToInternal(target, sourceOffset - leftLength, targetOffset,
-          numberToCopy);
+      right.copyToInternal(target, sourceOffset - leftLength, targetOffset, numberToCopy);
     } else {
       int leftLength = this.leftLength - sourceOffset;
       left.copyToInternal(target, sourceOffset, targetOffset, leftLength);
-      right.copyToInternal(target, 0, targetOffset + leftLength,
-          numberToCopy - leftLength);
+      right.copyToInternal(target, 0, targetOffset + leftLength, numberToCopy - leftLength);
     }
   }
 
@@ -387,8 +370,7 @@ final class RopeByteString extends ByteString {
   }
 
   @Override
-  void writeToInternal(OutputStream out, int sourceOffset,
-      int numberToWrite) throws IOException {
+  void writeToInternal(OutputStream out, int sourceOffset, int numberToWrite) throws IOException {
     if (sourceOffset + numberToWrite <= leftLength) {
       left.writeToInternal(out, sourceOffset, numberToWrite);
     } else if (sourceOffset >= leftLength) {
@@ -471,13 +453,11 @@ final class RopeByteString extends ByteString {
   }
 
   /**
-   * Determines if this string is equal to another of the same length by
-   * iterating over the leaf nodes. On each step of the iteration, the
-   * overlapping segments of the leaves are compared.
+   * Determines if this string is equal to another of the same length by iterating over the leaf
+   * nodes. On each step of the iteration, the overlapping segments of the leaves are compared.
    *
    * @param other string of the same length as this one
-   * @return true if the values of this string equals the value of the given
-   *         one
+   * @return true if the values of this string equals the value of the given one
    */
   private boolean equalsFragments(ByteString other) {
     int thisOffset = 0;
@@ -495,9 +475,10 @@ final class RopeByteString extends ByteString {
       int bytesToCompare = Math.min(thisRemaining, thatRemaining);
 
       // At least one of the offsets will be zero
-      boolean stillEqual = (thisOffset == 0)
-          ? thisString.equalsRange(thatString, thatOffset, bytesToCompare)
-          : thatString.equalsRange(thisString, thisOffset, bytesToCompare);
+      boolean stillEqual =
+          (thisOffset == 0)
+              ? thisString.equalsRange(thatString, thatOffset, bytesToCompare)
+              : thatString.equalsRange(thisString, thisOffset, bytesToCompare);
       if (!stillEqual) {
         return false;
       }
@@ -553,14 +534,13 @@ final class RopeByteString extends ByteString {
   }
 
   /**
-   * This class implements the balancing algorithm of BAP95. In the paper the
-   * authors use an array to keep track of pieces, while here we use a stack.
-   * The tree is balanced by traversing subtrees in left to right order, and the
-   * stack always contains the part of the string we've traversed so far.
+   * This class implements the balancing algorithm of BAP95. In the paper the authors use an array
+   * to keep track of pieces, while here we use a stack. The tree is balanced by traversing subtrees
+   * in left to right order, and the stack always contains the part of the string we've traversed so
+   * far.
    *
-   * <p>One surprising aspect of the algorithm is the result of balancing is not
-   * necessarily balanced, though it is nearly balanced.  For details, see
-   * BAP95.
+   * <p>One surprising aspect of the algorithm is the result of balancing is not necessarily
+   * balanced, though it is nearly balanced. For details, see BAP95.
    */
   private static class Balancer {
     // Stack containing the part of the string, starting from the left, that
@@ -596,21 +576,18 @@ final class RopeByteString extends ByteString {
         doBalance(rbs.right);
       } else {
         throw new IllegalArgumentException(
-            "Has a new type of ByteString been created? Found " +
-                root.getClass());
+            "Has a new type of ByteString been created? Found " + root.getClass());
       }
     }
 
     /**
-     * Push a string on the balance stack (BAP95).  BAP95 uses an array and
-     * calls the elements in the array 'bins'.  We instead use a stack, so the
-     * 'bins' of lengths are represented by differences between the elements of
-     * minLengthByDepth.
+     * Push a string on the balance stack (BAP95). BAP95 uses an array and calls the elements in the
+     * array 'bins'. We instead use a stack, so the 'bins' of lengths are represented by differences
+     * between the elements of minLengthByDepth.
      *
-     * <p>If the length bin for our string, and all shorter length bins, are
-     * empty, we just push it on the stack.  Otherwise, we need to start
-     * concatenating, putting the given string in the "middle" and continuing
-     * until we land in an empty length bin that matches the length of our
+     * <p>If the length bin for our string, and all shorter length bins, are empty, we just push it
+     * on the stack. Otherwise, we need to start concatenating, putting the given string in the
+     * "middle" and continuing until we land in an empty length bin that matches the length of our
      * concatenation.
      *
      * @param byteString string to place on the balance stack
@@ -630,8 +607,7 @@ final class RopeByteString extends ByteString {
 
         // Concatenate the subtrees of shorter length
         ByteString newTree = prefixesStack.pop();
-        while (!prefixesStack.isEmpty()
-            && prefixesStack.peek().size() < binStart) {
+        while (!prefixesStack.isEmpty() && prefixesStack.peek().size() < binStart) {
           ByteString left = prefixesStack.pop();
           newTree = new RopeByteString(left, newTree);
         }
@@ -668,18 +644,15 @@ final class RopeByteString extends ByteString {
   }
 
   /**
-   * This class is a continuable tree traversal, which keeps the state
-   * information which would exist on the stack in a recursive traversal instead
-   * on a stack of "Bread Crumbs". The maximum depth of the stack in this
-   * iterator is the same as the depth of the tree being traversed.
+   * This class is a continuable tree traversal, which keeps the state information which would exist
+   * on the stack in a recursive traversal instead on a stack of "Bread Crumbs". The maximum depth
+   * of the stack in this iterator is the same as the depth of the tree being traversed.
    *
-   * <p>This iterator is used to implement
-   * {@link RopeByteString#equalsFragments(ByteString)}.
+   * <p>This iterator is used to implement {@link RopeByteString#equalsFragments(ByteString)}.
    */
   private static class PieceIterator implements Iterator<LeafByteString> {
 
-    private final Stack<RopeByteString> breadCrumbs =
-        new Stack<RopeByteString>();
+    private final Stack<RopeByteString> breadCrumbs = new Stack<RopeByteString>();
     private LeafByteString next;
 
     private PieceIterator(ByteString root) {
@@ -717,8 +690,7 @@ final class RopeByteString extends ByteString {
     }
 
     /**
-     * Returns the next item and advances one
-     * {@link com.google.protobuf.ByteString.LeafByteString}.
+     * Returns the next item and advances one {@link com.google.protobuf.ByteString.LeafByteString}.
      *
      * @return next non-empty LeafByteString or {@code null}
      */
@@ -748,14 +720,10 @@ final class RopeByteString extends ByteString {
   }
 
   private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
-    throw new InvalidObjectException(
-        "RopeByteStream instances are not to be serialized directly");
+    throw new InvalidObjectException("RopeByteStream instances are not to be serialized directly");
   }
 
-  /**
-   * This class is the {@link RopeByteString} equivalent for
-   * {@link ByteArrayInputStream}.
-   */
+  /** This class is the {@link RopeByteString} equivalent for {@link ByteArrayInputStream}. */
   private class RopeInputStream extends InputStream {
     // Iterates through the pieces of the rope
     private PieceIterator pieceIterator;
@@ -775,7 +743,7 @@ final class RopeByteString extends ByteString {
     }
 
     @Override
-    public int read(byte b[], int offset, int length)  {
+    public int read(byte[] b, int offset, int length) {
       if (b == null) {
         throw new NullPointerException();
       } else if (offset < 0 || length < 0 || length > b.length - offset) {
@@ -795,24 +763,23 @@ final class RopeByteString extends ByteString {
     }
 
     /**
-     * Internal implementation of read and skip.  If b != null, then read the
-     * next {@code length} bytes into the buffer {@code b} at
-     * offset {@code offset}.  If b == null, then skip the next {@code length}
-     * bytes.
-     * <p>
-     * This method assumes that all error checking has already happened.
-     * <p>
-     * Returns the actual number of bytes read or skipped.
+     * Internal implementation of read and skip. If b != null, then read the next {@code length}
+     * bytes into the buffer {@code b} at offset {@code offset}. If b == null, then skip the next
+     * {@code length} bytes.
+     *
+     * <p>This method assumes that all error checking has already happened.
+     *
+     * <p>Returns the actual number of bytes read or skipped.
      */
-    private int readSkipInternal(byte b[], int offset, int length)  {
+    private int readSkipInternal(byte[] b, int offset, int length) {
       int bytesRemaining = length;
       while (bytesRemaining > 0) {
         advanceIfCurrentPieceFullyRead();
         if (currentPiece == null) {
           if (bytesRemaining == length) {
-             // We didn't manage to read anything
-             return -1;
-           }
+            // We didn't manage to read anything
+            return -1;
+          }
           break;
         } else {
           // Copy the bytes from this piece.
@@ -826,7 +793,7 @@ final class RopeByteString extends ByteString {
           bytesRemaining -= count;
         }
       }
-       // Return the number of bytes read.
+      // Return the number of bytes read.
       return length - bytesRemaining;
     }
 
@@ -874,9 +841,8 @@ final class RopeByteString extends ByteString {
     }
 
     /**
-     * Skips to the next piece if we have read all the data in the current
-     * piece.  Sets currentPiece to null if we have reached the end of the
-     * input.
+     * Skips to the next piece if we have read all the data in the current piece. Sets currentPiece
+     * to null if we have reached the end of the input.
      */
     private void advanceIfCurrentPieceFullyRead() {
       if (currentPiece != null && currentPieceIndex == currentPieceSize) {

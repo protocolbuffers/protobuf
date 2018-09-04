@@ -166,13 +166,13 @@ PyObject* InternalGetSubMessage(
 // Deletes a range of C++ submessages in a repeated field (following a
 // removal in a RepeatedCompositeContainer).
 //
-// Releases messages to the provided cmessage_list if it is not NULL rather
+// Releases submessages to the provided cmessage_list if it is not NULL rather
 // than just removing them from the underlying proto. This cmessage_list must
 // have a CMessage for each underlying submessage. The CMessages referred to
 // by slice will be removed from cmessage_list by this function.
 //
 // Corresponds to reflection api method RemoveLast.
-int InternalDeleteRepeatedField(CMessage* self,
+int InternalDeleteRepeatedField(Message* message,
                                 const FieldDescriptor* field_descriptor,
                                 PyObject* slice, PyObject* cmessage_list);
 
@@ -332,7 +332,7 @@ bool CheckAndSetString(
     bool append,
     int index);
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
-                         const string& value);
+                         const std::string& value);
 
 // Check if the passed field descriptor belongs to the given message.
 // If not, return false and set a Python exception (a KeyError)

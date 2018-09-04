@@ -32,7 +32,7 @@ package com.google.protobuf;
 
 import any_test.AnyTestProto.TestAny;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-
+import java.util.Objects;
 import junit.framework.TestCase;
 
 /**
@@ -56,7 +56,7 @@ public class AnyTest extends TestCase {
 
     // Unpacking to a wrong type will throw an exception.
     try {
-      TestAny wrongMessage = container.getValue().unpack(TestAny.class);
+      container.getValue().unpack(TestAny.class);
       fail("Exception is expected.");
     } catch (InvalidProtocolBufferException e) {
       // expected.
@@ -68,7 +68,7 @@ public class AnyTest extends TestCase {
         ByteString.copyFrom(new byte[]{0x11}));
     container = containerBuilder.build();
     try {
-      TestAllTypes parsingFailed = container.getValue().unpack(TestAllTypes.class);
+      container.getValue().unpack(TestAllTypes.class);
       fail("Exception is expected.");
     } catch (InvalidProtocolBufferException e) {
       // expected.
@@ -132,6 +132,6 @@ public class AnyTest extends TestCase {
 
     TestAllTypes result1 = container.getValue().unpack(TestAllTypes.class);
     TestAllTypes result2 = container.getValue().unpack(TestAllTypes.class);
-    assertTrue(result1 == result2);
+    assertTrue(Objects.equals(result1, result2));
   }
 }

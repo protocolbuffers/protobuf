@@ -1579,6 +1579,8 @@ class ReflectionTest(BaseTestCase):
     proto1.repeated_int32.append(3)
     container = copy.deepcopy(proto1.repeated_int32)
     self.assertEqual([2, 3], container)
+    container.remove(container[0])
+    self.assertEqual([3], container)
 
     message1 = proto1.repeated_nested_message.add()
     message1.bb = 1
@@ -1586,6 +1588,8 @@ class ReflectionTest(BaseTestCase):
     self.assertEqual(proto1.repeated_nested_message, messages)
     message1.bb = 2
     self.assertNotEqual(proto1.repeated_nested_message, messages)
+    messages.remove(messages[0])
+    self.assertEqual(len(messages), 0)
 
     # TODO(anuraag): Implement deepcopy for extension dict
 

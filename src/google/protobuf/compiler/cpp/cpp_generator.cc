@@ -182,32 +182,41 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   // Generate cc file(s).
   if (UsingImplicitWeakFields(file, file_options)) {
-    {
-      // This is the global .cc file, containing enum/services/tables/reflection
+    if (file->name() == "net/proto2/proto/descriptor.proto") {
+      // If we are building with implicit weak fields then we do not want to
+      // produce any symbols for descriptor.proto, so we just create an empty
+      // pb.cc file.
       std::unique_ptr<io::ZeroCopyOutputStream> output(
           generator_context->Open(basename + ".pb.cc"));
-      io::Printer printer(output.get(), '$');
-      file_generator.GenerateGlobalSource(&printer);
-    }
+    } else {
+      {
+        // This is the global .cc file, containing
+        // enum/services/tables/reflection
+        std::unique_ptr<io::ZeroCopyOutputStream> output(
+            generator_context->Open(basename + ".pb.cc"));
+        io::Printer printer(output.get(), '$');
+        file_generator.GenerateGlobalSource(&printer);
+      }
 
-    int num_cc_files = file_generator.NumMessages();
+      int num_cc_files = file_generator.NumMessages();
 
-    // If we're using implicit weak fields then we allow the user to optionally
-    // specify how many files to generate, not counting the global pb.cc file.
-    // If we have more files than messages, then some files will be generated as
-    // empty placeholders.
-    if (file_options.num_cc_files > 0) {
-      GOOGLE_CHECK_LE(file_generator.NumMessages(), file_options.num_cc_files)
-          << "There must be at least as many numbered .cc files as messages.";
-      num_cc_files = file_options.num_cc_files;
-    }
-    for (int i = 0; i < num_cc_files; i++) {
-      // TODO(gerbens) Agree on naming scheme.
-      std::unique_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(
-          basename + ".out/" + SimpleItoa(i) + ".cc"));
-      io::Printer printer(output.get(), '$');
-      if (i < file_generator.NumMessages()) {
-        file_generator.GenerateSourceForMessage(i, &printer);
+      // If we're using implicit weak fields then we allow the user to
+      // optionally specify how many files to generate, not counting the global
+      // pb.cc file. If we have more files than messages, then some files will
+      // be generated as empty placeholders.
+      if (file_options.num_cc_files > 0) {
+        GOOGLE_CHECK_LE(file_generator.NumMessages(), file_options.num_cc_files)
+            << "There must be at least as many numbered .cc files as messages.";
+        num_cc_files = file_options.num_cc_files;
+      }
+      for (int i = 0; i < num_cc_files; i++) {
+        std::unique_ptr<io::ZeroCopyOutputStream> output(
+            generator_context->Open(basename + ".out/" +
+                                    SimpleItoa(i) + ".cc"));
+        io::Printer printer(output.get(), '$');
+        if (i < file_generator.NumMessages()) {
+          file_generator.GenerateSourceForMessage(i, &printer);
+        }
       }
     }
   } else {

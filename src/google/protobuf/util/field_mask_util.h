@@ -45,20 +45,20 @@ namespace google {
 namespace protobuf {
 namespace util {
 
-class LIBPROTOBUF_EXPORT FieldMaskUtil {
+class PROTOBUF_EXPORT FieldMaskUtil {
   typedef google::protobuf::FieldMask FieldMask;
 
  public:
   // Converts FieldMask to/from string, formatted by separating each path
   // with a comma (e.g., "foo_bar,baz.quz").
-  static string ToString(const FieldMask& mask);
+  static std::string ToString(const FieldMask& mask);
   static void FromString(StringPiece str, FieldMask* out);
 
   // Converts FieldMask to/from string, formatted according to proto3 JSON
   // spec for FieldMask (e.g., "fooBar,baz.quz"). If the field name is not
   // style conforming (i.e., not snake_case when converted to string, or not
   // camelCase when converted from string), the conversion will fail.
-  static bool ToJsonString(const FieldMask& mask, string* out);
+  static bool ToJsonString(const FieldMask& mask, std::string* out);
   static bool FromJsonString(StringPiece str, FieldMask* out);
 
   // Get the descriptors of the fields which the given path from the message
@@ -98,15 +98,18 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   template <typename T>
   static FieldMask GetFieldMaskForAllFields() {
     FieldMask out;
-    InternalGetFieldMaskForAllFields(T::descriptor(), &out);
+    GetFieldMaskForAllFields(T::descriptor(), &out);
     return out;
   }
   template <typename T>
-  GOOGLE_PROTOBUF_DEPRECATED_MSG(
-      "Use *out = GetFieldMaskForAllFields() instead")
+  PROTOBUF_DEPRECATED_MSG("Use *out = GetFieldMaskForAllFields() instead")
   static void GetFieldMaskForAllFields(FieldMask* out) {
-    InternalGetFieldMaskForAllFields(T::descriptor(), out);
+    GetFieldMaskForAllFields(T::descriptor(), out);
   }
+  // This flavor takes the protobuf type descriptor as an argument.
+  // Useful when the type is not known at compile time.
+  static void GetFieldMaskForAllFields(const Descriptor* descriptor,
+                                       FieldMask* out);
 
   // Converts a FieldMask to the canonical form. It will:
   //   1. Remove paths that are covered by another path. For example,
@@ -127,8 +130,13 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   template <typename T>
   static void Subtract(const FieldMask& mask1, const FieldMask& mask2,
                        FieldMask* out) {
-    InternalSubtract(T::descriptor(), mask1, mask2, out);
+    Subtract(T::descriptor(), mask1, mask2, out);
   }
+  // This flavor takes the protobuf type descriptor as an argument.
+  // Useful when the type is not known at compile time.
+  static void Subtract(const Descriptor* descriptor,
+                       const FieldMask& mask1, const FieldMask& mask2,
+                       FieldMask* out);
 
   // Returns true if path is covered by the given FieldMask. Note that path
   // "foo.bar" covers all paths like "foo.bar.baz", "foo.bar.quz.x", etc.
@@ -169,7 +177,7 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   // Note that the input can contain characters not allowed in C identifiers.
   // For example, "foo_bar,baz_quz" will be converted to "fooBar,bazQuz"
   // successfully.
-  static bool SnakeCaseToCamelCase(StringPiece input, string* output);
+  static bool SnakeCaseToCamelCase(StringPiece input, std::string* output);
   // Converts a field name from camelCase to snake_case:
   //   1. Every uppercase letter is converted to lowercase with a additional
   //      preceding "-".
@@ -182,17 +190,10 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   // Note that the input can contain characters not allowed in C identifiers.
   // For example, "fooBar,bazQuz" will be converted to "foo_bar,baz_quz"
   // successfully.
-  static bool CamelCaseToSnakeCase(StringPiece input, string* output);
-
-  static void InternalGetFieldMaskForAllFields(const Descriptor* descriptor,
-                                               FieldMask* out);
-
-  static void InternalSubtract(const Descriptor* descriptor,
-                               const FieldMask& mask1, const FieldMask& mask2,
-                               FieldMask* out);
+  static bool CamelCaseToSnakeCase(StringPiece input, std::string* output);
 };
 
-class LIBPROTOBUF_EXPORT FieldMaskUtil::MergeOptions {
+class PROTOBUF_EXPORT FieldMaskUtil::MergeOptions {
  public:
   MergeOptions()
       : replace_message_fields_(false), replace_repeated_fields_(false) {}
@@ -220,7 +221,7 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil::MergeOptions {
   bool replace_repeated_fields_;
 };
 
-class LIBPROTOBUF_EXPORT FieldMaskUtil::TrimOptions {
+class PROTOBUF_EXPORT FieldMaskUtil::TrimOptions {
  public:
   TrimOptions()
       : keep_required_fields_(false) {}

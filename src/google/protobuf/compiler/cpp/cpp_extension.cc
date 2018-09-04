@@ -137,6 +137,16 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) const {
 }
 
 void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
+  // If we are building for lite with implicit weak fields, we want to skip over
+  // any custom options (i.e. extensions of messages from descriptor.proto).
+  // This prevents the creation of any unnecessary linker references to the
+  // descriptor messages.
+  if (options_.lite_implicit_weak_fields &&
+      descriptor_->containing_type()->file()->name() ==
+          "net/proto2/proto/descriptor.proto") {
+    return;
+  }
+
   Formatter format(printer, variables_);
   string default_str;
   // If this is a class member, it needs to be declared in its class scope.

@@ -31,6 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 
+#include <type_traits>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/port.h>
@@ -112,7 +114,7 @@ class MapFieldLite {
   Arena* arena_;
   Map<Key, T> map_;
 
-  friend class ::GOOGLE_PROTOBUF_NAMESPACE_ID::Arena;
+  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
 };
 
 // True if IsInitialized() is true for value field in all elements of t. T is
