@@ -200,9 +200,19 @@ static void *upb_array_add(upb_array *arr, size_t elements) {
   return ret;
 }
 
+static size_t get_field_offset(const upb_decframe *frame,
+                               const upb_msglayout_field *field) {
+  if (field->oneof_index == UPB_NOT_IN_ONEOF) {
+    return field->offset;
+  } else {
+    return frame->m->oneofs[field->oneof_index].data_offset;
+  }
+}
+
 static upb_array *upb_getarr(upb_decframe *frame,
                              const upb_msglayout_field *field) {
   UPB_ASSERT(field->label == UPB_LABEL_REPEATED);
+  UPB_ASSERT(field->oneof_index == UPB_NOT_IN_ONEOF);
   return *(upb_array**)&frame->msg[field->offset];
 }
 
@@ -237,7 +247,7 @@ static void upb_setoneofcase(upb_decframe *frame,
 
 static char *upb_decode_prepareslot(upb_decstate *d, upb_decframe *frame,
                                     const upb_msglayout_field *field) {
-  char *field_mem = frame->msg + field->offset;
+  char *field_mem = frame->msg + get_field_offset(frame, field);
   upb_array *arr;
 
   if (field->label == UPB_LABEL_REPEATED) {

@@ -186,17 +186,78 @@ local function field_layout_rank(field)
   return (rank * 2^29) + field:number()
 end
 
-local function get_layout_order(msg)
-  local ret = {}
-
-  for field in msg:fields() do
-    table.insert(ret, field)
+local function sizeof(field)
+  if field:label() == upb.LABEL_REPEATED or
+     field:type() == upb.TYPE_MESSAGE then
+    return {4, 8}
+  elseif field:type() == upb.TYPE_STRING or field:type() == upb.TYPE_BYTES then
+    -- upb_stringview
+    return {8, 16}
+  elseif field:type() == upb.TYPE_BOOL then
+    return {1, 1}
+  elseif field:type() == upb.TYPE_FLOAT or
+         field:type() == upb.TYPE_INT32 or
+         field:type() == upb.TYPE_UINT32 then
+    return {4, 4}
+  else
+    return {8, 8}
   end
-  table.sort(ret, function(a, b)
+end
+
+local function sizemax(size, max)
+  max[1] = math.max(max[1], size[1])
+  max[2] = math.max(max[2], size[2])
+end
+
+local function alignup(val, align)
+  val[1] = math.ceil(val[1] / align[1]) * align[1]
+  val[2] = math.ceil(val[2] / align[2]) * align[2]
+end
+
+local function copysize(size)
+  return {size[1], size[2]}
+end
+
+local function place(offset, size, max)
+  alignup(offset, size)
+  local ret = copysize(offset)
+
+  -- add size
+  offset[1] = offset[1] + size[1]
+  offset[2] = offset[2] + size[2]
+
+  -- track max size
+  sizemax(size, max)
+
+  return ret
+end
+
+local function get_field_layout_order(msg)
+  local field_order = {}
+
+  -- Sort fields by rank.
+  for field in msg:fields() do
+    table.insert(field_order, field)
+  end
+  table.sort(field_order, function(a, b)
     return field_layout_rank(a) < field_layout_rank(b)
   end)
 
-  return ret
+  return field_order
+end
+
+local function get_oneof_layout_order(msg)
+  local oneof_order = {}
+
+  -- Sort oneofs by name.
+  for oneof in msg:oneofs() do
+    table.insert(oneof_order, oneof)
+  end
+  table.sort(oneof_order, function(a, b)
+    return a:name() < b:name()
+  end)
+
+  return oneof_order
 end
 
 local function has_hasbit(field)
@@ -207,59 +268,63 @@ local function has_hasbit(field)
   end
 end
 
-local function get_hasbit_indexes(msg)
+local function get_message_layout(msg)
   local hasbit_count = 0
-  local ret = {}
+  local hasbit_indexes = {}
+  local field_order = get_field_layout_order(msg)
+  local maxsize = {0, 0}
 
-  for _, field in ipairs(get_layout_order(msg)) do
+  -- Count hasbits.
+  for _, field in ipairs(field_order) do
     if has_hasbit(field) then
-      ret[field] = hasbit_count
+      hasbit_indexes[field] = hasbit_count
       hasbit_count = hasbit_count + 1
     end
   end
 
-  return ret
+  -- Place hasbits at the beginning.
+  local offset = math.ceil(hasbit_count / 8)
+  offset = {offset, offset}  -- 32, 64 bit
+  local offsets = {}
+
+  -- Place non-oneof fields.
+  for _, field in ipairs(field_order) do
+    if not field:containing_oneof() then
+      offsets[field] = place(offset, sizeof(field), maxsize)
+    end
+  end
+
+  -- Place oneof fields.
+  for oneof in msg:oneofs() do
+    local oneof_maxsize = {0, 0}
+    -- Calculate max size.
+    for field in oneof:fields() do
+      local size = sizeof(field)
+      sizemax(size, oneof_maxsize)
+    end
+
+    -- Place discriminator enum and data.
+    local data = place(offset, oneof_maxsize, maxsize)
+    local case = place(offset, {4, 4}, maxsize)
+    offsets[oneof] = {data, case}
+  end
+
+  -- Align overall size up to max size.
+  alignup(offset, maxsize)
+  local size = copysize(offset)
+
+  -- Place oneof defaults.
+  for oneof in msg:oneofs() do
+    for field in oneof:fields() do
+      offsets[field] = place(offset, sizeof(field), maxsize)
+    end
+  end
+
+  return hasbit_indexes, offsets, size
 end
 
-local function generate_struct(msg, append)
-  -- Create a layout order for fields.  We use this order for the struct and
-  -- for offsets, but our list of fields we keep in field number order.
-  local fields_layout_order = get_layout_order(msg)
-  local hasbit_indexes = get_hasbit_indexes(msg)
-  local has_hasbits = next(hasbit_indexes) ~= nil
-
-  append('struct %s {\n', to_cident(msg:full_name()))
-
-  -- Hasbits
-  if has_hasbits then
-    append('  struct {\n')
-    for _, field in ipairs(fields_layout_order) do
-      if has_hasbit(field) then
-        append('    bool %s:1;\n', field:name())
-      end
-    end
-    append('  } has;\n')
-  end
-
-  -- Non-oneof fields.
-  for _, field in ipairs(fields_layout_order) do
-    if not field:containing_oneof() then
-      append('  %s %s;\n', ctype(field), field:name())
-    end
-  end
-
-  -- Oneof fields.
-  for oneof in msg:oneofs() do
-    local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
-    append('  union {\n')
-    for field in oneof:fields() do
-      append('    %s %s;\n', ctype(field), field:name())
-    end
-    append('  } %s;\n', oneof:name())
-    append('  %s_oneofcases %s_case;\n', fullname, oneof:name())
-  end
-
-  append('};\n\n')
+function get_sizeinit(size)
+  return string.format("UPB_SIZE(%s, %s)", size[1], size[2])
 end
 
 local function write_h_file(filedef, append)
@@ -271,16 +336,14 @@ local function write_h_file(filedef, append)
   append('#include "upb/msg.h"\n\n')
   append('#include "upb/decode.h"\n')
   append('#include "upb/encode.h"\n')
+  append('#include "upb/port_def.inc"\n')
 
   append('UPB_BEGIN_EXTERN_C\n\n')
 
   -- Forward-declare types defined in this file.
   for msg in filedef:defs(upb.DEF_MSG) do
-    -- TODO(haberman): forward declare C++ type names so we can use
-    -- UPB_DECLARE_TYPE().
     local msgname = to_cident(msg:full_name())
-    append('struct %s;\n', msgname)
-    append('typedef struct %s %s;\n', msgname, msgname)
+    append('typedef struct %s { int a; } %s;\n', msgname, msgname)
   end
 
   -- Forward-declare types not in this file, but used as submessages.
@@ -303,18 +366,9 @@ local function write_h_file(filedef, append)
   end
 
   for msg in filedef:defs(upb.DEF_MSG) do
-    for oneof in msg:oneofs() do
-      local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
-      append('typedef enum {\n')
-      for field in oneof:fields() do
-        append('  %s = %d,\n', fullname .. "_" .. field:name(), field:number())
-      end
-      append('  %s_NOT_SET = 0,\n', fullname)
-      append('} %s_oneofcases;\n', fullname)
-      append('\n')
-    end
+    local hasbit_indexes, offsets, size = get_message_layout(msg)
 
-    generate_struct(msg, append)
+    append("/* %s */\n\n", msg:full_name())
 
     local msgname = to_cident(msg:full_name())
     append('extern const upb_msglayout %s_msginit;\n', msgname)
@@ -331,11 +385,59 @@ local function write_h_file(filedef, append)
     append('  return upb_encode(msg, &%s_msginit, arena, len);\n', msgname)
     append('}\n')
     append('\n')
+
+    for oneof in msg:oneofs() do
+      local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
+      local offset = offsets[oneof]
+      append('typedef enum {\n')
+      for field in oneof:fields() do
+        append('  %s = %d,\n', fullname .. "_" .. field:name(), field:number())
+      end
+      append('  %s_NOT_SET = 0,\n', fullname)
+      append('} %s_oneofcases;\n', fullname)
+      append('UPB_INLINE %s_oneofcases %s_%s_case(const %s* msg) { ' ..
+             'return UPB_FIELD_AT(msg, int, %s); }\n',
+             fullname, msgname, oneof:name(), msgname, get_sizeinit(offset[2]))
+      append('\n')
+    end
+
+    for field in msg:fields() do
+      append('UPB_INLINE %s %s_%s(const %s *msg) {',
+             ctype(field, true), msgname, field:name(), msgname)
+      if field:containing_oneof() then
+        local offset = offsets[field:containing_oneof()]
+        append(' return UPB_READ_ONEOF(msg, %s, %s, %s, %s, %s); }\n',
+               ctype(field, true), get_sizeinit(offset[1]),
+               get_sizeinit(offset[2]), field:number(), field_default(field))
+      else
+        append(' return UPB_FIELD_AT(msg, %s, %s); }\n',
+               ctype(field, true), get_sizeinit(offsets[field]))
+      end
+    end
+
+    append('\n')
+
+    for field in msg:fields() do
+      append('UPB_INLINE void %s_set_%s(%s *msg, %s value) { ',
+              msgname, field:name(), msgname, ctype(field))
+      if field:containing_oneof() then
+        local offset = offsets[field:containing_oneof()]
+        append('UPB_WRITE_ONEOF(msg, %s, %s, value, %s, %s); }\n',
+               ctype(field), get_sizeinit(offset[1]), get_sizeinit(offset[2]),
+               field:number())
+      else
+        append('UPB_FIELD_AT(msg, %s, %s) = value; }\n',
+               ctype(field), get_sizeinit(offsets[field]))
+      end
+    end
+
+    append('\n\n')
   end
 
   append('UPB_END_EXTERN_C')
 
   append('\n')
+  append('#include "upb/port_undef.inc"\n');
   append('\n')
 
   append('#endif  /* %s_UPB_H_ */\n', basename_preproc)
@@ -365,7 +467,8 @@ local function write_c_file(filedef, hfilename, append)
     local submsg_count = 0
     local submsg_set = {}
     local submsg_indexes = {}
-    local hasbit_indexes = get_hasbit_indexes(msg)
+    local hasbit_indexes, offsets, size = get_message_layout(msg)
+    local oneofs_layout_order = get_oneof_layout_order(msg)
     local oneof_count = 0
     local oneof_indexes = {}
 
@@ -385,16 +488,6 @@ local function write_c_file(filedef, hfilename, append)
       return a:number() < b:number()
     end)
 
-    -- Create a layout order for oneofs.
-    local oneofs_layout_order = {}
-    for oneof in msg:oneofs() do
-      table.insert(oneofs_layout_order, oneof)
-    end
-
-    table.sort(oneofs_layout_order, function(a, b)
-      return a:name() < b:name()
-    end)
-
     for _, oneof in ipairs(oneofs_layout_order) do
       oneof_indexes[oneof] = oneof_count
       oneof_count = oneof_count + 1
@@ -406,8 +499,8 @@ local function write_c_file(filedef, hfilename, append)
       append('static const upb_msglayout_oneof %s[%s] = {\n',
              oneofs_array_name, oneof_count)
       for _, oneof in ipairs(oneofs_layout_order) do
-        append('  {offsetof(%s, %s), offsetof(%s, %s_case)},\n',
-               msgname, oneof:name(), msgname, oneof:name())
+        local offset = offsets[oneof]
+        append('  {%s, %s},\n', get_sizeinit(offset[1]), get_sizeinit(offset[2]))
       end
       append('};\n\n')
     end
@@ -451,10 +544,9 @@ local function write_c_file(filedef, hfilename, append)
         if field:containing_oneof() then
           oneof_index = oneof_indexes[field:containing_oneof()]
         end
-        append('  {%s, offsetof(%s, %s), %s, %s, %s, %s, %s},\n',
+        append('  {%s, %s, %s, %s, %s, %s, %s},\n',
                field:number(),
-               msgname,
-               (field:containing_oneof() and field:containing_oneof():name()) or field:name(),
+               get_sizeinit(offsets[field]),
                hasbit_indexes[field] or "UPB_NO_HASBIT",
                oneof_index,
                submsg_index,
@@ -469,9 +561,9 @@ local function write_c_file(filedef, hfilename, append)
     append('  %s,\n', fields_array_ref)
     append('  %s,\n', oneofs_array_ref)
     append('  NULL, /* TODO. default_msg */\n')
-    append('  UPB_ALIGNED_SIZEOF(%s), %s, %s, %s, %s\n',
-           msgname, field_count,
-           0, -- TODO: oneof_count
+    append('  %s, %s, %s, %s, %s\n',
+           get_sizeinit(size), field_count,
+           oneof_count,
            'false', -- TODO: extendable
           msg:file():syntax() == upb.SYNTAX_PROTO2
           )

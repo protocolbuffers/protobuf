@@ -340,6 +340,15 @@ bool upb_encode_hasscalarfield(const char *msg, const upb_msglayout *m,
   }
 }
 
+static size_t get_field_offset2(const upb_msglayout *m,
+                                const upb_msglayout_field *field) {
+  if (field->oneof_index == UPB_NOT_IN_ONEOF) {
+    return field->offset;
+  } else {
+    return m->oneofs[field->oneof_index].data_offset;
+  }
+}
+
 bool upb_encode_message(upb_encstate *e, const char *msg,
                         const upb_msglayout *m, size_t *size) {
   int i;
@@ -351,13 +360,14 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
 
   for (i = m->field_count - 1; i >= 0; i--) {
     const upb_msglayout_field *f = &m->fields[i];
+    size_t offset = get_field_offset2(m, f);
 
     if (f->label == UPB_LABEL_REPEATED) {
-      CHK(upb_encode_array(e, msg + f->offset, m, f));
+      CHK(upb_encode_array(e, msg + offset, m, f));
     } else {
       if (upb_encode_hasscalarfield(msg, m, f)) {
         if (f->oneof_index == UPB_NOT_IN_ONEOF) {
-          CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
+          CHK(upb_encode_scalarfield(e, msg + offset, m, f, !m->is_proto2));
         } else {
           const upb_msglayout_oneof *o = &m->oneofs[f->oneof_index];
           CHK(upb_encode_scalarfield(e, msg + o->data_offset,
