@@ -10,6 +10,7 @@
 #include "upb/msg.h"
 #include "google/protobuf/descriptor.upb.h"
 
+#include "upb/port_def.inc"
 
 static const upb_msglayout *const google_protobuf_FileDescriptorSet_submsgs[1] = {
   &google_protobuf_FileDescriptorProto_msginit,
@@ -531,4 +532,6 @@ const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
   NULL, /* TODO. default_msg */
   UPB_SIZE(32, 48), 4, 0, false, true
 };
+
+#include "upb/port_undef.inc"
 

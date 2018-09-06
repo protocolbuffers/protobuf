@@ -43,6 +43,7 @@ typedef struct google_protobuf_SourceCodeInfo { int a; } google_protobuf_SourceC
 typedef struct google_protobuf_SourceCodeInfo_Location { int a; } google_protobuf_SourceCodeInfo_Location;
 typedef struct google_protobuf_GeneratedCodeInfo { int a; } google_protobuf_GeneratedCodeInfo;
 typedef struct google_protobuf_GeneratedCodeInfo_Annotation { int a; } google_protobuf_GeneratedCodeInfo_Annotation;
+
 /* Enums */
 
 typedef enum {
@@ -800,6 +801,7 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_end(google_prot
 
 
 UPB_END_EXTERN_C
+
 #include "upb/port_undef.inc"
 
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_ */

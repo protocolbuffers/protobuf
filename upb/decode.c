@@ -216,7 +216,7 @@ static upb_array *upb_getarr(upb_decframe *frame,
   return *(upb_array**)&frame->msg[field->offset];
 }
 
-static upb_array *upb_getorcreatearr(upb_decstate *d, upb_decframe *frame,
+static upb_array *upb_getorcreatearr(upb_decframe *frame,
                                      const upb_msglayout_field *field) {
   upb_array *arr = upb_getarr(frame, field);
 
@@ -251,7 +251,7 @@ static char *upb_decode_prepareslot(upb_decstate *d, upb_decframe *frame,
   upb_array *arr;
 
   if (field->label == UPB_LABEL_REPEATED) {
-    arr = upb_getorcreatearr(d, frame, field);
+    arr = upb_getorcreatearr(frame, field);
     field_mem = upb_array_reserve(arr, 1);
   }
 
@@ -403,7 +403,7 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
                                const char *field_start,
                                const upb_msglayout_field *field,
                                upb_stringview val) {
-  upb_array *arr = upb_getorcreatearr(d, frame, field);
+  upb_array *arr = upb_getorcreatearr(frame, field);
 
 #define VARINT_CASE(ctype, decode) { \
   const char *ptr = val.data; \
