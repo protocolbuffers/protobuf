@@ -57,34 +57,6 @@ using std::string;
 namespace google {
 namespace protobuf {
 
-std::set<ConformanceTestSuite*> *conformance_test_suite_set;
-GOOGLE_PROTOBUF_DECLARE_ONCE(conformance_test_suite_set_init_);
-
-void DeleteConformanceTestSuiteSet() {
-  delete conformance_test_suite_set;
-}
-
-static void InitConformanceTestSuiteSet() {
-  conformance_test_suite_set = new std::set<ConformanceTestSuite*>();
-  internal::OnShutdown(&DeleteConformanceTestSuiteSet);
-}
-
-static void InitConformanceTestSuiteSetOnce() {
-  ::google::protobuf::GoogleOnceInit(
-      &conformance_test_suite_set_init_,
-      &InitConformanceTestSuiteSet);
-}
-
-void AddTestSuite(ConformanceTestSuite* suite) {
-  InitConformanceTestSuiteSetOnce();
-  conformance_test_suite_set->insert(suite);
-}
-
-const std::set<ConformanceTestSuite*>& GetTestSuiteSet() {
-  InitConformanceTestSuiteSetOnce();
-  return *conformance_test_suite_set;
-}
-
 ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     ConformanceLevel level,
     conformance::WireFormat input_format,

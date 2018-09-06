@@ -62,6 +62,8 @@ class TestAllTypesProto3;
 namespace google {
 namespace protobuf {
 
+class ConformanceTestSuite;
+
 class ConformanceTestRunner {
  public:
   virtual ~ConformanceTestRunner() {}
@@ -78,6 +80,54 @@ class ConformanceTestRunner {
                        std::string* output) = 0;
 };
 
+// Test runner that spawns the process being tested and communicates with it
+// over a pipe.
+class ForkPipeRunner : public ConformanceTestRunner {
+ public:
+  static int Run(int argc, char *argv[],
+                 ConformanceTestSuite* suite);
+
+ private:
+  ForkPipeRunner(const std::string &executable)
+      : child_pid_(-1), executable_(executable) {}
+
+  virtual ~ForkPipeRunner() {}
+
+  void RunTest(const std::string& test_name,
+               const std::string& request,
+               std::string* response);
+
+  // TODO(haberman): make this work on Windows, instead of using these
+  // UNIX-specific APIs.
+  //
+  // There is a platform-agnostic API in
+  //    src/google/protobuf/compiler/subprocess.h
+  //
+  // However that API only supports sending a single message to the subprocess.
+  // We really want to be able to send messages and receive responses one at a
+  // time:
+  //
+  // 1. Spawning a new process for each test would take way too long for thousands
+  //    of tests and subprocesses like java that can take 100ms or more to start
+  //    up.
+  //
+  // 2. Sending all the tests in one big message and receiving all results in one
+  //    big message would take away our visibility about which test(s) caused a
+  //    crash or other fatal error.  It would also give us only a single failure
+  //    instead of all of them.
+  void SpawnTestProgram();
+
+  void CheckedWrite(int fd, const void *buf, size_t len);
+  bool TryRead(int fd, void *buf, size_t len);
+  void CheckedRead(int fd, void *buf, size_t len);
+
+  int write_fd_;
+  int read_fd_;
+  pid_t child_pid_;
+  std::string executable_;
+  std::string current_test_name_;
+};
+
 // Class representing the test suite itself.  To run it, implement your own
 // class derived from ConformanceTestRunner, class derived from
 // ConformanceTestSuite and then write code like:
@@ -89,28 +139,20 @@ class ConformanceTestRunner {
 //      }
 //    };
 //
-//    // Force MyConformanceTestSuite to be added at dynamic initialization
-//    // time.
-//    struct StaticTestSuiteInitializer {
-//      StaticTestSuiteInitializer() {
-//        AddTestSuite(new MyConformanceTestSuite());
-//      }
-//    } static_test_suite_initializer;
-//
 //    class MyConformanceTestRunner : public ConformanceTestRunner {
 //     public:
+//      static int Run(int argc, char *argv[],
+//                 ConformanceTestSuite* suite);
+//
+//     private:
 //      virtual void RunTest(...) {
 //        // INSERT YOUR FRAMEWORK-SPECIFIC CODE HERE.
 //      }
 //    };
 //
 //    int main() {
-//      MyConformanceTestRunner runner;
-//      const std::set<ConformanceTestSuite*>& test_suite_set =
-//          ::google::protobuf::GetTestSuiteSet();
-//      for (auto suite : test_suite_set) {
-//        suite->RunSuite(&runner, &output);
-//      }
+//      MyConformanceTestSuite suite;
+//      MyConformanceTestRunner::Run(argc, argv, &suite);
 //    }
 //
 class ConformanceTestSuite {
@@ -258,9 +300,6 @@ class ConformanceTestSuite {
       type_resolver_;
   std::string type_url_;
 };
-
-void AddTestSuite(ConformanceTestSuite* suite);
-const std::set<ConformanceTestSuite*>& GetTestSuiteSet();
 
 }  // namespace protobuf
 }  // namespace google

@@ -2358,11 +2358,10 @@ void ConformanceTestSuiteImpl::RunSuiteImpl() {
       "");
 }
 
-struct StaticTestSuiteInitializer {
-  StaticTestSuiteInitializer() {
-    AddTestSuite(new ConformanceTestSuiteImpl());
-  }
-} static_test_suite_initializer;
-
 }  // namespace protobuf
 }  // namespace google
+
+int main(int argc, char *argv[]) {
+  google::protobuf::ConformanceTestSuiteImpl suite;
+  return google::protobuf::ForkPipeRunner::Run(argc, argv, &suite);
+}

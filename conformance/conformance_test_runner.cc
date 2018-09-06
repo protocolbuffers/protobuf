@@ -80,162 +80,31 @@ using std::vector;
     exit(1); \
   }
 
-// Test runner that spawns the process being tested and communicates with it
-// over a pipe.
-class ForkPipeRunner : public google::protobuf::ConformanceTestRunner {
- public:
-  ForkPipeRunner(const std::string &executable)
-      : child_pid_(-1), executable_(executable) {}
+namespace google {
+namespace protobuf {
 
-  virtual ~ForkPipeRunner() {}
+void ParseFailureList(const char *filename,
+                      std::vector<string>* failure_list) {
+  std::ifstream infile(filename);
 
-  void RunTest(const std::string& test_name,
-               const std::string& request,
-               std::string* response) {
-    if (child_pid_ < 0) {
-      SpawnTestProgram();
-    }
-
-    current_test_name_ = test_name;
-
-    uint32_t len = request.size();
-    CheckedWrite(write_fd_, &len, sizeof(uint32_t));
-    CheckedWrite(write_fd_, request.c_str(), request.size());
-
-    if (!TryRead(read_fd_, &len, sizeof(uint32_t))) {
-      // We failed to read from the child, assume a crash and try to reap.
-      GOOGLE_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
-
-      int status;
-      waitpid(child_pid_, &status, WEXITED);
-
-      string error_msg;
-      if (WIFEXITED(status)) {
-        StringAppendF(&error_msg,
-                      "child exited, status=%d", WEXITSTATUS(status));
-      } else if (WIFSIGNALED(status)) {
-        StringAppendF(&error_msg,
-                      "child killed by signal %d", WTERMSIG(status));
-      }
-      GOOGLE_LOG(INFO) << error_msg;
-      child_pid_ = -1;
-
-      conformance::ConformanceResponse response_obj;
-      response_obj.set_runtime_error(error_msg);
-      response_obj.SerializeToString(response);
-      return;
-    }
-
-    response->resize(len);
-    CheckedRead(read_fd_, (void*)response->c_str(), len);
+  if (!infile.is_open()) {
+    fprintf(stderr, "Couldn't open failure list file: %s\n", filename);
+    exit(1);
   }
 
- private:
-  // TODO(haberman): make this work on Windows, instead of using these
-  // UNIX-specific APIs.
-  //
-  // There is a platform-agnostic API in
-  //    src/google/protobuf/compiler/subprocess.h
-  //
-  // However that API only supports sending a single message to the subprocess.
-  // We really want to be able to send messages and receive responses one at a
-  // time:
-  //
-  // 1. Spawning a new process for each test would take way too long for thousands
-  //    of tests and subprocesses like java that can take 100ms or more to start
-  //    up.
-  //
-  // 2. Sending all the tests in one big message and receiving all results in one
-  //    big message would take away our visibility about which test(s) caused a
-  //    crash or other fatal error.  It would also give us only a single failure
-  //    instead of all of them.
-  void SpawnTestProgram() {
-    int toproc_pipe_fd[2];
-    int fromproc_pipe_fd[2];
-    if (pipe(toproc_pipe_fd) < 0 || pipe(fromproc_pipe_fd) < 0) {
-      perror("pipe");
-      exit(1);
-    }
+  for (string line; getline(infile, line);) {
+    // Remove whitespace.
+    line.erase(std::remove_if(line.begin(), line.end(), ::isspace),
+               line.end());
 
-    pid_t pid = fork();
-    if (pid < 0) {
-      perror("fork");
-      exit(1);
-    }
+    // Remove comments.
+    line = line.substr(0, line.find("#"));
 
-    if (pid) {
-      // Parent.
-      CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-      CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-      write_fd_ = toproc_pipe_fd[1];
-      read_fd_ = fromproc_pipe_fd[0];
-      child_pid_ = pid;
-    } else {
-      // Child.
-      CHECK_SYSCALL(close(STDIN_FILENO));
-      CHECK_SYSCALL(close(STDOUT_FILENO));
-      CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
-      CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
-
-      CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-      CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-      CHECK_SYSCALL(close(toproc_pipe_fd[1]));
-      CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
-
-      std::unique_ptr<char[]> executable(new char[executable_.size() + 1]);
-      memcpy(executable.get(), executable_.c_str(), executable_.size());
-      executable[executable_.size()] = '\0';
-
-      char *const argv[] = {executable.get(), NULL};
-      CHECK_SYSCALL(execv(executable.get(), argv));  // Never returns.
+    if (!line.empty()) {
+      failure_list->push_back(line);
     }
   }
-
-  void CheckedWrite(int fd, const void *buf, size_t len) {
-    if (write(fd, buf, len) != len) {
-      GOOGLE_LOG(FATAL) << current_test_name_
-                        << ": error writing to test program: "
-                        << strerror(errno);
-    }
-  }
-
-  bool TryRead(int fd, void *buf, size_t len) {
-    size_t ofs = 0;
-    while (len > 0) {
-      ssize_t bytes_read = read(fd, (char*)buf + ofs, len);
-
-      if (bytes_read == 0) {
-        GOOGLE_LOG(ERROR) << current_test_name_
-                          << ": unexpected EOF from test program";
-        return false;
-      } else if (bytes_read < 0) {
-        GOOGLE_LOG(ERROR) << current_test_name_
-                          << ": error reading from test program: "
-                          << strerror(errno);
-        return false;
-      }
-
-      len -= bytes_read;
-      ofs += bytes_read;
-    }
-
-    return true;
-  }
-
-  void CheckedRead(int fd, void *buf, size_t len) {
-    if (!TryRead(fd, buf, len)) {
-      GOOGLE_LOG(FATAL) << current_test_name_
-                        << ": error reading from test program: "
-                        << strerror(errno);
-    }
-  }
-
-  int write_fd_;
-  int read_fd_;
-  pid_t child_pid_;
-  std::string executable_;
-  std::string current_test_name_;
-};
+}
 
 void UsageError() {
   fprintf(stderr,
@@ -263,33 +132,51 @@ void UsageError() {
   exit(1);
 }
 
-void ParseFailureList(const char *filename, std::vector<string>* failure_list) {
-  std::ifstream infile(filename);
-
-  if (!infile.is_open()) {
-    fprintf(stderr, "Couldn't open failure list file: %s\n", filename);
-    exit(1);
+void ForkPipeRunner::RunTest(
+    const std::string& test_name,
+    const std::string& request,
+    std::string* response) {
+  if (child_pid_ < 0) {
+    SpawnTestProgram();
   }
 
-  for (string line; getline(infile, line);) {
-    // Remove whitespace.
-    line.erase(std::remove_if(line.begin(), line.end(), ::isspace),
-               line.end());
+  current_test_name_ = test_name;
 
-    // Remove comments.
-    line = line.substr(0, line.find("#"));
+  uint32_t len = request.size();
+  CheckedWrite(write_fd_, &len, sizeof(uint32_t));
+  CheckedWrite(write_fd_, request.c_str(), request.size());
 
-    if (!line.empty()) {
-      failure_list->push_back(line);
+  if (!TryRead(read_fd_, &len, sizeof(uint32_t))) {
+    // We failed to read from the child, assume a crash and try to reap.
+    GOOGLE_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
+
+    int status;
+    waitpid(child_pid_, &status, WEXITED);
+
+    string error_msg;
+    if (WIFEXITED(status)) {
+      StringAppendF(&error_msg,
+                    "child exited, status=%d", WEXITSTATUS(status));
+    } else if (WIFSIGNALED(status)) {
+      StringAppendF(&error_msg,
+                    "child killed by signal %d", WTERMSIG(status));
     }
+    GOOGLE_LOG(INFO) << error_msg;
+    child_pid_ = -1;
+
+    conformance::ConformanceResponse response_obj;
+    response_obj.set_runtime_error(error_msg);
+    response_obj.SerializeToString(response);
+    return;
   }
+
+  response->resize(len);
+  CheckedRead(read_fd_, (void*)response->c_str(), len);
 }
 
-int main(int argc, char *argv[]) {
+int ForkPipeRunner::Run(
+    int argc, char *argv[], ConformanceTestSuite* suite) {
   char *program;
-  const std::set<ConformanceTestSuite*>& test_suite_set =
-      ::google::protobuf::GetTestSuiteSet();
-
   string failure_list_filename;
   std::vector<string> failure_list;
 
@@ -299,13 +186,9 @@ int main(int argc, char *argv[]) {
       failure_list_filename = argv[arg];
       ParseFailureList(argv[arg], &failure_list);
     } else if (strcmp(argv[arg], "--verbose") == 0) {
-      for (auto *suite : test_suite_set) {
-        suite->SetVerbose(true);
-      }
+      suite->SetVerbose(true);
     } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
-      for (auto suite : test_suite_set) {
-        suite->SetEnforceRecommended(true);
-      }
+      suite->SetEnforceRecommended(true);
     } else if (argv[arg][0] == '-') {
       fprintf(stderr, "Unknown option: %s\n", argv[arg]);
       UsageError();
@@ -318,18 +201,97 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  for (auto suite : test_suite_set) {
-    suite->SetFailureList(failure_list_filename, failure_list);
-  }
+  suite->SetFailureList(failure_list_filename, failure_list);
   ForkPipeRunner runner(program);
 
   std::string output;
-  bool ok = true;
-  for (auto suite : test_suite_set) {
-    ok &= suite->RunSuite(&runner, &output);
-  }
+  bool ok =  suite->RunSuite(&runner, &output);
 
   fwrite(output.c_str(), 1, output.size(), stderr);
 
   return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+void ForkPipeRunner::SpawnTestProgram() {
+  int toproc_pipe_fd[2];
+  int fromproc_pipe_fd[2];
+  if (pipe(toproc_pipe_fd) < 0 || pipe(fromproc_pipe_fd) < 0) {
+    perror("pipe");
+    exit(1);
+  }
+
+  pid_t pid = fork();
+  if (pid < 0) {
+    perror("fork");
+    exit(1);
+  }
+
+  if (pid) {
+    // Parent.
+    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    write_fd_ = toproc_pipe_fd[1];
+    read_fd_ = fromproc_pipe_fd[0];
+    child_pid_ = pid;
+  } else {
+    // Child.
+    CHECK_SYSCALL(close(STDIN_FILENO));
+    CHECK_SYSCALL(close(STDOUT_FILENO));
+    CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
+    CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
+
+    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    CHECK_SYSCALL(close(toproc_pipe_fd[1]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
+
+    std::unique_ptr<char[]> executable(new char[executable_.size() + 1]);
+    memcpy(executable.get(), executable_.c_str(), executable_.size());
+    executable[executable_.size()] = '\0';
+
+    char *const argv[] = {executable.get(), NULL};
+    CHECK_SYSCALL(execv(executable.get(), argv));  // Never returns.
+  }
+}
+
+void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
+  if (write(fd, buf, len) != len) {
+    GOOGLE_LOG(FATAL) << current_test_name_
+                      << ": error writing to test program: "
+                      << strerror(errno);
+  }
+}
+
+bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
+  size_t ofs = 0;
+  while (len > 0) {
+    ssize_t bytes_read = read(fd, (char*)buf + ofs, len);
+
+    if (bytes_read == 0) {
+      GOOGLE_LOG(ERROR) << current_test_name_
+                        << ": unexpected EOF from test program";
+      return false;
+    } else if (bytes_read < 0) {
+      GOOGLE_LOG(ERROR) << current_test_name_
+                        << ": error reading from test program: "
+                        << strerror(errno);
+      return false;
+    }
+
+    len -= bytes_read;
+    ofs += bytes_read;
+  }
+
+  return true;
+}
+
+void ForkPipeRunner::CheckedRead(int fd, void *buf, size_t len) {
+  if (!TryRead(fd, buf, len)) {
+    GOOGLE_LOG(FATAL) << current_test_name_
+                      << ": error reading from test program: "
+                      << strerror(errno);
+  }
+}
+
+}  // namespace protobuf
+}  // namespace google
