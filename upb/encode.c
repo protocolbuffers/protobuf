@@ -47,7 +47,7 @@ static uint32_t upb_zzencode_32(int32_t n) { return (n << 1) ^ (n >> 31); }
 static uint64_t upb_zzencode_64(int64_t n) { return (n << 1) ^ (n >> 63); }
 
 typedef struct {
-  upb_env *env;
+  upb_alloc *alloc;
   char *buf, *ptr, *limit;
 } upb_encstate;
 
@@ -62,7 +62,7 @@ static size_t upb_roundup_pow2(size_t bytes) {
 static bool upb_encode_growbuffer(upb_encstate *e, size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t new_size = upb_roundup_pow2(bytes + (e->limit - e->ptr));
-  char *new_buf = upb_env_realloc(e->env, e->buf, old_size, new_size);
+  char *new_buf = upb_realloc(e->alloc, e->buf, old_size, new_size);
   CHK(new_buf);
 
   /* We want previous data at the end, realloc() put it at the beginning. */
@@ -340,6 +340,15 @@ bool upb_encode_hasscalarfield(const char *msg, const upb_msglayout *m,
   }
 }
 
+static size_t get_field_offset2(const upb_msglayout *m,
+                                const upb_msglayout_field *field) {
+  if (field->oneof_index == UPB_NOT_IN_ONEOF) {
+    return field->offset;
+  } else {
+    return m->oneofs[field->oneof_index].data_offset;
+  }
+}
+
 bool upb_encode_message(upb_encstate *e, const char *msg,
                         const upb_msglayout *m, size_t *size) {
   int i;
@@ -351,13 +360,14 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
 
   for (i = m->field_count - 1; i >= 0; i--) {
     const upb_msglayout_field *f = &m->fields[i];
+    size_t offset = get_field_offset2(m, f);
 
     if (f->label == UPB_LABEL_REPEATED) {
-      CHK(upb_encode_array(e, msg + f->offset, m, f));
+      CHK(upb_encode_array(e, msg + offset, m, f));
     } else {
       if (upb_encode_hasscalarfield(msg, m, f)) {
         if (f->oneof_index == UPB_NOT_IN_ONEOF) {
-          CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
+          CHK(upb_encode_scalarfield(e, msg + offset, m, f, !m->is_proto2));
         } else {
           const upb_msglayout_oneof *o = &m->oneofs[f->oneof_index];
           CHK(upb_encode_scalarfield(e, msg + o->data_offset,
@@ -371,10 +381,10 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
   return true;
 }
 
-char *upb_encode(const void *msg, const upb_msglayout *m, upb_env *env,
+char *upb_encode(const void *msg, const upb_msglayout *m, upb_arena *arena,
                  size_t *size) {
   upb_encstate e;
-  e.env = env;
+  e.alloc = upb_arena_alloc(arena);
   e.buf = NULL;
   e.limit = NULL;
   e.ptr = NULL;

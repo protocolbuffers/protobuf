@@ -12,14 +12,20 @@ def parse_include(line):
 class Amalgamator:
   def __init__(self, include_path, output_path):
     self.include_path = include_path
-    self.included = set()
+    self.included = set(["upb/port_def.inc", "upb/port_undef.inc"])
     self.output_h = open(output_path + "upb.h", "w")
     self.output_c = open(output_path + "upb.c", "w")
 
     self.output_c.write("// Amalgamated source file\n")
     self.output_c.write('#include "upb.h"\n')
+    self.output_c.write('#include "upb/port_def.inc"\n')
 
     self.output_h.write("// Amalgamated source file\n")
+    self.output_h.write('#include "upb/port_def.inc"\n')
+
+  def finish(self):
+    self.output_c.write('#include "upb/port_undef.inc"\n')
+    self.output_h.write('#include "upb/port_undef.inc"\n')
 
   def _process_file(self, infile_name, outfile):
     for line in open(infile_name):
@@ -46,3 +52,5 @@ amalgamator = Amalgamator(include_path, output_path)
 
 for filename in sys.argv[3:]:
   amalgamator.add_src(filename.strip())
+
+amalgamator.finish()

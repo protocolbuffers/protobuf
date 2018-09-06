@@ -49,10 +49,9 @@ static const char *proto3_msg =
 void DoTest(
     const conformance_ConformanceRequest* request,
     conformance_ConformanceResponse *response,
-    upb_env *env) {
-  upb_stringview message_type =
-      conformance_ConformanceRequest_message_type(request);
-  if (!stringview_eql(message_type, proto3_msg)) {
+    upb_arena *arena) {
+  if (!stringview_eql(conformance_ConformanceRequest_message_type(request),
+                      proto3_msg)) {
     static const char msg[] = "Only proto3 for now.";
     conformance_ConformanceResponse_set_skipped(
         response, upb_stringview_make(msg, sizeof(msg)));
@@ -63,14 +62,12 @@ void DoTest(
 
   switch (conformance_ConformanceRequest_payload_case(request)) {
     case conformance_ConformanceRequest_payload_protobuf_payload: {
-      upb_stringview payload =
-          conformance_ConformanceRequest_protobuf_payload(request);
+      upb_stringview payload = conformance_ConformanceRequest_protobuf_payload(request);
       test_message = protobuf_test_messages_proto3_TestAllTypesProto3_parsenew(
-          payload, env);
+          payload, arena);
 
       if (!test_message) {
-        /* TODO(haberman): return details. */
-        static const char msg[] = "Parse error (no more details available).";
+        static const char msg[] = "Parse error";
         conformance_ConformanceResponse_set_parse_error(
             response, upb_stringview_make(msg, sizeof(msg)));
         return;
@@ -88,6 +85,11 @@ void DoTest(
     case conformance_ConformanceRequest_payload_NOT_SET:
       fprintf(stderr, "conformance_upb: Request didn't have payload.\n");
       return;
+
+    default:
+      fprintf(stderr, "conformance_upb: Unexpected case: %d\n",
+              conformance_ConformanceRequest_payload_case(request));
+      exit(1);
   }
 
   switch (conformance_ConformanceRequest_requested_output_format(request)) {
@@ -99,7 +101,7 @@ void DoTest(
       size_t serialized_len;
       char *serialized =
           protobuf_test_messages_proto3_TestAllTypesProto3_serialize(
-              test_message, env, &serialized_len);
+              test_message, arena, &serialized_len);
       if (!serialized) {
         static const char msg[] = "Error serializing.";
         conformance_ConformanceResponse_set_serialize_error(
@@ -128,7 +130,8 @@ void DoTest(
 }
 
 bool DoTestIo() {
-  upb_env env;
+  upb_arena arena;
+  upb_alloc *alloc;
   upb_status status;
   char *serialized_input;
   char *serialized_output;
@@ -138,13 +141,13 @@ bool DoTestIo() {
   conformance_ConformanceResponse *response;
 
   if (!CheckedRead(STDIN_FILENO, &input_size, sizeof(uint32_t))) {
-    // EOF.
+    /* EOF. */
     return false;
   }
 
-  upb_env_init(&env);
-  upb_env_reporterrorsto(&env, &status);
-  serialized_input = upb_env_malloc(&env, input_size);
+  upb_arena_init(&arena);
+  alloc = upb_arena_alloc(&arena);
+  serialized_input = upb_malloc(alloc, input_size);
 
   if (!CheckedRead(STDIN_FILENO, serialized_input, input_size)) {
     fprintf(stderr, "conformance_upb: unexpected EOF on stdin.\n");
@@ -152,18 +155,18 @@ bool DoTestIo() {
   }
 
   request = conformance_ConformanceRequest_parsenew(
-      upb_stringview_make(serialized_input, input_size), &env);
-  response = conformance_ConformanceResponse_new(&env);
+      upb_stringview_make(serialized_input, input_size), &arena);
+  response = conformance_ConformanceResponse_new(&arena);
 
   if (request) {
-    DoTest(request, response, &env);
+    DoTest(request, response, &arena);
   } else {
     fprintf(stderr, "conformance_upb: parse of ConformanceRequest failed: %s\n",
             upb_status_errmsg(&status));
   }
 
   serialized_output = conformance_ConformanceResponse_serialize(
-      response, &env, &output_size);
+      response, &arena, &output_size);
 
   CheckedWrite(STDOUT_FILENO, &output_size, sizeof(uint32_t));
   CheckedWrite(STDOUT_FILENO, serialized_output, output_size);
