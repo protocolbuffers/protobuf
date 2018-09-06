@@ -357,7 +357,9 @@ local function write_h_file(filedef, append)
     end
   end
 
+  append('\n')
   append("/* Enums */\n\n")
+
   for _, def in ipairs(sorted_defs(filedef:defs(upb.DEF_ENUM))) do
     local cident = to_cident(def:full_name())
     append('typedef enum {\n')
@@ -434,7 +436,7 @@ local function write_h_file(filedef, append)
     append('\n\n')
   end
 
-  append('UPB_END_EXTERN_C')
+  append('UPB_END_EXTERN_C\n')
 
   append('\n')
   append('#include "upb/port_undef.inc"\n');
@@ -448,13 +450,15 @@ local function write_c_file(filedef, hfilename, append)
 
   append('#include <stddef.h>\n')
   append('#include "upb/msg.h"\n')
-  append('#include "%s"\n\n', hfilename)
+  append('#include "%s"\n', hfilename)
 
   for dep in filedef:dependencies() do
     local outbase = strip_proto(dep:name())
     append('#include "%s.upb.h"\n', outbase)
   end
 
+  append('\n')
+  append('#include "upb/port_def.inc"\n')
   append('\n')
 
   for msg in filedef:defs(upb.DEF_MSG) do
@@ -567,8 +571,12 @@ local function write_c_file(filedef, hfilename, append)
            'false', -- TODO: extendable
           msg:file():syntax() == upb.SYNTAX_PROTO2
           )
+
     append('};\n\n')
   end
+
+  append('#include "upb/port_undef.inc"\n')
+  append('\n')
 end
 
 function export.write_gencode(filedef, hfilename, append_h, append_c)

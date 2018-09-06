@@ -1,0 +1,5 @@
+
+#undef UPB_SIZE
+#undef UPB_FIELD_AT
+#undef UPB_READ_ONEOF
+#undef UPB_WRITE_ONEOF
