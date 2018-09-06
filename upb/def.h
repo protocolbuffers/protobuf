@@ -791,6 +791,15 @@ class upb::MessageDef {
   /* Is this message a timestamp? */
   bool timestamp() const;
 
+  /* Is this message a value? */
+  bool value() const;
+
+  /* Is this message a list value? */
+  bool listvalue() const;
+
+  /* Is this message a struct value? */
+  bool structvalue() const;
+
   /* Iteration over fields.  The order is undefined. */
   class field_iterator
       : public std::iterator<std::forward_iterator_tag, FieldDef*> {
@@ -934,6 +943,9 @@ void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
 bool upb_msgdef_duration(const upb_msgdef *m);
 bool upb_msgdef_timestamp(const upb_msgdef *m);
+bool upb_msgdef_value(const upb_msgdef *m);
+bool upb_msgdef_listvalue(const upb_msgdef *m);
+bool upb_msgdef_structvalue(const upb_msgdef *m);
 bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 
 /* Field lookup in a couple of different variations:
@@ -1878,6 +1890,15 @@ inline bool MessageDef::duration() const {
 }
 inline bool MessageDef::timestamp() const {
   return upb_msgdef_timestamp(this);
+}
+inline bool MessageDef::value() const {
+  return upb_msgdef_value(this);
+}
+inline bool MessageDef::listvalue() const {
+  return upb_msgdef_listvalue(this);
+}
+inline bool MessageDef::structvalue() const {
+  return upb_msgdef_structvalue(this);
 }
 inline MessageDef::field_iterator MessageDef::field_begin() {
   return field_iterator(this);
