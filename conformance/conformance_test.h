@@ -152,7 +152,7 @@ class ForkPipeRunner : public ConformanceTestRunner {
 //
 //    int main() {
 //      MyConformanceTestSuite suite;
-//      MyConformanceTestRunner::Run(argc, argv, &sutie);
+//      MyConformanceTestRunner::Run(argc, argv, &suite);
 //    }
 //
 class ConformanceTestSuite {
