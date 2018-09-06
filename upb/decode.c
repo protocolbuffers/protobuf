@@ -245,7 +245,7 @@ static void upb_setoneofcase(upb_decframe *frame,
             field->number);
 }
 
-static char *upb_decode_prepareslot(upb_decstate *d, upb_decframe *frame,
+static char *upb_decode_prepareslot(upb_decframe *frame,
                                     const upb_msglayout_field *field) {
   char *field_mem = frame->msg + get_field_offset(frame, field);
   upb_array *arr;
@@ -275,7 +275,7 @@ static bool upb_decode_submsg(upb_decstate *d, upb_decframe *frame,
                               const char *limit,
                               const upb_msglayout_field *field,
                               int group_number) {
-  char *submsg_slot = upb_decode_prepareslot(d, frame, field);
+  char *submsg_slot = upb_decode_prepareslot(frame, field);
   char *submsg = *(void **)submsg_slot;
   const upb_msglayout *subm;
 
@@ -300,7 +300,7 @@ static bool upb_decode_varintfield(upb_decstate *d, upb_decframe *frame,
   uint64_t val;
   void *field_mem;
 
-  field_mem = upb_decode_prepareslot(d, frame, field);
+  field_mem = upb_decode_prepareslot(frame, field);
   CHK(field_mem);
   CHK(upb_decode_varint(&d->ptr, frame->limit, &val));
 
@@ -345,7 +345,7 @@ static bool upb_decode_64bitfield(upb_decstate *d, upb_decframe *frame,
   void *field_mem;
   uint64_t val;
 
-  field_mem = upb_decode_prepareslot(d, frame, field);
+  field_mem = upb_decode_prepareslot(frame, field);
   CHK(field_mem);
   CHK(upb_decode_64bit(&d->ptr, frame->limit, &val));
 
@@ -369,7 +369,7 @@ static bool upb_decode_32bitfield(upb_decstate *d, upb_decframe *frame,
   void *field_mem;
   uint32_t val;
 
-  field_mem = upb_decode_prepareslot(d, frame, field);
+  field_mem = upb_decode_prepareslot(frame, field);
   CHK(field_mem);
   CHK(upb_decode_32bit(&d->ptr, frame->limit, &val));
 
@@ -494,7 +494,7 @@ static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
     switch ((upb_descriptortype_t)field->descriptortype) {
       case UPB_DESCRIPTOR_TYPE_STRING:
       case UPB_DESCRIPTOR_TYPE_BYTES: {
-        void *field_mem = upb_decode_prepareslot(d, frame, field);
+        void *field_mem = upb_decode_prepareslot(frame, field);
         CHK(field_mem);
         memcpy(field_mem, &val, sizeof(val));
         break;
