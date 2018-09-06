@@ -11,14 +11,8 @@ import platform
 # namespace_packages option for the "google" package.
 from setuptools import setup, Extension, find_packages
 
+from distutils.command.build_py import build_py as _build_py
 from distutils.command.clean import clean as _clean
-
-if sys.version_info[0] == 3:
-  # Python 3
-  from distutils.command.build_py import build_py_2to3 as _build_py
-else:
-  # Python 2
-  from distutils.command.build_py import build_py as _build_py
 from distutils.spawn import find_executable
 
 # Find the Protocol Compiler.
