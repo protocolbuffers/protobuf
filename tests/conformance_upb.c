@@ -141,7 +141,7 @@ bool DoTestIo() {
   conformance_ConformanceResponse *response;
 
   if (!CheckedRead(STDIN_FILENO, &input_size, sizeof(uint32_t))) {
-    // EOF.
+    /* EOF. */
     return false;
   }
 

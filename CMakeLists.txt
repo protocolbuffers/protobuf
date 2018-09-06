@@ -48,6 +48,7 @@ endif()
 include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_CXX_FLAGS "-std=c++11 -W -Wall -Wno-sign-compare")
+set(CMAKE_C_FLAGS "-std=c89 -W -Wall -Wno-sign-compare")
 
 if(APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup -flat_namespace")

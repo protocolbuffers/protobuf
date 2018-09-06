@@ -29,7 +29,6 @@ static int lupb_pb_encode(lua_State *L) {
   const upb_msg *msg = lupb_msg_checkmsg2(L, 1, &layout);
   upb_arena arena;
   size_t size;
-  upb_status status = UPB_STATUS_INIT;
   char *result;
 
   upb_arena_init(&arena);
