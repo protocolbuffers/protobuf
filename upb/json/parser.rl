@@ -1902,7 +1902,7 @@ static void start_value_object(upb_json_parser *p, int value_type) {
   const char *boolmember = "bool_value";
   const char *structmember = "struct_value";
   const char *listmember = "list_value";
-  const char *membername;
+  const char *membername = "";
 
   switch (value_type) {
     case VALUE_NULLVALUE:
