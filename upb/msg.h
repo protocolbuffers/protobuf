@@ -154,6 +154,9 @@ upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a);
 /* Returns the arena for the given message. */
 upb_arena *upb_msg_arena(const upb_msg *msg);
 
+void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len);
+const char *upb_msg_getunknown(upb_msg *msg, size_t *len);
+
 /* Read-only message API.  Can be safely called by anyone. */
 
 /* Returns the value associated with this field:
