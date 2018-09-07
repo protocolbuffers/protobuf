@@ -93,6 +93,13 @@ class WrapperTypeSettersTest extends TestBase
                 ["setBytesValue", "getBytesValue", null, null],
                 ["setBytesValue", "getBytesValue", "", new BytesValue()],
             ]],
+            [TestWrapperSetters::class, [
+                ["setDoubleValueList", "getDoubleValueList", [1.1], [new DoubleValue(["value" => 1.1])]],
+//                ["setDoubleValueList", "getDoubleValueList", new DoubleValue(["value" => 3.3]), new DoubleValue(["value" => 3.3])],
+//                ["setDoubleValueList", "getDoubleValueList", 2.2, new DoubleValue(["value" => 2.2])],
+//                ["setDoubleValueList", "getDoubleValueList", null, null],
+//                ["setDoubleValueList", "getDoubleValueList", 0, new DoubleValue()],
+            ]],
         ];
     }
 

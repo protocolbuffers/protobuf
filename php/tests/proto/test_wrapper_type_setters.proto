@@ -14,4 +14,6 @@ message TestWrapperSetters {
   google.protobuf.BoolValue bool_value = 7;
   google.protobuf.StringValue string_value = 8;
   google.protobuf.BytesValue bytes_value = 9;
+
+  repeated google.protobuf.DoubleValue double_value_list = 10;
 }
