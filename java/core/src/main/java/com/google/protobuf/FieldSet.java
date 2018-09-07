@@ -41,32 +41,35 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A class which represents an arbitrary set of fields of some message type.
- * This is used to implement {@link DynamicMessage}, and also to represent
- * extensions in {@link GeneratedMessage}.  This class is package-private,
- * since outside users should probably be using {@link DynamicMessage}.
+ * A class which represents an arbitrary set of fields of some message type. This is used to
+ * implement {@link DynamicMessage}, and also to represent extensions in {@link GeneratedMessage}.
+ * This class is package-private, since outside users should probably be using {@link
+ * DynamicMessage}.
  *
  * @author kenton@google.com Kenton Varda
  */
-final class FieldSet<FieldDescriptorType extends
-      FieldSet.FieldDescriptorLite<FieldDescriptorType>> {
+final class FieldSet<
+    FieldDescriptorType extends FieldSet.FieldDescriptorLite<FieldDescriptorType>> {
   /**
-   * Interface for a FieldDescriptor or lite extension descriptor.  This
-   * prevents FieldSet from depending on {@link Descriptors.FieldDescriptor}.
+   * Interface for a FieldDescriptor or lite extension descriptor. This prevents FieldSet from
+   * depending on {@link Descriptors.FieldDescriptor}.
    */
-  public interface FieldDescriptorLite<T extends FieldDescriptorLite<T>>
-      extends Comparable<T> {
+  public interface FieldDescriptorLite<T extends FieldDescriptorLite<T>> extends Comparable<T> {
     int getNumber();
+
     WireFormat.FieldType getLiteType();
+
     WireFormat.JavaType getLiteJavaType();
+
     boolean isRepeated();
+
     boolean isPacked();
+
     Internal.EnumLiteMap<?> getEnumType();
 
     // If getLiteJavaType() == MESSAGE, this merges a message object of the
     // type into a builder of the type.  Returns {@code to}.
-    MessageLite.Builder internalMergeFrom(
-        MessageLite.Builder to, MessageLite from);
+    MessageLite.Builder internalMergeFrom(MessageLite.Builder to, MessageLite from);
   }
 
   private final SmallSortedMap<FieldDescriptorType, Object> fields;
@@ -78,27 +81,23 @@ final class FieldSet<FieldDescriptorType extends
     this.fields = SmallSortedMap.newFieldMap(16);
   }
 
-  /**
-   * Construct an empty FieldSet.  This is only used to initialize
-   * DEFAULT_INSTANCE.
-   */
+  /** Construct an empty FieldSet. This is only used to initialize DEFAULT_INSTANCE. */
   private FieldSet(final boolean dummy) {
     this.fields = SmallSortedMap.newFieldMap(0);
     makeImmutable();
   }
 
   /** Construct a new FieldSet. */
-  public static <T extends FieldSet.FieldDescriptorLite<T>>
-      FieldSet<T> newFieldSet() {
+  public static <T extends FieldSet.FieldDescriptorLite<T>> FieldSet<T> newFieldSet() {
     return new FieldSet<T>();
   }
 
   /** Get an immutable empty FieldSet. */
   @SuppressWarnings("unchecked")
-  public static <T extends FieldSet.FieldDescriptorLite<T>>
-      FieldSet<T> emptySet() {
+  public static <T extends FieldSet.FieldDescriptorLite<T>> FieldSet<T> emptySet() {
     return DEFAULT_INSTANCE;
   }
+
   @SuppressWarnings("rawtypes")
   private static final FieldSet DEFAULT_INSTANCE = new FieldSet(true);
 
@@ -118,8 +117,8 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Returns whether the FieldSet is immutable. This is true if it is the
-   * {@link #emptySet} or if {@link #makeImmutable} were called.
+   * Returns whether the FieldSet is immutable. This is true if it is the {@link #emptySet} or if
+   * {@link #makeImmutable} were called.
    *
    * @return whether the FieldSet is immutable.
    */
@@ -147,8 +146,8 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Clones the FieldSet. The returned FieldSet will be mutable even if the
-   * original FieldSet was immutable.
+   * Clones the FieldSet. The returned FieldSet will be mutable even if the original FieldSet was
+   * immutable.
    *
    * @return the newly cloned FieldSet
    */
@@ -162,8 +161,7 @@ final class FieldSet<FieldDescriptorType extends
       FieldDescriptorType descriptor = entry.getKey();
       clone.setField(descriptor, entry.getValue());
     }
-    for (Map.Entry<FieldDescriptorType, Object> entry :
-             fields.getOverflowEntries()) {
+    for (Map.Entry<FieldDescriptorType, Object> entry : fields.getOverflowEntries()) {
       FieldDescriptorType descriptor = entry.getKey();
       clone.setField(descriptor, entry.getValue());
     }
@@ -180,18 +178,14 @@ final class FieldSet<FieldDescriptorType extends
     hasLazyField = false;
   }
 
-  /**
-   * Get a simple map containing all the fields.
-   */
+  /** Get a simple map containing all the fields. */
   public Map<FieldDescriptorType, Object> getAllFields() {
     if (hasLazyField) {
-      SmallSortedMap<FieldDescriptorType, Object> result =
-          SmallSortedMap.newFieldMap(16);
+      SmallSortedMap<FieldDescriptorType, Object> result = SmallSortedMap.newFieldMap(16);
       for (int i = 0; i < fields.getNumArrayEntries(); i++) {
         cloneFieldEntry(result, fields.getArrayEntryAt(i));
       }
-      for (Map.Entry<FieldDescriptorType, Object> entry :
-          fields.getOverflowEntries()) {
+      for (Map.Entry<FieldDescriptorType, Object> entry : fields.getOverflowEntries()) {
         cloneFieldEntry(result, entry);
       }
       if (fields.isImmutable()) {
@@ -202,8 +196,8 @@ final class FieldSet<FieldDescriptorType extends
     return fields.isImmutable() ? fields : Collections.unmodifiableMap(fields);
   }
 
-  private void cloneFieldEntry(Map<FieldDescriptorType, Object> map,
-      Map.Entry<FieldDescriptorType, Object> entry) {
+  private void cloneFieldEntry(
+      Map<FieldDescriptorType, Object> map, Map.Entry<FieldDescriptorType, Object> entry) {
     FieldDescriptorType key = entry.getKey();
     Object value = entry.getValue();
     if (value instanceof LazyField) {
@@ -214,37 +208,30 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Get an iterator to the field map. This iterator should not be leaked out
-   * of the protobuf library as it is not protected from mutation when fields
-   * is not immutable.
+   * Get an iterator to the field map. This iterator should not be leaked out of the protobuf
+   * library as it is not protected from mutation when fields is not immutable.
    */
   public Iterator<Map.Entry<FieldDescriptorType, Object>> iterator() {
     if (hasLazyField) {
-      return new LazyIterator<FieldDescriptorType>(
-          fields.entrySet().iterator());
+      return new LazyIterator<FieldDescriptorType>(fields.entrySet().iterator());
     }
     return fields.entrySet().iterator();
   }
 
 
-  /**
-   * Useful for implementing
-   * {@link Message#hasField(Descriptors.FieldDescriptor)}.
-   */
+  /** Useful for implementing {@link Message#hasField(Descriptors.FieldDescriptor)}. */
   public boolean hasField(final FieldDescriptorType descriptor) {
     if (descriptor.isRepeated()) {
-      throw new IllegalArgumentException(
-        "hasField() can only be called on non-repeated fields.");
+      throw new IllegalArgumentException("hasField() can only be called on non-repeated fields.");
     }
 
     return fields.get(descriptor) != null;
   }
 
   /**
-   * Useful for implementing
-   * {@link Message#getField(Descriptors.FieldDescriptor)}.  This method
-   * returns {@code null} if the field is not set; in this case it is up
-   * to the caller to fetch the field's default value.
+   * Useful for implementing {@link Message#getField(Descriptors.FieldDescriptor)}. This method
+   * returns {@code null} if the field is not set; in this case it is up to the caller to fetch the
+   * field's default value.
    */
   public Object getField(final FieldDescriptorType descriptor) {
     Object o = fields.get(descriptor);
@@ -255,16 +242,14 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Useful for implementing
-   * {@link Message.Builder#setField(Descriptors.FieldDescriptor,Object)}.
+   * Useful for implementing {@link Message.Builder#setField(Descriptors.FieldDescriptor,Object)}.
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public void setField(final FieldDescriptorType descriptor,
-                       Object value) {
+  public void setField(final FieldDescriptorType descriptor, Object value) {
     if (descriptor.isRepeated()) {
       if (!(value instanceof List)) {
         throw new IllegalArgumentException(
-          "Wrong object type used with protocol message reflection.");
+            "Wrong object type used with protocol message reflection.");
       }
 
       // Wrap the contents in a new list so that the caller cannot change
@@ -285,10 +270,7 @@ final class FieldSet<FieldDescriptorType extends
     fields.put(descriptor, value);
   }
 
-  /**
-   * Useful for implementing
-   * {@link Message.Builder#clearField(Descriptors.FieldDescriptor)}.
-   */
+  /** Useful for implementing {@link Message.Builder#clearField(Descriptors.FieldDescriptor)}. */
   public void clearField(final FieldDescriptorType descriptor) {
     fields.remove(descriptor);
     if (fields.isEmpty()) {
@@ -296,14 +278,11 @@ final class FieldSet<FieldDescriptorType extends
     }
   }
 
-  /**
-   * Useful for implementing
-   * {@link Message#getRepeatedFieldCount(Descriptors.FieldDescriptor)}.
-   */
+  /** Useful for implementing {@link Message#getRepeatedFieldCount(Descriptors.FieldDescriptor)}. */
   public int getRepeatedFieldCount(final FieldDescriptorType descriptor) {
     if (!descriptor.isRepeated()) {
       throw new IllegalArgumentException(
-        "getRepeatedField() can only be called on repeated fields.");
+          "getRepeatedField() can only be called on repeated fields.");
     }
 
     final Object value = getField(descriptor);
@@ -314,15 +293,11 @@ final class FieldSet<FieldDescriptorType extends
     }
   }
 
-  /**
-   * Useful for implementing
-   * {@link Message#getRepeatedField(Descriptors.FieldDescriptor,int)}.
-   */
-  public Object getRepeatedField(final FieldDescriptorType descriptor,
-                                 final int index) {
+  /** Useful for implementing {@link Message#getRepeatedField(Descriptors.FieldDescriptor,int)}. */
+  public Object getRepeatedField(final FieldDescriptorType descriptor, final int index) {
     if (!descriptor.isRepeated()) {
       throw new IllegalArgumentException(
-        "getRepeatedField() can only be called on repeated fields.");
+          "getRepeatedField() can only be called on repeated fields.");
     }
 
     final Object value = getField(descriptor);
@@ -335,16 +310,15 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Useful for implementing
-   * {@link Message.Builder#setRepeatedField(Descriptors.FieldDescriptor,int,Object)}.
+   * Useful for implementing {@link
+   * Message.Builder#setRepeatedField(Descriptors.FieldDescriptor,int,Object)}.
    */
   @SuppressWarnings("unchecked")
-  public void setRepeatedField(final FieldDescriptorType descriptor,
-                               final int index,
-                               final Object value) {
+  public void setRepeatedField(
+      final FieldDescriptorType descriptor, final int index, final Object value) {
     if (!descriptor.isRepeated()) {
       throw new IllegalArgumentException(
-        "getRepeatedField() can only be called on repeated fields.");
+          "getRepeatedField() can only be called on repeated fields.");
     }
 
     final Object list = getField(descriptor);
@@ -357,15 +331,14 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Useful for implementing
-   * {@link Message.Builder#addRepeatedField(Descriptors.FieldDescriptor,Object)}.
+   * Useful for implementing {@link
+   * Message.Builder#addRepeatedField(Descriptors.FieldDescriptor,Object)}.
    */
   @SuppressWarnings("unchecked")
-  public void addRepeatedField(final FieldDescriptorType descriptor,
-                               final Object value) {
+  public void addRepeatedField(final FieldDescriptorType descriptor, final Object value) {
     if (!descriptor.isRepeated()) {
       throw new IllegalArgumentException(
-        "addRepeatedField() can only be called on repeated fields.");
+          "addRepeatedField() can only be called on repeated fields.");
     }
 
     verifyType(descriptor.getLiteType(), value);
@@ -383,36 +356,45 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Verifies that the given object is of the correct type to be a valid
-   * value for the given field.  (For repeated fields, this checks if the
-   * object is the right type to be one element of the field.)
+   * Verifies that the given object is of the correct type to be a valid value for the given field.
+   * (For repeated fields, this checks if the object is the right type to be one element of the
+   * field.)
    *
    * @throws IllegalArgumentException The value is not of the right type.
    */
-  private static void verifyType(final WireFormat.FieldType type,
-                                 final Object value) {
+  private static void verifyType(final WireFormat.FieldType type, final Object value) {
     checkNotNull(value);
 
     boolean isValid = false;
     switch (type.getJavaType()) {
-      case INT:          isValid = value instanceof Integer   ; break;
-      case LONG:         isValid = value instanceof Long      ; break;
-      case FLOAT:        isValid = value instanceof Float     ; break;
-      case DOUBLE:       isValid = value instanceof Double    ; break;
-      case BOOLEAN:      isValid = value instanceof Boolean   ; break;
-      case STRING:       isValid = value instanceof String    ; break;
+      case INT:
+        isValid = value instanceof Integer;
+        break;
+      case LONG:
+        isValid = value instanceof Long;
+        break;
+      case FLOAT:
+        isValid = value instanceof Float;
+        break;
+      case DOUBLE:
+        isValid = value instanceof Double;
+        break;
+      case BOOLEAN:
+        isValid = value instanceof Boolean;
+        break;
+      case STRING:
+        isValid = value instanceof String;
+        break;
       case BYTE_STRING:
         isValid = value instanceof ByteString || value instanceof byte[];
         break;
       case ENUM:
         // TODO(kenton):  Caller must do type checking here, I guess.
-        isValid =
-            (value instanceof Integer || value instanceof Internal.EnumLite);
+        isValid = (value instanceof Integer || value instanceof Internal.EnumLite);
         break;
       case MESSAGE:
         // TODO(kenton):  Caller must do type checking here, I guess.
-        isValid =
-            (value instanceof MessageLite) || (value instanceof LazyField);
+        isValid = (value instanceof MessageLite) || (value instanceof LazyField);
         break;
     }
 
@@ -425,7 +407,7 @@ final class FieldSet<FieldDescriptorType extends
       //   isn't a big deal, though, since it would only really apply when using
       //   reflection and generally people don't chain reflection setters.
       throw new IllegalArgumentException(
-        "Wrong object type used with protocol message reflection.");
+          "Wrong object type used with protocol message reflection.");
     }
   }
 
@@ -433,10 +415,9 @@ final class FieldSet<FieldDescriptorType extends
   // Parsing and serialization
 
   /**
-   * See {@link Message#isInitialized()}.  Note:  Since {@code FieldSet}
-   * itself does not have any way of knowing about required fields that
-   * aren't actually present in the set, it is up to the caller to check
-   * that all required fields are present.
+   * See {@link Message#isInitialized()}. Note: Since {@code FieldSet} itself does not have any way
+   * of knowing about required fields that aren't actually present in the set, it is up to the
+   * caller to check that all required fields are present.
    */
   public boolean isInitialized() {
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
@@ -444,8 +425,7 @@ final class FieldSet<FieldDescriptorType extends
         return false;
       }
     }
-    for (final Map.Entry<FieldDescriptorType, Object> entry :
-             fields.getOverflowEntries()) {
+    for (final Map.Entry<FieldDescriptorType, Object> entry : fields.getOverflowEntries()) {
       if (!isInitialized(entry)) {
         return false;
       }
@@ -454,13 +434,11 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   @SuppressWarnings("unchecked")
-  private boolean isInitialized(
-      final Map.Entry<FieldDescriptorType, Object> entry) {
+  private boolean isInitialized(final Map.Entry<FieldDescriptorType, Object> entry) {
     final FieldDescriptorType descriptor = entry.getKey();
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
       if (descriptor.isRepeated()) {
-        for (final MessageLite element:
-                 (List<MessageLite>) entry.getValue()) {
+        for (final MessageLite element : (List<MessageLite>) entry.getValue()) {
           if (!element.isInitialized()) {
             return false;
           }
@@ -485,11 +463,9 @@ final class FieldSet<FieldDescriptorType extends
   /**
    * Given a field type, return the wire type.
    *
-   * @returns One of the {@code WIRETYPE_} constants defined in
-   *          {@link WireFormat}.
+   * @return One of the {@code WIRETYPE_} constants defined in {@link WireFormat}.
    */
-  static int getWireFormatForFieldType(final WireFormat.FieldType type,
-                                       boolean isPacked) {
+  static int getWireFormatForFieldType(final WireFormat.FieldType type, boolean isPacked) {
     if (isPacked) {
       return WireFormat.WIRETYPE_LENGTH_DELIMITED;
     } else {
@@ -497,16 +473,12 @@ final class FieldSet<FieldDescriptorType extends
     }
   }
 
-  /**
-   * Like {@link Message.Builder#mergeFrom(Message)}, but merges from another
-   * {@link FieldSet}.
-   */
+  /** Like {@link Message.Builder#mergeFrom(Message)}, but merges from another {@link FieldSet}. */
   public void mergeFrom(final FieldSet<FieldDescriptorType> other) {
     for (int i = 0; i < other.fields.getNumArrayEntries(); i++) {
       mergeFromField(other.fields.getArrayEntryAt(i));
     }
-    for (final Map.Entry<FieldDescriptorType, Object> entry :
-             other.fields.getOverflowEntries()) {
+    for (final Map.Entry<FieldDescriptorType, Object> entry : other.fields.getOverflowEntries()) {
       mergeFromField(entry);
     }
   }
@@ -523,8 +495,7 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private void mergeFromField(
-      final Map.Entry<FieldDescriptorType, Object> entry) {
+  private void mergeFromField(final Map.Entry<FieldDescriptorType, Object> entry) {
     final FieldDescriptorType descriptor = entry.getKey();
     Object otherValue = entry.getValue();
     if (otherValue instanceof LazyField) {
@@ -546,9 +517,10 @@ final class FieldSet<FieldDescriptorType extends
         fields.put(descriptor, cloneIfMutable(otherValue));
       } else {
         // Merge the messages.
-          value = descriptor.internalMergeFrom(
-                ((MessageLite) value).toBuilder(), (MessageLite) otherValue)
-                .build();
+          value =
+              descriptor
+                  .internalMergeFrom(((MessageLite) value).toBuilder(), (MessageLite) otherValue)
+                  .build();
 
         fields.put(descriptor, value);
       }
@@ -561,72 +533,59 @@ final class FieldSet<FieldDescriptorType extends
   //   other class.  Probably WireFormat.
 
   /**
-   * Read a field of any primitive type for immutable messages from a
-   * CodedInputStream. Enums, groups, and embedded messages are not handled by
-   * this method.
+   * Read a field of any primitive type for immutable messages from a CodedInputStream. Enums,
+   * groups, and embedded messages are not handled by this method.
    *
    * @param input The stream from which to read.
    * @param type Declared type of the field.
    * @param checkUtf8 When true, check that the input is valid utf8.
-   * @return An object representing the field's value, of the exact
-   *         type which would be returned by
-   *         {@link Message#getField(Descriptors.FieldDescriptor)} for
-   *         this field.
+   * @return An object representing the field's value, of the exact type which would be returned by
+   *     {@link Message#getField(Descriptors.FieldDescriptor)} for this field.
    */
   public static Object readPrimitiveField(
-      CodedInputStream input,
-      final WireFormat.FieldType type,
-      boolean checkUtf8) throws IOException {
+      CodedInputStream input, final WireFormat.FieldType type, boolean checkUtf8)
+      throws IOException {
     if (checkUtf8) {
-      return WireFormat.readPrimitiveField(input, type,
-          WireFormat.Utf8Validation.STRICT);
+      return WireFormat.readPrimitiveField(input, type, WireFormat.Utf8Validation.STRICT);
     } else {
-      return WireFormat.readPrimitiveField(input, type,
-          WireFormat.Utf8Validation.LOOSE);
+      return WireFormat.readPrimitiveField(input, type, WireFormat.Utf8Validation.LOOSE);
     }
   }
 
 
   /** See {@link Message#writeTo(CodedOutputStream)}. */
-  public void writeTo(final CodedOutputStream output)
-                      throws IOException {
+  public void writeTo(final CodedOutputStream output) throws IOException {
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
-      final Map.Entry<FieldDescriptorType, Object> entry =
-          fields.getArrayEntryAt(i);
+      final Map.Entry<FieldDescriptorType, Object> entry = fields.getArrayEntryAt(i);
       writeField(entry.getKey(), entry.getValue(), output);
     }
-    for (final Map.Entry<FieldDescriptorType, Object> entry :
-         fields.getOverflowEntries()) {
+    for (final Map.Entry<FieldDescriptorType, Object> entry : fields.getOverflowEntries()) {
       writeField(entry.getKey(), entry.getValue(), output);
     }
   }
 
-  /**
-   * Like {@link #writeTo} but uses MessageSet wire format.
-   */
-  public void writeMessageSetTo(final CodedOutputStream output)
-                                throws IOException {
+  /** Like {@link #writeTo} but uses MessageSet wire format. */
+  public void writeMessageSetTo(final CodedOutputStream output) throws IOException {
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
       writeMessageSetTo(fields.getArrayEntryAt(i), output);
     }
-    for (final Map.Entry<FieldDescriptorType, Object> entry :
-             fields.getOverflowEntries()) {
+    for (final Map.Entry<FieldDescriptorType, Object> entry : fields.getOverflowEntries()) {
       writeMessageSetTo(entry, output);
     }
   }
 
   private void writeMessageSetTo(
-      final Map.Entry<FieldDescriptorType, Object> entry,
-      final CodedOutputStream output) throws IOException {
+      final Map.Entry<FieldDescriptorType, Object> entry, final CodedOutputStream output)
+      throws IOException {
     final FieldDescriptorType descriptor = entry.getKey();
-    if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE &&
-        !descriptor.isRepeated() && !descriptor.isPacked()) {
+    if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
+        && !descriptor.isRepeated()
+        && !descriptor.isPacked()) {
       Object value = entry.getValue();
       if (value instanceof LazyField) {
         value = ((LazyField) value).getValue();
       }
-      output.writeMessageSetExtension(entry.getKey().getNumber(),
-                                      (MessageLite) value);
+      output.writeMessageSetExtension(entry.getKey().getNumber(), (MessageLite) value);
     } else {
       writeField(descriptor, entry.getValue(), output);
     }
@@ -636,18 +595,17 @@ final class FieldSet<FieldDescriptorType extends
    * Write a single tag-value pair to the stream.
    *
    * @param output The output stream.
-   * @param type   The field's type.
+   * @param type The field's type.
    * @param number The field's number.
-   * @param value  Object representing the field's value.  Must be of the exact
-   *               type which would be returned by
-   *               {@link Message#getField(Descriptors.FieldDescriptor)} for
-   *               this field.
+   * @param value Object representing the field's value. Must be of the exact type which would be
+   *     returned by {@link Message#getField(Descriptors.FieldDescriptor)} for this field.
    */
   static void writeElement(
       final CodedOutputStream output,
       final WireFormat.FieldType type,
       final int number,
-      final Object value) throws IOException {
+      final Object value)
+      throws IOException {
     // Special case for groups, which need a start and end tag; other fields
     // can just use writeTag() and writeFieldNoTag().
     if (type == WireFormat.FieldType.GROUP) {
@@ -663,26 +621,43 @@ final class FieldSet<FieldDescriptorType extends
    *
    * @param output The output stream.
    * @param type The field's type.
-   * @param value  Object representing the field's value.  Must be of the exact
-   *               type which would be returned by
-   *               {@link Message#getField(Descriptors.FieldDescriptor)} for
-   *               this field.
+   * @param value Object representing the field's value. Must be of the exact type which would be
+   *     returned by {@link Message#getField(Descriptors.FieldDescriptor)} for this field.
    */
   static void writeElementNoTag(
-      final CodedOutputStream output,
-      final WireFormat.FieldType type,
-      final Object value) throws IOException {
+      final CodedOutputStream output, final WireFormat.FieldType type, final Object value)
+      throws IOException {
     switch (type) {
-      case DOUBLE  : output.writeDoubleNoTag  ((Double     ) value); break;
-      case FLOAT   : output.writeFloatNoTag   ((Float      ) value); break;
-      case INT64   : output.writeInt64NoTag   ((Long       ) value); break;
-      case UINT64  : output.writeUInt64NoTag  ((Long       ) value); break;
-      case INT32   : output.writeInt32NoTag   ((Integer    ) value); break;
-      case FIXED64 : output.writeFixed64NoTag ((Long       ) value); break;
-      case FIXED32 : output.writeFixed32NoTag ((Integer    ) value); break;
-      case BOOL    : output.writeBoolNoTag    ((Boolean    ) value); break;
-      case GROUP   : output.writeGroupNoTag   ((MessageLite) value); break;
-      case MESSAGE : output.writeMessageNoTag ((MessageLite) value); break;
+      case DOUBLE:
+        output.writeDoubleNoTag((Double) value);
+        break;
+      case FLOAT:
+        output.writeFloatNoTag((Float) value);
+        break;
+      case INT64:
+        output.writeInt64NoTag((Long) value);
+        break;
+      case UINT64:
+        output.writeUInt64NoTag((Long) value);
+        break;
+      case INT32:
+        output.writeInt32NoTag((Integer) value);
+        break;
+      case FIXED64:
+        output.writeFixed64NoTag((Long) value);
+        break;
+      case FIXED32:
+        output.writeFixed32NoTag((Integer) value);
+        break;
+      case BOOL:
+        output.writeBoolNoTag((Boolean) value);
+        break;
+      case GROUP:
+        output.writeGroupNoTag((MessageLite) value);
+        break;
+      case MESSAGE:
+        output.writeMessageNoTag((MessageLite) value);
+        break;
       case STRING:
         if (value instanceof ByteString) {
           output.writeBytesNoTag((ByteString) value);
@@ -697,11 +672,21 @@ final class FieldSet<FieldDescriptorType extends
           output.writeByteArrayNoTag((byte[]) value);
         }
         break;
-      case UINT32  : output.writeUInt32NoTag  ((Integer    ) value); break;
-      case SFIXED32: output.writeSFixed32NoTag((Integer    ) value); break;
-      case SFIXED64: output.writeSFixed64NoTag((Long       ) value); break;
-      case SINT32  : output.writeSInt32NoTag  ((Integer    ) value); break;
-      case SINT64  : output.writeSInt64NoTag  ((Long       ) value); break;
+      case UINT32:
+        output.writeUInt32NoTag((Integer) value);
+        break;
+      case SFIXED32:
+        output.writeSFixed32NoTag((Integer) value);
+        break;
+      case SFIXED64:
+        output.writeSFixed64NoTag((Long) value);
+        break;
+      case SINT32:
+        output.writeSInt32NoTag((Integer) value);
+        break;
+      case SINT64:
+        output.writeSInt64NoTag((Long) value);
+        break;
 
       case ENUM:
         if (value instanceof Internal.EnumLite) {
@@ -714,14 +699,13 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /** Write a single field. */
-  public static void writeField(final FieldDescriptorLite<?> descriptor,
-                                final Object value,
-                                final CodedOutputStream output)
-                                throws IOException {
+  public static void writeField(
+      final FieldDescriptorLite<?> descriptor, final Object value, final CodedOutputStream output)
+      throws IOException {
     WireFormat.FieldType type = descriptor.getLiteType();
     int number = descriptor.getNumber();
     if (descriptor.isRepeated()) {
-      final List<?> valueList = (List<?>)value;
+      final List<?> valueList = (List<?>) value;
       if (descriptor.isPacked()) {
         output.writeTag(number, WireFormat.WIRETYPE_LENGTH_DELIMITED);
         // Compute the total data size so the length can be written.
@@ -749,44 +733,39 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * See {@link Message#getSerializedSize()}.  It's up to the caller to cache
-   * the resulting size if desired.
+   * See {@link Message#getSerializedSize()}. It's up to the caller to cache the resulting size if
+   * desired.
    */
   public int getSerializedSize() {
     int size = 0;
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
-      final Map.Entry<FieldDescriptorType, Object> entry =
-          fields.getArrayEntryAt(i);
+      final Map.Entry<FieldDescriptorType, Object> entry = fields.getArrayEntryAt(i);
       size += computeFieldSize(entry.getKey(), entry.getValue());
     }
-    for (final Map.Entry<FieldDescriptorType, Object> entry :
-         fields.getOverflowEntries()) {
+    for (final Map.Entry<FieldDescriptorType, Object> entry : fields.getOverflowEntries()) {
       size += computeFieldSize(entry.getKey(), entry.getValue());
     }
     return size;
   }
 
-  /**
-   * Like {@link #getSerializedSize} but uses MessageSet wire format.
-   */
+  /** Like {@link #getSerializedSize} but uses MessageSet wire format. */
   public int getMessageSetSerializedSize() {
     int size = 0;
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
       size += getMessageSetSerializedSize(fields.getArrayEntryAt(i));
     }
-    for (final Map.Entry<FieldDescriptorType, Object> entry :
-             fields.getOverflowEntries()) {
+    for (final Map.Entry<FieldDescriptorType, Object> entry : fields.getOverflowEntries()) {
       size += getMessageSetSerializedSize(entry);
     }
     return size;
   }
 
-  private int getMessageSetSerializedSize(
-      final Map.Entry<FieldDescriptorType, Object> entry) {
+  private int getMessageSetSerializedSize(final Map.Entry<FieldDescriptorType, Object> entry) {
     final FieldDescriptorType descriptor = entry.getKey();
     Object value = entry.getValue();
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
-        && !descriptor.isRepeated() && !descriptor.isPacked()) {
+        && !descriptor.isRepeated()
+        && !descriptor.isPacked()) {
       if (value instanceof LazyField) {
         return CodedOutputStream.computeLazyFieldMessageSetExtensionSize(
             entry.getKey().getNumber(), (LazyField) value);
@@ -800,15 +779,13 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * single tag/value pair of arbitrary type.
+   * Compute the number of bytes that would be needed to encode a single tag/value pair of arbitrary
+   * type.
    *
-   * @param type   The field's type.
+   * @param type The field's type.
    * @param number The field's number.
-   * @param value  Object representing the field's value.  Must be of the exact
-   *               type which would be returned by
-   *               {@link Message#getField(Descriptors.FieldDescriptor)} for
-   *               this field.
+   * @param value Object representing the field's value. Must be of the exact type which would be
+   *     returned by {@link Message#getField(Descriptors.FieldDescriptor)} for this field.
    */
   static int computeElementSize(
       final WireFormat.FieldType type, final int number, final Object value) {
@@ -822,46 +799,57 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a
-   * particular value of arbitrary type, excluding tag.
+   * Compute the number of bytes that would be needed to encode a particular value of arbitrary
+   * type, excluding tag.
    *
-   * @param type   The field's type.
-   * @param value  Object representing the field's value.  Must be of the exact
-   *               type which would be returned by
-   *               {@link Message#getField(Descriptors.FieldDescriptor)} for
-   *               this field.
+   * @param type The field's type.
+   * @param value Object representing the field's value. Must be of the exact type which would be
+   *     returned by {@link Message#getField(Descriptors.FieldDescriptor)} for this field.
    */
-  static int computeElementSizeNoTag(
-      final WireFormat.FieldType type, final Object value) {
+  static int computeElementSizeNoTag(final WireFormat.FieldType type, final Object value) {
     switch (type) {
-      // Note:  Minor violation of 80-char limit rule here because this would
-      //   actually be harder to read if we wrapped the lines.
-      case DOUBLE  : return CodedOutputStream.computeDoubleSizeNoTag  ((Double     )value);
-      case FLOAT   : return CodedOutputStream.computeFloatSizeNoTag   ((Float      )value);
-      case INT64   : return CodedOutputStream.computeInt64SizeNoTag   ((Long       )value);
-      case UINT64  : return CodedOutputStream.computeUInt64SizeNoTag  ((Long       )value);
-      case INT32   : return CodedOutputStream.computeInt32SizeNoTag   ((Integer    )value);
-      case FIXED64 : return CodedOutputStream.computeFixed64SizeNoTag ((Long       )value);
-      case FIXED32 : return CodedOutputStream.computeFixed32SizeNoTag ((Integer    )value);
-      case BOOL    : return CodedOutputStream.computeBoolSizeNoTag    ((Boolean    )value);
-      case GROUP   : return CodedOutputStream.computeGroupSizeNoTag   ((MessageLite)value);
-      case BYTES   :
+        // Note:  Minor violation of 80-char limit rule here because this would
+        //   actually be harder to read if we wrapped the lines.
+      case DOUBLE:
+        return CodedOutputStream.computeDoubleSizeNoTag((Double) value);
+      case FLOAT:
+        return CodedOutputStream.computeFloatSizeNoTag((Float) value);
+      case INT64:
+        return CodedOutputStream.computeInt64SizeNoTag((Long) value);
+      case UINT64:
+        return CodedOutputStream.computeUInt64SizeNoTag((Long) value);
+      case INT32:
+        return CodedOutputStream.computeInt32SizeNoTag((Integer) value);
+      case FIXED64:
+        return CodedOutputStream.computeFixed64SizeNoTag((Long) value);
+      case FIXED32:
+        return CodedOutputStream.computeFixed32SizeNoTag((Integer) value);
+      case BOOL:
+        return CodedOutputStream.computeBoolSizeNoTag((Boolean) value);
+      case GROUP:
+        return CodedOutputStream.computeGroupSizeNoTag((MessageLite) value);
+      case BYTES:
         if (value instanceof ByteString) {
           return CodedOutputStream.computeBytesSizeNoTag((ByteString) value);
         } else {
           return CodedOutputStream.computeByteArraySizeNoTag((byte[]) value);
         }
-      case STRING  :
+      case STRING:
         if (value instanceof ByteString) {
           return CodedOutputStream.computeBytesSizeNoTag((ByteString) value);
         } else {
           return CodedOutputStream.computeStringSizeNoTag((String) value);
         }
-      case UINT32  : return CodedOutputStream.computeUInt32SizeNoTag  ((Integer    )value);
-      case SFIXED32: return CodedOutputStream.computeSFixed32SizeNoTag((Integer    )value);
-      case SFIXED64: return CodedOutputStream.computeSFixed64SizeNoTag((Long       )value);
-      case SINT32  : return CodedOutputStream.computeSInt32SizeNoTag  ((Integer    )value);
-      case SINT64  : return CodedOutputStream.computeSInt64SizeNoTag  ((Long       )value);
+      case UINT32:
+        return CodedOutputStream.computeUInt32SizeNoTag((Integer) value);
+      case SFIXED32:
+        return CodedOutputStream.computeSFixed32SizeNoTag((Integer) value);
+      case SFIXED64:
+        return CodedOutputStream.computeSFixed64SizeNoTag((Long) value);
+      case SINT32:
+        return CodedOutputStream.computeSInt32SizeNoTag((Integer) value);
+      case SINT64:
+        return CodedOutputStream.computeSInt64SizeNoTag((Long) value);
 
       case MESSAGE:
         if (value instanceof LazyField) {
@@ -872,36 +860,31 @@ final class FieldSet<FieldDescriptorType extends
 
       case ENUM:
         if (value instanceof Internal.EnumLite) {
-          return CodedOutputStream.computeEnumSizeNoTag(
-              ((Internal.EnumLite) value).getNumber());
+          return CodedOutputStream.computeEnumSizeNoTag(((Internal.EnumLite) value).getNumber());
         } else {
           return CodedOutputStream.computeEnumSizeNoTag((Integer) value);
         }
     }
 
-    throw new RuntimeException(
-      "There is no way to get here, but the compiler thinks otherwise.");
+    throw new RuntimeException("There is no way to get here, but the compiler thinks otherwise.");
   }
 
-  /**
-   * Compute the number of bytes needed to encode a particular field.
-   */
-  public static int computeFieldSize(final FieldDescriptorLite<?> descriptor,
-                                     final Object value) {
+  /** Compute the number of bytes needed to encode a particular field. */
+  public static int computeFieldSize(final FieldDescriptorLite<?> descriptor, final Object value) {
     WireFormat.FieldType type = descriptor.getLiteType();
     int number = descriptor.getNumber();
     if (descriptor.isRepeated()) {
       if (descriptor.isPacked()) {
         int dataSize = 0;
-        for (final Object element : (List<?>)value) {
+        for (final Object element : (List<?>) value) {
           dataSize += computeElementSizeNoTag(type, element);
         }
-        return dataSize +
-            CodedOutputStream.computeTagSize(number) +
-            CodedOutputStream.computeRawVarint32Size(dataSize);
+        return dataSize
+            + CodedOutputStream.computeTagSize(number)
+            + CodedOutputStream.computeRawVarint32Size(dataSize);
       } else {
         int size = 0;
-        for (final Object element : (List<?>)value) {
+        for (final Object element : (List<?>) value) {
           size += computeElementSize(type, number, element);
         }
         return size;

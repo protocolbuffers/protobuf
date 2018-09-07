@@ -58,7 +58,7 @@ class EnumGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
   EnumGenerator(const EnumDescriptor* descriptor,
-                const std::map<string, string>& vars, const Options& options);
+                const std::map<std::string, std::string>& vars, const Options& options);
   ~EnumGenerator();
 
   // Generate header code defining the enum.  This code should be placed
@@ -85,12 +85,12 @@ class EnumGenerator {
 
  private:
   const EnumDescriptor* descriptor_;
-  const string classname_;
+  const std::string classname_;
   const Options& options_;
   // whether to generate the *_ARRAYSIZE constant.
   const bool generate_array_size_;
 
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
 
   friend class FileGenerator;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);

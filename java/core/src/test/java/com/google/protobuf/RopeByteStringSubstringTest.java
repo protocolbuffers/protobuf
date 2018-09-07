@@ -34,8 +34,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 
 /**
- * This class tests {@link RopeByteString#substring(int, int)} by inheriting the tests from
- * {@link LiteralByteStringTest}.  Only a couple of methods are overridden.
+ * This class tests {@link RopeByteString#substring(int, int)} by inheriting the tests from {@link
+ * LiteralByteStringTest}. Only a couple of methods are overridden.
  *
  * @author carlanton@google.com (Carl Haverl)
  */
@@ -61,8 +61,8 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
 
   @Override
   public void testGetTreeDepth() {
-    assertEquals(classUnderTest + " must have the expected tree depth",
-        3, stringUnderTest.getTreeDepth());
+    assertEquals(
+        classUnderTest + " must have the expected tree depth", 3, stringUnderTest.getTreeDepth());
   }
 
   @Override
@@ -84,15 +84,18 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
     testString = testString.substring(2, testString.length() - 6);
     unicode = unicode.substring(2, unicode.size() - 6);
 
-    assertEquals(classUnderTest + " from string must have the expected type",
-        classUnderTest, getActualClassName(unicode));
+    assertEquals(
+        classUnderTest + " from string must have the expected type",
+        classUnderTest,
+        getActualClassName(unicode));
     String roundTripString = unicode.toString(UTF_8);
-    assertEquals(classUnderTest + " unicode bytes must match",
-        testString, roundTripString);
+    assertEquals(classUnderTest + " unicode bytes must match", testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);
     assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
-    assertEquals(classUnderTest + " string must must have same hashCode as the flat string",
-        flatString.hashCode(), unicode.hashCode());
+    assertEquals(
+        classUnderTest + " string must must have same hashCode as the flat string",
+        flatString.hashCode(),
+        unicode.hashCode());
   }
 
   @Override
@@ -114,14 +117,17 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
     testString = testString.substring(2, testString.length() - 6);
     unicode = unicode.substring(2, unicode.size() - 6);
 
-    assertEquals(classUnderTest + " from string must have the expected type",
-        classUnderTest, getActualClassName(unicode));
+    assertEquals(
+        classUnderTest + " from string must have the expected type",
+        classUnderTest,
+        getActualClassName(unicode));
     String roundTripString = unicode.toString(Internal.UTF_8);
-    assertEquals(classUnderTest + " unicode bytes must match",
-        testString, roundTripString);
+    assertEquals(classUnderTest + " unicode bytes must match", testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);
     assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
-    assertEquals(classUnderTest + " string must must have same hashCode as the flat string",
-        flatString.hashCode(), unicode.hashCode());
+    assertEquals(
+        classUnderTest + " string must must have same hashCode as the flat string",
+        flatString.hashCode(),
+        unicode.hashCode());
   }
 }

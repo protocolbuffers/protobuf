@@ -80,9 +80,9 @@ class ExtensionGenerator {
 
  protected:
   static void InitTemplateVars(const FieldDescriptor* descriptor,
-                               const string& scope, bool immutable,
+                               const std::string& scope, bool immutable,
                                ClassNameResolver* name_resolver,
-                               std::map<string, string>* vars_pointer);
+                               std::map<std::string, std::string>* vars_pointer);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);
@@ -102,7 +102,7 @@ class ImmutableExtensionGenerator : public ExtensionGenerator {
   const FieldDescriptor* descriptor_;
   Context* context_;
   ClassNameResolver* name_resolver_;
-  string scope_;
+  std::string scope_;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableExtensionGenerator);

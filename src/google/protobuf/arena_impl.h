@@ -61,7 +61,7 @@ inline size_t AlignUpTo8(size_t n) {
 // in turn would be templates, which will/cannot happen. However separating
 // the memory allocation part from the cruft of the API users expect we can
 // use #ifdef the select the best implementation based on hardware / OS.
-class LIBPROTOBUF_EXPORT ArenaImpl {
+class PROTOBUF_EXPORT ArenaImpl {
  public:
   struct Options {
     size_t start_block_size;
@@ -137,7 +137,7 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
   class Block;
 
   // A thread-unsafe Arena that can only be used within its owning thread.
-  class LIBPROTOBUF_EXPORT SerialArena {
+  class PROTOBUF_EXPORT SerialArena {
    public:
     // The allocate/free methods here are a little strange, since SerialArena is
     // allocated inside a Block which it also manages.  This is to avoid doing
@@ -157,7 +157,7 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
     void* AllocateAligned(size_t n) {
       GOOGLE_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
       GOOGLE_DCHECK_GE(limit_, ptr_);
-      if (GOOGLE_PREDICT_FALSE(static_cast<size_t>(limit_ - ptr_) < n)) {
+      if (PROTOBUF_PREDICT_FALSE(static_cast<size_t>(limit_ - ptr_) < n)) {
         return AllocateAlignedFallback(n);
       }
       void* ret = ptr_;
@@ -169,7 +169,7 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
     }
 
     void AddCleanup(void* elem, void (*cleanup)(void*)) {
-      if (GOOGLE_PREDICT_FALSE(cleanup_ptr_ == cleanup_limit_)) {
+      if (PROTOBUF_PREDICT_FALSE(cleanup_ptr_ == cleanup_limit_)) {
         AddCleanupFallback(elem, cleanup);
         return;
       }
@@ -212,7 +212,7 @@ class LIBPROTOBUF_EXPORT ArenaImpl {
 
   // Blocks are variable length malloc-ed objects.  The following structure
   // describes the common header for all blocks.
-  class LIBPROTOBUF_EXPORT Block {
+  class PROTOBUF_EXPORT Block {
    public:
     Block(size_t size, Block* next);
 

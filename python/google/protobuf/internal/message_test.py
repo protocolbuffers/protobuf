@@ -1217,13 +1217,13 @@ class Proto2Test(BaseTestCase):
     message.optional_bool = True
     message.optional_nested_message.bb = 15
 
-    self.assertTrue(message.HasField("optional_int32"))
+    self.assertTrue(message.HasField(u"optional_int32"))
     self.assertTrue(message.HasField("optional_bool"))
     self.assertTrue(message.HasField("optional_nested_message"))
 
     # Clearing the fields unsets them and resets their value to default.
     message.ClearField("optional_int32")
-    message.ClearField("optional_bool")
+    message.ClearField(u"optional_bool")
     message.ClearField("optional_nested_message")
 
     self.assertFalse(message.HasField("optional_int32"))
@@ -1434,6 +1434,16 @@ class Proto2Test(BaseTestCase):
 
     with self.assertRaises(ValueError):
       unittest_pb2.TestAllTypes(repeated_nested_enum='FOO')
+
+  def testPythonicInitWithDict(self):
+    # Both string/unicode field name keys should work.
+    kwargs = {
+        'optional_int32': 100,
+        u'optional_fixed32': 200,
+    }
+    msg = unittest_pb2.TestAllTypes(**kwargs)
+    self.assertEqual(100, msg.optional_int32)
+    self.assertEqual(200, msg.optional_fixed32)
 
 
   def test_documentation(self):
@@ -2210,9 +2220,8 @@ class Proto3Test(BaseTestCase):
     msg.map_int32_int32[35] = 64
     msg.map_string_foreign_message['foo'].c = 5
     self.assertEqual(0, len(msg.FindInitializationErrors()))
- 
-  @unittest.skipIf(sys.maxunicode == UCS2_MAXUNICODE,
-                   'Skip for ucs2')
+
+  @unittest.skipIf(sys.maxunicode == UCS2_MAXUNICODE, 'Skip for ucs2')
   def testStrictUtf8Check(self):
     # Test u'\ud801' is rejected at parser in both python2 and python3.
     serialized = (b'r\x03\xed\xa0\x81')

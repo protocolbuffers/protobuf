@@ -32,9 +32,9 @@ package com.google.protobuf;
 
 /**
  * Lite interface that generated extensions implement.
- * <p>
- * Methods are for use by generated code only. You can hold a reference to
- * extensions using this type name.
+ *
+ * <p>Methods are for use by generated code only. You can hold a reference to extensions using this
+ * type name.
  */
 public abstract class ExtensionLite<ContainingType extends MessageLite, Type> {
 
@@ -50,12 +50,9 @@ public abstract class ExtensionLite<ContainingType extends MessageLite, Type> {
   /** Returns the default value of the extension field. */
   public abstract Type getDefaultValue();
 
-  /**
-   * Returns the default instance of the extension field, if it's a message
-   * extension.
-   */
+  /** Returns the default instance of the extension field, if it's a message extension. */
   public abstract MessageLite getMessageDefaultInstance();
-  
+
   /** Returns whether or not this extension is a Lite Extension. */
   boolean isLite() {
     return true;

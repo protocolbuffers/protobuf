@@ -42,11 +42,11 @@ import java.util.RandomAccess;
  *
  * @author dweis@google.com (Daniel Weis)
  */
-final class DoubleArrayList
-    extends AbstractProtobufList<Double>
+final class DoubleArrayList extends AbstractProtobufList<Double>
     implements DoubleList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final DoubleArrayList EMPTY_LIST = new DoubleArrayList();
+
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -55,9 +55,7 @@ final class DoubleArrayList
     return EMPTY_LIST;
   }
 
-  /**
-   * The backing store for the list.
-   */
+  /** The backing store for the list. */
   private double[] array;
 
   /**
@@ -66,16 +64,13 @@ final class DoubleArrayList
    */
   private int size;
 
-  /**
-   * Constructs a new mutable {@code DoubleArrayList} with default capacity.
-   */
+  /** Constructs a new mutable {@code DoubleArrayList} with default capacity. */
   DoubleArrayList() {
     this(new double[DEFAULT_CAPACITY], 0);
   }
 
   /**
-   * Constructs a new mutable {@code DoubleArrayList}
-   * containing the same elements as {@code other}.
+   * Constructs a new mutable {@code DoubleArrayList} containing the same elements as {@code other}.
    */
   private DoubleArrayList(double[] other, int size) {
     array = other;
@@ -170,17 +165,13 @@ final class DoubleArrayList
     addDouble(index, element);
   }
 
-  /**
-   * Like {@link #add(Double)} but more efficient in that it doesn't box the element.
-   */
+  /** Like {@link #add(Double)} but more efficient in that it doesn't box the element. */
   @Override
   public void addDouble(double element) {
     addDouble(size, element);
   }
 
-  /**
-   * Like {@link #add(int, Double)} but more efficient in that it doesn't box the element.
-   */
+  /** Like {@link #add(int, Double)} but more efficient in that it doesn't box the element. */
   private void addDouble(int index, double element) {
     ensureIsMutable();
     if (index < 0 || index > size) {

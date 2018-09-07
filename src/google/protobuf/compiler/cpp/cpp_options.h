@@ -35,7 +35,6 @@
 
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -45,7 +44,7 @@ namespace cpp {
 
 // Generator options (see generator.cc for a description of each):
 struct Options {
-  string dllexport_decl;
+  std::string dllexport_decl;
   bool safe_boundary_check = false;
   bool proto_h = false;
   bool transitive_pb_h = true;
@@ -58,8 +57,8 @@ struct Options {
   bool opensource_runtime = false;
   bool opensource_include_paths = false;
   int num_cc_files = 0;
-  string annotation_pragma_name;
-  string annotation_guard_name;
+  std::string annotation_pragma_name;
+  std::string annotation_guard_name;
   const AccessInfoMap* access_info_map = nullptr;
 };
 

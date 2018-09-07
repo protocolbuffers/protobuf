@@ -107,15 +107,15 @@ class MapReflectionTester {
   void ExpectClearViaReflectionIterator(Message* message);
   void ExpectMapEntryClearViaReflection(Message* message);
   void GetMapValueViaMapReflection(Message* message,
-                                   const string& field_name,
+                                   const std::string& field_name,
                                    const MapKey& map_key, MapValueRef* map_val);
-  Message* GetMapEntryViaReflection(Message* message, const string& field_name,
+  Message* GetMapEntryViaReflection(Message* message, const std::string& field_name,
                                     int index);
-  MapIterator MapBegin(Message* message, const string& field_name);
-  MapIterator MapEnd(Message* message, const string& field_name);
+  MapIterator MapBegin(Message* message, const std::string& field_name);
+  MapIterator MapEnd(Message* message, const std::string& field_name);
 
  private:
-  const FieldDescriptor* F(const string& name);
+  const FieldDescriptor* F(const std::string& name);
 
   const Descriptor* base_descriptor_;
 

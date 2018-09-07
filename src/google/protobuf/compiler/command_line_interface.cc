@@ -84,6 +84,8 @@
 #include <google/protobuf/stubs/io_win32.h>
 
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -169,7 +171,8 @@ bool VerifyDirectoryExists(const string& path) {
 bool TryCreateParentDirectory(const string& prefix, const string& filename) {
   // Recursively create parent directories to the output file.
   // On Windows, both '/' and '\' are valid path separators.
-  std::vector<string> parts = Split(filename, "/\\", true);
+  std::vector<string> parts =
+      Split(filename, "/\\", true);
   string path_so_far = prefix;
   for (int i = 0; i < parts.size() - 1; i++) {
     path_so_far += parts[i];
@@ -1546,7 +1549,7 @@ CommandLineInterface::InterpretArgument(const string& name,
       std::cout << version_info_ << std::endl;
     }
     std::cout << "libprotoc "
-         << protobuf::internal::VersionString(GOOGLE_PROTOBUF_VERSION)
+         << protobuf::internal::VersionString(PROTOBUF_VERSION)
          << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
@@ -1932,10 +1935,10 @@ bool CommandLineInterface::GeneratePluginOutput(
 
   google::protobuf::compiler::Version* version =
       request.mutable_compiler_version();
-  version->set_major(GOOGLE_PROTOBUF_VERSION / 1000000);
-  version->set_minor(GOOGLE_PROTOBUF_VERSION / 1000 % 1000);
-  version->set_patch(GOOGLE_PROTOBUF_VERSION % 1000);
-  version->set_suffix(GOOGLE_PROTOBUF_VERSION_SUFFIX);
+  version->set_major(PROTOBUF_VERSION / 1000000);
+  version->set_minor(PROTOBUF_VERSION / 1000 % 1000);
+  version->set_patch(PROTOBUF_VERSION % 1000);
+  version->set_suffix(PROTOBUF_VERSION_SUFFIX);
 
   // Invoke the plugin.
   Subprocess subprocess;

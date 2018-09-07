@@ -52,8 +52,8 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-using ::GOOGLE_PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using io::CodedOutputStream;
+using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using util::Status;
 using util::StatusOr;
 using util::error::INVALID_ARGUMENT;
@@ -67,6 +67,7 @@ ProtoWriter::ProtoWriter(TypeResolver* type_resolver,
       own_typeinfo_(true),
       done_(false),
       ignore_unknown_fields_(false),
+      ignore_unknown_enum_values_(false),
       use_lower_camel_for_enums_(false),
       element_(nullptr),
       size_insert_(),
@@ -86,6 +87,7 @@ ProtoWriter::ProtoWriter(const TypeInfo* typeinfo,
       own_typeinfo_(false),
       done_(false),
       ignore_unknown_fields_(false),
+      ignore_unknown_enum_values_(false),
       use_lower_camel_for_enums_(false),
       element_(nullptr),
       size_insert_(),
@@ -669,9 +671,10 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
       break;
     }
     case google::protobuf::Field_Kind_TYPE_ENUM: {
-      status = WriteEnum(
-          field.number(), data, typeinfo_->GetEnumByTypeUrl(field.type_url()),
-          stream_.get(), use_lower_camel_for_enums_, ignore_unknown_fields_);
+      status = WriteEnum(field.number(), data,
+                         typeinfo_->GetEnumByTypeUrl(field.type_url()),
+                         stream_.get(), use_lower_camel_for_enums_,
+                         ignore_unknown_enum_values_);
       break;
     }
     default:  // TYPE_GROUP or TYPE_MESSAGE

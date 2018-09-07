@@ -81,9 +81,8 @@ we repeatedly read a tag, look up the corresponding decoder, and invoke it.
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import struct
-
-import six
 import sys
+import six
 
 _UCS2_MAXUNICODE = 65535
 if six.PY3:

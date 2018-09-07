@@ -39,9 +39,7 @@ import java.util.Arrays;
  */
 public final class TextFormatParseLocation {
 
-  /**
-   * The empty location.
-   */
+  /** The empty location. */
   public static final TextFormatParseLocation EMPTY = new TextFormatParseLocation(-1, -1);
 
   /**
@@ -92,8 +90,7 @@ public final class TextFormatParseLocation {
       return false;
     }
     TextFormatParseLocation that = (TextFormatParseLocation) o;
-    return (this.line == that.getLine())
-         && (this.column == that.getColumn());
+    return (this.line == that.getLine()) && (this.column == that.getColumn());
   }
 
   @Override

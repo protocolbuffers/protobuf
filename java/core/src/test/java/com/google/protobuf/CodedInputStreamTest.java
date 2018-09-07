@@ -699,7 +699,7 @@ public class CodedInputStreamTest extends TestCase {
       }
       assertEquals(true, input.isAtEnd());
     } catch (Exception e) {
-      fail("Catch exception in the testIsAtEnd");
+      throw new AssertionError("Catch exception in the testIsAtEnd", e);
     }
   }
 

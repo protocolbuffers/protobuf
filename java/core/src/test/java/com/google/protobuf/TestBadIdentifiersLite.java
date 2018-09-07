@@ -75,9 +75,15 @@ public final class TestBadIdentifiersLite extends TestCase {
     assertEquals(0, message.getInt32FieldList31());
 
     assertEquals(0, message.getInt64FieldCount());
-    assertEquals(0L, message.getExtension(
-        TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldCount).longValue());
-    assertEquals(0L, message.getExtension(
-        TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList).longValue());
+    assertEquals(
+        0L,
+        message
+            .getExtension(TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldCount)
+            .longValue());
+    assertEquals(
+        0L,
+        message
+            .getExtension(TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList)
+            .longValue());
   }
 }

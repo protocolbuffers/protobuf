@@ -62,6 +62,8 @@
 #include <gtest/gtest.h>
 
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -2507,11 +2509,11 @@ TEST_F(MiscTest, DefaultValues) {
   ASSERT_TRUE(message->field(9)->has_default_value());
   ASSERT_TRUE(message->field(10)->has_default_value());
 
-  EXPECT_EQ(-1              , message->field(0)->default_value_int32 ());
-  EXPECT_EQ(-GOOGLE_ULONGLONG(1000000000000),
-            message->field(1)->default_value_int64 ());
-  EXPECT_EQ(42              , message->field(2)->default_value_uint32());
-  EXPECT_EQ(GOOGLE_ULONGLONG(2000000000000),
+  EXPECT_EQ(-1, message->field(0)->default_value_int32());
+  EXPECT_EQ(-PROTOBUF_ULONGLONG(1000000000000),
+            message->field(1)->default_value_int64());
+  EXPECT_EQ(42, message->field(2)->default_value_uint32());
+  EXPECT_EQ(PROTOBUF_ULONGLONG(2000000000000),
             message->field(3)->default_value_uint64());
   EXPECT_EQ(4.5             , message->field(4)->default_value_float ());
   EXPECT_EQ(10e100          , message->field(5)->default_value_double());
@@ -2926,11 +2928,11 @@ TEST(CustomOptions, OptionLocations) {
       file->FindServiceByName("TestServiceWithCustomOptions");
   const MethodDescriptor* method = service->FindMethodByName("Foo");
 
-  EXPECT_EQ(GOOGLE_LONGLONG(9876543210),
+  EXPECT_EQ(PROTOBUF_LONGLONG(9876543210),
             file->options().GetExtension(protobuf_unittest::file_opt1));
   EXPECT_EQ(-56,
             message->options().GetExtension(protobuf_unittest::message_opt1));
-  EXPECT_EQ(GOOGLE_LONGLONG(8765432109),
+  EXPECT_EQ(PROTOBUF_LONGLONG(8765432109),
             field->options().GetExtension(protobuf_unittest::field_opt1));
   EXPECT_EQ(42,  // Check that we get the default for an option we don't set.
             field->options().GetExtension(protobuf_unittest::field_opt2));
@@ -2941,7 +2943,7 @@ TEST(CustomOptions, OptionLocations) {
   EXPECT_EQ(123,
             enm->value(1)->options().GetExtension(
               protobuf_unittest::enum_value_opt1));
-  EXPECT_EQ(GOOGLE_LONGLONG(-9876543210),
+  EXPECT_EQ(PROTOBUF_LONGLONG(-9876543210),
             service->options().GetExtension(protobuf_unittest::service_opt1));
   EXPECT_EQ(protobuf_unittest::METHODOPT1_VAL2,
             method->options().GetExtension(protobuf_unittest::method_opt1));

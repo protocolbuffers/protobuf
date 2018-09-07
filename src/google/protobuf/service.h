@@ -108,6 +108,8 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -127,7 +129,7 @@ class Message;               // message.h
 // stubs), but they subclass this base interface.  The methods of this
 // interface can be used to call the methods of the Service without knowing
 // its exact type at compile time (analogous to Reflection).
-class LIBPROTOBUF_EXPORT Service {
+class PROTOBUF_EXPORT Service {
  public:
   inline Service() {}
   virtual ~Service();
@@ -204,7 +206,7 @@ class LIBPROTOBUF_EXPORT Service {
 // "least common denominator" set of features which we expect all
 // implementations to support.  Specific implementations may provide more
 // advanced features (e.g. deadline propagation).
-class LIBPROTOBUF_EXPORT RpcController {
+class PROTOBUF_EXPORT RpcController {
  public:
   inline RpcController() {}
   virtual ~RpcController();
@@ -224,7 +226,7 @@ class LIBPROTOBUF_EXPORT RpcController {
   virtual bool Failed() const = 0;
 
   // If Failed() is true, returns a human-readable description of the error.
-  virtual string ErrorText() const = 0;
+  virtual std::string ErrorText() const = 0;
 
   // Advises the RPC system that the caller desires that the RPC call be
   // canceled.  The RPC system may cancel it immediately, may wait awhile and
@@ -242,7 +244,7 @@ class LIBPROTOBUF_EXPORT RpcController {
   // you need to return machine-readable information about failures, you
   // should incorporate it into your response protocol buffer and should
   // NOT call SetFailed().
-  virtual void SetFailed(const string& reason) = 0;
+  virtual void SetFailed(const std::string& reason) = 0;
 
   // If true, indicates that the client canceled the RPC, so the server may
   // as well give up on replying to it.  The server should still call the
@@ -270,7 +272,7 @@ class LIBPROTOBUF_EXPORT RpcController {
 //   RpcChannel* channel = new MyRpcChannel("remotehost.example.com:1234");
 //   MyService* service = new MyService::Stub(channel);
 //   service->MyMethod(request, &response, callback);
-class LIBPROTOBUF_EXPORT RpcChannel {
+class PROTOBUF_EXPORT RpcChannel {
  public:
   inline RpcChannel() {}
   virtual ~RpcChannel();
@@ -292,5 +294,7 @@ class LIBPROTOBUF_EXPORT RpcChannel {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_SERVICE_H__

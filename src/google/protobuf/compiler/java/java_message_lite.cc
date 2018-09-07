@@ -736,14 +736,14 @@ void ImmutableMessageLiteGenerator::GenerateSerializeOneExtensionRange(
 
 void ImmutableMessageLiteGenerator::GenerateBuilder(io::Printer* printer) {
   printer->Print(
-    "public static Builder newBuilder() {\n"
-    "  return (Builder) DEFAULT_INSTANCE.createBuilder();\n"
-    "}\n"
-    "public static Builder newBuilder($classname$ prototype) {\n"
-    "  return (Builder) DEFAULT_INSTANCE.createBuilder(prototype);\n"
-    "}\n"
-    "\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
+      "public static Builder newBuilder() {\n"
+      "  return (Builder) DEFAULT_INSTANCE.createBuilder();\n"
+      "}\n"
+      "public static Builder newBuilder($classname$ prototype) {\n"
+      "  return (Builder) DEFAULT_INSTANCE.createBuilder(prototype);\n"
+      "}\n"
+      "\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   MessageBuilderLiteGenerator builderGenerator(descriptor_, context_);
   builderGenerator.Generate(printer);

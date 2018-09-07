@@ -30,19 +30,16 @@
 
 package com.google.protobuf;
 
-/**
- * Verifies that an object is mutable, throwing if not.
- */
+/** Verifies that an object is mutable, throwing if not. */
 interface MutabilityOracle {
-  static final MutabilityOracle IMMUTABLE = new MutabilityOracle() {
-    @Override
-    public void ensureMutable() {
-      throw new UnsupportedOperationException();
-    }
-  };
+  static final MutabilityOracle IMMUTABLE =
+      new MutabilityOracle() {
+        @Override
+        public void ensureMutable() {
+          throw new UnsupportedOperationException();
+        }
+      };
 
-  /**
-   * Throws an {@link UnsupportedOperationException} if not mutable.
-   */
+  /** Throws an {@link UnsupportedOperationException} if not mutable. */
   void ensureMutable();
 }

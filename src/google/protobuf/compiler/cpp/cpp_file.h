@@ -76,10 +76,10 @@ class FileGenerator {
 
   // info_path, if non-empty, should be the path (relative to printer's
   // output) to the metadata file describing this proto header.
-  void GenerateProtoHeader(io::Printer* printer, const string& info_path);
+  void GenerateProtoHeader(io::Printer* printer, const std::string& info_path);
   // info_path, if non-empty, should be the path (relative to printer's
   // output) to the metadata file describing this PB header.
-  void GeneratePBHeader(io::Printer* printer, const string& info_path);
+  void GeneratePBHeader(io::Printer* printer, const std::string& info_path);
   void GenerateSource(io::Printer* printer);
 
   int NumMessages() const { return message_generators_.size(); }
@@ -91,16 +91,16 @@ class FileGenerator {
   // Internal type used by GenerateForwardDeclarations (defined in file.cc).
   class ForwardDeclarations;
 
-  void IncludeFile(const string& google3_name, io::Printer* printer) {
+  void IncludeFile(const std::string& google3_name, io::Printer* printer) {
     DoIncludeFile(google3_name, false, printer);
   }
-  void IncludeFileAndExport(const string& google3_name, io::Printer* printer) {
+  void IncludeFileAndExport(const std::string& google3_name, io::Printer* printer) {
     DoIncludeFile(google3_name, true, printer);
   }
-  void DoIncludeFile(const string& google3_name, bool do_export,
+  void DoIncludeFile(const std::string& google3_name, bool do_export,
                      io::Printer* printer);
 
-  string CreateHeaderInclude(const string& basename,
+  std::string CreateHeaderInclude(const std::string& basename,
                              const FileDescriptor* file);
   void GenerateInternalForwardDeclarations(
       const std::vector<const FieldDescriptor*>& fields, const Options& options,
@@ -117,9 +117,9 @@ class FileGenerator {
 
   // Generates top or bottom of a header file.
   void GenerateTopHeaderGuard(io::Printer* printer,
-                              const string& filename_identifier);
+                              const std::string& filename_identifier);
   void GenerateBottomHeaderGuard(io::Printer* printer,
-                                 const string& filename_identifier);
+                                 const std::string& filename_identifier);
 
   // Generates #include directives.
   void GenerateLibraryIncludes(io::Printer* printer);
@@ -127,7 +127,7 @@ class FileGenerator {
 
   // Generate a pragma to pull in metadata using the given info_path (if
   // non-empty). info_path should be relative to printer's output.
-  void GenerateMetadataPragma(io::Printer* printer, const string& info_path);
+  void GenerateMetadataPragma(io::Printer* printer, const std::string& info_path);
 
   // Generates a couple of different pieces before definitions:
   void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);
@@ -182,7 +182,7 @@ class FileGenerator {
 
   MessageSCCAnalyzer scc_analyzer_;
 
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
 
   // Contains the post-order walk of all the messages (and child messages) in
   // this file. If you need a pre-order walk just reverse iterate.

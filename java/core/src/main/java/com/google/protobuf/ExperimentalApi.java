@@ -41,26 +41,25 @@ import java.lang.annotation.Target;
  * backward-compatibility.
  *
  * <p>Usage guidelines:
+ *
  * <ol>
- * <li>This annotation is used only on public API. Internal interfaces should not use it.</li>
- * <li>This annotation should only be added to new APIs. Adding it to an existing API is
- * considered API-breaking.</li>
- * <li>Removing this annotation from an API gives it stable status.</li>
+ *   <li>This annotation is used only on public API. Internal interfaces should not use it.
+ *   <li>This annotation should only be added to new APIs. Adding it to an existing API is
+ *       considered API-breaking.
+ *   <li>Removing this annotation from an API gives it stable status.
  * </ol>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({
-    ElementType.ANNOTATION_TYPE,
-    ElementType.CONSTRUCTOR,
-    ElementType.FIELD,
-    ElementType.METHOD,
-    ElementType.PACKAGE,
-    ElementType.TYPE})
+  ElementType.ANNOTATION_TYPE,
+  ElementType.CONSTRUCTOR,
+  ElementType.FIELD,
+  ElementType.METHOD,
+  ElementType.PACKAGE,
+  ElementType.TYPE
+})
 @Documented
 public @interface ExperimentalApi {
-  /**
-   * Context information such as links to discussion thread, tracking issue etc.
-   */
+  /** Context information such as links to discussion thread, tracking issue etc. */
   String value() default "";
 }
-

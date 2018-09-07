@@ -31,11 +31,13 @@
 #include <google/protobuf/implicit_weak_message.h>
 
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/stubs/once.h>
+#include <google/protobuf/wire_format_lite.h>
+
+#include <google/protobuf/port_def.inc>
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 #include <google/protobuf/parse_context.h>
 #endif
-#include <google/protobuf/stubs/once.h>
-#include <google/protobuf/wire_format_lite.h>
 
 namespace google {
 namespace protobuf {

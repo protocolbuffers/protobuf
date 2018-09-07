@@ -66,8 +66,8 @@ using util::error::Code;
 using util::error::INTERNAL;
 }
 namespace converter {
-using ::GOOGLE_PROTOBUF_NAMESPACE_ID::internal::WireFormat;
-using ::GOOGLE_PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
+using ::PROTOBUF_NAMESPACE_ID::internal::WireFormat;
+using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using util::Status;
 using util::StatusOr;
 
@@ -701,7 +701,7 @@ Status ProtoStreamObjectSource::RenderFieldMask(
 
 std::unordered_map<string, ProtoStreamObjectSource::TypeRenderer>*
     ProtoStreamObjectSource::renderers_ = NULL;
-GOOGLE_PROTOBUF_NAMESPACE_ID::internal::once_flag source_renderers_init_;
+PROTOBUF_NAMESPACE_ID::internal::once_flag source_renderers_init_;
 
 void ProtoStreamObjectSource::InitRendererMap() {
   renderers_ =
@@ -748,8 +748,8 @@ void ProtoStreamObjectSource::DeleteRendererMap() {
 // static
 ProtoStreamObjectSource::TypeRenderer*
 ProtoStreamObjectSource::FindTypeRenderer(const string& type_url) {
-  GOOGLE_PROTOBUF_NAMESPACE_ID::internal::call_once(source_renderers_init_,
-                                                     InitRendererMap);
+  PROTOBUF_NAMESPACE_ID::internal::call_once(source_renderers_init_,
+                                             InitRendererMap);
   return FindOrNull(*renderers_, type_url);
 }
 

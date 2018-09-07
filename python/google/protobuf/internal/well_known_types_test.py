@@ -35,7 +35,7 @@
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 import collections
-from datetime import datetime
+import datetime
 
 try:
   import unittest2 as unittest  #PY26
@@ -240,13 +240,33 @@ class TimeUtilTest(TimeUtilTestBase):
 
   def testDatetimeConverison(self):
     message = timestamp_pb2.Timestamp()
-    dt = datetime(1970, 1, 1)
+    dt = datetime.datetime(1970, 1, 1)
     message.FromDatetime(dt)
     self.assertEqual(dt, message.ToDatetime())
 
     message.FromMilliseconds(1999)
-    self.assertEqual(datetime(1970, 1, 1, 0, 0, 1, 999000),
+    self.assertEqual(datetime.datetime(1970, 1, 1, 0, 0, 1, 999000),
                      message.ToDatetime())
+
+  def testDatetimeConversionWithTimezone(self):
+    class TZ(datetime.tzinfo):
+
+      def utcoffset(self, _):
+        return datetime.timedelta(hours=1)
+
+      def dst(self, _):
+        return datetime.timedelta(0)
+
+      def tzname(self, _):
+        return 'UTC+1'
+
+    message1 = timestamp_pb2.Timestamp()
+    dt = datetime.datetime(1970, 1, 1, 1, tzinfo=TZ())
+    message1.FromDatetime(dt)
+    message2 = timestamp_pb2.Timestamp()
+    dt = datetime.datetime(1970, 1, 1, 0)
+    message2.FromDatetime(dt)
+    self.assertEqual(message1, message2)
 
   def testTimedeltaConversion(self):
     message = duration_pb2.Duration()
@@ -878,6 +898,17 @@ class AnyTest(unittest.TestCase):
     else:
       raise AttributeError('%s should not have Pack method.' %
                            msg_descriptor.full_name)
+
+  def testUnpackWithNoSlashInTypeUrl(self):
+    msg = any_test_pb2.TestAny()
+    all_types = unittest_pb2.TestAllTypes()
+    all_descriptor = all_types.DESCRIPTOR
+    msg.value.Pack(all_types)
+    # Reset type_url to part of type_url after '/'
+    msg.value.type_url = msg.value.TypeName()
+    self.assertFalse(msg.value.Is(all_descriptor))
+    unpacked_message = unittest_pb2.TestAllTypes()
+    self.assertFalse(msg.value.Unpack(unpacked_message))
 
   def testMessageName(self):
     # Creates and sets message.

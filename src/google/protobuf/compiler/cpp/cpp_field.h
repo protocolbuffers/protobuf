@@ -61,11 +61,11 @@ namespace cpp {
 // ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',
 // 'deprecation'].
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<string, string>* variables,
+                             std::map<std::string, std::string>* variables,
                              const Options& options);
 
 void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
-                                  std::map<string, string>* variables);
+                                  std::map<std::string, std::string>* variables);
 
 class FieldGenerator {
  public:
@@ -203,7 +203,7 @@ class FieldGenerator {
  protected:
   const FieldDescriptor* descriptor_;
   const Options& options_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGenerator);

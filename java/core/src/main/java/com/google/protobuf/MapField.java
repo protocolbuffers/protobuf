@@ -44,38 +44,44 @@ import java.util.Set;
 /**
  * Internal representation of map fields in generated messages.
  *
- * This class supports accessing the map field as a {@link Map} to be used in
- * generated API and also supports accessing the field as a {@link List} to be
- * used in reflection API. It keeps track of where the data is currently stored
- * and do necessary conversions between map and list.
+ * <p>This class supports accessing the map field as a {@link Map} to be used in generated API and
+ * also supports accessing the field as a {@link List} to be used in reflection API. It keeps track
+ * of where the data is currently stored and do necessary conversions between map and list.
  *
- * This class is a protobuf implementation detail. Users shouldn't use this
- * class directly.
+ * <p>This class is a protobuf implementation detail. Users shouldn't use this class directly.
  *
- * THREAD-SAFETY NOTE: Read-only access is thread-safe. Users can call getMap()
- * and getList() concurrently in multiple threads. If write-access is needed,
- * all access must be synchronized.
+ * <p>THREAD-SAFETY NOTE: Read-only access is thread-safe. Users can call getMap() and getList()
+ * concurrently in multiple threads. If write-access is needed, all access must be synchronized.
  */
 public class MapField<K, V> implements MutabilityOracle {
+
   /**
    * Indicates where the data of this map field is currently stored.
    *
-   * MAP: Data is stored in mapData.
-   * LIST: Data is stored in listData.
-   * BOTH: mapData and listData have the same data.
+   * <ul>
+   *   <li>MAP: Data is stored in mapData.
+   *   <li>LIST: Data is stored in listData.
+   *   <li>BOTH: mapData and listData have the same data.
+   * </ul>
    *
-   * When the map field is accessed (through generated API or reflection API),
-   * it will shift between these 3 modes:
+   * <p>When the map field is accessed (through generated API or reflection API), it will shift
+   * between these 3 modes:
    *
-   *          getMap()   getList()   getMutableMap()   getMutableList()
-   *   MAP      MAP        BOTH          MAP               LIST
-   *   LIST     BOTH       LIST          MAP               LIST
-   *   BOTH     BOTH       BOTH          MAP               LIST
+   * <pre>
+   *          <b>getMap()   getList()    getMutableMap()   getMutableList()</b>
+   * <b>MAP</b>      MAP        BOTH         MAP               LIST
+   * <b>LIST</b>     BOTH       LIST         MAP               LIST
+   * <b>BOTH</b>     BOTH       BOTH         MAP               LIST
+   * </pre>
    *
-   * As the map field changes its mode, the list/map reference returned in a
-   * previous method call may be invalidated.
+   * <p>As the map field changes its mode, the list/map reference returned in a previous method call
+   * may be invalidated.
    */
-  private enum StorageMode {MAP, LIST, BOTH}
+  private enum StorageMode {
+    MAP,
+    LIST,
+    BOTH
+  }
 
   private volatile boolean isMutable;
   private volatile StorageMode mode;
@@ -85,6 +91,7 @@ public class MapField<K, V> implements MutabilityOracle {
   // Convert between a map entry Message and a key-value pair.
   private static interface Converter<K, V> {
     Message convertKeyAndValueToMessage(K key, V value);
+
     void convertMessageToKeyAndValue(Message message, Map<K, V> map);
 
     Message getMessageDefaultInstance();
@@ -92,6 +99,7 @@ public class MapField<K, V> implements MutabilityOracle {
 
   private static class ImmutableMessageConverter<K, V> implements Converter<K, V> {
     private final MapEntry<K, V> defaultEntry;
+
     public ImmutableMessageConverter(MapEntry<K, V> defaultEntry) {
       this.defaultEntry = defaultEntry;
     }
@@ -117,10 +125,7 @@ public class MapField<K, V> implements MutabilityOracle {
 
   private final Converter<K, V> converter;
 
-  private MapField(
-      Converter<K, V> converter,
-      StorageMode mode,
-      Map<K, V> mapData) {
+  private MapField(Converter<K, V> converter, StorageMode mode, Map<K, V> mapData) {
     this.converter = converter;
     this.isMutable = true;
     this.mode = mode;
@@ -128,26 +133,20 @@ public class MapField<K, V> implements MutabilityOracle {
     this.listData = null;
   }
 
-  private MapField(
-      MapEntry<K, V> defaultEntry,
-      StorageMode mode,
-      Map<K, V> mapData) {
+  private MapField(MapEntry<K, V> defaultEntry, StorageMode mode, Map<K, V> mapData) {
     this(new ImmutableMessageConverter<K, V>(defaultEntry), mode, mapData);
   }
 
 
   /** Returns an immutable empty MapField. */
-  public static <K, V> MapField<K, V> emptyMapField(
-      MapEntry<K, V> defaultEntry) {
-    return new MapField<K, V>(
-        defaultEntry, StorageMode.MAP, Collections.<K, V>emptyMap());
+  public static <K, V> MapField<K, V> emptyMapField(MapEntry<K, V> defaultEntry) {
+    return new MapField<K, V>(defaultEntry, StorageMode.MAP, Collections.<K, V>emptyMap());
   }
 
 
   /** Creates a new mutable empty MapField. */
   public static <K, V> MapField<K, V> newMapField(MapEntry<K, V> defaultEntry) {
-    return new MapField<K, V>(
-        defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
+    return new MapField<K, V>(defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
 
 
@@ -163,9 +162,7 @@ public class MapField<K, V> implements MutabilityOracle {
   private List<Message> convertMapToList(MutatabilityAwareMap<K, V> mapData) {
     List<Message> listData = new ArrayList<Message>();
     for (Map.Entry<K, V> entry : mapData.entrySet()) {
-      listData.add(
-          convertKeyAndValueToMessage(
-              entry.getKey(), entry.getValue()));
+      listData.add(convertKeyAndValueToMessage(entry.getKey(), entry.getValue()));
     }
     return listData;
   }
@@ -229,8 +226,7 @@ public class MapField<K, V> implements MutabilityOracle {
 
   /** Returns a deep copy of this MapField. */
   public MapField<K, V> copy() {
-    return new MapField<K, V>(
-        converter, StorageMode.MAP, MapFieldLite.copy(getMap()));
+    return new MapField<K, V>(converter, StorageMode.MAP, MapFieldLite.copy(getMap()));
   }
 
   /** Gets the content of this MapField as a read-only List. */
@@ -258,25 +254,20 @@ public class MapField<K, V> implements MutabilityOracle {
     return listData;
   }
 
-  /**
-   * Gets the default instance of the message stored in the list view of this
-   * map field.
-   */
+  /** Gets the default instance of the message stored in the list view of this map field. */
   Message getMapEntryMessageDefaultInstance() {
     return converter.getMessageDefaultInstance();
   }
 
   /**
-   * Makes this list immutable. All subsequent modifications will throw an
-   * {@link UnsupportedOperationException}.
+   * Makes this list immutable. All subsequent modifications will throw an {@link
+   * UnsupportedOperationException}.
    */
   public void makeImmutable() {
     isMutable = false;
   }
 
-  /**
-   * Returns whether this field can be modified.
-   */
+  /** Returns whether this field can be modified. */
   public boolean isMutable() {
     return isMutable;
   }
@@ -291,9 +282,7 @@ public class MapField<K, V> implements MutabilityOracle {
     }
   }
 
-  /**
-   * An internal map that checks for mutability before delegating.
-   */
+  /** An internal map that checks for mutability before delegating. */
   private static class MutatabilityAwareMap<K, V> implements Map<K, V> {
     private final MutabilityOracle mutabilityOracle;
     private final Map<K, V> delegate;
@@ -388,9 +377,7 @@ public class MapField<K, V> implements MutabilityOracle {
       return delegate.toString();
     }
 
-    /**
-     * An internal collection that checks for mutability before delegating.
-     */
+    /** An internal collection that checks for mutability before delegating. */
     private static class MutatabilityAwareCollection<E> implements Collection<E> {
       private final MutabilityOracle mutabilityOracle;
       private final Collection<E> delegate;
@@ -487,9 +474,7 @@ public class MapField<K, V> implements MutabilityOracle {
       }
     }
 
-    /**
-     * An internal set that checks for mutability before delegating.
-     */
+    /** An internal set that checks for mutability before delegating. */
     private static class MutatabilityAwareSet<E> implements Set<E> {
       private final MutabilityOracle mutabilityOracle;
       private final Set<E> delegate;
@@ -586,9 +571,7 @@ public class MapField<K, V> implements MutabilityOracle {
       }
     }
 
-    /**
-     * An internal iterator that checks for mutability before delegating.
-     */
+    /** An internal iterator that checks for mutability before delegating. */
     private static class MutatabilityAwareIterator<E> implements Iterator<E> {
       private final MutabilityOracle mutabilityOracle;
       private final Iterator<E> delegate;

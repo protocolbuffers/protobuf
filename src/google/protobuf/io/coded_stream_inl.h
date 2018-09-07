@@ -47,7 +47,7 @@ namespace google {
 namespace protobuf {
 namespace io {
 
-inline bool CodedInputStream::InternalReadStringInline(string* buffer,
+inline bool CodedInputStream::InternalReadStringInline(std::string* buffer,
                                                        int size) {
   if (size < 0) return false;  // security: size is often user-supplied
 

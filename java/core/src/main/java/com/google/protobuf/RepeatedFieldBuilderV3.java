@@ -39,36 +39,29 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * {@code RepeatedFieldBuilderV3} implements a structure that a protocol
- * message uses to hold a repeated field of other protocol messages. It supports
- * the classical use case of adding immutable {@link Message}'s to the
- * repeated field and is highly optimized around this (no extra memory
- * allocations and sharing of immutable arrays).
- * <br>
- * It also supports the additional use case of adding a {@link Message.Builder}
- * to the repeated field and deferring conversion of that {@code Builder}
- * to an immutable {@code Message}. In this way, it's possible to maintain
- * a tree of {@code Builder}'s that acts as a fully read/write data
- * structure.
- * <br>
- * Logically, one can think of a tree of builders as converting the entire tree
- * to messages when build is called on the root or when any method is called
- * that desires a Message instead of a Builder. In terms of the implementation,
- * the {@code SingleFieldBuilderV3} and {@code RepeatedFieldBuilderV3}
- * classes cache messages that were created so that messages only need to be
- * created when some change occurred in its builder or a builder for one of its
- * descendants.
+ * {@code RepeatedFieldBuilderV3} implements a structure that a protocol message uses to hold a
+ * repeated field of other protocol messages. It supports the classical use case of adding immutable
+ * {@link Message}'s to the repeated field and is highly optimized around this (no extra memory
+ * allocations and sharing of immutable arrays). <br>
+ * It also supports the additional use case of adding a {@link Message.Builder} to the repeated
+ * field and deferring conversion of that {@code Builder} to an immutable {@code Message}. In this
+ * way, it's possible to maintain a tree of {@code Builder}'s that acts as a fully read/write data
+ * structure. <br>
+ * Logically, one can think of a tree of builders as converting the entire tree to messages when
+ * build is called on the root or when any method is called that desires a Message instead of a
+ * Builder. In terms of the implementation, the {@code SingleFieldBuilderV3} and {@code
+ * RepeatedFieldBuilderV3} classes cache messages that were created so that messages only need to be
+ * created when some change occurred in its builder or a builder for one of its descendants.
  *
  * @param <MType> the type of message for the field
  * @param <BType> the type of builder for the field
  * @param <IType> the common interface for the message and the builder
- *
  * @author jonp@google.com (Jon Perlow)
  */
-public class RepeatedFieldBuilderV3
-    <MType extends AbstractMessage,
-     BType extends AbstractMessage.Builder,
-     IType extends MessageOrBuilder>
+public class RepeatedFieldBuilderV3<
+        MType extends AbstractMessage,
+        BType extends AbstractMessage.Builder,
+        IType extends MessageOrBuilder>
     implements AbstractMessage.BuilderParent {
 
   // Parent to send changes to.
@@ -120,8 +113,7 @@ public class RepeatedFieldBuilderV3
   // is fully backed by this object and all changes are reflected in it.
   // Access to any item returns either a builder or message depending on
   // what is most efficient.
-  private MessageOrBuilderExternalList<MType, BType, IType>
-      externalMessageOrBuilderList;
+  private MessageOrBuilderExternalList<MType, BType, IType> externalMessageOrBuilderList;
 
   /**
    * Constructs a new builder with an empty list of messages.
@@ -148,8 +140,8 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Ensures that the list of messages is mutable so it can be updated. If it's
-   * immutable, a copy is made.
+   * Ensures that the list of messages is mutable so it can be updated. If it's immutable, a copy is
+   * made.
    */
   private void ensureMutableMessageList() {
     if (!isMessagesListMutable) {
@@ -159,15 +151,12 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Ensures that the list of builders is not null. If it's null, the list is
-   * created and initialized to be the same size as the messages list with
-   * null entries.
+   * Ensures that the list of builders is not null. If it's null, the list is created and
+   * initialized to be the same size as the messages list with null entries.
    */
   private void ensureBuilders() {
     if (this.builders == null) {
-      this.builders =
-          new ArrayList<SingleFieldBuilderV3<MType, BType, IType>>(
-              messages.size());
+      this.builders = new ArrayList<SingleFieldBuilderV3<MType, BType, IType>>(messages.size());
       for (int i = 0; i < messages.size(); i++) {
         builders.add(null);
       }
@@ -193,9 +182,9 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Get the message at the specified index. If the message is currently stored
-   * as a {@code Builder}, it is converted to a {@code Message} by
-   * calling {@link Message.Builder#buildPartial} on it.
+   * Get the message at the specified index. If the message is currently stored as a {@code
+   * Builder}, it is converted to a {@code Message} by calling {@link Message.Builder#buildPartial}
+   * on it.
    *
    * @param index the index of the message to get
    * @return the message for the specified index
@@ -205,13 +194,13 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Get the message at the specified index. If the message is currently stored
-   * as a {@code Builder}, it is converted to a {@code Message} by
-   * calling {@link Message.Builder#buildPartial} on it.
+   * Get the message at the specified index. If the message is currently stored as a {@code
+   * Builder}, it is converted to a {@code Message} by calling {@link Message.Builder#buildPartial}
+   * on it.
    *
    * @param index the index of the message to get
-   * @param forBuild this is being called for build so we want to make sure
-   *     we SingleFieldBuilderV3.build to send dirty invalidations
+   * @param forBuild this is being called for build so we want to make sure we
+   *     SingleFieldBuilderV3.build to send dirty invalidations
    * @return the message for the specified index
    */
   private MType getMessage(int index, boolean forBuild) {
@@ -235,9 +224,8 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Gets a builder for the specified index. If no builder has been created for
-   * that index, a builder is created on demand by calling
-   * {@link Message#toBuilder}.
+   * Gets a builder for the specified index. If no builder has been created for that index, a
+   * builder is created on demand by calling {@link Message#toBuilder}.
    *
    * @param index the index of the message to get
    * @return The builder for that index
@@ -247,16 +235,15 @@ public class RepeatedFieldBuilderV3
     SingleFieldBuilderV3<MType, BType, IType> builder = builders.get(index);
     if (builder == null) {
       MType message = messages.get(index);
-      builder = new SingleFieldBuilderV3<MType, BType, IType>(
-          message, this, isClean);
+      builder = new SingleFieldBuilderV3<MType, BType, IType>(message, this, isClean);
       builders.set(index, builder);
     }
     return builder.getBuilder();
   }
 
   /**
-   * Gets the base class interface for the specified index. This may either be
-   * a builder or a message. It will return whatever is more efficient.
+   * Gets the base class interface for the specified index. This may either be a builder or a
+   * message. It will return whatever is more efficient.
    *
    * @param index the index of the message to get
    * @return the message or builder for the index as the base class interface
@@ -283,21 +270,18 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Sets a  message at the specified index replacing the existing item at
-   * that index.
+   * Sets a message at the specified index replacing the existing item at that index.
    *
    * @param index the index to set.
    * @param message the message to set
    * @return the builder
    */
-  public RepeatedFieldBuilderV3<MType, BType, IType> setMessage(
-      int index, MType message) {
+  public RepeatedFieldBuilderV3<MType, BType, IType> setMessage(int index, MType message) {
     checkNotNull(message);
     ensureMutableMessageList();
     messages.set(index, message);
     if (builders != null) {
-      SingleFieldBuilderV3<MType, BType, IType> entry =
-          builders.set(index, null);
+      SingleFieldBuilderV3<MType, BType, IType> entry = builders.set(index, null);
       if (entry != null) {
         entry.dispose();
       }
@@ -313,8 +297,7 @@ public class RepeatedFieldBuilderV3
    * @param message the message to add
    * @return the builder
    */
-  public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(
-      MType message) {
+  public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(MType message) {
     checkNotNull(message);
     ensureMutableMessageList();
     messages.add(message);
@@ -327,16 +310,15 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Inserts the specified message at the specified position in this list.
-   * Shifts the element currently at that position (if any) and any subsequent
-   * elements to the right (adds one to their indices).
+   * Inserts the specified message at the specified position in this list. Shifts the element
+   * currently at that position (if any) and any subsequent elements to the right (adds one to their
+   * indices).
    *
    * @param index the index at which to insert the message
    * @param message the message to add
    * @return the builder
    */
-  public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(
-      int index, MType message) {
+  public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(int index, MType message) {
     checkNotNull(message);
     ensureMutableMessageList();
     messages.add(index, message);
@@ -349,9 +331,8 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Appends all of the messages in the specified collection to the end of
-   * this list, in the order that they are returned by the specified
-   * collection's iterator.
+   * Appends all of the messages in the specified collection to the end of this list, in the order
+   * that they are returned by the specified collection's iterator.
    *
    * @param values the messages to add
    * @return the builder
@@ -365,8 +346,8 @@ public class RepeatedFieldBuilderV3
     // If we can inspect the size, we can more efficiently add messages.
     int size = -1;
     if (values instanceof Collection) {
-      @SuppressWarnings("unchecked") final
-      Collection<MType> collection = (Collection<MType>) values;
+      @SuppressWarnings("unchecked")
+      final Collection<MType> collection = (Collection<MType>) values;
       if (collection.size() == 0) {
         return this;
       }
@@ -375,8 +356,7 @@ public class RepeatedFieldBuilderV3
     ensureMutableMessageList();
 
     if (size >= 0 && messages instanceof ArrayList) {
-      ((ArrayList<MType>) messages)
-          .ensureCapacity(messages.size() + size);
+      ((ArrayList<MType>) messages).ensureCapacity(messages.size() + size);
     }
 
     for (MType value : values) {
@@ -398,8 +378,7 @@ public class RepeatedFieldBuilderV3
     ensureMutableMessageList();
     ensureBuilders();
     SingleFieldBuilderV3<MType, BType, IType> builder =
-        new SingleFieldBuilderV3<MType, BType, IType>(
-            message, this, isClean);
+        new SingleFieldBuilderV3<MType, BType, IType>(message, this, isClean);
     messages.add(null);
     builders.add(builder);
     onChanged();
@@ -408,9 +387,8 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Inserts a new builder at the specified position in this list.
-   * Shifts the element currently at that position (if any) and any subsequent
-   * elements to the right (adds one to their indices).
+   * Inserts a new builder at the specified position in this list. Shifts the element currently at
+   * that position (if any) and any subsequent elements to the right (adds one to their indices).
    *
    * @param index the index at which to insert the builder
    * @param message the message to add which is the basis of the builder
@@ -420,8 +398,7 @@ public class RepeatedFieldBuilderV3
     ensureMutableMessageList();
     ensureBuilders();
     SingleFieldBuilderV3<MType, BType, IType> builder =
-        new SingleFieldBuilderV3<MType, BType, IType>(
-            message, this, isClean);
+        new SingleFieldBuilderV3<MType, BType, IType>(message, this, isClean);
     messages.add(index, null);
     builders.add(index, builder);
     onChanged();
@@ -430,9 +407,9 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Removes the element at the specified position in this list. Shifts any
-   * subsequent elements to the left (subtracts one from their indices).
-   * Returns the element that was removed from the list.
+   * Removes the element at the specified position in this list. Shifts any subsequent elements to
+   * the left (subtracts one from their indices). Returns the element that was removed from the
+   * list.
    *
    * @param index the index at which to remove the message
    */
@@ -440,8 +417,7 @@ public class RepeatedFieldBuilderV3
     ensureMutableMessageList();
     messages.remove(index);
     if (builders != null) {
-      SingleFieldBuilderV3<MType, BType, IType> entry =
-          builders.remove(index);
+      SingleFieldBuilderV3<MType, BType, IType> entry = builders.remove(index);
       if (entry != null) {
         entry.dispose();
       }
@@ -450,16 +426,12 @@ public class RepeatedFieldBuilderV3
     incrementModCounts();
   }
 
-  /**
-   * Removes all of the elements from this list.
-   * The list will be empty after this call returns.
-   */
+  /** Removes all of the elements from this list. The list will be empty after this call returns. */
   public void clear() {
     messages = Collections.emptyList();
     isMessagesListMutable = false;
     if (builders != null) {
-      for (SingleFieldBuilderV3<MType, BType, IType> entry :
-          builders) {
+      for (SingleFieldBuilderV3<MType, BType, IType> entry : builders) {
         if (entry != null) {
           entry.dispose();
         }
@@ -519,50 +491,47 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Gets a view of the builder as a list of messages. The returned list is live
-   * and will reflect any changes to the underlying builder.
+   * Gets a view of the builder as a list of messages. The returned list is live and will reflect
+   * any changes to the underlying builder.
    *
    * @return the messages in the list
    */
   public List<MType> getMessageList() {
     if (externalMessageList == null) {
-      externalMessageList =
-          new MessageExternalList<MType, BType, IType>(this);
+      externalMessageList = new MessageExternalList<MType, BType, IType>(this);
     }
     return externalMessageList;
   }
 
   /**
-   * Gets a view of the builder as a list of builders. This returned list is
-   * live and will reflect any changes to the underlying builder.
+   * Gets a view of the builder as a list of builders. This returned list is live and will reflect
+   * any changes to the underlying builder.
    *
    * @return the builders in the list
    */
   public List<BType> getBuilderList() {
     if (externalBuilderList == null) {
-      externalBuilderList =
-          new BuilderExternalList<MType, BType, IType>(this);
+      externalBuilderList = new BuilderExternalList<MType, BType, IType>(this);
     }
     return externalBuilderList;
   }
 
   /**
-   * Gets a view of the builder as a list of MessageOrBuilders. This returned
-   * list is live and will reflect any changes to the underlying builder.
+   * Gets a view of the builder as a list of MessageOrBuilders. This returned list is live and will
+   * reflect any changes to the underlying builder.
    *
    * @return the builders in the list
    */
   public List<IType> getMessageOrBuilderList() {
     if (externalMessageOrBuilderList == null) {
-      externalMessageOrBuilderList =
-          new MessageOrBuilderExternalList<MType, BType, IType>(this);
+      externalMessageOrBuilderList = new MessageOrBuilderExternalList<MType, BType, IType>(this);
     }
     return externalMessageOrBuilderList;
   }
 
   /**
-   * Called when a the builder or one of its nested children has changed
-   * and any parent should be notified of its invalidation.
+   * Called when a the builder or one of its nested children has changed and any parent should be
+   * notified of its invalidation.
    */
   private void onChanged() {
     if (isClean && parent != null) {
@@ -579,9 +548,8 @@ public class RepeatedFieldBuilderV3
   }
 
   /**
-   * Increments the mod counts so that an ConcurrentModificationException can
-   * be thrown if calling code tries to modify the builder while its iterating
-   * the list.
+   * Increments the mod counts so that an ConcurrentModificationException can be thrown if calling
+   * code tries to modify the builder while its iterating the list.
    */
   private void incrementModCounts() {
     if (externalMessageList != null) {
@@ -603,15 +571,14 @@ public class RepeatedFieldBuilderV3
    * @param <IType> the common interface for the message and the builder
    */
   private static class MessageExternalList<
-      MType extends AbstractMessage,
-      BType extends AbstractMessage.Builder,
-      IType extends MessageOrBuilder>
+          MType extends AbstractMessage,
+          BType extends AbstractMessage.Builder,
+          IType extends MessageOrBuilder>
       extends AbstractList<MType> implements List<MType> {
 
     RepeatedFieldBuilderV3<MType, BType, IType> builder;
 
-    MessageExternalList(
-        RepeatedFieldBuilderV3<MType, BType, IType> builder) {
+    MessageExternalList(RepeatedFieldBuilderV3<MType, BType, IType> builder) {
       this.builder = builder;
     }
 
@@ -638,15 +605,14 @@ public class RepeatedFieldBuilderV3
    * @param <IType> the common interface for the message and the builder
    */
   private static class BuilderExternalList<
-      MType extends AbstractMessage,
-      BType extends AbstractMessage.Builder,
-      IType extends MessageOrBuilder>
+          MType extends AbstractMessage,
+          BType extends AbstractMessage.Builder,
+          IType extends MessageOrBuilder>
       extends AbstractList<BType> implements List<BType> {
 
     RepeatedFieldBuilderV3<MType, BType, IType> builder;
 
-    BuilderExternalList(
-        RepeatedFieldBuilderV3<MType, BType, IType> builder) {
+    BuilderExternalList(RepeatedFieldBuilderV3<MType, BType, IType> builder) {
       this.builder = builder;
     }
 
@@ -673,15 +639,14 @@ public class RepeatedFieldBuilderV3
    * @param <IType> the common interface for the message and the builder
    */
   private static class MessageOrBuilderExternalList<
-      MType extends AbstractMessage,
-      BType extends AbstractMessage.Builder,
-      IType extends MessageOrBuilder>
+          MType extends AbstractMessage,
+          BType extends AbstractMessage.Builder,
+          IType extends MessageOrBuilder>
       extends AbstractList<IType> implements List<IType> {
 
     RepeatedFieldBuilderV3<MType, BType, IType> builder;
 
-    MessageOrBuilderExternalList(
-        RepeatedFieldBuilderV3<MType, BType, IType> builder) {
+    MessageOrBuilderExternalList(RepeatedFieldBuilderV3<MType, BType, IType> builder) {
       this.builder = builder;
     }
 

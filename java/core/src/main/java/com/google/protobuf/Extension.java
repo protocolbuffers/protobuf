@@ -49,9 +49,7 @@ public abstract class Extension<ContainingType extends MessageLite, Type>
 
   // All the methods below are extension implementation details.
 
-  /**
-   * The API type that the extension is used for.
-   */
+  /** The API type that the extension is used for. */
   protected enum ExtensionType {
     IMMUTABLE,
     MUTABLE,
@@ -60,24 +58,25 @@ public abstract class Extension<ContainingType extends MessageLite, Type>
 
   protected abstract ExtensionType getExtensionType();
 
-  /**
-   * Type of a message extension.
-   */
+  /** Type of a message extension. */
   public enum MessageType {
     PROTO1,
     PROTO2,
   }
 
   /**
-   * If the extension is a message extension (i.e., getLiteType() == MESSAGE),
-   * returns the type of the message, otherwise undefined.
+   * If the extension is a message extension (i.e., getLiteType() == MESSAGE), returns the type of
+   * the message, otherwise undefined.
    */
   public MessageType getMessageType() {
     return MessageType.PROTO2;
   }
 
   protected abstract Object fromReflectionType(Object value);
+
   protected abstract Object singularFromReflectionType(Object value);
+
   protected abstract Object toReflectionType(Object value);
+
   protected abstract Object singularToReflectionType(Object value);
 }
