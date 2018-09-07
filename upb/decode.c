@@ -224,8 +224,8 @@ static upb_array *upb_getorcreatearr(upb_decframe *frame,
 
 static void upb_sethasbit(upb_decframe *frame,
                           const upb_msglayout_field *field) {
-  UPB_ASSERT(field->presence > 0);
   int32_t hasbit = field->presence;
+  UPB_ASSERT(field->presence > 0);
   frame->msg[hasbit / 8] |= (1 << (hasbit % 8));
 }
 

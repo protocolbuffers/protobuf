@@ -134,8 +134,8 @@ static uint32_t upb_readcase(const char *msg, const upb_msglayout_field *f) {
 }
 
 static bool upb_readhasbit(const char *msg, const upb_msglayout_field *f) {
-  UPB_ASSERT(f->presence > 0);
   uint32_t hasbit = f->presence;
+  UPB_ASSERT(f->presence > 0);
   return msg[hasbit / 8] & (1 << (hasbit % 8));
 }
 
