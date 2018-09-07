@@ -148,14 +148,14 @@ static const upb_msglayout_field *upb_msg_checkfield(int field_index,
 }
 
 static bool upb_msg_inoneof(const upb_msglayout_field *field) {
-  return field->oneof_index != UPB_NOT_IN_ONEOF;
+  return field->presence < 0;
 }
 
 static uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
                                    const upb_msglayout *l) {
   const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
   UPB_ASSERT(upb_msg_inoneof(field));
-  return PTR_AT(msg, l->oneofs[field->oneof_index].case_offset, uint32_t);
+  return PTR_AT(msg, ~field->presence, uint32_t);
 }
 
 static size_t upb_msg_sizeof(const upb_msglayout *l) {
@@ -174,11 +174,7 @@ upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   msg = VOIDPTR_AT(mem, upb_msg_internalsize(l));
 
   /* Initialize normal members. */
-  if (l->default_msg) {
-    memcpy(msg, l->default_msg, l->size);
-  } else {
-    memset(msg, 0, l->size);
-  }
+  memset(msg, 0, l->size);
 
   /* Initialize internal members. */
   upb_msg_getinternal(msg)->arena = a;
@@ -199,14 +195,14 @@ bool upb_msg_has(const upb_msg *msg,
                  const upb_msglayout *l) {
   const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
 
-  UPB_ASSERT(l->is_proto2);
+  UPB_ASSERT(field->presence);
 
   if (upb_msg_inoneof(field)) {
     /* Oneofs are set when the oneof number is set to this field. */
     return *upb_msg_oneofcase(msg, field_index, l) == field->number;
   } else {
     /* Other fields are set when their hasbit is set. */
-    uint32_t hasbit = l->fields[field_index].hasbit;
+    uint32_t hasbit = field->presence;
     return DEREF(msg, hasbit / 8, char) | (1 << (hasbit % 8));
   }
 }
@@ -215,32 +211,14 @@ upb_msgval upb_msg_get(const upb_msg *msg, int field_index,
                        const upb_msglayout *l) {
   const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
   int size = upb_msg_fieldsize(field);
-
-  if (upb_msg_inoneof(field)) {
-    if (*upb_msg_oneofcase(msg, field_index, l) == field->number) {
-      size_t ofs = l->oneofs[field->oneof_index].data_offset;
-      return upb_msgval_read(msg, ofs, size);
-    } else {
-      /* Return default. */
-      return upb_msgval_read(l->default_msg, field->offset, size);
-    }
-  } else {
-    return upb_msgval_read(msg, field->offset, size);
-  }
+  return upb_msgval_read(msg, field->offset, size);
 }
 
 void upb_msg_set(upb_msg *msg, int field_index, upb_msgval val,
                  const upb_msglayout *l) {
   const upb_msglayout_field *field = upb_msg_checkfield(field_index, l);
   int size = upb_msg_fieldsize(field);
-
-  if (upb_msg_inoneof(field)) {
-    size_t ofs = l->oneofs[field->oneof_index].data_offset;
-    *upb_msg_oneofcase(msg, field_index, l) = field->number;
-    upb_msgval_write(msg, ofs, val, size);
-  } else {
-    upb_msgval_write(msg, field->offset, val, size);
-  }
+  upb_msgval_write(msg, field->offset, val, size);
 }
 
 

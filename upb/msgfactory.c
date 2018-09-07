@@ -45,42 +45,10 @@ static uint8_t upb_msg_fielddefsize(const upb_fielddef *f) {
   }
 }
 
-static upb_msgval upb_msgval_fromdefault(const upb_fielddef *f) {
-  switch (upb_fielddef_type(f)) {
-      case UPB_TYPE_FLOAT:
-        return upb_msgval_float(upb_fielddef_defaultfloat(f));
-      case UPB_TYPE_DOUBLE:
-        return upb_msgval_double(upb_fielddef_defaultdouble(f));
-      case UPB_TYPE_BOOL:
-        return upb_msgval_bool(upb_fielddef_defaultbool(f));
-      case UPB_TYPE_STRING:
-      case UPB_TYPE_BYTES: {
-        size_t len;
-        const char *ptr = upb_fielddef_defaultstr(f, &len);
-        return upb_msgval_makestr(ptr, len);
-      }
-      case UPB_TYPE_MESSAGE:
-        return upb_msgval_msg(NULL);
-      case UPB_TYPE_ENUM:
-      case UPB_TYPE_INT32:
-        return upb_msgval_int32(upb_fielddef_defaultint32(f));
-      case UPB_TYPE_UINT32:
-        return upb_msgval_uint32(upb_fielddef_defaultuint32(f));
-      case UPB_TYPE_INT64:
-        return upb_msgval_int64(upb_fielddef_defaultint64(f));
-      case UPB_TYPE_UINT64:
-        return upb_msgval_uint64(upb_fielddef_defaultuint64(f));
-      default:
-        UPB_ASSERT(false);
-        return upb_msgval_msg(NULL);
-  }
-}
-
 
 /** upb_msglayout *************************************************************/
 
 static void upb_msglayout_free(upb_msglayout *l) {
-  upb_gfree(l->default_msg);
   upb_gfree(l);
 }
 
@@ -93,38 +61,6 @@ static size_t upb_msglayout_place(upb_msglayout *l, size_t size) {
   return ret;
 }
 
-static bool upb_msglayout_initdefault(upb_msglayout *l, const upb_msgdef *m) {
-  upb_msg_field_iter it;
-
-  if (upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2 && l->size) {
-    /* Allocate default message and set default values in it. */
-    l->default_msg = upb_gmalloc(l->size);
-    if (!l->default_msg) {
-      return false;
-    }
-
-    memset(l->default_msg, 0, l->size);
-
-    for (upb_msg_field_begin(&it, m); !upb_msg_field_done(&it);
-         upb_msg_field_next(&it)) {
-      const upb_fielddef *f = upb_msg_iter_field(&it);
-
-      if (upb_fielddef_containingoneof(f)) {
-        continue;
-      }
-
-      /* TODO(haberman): handle strings. */
-      if (!upb_fielddef_isstring(f) && !upb_fielddef_issubmsg(f) &&
-          !upb_fielddef_isseq(f)) {
-        upb_msg_set(l->default_msg, upb_fielddef_index(f),
-                    upb_msgval_fromdefault(f), l);
-      }
-    }
-  }
-
-  return true;
-}
-
 static bool upb_msglayout_init(const upb_msgdef *m,
                                upb_msglayout *l,
                                upb_msgfactory *factory) {
@@ -134,7 +70,6 @@ static bool upb_msglayout_init(const upb_msgdef *m,
   size_t submsg_count = 0;
   const upb_msglayout **submsgs;
   upb_msglayout_field *fields;
-  upb_msglayout_oneof *oneofs;
 
   for (upb_msg_field_begin(&it, m);
        !upb_msg_field_done(&it);
@@ -149,24 +84,18 @@ static bool upb_msglayout_init(const upb_msgdef *m,
 
   fields = upb_gmalloc(upb_msgdef_numfields(m) * sizeof(*fields));
   submsgs = upb_gmalloc(submsg_count * sizeof(*submsgs));
-  oneofs = upb_gmalloc(upb_msgdef_numoneofs(m) * sizeof(*oneofs));
 
   if ((!fields && upb_msgdef_numfields(m)) ||
-      (!submsgs && submsg_count) ||
-      (!oneofs && upb_msgdef_numoneofs(m))) {
+      (!submsgs && submsg_count)) {
     /* OOM. */
     upb_gfree(fields);
     upb_gfree(submsgs);
-    upb_gfree(oneofs);
     return false;
   }
 
   l->field_count = upb_msgdef_numfields(m);
-  l->oneof_count = upb_msgdef_numoneofs(m);
   l->fields = fields;
   l->submsgs = submsgs;
-  l->oneofs = oneofs;
-  l->is_proto2 = (upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2);
 
   /* Allocate data offsets in three stages:
    *
@@ -189,25 +118,17 @@ static bool upb_msglayout_init(const upb_msgdef *m,
     field->descriptortype = upb_fielddef_descriptortype(f);
     field->label = upb_fielddef_label(f);
 
-    if (upb_fielddef_containingoneof(f)) {
-      field->oneof_index = upb_oneofdef_index(upb_fielddef_containingoneof(f));
-    } else {
-      field->oneof_index = UPB_NOT_IN_ONEOF;
-    }
-
     if (upb_fielddef_issubmsg(f)) {
       const upb_msglayout *sub_layout =
           upb_msgfactory_getlayout(factory, upb_fielddef_msgsubdef(f));
       field->submsg_index = submsg_count++;
       submsgs[field->submsg_index] = sub_layout;
-    } else {
-      field->submsg_index = UPB_NO_SUBMSG;
     }
 
     if (upb_fielddef_haspresence(f) && !upb_fielddef_containingoneof(f)) {
-      field->hasbit = hasbit++;
+      field->presence = (hasbit++);
     } else {
-      field->hasbit = UPB_NO_HASBIT;
+      field->presence = 0;
     }
   }
 
@@ -237,8 +158,9 @@ static bool upb_msglayout_init(const upb_msgdef *m,
     upb_oneof_iter fit;
 
     size_t case_size = sizeof(uint32_t);  /* Could potentially optimize this. */
-    upb_msglayout_oneof *oneof = &oneofs[upb_oneofdef_index(o)];
     size_t field_size = 0;
+    uint32_t case_offset;
+    uint32_t data_offset;
 
     /* Calculate field size: the max of all field sizes. */
     for (upb_oneof_begin(&fit, o);
@@ -249,15 +171,23 @@ static bool upb_msglayout_init(const upb_msgdef *m,
     }
 
     /* Align and allocate case offset. */
-    oneof->case_offset = upb_msglayout_place(l, case_size);
-    oneof->data_offset = upb_msglayout_place(l, field_size);
+    case_offset = upb_msglayout_place(l, case_size);
+    data_offset = upb_msglayout_place(l, field_size);
+
+    for (upb_oneof_begin(&fit, o);
+         !upb_oneof_done(&fit);
+         upb_oneof_next(&fit)) {
+      const upb_fielddef* f = upb_oneof_iter_field(&fit);
+      fields[upb_fielddef_index(f)].offset = data_offset;
+      fields[upb_fielddef_index(f)].presence = ~case_offset;
+    }
   }
 
   /* Size of the entire structure should be a multiple of its greatest
    * alignment.  TODO: track overall alignment for real? */
   l->size = align_up(l->size, 8);
 
-  return upb_msglayout_initdefault(l, m);
+  return true;
 }
 
 

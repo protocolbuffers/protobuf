@@ -200,19 +200,9 @@ static void *upb_array_add(upb_array *arr, size_t elements) {
   return ret;
 }
 
-static size_t get_field_offset(const upb_decframe *frame,
-                               const upb_msglayout_field *field) {
-  if (field->oneof_index == UPB_NOT_IN_ONEOF) {
-    return field->offset;
-  } else {
-    return frame->m->oneofs[field->oneof_index].data_offset;
-  }
-}
-
 static upb_array *upb_getarr(upb_decframe *frame,
                              const upb_msglayout_field *field) {
   UPB_ASSERT(field->label == UPB_LABEL_REPEATED);
-  UPB_ASSERT(field->oneof_index == UPB_NOT_IN_ONEOF);
   return *(upb_array**)&frame->msg[field->offset];
 }
 
@@ -234,20 +224,20 @@ static upb_array *upb_getorcreatearr(upb_decframe *frame,
 
 static void upb_sethasbit(upb_decframe *frame,
                           const upb_msglayout_field *field) {
-  UPB_ASSERT(field->hasbit != UPB_NO_HASBIT);
-  frame->msg[field->hasbit / 8] |= (1 << (field->hasbit % 8));
+  int32_t hasbit = field->presence;
+  UPB_ASSERT(field->presence > 0);
+  frame->msg[hasbit / 8] |= (1 << (hasbit % 8));
 }
 
 static void upb_setoneofcase(upb_decframe *frame,
                              const upb_msglayout_field *field) {
-  UPB_ASSERT(field->oneof_index != UPB_NOT_IN_ONEOF);
-  upb_set32(frame->msg, frame->m->oneofs[field->oneof_index].case_offset,
-            field->number);
+  UPB_ASSERT(field->presence < 0);
+  upb_set32(frame->msg, ~field->presence, field->number);
 }
 
 static char *upb_decode_prepareslot(upb_decframe *frame,
                                     const upb_msglayout_field *field) {
-  char *field_mem = frame->msg + get_field_offset(frame, field);
+  char *field_mem = frame->msg + field->offset;
   upb_array *arr;
 
   if (field->label == UPB_LABEL_REPEATED) {
@@ -264,9 +254,9 @@ static void upb_decode_setpresent(upb_decframe *frame,
    upb_array *arr = upb_getarr(frame, field);
    UPB_ASSERT(arr->len < arr->size);
    arr->len++;
-  } else if (field->oneof_index != UPB_NOT_IN_ONEOF) {
+  } else if (field->presence < 0) {
     upb_setoneofcase(frame, field);
-  } else if (field->hasbit != UPB_NO_HASBIT) {
+  } else if (field->presence > 0) {
     upb_sethasbit(frame, field);
   }
 }
@@ -279,7 +269,6 @@ static bool upb_decode_submsg(upb_decstate *d, upb_decframe *frame,
   char *submsg = *(void **)submsg_slot;
   const upb_msglayout *subm;
 
-  UPB_ASSERT(field->submsg_index != UPB_NO_SUBMSG);
   subm = frame->m->submsgs[field->submsg_index];
   UPB_ASSERT(subm);
 
@@ -460,7 +449,6 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
       d->ptr -= val.size;
 
       /* Create elemente message. */
-      UPB_ASSERT(field->submsg_index != UPB_NO_SUBMSG);
       subm = frame->m->submsgs[field->submsg_index];
       UPB_ASSERT(subm);
 

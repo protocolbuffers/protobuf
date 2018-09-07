@@ -11,6 +11,10 @@ cmake_minimum_required (VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
 project (upb)
 
+# Prevent CMake from setting -rdynamic on Linux (!!).
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
 # Options we define for users.
 option(UPB_ENABLE_ASAN "Enable address sanitizer." OFF)
 option(UPB_ENABLE_UBSAN "Enable undefined behavior sanitizer." OFF)
@@ -143,6 +147,21 @@ if(LUA_FOUND)
     genfiles2 ALL
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
   )
+
+  add_test(
+    NAME testlua
+    COMMAND lua ${CMAKE_SOURCE_DIR}/tests/bindings/lua/test_upb.lua
+                ${CMAKE_SOURCE_DIR}/tests/bindings/lua/test_upb.pb.lua
+  )
+  set_property(TEST testlua PROPERTY ENVIRONMENT
+      LUA_PATH=${CMAKE_SOURCE_DIR}/third_party/lunit/?.lua$<SEMICOLON>${CMAKE_SOURCE_DIR}/upb/bindings/lua/?.lua
+      LUA_CPATH=${CMAKE_BINARY_DIR}/upb/bindings/lua/?.so
+  )
+  set_tests_properties(testlua
+    PROPERTIES
+    DEPENDS "upb_c;pb_c"
+  )
+  enable_testing()
 endif()
 
 if(LUA_FOUND AND PROTOBUF_FOUND)
