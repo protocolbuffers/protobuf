@@ -343,7 +343,12 @@ local function write_h_file(filedef, append)
   -- Forward-declare types defined in this file.
   for msg in filedef:defs(upb.DEF_MSG) do
     local msgname = to_cident(msg:full_name())
-    append('typedef struct %s { int a; } %s;\n', msgname, msgname)
+    append('struct %s;\n', msgname)
+  end
+
+  for msg in filedef:defs(upb.DEF_MSG) do
+    local msgname = to_cident(msg:full_name())
+    append('typedef struct %s %s;\n', msgname, msgname)
   end
 
   -- Forward-declare types not in this file, but used as submessages.
