@@ -31,7 +31,7 @@
 #include <Python.h>
 
 #include <google/protobuf/pyext/message.h>
-#include <google/protobuf/python/proto_api.h>
+#include <google/protobuf/proto_api.h>
 
 #include <google/protobuf/message_lite.h>
 

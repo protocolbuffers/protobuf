@@ -644,7 +644,7 @@ void OutOfRangeError(PyObject* arg) {
 
 template<class RangeType, class ValueType>
 bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
-  if (ABSL_PREDICT_FALSE(value == -1 && PyErr_Occurred())) {
+  if (PROTOBUF_PREDICT_FALSE(value == -1 && PyErr_Occurred())) {
     if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
       // Replace it with the same ValueError as pure python protos instead of
       // the default one.
@@ -653,7 +653,7 @@ bool VerifyIntegerCastAndRange(PyObject* arg, ValueType value) {
     }  // Otherwise propagate existing error.
     return false;
     }
-    if (ABSL_PREDICT_FALSE(!IsValidNumericCast<RangeType>(value))) {
+    if (PROTOBUF_PREDICT_FALSE(!IsValidNumericCast<RangeType>(value))) {
       OutOfRangeError(arg);
       return false;
     }
@@ -680,7 +680,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
   // an integer and can be used as an ordinal number".
   // This definition includes everything that implements numbers.Integral
   // and shouldn't cast the net too wide.
-    if (ABSL_PREDICT_FALSE(!PyIndex_Check(arg))) {
+    if (PROTOBUF_PREDICT_FALSE(!PyIndex_Check(arg))) {
       FormatTypeError(arg, "int, long");
       return false;
     }
@@ -697,7 +697,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
       // Unlike PyLong_AsLongLong, PyLong_AsUnsignedLongLong is very
       // picky about the exact type.
       PyObject* casted = PyNumber_Long(arg);
-      if (ABSL_PREDICT_FALSE(casted == nullptr)) {
+      if (PROTOBUF_PREDICT_FALSE(casted == nullptr)) {
         // Propagate existing error.
         return false;
         }
@@ -722,7 +722,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
       // Valid subclasses of numbers.Integral should have a __long__() method
       // so fall back to that.
       PyObject* casted = PyNumber_Long(arg);
-      if (ABSL_PREDICT_FALSE(casted == nullptr)) {
+      if (PROTOBUF_PREDICT_FALSE(casted == nullptr)) {
         // Propagate existing error.
         return false;
         }
@@ -748,7 +748,7 @@ template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
 
 bool CheckAndGetDouble(PyObject* arg, double* value) {
   *value = PyFloat_AsDouble(arg);
-  if (ABSL_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
+  if (PROTOBUF_PREDICT_FALSE(*value == -1 && PyErr_Occurred())) {
     FormatTypeError(arg, "int, long, float");
     return false;
     }
