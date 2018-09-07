@@ -11,6 +11,10 @@ cmake_minimum_required (VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
 project (upb)
 
+# Prevent CMake from setting -rdynamic on Linux (!!).
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
 # Options we define for users.
 option(UPB_ENABLE_ASAN "Enable address sanitizer." OFF)
 option(UPB_ENABLE_UBSAN "Enable undefined behavior sanitizer." OFF)

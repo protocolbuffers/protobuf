@@ -53,41 +53,24 @@ typedef void upb_msg;
  * members are public so generated code can initialize them, but users MUST NOT
  * read or write any of its members. */
 
-#define UPB_NOT_IN_ONEOF UINT16_MAX
-#define UPB_NO_HASBIT UINT16_MAX
-#define UPB_NO_SUBMSG UINT16_MAX
-
 typedef struct {
   uint32_t number;
-  uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
-  uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
-  uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
-  uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
+  uint16_t offset;
+  int16_t presence;      /* If >0, hasbit_index+1.  If <0, oneof_index+1. */
+  uint16_t submsg_index;  /* undefined if descriptortype != MESSAGE or GROUP. */
   uint8_t descriptortype;
   uint8_t label;
 } upb_msglayout_field;
 
-typedef struct {
-  uint32_t data_offset;
-  uint32_t case_offset;
-} upb_msglayout_oneof;
-
 typedef struct upb_msglayout {
   const struct upb_msglayout *const* submsgs;
   const upb_msglayout_field *fields;
-  const upb_msglayout_oneof *oneofs;
-  void *default_msg;
   /* Must be aligned to sizeof(void*).  Doesn't include internal members like
    * unknown fields, extension dict, pointer to msglayout, etc. */
-  uint32_t size;
+  uint16_t size;
   uint16_t field_count;
-  uint16_t oneof_count;
   bool extendable;
-  bool is_proto2;
 } upb_msglayout;
-
-#define UPB_ALIGN_UP_TO(val, align) ((val + (align - 1)) & -align)
-#define UPB_ALIGNED_SIZEOF(type) UPB_ALIGN_UP_TO(sizeof(type), sizeof(void*))
 
 
 /** upb_stringview ************************************************************/
