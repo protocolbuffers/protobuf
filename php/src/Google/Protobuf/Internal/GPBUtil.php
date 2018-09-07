@@ -623,7 +623,6 @@ class GPBUtil
         BytesValue::class,
     ];
 
-
     /**
      * Determine if a fully qualified class name is a wrapper type.
      *

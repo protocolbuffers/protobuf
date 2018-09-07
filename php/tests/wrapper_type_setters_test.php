@@ -10,6 +10,8 @@ use Google\Protobuf\DoubleValue;
 use Google\Protobuf\FloatValue;
 use Google\Protobuf\Int32Value;
 use Google\Protobuf\Int64Value;
+use Google\Protobuf\Internal\GPBType;
+use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\StringValue;
 use Google\Protobuf\UInt32Value;
 use Google\Protobuf\UInt64Value;
@@ -94,13 +96,29 @@ class WrapperTypeSettersTest extends TestBase
                 ["setBytesValue", "getBytesValue", "", new BytesValue()],
             ]],
             [TestWrapperSetters::class, [
-                ["setDoubleValueList", "getDoubleValueList", [1.1], [new DoubleValue(["value" => 1.1])]],
-//                ["setDoubleValueList", "getDoubleValueList", new DoubleValue(["value" => 3.3]), new DoubleValue(["value" => 3.3])],
-//                ["setDoubleValueList", "getDoubleValueList", 2.2, new DoubleValue(["value" => 2.2])],
-//                ["setDoubleValueList", "getDoubleValueList", null, null],
-//                ["setDoubleValueList", "getDoubleValueList", 0, new DoubleValue()],
+                ["setDoubleValueList", "getDoubleValueList", [1.1], self::messageArrayToRepeatedField([new DoubleValue(["value" => 1.1])])],
+                [
+                    "setDoubleValueList",
+                    "getDoubleValueList",
+                    [1.1, new DoubleValue(["value" => 3.3]), 0],
+                    self::messageArrayToRepeatedField([
+                        new DoubleValue(["value" => 1.1]),
+                        new DoubleValue(["value" => 3.3]),
+                        new DoubleValue(),
+                    ])
+                ],
             ]],
         ];
+    }
+
+    private static function messageArrayToRepeatedField($arr)
+    {
+        $class = get_class($arr[0]);
+        $rf = new RepeatedField(GPBType::MESSAGE, $class);
+        foreach ($arr as $item) {
+            $rf[] = $item;
+        }
+        return $rf;
     }
 
     /**
