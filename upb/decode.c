@@ -130,9 +130,7 @@ static void upb_set32(void *msg, size_t ofs, uint32_t val) {
 
 static bool upb_append_unknown(upb_decstate *d, upb_decframe *frame,
                                const char *start) {
-  UPB_UNUSED(d);
-  UPB_UNUSED(frame);
-  UPB_UNUSED(start);
+  upb_msg_addunknown(frame->msg, start, d->ptr - start);
   return true;
 }
 
@@ -545,7 +543,9 @@ static bool upb_decode_field(upb_decstate *d, upb_decframe *frame) {
     }
   } else {
     CHK(field_number != 0);
-    return upb_skip_unknownfielddata(d, frame, field_number, wire_type);
+    CHK(upb_skip_unknownfielddata(d, frame, field_number, wire_type));
+    CHK(upb_append_unknown(d, frame, field_start));
+    return true;
   }
 }
 

@@ -331,6 +331,8 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
                         const upb_msglayout *m, size_t *size) {
   int i;
   size_t pre_len = e->limit - e->ptr;
+  const char *unknown;
+  size_t unknown_size;
 
   for (i = m->field_count - 1; i >= 0; i--) {
     const upb_msglayout_field *f = &m->fields[i];
@@ -355,6 +357,12 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
       }
       CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, skip_empty));
     }
+  }
+
+  unknown = upb_msg_getunknown(msg, &unknown_size);
+
+  if (unknown) {
+    upb_put_bytes(e, unknown, unknown_size);
   }
 
   *size = (e->limit - e->ptr) - pre_len;

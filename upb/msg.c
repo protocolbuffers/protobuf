@@ -113,8 +113,12 @@ static upb_ctype_t upb_fieldtotabtype(upb_fieldtype_t type) {
 
 /* Used when a message is not extendable. */
 typedef struct {
-  /* TODO(haberman): add unknown fields. */
+  /* TODO(haberman): use pointer tagging so we we are slim when known unknown
+   * fields are not present. */
   upb_arena *arena;
+  char *unknown;
+  size_t unknown_len;
+  size_t unknown_size;
 } upb_msg_internal;
 
 /* Used when a message is extendable. */
@@ -141,6 +145,25 @@ static upb_msg_internal_withext *upb_msg_getinternalwithext(
   return VOIDPTR_AT(msg, -sizeof(upb_msg_internal_withext));
 }
 
+void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len) {
+  upb_msg_internal* in = upb_msg_getinternal(msg);
+  if (len > in->unknown_size - in->unknown_len) {
+    upb_alloc *alloc = upb_arena_alloc(in->arena);
+    size_t need = in->unknown_size + len;
+    size_t newsize = UPB_MAX(in->unknown_size * 2, need);
+    in->unknown = upb_realloc(alloc, in->unknown, in->unknown_size, newsize);
+    in->unknown_size = newsize;
+  }
+  memcpy(in->unknown + in->unknown_len, data, len);
+  in->unknown_len += len;
+}
+
+const char *upb_msg_getunknown(const upb_msg *msg, size_t *len) {
+  const upb_msg_internal* in = upb_msg_getinternal_const(msg);
+  *len = in->unknown_len;
+  return in->unknown;
+}
+
 static const upb_msglayout_field *upb_msg_checkfield(int field_index,
                                                      const upb_msglayout *l) {
   UPB_ASSERT(field_index >= 0 && field_index < l->field_count);
@@ -165,6 +188,7 @@ static size_t upb_msg_sizeof(const upb_msglayout *l) {
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   upb_alloc *alloc = upb_arena_alloc(a);
   void *mem = upb_malloc(alloc, upb_msg_sizeof(l));
+  upb_msg_internal *in;
   upb_msg *msg;
 
   if (!mem) {
@@ -177,7 +201,11 @@ upb_msg *upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   memset(msg, 0, l->size);
 
   /* Initialize internal members. */
-  upb_msg_getinternal(msg)->arena = a;
+  in = upb_msg_getinternal(msg);
+  in->arena = a;
+  in->unknown = NULL;
+  in->unknown_len = 0;
+  in->unknown_size = 0;
 
   if (l->extendable) {
     upb_msg_getinternalwithext(msg, l)->extdict = NULL;
