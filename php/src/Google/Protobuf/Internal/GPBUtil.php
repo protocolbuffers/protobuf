@@ -198,12 +198,6 @@ class GPBUtil
         }
     }
 
-    public static function checkWrapperMessage(&$var, $klass, $newClass = null)
-    {
-        self::normalizeToMessageType($var, $klass);
-        self::checkMessage($var, $klass, $newClass);
-    }
-
     public static function checkRepeatedField(&$var, $type, $klass = null)
     {
         if (!$var instanceof RepeatedField && !is_array($var)) {
@@ -602,39 +596,5 @@ class GPBUtil
                is_a($msg, "Google\Protobuf\BoolValue")   ||
                is_a($msg, "Google\Protobuf\StringValue") ||
                is_a($msg, "Google\Protobuf\BytesValue");
-    }
-
-    /**
-     * Tries to normalize $value into a provided protobuf wrapper type $class.
-     * If $value is any type other than an object, we attempt to construct an
-     * instance of $class and assign $value to it using the setValue method
-     * shared by all wrapper types.
-     *
-     * @param mixed $value The value passed to the protobuf setter method
-     * @param string $class The expected wrapper class name
-     * @throws \Exception If $value cannot be converted to a wrapper type
-     */
-    public static function normalizeToMessageType(&$value, $class)
-    {
-        if (is_null($value) || is_object($value)) {
-            // This handles the case that $value is an instance of $class. We
-            // choose not to do any more strict checking here, relying on the
-            // existing type checking done by GPBUtil.
-            return;
-        } else {
-            // Try to instantiate $class and set the value
-            try {
-                $msg = new $class;
-                $msg->setValue($value);
-                $value = $msg;
-                return;
-            } catch (\Exception $exception) {
-                throw new \Exception(
-                    "Error normalizing value to type '$class': " . $exception->getMessage(),
-                    $exception->getCode(),
-                    $exception
-                );
-            }
-        }
     }
 }

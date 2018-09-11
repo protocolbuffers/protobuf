@@ -745,13 +745,12 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     if (IsWrapperType(field)) {
       printer->Print(
-          "GPBUtil::checkWrapperMessage($var, \\^class_name^::class);\n",
-          "class_name", LegacyFullClassName(field->message_type(), is_descriptor));
-    } else {
-      printer->Print(
-          "GPBUtil::checkMessage($var, \\^class_name^::class);\n",
+          "GPBWrapperUtils::normalizeToMessageType($var, \\^class_name^::class);\n",
           "class_name", LegacyFullClassName(field->message_type(), is_descriptor));
     }
+    printer->Print(
+        "GPBUtil::checkMessage($var, \\^class_name^::class);\n",
+        "class_name", LegacyFullClassName(field->message_type(), is_descriptor));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
     printer->Print(
         "GPBUtil::checkEnum($var, \\^class_name^::class);\n",
@@ -1011,14 +1010,16 @@ void GenerateUseDeclaration(bool is_descriptor, io::Printer* printer) {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\RepeatedField;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
+        "use Google\\Protobuf\\Internal\\GPBWrapperUtils;\n\n");
   } else {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\GPBWire;\n"
         "use Google\\Protobuf\\Internal\\RepeatedField;\n"
         "use Google\\Protobuf\\Internal\\InputStream;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
+        "use Google\\Protobuf\\Internal\\GPBWrapperUtils;\n\n");
   }
 }
 
