@@ -32,20 +32,11 @@
 
 namespace Google\Protobuf\Internal;
 
-use Google\Protobuf\BoolValue;
-use Google\Protobuf\BytesValue;
-use Google\Protobuf\DoubleValue;
 use Google\Protobuf\Duration;
 use Google\Protobuf\FieldMask;
-use Google\Protobuf\FloatValue;
-use Google\Protobuf\Int32Value;
-use Google\Protobuf\Int64Value;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
-use Google\Protobuf\StringValue;
-use Google\Protobuf\UInt32Value;
-use Google\Protobuf\UInt64Value;
 
 function camel2underscore($input) {
     preg_match_all(

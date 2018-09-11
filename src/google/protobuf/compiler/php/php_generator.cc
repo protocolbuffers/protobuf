@@ -685,10 +685,10 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     printer->Print(
         "public function get^camel_name^Value()\n"
         "{\n"
-        "    return is_null($this->^name^) ? null : $this->^name^->getValue();\n"
+        "    $wrapper = $this->get^camel_name^();\n"
+        "    return is_null($wrapper) ? null : $wrapper->getValue();\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name());
+        "camel_name", UnderscoresToCamelCase(field->name(), true));
   }
 
   // Generate setter.
