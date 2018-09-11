@@ -96,29 +96,19 @@ class WrapperTypeSettersTest extends TestBase
                 ["setBytesValue", "getBytesValue", "", new BytesValue()],
             ]],
             [TestWrapperSetters::class, [
-                ["setDoubleValueList", "getDoubleValueList", [1.1], self::messageArrayToRepeatedField([new DoubleValue(["value" => 1.1])])],
-                [
-                    "setDoubleValueList",
-                    "getDoubleValueList",
-                    [1.1, new DoubleValue(["value" => 3.3]), 0],
-                    self::messageArrayToRepeatedField([
-                        new DoubleValue(["value" => 1.1]),
-                        new DoubleValue(["value" => 3.3]),
-                        new DoubleValue(),
-                    ])
-                ],
+                ["setDoubleValueOneof", "getDoubleValueOneof", 1.1, new DoubleValue(["value" => 1.1])],
+                ["setDoubleValueOneof", "getDoubleValueOneof", new DoubleValue(["value" => 3.3]), new DoubleValue(["value" => 3.3])],
+                ["setDoubleValueOneof", "getDoubleValueOneof", 2.2, new DoubleValue(["value" => 2.2])],
+                ["setDoubleValueOneof", "getDoubleValueOneof", null, null],
+                ["setDoubleValueOneof", "getDoubleValueOneof", 0, new DoubleValue()],
+            ]],[TestWrapperSetters::class, [
+                ["setStringValueOneof", "getStringValueOneof", "asdf", new StringValue(["value" => "asdf"])],
+                ["setStringValueOneof", "getStringValueOneof", new StringValue(["value" => "qwerty"]), new StringValue(["value" => "qwerty"])],
+                ["setStringValueOneof", "getStringValueOneof", "", new StringValue(["value" => ""])],
+                ["setStringValueOneof", "getStringValueOneof", null, null],
+                ["setStringValueOneof", "getStringValueOneof", "", new StringValue()],
             ]],
         ];
-    }
-
-    private static function messageArrayToRepeatedField($arr)
-    {
-        $class = get_class($arr[0]);
-        $rf = new RepeatedField(GPBType::MESSAGE, $class);
-        foreach ($arr as $item) {
-            $rf[] = $item;
-        }
-        return $rf;
     }
 
     /**

@@ -15,5 +15,8 @@ message TestWrapperSetters {
   google.protobuf.StringValue string_value = 8;
   google.protobuf.BytesValue bytes_value = 9;
 
-  repeated google.protobuf.DoubleValue double_value_list = 10;
+  oneof wrapped_oneofs {
+    google.protobuf.DoubleValue double_value_oneof = 10;
+    google.protobuf.StringValue string_value_oneof = 11;
+  }
 }

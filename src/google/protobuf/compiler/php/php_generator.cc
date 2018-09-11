@@ -99,6 +99,8 @@ void GenerateMessageConstructorDocComment(io::Printer* printer,
                                           int is_descriptor);
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
                              int is_descriptor, int function_type);
+void GenerateWrapperFieldGetterDocComment(io::Printer* printer,
+                                          const FieldDescriptor* field);
 void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
                             int is_descriptor);
 void GenerateEnumValueDocComment(io::Printer* printer,
@@ -674,6 +676,21 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         field->name());
   }
 
+  // For wrapper types, generate an additional getXXXValue getter
+  if (!field->is_map() &&
+      !field->is_repeated() &&
+      field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+      IsWrapperType(field)) {
+    GenerateWrapperFieldGetterDocComment(printer, field);
+    printer->Print(
+        "public function get^camel_name^Value()\n"
+        "{\n"
+        "    return is_null($this->^name^) ? null : $this->^name^->getValue();\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
+        field->name());
+  }
+
   // Generate setter.
   GenerateFieldDocComment(printer, field, is_descriptor, kFieldSetter);
   printer->Print(
@@ -726,9 +743,15 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
       printer->Print(");\n");
     }
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    printer->Print(
-        "GPBUtil::checkMessage($var, \\^class_name^::class);\n",
-        "class_name", LegacyFullClassName(field->message_type(), is_descriptor));
+    if (IsWrapperType(field)) {
+      printer->Print(
+          "GPBUtil::checkWrapperMessage($var, \\^class_name^::class);\n",
+          "class_name", LegacyFullClassName(field->message_type(), is_descriptor));
+    } else {
+      printer->Print(
+          "GPBUtil::checkMessage($var, \\^class_name^::class);\n",
+          "class_name", LegacyFullClassName(field->message_type(), is_descriptor));
+    }
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
     printer->Print(
         "GPBUtil::checkEnum($var, \\^class_name^::class);\n",
@@ -1494,6 +1517,23 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
     printer->Print(" * @return ^php_type^\n",
       "php_type", PhpGetterTypeName(field, is_descriptor));
   }
+  printer->Print(" */\n");
+}
+
+void GenerateWrapperFieldGetterDocComment(io::Printer* printer, const FieldDescriptor* field) {
+  // Generate a doc comment for the special getXXXValue methods that are
+  // generated for wrapper types.
+  const FieldDescriptor* primitiveField = field->message_type()->FindFieldByName("value");
+  printer->Print("/**\n");
+  printer->Print(
+      " * Returns the unboxed value from <code>get^camel_name^()</code>\n\n",
+      "camel_name", UnderscoresToCamelCase(field->name(), true));
+  GenerateDocCommentBody(printer, field);
+  printer->Print(
+    " * Generated from protobuf field <code>^def^</code>\n",
+    "def", EscapePhpdoc(FirstLineOf(field->DebugString())));
+  printer->Print(" * @return ^php_type^|null\n",
+        "php_type", PhpGetterTypeName(primitiveField, false));
   printer->Print(" */\n");
 }
 

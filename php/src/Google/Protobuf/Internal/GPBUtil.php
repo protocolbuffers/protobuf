@@ -202,12 +202,15 @@ class GPBUtil
 
     public static function checkMessage(&$var, $klass, $newClass = null)
     {
-        if (self::isWrapperType($klass)) {
-            self::normalizeToMessageType($var, $klass);
-        }
         if (!$var instanceof $klass && !is_null($var)) {
             throw new \Exception("Expect $klass.");
         }
+    }
+
+    public static function checkWrapperMessage(&$var, $klass, $newClass = null)
+    {
+        self::normalizeToMessageType($var, $klass);
+        self::checkMessage($var, $klass, $newClass);
     }
 
     public static function checkRepeatedField(&$var, $type, $klass = null)
@@ -610,30 +613,6 @@ class GPBUtil
                is_a($msg, "Google\Protobuf\BytesValue");
     }
 
-
-    private static $wrapperTypes = [
-        DoubleValue::class,
-        FloatValue::class,
-        Int64Value::class,
-        UInt64Value::class,
-        Int32Value::class,
-        UInt32Value::class,
-        BoolValue::class,
-        StringValue::class,
-        BytesValue::class,
-    ];
-
-    /**
-     * Determine if a fully qualified class name is a wrapper type.
-     *
-     * @param string $class the fully qualified class name
-     * @return bool true if this is a wrapper type
-     */
-    public static function isWrapperType($class)
-    {
-        return in_array($class, self::$wrapperTypes);
-    }
-
     /**
      * Tries to normalize $value into a provided protobuf wrapper type $class.
      * If $value is any type other than an object, we attempt to construct an
@@ -653,9 +632,6 @@ class GPBUtil
             return;
         } else {
             // Try to instantiate $class and set the value
-            if (!self::isWrapperType($class)) {
-                throw new \Exception("Expected wrapper type, got '$class'");
-            }
             try {
                 $msg = new $class;
                 $msg->setValue($value);
