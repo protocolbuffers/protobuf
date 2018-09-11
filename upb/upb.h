@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 namespace upb {
@@ -526,6 +527,13 @@ size_t upb_arena_bytesallocated(const upb_arena *a);
 void upb_arena_setnextblocksize(upb_arena *a, size_t size);
 void upb_arena_setmaxblocksize(upb_arena *a, size_t size);
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
+UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
+  return upb_malloc(upb_arena_alloc(a), size);
+}
+UPB_INLINE void *upb_arena_realloc(upb_arena *a, void *ptr, size_t oldsize,
+                                   size_t size) {
+  return upb_malloc(upb_arena_realloc(a), ptr, oldsize, size);
+}
 
 UPB_END_EXTERN_C
 
@@ -733,6 +741,69 @@ template <int N> class upb::InlinedEnvironment : public upb::Environment {
 
 #endif  /* __cplusplus */
 
+/* The types a field can have.  Note that this list is not identical to the
+ * types defined in descriptor.proto, which gives INT32 and SINT32 separate
+ * types (we distinguish the two with the "integer encoding" enum below). */
+typedef enum {
+  /* Types stored in 1 byte. */
+  UPB_TYPE_BOOL     = 1,
+  /* Types stored in 4 bytes. */
+  UPB_TYPE_FLOAT    = 2,
+  UPB_TYPE_INT32    = 3,
+  UPB_TYPE_UINT32   = 4,
+  UPB_TYPE_ENUM     = 5,  /* Enum values are int32. */
+  /* Types stored as pointers (probably 4 or 8 bytes). */
+  UPB_TYPE_STRING   = 6,
+  UPB_TYPE_BYTES    = 7,
+  UPB_TYPE_MESSAGE  = 8,
+  /* Types stored as 8 bytes. */
+  UPB_TYPE_DOUBLE   = 9,
+  UPB_TYPE_INT64    = 10,
+  UPB_TYPE_UINT64   = 11
+} upb_fieldtype_t;
 
+/* The repeated-ness of each field; this matches descriptor.proto. */
+typedef enum {
+  UPB_LABEL_OPTIONAL = 1,
+  UPB_LABEL_REQUIRED = 2,
+  UPB_LABEL_REPEATED = 3
+} upb_label_t;
+
+/* How integers should be encoded in serializations that offer multiple
+ * integer encoding methods. */
+typedef enum {
+  UPB_INTFMT_VARIABLE = 1,
+  UPB_INTFMT_FIXED = 2,
+  UPB_INTFMT_ZIGZAG = 3   /* Only for signed types (INT32/INT64). */
+} upb_intfmt_t;
+
+/* Descriptor types, as defined in descriptor.proto. */
+typedef enum {
+  UPB_DESCRIPTOR_TYPE_DOUBLE   = 1,
+  UPB_DESCRIPTOR_TYPE_FLOAT    = 2,
+  UPB_DESCRIPTOR_TYPE_INT64    = 3,
+  UPB_DESCRIPTOR_TYPE_UINT64   = 4,
+  UPB_DESCRIPTOR_TYPE_INT32    = 5,
+  UPB_DESCRIPTOR_TYPE_FIXED64  = 6,
+  UPB_DESCRIPTOR_TYPE_FIXED32  = 7,
+  UPB_DESCRIPTOR_TYPE_BOOL     = 8,
+  UPB_DESCRIPTOR_TYPE_STRING   = 9,
+  UPB_DESCRIPTOR_TYPE_GROUP    = 10,
+  UPB_DESCRIPTOR_TYPE_MESSAGE  = 11,
+  UPB_DESCRIPTOR_TYPE_BYTES    = 12,
+  UPB_DESCRIPTOR_TYPE_UINT32   = 13,
+  UPB_DESCRIPTOR_TYPE_ENUM     = 14,
+  UPB_DESCRIPTOR_TYPE_SFIXED32 = 15,
+  UPB_DESCRIPTOR_TYPE_SFIXED64 = 16,
+  UPB_DESCRIPTOR_TYPE_SINT32   = 17,
+  UPB_DESCRIPTOR_TYPE_SINT64   = 18
+} upb_descriptortype_t;
+
+typedef enum {
+  UPB_SYNTAX_PROTO2 = 2,
+  UPB_SYNTAX_PROTO3 = 3
+} upb_syntax_t;
+
+extern const uint8_t upb_desctype_to_fieldtype[];
 
 #endif  /* UPB_H_ */

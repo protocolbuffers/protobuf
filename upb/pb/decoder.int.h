@@ -9,7 +9,6 @@
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/sink.h"
-#include "upb/structdefs.int.h"
 #include "upb/table.int.h"
 
 /* C++ names are not actually used since this type isn't exposed to users. */

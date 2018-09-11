@@ -21,9 +21,8 @@
 #ifndef UPB_MSG_H_
 #define UPB_MSG_H_
 
-#include "upb/def.h"
-#include "upb/handlers.h"
-#include "upb/sink.h"
+#include <stdint.h>
+#include "upb/upb.h"
 
 #ifdef __cplusplus
 

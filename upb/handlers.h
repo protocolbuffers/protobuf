@@ -21,6 +21,7 @@
 
 #include "upb/def.h"
 #include "upb/table.int.h"
+#include "upb/refcounted.h"
 
 #ifdef __cplusplus
 namespace upb {

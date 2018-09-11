@@ -1,4 +1,6 @@
 
+#include <string.h>
+#include "upb/table.int.h"
 #include "upb/msg.h"
 #include "upb/structs.int.h"
 

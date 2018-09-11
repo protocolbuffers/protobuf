@@ -6,7 +6,6 @@
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
 #include "upb/def.h"
-#include "upb/pb/glue.h"
 
 #define LUPB_ENUMDEF "lupb.enumdef"
 #define LUPB_FIELDDEF "lupb.fielddef"
@@ -1196,37 +1195,27 @@ static int lupb_symtab_gc(lua_State *L) {
 }
 
 static int lupb_symtab_add(lua_State *L) {
+  size_t len;
   upb_symtab *s = lupb_symtab_check(L, 1);
-  int n;
-  upb_def **defs;
+  const char *str = luaL_checklstring(L, 2, &len);
+  google_protobuf_FileDescriptorSet *set =
+      google_protobuf_FileDescriptorSet_parsenew(upb_stringview_make(str, len),
+                                                 upb_symtab_arena(s));
+  size_t i;
+  upb_array *file_arr;
 
-  luaL_checktype(L, 2, LUA_TTABLE);
-  /* Iterate over table twice.  First iteration to count entries and
-   * check constraints. */
-  n = 0;
-  for (lua_pushnil(L); lua_next(L, 2); lua_pop(L, 1)) {
-    lupb_def_checkmutable(L, -1);
-    ++n;
+  if (!set) {
+    luaL_argerror(L, 2, "failed to parse descriptor");
   }
 
-  /* Second iteration to build deflist.
-   * Allocate list with lua_newuserdata() so it is anchored as a GC root in
-   * case any Lua functions longjmp(). */
-  defs = lua_newuserdata(L, n * sizeof(*defs));
-  n = 0;
-  for (lua_pushnil(L); lua_next(L, 2); lua_pop(L, 1)) {
-    upb_def *def = lupb_def_checkmutable(L, -1);
-    defs[n++] = def;
+  file_arr = (upb_array*)google_protobuf_FileDescriptorSet_file(set);
+  for (i = 0; i < upb_array_size(file_arr); i++) {
+    upb_msgval entry = upb_array_get(file_arr, i);
+    google_protobuf_FileDescriptorProto *file =
+        (void *)upb_msgval_getmsg(entry);
+    CHK(upb_symtab_addfile(s, file, &status));
   }
 
-  CHK(upb_symtab_add(s, defs, n, NULL, &status));
-  return 0;
-}
-
-static int lupb_symtab_addfile(lua_State *L) {
-  upb_symtab *s = lupb_symtab_check(L, 1);
-  upb_filedef *f = lupb_filedef_checkmutable(L, 2);
-  CHK(upb_symtab_addfile(s, f, &status));
   return 0;
 }
 
@@ -1262,7 +1251,6 @@ static int lupb_symtab_defs(lua_State *L) {
 
 static const struct luaL_Reg lupb_symtab_m[] = {
   {"add", lupb_symtab_add},
-  {"add_file", lupb_symtab_addfile},
   {"defs", lupb_symtab_defs},
   {"lookup", lupb_symtab_lookup},
   {NULL, NULL}
@@ -1290,25 +1278,6 @@ static int lupb_freeze(lua_State *L) {
   return 0;
 }
 
-/* This is a *temporary* API that will be removed once pending refactorings are
- * complete (it does not belong here in core because it depends on both
- * the descriptor.proto schema and the protobuf binary format. */
-static int lupb_loaddescriptor(lua_State *L) {
-  size_t len;
-  const char *str = luaL_checklstring(L, 1, &len);
-  size_t i;
-  upb_filedef **files = NULL;
-  CHK(files = upb_loaddescriptor(str, len, &files, &status));
-
-  lua_newtable(L);
-  for (i = 1; *files; i++, files++) {
-    lupb_filedef_pushnewrapper(L, *files, &files);
-    lua_rawseti(L, -2, i);
-  }
-
-  return 1;
-}
-
 static void lupb_setfieldi(lua_State *L, const char *field, int i) {
   lua_pushinteger(L, i);
   lua_setfield(L, -2, field);
@@ -1322,7 +1291,6 @@ static const struct luaL_Reg lupbdef_toplevel_m[] = {
   {"OneofDef", lupb_oneofdef_new},
   {"SymbolTable", lupb_symtab_new},
   {"freeze", lupb_freeze},
-  {"load_descriptor", lupb_loaddescriptor},
 
   {NULL, NULL}
 };

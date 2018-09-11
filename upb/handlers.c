@@ -4,7 +4,6 @@
 */
 
 #include "upb/handlers.h"
-#include "upb/structdefs.int.h"
 
 #include <string.h>
 
@@ -35,7 +34,6 @@ static void freehandlers(upb_refcounted *r) {
   }
 
   upb_inttable_uninit(&h->cleanup_);
-  upb_msgdef_unref(h->msg, h);
   upb_gfree(h->sub);
   upb_gfree(h);
 }
@@ -108,7 +106,7 @@ oom:
 #define SUBH(h, selector) (h->sub[selector])
 
 /* The selector for a submessage field is the field index. */
-#define SUBH_F(h, f) SUBH(h, f->index_)
+#define SUBH_F(h, f) SUBH(h, upb_fielddef_index(f))
 
 static int32_t trygetsel(upb_handlers *h, const upb_fielddef *f,
                          upb_handlertype_t type) {
@@ -284,18 +282,15 @@ upb_handlers *upb_handlers_new(const upb_msgdef *md, const void *owner) {
   int extra;
   upb_handlers *h;
 
-  UPB_ASSERT(upb_msgdef_isfrozen(md));
-
-  extra = sizeof(upb_handlers_tabent) * (md->selector_count - 1);
+  extra = sizeof(upb_handlers_tabent) * (upb_msgdef_selectorcount(md) - 1);
   h = upb_calloc(sizeof(*h) + extra);
   if (!h) return NULL;
 
   h->msg = md;
-  upb_msgdef_ref(h->msg, h);
   upb_status_clear(&h->status_);
 
-  if (md->submsg_field_count > 0) {
-    h->sub = upb_calloc(md->submsg_field_count * sizeof(*h->sub));
+  if (upb_msgdef_submsgfieldcount(md) > 0) {
+    h->sub = upb_calloc(upb_msgdef_submsgfieldcount(md) * sizeof(*h->sub));
     if (!h->sub) goto oom;
   } else {
     h->sub = 0;
@@ -540,6 +535,7 @@ upb_handlertype_t upb_handlers_getprimitivehandlertype(const upb_fielddef *f) {
 
 bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
                               upb_selector_t *s) {
+  uint32_t selector_base = upb_fielddef_selectorbase(f);
   switch (type) {
     case UPB_HANDLER_INT32:
     case UPB_HANDLER_INT64:
@@ -551,38 +547,38 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
       if (!upb_fielddef_isprimitive(f) ||
           upb_handlers_getprimitivehandlertype(f) != type)
         return false;
-      *s = f->selector_base;
+      *s = selector_base;
       break;
     case UPB_HANDLER_STRING:
       if (upb_fielddef_isstring(f)) {
-        *s = f->selector_base;
+        *s = selector_base;
       } else if (upb_fielddef_lazy(f)) {
-        *s = f->selector_base + 3;
+        *s = selector_base + 3;
       } else {
         return false;
       }
       break;
     case UPB_HANDLER_STARTSTR:
       if (upb_fielddef_isstring(f) || upb_fielddef_lazy(f)) {
-        *s = f->selector_base + 1;
+        *s = selector_base + 1;
       } else {
         return false;
       }
       break;
     case UPB_HANDLER_ENDSTR:
       if (upb_fielddef_isstring(f) || upb_fielddef_lazy(f)) {
-        *s = f->selector_base + 2;
+        *s = selector_base + 2;
       } else {
         return false;
       }
       break;
     case UPB_HANDLER_STARTSEQ:
       if (!upb_fielddef_isseq(f)) return false;
-      *s = f->selector_base - 2;
+      *s = selector_base - 2;
       break;
     case UPB_HANDLER_ENDSEQ:
       if (!upb_fielddef_isseq(f)) return false;
-      *s = f->selector_base - 1;
+      *s = selector_base - 1;
       break;
     case UPB_HANDLER_STARTSUBMSG:
       if (!upb_fielddef_issubmsg(f)) return false;
@@ -590,14 +586,14 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
        * selector can also be used as an index into the "sub" array of
        * subhandlers.  The indexes for the two into these two tables are the
        * same, except that in the handler table the static selectors come first. */
-      *s = f->index_ + UPB_STATIC_SELECTOR_COUNT;
+      *s = upb_fielddef_index(f) + UPB_STATIC_SELECTOR_COUNT;
       break;
     case UPB_HANDLER_ENDSUBMSG:
       if (!upb_fielddef_issubmsg(f)) return false;
-      *s = f->selector_base;
+      *s = selector_base;
       break;
   }
-  UPB_ASSERT((size_t)*s < upb_fielddef_containingtype(f)->selector_count);
+  UPB_ASSERT((size_t)*s < upb_msgdef_selectorcount(upb_fielddef_containingtype(f)));
   return true;
 }
 

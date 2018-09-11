@@ -333,6 +333,7 @@ local function write_h_file(filedef, append)
   append('#ifndef %s_UPB_H_\n', basename_preproc)
   append('#define %s_UPB_H_\n\n', basename_preproc)
 
+  append('#include <string.h>\n\n')
   append('#include "upb/msg.h"\n\n')
   append('#include "upb/decode.h"\n')
   append('#include "upb/encode.h"\n')

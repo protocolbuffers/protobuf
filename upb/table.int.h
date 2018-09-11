@@ -180,69 +180,11 @@ UPB_INLINE char *upb_tabstr(upb_tabkey key, uint32_t *len) {
 
 /* upb_tabval *****************************************************************/
 
-#ifdef __cplusplus
-
-/* Status initialization not supported.
- *
- * This separate definition is necessary because in C++, UINTPTR_MAX isn't
- * reliably available. */
 typedef struct {
   uint64_t val;
 } upb_tabval;
 
-#else
-
-/* C -- supports static initialization, but to support static initialization of
- * both integers and points for both 32 and 64 bit targets, it takes a little
- * bit of doing. */
-
-#if UINTPTR_MAX == 0xffffffffffffffffULL
-#define UPB_PTR_IS_64BITS
-#elif UINTPTR_MAX != 0xffffffff
-#error Could not determine how many bits pointers are.
-#endif
-
-typedef union {
-  /* For static initialization.
-   *
-   * Unfortunately this ugliness is necessary -- it is the only way that we can,
-   * with -std=c89 -pedantic, statically initialize this to either a pointer or
-   * an integer on 32-bit platforms. */
-  struct {
-#ifdef UPB_PTR_IS_64BITS
-    uintptr_t val;
-#else
-    uintptr_t val1;
-    uintptr_t val2;
-#endif
-  } staticinit;
-
-  /* The normal accessor that we use for everything at runtime. */
-  uint64_t val;
-} upb_tabval;
-
-#ifdef UPB_PTR_IS_64BITS
-#define UPB_TABVALUE_INT_INIT(v) {{v}}
-#define UPB_TABVALUE_EMPTY_INIT  {{-1}}
-#else
-
-/* 32-bit pointers */
-
-#ifdef UPB_BIG_ENDIAN
-#define UPB_TABVALUE_INT_INIT(v) {{0, v}}
-#define UPB_TABVALUE_EMPTY_INIT  {{-1, -1}}
-#else
-#define UPB_TABVALUE_INT_INIT(v) {{v, 0}}
-#define UPB_TABVALUE_EMPTY_INIT  {{-1, -1}}
-#endif
-
-#endif
-
-#define UPB_TABVALUE_PTR_INIT(v) UPB_TABVALUE_INT_INIT((uintptr_t)v)
-
-#undef UPB_PTR_IS_64BITS
-
-#endif  /* __cplusplus */
+#define UPB_TABVALUE_EMPTY_INIT  {-1}
 
 
 /* upb_table ******************************************************************/
@@ -284,30 +226,9 @@ typedef struct {
 #endif
 } upb_table;
 
-#ifdef NDEBUG
-#  define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
-     {count, mask, ctype, size_lg2, entries}
-#else
-#  ifdef UPB_DEBUG_REFS
-/* At the moment the only mutable tables we statically initialize are debug
- * ref tables. */
-#    define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
-       {count, mask, ctype, size_lg2, entries, &upb_alloc_debugrefs}
-#  else
-#    define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
-       {count, mask, ctype, size_lg2, entries, NULL}
-#  endif
-#endif
-
 typedef struct {
   upb_table t;
 } upb_strtable;
-
-#define UPB_STRTABLE_INIT(count, mask, ctype, size_lg2, entries) \
-  {UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries)}
-
-#define UPB_EMPTY_STRTABLE_INIT(ctype)                           \
-  UPB_STRTABLE_INIT(0, 0, ctype, 0, NULL)
 
 typedef struct {
   upb_table t;              /* For entries that don't fit in the array part. */

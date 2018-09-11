@@ -79,11 +79,6 @@ if(LUA_FOUND)
     upbdef_pic
     upbhandlers_pic upb_pic )
 
-  add_library(table_c SHARED
-    upb/bindings/lua/upb/table.c
-  )
-  target_link_libraries(table_c LINK_PRIVATE upb_c upb_pic)
-
   add_library(pb_c SHARED
     upb/bindings/lua/upb/pb.c
   )
@@ -94,7 +89,7 @@ if(LUA_FOUND)
     LIBRARY_OUTPUT_DIRECTORY "upb/bindings/lua"
     PREFIX ""
     SUFFIX ".so")
-  set_target_properties(table_c pb_c
+  set_target_properties(pb_c
     PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "upb/bindings/lua/upb"
     PREFIX ""
@@ -104,18 +99,14 @@ if(LUA_FOUND)
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
         DEPENDS ${CMAKE_SOURCE_DIR}/tools/upbc
                 ${CMAKE_SOURCE_DIR}/tools/upbc.lua
-                ${CMAKE_SOURCE_DIR}/tools/dump_cinit.lua
                 ${CMAKE_SOURCE_DIR}/tools/make_c_api.lua
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
                 upb_c
-                table_c
                 pb_c
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_SOURCE_DIR}/tools/upbc
                 ${CMAKE_SOURCE_DIR}/tools/upbc.lua
-                ${CMAKE_SOURCE_DIR}/tools/dump_cinit.lua
                 ${CMAKE_SOURCE_DIR}/tools/make_c_api.lua
                 ${CMAKE_CURRENT_BINARY_DIR}/tools)
   add_custom_command(
@@ -126,10 +117,8 @@ if(LUA_FOUND)
                 ${CMAKE_CURRENT_BINARY_DIR}/upb/bindings/lua)
   add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
-        DEPENDS ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
+        DEPENDS ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
         COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
                 ${CMAKE_CURRENT_BINARY_DIR}/upb/bindings/lua/upb)
 
@@ -262,11 +251,8 @@ set(UPB_SRCS
 )
 
 set (UPBDEF_SRCS
-    upb/descriptor/descriptor.upbdefs.c
-    upb/descriptor/reader.c
     upb/def.c
     upb/msgfactory.c
-    upb/refcounted.c
 )
 
 set(UPBHANDLERS_SRCS
@@ -278,7 +264,6 @@ set(UPBPB_SRCS
   upb/pb/compile_decoder.c
   upb/pb/decoder.c
   upb/pb/encoder.c
-  upb/pb/glue.c
   upb/pb/textprinter.c
   upb/pb/varint.c
 )
