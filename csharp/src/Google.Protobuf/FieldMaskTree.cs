@@ -30,14 +30,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 
-namespace Google.Protobuf.Util
+namespace Google.Protobuf
 {
     /// <summary>
     /// <para>A tree representation of a FieldMask. Each leaf node in this tree represent
@@ -85,7 +84,7 @@ namespace Google.Protobuf.Util
 
         public override string ToString()
         {
-            return FieldMaskUtil.ToString(ToFieldMask());
+            return ToFieldMask().ToString();
         }
 
         /// <summary>
@@ -156,12 +155,21 @@ namespace Google.Protobuf.Util
             var mask = new FieldMask();
             if (root.Children.Count != 0)
             {
-                var paths = new List<string>();
-                GetFieldPaths(root, "", paths);
+                var paths = GetFieldPaths();
                 mask.Paths.AddRange(paths);
             }
 
             return mask;
+        }
+
+        /// <summary>
+        /// Gathers all field paths in a sub-tree.
+        /// </summary>
+        internal List<string> GetFieldPaths()
+        {
+            var paths = new List<string>();
+            GetFieldPaths(root, "", paths);
+            return paths;
         }
 
         /// <summary>
@@ -228,7 +236,7 @@ namespace Google.Protobuf.Util
         /// <summary>
         /// Merges all fields specified by this FieldMaskTree from <paramref name="source"/> to <paramref name="destination"/>.
         /// </summary>
-        public void Merge(IMessage source, IMessage destination, FieldMaskUtil.MergeOptions options)
+        public void Merge(IMessage source, IMessage destination, FieldMask.MergeOptions options)
         {
             if (source.Descriptor != destination.Descriptor)
             {
@@ -251,7 +259,7 @@ namespace Google.Protobuf.Util
             string path,
             IMessage source,
             IMessage destination,
-            FieldMaskUtil.MergeOptions options)
+            FieldMask.MergeOptions options)
         {
             if (source.Descriptor != destination.Descriptor)
             {

@@ -30,11 +30,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System.Collections.Generic;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using Google.Protobuf.WellKnownTypes;
 
-namespace Google.Protobuf.Util
+namespace Google.Protobuf
 {
     public class FieldMaskTreeTest
     {
@@ -42,34 +43,49 @@ namespace Google.Protobuf.Util
         public void AddFieldPath()
         {
             FieldMaskTree tree = new FieldMaskTree();
-            Assert.AreEqual("", tree.ToString());
+            List<string> paths = tree.GetFieldPaths();
+            Assert.AreEqual(1, paths.Count);
+            Assert.Contains("", paths);
 
             tree.AddFieldPath("");
-            Assert.AreEqual("", tree.ToString());
-            
+            paths = tree.GetFieldPaths();
+            Assert.AreEqual(1, paths.Count);
+            Assert.Contains("", paths);
+
             // New branch.
             tree.AddFieldPath("foo");
-            Assert.AreEqual("foo", tree.ToString());
-            
+            paths = tree.GetFieldPaths();
+            Assert.AreEqual(2, paths.Count);
+            Assert.Contains("foo", paths);
+
             // Redundant path.
             tree.AddFieldPath("foo");
-            Assert.AreEqual("foo", tree.ToString());
-            
+            paths = tree.GetFieldPaths();
+            Assert.AreEqual(2, paths.Count);
+
             // New branch.
             tree.AddFieldPath("bar.baz");
-            Assert.AreEqual("foo,bar.baz", tree.ToString());
+            paths = tree.GetFieldPaths();
+            Assert.AreEqual(3, paths.Count);
+            Assert.Contains("bar.baz", paths);
             
             // Redundant sub-path.
             tree.AddFieldPath("foo.bar");
-            Assert.AreEqual("foo,bar.baz", tree.ToString());
-            
+            paths = tree.GetFieldPaths();
+            Assert.AreEqual(3, paths.Count);
+
             // New branch from a non-root node.
             tree.AddFieldPath("bar.quz");
-            Assert.AreEqual("foo,bar.baz,bar.quz", tree.ToString());
+            paths = tree.GetFieldPaths();
+            Assert.AreEqual(4, paths.Count);
+            Assert.Contains("bar.quz", paths);
             
             // A path that matches several existing sub-paths.
             tree.AddFieldPath("bar");
-            Assert.AreEqual("foo,bar", tree.ToString());
+            paths = tree.GetFieldPaths();
+            Assert.AreEqual(3, paths.Count);
+            Assert.Contains("foo", paths);
+            Assert.Contains("bar", paths);
         }
 
         [Test]
@@ -80,13 +96,20 @@ namespace Google.Protobuf.Util
             {
                 Paths = {"foo", "bar.baz", "bar.quz"}
             });
-            Assert.AreEqual("foo,bar.baz,bar.quz", tree.ToString());
+            List<string> paths = tree.GetFieldPaths();
+            Assert.AreEqual(3, paths.Count);
+            Assert.Contains("foo", paths);
+            Assert.Contains("bar.baz", paths);
+            Assert.Contains("bar.quz", paths);
 
             tree.MergeFromFieldMask(new FieldMask
             {
                 Paths = {"foo.bar", "bar"}
             });
-            Assert.AreEqual("foo,bar", tree.ToString());
+            paths = tree.GetFieldPaths();
+            Assert.AreEqual(2, paths.Count);
+            Assert.Contains("foo", paths);
+            Assert.Contains("bar", paths);
         }
 
         [Test]
@@ -101,30 +124,44 @@ namespace Google.Protobuf.Util
 
             // Empty path.
             tree.IntersectFieldPath("", result);
-            Assert.AreEqual("", result.ToString());
+            List<string> paths = result.GetFieldPaths();
+            Assert.AreEqual(1, paths.Count);
+            Assert.Contains("", paths); // FieldMaskTree always includes at least the empty string
 
             // Non-exist path.
             tree.IntersectFieldPath("quz", result);
-            Assert.AreEqual("", result.ToString());
+            paths = result.GetFieldPaths();
+            Assert.AreEqual(1, paths.Count);
+            Assert.Contains("", paths); // FieldMaskTree always includes at least the empty string
 
             // Sub-path of an existing leaf.
             tree.IntersectFieldPath("foo.bar", result);
-            Assert.AreEqual("foo.bar", result.ToString());
+            paths = result.GetFieldPaths();
+            Assert.AreEqual(1, paths.Count);
+            Assert.Contains("foo.bar", paths);
 
             // Match an existing leaf node.
             tree.IntersectFieldPath("foo", result);
-            Assert.AreEqual("foo", result.ToString());
+            paths = result.GetFieldPaths();
+            Assert.AreEqual(1, paths.Count);
+            Assert.Contains("foo", paths);
 
             // Non-exist path.
             tree.IntersectFieldPath("bar.foo", result);
-            Assert.AreEqual("foo", result.ToString());
+            paths = result.GetFieldPaths();
+            Assert.AreEqual(1, paths.Count);
+            Assert.Contains("foo", paths);
 
             // Match a non-leaf node.
             tree.IntersectFieldPath("bar", result);
-            Assert.AreEqual("foo,bar.baz,bar.quz", result.ToString());
+            paths = result.GetFieldPaths();
+            Assert.AreEqual(3, paths.Count);
+            Assert.Contains("foo", paths);
+            Assert.Contains("bar.baz", paths);
+            Assert.Contains("bar.quz", paths);
         }
 
-        private void Merge(FieldMaskTree tree, IMessage source, IMessage destination, FieldMaskUtil.MergeOptions options, bool useDynamicMessage)
+        private void Merge(FieldMaskTree tree, IMessage source, IMessage destination, FieldMask.MergeOptions options, bool useDynamicMessage)
         {
             if (useDynamicMessage)
             {
@@ -152,7 +189,7 @@ namespace Google.Protobuf.Util
         [Test]
         [TestCase(true)]
         [TestCase(false)]
-        public void MergeImpl(bool useDynamicMessage)
+        public void Merge(bool useDynamicMessage)
         {
             TestAllTypes value = new TestAllTypes
             {
@@ -178,7 +215,7 @@ namespace Google.Protobuf.Util
             //                                 +- repeated_int32
             //                                 +- repeated_nested_message
 
-            FieldMaskUtil.MergeOptions options = new FieldMaskUtil.MergeOptions();
+            FieldMask.MergeOptions options = new FieldMask.MergeOptions();
 
             // Test merging each individual field.
             NestedTestAllTypes destination = new NestedTestAllTypes();
