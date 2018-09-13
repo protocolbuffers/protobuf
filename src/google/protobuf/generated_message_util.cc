@@ -620,6 +620,7 @@ bool IsNull<FieldMetadata::kInlinedType>(const void* ptr) {
 void SerializeInternal(const uint8* base,
                        const FieldMetadata* field_metadata_table,
                        int32 num_fields, io::CodedOutputStream* output) {
+  SpecialSerializer func = nullptr;
   for (int i = 0; i < num_fields; i++) {
     const FieldMetadata& field_metadata = field_metadata_table[i];
     const uint8* ptr = base + field_metadata.offset;
@@ -646,9 +647,9 @@ void SerializeInternal(const uint8* base,
 
       // Special cases
       case FieldMetadata::kSpecial:
-        reinterpret_cast<SpecialSerializer>(
-            const_cast<void*>(field_metadata.ptr))(
-            base, field_metadata.offset, field_metadata.tag,
+	    func = reinterpret_cast<SpecialSerializer>(
+            const_cast<void*>(field_metadata.ptr));
+        func (base, field_metadata.offset, field_metadata.tag,
             field_metadata.has_offset, output);
         break;
       default:
@@ -664,6 +665,7 @@ uint8* SerializeInternalToArray(const uint8* base,
                                 uint8* buffer) {
   ArrayOutput array_output = {buffer, is_deterministic};
   ArrayOutput* output = &array_output;
+  SpecialSerializer func = nullptr;
   for (int i = 0; i < num_fields; i++) {
     const FieldMetadata& field_metadata = field_metadata_table[i];
     const uint8* ptr = base + field_metadata.offset;
@@ -692,9 +694,9 @@ uint8* SerializeInternalToArray(const uint8* base,
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
         io::CodedOutputStream output(&array_stream);
         output.SetSerializationDeterministic(is_deterministic);
-        reinterpret_cast<SpecialSerializer>(
-            const_cast<void*>(field_metadata.ptr))(
-            base, field_metadata.offset, field_metadata.tag,
+		func =  reinterpret_cast<SpecialSerializer>(
+            const_cast<void*>(field_metadata.ptr));
+		func (base, field_metadata.offset, field_metadata.tag,
             field_metadata.has_offset, &output);
         array_output.ptr += output.ByteCount();
       } break;
