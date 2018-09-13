@@ -422,36 +422,6 @@ class DescriptorTest(unittest.TestCase):
     # Generated modules also belong to the default pool.
     self.assertEqual(unittest_pb2.DESCRIPTOR.pool, descriptor_pool.Default())
 
-  @unittest.skipIf(
-      api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
-      'Immutability of descriptors is only enforced in v2 implementation')
-  def testImmutableCppDescriptor(self):
-    file_descriptor = unittest_pb2.DESCRIPTOR
-    message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
-    field_descriptor = message_descriptor.fields_by_name['optional_int32']
-    enum_descriptor = message_descriptor.enum_types_by_name['NestedEnum']
-    oneof_descriptor = message_descriptor.oneofs_by_name['oneof_field']
-    with self.assertRaises(AttributeError):
-      message_descriptor.fields_by_name = None
-    with self.assertRaises(TypeError):
-      message_descriptor.fields_by_name['Another'] = None
-    with self.assertRaises(TypeError):
-      message_descriptor.fields.append(None)
-    with self.assertRaises(AttributeError):
-      field_descriptor.containing_type = message_descriptor
-    with self.assertRaises(AttributeError):
-      file_descriptor.has_options = False
-    with self.assertRaises(AttributeError):
-      field_descriptor.has_options = False
-    with self.assertRaises(AttributeError):
-      oneof_descriptor.has_options = False
-    with self.assertRaises(AttributeError):
-      enum_descriptor.has_options = False
-    with self.assertRaises(AttributeError) as e:
-      message_descriptor.has_options = True
-    self.assertEqual('attribute is not writable: has_options',
-                     str(e.exception))
-
   def testDefault(self):
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
     field = message_descriptor.fields_by_name['repeated_int32']
@@ -970,9 +940,6 @@ class MakeDescriptorTest(unittest.TestCase):
                      result.nested_types[0].enum_types[0])
     self.assertFalse(result.has_options)
     self.assertFalse(result.fields[0].has_options)
-    if api_implementation.Type() == 'cpp':
-      with self.assertRaises(AttributeError):
-        result.fields[0].has_options = False
 
   def testMakeDescriptorWithUnsignedIntField(self):
     file_descriptor_proto = descriptor_pb2.FileDescriptorProto()

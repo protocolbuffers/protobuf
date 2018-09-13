@@ -284,7 +284,6 @@ class Descriptor(_NestedDescriptorBase):
                 is_extendable=True, extension_ranges=None, oneofs=None,
                 file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
                 syntax=None):
-      _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
   # NOTE(tmarek): The file argument redefining a builtin is nothing we can
@@ -527,7 +526,6 @@ class FieldDescriptor(DescriptorBase):
                 serialized_options=None,
                 has_default_value=True, containing_oneof=None, json_name=None,
                 file=None):  # pylint: disable=redefined-builtin
-      _message.Message._CheckCalledFromGeneratedFile()
       if is_extension:
         return _message.default_pool.FindExtensionByName(full_name)
       else:
@@ -636,7 +634,6 @@ class EnumDescriptor(_NestedDescriptorBase):
                 containing_type=None, options=None,
                 serialized_options=None, file=None,  # pylint: disable=redefined-builtin
                 serialized_start=None, serialized_end=None):
-      _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindEnumTypeByName(full_name)
 
   def __init__(self, name, full_name, filename, values,
@@ -690,7 +687,6 @@ class EnumValueDescriptor(DescriptorBase):
     def __new__(cls, name, index, number,
                 type=None,  # pylint: disable=redefined-builtin
                 options=None, serialized_options=None):
-      _message.Message._CheckCalledFromGeneratedFile()
       # There is no way we can build a complete EnumValueDescriptor with the
       # given parameters (the name of the Enum is not known, for example).
       # Fortunately generated files just pass it to the EnumDescriptor()
@@ -729,7 +725,6 @@ class OneofDescriptor(DescriptorBase):
     def __new__(
         cls, name, full_name, index, containing_type, fields, options=None,
         serialized_options=None):
-      _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindOneofByName(full_name)
 
   def __init__(
@@ -769,7 +764,6 @@ class ServiceDescriptor(_NestedDescriptorBase):
     def __new__(cls, name, full_name, index, methods, options=None,
                 serialized_options=None, file=None,  # pylint: disable=redefined-builtin
                 serialized_start=None, serialized_end=None):
-      _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindServiceByName(full_name)
 
   def __init__(self, name, full_name, index, methods, options=None,
@@ -820,7 +814,6 @@ class MethodDescriptor(DescriptorBase):
 
     def __new__(cls, name, full_name, index, containing_service,
                 input_type, output_type, options=None, serialized_options=None):
-      _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindMethodByName(full_name)
 
   def __init__(self, name, full_name, index, containing_service,

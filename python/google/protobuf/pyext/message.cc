@@ -2664,18 +2664,6 @@ PyObject* SetState(CMessage* self, PyObject* state) {
   Py_RETURN_NONE;
 }
 
-// CMessage static methods:
-PyObject* _CheckCalledFromGeneratedFile(PyObject* unused,
-                                        PyObject* unused_arg) {
-  if (!_CalledFromGeneratedFile(1)) {
-    PyErr_SetString(PyExc_TypeError,
-                    "Descriptors should not be created directly, "
-                    "but only retrieved from their parent.");
-    return NULL;
-  }
-  Py_RETURN_NONE;
-}
-
 static PyObject* GetExtensionDict(CMessage* self, void *closure) {
   // If there are extension_ranges, the message is "extendable". Allocate a
   // dictionary to store the extension fields.
@@ -2775,11 +2763,6 @@ static PyMethodDef Methods[] = {
   { "WhichOneof", (PyCFunction)WhichOneof, METH_O,
     "Returns the name of the field set inside a oneof, "
     "or None if no field is set." },
-
-  // Static Methods.
-  { "_CheckCalledFromGeneratedFile", (PyCFunction)_CheckCalledFromGeneratedFile,
-    METH_NOARGS | METH_STATIC,
-    "Raises TypeError if the caller is not in a _pb2.py file."},
   { NULL, NULL}
 };
 

@@ -275,13 +275,7 @@ static PyObject* Subscript(PyContainer* self, PyObject* key) {
 }
 
 static int AssSubscript(PyContainer* self, PyObject* key, PyObject* value) {
-  if (_CalledFromGeneratedFile(0)) {
-    return 0;
-  }
-  PyErr_Format(PyExc_TypeError,
-               "'%.200s' object does not support item assignment",
-               Py_TYPE(self)->tp_name);
-  return -1;
+  return 0;
 }
 
 static PyMappingMethods MappingMappingMethods = {
@@ -700,13 +694,7 @@ static PyObject* Count(PyContainer* self, PyObject* item) {
 }
 
 static PyObject* Append(PyContainer* self, PyObject* args) {
-  if (_CalledFromGeneratedFile(0)) {
-    Py_RETURN_NONE;
-  }
-  PyErr_Format(PyExc_TypeError,
-               "'%.200s' object is not a mutable sequence",
-               Py_TYPE(self)->tp_name);
-  return NULL;
+  Py_RETURN_NONE;
 }
 
 static PyObject* Reversed(PyContainer* self, PyObject* args) {
