@@ -6,6 +6,14 @@
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <IsPackable>False</IsPackable>
+    <OutputType>Exe</OutputType>
+    <!-- 
+      - Microsoft.NET.Test.Sdk checks <GenerateProgramFile> to decide whether or not to 
+      - add an entrypoint during the build. We disable the addition of an entrypoint
+      - because Google.Protobuf.Test.csproj has <OutputType> set to Exe, which already
+      - adds an entrypoint; two entrypoints would result in a build error.
+      -->
+    <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,9 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" Condition=" '$(TargetFramework)' != 'net35' " />
     <PackageReference Include="NUnit" Version="3.9.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
+    <PackageReference Include="NUnitLite" Version="3.9.0" />
   </ItemGroup>
 
   <!-- 

@@ -71,6 +71,9 @@ target frameworks, noting that the `TargetFrameworks` element appears twice in
 the file (once in the first `PropertyGroup` element, and again in the second 
 `PropertyGroup` element, i.e., the one with the conditional).
 
+`dotnet test` is unable to run unit tests under .NET 3.5, but after building 
+Google.Protobuf.Test.csproj you can run the tests by running Google.Protobuf.Test.exe.
+
 History of C# protobufs
 =======================
 
