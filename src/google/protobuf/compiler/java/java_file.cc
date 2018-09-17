@@ -172,7 +172,8 @@ void MaybeRestartJavaMethod(io::Printer* printer,
 
   if ((*bytecode_estimate) > bytesPerMethod) {
     ++(*method_num);
-    printer->Print(chain_statement, "method_num", SimpleItoa(*method_num));
+    printer->Print(chain_statement, "method_num",
+                   SimpleItoa(*method_num));
     printer->Outdent();
     printer->Print("}\n");
     printer->Print(method_decl, "method_num", SimpleItoa(*method_num));
@@ -231,7 +232,9 @@ bool FileGenerator::Validate(string* error) {
         << "will be ignored by protoc in the future and protoc will always "
         << "generate full runtime code for Java. To use Java Lite runtime, "
         << "users should use the Java Lite plugin instead. See:\n"
-        << "  https://github.com/google/protobuf/blob/master/java/lite.md";
+        << "  "
+           "https://github.com/protocolbuffers/protobuf/blob/master/java/"
+           "lite.md";
   }
   return true;
 }
@@ -545,11 +548,13 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
             "      $scope$.getExtensions().get($index$),\n"
             "      (com.google.protobuf.Message) defaultExtensionInstance);\n"
             "}\n",
-            "scope", scope, "index", SimpleItoa(field->index()), "class",
+            "scope", scope, "index", SimpleItoa(field->index()),
+            "class",
             name_resolver_->GetImmutableClassName(field->message_type()));
       } else {
         printer->Print("registry.add($scope$.getExtensions().get($index$));\n",
-                       "scope", scope, "index", SimpleItoa(field->index()));
+                       "scope", scope, "index",
+                       SimpleItoa(field->index()));
       }
     }
     printer->Print(

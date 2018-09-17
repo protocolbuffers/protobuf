@@ -46,6 +46,8 @@
 #define GOOGLE_PROTOBUF_RELEASE(...)
 #endif
 
+#include <google/protobuf/port_def.inc>
+
 // ===================================================================
 // emulates google3/base/mutex.h
 namespace google {
@@ -57,7 +59,7 @@ namespace internal {
 // Mutex is a natural type to wrap. As both google and other organization have
 // specialized mutexes. gRPC also provides an injection mechanism for custom
 // mutexes.
-class LIBPROTOBUF_EXPORT WrappedMutex {
+class PROTOBUF_EXPORT WrappedMutex {
  public:
   WrappedMutex() = default;
   void Lock() GOOGLE_PROTOBUF_ACQUIRE() { mu_.lock(); }
@@ -73,7 +75,7 @@ class LIBPROTOBUF_EXPORT WrappedMutex {
 using Mutex = WrappedMutex;
 
 // MutexLock(mu) acquires mu when constructed and releases it when destroyed.
-class LIBPROTOBUF_EXPORT MutexLock {
+class PROTOBUF_EXPORT MutexLock {
  public:
   explicit MutexLock(Mutex *mu) : mu_(mu) { this->mu_->Lock(); }
   ~MutexLock() { this->mu_->Unlock(); }
@@ -86,12 +88,12 @@ class LIBPROTOBUF_EXPORT MutexLock {
 typedef MutexLock ReaderMutexLock;
 typedef MutexLock WriterMutexLock;
 
-// MutexLockMaybe is like MutexLock, but is a no-op when mu is NULL.
-class LIBPROTOBUF_EXPORT MutexLockMaybe {
+// MutexLockMaybe is like MutexLock, but is a no-op when mu is nullptr.
+class PROTOBUF_EXPORT MutexLockMaybe {
  public:
   explicit MutexLockMaybe(Mutex *mu) :
-    mu_(mu) { if (this->mu_ != NULL) { this->mu_->Lock(); } }
-  ~MutexLockMaybe() { if (this->mu_ != NULL) { this->mu_->Unlock(); } }
+    mu_(mu) { if (this->mu_ != nullptr) { this->mu_->Lock(); } }
+  ~MutexLockMaybe() { if (this->mu_ != nullptr) { this->mu_->Unlock(); } }
  private:
   Mutex *const mu_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLockMaybe);
@@ -109,7 +111,7 @@ class ThreadLocalStorage {
   }
   T* Get() {
     T* result = static_cast<T*>(pthread_getspecific(key_));
-    if (result == NULL) {
+    if (result == nullptr) {
       result = new T();
       pthread_setspecific(key_, result);
     }
@@ -140,5 +142,7 @@ using internal::MutexLockMaybe;
 
 #undef GOOGLE_PROTOBUF_ACQUIRE
 #undef GOOGLE_PROTOBUF_RELEASE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_MUTEX_H_

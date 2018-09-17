@@ -43,22 +43,24 @@
 
 namespace google {
 namespace protobuf {
-  class FileDescriptor;          // descriptor.h
-  namespace io {
-    class Printer;               // printer.h
-  }
-  namespace compiler {
-    class GeneratorContext;      // code_generator.h
-    namespace java {
-      class Context;             // context.h
-      class MessageGenerator;    // message.h
-      class GeneratorFactory;    // generator_factory.h
-      class ExtensionGenerator;  // extension.h
-      class ClassNameResolver;   // name_resolver.h
-    }
+class FileDescriptor;          // descriptor.h
+namespace io {
+  class Printer;               // printer.h
+}
+namespace compiler {
+  class GeneratorContext;      // code_generator.h
+  namespace java {
+    class Context;             // context.h
+    class MessageGenerator;    // message.h
+    class GeneratorFactory;    // generator_factory.h
+    class ExtensionGenerator;  // extension.h
+    class ClassNameResolver;   // name_resolver.h
   }
 }
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
@@ -72,20 +74,20 @@ class FileGenerator {
   // Checks for problems that would otherwise lead to cryptic compile errors.
   // Returns true if there are no problems, or writes an error description to
   // the given string and returns false otherwise.
-  bool Validate(string* error);
+  bool Validate(std::string* error);
 
   void Generate(io::Printer* printer);
 
   // If we aren't putting everything into one file, this will write all the
   // files other than the outer file (i.e. one for each message, enum, and
   // service type).
-  void GenerateSiblings(const string& package_dir,
+  void GenerateSiblings(const std::string& package_dir,
                         GeneratorContext* generator_context,
-                        std::vector<string>* file_list,
-                        std::vector<string>* annotation_list);
+                        std::vector<std::string>* file_list,
+                        std::vector<std::string>* annotation_list);
 
-  const string& java_package() { return java_package_; }
-  const string& classname()    { return classname_;    }
+  const std::string& java_package() { return java_package_; }
+  const std::string& classname() { return classname_; }
 
  private:
   void GenerateDescriptorInitializationCodeForImmutable(io::Printer* printer);
@@ -95,8 +97,8 @@ class FileGenerator {
                                bool immutable_api_);
 
   const FileDescriptor* file_;
-  string java_package_;
-  string classname_;
+  std::string java_package_;
+  std::string classname_;
 
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
@@ -112,6 +114,6 @@ class FileGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__

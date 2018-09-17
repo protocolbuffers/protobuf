@@ -44,23 +44,26 @@
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/compiler/scc.h>
 
 namespace google {
 namespace protobuf {
-  class FileDescriptor;        // descriptor.h
-  namespace io {
-    class Printer;             // printer.h
-  }
+class FileDescriptor;  // descriptor.h
+namespace io {
+class Printer;  // printer.h
 }
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-class EnumGenerator;           // enum.h
-class MessageGenerator;        // message.h
-class ServiceGenerator;        // service.h
-class ExtensionGenerator;      // extension.h
+class EnumGenerator;       // enum.h
+class MessageGenerator;    // message.h
+class ServiceGenerator;    // service.h
+class ExtensionGenerator;  // extension.h
 
 class FileGenerator {
  public:
@@ -71,14 +74,12 @@ class FileGenerator {
   // Shared code between the two header generators below.
   void GenerateHeader(io::Printer* printer);
 
-  // info_path, if non-empty, should be the path (relative to printer's output)
-  // to the metadata file describing this proto header.
-  void GenerateProtoHeader(io::Printer* printer,
-                           const string& info_path);
-  // info_path, if non-empty, should be the path (relative to printer's output)
-  // to the metadata file describing this PB header.
-  void GeneratePBHeader(io::Printer* printer,
-                        const string& info_path);
+  // info_path, if non-empty, should be the path (relative to printer's
+  // output) to the metadata file describing this proto header.
+  void GenerateProtoHeader(io::Printer* printer, const std::string& info_path);
+  // info_path, if non-empty, should be the path (relative to printer's
+  // output) to the metadata file describing this PB header.
+  void GeneratePBHeader(io::Printer* printer, const std::string& info_path);
   void GenerateSource(io::Printer* printer);
 
   int NumMessages() const { return message_generators_.size(); }
@@ -90,6 +91,20 @@ class FileGenerator {
   // Internal type used by GenerateForwardDeclarations (defined in file.cc).
   class ForwardDeclarations;
 
+  void IncludeFile(const std::string& google3_name, io::Printer* printer) {
+    DoIncludeFile(google3_name, false, printer);
+  }
+  void IncludeFileAndExport(const std::string& google3_name, io::Printer* printer) {
+    DoIncludeFile(google3_name, true, printer);
+  }
+  void DoIncludeFile(const std::string& google3_name, bool do_export,
+                     io::Printer* printer);
+
+  std::string CreateHeaderInclude(const std::string& basename,
+                             const FileDescriptor* file);
+  void GenerateInternalForwardDeclarations(
+      const std::vector<const FieldDescriptor*>& fields, const Options& options,
+      MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
   void GenerateSourceIncludes(io::Printer* printer);
   void GenerateSourceDefaultInstance(int idx, io::Printer* printer);
 
@@ -100,16 +115,11 @@ class FileGenerator {
   // For other imports, generates their forward-declarations.
   void GenerateForwardDeclarations(io::Printer* printer);
 
-  // Internal helper used by GenerateForwardDeclarations: fills 'decls'
-  // with all necessary forward-declarations for this file and its
-  // transient depednencies.
-  void FillForwardDeclarations(ForwardDeclarations* decls);
-
   // Generates top or bottom of a header file.
   void GenerateTopHeaderGuard(io::Printer* printer,
-                              const string& filename_identifier);
+                              const std::string& filename_identifier);
   void GenerateBottomHeaderGuard(io::Printer* printer,
-                                 const string& filename_identifier);
+                                 const std::string& filename_identifier);
 
   // Generates #include directives.
   void GenerateLibraryIncludes(io::Printer* printer);
@@ -117,7 +127,7 @@ class FileGenerator {
 
   // Generate a pragma to pull in metadata using the given info_path (if
   // non-empty). info_path should be relative to printer's output.
-  void GenerateMetadataPragma(io::Printer* printer, const string& info_path);
+  void GenerateMetadataPragma(io::Printer* printer, const std::string& info_path);
 
   // Generates a couple of different pieces before definitions:
   void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);
@@ -138,13 +148,13 @@ class FileGenerator {
 
   void GenerateProto2NamespaceEnumSpecializations(io::Printer* printer);
 
-  // Sometimes the names we use in a .proto file happen to be defined as macros
-  // on some platforms (e.g., macro/minor used in plugin.proto are defined as
-  // macros in sys/types.h on FreeBSD and a few other platforms). To make the
-  // generated code compile on these platforms, we either have to undef the
-  // macro for these few platforms, or rename the field name for all platforms.
-  // Since these names are part of protobuf public API, renaming is generally
-  // a breaking change so we prefer the #undef approach.
+  // Sometimes the names we use in a .proto file happen to be defined as
+  // macros on some platforms (e.g., macro/minor used in plugin.proto are
+  // defined as macros in sys/types.h on FreeBSD and a few other platforms).
+  // To make the generated code compile on these platforms, we either have to
+  // undef the macro for these few platforms, or rename the field name for all
+  // platforms. Since these names are part of protobuf public API, renaming is
+  // generally a breaking change so we prefer the #undef approach.
   void GenerateMacroUndefs(io::Printer* printer);
 
   bool IsSCCRepresentative(const Descriptor* d) {
@@ -157,30 +167,29 @@ class FileGenerator {
     return scc_analyzer_.GetSCC(d);
   }
 
+  bool IsDepWeak(const FileDescriptor* dep) const {
+    if (weak_deps_.count(dep) != 0) {
+      GOOGLE_CHECK(!options_.opensource_runtime);
+      return true;
+    }
+    return false;
+  }
+
+  std::set<const FileDescriptor*> weak_deps_;
 
   const FileDescriptor* file_;
   const Options options_;
 
-  SCCAnalyzer scc_analyzer_;
+  MessageSCCAnalyzer scc_analyzer_;
 
+  std::map<std::string, std::string> variables_;
 
   // Contains the post-order walk of all the messages (and child messages) in
   // this file. If you need a pre-order walk just reverse iterate.
-  std::vector<MessageGenerator*> message_generators_;
-  std::vector<EnumGenerator*> enum_generators_;
-  std::vector<ServiceGenerator*> service_generators_;
-  std::vector<ExtensionGenerator*> extension_generators_;
-
-  // These members are just for owning (and thus proper deleting).
-  // Nested (enum/extension)_generators are owned by child messages.
-  std::unique_ptr<std::unique_ptr<EnumGenerator> []> enum_generators_owner_;
-  std::unique_ptr<std::unique_ptr<ServiceGenerator> []>
-      service_generators_owner_;
-  std::unique_ptr<std::unique_ptr<ExtensionGenerator> []>
-      extension_generators_owner_;
-
-  // E.g. if the package is foo.bar, package_parts_ is {"foo", "bar"}.
-  std::vector<string> package_parts_;
+  std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
+  std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
+  std::vector<std::unique_ptr<ServiceGenerator>> service_generators_;
+  std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };
@@ -188,6 +197,6 @@ class FileGenerator {
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_FILE_H__

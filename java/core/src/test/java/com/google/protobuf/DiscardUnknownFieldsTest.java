@@ -43,15 +43,13 @@ import org.junit.runners.JUnit4;
 public class DiscardUnknownFieldsTest {
   @Test
   public void testProto2() throws Exception {
+    testProto2Message(UnittestProto.TestEmptyMessage.getDefaultInstance());
+    testProto2Message(UnittestProto.TestEmptyMessageWithExtensions.getDefaultInstance());
     testProto2Message(
-          UnittestProto.TestEmptyMessage.getDefaultInstance());
+        DynamicMessage.getDefaultInstance(UnittestProto.TestEmptyMessage.getDescriptor()));
     testProto2Message(
-          UnittestProto.TestEmptyMessageWithExtensions.getDefaultInstance());
-    testProto2Message(
-          DynamicMessage.getDefaultInstance(UnittestProto.TestEmptyMessage.getDescriptor()));
-    testProto2Message(
-          DynamicMessage.getDefaultInstance(
-              UnittestProto.TestEmptyMessageWithExtensions.getDescriptor()));
+        DynamicMessage.getDefaultInstance(
+            UnittestProto.TestEmptyMessageWithExtensions.getDescriptor()));
   }
 
   @Test
@@ -62,22 +60,17 @@ public class DiscardUnknownFieldsTest {
   }
 
   private static void testProto2Message(Message message) throws Exception {
-    assertUnknownFieldsDefaultPreserved(message);
+    assertUnknownFieldsPreserved(message);
     assertUnknownFieldsExplicitlyDiscarded(message);
     assertReuseCodedInputStreamPreserve(message);
     assertUnknownFieldsInUnknownFieldSetArePreserve(message);
   }
 
   private static void testProto3Message(Message message) throws Exception {
-    CodedInputStream.setProto3KeepUnknownsByDefaultForTest();
-    assertUnknownFieldsDefaultPreserved(message);
+    assertUnknownFieldsPreserved(message);
     assertUnknownFieldsExplicitlyDiscarded(message);
     assertReuseCodedInputStreamPreserve(message);
     assertUnknownFieldsInUnknownFieldSetArePreserve(message);
-    CodedInputStream.setProto3DiscardUnknownsByDefaultForTest();
-    assertUnknownFieldsDefaultDiscarded(message);
-    assertUnknownFieldsExplicitlyDiscarded(message);
-    assertUnknownFieldsInUnknownFieldSetAreDiscarded(message);
   }
 
   private static void assertReuseCodedInputStreamPreserve(Message message) throws Exception {
@@ -86,18 +79,16 @@ public class DiscardUnknownFieldsTest {
     payload.copyTo(copied, 0);
     payload.copyTo(copied, messageSize);
     CodedInputStream input = CodedInputStream.newInstance(copied);
-    {
-      // Use DiscardUnknownFieldsParser to parse the first payload.
-      int oldLimit = input.pushLimit(messageSize);
-      Message parsed = DiscardUnknownFieldsParser.wrap(message.getParserForType()).parseFrom(input);
-      assertEquals(message.getClass().getName(), 0, parsed.getSerializedSize());
-      input.popLimit(oldLimit);
-    }
-    {
-      // Use the normal parser to parse the remaining payload should have unknown fields preserved.
-      Message parsed = message.getParserForType().parseFrom(input);
-      assertEquals(message.getClass().getName(), payload, parsed.toByteString());
-    }
+
+    // Use DiscardUnknownFieldsParser to parse the first payload.
+    int oldLimit = input.pushLimit(messageSize);
+    Message parsed = DiscardUnknownFieldsParser.wrap(message.getParserForType()).parseFrom(input);
+    assertEquals(message.getClass().getName(), 0, parsed.getSerializedSize());
+    input.popLimit(oldLimit);
+
+    // Use the normal parser to parse the remaining payload should have unknown fields preserved.
+    parsed = message.getParserForType().parseFrom(input);
+    assertEquals(message.getClass().getName(), payload, parsed.toByteString());
   }
 
   /**
@@ -109,46 +100,18 @@ public class DiscardUnknownFieldsTest {
     UnknownFieldSet unknownFields = UnknownFieldSet.newBuilder().mergeFrom(payload).build();
     Message built = message.newBuilderForType().setUnknownFields(unknownFields).build();
     assertEquals(message.getClass().getName(), payload, built.toByteString());
-
-  }
-  /**
-   * {@link Message.Builder#setUnknownFields(UnknownFieldSet)} and {@link
-   * Message.Builder#mergeUnknownFields(UnknownFieldSet)} should discard the unknown fields.
-   */
-  private static void assertUnknownFieldsInUnknownFieldSetAreDiscarded(Message message)
-      throws Exception {
-    UnknownFieldSet unknownFields = UnknownFieldSet.newBuilder().mergeFrom(payload).build();
-    Message built = message.newBuilderForType().setUnknownFields(unknownFields).build();
-    assertEquals(message.getClass().getName(), 0, built.getSerializedSize());
   }
 
-  private static void assertUnknownFieldsDefaultPreserved(MessageLite message) throws Exception {
-    {
-      MessageLite parsed = message.getParserForType().parseFrom(payload);
-      assertEquals(message.getClass().getName(), payload, parsed.toByteString());
-    }
+  private static void assertUnknownFieldsPreserved(MessageLite message) throws Exception {
+    MessageLite parsed = message.getParserForType().parseFrom(payload);
+    assertEquals(message.getClass().getName(), payload, parsed.toByteString());
 
-    {
-      MessageLite parsed = message.newBuilderForType().mergeFrom(payload).build();
-      assertEquals(message.getClass().getName(), payload, parsed.toByteString());
-    }
-  }
-
-  private static void assertUnknownFieldsDefaultDiscarded(MessageLite message) throws Exception {
-    {
-      MessageLite parsed = message.getParserForType().parseFrom(payload);
-      assertEquals(message.getClass().getName(), 0, parsed.getSerializedSize());
-    }
-
-    {
-      MessageLite parsed = message.newBuilderForType().mergeFrom(payload).build();
-      assertEquals(message.getClass().getName(), 0, parsed.getSerializedSize());
-    }
+    parsed = message.newBuilderForType().mergeFrom(payload).build();
+    assertEquals(message.getClass().getName(), payload, parsed.toByteString());
   }
 
   private static void assertUnknownFieldsExplicitlyDiscarded(Message message) throws Exception {
-    Message parsed =
-        DiscardUnknownFieldsParser.wrap(message.getParserForType()).parseFrom(payload);
+    Message parsed = DiscardUnknownFieldsParser.wrap(message.getParserForType()).parseFrom(payload);
     assertEquals(message.getClass().getName(), 0, parsed.getSerializedSize());
   }
 

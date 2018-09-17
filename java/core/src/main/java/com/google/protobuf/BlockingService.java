@@ -37,28 +37,21 @@ package com.google.protobuf;
  * @author cpovirk@google.com Chris Povirk
  */
 public interface BlockingService {
-  /**
-   * Equivalent to {@link Service#getDescriptorForType}.
-   */
+  /** Equivalent to {@link Service#getDescriptorForType}. */
   Descriptors.ServiceDescriptor getDescriptorForType();
 
   /**
-   * Equivalent to {@link Service#callMethod}, except that
-   * {@code callBlockingMethod()} returns the result of the RPC or throws a
-   * {@link ServiceException} if there is a failure, rather than passing the
-   * information to a callback.
+   * Equivalent to {@link Service#callMethod}, except that {@code callBlockingMethod()} returns the
+   * result of the RPC or throws a {@link ServiceException} if there is a failure, rather than
+   * passing the information to a callback.
    */
-  Message callBlockingMethod(Descriptors.MethodDescriptor method,
-                             RpcController controller,
-                             Message request) throws ServiceException;
+  Message callBlockingMethod(
+      Descriptors.MethodDescriptor method, RpcController controller, Message request)
+      throws ServiceException;
 
-  /**
-   * Equivalent to {@link Service#getRequestPrototype}.
-   */
+  /** Equivalent to {@link Service#getRequestPrototype}. */
   Message getRequestPrototype(Descriptors.MethodDescriptor method);
 
-  /**
-   * Equivalent to {@link Service#getResponsePrototype}.
-   */
+  /** Equivalent to {@link Service#getResponsePrototype}. */
   Message getResponsePrototype(Descriptors.MethodDescriptor method);
 }

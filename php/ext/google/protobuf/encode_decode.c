@@ -577,7 +577,7 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
       break;
     case UPB_TYPE_MESSAGE:
       *(zend_object**)to = Z_OBJ_P(*(zval**)from);
-      ++GC_REFCOUNT(*(zend_object**)to);
+      GC_ADDREF(*(zend_object**)to);
       break;
 #endif
     default:

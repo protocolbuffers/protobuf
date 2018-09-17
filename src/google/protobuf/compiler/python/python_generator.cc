@@ -45,7 +45,6 @@
 // directly.
 
 #include <algorithm>
-#include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <map>
 #include <memory>
@@ -73,11 +72,6 @@ namespace python {
 
 namespace {
 
-// Reimplemented here because we can't bring in
-// absl/strings/string_view_utils.h because it needs C++11.
-bool StrStartsWith(StringPiece sp, StringPiece x) {
-  return sp.size() >= x.size() && sp.substr(0, x.size()) == x;
-}
 bool StrEndsWith(StringPiece sp, StringPiece x) {
   return sp.size() >= x.size() && sp.substr(sp.size() - x.size()) == x;
 }
@@ -103,7 +97,7 @@ string ModuleName(const string& filename) {
 
 // Returns the alias we assign to the module of the given .proto filename
 // when importing. See testPackageInitializationImport in
-// google/protobuf/python/reflection_test.py
+// net/proto2/python/internal/reflection_test.py
 // to see why we need the alias.
 string ModuleAlias(const string& filename) {
   string module_name = ModuleName(filename);
@@ -424,7 +418,7 @@ void Generator::PrintFileDescriptor() const {
   printer_->Print(m, file_descriptor_template);
   printer_->Indent();
   printer_->Print(
-//##!PY25      "serialized_pb=b'$value$'\n",
+      //##!PY25      "serialized_pb=b'$value$'\n",
       "serialized_pb=_b('$value$')\n",  //##PY25
       "value", strings::CHexEscape(file_descriptor_serialized_));
   if (file_->dependency_count() != 0) {
@@ -476,9 +470,9 @@ void Generator::PrintTopLevelEnums() const {
   }
 
   for (int i = 0; i < top_level_enum_values.size(); ++i) {
-    printer_->Print("$name$ = $value$\n",
-                    "name", top_level_enum_values[i].first,
-                    "value", SimpleItoa(top_level_enum_values[i].second));
+    printer_->Print("$name$ = $value$\n", "name",
+                    top_level_enum_values[i].first, "value",
+                    SimpleItoa(top_level_enum_values[i].second));
   }
   printer_->Print("\n");
 }
@@ -550,9 +544,9 @@ void Generator::PrintTopLevelExtensions() const {
     const FieldDescriptor& extension_field = *file_->extension(i);
     string constant_name = extension_field.name() + "_FIELD_NUMBER";
     UpperString(&constant_name);
-    printer_->Print("$constant_name$ = $number$\n",
-      "constant_name", constant_name,
-      "number", SimpleItoa(extension_field.number()));
+    printer_->Print("$constant_name$ = $number$\n", "constant_name",
+                    constant_name, "number",
+                    SimpleItoa(extension_field.number()));
     printer_->Print("$name$ = ", "name", extension_field.name());
     PrintFieldDescriptor(extension_field, is_extension);
     printer_->Print("\n");
@@ -745,9 +739,9 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
   for (int i = 0; i < message_descriptor.extension_range_count(); ++i) {
     const Descriptor::ExtensionRange* range =
         message_descriptor.extension_range(i);
-    printer_->Print("($start$, $end$), ",
-                    "start", SimpleItoa(range->start),
-                    "end", SimpleItoa(range->end));
+    printer_->Print("($start$, $end$), ", "start",
+                    SimpleItoa(range->start), "end",
+                    SimpleItoa(range->end));
   }
   printer_->Print("],\n");
   printer_->Print("oneofs=[\n");
@@ -1184,7 +1178,8 @@ void Generator::PrintExtensionsInDescriptor(
 }
 
 bool Generator::GeneratingDescriptorProto() const {
-  return file_->name() == "google/protobuf/descriptor.proto";
+  return file_->name() == "net/proto2/proto/descriptor.proto" ||
+         file_->name() == "google/protobuf/descriptor.proto";
 }
 
 // Returns the unique Python module-level identifier given to a descriptor.
@@ -1260,10 +1255,11 @@ void Generator::PrintSerializedPbInterval(
   int offset = file_descriptor_serialized_.find(sp);
   GOOGLE_CHECK_GE(offset, 0);
 
-  printer_->Print("serialized_start=$serialized_start$,\n"
-                  "serialized_end=$serialized_end$,\n",
-                  "serialized_start", SimpleItoa(offset),
-                  "serialized_end", SimpleItoa(offset + sp.size()));
+  printer_->Print(
+      "serialized_start=$serialized_start$,\n"
+      "serialized_end=$serialized_end$,\n",
+      "serialized_start", SimpleItoa(offset), "serialized_end",
+      SimpleItoa(offset + sp.size()));
 }
 
 namespace {

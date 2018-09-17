@@ -14,7 +14,7 @@ set -e
 phpize && ./configure CFLAGS='-g -O0' && make
 popd
 
-tests=( array_test.php encode_decode_test.php generated_class_test.php generated_phpdoc_test.php map_field_test.php well_known_test.php generated_service_test.php descriptors_test.php )
+tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php )
 
 for t in "${tests[@]}"
 do

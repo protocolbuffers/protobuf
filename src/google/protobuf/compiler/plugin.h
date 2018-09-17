@@ -64,7 +64,8 @@
 
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -74,17 +75,20 @@ class CodeGeneratorRequest;
 class CodeGeneratorResponse;
 
 // Implements main() for a protoc plugin exposing the given code generator.
-LIBPROTOC_EXPORT int PluginMain(int argc, char* argv[], const CodeGenerator* generator);
+PROTOC_EXPORT int PluginMain(int argc, char* argv[],
+                             const CodeGenerator* generator);
 
 // Generates code using the given code generator. Returns true if the code
 // generation is successful. If the code geneartion fails, error_msg may be
 // populated to describe the failure cause.
 bool GenerateCode(const CodeGeneratorRequest& request,
     const CodeGenerator& generator, CodeGeneratorResponse* response,
-    string* error_msg);
+    std::string* error_msg);
 
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_PLUGIN_H__

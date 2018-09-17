@@ -84,13 +84,13 @@ void ImmutableServiceGenerator::Generate(io::Printer* printer) {
 
   // Generate getDescriptor() and getDescriptorForType().
   printer->Print(
-    "public static final\n"
-    "    com.google.protobuf.Descriptors.ServiceDescriptor\n"
-    "    getDescriptor() {\n"
-    "  return $file$.getDescriptor().getServices().get($index$);\n"
-    "}\n",
-    "file", name_resolver_->GetImmutableClassName(descriptor_->file()),
-    "index", SimpleItoa(descriptor_->index()));
+      "public static final\n"
+      "    com.google.protobuf.Descriptors.ServiceDescriptor\n"
+      "    getDescriptor() {\n"
+      "  return $file$.getDescriptor().getServices().get($index$);\n"
+      "}\n",
+      "file", name_resolver_->GetImmutableClassName(descriptor_->file()),
+      "index", SimpleItoa(descriptor_->index()));
   GenerateGetDescriptorForType(printer);
 
   // Generate more stuff.

@@ -37,6 +37,7 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/strutil.h>
+
 #include <google/protobuf/stubs/status.h>
 
 namespace google {
@@ -179,9 +180,10 @@ class DescriptorPoolTypeResolver : public TypeResolver {
 
   Status ParseTypeUrl(const string& type_url, string* type_name) {
     if (type_url.substr(0, url_prefix_.size() + 1) != url_prefix_ + "/") {
-      return Status(INVALID_ARGUMENT,
-                    StrCat("Invalid type URL, type URLs must be of the form '",
-                           url_prefix_, "/<typename>', got: ", type_url));
+      return Status(
+          INVALID_ARGUMENT,
+          StrCat("Invalid type URL, type URLs must be of the form '",
+                       url_prefix_, "/<typename>', got: ", type_url));
     }
     *type_name = type_url.substr(url_prefix_.size() + 1);
     return Status();

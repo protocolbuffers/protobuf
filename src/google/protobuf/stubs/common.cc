@@ -30,7 +30,6 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/message_lite.h>  // TODO(gerbens) ideally remove this.
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status.h>
@@ -54,6 +53,8 @@
 #if defined(__ANDROID__)
 #include <android/log.h>
 #endif
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -176,12 +177,12 @@ void NullLogHandler(LogLevel /* level */, const char* /* filename */,
 static LogHandler* log_handler_ = &DefaultLogHandler;
 static int log_silencer_count_ = 0;
 
-static Mutex* log_silencer_count_mutex_ = NULL;
+static Mutex* log_silencer_count_mutex_ = nullptr;
 GOOGLE_PROTOBUF_DECLARE_ONCE(log_silencer_count_init_);
 
 void DeleteLogSilencerCount() {
   delete log_silencer_count_mutex_;
-  log_silencer_count_mutex_ = NULL;
+  log_silencer_count_mutex_ = nullptr;
 }
 void InitLogSilencerCount() {
   log_silencer_count_mutex_ = new Mutex;
@@ -243,8 +244,8 @@ DECLARE_STREAM_OPERATOR(long         , "%ld")
 DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
 DECLARE_STREAM_OPERATOR(double       , "%g" )
 DECLARE_STREAM_OPERATOR(void*        , "%p" )
-DECLARE_STREAM_OPERATOR(long long         , "%" GOOGLE_LL_FORMAT "d")
-DECLARE_STREAM_OPERATOR(unsigned long long, "%" GOOGLE_LL_FORMAT "u")
+DECLARE_STREAM_OPERATOR(long long         , "%" PROTOBUF_LL_FORMAT "d")
+DECLARE_STREAM_OPERATOR(unsigned long long, "%" PROTOBUF_LL_FORMAT "u")
 #undef DECLARE_STREAM_OPERATOR
 
 LogMessage::LogMessage(LogLevel level, const char* filename, int line)
@@ -282,9 +283,9 @@ void LogFinisher::operator=(LogMessage& other) {
 LogHandler* SetLogHandler(LogHandler* new_func) {
   LogHandler* old = internal::log_handler_;
   if (old == &internal::NullLogHandler) {
-    old = NULL;
+    old = nullptr;
   }
-  if (new_func == NULL) {
+  if (new_func == nullptr) {
     internal::log_handler_ = &internal::NullLogHandler;
   } else {
     internal::log_handler_ = new_func;

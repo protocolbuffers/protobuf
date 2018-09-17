@@ -45,17 +45,19 @@
 
 namespace google {
 namespace protobuf {
-  namespace compiler {
-    namespace java {
-      class Context;                // context.h
-      class ClassNameResolver;      // name_resolver.h
-    }
-  }
-  namespace io {
-    class Printer;                  // printer.h
-  }
+namespace compiler {
+namespace java {
+class Context;            // context.h
+class ClassNameResolver;  // name_resolver.h
+}  // namespace java
+}  // namespace compiler
+namespace io {
+class Printer;  // printer.h
 }
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
@@ -79,13 +81,13 @@ class ImmutableFieldGenerator {
   virtual void GenerateParsingDoneCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
-  virtual void GenerateFieldBuilderInitializationCode(io::Printer* printer)
-      const = 0;
+  virtual void GenerateFieldBuilderInitializationCode(
+      io::Printer* printer) const = 0;
 
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
 
-  virtual string GetBoxedType() const = 0;
+  virtual std::string GetBoxedType() const = 0;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableFieldGenerator);
@@ -97,7 +99,6 @@ class ImmutableFieldLiteGenerator {
   virtual ~ImmutableFieldLiteGenerator();
 
   virtual int GetNumBitsForMessage() const = 0;
-  virtual int GetNumBitsForBuilder() const = 0;
   virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
   virtual void GenerateMembers(io::Printer* printer) const = 0;
   virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
@@ -117,7 +118,7 @@ class ImmutableFieldLiteGenerator {
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
 
 
-  virtual string GetBoxedType() const = 0;
+  virtual std::string GetBoxedType() const = 0;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableFieldLiteGenerator);
@@ -170,34 +171,34 @@ FieldGeneratorMap<ImmutableFieldLiteGenerator>::~FieldGeneratorMap();
 
 // Field information used in FieldGeneartors.
 struct FieldGeneratorInfo {
-  string name;
-  string capitalized_name;
-  string disambiguated_reason;
+  std::string name;
+  std::string capitalized_name;
+  std::string disambiguated_reason;
 };
 
 // Oneof information used in OneofFieldGenerators.
 struct OneofGeneratorInfo {
-  string name;
-  string capitalized_name;
+  std::string name;
+  std::string capitalized_name;
 };
 
 // Set some common variables used in variable FieldGenerators.
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              const FieldGeneratorInfo* info,
-                             std::map<string, string>* variables);
+                             std::map<std::string, std::string>* variables);
 
 // Set some common oneof variables used in OneofFieldGenerators.
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,
                              const OneofGeneratorInfo* info,
-                             std::map<string, string>* variables);
+                             std::map<std::string, std::string>* variables);
 
 // Print useful comments before a field's accessors.
-void PrintExtraFieldInfo(const std::map<string, string>& variables,
+void PrintExtraFieldInfo(const std::map<std::string, std::string>& variables,
                          io::Printer* printer);
 
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_H__

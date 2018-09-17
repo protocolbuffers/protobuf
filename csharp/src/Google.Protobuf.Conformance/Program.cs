@@ -87,6 +87,9 @@ namespace Google.Protobuf.Conformance
                 switch (request.PayloadCase)
                 {
                     case ConformanceRequest.PayloadOneofCase.JsonPayload:
+                        if (request.TestCategory == global::Conformance.TestCategory.JsonIgnoreUnknownParsingTest) {
+                            return new ConformanceResponse { Skipped = "CSharp doesn't support skipping unknown fields in json parsing." };
+                        }
                         var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
                         message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload);
                         break;

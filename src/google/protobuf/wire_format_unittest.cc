@@ -48,7 +48,10 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/stl_util.h>
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -59,17 +62,16 @@ TEST(WireFormatTest, EnumsInSync) {
   // Verify that WireFormatLite::FieldType and WireFormatLite::CppType match
   // FieldDescriptor::Type and FieldDescriptor::CppType.
 
-  EXPECT_EQ(implicit_cast<int>(FieldDescriptor::MAX_TYPE),
-            implicit_cast<int>(WireFormatLite::MAX_FIELD_TYPE));
-  EXPECT_EQ(implicit_cast<int>(FieldDescriptor::MAX_CPPTYPE),
-            implicit_cast<int>(WireFormatLite::MAX_CPPTYPE));
+  EXPECT_EQ(::google::protobuf::implicit_cast<int>(FieldDescriptor::MAX_TYPE),
+            ::google::protobuf::implicit_cast<int>(WireFormatLite::MAX_FIELD_TYPE));
+  EXPECT_EQ(::google::protobuf::implicit_cast<int>(FieldDescriptor::MAX_CPPTYPE),
+            ::google::protobuf::implicit_cast<int>(WireFormatLite::MAX_CPPTYPE));
 
   for (int i = 1; i <= WireFormatLite::MAX_FIELD_TYPE; i++) {
-    EXPECT_EQ(
-      implicit_cast<int>(FieldDescriptor::TypeToCppType(
-        static_cast<FieldDescriptor::Type>(i))),
-      implicit_cast<int>(WireFormatLite::FieldTypeToCppType(
-        static_cast<WireFormatLite::FieldType>(i))));
+    EXPECT_EQ(::google::protobuf::implicit_cast<int>(FieldDescriptor::TypeToCppType(
+                  static_cast<FieldDescriptor::Type>(i))),
+              ::google::protobuf::implicit_cast<int>(WireFormatLite::FieldTypeToCppType(
+                  static_cast<WireFormatLite::FieldType>(i))));
   }
 }
 
@@ -485,14 +487,15 @@ TEST(WireFormatTest, SerializeMessageSetVariousWaysAreEqual) {
 
   // Serialize to flat array
   {
-    uint8* target = reinterpret_cast<uint8*>(string_as_array(&flat_data));
+    uint8* target = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&flat_data));
     uint8* end = message_set.SerializeWithCachedSizesToArray(target);
     EXPECT_EQ(size, end - target);
   }
 
   // Serialize to buffer
   {
-    io::ArrayOutputStream array_stream(string_as_array(&stream_data), size, 1);
+    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&stream_data), size,
+                                       1);
     io::CodedOutputStream output_stream(&array_stream);
     message_set.SerializeWithCachedSizes(&output_stream);
     ASSERT_FALSE(output_stream.HadError());
@@ -664,8 +667,8 @@ TEST(WireFormatTest, UnknownFieldRecursionLimit) {
 
 TEST(WireFormatTest, ZigZag) {
 // avoid line-wrapping
-#define LL(x) GOOGLE_LONGLONG(x)
-#define ULL(x) GOOGLE_ULONGLONG(x)
+#define LL(x) PROTOBUF_LONGLONG(x)
+#define ULL(x) PROTOBUF_ULONGLONG(x)
 #define ZigZagEncode32(x) WireFormatLite::ZigZagEncode32(x)
 #define ZigZagDecode32(x) WireFormatLite::ZigZagDecode32(x)
 #define ZigZagEncode64(x) WireFormatLite::ZigZagEncode64(x)
@@ -745,8 +748,8 @@ TEST(WireFormatTest, RepeatedScalarsDifferentTagSizes) {
   }
 
   // Make sure that we have a variety of tag sizes.
-  const google::protobuf::Descriptor* desc = msg1.GetDescriptor();
-  const google::protobuf::FieldDescriptor* field;
+  const Descriptor* desc = msg1.GetDescriptor();
+  const FieldDescriptor* field;
   field = desc->FindFieldByName("repeated_fixed32");
   ASSERT_TRUE(field != NULL);
   ASSERT_EQ(1, WireFormat::TagSize(field->number(), field->type()));

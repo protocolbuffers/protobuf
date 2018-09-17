@@ -77,7 +77,7 @@ History of C# protobufs
 This subtree was originally imported from https://github.com/jskeet/protobuf-csharp-port
 and represents the latest development version of C# protobufs, that will now be developed
 and maintained by Google. All the development will be done in open, under this repository
-(https://github.com/google/protobuf).
+(https://github.com/protocolbuffers/protobuf).
 
 The previous project differs from this project in a number of ways:
 

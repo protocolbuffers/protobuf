@@ -31,9 +31,18 @@
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 
+#include <type_traits>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_entry_lite.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/wire_format_lite.h>
+
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -105,7 +114,7 @@ class MapFieldLite {
   Arena* arena_;
   Map<Key, T> map_;
 
-  friend class ::google::protobuf::Arena;
+  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
 };
 
 // True if IsInitialized() is true for value field in all elements of t. T is
@@ -138,6 +147,8 @@ struct MapEntryToMapField<MapEntryLite<T, Key, Value, kKeyFieldType,
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__

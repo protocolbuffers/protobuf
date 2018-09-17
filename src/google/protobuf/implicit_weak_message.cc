@@ -30,9 +30,14 @@
 
 #include <google/protobuf/implicit_weak_message.h>
 
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/wire_format_lite.h>
+
+#include <google/protobuf/port_def.inc>
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+#include <google/protobuf/parse_context.h>
+#endif
 
 namespace google {
 namespace protobuf {
@@ -44,17 +49,26 @@ bool ImplicitWeakMessage::MergePartialFromCodedStream(io::CodedInputStream* inpu
   return WireFormatLite::SkipMessage(input, &coded_stream);
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<ImplicitWeakMessage>
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+const char* ImplicitWeakMessage::_InternalParse(const char* begin,
+                                                const char* end, void* object,
+                                                ParseContext* ctx) {
+  return internal::StringParser(
+      begin, end, &(static_cast<ImplicitWeakMessage*>(object)->data_), ctx);
+}
+#endif
+
+ExplicitlyConstructed<ImplicitWeakMessage>
     implicit_weak_message_default_instance;
-GOOGLE_PROTOBUF_DECLARE_ONCE(implicit_weak_message_once_init_);
+internal::once_flag implicit_weak_message_once_init_;
 
 void InitImplicitWeakMessageDefaultInstance() {
   implicit_weak_message_default_instance.DefaultConstruct();
 }
 
 const ImplicitWeakMessage* ImplicitWeakMessage::default_instance() {
-  ::google::protobuf::GoogleOnceInit(&implicit_weak_message_once_init_,
-                 &InitImplicitWeakMessageDefaultInstance);
+  internal::call_once(implicit_weak_message_once_init_,
+                      InitImplicitWeakMessageDefaultInstance);
   return &implicit_weak_message_default_instance.get();
 }
 

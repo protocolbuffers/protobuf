@@ -31,6 +31,7 @@
 #include <google/protobuf/any_test.pb.h>
 #include <gtest/gtest.h>
 
+
 namespace google {
 namespace protobuf {
 namespace {
@@ -67,6 +68,28 @@ TEST(AnyTest, TestPackAndUnpackAny) {
   EXPECT_EQ(12345, submessage.int32_value());
 }
 
+TEST(AnyType, TestPackWithCustomTypeUrl) {
+  protobuf_unittest::TestAny submessage;
+  submessage.set_int32_value(12345);
+  google::protobuf::Any any;
+  // Pack with a custom type URL prefix.
+  any.PackFrom(submessage, "type.myservice.com");
+  EXPECT_EQ("type.myservice.com/" + submessage.GetDescriptor()->full_name(),
+            any.type_url());
+  // Pack with a custom type URL prefix ending with '/'.
+  any.PackFrom(submessage, "type.myservice.com/");
+  EXPECT_EQ("type.myservice.com/" + submessage.GetDescriptor()->full_name(),
+            any.type_url());
+  // Pack with an empty type URL prefix.
+  any.PackFrom(submessage, "");
+  EXPECT_EQ("/" + submessage.GetDescriptor()->full_name(), any.type_url());
+
+  // Test unpacking the type.
+  submessage.Clear();
+  EXPECT_TRUE(any.UnpackTo(&submessage));
+  EXPECT_EQ(12345, submessage.int32_value());
+}
+
 TEST(AnyTest, TestIs) {
   protobuf_unittest::TestAny submessage;
   submessage.set_int32_value(12345);
@@ -83,7 +106,39 @@ TEST(AnyTest, TestIs) {
   EXPECT_TRUE(message.any_value().Is<google::protobuf::Any>());
 }
 
+TEST(AnyTest, MoveConstructor) {
+  protobuf_unittest::TestAny payload;
+  payload.set_int32_value(12345);
+
+  google::protobuf::Any src;
+  src.PackFrom(payload);
+
+  const char* type_url = src.type_url().data();
+
+  google::protobuf::Any dst(std::move(src));
+  EXPECT_EQ(type_url, dst.type_url().data());
+  ASSERT_TRUE(dst.UnpackTo(&payload));
+  EXPECT_EQ(12345, payload.int32_value());
+}
+
+TEST(AnyTest, MoveAssignment) {
+  protobuf_unittest::TestAny payload;
+  payload.set_int32_value(12345);
+
+  google::protobuf::Any src;
+  src.PackFrom(payload);
+
+  const char* type_url = src.type_url().data();
+
+  google::protobuf::Any dst;
+  dst = std::move(src);
+  EXPECT_EQ(type_url, dst.type_url().data());
+  ASSERT_TRUE(dst.UnpackTo(&payload));
+  EXPECT_EQ(12345, payload.int32_value());
+}
+
+
 }  // namespace
 }  // namespace protobuf
-
 }  // namespace google
+

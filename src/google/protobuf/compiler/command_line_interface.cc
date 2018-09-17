@@ -84,6 +84,8 @@
 #include <google/protobuf/stubs/io_win32.h>
 
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -168,7 +170,9 @@ bool VerifyDirectoryExists(const string& path) {
 // directories listed in |filename|.
 bool TryCreateParentDirectory(const string& prefix, const string& filename) {
   // Recursively create parent directories to the output file.
-  std::vector<string> parts = Split(filename, "/", true);
+  // On Windows, both '/' and '\' are valid path separators.
+  std::vector<string> parts =
+      Split(filename, "/\\", true);
   string path_so_far = prefix;
   for (int i = 0; i < parts.size() - 1; i++) {
     path_so_far += parts[i];
@@ -395,7 +399,7 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
  private:
   friend class MemoryOutputStream;
 
-  // map instead of hash_map so that files are written in order (good when
+  // map instead of unordered_map so that files are written in order (good when
   // writing zips).
   std::map<string, string*> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
@@ -749,7 +753,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
       // Now copy in the data.
       string::size_type data_pos = 0;
-      char* target_ptr = string_as_array(target) + pos;
+      char* target_ptr = ::google::protobuf::string_as_array(target) + pos;
       while (data_pos < data_.size()) {
         // Copy indent.
         memcpy(target_ptr, indent_.data(), indent_.size());
@@ -766,7 +770,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
       }
 
       GOOGLE_CHECK_EQ(target_ptr,
-          string_as_array(target) + pos + data_.size() + indent_size);
+               ::google::protobuf::string_as_array(target) + pos + data_.size() + indent_size);
     }
   }
 }
@@ -988,6 +992,7 @@ bool CommandLineInterface::InitializeDiskSourceTree(
   if (!MakeInputsBeProtoPathRelative(source_tree)) {
     return false;
   }
+
   return true;
 }
 
@@ -1039,15 +1044,15 @@ bool CommandLineInterface::ParseInputFiles(
     std::vector<const FileDescriptor*>* parsed_files) {
 
   // Parse each file.
-  for (int i = 0; i < input_files_.size(); i++) {
+  for (const auto& input_file : input_files_) {
     // Import the file.
-    descriptor_pool->AddUnusedImportTrackFile(input_files_[i]);
+    descriptor_pool->AddUnusedImportTrackFile(input_file);
     const FileDescriptor* parsed_file =
-        descriptor_pool->FindFileByName(input_files_[i]);
+        descriptor_pool->FindFileByName(input_file);
     descriptor_pool->ClearUnusedImportTrackFiles();
     if (parsed_file == NULL) {
       if (!descriptor_set_in_names_.empty()) {
-        std::cerr << input_files_[i] << ": " << strerror(ENOENT) << std::endl;
+        std::cerr << input_file << ": " << strerror(ENOENT) << std::endl;
       }
       return false;
     }
@@ -1096,6 +1101,7 @@ void CommandLineInterface::Clear() {
   descriptor_set_out_name_.clear();
   dependency_out_name_.clear();
 
+
   mode_ = MODE_COMPILE;
   print_mode_ = PRINT_NONE;
   imports_in_descriptor_set_ = false;
@@ -1104,63 +1110,72 @@ void CommandLineInterface::Clear() {
   direct_dependencies_explicitly_set_ = false;
 }
 
-bool CommandLineInterface::MakeInputsBeProtoPathRelative(
-    DiskSourceTree* source_tree) {
-  for (int i = 0; i < input_files_.size(); i++) {
-    // If the input file path is not a physical file path, it must be a virtual
-    // path.
-    if (access(input_files_[i].c_str(), F_OK) < 0) {
+bool CommandLineInterface::MakeProtoProtoPathRelative(
+    DiskSourceTree* source_tree, string* proto) {
+  // If the input file path is not a physical file path, it must be a virtual
+  // path.
+  if (access(proto->c_str(), F_OK) < 0) {
+    string disk_file;
+    if (source_tree->VirtualFileToDiskFile(*proto, &disk_file)) {
+      return true;
+    } else {
+      std::cerr << *proto << ": " << strerror(ENOENT) << std::endl;
+      return false;
+    }
+  }
+  string virtual_file, shadowing_disk_file;
+  switch (source_tree->DiskFileToVirtualFile(
+      *proto, &virtual_file, &shadowing_disk_file)) {
+    case DiskSourceTree::SUCCESS:
+      *proto = virtual_file;
+      break;
+    case DiskSourceTree::SHADOWED:
+      std::cerr << *proto
+                << ": Input is shadowed in the --proto_path by \""
+                << shadowing_disk_file
+                << "\".  Either use the latter file as your input or reorder "
+                   "the --proto_path so that the former file's location "
+                   "comes first." << std::endl;
+      return false;
+    case DiskSourceTree::CANNOT_OPEN:
+      std::cerr << *proto << ": " << strerror(errno) << std::endl;
+      return false;
+    case DiskSourceTree::NO_MAPPING: {
+      // Try to interpret the path as a virtual path.
       string disk_file;
-      if (source_tree->VirtualFileToDiskFile(input_files_[i], &disk_file)) {
-        return true;
+      if (source_tree->VirtualFileToDiskFile(*proto, &disk_file)) {
+       return true;
       } else {
-        std::cerr << input_files_[i] << ": " << strerror(ENOENT) << std::endl;
+        // The input file path can't be mapped to any --proto_path and it also
+        // can't be interpreted as a virtual path.
+        std::cerr
+            << *proto
+            << ": File does not reside within any path "
+               "specified using --proto_path (or -I).  You must specify a "
+               "--proto_path which encompasses this file.  Note that the "
+               "proto_path must be an exact prefix of the .proto file "
+               "names -- protoc is too dumb to figure out when two paths "
+               "(e.g. absolute and relative) are equivalent (it's harder "
+               "than you think)."
+            << std::endl;
         return false;
       }
     }
-    string virtual_file, shadowing_disk_file;
-    switch (source_tree->DiskFileToVirtualFile(
-        input_files_[i], &virtual_file, &shadowing_disk_file)) {
-      case DiskSourceTree::SUCCESS:
-        input_files_[i] = virtual_file;
-        break;
-      case DiskSourceTree::SHADOWED:
-        std::cerr << input_files_[i]
-                  << ": Input is shadowed in the --proto_path by \""
-                  << shadowing_disk_file
-                  << "\".  Either use the latter file as your input or reorder "
-                     "the --proto_path so that the former file's location "
-                     "comes first." << std::endl;
-        return false;
-      case DiskSourceTree::CANNOT_OPEN:
-        std::cerr << input_files_[i] << ": " << strerror(errno) << std::endl;
-        return false;
-      case DiskSourceTree::NO_MAPPING: {
-        // Try to interpret the path as a virtual path.
-        string disk_file;
-        if (source_tree->VirtualFileToDiskFile(input_files_[i], &disk_file)) {
-          return true;
-        } else {
-          // The input file path can't be mapped to any --proto_path and it also
-          // can't be interpreted as a virtual path.
-          std::cerr
-              << input_files_[i]
-              << ": File does not reside within any path "
-                 "specified using --proto_path (or -I).  You must specify a "
-                 "--proto_path which encompasses this file.  Note that the "
-                 "proto_path must be an exact prefix of the .proto file "
-                 "names -- protoc is too dumb to figure out when two paths "
-                 "(e.g. absolute and relative) are equivalent (it's harder "
-                 "than you think)."
-              << std::endl;
-          return false;
-        }
-      }
+  }
+  return true;
+}
+
+bool CommandLineInterface::MakeInputsBeProtoPathRelative(
+    DiskSourceTree* source_tree) {
+  for (auto& input_file : input_files_) {
+    if (!MakeProtoProtoPathRelative(source_tree, &input_file)) {
+      return false;
     }
   }
 
   return true;
 }
+
 
 bool CommandLineInterface::ExpandArgumentFile(const string& file,
                                               std::vector<string>* arguments) {
@@ -1534,7 +1549,7 @@ CommandLineInterface::InterpretArgument(const string& name,
       std::cout << version_info_ << std::endl;
     }
     std::cout << "libprotoc "
-         << protobuf::internal::VersionString(GOOGLE_PROTOBUF_VERSION)
+         << protobuf::internal::VersionString(PROTOBUF_VERSION)
          << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
@@ -1920,10 +1935,10 @@ bool CommandLineInterface::GeneratePluginOutput(
 
   google::protobuf::compiler::Version* version =
       request.mutable_compiler_version();
-  version->set_major(GOOGLE_PROTOBUF_VERSION / 1000000);
-  version->set_minor(GOOGLE_PROTOBUF_VERSION / 1000 % 1000);
-  version->set_patch(GOOGLE_PROTOBUF_VERSION % 1000);
-  version->set_suffix(GOOGLE_PROTOBUF_VERSION_SUFFIX);
+  version->set_major(PROTOBUF_VERSION / 1000000);
+  version->set_minor(PROTOBUF_VERSION / 1000 % 1000);
+  version->set_patch(PROTOBUF_VERSION % 1000);
+  version->set_suffix(PROTOBUF_VERSION_SUFFIX);
 
   // Invoke the plugin.
   Subprocess subprocess;

@@ -39,9 +39,9 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-namespace google {
 using proto3_arena_unittest::TestAllTypes;
 
+namespace google {
 namespace protobuf {
 namespace {
 // We selectively set/check a few representative fields rather than all fields
@@ -126,30 +126,7 @@ TEST(Proto3ArenaTest, Parsing) {
   ExpectAllFieldsSet(*arena_message);
 }
 
-TEST(Proto3ArenaTest, UnknownFieldsDefaultDrop) {
-  ::google::protobuf::internal::SetProto3PreserveUnknownsDefault(false);
-  TestAllTypes original;
-  SetAllFields(&original);
-
-  Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
-  ExpectAllFieldsSet(*arena_message);
-
-  // In proto3 we can still get a pointer to the UnknownFieldSet through
-  // reflection API.
-  UnknownFieldSet* unknown_fields =
-      arena_message->GetReflection()->MutableUnknownFields(arena_message);
-  // We can modify this UnknownFieldSet.
-  unknown_fields->AddVarint(1, 2);
-  // But the change will never will serialized back.
-  ASSERT_EQ(original.ByteSize(), arena_message->ByteSize());
-  ASSERT_TRUE(
-      arena_message->GetReflection()->GetUnknownFields(*arena_message).empty());
-}
-
-TEST(Proto3ArenaTest, UnknownFieldsDefaultPreserve) {
-  ::google::protobuf::internal::SetProto3PreserveUnknownsDefault(true);
+TEST(Proto3ArenaTest, UnknownFields) {
   TestAllTypes original;
   SetAllFields(&original);
 
@@ -201,7 +178,7 @@ TEST(Proto3ArenaTest, ReleaseMessage) {
 }
 
 TEST(Proto3ArenaTest, MessageFieldClear) {
-  // GitHub issue #310: https://github.com/google/protobuf/issues/310
+  // GitHub issue #310: https://github.com/protocolbuffers/protobuf/issues/310
   Arena arena;
   TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);

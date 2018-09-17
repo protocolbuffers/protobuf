@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <cctype>
+
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/logging.h>
@@ -178,123 +180,6 @@ void Printer::Print(const std::map<string, string>& variables,
   WriteRaw(text + pos, size - pos);
 }
 
-void Printer::Print(const char* text) {
-  static std::map<string, string> empty;
-  Print(empty, text);
-}
-
-void Printer::Print(const char* text,
-                    const char* variable, const string& value) {
-  std::map<string, string> vars;
-  vars[variable] = value;
-  Print(vars, text);
-}
-
-void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2) {
-  std::map<string, string> vars;
-  vars[variable1] = value1;
-  vars[variable2] = value2;
-  Print(vars, text);
-}
-
-void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2,
-                    const char* variable3, const string& value3) {
-  std::map<string, string> vars;
-  vars[variable1] = value1;
-  vars[variable2] = value2;
-  vars[variable3] = value3;
-  Print(vars, text);
-}
-
-void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2,
-                    const char* variable3, const string& value3,
-                    const char* variable4, const string& value4) {
-  std::map<string, string> vars;
-  vars[variable1] = value1;
-  vars[variable2] = value2;
-  vars[variable3] = value3;
-  vars[variable4] = value4;
-  Print(vars, text);
-}
-
-void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2,
-                    const char* variable3, const string& value3,
-                    const char* variable4, const string& value4,
-                    const char* variable5, const string& value5) {
-  std::map<string, string> vars;
-  vars[variable1] = value1;
-  vars[variable2] = value2;
-  vars[variable3] = value3;
-  vars[variable4] = value4;
-  vars[variable5] = value5;
-  Print(vars, text);
-}
-
-void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2,
-                    const char* variable3, const string& value3,
-                    const char* variable4, const string& value4,
-                    const char* variable5, const string& value5,
-                    const char* variable6, const string& value6) {
-  std::map<string, string> vars;
-  vars[variable1] = value1;
-  vars[variable2] = value2;
-  vars[variable3] = value3;
-  vars[variable4] = value4;
-  vars[variable5] = value5;
-  vars[variable6] = value6;
-  Print(vars, text);
-}
-
-void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2,
-                    const char* variable3, const string& value3,
-                    const char* variable4, const string& value4,
-                    const char* variable5, const string& value5,
-                    const char* variable6, const string& value6,
-                    const char* variable7, const string& value7) {
-  std::map<string, string> vars;
-  vars[variable1] = value1;
-  vars[variable2] = value2;
-  vars[variable3] = value3;
-  vars[variable4] = value4;
-  vars[variable5] = value5;
-  vars[variable6] = value6;
-  vars[variable7] = value7;
-  Print(vars, text);
-}
-
-void Printer::Print(const char* text,
-                    const char* variable1, const string& value1,
-                    const char* variable2, const string& value2,
-                    const char* variable3, const string& value3,
-                    const char* variable4, const string& value4,
-                    const char* variable5, const string& value5,
-                    const char* variable6, const string& value6,
-                    const char* variable7, const string& value7,
-                    const char* variable8, const string& value8) {
-  std::map<string, string> vars;
-  vars[variable1] = value1;
-  vars[variable2] = value2;
-  vars[variable3] = value3;
-  vars[variable4] = value4;
-  vars[variable5] = value5;
-  vars[variable6] = value6;
-  vars[variable7] = value7;
-  vars[variable8] = value8;
-  Print(vars, text);
-}
-
 void Printer::Indent() {
   indent_ += "  ";
 }
@@ -343,6 +228,18 @@ void Printer::WriteRaw(const char* data, int size) {
   CopyToBuffer(data, size);
 }
 
+bool Printer::Next() {
+  do {
+    void* void_buffer;
+    if (!output_->Next(&void_buffer, &buffer_size_)) {
+      failed_ = true;
+      return false;
+    }
+    buffer_ = reinterpret_cast<char*>(void_buffer);
+  } while (buffer_size_ == 0);
+  return true;
+}
+
 void Printer::CopyToBuffer(const char* data, int size) {
   if (failed_) return;
   if (size == 0) return;
@@ -367,6 +264,134 @@ void Printer::CopyToBuffer(const char* data, int size) {
   buffer_ += size;
   buffer_size_ -= size;
   offset_ += size;
+}
+
+void Printer::IndentIfAtStart() {
+  if (at_start_of_line_) {
+    CopyToBuffer(indent_.data(), indent_.size());
+    at_start_of_line_ = false;
+  }
+}
+
+void Printer::FormatInternal(const std::vector<string>& args,
+                             const std::map<string, string>& vars,
+                             const char* format) {
+  auto save = format;
+  int arg_index = 0;
+  std::vector<AnnotationCollector::Annotation> annotations;
+  while (*format) {
+    char c = *format++;
+    switch (c) {
+      case '$':
+        format = WriteVariable(args, vars, format, &arg_index, &annotations);
+        continue;
+      case '\n':
+        at_start_of_line_ = true;
+        line_start_variables_.clear();
+        break;
+      default:
+        IndentIfAtStart();
+        break;
+    }
+    push_back(c);
+  }
+  if (arg_index != args.size()) {
+    GOOGLE_LOG(FATAL) << " Unused arguments. " << save;
+  }
+  if (!annotations.empty()) {
+    GOOGLE_LOG(FATAL) << " Annotation range is not-closed, expect $}$. " << save;
+  }
+}
+
+const char* Printer::WriteVariable(
+    const std::vector<string>& args, const std::map<string, string>& vars,
+    const char* format, int* arg_index,
+    std::vector<AnnotationCollector::Annotation>* annotations) {
+  auto start = format;
+  auto end = strchr(format, '$');
+  if (!end) {
+    GOOGLE_LOG(FATAL) << " Unclosed variable name.";
+  }
+  format = end + 1;
+  if (end == start) {
+    // "$$" is an escape for just '$'
+    IndentIfAtStart();
+    push_back('$');
+    return format;
+  }
+  if (*start == '{') {
+    GOOGLE_CHECK(std::isdigit(start[1]));
+    GOOGLE_CHECK_EQ(end - start, 2);
+    int idx = start[1] - '1';
+    if (idx < 0 || idx >= args.size()) {
+      GOOGLE_LOG(FATAL) << "Annotation ${" << idx + 1 << "$ is out of bounds.";
+    }
+    if (idx > *arg_index) {
+      GOOGLE_LOG(FATAL) << "Annotation arg must be in correct order as given. Expected"
+                 << " ${" << (*arg_index) + 1 << "$ got ${" << idx + 1 << "$.";
+    } else if (idx == *arg_index) {
+      (*arg_index)++;
+    }
+    IndentIfAtStart();
+    annotations->push_back({{offset_, 0}, args[idx]});
+    return format;
+  } else if (*start == '}') {
+    GOOGLE_CHECK(annotations);
+    if (annotations->empty()) {
+      GOOGLE_LOG(FATAL) << "Unexpected end of annotation found.";
+    }
+    auto& a = annotations->back();
+    a.first.second = offset_;
+    if (annotation_collector_) annotation_collector_->AddAnnotationNew(a);
+    annotations->pop_back();
+    return format;
+  }
+  auto start_var = start;
+  while (start_var < end && *start_var == ' ') start_var++;
+  if (start_var == end) {
+    GOOGLE_LOG(FATAL) << " Empty variable.";
+  }
+  auto end_var = end;
+  while (start_var < end_var && *(end_var - 1) == ' ') end_var--;
+  string var_name{start_var,
+                  static_cast<string::size_type>(end_var - start_var)};
+  string sub;
+  if (std::isdigit(var_name[0])) {
+    GOOGLE_CHECK_EQ(var_name.size(), 1);  // No need for multi-digits
+    int idx = var_name[0] - '1';   // Start counting at 1
+    GOOGLE_CHECK_GE(idx, 0);
+    if (idx >= args.size()) {
+      GOOGLE_LOG(FATAL) << "Argument $" << idx + 1 << "$ is out of bounds.";
+    }
+    if (idx > *arg_index) {
+      GOOGLE_LOG(FATAL) << "Arguments must be used in same order as given. Expected $"
+                 << (*arg_index) + 1 << "$ got $" << idx + 1 << "$.";
+    } else if (idx == *arg_index) {
+      (*arg_index)++;
+    }
+    sub = args[idx];
+  } else {
+    auto it = vars.find(var_name);
+    if (it == vars.end()) {
+      GOOGLE_LOG(FATAL) << " Unknown variable: " << var_name << ".";
+    }
+    sub = it->second;
+  }
+
+  // By returning here in case of empty we also skip possible spaces inside
+  // the $...$, i.e. "void$ dllexpor$ f();" -> "void f();" in the empty case.
+  if (sub.empty()) return format;
+
+  // We're going to write something non-empty so we need a possible indent.
+  IndentIfAtStart();
+
+  // Write the possible spaces in front.
+  CopyToBuffer(start, start_var - start);
+  // Write a non-empty substituted variable.
+  CopyToBuffer(sub.c_str(), sub.size());
+  // Finish off with writing possible trailing spaces.
+  CopyToBuffer(end_var, end - end_var);
+  return format;
 }
 
 }  // namespace io

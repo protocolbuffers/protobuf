@@ -39,9 +39,10 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/strutil.h>
+
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/util/internal/json_escaping.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathlimits.h>
 
 
@@ -62,6 +63,8 @@ namespace converter {
 
 // Number of digits in an escaped UTF-16 code unit ('\\' 'u' X X X X)
 static const int kUnicodeEscapedLength = 6;
+
+static const int kDefaultMaxRecursionDepth = 100;
 
 // Length of the true, false, and null literals.
 static const int true_len = strlen("true");
@@ -109,7 +112,9 @@ JsonStreamParser::JsonStreamParser(ObjectWriter* ow)
       chunk_storage_(),
       coerce_to_utf8_(false),
       allow_empty_null_(false),
-      loose_float_number_conversion_(false) {
+      loose_float_number_conversion_(false),
+      recursion_depth_(0),
+      max_recursion_depth_(kDefaultMaxRecursionDepth) {
   // Initialize the stack with a single value to be parsed.
   stack_.push(VALUE);
 }
@@ -201,7 +206,7 @@ util::Status JsonStreamParser::ParseChunk(StringPiece chunk) {
     }
     // If we expect future data i.e. stack is non-empty, and we have some
     // unparsed data left, we save it for later parse.
-    leftover_ = p_.ToString();
+    leftover_ = string(p_);
   }
   return util::Status();
 }
@@ -539,7 +544,7 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
   }
 
   // Create a string containing just the number, so we can use safe_strtoX
-  string number = p_.substr(0, index).ToString();
+  string number = string(p_.substr(0, index));
 
   // Floating point number, parse as a double.
   if (floating) {
@@ -593,6 +598,10 @@ util::Status JsonStreamParser::HandleBeginObject() {
   GOOGLE_DCHECK_EQ('{', *p_.data());
   Advance();
   ow_->StartObject(key_);
+  auto status = IncrementRecursionDepth(key_);
+  if (!status.ok()) {
+    return status;
+  }
   key_ = StringPiece();
   stack_.push(ENTRY);
   return util::Status();
@@ -607,6 +616,7 @@ util::Status JsonStreamParser::ParseObjectMid(TokenType type) {
   if (type == END_OBJECT) {
     Advance();
     ow_->EndObject();
+    --recursion_depth_;
     return util::Status();
   }
   // Found a comma, advance past it and get ready for an entry.
@@ -628,6 +638,7 @@ util::Status JsonStreamParser::ParseEntry(TokenType type) {
   if (type == END_OBJECT) {
     ow_->EndObject();
     Advance();
+    --recursion_depth_;
     return util::Status();
   }
 
@@ -782,6 +793,17 @@ util::Status JsonStreamParser::ReportUnknown(StringPiece message) {
     return ReportFailure(StrCat("Unexpected end of string. ", message));
   }
   return ReportFailure(message);
+}
+
+util::Status JsonStreamParser::IncrementRecursionDepth(
+    StringPiece key) const {
+  if (++recursion_depth_ > max_recursion_depth_) {
+    return Status(
+        util::error::INVALID_ARGUMENT,
+        StrCat("Message too deep. Max recursion depth reached for key '",
+                     key, "'"));
+  }
+  return util::Status();
 }
 
 void JsonStreamParser::SkipWhitespace() {

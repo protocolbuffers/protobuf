@@ -48,13 +48,14 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/map_field.h>
+#include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
 
-namespace google {
 const size_t kMapEntryTagByteSize = 2;
 
+namespace google {
 namespace protobuf {
 namespace internal {
 
@@ -172,8 +173,8 @@ bool WireFormat::ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
   io::CodedInputStream::Limit limit = input->PushLimit(length);
   while (input->BytesUntilLimit() > 0) {
     int value;
-    if (!google::protobuf::internal::WireFormatLite::ReadPrimitive<
-        int, WireFormatLite::TYPE_ENUM>(input, &value)) {
+    if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
+            input, &value)) {
       return false;
     }
     if (is_valid == NULL || is_valid(value)) {
@@ -617,31 +618,10 @@ bool WireFormat::ParseAndMergeField(
         int value;
         if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
                 input, &value)) return false;
-        if (message->GetDescriptor()->file()->syntax() ==
-            FileDescriptor::SYNTAX_PROTO3) {
-          if (field->is_repeated()) {
-            message_reflection->AddEnumValue(message, field, value);
-          } else {
-            message_reflection->SetEnumValue(message, field, value);
-          }
+        if (field->is_repeated()) {
+          message_reflection->AddEnumValue(message, field, value);
         } else {
-          const EnumValueDescriptor* enum_value =
-              field->enum_type()->FindValueByNumber(value);
-          if (enum_value != NULL) {
-            if (field->is_repeated()) {
-              message_reflection->AddEnum(message, field, enum_value);
-            } else {
-              message_reflection->SetEnum(message, field, enum_value);
-            }
-          } else {
-            // The enum value is not one of the known values.  Add it to the
-            // UnknownFieldSet.
-            int64 sign_extended_value = static_cast<int64>(value);
-            message_reflection->MutableUnknownFields(message)
-                              ->AddVarint(
-                                  WireFormatLite::GetTagFieldNumber(tag),
-                                  sign_extended_value);
-          }
+          message_reflection->SetEnumValue(message, field, value);
         }
         break;
       }
@@ -718,80 +698,23 @@ bool WireFormat::ParseAndMergeField(
 bool WireFormat::ParseAndMergeMessageSetItem(
     io::CodedInputStream* input,
     Message* message) {
-  const Reflection* message_reflection = message->GetReflection();
-
-  // This method parses a group which should contain two fields:
-  //   required int32 type_id = 2;
-  //   required data message = 3;
-
-  uint32 last_type_id = 0;
-
-  // Once we see a type_id, we'll look up the FieldDescriptor for the
-  // extension.
-  const FieldDescriptor* field = NULL;
-
-  // If we see message data before the type_id, we'll append it to this so
-  // we can parse it later.
-  string message_data;
-
-  while (true) {
-    uint32 tag = input->ReadTag();
-    if (tag == 0) return false;
-
-    switch (tag) {
-      case WireFormatLite::kMessageSetTypeIdTag: {
-        uint32 type_id;
-        if (!input->ReadVarint32(&type_id)) return false;
-        last_type_id = type_id;
-        field = message_reflection->FindKnownExtensionByNumber(type_id);
-
-        if (!message_data.empty()) {
-          // We saw some message data before the type_id.  Have to parse it
-          // now.
-          io::ArrayInputStream raw_input(message_data.data(),
-                                         message_data.size());
-          io::CodedInputStream sub_input(&raw_input);
-          if (!ParseAndMergeMessageSetField(last_type_id, field, message,
-                                            &sub_input)) {
-            return false;
-          }
-          message_data.clear();
-        }
-
-        break;
-      }
-
-      case WireFormatLite::kMessageSetMessageTag: {
-        if (last_type_id == 0) {
-          // We haven't seen a type_id yet.  Append this data to message_data.
-          string temp;
-          uint32 length;
-          if (!input->ReadVarint32(&length)) return false;
-          if (!input->ReadString(&temp, length)) return false;
-          io::StringOutputStream output_stream(&message_data);
-          io::CodedOutputStream coded_output(&output_stream);
-          coded_output.WriteVarint32(length);
-          coded_output.WriteString(temp);
-        } else {
-          // Already saw type_id, so we can parse this directly.
-          if (!ParseAndMergeMessageSetField(last_type_id, field, message,
-                                            input)) {
-            return false;
-          }
-        }
-
-        break;
-      }
-
-      case WireFormatLite::kMessageSetItemEndTag: {
-        return true;
-      }
-
-      default: {
-        if (!SkipField(input, tag, NULL)) return false;
-      }
+  struct MSReflective {
+    bool ParseField(int type_id, io::CodedInputStream* input) {
+      const FieldDescriptor* field =
+          message_reflection->FindKnownExtensionByNumber(type_id);
+      return ParseAndMergeMessageSetField(type_id, field, message, input);
     }
-  }
+
+    bool SkipField(uint32 tag, io::CodedInputStream* input) {
+      return WireFormat::SkipField(input, tag, NULL);
+    }
+
+    const Reflection* message_reflection;
+    Message* message;
+  };
+
+  return ParseMessageSetItemImpl(
+      input, MSReflective{message->GetReflection(), message});
 }
 
 // ===================================================================

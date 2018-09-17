@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/java/java_generator.h>
 
+
 #include <memory>
 
 #include <google/protobuf/compiler/java/java_file.h>
@@ -117,6 +118,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
     file_generators.push_back(new FileGenerator(file, file_options,
                                                 /* mutable = */ false));
   }
+
   for (int i = 0; i < file_generators.size(); ++i) {
     if (!file_generators[i]->Validate(error)) {
       for (int j = 0; j < file_generators.size(); ++j) {
@@ -162,6 +164,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
       annotations.SerializeToZeroCopyStream(info_output.get());
     }
   }
+
 
   for (int i = 0; i < file_generators.size(); ++i) {
     delete file_generators[i];

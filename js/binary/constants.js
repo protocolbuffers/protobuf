@@ -174,7 +174,7 @@ jspb.PrunerFunction;
 
 /**
  * A comparer function returns true if two protos are equal.
- * @typedef {!function(?jspb.ConstBinaryMessage,
+ * @typedef {function(?jspb.ConstBinaryMessage,
  *                     ?jspb.ConstBinaryMessage):boolean}
  */
 jspb.ComparerFunction;

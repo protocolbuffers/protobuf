@@ -1342,4 +1342,17 @@ class GeneratedClassTest extends TestBase
 
         TestUtil::assertTestMessage($m);
     }
+
+    #########################################################
+    # Test message equals.
+    #########################################################
+
+    public function testMessageEquals()
+    {
+        $m = new TestMessage();
+        TestUtil::setTestMessage($m);
+        $n = new TestMessage();
+        TestUtil::setTestMessage($n);
+        $this->assertEquals($m, $n);
+    }
 }

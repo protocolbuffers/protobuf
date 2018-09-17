@@ -136,7 +136,7 @@ jspb.Map.prototype.toArray = function() {
  *
  * @param {boolean=} includeInstance Whether to include the JSPB instance for
  *    transitional soy proto support: http://goto/soy-param-migration
- * @param {!function((boolean|undefined),V):!Object=} valueToObject
+ * @param {function((boolean|undefined),V):!Object=} valueToObject
  *    The static toObject() method, if V is a message type.
  * @return {!Array<!Array<!Object>>}
  */
@@ -165,9 +165,9 @@ jspb.Map.prototype.toObject = function(includeInstance, valueToObject) {
  *
  * @template K, V
  * @param {!Array<!Array<!Object>>} entries
- * @param {!function(new:V,?=)} valueCtor
+ * @param {function(new:V,?=)} valueCtor
  *    The constructor for type V.
- * @param {!function(!Object):V} valueFromObject
+ * @param {function(!Object):V} valueFromObject
  *    The fromObject function for type V.
  * @return {!jspb.Map<K, V>}
  */
@@ -410,9 +410,9 @@ jspb.Map.prototype.has = function(key) {
  * number.
  * @param {number} fieldNumber
  * @param {!jspb.BinaryWriter} writer
- * @param {!function(this:jspb.BinaryWriter,number,K)} keyWriterFn
+ * @param {function(this:jspb.BinaryWriter,number,K)} keyWriterFn
  *     The method on BinaryWriter that writes type K to the stream.
- * @param {!function(this:jspb.BinaryWriter,number,V,?=)|
+ * @param {function(this:jspb.BinaryWriter,number,V,?=)|
  *          function(this:jspb.BinaryWriter,number,V,?)} valueWriterFn
  *     The method on BinaryWriter that writes type V to the stream.  May be
  *     writeMessage, in which case the second callback arg form is used.
@@ -448,10 +448,10 @@ jspb.Map.prototype.serializeBinary = function(
  * @template K, V
  * @param {!jspb.Map} map
  * @param {!jspb.BinaryReader} reader
- * @param {!function(this:jspb.BinaryReader):K} keyReaderFn
+ * @param {function(this:jspb.BinaryReader):K} keyReaderFn
  *     The method on BinaryReader that reads type K from the stream.
  *
- * @param {!function(this:jspb.BinaryReader):V|
+ * @param {function(this:jspb.BinaryReader):V|
  *          function(this:jspb.BinaryReader,V,
  *                  function(V,!jspb.BinaryReader))} valueReaderFn
  *    The method on BinaryReader that reads type V from the stream. May be

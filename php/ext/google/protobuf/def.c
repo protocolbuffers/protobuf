@@ -253,7 +253,7 @@ PHP_METHOD(Descriptor, getField) {
 #else
     field_hashtable_value =
         field_descriptor_type->create_object(field_descriptor_type TSRMLS_CC);
-    --GC_REFCOUNT(field_hashtable_value);
+    GC_DELREF(field_hashtable_value);
 #endif
     FieldDescriptor *field_php =
         UNBOX_HASHTABLE_VALUE(FieldDescriptor, field_hashtable_value);
@@ -264,7 +264,7 @@ PHP_METHOD(Descriptor, getField) {
 #if PHP_MAJOR_VERSION < 7
   RETURN_ZVAL(field_hashtable_value, 1, 0);
 #else
-  ++GC_REFCOUNT(field_hashtable_value);
+  GC_ADDREF(field_hashtable_value);
   RETURN_OBJ(field_hashtable_value);
 #endif
 }
@@ -492,7 +492,7 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
 #if PHP_MAJOR_VERSION < 7
   RETURN_ZVAL(desc, 1, 0);
 #else
-  ++GC_REFCOUNT(desc);
+  GC_ADDREF(desc);
   RETURN_OBJ(desc);
 #endif
 }
@@ -512,7 +512,7 @@ PHP_METHOD(FieldDescriptor, getMessageType) {
 #if PHP_MAJOR_VERSION < 7
   RETURN_ZVAL(desc, 1, 0);
 #else
-  ++GC_REFCOUNT(desc);
+  GC_ADDREF(desc);
   RETURN_OBJ(desc);
 #endif
 }
@@ -585,7 +585,7 @@ PHP_METHOD(Oneof, getField) {
 #if PHP_MAJOR_VERSION < 7
   RETURN_ZVAL(field_hashtable_value, 1, 0);
 #else
-  ++GC_REFCOUNT(field_hashtable_value);
+  GC_ADDREF(field_hashtable_value);
   RETURN_OBJ(field_hashtable_value);
 #endif
 }
@@ -703,7 +703,7 @@ PHP_METHOD(DescriptorPool, getGeneratedPool) {
 #if PHP_MAJOR_VERSION < 7
   RETURN_ZVAL(generated_pool_php, 1, 0);
 #else
-  ++GC_REFCOUNT(generated_pool_php);
+  GC_ADDREF(generated_pool_php);
   RETURN_OBJ(generated_pool_php);
 #endif
 }
@@ -713,7 +713,7 @@ PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
 #if PHP_MAJOR_VERSION < 7
   RETURN_ZVAL(internal_generated_pool_php, 1, 0);
 #else
-  ++GC_REFCOUNT(internal_generated_pool_php);
+  GC_ADDREF(internal_generated_pool_php);
   RETURN_OBJ(internal_generated_pool_php);
 #endif
 }
@@ -1033,7 +1033,7 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
 #if PHP_MAJOR_VERSION < 7
   RETURN_ZVAL(desc, 1, 0);
 #else
-  ++GC_REFCOUNT(desc);
+  GC_ADDREF(desc);
   RETURN_OBJ(desc);
 #endif
 }
@@ -1070,7 +1070,7 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
 #if PHP_MAJOR_VERSION < 7
   RETURN_ZVAL(desc, 1, 0);
 #else
-  ++GC_REFCOUNT(desc);
+  GC_ADDREF(desc);
   RETURN_OBJ(desc);
 #endif
 }

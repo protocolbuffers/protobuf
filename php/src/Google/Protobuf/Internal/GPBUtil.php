@@ -305,11 +305,8 @@ class GPBUtil
         $name,
         $file_proto)
     {
-        $parts = explode('.', $name);
-        foreach ($parts as $i => $part) {
-            $parts[$i] = static::getClassNamePrefix($parts[$i], $file_proto) . $parts[$i];
-        }
-        return implode('\\', $parts);
+        $classname = implode('_', explode('.', $name));
+        return static::getClassNamePrefix($classname, $file_proto) . $classname;
     }
 
     public static function getClassNameWithoutPackage(

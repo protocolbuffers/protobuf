@@ -132,10 +132,10 @@ template <class Dest, class Source>
 inline bool IsValidNumericCast(Source source) {
   typedef std::numeric_limits<Source> SourceLimits;
   typedef std::numeric_limits<Dest> DestLimits;
-  GOOGLE_COMPILE_ASSERT(SourceLimits::is_specialized, argument_must_be_numeric);
-  GOOGLE_COMPILE_ASSERT(SourceLimits::is_integer, argument_must_be_integral);
-  GOOGLE_COMPILE_ASSERT(DestLimits::is_specialized, result_must_be_numeric);
-  GOOGLE_COMPILE_ASSERT(DestLimits::is_integer, result_must_be_integral);
+  static_assert(SourceLimits::is_specialized, "argument must be numeric");
+  static_assert(SourceLimits::is_integer, "argument must be integral");
+  static_assert(DestLimits::is_specialized, "result must be numeric");
+  static_assert(DestLimits::is_integer, "result must be integral");
 
   return IsValidNumericCastImpl<
       sizeof(Dest) == sizeof(Source),
@@ -150,7 +150,7 @@ inline bool IsValidNumericCast(Source source) {
 // checked_numeric_cast<> is analogous to static_cast<> for numeric types,
 // except that it CHECKs that the specified numeric conversion will not
 // overflow or underflow. Floating point arguments are not currently allowed
-// (this is COMPILE_ASSERTd), though this could be supported if necessary.
+// (this is static_asserted), though this could be supported if necessary.
 template <class Dest, class Source>
 inline Dest checked_numeric_cast(Source source) {
   GOOGLE_CHECK(IsValidNumericCast<Dest>(source));
@@ -159,6 +159,6 @@ inline Dest checked_numeric_cast(Source source) {
 
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_SAFE_NUMERICS_H__

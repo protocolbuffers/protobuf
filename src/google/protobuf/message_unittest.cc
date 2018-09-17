@@ -43,9 +43,3 @@
 // Must include after the above macros.
 #include <google/protobuf/test_util.inc>
 #include <google/protobuf/message_unittest.inc>
-
-// Make extract script happy.
-namespace google {
-namespace protobuf {
-}  // namespace protobuf
-}  // namespace google

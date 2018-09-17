@@ -89,7 +89,7 @@ inline To down_cast(From* f) {                   // so we only accept pointers
   }
 
 #if !defined(NDEBUG) && !defined(GOOGLE_PROTOBUF_NO_RTTI)
-  assert(f == NULL || dynamic_cast<To>(f) != NULL);  // RTTI: debug mode only!
+  assert(f == nullptr || dynamic_cast<To>(f) != nullptr);  // RTTI: debug mode only!
 #endif
   return static_cast<To>(f);
 }
@@ -107,7 +107,7 @@ inline To down_cast(From& f) {
 
 #if !defined(NDEBUG) && !defined(GOOGLE_PROTOBUF_NO_RTTI)
   // RTTI: debug mode only!
-  assert(dynamic_cast<ToAsPointer>(&f) != NULL);
+  assert(dynamic_cast<ToAsPointer>(&f) != nullptr);
 #endif
   return *static_cast<ToAsPointer>(&f);
 }

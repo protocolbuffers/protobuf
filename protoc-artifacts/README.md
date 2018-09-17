@@ -7,13 +7,31 @@ build and publish a ``protoc`` executable (a.k.a. artifact) to Maven
 repositories. The artifact can be used by build automation tools so that users
 would not need to compile and install ``protoc`` for their systems.
 
+If you would like us to publish protoc artifact for a new platform, please send
+us a pull request to add support for the new platform. You would need to change
+the following files:
+
+* [build-protoc.sh](build-protoc.sh): script to cross-build the protoc for your
+  platform.
+* [pom.xml](pom.xml): script to upload artifacts to maven.
+* [build-zip.sh](build-zip.sh): script to package published maven artifacts in
+  our release page.
+
+## Maven Location
+The published protoc artifacts are available on Maven here:
+
+    http://central.maven.org/maven2/com/google/protobuf/protoc/
+
 ## Versioning
 The version of the ``protoc`` artifact must be the same as the version of the
 Protobuf project.
 
 ## Artifact name
 The name of a published ``protoc`` artifact is in the following format:
-``protoc-<version>-<os>-<arch>.exe``, e.g., ``protoc-3.0.0-alpha-3-windows-x86_64.exe``.
+``protoc-<version>-<os>-<arch>.exe``, e.g., ``protoc-3.6.1-linux-x86_64.exe``.
+
+Note that artifacts for linux/macos also have the `.exe` suffix but they are
+not windows binaries.
 
 ## System requirement
 Install [Apache Maven](http://maven.apache.org/) if you don't have it.
@@ -29,163 +47,135 @@ generate the configure script.
 
 Under the protobuf project directory:
 
+
 ```
-$ ./autogen.sh && ./configure && make
+$ ./autogen.sh
 ```
 
-## To install artifacts locally
-The following command will install the ``protoc`` artifact to your local Maven repository.
+### Build the artifact for each platform
+
+Run the build-protoc.sh script under this protoc-artifacts directory to build the protoc
+artifact for each platform.  For example:
+
 ```
-$ mvn install
+$ cd protoc-artifacts
+$ ./build-protoc.sh linux x86_64 protoc
 ```
 
-## Cross-compilation
-The Maven script will try to detect the OS and the architecture from Java
-system properties. It's possible to build a protoc binary for an architecture
-that is different from what Java has detected, as long as you have the proper
-compilers installed.
+The above command will produce a `target/linux/x86_64/protoc` binary under the
+protoc-artifacts directory.
 
-You can override the Maven properties ``os.detected.name`` and
-``os.detected.arch`` to force the script to generate binaries for a specific OS
-and/or architecture. Valid values are defined as the return values of
-``normalizeOs()`` and ``normalizeArch()`` of ``Detector`` from
-[os-maven-plugin](https://github.com/trustin/os-maven-plugin/blob/master/src/main/java/kr/motd/maven/os/Detector.java).
-Frequently used values are:
-- ``os.detected.name``: ``linux``, ``osx``, ``windows``.
-- ``os.detected.arch``: ``x86_32``, ``x86_64``
+For a list of supported platforms, see the comments in the build-protoc.sh
+script. We only use this script to build artifacts on Ubuntu and MacOS (both
+with x86_64, and do cross-compilation for other platforms.
 
-For example, MinGW32 only ships with 32-bit compilers, but you can still build
-32-bit protoc under 64-bit Windows, with the following command:
+### Tips for building for Linux
+We build on Centos 6.9 to provide a good compatibility for not very new
+systems. We have provided a ``Dockerfile`` under this directory to build the
+environment. It has been tested with Docker 1.6.1.
+
+To build a image:
+
 ```
-$ mvn install -Dos.detected.arch=x86_32
+$ docker build -t protoc-artifacts .
 ```
+
+To run the image:
+
+```
+$ docker run -it --rm=true protoc-artifacts bash
+```
+
+To checkout protobuf (run within the container):
+
+```
+$ # Replace v3.5.1 with the version you want
+$ wget -O - https://github.com/protocolbuffers/protobuf/archive/v3.5.1.tar.gz | tar xvzp
+```
+
+### Windows build
+We no longer use scripts in this directory to build windows artifacts. Instead,
+we use Visual Studio 2015 to build our windows release artifacts. See our
+[kokoro windows build scripts here](../kokoro/release/protoc/windows/build.bat).
+
+To upload windows artifacts, copy the built binaries into this directory and
+put it into the target/windows/(x86_64|x86_32) directory the same way as the
+artifacts for other platforms. That will allow the maven script to find and
+upload the artifacts to maven.
 
 ## To push artifacts to Maven Central
 Before you can upload artifacts to Maven Central repository, make sure you have
 read [this page](http://central.sonatype.org/pages/apache-maven.html) on how to
 configure GPG and Sonatype account.
 
-You need to perform the deployment for every platform that you want to
-support. DO NOT close the staging repository until you have done the
-deployment for all platforms. Currently the following platforms are supported:
-- Linux (x86_32, x86_64 and cross compiled aarch_64)
-- Windows (x86_32 and x86_64) with
-  - Cygwin64 with MinGW compilers (x86_64)
-  - MSYS with MinGW32 (x86_32)
-  - Cross compile in Linux with MinGW-w64 (x86_32, x86_64)
-- MacOSX (x86_32 and x86_64)
+Before you do the deployment, make sure you have built the protoc artifacts for
+every supported platform and put them under the target directory. Example
+target directory layout:
 
-As for MSYS2/MinGW64 for Windows: protoc will build, but it insists on
-adding a dependency of `libwinpthread-1.dll`, which isn't shipped with
-Windows.
+    + pom.xml
+    + target
+      + linux
+        + x86_64
+          protoc.exe
+        + x86_32
+          protoc.exe
+        + aarch_64
+          protoc.exe
+      + osx
+        + x86_64
+          protoc.exe
+        + x86_32
+          protoc.exe
+      + windows
+        + x86_64
+          protoc.exe
+        + x86_32
+          protoc.exe
+
+You will need to build the artifacts on multiple machines and gather them
+together into one place.
 
 Use the following command to deploy artifacts for the host platform to a
 staging repository.
+
 ```
-$ mvn clean deploy -P release
+$ mvn deploy -P release
 ```
+
 It creates a new staging repository. Go to
 https://oss.sonatype.org/#stagingRepositories and find the repository, usually
-in the name like ``comgoogle-123``.
-
-You will want to run this command on a different platform. Remember, in
-subsequent deployments you will need to provide the repository name that you
-have found in the first deployment so that all artifacts go to the same
-repository:
-```
-$ mvn clean deploy -P release -Dstaging.repository=comgoogle-123
-```
-
-A 32-bit artifact can be deployed from a 64-bit host with
-``-Dos.detected.arch=x86_32``
-
-An arm64 artifact can be deployed from x86 host with
-``-Dos.detected.arch=aarch_64``
-
-A windows artifact can be deployed from a linux machine with
-``-Dos.detected.name=windows``
-
-When you have done deployment for all platforms, go to
-https://oss.sonatype.org/#stagingRepositories, verify that the staging
-repository has all the binaries, close and release this repository.
+in the name like ``comgoogle-123``. Verify that the staging repository has all
+the binaries, close and release this repository.
 
 ## Upload zip packages to github release page.
 After uploading protoc artifacts to Maven Central repository, run the
 build-zip.sh script to bulid zip packages for these protoc binaries
 and upload these zip packages to the download section of the github
 release. For example:
+
 ```
-$ ./build-zip.sh 3.0.0-beta-4
+$ ./build-zip.sh protoc 3.6.0
 ```
-The above command will create 5 zip files:
+
+The above command will create 7 zip files:
+
 ```
-dist/protoc-3.0.0-beta-4-win32.zip
-dist/protoc-3.0.0-beta-4-osx-x86_32.zip
-dist/protoc-3.0.0-beta-4-osx-x86_64.zip
-dist/protoc-3.0.0-beta-4-linux-x86_32.zip
-dist/protoc-3.0.0-beta-4-linux-x86_64.zip
+dist/protoc-3.6.0-win32.zip
+dist/protoc-3.6.0-osx-x86_32.zip
+dist/protoc-3.6.0-osx-x86_64.zip
+dist/protoc-3.6.0-linux-x86_32.zip
+dist/protoc-3.6.0-linux-x86_64.zip
+dist/protoc-3.6.0-linux-aarch_64.zip
+dist/protoc-3.6.0-linux-ppcle_64.zip
 ```
+
 Before running the script, make sure the artifacts are accessible from:
 http://repo1.maven.org/maven2/com/google/protobuf/protoc/
 
-### Tips for deploying on Linux
-We build on Centos 6.6 to provide a good compatibility for not very new
-systems. We have provided a ``Dockerfile`` under this directory to build the
-environment. It has been tested with Docker 1.6.1.
-
-To build a image:
-```
-$ docker build -t protoc-artifacts .
-```
-
-To run the image:
-```
-$ docker run -it --rm=true protoc-artifacts bash
-```
-
-To checkout protobuf (run within the container):
-```
-$ # Replace v3.5.1 with the version you want
-$ wget -O - https://github.com/google/protobuf/archive/v3.5.1.tar.gz | tar xvzp
-```
-
-### Tips for deploying on Windows
-Under Windows the following error may occur: ``gpg: cannot open tty `no tty':
-No such file or directory``. This can be fixed by configuring gpg through an
-active profile in ``.m2\settings.xml`` where also the Sonatype password is
-stored:
-```xml
-<settings>
-  <servers>
-    <server>
-      <id>sonatype-nexus-staging</id>
-      <username>[username]</username>
-      <password>[password]</password>
-    </server>
-  </servers>
-  <profiles>
-    <profile>
-      <id>gpg</id>
-      <properties>
-        <gpg.executable>gpg</gpg.executable>
-        <gpg.passphrase>[password]</gpg.passphrase>
-      </properties>
-    </profile>
-  </profiles>
-  <activeProfiles>
-    <activeProfile>gpg</activeProfile>
-  </activeProfiles>
-</settings>
-```
-
-### Tested build environments
+## Tested build environments
 We have successfully built artifacts on the following environments:
 - Linux x86_32 and x86_64:
-  - Centos 6.6 (within Docker 1.6.1)
-  - Ubuntu 14.04.2 64-bit
-- Linux aarch_64: Cross compiled with `g++-aarch64-linux-gnu` on Ubuntu 14.04.2 64-bit
-- Windows x86_32: MSYS with ``mingw32-gcc-g++ 4.8.1-4`` on Windows 7 64-bit
-- Windows x86_32: Cross compile with ``i686-w64-mingw32-g++ 4.8.2`` on Ubuntu 14.04.2 64-bit
-- Windows x86_64: Cygwin64 with ``mingw64-x86_64-gcc-g++ 4.8.3-1`` on Windows 7 64-bit
-- Windows x86_64: Cross compile with ``x86_64-w64-mingw32-g++ 4.8.2`` on Ubuntu 14.04.2 64-bit
+  - Centos 6.9 (within Docker 1.6.1)
+  - Ubuntu 14.04.5 64-bit
+- Linux aarch_64: Cross compiled with `g++-aarch64-linux-gnu` on Ubuntu 14.04.5 64-bit
 - Mac OS X x86_32 and x86_64: Mac OS X 10.9.5

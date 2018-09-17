@@ -37,6 +37,8 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -291,24 +293,26 @@ TEST(Int128, Multiply) {
   }
 
   // Verified with dc.
-  a = uint128(GOOGLE_ULONGLONG(0xffffeeeeddddcccc),
-              GOOGLE_ULONGLONG(0xbbbbaaaa99998888));
-  b = uint128(GOOGLE_ULONGLONG(0x7777666655554444),
-              GOOGLE_ULONGLONG(0x3333222211110000));
+  a = uint128(PROTOBUF_ULONGLONG(0xffffeeeeddddcccc),
+              PROTOBUF_ULONGLONG(0xbbbbaaaa99998888));
+  b = uint128(PROTOBUF_ULONGLONG(0x7777666655554444),
+              PROTOBUF_ULONGLONG(0x3333222211110000));
   c = a * b;
-  EXPECT_EQ(uint128(GOOGLE_ULONGLONG(0x530EDA741C71D4C3),
-                    GOOGLE_ULONGLONG(0xBF25975319080000)), c);
+  EXPECT_EQ(uint128(PROTOBUF_ULONGLONG(0x530EDA741C71D4C3),
+                    PROTOBUF_ULONGLONG(0xBF25975319080000)),
+            c);
   EXPECT_EQ(0, c - b * a);
-  EXPECT_EQ(a*a - b*b, (a+b) * (a-b));
+  EXPECT_EQ(a * a - b * b, (a + b) * (a - b));
 
   // Verified with dc.
-  a = uint128(GOOGLE_ULONGLONG(0x0123456789abcdef),
-              GOOGLE_ULONGLONG(0xfedcba9876543210));
-  b = uint128(GOOGLE_ULONGLONG(0x02468ace13579bdf),
-              GOOGLE_ULONGLONG(0xfdb97531eca86420));
+  a = uint128(PROTOBUF_ULONGLONG(0x0123456789abcdef),
+              PROTOBUF_ULONGLONG(0xfedcba9876543210));
+  b = uint128(PROTOBUF_ULONGLONG(0x02468ace13579bdf),
+              PROTOBUF_ULONGLONG(0xfdb97531eca86420));
   c = a * b;
-  EXPECT_EQ(uint128(GOOGLE_ULONGLONG(0x97a87f4f261ba3f2),
-                    GOOGLE_ULONGLONG(0x342d0bbf48948200)), c);
+  EXPECT_EQ(uint128(PROTOBUF_ULONGLONG(0x97a87f4f261ba3f2),
+                    PROTOBUF_ULONGLONG(0x342d0bbf48948200)),
+            c);
   EXPECT_EQ(0, c - b * a);
   EXPECT_EQ(a*a - b*b, (a+b) * (a-b));
 }
@@ -355,10 +359,10 @@ TEST(Int128, DivideAndMod) {
   EXPECT_EQ(0, q);
   EXPECT_EQ(0, r);
 
-  a = uint128(GOOGLE_ULONGLONG(0x530eda741c71d4c3),
-              GOOGLE_ULONGLONG(0xbf25975319080000));
-  q = uint128(GOOGLE_ULONGLONG(0x4de2cab081),
-              GOOGLE_ULONGLONG(0x14c34ab4676e4bab));
+  a = uint128(PROTOBUF_ULONGLONG(0x530eda741c71d4c3),
+              PROTOBUF_ULONGLONG(0xbf25975319080000));
+  q = uint128(PROTOBUF_ULONGLONG(0x4de2cab081),
+              PROTOBUF_ULONGLONG(0x14c34ab4676e4bab));
   b = uint128(0x1110001);
   r = uint128(0x3eb455);
   ASSERT_EQ(a, q * b + r);  // Sanity-check.
@@ -396,8 +400,8 @@ TEST(Int128, DivideAndMod) {
 
   // Try a large remainder.
   b = a / 2 + 1;
-  uint128 expected_r(GOOGLE_ULONGLONG(0x29876d3a0e38ea61),
-                     GOOGLE_ULONGLONG(0xdf92cba98c83ffff));
+  uint128 expected_r(PROTOBUF_ULONGLONG(0x29876d3a0e38ea61),
+                     PROTOBUF_ULONGLONG(0xdf92cba98c83ffff));
   // Sanity checks.
   ASSERT_EQ(a / 2 - 1, expected_r);
   ASSERT_EQ(a, b + expected_r);
@@ -455,50 +459,50 @@ TEST(Int128, OStream) {
     char fill;
     const char* rep;
   } cases[] = {
-        // zero with different bases
-        {uint128(0), std::ios::dec, 0, '_', "0"},
-        {uint128(0), std::ios::oct, 0, '_', "0"},
-        {uint128(0), std::ios::hex, 0, '_', "0"},
-        // crossover between lo_ and hi_
-        {uint128(0, -1), std::ios::dec, 0, '_', "18446744073709551615"},
-        {uint128(0, -1), std::ios::oct, 0, '_', "1777777777777777777777"},
-        {uint128(0, -1), std::ios::hex, 0, '_', "ffffffffffffffff"},
-        {uint128(1, 0), std::ios::dec, 0, '_', "18446744073709551616"},
-        {uint128(1, 0), std::ios::oct, 0, '_', "2000000000000000000000"},
-        {uint128(1, 0), std::ios::hex, 0, '_', "10000000000000000"},
-        // just the top bit
-        {uint128(GOOGLE_ULONGLONG(0x8000000000000000), 0), std::ios::dec, 0, '_',
-         "170141183460469231731687303715884105728"},
-        {uint128(GOOGLE_ULONGLONG(0x8000000000000000), 0), std::ios::oct, 0, '_',
-         "2000000000000000000000000000000000000000000"},
-        {uint128(GOOGLE_ULONGLONG(0x8000000000000000), 0), std::ios::hex, 0, '_',
-         "80000000000000000000000000000000"},
-        // maximum uint128 value
-        {uint128(-1, -1), std::ios::dec, 0, '_',
-         "340282366920938463463374607431768211455"},
-        {uint128(-1, -1), std::ios::oct, 0, '_',
-         "3777777777777777777777777777777777777777777"},
-        {uint128(-1, -1), std::ios::hex, 0, '_',
-         "ffffffffffffffffffffffffffffffff"},
-        // uppercase
-        {uint128(-1, -1), std::ios::hex | std::ios::uppercase, 0, '_',
-         "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"},
-        // showbase
-        {uint128(1), std::ios::dec | std::ios::showbase, 0, '_', "1"},
-        {uint128(1), std::ios::oct | std::ios::showbase, 0, '_', "01"},
-        {uint128(1), std::ios::hex | std::ios::showbase, 0, '_', "0x1"},
-        // showbase does nothing on zero
-        {uint128(0), std::ios::dec | std::ios::showbase, 0, '_', "0"},
-        {uint128(0), std::ios::oct | std::ios::showbase, 0, '_', "0"},
-        {uint128(0), std::ios::hex | std::ios::showbase, 0, '_', "0"},
-        // showpos does nothing on unsigned types
-        {uint128(1), std::ios::dec | std::ios::showpos, 0, '_', "1"},
-        // padding
-        {uint128(9), std::ios::dec, 6, '_', "_____9"},
-        {uint128(12345), std::ios::dec, 6, '_', "_12345"},
-        // left adjustment
-        {uint128(9), std::ios::dec | std::ios::left, 6, '_', "9_____"},
-        {uint128(12345), std::ios::dec | std::ios::left, 6, '_', "12345_"},
+      // zero with different bases
+      {uint128(0), std::ios::dec, 0, '_', "0"},
+      {uint128(0), std::ios::oct, 0, '_', "0"},
+      {uint128(0), std::ios::hex, 0, '_', "0"},
+      // crossover between lo_ and hi_
+      {uint128(0, -1), std::ios::dec, 0, '_', "18446744073709551615"},
+      {uint128(0, -1), std::ios::oct, 0, '_', "1777777777777777777777"},
+      {uint128(0, -1), std::ios::hex, 0, '_', "ffffffffffffffff"},
+      {uint128(1, 0), std::ios::dec, 0, '_', "18446744073709551616"},
+      {uint128(1, 0), std::ios::oct, 0, '_', "2000000000000000000000"},
+      {uint128(1, 0), std::ios::hex, 0, '_', "10000000000000000"},
+      // just the top bit
+      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::dec, 0,
+       '_', "170141183460469231731687303715884105728"},
+      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::oct, 0,
+       '_', "2000000000000000000000000000000000000000000"},
+      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::hex, 0,
+       '_', "80000000000000000000000000000000"},
+      // maximum uint128 value
+      {uint128(-1, -1), std::ios::dec, 0, '_',
+       "340282366920938463463374607431768211455"},
+      {uint128(-1, -1), std::ios::oct, 0, '_',
+       "3777777777777777777777777777777777777777777"},
+      {uint128(-1, -1), std::ios::hex, 0, '_',
+       "ffffffffffffffffffffffffffffffff"},
+      // uppercase
+      {uint128(-1, -1), std::ios::hex | std::ios::uppercase, 0, '_',
+       "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"},
+      // showbase
+      {uint128(1), std::ios::dec | std::ios::showbase, 0, '_', "1"},
+      {uint128(1), std::ios::oct | std::ios::showbase, 0, '_', "01"},
+      {uint128(1), std::ios::hex | std::ios::showbase, 0, '_', "0x1"},
+      // showbase does nothing on zero
+      {uint128(0), std::ios::dec | std::ios::showbase, 0, '_', "0"},
+      {uint128(0), std::ios::oct | std::ios::showbase, 0, '_', "0"},
+      {uint128(0), std::ios::hex | std::ios::showbase, 0, '_', "0"},
+      // showpos does nothing on unsigned types
+      {uint128(1), std::ios::dec | std::ios::showpos, 0, '_', "1"},
+      // padding
+      {uint128(9), std::ios::dec, 6, '_', "_____9"},
+      {uint128(12345), std::ios::dec, 6, '_', "_12345"},
+      // left adjustment
+      {uint128(9), std::ios::dec | std::ios::left, 6, '_', "9_____"},
+      {uint128(12345), std::ios::dec | std::ios::left, 6, '_', "12345_"},
   };
   for (size_t i = 0; i < GOOGLE_ARRAYSIZE(cases); ++i) {
     std::ostringstream os;

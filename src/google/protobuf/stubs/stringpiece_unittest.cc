@@ -46,7 +46,7 @@ TEST(StringPiece, Ctor) {
   {
     // Null.
     StringPiece s10;
-    EXPECT_TRUE(s10.data() == NULL);
+    EXPECT_TRUE(s10.data() == nullptr);
     EXPECT_EQ(0, s10.length());
   }
 
@@ -148,8 +148,8 @@ TEST(StringPiece, ComparisonOperators) {
   EXPECT_EQ(result, StringPiece((x)).compare(StringPiece((y))) op 0)
 
   COMPARE(true, ==, "",   "");
-  COMPARE(true, ==, "", NULL);
-  COMPARE(true, ==, NULL, "");
+  COMPARE(true, ==, "", nullptr);
+  COMPARE(true, ==, nullptr, "");
   COMPARE(true, ==, "a",  "a");
   COMPARE(true, ==, "aa", "aa");
   COMPARE(false, ==, "a",  "");
@@ -253,7 +253,7 @@ TEST(StringPiece, STL1) {
 
   EXPECT_EQ(*d.data(), 'f');
   EXPECT_EQ(d.data()[5], 'r');
-  EXPECT_TRUE(e.data() == NULL);
+  EXPECT_TRUE(e.data() == nullptr);
 
   EXPECT_EQ(*a.begin(), 'a');
   EXPECT_EQ(*(b.begin() + 2), 'c');
@@ -312,7 +312,7 @@ TEST(StringPiece, STL2) {
   d.clear();
   EXPECT_EQ(d.size(), 0);
   EXPECT_TRUE(d.empty());
-  EXPECT_TRUE(d.data() == NULL);
+  EXPECT_TRUE(d.data() == nullptr);
   EXPECT_TRUE(d.begin() == d.end());
 
   EXPECT_EQ(StringPiece::npos, string::npos);
@@ -707,17 +707,17 @@ TEST(StringPiece, Contains) {
   EXPECT_TRUE(!a.contains(d));
 }
 
-TEST(StringPiece, NULLInput) {
+TEST(StringPiece, NullInput) {
   // we used to crash here, but now we don't.
-  StringPiece s(NULL);
-  EXPECT_EQ(s.data(), (const char*)NULL);
+  StringPiece s(nullptr);
+  EXPECT_EQ(s.data(), (const char*)nullptr);
   EXPECT_EQ(s.size(), 0);
 
-  s.set(NULL);
-  EXPECT_EQ(s.data(), (const char*)NULL);
+  s.set(nullptr);
+  EXPECT_EQ(s.data(), (const char*)nullptr);
   EXPECT_EQ(s.size(), 0);
 
-  // .ToString() on a StringPiece with NULL should produce the empty string.
+  // .ToString() on a StringPiece with nullptr should produce the empty string.
   EXPECT_EQ("", s.ToString());
   EXPECT_EQ("", s.as_string());
 }

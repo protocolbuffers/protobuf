@@ -28,6 +28,11 @@ fi
 
 set -ex
 
+# The absence of a m4 directory in googletest causes autoreconf to fail when
+# building under the CentOS docker image. It's a warning in regular build on
+# Ubuntu/gLinux as well.
+mkdir -p third_party/googletest/m4
+
 # TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
 autoreconf -f -i -Wall,no-obsolete
 

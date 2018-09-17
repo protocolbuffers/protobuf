@@ -57,11 +57,9 @@ DefaultFieldComparator::DefaultFieldComparator()
 DefaultFieldComparator::~DefaultFieldComparator() {}
 
 FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
-      const google::protobuf::Message& message_1,
-      const google::protobuf::Message& message_2,
-      const google::protobuf::FieldDescriptor* field,
-      int index_1, int index_2,
-      const google::protobuf::util::FieldContext* field_context) {
+    const Message& message_1, const Message& message_2,
+    const FieldDescriptor* field, int index_1, int index_2,
+    const util::FieldContext* field_context) {
   const Reflection* reflection_1 = message_1.GetReflection();
   const Reflection* reflection_2 = message_2.GetReflection();
 
@@ -131,11 +129,10 @@ FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
   }
 }
 
-bool DefaultFieldComparator::Compare(
-    MessageDifferencer* differencer,
-    const Message& message1,
-    const Message& message2,
-    const google::protobuf::util::FieldContext* field_context) {
+bool DefaultFieldComparator::Compare(MessageDifferencer* differencer,
+                                     const Message& message1,
+                                     const Message& message2,
+                                     const util::FieldContext* field_context) {
   return differencer->Compare(
       message1, message2, field_context->parent_fields());
 }

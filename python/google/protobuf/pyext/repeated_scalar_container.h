@@ -104,6 +104,6 @@ void SetOwner(RepeatedScalarContainer* self,
 }  // namespace repeated_scalar_container
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_REPEATED_SCALAR_CONTAINER_H__

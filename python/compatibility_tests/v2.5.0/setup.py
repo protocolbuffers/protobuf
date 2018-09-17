@@ -59,7 +59,7 @@ if __name__ == '__main__':
   setup(
       name='protobuf',
       description='Protocol Buffers',
-      download_url='https://github.com/google/protobuf/releases',
+      download_url='https://github.com/protocolbuffers/protobuf/releases',
       long_description="Protocol Buffers are Google's data interchange format",
       url='https://developers.google.com/protocol-buffers/',
       maintainer='protobuf@googlegroups.com',

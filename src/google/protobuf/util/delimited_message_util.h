@@ -1,5 +1,5 @@
 // Adapted from the patch of kenton@google.com (Kenton Varda)
-// See https://github.com/google/protobuf/pull/710 for details.
+// See https://github.com/protocolbuffers/protobuf/pull/710 for details.
 
 #ifndef GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__
@@ -9,6 +9,8 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -30,9 +32,11 @@ namespace util {
 // then parse it. As a result, they may read past the end of the delimited
 // message. There is no way for them to push the extra data back into the
 // underlying source, so instead you must keep using the same stream object.
-bool LIBPROTOBUF_EXPORT SerializeDelimitedToFileDescriptor(const MessageLite& message, int file_descriptor);
+bool PROTOBUF_EXPORT SerializeDelimitedToFileDescriptor(
+    const MessageLite& message, int file_descriptor);
 
-bool LIBPROTOBUF_EXPORT SerializeDelimitedToOstream(const MessageLite& message, std::ostream* output);
+bool PROTOBUF_EXPORT SerializeDelimitedToOstream(const MessageLite& message,
+                                                 std::ostream* output);
 
 // Read a single size-delimited message from the given stream. Delimited
 // format allows a single file or stream to contain multiple messages,
@@ -46,21 +50,28 @@ bool LIBPROTOBUF_EXPORT SerializeDelimitedToOstream(const MessageLite& message, 
 // otherwise it will be set false. Note that these methods return false
 // on EOF, but they also return false on other errors, so |clean_eof| is
 // needed to distinguish a clean end from errors.
-bool LIBPROTOBUF_EXPORT ParseDelimitedFromZeroCopyStream(MessageLite* message, io::ZeroCopyInputStream* input, bool* clean_eof);
+bool PROTOBUF_EXPORT ParseDelimitedFromZeroCopyStream(
+    MessageLite* message, io::ZeroCopyInputStream* input, bool* clean_eof);
 
-bool LIBPROTOBUF_EXPORT ParseDelimitedFromCodedStream(MessageLite* message, io::CodedInputStream* input, bool* clean_eof);
+bool PROTOBUF_EXPORT ParseDelimitedFromCodedStream(MessageLite* message,
+                                                   io::CodedInputStream* input,
+                                                   bool* clean_eof);
 
 // Write a single size-delimited message from the given stream. Delimited
 // format allows a single file or stream to contain multiple messages,
 // whereas normally writing multiple non-delimited messages to the same
 // stream would cause them to be merged. A delimited message is a varint
 // encoding the message size followed by a message of exactly that size.
-bool LIBPROTOBUF_EXPORT SerializeDelimitedToZeroCopyStream(const MessageLite& message, io::ZeroCopyOutputStream* output);
+bool PROTOBUF_EXPORT SerializeDelimitedToZeroCopyStream(
+    const MessageLite& message, io::ZeroCopyOutputStream* output);
 
-bool LIBPROTOBUF_EXPORT SerializeDelimitedToCodedStream(const MessageLite& message, io::CodedOutputStream* output);
+bool PROTOBUF_EXPORT SerializeDelimitedToCodedStream(
+    const MessageLite& message, io::CodedOutputStream* output);
 
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_DELIMITED_MESSAGE_UTIL_H__

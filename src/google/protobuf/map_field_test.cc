@@ -30,22 +30,23 @@
 
 #include <map>
 #include <memory>
+#include <unordered_map>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/arena_test_util.h>
+#include <google/protobuf/map_test_util.h>
+#include <google/protobuf/map_unittest.pb.h>
+#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/map.h>
-#include <google/protobuf/arena_test_util.h>
-#include <google/protobuf/map_unittest.pb.h>
-#include <google/protobuf/map_test_util.h>
-#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <gtest/gtest.h>
-namespace google {
 
+namespace google {
 namespace protobuf {
 
 namespace internal {
@@ -95,6 +96,7 @@ class MapFieldBaseStub : public MapFieldBase {
   int size() const { return 0; }
   void MapBegin(MapIterator* map_iter) const {}
   void MapEnd(MapIterator* map_iter) const {}
+  void Swap(MapFieldBase* other) {}
   void InitializeIterator(MapIterator* map_iter) const {}
   void DeleteIterator(MapIterator* map_iter) const {}
   void CopyIterator(MapIterator* this_iterator,

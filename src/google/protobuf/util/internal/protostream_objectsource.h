@@ -32,8 +32,8 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTSOURCE_H__
 
 #include <functional>
-#include <google/protobuf/stubs/hash.h>
 #include <string>
+#include <unordered_map>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/type.pb.h>
@@ -42,17 +42,20 @@
 #include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/stringpiece.h>
+#include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 class Field;
 class Type;
 }  // namespace protobuf
+}  // namespace google
 
-
+namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
@@ -72,15 +75,16 @@ class TypeInfo;
 //                              <your message google::protobuf::Type>);
 //
 //   Status status = os.WriteTo(<some ObjectWriter>);
-class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
+class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
  public:
-  ProtoStreamObjectSource(google::protobuf::io::CodedInputStream* stream,
+  ProtoStreamObjectSource(io::CodedInputStream* stream,
                           TypeResolver* type_resolver,
                           const google::protobuf::Type& type);
 
-  virtual ~ProtoStreamObjectSource() override;
+  ~ProtoStreamObjectSource() override;
 
-  virtual util::Status NamedWriteTo(StringPiece name, ObjectWriter* ow) const override;
+  util::Status NamedWriteTo(StringPiece name,
+                              ObjectWriter* ow) const override;
 
   // Sets whether or not to use lowerCamelCase casing for enum values. If set to
   // false, enum values are output without any case conversions.
@@ -134,7 +138,8 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // The include_start_and_end parameter allows this method to be called when
   // already inside of an object, and skip calling StartObject and EndObject.
   virtual util::Status WriteMessage(const google::protobuf::Type& descriptor,
-                                      StringPiece name, const uint32 end_tag,
+                                      StringPiece name,
+                                      const uint32 end_tag,
                                       bool include_start_and_end,
                                       ObjectWriter* ow) const;
 
@@ -142,8 +147,8 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // reading all sequential repeating elements. The caller should use this tag
   // before reading more tags from the stream.
   virtual util::StatusOr<uint32> RenderList(
-      const google::protobuf::Field* field, StringPiece name, uint32 list_tag,
-      ObjectWriter* ow) const;
+      const google::protobuf::Field* field, StringPiece name,
+      uint32 list_tag, ObjectWriter* ow) const;
 
   // Looks up a field and verify its consistency with wire type in tag.
   const google::protobuf::Field* FindAndVerifyField(
@@ -151,17 +156,18 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // Renders a field value to the ObjectWriter.
   util::Status RenderField(const google::protobuf::Field* field,
-                             StringPiece field_name, ObjectWriter* ow) const;
+                             StringPiece field_name,
+                             ObjectWriter* ow) const;
 
   // Reads field value according to Field spec in 'field' and returns the read
   // value as string. This only works for primitive datatypes (no message
   // types).
-  const string ReadFieldValueAsString(
+  const std::string ReadFieldValueAsString(
       const google::protobuf::Field& field) const;
 
 
  private:
-  ProtoStreamObjectSource(google::protobuf::io::CodedInputStream* stream,
+  ProtoStreamObjectSource(io::CodedInputStream* stream,
                           const TypeInfo* typeinfo,
                           const google::protobuf::Type& type);
   // Function that renders a well known type with a modified behavior.
@@ -188,12 +194,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Renders a google.protobuf.Timestamp value to ObjectWriter
   static util::Status RenderTimestamp(const ProtoStreamObjectSource* os,
                                         const google::protobuf::Type& type,
-                                        StringPiece name, ObjectWriter* ow);
+                                        StringPiece name,
+                                        ObjectWriter* ow);
 
   // Renders a google.protobuf.Duration value to ObjectWriter
   static util::Status RenderDuration(const ProtoStreamObjectSource* os,
                                        const google::protobuf::Type& type,
-                                       StringPiece name, ObjectWriter* ow);
+                                       StringPiece name,
+                                       ObjectWriter* ow);
 
   // Following RenderTYPE functions render well known types in
   // google/protobuf/wrappers.proto corresponding to TYPE.
@@ -233,7 +241,8 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Helper to render google.protobuf.Struct's Value fields to ObjectWriter.
   static util::Status RenderStructValue(const ProtoStreamObjectSource* os,
                                           const google::protobuf::Type& type,
-                                          StringPiece name, ObjectWriter* ow);
+                                          StringPiece name,
+                                          ObjectWriter* ow);
 
   // Helper to render google.protobuf.Struct's ListValue fields to ObjectWriter.
   static util::Status RenderStructListValue(
@@ -248,12 +257,13 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Render the "FieldMask" type.
   static util::Status RenderFieldMask(const ProtoStreamObjectSource* os,
                                         const google::protobuf::Type& type,
-                                        StringPiece name, ObjectWriter* ow);
+                                        StringPiece name,
+                                        ObjectWriter* ow);
 
-  static hash_map<string, TypeRenderer>* renderers_;
+  static std::unordered_map<std::string, TypeRenderer>* renderers_;
   static void InitRendererMap();
   static void DeleteRendererMap();
-  static TypeRenderer* FindTypeRenderer(const string& type_url);
+  static TypeRenderer* FindTypeRenderer(const std::string& type_url);
 
   // Same as above but renders all non-message field types. Callers don't call
   // this function directly. They just use RenderField.
@@ -277,7 +287,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
                                          StringPiece field_name) const;
 
   // Input stream to read from. Ownership rests with the caller.
-  google::protobuf::io::CodedInputStream* stream_;
+  io::CodedInputStream* stream_;
 
   // Type information for all the types used in the descriptor. Used to find
   // google::protobuf::Type of nested messages/enums.
@@ -321,6 +331,8 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTSOURCE_H__

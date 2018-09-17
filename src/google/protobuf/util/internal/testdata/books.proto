@@ -196,7 +196,7 @@ message Cyclic {
 }
 
 // Test that two messages can have different fields mapped to the same JSON
-// name. See: https://github.com/google/protobuf/issues/1415
+// name. See: https://github.com/protocolbuffers/protobuf/issues/1415
 message TestJsonName1 {
   optional int32 one_value = 1 [json_name = "value"];
 }

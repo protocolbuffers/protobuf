@@ -40,6 +40,8 @@
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -49,16 +51,16 @@ namespace java {
 // own protocol compiler binary and you want it to support Java output, you
 // can do so by registering an instance of this CodeGenerator with the
 // CommandLineInterface in your main() function.
-class LIBPROTOC_EXPORT JavaGenerator : public CodeGenerator {
+class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
  public:
   JavaGenerator();
   ~JavaGenerator();
 
   // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file,
-                const string& parameter,
+                const std::string& parameter,
                 GeneratorContext* context,
-                string* error) const;
+                std::string* error) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JavaGenerator);
@@ -67,6 +69,8 @@ class LIBPROTOC_EXPORT JavaGenerator : public CodeGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_H__

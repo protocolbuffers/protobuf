@@ -68,8 +68,8 @@ cd $oldpwd
 export PATH="`pwd`/src:$PATH"
 export GOPATH="$HOME/gocode"
 mkdir -p "$GOPATH/src/github.com/google"
-rm -f "$GOPATH/src/github.com/google/protobuf"
-ln -s "`pwd`" "$GOPATH/src/github.com/google/protobuf"
+rm -f "$GOPATH/src/github.com/protocolbuffers/protobuf"
+ln -s "`pwd`" "$GOPATH/src/github.com/protocolbuffers/protobuf"
 export PATH="$GOPATH/bin:$PATH"
 go get github.com/golang/protobuf/protoc-gen-go
 
@@ -86,7 +86,7 @@ echo "benchmarking java..."
 
 # upload result to bq
 make python_add_init
-env LD_LIBRARY_PATH="$oldpwd/src/.libs" python util/run_and_upload.py -cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" \
+env LD_LIBRARY_PATH="$oldpwd/src/.libs" python -m util.result_uploader -cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" \
     -python="../tmp/python_result.json" -go="../tmp/go_result.txt"
 
 cd $oldpwd

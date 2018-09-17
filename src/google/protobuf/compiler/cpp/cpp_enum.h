@@ -46,8 +46,10 @@ namespace protobuf {
   namespace io {
     class Printer;             // printer.h
   }
-}
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
@@ -55,19 +57,9 @@ namespace cpp {
 class EnumGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
-  EnumGenerator(const EnumDescriptor* descriptor, const Options& options);
+  EnumGenerator(const EnumDescriptor* descriptor,
+                const std::map<std::string, std::string>& vars, const Options& options);
   ~EnumGenerator();
-
-  // Header stuff.
-
-  // Fills the name to use when declaring the enum. This is for use when
-  // generating other .proto.h files. This code should be placed within the
-  // enum's package namespace, but NOT within any class, even for nested
-  // enums. A given key in enum_names will map from an enum class name to the
-  // EnumDescriptor that was responsible for its inclusion in the map. This can
-  // be used to associate the descriptor with the code generated for it.
-  void FillForwardDeclaration(
-      std::map<string, const EnumDescriptor*>* enum_names);
 
   // Generate header code defining the enum.  This code should be placed
   // within the enum's package namespace, but NOT within any class, even for
@@ -82,7 +74,7 @@ class EnumGenerator {
   // symbols (e.g. the enum type name, all its values, etc.) into the class's
   // namespace.  This should be placed inside the class definition in the
   // header.
-  void GenerateSymbolImports(io::Printer* printer);
+  void GenerateSymbolImports(io::Printer* printer) const;
 
   // Source file stuff.
 
@@ -93,10 +85,12 @@ class EnumGenerator {
 
  private:
   const EnumDescriptor* descriptor_;
-  const string classname_;
+  const std::string classname_;
   const Options& options_;
   // whether to generate the *_ARRAYSIZE constant.
   const bool generate_array_size_;
+
+  std::map<std::string, std::string> variables_;
 
   friend class FileGenerator;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);
@@ -105,6 +99,6 @@ class EnumGenerator {
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_ENUM_H__

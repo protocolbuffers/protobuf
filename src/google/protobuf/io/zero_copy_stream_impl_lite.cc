@@ -37,9 +37,9 @@
 #include <algorithm>
 #include <limits>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -200,8 +200,8 @@ int CopyingInputStream::Skip(int count) {
   char junk[4096];
   int skipped = 0;
   while (skipped < count) {
-    int bytes =
-        Read(junk, std::min(count - skipped, implicit_cast<int>(sizeof(junk))));
+    int bytes = Read(junk, std::min(count - skipped,
+                                    ::google::protobuf::implicit_cast<int>(sizeof(junk))));
     if (bytes <= 0) {
       // EOF or read error.
       return skipped;

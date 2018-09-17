@@ -76,30 +76,30 @@
 //
 // There are several ways to create a null StringPiece:
 //   StringPiece()
-//   StringPiece(NULL)
-//   StringPiece(NULL, 0)
-// For all of the above, sp.data() == NULL, sp.length() == 0,
+//   StringPiece(nullptr)
+//   StringPiece(nullptr, 0)
+// For all of the above, sp.data() == nullptr, sp.length() == 0,
 // and sp.empty() == true.  Also, if you create a StringPiece with
-// a non-NULL pointer then sp.data() != NULL.  Once created,
-// sp.data() will stay either NULL or not-NULL, except if you call
+// a non-null pointer then sp.data() != nullptr.  Once created,
+// sp.data() will stay either nullptr or not-nullptr, except if you call
 // sp.clear() or sp.set().
 //
-// Thus, you can use StringPiece(NULL) to signal an out-of-band value
+// Thus, you can use StringPiece(nullptr) to signal an out-of-band value
 // that is different from other StringPiece values.  This is similar
-// to the way that const char* p1 = NULL; is different from
+// to the way that const char* p1 = nullptr; is different from
 // const char* p2 = "";.
 //
 // There are many ways to create an empty StringPiece:
 //   StringPiece()
-//   StringPiece(NULL)
-//   StringPiece(NULL, 0)
+//   StringPiece(nullptr)
+//   StringPiece(nullptr, 0)
 //   StringPiece("")
 //   StringPiece("", 0)
 //   StringPiece("abcdef", 0)
 //   StringPiece("abcdef"+6, 0)
 // For all of the above, sp.length() will be 0 and sp.empty() will be true.
-// For some empty StringPiece values, sp.data() will be NULL.
-// For some empty StringPiece values, sp.data() will not be NULL.
+// For some empty StringPiece values, sp.data() will be nullptr.
+// For some empty StringPiece values, sp.data() will not be nullptr.
 //
 // Be careful not to confuse: null StringPiece and empty StringPiece.
 // The set of empty StringPieces properly includes the set of null StringPieces.
@@ -109,20 +109,20 @@
 // All empty StringPiece values compare equal to each other.
 // Even a null StringPieces compares equal to a non-null empty StringPiece:
 //  StringPiece() == StringPiece("", 0)
-//  StringPiece(NULL) == StringPiece("abc", 0)
-//  StringPiece(NULL, 0) == StringPiece("abcdef"+6, 0)
+//  StringPiece(nullptr) == StringPiece("abc", 0)
+//  StringPiece(nullptr, 0) == StringPiece("abcdef"+6, 0)
 //
 // Look carefully at this example:
-//   StringPiece("") == NULL
+//   StringPiece("") == nullptr
 // True or false?  TRUE, because StringPiece::operator== converts
-// the right-hand side from NULL to StringPiece(NULL),
+// the right-hand side from nullptr to StringPiece(nullptr),
 // and then compares two zero-length spans of characters.
 // However, we are working to make this example produce a compile error.
 //
 // Suppose you want to write:
-//   bool TestWhat?(StringPiece sp) { return sp == NULL; }  // BAD
+//   bool TestWhat?(StringPiece sp) { return sp == nullptr; }  // BAD
 // Do not do that.  Write one of these instead:
-//   bool TestNull(StringPiece sp) { return sp.data() == NULL; }
+//   bool TestNull(StringPiece sp) { return sp.data() == nullptr; }
 //   bool TestEmpty(StringPiece sp) { return sp.empty(); }
 // The intent of TestWhat? is unclear.  Did you mean TestNull or TestEmpty?
 // Right now, TestWhat? behaves likes TestEmpty.
@@ -151,6 +151,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/hash.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 // StringPiece has *two* size types.
@@ -175,7 +177,7 @@ typedef string::difference_type stringpiece_ssize_type;
 #define STRINGPIECE_CHECK_SIZE 0
 #endif
 
-class LIBPROTOBUF_EXPORT StringPiece {
+class PROTOBUF_EXPORT StringPiece {
  private:
   const char* ptr_;
   stringpiece_ssize_type length_;
@@ -207,11 +209,11 @@ class LIBPROTOBUF_EXPORT StringPiece {
   //
   // Style guide exception granted:
   // http://goto/style-guide-exception-20978288
-  StringPiece() : ptr_(NULL), length_(0) {}
+  StringPiece() : ptr_(nullptr), length_(0) {}
 
   StringPiece(const char* str)  // NOLINT(runtime/explicit)
       : ptr_(str), length_(0) {
-    if (str != NULL) {
+    if (str != nullptr) {
       length_ = CheckedSsizeTFromSizeT(strlen(str));
     }
   }
@@ -248,7 +250,7 @@ class LIBPROTOBUF_EXPORT StringPiece {
   bool empty() const { return length_ == 0; }
 
   void clear() {
-    ptr_ = NULL;
+    ptr_ = nullptr;
     length_ = 0;
   }
 
@@ -260,7 +262,7 @@ class LIBPROTOBUF_EXPORT StringPiece {
 
   void set(const char* str) {
     ptr_ = str;
-    if (str != NULL)
+    if (str != nullptr)
       length_ = CheckedSsizeTFromSizeT(strlen(str));
     else
       length_ = 0;
@@ -309,7 +311,7 @@ class LIBPROTOBUF_EXPORT StringPiece {
   // for a StringPiece be called "as_string()".  We also leave the
   // "as_string()" method defined here for existing code.
   string ToString() const {
-    if (ptr_ == NULL) return string();
+    if (ptr_ == nullptr) return string();
     return string(data(), static_cast<size_type>(size()));
   }
 
@@ -463,6 +465,9 @@ struct StringPiecePod {
   std::string ToString() const {
     return std::string(data_, static_cast<size_t>(size_));
   }
+
+  operator string() const { return ToString(); }
+
  private:
   const char* data_;
   stringpiece_ssize_type size_;
@@ -483,5 +488,7 @@ template<> struct hash<StringPiece> {
   }
 };
 GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // STRINGS_STRINGPIECE_H_

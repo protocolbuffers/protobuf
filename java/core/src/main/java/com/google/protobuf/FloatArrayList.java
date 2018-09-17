@@ -46,6 +46,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     implements FloatList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final FloatArrayList EMPTY_LIST = new FloatArrayList();
+
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -54,9 +55,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     return EMPTY_LIST;
   }
 
-  /**
-   * The backing store for the list.
-   */
+  /** The backing store for the list. */
   private float[] array;
 
   /**
@@ -65,16 +64,13 @@ final class FloatArrayList extends AbstractProtobufList<Float>
    */
   private int size;
 
-  /**
-   * Constructs a new mutable {@code FloatArrayList} with default capacity.
-   */
+  /** Constructs a new mutable {@code FloatArrayList} with default capacity. */
   FloatArrayList() {
     this(new float[DEFAULT_CAPACITY], 0);
   }
 
   /**
-   * Constructs a new mutable {@code FloatArrayList}
-   * containing the same elements as {@code other}.
+   * Constructs a new mutable {@code FloatArrayList} containing the same elements as {@code other}.
    */
   private FloatArrayList(float[] other, int size) {
     array = other;
@@ -168,17 +164,13 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     addFloat(index, element);
   }
 
-  /**
-   * Like {@link #add(Float)} but more efficient in that it doesn't box the element.
-   */
+  /** Like {@link #add(Float)} but more efficient in that it doesn't box the element. */
   @Override
   public void addFloat(float element) {
     addFloat(size, element);
   }
 
-  /**
-   * Like {@link #add(int, Float)} but more efficient in that it doesn't box the element.
-   */
+  /** Like {@link #add(int, Float)} but more efficient in that it doesn't box the element. */
   private void addFloat(int index, float element) {
     ensureIsMutable();
     if (index < 0 || index > size) {

@@ -45,10 +45,8 @@ import junit.framework.TestCase;
  */
 public class IntArrayListTest extends TestCase {
 
-  private static final IntArrayList UNARY_LIST =
-      newImmutableIntArrayList(1);
-  private static final IntArrayList TERTIARY_LIST =
-      newImmutableIntArrayList(1, 2, 3);
+  private static final IntArrayList UNARY_LIST = newImmutableIntArrayList(1);
+  private static final IntArrayList TERTIARY_LIST = newImmutableIntArrayList(1, 2, 3);
 
   private IntArrayList list;
 
@@ -225,9 +223,7 @@ public class IntArrayListTest extends TestCase {
     for (int i = 0; i < 6; i++) {
       list.add(Integer.valueOf(5 + i));
     }
-    assertEquals(
-        asList(0, 1, 4, 2, 3, 5, 6, 7, 8, 9, 10),
-        list);
+    assertEquals(asList(0, 1, 4, 2, 3, 5, 6, 7, 8, 9, 10), list);
 
     try {
       list.add(-1, 5);
@@ -312,7 +308,7 @@ public class IntArrayListTest extends TestCase {
     assertEquals(0, toRemove.size());
   }
 
-  private void assertImmutable(IntArrayList list) {
+  private void assertImmutable(IntList list) {
     if (list.contains(1)) {
       throw new RuntimeException("Cannot test the immutability of lists that contain 1.");
     }

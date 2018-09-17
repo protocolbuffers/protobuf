@@ -482,7 +482,7 @@ class _Parser(object):
               ('Message type "{0}" has no field named "{1}".\n'
                ' Available Fields(except extensions): {2}').format(
                    message_descriptor.full_name, name,
-                   message_descriptor.fields))
+                   [f.json_name for f in message_descriptor.fields]))
         if name in names:
           raise ParseError('Message type "{0}" should not have multiple '
                            '"{1}" fields.'.format(

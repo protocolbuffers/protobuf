@@ -40,45 +40,40 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
-/**
- * Utility class to provide efficient writing of {@link ByteBuffer}s to {@link OutputStream}s.
- */
+/** Utility class to provide efficient writing of {@link ByteBuffer}s to {@link OutputStream}s. */
 final class ByteBufferWriter {
   private ByteBufferWriter() {}
 
   /**
-   * Minimum size for a cached buffer. This prevents us from allocating buffers that are too
-   * small to be easily reused.
+   * Minimum size for a cached buffer. This prevents us from allocating buffers that are too small
+   * to be easily reused.
    */
   // TODO(nathanmittler): tune this property or allow configuration?
   private static final int MIN_CACHED_BUFFER_SIZE = 1024;
 
   /**
-   * Maximum size for a cached buffer. If a larger buffer is required, it will be allocated
-   * but not cached.
+   * Maximum size for a cached buffer. If a larger buffer is required, it will be allocated but not
+   * cached.
    */
   // TODO(nathanmittler): tune this property or allow configuration?
   private static final int MAX_CACHED_BUFFER_SIZE = 16 * 1024;
 
-  /**
-   * The fraction of the requested buffer size under which the buffer will be reallocated.
-   */
+  /** The fraction of the requested buffer size under which the buffer will be reallocated. */
   // TODO(nathanmittler): tune this property or allow configuration?
   private static final float BUFFER_REALLOCATION_THRESHOLD = 0.5f;
 
   /**
-   * Keeping a soft reference to a thread-local buffer. This buffer is used for writing a
-   * {@link ByteBuffer} to an {@link OutputStream} when no zero-copy alternative was available.
-   * Using a "soft" reference since VMs may keep this reference around longer than "weak"
-   * (e.g. HotSpot will maintain soft references until memory pressure warrants collection).
+   * Keeping a soft reference to a thread-local buffer. This buffer is used for writing a {@link
+   * ByteBuffer} to an {@link OutputStream} when no zero-copy alternative was available. Using a
+   * "soft" reference since VMs may keep this reference around longer than "weak" (e.g. HotSpot will
+   * maintain soft references until memory pressure warrants collection).
    */
   private static final ThreadLocal<SoftReference<byte[]>> BUFFER =
       new ThreadLocal<SoftReference<byte[]>>();
 
-  /**
-   * This is a hack for GAE, where {@code FileOutputStream} is unavailable.
-   */
+  /** This is a hack for GAE, where {@code FileOutputStream} is unavailable. */
   private static final Class<?> FILE_OUTPUT_STREAM_CLASS = safeGetClass("java.io.FileOutputStream");
+
   private static final long CHANNEL_FIELD_OFFSET = getChannelFieldOffset(FILE_OUTPUT_STREAM_CLASS);
 
   /**
@@ -100,7 +95,7 @@ final class ByteBufferWriter {
         // Optimized write for array-backed buffers.
         // Note that we're taking the risk that a malicious OutputStream could modify the array.
         output.write(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining());
-      } else if (!writeToChannel(buffer, output)){
+      } else if (!writeToChannel(buffer, output)) {
         // Read all of the data from the buffer to an array.
         // TODO(nathanmittler): Consider performance improvements for other "known" stream types.
         final byte[] array = getOrCreateBuffer(buffer.remaining());
@@ -171,6 +166,7 @@ final class ByteBufferWriter {
       return null;
     }
   }
+
   private static long getChannelFieldOffset(Class<?> clazz) {
     try {
       if (clazz != null && UnsafeUtil.hasUnsafeArrayOperations()) {

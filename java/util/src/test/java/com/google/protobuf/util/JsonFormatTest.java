@@ -70,7 +70,6 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -160,6 +159,11 @@ public class JsonFormatTest extends TestCase {
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
     JsonFormat.parser().merge(json, builder);
+  }
+
+  private void mergeFromJsonIgnoringUnknownFields(String json, Message.Builder builder)
+      throws IOException {
+    JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
   }
 
   public void testAllFields() throws Exception {
@@ -669,9 +673,18 @@ public class JsonFormatTest extends TestCase {
               + "}",
           builder);
       fail();
+        
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
     }
+  }
+
+  public void testMapEnumNullValueIsIgnored() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+    mergeFromJsonIgnoringUnknownFields(
+        "{\n" + "  \"int32ToEnumMap\": {\"1\": null}\n" + "}", builder);
+    TestMap map = builder.build();
+    assertEquals(0, map.getInt32ToEnumMapMap().size());
   }
 
   public void testParserAcceptNonQuotedObjectKey() throws Exception {
@@ -1174,6 +1187,35 @@ public class JsonFormatTest extends TestCase {
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
   }
 
+  public void testParserIgnoringUnknownEnums() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    String json = "{\n" + "  \"optionalNestedEnum\": \"XXX\"\n" + "}";
+    JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+    assertEquals(0, builder.getOptionalNestedEnumValue());
+  }
+
+  public void testUnknownEnumMap() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+    JsonFormat.parser()
+        .ignoringUnknownFields()
+        .merge("{\n" + "  \"int32ToEnumMap\": {1: XXX, 2: FOO}" + "}", builder);
+
+    assertEquals(NestedEnum.FOO, builder.getInt32ToEnumMapMap().get(2));
+    assertEquals(1, builder.getInt32ToEnumMapMap().size());
+  }
+
+  public void testRepeatedUnknownEnum() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    JsonFormat.parser()
+        .ignoringUnknownFields()
+        .merge("{\n" + "  \"repeatedNestedEnum\": [XXX, FOO, BAR, BAZ]" + "}", builder);
+
+    assertEquals(NestedEnum.FOO, builder.getRepeatedNestedEnum(0));
+    assertEquals(NestedEnum.BAR, builder.getRepeatedNestedEnum(1));
+    assertEquals(NestedEnum.BAZ, builder.getRepeatedNestedEnum(2));
+    assertEquals(3, builder.getRepeatedNestedEnumList().size());
+  }
+
   public void testParserIntegerEnumValue() throws Exception {
     TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
     mergeFromJson("{\n" + "  \"optionalNestedEnum\": 2\n" + "}", actualBuilder);
@@ -1188,10 +1230,14 @@ public class JsonFormatTest extends TestCase {
     assertRoundTripEquals(message);
   }
 
-  public void testDefaultGsonDoesNotHtmlEscape() throws Exception {
-    TestAllTypes message = TestAllTypes.newBuilder().setOptionalString("=").build();
-    assertEquals(
-        "{\n" + "  \"optionalString\": \"=\"" + "\n}", JsonFormat.printer().print(message));
+  // Regression test for b/73832901. Make sure html tags are escaped.
+  public void testHtmlEscape() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalString("</script>").build();
+    assertEquals("{\n  \"optionalString\": \"\\u003c/script\\u003e\"\n}", toJsonString(message));
+
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    JsonFormat.parser().merge(toJsonString(message), builder);
+    assertEquals(message.getOptionalString(), builder.getOptionalString());
   }
 
   public void testIncludingDefaultValueFields() throws Exception {

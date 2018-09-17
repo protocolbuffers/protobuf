@@ -49,6 +49,8 @@
 #include <google/protobuf/stubs/stl_util.h>
 
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace io {
@@ -121,7 +123,7 @@ CodedInputStream::Limit CodedInputStream::PushLimit(int byte_limit) {
   // security: byte_limit is possibly evil, so check for negative values
   // and overflow. Also check that the new requested limit is before the
   // previous limit; otherwise we continue to enforce the previous limit.
-  if (GOOGLE_PREDICT_TRUE(byte_limit >= 0 &&
+  if (PROTOBUF_PREDICT_TRUE(byte_limit >= 0 &&
                         byte_limit <= INT_MAX - current_position &&
                         byte_limit < current_limit_ - current_position)) {
     current_limit_ = current_position + byte_limit;
@@ -191,7 +193,7 @@ void CodedInputStream::PrintTotalBytesLimitError() {
                 "big (more than " << total_bytes_limit_
              << " bytes).  To increase the limit (or to disable these "
                 "warnings), see CodedInputStream::SetTotalBytesLimit() "
-                "in google/protobuf/io/coded_stream.h.";
+                "in net/proto2/io/public/coded_stream.h.";
 }
 
 bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
@@ -312,11 +314,25 @@ bool CodedInputStream::ReadLittleEndian64Fallback(uint64* value) {
 
 namespace {
 
+// Decodes varint64 with known size, N, and returns next pointer. Knowing N at
+// compile time, compiler can generate optimal code. For example, instead of
+// subtracting 0x80 at each iteration, it subtracts properly shifted mask once.
+template <size_t N>
+const uint8* DecodeVarint64KnownSize(const uint8* buffer, uint64* value) {
+  GOOGLE_DCHECK_GT(N, 0);
+  uint64 result = static_cast<uint64>(buffer[N - 1]) << (7 * (N - 1));
+  for (int i = 0, offset = 0; i < N - 1; i++, offset += 7) {
+    result += static_cast<uint64>(buffer[i] - 0x80) << offset;
+  }
+  *value = result;
+  return buffer + N;
+}
+
 // Read a varint from the given buffer, write it to *value, and return a pair.
 // The first part of the pair is true iff the read was successful.  The second
 // part is buffer + (number of bytes read).  This function is always inlined,
 // so returning a pair is costless.
-GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+PROTOBUF_ALWAYS_INLINE
 ::std::pair<bool, const uint8*> ReadVarint32FromArray(
     uint32 first_byte, const uint8* buffer,
     uint32* value);
@@ -354,47 +370,39 @@ inline ::std::pair<bool, const uint8*> ReadVarint32FromArray(
   return std::make_pair(true, ptr);
 }
 
-GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE::std::pair<bool, const uint8*>
-ReadVarint64FromArray(const uint8* buffer, uint64* value);
+PROTOBUF_ALWAYS_INLINE::std::pair<bool, const uint8*> ReadVarint64FromArray(
+    const uint8* buffer, uint64* value);
 inline ::std::pair<bool, const uint8*> ReadVarint64FromArray(
     const uint8* buffer, uint64* value) {
-  const uint8* ptr = buffer;
-  uint32 b;
+  // Assumes varint64 is at least 2 bytes.
+  GOOGLE_DCHECK_GE(buffer[0], 128);
 
-  // Splitting into 32-bit pieces gives better performance on 32-bit
-  // processors.
-  uint32 part0 = 0, part1 = 0, part2 = 0;
+  const uint8* next;
+  if (buffer[1] < 128) {
+    next = DecodeVarint64KnownSize<2>(buffer, value);
+  } else if (buffer[2] < 128) {
+    next = DecodeVarint64KnownSize<3>(buffer, value);
+  } else if (buffer[3] < 128) {
+    next = DecodeVarint64KnownSize<4>(buffer, value);
+  } else if (buffer[4] < 128) {
+    next = DecodeVarint64KnownSize<5>(buffer, value);
+  } else if (buffer[5] < 128) {
+    next = DecodeVarint64KnownSize<6>(buffer, value);
+  } else if (buffer[6] < 128) {
+    next = DecodeVarint64KnownSize<7>(buffer, value);
+  } else if (buffer[7] < 128) {
+    next = DecodeVarint64KnownSize<8>(buffer, value);
+  } else if (buffer[8] < 128) {
+    next = DecodeVarint64KnownSize<9>(buffer, value);
+  } else if (buffer[9] < 128) {
+    next = DecodeVarint64KnownSize<10>(buffer, value);
+  } else {
+    // We have overrun the maximum size of a varint (10 bytes). Assume
+    // the data is corrupt.
+    return std::make_pair(false, buffer + 11);
+  }
 
-  b = *(ptr++); part0  = b      ; if (!(b & 0x80)) goto done;
-  part0 -= 0x80;
-  b = *(ptr++); part0 += b <<  7; if (!(b & 0x80)) goto done;
-  part0 -= 0x80 << 7;
-  b = *(ptr++); part0 += b << 14; if (!(b & 0x80)) goto done;
-  part0 -= 0x80 << 14;
-  b = *(ptr++); part0 += b << 21; if (!(b & 0x80)) goto done;
-  part0 -= 0x80 << 21;
-  b = *(ptr++); part1  = b      ; if (!(b & 0x80)) goto done;
-  part1 -= 0x80;
-  b = *(ptr++); part1 += b <<  7; if (!(b & 0x80)) goto done;
-  part1 -= 0x80 << 7;
-  b = *(ptr++); part1 += b << 14; if (!(b & 0x80)) goto done;
-  part1 -= 0x80 << 14;
-  b = *(ptr++); part1 += b << 21; if (!(b & 0x80)) goto done;
-  part1 -= 0x80 << 21;
-  b = *(ptr++); part2  = b      ; if (!(b & 0x80)) goto done;
-  part2 -= 0x80;
-  b = *(ptr++); part2 += b <<  7; if (!(b & 0x80)) goto done;
-  // "part2 -= 0x80 << 7" is irrelevant because (0x80 << 7) << 56 is 0.
-
-  // We have overrun the maximum size of a varint (10 bytes).  Assume
-  // the data is corrupt.
-  return std::make_pair(false, ptr);
-
- done:
-  *value = (static_cast<uint64>(part0)) |
-           (static_cast<uint64>(part1) << 28) |
-           (static_cast<uint64>(part2) << 56);
-  return std::make_pair(true, ptr);
+  return std::make_pair(true, next);
 }
 
 }  // namespace

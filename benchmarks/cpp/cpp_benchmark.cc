@@ -30,7 +30,7 @@
 
 #include <fstream>
 #include <iostream>
-#include "benchmark/benchmark_api.h"
+#include "benchmark/benchmark.h"
 #include "benchmarks.pb.h"
 #include "datasets/google_message1/proto2/benchmark_message1_proto2.pb.h"
 #include "datasets/google_message1/proto3/benchmark_message1_proto3.pb.h"

@@ -52,10 +52,9 @@ COPTS = select({
     ],
 })
 
-config_setting(
-    name = "msvc",
-    values = { "compiler": "msvc-cl" },
-)
+load(":compiler_config_setting.bzl", "create_compiler_config_setting")
+
+create_compiler_config_setting(name = "msvc", value = "msvc-cl")
 
 config_setting(
     name = "android",
@@ -111,7 +110,7 @@ cc_library(
         "src/google/protobuf/stubs/time.cc",
         "src/google/protobuf/wire_format_lite.cc",
     ],
-    hdrs = glob(["src/google/protobuf/**/*.h"]),
+    hdrs = glob(["src/google/protobuf/**/*.h", "src/google/protobuf/**/*.inc"]),
     copts = COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
@@ -178,7 +177,7 @@ cc_library(
         "src/google/protobuf/wire_format.cc",
         "src/google/protobuf/wrappers.pb.cc",
     ],
-    hdrs = glob(["src/**/*.h"]),
+    hdrs = glob(["src/**/*.h", "src/**/*.inc"]),
     copts = COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
@@ -322,8 +321,6 @@ cc_library(
         "src/google/protobuf/compiler/java/java_generator.cc",
         "src/google/protobuf/compiler/java/java_generator_factory.cc",
         "src/google/protobuf/compiler/java/java_helpers.cc",
-        "src/google/protobuf/compiler/java/java_lazy_message_field.cc",
-        "src/google/protobuf/compiler/java/java_lazy_message_field_lite.cc",
         "src/google/protobuf/compiler/java/java_map_field.cc",
         "src/google/protobuf/compiler/java/java_map_field_lite.cc",
         "src/google/protobuf/compiler/java/java_message.cc",
@@ -358,6 +355,7 @@ cc_library(
         "src/google/protobuf/compiler/plugin.pb.cc",
         "src/google/protobuf/compiler/python/python_generator.cc",
         "src/google/protobuf/compiler/ruby/ruby_generator.cc",
+        "src/google/protobuf/compiler/scc.cc",
         "src/google/protobuf/compiler/subprocess.cc",
         "src/google/protobuf/compiler/zip_writer.cc",
     ],
@@ -438,6 +436,7 @@ RELATIVE_TEST_PROTOS = [
     "google/protobuf/unittest_optimize_for.proto",
     "google/protobuf/unittest_preserve_unknown_enum.proto",
     "google/protobuf/unittest_preserve_unknown_enum2.proto",
+    "google/protobuf/unittest_proto3.proto",
     "google/protobuf/unittest_proto3_arena.proto",
     "google/protobuf/unittest_proto3_arena_lite.proto",
     "google/protobuf/unittest_proto3_lite.proto",
@@ -453,6 +452,7 @@ RELATIVE_TEST_PROTOS = [
     "google/protobuf/util/internal/testdata/struct.proto",
     "google/protobuf/util/internal/testdata/timestamp_duration.proto",
     "google/protobuf/util/internal/testdata/wrappers.proto",
+    "google/protobuf/util/json_format.proto",
     "google/protobuf/util/json_format_proto3.proto",
     "google/protobuf/util/message_differencer_unittest.proto",
 ]
@@ -547,6 +547,7 @@ cc_test(
         "src/google/protobuf/proto3_arena_lite_unittest.cc",
         "src/google/protobuf/proto3_arena_unittest.cc",
         "src/google/protobuf/proto3_lite_unittest.cc",
+        "src/google/protobuf/proto3_lite_unittest.inc",
         "src/google/protobuf/reflection_ops_unittest.cc",
         "src/google/protobuf/repeated_field_reflection_unittest.cc",
         "src/google/protobuf/repeated_field_unittest.cc",
@@ -934,6 +935,9 @@ OBJC_SRCS = [
 objc_library(
     name = "objectivec",
     hdrs = OBJC_HDRS + OBJC_PRIVATE_HDRS,
+    copts = [
+        "-Wno-vla",
+    ],
     includes = [
         "objectivec",
     ],

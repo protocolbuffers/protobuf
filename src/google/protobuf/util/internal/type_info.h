@@ -38,13 +38,15 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
 // Internal helper class for type resolving. Note that this class is not
 // thread-safe and should only be accessed in one thread.
-class LIBPROTOBUF_EXPORT TypeInfo {
+class PROTOBUF_EXPORT TypeInfo {
  public:
   TypeInfo() {}
   virtual ~TypeInfo() {}
@@ -87,6 +89,8 @@ class LIBPROTOBUF_EXPORT TypeInfo {
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_H__

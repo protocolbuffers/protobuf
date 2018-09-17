@@ -214,6 +214,17 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
 }
 
 template <typename Value>
+void SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllFileNames(
+    std::vector<string>* output) {
+  output->resize(by_name_.size());
+  int i = 0;
+  for (const auto& kv : by_name_) {
+    (*output)[i] = kv.first;
+    i++;
+  }
+}
+
+template <typename Value>
 typename std::map<string, Value>::iterator
 SimpleDescriptorDatabase::DescriptorIndex<Value>::FindLastLessOrEqual(
     const string& name) {
@@ -292,6 +303,11 @@ bool SimpleDescriptorDatabase::FindAllExtensionNumbers(
   return index_.FindAllExtensionNumbers(extendee_type, output);
 }
 
+
+bool SimpleDescriptorDatabase::FindAllFileNames(std::vector<string>* output) {
+  index_.FindAllFileNames(output);
+  return true;
+}
 
 bool SimpleDescriptorDatabase::MaybeCopy(const FileDescriptorProto* file,
                                          FileDescriptorProto* output) {

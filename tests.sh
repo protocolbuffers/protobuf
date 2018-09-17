@@ -1,14 +1,8 @@
 #!/bin/bash
 #
-# Build and runs tests for the protobuf project.  The tests as written here are
-# used by both Jenkins and Travis, though some specialized logic is required to
-# handle the differences between them.
-
-on_travis() {
-  if [ "$TRAVIS" == "true" ]; then
-    "$@"
-  fi
-}
+# Build and runs tests for the protobuf project. We use this script to run
+# tests on kokoro (Ubuntu and MacOS). It can run locally as well but you
+# will need to make sure the required compilers/tools are available.
 
 # For when some other test needs the C++ main build, including protoc and
 # libprotobuf.
@@ -18,33 +12,22 @@ internal_build_cpp() {
     return
   fi
 
-  if [[ $(uname -s) == "Linux" && "$TRAVIS" == "true" ]]; then
-    # Install GCC 4.8 to replace the default GCC 4.6. We need 4.8 for more
-    # decent C++ 11 support in order to compile conformance tests.
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    sudo apt-get update -qq
-    sudo apt-get install -qq g++-4.8
-    export CXX="g++-4.8" CC="gcc-4.8"
-  fi
-
   # Initialize any submodules.
   git submodule update --init --recursive
 
   ./autogen.sh
   ./configure CXXFLAGS="-fPIC"  # -fPIC is needed for python cpp test.
                                 # See python/setup.py for more details
-  make -j2
+  make -j4
 }
 
 build_cpp() {
   internal_build_cpp
-  make check -j2 || (cat src/test-suite.log; false)
+  make check -j4 || (cat src/test-suite.log; false)
   cd conformance && make test_cpp && cd ..
 
   # The benchmark code depends on cmake, so test if it is installed before
   # trying to do the build.
-  # NOTE: The travis macOS images say they have cmake, but the xcode8.1 image
-  # appears to be missing it: https://github.com/travis-ci/travis-ci/issues/6996
   if [[ $(type cmake 2>/dev/null) ]]; then
     # Verify benchmarking code can build successfully.
     cd benchmarks && make cpp-benchmark && cd ..
@@ -73,10 +56,10 @@ build_cpp_distcheck() {
   # Check if every file exists in the dist tar file.
   FILES_MISSING=""
   for FILE in $(<../dist.lst); do
-    if ! file $FILE &>/dev/null; then
+    [ -f "$FILE" ] || {
       echo "$FILE is not found!"
       FILES_MISSING="$FILE $FILES_MISSING"
-    fi
+    }
   done
   cd ..
   if [ ! -z "$FILES_MISSING" ]; then
@@ -85,7 +68,7 @@ build_cpp_distcheck() {
   fi
 
   # Do the regular dist-check for C++.
-  make distcheck -j2
+  make distcheck -j4
 }
 
 build_csharp() {
@@ -121,14 +104,10 @@ build_golang() {
   # Add protoc to the path so that the examples build finds it.
   export PATH="`pwd`/src:$PATH"
 
-  # Install Go and the Go protobuf compiler plugin.
-  on_travis sudo apt-get update -qq
-  on_travis sudo apt-get install -qq golang
-
   export GOPATH="$HOME/gocode"
-  mkdir -p "$GOPATH/src/github.com/google"
-  rm -f "$GOPATH/src/github.com/google/protobuf"
-  ln -s "`pwd`" "$GOPATH/src/github.com/google/protobuf"
+  mkdir -p "$GOPATH/src/github.com/protocolbuffers"
+  rm -f "$GOPATH/src/github.com/protocolbuffers/protobuf"
+  ln -s "`pwd`" "$GOPATH/src/github.com/protocolbuffers/protobuf"
   export PATH="$GOPATH/bin:$PATH"
   go get github.com/golang/protobuf/protoc-gen-go
 
@@ -139,27 +118,17 @@ use_java() {
   version=$1
   case "$version" in
     jdk7)
-      on_travis sudo apt-get install openjdk-7-jdk
       export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH
       export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
       ;;
     oracle7)
-      if [ "$TRAVIS" == "true" ]; then
-        sudo apt-get install python-software-properties # for apt-add-repository
-        echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | \
-          sudo debconf-set-selections
-        yes | sudo apt-add-repository ppa:webupd8team/java
-        yes | sudo apt-get install oracle-java7-installer
-      fi;
       export PATH=/usr/lib/jvm/java-7-oracle/bin:$PATH
       export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
       ;;
   esac
 
-  if [ "$TRAVIS" != "true" ]; then
-    MAVEN_LOCAL_REPOSITORY=/var/maven_local_repository
-    MVN="$MVN -e -X --offline -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
-  fi;
+  MAVEN_LOCAL_REPOSITORY=/var/maven_local_repository
+  MVN="$MVN -e -X --offline -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
 
   which java
   java -version
@@ -190,12 +159,6 @@ build_java_with_conformance_tests() {
   cd conformance && make test_java && cd ..
 }
 
-build_javanano() {
-  # Java build needs `protoc`.
-  internal_build_cpp
-  cd javanano && $MVN test && cd ..
-}
-
 build_java_jdk7() {
   use_java jdk7
   build_java_with_conformance_tests
@@ -211,38 +174,6 @@ build_java_compatibility() {
   # 3.0.0-beta-4 and the current version.
   cd java/compatibility_tests/v2.5.0
   ./test.sh 3.0.0-beta-4
-}
-
-build_javanano_jdk7() {
-  use_java jdk7
-  build_javanano
-}
-build_javanano_oracle7() {
-  use_java oracle7
-  build_javanano
-}
-
-internal_install_python_deps() {
-  if [ "$TRAVIS" != "true" ]; then
-    return;
-  fi
-  # Install tox (OS X doesn't have pip).
-  if [ $(uname -s) == "Darwin" ]; then
-    brew upgrade python
-    python3 -m pip install tox
-  else
-    sudo pip install tox
-  fi
-  # Only install Python2.6/3.x on Linux.
-  if [ $(uname -s) == "Linux" ]; then
-    sudo apt-get install -y python-software-properties # for apt-add-repository
-    sudo apt-add-repository -y ppa:fkrull/deadsnakes
-    sudo apt-get update -qq
-    sudo apt-get install -y python3.3 python3.3-dev
-    sudo apt-get install -y python3.4 python3.4-dev
-    sudo apt-get install -y python3.5 python3.5-dev
-    sudo apt-get install -y python3.6 python3.6-dev
-  fi
 }
 
 build_objectivec_ios() {
@@ -279,9 +210,7 @@ build_objectivec_cocoapods_integration() {
 
 build_python() {
   internal_build_cpp
-  internal_install_python_deps
   cd python
-  # Only test Python 2.6/3.x on Linux
   if [ $(uname -s) == "Linux" ]; then
     envlist=py\{27,33,34,35,36\}-python
   else
@@ -293,11 +222,9 @@ build_python() {
 
 build_python_cpp() {
   internal_build_cpp
-  internal_install_python_deps
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
-  # Only test Python 3.x on Linux
   if [ $(uname -s) == "Linux" ]; then
     envlist=py\{27,33,34,35,36\}-cpp
   else
@@ -337,21 +264,12 @@ build_ruby25() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.5.0 && cd ..
 }
-build_jruby() {
-  internal_build_cpp  # For conformance tests.
-  # TODO(xiaofeng): Upgrade to jruby-9.x. There are some broken jests to be
-  # fixed.
-  cd ruby && bash travis-test.sh jruby-1.7 && cd ..
-}
 build_ruby_all() {
   build_ruby21
   build_ruby22
   build_ruby23
   build_ruby24
   build_ruby25
-  # TODO(teboring): Disable jruby test temperarily for it randomly fails.
-  # https://grpc-testing.appspot.com/job/protobuf_pull_request/735/consoleFull.
-  # build_jruby
 }
 
 build_javascript() {
@@ -589,18 +507,21 @@ build_php7.1() {
   phpunit
   popd
   pushd conformance
-  # TODO(teboring): Add it back
-  # make test_php
+  make test_php
   popd
 }
 
 build_php7.1_c() {
+  ENABLE_CONFORMANCE_TEST=$1
   use_php 7.1
   wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 7.1 && cd ../..
-  pushd conformance
-  # make test_php_c
-  popd
+  if [ "$ENABLE_CONFORMANCE_TEST" = "true" ]
+  then
+    pushd conformance
+    make test_php_c
+    popd
+  fi
 }
 
 build_php7.1_zts_c() {
@@ -620,7 +541,7 @@ build_php_all_32() {
   build_php5.5_c
   build_php5.6_c
   build_php7.0_c
-  build_php7.1_c
+  build_php7.1_c $1
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
@@ -628,17 +549,9 @@ build_php_all_32() {
 }
 
 build_php_all() {
-  build_php_all_32
+  build_php_all_32 true
   build_php_compatibility
 }
-
-# Note: travis currently does not support testing more than one language so the
-# .travis.yml cheats and claims to only be cpp.  If they add multiple language
-# support, this should probably get updated to install steps and/or
-# rvm/gemfile/jdk/etc. entries rather than manually doing the work.
-
-# .travis.yml uses matrix.exclude to block the cases where app-get can't be
-# use to install things.
 
 # -------- main --------
 
@@ -650,8 +563,6 @@ Usage: $0 { cpp |
             java_jdk7 |
             java_oracle7 |
             java_compatibility |
-            javanano_jdk7 |
-            javanano_oracle7 |
             objectivec_ios |
             objectivec_ios_debug |
             objectivec_ios_release |
@@ -680,4 +591,5 @@ fi
 
 set -e  # exit immediately on error
 set -x  # display all commands
+cd $(dirname $0)
 eval "build_$1"

@@ -63,11 +63,11 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
   void GenerateMapGetters(io::Printer* printer) const;
 };
@@ -75,6 +75,6 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_H__

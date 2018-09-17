@@ -106,6 +106,8 @@ class FieldGroup {
 // STRING is grouped next, as our Clear/SharedCtor/SharedDtor walks it and
 // calls ArenaStringPtr::Destroy on each.
 //
+// LAZY_MESSAGE is grouped next, as it interferes with the ability to memset
+// non-repeated fields otherwise.
 //
 // MESSAGE is grouped next, as our Clear/SharedDtor code walks it and calls
 // delete on each.  We initialize these fields with a NULL pointer (see
@@ -122,6 +124,9 @@ void PaddingOptimizer::OptimizeLayout(
   enum Family {
     REPEATED = 0,
     STRING = 1,
+    // Laying out LAZY_MESSAGE before MESSAGE allows a single memset to zero
+    // MESSAGE and ZERO_INITIALIZABLE fields together.
+    LAZY_MESSAGE = 2,
     MESSAGE = 3,
     ZERO_INITIALIZABLE = 4,
     OTHER = 5,
@@ -142,7 +147,9 @@ void PaddingOptimizer::OptimizeLayout(
       f = STRING;
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       f = MESSAGE;
-
+      if (IsLazy(field, options)) {
+        f = LAZY_MESSAGE;
+      }
     } else if (CanInitializeByZeroing(field)) {
       f = ZERO_INITIALIZABLE;
     }

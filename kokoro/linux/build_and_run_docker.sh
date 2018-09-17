@@ -8,7 +8,6 @@
 # OUTPUT_DIR - Directory that will be copied from inside docker after finishing.
 # $@ - Extra args to pass to docker run
 
-
 set -ex
 
 cd $(dirname $0)/../..
@@ -35,9 +34,10 @@ echo $git_root
 docker run \
   "$@" \
   -e CCACHE_DIR=$CCACHE_DIR \
+  -e KOKORO_BUILD_NUMBER=$KOKORO_BUILD_NUMBER \
+  -e KOKORO_BUILD_ID=$KOKORO_BUILD_ID \
   -e EXTERNAL_GIT_ROOT="/var/local/kokoro/protobuf" \
   -e TEST_SET="$TEST_SET" \
-  -e THIS_IS_REALLY_NEEDED='see https://github.com/docker/docker/issues/14203 for why docker is awful' \
   -v "$git_root:/var/local/kokoro/protobuf:ro" \
   -v $CCACHE_DIR:$CCACHE_DIR \
   -w /var/local/git/protobuf \
@@ -45,16 +45,9 @@ docker run \
   $DOCKER_IMAGE_NAME \
   bash -l "/var/local/kokoro/protobuf/$DOCKER_RUN_SCRIPT" || FAILED="true"
 
-# Copy output artifacts
-if [ "$OUTPUT_DIR" != "" ]
-then
-  docker cp "$CONTAINER_NAME:/var/local/git/protobuf/$OUTPUT_DIR" "${git_root}/kokoro" || FAILED="true"
-fi
-
 # remove the container, possibly killing it first
 docker rm -f $CONTAINER_NAME || true
 
-if [ "$FAILED" != "" ]
-then
+[ -z "$FAILED" ] || {
   exit 1
-fi
+}

@@ -57,6 +57,7 @@ message AnyTestCases {
   AnyWrapper any_with_message_containing_struct = 13;
   AnyWrapper any_with_message_containing_repeated_message = 14;
   AnyWrapper recursive_any_with_type_field_at_end = 15;
+  AnyWrapper repeated_any = 16;
 
   google.protobuf.Any top_level_any = 50;
   google.protobuf.Any top_level_any_with_type_field_at_end = 51;
@@ -87,6 +88,7 @@ message Data {
   map<string, string> map_data = 7;
   google.protobuf.Struct struct_data = 8;
   repeated Data repeated_data = 9;
+  repeated google.protobuf.Any repeated_any = 10;
 }
 
 service AnyTestService {

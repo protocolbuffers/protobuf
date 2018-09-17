@@ -42,28 +42,30 @@
 
 namespace google {
 namespace protobuf {
-  namespace compiler {
-    namespace java {
-      class Context;           // context.h
-      class ClassNameResolver; // name_resolver.h
-    }
-  }
-}
+namespace compiler {
+namespace java {
+class Context;            // context.h
+class ClassNameResolver;  // name_resolver.h
+}  // namespace java
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
 
+namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
 
 class ImmutableStringFieldLiteGenerator : public ImmutableFieldLiteGenerator {
  public:
-  explicit ImmutableStringFieldLiteGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+  explicit ImmutableStringFieldLiteGenerator(const FieldDescriptor* descriptor,
+                                             int messageBitIndex,
+                                             Context* context);
   ~ImmutableStringFieldLiteGenerator();
 
-  // implements ImmutableFieldLiteGenerator ------------------------------------
+  // implements ImmutableFieldLiteGenerator
+  // ------------------------------------
   int GetNumBitsForMessage() const;
-  int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
@@ -79,13 +81,12 @@ class ImmutableStringFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   void GenerateHashCode(io::Printer* printer) const;
 
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  protected:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
-  const int builderBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
 
@@ -96,9 +97,8 @@ class ImmutableStringFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 class ImmutableStringOneofFieldLiteGenerator
     : public ImmutableStringFieldLiteGenerator {
  public:
-  ImmutableStringOneofFieldLiteGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+  ImmutableStringOneofFieldLiteGenerator(const FieldDescriptor* descriptor,
+                                         int messageBitIndex, Context* context);
   ~ImmutableStringOneofFieldLiteGenerator();
 
  private:
@@ -117,13 +117,11 @@ class RepeatedImmutableStringFieldLiteGenerator
     : public ImmutableFieldLiteGenerator {
  public:
   explicit RepeatedImmutableStringFieldLiteGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+      const FieldDescriptor* descriptor, int messageBitIndex, Context* context);
   ~RepeatedImmutableStringFieldLiteGenerator();
 
   // implements ImmutableFieldLiteGenerator ------------------------------------
   int GetNumBitsForMessage() const;
-  int GetNumBitsForBuilder() const;
   void GenerateInterfaceMembers(io::Printer* printer) const;
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
@@ -139,13 +137,12 @@ class RepeatedImmutableStringFieldLiteGenerator
   void GenerateHashCode(io::Printer* printer) const;
 
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
-  const int builderBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
 
@@ -155,6 +152,6 @@ class RepeatedImmutableStringFieldLiteGenerator
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_LITE_H__

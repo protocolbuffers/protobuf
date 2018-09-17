@@ -85,6 +85,16 @@ namespace Google.Protobuf.Reflection
         /// Gets an accessor for reflective access to the values associated with the oneof
         /// in a particular message.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// In descriptors for generated code, the value returned by this property will always be non-null.
+        /// </para>
+        /// <para>
+        /// In dynamically loaded descriptors, the value returned by this property will current be null;
+        /// if and when dynamic messages are supported, it will return a suitable accessor to work with
+        /// them.
+        /// </para>
+        /// </remarks>
         /// <value>
         /// The accessor used for reflective access.
         /// </value>
@@ -110,6 +120,12 @@ namespace Google.Protobuf.Reflection
 
         private OneofAccessor CreateAccessor(string clrName)
         {
+            // We won't have a CLR name if this is from a dynamically-loaded FileDescriptor.
+            // TODO: Support dynamic messages.
+            if (clrName == null)
+            {
+                return null;
+            }
             var caseProperty = containingType.ClrType.GetProperty(clrName + "Case");
             if (caseProperty == null)
             {

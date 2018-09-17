@@ -33,6 +33,7 @@ package com.google.protobuf;
 import java.lang.reflect.Field;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
@@ -146,6 +147,10 @@ final class UnsafeUtil {
     return MEMORY_ACCESSOR.getObject(target, offset);
   }
 
+  static void putObject(Object target, long offset, Object value) {
+    MEMORY_ACCESSOR.putObject(target, offset, value);
+  }
+
   static byte getByte(byte[] target, long index) {
     return MEMORY_ACCESSOR.getByte(target, BYTE_ARRAY_BASE_OFFSET + index);
   }
@@ -221,7 +226,7 @@ final class UnsafeUtil {
   }
 
   static void copyMemory(byte[] src, long srcIndex, byte[] target, long targetIndex, long length) {
-    System.arraycopy(src, (int) srcIndex, target, (int) targetIndex, (int) length); 
+    System.arraycopy(src, (int) srcIndex, target, (int) targetIndex, (int) length);
   }
 
   static byte getByte(long address) {
@@ -248,9 +253,7 @@ final class UnsafeUtil {
     MEMORY_ACCESSOR.putLong(address, value);
   }
 
-  /**
-   * Gets the offset of the {@code address} field of the given direct {@link ByteBuffer}.
-   */
+  /** Gets the offset of the {@code address} field of the given direct {@link ByteBuffer}. */
   static long addressOffset(ByteBuffer buffer) {
     return MEMORY_ACCESSOR.getLong(buffer, BUFFER_ADDRESS_OFFSET);
   }
@@ -370,12 +373,6 @@ final class UnsafeUtil {
     return field != null && field.getType() == long.class ? field : null;
   }
 
-  /** Finds the value field within a {@link String}. */
-  private static Field stringValueField() {
-    Field field = field(String.class, "value");
-    return field != null && field.getType() == char[].class ? field : null;
-  }
-
   /**
    * Returns the offset of the provided field, or {@code -1} if {@code sun.misc.Unsafe} is not
    * available.
@@ -473,9 +470,9 @@ final class UnsafeUtil {
     public abstract void putLong(long address, long value);
 
     public abstract Object getStaticObject(Field field);
-    
+
     public abstract void copyMemory(long srcOffset, byte[] target, long targetIndex, long length);
-    
+
     public abstract void copyMemory(byte[] src, long srcIndex, long targetOffset, long length);
   }
 
@@ -554,12 +551,12 @@ final class UnsafeUtil {
     public void putDouble(Object target, long offset, double value) {
       unsafe.putDouble(target, offset, value);
     }
-    
-    @Override 
+
+    @Override
     public void copyMemory(long srcOffset, byte[] target, long targetIndex, long length) {
       unsafe.copyMemory(null, srcOffset, target, BYTE_ARRAY_BASE_OFFSET + targetIndex, length);
     }
-    
+
     @Override
     public void copyMemory(byte[] src, long srcIndex, long targetOffset, long length) {
       unsafe.copyMemory(src, BYTE_ARRAY_BASE_OFFSET + srcIndex, null, targetOffset, length);

@@ -44,6 +44,7 @@
 #undef UNITTEST
 #undef UNITTEST_IMPORT
 
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -94,7 +95,7 @@ class ReflectionTester {
   static void ExpectOneofSetViaReflection(const Message& message);
 
  private:
-  const FieldDescriptor* F(const string& name);
+  const FieldDescriptor* F(const std::string& name);
 
   const Descriptor* base_descriptor_;
 
@@ -128,10 +129,10 @@ inline TestUtil::ReflectionTester::ReflectionTester(
     const Descriptor* base_descriptor)
     : base_descriptor_(base_descriptor) {
   const DescriptorPool* pool = base_descriptor->file()->pool();
-  string package = base_descriptor->file()->package();
+  std::string package = base_descriptor->file()->package();
   const FieldDescriptor* import_descriptor =
       pool->FindFieldByName(package + ".TestAllTypes.optional_import_message");
-  string import_package = import_descriptor->message_type()->file()->package();
+  std::string import_package = import_descriptor->message_type()->file()->package();
 
   nested_b_ = pool->FindFieldByName(package + ".TestAllTypes.NestedMessage.bb");
   foreign_c_ = pool->FindFieldByName(package + ".ForeignMessage.c");
@@ -176,7 +177,7 @@ inline TestUtil::ReflectionTester::ReflectionTester(
 
 // Shorthand to get a FieldDescriptor for a field of TestAllTypes.
 inline const FieldDescriptor* TestUtil::ReflectionTester::F(
-    const string& name) {
+    const std::string& name) {
   const FieldDescriptor* result = nullptr;
   if (base_descriptor_->name() == "TestAllExtensions" ||
       base_descriptor_->name() == "TestPackedExtensions") {
@@ -361,7 +362,7 @@ inline void TestUtil::ReflectionTester::ExpectOneofSetViaReflection(
     const Message& message) {
   const Descriptor* descriptor = message.GetDescriptor();
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  std::string scratch;
   EXPECT_TRUE(reflection->HasField(
       message, descriptor->FindFieldByName("foo_lazy_message")));
   EXPECT_TRUE(
@@ -441,7 +442,7 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection(
 inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
     const Message& message) {
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  std::string scratch;
   const Message* sub_message;
 
   EXPECT_TRUE(reflection->HasField(message, F("optional_int32")));
@@ -565,7 +566,7 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
 inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
     const Message& message) {
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  std::string scratch;
   const Message* sub_message;
 
   // -----------------------------------------------------------------
@@ -740,7 +741,7 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
 inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
     const Message& message) {
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  std::string scratch;
 
   // -----------------------------------------------------------------
 
@@ -869,7 +870,7 @@ inline void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
 inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
     const Message& message) {
   const Reflection* reflection = message.GetReflection();
-  string scratch;
+  std::string scratch;
   const Message* sub_message;
 
   // has_blah() should initially be false for all optional fields.
@@ -1269,10 +1270,10 @@ inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
 // expect for a TestFieldOrderings message filled in by
 // SetAllFieldsAndExtensions().
 inline void ExpectAllFieldsAndExtensionsInOrder(
-    const string& serialized) {
+    const std::string& serialized) {
   // We set each field individually, serialize separately, and concatenate all
   // the strings in canonical order to determine the expected serialization.
-  string expected;
+  std::string expected;
   unittest::TestFieldOrderings message;
   message.set_my_int(1);  // Field 1.
   message.AppendToString(&expected);
@@ -1296,6 +1297,8 @@ inline void ExpectAllFieldsAndExtensionsInOrder(
 
 }  // namespace TestUtil
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_TEST_UTIL_H__

@@ -76,6 +76,9 @@ class DescriptorDatabase(object):
         self._AddSymbol(name, file_desc_proto)
     for enum in file_desc_proto.enum_type:
       self._AddSymbol(('.'.join((package, enum.name))), file_desc_proto)
+      for enum_value in enum.value:
+        self._file_desc_protos_by_symbol[
+            '.'.join((package, enum_value.name))] = file_desc_proto
     for extension in file_desc_proto.extension:
       self._AddSymbol(('.'.join((package, extension.name))), file_desc_proto)
     for service in file_desc_proto.service:
@@ -131,7 +134,19 @@ class DescriptorDatabase(object):
       # descriptor can also be found. The behavior is the same with
       # protobuf C++.
       top_level, _, _ = symbol.rpartition('.')
-      return self._file_desc_protos_by_symbol[top_level]
+      try:
+        return self._file_desc_protos_by_symbol[top_level]
+      except KeyError:
+        # Raise the original symbol as a KeyError for better diagnostics.
+        raise KeyError(symbol)
+
+  def FindFileContainingExtension(self, extendee_name, extension_number):
+    # TODO(jieluo): implement this API.
+    return None
+
+  def FindAllExtensionNumbers(self, extendee_name):
+    # TODO(jieluo): implement this API.
+    return []
 
   def _AddSymbol(self, name, file_desc_proto):
     if name in self._file_desc_protos_by_symbol:

@@ -33,8 +33,8 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
-#include <google/protobuf/stubs/hash.h>
 #include <limits>
+#include <unordered_set>
 #include <vector>
 
 #include <google/protobuf/stubs/stringprintf.h>
@@ -135,6 +135,29 @@ void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
   printer->Print(ptemplate.c_str(), "annotation_file", annotation_file);
 }
 
+void PrintEnumVerifierLogic(io::Printer* printer,
+                            const FieldDescriptor* descriptor,
+                            const std::map<string, string>& variables,
+                            const char* var_name,
+                            const char* terminating_string,
+                            bool enforce_lite) {
+  std::string enum_verifier_string =
+      (descriptor->enum_type()->file()->options().optimize_for() ==
+       FileOptions::LITE_RUNTIME) || enforce_lite
+          ? StrCat(var_name, ".internalGetVerifier()")
+          : StrCat(
+              "new com.google.protobuf.Internal.EnumVerifier() {\n"
+              "        @java.lang.Override\n"
+              "        public boolean isInRange(int number) {\n"
+              "          return ", var_name, ".forNumber(number) != null;\n"
+              "        }\n"
+              "      }"
+      );
+  printer->Print(
+      variables,
+      StrCat(enum_verifier_string, terminating_string).c_str());
+}
+
 string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
   string result;
   // Note:  I distrust ctype.h due to locales.
@@ -176,6 +199,10 @@ string UnderscoresToCamelCase(const FieldDescriptor* field) {
 
 string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field) {
   return UnderscoresToCamelCase(FieldName(field), true);
+}
+
+string CapitalizedFieldName(const FieldDescriptor* field) {
+  return UnderscoresToCapitalizedCamelCase(field);
 }
 
 string UnderscoresToCamelCase(const MethodDescriptor* method) {
@@ -221,6 +248,10 @@ string FileJavaPackage(const FileDescriptor* file, bool immutable) {
   }
 
   return result;
+}
+
+string FileJavaPackage(const FileDescriptor* file) {
+  return FileJavaPackage(file, true /* immutable */);
 }
 
 string JavaPackageToDir(string package_name) {
@@ -369,6 +400,10 @@ const char* PrimitiveTypeName(JavaType type) {
   return NULL;
 }
 
+const char* PrimitiveTypeName(const FieldDescriptor* descriptor) {
+  return PrimitiveTypeName(GetJavaType(descriptor));
+}
+
 const char* BoxedPrimitiveTypeName(JavaType type) {
   switch (type) {
     case JAVATYPE_INT    : return "java.lang.Integer";
@@ -387,6 +422,10 @@ const char* BoxedPrimitiveTypeName(JavaType type) {
 
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
+}
+
+const char* BoxedPrimitiveTypeName(const FieldDescriptor* descriptor) {
+  return BoxedPrimitiveTypeName(GetJavaType(descriptor));
 }
 
 
@@ -437,11 +476,13 @@ string DefaultValue(const FieldDescriptor* field, bool immutable,
       return SimpleItoa(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
       // Need to print as a signed int since Java has no unsigned.
-      return SimpleItoa(static_cast<int32>(field->default_value_uint32()));
+      return SimpleItoa(
+          static_cast<int32>(field->default_value_uint32()));
     case FieldDescriptor::CPPTYPE_INT64:
       return SimpleItoa(field->default_value_int64()) + "L";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return SimpleItoa(static_cast<int64>(field->default_value_uint64())) +
+      return SimpleItoa(
+                 static_cast<int64>(field->default_value_uint64())) +
              "L";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
@@ -749,9 +790,8 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
 //
 // already_seen is used to avoid checking the same type multiple times
 // (and also to protect against recursion).
-bool HasRequiredFields(
-    const Descriptor* type,
-    hash_set<const Descriptor*>* already_seen) {
+bool HasRequiredFields(const Descriptor* type,
+                       std::unordered_set<const Descriptor*>* already_seen) {
   if (already_seen->count(type) > 0) {
     // The type is already in cache.  This means that either:
     // a. The type has no required fields.
@@ -786,7 +826,7 @@ bool HasRequiredFields(
 }
 
 bool HasRequiredFields(const Descriptor* type) {
-  hash_set<const Descriptor*> already_seen;
+  std::unordered_set<const Descriptor*> already_seen;
   return HasRequiredFields(type, &already_seen);
 }
 
@@ -932,22 +972,6 @@ void EscapeUtf16ToString(uint16 code, string* output) {
   }
 }
 
-std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
-    const FieldDescriptor** fields, int count) {
-  GOOGLE_CHECK_GT(count, 0);
-  int table_driven_number_of_entries = count;
-  int look_up_start_field_number = 0;
-  for (int i = 0; i < count; i++) {
-    const int field_number = fields[i]->number();
-    if (ShouldUseTable(fields[0]->number(), field_number, i + 1)) {
-      table_driven_number_of_entries =
-          field_number - fields[0]->number() + 1 + count - i - 1;
-      look_up_start_field_number = field_number + 1;
-    }
-  }
-  return std::make_pair(
-      table_driven_number_of_entries, look_up_start_field_number);
-}
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

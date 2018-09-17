@@ -133,11 +133,17 @@
   #endif
 #endif
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/port.h>
-#include <google/protobuf/stubs/port.h>
+
+
+#include <google/protobuf/port_def.inc>
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+#include "util/coding/varint.h"
+#endif
 
 namespace google {
-
 namespace protobuf {
 
 class DescriptorPool;
@@ -155,6 +161,13 @@ class CodedOutputStream;
 class ZeroCopyInputStream;           // zero_copy_stream.h
 class ZeroCopyOutputStream;          // zero_copy_stream.h
 
+template <typename T>
+T UnalignedLoad(const void* p) {
+  T res;
+  memcpy(&res, p, sizeof(T));
+  return res;
+}
+
 // Class which reads and decodes binary data which is composed of varint-
 // encoded integers and fixed-width pieces.  Wraps a ZeroCopyInputStream.
 // Most users will not need to deal with CodedInputStream.
@@ -162,7 +175,7 @@ class ZeroCopyOutputStream;          // zero_copy_stream.h
 // Most methods of CodedInputStream that return a bool return false if an
 // underlying I/O error occurs or if the data is malformed.  Once such a
 // failure occurs, the CodedInputStream is broken and is no longer useful.
-class LIBPROTOBUF_EXPORT CodedInputStream {
+class PROTOBUF_EXPORT CodedInputStream {
  public:
   // Create a CodedInputStream that reads from the given ZeroCopyInputStream.
   explicit CodedInputStream(ZeroCopyInputStream* input);
@@ -198,7 +211,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Like GetDirectBufferPointer, but this method is inlined, and does not
   // attempt to Refresh() if the buffer is currently empty.
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  PROTOBUF_ALWAYS_INLINE
   void GetDirectBufferPointerInline(const void** data, int* size);
 
   // Read raw bytes, copying them into the given buffer.
@@ -206,15 +219,15 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Like the above, with inlined optimizations. This should only be used
   // by the protobuf implementation.
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  PROTOBUF_ALWAYS_INLINE
   bool InternalReadRawInline(void* buffer, int size);
 
   // Like ReadRaw, but reads into a string.
-  bool ReadString(string* buffer, int size);
+  bool ReadString(std::string* buffer, int size);
   // Like the above, with inlined optimizations. This should only be used
   // by the protobuf implementation.
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
-  bool InternalReadStringInline(string* buffer, int size);
+  PROTOBUF_ALWAYS_INLINE
+  bool InternalReadStringInline(std::string* buffer, int size);
 
 
   // Read a 32-bit little-endian integer.
@@ -257,12 +270,11 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Always inline because this is only called in one place per parse loop
   // but it is called for every iteration of said loop, so it should be fast.
   // GCC doesn't want to inline this by default.
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE uint32 ReadTag() {
+  PROTOBUF_ALWAYS_INLINE uint32 ReadTag() {
     return last_tag_ = ReadTagNoLastTag();
   }
 
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE uint32 ReadTagNoLastTag();
-
+  PROTOBUF_ALWAYS_INLINE uint32 ReadTagNoLastTag();
 
   // This usually a faster alternative to ReadTag() when cutoff is a manifest
   // constant.  It does particularly well for cutoff >= 127.  The first part
@@ -272,14 +284,14 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // above cutoff or is 0.  (There's intentional wiggle room when tag is 0,
   // because that can arise in several ways, and for best performance we want
   // to avoid an extra "is tag == 0?" check here.)
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  PROTOBUF_ALWAYS_INLINE
   std::pair<uint32, bool> ReadTagWithCutoff(uint32 cutoff) {
     std::pair<uint32, bool> result = ReadTagWithCutoffNoLastTag(cutoff);
     last_tag_ = result.first;
     return result;
   }
 
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  PROTOBUF_ALWAYS_INLINE
   std::pair<uint32, bool> ReadTagWithCutoffNoLastTag(uint32 cutoff);
 
   // Usually returns true if calling ReadVarint32() now would produce the given
@@ -289,7 +301,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // parameter.
   // Always inline because this collapses to a small number of instructions
   // when given a constant parameter, but GCC doesn't want to inline by default.
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE bool ExpectTag(uint32 expected);
+  PROTOBUF_ALWAYS_INLINE bool ExpectTag(uint32 expected);
 
   // Like above, except this reads from the specified buffer. The caller is
   // responsible for ensuring that the buffer is large enough to read a varint
@@ -298,7 +310,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   //
   // Returns a pointer beyond the expected tag if it was found, or NULL if it
   // was not.
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  PROTOBUF_ALWAYS_INLINE
   static const uint8* ExpectTagFromArray(const uint8* buffer, uint32 expected);
 
   // Usually returns true if no more bytes can be read.  Always returns false
@@ -328,6 +340,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // It also checks for some cases where, due to optimizations,
   // MergeFromCodedStream() can incorrectly return true.
   bool ConsumedEntireMessage();
+  void SetConsumed() { legitimate_message_end_ = true; }
 
   // Limits ----------------------------------------------------------
   // Limits are used when parsing length-delimited embedded messages.
@@ -384,7 +397,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // This is unrelated to PushLimit()/PopLimit().
   void SetTotalBytesLimit(int total_bytes_limit);
 
-  PROTOBUF_RUNTIME_DEPRECATED(
+  PROTOBUF_DEPRECATED_MSG(
       "Please use the single parameter version of SetTotalBytesLimit(). The "
       "second parameter is ignored.")
   void SetTotalBytesLimit(int total_bytes_limit, int) {
@@ -403,6 +416,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Sets the maximum recursion depth.  The default is 100.
   void SetRecursionLimit(int limit);
+  int RecursionBudget() { return recursion_budget_; }
 
 
   // Increments the current recursion depth.  Returns true if the depth is
@@ -621,7 +635,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // stream.
   uint32 ReadTagFallback(uint32 first_byte_or_zero);
   uint32 ReadTagSlow();
-  bool ReadStringFallback(string* buffer, int size);
+  bool ReadStringFallback(std::string* buffer, int size);
 
   // Return the size of the buffer.
   int BufferSize() const;
@@ -677,7 +691,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 //   }
 //
 //   delete coded_output;
-class LIBPROTOBUF_EXPORT CodedOutputStream {
+class PROTOBUF_EXPORT CodedOutputStream {
  public:
   // Create an CodedOutputStream that writes to the given ZeroCopyOutputStream.
   explicit CodedOutputStream(ZeroCopyOutputStream* output);
@@ -731,11 +745,11 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   static uint8* WriteRawToArray(const void* buffer, int size, uint8* target);
 
   // Equivalent to WriteRaw(str.data(), str.size()).
-  void WriteString(const string& str);
+  void WriteString(const std::string& str);
   // Like WriteString()  but writing directly to the target array.
-  static uint8* WriteStringToArray(const string& str, uint8* target);
+  static uint8* WriteStringToArray(const std::string& str, uint8* target);
   // Write the varint-encoded size of str followed by str.
-  static uint8* WriteStringWithSizeToArray(const string& str, uint8* target);
+  static uint8* WriteStringWithSizeToArray(const std::string& str, uint8* target);
 
 
   // Instructs the CodedOutputStream to allow the underlying
@@ -782,7 +796,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // but GCC by default doesn't want to inline this.
   void WriteTag(uint32 value);
   // Like WriteTag()  but writing directly to the target array.
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+  PROTOBUF_ALWAYS_INLINE
   static uint8* WriteTagToArray(uint32 value, uint8* target);
 
   // Returns the number of bytes needed to encode the given value as a varint.
@@ -851,7 +865,8 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   }
 
   static bool IsDefaultSerializationDeterministic() {
-    return default_serialization_deterministic_.load(std::memory_order_relaxed) != 0;
+    return default_serialization_deterministic_.load(
+               std::memory_order_relaxed) != 0;
   }
 
  private:
@@ -889,7 +904,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // that wants deterministic serialization by default needs to call
   // SetDefaultSerializationDeterministic() or ensure on its own that another
   // thread has done so.
-  friend void ::google::protobuf::internal::MapTestForceDeterministic();
+  friend void internal::MapTestForceDeterministic();
   static void SetDefaultSerializationDeterministic() {
     default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
@@ -901,7 +916,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
 
 inline bool CodedInputStream::ReadVarint32(uint32* value) {
   uint32 v = 0;
-  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
+  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
     v = *buffer_;
     if (v < 0x80) {
       *value = v;
@@ -915,7 +930,7 @@ inline bool CodedInputStream::ReadVarint32(uint32* value) {
 }
 
 inline bool CodedInputStream::ReadVarint64(uint64* value) {
-  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_) && *buffer_ < 0x80) {
+  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_) && *buffer_ < 0x80) {
     *value = *buffer_;
     Advance(1);
     return true;
@@ -926,7 +941,7 @@ inline bool CodedInputStream::ReadVarint64(uint64* value) {
 }
 
 inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
-  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
+  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
     int v = *buffer_;
     if (v < 0x80) {
       *value = v;
@@ -977,7 +992,7 @@ inline const uint8* CodedInputStream::ReadLittleEndian64FromArray(
 
 inline bool CodedInputStream::ReadLittleEndian32(uint32* value) {
 #if defined(PROTOBUF_LITTLE_ENDIAN)
-  if (GOOGLE_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
+  if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian32FromArray(buffer_, value);
     return true;
   } else {
@@ -990,7 +1005,7 @@ inline bool CodedInputStream::ReadLittleEndian32(uint32* value) {
 
 inline bool CodedInputStream::ReadLittleEndian64(uint64* value) {
 #if defined(PROTOBUF_LITTLE_ENDIAN)
-  if (GOOGLE_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
+  if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian64FromArray(buffer_, value);
     return true;
   } else {
@@ -1003,7 +1018,7 @@ inline bool CodedInputStream::ReadLittleEndian64(uint64* value) {
 
 inline uint32 CodedInputStream::ReadTagNoLastTag() {
   uint32 v = 0;
-  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
+  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
     v = *buffer_;
     if (v < 0x80) {
       Advance(1);
@@ -1020,7 +1035,7 @@ inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
   // constant, and things like "cutoff >= kMax1ByteVarint" to be evaluated at
   // compile time.
   uint32 first_byte_or_zero = 0;
-  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
+  if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_)) {
     // Hot case: buffer_ non_empty, buffer_[0] in [1, 128).
     // TODO(gpike): Is it worth rearranging this? E.g., if the number of fields
     // is large enough then is it better to check for the two-byte case first?
@@ -1034,8 +1049,8 @@ inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
     // Other hot case: cutoff >= 0x80, buffer_ has at least two bytes available,
     // and tag is two bytes.  The latter is tested by bitwise-and-not of the
     // first byte and the second byte.
-    if (cutoff >= 0x80 && GOOGLE_PREDICT_TRUE(buffer_ + 1 < buffer_end_) &&
-        GOOGLE_PREDICT_TRUE((buffer_[0] & ~buffer_[1]) >= 0x80)) {
+    if (cutoff >= 0x80 && PROTOBUF_PREDICT_TRUE(buffer_ + 1 < buffer_end_) &&
+        PROTOBUF_PREDICT_TRUE((buffer_[0] & ~buffer_[1]) >= 0x80)) {
       const uint32 kMax2ByteVarint = (0x7f << 7) + 0x7f;
       uint32 tag = (1u << 7) * buffer_[1] + (buffer_[0] - 0x80);
       Advance(2);
@@ -1064,14 +1079,14 @@ inline bool CodedInputStream::ConsumedEntireMessage() {
 
 inline bool CodedInputStream::ExpectTag(uint32 expected) {
   if (expected < (1 << 7)) {
-    if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_) && buffer_[0] == expected) {
+    if (PROTOBUF_PREDICT_TRUE(buffer_ < buffer_end_) && buffer_[0] == expected) {
       Advance(1);
       return true;
     } else {
       return false;
     }
   } else if (expected < (1 << 14)) {
-    if (GOOGLE_PREDICT_TRUE(BufferSize() >= 2) &&
+    if (PROTOBUF_PREDICT_TRUE(BufferSize() >= 2) &&
         buffer_[0] == static_cast<uint8>(expected | 0x80) &&
         buffer_[1] == static_cast<uint8>(expected >> 7)) {
       Advance(2);
@@ -1262,7 +1277,7 @@ inline size_t CodedOutputStream::VarintSize32SignExtended(int32 value) {
   }
 }
 
-inline void CodedOutputStream::WriteString(const string& str) {
+inline void CodedOutputStream::WriteString(const std::string& str) {
   WriteRaw(str.data(), static_cast<int>(str.size()));
 }
 
@@ -1276,7 +1291,7 @@ inline void CodedOutputStream::WriteRawMaybeAliased(
 }
 
 inline uint8* CodedOutputStream::WriteStringToArray(
-    const string& str, uint8* target) {
+    const std::string& str, uint8* target) {
   return WriteRawToArray(str.data(), static_cast<int>(str.size()), target);
 }
 
@@ -1390,11 +1405,13 @@ inline bool CodedInputStream::Skip(int count) {
 
 }  // namespace io
 }  // namespace protobuf
+}  // namespace google
 
 
 #if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
   #pragma runtime_checks("c", restore)
 #endif  // _MSC_VER && !defined(__INTEL_COMPILER)
 
-}  // namespace google
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_IO_CODED_STREAM_H__

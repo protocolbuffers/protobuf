@@ -96,6 +96,9 @@ const char kAnyType[] = "google.protobuf.Any";
 const char kFieldMaskTypeUrl[] =
     "type.googleapis.com/google.protobuf.FieldMask";
 
+// The protobuf option name of jspb.message_id;
+const char kOptionJspbMessageId[] = "jspb.message_id";
+
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf

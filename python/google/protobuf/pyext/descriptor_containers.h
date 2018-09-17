@@ -104,6 +104,6 @@ PyObject* NewServiceMethodsByName(const ServiceDescriptor* descriptor);
 
 }  // namespace python
 }  // namespace protobuf
-
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_CONTAINERS_H__

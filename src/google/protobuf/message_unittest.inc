@@ -46,6 +46,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <google/protobuf/test_util2.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -117,8 +118,8 @@ TEST(MESSAGE_TEST_NAME, SerializeToBrokenOstream) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
-  string filename = TestSourceDir() +
-                    "/google/protobuf/testdata/golden_message";
+  string filename =
+      TestUtil::GetTestDataPath("net/proto2/internal/testdata/golden_message");
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
 
@@ -130,9 +131,8 @@ TEST(MESSAGE_TEST_NAME, ParseFromFileDescriptor) {
 }
 
 TEST(MESSAGE_TEST_NAME, ParsePackedFromFileDescriptor) {
-  string filename =
-      TestSourceDir() +
-      "/google/protobuf/testdata/golden_packed_fields_message";
+  string filename = TestUtil::GetTestDataPath(
+      "net/proto2/internal/testdata/golden_packed_fields_message");
   int file = open(filename.c_str(), O_RDONLY | O_BINARY);
   ASSERT_GE(file, 0);
 
@@ -223,23 +223,18 @@ TEST(MESSAGE_TEST_NAME, InitializationErrorString) {
 TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
   UNITTEST::TestAllTypes test_all_types;
 
-  google::protobuf::Message* test_all_types_pointer = &test_all_types;
-  EXPECT_EQ(&test_all_types,
-            google::protobuf::internal::DynamicCastToGenerated<UNITTEST::TestAllTypes>(
-                test_all_types_pointer));
-  EXPECT_EQ(nullptr,
-            google::protobuf::internal::DynamicCastToGenerated<UNITTEST::TestRequired>(
-                test_all_types_pointer));
+  Message* test_all_types_pointer = &test_all_types;
+  EXPECT_EQ(&test_all_types, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer));
+  EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestRequired>(
+                         test_all_types_pointer));
 
-  const google::protobuf::Message* test_all_types_pointer_const = &test_all_types;
-  EXPECT_EQ(
-      &test_all_types,
-      google::protobuf::internal::DynamicCastToGenerated<const UNITTEST::TestAllTypes>(
-          test_all_types_pointer_const));
-  EXPECT_EQ(
-      nullptr,
-      google::protobuf::internal::DynamicCastToGenerated<const UNITTEST::TestRequired>(
-          test_all_types_pointer_const));
+  const Message* test_all_types_pointer_const = &test_all_types;
+  EXPECT_EQ(&test_all_types,
+            DynamicCastToGenerated<const UNITTEST::TestAllTypes>(
+                test_all_types_pointer_const));
+  EXPECT_EQ(nullptr, DynamicCastToGenerated<const UNITTEST::TestRequired>(
+                         test_all_types_pointer_const));
 }
 
 #ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
@@ -406,9 +401,9 @@ TEST(MESSAGE_TEST_NAME, MessageIsStillValidAfterParseFails) {
   // payload.
   string invalid_string_data = "\x72\x01";
   {
-    google::protobuf::Arena arena;
+    Arena arena;
     UNITTEST::TestAllTypes* arena_message =
-        google::protobuf::Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena);
+        Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena);
     EXPECT_FALSE(arena_message->ParseFromString(invalid_string_data));
     arena_message->Clear();
     EXPECT_EQ("", arena_message->optional_string());
@@ -571,6 +566,68 @@ TEST(MESSAGE_FACTORY_TEST_NAME, GeneratedFactoryUnknownType) {
   EXPECT_TRUE(MessageFactory::generated_factory()->GetPrototype(descriptor) ==
               nullptr);
 }
+
+TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
+  {
+    UNITTEST::TestAllTypes msg;
+    // Parser ends in last 16 bytes of buffer due to a 0.
+    string data;
+    // 12 bytes of data
+    for (int i = 0; i < 4; i++) data += "\370\1\1";
+    // 13 byte is terminator
+    data += '\0';  // Terminator
+    // followed by the rest of the stream
+    // space is ascii 32 so no end group
+    data += string(30, ' ');
+    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::CodedInputStream cis(&zcis);
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_EQ(cis.CurrentPosition(), 3 * 4 + 1);
+  }
+  {
+    // Parser ends in last 16 bytes of buffer due to a end-group.
+    // Must use a message that is a group. Otherwise ending on a group end is
+    // a failure.
+    UNITTEST::TestAllTypes::OptionalGroup msg;
+    string data;
+    for (int i = 0; i < 3; i++) data += "\370\1\1";
+    data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
+    data += string(30, ' ');
+    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::CodedInputStream cis(&zcis);
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_EQ(cis.CurrentPosition(), 3 * 3 + 1);
+    EXPECT_TRUE(cis.LastTagWas(12));
+  }
+  {
+    // Parser ends in last 16 bytes of buffer due to a end-group. But is inside
+    // a length delimited field.
+    // a failure.
+    UNITTEST::TestAllTypes::OptionalGroup msg;
+    string data;
+    data += "\22\3foo";
+    data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
+    data += string(30, ' ');
+    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::CodedInputStream cis(&zcis);
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_EQ(cis.CurrentPosition(), 6);
+    EXPECT_TRUE(cis.LastTagWas(12));
+  }
+  {
+    // Parser fails when ending on 0 if from ZeroCopyInputStream
+    UNITTEST::TestAllTypes msg;
+    string data;
+    // 12 bytes of data
+    for (int i = 0; i < 4; i++) data += "\370\1\1";
+    // 13 byte is terminator
+    data += '\0';  // Terminator
+    data += string(30, ' ');
+    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    EXPECT_FALSE(msg.ParsePartialFromZeroCopyStream(&zcis));
+  }
+}
+
 
 
 }  // namespace protobuf

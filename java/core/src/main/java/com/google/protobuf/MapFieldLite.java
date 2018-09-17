@@ -42,8 +42,7 @@ import java.util.Set;
 /**
  * Internal representation of map fields in generated lite-runtime messages.
  *
- * This class is a protobuf implementation detail. Users shouldn't use this
- * class directly.
+ * <p>This class is a protobuf implementation detail. Users shouldn't use this class directly.
  */
 public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
 
@@ -60,6 +59,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   private static final MapFieldLite EMPTY_MAP_FIELD = new MapFieldLite();
+
   static {
     EMPTY_MAP_FIELD.makeImmutable();
   }
@@ -78,16 +78,19 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   }
 
   @SuppressWarnings({"unchecked", "cast"})
-  @Override public Set<Map.Entry<K, V>> entrySet() {
+  @Override
+  public Set<Map.Entry<K, V>> entrySet() {
     return isEmpty() ? Collections.<Map.Entry<K, V>>emptySet() : super.entrySet();
   }
 
-  @Override public void clear() {
+  @Override
+  public void clear() {
     ensureMutable();
     super.clear();
   }
 
-  @Override public V put(K key, V value) {
+  @Override
+  public V put(K key, V value) {
     ensureMutable();
     checkNotNull(key);
 
@@ -99,13 +102,15 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
     return put(entry.getKey(), entry.getValue());
   }
 
-  @Override public void putAll(Map<? extends K, ? extends V> m) {
+  @Override
+  public void putAll(Map<? extends K, ? extends V> m) {
     ensureMutable();
     checkForNullKeysAndValues(m);
     super.putAll(m);
   }
 
-  @Override public V remove(Object key) {
+  @Override
+  public V remove(Object key) {
     ensureMutable();
     return super.remove(key);
   }
@@ -125,9 +130,8 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   }
 
   /**
-   * Checks whether two {@link Map}s are equal. We don't use the default equals
-   * method of {@link Map} because it compares by identity not by content for
-   * byte arrays.
+   * Checks whether two {@link Map}s are equal. We don't use the default equals method of {@link
+   * Map} because it compares by identity not by content for byte arrays.
    */
   static <K, V> boolean equals(Map<K, V> a, Map<K, V> b) {
     if (a == b) {
@@ -147,9 +151,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
     return true;
   }
 
-  /**
-   * Checks whether two map fields are equal.
-   */
+  /** Checks whether two map fields are equal. */
   @SuppressWarnings("unchecked")
   @Override
   public boolean equals(Object object) {
@@ -168,15 +170,14 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   }
 
   /**
-   * Calculates the hash code for a {@link Map}. We don't use the default hash
-   * code method of {@link Map} because for byte arrays and protobuf enums it
-   * use {@link Object#hashCode()}.
+   * Calculates the hash code for a {@link Map}. We don't use the default hash code method of {@link
+   * Map} because for byte arrays and protobuf enums it use {@link Object#hashCode()}.
    */
   static <K, V> int calculateHashCodeForMap(Map<K, V> a) {
     int result = 0;
     for (Map.Entry<K, V> entry : a.entrySet()) {
-      result += calculateHashCodeForObject(entry.getKey())
-          ^ calculateHashCodeForObject(entry.getValue());
+      result +=
+          calculateHashCodeForObject(entry.getKey()) ^ calculateHashCodeForObject(entry.getValue());
     }
     return result;
   }
@@ -195,9 +196,9 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   }
 
   /**
-   * Makes a deep copy of a {@link Map}. Immutable objects in the map will be
-   * shared (e.g., integers, strings, immutable messages) and mutable ones will
-   * have a copy (e.g., byte arrays, mutable messages).
+   * Makes a deep copy of a {@link Map}. Immutable objects in the map will be shared (e.g.,
+   * integers, strings, immutable messages) and mutable ones will have a copy (e.g., byte arrays,
+   * mutable messages).
    */
   @SuppressWarnings("unchecked")
   static <K, V> Map<K, V> copy(Map<K, V> map) {
@@ -214,16 +215,14 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
   }
 
   /**
-   * Makes this field immutable. All subsequent modifications will throw an
-   * {@link UnsupportedOperationException}.
+   * Makes this field immutable. All subsequent modifications will throw an {@link
+   * UnsupportedOperationException}.
    */
   public void makeImmutable() {
     isMutable = false;
   }
 
-  /**
-   * Returns whether this field can be modified.
-   */
+  /** Returns whether this field can be modified. */
   public boolean isMutable() {
     return isMutable;
   }

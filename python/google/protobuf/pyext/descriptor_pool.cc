@@ -30,6 +30,8 @@
 
 // Implements the DescriptorPool, which collects all descriptors.
 
+#include <unordered_map>
+
 #include <Python.h>
 
 #include <google/protobuf/descriptor.pb.h>
@@ -46,10 +48,12 @@
   #if PY_VERSION_HEX < 0x03030000
     #error "Python 3.0 - 3.2 are not supported."
   #endif
-  #define PyString_AsStringAndSize(ob, charpp, sizep) \
-    (PyUnicode_Check(ob)? \
-       ((*(charpp) = PyUnicode_AsUTF8AndSize(ob, (sizep))) == NULL? -1: 0): \
-       PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
+#define PyString_AsStringAndSize(ob, charpp, sizep)                           \
+  (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                     \
+                               PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
+                              ? -1                                            \
+                              : 0)                                            \
+                       : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 #endif
 
 namespace google {
@@ -58,7 +62,8 @@ namespace python {
 
 // A map to cache Python Pools per C++ pointer.
 // Pointers are not owned here, and belong to the PyDescriptorPool.
-static hash_map<const DescriptorPool*, PyDescriptorPool*> descriptor_pool_map;
+static std::unordered_map<const DescriptorPool*, PyDescriptorPool*>*
+    descriptor_pool_map;
 
 namespace cdescriptor_pool {
 
@@ -74,8 +79,7 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   cpool->underlay = NULL;
   cpool->database = NULL;
 
-  cpool->descriptor_options =
-      new hash_map<const void*, PyObject *>();
+  cpool->descriptor_options = new std::unordered_map<const void*, PyObject*>();
 
   cpool->py_message_factory = message_factory::NewMessageFactory(
       &PyMessageFactory_Type, cpool);
@@ -101,7 +105,7 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
   cpool->pool = new DescriptorPool(underlay);
   cpool->underlay = underlay;
 
-  if (!descriptor_pool_map.insert(
+  if (!descriptor_pool_map->insert(
       std::make_pair(cpool->pool, cpool)).second) {
     // Should never happen -- would indicate an internal error / bug.
     PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
@@ -124,7 +128,7 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
     cpool->pool = new DescriptorPool();
   }
 
-  if (!descriptor_pool_map.insert(std::make_pair(cpool->pool, cpool)).second) {
+  if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
     // Should never happen -- would indicate an internal error / bug.
     PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
     return NULL;
@@ -151,9 +155,9 @@ static PyObject* New(PyTypeObject* type,
 
 static void Dealloc(PyObject* pself) {
   PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
-  descriptor_pool_map.erase(self->pool);
+  descriptor_pool_map->erase(self->pool);
   Py_CLEAR(self->py_message_factory);
-  for (hash_map<const void*, PyObject*>::iterator it =
+  for (std::unordered_map<const void*, PyObject*>::iterator it =
            self->descriptor_options->begin();
        it != self->descriptor_options->end(); ++it) {
     Py_DECREF(it->second);
@@ -179,6 +183,7 @@ static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
     PyErr_Format(PyExc_KeyError, "Couldn't find message %.200s", name);
     return NULL;
   }
+
 
   return PyMessageDescriptor_FromDescriptor(message_descriptor);
 }
@@ -218,6 +223,7 @@ PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* arg) {
     return NULL;
   }
 
+
   return PyFieldDescriptor_FromDescriptor(field_descriptor);
 }
 
@@ -238,6 +244,7 @@ PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg) {
     PyErr_Format(PyExc_KeyError, "Couldn't find extension field %.200s", name);
     return NULL;
   }
+
 
   return PyFieldDescriptor_FromDescriptor(field_descriptor);
 }
@@ -260,6 +267,7 @@ PyObject* FindEnumTypeByName(PyDescriptorPool* self, PyObject* arg) {
     return NULL;
   }
 
+
   return PyEnumDescriptor_FromDescriptor(enum_descriptor);
 }
 
@@ -280,6 +288,7 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg) {
     PyErr_Format(PyExc_KeyError, "Couldn't find oneof %.200s", name);
     return NULL;
   }
+
 
   return PyOneofDescriptor_FromDescriptor(oneof_descriptor);
 }
@@ -303,6 +312,7 @@ static PyObject* FindServiceByName(PyObject* self, PyObject* arg) {
     return NULL;
   }
 
+
   return PyServiceDescriptor_FromDescriptor(service_descriptor);
 }
 
@@ -321,6 +331,7 @@ static PyObject* FindMethodByName(PyObject* self, PyObject* arg) {
     return NULL;
   }
 
+
   return PyMethodDescriptor_FromDescriptor(method_descriptor);
 }
 
@@ -338,6 +349,7 @@ static PyObject* FindFileContainingSymbol(PyObject* self, PyObject* arg) {
     PyErr_Format(PyExc_KeyError, "Couldn't find symbol %.200s", name);
     return NULL;
   }
+
 
   return PyFileDescriptor_FromDescriptor(file_descriptor);
 }
@@ -361,6 +373,7 @@ static PyObject* FindExtensionByNumber(PyObject* self, PyObject* args) {
     PyErr_Format(PyExc_KeyError, "Couldn't find extension %d", number);
     return NULL;
   }
+
 
   return PyFieldDescriptor_FromDescriptor(extension_descriptor);
 }
@@ -668,13 +681,17 @@ bool InitDescriptorPool() {
   // The Pool of messages declared in Python libraries.
   // generated_pool() contains all messages already linked in C++ libraries, and
   // is used as underlay.
+  descriptor_pool_map =
+      new std::unordered_map<const DescriptorPool*, PyDescriptorPool*>;
   python_generated_pool = cdescriptor_pool::PyDescriptorPool_NewWithUnderlay(
       DescriptorPool::generated_pool());
   if (python_generated_pool == NULL) {
+    delete descriptor_pool_map;
     return false;
   }
+
   // Register this pool to be found for C++-generated descriptors.
-  descriptor_pool_map.insert(
+  descriptor_pool_map->insert(
       std::make_pair(DescriptorPool::generated_pool(),
                      python_generated_pool));
 
@@ -695,9 +712,9 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
       pool == DescriptorPool::generated_pool()) {
     return python_generated_pool;
   }
-  hash_map<const DescriptorPool*, PyDescriptorPool*>::iterator it =
-      descriptor_pool_map.find(pool);
-  if (it == descriptor_pool_map.end()) {
+  std::unordered_map<const DescriptorPool*, PyDescriptorPool*>::iterator it =
+      descriptor_pool_map->find(pool);
+  if (it == descriptor_pool_map->end()) {
     PyErr_SetString(PyExc_KeyError, "Unknown descriptor pool");
     return NULL;
   }

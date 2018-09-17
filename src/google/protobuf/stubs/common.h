@@ -73,22 +73,7 @@
 #include <pthread.h>
 #endif
 
-#if defined(_WIN32) && defined(GetMessage)
-// Allow GetMessage to be used as a valid method name in protobuf classes.
-// windows.h defines GetMessage() as a macro.  Let's re-define it as an inline
-// function.  The inline function should be equivalent for C++ users.
-inline BOOL GetMessage_Win32(
-    LPMSG lpMsg, HWND hWnd,
-    UINT wMsgFilterMin, UINT wMsgFilterMax) {
-  return GetMessage(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
-}
-#undef GetMessage
-inline BOOL GetMessage(
-    LPMSG lpMsg, HWND hWnd,
-    UINT wMsgFilterMin, UINT wMsgFilterMax) {
-  return GetMessage_Win32(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
-}
-#endif
+#include <google/protobuf/port_def.inc>
 
 namespace std {}
 
@@ -101,35 +86,35 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3006000
+#define GOOGLE_PROTOBUF_VERSION 3006001
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3006000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3006001
 
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code
 // generator.
-static const int kMinHeaderVersionForLibrary = 3006000;
+static const int kMinHeaderVersionForLibrary = 3006001;
 
 // The minimum protoc version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3006000
+#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3006001
 
 // The minimum header version which works with the current version of
 // protoc.  This constant should only be used in VerifyVersion().
-static const int kMinHeaderVersionForProtoc = 3006000;
+static const int kMinHeaderVersionForProtoc = 3006001;
 
 // Verifies that the headers and libraries are compatible.  Use the macro
 // below to call this.
-void LIBPROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
-                                      const char* filename);
+void PROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
+                                   const char* filename);
 
 // Converts a numeric version number to a string.
-std::string LIBPROTOBUF_EXPORT VersionString(int version);
+std::string PROTOBUF_EXPORT VersionString(int version);
 
 }  // namespace internal
 
@@ -151,14 +136,14 @@ namespace internal {
 
 // Checks if the buffer contains structurally-valid UTF-8.  Implemented in
 // structurally_valid.cc.
-LIBPROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len);
+PROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len);
 
 inline bool IsStructurallyValidUTF8(const std::string& str) {
   return IsStructurallyValidUTF8(str.data(), static_cast<int>(str.length()));
 }
 
 // Returns initial number of bytes of structually valid UTF-8.
-LIBPROTOBUF_EXPORT int UTF8SpnStructurallyValid(const StringPiece& str);
+PROTOBUF_EXPORT int UTF8SpnStructurallyValid(const StringPiece& str);
 
 // Coerce UTF-8 byte string in src_str to be
 // a structurally-valid equal-length string by selectively
@@ -172,8 +157,9 @@ LIBPROTOBUF_EXPORT int UTF8SpnStructurallyValid(const StringPiece& str);
 //
 // Optimized for: all structurally valid and no byte copying is done.
 //
-LIBPROTOBUF_EXPORT char* UTF8CoerceToStructurallyValid(
-    const StringPiece& str, char* dst, char replace_char);
+PROTOBUF_EXPORT char* UTF8CoerceToStructurallyValid(const StringPiece& str,
+                                                    char* dst,
+                                                    char replace_char);
 
 }  // namespace internal
 
@@ -195,18 +181,18 @@ LIBPROTOBUF_EXPORT char* UTF8CoerceToStructurallyValid(
 // any other part of the protocol buffers library after
 // ShutdownProtobufLibrary() has been called. Furthermore this call is not
 // thread safe, user needs to synchronize multiple calls.
-LIBPROTOBUF_EXPORT void ShutdownProtobufLibrary();
+PROTOBUF_EXPORT void ShutdownProtobufLibrary();
 
 namespace internal {
 
 // Register a function to be called when ShutdownProtocolBuffers() is called.
-LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
+PROTOBUF_EXPORT void OnShutdown(void (*func)());
 // Run an arbitrary function on an arg
-LIBPROTOBUF_EXPORT void OnShutdownRun(void (*f)(const void*), const void* arg);
+PROTOBUF_EXPORT void OnShutdownRun(void (*f)(const void*), const void* arg);
 
 template <typename T>
 T* OnShutdownDelete(T* p) {
-  OnShutdownRun([](const void* p) { delete static_cast<const T*>(p); }, p);
+  OnShutdownRun([](const void* pp) { delete static_cast<const T*>(pp); }, p);
   return p;
 }
 
@@ -238,5 +224,7 @@ using std::string;
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMMON_H__

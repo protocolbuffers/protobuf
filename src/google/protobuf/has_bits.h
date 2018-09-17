@@ -32,7 +32,13 @@
 #define GOOGLE_PROTOBUF_HAS_BITS_H__
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/port.h>
+#include <google/protobuf/port.h>
+
+#include <google/protobuf/port_def.inc>
+
+#ifdef SWIG
+#error "You cannot SWIG proto headers"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -41,18 +47,17 @@ namespace internal {
 template<size_t doublewords>
 class HasBits {
  public:
-  HasBits() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE { Clear(); }
+  HasBits() PROTOBUF_ALWAYS_INLINE { Clear(); }
 
-  void Clear() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void Clear() PROTOBUF_ALWAYS_INLINE {
     memset(has_bits_, 0, sizeof(has_bits_));
   }
 
-  ::google::protobuf::uint32& operator[](int index) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  ::google::protobuf::uint32& operator[](int index) PROTOBUF_ALWAYS_INLINE {
     return has_bits_[index];
   }
 
-  const ::google::protobuf::uint32& operator[](int index) const
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  const ::google::protobuf::uint32& operator[](int index) const PROTOBUF_ALWAYS_INLINE {
     return has_bits_[index];
   }
 
@@ -100,6 +105,8 @@ inline bool HasBits<doublewords>::empty() const {
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_HAS_BITS_H__

@@ -1,8 +1,6 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-[![Build Status](https://travis-ci.org/google/protobuf.svg?branch=master)](https://travis-ci.org/google/protobuf)
-
 Copyright 2008 Google Inc.
 
 This directory contains conformance tests for testing completeness and
@@ -59,10 +57,10 @@ Testing other Protocol Buffer implementations
 To run these tests against a new Protocol Buffers implementation, write a
 program in your language that uses the protobuf implementation you want
 to test.  This program should implement the testing protocol defined in
-[conformance.proto](https://github.com/google/protobuf/blob/master/conformance/conformance.proto).
+[conformance.proto](https://github.com/protocolbuffers/protobuf/blob/master/conformance/conformance.proto).
 This is designed to be as easy as possible: the C++ version is only
 150 lines and is a good example for what this program should look like
-(see [conformance_cpp.cc](https://github.com/google/protobuf/blob/master/conformance/conformance_cpp.cc)).
+(see [conformance_cpp.cc](https://github.com/protocolbuffers/protobuf/blob/master/conformance/conformance_cpp.cc)).
 The program only needs to be able to read from stdin and write to stdout.
 
 Portability

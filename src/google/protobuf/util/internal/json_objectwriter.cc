@@ -49,7 +49,7 @@ using strings::ArrayByteSource;
 ;
 
 JsonObjectWriter::~JsonObjectWriter() {
-  if (!element_->is_root()) {
+  if (element_ && !element_->is_root()) {
     GOOGLE_LOG(WARNING) << "JsonObjectWriter was not fully closed.";
   }
 }
@@ -64,7 +64,7 @@ JsonObjectWriter* JsonObjectWriter::StartObject(StringPiece name) {
 JsonObjectWriter* JsonObjectWriter::EndObject() {
   Pop();
   WriteChar('}');
-  if (element()->is_root()) NewLine();
+  if (element() && element()->is_root()) NewLine();
   return this;
 }
 
@@ -82,11 +82,13 @@ JsonObjectWriter* JsonObjectWriter::EndList() {
   return this;
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderBool(StringPiece name, bool value) {
+JsonObjectWriter* JsonObjectWriter::RenderBool(StringPiece name,
+                                               bool value) {
   return RenderSimple(name, value ? "true" : "false");
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderInt32(StringPiece name, int32 value) {
+JsonObjectWriter* JsonObjectWriter::RenderInt32(StringPiece name,
+                                                int32 value) {
   return RenderSimple(name, SimpleItoa(value));
 }
 
@@ -95,7 +97,8 @@ JsonObjectWriter* JsonObjectWriter::RenderUint32(StringPiece name,
   return RenderSimple(name, SimpleItoa(value));
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderInt64(StringPiece name, int64 value) {
+JsonObjectWriter* JsonObjectWriter::RenderInt64(StringPiece name,
+                                                int64 value) {
   WritePrefix(name);
   WriteChar('"');
   stream_->WriteString(SimpleItoa(value));
@@ -122,7 +125,8 @@ JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
   return RenderString(name, DoubleAsString(value));
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderFloat(StringPiece name, float value) {
+JsonObjectWriter* JsonObjectWriter::RenderFloat(StringPiece name,
+                                                float value) {
   if (MathLimits<float>::IsFinite(value)) {
     return RenderSimple(name, SimpleFtoa(value));
   }

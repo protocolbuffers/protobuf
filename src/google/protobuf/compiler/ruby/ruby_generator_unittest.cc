@@ -90,12 +90,12 @@ TEST(RubyGeneratorTest, GeneratorTest) {
 
   // Load the generated output and compare to the expected result.
   string output;
-  GOOGLE_CHECK_OK(File::GetContents(
+  GOOGLE_CHECK_OK(File::GetContentsAsText(
       TestTempDir() + "/ruby_generated_code_pb.rb",
       &output,
       true));
   string expected_output;
-  GOOGLE_CHECK_OK(File::GetContents(
+  GOOGLE_CHECK_OK(File::GetContentsAsText(
       ruby_tests + "/ruby_generated_code_pb.rb",
       &expected_output,
       true));

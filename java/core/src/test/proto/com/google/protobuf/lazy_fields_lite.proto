@@ -36,8 +36,6 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
-option optimize_for = LITE_RUNTIME;
-
 message LazyMessageLite {
   optional int32 num = 1;
   optional int32 num_with_default = 2 [default = 421];

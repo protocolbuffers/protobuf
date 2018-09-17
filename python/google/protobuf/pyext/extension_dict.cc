@@ -51,10 +51,12 @@
   #if PY_VERSION_HEX < 0x03030000
     #error "Python 3.0 - 3.2 are not supported."
   #endif
-  #define PyString_AsStringAndSize(ob, charpp, sizep) \
-    (PyUnicode_Check(ob)? \
-       ((*(charpp) = PyUnicode_AsUTF8AndSize(ob, (sizep))) == NULL? -1: 0): \
-       PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
+#define PyString_AsStringAndSize(ob, charpp, sizep)                           \
+  (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                     \
+                               PyUnicode_AsUTF8AndSize(ob, (sizep)))) == NULL \
+                              ? -1                                            \
+                              : 0)                                            \
+                       : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 #endif
 
 namespace google {
@@ -63,40 +65,25 @@ namespace python {
 
 namespace extension_dict {
 
-PyObject* len(ExtensionDict* self) {
-#if PY_MAJOR_VERSION >= 3
-  return PyLong_FromLong(PyDict_Size(self->values));
-#else
-  return PyInt_FromLong(PyDict_Size(self->values));
-#endif
-}
-
 PyObject* subscript(ExtensionDict* self, PyObject* key) {
   const FieldDescriptor* descriptor = cmessage::GetExtensionDescriptor(key);
   if (descriptor == NULL) {
     return NULL;
   }
-  if (!CheckFieldBelongsToMessage(descriptor, self->message)) {
+  if (!CheckFieldBelongsToMessage(descriptor, self->parent->message)) {
     return NULL;
   }
 
   if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
       descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    return cmessage::InternalGetScalar(self->message, descriptor);
+    return cmessage::InternalGetScalar(self->parent->message, descriptor);
   }
 
-  PyObject* value = PyDict_GetItem(self->values, key);
-  if (value != NULL) {
-    Py_INCREF(value);
-    return value;
-  }
-
-  if (self->parent == NULL) {
-    // We are in "detached" state. Don't allow further modifications.
-    // TODO(amauryfa): Support adding non-scalars to a detached extension dict.
-    // This probably requires to store the type of the main message.
-    PyErr_SetObject(PyExc_KeyError, key);
-    return NULL;
+  CMessage::CompositeFieldsMap::iterator iterator =
+      self->parent->composite_fields->find(descriptor);
+  if (iterator != self->parent->composite_fields->end()) {
+    Py_INCREF(iterator->second);
+    return iterator->second;
   }
 
   if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
@@ -107,7 +94,8 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     if (sub_message == NULL) {
       return NULL;
     }
-    PyDict_SetItem(self->values, key, sub_message);
+    Py_INCREF(sub_message);
+    (*self->parent->composite_fields)[descriptor] = sub_message;
     return sub_message;
   }
 
@@ -136,7 +124,8 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       if (py_container == NULL) {
         return NULL;
       }
-      PyDict_SetItem(self->values, key, py_container);
+      Py_INCREF(py_container);
+      (*self->parent->composite_fields)[descriptor] = py_container;
       return py_container;
     } else {
       PyObject* py_container = repeated_scalar_container::NewContainer(
@@ -144,7 +133,8 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       if (py_container == NULL) {
         return NULL;
       }
-      PyDict_SetItem(self->values, key, py_container);
+      Py_INCREF(py_container);
+      (*self->parent->composite_fields)[descriptor] = py_container;
       return py_container;
     }
   }
@@ -157,7 +147,7 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
   if (descriptor == NULL) {
     return -1;
   }
-  if (!CheckFieldBelongsToMessage(descriptor, self->message)) {
+  if (!CheckFieldBelongsToMessage(descriptor, self->parent->message)) {
     return -1;
   }
 
@@ -167,14 +157,10 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
                     "type");
     return -1;
   }
-  if (self->parent) {
-    cmessage::AssureWritable(self->parent);
-    if (cmessage::InternalSetScalar(self->parent, descriptor, value) < 0) {
-      return -1;
-    }
+  cmessage::AssureWritable(self->parent);
+  if (cmessage::InternalSetScalar(self->parent, descriptor, value) < 0) {
+    return -1;
   }
-  // TODO(tibell): We shouldn't write scalars to the cache.
-  PyDict_SetItem(self->values, key, value);
   return 0;
 }
 
@@ -232,22 +218,36 @@ ExtensionDict* NewExtensionDict(CMessage *parent) {
     return NULL;
   }
 
-  self->parent = parent;  // Store a borrowed reference.
-  self->message = parent->message;
-  self->owner = parent->owner;
-  self->values = PyDict_New();
+  Py_INCREF(parent);
+  self->parent = parent;
   return self;
 }
 
 void dealloc(ExtensionDict* self) {
-  Py_CLEAR(self->values);
-  self->owner.reset();
+  Py_CLEAR(self->parent);
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
+static PyObject* RichCompare(ExtensionDict* self, PyObject* other, int opid) {
+  // Only equality comparisons are implemented.
+  if (opid != Py_EQ && opid != Py_NE) {
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+  }
+  bool equals = false;
+  if (PyObject_TypeCheck(other, &ExtensionDict_Type)) {
+    equals = self->parent == reinterpret_cast<ExtensionDict*>(other)->parent;;
+  }
+  if (equals ^ (opid == Py_EQ)) {
+    Py_RETURN_FALSE;
+  } else {
+    Py_RETURN_TRUE;
+  }
+}
+
 static PyMappingMethods MpMethods = {
-  (lenfunc)len,               /* mp_length */
-  (binaryfunc)subscript,      /* mp_subscript */
+  (lenfunc)NULL,               /* mp_length */
+  (binaryfunc)subscript,       /* mp_subscript */
   (objobjargproc)ass_subscript,/* mp_ass_subscript */
 };
 
@@ -286,7 +286,7 @@ PyTypeObject ExtensionDict_Type = {
   "An extension dict",                 //  tp_doc
   0,                                   //  tp_traverse
   0,                                   //  tp_clear
-  0,                                   //  tp_richcompare
+  (richcmpfunc)extension_dict::RichCompare,  //  tp_richcompare
   0,                                   //  tp_weaklistoffset
   0,                                   //  tp_iter
   0,                                   //  tp_iternext

@@ -37,14 +37,23 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.6.0"
+#define PHP_PROTOBUF_VERSION "3.6.1"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
 
+/* From Chromium. */
+#define ARRAY_SIZE(x) \
+    ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
 // -----------------------------------------------------------------------------
 // PHP7 Wrappers
 // ----------------------------------------------------------------------------
+
+#if PHP_VERSION_ID < 70300
+#define GC_ADDREF(h) ++GC_REFCOUNT(h)
+#define GC_DELREF(h) --GC_REFCOUNT(h)
+#endif
 
 #if PHP_MAJOR_VERSION < 7
 
@@ -129,7 +138,8 @@
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
     LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
-    LOWWERNAME##_type->create_object = message_create;
+    LOWWERNAME##_type->create_object = message_create;                       \
+    zend_do_inheritance(LOWWERNAME##_type, message_type TSRMLS_CC);
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
   }
 
@@ -395,7 +405,7 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
     LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
-    LOWWERNAME##_type->create_object = message_create;
+    zend_do_inheritance(LOWWERNAME##_type, message_type TSRMLS_CC);
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
   }
 
@@ -496,7 +506,7 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
   PHP_PROTO_HASHTABLE_VALUE WRAPPED_OBJ;                                    \
   WRAPPED_OBJ = OBJ_CLASS_ENTRY->create_object(OBJ_CLASS_ENTRY);            \
   OBJ = UNBOX_HASHTABLE_VALUE(OBJ_TYPE, WRAPPED_OBJ);                       \
-  --GC_REFCOUNT(WRAPPED_OBJ);
+  GC_DELREF(WRAPPED_OBJ);
 
 #define PHP_PROTO_CE_DECLARE zend_class_entry*
 #define PHP_PROTO_CE_UNREF(ce) (ce)

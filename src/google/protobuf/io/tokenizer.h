@@ -42,6 +42,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace io {
@@ -61,7 +63,7 @@ typedef int ColumnNumber;
 // Abstract interface for an object which collects the errors that occur
 // during parsing.  A typical implementation might simply print the errors
 // to stdout.
-class LIBPROTOBUF_EXPORT ErrorCollector {
+class PROTOBUF_EXPORT ErrorCollector {
  public:
   inline ErrorCollector() {}
   virtual ~ErrorCollector();
@@ -70,13 +72,13 @@ class LIBPROTOBUF_EXPORT ErrorCollector {
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
   virtual void AddError(int line, ColumnNumber column,
-                        const string& message) = 0;
+                        const std::string& message) = 0;
 
   // Indicates that there was a warning in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
   virtual void AddWarning(int line, ColumnNumber column,
-                          const string& message) { }
+                          const std::string& message) { }
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorCollector);
@@ -88,7 +90,7 @@ class LIBPROTOBUF_EXPORT ErrorCollector {
 // precise descriptions.  Whitespace and comments are skipped.  By default,
 // C- and C++-style comments are recognized, but other styles can be used by
 // calling set_comment_style().
-class LIBPROTOBUF_EXPORT Tokenizer {
+class PROTOBUF_EXPORT Tokenizer {
  public:
   // Construct a Tokenizer that reads and tokenizes text from the given
   // input stream and writes errors to the given error_collector.
@@ -124,7 +126,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // Structure representing a token read from the token stream.
   struct Token {
     TokenType type;
-    string text;       // The exact text of the token as it appeared in
+    std::string text;       // The exact text of the token as it appeared in
                        // the input.  e.g. tokens of TYPE_STRING will still
                        // be escaped and in quotes.
 
@@ -190,31 +192,31 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   //   /* Block comment attached to
   //    * grault. */
   //   optional int32 grault = 6;
-  bool NextWithComments(string* prev_trailing_comments,
-                        std::vector<string>* detached_comments,
-                        string* next_leading_comments);
+  bool NextWithComments(std::string* prev_trailing_comments,
+                        std::vector<std::string>* detached_comments,
+                        std::string* next_leading_comments);
 
   // Parse helpers ---------------------------------------------------
 
   // Parses a TYPE_FLOAT token.  This never fails, so long as the text actually
   // comes from a TYPE_FLOAT token parsed by Tokenizer.  If it doesn't, the
   // result is undefined (possibly an assert failure).
-  static double ParseFloat(const string& text);
+  static double ParseFloat(const std::string& text);
 
   // Parses a TYPE_STRING token.  This never fails, so long as the text actually
   // comes from a TYPE_STRING token parsed by Tokenizer.  If it doesn't, the
   // result is undefined (possibly an assert failure).
-  static void ParseString(const string& text, string* output);
+  static void ParseString(const std::string& text, std::string* output);
 
   // Identical to ParseString, but appends to output.
-  static void ParseStringAppend(const string& text, string* output);
+  static void ParseStringAppend(const std::string& text, std::string* output);
 
   // Parses a TYPE_INTEGER token.  Returns false if the result would be
   // greater than max_value.  Otherwise, returns true and sets *output to the
   // result.  If the text is not from a Token of type TYPE_INTEGER originally
   // parsed by a Tokenizer, the result is undefined (possibly an assert
   // failure).
-  static bool ParseInteger(const string& text, uint64 max_value,
+  static bool ParseInteger(const std::string& text, uint64 max_value,
                            uint64* output);
 
   // Options ---------------------------------------------------------
@@ -250,7 +252,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   }
 
   // External helper: validate an identifier.
-  static bool IsIdentifier(const string& text);
+  static bool IsIdentifier(const std::string& text);
 
   // -----------------------------------------------------------------
  private:
@@ -276,7 +278,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // Call RecordTo(&str) to start recording and StopRecording() to stop.
   // E.g. StartToken() calls RecordTo(&current_.text).  record_start_ is the
   // position within the current buffer where recording started.
-  string* record_target_;
+  std::string* record_target_;
   int record_start_;
 
   // Options.
@@ -299,7 +301,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // Read a new buffer from the input.
   void Refresh();
 
-  inline void RecordTo(string* target);
+  inline void RecordTo(std::string* target);
   inline void StopRecording();
 
   // Called when the current character is the first character of a new
@@ -311,7 +313,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   inline void EndToken();
 
   // Convenience method to add an error at the current line and column.
-  void AddError(const string& message) {
+  void AddError(const std::string& message) {
     error_collector_->AddError(line_, column_, message);
   }
 
@@ -334,9 +336,9 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   TokenType ConsumeNumber(bool started_with_zero, bool started_with_dot);
 
   // Consume the rest of a line.
-  void ConsumeLineComment(string* content);
+  void ConsumeLineComment(std::string* content);
   // Consume until "*/".
-  void ConsumeBlockComment(string* content);
+  void ConsumeBlockComment(std::string* content);
 
   enum NextCommentStatus {
     // Started a line comment.
@@ -399,13 +401,15 @@ inline const Tokenizer::Token& Tokenizer::previous() {
   return previous_;
 }
 
-inline void Tokenizer::ParseString(const string& text, string* output) {
+inline void Tokenizer::ParseString(const std::string& text, std::string* output) {
   output->clear();
   ParseStringAppend(text, output);
 }
 
 }  // namespace io
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_IO_TOKENIZER_H__

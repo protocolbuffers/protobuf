@@ -35,9 +35,10 @@
 // Recursive descent FTW.
 
 #include <float.h>
-#include <google/protobuf/stubs/hash.h>
 #include <limits>
+#include <unordered_map>
 
+#include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
@@ -58,7 +59,7 @@ using internal::WireFormat;
 
 namespace {
 
-typedef hash_map<string, FieldDescriptorProto::Type> TypeNameMap;
+typedef std::unordered_map<string, FieldDescriptorProto::Type> TypeNameMap;
 
 TypeNameMap MakeTypeNameTable() {
   TypeNameMap result;
@@ -336,9 +337,9 @@ void Parser::AddError(const string& error) {
 // -------------------------------------------------------------------
 
 Parser::LocationRecorder::LocationRecorder(Parser* parser)
-  : parser_(parser),
-    source_code_info_(parser->source_code_info_),
-    location_(parser_->source_code_info_->add_location()) {
+    : parser_(parser),
+      source_code_info_(parser->source_code_info_),
+      location_(parser_->source_code_info_->add_location()) {
   location_->add_span(parser_->input_->current().line);
   location_->add_span(parser_->input_->current().column);
 }
@@ -1511,7 +1512,6 @@ bool Parser::ParseExtensions(DescriptorProto* message,
     range->set_end(end);
   } while (TryConsume(","));
 
-
   if (LookingAt("[")) {
     int range_number_index = extensions_location.CurrentPathSize();
     SourceCodeInfo info;
@@ -1525,8 +1525,7 @@ bool Parser::ParseExtensions(DescriptorProto* message,
           extensions_location, 0 /* we fill this in w/ actual index below */,
           &info);
       LocationRecorder location(
-          index_location,
-          DescriptorProto::ExtensionRange::kOptionsFieldNumber);
+          index_location, DescriptorProto::ExtensionRange::kOptionsFieldNumber);
       DO(Consume("["));
 
       do {
@@ -1546,12 +1545,12 @@ bool Parser::ParseExtensions(DescriptorProto* message,
     for (int i = old_range_size; i < message->extension_range_size(); i++) {
       for (int j = 0; j < info.location_size(); j++) {
         if (info.location(j).path_size() == range_number_index + 1) {
-          // this location's path is up to the extension range index, but doesn't
-          // include options; so it's redundant with location above
+          // this location's path is up to the extension range index, but
+          // doesn't include options; so it's redundant with location above
           continue;
         }
         SourceCodeInfo_Location* dest = source_code_info_->add_location();
-        dest->CopyFrom(info.location(j));
+        *dest = info.location(j);
         dest->set_path(range_number_index, i);
       }
     }
@@ -2277,5 +2276,4 @@ void SourceLocationTable::Clear() {
 
 }  // namespace compiler
 }  // namespace protobuf
-
 }  // namespace google
