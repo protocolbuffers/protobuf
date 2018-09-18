@@ -182,7 +182,7 @@ class Message(object):
     do not return the value that MergeFromString returns.
     """
     self.Clear()
-    self.MergeFromString(serialized)
+    return self.MergeFromString(serialized)
 
   def SerializeToString(self, **kwargs):
     """Serializes the protocol message to a binary string.
