@@ -60,9 +60,9 @@ namespace Google.Protobuf.Reflection
             // dependencies come before the descriptors depending on them.
             var descriptorData = new List<ByteString>
             {
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestProto3Reflection.Descriptor.Proto.ToByteString()
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportProto3Reflection.Descriptor.SerializedData,
+                UnittestProto3Reflection.Descriptor.SerializedData
             };
             var converted = FileDescriptor.BuildFromByteStrings(descriptorData);
             Assert.AreEqual(3, converted.Count);
@@ -120,8 +120,8 @@ namespace Google.Protobuf.Reflection
         {
             var descriptorData = new List<ByteString>
             {
-                UnittestImportProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestProto3Reflection.Descriptor.Proto.ToByteString(),
+                UnittestImportProto3Reflection.Descriptor.SerializedData,
+                UnittestProto3Reflection.Descriptor.SerializedData,
             };
             // This will fail, because we're missing UnittestImportPublicProto3Reflection
             Assert.Throws<ArgumentException>(() => FileDescriptor.BuildFromByteStrings(descriptorData));
@@ -132,8 +132,8 @@ namespace Google.Protobuf.Reflection
         {
             var descriptorData = new List<ByteString>
             {
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
             };
             // This will fail due to the same name being used twice
             Assert.Throws<ArgumentException>(() => FileDescriptor.BuildFromByteStrings(descriptorData));
@@ -144,9 +144,9 @@ namespace Google.Protobuf.Reflection
         {
             var descriptorData = new List<ByteString>
             {
-                UnittestProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportProto3Reflection.Descriptor.Proto.ToByteString()
+                UnittestProto3Reflection.Descriptor.SerializedData,
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportProto3Reflection.Descriptor.SerializedData
             };
             // This will fail, because the dependencies should come first
             Assert.Throws<ArgumentException>(() => FileDescriptor.BuildFromByteStrings(descriptorData));
@@ -225,9 +225,9 @@ namespace Google.Protobuf.Reflection
             // dependencies come before the descriptors depending on them.
             var descriptorData = new List<ByteString>
             {
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestProto3Reflection.Descriptor.Proto.ToByteString()
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportProto3Reflection.Descriptor.SerializedData,
+                UnittestProto3Reflection.Descriptor.SerializedData
             };
             var converted = FileDescriptor.BuildFromByteStrings(descriptorData);
             TestFieldDescriptor(
