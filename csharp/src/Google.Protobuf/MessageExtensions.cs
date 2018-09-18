@@ -156,58 +156,36 @@ namespace Google.Protobuf
             return message.Descriptor
                 .Fields
                 .InDeclarationOrder()
-                .Where(f => f.IsRequired || f.IsRepeated || f.IsMap || f.MessageType != null)
                 .All(f =>
                 {
-                    if (f.MessageType != null)
+                    if (f.IsMap)
+                    {
+                        var map = (IDictionary)f.Accessor.GetValue(message);
+                        return map.Values.OfType<IMessage>().All(IsInitialized);
+                    }
+                    else if (f.IsRepeated && f.MessageType != null)
+                    {
+                        var enumerable = (IEnumerable)f.Accessor.GetValue(message);
+                        return enumerable.Cast<IMessage>().All(IsInitialized);
+                    }
+                    else if (f.MessageType != null)
                     {
                         if (f.Accessor.HasValue(message))
                         {
-                            var field = (IMessage)f.Accessor.GetValue(message);
-                            return field.IsInitialized();
+                            return ((IMessage)f.Accessor.GetValue(message)).IsInitialized();
                         }
                         else
                         {
-                            return false;
+                            return !f.IsRequired;
                         }
                     }
-                    else if (f.IsRepeated)
-                    {
-                        IList list = (IList)f.Accessor.GetValue(message);
-                        foreach (IMessage item in list)
-                        {
-                            if (item is null)
-                            {
-                                return true;
-                            }
-                            else if (!item.IsInitialized())
-                            {
-                                return false;
-                            }
-                        }
-
-                        return true;
-                    }
-                    else if (f.IsMap)
-                    {
-                        IDictionary list = (IDictionary)f.Accessor.GetValue(message);
-                        foreach (IMessage item in list.Values)
-                        {
-                            if (item is null)
-                            {
-                                return true;
-                            }
-                            else if (!item.IsInitialized())
-                            {
-                                return false;
-                            }
-                        }
-
-                        return true;
-                    }
-                    else
+                    else if (f.IsRequired)
                     {
                         return f.Accessor.HasValue(message);
+                    }
+                    else 
+                    {
+                        return true;
                     }
                 });
         }
