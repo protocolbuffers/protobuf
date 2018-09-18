@@ -95,10 +95,6 @@ std::string MessageGenerator::full_class_name() {
   return GetClassName(descriptor_);
 }
 
-const std::vector<std::string>& MessageGenerator::field_names() {
-  return field_names_;
-}
-
 const std::vector<const FieldDescriptor*>& MessageGenerator::fields_by_number() {
   return fields_by_number_;
 }
