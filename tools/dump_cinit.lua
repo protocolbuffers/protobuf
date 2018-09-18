@@ -348,6 +348,29 @@ local function end_namespace(package, append)
   end
 end
 
+local function well_known_type(m)
+  local type_map = {}
+  type_map["google.protobuf.Duration"]    = "UPB_WELLKNOWN_DURATION"
+  type_map["google.protobuf.Timestamp"]   = "UPB_WELLKNOWN_TIMESTAMP"
+  type_map["google.protobuf.Value"]       = "UPB_WELLKNOWN_VALUE"
+  type_map["google.protobuf.ListValue"]   = "UPB_WELLKNOWN_LISTVALUE"
+  type_map["google.protobuf.Struct"]      = "UPB_WELLKNOWN_STRUCT"
+  type_map["google.protobuf.DoubleValue"] = "UPB_WELLKNOWN_DOUBLEVALUE"
+  type_map["google.protobuf.FloatValue"]  = "UPB_WELLKNOWN_FLOATVALUE"
+  type_map["google.protobuf.Int64Value"]  = "UPB_WELLKNOWN_INT64VALUE"
+  type_map["google.protobuf.UInt64Value"] = "UPB_WELLKNOWN_UINT64VALUE"
+  type_map["google.protobuf.Int32Value"]  = "UPB_WELLKNOWN_INT32VALUE"
+  type_map["google.protobuf.UInt32Value"] = "UPB_WELLKNOWN_UINT32VALUE"
+  type_map["google.protobuf.BoolValue"]   = "UPB_WELLKNOWN_BOOLVALUE"
+  type_map["google.protobuf.StringValue"] = "UPB_WELLKNOWN_STRINGVALUE"
+  type_map["google.protobuf.BytesValue"]  = "UPB_WELLKNOWN_BYTESVALUE"
+  local t = type_map[m:full_name()]
+  if (t == nil) then
+    t = "UPB_WELLKNOWN_UNSPECIFIED"
+  end
+  return t
+end
+
 --[[
 
   Top-level, exported dumper functions
@@ -435,7 +458,7 @@ local function dump_defs_c(filedef, append)
     local tables = gettables(m)
     -- UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof,
     --                 refs, ref2s)
-    append('  UPB_MSGDEF_INIT("%s", %d, %d, %s, %s, %s, %s,' ..
+    append('  UPB_MSGDEF_INIT("%s", %d, %d, %s, %s, %s, %s, %s,' ..
            ' &reftables[%d], &reftables[%d]),\n',
            m:full_name(),
            upbtable.msgdef_selector_count(m),
@@ -444,6 +467,7 @@ local function dump_defs_c(filedef, append)
            dumper:strtable(tables.str),
            boolstr(m:_map_entry()),
            const(m, "syntax"),
+           well_known_type(m),
            reftable, reftable + 1)
     reftable = reftable + 2
   end

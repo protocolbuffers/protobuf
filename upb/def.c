@@ -365,6 +365,45 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   return true;
 }
 
+static void assign_msg_wellknowntype(upb_msgdef *m) {
+  const char *name = upb_msgdef_fullname(m);
+  if (name == NULL) {
+    m->well_known_type = UPB_WELLKNOWN_UNSPECIFIED;
+    return;
+  }
+  if (!strcmp(name, "google.protobuf.Duration")) {
+    m->well_known_type = UPB_WELLKNOWN_DURATION;
+  } else if (!strcmp(name, "google.protobuf.Timestamp")) {
+    m->well_known_type = UPB_WELLKNOWN_TIMESTAMP;
+  } else if (!strcmp(name, "google.protobuf.DoubleValue")) {
+    m->well_known_type = UPB_WELLKNOWN_DOUBLEVALUE;
+  } else if (!strcmp(name, "google.protobuf.FloatValue")) {
+    m->well_known_type = UPB_WELLKNOWN_FLOATVALUE;
+  } else if (!strcmp(name, "google.protobuf.Int64Value")) {
+    m->well_known_type = UPB_WELLKNOWN_INT64VALUE;
+  } else if (!strcmp(name, "google.protobuf.UInt64Value")) {
+    m->well_known_type = UPB_WELLKNOWN_UINT64VALUE;
+  } else if (!strcmp(name, "google.protobuf.Int32Value")) {
+    m->well_known_type = UPB_WELLKNOWN_INT32VALUE;
+  } else if (!strcmp(name, "google.protobuf.UInt32Value")) {
+    m->well_known_type = UPB_WELLKNOWN_UINT32VALUE;
+  } else if (!strcmp(name, "google.protobuf.BoolValue")) {
+    m->well_known_type = UPB_WELLKNOWN_BOOLVALUE;
+  } else if (!strcmp(name, "google.protobuf.StringValue")) {
+    m->well_known_type = UPB_WELLKNOWN_STRINGVALUE;
+  } else if (!strcmp(name, "google.protobuf.BytesValue")) {
+    m->well_known_type = UPB_WELLKNOWN_BYTESVALUE;
+  } else if (!strcmp(name, "google.protobuf.Value")) {
+    m->well_known_type = UPB_WELLKNOWN_VALUE;
+  } else if (!strcmp(name, "google.protobuf.ListValue")) {
+    m->well_known_type = UPB_WELLKNOWN_LISTVALUE;
+  } else if (!strcmp(name, "google.protobuf.Struct")) {
+    m->well_known_type = UPB_WELLKNOWN_STRUCT;
+  } else {
+    m->well_known_type = UPB_WELLKNOWN_UNSPECIFIED;
+  }
+}
+
 bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s) {
   size_t i;
 
@@ -401,6 +440,8 @@ bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s) {
       if (!assign_msg_indices(m, s)) {
         goto err;
       }
+      assign_msg_wellknowntype(m);
+      /* m->well_known_type = UPB_WELLKNOWN_UNSPECIFIED; */
     } else if (e) {
       upb_inttable_compact(&e->iton);
     }
@@ -1337,12 +1378,6 @@ bool upb_fielddef_checkdescriptortype(int32_t type) {
 
 /* upb_msgdef *****************************************************************/
 
-static const char *kDurationFullMessageName = "google.protobuf.Duration";
-static const char *kTimestampFullMessageName = "google.protobuf.Timestamp";
-static const char *kValueFullMessageName = "google.protobuf.Value";
-static const char *kListValueFullMessageName = "google.protobuf.ListValue";
-static const char *kStructFullMessageName = "google.protobuf.Struct";
-
 static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
                      void *closure) {
   upb_msg_oneof_iter o;
@@ -1599,24 +1634,14 @@ bool upb_msgdef_mapentry(const upb_msgdef *m) {
   return m->map_entry;
 }
 
-bool upb_msgdef_duration(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kDurationFullMessageName) == 0;
+upb_wellknowntype_t upb_msgdef_wellknowntype(const upb_msgdef *m) {
+  return m->well_known_type;
 }
 
-bool upb_msgdef_timestamp(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kTimestampFullMessageName) == 0;
-}
-
-bool upb_msgdef_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kValueFullMessageName) == 0;
-}
-
-bool upb_msgdef_listvalue(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kListValueFullMessageName) == 0;
-}
-
-bool upb_msgdef_structvalue(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kStructFullMessageName) == 0;
+bool upb_msgdef_isnumberwrapper(const upb_msgdef *m) {
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type >= UPB_WELLKNOWN_DOUBLEVALUE &&
+         type <= UPB_WELLKNOWN_UINT32VALUE;
 }
 
 void upb_msg_field_begin(upb_msg_field_iter *iter, const upb_msgdef *m) {

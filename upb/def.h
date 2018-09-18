@@ -279,6 +279,31 @@ typedef enum {
   UPB_SYNTAX_PROTO3 = 3
 } upb_syntax_t;
 
+/* All the different kind of well known type messages. For simplicity of check,
+ * number wrappers and string wrappers are grouped together. Make sure the
+ * order and merber of these groups are not changed.
+ */
+typedef enum {
+  UPB_WELLKNOWN_UNSPECIFIED,
+  UPB_WELLKNOWN_DURATION,
+  UPB_WELLKNOWN_TIMESTAMP,
+  /* number wrappers */
+  UPB_WELLKNOWN_DOUBLEVALUE,
+  UPB_WELLKNOWN_FLOATVALUE,
+  UPB_WELLKNOWN_INT64VALUE,
+  UPB_WELLKNOWN_UINT64VALUE,
+  UPB_WELLKNOWN_INT32VALUE,
+  UPB_WELLKNOWN_UINT32VALUE,
+  /* string wrappers */
+  UPB_WELLKNOWN_STRINGVALUE,
+  UPB_WELLKNOWN_BYTESVALUE,
+  UPB_WELLKNOWN_BOOLVALUE,
+  UPB_WELLKNOWN_VALUE,
+  UPB_WELLKNOWN_LISTVALUE,
+  UPB_WELLKNOWN_STRUCT
+} upb_wellknowntype_t;
+
+
 /* Maps descriptor type -> upb field type.  */
 extern const uint8_t upb_desctype_to_fieldtype[];
 
@@ -785,20 +810,12 @@ class upb::MessageDef {
   void setmapentry(bool map_entry);
   bool mapentry() const;
 
-  /* Is this message a duration? */
-  bool duration() const;
+  /* Return the type of well known type message. UPB_WELLKNOWN_UNSPECIFIED for
+   * non-well-known message. */
+  upb_wellknowntype_t wellknowntype() const;
 
-  /* Is this message a timestamp? */
-  bool timestamp() const;
-
-  /* Is this message a value? */
-  bool value() const;
-
-  /* Is this message a list value? */
-  bool listvalue() const;
-
-  /* Is this message a struct value? */
-  bool structvalue() const;
+  /* Whether is a number wrapper. */
+  bool isnumberwrapper() const;
 
   /* Iteration over fields.  The order is undefined. */
   class field_iterator
@@ -941,11 +958,8 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
-bool upb_msgdef_duration(const upb_msgdef *m);
-bool upb_msgdef_timestamp(const upb_msgdef *m);
-bool upb_msgdef_value(const upb_msgdef *m);
-bool upb_msgdef_listvalue(const upb_msgdef *m);
-bool upb_msgdef_structvalue(const upb_msgdef *m);
+upb_wellknowntype_t upb_msgdef_wellknowntype(const upb_msgdef *m);
+bool upb_msgdef_isnumberwrapper(const upb_msgdef *m);
 bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 
 /* Field lookup in a couple of different variations:
@@ -1885,20 +1899,11 @@ inline void MessageDef::setmapentry(bool map_entry) {
 inline bool MessageDef::mapentry() const {
   return upb_msgdef_mapentry(this);
 }
-inline bool MessageDef::duration() const {
-  return upb_msgdef_duration(this);
+inline upb_wellknowntype_t MessageDef::wellknowntype() const {
+  return upb_msgdef_wellknowntype(this);
 }
-inline bool MessageDef::timestamp() const {
-  return upb_msgdef_timestamp(this);
-}
-inline bool MessageDef::value() const {
-  return upb_msgdef_value(this);
-}
-inline bool MessageDef::listvalue() const {
-  return upb_msgdef_listvalue(this);
-}
-inline bool MessageDef::structvalue() const {
-  return upb_msgdef_structvalue(this);
+inline bool MessageDef::isnumberwrapper() const {
+  return upb_msgdef_isnumberwrapper(this);
 }
 inline MessageDef::field_iterator MessageDef::field_begin() {
   return field_iterator(this);

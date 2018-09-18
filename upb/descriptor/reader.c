@@ -687,6 +687,7 @@ static size_t msg_name(void *closure, const void *hd, const char *buf,
 
   upb_def_setfullname(upb_msgdef_upcast_mutable(m), name, NULL);
   upb_descreader_setscopename(r, name);  /* Passes ownership of name. */
+
   return n;
 }
 
