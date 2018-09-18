@@ -42,6 +42,9 @@ namespace Google.Protobuf.Test.Reflection
     {
         static readonly FileDescriptor unitTestProto3Descriptor = LoadProtos();
 
+        // Note: we don't expose a declaration for FileDescriptor as it doesn't have comments
+        // at the moment and the locations aren't terribly useful.
+
         [Test]
         public void ServiceComments()
         {
