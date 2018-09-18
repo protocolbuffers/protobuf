@@ -93,6 +93,8 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 
  private:
   void SetCommonFieldVariables(std::map<string, string>* variables);
+  std::string GetStringDefaultValueInternal();
+  std::string GetBytesDefaultValueInternal();
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorBase);
 };

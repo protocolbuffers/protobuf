@@ -281,6 +281,20 @@ bool AllPrintableAscii(const std::string& text) {
   return true;
 }
 
+std::string FieldGeneratorBase::GetStringDefaultValueInternal() {
+    if (descriptor_->default_value_string().empty())
+        return "\"\"";
+    else
+        return "global::System.Encoding.UTF8.GetString(global::System.Convert.FromBase64String(\" +" + StringToBase64(descriptor_->default_value_string()) + " +\"))";
+}
+
+std::string FieldGeneratorBase::GetBytesDefaultValueInternal() {
+    if (descriptor_->default_value_string().empty())
+        return "pb::ByteString.Empty";
+    else
+        return "pb::ByteString.FromBase64(\"" + StringToBase64(descriptor_->default_value_string()) + "\")";
+}
+
 std::string FieldGeneratorBase::default_value() {
     return default_value(descriptor_);
 }
@@ -342,15 +356,9 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
         return "false";
       }
     case FieldDescriptor::TYPE_STRING:
-      if (descriptor->default_value_string().empty())
-        return "\"\"";
-      else
-        return "global::System.Encoding.UTF8.GetString(global::System.Convert.FromBase64String(\" +" + StringToBase64(descriptor->default_value_string()) + " +\"))";
+      return GetStringDefaultValueInternal();
     case FieldDescriptor::TYPE_BYTES:
-      if (descriptor->default_value_string().empty())
-        return "pb::ByteString.Empty";
-      else
-        return "pb::ByteString.FromBase64(\"" + StringToBase64(descriptor->default_value_string()) + "\")";
+      return GetBytesDefaultValueInternal();
     case FieldDescriptor::TYPE_UINT32:
       return SimpleItoa(descriptor->default_value_uint32());
     case FieldDescriptor::TYPE_SFIXED32:
