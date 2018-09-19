@@ -281,18 +281,18 @@ bool AllPrintableAscii(const std::string& text) {
   return true;
 }
 
-std::string FieldGeneratorBase::GetStringDefaultValueInternal() {
-    if (descriptor_->default_value_string().empty())
+std::string FieldGeneratorBase::GetStringDefaultValueInternal(const FieldDescriptor* descriptor) {
+    if (descriptor->default_value_string().empty())
         return "\"\"";
     else
-        return "global::System.Encoding.UTF8.GetString(global::System.Convert.FromBase64String(\" +" + StringToBase64(descriptor_->default_value_string()) + " +\"))";
+        return "global::System.Encoding.UTF8.GetString(global::System.Convert.FromBase64String(\" +" + StringToBase64(descriptor->default_value_string()) + " +\"))";
 }
 
-std::string FieldGeneratorBase::GetBytesDefaultValueInternal() {
-    if (descriptor_->default_value_string().empty())
+std::string FieldGeneratorBase::GetBytesDefaultValueInternal(const FieldDescriptor* descriptor) {
+    if (descriptor->default_value_string().empty())
         return "pb::ByteString.Empty";
     else
-        return "pb::ByteString.FromBase64(\"" + StringToBase64(descriptor_->default_value_string()) + "\")";
+        return "pb::ByteString.FromBase64(\"" + StringToBase64(descriptor->default_value_string()) + "\")";
 }
 
 std::string FieldGeneratorBase::default_value() {
@@ -356,9 +356,9 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
         return "false";
       }
     case FieldDescriptor::TYPE_STRING:
-      return GetStringDefaultValueInternal();
+      return GetStringDefaultValueInternal(descriptor);
     case FieldDescriptor::TYPE_BYTES:
-      return GetBytesDefaultValueInternal();
+      return GetBytesDefaultValueInternal(descriptor);
     case FieldDescriptor::TYPE_UINT32:
       return SimpleItoa(descriptor->default_value_uint32());
     case FieldDescriptor::TYPE_SFIXED32:

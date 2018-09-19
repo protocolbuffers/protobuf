@@ -83,8 +83,6 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   std::string name();
   std::string type_name();
   std::string type_name(const FieldDescriptor* descriptor);
-  std::string nullable_type_name();
-  std::string nullable_type_name(const FieldDescriptor* descriptor);
   bool has_default_value();
   std::string default_value();
   std::string default_value(const FieldDescriptor* descriptor);
@@ -93,8 +91,8 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 
  private:
   void SetCommonFieldVariables(std::map<string, string>* variables);
-  std::string GetStringDefaultValueInternal();
-  std::string GetBytesDefaultValueInternal();
+  std::string GetStringDefaultValueInternal(const FieldDescriptor* descriptor);
+  std::string GetBytesDefaultValueInternal(const FieldDescriptor* descriptor);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGeneratorBase);
 };
