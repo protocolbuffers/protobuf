@@ -45,6 +45,14 @@ namespace Google.Protobuf.Test.Reflection
         // Note: we don't expose a declaration for FileDescriptor as it doesn't have comments
         // at the moment and the locations aren't terribly useful.
 
+        // The tests for most elements are quite basic: we don't test every aspect of every element.
+        // The code within the library falls into two categories:
+        // - Exposing the properties for *any* declaration
+        // - Finding the right declaration for an element from the descriptor data
+        // We have a per-element check to make sure we *are* finding the right declaration, and we
+        // check every property of declarations in at least one test, but we don't have a cross-product.
+        // That would effectively be testing protoc, which seems redundant here.
+
         [Test]
         public void ServiceComments()
         {
@@ -70,6 +78,19 @@ namespace Google.Protobuf.Test.Reflection
             Assert.AreEqual(" This is a leading comment\n", message.Declaration.LeadingComments);
             Assert.AreEqual(new[] { " This is leading detached comment 1\n", " This is leading detached comment 2\n" },
                 message.Declaration.LeadingDetachedComments);
+        }
+
+        // Note: this test is somewhat brittle; a change earlier in the proto will break it.
+        [Test]
+        public void MessageLocations()
+        {
+            var message = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
+            Assert.NotNull(message.Declaration);
+            Assert.AreEqual(389, message.Declaration.StartLine);
+            Assert.AreEqual(1, message.Declaration.StartColumn);
+
+            Assert.AreEqual(404, message.Declaration.EndLine);
+            Assert.AreEqual(2, message.Declaration.EndColumn);
         }
 
         [Test]
