@@ -42,6 +42,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
@@ -102,6 +103,12 @@ void MessageGenerator::AddDeprecatedFlag(io::Printer* printer) {
   }
 }
 
+void MessageGenerator::AddSerializableAttribute(io::Printer* printer) {
+  if (this->options()->serializable) {
+    printer->Print("[global::System.SerializableAttribute]\n");
+  }
+}
+
 void MessageGenerator::Generate(io::Printer* printer) {
   std::map<string, string> vars;
   vars["class_name"] = class_name();
@@ -109,6 +116,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   WriteMessageDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
+  AddSerializableAttribute(printer);
 
   printer->Print(
     vars,
