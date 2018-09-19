@@ -64,24 +64,30 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public int EndLine { get; }
         /// <summary>
-        /// The end column of the declaration within the source file. This value is 1-based.
+        /// The end column of the declaration within the source file. This value is 1-based, and
+        /// exclusive. (The final character of the declaration is on the column before this value.)
         /// </summary>
         public int EndColumn { get; }
 
         /// <summary>
-        /// Comments appearing before the declaration. Never null, but may be empty.
+        /// Comments appearing before the declaration. Never null, but may be empty. Multi-line comments
+        /// are represented as a newline-separated string. Leading whitespace and the comment marker ("//")
+        /// are removed from each line.
         /// </summary>
         public string LeadingComments { get; }
 
         /// <summary>
-        /// Comments appearing after the declaration. Never null, but may be empty.
+        /// Comments appearing after the declaration. Never null, but may be empty. Multi-line comments
+        /// are represented as a newline-separated string. Leading whitespace and the comment marker ("//")
+        /// are removed from each line.
         /// </summary>
         public string TrailingComments { get; }
 
         /// <summary>
         /// Comments appearing before the declaration, but separated from it by blank
-        /// lines. Each string represents a paragraph of comments. The list is never null,
-        /// but may be empty. Likewise each element is never null, but may be empty.
+        /// lines. Each string represents a newline-separated paragraph of comments.
+        /// Leading whitespace and the comment marker ("//") are removed from each line.
+        /// The list is never null, but may be empty. Likewise each element is never null, but may be empty.
         /// </summary>
         public IReadOnlyList<string> LeadingDetachedComments { get; }
 
