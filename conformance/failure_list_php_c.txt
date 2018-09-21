@@ -18,6 +18,10 @@ Recommended.Proto3.JsonInput.TimestampHas3FractionalDigits.Validator
 Recommended.Proto3.JsonInput.TimestampHas6FractionalDigits.Validator
 Recommended.Proto3.JsonInput.Uint64FieldBeString.Validator
 Recommended.Proto3.ProtobufInput.OneofZeroBytes.JsonOutput
+Required.DurationProtoInputTooLarge.JsonOutput
+Required.DurationProtoInputTooSmall.JsonOutput
+Required.TimestampProtoInputTooLarge.JsonOutput
+Required.TimestampProtoInputTooSmall.JsonOutput
 Required.Proto3.JsonInput.Any.JsonOutput
 Required.Proto3.JsonInput.Any.ProtobufOutput
 Required.Proto3.JsonInput.AnyNested.JsonOutput
@@ -62,14 +66,6 @@ Required.Proto3.JsonInput.StringFieldUnicodeEscape.JsonOutput
 Required.Proto3.JsonInput.StringFieldUnicodeEscape.ProtobufOutput
 Required.Proto3.JsonInput.StringFieldUnicodeEscapeWithLowercaseHexLetters.JsonOutput
 Required.Proto3.JsonInput.StringFieldUnicodeEscapeWithLowercaseHexLetters.ProtobufOutput
-Required.Proto3.JsonInput.Struct.JsonOutput
-Required.Proto3.JsonInput.ValueAcceptBool.JsonOutput
-Required.Proto3.JsonInput.ValueAcceptFloat.JsonOutput
-Required.Proto3.JsonInput.ValueAcceptInteger.JsonOutput
-Required.Proto3.JsonInput.ValueAcceptList.JsonOutput
-Required.Proto3.JsonInput.ValueAcceptNull.JsonOutput
-Required.Proto3.JsonInput.ValueAcceptObject.JsonOutput
-Required.Proto3.JsonInput.ValueAcceptString.JsonOutput
 Required.Proto3.ProtobufInput.DoubleFieldNormalizeQuietNan.JsonOutput
 Required.Proto3.ProtobufInput.DoubleFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.FloatFieldNormalizeQuietNan.JsonOutput

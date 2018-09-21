@@ -20,6 +20,9 @@ use Google\Protobuf\UInt64Value;
 use Google\Protobuf\BoolValue;
 use Google\Protobuf\StringValue;
 use Google\Protobuf\BytesValue;
+use Google\Protobuf\Value;
+use Google\Protobuf\ListValue;
+use Google\Protobuf\Struct;
 
 class EncodeDecodeTest extends TestBase
 {
@@ -40,11 +43,25 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(false, $m->getValue());
     }
 
+    public function testEncodeTopLevelBoolValue()
+    {
+        $m = new BoolValue();
+        $m->setValue(true);
+        $this->assertSame("true", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelDoubleValue()
     {
         $m = new DoubleValue();
         $m->mergeFromJsonString("1.5");
         $this->assertEquals(1.5, $m->getValue());
+    }
+
+    public function testEncodeTopLevelDoubleValue()
+    {
+        $m = new DoubleValue();
+        $m->setValue(1.5);
+        $this->assertSame("1.5", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelFloatValue()
@@ -54,11 +71,25 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(1.5, $m->getValue());
     }
 
+    public function testEncodeTopLevelFloatValue()
+    {
+        $m = new FloatValue();
+        $m->setValue(1.5);
+        $this->assertSame("1.5", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelInt32Value()
     {
         $m = new Int32Value();
         $m->mergeFromJsonString("1");
         $this->assertEquals(1, $m->getValue());
+    }
+
+    public function testEncodeTopLevelInt32Value()
+    {
+        $m = new Int32Value();
+        $m->setValue(1);
+        $this->assertSame("1", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelUInt32Value()
@@ -68,11 +99,25 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(1, $m->getValue());
     }
 
+    public function testEncodeTopLevelUInt32Value()
+    {
+        $m = new UInt32Value();
+        $m->setValue(1);
+        $this->assertSame("1", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelInt64Value()
     {
         $m = new Int64Value();
         $m->mergeFromJsonString("1");
         $this->assertEquals(1, $m->getValue());
+    }
+
+    public function testEncodeTopLevelInt64Value()
+    {
+        $m = new Int64Value();
+        $m->setValue(1);
+        $this->assertSame("1", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelUInt64Value()
@@ -82,6 +127,13 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(1, $m->getValue());
     }
 
+    public function testEncodeTopLevelUInt64Value()
+    {
+        $m = new UInt64Value();
+        $m->setValue(1);
+        $this->assertSame("1", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelStringValue()
     {
         $m = new StringValue();
@@ -89,11 +141,25 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("a", $m->getValue());
     }
 
+    public function testEncodeTopLevelStringValue()
+    {
+        $m = new StringValue();
+        $m->setValue("a");
+        $this->assertSame("\"a\"", $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelBytesValue()
     {
         $m = new BytesValue();
         $m->mergeFromJsonString("\"YQ==\"");
         $this->assertSame("a", $m->getValue());
+    }
+
+    public function testEncodeTopLevelBytesValue()
+    {
+        $m = new BytesValue();
+        $m->setValue("a");
+        $this->assertSame("\"YQ==\"", $m->serializeToJsonString());
     }
 
     public function testEncode()
@@ -635,6 +701,88 @@ class EncodeDecodeTest extends TestBase
         $m->setNanos(123456789);
         $this->assertEquals("\"2000-01-01T00:00:00.123456789Z\"",
                             $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelValue()
+    {
+        $m = new Value();
+        $m->mergeFromJsonString("\"a\"");
+        $this->assertSame("a", $m->getStringValue());
+
+        $m = new Value();
+        $m->mergeFromJsonString("1.5");
+        $this->assertSame(1.5, $m->getNumberValue());
+
+        $m = new Value();
+        $m->mergeFromJsonString("true");
+        $this->assertSame(true, $m->getBoolValue());
+
+        $m = new Value();
+        $m->mergeFromJsonString("null");
+        $this->assertSame("null_value", $m->getKind());
+
+        $m = new Value();
+        $m->mergeFromJsonString("[1]");
+        $this->assertSame("list_value", $m->getKind());
+
+        $m = new Value();
+        $m->mergeFromJsonString("{\"a\":1}");
+        $this->assertSame("struct_value", $m->getKind());
+    }
+
+    public function testEncodeTopLevelValue()
+    {
+        $m = new Value();
+        $m->setStringValue("a");
+        $this->assertSame("\"a\"", $m->serializeToJsonString());
+
+        $m = new Value();
+        $m->setNumberValue(1.5);
+        $this->assertSame("1.5", $m->serializeToJsonString());
+
+        $m = new Value();
+        $m->setBoolValue(true);
+        $this->assertSame("true", $m->serializeToJsonString());
+
+        $m = new Value();
+        $m->setNullValue(0);
+        $this->assertSame("null", $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelListValue()
+    {
+        $m = new ListValue();
+        $m->mergeFromJsonString("[1]");
+        $this->assertSame(1.0, $m->getValues()[0]->getNumberValue());
+    }
+
+    public function testEncodeTopLevelListValue()
+    {
+        $m = new ListValue();
+        $arr = $m->getValues();
+        $sub = new Value();
+        $sub->setNumberValue(1.5);
+        $arr[] = $sub;
+        $this->assertSame("[1.5]", $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelStruct()
+    {
+        $m = new Struct();
+        $m->mergeFromJsonString("{\"a\":{\"b\":1}}");
+        $this->assertSame(1.0, $m->getFields()["a"]
+                                 ->getStructValue()
+                                 ->getFields()["b"]->getNumberValue());
+    }
+
+    public function testEncodeTopLevelStruct()
+    {
+        $m = new Struct();
+        $map = $m->getFields();
+        $sub = new Value();
+        $sub->setNumberValue(1.5);
+        $map["a"] = $sub;
+        $this->assertSame("{\"a\":1.5}", $m->serializeToJsonString());
     }
 
 }
