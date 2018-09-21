@@ -1259,18 +1259,26 @@ static void start_timestamp_base(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
+#define UPB_TIMESTAMP_BASE_SIZE 19
+
 static bool end_timestamp_base(upb_json_parser *p, const char *ptr) {
   size_t len;
   const char *buf;
+  /* 3 for GMT and 1 for ending 0 */
+  char timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 4];
 
   if (!capture_end(p, ptr)) {
     return false;
   }
 
   buf = accumulate_getptr(p, &len);
+  UPB_ASSERT(len == UPB_TIMESTAMP_BASE_SIZE);
+  memcpy(timestamp_buf, buf, UPB_TIMESTAMP_BASE_SIZE);
+  memcpy(timestamp_buf + UPB_TIMESTAMP_BASE_SIZE, "GMT", 3);
+  timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 3] = 0;
 
   /* Parse seconds */
-  if (strptime(buf, "%FT%H:%M:%S", &p->tm) == NULL) {
+  if (strptime(timestamp_buf, "%FT%H:%M:%S%Z", &p->tm) == NULL) {
     upb_status_seterrf(&p->status, "error parsing timestamp: %s", buf);
     upb_env_reporterror(p->env, &p->status);
     return false;
