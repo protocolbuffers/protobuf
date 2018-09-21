@@ -1452,6 +1452,45 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   return true;
 }
 
+static void assign_msg_wellknowntype(upb_msgdef *m) {
+  const char *name = upb_msgdef_fullname(m);
+  if (name == NULL) {
+    m->well_known_type = UPB_WELLKNOWN_UNSPECIFIED;
+    return;
+  }
+  if (!strcmp(name, "google.protobuf.Duration")) {
+    m->well_known_type = UPB_WELLKNOWN_DURATION;
+  } else if (!strcmp(name, "google.protobuf.Timestamp")) {
+    m->well_known_type = UPB_WELLKNOWN_TIMESTAMP;
+  } else if (!strcmp(name, "google.protobuf.DoubleValue")) {
+    m->well_known_type = UPB_WELLKNOWN_DOUBLEVALUE;
+  } else if (!strcmp(name, "google.protobuf.FloatValue")) {
+    m->well_known_type = UPB_WELLKNOWN_FLOATVALUE;
+  } else if (!strcmp(name, "google.protobuf.Int64Value")) {
+    m->well_known_type = UPB_WELLKNOWN_INT64VALUE;
+  } else if (!strcmp(name, "google.protobuf.UInt64Value")) {
+    m->well_known_type = UPB_WELLKNOWN_UINT64VALUE;
+  } else if (!strcmp(name, "google.protobuf.Int32Value")) {
+    m->well_known_type = UPB_WELLKNOWN_INT32VALUE;
+  } else if (!strcmp(name, "google.protobuf.UInt32Value")) {
+    m->well_known_type = UPB_WELLKNOWN_UINT32VALUE;
+  } else if (!strcmp(name, "google.protobuf.BoolValue")) {
+    m->well_known_type = UPB_WELLKNOWN_BOOLVALUE;
+  } else if (!strcmp(name, "google.protobuf.StringValue")) {
+    m->well_known_type = UPB_WELLKNOWN_STRINGVALUE;
+  } else if (!strcmp(name, "google.protobuf.BytesValue")) {
+    m->well_known_type = UPB_WELLKNOWN_BYTESVALUE;
+  } else if (!strcmp(name, "google.protobuf.Value")) {
+    m->well_known_type = UPB_WELLKNOWN_VALUE;
+  } else if (!strcmp(name, "google.protobuf.ListValue")) {
+    m->well_known_type = UPB_WELLKNOWN_LISTVALUE;
+  } else if (!strcmp(name, "google.protobuf.Struct")) {
+    m->well_known_type = UPB_WELLKNOWN_STRUCT;
+  } else {
+    m->well_known_type = UPB_WELLKNOWN_UNSPECIFIED;
+  }
+}
+
 bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s) {
   size_t i;
 
@@ -1488,6 +1527,8 @@ bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s) {
       if (!assign_msg_indices(m, s)) {
         goto err;
       }
+      assign_msg_wellknowntype(m);
+      /* m->well_known_type = UPB_WELLKNOWN_UNSPECIFIED; */
     } else if (e) {
       upb_inttable_compact(&e->iton);
     }
@@ -2424,12 +2465,6 @@ bool upb_fielddef_checkdescriptortype(int32_t type) {
 
 /* upb_msgdef *****************************************************************/
 
-static const char *kDurationFullMessageName = "google.protobuf.Duration";
-static const char *kTimestampFullMessageName = "google.protobuf.Timestamp";
-static const char *kValueFullMessageName = "google.protobuf.Value";
-static const char *kListValueFullMessageName = "google.protobuf.ListValue";
-static const char *kStructFullMessageName = "google.protobuf.Struct";
-
 static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
                      void *closure) {
   upb_msg_oneof_iter o;
@@ -2686,24 +2721,14 @@ bool upb_msgdef_mapentry(const upb_msgdef *m) {
   return m->map_entry;
 }
 
-bool upb_msgdef_duration(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kDurationFullMessageName) == 0;
+upb_wellknowntype_t upb_msgdef_wellknowntype(const upb_msgdef *m) {
+  return m->well_known_type;
 }
 
-bool upb_msgdef_timestamp(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kTimestampFullMessageName) == 0;
-}
-
-bool upb_msgdef_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kValueFullMessageName) == 0;
-}
-
-bool upb_msgdef_listvalue(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kListValueFullMessageName) == 0;
-}
-
-bool upb_msgdef_structvalue(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kStructFullMessageName) == 0;
+bool upb_msgdef_isnumberwrapper(const upb_msgdef *m) {
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type >= UPB_WELLKNOWN_DOUBLEVALUE &&
+         type <= UPB_WELLKNOWN_UINT32VALUE;
 }
 
 void upb_msg_field_begin(upb_msg_field_iter *iter, const upb_msgdef *m) {
@@ -7617,28 +7642,28 @@ static upb_inttable reftables[268];
 #endif
 
 static const upb_msgdef msgs[22] = {
-  UPB_MSGDEF_INIT("google.protobuf.DescriptorProto", 41, 8, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[0], 11, 10), UPB_STRTABLE_INIT(10, 15, UPB_CTYPE_PTR, 4, &strentries[0]), false, UPB_SYNTAX_PROTO2, &reftables[0], &reftables[1]),
-  UPB_MSGDEF_INIT("google.protobuf.DescriptorProto.ExtensionRange", 5, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[11], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[16]), false, UPB_SYNTAX_PROTO2, &reftables[2], &reftables[3]),
-  UPB_MSGDEF_INIT("google.protobuf.DescriptorProto.ReservedRange", 5, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[14], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[20]), false, UPB_SYNTAX_PROTO2, &reftables[4], &reftables[5]),
-  UPB_MSGDEF_INIT("google.protobuf.EnumDescriptorProto", 12, 2, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[17], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[24]), false, UPB_SYNTAX_PROTO2, &reftables[6], &reftables[7]),
-  UPB_MSGDEF_INIT("google.protobuf.EnumOptions", 9, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[0], &arrays[21], 4, 2), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[28]), false, UPB_SYNTAX_PROTO2, &reftables[8], &reftables[9]),
-  UPB_MSGDEF_INIT("google.protobuf.EnumValueDescriptorProto", 9, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[25], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[32]), false, UPB_SYNTAX_PROTO2, &reftables[10], &reftables[11]),
-  UPB_MSGDEF_INIT("google.protobuf.EnumValueOptions", 8, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[2], &arrays[29], 2, 1), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[36]), false, UPB_SYNTAX_PROTO2, &reftables[12], &reftables[13]),
-  UPB_MSGDEF_INIT("google.protobuf.FieldDescriptorProto", 24, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[31], 11, 10), UPB_STRTABLE_INIT(10, 15, UPB_CTYPE_PTR, 4, &strentries[40]), false, UPB_SYNTAX_PROTO2, &reftables[14], &reftables[15]),
-  UPB_MSGDEF_INIT("google.protobuf.FieldOptions", 13, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[4], &arrays[42], 11, 6), UPB_STRTABLE_INIT(7, 15, UPB_CTYPE_PTR, 4, &strentries[56]), false, UPB_SYNTAX_PROTO2, &reftables[16], &reftables[17]),
-  UPB_MSGDEF_INIT("google.protobuf.FileDescriptorProto", 43, 6, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[53], 13, 12), UPB_STRTABLE_INIT(12, 15, UPB_CTYPE_PTR, 4, &strentries[72]), false, UPB_SYNTAX_PROTO2, &reftables[18], &reftables[19]),
-  UPB_MSGDEF_INIT("google.protobuf.FileDescriptorSet", 7, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[66], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[88]), false, UPB_SYNTAX_PROTO2, &reftables[20], &reftables[21]),
-  UPB_MSGDEF_INIT("google.protobuf.FileOptions", 38, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[6], &arrays[68], 42, 17), UPB_STRTABLE_INIT(18, 31, UPB_CTYPE_PTR, 5, &strentries[92]), false, UPB_SYNTAX_PROTO2, &reftables[22], &reftables[23]),
-  UPB_MSGDEF_INIT("google.protobuf.MessageOptions", 11, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[8], &arrays[110], 8, 4), UPB_STRTABLE_INIT(5, 7, UPB_CTYPE_PTR, 3, &strentries[124]), false, UPB_SYNTAX_PROTO2, &reftables[24], &reftables[25]),
-  UPB_MSGDEF_INIT("google.protobuf.MethodDescriptorProto", 16, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[118], 7, 6), UPB_STRTABLE_INIT(6, 7, UPB_CTYPE_PTR, 3, &strentries[132]), false, UPB_SYNTAX_PROTO2, &reftables[26], &reftables[27]),
-  UPB_MSGDEF_INIT("google.protobuf.MethodOptions", 8, 1, UPB_INTTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &intentries[10], &arrays[125], 1, 0), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[140]), false, UPB_SYNTAX_PROTO2, &reftables[28], &reftables[29]),
-  UPB_MSGDEF_INIT("google.protobuf.OneofDescriptorProto", 6, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[126], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[144]), false, UPB_SYNTAX_PROTO2, &reftables[30], &reftables[31]),
-  UPB_MSGDEF_INIT("google.protobuf.ServiceDescriptorProto", 12, 2, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[128], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[148]), false, UPB_SYNTAX_PROTO2, &reftables[32], &reftables[33]),
-  UPB_MSGDEF_INIT("google.protobuf.ServiceOptions", 8, 1, UPB_INTTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &intentries[14], &arrays[132], 1, 0), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[152]), false, UPB_SYNTAX_PROTO2, &reftables[34], &reftables[35]),
-  UPB_MSGDEF_INIT("google.protobuf.SourceCodeInfo", 7, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[133], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[156]), false, UPB_SYNTAX_PROTO2, &reftables[36], &reftables[37]),
-  UPB_MSGDEF_INIT("google.protobuf.SourceCodeInfo.Location", 20, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[135], 7, 5), UPB_STRTABLE_INIT(5, 7, UPB_CTYPE_PTR, 3, &strentries[160]), false, UPB_SYNTAX_PROTO2, &reftables[38], &reftables[39]),
-  UPB_MSGDEF_INIT("google.protobuf.UninterpretedOption", 19, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[142], 9, 7), UPB_STRTABLE_INIT(7, 15, UPB_CTYPE_PTR, 4, &strentries[168]), false, UPB_SYNTAX_PROTO2, &reftables[40], &reftables[41]),
-  UPB_MSGDEF_INIT("google.protobuf.UninterpretedOption.NamePart", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[151], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[184]), false, UPB_SYNTAX_PROTO2, &reftables[42], &reftables[43]),
+  UPB_MSGDEF_INIT("google.protobuf.DescriptorProto", 41, 8, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[0], 11, 10), UPB_STRTABLE_INIT(10, 15, UPB_CTYPE_PTR, 4, &strentries[0]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[0], &reftables[1]),
+  UPB_MSGDEF_INIT("google.protobuf.DescriptorProto.ExtensionRange", 5, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[11], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[16]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[2], &reftables[3]),
+  UPB_MSGDEF_INIT("google.protobuf.DescriptorProto.ReservedRange", 5, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[14], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[20]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[4], &reftables[5]),
+  UPB_MSGDEF_INIT("google.protobuf.EnumDescriptorProto", 12, 2, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[17], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[24]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[6], &reftables[7]),
+  UPB_MSGDEF_INIT("google.protobuf.EnumOptions", 9, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[0], &arrays[21], 4, 2), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[28]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[8], &reftables[9]),
+  UPB_MSGDEF_INIT("google.protobuf.EnumValueDescriptorProto", 9, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[25], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[32]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[10], &reftables[11]),
+  UPB_MSGDEF_INIT("google.protobuf.EnumValueOptions", 8, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[2], &arrays[29], 2, 1), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[36]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[12], &reftables[13]),
+  UPB_MSGDEF_INIT("google.protobuf.FieldDescriptorProto", 24, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[31], 11, 10), UPB_STRTABLE_INIT(10, 15, UPB_CTYPE_PTR, 4, &strentries[40]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[14], &reftables[15]),
+  UPB_MSGDEF_INIT("google.protobuf.FieldOptions", 13, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[4], &arrays[42], 11, 6), UPB_STRTABLE_INIT(7, 15, UPB_CTYPE_PTR, 4, &strentries[56]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[16], &reftables[17]),
+  UPB_MSGDEF_INIT("google.protobuf.FileDescriptorProto", 43, 6, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[53], 13, 12), UPB_STRTABLE_INIT(12, 15, UPB_CTYPE_PTR, 4, &strentries[72]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[18], &reftables[19]),
+  UPB_MSGDEF_INIT("google.protobuf.FileDescriptorSet", 7, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[66], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[88]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[20], &reftables[21]),
+  UPB_MSGDEF_INIT("google.protobuf.FileOptions", 38, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[6], &arrays[68], 42, 17), UPB_STRTABLE_INIT(18, 31, UPB_CTYPE_PTR, 5, &strentries[92]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[22], &reftables[23]),
+  UPB_MSGDEF_INIT("google.protobuf.MessageOptions", 11, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[8], &arrays[110], 8, 4), UPB_STRTABLE_INIT(5, 7, UPB_CTYPE_PTR, 3, &strentries[124]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[24], &reftables[25]),
+  UPB_MSGDEF_INIT("google.protobuf.MethodDescriptorProto", 16, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[118], 7, 6), UPB_STRTABLE_INIT(6, 7, UPB_CTYPE_PTR, 3, &strentries[132]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[26], &reftables[27]),
+  UPB_MSGDEF_INIT("google.protobuf.MethodOptions", 8, 1, UPB_INTTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &intentries[10], &arrays[125], 1, 0), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[140]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[28], &reftables[29]),
+  UPB_MSGDEF_INIT("google.protobuf.OneofDescriptorProto", 6, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[126], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[144]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[30], &reftables[31]),
+  UPB_MSGDEF_INIT("google.protobuf.ServiceDescriptorProto", 12, 2, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[128], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[148]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[32], &reftables[33]),
+  UPB_MSGDEF_INIT("google.protobuf.ServiceOptions", 8, 1, UPB_INTTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &intentries[14], &arrays[132], 1, 0), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[152]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[34], &reftables[35]),
+  UPB_MSGDEF_INIT("google.protobuf.SourceCodeInfo", 7, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[133], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[156]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[36], &reftables[37]),
+  UPB_MSGDEF_INIT("google.protobuf.SourceCodeInfo.Location", 20, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[135], 7, 5), UPB_STRTABLE_INIT(5, 7, UPB_CTYPE_PTR, 3, &strentries[160]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[38], &reftables[39]),
+  UPB_MSGDEF_INIT("google.protobuf.UninterpretedOption", 19, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[142], 9, 7), UPB_STRTABLE_INIT(7, 15, UPB_CTYPE_PTR, 4, &strentries[168]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[40], &reftables[41]),
+  UPB_MSGDEF_INIT("google.protobuf.UninterpretedOption.NamePart", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[151], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[184]), false, UPB_SYNTAX_PROTO2, UPB_WELLKNOWN_UNSPECIFIED, &reftables[42], &reftables[43]),
 };
 
 static const upb_fielddef fields[107] = {
@@ -9206,6 +9231,7 @@ static size_t msg_name(void *closure, const void *hd, const char *buf,
 
   upb_def_setfullname(upb_msgdef_upcast_mutable(m), name, NULL);
   upb_descreader_setscopename(r, name);  /* Passes ownership of name. */
+
   return n;
 }
 
@@ -12559,16 +12585,6 @@ done:
 
 #define UPB_JSON_MAX_DEPTH 64
 
-static const char *kDoubleValueFullMessageName = "google.protobuf.DoubleValue";
-static const char *kFloatValueFullMessageName = "google.protobuf.FloatValue";
-static const char *kInt64ValueFullMessageName = "google.protobuf.Int64Value";
-static const char *kUInt64ValueFullMessageName = "google.protobuf.UInt64Value";
-static const char *kInt32ValueFullMessageName = "google.protobuf.Int32Value";
-static const char *kUInt32ValueFullMessageName = "google.protobuf.UInt32Value";
-static const char *kBoolValueFullMessageName = "google.protobuf.BoolValue";
-static const char *kStringValueFullMessageName = "google.protobuf.StringValue";
-static const char *kBytesValueFullMessageName = "google.protobuf.BytesValue";
-
 /* Type of value message */
 enum {
   VALUE_NULLVALUE   = 0,
@@ -12581,6 +12597,8 @@ enum {
 
 /* Forward declare */
 static bool is_top_level(upb_json_parser *p);
+static bool is_wellknown_msg(upb_json_parser *p, upb_wellknowntype_t type);
+static bool is_wellknown_field(upb_json_parser *p, upb_wellknowntype_t type);
 
 static bool is_number_wrapper_object(upb_json_parser *p);
 static bool does_number_wrapper_start(upb_json_parser *p);
@@ -12589,30 +12607,6 @@ static bool does_number_wrapper_end(upb_json_parser *p);
 static bool is_string_wrapper_object(upb_json_parser *p);
 static bool does_string_wrapper_start(upb_json_parser *p);
 static bool does_string_wrapper_end(upb_json_parser *p);
-
-static bool is_boolean_wrapper_object(upb_json_parser *p);
-static bool does_boolean_wrapper_start(upb_json_parser *p);
-static bool does_boolean_wrapper_end(upb_json_parser *p);
-
-static bool is_duration_object(upb_json_parser *p);
-static bool does_duration_start(upb_json_parser *p);
-static bool does_duration_end(upb_json_parser *p);
-
-static bool is_timestamp_object(upb_json_parser *p);
-static bool does_timestamp_start(upb_json_parser *p);
-static bool does_timestamp_end(upb_json_parser *p);
-
-static bool is_value_object(upb_json_parser *p);
-static bool does_value_start(upb_json_parser *p);
-static bool does_value_end(upb_json_parser *p);
-
-static bool is_listvalue_object(upb_json_parser *p);
-static bool does_listvalue_start(upb_json_parser *p);
-static bool does_listvalue_end(upb_json_parser *p);
-
-static bool is_structvalue_object(upb_json_parser *p);
-static bool does_structvalue_start(upb_json_parser *p);
-static bool does_structvalue_end(upb_json_parser *p);
 
 static void start_wrapper_object(upb_json_parser *p);
 static void end_wrapper_object(upb_json_parser *p);
@@ -13221,7 +13215,7 @@ static bool start_number(upb_json_parser *p, const char *ptr) {
   if (is_top_level(p)) {
     if (is_number_wrapper_object(p)) {
       start_wrapper_object(p);
-    } else if (is_value_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_NUMBERVALUE);
     } else {
       return false;
@@ -13231,7 +13225,7 @@ static bool start_number(upb_json_parser *p, const char *ptr) {
       return false;
     }
     start_wrapper_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -13271,7 +13265,7 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
     return true;
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -13451,19 +13445,19 @@ static bool parser_putbool(upb_json_parser *p, bool val) {
 
 static bool end_bool(upb_json_parser *p, bool val) {
   if (is_top_level(p)) {
-    if (is_boolean_wrapper_object(p)) {
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_BOOLVALUE)) {
       start_wrapper_object(p);
-    } else if (is_value_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_BOOLVALUE);
     } else {
       return false;
     }
-  } else if (does_boolean_wrapper_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_BOOLVALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
     start_wrapper_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -13474,7 +13468,7 @@ static bool end_bool(upb_json_parser *p, bool val) {
     return false;
   }
 
-  if (does_boolean_wrapper_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_BOOLVALUE)) {
     end_wrapper_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -13482,7 +13476,7 @@ static bool end_bool(upb_json_parser *p, bool val) {
     return true;
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -13497,12 +13491,12 @@ static bool end_null(upb_json_parser *p) {
   const char *zero_ptr = "0";
 
   if (is_top_level(p)) {
-    if (is_value_object(p)) {
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_NULLVALUE);
     } else {
       return true;
     }
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -13529,9 +13523,10 @@ static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
     if (is_string_wrapper_object(p)) {
       start_wrapper_object(p);
-    } else if (is_timestamp_object(p) || is_duration_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
+               is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
       start_object(p);
-    } else if (is_value_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_STRINGVALUE);
     } else {
       return false;
@@ -13541,12 +13536,13 @@ static bool start_stringval(upb_json_parser *p) {
       return false;
     }
     start_wrapper_object(p);
-  } else if (does_timestamp_start(p) || does_duration_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_TIMESTAMP) ||
+             is_wellknown_field(p, UPB_WELLKNOWN_DURATION)) {
     if (!start_subobject(p)) {
       return false;
     }
     start_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -13607,7 +13603,8 @@ static bool start_stringval(upb_json_parser *p) {
 static bool end_stringval_nontop(upb_json_parser *p) {
   bool ok = true;
 
-  if (is_timestamp_object(p) || is_duration_object(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
+      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
     multipart_end(p);
     return true;
   }
@@ -13689,7 +13686,7 @@ static bool end_stringval(upb_json_parser *p) {
     return true;
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -13697,7 +13694,8 @@ static bool end_stringval(upb_json_parser *p) {
     return true;
   }
 
-  if (does_timestamp_end(p) || does_duration_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
+      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
     end_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -13809,19 +13807,23 @@ static void start_timestamp_base(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
+#define UPB_TIMESTAMP_BASE_SIZE 19
+
 static bool end_timestamp_base(upb_json_parser *p, const char *ptr) {
   size_t len;
   const char *buf;
-  char timestamp_buf[23];
+  /* 3 for GMT and 1 for ending 0 */
+  char timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 4];
 
   if (!capture_end(p, ptr)) {
     return false;
   }
 
   buf = accumulate_getptr(p, &len);
-  memset(timestamp_buf, 0, 23);
-  memcpy(timestamp_buf, buf, len);
-  memcpy(timestamp_buf + 19, "GMT", 3);
+  UPB_ASSERT(len == UPB_TIMESTAMP_BASE_SIZE);
+  memcpy(timestamp_buf, buf, UPB_TIMESTAMP_BASE_SIZE);
+  memcpy(timestamp_buf + UPB_TIMESTAMP_BASE_SIZE, "GMT", 3);
+  timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 3] = 0;
 
   /* Parse seconds */
   if (strptime(timestamp_buf, "%FT%H:%M:%S%Z", &p->tm) == NULL) {
@@ -14203,19 +14205,19 @@ static bool start_subobject(upb_json_parser *p) {
 
 static bool start_subobject_full(upb_json_parser *p) {
   if (is_top_level(p)) {
-    if (is_value_object(p)) {
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_STRUCTVALUE);
       if (!start_subobject(p)) return false;
       start_structvalue_object(p);
-    } else if (is_structvalue_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_STRUCT)) {
       start_structvalue_object(p);
     } else {
       return true;
     }
-  } else if (does_structvalue_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_STRUCT)) {
     if (!start_subobject(p)) return false;
     start_structvalue_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) return false;
     start_value_object(p, VALUE_STRUCTVALUE);
     if (!start_subobject(p)) return false;
@@ -14249,14 +14251,14 @@ static void end_subobject(upb_json_parser *p) {
 static void end_subobject_full(upb_json_parser *p) {
   end_subobject(p);
 
-  if (does_structvalue_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_STRUCT)) {
     end_structvalue_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
     }
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -14269,19 +14271,19 @@ static bool start_array(upb_json_parser *p) {
   upb_selector_t sel;
 
   if (is_top_level(p)) {
-    if (is_value_object(p)) {
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_LISTVALUE);
       if (!start_subobject(p)) return false;
       start_listvalue_object(p);
-    } else if (is_listvalue_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_LISTVALUE)) {
       start_listvalue_object(p);
     } else {
       return false;
     }
-  } else if (does_listvalue_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_LISTVALUE)) {
     if (!start_subobject(p)) return false;
     start_listvalue_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) return false;
     start_value_object(p, VALUE_LISTVALUE);
     if (!start_subobject(p)) return false;
@@ -14322,14 +14324,14 @@ static void end_array(upb_json_parser *p) {
   sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSEQ);
   upb_sink_endseq(&p->top->sink, sel);
 
-  if (does_listvalue_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_LISTVALUE)) {
     end_listvalue_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
     }
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -14354,54 +14356,10 @@ static void end_object(upb_json_parser *p) {
   }
 }
 
-static bool is_double_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kDoubleValueFullMessageName) == 0;
-}
-
-static bool is_float_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kFloatValueFullMessageName) == 0;
-}
-
-static bool is_int64_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kInt64ValueFullMessageName) == 0;
-}
-
-static bool is_uint64_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kUInt64ValueFullMessageName) == 0;
-}
-
-static bool is_int32_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kInt32ValueFullMessageName) == 0;
-}
-
-static bool is_uint32_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kUInt32ValueFullMessageName) == 0;
-}
-
-static bool is_bool_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kBoolValueFullMessageName) == 0;
-}
-
-static bool is_string_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kStringValueFullMessageName) == 0;
-}
-
-static bool is_bytes_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kBytesValueFullMessageName) == 0;
-}
-
-static bool is_number_wrapper(const upb_msgdef *m) {
-  return is_double_value(m) ||
-         is_float_value(m) ||
-         is_int64_value(m) ||
-         is_uint64_value(m) ||
-         is_int32_value(m) ||
-         is_uint32_value(m);
-}
-
 static bool is_string_wrapper(const upb_msgdef *m) {
-  return is_string_value(m) ||
-         is_bytes_value(m);
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type == UPB_WELLKNOWN_STRINGVALUE ||
+         type == UPB_WELLKNOWN_BYTESVALUE;
 }
 
 static void start_wrapper_object(upb_json_parser *p) {
@@ -14503,18 +14461,29 @@ static bool is_top_level(upb_json_parser *p) {
   return p->top == p->stack && p->top->f == NULL;
 }
 
+static bool is_wellknown_msg(upb_json_parser *p, upb_wellknowntype_t type) {
+  return p->top->m != NULL && upb_msgdef_wellknowntype(p->top->m) == type;
+}
+
+static bool is_wellknown_field(upb_json_parser *p, upb_wellknowntype_t type) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         (upb_msgdef_wellknowntype(upb_fielddef_msgsubdef(p->top->f))
+              == type);
+}
+
 static bool does_number_wrapper_start(upb_json_parser *p) {
   return p->top->f != NULL &&
          upb_fielddef_issubmsg(p->top->f) &&
-         is_number_wrapper(upb_fielddef_msgsubdef(p->top->f));
+         upb_msgdef_isnumberwrapper(upb_fielddef_msgsubdef(p->top->f));
 }
 
 static bool does_number_wrapper_end(upb_json_parser *p) {
-  return p->top->m != NULL && is_number_wrapper(p->top->m);
+  return p->top->m != NULL && upb_msgdef_isnumberwrapper(p->top->m);
 }
 
 static bool is_number_wrapper_object(upb_json_parser *p) {
-  return p->top->m != NULL && is_number_wrapper(p->top->m);
+  return p->top->m != NULL && upb_msgdef_isnumberwrapper(p->top->m);
 }
 
 static bool does_string_wrapper_start(upb_json_parser *p) {
@@ -14529,91 +14498,6 @@ static bool does_string_wrapper_end(upb_json_parser *p) {
 
 static bool is_string_wrapper_object(upb_json_parser *p) {
   return p->top->m != NULL && is_string_wrapper(p->top->m);
-}
-
-static bool does_boolean_wrapper_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         is_bool_value(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_boolean_wrapper_end(upb_json_parser *p) {
-  return p->top->m != NULL && is_bool_value(p->top->m);
-}
-
-static bool is_boolean_wrapper_object(upb_json_parser *p) {
-  return p->top->m != NULL && is_bool_value(p->top->m);
-}
-
-static bool does_duration_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_duration(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_duration_end(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_duration(p->top->m);
-}
-
-static bool is_duration_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_duration(p->top->m);
-}
-
-static bool does_timestamp_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_timestamp(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_timestamp_end(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_timestamp(p->top->m);
-}
-
-static bool is_timestamp_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_timestamp(p->top->m);
-}
-
-static bool does_value_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_value(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_value_end(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_value(p->top->m);
-}
-
-static bool is_value_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_value(p->top->m);
-}
-
-static bool does_listvalue_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_listvalue(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_listvalue_end(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_listvalue(p->top->m);
-}
-
-static bool is_listvalue_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_listvalue(p->top->m);
-}
-
-static bool does_structvalue_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_structvalue(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_structvalue_end(upb_json_parser *p) {
-  /* return p->top != p->stack && upb_msgdef_structvalue((p->top - 1)->m); */
-  return p->top->m != NULL && upb_msgdef_structvalue(p->top->m);
-}
-
-static bool is_structvalue_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_structvalue(p->top->m);
 }
 
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
@@ -14637,11 +14521,11 @@ static bool is_structvalue_object(upb_json_parser *p) {
  * final state once, when the closing '"' is seen. */
 
 
-#line 2256 "upb/json/parser.rl"
+#line 2114 "upb/json/parser.rl"
 
 
 
-#line 2125 "upb/json/parser.c"
+#line 1983 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 1, 1, 3, 1, 
 	4, 1, 6, 1, 7, 1, 8, 1, 
@@ -14892,7 +14776,7 @@ static const int json_en_value_machine = 76;
 static const int json_en_main = 1;
 
 
-#line 2259 "upb/json/parser.rl"
+#line 2117 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -14915,7 +14799,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 2399 "upb/json/parser.c"
+#line 2257 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -14990,87 +14874,87 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 1:
-#line 2130 "upb/json/parser.rl"
+#line 1988 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 2:
-#line 2132 "upb/json/parser.rl"
+#line 1990 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 24; goto _again;} }
 	break;
 	case 3:
-#line 2136 "upb/json/parser.rl"
+#line 1994 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 4:
-#line 2137 "upb/json/parser.rl"
+#line 1995 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 5:
-#line 2143 "upb/json/parser.rl"
+#line 2001 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 6:
-#line 2144 "upb/json/parser.rl"
+#line 2002 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 7:
-#line 2145 "upb/json/parser.rl"
+#line 2003 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 8:
-#line 2151 "upb/json/parser.rl"
+#line 2009 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 9:
-#line 2157 "upb/json/parser.rl"
+#line 2015 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 10:
-#line 2169 "upb/json/parser.rl"
+#line 2027 "upb/json/parser.rl"
 	{ start_duration_base(parser, p); }
 	break;
 	case 11:
-#line 2170 "upb/json/parser.rl"
+#line 2028 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_duration_base(parser, p)); }
 	break;
 	case 12:
-#line 2172 "upb/json/parser.rl"
+#line 2030 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 13:
-#line 2177 "upb/json/parser.rl"
+#line 2035 "upb/json/parser.rl"
 	{ start_timestamp_base(parser, p); }
 	break;
 	case 14:
-#line 2178 "upb/json/parser.rl"
+#line 2036 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_base(parser, p)); }
 	break;
 	case 15:
-#line 2180 "upb/json/parser.rl"
+#line 2038 "upb/json/parser.rl"
 	{ start_timestamp_fraction(parser, p); }
 	break;
 	case 16:
-#line 2181 "upb/json/parser.rl"
+#line 2039 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_fraction(parser, p)); }
 	break;
 	case 17:
-#line 2183 "upb/json/parser.rl"
+#line 2041 "upb/json/parser.rl"
 	{ start_timestamp_zone(parser, p); }
 	break;
 	case 18:
-#line 2184 "upb/json/parser.rl"
+#line 2042 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_zone(parser, p)); }
 	break;
 	case 19:
-#line 2186 "upb/json/parser.rl"
+#line 2044 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 20:
-#line 2191 "upb/json/parser.rl"
+#line 2049 "upb/json/parser.rl"
 	{
-        if (is_timestamp_object(parser)) {
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_TIMESTAMP)) {
           {stack[top++] = cs; cs = 48; goto _again;}
-        } else if (is_duration_object(parser)) {
+        } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_DURATION)) {
           {stack[top++] = cs; cs = 41; goto _again;}
         } else {
           {stack[top++] = cs; cs = 33; goto _again;}
@@ -15078,78 +14962,78 @@ _match:
       }
 	break;
 	case 21:
-#line 2202 "upb/json/parser.rl"
+#line 2060 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 76; goto _again;} }
 	break;
 	case 22:
-#line 2207 "upb/json/parser.rl"
+#line 2065 "upb/json/parser.rl"
 	{ start_member(parser); }
 	break;
 	case 23:
-#line 2208 "upb/json/parser.rl"
+#line 2066 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
 	case 24:
-#line 2211 "upb/json/parser.rl"
+#line 2069 "upb/json/parser.rl"
 	{ end_member(parser); }
 	break;
 	case 25:
-#line 2217 "upb/json/parser.rl"
+#line 2075 "upb/json/parser.rl"
 	{ start_object(parser); }
 	break;
 	case 26:
-#line 2220 "upb/json/parser.rl"
+#line 2078 "upb/json/parser.rl"
 	{ end_object(parser); }
 	break;
 	case 27:
-#line 2226 "upb/json/parser.rl"
+#line 2084 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
 	case 28:
-#line 2230 "upb/json/parser.rl"
+#line 2088 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
 	case 29:
-#line 2235 "upb/json/parser.rl"
+#line 2093 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_number(parser, p)); }
 	break;
 	case 30:
-#line 2236 "upb/json/parser.rl"
+#line 2094 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 31:
-#line 2238 "upb/json/parser.rl"
+#line 2096 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
 	case 32:
-#line 2239 "upb/json/parser.rl"
+#line 2097 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
 	case 33:
-#line 2241 "upb/json/parser.rl"
+#line 2099 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
 	case 34:
-#line 2243 "upb/json/parser.rl"
+#line 2101 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
 	case 35:
-#line 2245 "upb/json/parser.rl"
+#line 2103 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
 	case 36:
-#line 2247 "upb/json/parser.rl"
+#line 2105 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject_full(parser)); }
 	break;
 	case 37:
-#line 2248 "upb/json/parser.rl"
+#line 2106 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
 	case 38:
-#line 2253 "upb/json/parser.rl"
+#line 2111 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 2633 "upb/json/parser.c"
+#line 2491 "upb/json/parser.c"
 		}
 	}
 
@@ -15166,34 +15050,34 @@ _again:
 	while ( __nacts-- > 0 ) {
 		switch ( *__acts++ ) {
 	case 0:
-#line 2128 "upb/json/parser.rl"
+#line 1986 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 26:
-#line 2220 "upb/json/parser.rl"
+#line 2078 "upb/json/parser.rl"
 	{ end_object(parser); }
 	break;
 	case 30:
-#line 2236 "upb/json/parser.rl"
+#line 2094 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 33:
-#line 2241 "upb/json/parser.rl"
+#line 2099 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
 	case 34:
-#line 2243 "upb/json/parser.rl"
+#line 2101 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
 	case 35:
-#line 2245 "upb/json/parser.rl"
+#line 2103 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
 	case 37:
-#line 2248 "upb/json/parser.rl"
+#line 2106 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-#line 2677 "upb/json/parser.c"
+#line 2535 "upb/json/parser.c"
 		}
 	}
 	}
@@ -15201,7 +15085,7 @@ _again:
 	_out: {}
 	}
 
-#line 2281 "upb/json/parser.rl"
+#line 2139 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(&parser->status, "Parse error at '%.*s'\n", pe - p, p);
@@ -15233,9 +15117,9 @@ bool end(void *closure, const void *hd) {
   parse(parser, hd, &eof_ch, 0, NULL);
 
   return parser->current_state >= 
-#line 2717 "upb/json/parser.c"
+#line 2575 "upb/json/parser.c"
 105
-#line 2311 "upb/json/parser.rl"
+#line 2169 "upb/json/parser.rl"
 ;
 }
 
@@ -15250,13 +15134,13 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 2734 "upb/json/parser.c"
+#line 2592 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 2325 "upb/json/parser.rl"
+#line 2183 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);
@@ -16110,6 +15994,54 @@ static bool putnanos(void *closure, const void *handler_data,
   return true;
 }
 
+static void *scalar_startstr_nokey(void *closure, const void *handler_data,
+                                   size_t size_hint) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(size_hint);
+  print_data(p, "\"", 1);
+  return p;
+}
+
+static size_t putstr_nokey(void *closure, const void *handler_data,
+                           const char *str, size_t len,
+                           const upb_bufhandle *handle) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(handle);
+  print_data(p, "\"", 1);
+  putstring(p, str, len);
+  print_data(p, "\"", 1);
+  return len + 2;
+}
+
+static void *startseq_nokey(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "[", 1);
+  return closure;
+}
+
+static void *startmap_nokey(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "{", 1);
+  return closure;
+}
+
+static bool putnull(void *closure, const void *handler_data,
+                    int32_t null) {
+  upb_json_printer *p = closure;
+  print_data(p, "null", 4);
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(null);
+  return true;
+}
+
 static bool printer_startdurationmsg(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
@@ -16254,6 +16186,26 @@ static bool printer_endtimestampmsg(void *closure, const void *handler_data,
   return true;
 }
 
+static bool printer_startmsg_noframe(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  if (p->depth_ == 0) {
+    upb_bytessink_start(p->output_, 0, &p->subc_);
+  }
+  return true;
+}
+
+static bool printer_endmsg_noframe(
+    void *closure, const void *handler_data, upb_status *s) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(s);
+  if (p->depth_ == 0) {
+    upb_bytessink_end(p->output_);
+  }
+  return true;
+}
+
 /* Set up handlers for a duration submessage. */
 void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
@@ -16293,6 +16245,102 @@ void printer_sethandlers_timestamp(const void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
 }
 
+void printer_sethandlers_value(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  upb_msg_field_iter i;
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_msg_field_begin(&i, md);
+  for(; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
+    const upb_fielddef *f = upb_msg_iter_field(&i);
+
+    switch (upb_fielddef_type(f)) {
+      case UPB_TYPE_ENUM:
+        upb_handlers_setint32(h, f, putnull, &empty_attr);
+        break;
+      case UPB_TYPE_DOUBLE:
+        upb_handlers_setdouble(h, f, putdouble, &empty_attr);
+        break;
+      case UPB_TYPE_STRING:
+        upb_handlers_setstartstr(h, f, scalar_startstr_nokey, &empty_attr);
+        upb_handlers_setstring(h, f, scalar_str, &empty_attr);
+        upb_handlers_setendstr(h, f, scalar_endstr, &empty_attr);
+        break;
+      case UPB_TYPE_BOOL:
+        upb_handlers_setbool(h, f, putbool, &empty_attr);
+        break;
+      case UPB_TYPE_MESSAGE:
+        break;
+      default:
+        UPB_ASSERT(false);
+        break;
+    }
+  }
+
+  UPB_UNUSED(closure);
+}
+
+#define WRAPPER_SETHANDLERS(wrapper, type, putmethod)                      \
+void printer_sethandlers_##wrapper(const void *closure, upb_handlers *h) { \
+  const upb_msgdef *md = upb_handlers_msgdef(h);                           \
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);                          \
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;                \
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);      \
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);          \
+  upb_handlers_set##type(h, f, putmethod, &empty_attr);                    \
+  UPB_UNUSED(closure);                                                     \
+}
+
+WRAPPER_SETHANDLERS(doublevalue, double, putdouble)
+WRAPPER_SETHANDLERS(floatvalue,  float,  putfloat)
+WRAPPER_SETHANDLERS(int64value,  int64,  putint64_t)
+WRAPPER_SETHANDLERS(uint64value, uint64, putuint64_t)
+WRAPPER_SETHANDLERS(int32value,  int32,  putint32_t)
+WRAPPER_SETHANDLERS(uint32value, uint32, putuint32_t)
+WRAPPER_SETHANDLERS(boolvalue,   bool,   putbool)
+WRAPPER_SETHANDLERS(stringvalue, string, putstr_nokey)
+WRAPPER_SETHANDLERS(bytesvalue,  string, putbytes)
+
+#undef WRAPPER_SETHANDLERS
+
+void printer_sethandlers_listvalue(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartseq(h, f, startseq_nokey, &empty_attr);
+  upb_handlers_setendseq(h, f, endseq, &empty_attr);
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_handlers_setstartsubmsg(h, f, repeated_startsubmsg, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
+void printer_sethandlers_structvalue(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartseq(h, f, startmap_nokey, &empty_attr);
+  upb_handlers_setendseq(h, f, endmap, &empty_attr);
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_handlers_setstartsubmsg(h, f, repeated_startsubmsg, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
 void printer_sethandlers(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   bool is_mapentry = upb_msgdef_mapentry(md);
@@ -16308,14 +16356,40 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     return;
   }
 
-  if (upb_msgdef_duration(md)) {
-    printer_sethandlers_duration(closure, h);
-    return;
-  }
+  switch (upb_msgdef_wellknowntype(md)) {
+    case UPB_WELLKNOWN_UNSPECIFIED:
+      break;
+    case UPB_WELLKNOWN_DURATION:
+      printer_sethandlers_duration(closure, h);
+      return;
+    case UPB_WELLKNOWN_TIMESTAMP:
+      printer_sethandlers_timestamp(closure, h);
+      return;
+    case UPB_WELLKNOWN_VALUE:
+      printer_sethandlers_value(closure, h);
+      return;
+    case UPB_WELLKNOWN_LISTVALUE:
+      printer_sethandlers_listvalue(closure, h);
+      return;
+    case UPB_WELLKNOWN_STRUCT:
+      printer_sethandlers_structvalue(closure, h);
+      return;
+#define WRAPPER(wellknowntype, name)        \
+  case wellknowntype:                       \
+    printer_sethandlers_##name(closure, h); \
+    return;                                 \
 
-  if (upb_msgdef_timestamp(md)) {
-    printer_sethandlers_timestamp(closure, h);
-    return;
+    WRAPPER(UPB_WELLKNOWN_DOUBLEVALUE, doublevalue);
+    WRAPPER(UPB_WELLKNOWN_FLOATVALUE, floatvalue);
+    WRAPPER(UPB_WELLKNOWN_INT64VALUE, int64value);
+    WRAPPER(UPB_WELLKNOWN_UINT64VALUE, uint64value);
+    WRAPPER(UPB_WELLKNOWN_INT32VALUE, int32value);
+    WRAPPER(UPB_WELLKNOWN_UINT32VALUE, uint32value);
+    WRAPPER(UPB_WELLKNOWN_BOOLVALUE, boolvalue);
+    WRAPPER(UPB_WELLKNOWN_STRINGVALUE, stringvalue);
+    WRAPPER(UPB_WELLKNOWN_BYTESVALUE, bytesvalue);
+
+#undef WRAPPER
   }
 
   upb_handlers_setstartmsg(h, printer_startmsg, &empty_attr);
