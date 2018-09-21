@@ -31,6 +31,7 @@
 #endregion
 
 using System.Collections.Generic;
+using Google.Protobuf.Collections;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using Google.Protobuf.WellKnownTypes;
@@ -43,46 +44,45 @@ namespace Google.Protobuf
         public void AddFieldPath()
         {
             FieldMaskTree tree = new FieldMaskTree();
-            List<string> paths = tree.GetFieldPaths();
-            Assert.AreEqual(1, paths.Count);
-            Assert.Contains("", paths);
+            RepeatedField<string> paths = tree.ToFieldMask().Paths;
+            Assert.AreEqual(0, paths.Count);
 
             tree.AddFieldPath("");
-            paths = tree.GetFieldPaths();
+            paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(1, paths.Count);
             Assert.Contains("", paths);
 
             // New branch.
             tree.AddFieldPath("foo");
-            paths = tree.GetFieldPaths();
+            paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(2, paths.Count);
             Assert.Contains("foo", paths);
 
             // Redundant path.
             tree.AddFieldPath("foo");
-            paths = tree.GetFieldPaths();
+            paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(2, paths.Count);
 
             // New branch.
             tree.AddFieldPath("bar.baz");
-            paths = tree.GetFieldPaths();
+            paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(3, paths.Count);
             Assert.Contains("bar.baz", paths);
             
             // Redundant sub-path.
             tree.AddFieldPath("foo.bar");
-            paths = tree.GetFieldPaths();
+            paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(3, paths.Count);
 
             // New branch from a non-root node.
             tree.AddFieldPath("bar.quz");
-            paths = tree.GetFieldPaths();
+            paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(4, paths.Count);
             Assert.Contains("bar.quz", paths);
             
             // A path that matches several existing sub-paths.
             tree.AddFieldPath("bar");
-            paths = tree.GetFieldPaths();
+            paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(3, paths.Count);
             Assert.Contains("foo", paths);
             Assert.Contains("bar", paths);
@@ -96,7 +96,7 @@ namespace Google.Protobuf
             {
                 Paths = {"foo", "bar.baz", "bar.quz"}
             });
-            List<string> paths = tree.GetFieldPaths();
+            RepeatedField<string> paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(3, paths.Count);
             Assert.Contains("foo", paths);
             Assert.Contains("bar.baz", paths);
@@ -106,7 +106,7 @@ namespace Google.Protobuf
             {
                 Paths = {"foo.bar", "bar"}
             });
-            paths = tree.GetFieldPaths();
+            paths = tree.ToFieldMask().Paths;
             Assert.AreEqual(2, paths.Count);
             Assert.Contains("foo", paths);
             Assert.Contains("bar", paths);
@@ -124,37 +124,35 @@ namespace Google.Protobuf
 
             // Empty path.
             tree.IntersectFieldPath("", result);
-            List<string> paths = result.GetFieldPaths();
-            Assert.AreEqual(1, paths.Count);
-            Assert.Contains("", paths); // FieldMaskTree always includes at least the empty string
+            RepeatedField<string> paths = result.ToFieldMask().Paths;
+            Assert.AreEqual(0, paths.Count);
 
             // Non-exist path.
             tree.IntersectFieldPath("quz", result);
-            paths = result.GetFieldPaths();
-            Assert.AreEqual(1, paths.Count);
-            Assert.Contains("", paths); // FieldMaskTree always includes at least the empty string
+            paths = result.ToFieldMask().Paths;
+            Assert.AreEqual(0, paths.Count);
 
             // Sub-path of an existing leaf.
             tree.IntersectFieldPath("foo.bar", result);
-            paths = result.GetFieldPaths();
+            paths = result.ToFieldMask().Paths;
             Assert.AreEqual(1, paths.Count);
             Assert.Contains("foo.bar", paths);
 
             // Match an existing leaf node.
             tree.IntersectFieldPath("foo", result);
-            paths = result.GetFieldPaths();
+            paths = result.ToFieldMask().Paths;
             Assert.AreEqual(1, paths.Count);
             Assert.Contains("foo", paths);
 
             // Non-exist path.
             tree.IntersectFieldPath("bar.foo", result);
-            paths = result.GetFieldPaths();
+            paths = result.ToFieldMask().Paths;
             Assert.AreEqual(1, paths.Count);
             Assert.Contains("foo", paths);
 
             // Match a non-leaf node.
             tree.IntersectFieldPath("bar", result);
-            paths = result.GetFieldPaths();
+            paths = result.ToFieldMask().Paths;
             Assert.AreEqual(3, paths.Count);
             Assert.Contains("foo", paths);
             Assert.Contains("bar.baz", paths);

@@ -170,8 +170,12 @@ namespace Google.Protobuf.WellKnownTypes
             FieldMask mask1 = FieldMask.FromString("foo,bar.baz,bar.quz");
             FieldMask mask2 = FieldMask.FromString("foo.bar,bar");
             FieldMask result = mask1.Union(mask2);
+            Assert.AreEqual(2, result.Paths.Count);
             Assert.Contains("bar", result.Paths);
             Assert.Contains("foo", result.Paths);
+            Assert.That(result.Paths, Has.No.Member("bar.baz"));
+            Assert.That(result.Paths, Has.No.Member("bar.quz"));
+            Assert.That(result.Paths, Has.No.Member("foo.bar"));
         }
 
         [Test]
@@ -182,8 +186,11 @@ namespace Google.Protobuf.WellKnownTypes
             FieldMask mask3 = FieldMask.FromString("bar.quz");
             FieldMask mask4 = FieldMask.FromString("bar");
             FieldMask result = mask1.Union(mask2, mask3, mask4);
+            Assert.AreEqual(2, result.Paths.Count);
             Assert.Contains("bar", result.Paths);
             Assert.Contains("foo", result.Paths);
+            Assert.That(result.Paths, Has.No.Member("foo.bar"));
+            Assert.That(result.Paths, Has.No.Member("bar.quz"));
         }
 
         [Test]
@@ -194,9 +201,12 @@ namespace Google.Protobuf.WellKnownTypes
             FieldMask mask1 = FieldMask.FromString("foo,bar.baz,bar.quz");
             FieldMask mask2 = FieldMask.FromString("foo.bar,bar");
             FieldMask result = mask1.Intersection(mask2);
+            Assert.AreEqual(3, result.Paths.Count);
             Assert.Contains("foo.bar", result.Paths);
             Assert.Contains("bar.baz", result.Paths);
             Assert.Contains("bar.quz", result.Paths);
+            Assert.That(result.Paths, Has.No.Member("foo"));
+            Assert.That(result.Paths, Has.No.Member("bar"));
         }
 
         [Test]
@@ -209,12 +219,14 @@ namespace Google.Protobuf.WellKnownTypes
             {
                 Payload = new TestAllTypes
                 {
-                    SingleInt32 = 1234
+                    SingleInt32 = 1234,
+                    SingleFixed64 = 4321
                 }
             };
             NestedTestAllTypes destination = new NestedTestAllTypes();
             fieldMask.Merge(source, destination);
             Assert.AreEqual(1234, destination.Payload.SingleInt32);
+            Assert.AreEqual(4321, destination.Payload.SingleFixed64);
 
             destination = new NestedTestAllTypes
             {
@@ -227,6 +239,7 @@ namespace Google.Protobuf.WellKnownTypes
             fieldMask.Merge(source, destination);
             Assert.AreEqual(1234, destination.Payload.SingleInt32);
             Assert.AreEqual(5678, destination.Payload.SingleInt64);
+            Assert.AreEqual(4321, destination.Payload.SingleFixed64);
         }
     }
 }

@@ -155,21 +155,12 @@ namespace Google.Protobuf
             var mask = new FieldMask();
             if (root.Children.Count != 0)
             {
-                var paths = GetFieldPaths();
+                var paths = new List<string>();
+                GetFieldPaths(root, "", paths);
                 mask.Paths.AddRange(paths);
             }
 
             return mask;
-        }
-
-        /// <summary>
-        /// Gathers all field paths in a sub-tree.
-        /// </summary>
-        internal List<string> GetFieldPaths()
-        {
-            var paths = new List<string>();
-            GetFieldPaths(root, "", paths);
-            return paths;
         }
 
         /// <summary>
