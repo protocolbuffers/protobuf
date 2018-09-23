@@ -1157,9 +1157,17 @@ class Message
     public function parseFromJsonStream($input)
     {
         $array = json_decode($input->getData(), true, 512, JSON_BIGINT_AS_STRING);
+        if ($this instanceof \Google\Protobuf\ListValue) {
+            $array = ["values"=>$array];
+        }
         if (is_null($array)) {
-            throw new GPBDecodeException(
-                "Cannot decode json string.");
+            if ($this instanceof \Google\Protobuf\Value) {
+              $this->setNullValue(\Google\Protobuf\NullValue::NULL_VALUE);
+              return;
+            } else {
+              throw new GPBDecodeException(
+                  "Cannot decode json string: " . $input->getData());
+            }
         }
         try {
             $this->mergeFromJsonArray($array);
