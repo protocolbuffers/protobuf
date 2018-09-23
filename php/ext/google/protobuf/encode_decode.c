@@ -426,13 +426,13 @@ static void *submsg_handler(void *closure, const void *hd) {
   if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(DEREF(message_data(msg), submsgdata->ofs,
                                             CACHED_VALUE*))) == IS_NULL) {
 #if PHP_MAJOR_VERSION < 7
-    zval* val = NULL;
-    MAKE_STD_ZVAL(val);
-    ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
-    MessageHeader* intern = UNBOX(MessageHeader, val);
+    zval val;
+    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
+    MessageHeader* intern = UNBOX(MessageHeader, &val);
     custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-    php_proto_zval_ptr_dtor(*DEREF(message_data(msg), submsgdata->ofs, zval**));
-    *DEREF(message_data(msg), submsgdata->ofs, zval**) = val;
+    REPLACE_ZVAL_VALUE(DEREF(message_data(msg), submsgdata->ofs, zval**),
+                       &val, 1);
+    zval_dtor(&val);
 #else
     zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
     ZVAL_OBJ(DEREF(message_data(msg), submsgdata->ofs, zval*), obj);
@@ -771,9 +771,16 @@ static void* oneofsubmsg_handler(void* closure, const void* hd) {
     // Create new message.
     DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*) =
         OBJ_PROP(&msg->std, oneofdata->property_ofs);
-    ZVAL_OBJ(CACHED_PTR_TO_ZVAL_PTR(
-        DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*)),
-        subklass->create_object(subklass TSRMLS_CC));
+#if PHP_MAJOR_VERSION < 7
+    zval val;
+    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
+    REPLACE_ZVAL_VALUE(DEREF(message_data(msg), oneofdata->ofs, zval**),
+                       &val, 1);
+    zval_dtor(&val);
+#else
+    zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
+    ZVAL_OBJ(DEREF(message_data(msg), oneofdata->ofs, zval*), obj);
+#endif
   }
 
   DEREF(message_data(msg), oneofdata->case_ofs, uint32_t) =
