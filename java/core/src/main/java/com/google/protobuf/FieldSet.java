@@ -81,6 +81,11 @@ final class FieldSet<
     this.fields = SmallSortedMap.newFieldMap(16);
   }
 
+  /** Construct a new FieldSet. */
+  private FieldSet(int initialCapacity) {
+    this.fields = SmallSortedMap.newFieldMap(initialCapacity);
+  }
+
   /** Construct an empty FieldSet. This is only used to initialize DEFAULT_INSTANCE. */
   private FieldSet(final boolean dummy) {
     this.fields = SmallSortedMap.newFieldMap(0);
@@ -90,6 +95,11 @@ final class FieldSet<
   /** Construct a new FieldSet. */
   public static <T extends FieldSet.FieldDescriptorLite<T>> FieldSet<T> newFieldSet() {
     return new FieldSet<T>();
+  }
+
+  /** Construct a new FieldSet. */
+  public static <T extends FieldSet.FieldDescriptorLite<T>> FieldSet<T> newFieldSet(int fieldsInitSize) {
+    return new FieldSet<T>(fieldsInitSize);
   }
 
   /** Get an immutable empty FieldSet. */

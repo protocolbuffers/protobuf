@@ -141,6 +141,11 @@ public final class DynamicMessage extends AbstractMessage {
     return new Builder(type);
   }
 
+  /** Construct a {@link Message.Builder} for the given type. */
+  public static Builder newBuilder(Descriptor type, int initialCapacity) {
+    return new Builder(type, initialCapacity);
+  }
+
   /**
    * Construct a {@link Message.Builder} for a message of the same type as {@code prototype}, and
    * initialize it with {@code prototype}'s contents.
@@ -326,6 +331,18 @@ public final class DynamicMessage extends AbstractMessage {
     private Builder(Descriptor type) {
       this.type = type;
       this.fields = FieldSet.newFieldSet();
+      this.unknownFields = UnknownFieldSet.getDefaultInstance();
+      this.oneofCases = new FieldDescriptor[type.toProto().getOneofDeclCount()];
+      // A MapEntry has all of its fields present at all times.
+      if (type.getOptions().getMapEntry()) {
+        populateMapEntry();
+      }
+    }
+
+    /** Construct a {@code Builder} for the given type. */
+    private Builder(Descriptor type, int initialCapacity) {
+      this.type = type;
+      this.fields = FieldSet.newFieldSet(initialCapacity);
       this.unknownFields = UnknownFieldSet.getDefaultInstance();
       this.oneofCases = new FieldDescriptor[type.toProto().getOneofDeclCount()];
       // A MapEntry has all of its fields present at all times.
