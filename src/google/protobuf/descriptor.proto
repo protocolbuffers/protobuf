@@ -303,16 +303,18 @@ message MethodDescriptorProto {
 //   through 99999.  It is up to you to ensure that you do not use the
 //   same number for multiple options.
 // * For options which will be published and used publicly by multiple
-//   independent entities, e-mail protobuf-global-extension-registry@google.com
-//   to reserve extension numbers. Simply provide your project name (e.g.
-//   Objective-C plugin) and your project website (if available) -- there's no
-//   need to explain how you intend to use them. Usually you only need one
+//   independent entities, you may obtain globally unique field numbers
+//   by sending a request to add an entry to the [protobuf global
+//   extension registry]
+//   (https://github.com/protocolbuffers/protobuf/blob/master/docs/options.md).
+
+Usually you only need one
 //   extension number. You can declare multiple options with only one extension
 //   number by putting them in a sub-message. See the Custom Options section of
 //   the docs for examples:
 //   https://developers.google.com/protocol-buffers/docs/proto#options
-//   If this turns out to be popular, a web service will be set up
-//   to automatically assign option numbers.
+//   You may also send a pull request or file an issue: see
+//   https://github.com/protocolbuffers/protobuf/blob/master/docs/options.md
 
 
 message FileOptions {
