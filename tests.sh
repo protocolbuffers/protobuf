@@ -128,7 +128,7 @@ use_java() {
   esac
 
   MAVEN_LOCAL_REPOSITORY=/var/maven_local_repository
-  MVN="$MVN -e -X --offline -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
+  MVN="$MVN -e -X -Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
 
   which java
   java -version
