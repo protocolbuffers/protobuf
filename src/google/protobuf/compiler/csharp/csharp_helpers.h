@@ -107,8 +107,10 @@ std::string StringToBase64(const std::string& input);
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
-                                         int fieldOrdinal,
+                                         int presenceIndex,
                                          const Options* options);
+
+bool IsNullable(const FieldDescriptor* descriptor);
 
 // Determines whether the given message is a map entry message,
 // i.e. one implicitly created by protoc due to a map<key, value> field.
@@ -142,6 +144,10 @@ inline bool IsDescriptorOptionMessage(const Descriptor* descriptor) {
 inline bool IsWrapperType(const FieldDescriptor* descriptor) {
   return descriptor->type() == FieldDescriptor::TYPE_MESSAGE &&
       descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
+}
+
+inline bool IsProto2(const FileDescriptor* descriptor) {
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
 }  // namespace csharp

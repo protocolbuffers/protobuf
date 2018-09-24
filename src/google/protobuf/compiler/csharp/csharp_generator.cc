@@ -65,11 +65,11 @@ bool Generator::Generate(
   std::vector<std::pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
 
-  // We only support proto3 - but we make an exception for descriptor.proto.
+  // We only support proto3 - but we make an exception for descriptor.proto. 
   if (file->syntax() != FileDescriptor::SYNTAX_PROTO3 && !IsDescriptorProto(file)) {
-    *error = "C# code generation only supports proto3 syntax";
+    *error = "C# code generation only supports proto3 syntax"; 
     return false;
-  }
+  } 
 
   struct Options cli_options;
 

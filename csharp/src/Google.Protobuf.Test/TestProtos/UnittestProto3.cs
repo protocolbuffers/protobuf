@@ -1307,19 +1307,19 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.singleNestedMessage_ != null) {
         if (singleNestedMessage_ == null) {
-          singleNestedMessage_ = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+          SingleNestedMessage = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
         }
         SingleNestedMessage.MergeFrom(other.SingleNestedMessage);
       }
       if (other.singleForeignMessage_ != null) {
         if (singleForeignMessage_ == null) {
-          singleForeignMessage_ = new global::Google.Protobuf.TestProtos.ForeignMessage();
+          SingleForeignMessage = new global::Google.Protobuf.TestProtos.ForeignMessage();
         }
         SingleForeignMessage.MergeFrom(other.SingleForeignMessage);
       }
       if (other.singleImportMessage_ != null) {
         if (singleImportMessage_ == null) {
-          singleImportMessage_ = new global::Google.Protobuf.TestProtos.ImportMessage();
+          SingleImportMessage = new global::Google.Protobuf.TestProtos.ImportMessage();
         }
         SingleImportMessage.MergeFrom(other.SingleImportMessage);
       }
@@ -1334,7 +1334,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.singlePublicImportMessage_ != null) {
         if (singlePublicImportMessage_ == null) {
-          singlePublicImportMessage_ = new global::Google.Protobuf.TestProtos.PublicImportMessage();
+          SinglePublicImportMessage = new global::Google.Protobuf.TestProtos.PublicImportMessage();
         }
         SinglePublicImportMessage.MergeFrom(other.SinglePublicImportMessage);
       }
@@ -1451,42 +1451,42 @@ namespace Google.Protobuf.TestProtos {
           }
           case 146: {
             if (singleNestedMessage_ == null) {
-              singleNestedMessage_ = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+              SingleNestedMessage = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
             }
-            input.ReadMessage(singleNestedMessage_);
+            input.ReadMessage(SingleNestedMessage);
             break;
           }
           case 154: {
             if (singleForeignMessage_ == null) {
-              singleForeignMessage_ = new global::Google.Protobuf.TestProtos.ForeignMessage();
+              SingleForeignMessage = new global::Google.Protobuf.TestProtos.ForeignMessage();
             }
-            input.ReadMessage(singleForeignMessage_);
+            input.ReadMessage(SingleForeignMessage);
             break;
           }
           case 162: {
             if (singleImportMessage_ == null) {
-              singleImportMessage_ = new global::Google.Protobuf.TestProtos.ImportMessage();
+              SingleImportMessage = new global::Google.Protobuf.TestProtos.ImportMessage();
             }
-            input.ReadMessage(singleImportMessage_);
+            input.ReadMessage(SingleImportMessage);
             break;
           }
           case 168: {
-            singleNestedEnum_ = (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) input.ReadEnum();
+            SingleNestedEnum = (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) input.ReadEnum();
             break;
           }
           case 176: {
-            singleForeignEnum_ = (global::Google.Protobuf.TestProtos.ForeignEnum) input.ReadEnum();
+            SingleForeignEnum = (global::Google.Protobuf.TestProtos.ForeignEnum) input.ReadEnum();
             break;
           }
           case 184: {
-            singleImportEnum_ = (global::Google.Protobuf.TestProtos.ImportEnum) input.ReadEnum();
+            SingleImportEnum = (global::Google.Protobuf.TestProtos.ImportEnum) input.ReadEnum();
             break;
           }
           case 210: {
             if (singlePublicImportMessage_ == null) {
-              singlePublicImportMessage_ = new global::Google.Protobuf.TestProtos.PublicImportMessage();
+              SinglePublicImportMessage = new global::Google.Protobuf.TestProtos.PublicImportMessage();
             }
-            input.ReadMessage(singlePublicImportMessage_);
+            input.ReadMessage(SinglePublicImportMessage);
             break;
           }
           case 250:
@@ -1918,13 +1918,13 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.child_ != null) {
         if (child_ == null) {
-          child_ = new global::Google.Protobuf.TestProtos.NestedTestAllTypes();
+          Child = new global::Google.Protobuf.TestProtos.NestedTestAllTypes();
         }
         Child.MergeFrom(other.Child);
       }
       if (other.payload_ != null) {
         if (payload_ == null) {
-          payload_ = new global::Google.Protobuf.TestProtos.TestAllTypes();
+          Payload = new global::Google.Protobuf.TestProtos.TestAllTypes();
         }
         Payload.MergeFrom(other.Payload);
       }
@@ -1942,16 +1942,16 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (child_ == null) {
-              child_ = new global::Google.Protobuf.TestProtos.NestedTestAllTypes();
+              Child = new global::Google.Protobuf.TestProtos.NestedTestAllTypes();
             }
-            input.ReadMessage(child_);
+            input.ReadMessage(Child);
             break;
           }
           case 18: {
             if (payload_ == null) {
-              payload_ = new global::Google.Protobuf.TestProtos.TestAllTypes();
+              Payload = new global::Google.Protobuf.TestProtos.TestAllTypes();
             }
-            input.ReadMessage(payload_);
+            input.ReadMessage(Payload);
             break;
           }
           case 26: {
@@ -2438,7 +2438,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.foreignNested_ != null) {
         if (foreignNested_ == null) {
-          foreignNested_ = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+          ForeignNested = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
         }
         ForeignNested.MergeFrom(other.ForeignNested);
       }
@@ -2455,9 +2455,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (foreignNested_ == null) {
-              foreignNested_ = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+              ForeignNested = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
             }
-            input.ReadMessage(foreignNested_);
+            input.ReadMessage(ForeignNested);
             break;
           }
         }
@@ -2758,7 +2758,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.a_ != null) {
         if (a_ == null) {
-          a_ = new global::Google.Protobuf.TestProtos.TestRecursiveMessage();
+          A = new global::Google.Protobuf.TestProtos.TestRecursiveMessage();
         }
         A.MergeFrom(other.A);
       }
@@ -2778,9 +2778,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (a_ == null) {
-              a_ = new global::Google.Protobuf.TestProtos.TestRecursiveMessage();
+              A = new global::Google.Protobuf.TestProtos.TestRecursiveMessage();
             }
-            input.ReadMessage(a_);
+            input.ReadMessage(A);
             break;
           }
           case 16: {
@@ -2903,7 +2903,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.bb_ != null) {
         if (bb_ == null) {
-          bb_ = new global::Google.Protobuf.TestProtos.TestMutualRecursionB();
+          Bb = new global::Google.Protobuf.TestProtos.TestMutualRecursionB();
         }
         Bb.MergeFrom(other.Bb);
       }
@@ -2920,9 +2920,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (bb_ == null) {
-              bb_ = new global::Google.Protobuf.TestProtos.TestMutualRecursionB();
+              Bb = new global::Google.Protobuf.TestProtos.TestMutualRecursionB();
             }
-            input.ReadMessage(bb_);
+            input.ReadMessage(Bb);
             break;
           }
         }
@@ -3059,7 +3059,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.a_ != null) {
         if (a_ == null) {
-          a_ = new global::Google.Protobuf.TestProtos.TestMutualRecursionA();
+          A = new global::Google.Protobuf.TestProtos.TestMutualRecursionA();
         }
         A.MergeFrom(other.A);
       }
@@ -3079,9 +3079,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 10: {
             if (a_ == null) {
-              a_ = new global::Google.Protobuf.TestProtos.TestMutualRecursionA();
+              A = new global::Google.Protobuf.TestProtos.TestMutualRecursionA();
             }
-            input.ReadMessage(a_);
+            input.ReadMessage(A);
             break;
           }
           case 16: {
@@ -3214,7 +3214,7 @@ namespace Google.Protobuf.TestProtos {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            value_ = (global::Google.Protobuf.TestProtos.TestEnumWithDupValue) input.ReadEnum();
+            Value = (global::Google.Protobuf.TestProtos.TestEnumWithDupValue) input.ReadEnum();
             break;
           }
         }
@@ -3466,7 +3466,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.messageField_ != null) {
         if (messageField_ == null) {
-          messageField_ = new global::Google.Protobuf.TestProtos.ForeignMessage();
+          MessageField = new global::Google.Protobuf.TestProtos.ForeignMessage();
         }
         MessageField.MergeFrom(other.MessageField);
       }
@@ -3494,14 +3494,14 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 24: {
-            enumField_ = (global::Google.Protobuf.TestProtos.ForeignEnum) input.ReadEnum();
+            EnumField = (global::Google.Protobuf.TestProtos.ForeignEnum) input.ReadEnum();
             break;
           }
           case 34: {
             if (messageField_ == null) {
-              messageField_ = new global::Google.Protobuf.TestProtos.ForeignMessage();
+              MessageField = new global::Google.Protobuf.TestProtos.ForeignMessage();
             }
-            input.ReadMessage(messageField_);
+            input.ReadMessage(MessageField);
             break;
           }
           case 58:
@@ -3711,7 +3711,7 @@ namespace Google.Protobuf.TestProtos {
       }
       if (other.singleNestedMessage_ != null) {
         if (singleNestedMessage_ == null) {
-          singleNestedMessage_ = new global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage();
+          SingleNestedMessage = new global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage();
         }
         SingleNestedMessage.MergeFrom(other.SingleNestedMessage);
       }
@@ -3740,9 +3740,9 @@ namespace Google.Protobuf.TestProtos {
           }
           case 1602: {
             if (singleNestedMessage_ == null) {
-              singleNestedMessage_ = new global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage();
+              SingleNestedMessage = new global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage();
             }
-            input.ReadMessage(singleNestedMessage_);
+            input.ReadMessage(SingleNestedMessage);
             break;
           }
         }
@@ -4040,7 +4040,7 @@ namespace Google.Protobuf.TestProtos {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            sparseEnum_ = (global::Google.Protobuf.TestProtos.TestSparseEnum) input.ReadEnum();
+            SparseEnum = (global::Google.Protobuf.TestProtos.TestSparseEnum) input.ReadEnum();
             break;
           }
         }

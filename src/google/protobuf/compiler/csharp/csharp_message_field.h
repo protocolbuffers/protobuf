@@ -44,7 +44,7 @@ namespace csharp {
 class MessageFieldGenerator : public FieldGeneratorBase {
  public:
   MessageFieldGenerator(const FieldDescriptor* descriptor,
-                        int fieldOrdinal,
+                        int presenceIndex,
                         const Options *options);
   ~MessageFieldGenerator();
 
@@ -68,7 +68,7 @@ class MessageFieldGenerator : public FieldGeneratorBase {
 class MessageOneofFieldGenerator : public MessageFieldGenerator {
  public:
   MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
-                             int fieldOrdinal,
+                             int presenceIndex,
                              const Options *options);
   ~MessageOneofFieldGenerator();
 

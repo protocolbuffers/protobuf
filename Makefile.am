@@ -179,7 +179,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Reflection/OneofDescriptor.cs                   \
   csharp/src/Google.Protobuf/Reflection/OriginalNameAttribute.cs             \
   csharp/src/Google.Protobuf/Reflection/PackageDescriptor.cs                 \
-  csharp/src/Google.Protobuf/Reflection/PartialClasses.cs                    \
   csharp/src/Google.Protobuf/Reflection/ReflectionUtil.cs                    \
   csharp/src/Google.Protobuf/Reflection/RepeatedFieldAccessor.cs             \
   csharp/src/Google.Protobuf/Reflection/ServiceDescriptor.cs                 \

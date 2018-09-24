@@ -30,7 +30,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Reflection;
+using System.Collections;
 using System.IO;
+using System.Linq;
 
 namespace Google.Protobuf
 {
@@ -138,6 +141,53 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             return ByteString.AttachBytes(message.ToByteArray());
+        }
+
+        /// <summary>
+        /// Checks if all required fields in a message have values set. For proto3 messages, this returns true
+        /// </summary>
+        public static bool IsInitialized(this IMessage message)
+        {
+            if (message.Descriptor.File.Proto.Syntax != "proto2")
+            {
+                return true;
+            }
+
+            return message.Descriptor
+                .Fields
+                .InDeclarationOrder()
+                .All(f =>
+                {
+                    if (f.IsMap)
+                    {
+                        var map = (IDictionary)f.Accessor.GetValue(message);
+                        return map.Values.OfType<IMessage>().All(IsInitialized);
+                    }
+                    else if (f.IsRepeated && f.MessageType != null)
+                    {
+                        var enumerable = (IEnumerable)f.Accessor.GetValue(message);
+                        return enumerable.Cast<IMessage>().All(IsInitialized);
+                    }
+                    else if (f.MessageType != null)
+                    {
+                        if (f.Accessor.HasValue(message))
+                        {
+                            return ((IMessage)f.Accessor.GetValue(message)).IsInitialized();
+                        }
+                        else
+                        {
+                            return !f.IsRequired;
+                        }
+                    }
+                    else if (f.IsRequired)
+                    {
+                        return f.Accessor.HasValue(message);
+                    }
+                    else 
+                    {
+                        return true;
+                    }
+                });
         }
 
         // Implementations allowing unknown fields to be discarded.

@@ -112,6 +112,9 @@ namespace Google.Protobuf.Reflection
         internal static Action<IMessage> CreateActionIMessage(MethodInfo method) =>
             GetReflectionHelper(method.DeclaringType, typeof(object)).CreateActionIMessage(method);
 
+        internal static Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method) =>
+            GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageBool(method);
+
         /// <summary>
         /// Creates a reflection helper for the given type arguments. Currently these are created on demand
         /// rather than cached; this will be "busy" when initially loading a message's descriptor, but after that
@@ -129,6 +132,7 @@ namespace Google.Protobuf.Reflection
             Action<IMessage> CreateActionIMessage(MethodInfo method);
             Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method);
             Action<IMessage, object> CreateActionIMessageObject(MethodInfo method);
+            Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method);
         }
 
         private class ReflectionHelper<T1, T2> : IReflectionHelper
@@ -169,6 +173,12 @@ namespace Google.Protobuf.Reflection
             {
                 var del = (Action<T1, T2>) method.CreateDelegate(typeof(Action<T1, T2>));
                 return (message, arg) => del((T1) message, (T2) arg);
+            }
+
+            public Func<IMessage, bool> CreateFuncIMessageBool(MethodInfo method)
+            {
+                var del = (Func<T1, bool>)method.CreateDelegate(typeof(Func<T1, bool>));
+                return message => del((T1)message);
             }
         }
 

@@ -79,8 +79,7 @@ namespace Google.Protobuf.Reflection
                 throw new DescriptorValidationException(this, "Field numbers must be positive integers.");
             }
             ContainingType = parent;
-            // OneofIndex "defaults" to -1 due to a hack in FieldDescriptor.OnConstruction.
-            if (proto.OneofIndex != -1)
+            if (proto.HasOneofIndex)
             {
                 if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDecl.Count)
                 {
@@ -185,6 +184,11 @@ namespace Google.Protobuf.Reflection
         public bool IsRepeated => Proto.Label == FieldDescriptorProto.Types.Label.Repeated;
 
         /// <summary>
+        /// Returns <c>true</c> if this field is a required field; <c>false</c> otherwise.
+        /// </summary>
+        public bool IsRequired => Proto.Label == FieldDescriptorProto.Types.Label.Required;
+
+        /// <summary>
         /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.
         /// </summary>
         public bool IsMap => fieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry;
@@ -192,13 +196,8 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsPacked => 
-            // Note the || rather than && here - we're effectively defaulting to packed, because that *is*
-            // the default in proto3, which is all we support. We may give the wrong result for the protos
-            // within descriptor.proto, but that's okay, as they're never exposed and we don't use IsPacked
-            // within the runtime.
-            Proto.Options == null || Proto.Options.Packed;
-        
+        public bool IsPacked => File.Proto.Syntax == "proto2" ? Proto.Options?.Packed ?? false : !Proto.Options.HasPacked || Proto.Options.Packed;
+
         /// <summary>
         /// Returns the type of the field.
         /// </summary>
@@ -247,9 +246,9 @@ namespace Google.Protobuf.Reflection
         {
             get
             {
-                if (fieldType != FieldType.Message)
+                if (fieldType != FieldType.Message && fieldType != FieldType.Group)
                 {
-                    throw new InvalidOperationException("MessageType is only valid for message fields.");
+                    throw new InvalidOperationException("MessageType is only valid for message or group fields.");
                 }
                 return messageType;
             }
@@ -265,12 +264,12 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         internal void CrossLink()
         {
-            if (Proto.TypeName != "")
+            if (Proto.HasTypeName)
             {
                 IDescriptor typeDescriptor =
                     File.DescriptorPool.LookupSymbol(Proto.TypeName, this);
 
-                if (Proto.Type != 0)
+                if (Proto.HasType)
                 {
                     // Choose field type based on symbol.
                     if (typeDescriptor is MessageDescriptor)
@@ -287,7 +286,7 @@ namespace Google.Protobuf.Reflection
                     }
                 }
 
-                if (fieldType == FieldType.Message)
+                if (fieldType == FieldType.Message || fieldType == FieldType.Group)
                 {
                     if (!(typeDescriptor is MessageDescriptor))
                     {
@@ -295,7 +294,7 @@ namespace Google.Protobuf.Reflection
                     }
                     messageType = (MessageDescriptor) typeDescriptor;
 
-                    if (Proto.DefaultValue != "")
+                    if (Proto.HasDefaultValue)
                     {
                         throw new DescriptorValidationException(this, "Messages can't have default values.");
                     }
@@ -325,7 +324,7 @@ namespace Google.Protobuf.Reflection
 
             File.DescriptorPool.AddFieldByNumber(this);
 
-            if (ContainingType != null && ContainingType.Proto.Options != null && ContainingType.Proto.Options.MessageSetWireFormat)
+            if (ContainingType != null && ContainingType.Proto.HasOptions && ContainingType.Proto.Options.MessageSetWireFormat)
             {
                 throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }

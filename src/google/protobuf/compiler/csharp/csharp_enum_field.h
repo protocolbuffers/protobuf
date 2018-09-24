@@ -44,7 +44,7 @@ namespace csharp {
 class EnumFieldGenerator : public PrimitiveFieldGenerator {
  public:
   EnumFieldGenerator(const FieldDescriptor* descriptor,
-                     int fieldOrdinal,
+                     int presenceIndex,
                      const Options *options);
   ~EnumFieldGenerator();
 
@@ -60,7 +60,7 @@ class EnumFieldGenerator : public PrimitiveFieldGenerator {
 class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
  public:
   EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
-                          int fieldOrdinal,
+                          int presenceIndex,
                           const Options *options);
   ~EnumOneofFieldGenerator();
 

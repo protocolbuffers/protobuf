@@ -51,6 +51,11 @@ namespace Google.Protobuf.Reflection
             list.Clear();
         }
 
+        public override bool HasValue(IMessage message)
+        {
+            throw new InvalidOperationException("HasValue is not implemented for repeated fields");
+        }
+
         public override void SetValue(IMessage message, object value)
         {
             throw new InvalidOperationException("SetValue is not implemented for repeated fields");
