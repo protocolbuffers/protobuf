@@ -10,8 +10,6 @@ use Google\Protobuf\DoubleValue;
 use Google\Protobuf\FloatValue;
 use Google\Protobuf\Int32Value;
 use Google\Protobuf\Int64Value;
-use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\StringValue;
 use Google\Protobuf\UInt32Value;
 use Google\Protobuf\UInt64Value;
@@ -21,17 +19,33 @@ class WrapperTypeSettersTest extends TestBase
     /**
      * @dataProvider gettersAndSettersDataProvider
      */
-    public function testGettersAndSetters($class, $setter, $getter, $valueGetter, $sequence)
+    public function testGettersAndSetters($class, $wrapperClass, $setter, $valueSetter, $getter, $valueGetter, $sequence)
     {
-        $msg = new $class();
+        $oldSetterMsg = new $class();
+        $newSetterMsg = new $class();
         foreach ($sequence as list($value, $expectedValue)) {
-            $actualValue = $msg->$setter($value)->$getter();
-            $actualValueGetterValue = $msg->$valueGetter();
+            // Manually wrap the value to pass to the old setter
+            $wrappedValue = is_null($value) ? $value : new $wrapperClass(['value' => $value]);
+
+            // Set values using new and old setters
+            $oldSetterMsg->$setter($wrappedValue);
+            $newSetterMsg->$valueSetter($value);
+
+            // Get expected values old getter
+            $expectedValue = $oldSetterMsg->$getter();
+
+            // Check that old getter returns the same value after using the
+            // new setter
+            $actualValue = $newSetterMsg->$getter();
             $this->assertEquals($expectedValue, $actualValue);
+
+            // Check that new getter returns the unwrapped value from
+            // $expectedValue
+            $actualValueNewGetter = $newSetterMsg->$valueGetter();
             if (is_null($expectedValue)) {
-                $this->assertNull($actualValueGetterValue);
+                $this->assertNull($actualValueNewGetter);
             } else {
-                $this->assertEquals($expectedValue->getValue(), $actualValueGetterValue);
+                $this->assertEquals($expectedValue->getValue(), $actualValueNewGetter);
             }
         }
     }
@@ -39,63 +53,55 @@ class WrapperTypeSettersTest extends TestBase
     public function gettersAndSettersDataProvider()
     {
         return [
-            [TestWrapperSetters::class, "setDoubleValue", "getDoubleValue", "getDoubleValueValue", [
+            [TestWrapperSetters::class, DoubleValue::class, "setDoubleValue", "setDoubleValueValue", "getDoubleValue", "getDoubleValueValue", [
                 [1.1, new DoubleValue(["value" => 1.1])],
-                [new DoubleValue(["value" => 3.3]), new DoubleValue(["value" => 3.3])],
                 [2.2, new DoubleValue(["value" => 2.2])],
                 [null, null],
                 [0, new DoubleValue()],
             ]],
-            [TestWrapperSetters::class, "setFloatValue", "getFloatValue", "getFloatValueValue", [
+            [TestWrapperSetters::class, FloatValue::class, "setFloatValue", "setFloatValueValue", "getFloatValue", "getFloatValueValue", [
                 [1.1, new FloatValue(["value" => 1.1])],
-                [new FloatValue(["value" => 3.3]), new FloatValue(["value" => 3.3])],
                 [2.2, new FloatValue(["value" => 2.2])],
                 [null, null],
                 [0, new FloatValue()],
             ]],
-            [TestWrapperSetters::class, "setInt64Value", "getInt64Value", "getInt64ValueValue", [
+            [TestWrapperSetters::class, Int64Value::class, "setInt64Value", "setInt64ValueValue", "getInt64Value", "getInt64ValueValue", [
                 [123, new Int64Value(["value" => 123])],
-                [new Int64Value(["value" => 23456]), new Int64Value(["value" => 23456])],
                 [-789, new Int64Value(["value" => -789])],
                 [null, null],
                 [0, new Int64Value()],
                 [5.5, new Int64Value(["value" => 5])], // Test conversion from float to int
             ]],
-            [TestWrapperSetters::class, "setUInt64Value", "getUInt64Value", "getUInt64ValueValue", [
+            [TestWrapperSetters::class, UInt64Value::class, "setUInt64Value", "setUInt64ValueValue", "getUInt64Value", "getUInt64ValueValue", [
                 [123, new UInt64Value(["value" => 123])],
-                [new UInt64Value(["value" => 23456]), new UInt64Value(["value" => 23456])],
                 [789, new UInt64Value(["value" => 789])],
                 [null, null],
                 [0, new UInt64Value()],
                 [5.5, new UInt64Value(["value" => 5])], // Test conversion from float to int
                 [-7, new UInt64Value(["value" => -7])], // Test conversion from -ve to +ve
             ]],
-            [TestWrapperSetters::class, "setInt32Value", "getInt32Value", "getInt32ValueValue", [
+            [TestWrapperSetters::class, Int32Value::class, "setInt32Value", "setInt32ValueValue", "getInt32Value", "getInt32ValueValue", [
                 [123, new Int32Value(["value" => 123])],
-                [new Int32Value(["value" => 23456]), new Int32Value(["value" => 23456])],
                 [-789, new Int32Value(["value" => -789])],
                 [null, null],
                 [0, new Int32Value()],
                 [5.5, new Int32Value(["value" => 5])], // Test conversion from float to int
             ]],
-            [TestWrapperSetters::class, "setUInt32Value", "getUInt32Value", "getUInt32ValueValue", [
+            [TestWrapperSetters::class, UInt32Value::class, "setUInt32Value", "setUInt32ValueValue", "getUInt32Value", "getUInt32ValueValue", [
                 [123, new UInt32Value(["value" => 123])],
-                [new UInt32Value(["value" => 23456]), new UInt32Value(["value" => 23456])],
                 [789, new UInt32Value(["value" => 789])],
                 [null, null],
                 [0, new UInt32Value()],
                 [5.5, new UInt32Value(["value" => 5])], // Test conversion from float to int
                 [-7, new UInt32Value(["value" => -7])], // Test conversion from -ve to +ve
             ]],
-            [TestWrapperSetters::class, "setBoolValue", "getBoolValue", "getBoolValueValue", [
+            [TestWrapperSetters::class, BoolValue::class, "setBoolValue", "setBoolValueValue", "getBoolValue", "getBoolValueValue", [
                 [true, new BoolValue(["value" => true])],
-                [new BoolValue(["value" => true]), new BoolValue(["value" => true])],
                 [false, new BoolValue(["value" => false])],
                 [null, null],
             ]],
-            [TestWrapperSetters::class, "setStringValue", "getStringValue", "getStringValueValue", [
+            [TestWrapperSetters::class, StringValue::class, "setStringValue", "setStringValueValue", "getStringValue", "getStringValueValue", [
                 ["asdf", new StringValue(["value" => "asdf"])],
-                [new StringValue(["value" => "qwerty"]), new StringValue(["value" => "qwerty"])],
                 ["", new StringValue(["value" => ""])],
                 [null, null],
                 ["", new StringValue()],
@@ -104,9 +110,8 @@ class WrapperTypeSettersTest extends TestBase
                 [-7, new StringValue(["value" => "-7"])], // Test conversion from number to string
                 [-7.5, new StringValue(["value" => "-7.5"])], // Test conversion from number to string
             ]],
-            [TestWrapperSetters::class, "setBytesValue", "getBytesValue", "getBytesValueValue", [
+            [TestWrapperSetters::class, BytesValue::class, "setBytesValue", "setBytesValueValue", "getBytesValue", "getBytesValueValue", [
                 ["asdf", new BytesValue(["value" => "asdf"])],
-                [new BytesValue(["value" => "qwerty"]), new BytesValue(["value" => "qwerty"])],
                 ["", new BytesValue(["value" => ""])],
                 [null, null],
                 ["", new BytesValue()],
@@ -115,15 +120,13 @@ class WrapperTypeSettersTest extends TestBase
                 [-7, new BytesValue(["value" => "-7"])], // Test conversion from number to bytes
                 [-7.5, new BytesValue(["value" => "-7.5"])], // Test conversion from number to bytes
             ]],
-            [TestWrapperSetters::class, "setDoubleValueOneof", "getDoubleValueOneof", "getDoubleValueOneofValue", [
+            [TestWrapperSetters::class, DoubleValue::class, "setDoubleValueOneof", "setDoubleValueOneofValue", "getDoubleValueOneof", "getDoubleValueOneofValue", [
                 [1.1, new DoubleValue(["value" => 1.1])],
-                [new DoubleValue(["value" => 3.3]), new DoubleValue(["value" => 3.3])],
                 [2.2, new DoubleValue(["value" => 2.2])],
                 [null, null],
                 [0, new DoubleValue()],
-            ]],[TestWrapperSetters::class, "setStringValueOneof", "getStringValueOneof", "getStringValueOneofValue", [
+            ]],[TestWrapperSetters::class, StringValue::class, "setStringValueOneof", "setStringValueOneofValue", "getStringValueOneof", "getStringValueOneofValue", [
                 ["asdf", new StringValue(["value" => "asdf"])],
-                [new StringValue(["value" => "qwerty"]), new StringValue(["value" => "qwerty"])],
                 ["", new StringValue(["value" => ""])],
                 [null, null],
                 ["", new StringValue()],
