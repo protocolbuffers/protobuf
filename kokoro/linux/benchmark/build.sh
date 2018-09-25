@@ -19,7 +19,8 @@ fi
 # download datasets for benchmark
 cd benchmarks
 ./download_data.sh
-datasets=`find . -type f -name "dataset.*.pb"`
+datasets=$(for file in $(find . -type f -name "dataset.*.pb" -not -path "./tmp/*"); do echo "$(pwd)/$file"; done | xargs)
+echo $datasets
 cd $oldpwd
 
 # build Python protobuf
@@ -84,9 +85,24 @@ make java-benchmark
 echo "benchmarking java..."
 ./java-benchmark -Cresults.file.options.file="tmp/java_result.json" $datasets
 
+make js-benchmark
+echo "benchmarking js..."
+./js-benchmark $datasets  --json_output=$(pwd)/tmp/node_result.json
+
+make -j8 generate_proto3_data
+proto3_datasets=$(for file in $datasets; do echo $(pwd)/tmp/proto3_data/${file#$(pwd)}; done | xargs)
+echo $proto3_datasets
+
+# build php benchmark
+make -j8 php-benchmark
+echo "benchmarking php..."
+./php-benchmark $proto3_datasets --json --behavior_prefix="php" > tmp/php_result.json
+make -j8 php-c-benchmark
+echo "benchmarking php_c..."
+./php-c-benchmark $proto3_datasets --json --behavior_prefix="php_c" > tmp/php_c_result.json
+
 # upload result to bq
 make python_add_init
-env LD_LIBRARY_PATH="$oldpwd/src/.libs" python -m util.result_uploader -cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" \
-    -python="../tmp/python_result.json" -go="../tmp/go_result.txt"
-
+env LD_LIBRARY_PATH="$oldpwd/src/.libs" python -m util.result_uploader -php="../tmp/php_result.json" -php_c="../tmp/php_c_result.json"  \
+	-cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" -go="../tmp/go_result.txt" -python="../tmp/python_result.json" -node="../tmp/node_result.json"
 cd $oldpwd

@@ -18,6 +18,7 @@ function getNewPrototype(name) {
 }
 
 var results = [];
+var json_file = "";
 
 console.log("#####################################################");
 console.log("Js Benchmark: ");
@@ -25,6 +26,11 @@ process.argv.forEach(function(filename, index) {
   if (index < 2) {
     return;
   }
+  if (filename.indexOf("--json_output") != -1) {
+    json_file = filename.replace(/^--json_output=/, '');
+    return;
+  }
+  
   var benchmarkDataset =
       proto.benchmarks.BenchmarkDataset.deserializeBinary(fs.readFileSync(filename));
   var messageList = [];
@@ -55,8 +61,8 @@ process.argv.forEach(function(filename, index) {
   results.push({
     filename: filename,
     benchmarks: {
-      protobufjs_decoding: senarios.benches[0] * totalBytes,
-      protobufjs_encoding: senarios.benches[1] * totalBytes
+      protobufjs_decoding: senarios.benches[0] * totalBytes / 1024 / 1024,
+      protobufjs_encoding: senarios.benches[1] * totalBytes / 1024 / 1024
     }
   })
 
@@ -67,4 +73,10 @@ process.argv.forEach(function(filename, index) {
   console.log("");
 });
 console.log("#####################################################");
+
+if (json_file != "") {
+  fs.writeFile(json_file, JSON.stringify(results), (err) => {
+    if (err) throw err;
+  });
+}
 

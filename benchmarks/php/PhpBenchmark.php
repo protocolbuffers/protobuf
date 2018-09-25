@@ -93,7 +93,7 @@ function getMessageName(&$dataset) {
     }
 }
 
-function runBenchmark($file) {
+function runBenchmark($file, $behavior_prefix) {
     $datafile = fopen($file, "r") or die("Unable to open file " . $file);
     $bytes = fread($datafile, filesize($file));
     $dataset = new BenchmarkDataset(NULL);
@@ -119,8 +119,8 @@ function runBenchmark($file) {
     return array(
         "filename" => $file,
         "benchmarks" => array(
-            "parse_php" => $parse_benchmark->runBenchmark(),
-            "serailize_php" => $serialize_benchmark->runBenchmark()
+            $behavior_prefix . "_parse" => $parse_benchmark->runBenchmark(),
+            $behavior_prefix . "_serailize" => $serialize_benchmark->runBenchmark()
         ),
         "message_name" => $dataset->getMessageName()
     );
@@ -129,15 +129,27 @@ function runBenchmark($file) {
 // main
 $json_output = false;
 $results = array();
+$behavior_prefix = "";
+
 foreach ($argv as $index => $arg) {
     if ($index == 0) {
         continue;
     }
     if ($arg == "--json") {
         $json_output = true;
+    } else if (strpos($arg, "--behavior_prefix") == 0) {
+        $behavior_prefix = str_replace("--behavior_prefix=", "", $arg);     
+    }
+}
+
+foreach ($argv as $index => $arg) {
+    if ($index == 0) {
+        continue;
+    }
+    if (substr($arg, 0, 2) == "--") {
         continue;
     } else {
-        array_push($results, runBenchmark($arg));
+        array_push($results, runBenchmark($arg, $behavior_prefix));
     }
 }
 
