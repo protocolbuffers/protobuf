@@ -215,7 +215,13 @@ namespace Google.Protobuf
                     }
                 case WireFormat.WireType.StartGroup:
                     {
-                        input.SkipGroup(tag);
+                        uint endTag = WireFormat.MakeTag(number, WireFormat.WireType.EndGroup);
+                        UnknownFieldSet set = new UnknownFieldSet();
+                        while (input.ReadTag() != endTag)
+                        {
+                            set.MergeFieldFrom(input);
+                        }
+                        GetOrAddField(number).AddGroup(set);
                         return;
                     }
                 case WireFormat.WireType.EndGroup:
