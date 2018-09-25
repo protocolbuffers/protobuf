@@ -93,6 +93,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/DeprecatedMemberTest.cs                    \
   csharp/src/Google.Protobuf.Test/EqualityTester.cs                          \
   csharp/src/Google.Protobuf.Test/FieldCodecTest.cs                          \
+  csharp/src/Google.Protobuf.Test/FieldMaskTreeTest.cs                       \
   csharp/src/Google.Protobuf.Test/GeneratedMessageTest.cs                    \
   csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj                \
   csharp/src/Google.Protobuf.Test/IssuesTest.cs                              \
