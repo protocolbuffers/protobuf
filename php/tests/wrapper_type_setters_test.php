@@ -150,38 +150,47 @@ class WrapperTypeSettersTest extends TestBase
     public function invalidSettersDataProvider()
     {
         return [
-            [TestWrapperSetters::class, "setDoubleValue", "abc"],
-            [TestWrapperSetters::class, "setDoubleValue", []],
-            [TestWrapperSetters::class, "setDoubleValue", new stdClass()],
+            [TestWrapperSetters::class, "setDoubleValueValue", "abc"],
+            [TestWrapperSetters::class, "setDoubleValueValue", []],
+            [TestWrapperSetters::class, "setDoubleValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setDoubleValueValue", new DoubleValue()],
 
-            [TestWrapperSetters::class, "setFloatValue", "abc"],
-            [TestWrapperSetters::class, "setFloatValue", []],
-            [TestWrapperSetters::class, "setFloatValue", new stdClass()],
+            [TestWrapperSetters::class, "setFloatValueValue", "abc"],
+            [TestWrapperSetters::class, "setFloatValueValue", []],
+            [TestWrapperSetters::class, "setFloatValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setFloatValueValue", new FloatValue()],
 
-            [TestWrapperSetters::class, "setInt64Value", "abc"],
-            [TestWrapperSetters::class, "setInt64Value", []],
-            [TestWrapperSetters::class, "setInt64Value", new stdClass()],
+            [TestWrapperSetters::class, "setInt64ValueValue", "abc"],
+            [TestWrapperSetters::class, "setInt64ValueValue", []],
+            [TestWrapperSetters::class, "setInt64ValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setInt64ValueValue", new Int64Value()],
 
-            [TestWrapperSetters::class, "setUInt64Value", "abc"],
-            [TestWrapperSetters::class, "setUInt64Value", []],
-            [TestWrapperSetters::class, "setUInt64Value", new stdClass()],
+            [TestWrapperSetters::class, "setUInt64ValueValue", "abc"],
+            [TestWrapperSetters::class, "setUInt64ValueValue", []],
+            [TestWrapperSetters::class, "setUInt64ValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setUInt64ValueValue", new UInt64Value()],
 
-            [TestWrapperSetters::class, "setInt32Value", "abc"],
-            [TestWrapperSetters::class, "setInt32Value", []],
-            [TestWrapperSetters::class, "setInt32Value", new stdClass()],
+            [TestWrapperSetters::class, "setInt32ValueValue", "abc"],
+            [TestWrapperSetters::class, "setInt32ValueValue", []],
+            [TestWrapperSetters::class, "setInt32ValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setInt32ValueValue", new Int32Value()],
 
-            [TestWrapperSetters::class, "setUInt32Value", "abc"],
-            [TestWrapperSetters::class, "setUInt32Value", []],
-            [TestWrapperSetters::class, "setUInt32Value", new stdClass()],
+            [TestWrapperSetters::class, "setUInt32ValueValue", "abc"],
+            [TestWrapperSetters::class, "setUInt32ValueValue", []],
+            [TestWrapperSetters::class, "setUInt32ValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setUInt32ValueValue", new UInt32Value()],
 
-            [TestWrapperSetters::class, "setBoolValue", []],
-            [TestWrapperSetters::class, "setBoolValue", new stdClass()],
+            [TestWrapperSetters::class, "setBoolValueValue", []],
+            [TestWrapperSetters::class, "setBoolValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setBoolValueValue", new BoolValue()],
 
-            [TestWrapperSetters::class, "setStringValue", []],
-            [TestWrapperSetters::class, "setStringValue", new stdClass()],
+            [TestWrapperSetters::class, "setStringValueValue", []],
+            [TestWrapperSetters::class, "setStringValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setStringValueValue", new StringValue()],
 
-            [TestWrapperSetters::class, "setBytesValue", []],
-            [TestWrapperSetters::class, "setBytesValue", new stdClass()],
+            [TestWrapperSetters::class, "setBytesValueValue", []],
+            [TestWrapperSetters::class, "setBytesValueValue", new stdClass()],
+            [TestWrapperSetters::class, "setBytesValueValue", new BytesValue()],
         ];
     }
 
