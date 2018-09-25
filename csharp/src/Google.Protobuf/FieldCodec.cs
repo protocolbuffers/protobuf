@@ -436,7 +436,7 @@ namespace Google.Protobuf
                 Func<CodedInputStream, T> reader,
                 Action<CodedOutputStream, T> writer,
                 int fixedSize,
-                uint tag) : this(reader, writer, _ => fixedSize, 0, tag)
+                uint tag) : this(reader, writer, _ => fixedSize, tag)
         {
             FixedSize = fixedSize;
         }
