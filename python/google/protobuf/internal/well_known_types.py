@@ -254,6 +254,31 @@ class Timestamp(object):
     self.seconds = calendar.timegm(dt.utctimetuple())
     self.nanos = dt.microsecond * _NANOS_PER_MICROSECOND
 
+  def _comparable_vector(self, obj):
+    # not dealing with datetime as didn't want to cause any surprises with 2/3
+    # differences. see https://github.com/protocolbuffers/protobuf/pull/5168
+    return (obj.seconds, obj.nanos)
+
+  # Make sure to normalize timestamps before using the following comparisons.
+  # Comparing non-normalized timestamps is not specified and may give unexpected results.
+  def __eq__(self, other):
+    return self._comparable_vector(self) == self._comparable_vector(other)
+
+  def __ne__(self, other):
+    return self._comparable_vector(self) != self._comparable_vector(other)
+
+  def __lt__(self, other):
+    return self._comparable_vector(self) < self._comparable_vector(other)
+
+  def __le__(self, other):
+    return self._comparable_vector(self) <= self._comparable_vector(other)
+
+  def __gt__(self, other):
+    return self._comparable_vector(self) > self._comparable_vector(other)
+
+  def __ge__(self, other):
+    return self._comparable_vector(self) >= self._comparable_vector(other)
+
 
 class Duration(object):
   """Class for Duration message type."""
@@ -383,6 +408,30 @@ class Duration(object):
       nanos -= _NANOS_PER_SECOND
     self.seconds = seconds
     self.nanos = nanos
+
+  def _comparable_vector(self, obj):
+    # comarison with timedelta not possible with python2 - see https://github.com/protocolbuffers/protobuf/pull/5168
+    return (obj.seconds, obj.nanos)
+
+  # Make sure to normalize timestamps before using the following comparisons.
+  # Comparing non-normalized timestamps is not specified and may give unexpected results.
+  def __eq__(self, other):
+    return self._comparable_vector(self) == self._comparable_vector(other)
+
+  def __ne__(self, other):
+    return self._comparable_vector(self) != self._comparable_vector(other)
+
+  def __lt__(self, other):
+    return self._comparable_vector(self) < self._comparable_vector(other)
+
+  def __le__(self, other):
+    return self._comparable_vector(self) <= self._comparable_vector(other)
+
+  def __gt__(self, other):
+    return self._comparable_vector(self) > self._comparable_vector(other)
+
+  def __ge__(self, other):
+    return self._comparable_vector(self) >= self._comparable_vector(other)
 
 
 def _CheckDurationValid(seconds, nanos):

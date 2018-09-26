@@ -34,6 +34,7 @@
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+import copy
 import datetime
 
 try:
@@ -60,6 +61,28 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import well_known_types
 from google.protobuf import descriptor
 from google.protobuf import text_format
+
+
+def total_ordering_test(self, lesser, greater):
+    self.assertTrue(lesser == copy.deepcopy(lesser))
+    self.assertTrue(not lesser == greater)
+
+    self.assertTrue(lesser != greater)
+    self.assertTrue(not lesser != lesser)
+
+    self.assertTrue(greater > lesser)
+    self.assertTrue(not lesser > lesser)
+
+    self.assertTrue(greater >= lesser)
+    self.assertTrue(lesser >= lesser)
+    self.assertTrue(not lesser >= greater)
+
+    self.assertTrue(lesser < greater)
+    self.assertTrue(not greater < lesser)
+
+    self.assertTrue(lesser <= greater)
+    self.assertTrue(lesser <= lesser)
+    self.assertTrue(not greater <= lesser)
 
 
 class TimeUtilTestBase(unittest.TestCase):
@@ -386,6 +409,24 @@ class TimeUtilTest(TimeUtilTestBase):
         ValueError,
         r'Duration is not valid\: Sign mismatch.',
         message.ToJsonString)
+
+  def testTimestampOrdering(self):
+    a, b = timestamp_pb2.Timestamp(), timestamp_pb2.Timestamp()
+    # normalized comparisons
+    a.seconds, a.nanos, b.seconds, b.nanos = 0, 1, 1, 0
+    total_ordering_test(self, a, b)
+    # non-normalised is not equal to normalised
+    a.seconds, a.nanos, b.seconds, b.nanos = 1, 0, 0, 1000000001
+    self.assertNotEqual(a, b)
+
+  def testDurationOrdering(self):
+    a, b = duration_pb2.Duration(), duration_pb2.Duration()
+    # normalized comparisons
+    a.seconds, a.nanos, b.seconds, b.nanos = 0, 1, 1, 0
+    total_ordering_test(self, a, b)
+    # non-normalised is not equal to normalised`
+    a.seconds, a.nanos, b.seconds, b.nanos = 1, 0, 0, 1000000001
+    self.assertNotEqual(a, b)
 
 
 class FieldMaskTest(unittest.TestCase):
