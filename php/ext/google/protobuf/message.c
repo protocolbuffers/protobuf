@@ -361,15 +361,26 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       zval* submsg = CACHED_PTR_TO_ZVAL_PTR(cached);
       ZVAL_OBJ(submsg, desc->klass->create_object(desc->klass TSRMLS_CC));
       Message_construct(submsg, NULL);
-      MessageHeader* from = UNBOX(MessageHeader,
-                                  CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
       MessageHeader* to = UNBOX(MessageHeader, submsg);
-      if(from->descriptor != to->descriptor) {
-        zend_error(E_USER_ERROR, "Cannot merge messages with different class.");
-        return;
-      }
+      const upb_filedef *file = upb_def_file(upb_msgdef_upcast(submsgdef));
+      if (!strcmp(upb_filedef_name(file), "google/protobuf/wrappers.proto") &&
+          Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value)) != IS_OBJECT) {
+        const upb_fielddef *value_field = upb_msgdef_itof(submsgdef, 1);
+        layout_set(to->descriptor->layout, to,
+                   value_field, CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value)
+                   TSRMLS_CC);
+      } else {
+        MessageHeader* from =
+            UNBOX(MessageHeader,
+                  CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
+        if(from->descriptor != to->descriptor) {
+          zend_error(E_USER_ERROR,
+                     "Cannot merge messages with different class.");
+          return;
+        }
 
-      layout_merge(from->descriptor->layout, from, to TSRMLS_CC);
+        layout_merge(from->descriptor->layout, from, to TSRMLS_CC);
+      }
     } else {
       message_set_property_internal(msg, &key,
           CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value) TSRMLS_CC);

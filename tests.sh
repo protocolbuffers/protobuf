@@ -300,6 +300,7 @@ generate_php_test_proto() {
     proto/test_reserved_message_upper.proto    \
     proto/test_service.proto                   \
     proto/test_service_namespace.proto         \
+    proto/test_wrapper_type_setters.proto      \
     proto/test_descriptors.proto
   pushd ../../src
   ./protoc --php_out=../php/tests/generated -I../php/tests -I. \
