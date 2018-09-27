@@ -87,3 +87,9 @@ class EnumTypeWrapper(object):
     """
     return [(value_descriptor.name, value_descriptor.number)
             for value_descriptor in self._enum_type.values]
+
+  def __getattr__(self, name):
+    """Returns the value coresponding to the given enum name."""
+    if name in self._enum_type.values_by_name:
+      return self._enum_type.values_by_name[name].number
+    raise AttributeError
