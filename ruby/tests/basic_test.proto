@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package basic_test;
+
+message Foo {
+  Bar bar = 1;
+  repeated Baz baz = 2;
+}
+
+message Bar {
+  string msg = 1;
+}
+
+message Baz {
+  string msg = 1;
+}
+
+message TestMessage {
+  int32 optional_int32 = 1;
+  int64 optional_int64 = 2;
+  uint32 optional_uint32 = 3;
+  uint64 optional_uint64 = 4;
+  bool optional_bool = 5;
+  float optional_float = 6;
+  double optional_double = 7;
+  string optional_string = 8;
+  bytes optional_bytes = 9;
+  TestMessage2 optional_msg = 10;
+  TestEnum optional_enum = 11;
+
+  repeated int32 repeated_int32 = 12;
+  repeated int64 repeated_int64 = 13;
+  repeated uint32 repeated_uint32 = 14;
+  repeated uint64 repeated_uint64 = 15;
+  repeated bool repeated_bool = 16;
+  repeated float repeated_float = 17;
+  repeated double repeated_double = 18;
+  repeated string repeated_string = 19;
+  repeated bytes repeated_bytes = 20;
+  repeated TestMessage2 repeated_msg = 21;
+  repeated TestEnum repeated_enum = 22;
+}
+
+message TestMessage2 {
+  int32 foo = 1;
+}
+
+enum TestEnum {
+  Default = 0;
+  A = 1;
+  B = 2;
+  C = 3;
+}
+
+message TestEmbeddedMessageParent {
+  TestEmbeddedMessageChild child_msg = 1;
+  int32 number = 2;
+
+  repeated TestEmbeddedMessageChild repeated_msg = 3;
+  repeated int32 repeated_number = 4;
+}
+
+message TestEmbeddedMessageChild {
+  TestMessage sub_child = 1;
+}
+
+message Recursive1 {
+  Recursive2 foo = 1;
+}
+
+message Recursive2 {
+  Recursive1 foo = 1;
+}
+
+message MapMessage {
+  map<string, int32> map_string_int32 = 1;
+  map<string, TestMessage2> map_string_msg = 2;
+}
+
+message MapMessageWireEquiv {
+  repeated MapMessageWireEquiv_entry1 map_string_int32 = 1;
+  repeated MapMessageWireEquiv_entry2 map_string_msg = 2;
+}
+
+message MapMessageWireEquiv_entry1 {
+  string key = 1;
+  int32 value = 2;
+}
+
+message MapMessageWireEquiv_entry2 {
+  string key = 1;
+  TestMessage2 value = 2;
+}
+
+message OneofMessage {
+  oneof my_oneof {
+    string a = 1;
+    int32 b = 2;
+    TestMessage2 c = 3;
+    TestEnum d = 4;
+  }
+}
+
+message Outer {
+  map<int32, Inner> items = 1;
+}
+
+message Inner {
+}
