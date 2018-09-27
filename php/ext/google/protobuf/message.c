@@ -361,15 +361,26 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       zval* submsg = CACHED_PTR_TO_ZVAL_PTR(cached);
       ZVAL_OBJ(submsg, desc->klass->create_object(desc->klass TSRMLS_CC));
       Message_construct(submsg, NULL);
-      MessageHeader* from = UNBOX(MessageHeader,
-                                  CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
       MessageHeader* to = UNBOX(MessageHeader, submsg);
-      if(from->descriptor != to->descriptor) {
-        zend_error(E_USER_ERROR, "Cannot merge messages with different class.");
-        return;
-      }
+      const upb_filedef *file = upb_def_file(upb_msgdef_upcast(submsgdef));
+      if (!strcmp(upb_filedef_name(file), "google/protobuf/wrappers.proto") &&
+          Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value)) != IS_OBJECT) {
+        const upb_fielddef *value_field = upb_msgdef_itof(submsgdef, 1);
+        layout_set(to->descriptor->layout, to,
+                   value_field, CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value)
+                   TSRMLS_CC);
+      } else {
+        MessageHeader* from =
+            UNBOX(MessageHeader,
+                  CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value));
+        if(from->descriptor != to->descriptor) {
+          zend_error(E_USER_ERROR,
+                     "Cannot merge messages with different class.");
+          return;
+        }
 
-      layout_merge(from->descriptor->layout, from, to TSRMLS_CC);
+        layout_merge(from->descriptor->layout, from, to TSRMLS_CC);
+      }
     } else {
       message_set_property_internal(msg, &key,
           CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value) TSRMLS_CC);
@@ -1024,7 +1035,15 @@ static void hex_to_binary(const char* hex, char** binary, int* binary_len) {
 PHP_METHOD(Any, __construct) {
   init_file_any(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(any_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Any, any, TypeUrl, "type_url")
@@ -1193,7 +1212,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Duration, __construct) {
   init_file_duration(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(duration_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Duration, duration, Seconds, "seconds")
@@ -1229,7 +1256,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Timestamp, __construct) {
   init_file_timestamp(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(timestamp_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Timestamp, timestamp, Seconds, "seconds")
@@ -1432,7 +1467,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Api, __construct) {
   init_file_api(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(api_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Api, api, Name, "name")
@@ -1467,7 +1510,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(BoolValue, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(bool_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(BoolValue, bool_value, Value, "value")
@@ -1496,7 +1547,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(BytesValue, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(bytes_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(BytesValue, bytes_value, Value, "value")
@@ -1525,7 +1584,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(DoubleValue, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(double_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(DoubleValue, double_value, Value, "value")
@@ -1570,7 +1637,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Enum, __construct) {
   init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(enum_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Enum, enum, Name, "name")
@@ -1611,7 +1686,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(EnumValue, __construct) {
   init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(enum_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(EnumValue, enum_value, Name, "name")
@@ -1642,7 +1725,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(FieldMask, __construct) {
   init_file_field_mask(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(field_mask_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(FieldMask, field_mask, Paths, "paths")
@@ -1707,7 +1798,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Field, __construct) {
   init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(field_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Field, field, Kind, "kind")
@@ -1745,7 +1844,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(FloatValue, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(float_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(FloatValue, float_value, Value, "value")
@@ -1770,7 +1877,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(GPBEmpty, __construct) {
   init_file_empty(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(empty_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 
@@ -1798,7 +1913,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Int32Value, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(int32_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Int32Value, int32_value, Value, "value")
@@ -1827,7 +1950,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Int64Value, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(int64_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Int64Value, int64_value, Value, "value")
@@ -1856,7 +1987,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(ListValue, __construct) {
   init_file_struct(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(list_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(ListValue, list_value, Values, "values")
@@ -1909,7 +2048,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Method, __construct) {
   init_file_api(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(method_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Method, method, Name, "name")
@@ -1948,7 +2095,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Mixin, __construct) {
   init_file_api(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(mixin_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Mixin, mixin, Name, "name")
@@ -1982,7 +2137,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Option, __construct) {
   init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(option_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Option, option, Name, "name")
@@ -2012,7 +2175,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(SourceContext, __construct) {
   init_file_source_context(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(source_context_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(SourceContext, source_context, FileName, "file_name")
@@ -2041,7 +2212,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(StringValue, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(string_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(StringValue, string_value, Value, "value")
@@ -2070,7 +2249,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Struct, __construct) {
   init_file_struct(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(struct_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Struct, struct, Fields, "fields")
@@ -2119,7 +2306,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Type, __construct) {
   init_file_type(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(type_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(Type, type, Name, "name")
@@ -2153,7 +2348,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(UInt32Value, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(u_int32_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(UInt32Value, u_int32_value, Value, "value")
@@ -2182,7 +2385,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(UInt64Value, __construct) {
   init_file_wrappers(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(u_int64_value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_FIELD_ACCESSORS(UInt64Value, u_int64_value, Value, "value")
@@ -2222,7 +2433,15 @@ PHP_PROTO_INIT_SUBMSGCLASS_END
 PHP_METHOD(Value, __construct) {
   init_file_struct(TSRMLS_C);
   MessageHeader* intern = UNBOX(MessageHeader, getThis());
-  custom_data_init(value_type, intern PHP_PROTO_TSRMLS_CC);
+
+  // Init message with array
+  zval* array_wrapper = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC,
+                            "|a!", &array_wrapper) == FAILURE) {
+    return;
+  }
+
+  Message_construct(getThis(), array_wrapper);
 }
 
 PHP_PROTO_ONEOF_FIELD_ACCESSORS(Value, value, NullValue, "null_value")

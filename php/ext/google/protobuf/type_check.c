@@ -231,8 +231,9 @@ process_double:
         return convert_int64_to_##type(lval, type##_value);                  \
       }                                                                      \
       default:                                                               \
-        zend_error(E_USER_ERROR,                                             \
-                   "Given string value cannot be converted to integer.");    \
+        zend_throw_exception(NULL,                                           \
+                   "Given string value cannot be converted to integer.",     \
+                   0 TSRMLS_CC);                                             \
         return false;                                                        \
     }                                                                        \
   }                                                                          \
@@ -250,8 +251,9 @@ process_double:
                                         to);                                 \
       }                                                                      \
       default: {                                                             \
-        zend_error(E_USER_ERROR,                                             \
-                   "Given value cannot be converted to integer.");           \
+        zend_throw_exception(NULL,                                           \
+                   "Given value cannot be converted to integer.",            \
+                   0 TSRMLS_CC);                                             \
         return false;                                                        \
       }                                                                      \
     }                                                                        \
@@ -291,8 +293,9 @@ CONVERT_TO_INTEGER(uint64);
         return true;                                                        \
       }                                                                     \
       default:                                                              \
-        zend_error(E_USER_ERROR,                                            \
-                   "Given string value cannot be converted to integer.");   \
+        zend_throw_exception(NULL,                                          \
+                   "Given string value cannot be converted to integer.",    \
+                   0 TSRMLS_CC);                                            \
         return false;                                                       \
     }                                                                       \
   }                                                                         \
@@ -310,8 +313,9 @@ CONVERT_TO_INTEGER(uint64);
                                         to);                                \
       }                                                                     \
       default: {                                                            \
-        zend_error(E_USER_ERROR,                                            \
-                   "Given value cannot be converted to integer.");          \
+        zend_throw_exception(NULL,                                          \
+                   "Given value cannot be converted to integer.",           \
+                   0 TSRMLS_CC);                                            \
         return false;                                                       \
       }                                                                     \
     }                                                                       \
@@ -354,7 +358,9 @@ bool protobuf_convert_to_bool(zval* from, int8_t* to) {
       }
     } break;
     default: {
-      zend_error(E_USER_ERROR, "Given value cannot be converted to bool.");
+      zend_throw_exception(
+          NULL, "Given value cannot be converted to bool.",
+          0 TSRMLS_CC);
       return false;
     }
   }
@@ -380,7 +386,9 @@ bool protobuf_convert_to_string(zval* from) {
       return true;
     }
     default:
-      zend_error(E_USER_ERROR, "Given value cannot be converted to string.");
+      zend_throw_exception(
+          NULL, "Given value cannot be converted to string.",
+          0 TSRMLS_CC);
       return false;
   }
 }
@@ -421,8 +429,9 @@ PHP_METHOD(Util, checkMessage) {
     RETURN_NULL();
   }
   if (!instanceof_function(Z_OBJCE_P(val), klass TSRMLS_CC)) {
-    zend_error(E_USER_ERROR, "Given value is not an instance of %s.",
-               klass->name);
+    zend_throw_exception(
+        NULL, "Given value is not an instance of %s.", klass->name,
+        0 TSRMLS_CC);
     return;
   }
   RETURN_ZVAL(val, 1, 0);
@@ -465,24 +474,32 @@ void check_repeated_field(const zend_class_entry* klass, PHP_PROTO_LONG type,
 
   } else if (Z_TYPE_P(val) == IS_OBJECT) {
     if (!instanceof_function(Z_OBJCE_P(val), repeated_field_type TSRMLS_CC)) {
-      zend_error(E_USER_ERROR, "Given value is not an instance of %s.",
-                 repeated_field_type->name);
+      zend_throw_exception(
+          NULL, "Given value is not an instance of %s.",
+          repeated_field_type->name,
+          0 TSRMLS_CC);
       return;
     }
     RepeatedField* intern = UNBOX(RepeatedField, val);
     if (to_fieldtype(type) != intern->type) {
-      zend_error(E_USER_ERROR, "Incorrect repeated field type.");
+      zend_throw_exception(
+          NULL, "Incorrect repeated field type.",
+          0 TSRMLS_CC);
       return;
     }
     if (klass != NULL && intern->msg_ce != klass) {
-      zend_error(E_USER_ERROR,
-                 "Expect a repeated field of %s, but %s is given.", klass->name,
-                 intern->msg_ce->name);
+      zend_throw_exception(
+          NULL, "Expect a repeated field of %s, but %s is given.",
+          klass->name,
+          intern->msg_ce->name,
+          0 TSRMLS_CC);
       return;
     }
     RETURN_ZVAL(val, 1, 0);
   } else {
-    zend_error(E_USER_ERROR, "Incorrect repeated field type.");
+    zend_throw_exception(
+        NULL, "Incorrect repeated field type.",
+        0 TSRMLS_CC);
     return;
   }
 }
@@ -538,27 +555,37 @@ void check_map_field(const zend_class_entry* klass, PHP_PROTO_LONG key_type,
     RETURN_ZVAL(CACHED_TO_ZVAL_PTR(map_field), 1, 1);
   } else if (Z_TYPE_P(val) == IS_OBJECT) {
     if (!instanceof_function(Z_OBJCE_P(val), map_field_type TSRMLS_CC)) {
-      zend_error(E_USER_ERROR, "Given value is not an instance of %s.",
-                 map_field_type->name);
+      zend_throw_exception(
+          NULL, "Given value is not an instance of %s.",
+          map_field_type->name,
+          0 TSRMLS_CC);
       return;
     }
     Map* intern = UNBOX(Map, val);
     if (to_fieldtype(key_type) != intern->key_type) {
-      zend_error(E_USER_ERROR, "Incorrect map field key type.");
+      zend_throw_exception(
+          NULL, "Incorrect map field key type.",
+          0 TSRMLS_CC);
       return;
     }
     if (to_fieldtype(value_type) != intern->value_type) {
-      zend_error(E_USER_ERROR, "Incorrect map field value type.");
+      zend_throw_exception(
+          NULL, "Incorrect map field value type.",
+          0 TSRMLS_CC);
       return;
     }
     if (klass != NULL && intern->msg_ce != klass) {
-      zend_error(E_USER_ERROR, "Expect a map field of %s, but %s is given.",
-                 klass->name, intern->msg_ce->name);
+      zend_throw_exception(
+          NULL, "Expect a map field of %s, but %s is given.",
+          klass->name, intern->msg_ce->name,
+          0 TSRMLS_CC);
       return;
     }
     RETURN_ZVAL(val, 1, 0);
   } else {
-    zend_error(E_USER_ERROR, "Incorrect map field type.");
+      zend_throw_exception(
+          NULL, "Incorrect map field type.",
+          0 TSRMLS_CC);
     return;
   }
 }
