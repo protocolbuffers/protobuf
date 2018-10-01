@@ -163,6 +163,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Multi-platform executable JAR and Java API for protoc](https://github.com/os72/protoc-jar)
 * [Python scripts to convert between Protocol Buffers and JSON](https://github.com/NextTuesday/py-pb-converters)
 * [Visual Studio Language Service support for Protocol Buffers](http://visualstudiogallery.msdn.microsoft.com/4bc0f38c-b058-4e05-ae38-155e053c19c5)
+* [Visual Studio Code Support for Protocol Buffers](https://marketplace.visualstudio.com/items?itemName=zxh404.vscode-proto3)
 * [C++ library for serialization/de-serialization between Protocol Buffers and JSON.](https://github.com/yinqiwen/pbjson)
 * [ProtoBuf with Java EE7 Expression Language 3.0; pure Java ProtoBuf Parser and Builder.](https://github.com/protobufel/protobuf-el)
 * [Notepad++ Syntax Highlighting for .proto files](https://github.com/chai2010/notepadplus-protobuf)
