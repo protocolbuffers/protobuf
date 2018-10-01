@@ -495,6 +495,7 @@ class JsonFormatTest(JsonFormatBase):
     message.value['email'] = None
     message.value.get_or_create_struct('address')['city'] = 'SFO'
     message.value['address']['house_number'] = 1024
+    message.value.get_or_create_struct('empty')
     struct_list = message.value.get_or_create_list('list')
     struct_list.extend([6, 'seven', True, False, None])
     struct_list.add_struct()['subkey2'] = 9
@@ -509,6 +510,7 @@ class JsonFormatTest(JsonFormatBase):
             '      "city": "SFO", '
             '      "house_number": 1024'
             '    }, '
+            '    "empty": {}, '
             '    "age": 10, '
             '    "name": "Jim", '
             '    "attend": true, '
@@ -519,6 +521,7 @@ class JsonFormatTest(JsonFormatBase):
             '}'))
     parsed_message = json_format_proto3_pb2.TestStruct()
     self.CheckParseBack(message, parsed_message)
+    parsed_message.value['empty']  # check for regression; this used to raise
 
   def testValueMessage(self):
     message = json_format_proto3_pb2.TestValue()
