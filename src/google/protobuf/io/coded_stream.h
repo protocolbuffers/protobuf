@@ -67,7 +67,7 @@
 //   // Read a file created by the above code.
 //   int fd = open("myfile", O_RDONLY);
 //   ZeroCopyInputStream* raw_input = new FileInputStream(fd);
-//   CodedInputStream coded_input = new CodedInputStream(raw_input);
+//   CodedInputStream* coded_input = new CodedInputStream(raw_input);
 //
 //   coded_input->ReadLittleEndian32(&magic_number);
 //   if (magic_number != 1234) {
