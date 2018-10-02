@@ -3084,6 +3084,14 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
       result->encodingSelector = @selector(set##NAME:);                       \
       break;                                                                  \
     }
+#define CASE_SET_COPY(NAME)                                                   \
+    case GPBDataType##NAME: {                                                 \
+      result->impToAdd = imp_implementationWithBlock(^(id obj, id value) {    \
+        return GPBSetRetainedObjectIvarWithFieldInternal(obj, field, [value copy], syntax); \
+      });                                                                     \
+      result->encodingSelector = @selector(set##NAME:);                       \
+      break;                                                                  \
+    }
       CASE_SET(Bool, BOOL, Bool)
       CASE_SET(Fixed32, uint32_t, UInt32)
       CASE_SET(SFixed32, int32_t, Int32)
@@ -3097,8 +3105,8 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
       CASE_SET(SInt64, int64_t, Int64)
       CASE_SET(UInt32, uint32_t, UInt32)
       CASE_SET(UInt64, uint64_t, UInt64)
-      CASE_SET(Bytes, id, Object)
-      CASE_SET(String, id, Object)
+      CASE_SET_COPY(Bytes)
+      CASE_SET_COPY(String)
       CASE_SET(Message, id, Object)
       CASE_SET(Group, id, Object)
       CASE_SET(Enum, int32_t, Enum)
