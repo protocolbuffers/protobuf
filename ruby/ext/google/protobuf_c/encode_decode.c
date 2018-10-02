@@ -193,8 +193,7 @@ static void* appendstr_handler(void *closure,
                                const void *hd,
                                size_t size_hint) {
   VALUE ary = (VALUE)closure;
-  VALUE str = rb_str_new2("");
-  rb_enc_associate(str, kRubyStringUtf8Encoding);
+  VALUE str = rb_utf8_str_new_cstr("");
   RepeatedField_push_native(ary, &str);
   return (void*)str;
 }
@@ -224,8 +223,7 @@ static void* str_handler(void *closure,
   MessageHeader* msg = closure;
   const field_handlerdata_t *fieldhandler = hd;
 
-  VALUE str = rb_str_new2("");
-  rb_enc_associate(str, kRubyStringUtf8Encoding);
+  VALUE str = rb_utf8_str_new_cstr("");
   DEREF(msg, fieldhandler->ofs, VALUE) = str;
   set_hasbit(closure, fieldhandler->hasbit);
   return (void*)str;
@@ -459,8 +457,7 @@ static void *oneofstr_handler(void *closure,
                               size_t size_hint) {
   MessageHeader* msg = closure;
   const oneof_handlerdata_t *oneofdata = hd;
-  VALUE str = rb_str_new2("");
-  rb_enc_associate(str, kRubyStringUtf8Encoding);
+  VALUE str = rb_utf8_str_new_cstr("");
   DEREF(msg, oneofdata->case_ofs, uint32_t) =
       oneofdata->oneof_case_num;
   DEREF(msg, oneofdata->ofs, VALUE) = str;
@@ -1354,7 +1351,7 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
 
     putmsg(msg_rb, desc, upb_json_printer_input(printer), 0, RTEST(emit_defaults));
 
-    ret = rb_enc_str_new(sink.ptr, sink.len, rb_utf8_encoding());
+    ret = rb_utf8_str_new(sink.ptr, sink.len);
 
     stackenv_uninit(&se);
     stringsink_uninit(&sink);
