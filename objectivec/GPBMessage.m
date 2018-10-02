@@ -3178,7 +3178,7 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
         // full lookup.
         const GPBFileSyntax syntax = descriptor.file.syntax;
         result.impToAdd = imp_implementationWithBlock(^(id obj, id value) {
-          return GPBSetObjectIvarWithFieldInternal(obj, field, value, syntax);
+          GPBSetObjectIvarWithFieldInternal(obj, field, value, syntax);
         });
         result.encodingSelector = @selector(setArray:);
         break;
