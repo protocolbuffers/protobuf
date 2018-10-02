@@ -125,7 +125,7 @@ class ImmutableServiceGenerator : public ServiceGenerator {
                                        const MethodDescriptor* method);
 
   // Return the output type of the method.
-  string GetOutput(const MethodDescriptor* method);
+  std::string GetOutput(const MethodDescriptor* method);
 
   Context* context_;
   ClassNameResolver* name_resolver_;

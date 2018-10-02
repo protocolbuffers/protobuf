@@ -184,6 +184,8 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
   StatusErrorListener listener;
   converter::ProtoStreamObjectWriter::Options proto_writer_options;
   proto_writer_options.ignore_unknown_fields = options.ignore_unknown_fields;
+  proto_writer_options.ignore_unknown_enum_values =
+      options.ignore_unknown_fields;
   converter::ProtoStreamObjectWriter proto_writer(resolver, type, &sink,
                                                   &listener,
                                                   proto_writer_options);
@@ -215,8 +217,7 @@ util::Status JsonToBinaryString(TypeResolver* resolver,
 namespace {
 const char* kTypeUrlPrefix = "type.googleapis.com";
 TypeResolver* generated_type_resolver_ = NULL;
-GOOGLE_PROTOBUF_NAMESPACE_ID::internal::once_flag
-    generated_type_resolver_init_;
+PROTOBUF_NAMESPACE_ID::internal::once_flag generated_type_resolver_init_;
 
 string GetTypeUrl(const Message& message) {
   return string(kTypeUrlPrefix) + "/" + message.GetDescriptor()->full_name();
@@ -231,8 +232,8 @@ void InitGeneratedTypeResolver() {
 }
 
 TypeResolver* GetGeneratedTypeResolver() {
-  GOOGLE_PROTOBUF_NAMESPACE_ID::internal::call_once(
-      generated_type_resolver_init_, InitGeneratedTypeResolver);
+  PROTOBUF_NAMESPACE_ID::internal::call_once(generated_type_resolver_init_,
+                                             InitGeneratedTypeResolver);
   return generated_type_resolver_;
 }
 }  // namespace

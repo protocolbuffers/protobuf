@@ -329,6 +329,7 @@ const char* PackedValidEnumParser(const char* begin, const char* end,
   while (ptr < end) {
     uint64 varint;
     ptr = Varint::Parse64(ptr, &varint);
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     int val = varint;
     if (ctx->extra_parse_data().ValidateEnum<UnknownFieldSet>(val))
       repeated_field->Add(val);
@@ -343,6 +344,7 @@ const char* PackedValidEnumParserArg(const char* begin, const char* end,
   while (ptr < end) {
     uint64 varint;
     ptr = Varint::Parse64(ptr, &varint);
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     int val = varint;
     if (ctx->extra_parse_data().ValidateEnumArg<UnknownFieldSet>(val))
       repeated_field->Add(val);
@@ -358,7 +360,8 @@ const char* UnknownGroupParse(const char* begin, const char* end, void* object,
   while (ptr < end) {
     uint32 tag;
     ptr = Varint::Parse32Inline(ptr, &tag);
-    if ((tag >> 3) == 0) return nullptr;
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+    GOOGLE_PROTOBUF_PARSER_ASSERT((tag >> 3) != 0);
 
     auto res = UnknownFieldParse(tag, {UnknownGroupParse, unknown}, ptr, end,
                                  unknown, ctx);
@@ -368,7 +371,7 @@ const char* UnknownGroupParse(const char* begin, const char* end, void* object,
   return ptr;
 }
 
-std::pair<const char*, bool> UnknownFieldParse(uint32 tag, ParseClosure parent,
+std::pair<const char*, bool> UnknownFieldParse(uint64 tag, ParseClosure parent,
                                                const char* begin,
                                                const char* end,
                                                UnknownFieldSet* unknown,
@@ -378,14 +381,13 @@ std::pair<const char*, bool> UnknownFieldParse(uint32 tag, ParseClosure parent,
   void* object;
   auto ptr = begin;
 
-  GOOGLE_DCHECK(tag >> 3);
-
   uint32 field_num = tag >> 3;
+  GOOGLE_PROTOBUF_ASSERT_RETURN(field_num != 0, std::make_pair(nullptr, true));
   switch (tag & 7) {
     case 0: {
       uint64 val;
       ptr = Varint::Parse64(ptr, &val);
-      if (!ptr) goto error;
+      GOOGLE_PROTOBUF_ASSERT_RETURN(ptr, std::make_pair(nullptr, true));
       unknown->AddVarint(field_num, val);
       break;
     }
@@ -397,26 +399,27 @@ std::pair<const char*, bool> UnknownFieldParse(uint32 tag, ParseClosure parent,
     }
     case 2: {
       ptr = Varint::Parse32Inline(ptr, &size);
-      if (!ptr) goto error;
+      GOOGLE_PROTOBUF_ASSERT_RETURN(ptr, std::make_pair(nullptr, true));
       object = unknown->AddLengthDelimited(field_num);
       if (size > end - ptr) goto len_delim_till_end;
       auto newend = ptr + size;
-      if (!ctx->ParseExactRange({StringParser, object}, ptr, newend)) {
-        goto error;
-      }
+      bool ok = ctx->ParseExactRange({StringParser, object}, ptr, newend);
+      GOOGLE_PROTOBUF_ASSERT_RETURN(ok, std::make_pair(nullptr, true));
       ptr = newend;
       break;
     }
     case 3: {
       object = unknown->AddGroup(field_num);
-      if (!ctx->PrepareGroup(tag, &depth)) goto error;
+      bool ok = ctx->PrepareGroup(tag, &depth);
+      GOOGLE_PROTOBUF_ASSERT_RETURN(ok, std::make_pair(nullptr, true));
       ptr = UnknownGroupParse(ptr, end, object, ctx);
-      if (!ptr) goto error;
+      GOOGLE_PROTOBUF_ASSERT_RETURN(ptr, std::make_pair(nullptr, true));
       if (ctx->GroupContinues(depth)) goto group_continues;
       break;
     }
     case 4: {
-      if (!ctx->ValidEndGroup(tag)) goto error;
+      bool ok = ctx->ValidEndGroup(tag);
+      GOOGLE_PROTOBUF_ASSERT_RETURN(ok, std::make_pair(nullptr, true));
       return std::make_pair(ptr, true);
     }
     case 5: {
@@ -426,11 +429,9 @@ std::pair<const char*, bool> UnknownFieldParse(uint32 tag, ParseClosure parent,
       break;
     }
     default:
-      goto error;
+      GOOGLE_PROTOBUF_ASSERT_RETURN(false, std::make_pair(nullptr, true));
   }
   return std::make_pair(ptr, false);
-error:
-  return std::make_pair(nullptr, true);
 len_delim_till_end:
   // Length delimited field crosses end
   return std::make_pair(

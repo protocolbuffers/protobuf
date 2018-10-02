@@ -41,32 +41,30 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 /**
- * Unit test for {@link DynamicMessage}.  See also {@link MessageTest}, which
- * tests some {@link DynamicMessage} functionality.
+ * Unit test for {@link DynamicMessage}. See also {@link MessageTest}, which tests some {@link
+ * DynamicMessage} functionality.
  *
  * @author kenton@google.com Kenton Varda
  */
 public class DynamicMessageTest extends TestCase {
   TestUtil.ReflectionTester reflectionTester =
-    new TestUtil.ReflectionTester(TestAllTypes.getDescriptor(), null);
+      new TestUtil.ReflectionTester(TestAllTypes.getDescriptor(), null);
 
   TestUtil.ReflectionTester extensionsReflectionTester =
       new TestUtil.ReflectionTester(
           TestAllExtensions.getDescriptor(), TestUtil.getFullExtensionRegistry());
   TestUtil.ReflectionTester packedReflectionTester =
-    new TestUtil.ReflectionTester(TestPackedTypes.getDescriptor(), null);
+      new TestUtil.ReflectionTester(TestPackedTypes.getDescriptor(), null);
 
   public void testDynamicMessageAccessors() throws Exception {
-    Message.Builder builder =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     reflectionTester.setAllFieldsViaReflection(builder);
     Message message = builder.build();
     reflectionTester.assertAllFieldsSetViaReflection(message);
   }
 
   public void testSettersAfterBuild() throws Exception {
-    Message.Builder builder =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     Message firstMessage = builder.build();
     // double build()
     builder.build();
@@ -85,12 +83,12 @@ public class DynamicMessageTest extends TestCase {
   }
 
   public void testUnknownFields() throws Exception {
-    Message.Builder builder =
-        DynamicMessage.newBuilder(TestEmptyMessage.getDescriptor());
-    builder.setUnknownFields(UnknownFieldSet.newBuilder()
-        .addField(1, UnknownFieldSet.Field.newBuilder().addVarint(1).build())
-        .addField(2, UnknownFieldSet.Field.newBuilder().addFixed32(1).build())
-        .build());
+    Message.Builder builder = DynamicMessage.newBuilder(TestEmptyMessage.getDescriptor());
+    builder.setUnknownFields(
+        UnknownFieldSet.newBuilder()
+            .addField(1, UnknownFieldSet.Field.newBuilder().addVarint(1).build())
+            .addField(2, UnknownFieldSet.Field.newBuilder().addFixed32(1).build())
+            .build());
     Message message = builder.build();
     assertEquals(2, message.getUnknownFields().asMap().size());
     // clone() with unknown fields
@@ -105,8 +103,7 @@ public class DynamicMessageTest extends TestCase {
   }
 
   public void testDynamicMessageSettersRejectNull() throws Exception {
-    Message.Builder builder =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     reflectionTester.assertReflectionSettersRejectNull(builder);
   }
 
@@ -114,22 +111,19 @@ public class DynamicMessageTest extends TestCase {
     // We don't need to extensively test DynamicMessage's handling of
     // extensions because, frankly, it doesn't do anything special with them.
     // It treats them just like any other fields.
-    Message.Builder builder =
-      DynamicMessage.newBuilder(TestAllExtensions.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllExtensions.getDescriptor());
     extensionsReflectionTester.setAllFieldsViaReflection(builder);
     Message message = builder.build();
     extensionsReflectionTester.assertAllFieldsSetViaReflection(message);
   }
 
   public void testDynamicMessageExtensionSettersRejectNull() throws Exception {
-    Message.Builder builder =
-      DynamicMessage.newBuilder(TestAllExtensions.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllExtensions.getDescriptor());
     extensionsReflectionTester.assertReflectionSettersRejectNull(builder);
   }
 
   public void testDynamicMessageRepeatedSetters() throws Exception {
-    Message.Builder builder =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     reflectionTester.setAllFieldsViaReflection(builder);
     reflectionTester.modifyRepeatedFieldsViaReflection(builder);
     Message message = builder.build();
@@ -137,33 +131,29 @@ public class DynamicMessageTest extends TestCase {
   }
 
   public void testDynamicMessageRepeatedSettersRejectNull() throws Exception {
-    Message.Builder builder =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     reflectionTester.assertReflectionRepeatedSettersRejectNull(builder);
   }
 
   public void testDynamicMessageDefaults() throws Exception {
     reflectionTester.assertClearViaReflection(
-      DynamicMessage.getDefaultInstance(TestAllTypes.getDescriptor()));
+        DynamicMessage.getDefaultInstance(TestAllTypes.getDescriptor()));
     reflectionTester.assertClearViaReflection(
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor()).build());
+        DynamicMessage.newBuilder(TestAllTypes.getDescriptor()).build());
   }
 
   public void testDynamicMessageSerializedSize() throws Exception {
     TestAllTypes message = TestUtil.getAllSet();
 
-    Message.Builder dynamicBuilder =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    Message.Builder dynamicBuilder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     reflectionTester.setAllFieldsViaReflection(dynamicBuilder);
     Message dynamicMessage = dynamicBuilder.build();
 
-    assertEquals(message.getSerializedSize(),
-                 dynamicMessage.getSerializedSize());
+    assertEquals(message.getSerializedSize(), dynamicMessage.getSerializedSize());
   }
 
   public void testDynamicMessageSerialization() throws Exception {
-    Message.Builder builder =
-      DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     reflectionTester.setAllFieldsViaReflection(builder);
     Message message = builder.build();
 
@@ -183,8 +173,7 @@ public class DynamicMessageTest extends TestCase {
 
     ByteString rawBytes = message.toByteString();
 
-    Message message2 =
-      DynamicMessage.parseFrom(TestAllTypes.getDescriptor(), rawBytes);
+    Message message2 = DynamicMessage.parseFrom(TestAllTypes.getDescriptor(), rawBytes);
     reflectionTester.assertAllFieldsSetViaReflection(message2);
 
     // Test Parser interface.
@@ -200,14 +189,13 @@ public class DynamicMessageTest extends TestCase {
     extensionsReflectionTester.assertAllFieldsSetViaReflection(message);
 
     // Test Parser interface.
-    Message message2 = message.getParserForType().parseFrom(
-        rawBytes, TestUtil.getExtensionRegistry());
+    Message message2 =
+        message.getParserForType().parseFrom(rawBytes, TestUtil.getExtensionRegistry());
     extensionsReflectionTester.assertAllFieldsSetViaReflection(message2);
   }
 
   public void testDynamicMessagePackedSerialization() throws Exception {
-    Message.Builder builder =
-        DynamicMessage.newBuilder(TestPackedTypes.getDescriptor());
+    Message.Builder builder = DynamicMessage.newBuilder(TestPackedTypes.getDescriptor());
     packedReflectionTester.setPackedFieldsViaReflection(builder);
     Message message = builder.build();
 
@@ -227,8 +215,7 @@ public class DynamicMessageTest extends TestCase {
 
     ByteString rawBytes = message.toByteString();
 
-    Message message2 =
-      DynamicMessage.parseFrom(TestPackedTypes.getDescriptor(), rawBytes);
+    Message message2 = DynamicMessage.parseFrom(TestPackedTypes.getDescriptor(), rawBytes);
     packedReflectionTester.assertPackedFieldsSetViaReflection(message2);
 
     // Test Parser interface.
@@ -245,41 +232,38 @@ public class DynamicMessageTest extends TestCase {
     reflectionTester.assertAllFieldsSetViaReflection(copy);
 
     // Test oneof behavior
-    FieldDescriptor bytesField =
-        TestAllTypes.getDescriptor().findFieldByName("oneof_bytes");
-    FieldDescriptor uint32Field =
-        TestAllTypes.getDescriptor().findFieldByName("oneof_uint32");
+    FieldDescriptor bytesField = TestAllTypes.getDescriptor().findFieldByName("oneof_bytes");
+    FieldDescriptor uint32Field = TestAllTypes.getDescriptor().findFieldByName("oneof_uint32");
     assertTrue(copy.hasField(bytesField));
     assertFalse(copy.hasField(uint32Field));
-    DynamicMessage copy2 =
-        DynamicMessage.newBuilder(message).setField(uint32Field, 123).build();
+    DynamicMessage copy2 = DynamicMessage.newBuilder(message).setField(uint32Field, 123).build();
     assertFalse(copy2.hasField(bytesField));
     assertTrue(copy2.hasField(uint32Field));
     assertEquals(123, copy2.getField(uint32Field));
   }
 
   public void testToBuilder() throws Exception {
-    DynamicMessage.Builder builder =
-        DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    DynamicMessage.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     reflectionTester.setAllFieldsViaReflection(builder);
     int unknownFieldNum = 9;
     long unknownFieldVal = 90;
-    builder.setUnknownFields(UnknownFieldSet.newBuilder()
-        .addField(unknownFieldNum,
-            UnknownFieldSet.Field.newBuilder()
-                .addVarint(unknownFieldVal).build())
-        .build());
+    builder.setUnknownFields(
+        UnknownFieldSet.newBuilder()
+            .addField(
+                unknownFieldNum,
+                UnknownFieldSet.Field.newBuilder().addVarint(unknownFieldVal).build())
+            .build());
     DynamicMessage message = builder.build();
 
     DynamicMessage derived = message.toBuilder().build();
     reflectionTester.assertAllFieldsSetViaReflection(derived);
-    assertEquals(Arrays.asList(unknownFieldVal),
+    assertEquals(
+        Arrays.asList(unknownFieldVal),
         derived.getUnknownFields().getField(unknownFieldNum).getVarintList());
   }
 
   public void testDynamicOneofMessage() throws Exception {
-    DynamicMessage.Builder builder =
-        DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    DynamicMessage.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     OneofDescriptor oneof = TestAllTypes.getDescriptor().getOneofs().get(0);
     assertFalse(builder.hasOneof(oneof));
     assertSame(null, builder.getOneofFieldDescriptor(oneof));
@@ -292,8 +276,7 @@ public class DynamicMessageTest extends TestCase {
     DynamicMessage message = builder.buildPartial();
     assertTrue(message.hasOneof(oneof));
 
-    DynamicMessage.Builder mergedBuilder =
-        DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    DynamicMessage.Builder mergedBuilder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     FieldDescriptor mergedField = oneof.getField(0);
     mergedBuilder.setField(mergedField, 123);
     assertTrue(mergedBuilder.hasField(mergedField));
@@ -310,15 +293,12 @@ public class DynamicMessageTest extends TestCase {
   // Regression test for a bug that makes setField() not work for repeated
   // enum fields.
   public void testSettersForRepeatedEnumField() throws Exception {
-    DynamicMessage.Builder builder =
-        DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    DynamicMessage.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     FieldDescriptor repeatedEnumField =
-        TestAllTypes.getDescriptor().findFieldByName(
-            "repeated_nested_enum");
+        TestAllTypes.getDescriptor().findFieldByName("repeated_nested_enum");
     EnumDescriptor enumDescriptor = TestAllTypes.NestedEnum.getDescriptor();
     builder.setField(repeatedEnumField, enumDescriptor.getValues());
     DynamicMessage message = builder.build();
-    assertEquals(
-        enumDescriptor.getValues(), message.getField(repeatedEnumField));
+    assertEquals(enumDescriptor.getValues(), message.getField(repeatedEnumField));
   }
 }

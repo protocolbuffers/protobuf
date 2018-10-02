@@ -44,6 +44,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/map_unittest.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
@@ -58,6 +59,8 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/mathlimits.h>
 
+
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -963,8 +966,8 @@ TEST_F(TextFormatTest, PrintExotic) {
   //   9223372036854775808 is outside the range of int64.  However, it is not
   //   outside the range of uint64.  Confusingly, this means that everything
   //   works if we make the literal unsigned, even though we are negating it.
-  message.add_repeated_int64(-GOOGLE_ULONGLONG(9223372036854775808));
-  message.add_repeated_uint64(GOOGLE_ULONGLONG(18446744073709551615));
+  message.add_repeated_int64(-PROTOBUF_ULONGLONG(9223372036854775808));
+  message.add_repeated_uint64(PROTOBUF_ULONGLONG(18446744073709551615));
   message.add_repeated_double(123.456);
   message.add_repeated_double(1.23e21);
   message.add_repeated_double(1.23e-18);
@@ -1137,15 +1140,18 @@ TEST_F(TextFormatTest, ParseExotic) {
   //   9223372036854775808 is outside the range of int64.  However, it is not
   //   outside the range of uint64.  Confusingly, this means that everything
   //   works if we make the literal unsigned, even though we are negating it.
-  EXPECT_EQ(-GOOGLE_ULONGLONG(9223372036854775808), message.repeated_int64(1));
+  EXPECT_EQ(-PROTOBUF_ULONGLONG(9223372036854775808),
+            message.repeated_int64(1));
 
   ASSERT_EQ(2, message.repeated_uint32_size());
   EXPECT_EQ(4294967295u, message.repeated_uint32(0));
   EXPECT_EQ(2147483648u, message.repeated_uint32(1));
 
   ASSERT_EQ(2, message.repeated_uint64_size());
-  EXPECT_EQ(GOOGLE_ULONGLONG(18446744073709551615), message.repeated_uint64(0));
-  EXPECT_EQ(GOOGLE_ULONGLONG(9223372036854775808), message.repeated_uint64(1));
+  EXPECT_EQ(PROTOBUF_ULONGLONG(18446744073709551615),
+            message.repeated_uint64(0));
+  EXPECT_EQ(PROTOBUF_ULONGLONG(9223372036854775808),
+            message.repeated_uint64(1));
 
   ASSERT_EQ(13, message.repeated_double_size());
   EXPECT_EQ(123.0     , message.repeated_double(0));

@@ -151,6 +151,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/hash.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 // StringPiece has *two* size types.
@@ -175,7 +177,7 @@ typedef string::difference_type stringpiece_ssize_type;
 #define STRINGPIECE_CHECK_SIZE 0
 #endif
 
-class LIBPROTOBUF_EXPORT StringPiece {
+class PROTOBUF_EXPORT StringPiece {
  private:
   const char* ptr_;
   stringpiece_ssize_type length_;
@@ -486,5 +488,7 @@ template<> struct hash<StringPiece> {
   }
 };
 GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // STRINGS_STRINGPIECE_H_

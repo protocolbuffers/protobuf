@@ -36,12 +36,14 @@
 
 #include <string>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace php {
 
-class LIBPROTOC_EXPORT Generator
+class PROTOC_EXPORT Generator
     : public google::protobuf::compiler::CodeGenerator {
   virtual bool Generate(
       const FileDescriptor* file,
@@ -53,16 +55,18 @@ class LIBPROTOC_EXPORT Generator
 // To skip reserved keywords in php, some generated classname are prefixed.
 // Other code generators may need following API to figure out the actual
 // classname.
-LIBPROTOC_EXPORT std::string GeneratedClassName(
+PROTOC_EXPORT std::string GeneratedClassName(
     const google::protobuf::Descriptor* desc);
-LIBPROTOC_EXPORT std::string GeneratedClassName(
+PROTOC_EXPORT std::string GeneratedClassName(
     const google::protobuf::EnumDescriptor* desc);
-LIBPROTOC_EXPORT std::string GeneratedClassName(
+PROTOC_EXPORT std::string GeneratedClassName(
     const google::protobuf::ServiceDescriptor* desc);
 
 }  // namespace php
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__

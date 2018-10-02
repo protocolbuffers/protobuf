@@ -39,8 +39,7 @@ import com.google.protobuf.TextFormat.ParseException;
 import junit.framework.TestCase;
 
 /**
- * Unit tests for protos that keep unknown enum values rather than discard
- * them as unknown fields.
+ * Unit tests for protos that keep unknown enum values rather than discard them as unknown fields.
  */
 public class UnknownEnumValueTest extends TestCase {
   public void testUnknownEnumValues() throws Exception {
@@ -58,7 +57,7 @@ public class UnknownEnumValueTest extends TestCase {
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getRepeatedNestedEnum(0));
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getRepeatedNestedEnumList().get(0));
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getPackedNestedEnum(0));
-    
+
     // Test serialization and parsing.
     ByteString data = message.toByteString();
     message = TestAllTypes.parseFrom(data);
@@ -71,19 +70,19 @@ public class UnknownEnumValueTest extends TestCase {
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getRepeatedNestedEnum(0));
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getRepeatedNestedEnumList().get(0));
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getPackedNestedEnum(0));
-    
+
     // Test toBuilder().
     builder = message.toBuilder();
     assertEquals(4321, builder.getOptionalNestedEnumValue());
     assertEquals(5432, builder.getRepeatedNestedEnumValue(0));
     assertEquals(5432, builder.getRepeatedNestedEnumValueList().get(0).intValue());
-    assertEquals(6543, builder.getPackedNestedEnumValue(0));    
+    assertEquals(6543, builder.getPackedNestedEnumValue(0));
     // Returns UNRECOGNIZED if an enum type is requested.
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, builder.getOptionalNestedEnum());
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, builder.getRepeatedNestedEnum(0));
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, builder.getRepeatedNestedEnumList().get(0));
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, builder.getPackedNestedEnum(0));
-    
+
     // Test mergeFrom().
     builder = TestAllTypes.newBuilder().mergeFrom(message);
     assertEquals(4321, builder.getOptionalNestedEnumValue());
@@ -95,7 +94,7 @@ public class UnknownEnumValueTest extends TestCase {
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, builder.getRepeatedNestedEnum(0));
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, builder.getRepeatedNestedEnumList().get(0));
     assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, builder.getPackedNestedEnum(0));
-    
+
     // Test equals() and hashCode()
     TestAllTypes sameMessage = builder.build();
     assertEquals(message, sameMessage);
@@ -123,7 +122,7 @@ public class UnknownEnumValueTest extends TestCase {
       // Expected.
     }
   }
-  
+
   public void testUnknownEnumValueInReflectionApi() throws Exception {
     Descriptor descriptor = TestAllTypes.getDescriptor();
     FieldDescriptor optionalNestedEnumField = descriptor.findFieldByName("optional_nested_enum");
@@ -132,14 +131,13 @@ public class UnknownEnumValueTest extends TestCase {
     EnumDescriptor enumType = TestAllTypes.NestedEnum.getDescriptor();
 
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    builder.setField(optionalNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(4321));
-    builder.addRepeatedField(repeatedNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(5432));
-    builder.addRepeatedField(packedNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(6543));
+    builder.setField(optionalNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(4321));
+    builder.addRepeatedField(
+        repeatedNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(5432));
+    builder.addRepeatedField(
+        packedNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(6543));
     TestAllTypes message = builder.build();
-    
+
     // Getters will return unknown enum values as EnumValueDescriptor.
     EnumValueDescriptor unknown4321 =
         (EnumValueDescriptor) message.getField(optionalNestedEnumField);
@@ -166,79 +164,78 @@ public class UnknownEnumValueTest extends TestCase {
     message = builder.build();
     // Like other descriptors, unknown EnumValueDescriptor can be compared by
     // object identity.
-    assertTrue(unknown6543 == message.getField(optionalNestedEnumField));
-    assertTrue(unknown4321 == message.getRepeatedField(repeatedNestedEnumField, 0));
-    assertTrue(unknown5432 == message.getRepeatedField(packedNestedEnumField, 0));
+    assertSame(message.getField(optionalNestedEnumField), unknown6543);
+    assertSame(message.getRepeatedField(repeatedNestedEnumField, 0), unknown4321);
+    assertSame(message.getRepeatedField(packedNestedEnumField, 0), unknown5432);
   }
-  
+
   public void testUnknownEnumValueWithDynamicMessage() throws Exception {
     Descriptor descriptor = TestAllTypes.getDescriptor();
     FieldDescriptor optionalNestedEnumField = descriptor.findFieldByName("optional_nested_enum");
     FieldDescriptor repeatedNestedEnumField = descriptor.findFieldByName("repeated_nested_enum");
     FieldDescriptor packedNestedEnumField = descriptor.findFieldByName("packed_nested_enum");
     EnumDescriptor enumType = TestAllTypes.NestedEnum.getDescriptor();
-    
+
     Message dynamicMessageDefaultInstance = DynamicMessage.getDefaultInstance(descriptor);
 
     Message.Builder builder = dynamicMessageDefaultInstance.newBuilderForType();
-    builder.setField(optionalNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(4321));
-    builder.addRepeatedField(repeatedNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(5432));
-    builder.addRepeatedField(packedNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(6543));
+    builder.setField(optionalNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(4321));
+    builder.addRepeatedField(
+        repeatedNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(5432));
+    builder.addRepeatedField(
+        packedNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(6543));
     Message message = builder.build();
-    assertEquals(4321,
-        ((EnumValueDescriptor) message.getField(optionalNestedEnumField)).getNumber());
-    assertEquals(5432,
+    assertEquals(
+        4321, ((EnumValueDescriptor) message.getField(optionalNestedEnumField)).getNumber());
+    assertEquals(
+        5432,
         ((EnumValueDescriptor) message.getRepeatedField(repeatedNestedEnumField, 0)).getNumber());
-    assertEquals(6543,
+    assertEquals(
+        6543,
         ((EnumValueDescriptor) message.getRepeatedField(packedNestedEnumField, 0)).getNumber());
-    
+
     // Test reflection based serialization/parsing implementation.
     ByteString data = message.toByteString();
-    message = dynamicMessageDefaultInstance
-        .newBuilderForType()
-        .mergeFrom(data)
-        .build();
-    assertEquals(4321,
-        ((EnumValueDescriptor) message.getField(optionalNestedEnumField)).getNumber());
-    assertEquals(5432,
+    message = dynamicMessageDefaultInstance.newBuilderForType().mergeFrom(data).build();
+    assertEquals(
+        4321, ((EnumValueDescriptor) message.getField(optionalNestedEnumField)).getNumber());
+    assertEquals(
+        5432,
         ((EnumValueDescriptor) message.getRepeatedField(repeatedNestedEnumField, 0)).getNumber());
-    assertEquals(6543,
+    assertEquals(
+        6543,
         ((EnumValueDescriptor) message.getRepeatedField(packedNestedEnumField, 0)).getNumber());
-    
+
     // Test reflection based equals()/hashCode().
     builder = dynamicMessageDefaultInstance.newBuilderForType();
-    builder.setField(optionalNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(4321));
-    builder.addRepeatedField(repeatedNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(5432));
-    builder.addRepeatedField(packedNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(6543));
+    builder.setField(optionalNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(4321));
+    builder.addRepeatedField(
+        repeatedNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(5432));
+    builder.addRepeatedField(
+        packedNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(6543));
     Message sameMessage = builder.build();
     assertEquals(message, sameMessage);
     assertEquals(message.hashCode(), sameMessage.hashCode());
-    builder.setField(optionalNestedEnumField,
-        enumType.findValueByNumberCreatingIfUnknown(0));
+    builder.setField(optionalNestedEnumField, enumType.findValueByNumberCreatingIfUnknown(0));
     Message differentMessage = builder.build();
     assertFalse(message.equals(differentMessage));
   }
-  
+
   public void testUnknownEnumValuesInTextFormat() {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalNestedEnumValue(4321);
     builder.addRepeatedNestedEnumValue(5432);
     builder.addPackedNestedEnumValue(6543);
     TestAllTypes message = builder.build();
-    
+
     // We can print a message with unknown enum values.
     String textData = TextFormat.printToString(message);
     assertEquals(
         "optional_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_4321\n"
-        + "repeated_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_5432\n"
-        + "packed_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_6543\n", textData);
-    
+            + "repeated_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_5432\n"
+            + "packed_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_6543\n",
+        textData);
+
     // Parsing unknown enum values will fail just like parsing other kinds of
     // unknown fields.
     try {

@@ -91,12 +91,14 @@ void Init_protobuf_c() {
   descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
   DescriptorPool_register(protobuf);
   Descriptor_register(protobuf);
+  FileDescriptor_register(protobuf);
   FieldDescriptor_register(protobuf);
   OneofDescriptor_register(protobuf);
   EnumDescriptor_register(protobuf);
   MessageBuilderContext_register(internal);
   OneofBuilderContext_register(internal);
   EnumBuilderContext_register(internal);
+  FileBuilderContext_register(internal);
   Builder_register(internal);
   RepeatedField_register(protobuf);
   Map_register(protobuf);

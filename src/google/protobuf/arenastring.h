@@ -39,6 +39,8 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/port.h>
 
+#include <google/protobuf/port_def.inc>
+
 // This is the implementation of arena string fields written for the open-source
 // release. The ArenaStringPtr struct below is an internal implementation class
 // and *should not be used* by user code. It is used to collect string
@@ -63,7 +65,7 @@ class TaggedPtr {
   uintptr_t ptr_;
 };
 
-struct LIBPROTOBUF_EXPORT ArenaStringPtr {
+struct PROTOBUF_EXPORT ArenaStringPtr {
   inline void Set(const ::std::string* default_value,
                   const ::std::string& value, ::google::protobuf::Arena* arena) {
     if (ptr_ == default_value) {
@@ -168,11 +170,12 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   // Swaps internal pointers. Arena-safety semantics: this is guarded by the
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE void Swap(ArenaStringPtr* other) {
+  PROTOBUF_ALWAYS_INLINE void Swap(ArenaStringPtr* other) {
     std::swap(ptr_, other->ptr_);
   }
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE void Swap(
-      ArenaStringPtr* other, const ::std::string* default_value, Arena* arena) {
+  PROTOBUF_ALWAYS_INLINE void Swap(ArenaStringPtr* other,
+                                   const ::std::string* default_value,
+                                   Arena* arena) {
 #ifndef NDEBUG
     // For debug builds, we swap the contents of the string, rather than the
     // string instances themselves.  This invalidates previously taken const
@@ -364,14 +367,14 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
  private:
   ::std::string* ptr_;
 
-  GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
+  PROTOBUF_NOINLINE
   void CreateInstance(::google::protobuf::Arena* arena,
                       const ::std::string* initial_value) {
     GOOGLE_DCHECK(initial_value != NULL);
     // uses "new ::std::string" when arena is nullptr
     ptr_ = Arena::Create< ::std::string >(arena, *initial_value);
   }
-  GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE
+  PROTOBUF_NOINLINE
   void CreateInstanceNoArena(const ::std::string* initial_value) {
     GOOGLE_DCHECK(initial_value != NULL);
     ptr_ = new ::std::string(*initial_value);
@@ -398,6 +401,8 @@ inline void ArenaStringPtr::AssignWithDefault(const ::std::string* default_value
 
 }  // namespace internal
 }  // namespace protobuf
-
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_ARENASTRING_H__

@@ -42,11 +42,11 @@ import java.util.RandomAccess;
  *
  * @author dweis@google.com (Daniel Weis)
  */
-final class LongArrayList
-    extends AbstractProtobufList<Long>
+final class LongArrayList extends AbstractProtobufList<Long>
     implements LongList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final LongArrayList EMPTY_LIST = new LongArrayList();
+
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -55,9 +55,7 @@ final class LongArrayList
     return EMPTY_LIST;
   }
 
-  /**
-   * The backing store for the list.
-   */
+  /** The backing store for the list. */
   private long[] array;
 
   /**
@@ -66,16 +64,13 @@ final class LongArrayList
    */
   private int size;
 
-  /**
-   * Constructs a new mutable {@code LongArrayList} with default capacity.
-   */
+  /** Constructs a new mutable {@code LongArrayList} with default capacity. */
   LongArrayList() {
     this(new long[DEFAULT_CAPACITY], 0);
   }
 
   /**
-   * Constructs a new mutable {@code LongArrayList}
-   * containing the same elements as {@code other}.
+   * Constructs a new mutable {@code LongArrayList} containing the same elements as {@code other}.
    */
   private LongArrayList(long[] other, int size) {
     array = other;
@@ -169,17 +164,13 @@ final class LongArrayList
     addLong(index, element);
   }
 
-  /**
-   * Like {@link #add(Long)} but more efficient in that it doesn't box the element.
-   */
+  /** Like {@link #add(Long)} but more efficient in that it doesn't box the element. */
   @Override
   public void addLong(long element) {
     addLong(size, element);
   }
 
-  /**
-   * Like {@link #add(int, Long)} but more efficient in that it doesn't box the element.
-   */
+  /** Like {@link #add(int, Long)} but more efficient in that it doesn't box the element. */
   private void addLong(int index, long element) {
     ensureIsMutable();
     if (index < 0 || index > size) {

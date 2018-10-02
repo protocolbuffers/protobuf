@@ -46,6 +46,8 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 class Field;
@@ -73,7 +75,7 @@ class TypeInfo;
 //                              <your message google::protobuf::Type>);
 //
 //   Status status = os.WriteTo(<some ObjectWriter>);
-class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
+class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
  public:
   ProtoStreamObjectSource(io::CodedInputStream* stream,
                           TypeResolver* type_resolver,
@@ -160,7 +162,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Reads field value according to Field spec in 'field' and returns the read
   // value as string. This only works for primitive datatypes (no message
   // types).
-  const string ReadFieldValueAsString(
+  const std::string ReadFieldValueAsString(
       const google::protobuf::Field& field) const;
 
 
@@ -258,10 +260,10 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
                                         StringPiece name,
                                         ObjectWriter* ow);
 
-  static std::unordered_map<string, TypeRenderer>* renderers_;
+  static std::unordered_map<std::string, TypeRenderer>* renderers_;
   static void InitRendererMap();
   static void DeleteRendererMap();
-  static TypeRenderer* FindTypeRenderer(const string& type_url);
+  static TypeRenderer* FindTypeRenderer(const std::string& type_url);
 
   // Same as above but renders all non-message field types. Callers don't call
   // this function directly. They just use RenderField.
@@ -330,5 +332,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTSOURCE_H__

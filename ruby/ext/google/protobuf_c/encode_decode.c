@@ -100,24 +100,34 @@ void stringsink_uninit(stringsink *sink) {
 
 #define DEREF(msg, ofs, type) *(type*)(((uint8_t *)msg) + ofs)
 
-// Creates a handlerdata that simply contains the offset for this field.
-static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
-  size_t* hd_ofs = ALLOC(size_t);
-  *hd_ofs = ofs;
-  upb_handlers_addcleanup(h, hd_ofs, xfree);
-  return hd_ofs;
+typedef struct {
+  size_t ofs;
+  int32_t hasbit;
+} field_handlerdata_t;
+
+// Creates a handlerdata that contains the offset and the hasbit for the field
+static const void* newhandlerdata(upb_handlers* h, uint32_t ofs, int32_t hasbit) {
+  field_handlerdata_t *hd = ALLOC(field_handlerdata_t);
+  hd->ofs = ofs;
+  hd->hasbit = hasbit;
+  upb_handlers_addcleanup(h, hd, xfree);
+  return hd;
 }
 
 typedef struct {
   size_t ofs;
+  int32_t hasbit;
   const upb_msgdef *md;
 } submsg_handlerdata_t;
 
 // Creates a handlerdata that contains offset and submessage type information.
-static const void *newsubmsghandlerdata(upb_handlers* h, uint32_t ofs,
+static const void *newsubmsghandlerdata(upb_handlers* h,
+                                        uint32_t ofs,
+                                        int32_t hasbit,
                                         const upb_fielddef* f) {
   submsg_handlerdata_t *hd = ALLOC(submsg_handlerdata_t);
   hd->ofs = ofs;
+  hd->hasbit = hasbit;
   hd->md = upb_fielddef_msgsubdef(f);
   upb_handlers_addcleanup(h, hd, xfree);
   return hd;
@@ -189,6 +199,13 @@ static void* appendstr_handler(void *closure,
   return (void*)str;
 }
 
+static void set_hasbit(void *closure, int32_t hasbit) {
+  if (hasbit > 0) {
+    uint8_t* storage = closure;
+    storage[hasbit/8] |= 1 << (hasbit % 8);
+  }
+}
+
 // Appends a 'bytes' string to a repeated field.
 static void* appendbytes_handler(void *closure,
                                  const void *hd,
@@ -205,10 +222,12 @@ static void* str_handler(void *closure,
                          const void *hd,
                          size_t size_hint) {
   MessageHeader* msg = closure;
-  const size_t *ofs = hd;
+  const field_handlerdata_t *fieldhandler = hd;
+
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyStringUtf8Encoding);
-  DEREF(msg, *ofs, VALUE) = str;
+  DEREF(msg, fieldhandler->ofs, VALUE) = str;
+  set_hasbit(closure, fieldhandler->hasbit);
   return (void*)str;
 }
 
@@ -217,10 +236,12 @@ static void* bytes_handler(void *closure,
                            const void *hd,
                            size_t size_hint) {
   MessageHeader* msg = closure;
-  const size_t *ofs = hd;
+  const field_handlerdata_t *fieldhandler = hd;
+
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyString8bitEncoding);
-  DEREF(msg, *ofs, VALUE) = str;
+  DEREF(msg, fieldhandler->ofs, VALUE) = str;
+  set_hasbit(closure, fieldhandler->hasbit);
   return (void*)str;
 }
 
@@ -280,8 +301,11 @@ static void *submsg_handler(void *closure, const void *hd) {
         rb_class_new_instance(0, NULL, subklass);
   }
 
+  set_hasbit(closure, submsgdata->hasbit);
+
   submsg_rb = DEREF(msg, submsgdata->ofs, VALUE);
   TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
+
   return submsg;
 }
 
@@ -500,7 +524,7 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
                                             const upb_fielddef *f,
                                             size_t offset) {
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-  upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset));
+  upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset, -1));
   upb_handlers_setstartseq(h, f, startseq_handler, &attr);
   upb_handlerattr_uninit(&attr);
 
@@ -534,7 +558,7 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
     }
     case UPB_TYPE_MESSAGE: {
       upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-      upb_handlerattr_sethandlerdata(&attr, newsubmsghandlerdata(h, 0, f));
+      upb_handlerattr_sethandlerdata(&attr, newsubmsghandlerdata(h, 0, -1, f));
       upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
       upb_handlerattr_uninit(&attr);
       break;
@@ -545,7 +569,15 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
 // Set up handlers for a singular field.
 static void add_handlers_for_singular_field(upb_handlers *h,
                                             const upb_fielddef *f,
-                                            size_t offset) {
+                                            size_t offset,
+                                            size_t hasbit_off) {
+  // The offset we pass to UPB points to the start of the Message,
+  // rather than the start of where our data is stored.
+  int32_t hasbit = -1;
+  if (hasbit_off != MESSAGE_FIELD_NO_HASBIT) {
+    hasbit = hasbit_off + sizeof(MessageHeader) * 8;
+  }
+
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_BOOL:
     case UPB_TYPE_INT32:
@@ -555,13 +587,13 @@ static void add_handlers_for_singular_field(upb_handlers *h,
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT64:
     case UPB_TYPE_DOUBLE:
-      upb_msg_setscalarhandler(h, f, offset, -1);
+      upb_msg_setscalarhandler(h, f, offset, hasbit);
       break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
       bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
       upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-      upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset));
+      upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset, hasbit));
       upb_handlers_setstartstr(h, f,
                                is_bytes ? bytes_handler : str_handler,
                                &attr);
@@ -572,7 +604,9 @@ static void add_handlers_for_singular_field(upb_handlers *h,
     }
     case UPB_TYPE_MESSAGE: {
       upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-      upb_handlerattr_sethandlerdata(&attr, newsubmsghandlerdata(h, offset, f));
+      upb_handlerattr_sethandlerdata(&attr,
+				     newsubmsghandlerdata(h, offset,
+							  hasbit, f));
       upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
       upb_handlerattr_uninit(&attr);
       break;
@@ -610,10 +644,12 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
 
   add_handlers_for_singular_field(
       h, key_field,
-      offsetof(map_parse_frame_t, key_storage));
+      offsetof(map_parse_frame_t, key_storage),
+      MESSAGE_FIELD_NO_HASBIT);
   add_handlers_for_singular_field(
       h, value_field,
-      offsetof(map_parse_frame_t, value_storage));
+      offsetof(map_parse_frame_t, value_storage),
+      MESSAGE_FIELD_NO_HASBIT);
 }
 
 // Set up handlers for a oneof field.
@@ -718,7 +754,8 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
     } else if (upb_fielddef_isseq(f)) {
       add_handlers_for_repeated_field(h, f, offset);
     } else {
-      add_handlers_for_singular_field(h, f, offset);
+      add_handlers_for_singular_field(
+          h, f, offset, desc->layout->fields[upb_fielddef_index(f)].hasbit);
     }
   }
 }
@@ -901,11 +938,6 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
 
 /* msgvisitor *****************************************************************/
 
-// TODO: If/when we support proto2 semantics in addition to the current proto3
-// semantics, which means that we have true field presence, we will want to
-// modify msgvisitor so that it emits all present fields rather than all
-// non-default-value fields.
-
 static void putmsg(VALUE msg, const Descriptor* desc,
                    upb_sink *sink, int depth, bool emit_defaults);
 
@@ -962,6 +994,7 @@ static void putary(VALUE ary, const upb_fielddef *f, upb_sink *sink,
   int size;
 
   if (ary == Qnil) return;
+  if (!emit_defaults && NUM2INT(RepeatedField_length(ary)) == 0) return;
 
   size = NUM2INT(RepeatedField_length(ary));
   if (size == 0 && !emit_defaults) return;
@@ -1062,6 +1095,8 @@ static void putmap(VALUE map, const upb_fielddef *f, upb_sink *sink,
   Map_iter it;
 
   if (map == Qnil) return;
+  if (!emit_defaults && Map_length(map) == 0) return;
+
   self = ruby_to_Map(map);
 
   upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
@@ -1151,7 +1186,15 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
       }
     } else if (upb_fielddef_isstring(f)) {
       VALUE str = DEREF(msg, offset, VALUE);
-      if (is_matching_oneof || emit_defaults || RSTRING_LEN(str) > 0) {
+      bool is_default = false;
+
+      if (upb_msgdef_syntax(desc->msgdef) == UPB_SYNTAX_PROTO2) {
+        is_default = layout_has(desc->layout, Message_data(msg), f) == Qfalse;
+      } else if (upb_msgdef_syntax(desc->msgdef) == UPB_SYNTAX_PROTO3) {
+        is_default = RSTRING_LEN(str) == 0;
+      }
+
+      if (is_matching_oneof || emit_defaults || !is_default) {
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
@@ -1159,13 +1202,19 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
     } else {
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
 
-#define T(upbtypeconst, upbtype, ctype, default_value)                    \
-  case upbtypeconst: {                                                    \
-      ctype value = DEREF(msg, offset, ctype);                            \
-      if (is_matching_oneof || emit_defaults || value != default_value) { \
-        upb_sink_put##upbtype(sink, sel, value);                          \
-      }                                                                   \
-    }                                                                     \
+#define T(upbtypeconst, upbtype, ctype, default_value)                          \
+  case upbtypeconst: {                                                          \
+      ctype value = DEREF(msg, offset, ctype);                                  \
+      bool is_default = false;                                                  \
+      if (upb_fielddef_haspresence(f)) {                                        \
+        is_default = layout_has(desc->layout, Message_data(msg), f) == Qfalse;  \
+      } else if (upb_msgdef_syntax(desc->msgdef) == UPB_SYNTAX_PROTO3) {        \
+        is_default = default_value == value;                                    \
+      }                                                                         \
+      if (is_matching_oneof || emit_defaults || !is_default) {                  \
+        upb_sink_put##upbtype(sink, sel, value);                                \
+      }                                                                         \
+    }                                                                           \
     break;
 
       switch (upb_fielddef_type(f)) {

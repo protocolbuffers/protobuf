@@ -79,11 +79,11 @@ class ImmutableMessageFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  protected:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
@@ -136,11 +136,11 @@ class RepeatedImmutableMessageFieldLiteGenerator
   void GenerateHashCode(io::Printer* printer) const;
 
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  protected:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;

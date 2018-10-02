@@ -124,22 +124,24 @@ public class ByteStringTest extends TestCase {
   public void testSubstring_BeginIndex() {
     byte[] bytes = getTestBytes();
     ByteString substring = ByteString.copyFrom(bytes).substring(500);
-    assertTrue("substring must contain the tail of the string",
+    assertTrue(
+        "substring must contain the tail of the string",
         isArrayRange(substring.toByteArray(), bytes, 500, bytes.length - 500));
   }
 
   public void testCopyFrom_BytesOffsetSize() {
     byte[] bytes = getTestBytes();
     ByteString byteString = ByteString.copyFrom(bytes, 500, 200);
-    assertTrue("copyFrom sub-range must contain the expected bytes",
+    assertTrue(
+        "copyFrom sub-range must contain the expected bytes",
         isArrayRange(byteString.toByteArray(), bytes, 500, 200));
   }
 
   public void testCopyFrom_Bytes() {
     byte[] bytes = getTestBytes();
     ByteString byteString = ByteString.copyFrom(bytes);
-    assertTrue("copyFrom must contain the expected bytes",
-        isArray(byteString.toByteArray(), bytes));
+    assertTrue(
+        "copyFrom must contain the expected bytes", isArray(byteString.toByteArray(), bytes));
   }
 
   public void testCopyFrom_ByteBufferSize() {
@@ -148,7 +150,8 @@ public class ByteStringTest extends TestCase {
     byteBuffer.put(bytes);
     byteBuffer.position(500);
     ByteString byteString = ByteString.copyFrom(byteBuffer, 200);
-    assertTrue("copyFrom byteBuffer sub-range must contain the expected bytes",
+    assertTrue(
+        "copyFrom byteBuffer sub-range must contain the expected bytes",
         isArrayRange(byteString.toByteArray(), bytes, 500, 200));
   }
 
@@ -158,7 +161,8 @@ public class ByteStringTest extends TestCase {
     byteBuffer.put(bytes);
     byteBuffer.position(500);
     ByteString byteString = ByteString.copyFrom(byteBuffer);
-    assertTrue("copyFrom byteBuffer sub-range must contain the expected bytes",
+    assertTrue(
+        "copyFrom byteBuffer sub-range must contain the expected bytes",
         isArrayRange(byteString.toByteArray(), bytes, 500, bytes.length - 500));
   }
 
@@ -166,7 +170,8 @@ public class ByteStringTest extends TestCase {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFrom(testString, UTF_16);
     byte[] testBytes = testString.getBytes(UTF_16);
-    assertTrue("copyFrom string must respect the charset",
+    assertTrue(
+        "copyFrom string must respect the charset",
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
   }
 
@@ -174,7 +179,8 @@ public class ByteStringTest extends TestCase {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFromUtf8(testString);
     byte[] testBytes = testString.getBytes(Internal.UTF_8);
-    assertTrue("copyFromUtf8 string must respect the charset",
+    assertTrue(
+        "copyFromUtf8 string must respect the charset",
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
   }
 
@@ -183,17 +189,20 @@ public class ByteStringTest extends TestCase {
     final List<ByteString> pieces = makeConcretePieces(testBytes);
     // Call copyFrom() on a Collection
     ByteString byteString = ByteString.copyFrom(pieces);
-    assertTrue("copyFrom a List must contain the expected bytes",
+    assertTrue(
+        "copyFrom a List must contain the expected bytes",
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
     // Call copyFrom on an iteration that's not a collection
-    ByteString byteStringAlt = ByteString.copyFrom(new Iterable<ByteString>() {
-      @Override
-      public Iterator<ByteString> iterator() {
-        return pieces.iterator();
-      }
-    });
-    assertEquals("copyFrom from an Iteration must contain the expected bytes",
-        byteString, byteStringAlt);
+    ByteString byteStringAlt =
+        ByteString.copyFrom(
+            new Iterable<ByteString>() {
+              @Override
+              public Iterator<ByteString> iterator() {
+                return pieces.iterator();
+              }
+            });
+    assertEquals(
+        "copyFrom from an Iteration must contain the expected bytes", byteString, byteStringAlt);
   }
 
   public void testCopyFrom_LengthTooBig() {
@@ -229,15 +238,17 @@ public class ByteStringTest extends TestCase {
     ByteString byteString = ByteString.copyFrom(bytes);
     byte[] target = new byte[bytes.length + 1000];
     byteString.copyTo(target, 400);
-    assertTrue("copyFrom byteBuffer sub-range must contain the expected bytes",
+    assertTrue(
+        "copyFrom byteBuffer sub-range must contain the expected bytes",
         isArrayRange(bytes, target, 400, bytes.length));
   }
 
   public void testReadFrom_emptyStream() throws IOException {
-    ByteString byteString =
-        ByteString.readFrom(new ByteArrayInputStream(new byte[0]));
-    assertSame("reading an empty stream must result in the EMPTY constant "
-        + "byte string", ByteString.EMPTY, byteString);
+    ByteString byteString = ByteString.readFrom(new ByteArrayInputStream(new byte[0]));
+    assertSame(
+        "reading an empty stream must result in the EMPTY constant byte string",
+        ByteString.EMPTY,
+        byteString);
   }
 
   public void testReadFrom_smallStream() throws IOException {
@@ -245,18 +256,18 @@ public class ByteStringTest extends TestCase {
   }
 
   public void testReadFrom_mutating() throws IOException {
-    byte[] capturedArray = null;
     EvilInputStream eis = new EvilInputStream();
     ByteString byteString = ByteString.readFrom(eis);
+    byte[] capturedArray = eis.capturedArray;
 
-    capturedArray = eis.capturedArray;
     byte[] originalValue = byteString.toByteArray();
     for (int x = 0; x < capturedArray.length; ++x) {
       capturedArray[x] = (byte) 0;
     }
 
     byte[] newValue = byteString.toByteArray();
-    assertTrue("copyFrom byteBuffer must not grant access to underlying array",
+    assertTrue(
+        "copyFrom byteBuffer must not grant access to underlying array",
         Arrays.equals(originalValue, newValue));
   }
 
@@ -318,8 +329,8 @@ public class ByteStringTest extends TestCase {
       fail("readFrom must throw the underlying IOException");
 
     } catch (IOException e) {
-      assertEquals("readFrom must throw the expected exception",
-                   "synthetic failure", e.getMessage());
+      assertEquals(
+          "readFrom must throw the expected exception", "synthetic failure", e.getMessage());
     }
   }
 
@@ -329,7 +340,8 @@ public class ByteStringTest extends TestCase {
     final byte[] data = getTestBytes(0x1000);
 
     ByteString byteString = ByteString.readFrom(new ReluctantStream(data));
-    assertTrue("readFrom byte stream must contain the expected bytes",
+    assertTrue(
+        "readFrom byte stream must contain the expected bytes",
         isArray(byteString.toByteArray(), data));
 
     // Same test as above, but with some specific chunk sizes.
@@ -344,11 +356,10 @@ public class ByteStringTest extends TestCase {
 
   // Fails unless ByteString.readFrom reads the bytes correctly from a
   // reluctant stream with the given chunkSize parameter.
-  private void assertReadFromReluctantStream(byte[] bytes, int chunkSize)
-      throws IOException {
+  private void assertReadFromReluctantStream(byte[] bytes, int chunkSize) throws IOException {
     ByteString b = ByteString.readFrom(new ReluctantStream(bytes), chunkSize);
-    assertTrue("readFrom byte stream must contain the expected bytes",
-        isArray(b.toByteArray(), bytes));
+    assertTrue(
+        "readFrom byte stream must contain the expected bytes", isArray(b.toByteArray(), bytes));
   }
 
   // Tests that ByteString.readFrom works with streams that implement
@@ -357,21 +368,23 @@ public class ByteStringTest extends TestCase {
     final byte[] data = getTestBytes(0x1001);
 
     ByteString byteString = ByteString.readFrom(new AvailableStream(data));
-    assertTrue("readFrom byte stream must contain the expected bytes",
+    assertTrue(
+        "readFrom byte stream must contain the expected bytes",
         isArray(byteString.toByteArray(), data));
   }
 
   // Fails unless ByteString.readFrom reads the bytes correctly.
   private void assertReadFrom(byte[] bytes) throws IOException {
-    ByteString byteString =
-        ByteString.readFrom(new ByteArrayInputStream(bytes));
-    assertTrue("readFrom byte stream must contain the expected bytes",
+    ByteString byteString = ByteString.readFrom(new ByteArrayInputStream(bytes));
+    assertTrue(
+        "readFrom byte stream must contain the expected bytes",
         isArray(byteString.toByteArray(), bytes));
   }
 
   // A stream that fails when read.
   private static final class FailStream extends InputStream {
-    @Override public int read() throws IOException {
+    @Override
+    public int read() throws IOException {
       throw new IOException("synthetic failure");
     }
   }
@@ -386,7 +399,8 @@ public class ByteStringTest extends TestCase {
       this.data = data;
     }
 
-    @Override public int read() {
+    @Override
+    public int read() {
       if (pos == data.length) {
         return -1;
       } else {
@@ -394,11 +408,13 @@ public class ByteStringTest extends TestCase {
       }
     }
 
-    @Override public int read(byte[] buf) {
+    @Override
+    public int read(byte[] buf) {
       return read(buf, 0, buf.length);
     }
 
-    @Override public int read(byte[] buf, int offset, int size) {
+    @Override
+    public int read(byte[] buf, int offset, int size) {
       if (pos == data.length) {
         return -1;
       }
@@ -415,7 +431,8 @@ public class ByteStringTest extends TestCase {
       super(data);
     }
 
-    @Override public int available() {
+    @Override
+    public int available() {
       return Math.min(250, data.length - pos);
     }
   }
@@ -465,8 +482,8 @@ public class ByteStringTest extends TestCase {
     String testString = "I love unicode \u1234\u5678 characters";
     byte[] testBytes = testString.getBytes(Internal.UTF_8);
     ByteString byteString = ByteString.copyFrom(testBytes);
-    assertEquals("copyToStringUtf8 must respect the charset",
-        testString, byteString.toStringUtf8());
+    assertEquals(
+        "copyToStringUtf8 must respect the charset", testString, byteString.toStringUtf8());
   }
 
   public void testNewOutput_InitialCapacity() throws IOException {
@@ -484,8 +501,9 @@ public class ByteStringTest extends TestCase {
   public void testNewOutput_ArrayWrite() {
     byte[] bytes = getTestBytes();
     int length = bytes.length;
-    int[] bufferSizes = {128, 256, length / 2, length - 1, length, length + 1,
-                         2 * length, 3 * length};
+    int[] bufferSizes = {
+      128, 256, length / 2, length - 1, length, length + 1, 2 * length, 3 * length
+    };
     int[] writeSizes = {1, 4, 5, 7, 23, bytes.length};
 
     for (int bufferSize : bufferSizes) {
@@ -496,7 +514,8 @@ public class ByteStringTest extends TestCase {
           output.write(bytes, i, Math.min(writeSize, length - i));
         }
         ByteString byteString = output.toByteString();
-        assertTrue("String built from newOutput() must contain the expected bytes",
+        assertTrue(
+            "String built from newOutput() must contain the expected bytes",
             isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
       }
     }
@@ -507,16 +526,17 @@ public class ByteStringTest extends TestCase {
   public void testNewOutput_WriteChar() {
     byte[] bytes = getTestBytes();
     int length = bytes.length;
-    int[] bufferSizes = {0, 1, 128, 256, length / 2,
-                         length - 1, length, length + 1,
-                         2 * length, 3 * length};
+    int[] bufferSizes = {
+      0, 1, 128, 256, length / 2, length - 1, length, length + 1, 2 * length, 3 * length
+    };
     for (int bufferSize : bufferSizes) {
       ByteString.Output output = ByteString.newOutput(bufferSize);
       for (byte byteValue : bytes) {
         output.write(byteValue);
       }
       ByteString byteString = output.toByteString();
-      assertTrue("String built from newOutput() must contain the expected bytes",
+      assertTrue(
+          "String built from newOutput() must contain the expected bytes",
           isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
     }
   }
@@ -527,9 +547,9 @@ public class ByteStringTest extends TestCase {
     Random rng = new Random(1);
     byte[] bytes = getTestBytes();
     int length = bytes.length;
-    int[] bufferSizes = {0, 1, 128, 256, length / 2,
-                         length - 1, length, length + 1,
-                         2 * length, 3 * length};
+    int[] bufferSizes = {
+      0, 1, 128, 256, length / 2, length - 1, length, length + 1, 2 * length, 3 * length
+    };
 
     for (int bufferSize : bufferSizes) {
       // Test writing the entire output using a mixture of write sizes and
@@ -546,12 +566,13 @@ public class ByteStringTest extends TestCase {
           position++;
         }
         assertEquals("size() returns the right value", position, output.size());
-        assertTrue("newOutput() substring must have correct bytes",
-            isArrayRange(output.toByteString().toByteArray(),
-                bytes, 0, position));
+        assertTrue(
+            "newOutput() substring must have correct bytes",
+            isArrayRange(output.toByteString().toByteArray(), bytes, 0, position));
       }
       ByteString byteString = output.toByteString();
-      assertTrue("String built from newOutput() must contain the expected bytes",
+      assertTrue(
+          "String built from newOutput() must contain the expected bytes",
           isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
     }
   }
@@ -572,7 +593,8 @@ public class ByteStringTest extends TestCase {
     byte[] oldValue = byteString.toByteArray();
     Arrays.fill(capturedArray, (byte) 0);
     byte[] newValue = byteString.toByteArray();
-    assertTrue("Output must not provide access to the underlying byte array",
+    assertTrue(
+        "Output must not provide access to the underlying byte array",
         Arrays.equals(oldValue, newValue));
   }
 
@@ -581,14 +603,15 @@ public class ByteStringTest extends TestCase {
     ByteString.CodedBuilder builder = ByteString.newCodedBuilder(bytes.length);
     builder.getCodedOutput().writeRawBytes(bytes);
     ByteString byteString = builder.build();
-    assertTrue("String built from newCodedBuilder() must contain the expected bytes",
+    assertTrue(
+        "String built from newCodedBuilder() must contain the expected bytes",
         isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
   }
 
   public void testSubstringParity() {
     byte[] bigBytes = getTestBytes(2048 * 1024, 113344L);
     int start = 512 * 1024 - 3333;
-    int end   = 512 * 1024 + 7777;
+    int end = 512 * 1024 + 7777;
     ByteString concreteSubstring = ByteString.copyFrom(bigBytes).substring(start, end);
     boolean ok = true;
     for (int i = start; ok && i < end; ++i) {
@@ -597,10 +620,11 @@ public class ByteStringTest extends TestCase {
     assertTrue("Concrete substring didn't capture the right bytes", ok);
 
     ByteString literalString = ByteString.copyFrom(bigBytes, start, end - start);
-    assertTrue("Substring must be equal to literal string",
-        concreteSubstring.equals(literalString));
-    assertEquals("Substring must have same hashcode as literal string",
-        literalString.hashCode(), concreteSubstring.hashCode());
+    assertEquals("Substring must be equal to literal string", literalString, concreteSubstring);
+    assertEquals(
+        "Substring must have same hashcode as literal string",
+        literalString.hashCode(),
+        concreteSubstring.hashCode());
   }
 
   public void testCompositeSubstring() {
@@ -626,15 +650,22 @@ public class ByteStringTest extends TestCase {
     assertTrue("Substring must support byteAt() correctly", stillEqual);
 
     ByteString literalSubstring = ByteString.copyFrom(referenceBytes, from, to - from);
-    assertTrue("Composite substring must equal a literal substring over the same bytes",
-        compositeSubstring.equals(literalSubstring));
-    assertTrue("Literal substring must equal a composite substring over the same bytes",
-        literalSubstring.equals(compositeSubstring));
+    assertEquals(
+        "Composite substring must equal a literal substring over the same bytes",
+        literalSubstring,
+        compositeSubstring);
+    assertEquals(
+        "Literal substring must equal a composite substring over the same bytes",
+        compositeSubstring,
+        literalSubstring);
 
-    assertEquals("We must get the same hashcodes for composite and literal substrings",
-        literalSubstring.hashCode(), compositeSubstring.hashCode());
+    assertEquals(
+        "We must get the same hashcodes for composite and literal substrings",
+        literalSubstring.hashCode(),
+        compositeSubstring.hashCode());
 
-    assertFalse("We can't be equal to a proper substring",
+    assertFalse(
+        "We can't be equal to a proper substring",
         compositeSubstring.equals(literalSubstring.substring(0, literalSubstring.size() - 1)));
   }
 
@@ -645,10 +676,11 @@ public class ByteStringTest extends TestCase {
     List<ByteString> pieces = makeConcretePieces(referenceBytes);
     ByteString listString = ByteString.copyFrom(pieces);
 
-    assertTrue("Composite string must be equal to literal string",
-        listString.equals(literalString));
-    assertEquals("Composite string must have same hashcode as literal string",
-        literalString.hashCode(), listString.hashCode());
+    assertEquals("Composite string must be equal to literal string", literalString, listString);
+    assertEquals(
+        "Composite string must have same hashcode as literal string",
+        literalString.hashCode(),
+        listString.hashCode());
   }
 
   public void testConcat() {
@@ -663,30 +695,34 @@ public class ByteStringTest extends TestCase {
       concatenatedString = concatenatedString.concat(iter.next());
     }
 
-    assertTrue("Concatenated string must be equal to literal string",
-        concatenatedString.equals(literalString));
-    assertEquals("Concatenated string must have same hashcode as literal string",
-        literalString.hashCode(), concatenatedString.hashCode());
+    assertEquals(
+        "Concatenated string must be equal to literal string", literalString, concatenatedString);
+    assertEquals(
+        "Concatenated string must have same hashcode as literal string",
+        literalString.hashCode(),
+        concatenatedString.hashCode());
   }
 
   /**
-   * Test the Rope implementation can deal with Empty nodes, even though we
-   * guard against them. See also {@link LiteralByteStringTest#testConcat_empty()}.
+   * Test the Rope implementation can deal with Empty nodes, even though we guard against them. See
+   * also {@link LiteralByteStringTest#testConcat_empty()}.
    */
   public void testConcat_empty() {
     byte[] referenceBytes = getTestBytes(7748, 113344L);
     ByteString literalString = ByteString.copyFrom(referenceBytes);
 
     ByteString duo = RopeByteString.newInstanceForTest(literalString, literalString);
-    ByteString temp = RopeByteString.newInstanceForTest(
-        RopeByteString.newInstanceForTest(literalString, ByteString.EMPTY),
-        RopeByteString.newInstanceForTest(ByteString.EMPTY, literalString));
+    ByteString temp =
+        RopeByteString.newInstanceForTest(
+            RopeByteString.newInstanceForTest(literalString, ByteString.EMPTY),
+            RopeByteString.newInstanceForTest(ByteString.EMPTY, literalString));
     ByteString quintet = RopeByteString.newInstanceForTest(temp, ByteString.EMPTY);
 
-    assertTrue("String with concatenated nulls must equal simple concatenate",
-        duo.equals(quintet));
-    assertEquals("String with concatenated nulls have same hashcode as simple concatenate",
-        duo.hashCode(), quintet.hashCode());
+    assertEquals("String with concatenated nulls must equal simple concatenate", quintet, duo);
+    assertEquals(
+        "String with concatenated nulls have same hashcode as simple concatenate",
+        duo.hashCode(),
+        quintet.hashCode());
 
     ByteString.ByteIterator duoIter = duo.iterator();
     ByteString.ByteIterator quintetIter = quintet.iterator();
@@ -716,11 +752,13 @@ public class ByteStringTest extends TestCase {
     // It is possible, using the testing factory method to create deeply nested
     // trees of empty leaves, to make a string that will fail this test.
     for (int i = 1; i < duo.size(); ++i) {
-      assertTrue("Substrings of size() < 2 must not be RopeByteStrings",
+      assertTrue(
+          "Substrings of size() < 2 must not be RopeByteStrings",
           duo.substring(i - 1, i) instanceof ByteString.LeafByteString);
     }
     for (int i = 1; i < quintet.size(); ++i) {
-      assertTrue("Substrings of size() < 2 must not be RopeByteStrings",
+      assertTrue(
+          "Substrings of size() < 2 must not be RopeByteStrings",
           quintet.substring(i - 1, i) instanceof ByteString.LeafByteString);
     }
   }
@@ -769,8 +807,7 @@ public class ByteStringTest extends TestCase {
     return pieces;
   }
 
-  private byte[] substringUsingWriteTo(
-      ByteString data, int offset, int length) throws IOException {
+  private byte[] substringUsingWriteTo(ByteString data, int offset, int length) throws IOException {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     data.writeTo(output, offset, length);
     return output.toByteArray();
@@ -781,9 +818,7 @@ public class ByteStringTest extends TestCase {
     // won't be merged into one byte array due to some optimizations.
     final int dataSize = ByteString.CONCATENATE_BY_COPY_SIZE + 1;
     byte[] data1 = new byte[dataSize];
-    for (int i = 0; i < data1.length; i++) {
-      data1[i] = (byte) 1;
-    }
+    Arrays.fill(data1, (byte) 1);
     data1[1] = (byte) 11;
     // Test LiteralByteString.writeTo(OutputStream,int,int)
     ByteString left = ByteString.wrap(data1);
@@ -792,9 +827,7 @@ public class ByteStringTest extends TestCase {
     assertEquals((byte) 11, result[0]);
 
     byte[] data2 = new byte[dataSize];
-    for (int i = 0; i < data1.length; i++) {
-      data2[i] = (byte) 2;
-    }
+    Arrays.fill(data2, 0, data1.length, (byte) 2);
     ByteString right = ByteString.wrap(data2);
     // Concatenate two ByteStrings to create a RopeByteString.
     ByteString root = left.concat(right);
@@ -819,10 +852,8 @@ public class ByteStringTest extends TestCase {
     assertEquals((byte) 2, result[dataSize - dataSize / 2]);
     assertEquals((byte) 2, result[dataSize - 1]);
   }
-  
-  /**
-   * Tests ByteString uses Arrays based byte copier when running under Hotstop VM.
-   */
+
+  /** Tests ByteString uses Arrays based byte copier when running under Hotstop VM. */
   public void testByteArrayCopier() throws Exception {
     if (Android.isOnAndroidDevice()) {
       return;

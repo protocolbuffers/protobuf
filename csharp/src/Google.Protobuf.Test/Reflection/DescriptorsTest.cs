@@ -60,9 +60,9 @@ namespace Google.Protobuf.Reflection
             // dependencies come before the descriptors depending on them.
             var descriptorData = new List<ByteString>
             {
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestProto3Reflection.Descriptor.Proto.ToByteString()
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportProto3Reflection.Descriptor.SerializedData,
+                UnittestProto3Reflection.Descriptor.SerializedData
             };
             var converted = FileDescriptor.BuildFromByteStrings(descriptorData);
             Assert.AreEqual(3, converted.Count);
@@ -71,7 +71,6 @@ namespace Google.Protobuf.Reflection
 
         private void TestFileDescriptor(FileDescriptor file, FileDescriptor importedFile, FileDescriptor importedPublicFile)
         {
-
             Assert.AreEqual("unittest_proto3.proto", file.Name);
             Assert.AreEqual("protobuf_unittest3", file.Package);
 
@@ -121,8 +120,8 @@ namespace Google.Protobuf.Reflection
         {
             var descriptorData = new List<ByteString>
             {
-                UnittestImportProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestProto3Reflection.Descriptor.Proto.ToByteString(),
+                UnittestImportProto3Reflection.Descriptor.SerializedData,
+                UnittestProto3Reflection.Descriptor.SerializedData,
             };
             // This will fail, because we're missing UnittestImportPublicProto3Reflection
             Assert.Throws<ArgumentException>(() => FileDescriptor.BuildFromByteStrings(descriptorData));
@@ -133,8 +132,8 @@ namespace Google.Protobuf.Reflection
         {
             var descriptorData = new List<ByteString>
             {
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
             };
             // This will fail due to the same name being used twice
             Assert.Throws<ArgumentException>(() => FileDescriptor.BuildFromByteStrings(descriptorData));
@@ -145,9 +144,9 @@ namespace Google.Protobuf.Reflection
         {
             var descriptorData = new List<ByteString>
             {
-                UnittestProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportPublicProto3Reflection.Descriptor.Proto.ToByteString(),
-                UnittestImportProto3Reflection.Descriptor.Proto.ToByteString()
+                UnittestProto3Reflection.Descriptor.SerializedData,
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportProto3Reflection.Descriptor.SerializedData
             };
             // This will fail, because the dependencies should come first
             Assert.Throws<ArgumentException>(() => FileDescriptor.BuildFromByteStrings(descriptorData));
@@ -214,29 +213,61 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
-        public void FieldDescriptor()
+        public void FieldDescriptor_GeneratedCode()
         {
-            MessageDescriptor messageType = TestAllTypes.Descriptor;
-            FieldDescriptor primitiveField = messageType.FindDescriptor<FieldDescriptor>("single_int32");
-            FieldDescriptor enumField = messageType.FindDescriptor<FieldDescriptor>("single_nested_enum");
-            FieldDescriptor messageField = messageType.FindDescriptor<FieldDescriptor>("single_foreign_message");
+            TestFieldDescriptor(UnittestProto3Reflection.Descriptor, TestAllTypes.Descriptor, ForeignMessage.Descriptor, ImportMessage.Descriptor);
+        }
+
+        [Test]
+        public void FieldDescriptor_BuildFromByteStrings()
+        {
+            // The descriptors have to be supplied in an order such that all the
+            // dependencies come before the descriptors depending on them.
+            var descriptorData = new List<ByteString>
+            {
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportProto3Reflection.Descriptor.SerializedData,
+                UnittestProto3Reflection.Descriptor.SerializedData
+            };
+            var converted = FileDescriptor.BuildFromByteStrings(descriptorData);
+            TestFieldDescriptor(
+                converted[2],
+                converted[2].FindTypeByName<MessageDescriptor>("TestAllTypes"),
+                converted[2].FindTypeByName<MessageDescriptor>("ForeignMessage"),
+                converted[1].FindTypeByName<MessageDescriptor>("ImportMessage"));
+        }
+
+        public void TestFieldDescriptor(
+            FileDescriptor unitTestProto3Descriptor,
+            MessageDescriptor testAllTypesDescriptor,
+            MessageDescriptor foreignMessageDescriptor,
+            MessageDescriptor importMessageDescriptor)
+        {
+            FieldDescriptor primitiveField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_int32");
+            FieldDescriptor enumField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_nested_enum");
+            FieldDescriptor foreignMessageField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_foreign_message");
+            FieldDescriptor importMessageField = testAllTypesDescriptor.FindDescriptor<FieldDescriptor>("single_import_message");
 
             Assert.AreEqual("single_int32", primitiveField.Name);
             Assert.AreEqual("protobuf_unittest3.TestAllTypes.single_int32",
                             primitiveField.FullName);
             Assert.AreEqual(1, primitiveField.FieldNumber);
-            Assert.AreEqual(messageType, primitiveField.ContainingType);
-            Assert.AreEqual(UnittestProto3Reflection.Descriptor, primitiveField.File);
+            Assert.AreEqual(testAllTypesDescriptor, primitiveField.ContainingType);
+            Assert.AreEqual(unitTestProto3Descriptor, primitiveField.File);
             Assert.AreEqual(FieldType.Int32, primitiveField.FieldType);
             Assert.IsNull(primitiveField.Proto.Options);
             
             Assert.AreEqual("single_nested_enum", enumField.Name);
             Assert.AreEqual(FieldType.Enum, enumField.FieldType);
-            Assert.AreEqual(messageType.EnumTypes[0], enumField.EnumType);
+            Assert.AreEqual(testAllTypesDescriptor.EnumTypes[0], enumField.EnumType);
 
-            Assert.AreEqual("single_foreign_message", messageField.Name);
-            Assert.AreEqual(FieldType.Message, messageField.FieldType);
-            Assert.AreEqual(ForeignMessage.Descriptor, messageField.MessageType);
+            Assert.AreEqual("single_foreign_message", foreignMessageField.Name);
+            Assert.AreEqual(FieldType.Message, foreignMessageField.FieldType);
+            Assert.AreEqual(foreignMessageDescriptor, foreignMessageField.MessageType);
+
+            Assert.AreEqual("single_import_message", importMessageField.Name);
+            Assert.AreEqual(FieldType.Message, importMessageField.FieldType);
+            Assert.AreEqual(importMessageDescriptor, importMessageField.MessageType);
         }
 
         [Test]

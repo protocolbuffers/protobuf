@@ -586,7 +586,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageMakesCopy) {
   delete nested_string;
 }
 
-#if GOOGLE_PROTOBUF_RTTI
+#if PROTOBUF_RTTI
 TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
   TestAllTypes::NestedMessage* nested_msg = NULL;
   // Note: no string: reflection API only supports releasing submessages.
@@ -603,7 +603,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
   EXPECT_EQ(42, nested_msg->bb());
   delete nested_msg;
 }
-#endif  // GOOGLE_PROTOBUF_RTTI
+#endif  // PROTOBUF_RTTI
 
 TEST(ArenaTest, SetAllocatedAcrossArenas) {
   Arena arena1;
@@ -1129,7 +1129,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
 }
 
 
-#if GOOGLE_PROTOBUF_RTTI
+#if PROTOBUF_RTTI
 TEST(ArenaTest, MutableMessageReflection) {
   Arena arena;
   TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
@@ -1153,7 +1153,7 @@ TEST(ArenaTest, MutableMessageReflection) {
   EXPECT_EQ(submessage_expected, submessage);
   EXPECT_EQ(&arena, submessage->GetArena());
 }
-#endif  // GOOGLE_PROTOBUF_RTTI
+#endif  // PROTOBUF_RTTI
 
 
 void FillArenaAwareFields(TestAllTypes* message) {
@@ -1199,7 +1199,7 @@ TEST(ArenaTest, ParseCorruptedString) {
   TestParseCorruptedString<TestAllTypes, false>(message);
 }
 
-#if GOOGLE_PROTOBUF_RTTI
+#if PROTOBUF_RTTI
 // Test construction on an arena via generic MessageLite interface. We should be
 // able to successfully deserialize on the arena without incurring heap
 // allocations, i.e., everything should still be arena-allocation-aware.
@@ -1228,7 +1228,7 @@ TEST(ArenaTest, MessageLiteOnArena) {
 
   arena.Reset();
 }
-#endif  // GOOGLE_PROTOBUF_RTTI
+#endif  // PROTOBUF_RTTI
 
 
 // RepeatedField should support non-POD types, and invoke constructors and

@@ -33,6 +33,8 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
 
 namespace google {
@@ -41,7 +43,15 @@ namespace protobuf {
 template <typename T, bool use_arena>
 void TestParseCorruptedString(const T& message) {
   int success_count = 0;
-  string s = message.SerializeAsString();
+  std::string s;
+  {
+    // Map order is not deterministic. To make the test deterministic we want
+    // to serialize the proto deterministically.
+    io::StringOutputStream output(&s);
+    io::CodedOutputStream out(&output);
+    out.SetSerializationDeterministic(true);
+    message.SerializePartialToCodedStream(&out);
+  }
   const int kMaxIters = 900;
   const int stride = s.size() <= kMaxIters ? 1 : s.size() / kMaxIters;
   const int start = stride == 1 || use_arena ? 0 : (stride + 1) / 2;

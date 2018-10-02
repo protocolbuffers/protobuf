@@ -52,10 +52,9 @@ COPTS = select({
     ],
 })
 
-config_setting(
-    name = "msvc",
-    values = { "compiler": "msvc-cl" },
-)
+load(":compiler_config_setting.bzl", "create_compiler_config_setting")
+
+create_compiler_config_setting(name = "msvc", value = "msvc-cl")
 
 config_setting(
     name = "android",

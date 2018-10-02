@@ -51,6 +51,8 @@
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -665,8 +667,8 @@ TEST(WireFormatTest, UnknownFieldRecursionLimit) {
 
 TEST(WireFormatTest, ZigZag) {
 // avoid line-wrapping
-#define LL(x) GOOGLE_LONGLONG(x)
-#define ULL(x) GOOGLE_ULONGLONG(x)
+#define LL(x) PROTOBUF_LONGLONG(x)
+#define ULL(x) PROTOBUF_ULONGLONG(x)
 #define ZigZagEncode32(x) WireFormatLite::ZigZagEncode32(x)
 #define ZigZagDecode32(x) WireFormatLite::ZigZagDecode32(x)
 #define ZigZagEncode64(x) WireFormatLite::ZigZagEncode64(x)

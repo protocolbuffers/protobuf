@@ -554,7 +554,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_bit_index,
   }
 
   // Emit has_bit check for each has_bit_dword index.
-  format("if ($GOOGLE_PROTOBUF$_PREDICT_FALSE(");
+  format("if (PROTOBUF_PREDICT_FALSE(");
   int first_word = HasbitWord(chunk, 0);
   while (chunk < limit_chunk_) {
     uint32 mask = 0;
@@ -940,8 +940,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "    $default_enum_value$ > {\n"
         "public:\n"
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-        "  static const char* _InternalParse(const char* begin, const char* "
-        "end, void* object, ::$proto_ns$::internal::ParseContext* ctx);\n"
+        "static bool _ParseMap(const char* begin, const "
+        "char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);\n"
         "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
@@ -1514,23 +1514,17 @@ bool MessageGenerator::GenerateParseTable(io::Printer* printer, size_t offset,
     // If we don't have field presence, then _has_bits_ does not exist.
     format("-1,\n");
   } else {
-    format(
-        "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET(\n"
-        "  $classtype$, _has_bits_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _has_bits_),\n");
   }
 
   if (descriptor_->oneof_decl_count() > 0) {
-    format(
-        "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET(\n"
-        "  $classtype$, _oneof_case_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _oneof_case_),\n");
   } else {
     format("-1,  // no _oneof_case_\n");
   }
 
   if (descriptor_->extension_range_count() > 0) {
-    format(
-        "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-        "_extensions_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _extensions_),\n");
   } else {
     format("-1,  // no _extensions_\n");
   }
@@ -1538,8 +1532,7 @@ bool MessageGenerator::GenerateParseTable(io::Printer* printer, size_t offset,
   // TODO(ckennelly): Consolidate this with the calculation for
   // AuxillaryParseTableField.
   format(
-      "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET(\n"
-      "  $classtype$, _internal_metadata_),\n"
+      "PROTOBUF_FIELD_OFFSET($classtype$, _internal_metadata_),\n"
       "&$package_ns$::_$classname$_default_instance_,\n");
 
   if (UseUnknownFieldSet(descriptor_->file(), options_)) {
@@ -1650,10 +1643,10 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       Formatter::SaveState saver(&format);
       format.AddMap(vars);
       format(
-          "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET("
+          "{PROTOBUF_FIELD_OFFSET("
           "::$proto_ns$::internal::MapEntryHelper<$classtype$::"
           "SuperType>, $field_name$_), $tag$,"
-          "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET("
+          "PROTOBUF_FIELD_OFFSET("
           "::$proto_ns$::internal::MapEntryHelper<$classtype$::"
           "SuperType>, _has_bits_) * 8 + $hasbit$, $type$, "
           "$ptr$},\n");
@@ -1661,8 +1654,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     return 2;
   }
   format(
-      "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-      "_cached_size_), 0, 0, 0, NULL},\n");
+      "{PROTOBUF_FIELD_OFFSET($classtype$, _cached_size_), 0, 0, 0, NULL},\n");
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
@@ -1677,8 +1669,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       const Descriptor::ExtensionRange* range =
           sorted_extensions[extension_idx];
       format(
-          "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-          "_extensions_), "
+          "{PROTOBUF_FIELD_OFFSET($classtype$, _extensions_), "
           "$1$, $2$, ::$proto_ns$::internal::FieldMetadata::kSpecial, "
           "reinterpret_cast<const "
           "void*>(::$proto_ns$::internal::ExtensionSerializer)},\n",
@@ -1703,8 +1694,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       if (IsMapEntryMessage(field->message_type())) {
         format(
-            "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($"
-            "classtype$, $field_name$_), $1$, $2$, "
+            "{PROTOBUF_FIELD_OFFSET($classtype$, $field_name$_), $1$, $2$, "
             "::$proto_ns$::internal::FieldMetadata::kSpecial, "
             "reinterpret_cast<const void*>(static_cast< "
             "::$proto_ns$::internal::SpecialSerializer>("
@@ -1745,7 +1735,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     if (field->options().weak()) {
       // TODO(gerbens) merge weak fields into ranges
       format(
-          "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET("
+          "{PROTOBUF_FIELD_OFFSET("
           "$classtype$, _weak_field_map_), $1$, $1$, "
           "::$proto_ns$::internal::FieldMetadata::kSpecial, "
           "reinterpret_cast<const "
@@ -1755,24 +1745,21 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       format.Set("oneofoffset",
                  sizeof(uint32) * field->containing_oneof()->index());
       format(
-          "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-          "$field_name$_), "
-          "$1$, $GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-          "_oneof_case_) + $oneofoffset$, $2$, $3$},\n",
+          "{PROTOBUF_FIELD_OFFSET($classtype$, $field_name$_), $1$,"
+          " PROTOBUF_FIELD_OFFSET($classtype$, _oneof_case_) + "
+          "$oneofoffset$, $2$, $3$},\n",
           tag, type, ptr);
     } else if (HasFieldPresence(descriptor_->file()) &&
                has_bit_indices_[field->index()] != -1) {
       format.Set("hasbitsoffset", has_bit_indices_[field->index()]);
       format(
-          "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-          "$field_name$_), "
-          "$1$, $GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-          "_has_bits_) * 8 + $hasbitsoffset$, $2$, $3$},\n",
+          "{PROTOBUF_FIELD_OFFSET($classtype$, $field_name$_), "
+          "$1$, PROTOBUF_FIELD_OFFSET($classtype$, _has_bits_) * 8 + "
+          "$hasbitsoffset$, $2$, $3$},\n",
           tag, type, ptr);
     } else {
       format(
-          "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-          "$field_name$_), "
+          "{PROTOBUF_FIELD_OFFSET($classtype$, $field_name$_), "
           "$1$, ~0u, $2$, $3$},\n",
           tag, type, ptr);
     }
@@ -1783,8 +1770,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
                           ? "UnknownFieldSetSerializer"
                           : "UnknownFieldSerializerLite";
   format(
-      "{$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-      "_internal_metadata_), 0, ~0u, "
+      "{PROTOBUF_FIELD_OFFSET($classtype$, _internal_metadata_), 0, ~0u, "
       "::$proto_ns$::internal::FieldMetadata::kSpecial, reinterpret_cast<const "
       "void*>(::$proto_ns$::internal::$1$)},\n",
       serializer);
@@ -1876,12 +1862,62 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
           "}\n"
           "\n");
     }
-    // TODO(gerbens) make maps parse :(
     format(
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-        "const char* $classname$::_InternalParse(const char* begin, const "
-        "char* end, void* object, ::$proto_ns$::internal::ParseContext* ctx) { "
-        "return end; }\n"
+        "bool $classname$::_ParseMap(const char* begin, const "
+        "char* end, void* object, ::google::protobuf::internal::ParseContext* ctx) {\n"
+        "  using MF = ::$proto_ns$::internal::MapField$1$<\n"
+        "      $classname$, EntryKeyType, EntryValueType,\n"
+        "      kEntryKeyFieldType, kEntryValueFieldType,\n"
+        "      kEntryDefaultEnumValue>;\n"
+        "  auto mf = static_cast<MF*>(object);\n"
+        "  Parser<MF, ::$proto_ns$::Map<EntryKeyType, EntryValueType>> "
+        "parser(mf);\n"
+        "#define DO_(x) if (!(x)) return false\n",
+        HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite");
+    const FieldDescriptor* key = descriptor_->FindFieldByName("key");
+    const FieldDescriptor* val = descriptor_->FindFieldByName("value");
+    GOOGLE_CHECK(val);
+    string key_string;
+    string value_string;
+    if (HasFieldPresence(descriptor_->file()) &&
+        val->type() == FieldDescriptor::TYPE_ENUM) {
+      format(
+          "  DO_(parser.ParseMapEnumValidation(\n"
+          "    begin, end, ctx->extra_parse_data().field_number,\n"
+          "    static_cast<::google::protobuf::internal::InternalMetadataWithArena$1$*>("
+          "ctx->extra_parse_data().unknown_fields), $2$_IsValid));\n",
+          HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite",
+          QualifiedClassName(val->enum_type()));
+      key_string = "parser.entry_key()";
+      value_string = "parser.entry_value()";
+    } else {
+      format("  DO_(parser.ParseMap(begin, end));\n");
+      key_string = "parser.key()";
+      value_string = "parser.value()";
+    }
+    format.Indent();
+    if (key->type() == FieldDescriptor::TYPE_STRING) {
+      GenerateUtf8CheckCodeForString(
+          key, options_, true,
+          StrCat(key_string, ".data(), static_cast<int>(", key_string,
+                       ".length()),\n")
+              .data(),
+          format);
+    }
+    if (val->type() == FieldDescriptor::TYPE_STRING) {
+      GenerateUtf8CheckCodeForString(
+          val, options_, true,
+          StrCat(value_string, ".data(), static_cast<int>(", value_string,
+                       ".length()),\n")
+              .data(),
+          format);
+    }
+    format.Outdent();
+    format(
+        "#undef DO_\n"
+        "  return true;\n"
+        "}\n"
         "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n");
     format("\n");
     return;
@@ -2138,8 +2174,7 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
 
     format(
         "{\n"
-        "  $GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET(\n"
-        "    $classtype$, $name$_),\n"
+        "  PROTOBUF_FIELD_OFFSET($classtype$, $name$_),\n"
         "  static_cast<$uint32$>($presence$),\n"
         "  $nwtype$, $pwtype$, $ptype$, $tag_size$\n"
         "},\n");
@@ -2236,33 +2271,23 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   Formatter format(printer, variables_);
 
   if (HasFieldPresence(descriptor_->file()) || IsMapEntryMessage(descriptor_)) {
-    format(
-        "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-        "_has_bits_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _has_bits_),\n");
   } else {
     format("~0u,  // no _has_bits_\n");
   }
-  format(
-      "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-      "_internal_metadata_),\n");
+  format("PROTOBUF_FIELD_OFFSET($classtype$, _internal_metadata_),\n");
   if (descriptor_->extension_range_count() > 0) {
-    format(
-        "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, "
-        "_extensions_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _extensions_),\n");
   } else {
     format("~0u,  // no _extensions_\n");
   }
   if (descriptor_->oneof_decl_count() > 0) {
-    format(
-        "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET("
-        "$classtype$, _oneof_case_[0]),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _oneof_case_[0]),\n");
   } else {
     format("~0u,  // no _oneof_case_\n");
   }
   if (num_weak_fields_ > 0) {
-    format(
-        "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$,"
-        " _weak_field_map_),\n");
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _weak_field_map_),\n");
   } else {
     format("~0u,  // no _weak_field_map_\n");
   }
@@ -2275,9 +2300,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
       format("offsetof($classtype$DefaultTypeInternal, $1$_)",
              FieldName(field));
     } else {
-      format(
-          "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, $1$_)",
-          FieldName(field));
+      format("PROTOBUF_FIELD_OFFSET($classtype$, $1$_)", FieldName(field));
     }
 
     uint32 tag = field_generators_.get(field).CalculateFieldTag();
@@ -2289,9 +2312,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   }
 
   for (auto oneof : OneOfRange(descriptor_)) {
-    format(
-        "$GOOGLE_PROTOBUF$_GENERATED_MESSAGE_FIELD_OFFSET($classtype$, $1$_),\n",
-        oneof->name());
+    format("PROTOBUF_FIELD_OFFSET($classtype$, $1$_),\n", oneof->name());
   }
 
   if (IsMapEntryMessage(descriptor_)) {
@@ -2687,7 +2708,7 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* printer) {
   Formatter format(printer, variables_);
   format(
       "template<> "
-      "$GOOGLE_PROTOBUF$_ATTRIBUTE_NOINLINE "
+      "PROTOBUF_NOINLINE "
       "$classtype$* Arena::CreateMaybeMessage< $classtype$ >(Arena* arena) {\n"
       "  return Arena::$1$Internal< $classtype$ >(arena);\n"
       "}\n",
@@ -3334,8 +3355,9 @@ void MessageGenerator::GenerateMergeFromCodedStream(io::Printer* printer) {
         "const char* $classname$::_InternalParse(const char* begin, const "
         "char* end, void* object,\n"
         "                  ::$proto_ns$::internal::ParseContext* ctx) {\n"
+        "  auto msg = static_cast<$classname$*>(object);\n"
         "  return ::$proto_ns$::internal::ParseMessageSet(begin, end, "
-        "static_cast<$classname$*>(object), ctx);\n"
+        "msg, &msg->_extensions_, &msg->_internal_metadata_, ctx);\n"
         "}\n"
         "const char* $classname$::InternalParseMessageSetItem(const char* "
         "begin, const char* end, void* object,\n"
@@ -3396,7 +3418,7 @@ void MessageGenerator::GenerateMergeFromCodedStream(io::Printer* printer) {
 
   format(
       "#define DO_(EXPRESSION) if "
-      "(!$GOOGLE_PROTOBUF$_PREDICT_TRUE(EXPRESSION)) goto failure\n"
+      "(!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure\n"
       "  $uint32$ tag;\n");
 
   if (!UseUnknownFieldSet(descriptor_->file(), options_)) {
@@ -3801,11 +3823,12 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
         "  target = _extensions_."
         "InternalSerializeMessageSetWithCachedSizesToArray(\n"
         "               deterministic, target);\n");
+    GOOGLE_CHECK(UseUnknownFieldSet(descriptor_->file(), options_));
     std::map<string, string> vars;
     SetUnknkownFieldsVariable(descriptor_, options_, &vars);
     format.AddMap(vars);
     format(
-        "  target = ::$proto_ns$::internal::\n"
+        "  target = ::$proto_ns$::internal::WireFormat::\n"
         "             SerializeUnknownMessageSetItemsToArray(\n"
         "               $unknown_fields$, target);\n");
     format(

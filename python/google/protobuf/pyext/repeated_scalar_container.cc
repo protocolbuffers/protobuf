@@ -104,7 +104,8 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
 
   if (arg == NULL) {
     ScopedPyObjectPtr py_index(PyLong_FromLong(index));
-    return cmessage::InternalDeleteRepeatedField(self->parent, field_descriptor,
+    return cmessage::InternalDeleteRepeatedField(self->message,
+                                                 field_descriptor,
                                                  py_index.get(), NULL);
   }
 
@@ -467,7 +468,7 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
 
   if (value == NULL) {
     return cmessage::InternalDeleteRepeatedField(
-        self->parent, field_descriptor, slice, NULL);
+        self->message, field_descriptor, slice, nullptr);
   }
 
   if (!create_list) {

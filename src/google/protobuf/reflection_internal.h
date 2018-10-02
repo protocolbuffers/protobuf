@@ -293,7 +293,7 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
 // Default implementation of RepeatedFieldAccessor for string fields with
 // ctype=STRING.
 class RepeatedPtrFieldStringAccessor final
-    : public RepeatedPtrFieldWrapper<string> {
+    : public RepeatedPtrFieldWrapper<std::string> {
   typedef void Field;
   typedef void Value;
   using RepeatedFieldAccessor::Add;
@@ -305,26 +305,26 @@ class RepeatedPtrFieldStringAccessor final
     if (this == other_mutator) {
       MutableRepeatedField(data)->Swap(MutableRepeatedField(other_data));
     } else {
-      RepeatedPtrField<string> tmp;
+      RepeatedPtrField<std::string> tmp;
       tmp.Swap(MutableRepeatedField(data));
       int other_size = other_mutator->Size(other_data);
       for (int i = 0; i < other_size; ++i) {
-        Add<string>(data, other_mutator->Get<string>(other_data, i));
+        Add<std::string>(data, other_mutator->Get<std::string>(other_data, i));
       }
       int size = Size(data);
       other_mutator->Clear(other_data);
       for (int i = 0; i < size; ++i) {
-        other_mutator->Add<string>(other_data, tmp.Get(i));
+        other_mutator->Add<std::string>(other_data, tmp.Get(i));
       }
     }
   }
 
  protected:
-  string* New(const Value*) const override { return new string(); }
-  void ConvertToT(const Value* value, string* result) const override {
-    *result = *static_cast<const string*>(value);
+  std::string* New(const Value*) const override { return new std::string(); }
+  void ConvertToT(const Value* value, std::string* result) const override {
+    *result = *static_cast<const std::string*>(value);
   }
-  const Value* ConvertFromT(const string& value,
+  const Value* ConvertFromT(const std::string& value,
                             Value* scratch_space) const override {
     return static_cast<const Value*>(&value);
   }

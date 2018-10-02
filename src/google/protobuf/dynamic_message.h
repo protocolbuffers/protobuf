@@ -51,6 +51,8 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -75,7 +77,7 @@ class DescriptorPool;    // descriptor.h
 // encapsulates this "cache".  All DynamicMessages of the same type created
 // from the same factory will share the same support data.  Any Descriptors
 // used with a particular factory must outlive the factory.
-class LIBPROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
+class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
  public:
   // Construct a DynamicMessageFactory that will search for extensions in
   // the DescriptorPool in which the extendee is defined.
@@ -151,7 +153,7 @@ class LIBPROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
 };
 
 // Helper for computing a sorted list of map entries via reflection.
-class LIBPROTOBUF_EXPORT DynamicMapSorter {
+class PROTOBUF_EXPORT DynamicMapSorter {
  public:
   static std::vector<const Message*> Sort(const Message& message,
                                           int map_size,
@@ -182,7 +184,7 @@ class LIBPROTOBUF_EXPORT DynamicMapSorter {
   }
 
  private:
-  class LIBPROTOBUF_EXPORT MapEntryMessageComparator {
+  class PROTOBUF_EXPORT MapEntryMessageComparator {
    public:
     explicit MapEntryMessageComparator(const Descriptor* descriptor)
         : field_(descriptor->field(0)) {}
@@ -216,8 +218,8 @@ class LIBPROTOBUF_EXPORT DynamicMapSorter {
           return first < second;
         }
         case FieldDescriptor::CPPTYPE_STRING: {
-          string first = reflection->GetString(*a, field_);
-          string second = reflection->GetString(*b, field_);
+          std::string first = reflection->GetString(*a, field_);
+          std::string second = reflection->GetString(*b, field_);
           return first < second;
         }
         default:
@@ -233,5 +235,7 @@ class LIBPROTOBUF_EXPORT DynamicMapSorter {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__

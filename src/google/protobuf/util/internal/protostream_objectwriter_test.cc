@@ -921,6 +921,22 @@ TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownListAtPublisher) {
   CheckOutput(expected);
 }
 
+TEST_P(ProtoStreamObjectWriterTest,
+       IgnoreUnknownFieldsDontIgnoreUnknownEnumValues) {
+  ResetTypeInfo(Proto3Message::descriptor());
+
+  Proto3Message expected;
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(_, StringPiece("TYPE_ENUM"),
+                   StringPiece("\"someunknownvalueyouwillneverknow\"")))
+      .With(Args<0>(HasObjectLocation("enum_value")));
+  ow_->StartObject("")
+      ->RenderString("enumValue", "someunknownvalueyouwillneverknow")
+      ->EndObject();
+  CheckOutput(expected);
+}
+
 TEST_P(ProtoStreamObjectWriterTest, AcceptUnknownEnumValue) {
   ResetTypeInfo(Proto3Message::descriptor());
 

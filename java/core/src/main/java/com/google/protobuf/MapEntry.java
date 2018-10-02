@@ -41,11 +41,11 @@ import java.util.TreeMap;
 /**
  * Implements MapEntry messages.
  *
- * In reflection API, map fields will be treated as repeated message fields and
- * each map entry is accessed as a message. This MapEntry class is used to
- * represent these map entry messages in reflection API.
+ * <p>In reflection API, map fields will be treated as repeated message fields and each map entry is
+ * accessed as a message. This MapEntry class is used to represent these map entry messages in
+ * reflection API.
  *
- * Protobuf internal. Users shouldn't use this class.
+ * <p>Protobuf internal. Users shouldn't use this class.
  */
 public final class MapEntry<K, V> extends AbstractMessage {
 
@@ -61,15 +61,16 @@ public final class MapEntry<K, V> extends AbstractMessage {
         WireFormat.FieldType valueType) {
       super(keyType, defaultInstance.key, valueType, defaultInstance.value);
       this.descriptor = descriptor;
-      this.parser = new AbstractParser<MapEntry<K, V>>() {
+      this.parser =
+          new AbstractParser<MapEntry<K, V>>() {
 
-        @Override
-        public MapEntry<K, V> parsePartialFrom(
-            CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-            throws InvalidProtocolBufferException {
-          return new MapEntry<K, V>(Metadata.this, input, extensionRegistry);
-        }
-      };
+            @Override
+            public MapEntry<K, V> parsePartialFrom(
+                CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+                throws InvalidProtocolBufferException {
+              return new MapEntry<K, V>(Metadata.this, input, extensionRegistry);
+            }
+          };
     }
   }
 
@@ -80,8 +81,10 @@ public final class MapEntry<K, V> extends AbstractMessage {
   /** Create a default MapEntry instance. */
   private MapEntry(
       Descriptor descriptor,
-      WireFormat.FieldType keyType, K defaultKey,
-      WireFormat.FieldType valueType, V defaultValue) {
+      WireFormat.FieldType keyType,
+      K defaultKey,
+      WireFormat.FieldType valueType,
+      V defaultValue) {
     this.key = defaultKey;
     this.value = defaultValue;
     this.metadata = new Metadata<K, V>(descriptor, this, keyType, valueType);
@@ -97,9 +100,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
   /** Parsing constructor. */
   private MapEntry(
-      Metadata<K, V> metadata,
-      CodedInputStream input,
-      ExtensionRegistryLite extensionRegistry)
+      Metadata<K, V> metadata, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
     try {
       this.metadata = metadata;
@@ -114,17 +115,17 @@ public final class MapEntry<K, V> extends AbstractMessage {
   }
 
   /**
-   * Create a default MapEntry instance. A default MapEntry instance should be
-   * created only once for each map entry message type. Generated code should
-   * store the created default instance and use it later to create new MapEntry
-   * messages of the same type.
+   * Create a default MapEntry instance. A default MapEntry instance should be created only once for
+   * each map entry message type. Generated code should store the created default instance and use
+   * it later to create new MapEntry messages of the same type.
    */
   public static <K, V> MapEntry<K, V> newDefaultInstance(
       Descriptor descriptor,
-      WireFormat.FieldType keyType, K defaultKey,
-      WireFormat.FieldType valueType, V defaultValue) {
-    return new MapEntry<K, V>(
-        descriptor, keyType, defaultKey, valueType, defaultValue);
+      WireFormat.FieldType keyType,
+      K defaultKey,
+      WireFormat.FieldType valueType,
+      V defaultValue) {
+    return new MapEntry<K, V>(descriptor, keyType, defaultKey, valueType, defaultValue);
   }
 
   public K getKey() {
@@ -197,14 +198,17 @@ public final class MapEntry<K, V> extends AbstractMessage {
   private void checkFieldDescriptor(FieldDescriptor field) {
     if (field.getContainingType() != metadata.descriptor) {
       throw new RuntimeException(
-          "Wrong FieldDescriptor \"" + field.getFullName()
-          + "\" used in message \"" + metadata.descriptor.getFullName());
+          "Wrong FieldDescriptor \""
+              + field.getFullName()
+              + "\" used in message \""
+              + metadata.descriptor.getFullName());
     }
   }
 
   @Override
   public boolean hasField(FieldDescriptor field) {
-    checkFieldDescriptor(field);;
+    checkFieldDescriptor(field);
+    ;
     // A MapEntry always contains two fields.
     return true;
   }
@@ -215,22 +219,19 @@ public final class MapEntry<K, V> extends AbstractMessage {
     Object result = field.getNumber() == 1 ? getKey() : getValue();
     // Convert enums to EnumValueDescriptor.
     if (field.getType() == FieldDescriptor.Type.ENUM) {
-      result = field.getEnumType().findValueByNumberCreatingIfUnknown(
-          (java.lang.Integer) result);
+      result = field.getEnumType().findValueByNumberCreatingIfUnknown((java.lang.Integer) result);
     }
     return result;
   }
 
   @Override
   public int getRepeatedFieldCount(FieldDescriptor field) {
-    throw new RuntimeException(
-        "There is no repeated field in a map entry message.");
+    throw new RuntimeException("There is no repeated field in a map entry message.");
   }
 
   @Override
   public Object getRepeatedField(FieldDescriptor field, int index) {
-    throw new RuntimeException(
-        "There is no repeated field in a map entry message.");
+    throw new RuntimeException("There is no repeated field in a map entry message.");
   }
 
   @Override
@@ -238,11 +239,8 @@ public final class MapEntry<K, V> extends AbstractMessage {
     return UnknownFieldSet.getDefaultInstance();
   }
 
-  /**
-   * Builder to create {@link MapEntry} messages.
-   */
-  public static class Builder<K, V>
-      extends AbstractMessage.Builder<Builder<K, V>> {
+  /** Builder to create {@link MapEntry} messages. */
+  public static class Builder<K, V> extends AbstractMessage.Builder<Builder<K, V>> {
     private final Metadata<K, V> metadata;
     private K key;
     private V value;
@@ -315,20 +313,21 @@ public final class MapEntry<K, V> extends AbstractMessage {
     private void checkFieldDescriptor(FieldDescriptor field) {
       if (field.getContainingType() != metadata.descriptor) {
         throw new RuntimeException(
-            "Wrong FieldDescriptor \"" + field.getFullName()
-            + "\" used in message \"" + metadata.descriptor.getFullName());
+            "Wrong FieldDescriptor \""
+                + field.getFullName()
+                + "\" used in message \""
+                + metadata.descriptor.getFullName());
       }
     }
 
     @Override
     public Message.Builder newBuilderForField(FieldDescriptor field) {
-      checkFieldDescriptor(field);;
+      checkFieldDescriptor(field);
+      ;
       // This method should be called for message fields and in a MapEntry
       // message only the value field can possibly be a message field.
-      if (field.getNumber() != 2
-          || field.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
-        throw new RuntimeException(
-            "\"" + field.getFullName() + "\" is not a message value field.");
+      if (field.getNumber() != 2 || field.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
+        throw new RuntimeException("\"" + field.getFullName() + "\" is not a message value field.");
       }
       return ((Message) value).newBuilderForType();
     }
@@ -369,16 +368,13 @@ public final class MapEntry<K, V> extends AbstractMessage {
     }
 
     @Override
-    public Builder<K, V> setRepeatedField(FieldDescriptor field, int index,
-        Object value) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
+    public Builder<K, V> setRepeatedField(FieldDescriptor field, int index, Object value) {
+      throw new RuntimeException("There is no repeated field in a map entry message.");
     }
 
     @Override
     public Builder<K, V> addRepeatedField(FieldDescriptor field, Object value) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
+      throw new RuntimeException("There is no repeated field in a map entry message.");
     }
 
     @Override
@@ -427,14 +423,12 @@ public final class MapEntry<K, V> extends AbstractMessage {
 
     @Override
     public int getRepeatedFieldCount(FieldDescriptor field) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
+      throw new RuntimeException("There is no repeated field in a map entry message.");
     }
 
     @Override
     public Object getRepeatedField(FieldDescriptor field, int index) {
-      throw new RuntimeException(
-          "There is no repeated field in a map entry message.");
+      throw new RuntimeException("There is no repeated field in a map entry message.");
     }
 
     @Override
@@ -455,7 +449,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     }
     return true;
   }
-  
+
   /** Returns the metadata only for experimental runtime. */
   final Metadata<K, V> getMetadata() {
     return metadata;

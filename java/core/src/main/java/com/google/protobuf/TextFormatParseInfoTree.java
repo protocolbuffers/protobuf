@@ -31,7 +31,6 @@
 package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,14 +38,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-
 /**
  * Data structure which is populated with the locations of each field value parsed from the text.
  *
- * <p>The locations of primary fields values are retrieved by {@code getLocation} or
- * {@code getLocations}.  The locations of sub message values are within nested
- * {@code TextFormatParseInfoTree}s and are retrieve by {@code getNestedTree} or
- * {@code getNestedTrees}.
+ * <p>The locations of primary fields values are retrieved by {@code getLocation} or {@code
+ * getLocations}. The locations of sub message values are within nested {@code
+ * TextFormatParseInfoTree}s and are retrieve by {@code getNestedTree} or {@code getNestedTrees}.
  *
  * <p>The {@code TextFormatParseInfoTree} is created by a Builder.
  */
@@ -90,13 +87,13 @@ public class TextFormatParseInfoTree {
     this.subtreesFromField = Collections.unmodifiableMap(subs);
   }
 
- /**
-  * Retrieve all the locations of a field.
-  *
-  * @param fieldDescriptor the the @{link FieldDescriptor} of the desired field
-  * @return a list of the locations of values of the field.  If there are not values
-  *         or the field doesn't exist, an empty list is returned.
-  */
+  /**
+   * Retrieve all the locations of a field.
+   *
+   * @param fieldDescriptor the @{link FieldDescriptor} of the desired field
+   * @return a list of the locations of values of the field. If there are not values or the field
+   *     doesn't exist, an empty list is returned.
+   */
   public List<TextFormatParseLocation> getLocations(final FieldDescriptor fieldDescriptor) {
     List<TextFormatParseLocation> result = locationsFromField.get(fieldDescriptor);
     return (result == null) ? Collections.<TextFormatParseLocation>emptyList() : result;
@@ -134,7 +131,7 @@ public class TextFormatParseInfoTree {
    * @param fieldDescriptor the @{link FieldDescriptor} of the desired sub message
    * @param index the index of message value.
    * @return the {@code ParseInfoTree} of the message value. {@code null} is returned if the field
-   *         doesn't exist or the index is out of range.
+   *     doesn't exist or the index is out of range.
    * @throws IllegalArgumentException if index is out of range
    */
   public TextFormatParseInfoTree getNestedTree(final FieldDescriptor fieldDescriptor, int index) {
@@ -151,16 +148,16 @@ public class TextFormatParseInfoTree {
   }
 
   private static <T> T getFromList(List<T> list, int index, FieldDescriptor fieldDescriptor) {
-    if (index >= list.size() || index < 0)  {
-      throw new IllegalArgumentException(String.format("Illegal index field: %s, index %d",
-          fieldDescriptor == null ? "<null>" : fieldDescriptor.getName(), index));
+    if (index >= list.size() || index < 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Illegal index field: %s, index %d",
+              fieldDescriptor == null ? "<null>" : fieldDescriptor.getName(), index));
     }
     return list.get(index);
   }
 
-  /**
-   * Builder for a {@link TextFormatParseInfoTree}.
-   */
+  /** Builder for a {@link TextFormatParseInfoTree}. */
   public static class Builder {
 
     private Map<FieldDescriptor, List<TextFormatParseLocation>> locationsFromField;
@@ -169,9 +166,7 @@ public class TextFormatParseInfoTree {
     // sub message location information.
     private Map<FieldDescriptor, List<Builder>> subtreeBuildersFromField;
 
-     /**
-     * Create a root level {@ParseInfoTree} builder.
-     */
+    /** Create a root level {@ParseInfoTree} builder. */
     private Builder() {
       locationsFromField = new HashMap<FieldDescriptor, List<TextFormatParseLocation>>();
       subtreeBuildersFromField = new HashMap<FieldDescriptor, List<Builder>>();

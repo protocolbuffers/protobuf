@@ -36,6 +36,8 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/message_lite.h>
 
+#include <google/protobuf/port_def.inc>
+
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
@@ -50,52 +52,52 @@ namespace internal {
 // An implementation of MessageLite that treats all data as unknown. This type
 // acts as a placeholder for an implicit weak field in the case where the true
 // message type does not get linked into the binary.
-class LIBPROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
+class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
  public:
   ImplicitWeakMessage() : arena_(NULL) {}
   explicit ImplicitWeakMessage(Arena* arena) : arena_(arena) {}
 
   static const ImplicitWeakMessage* default_instance();
 
-  string GetTypeName() const { return ""; }
+  std::string GetTypeName() const override { return ""; }
 
-  MessageLite* New() const { return new ImplicitWeakMessage; }
-  MessageLite* New(Arena* arena) const {
+  MessageLite* New() const override { return new ImplicitWeakMessage; }
+  MessageLite* New(Arena* arena) const override {
     return Arena::CreateMessage<ImplicitWeakMessage>(arena);
   }
 
-  Arena* GetArena() const { return arena_; }
+  Arena* GetArena() const override { return arena_; }
 
-  void Clear() { data_.clear(); }
+  void Clear() override { data_.clear(); }
 
-  bool IsInitialized() const { return true; }
+  bool IsInitialized() const override { return true; }
 
-  void CheckTypeAndMergeFrom(const MessageLite& other) {
+  void CheckTypeAndMergeFrom(const MessageLite& other) override {
     data_.append(static_cast<const ImplicitWeakMessage&>(other).data_);
   }
 
-  bool MergePartialFromCodedStream(io::CodedInputStream* input);
+  bool MergePartialFromCodedStream(io::CodedInputStream* input) override;
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  ParseFunc _ParseFunc() const { return _InternalParse; }
+  ParseFunc _ParseFunc() const override { return _InternalParse; }
 
   static const char* _InternalParse(const char* begin, const char* end,
                                     void* object, ParseContext* ctx);
 #endif
 
-  size_t ByteSizeLong() const { return data_.size(); }
+  size_t ByteSizeLong() const override { return data_.size(); }
 
-  void SerializeWithCachedSizes(io::CodedOutputStream* output) const {
+  void SerializeWithCachedSizes(io::CodedOutputStream* output) const override {
     output->WriteString(data_);
   }
 
-  int GetCachedSize() const { return static_cast<int>(data_.size()); }
+  int GetCachedSize() const override { return static_cast<int>(data_.size()); }
 
   typedef void InternalArenaConstructable_;
 
  private:
   Arena* const arena_;
-  string data_;
+  std::string data_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImplicitWeakMessage);
 };
 
@@ -140,5 +142,7 @@ class ImplicitWeakTypeHandler {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__

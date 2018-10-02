@@ -245,7 +245,7 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
                                                int default_enum);             \
     static inline size_t SpaceUsedInMapEntryLong(const TypeOnMemory& value);  \
     static inline size_t SpaceUsedInMapLong(const TypeOnMemory& value);       \
-    static inline size_t SpaceUsedInMapLong(const string& value);             \
+    static inline size_t SpaceUsedInMapLong(const std::string& value);             \
     static inline void AssignDefaultValue(TypeOnMemory* value);               \
     static inline const MapEntryAccessorType& DefaultIfNotInitialized(        \
         const TypeOnMemory& value, const TypeOnMemory& default_value);        \
@@ -575,7 +575,7 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE,
   template <typename Type>                                                    \
   inline size_t                                                               \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::SpaceUsedInMapLong( \
-      const string& value) {                                                  \
+      const std::string& value) {                                                  \
     return sizeof(value);                                                     \
   }                                                                           \
   template <typename Type>                                                    \

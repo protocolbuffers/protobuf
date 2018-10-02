@@ -35,8 +35,8 @@
 //
 // These wrappers have no meaningful use within repeated fields as they lack
 // the ability to detect presence on individual elements.
-// These wrappers have no meaningful use within a map or a oneof since individual
-// entries of a map or fields of a oneof can already detect presence.
+// These wrappers have no meaningful use within a map or a oneof since
+// individual entries of a map or fields of a oneof can already detect presence.
 
 syntax = "proto3";
 

@@ -35,6 +35,7 @@
 // TODO(ksroka): Move some of these tests to field_comparator_test.cc.
 
 #include <algorithm>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -906,8 +907,9 @@ TEST(MessageDifferencerTest, SpecifiedFieldsEqualityAllShuffledTest) {
   msg1.GetReflection()->ListFields(msg1, &fields1);
   msg2.GetReflection()->ListFields(msg2, &fields2);
 
-  std::random_shuffle(fields1.begin(), fields1.end());
-  std::random_shuffle(fields2.begin(), fields2.end());
+  std::default_random_engine rng;
+  std::shuffle(fields1.begin(), fields1.end(), rng);
+  std::shuffle(fields2.begin(), fields2.end(), rng);
 
   util::MessageDifferencer differencer;
   EXPECT_TRUE(differencer.CompareWithFields(msg1, msg2, fields1, fields2));

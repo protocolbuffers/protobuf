@@ -38,6 +38,8 @@
 // Ruby <-> native slot management.
 // -----------------------------------------------------------------------------
 
+#define CHARPTR_AT(msg, ofs) ((char*)msg + ofs)
+#define DEREF_OFFSET(msg, ofs, type) *(type*)CHARPTR_AT(msg, ofs)
 #define DEREF(memory, type) *(type*)(memory)
 
 size_t native_slot_size(upb_fieldtype_t type) {
@@ -54,37 +56,6 @@ size_t native_slot_size(upb_fieldtype_t type) {
     case UPB_TYPE_UINT32:  return 4;
     case UPB_TYPE_UINT64:  return 8;
     default: return 0;
-  }
-}
-
-static VALUE value_from_default(const upb_fielddef *field) {
-  switch (upb_fielddef_type(field)) {
-    case UPB_TYPE_FLOAT:   return DBL2NUM(upb_fielddef_defaultfloat(field));
-    case UPB_TYPE_DOUBLE:  return DBL2NUM(upb_fielddef_defaultdouble(field));
-    case UPB_TYPE_BOOL:
-      return upb_fielddef_defaultbool(field) ? Qtrue : Qfalse;
-    case UPB_TYPE_MESSAGE: return Qnil;
-    case UPB_TYPE_ENUM: {
-      const upb_enumdef *enumdef = upb_fielddef_enumsubdef(field);
-      int32_t num = upb_fielddef_defaultint32(field);
-      const char *label = upb_enumdef_iton(enumdef, num);
-      if (label) {
-        return ID2SYM(rb_intern(label));
-      } else {
-        return INT2NUM(num);
-      }
-    }
-    case UPB_TYPE_INT32:   return INT2NUM(upb_fielddef_defaultint32(field));
-    case UPB_TYPE_INT64:   return LL2NUM(upb_fielddef_defaultint64(field));;
-    case UPB_TYPE_UINT32:  return UINT2NUM(upb_fielddef_defaultuint32(field));
-    case UPB_TYPE_UINT64:  return ULL2NUM(upb_fielddef_defaultuint64(field));
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES: {
-      size_t size;
-      const char *str = upb_fielddef_defaultstr(field, &size);
-      return rb_str_new(str, size);
-    }
-    default: return Qnil;
   }
 }
 
@@ -404,7 +375,12 @@ const upb_msgdef *map_entry_msgdef(const upb_fielddef* field) {
 }
 
 bool is_map_field(const upb_fielddef *field) {
-  return tryget_map_entry_msgdef(field) != NULL;
+  const upb_msgdef* subdef = tryget_map_entry_msgdef(field);
+  if (subdef == NULL) return false;
+
+  // Map fields are a proto3 feature.
+  // If we're using proto2 syntax we need to fallback to the repeated field.
+  return upb_msgdef_syntax(subdef) == UPB_SYNTAX_PROTO3;
 }
 
 const upb_fielddef* map_field_key(const upb_fielddef* field) {
@@ -433,6 +409,12 @@ const upb_fielddef* map_entry_value(const upb_msgdef* msgdef) {
 // Memory layout management.
 // -----------------------------------------------------------------------------
 
+bool field_contains_hasbit(MessageLayout* layout,
+                            const upb_fielddef* field) {
+  return layout->fields[upb_fielddef_index(field)].hasbit !=
+      MESSAGE_FIELD_NO_HASBIT;
+}
+
 static size_t align_up_to(size_t offset, size_t granularity) {
   // Granularity must be a power of two.
   return (offset + granularity - 1) & ~(granularity - 1);
@@ -446,6 +428,23 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   size_t off = 0;
 
   layout->fields = ALLOC_N(MessageField, nfields);
+
+  size_t hasbit = 0;
+  for (upb_msg_field_begin(&it, msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    if (upb_fielddef_haspresence(field)) {
+      layout->fields[upb_fielddef_index(field)].hasbit = hasbit++;
+    } else {
+      layout->fields[upb_fielddef_index(field)].hasbit =
+	  MESSAGE_FIELD_NO_HASBIT;
+    }
+  }
+
+  if (hasbit != 0) {
+    off += (hasbit + 8 - 1) / 8;
+  }
 
   for (upb_msg_field_begin(&it, msgdef);
        !upb_msg_field_done(&it);
@@ -569,6 +568,136 @@ static uint32_t* slot_oneof_case(MessageLayout* layout,
       layout->fields[upb_fielddef_index(field)].case_offset);
 }
 
+static void slot_set_hasbit(MessageLayout* layout,
+                            const void* storage,
+                            const upb_fielddef* field) {
+  size_t hasbit = layout->fields[upb_fielddef_index(field)].hasbit;
+  assert(hasbit != MESSAGE_FIELD_NO_HASBIT);
+
+  ((uint8_t*)storage)[hasbit / 8] |= 1 << (hasbit % 8);
+}
+
+static void slot_clear_hasbit(MessageLayout* layout,
+                              const void* storage,
+                              const upb_fielddef* field) {
+  size_t hasbit = layout->fields[upb_fielddef_index(field)].hasbit;
+  assert(hasbit != MESSAGE_FIELD_NO_HASBIT);
+  ((uint8_t*)storage)[hasbit / 8] &= ~(1 << (hasbit % 8));
+}
+
+static bool slot_is_hasbit_set(MessageLayout* layout,
+                            const void* storage,
+                            const upb_fielddef* field) {
+  size_t hasbit = layout->fields[upb_fielddef_index(field)].hasbit;
+  if (hasbit == MESSAGE_FIELD_NO_HASBIT) {
+    return false;
+  }
+
+  return DEREF_OFFSET(
+      (uint8_t*)storage, hasbit / 8, char) & (1 << (hasbit % 8));
+}
+
+VALUE layout_has(MessageLayout* layout,
+                 const void* storage,
+                 const upb_fielddef* field) {
+  assert(field_contains_hasbit(layout, field));
+  return slot_is_hasbit_set(layout, storage, field) ? Qtrue : Qfalse;
+}
+
+void layout_clear(MessageLayout* layout,
+                 const void* storage,
+                 const upb_fielddef* field) {
+  void* memory = slot_memory(layout, storage, field);
+  uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
+
+  if (field_contains_hasbit(layout, field)) {
+    slot_clear_hasbit(layout, storage, field);
+  }
+
+  if (upb_fielddef_containingoneof(field)) {
+    memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
+    *oneof_case = ONEOF_CASE_NONE;
+  } else if (is_map_field(field)) {
+    VALUE map = Qnil;
+
+    const upb_fielddef* key_field = map_field_key(field);
+    const upb_fielddef* value_field = map_field_value(field);
+    VALUE type_class = field_type_class(value_field);
+
+    if (type_class != Qnil) {
+      VALUE args[3] = {
+        fieldtype_to_ruby(upb_fielddef_type(key_field)),
+        fieldtype_to_ruby(upb_fielddef_type(value_field)),
+        type_class,
+      };
+      map = rb_class_new_instance(3, args, cMap);
+    } else {
+      VALUE args[2] = {
+        fieldtype_to_ruby(upb_fielddef_type(key_field)),
+        fieldtype_to_ruby(upb_fielddef_type(value_field)),
+      };
+      map = rb_class_new_instance(2, args, cMap);
+    }
+
+    DEREF(memory, VALUE) = map;
+  } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+    VALUE ary = Qnil;
+
+    VALUE type_class = field_type_class(field);
+
+    if (type_class != Qnil) {
+      VALUE args[2] = {
+        fieldtype_to_ruby(upb_fielddef_type(field)),
+        type_class,
+      };
+      ary = rb_class_new_instance(2, args, cRepeatedField);
+    } else {
+      VALUE args[1] = { fieldtype_to_ruby(upb_fielddef_type(field)) };
+      ary = rb_class_new_instance(1, args, cRepeatedField);
+    }
+
+    DEREF(memory, VALUE) = ary;
+  } else {
+    native_slot_set(upb_fielddef_type(field), field_type_class(field),
+                      memory, layout_get_default(field));
+  }
+}
+
+VALUE layout_get_default(const upb_fielddef *field) {
+  switch (upb_fielddef_type(field)) {
+    case UPB_TYPE_FLOAT:   return DBL2NUM(upb_fielddef_defaultfloat(field));
+    case UPB_TYPE_DOUBLE:  return DBL2NUM(upb_fielddef_defaultdouble(field));
+    case UPB_TYPE_BOOL:
+      return upb_fielddef_defaultbool(field) ? Qtrue : Qfalse;
+    case UPB_TYPE_MESSAGE: return Qnil;
+    case UPB_TYPE_ENUM: {
+      const upb_enumdef *enumdef = upb_fielddef_enumsubdef(field);
+      int32_t num = upb_fielddef_defaultint32(field);
+      const char *label = upb_enumdef_iton(enumdef, num);
+      if (label) {
+        return ID2SYM(rb_intern(label));
+      } else {
+        return INT2NUM(num);
+      }
+    }
+    case UPB_TYPE_INT32:   return INT2NUM(upb_fielddef_defaultint32(field));
+    case UPB_TYPE_INT64:   return LL2NUM(upb_fielddef_defaultint64(field));;
+    case UPB_TYPE_UINT32:  return UINT2NUM(upb_fielddef_defaultuint32(field));
+    case UPB_TYPE_UINT64:  return ULL2NUM(upb_fielddef_defaultuint64(field));
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      size_t size;
+      const char *str = upb_fielddef_defaultstr(field, &size);
+      VALUE str_rb = rb_str_new(str, size);
+
+      rb_enc_associate(str_rb, (upb_fielddef_type(field) == UPB_TYPE_BYTES) ?
+                 kRubyString8bitEncoding : kRubyStringUtf8Encoding);
+      rb_obj_freeze(str_rb);
+      return str_rb;
+    }
+    default: return Qnil;
+  }
+}
 
 VALUE layout_get(MessageLayout* layout,
                  const void* storage,
@@ -576,15 +705,24 @@ VALUE layout_get(MessageLayout* layout,
   void* memory = slot_memory(layout, storage, field);
   uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
+  bool field_set;
+  if (field_contains_hasbit(layout, field)) {
+    field_set = slot_is_hasbit_set(layout, storage, field);
+  } else {
+    field_set = true;
+  }
+
   if (upb_fielddef_containingoneof(field)) {
     if (*oneof_case != upb_fielddef_number(field)) {
-      return value_from_default(field);
+      return layout_get_default(field);
     }
     return native_slot_get(upb_fielddef_type(field),
                            field_type_class(field),
                            memory);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     return *((VALUE *)memory);
+  } else if (!field_set) {
+    return layout_get_default(field);
   } else {
     return native_slot_get(upb_fielddef_type(field),
                            field_type_class(field),
@@ -689,67 +827,24 @@ void layout_set(MessageLayout* layout,
     check_repeated_field_type(val, field);
     DEREF(memory, VALUE) = val;
   } else {
-    native_slot_set(upb_fielddef_type(field), field_type_class(field),
-                    memory, val);
+    native_slot_set(upb_fielddef_type(field), field_type_class(field), memory,
+		    val);
+  }
+
+  if (layout->fields[upb_fielddef_index(field)].hasbit !=
+      MESSAGE_FIELD_NO_HASBIT) {
+    slot_set_hasbit(layout, storage, field);
   }
 }
 
 void layout_init(MessageLayout* layout,
                  void* storage) {
+
   upb_msg_field_iter it;
   for (upb_msg_field_begin(&it, layout->msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    void* memory = slot_memory(layout, storage, field);
-    uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
-
-    if (upb_fielddef_containingoneof(field)) {
-      memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
-      *oneof_case = ONEOF_CASE_NONE;
-    } else if (is_map_field(field)) {
-      VALUE map = Qnil;
-
-      const upb_fielddef* key_field = map_field_key(field);
-      const upb_fielddef* value_field = map_field_value(field);
-      VALUE type_class = field_type_class(value_field);
-
-      if (type_class != Qnil) {
-        VALUE args[3] = {
-          fieldtype_to_ruby(upb_fielddef_type(key_field)),
-          fieldtype_to_ruby(upb_fielddef_type(value_field)),
-          type_class,
-        };
-        map = rb_class_new_instance(3, args, cMap);
-      } else {
-        VALUE args[2] = {
-          fieldtype_to_ruby(upb_fielddef_type(key_field)),
-          fieldtype_to_ruby(upb_fielddef_type(value_field)),
-        };
-        map = rb_class_new_instance(2, args, cMap);
-      }
-
-      DEREF(memory, VALUE) = map;
-    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      VALUE ary = Qnil;
-
-      VALUE type_class = field_type_class(field);
-
-      if (type_class != Qnil) {
-        VALUE args[2] = {
-          fieldtype_to_ruby(upb_fielddef_type(field)),
-          type_class,
-        };
-        ary = rb_class_new_instance(2, args, cRepeatedField);
-      } else {
-        VALUE args[1] = { fieldtype_to_ruby(upb_fielddef_type(field)) };
-        ary = rb_class_new_instance(1, args, cRepeatedField);
-      }
-
-      DEREF(memory, VALUE) = ary;
-    } else {
-      native_slot_init(upb_fielddef_type(field), memory);
-    }
+    layout_clear(layout, storage, upb_msg_iter_field(&it));
   }
 }
 
@@ -796,6 +891,11 @@ void layout_dup(MessageLayout* layout, void* to, void* from) {
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       DEREF(to_memory, VALUE) = RepeatedField_dup(DEREF(from_memory, VALUE));
     } else {
+      if (field_contains_hasbit(layout, field)) {
+        if (!slot_is_hasbit_set(layout, from, field)) continue;
+        slot_set_hasbit(layout, to, field);
+      }
+
       native_slot_dup(upb_fielddef_type(field), to_memory, from_memory);
     }
   }
@@ -825,6 +925,11 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
       DEREF(to_memory, VALUE) =
           RepeatedField_deep_copy(DEREF(from_memory, VALUE));
     } else {
+      if (field_contains_hasbit(layout, field)) {
+        if (!slot_is_hasbit_set(layout, from, field)) continue;
+        slot_set_hasbit(layout, to, field);
+      }
+
       native_slot_deep_copy(upb_fielddef_type(field), to_memory, from_memory);
     }
   }
@@ -861,8 +966,10 @@ VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2) {
         return Qfalse;
       }
     } else {
-      if (!native_slot_eq(upb_fielddef_type(field),
-                          msg1_memory, msg2_memory)) {
+      if (slot_is_hasbit_set(layout, msg1, field) !=
+	  slot_is_hasbit_set(layout, msg2, field) ||
+          !native_slot_eq(upb_fielddef_type(field),
+			  msg1_memory, msg2_memory)) {
         return Qfalse;
       }
     }

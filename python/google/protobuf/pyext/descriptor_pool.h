@@ -89,7 +89,7 @@ namespace cdescriptor_pool {
 // Looks up a message by name.
 // Returns a message Descriptor, or NULL if not found.
 const Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
-                                        const string& name);
+                                        const std::string& name);
 
 // The functions below are also exposed as methods of the DescriptorPool type.
 

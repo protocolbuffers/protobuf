@@ -40,6 +40,8 @@
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -49,12 +51,12 @@ namespace cpp {
 // header.  If you create your own protocol compiler binary and you want
 // it to support C++ output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
-class LIBPROTOC_EXPORT CppGenerator : public CodeGenerator {
+class PROTOC_EXPORT CppGenerator : public CodeGenerator {
  public:
   CppGenerator();
   ~CppGenerator();
 
-  enum class LIBPROTOC_EXPORT Runtime {
+  enum class Runtime {
     kGoogle3,     // Use the internal google3 runtime.
     kOpensource,  // Use the open-source runtime.
 
@@ -70,9 +72,9 @@ class LIBPROTOC_EXPORT CppGenerator : public CodeGenerator {
 
   // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file,
-                const string& parameter,
+                const std::string& parameter,
                 GeneratorContext* generator_context,
-                string* error) const;
+                std::string* error) const;
 
  private:
   Runtime runtime_ = Runtime::kOpensource;
@@ -83,5 +85,7 @@ class LIBPROTOC_EXPORT CppGenerator : public CodeGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__

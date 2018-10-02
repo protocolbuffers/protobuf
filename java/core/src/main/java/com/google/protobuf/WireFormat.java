@@ -33,13 +33,12 @@ package com.google.protobuf;
 import java.io.IOException;
 
 /**
- * This class is used internally by the Protocol Buffer library and generated
- * message implementations.  It is public only because those generated messages
- * do not reside in the {@code protobuf} package.  Others should not use this
- * class directly.
+ * This class is used internally by the Protocol Buffer library and generated message
+ * implementations. It is public only because those generated messages do not reside in the {@code
+ * protobuf} package. Others should not use this class directly.
  *
- * This class contains constants and helper functions useful for dealing with
- * the Protocol Buffer wire format.
+ * <p>This class contains constants and helper functions useful for dealing with the Protocol Buffer
+ * wire format.
  *
  * @author kenton@google.com Kenton Varda
  */
@@ -53,12 +52,12 @@ public final class WireFormat {
   static final int MAX_VARINT64_SIZE = 10;
   static final int MAX_VARINT_SIZE = 10;
 
-  public static final int WIRETYPE_VARINT           = 0;
-  public static final int WIRETYPE_FIXED64          = 1;
+  public static final int WIRETYPE_VARINT = 0;
+  public static final int WIRETYPE_FIXED64 = 1;
   public static final int WIRETYPE_LENGTH_DELIMITED = 2;
-  public static final int WIRETYPE_START_GROUP      = 3;
-  public static final int WIRETYPE_END_GROUP        = 4;
-  public static final int WIRETYPE_FIXED32          = 5;
+  public static final int WIRETYPE_START_GROUP = 3;
+  public static final int WIRETYPE_END_GROUP = 4;
+  public static final int WIRETYPE_FIXED32 = 5;
 
   static final int TAG_TYPE_BITS = 3;
   static final int TAG_TYPE_MASK = (1 << TAG_TYPE_BITS) - 1;
@@ -79,8 +78,8 @@ public final class WireFormat {
   }
 
   /**
-   * Lite equivalent to {@link Descriptors.FieldDescriptor.JavaType}.  This is
-   * only here to support the lite runtime and should not be used by users.
+   * Lite equivalent to {@link Descriptors.FieldDescriptor.JavaType}. This is only here to support
+   * the lite runtime and should not be used by users.
    */
   public enum JavaType {
     INT(0),
@@ -97,10 +96,7 @@ public final class WireFormat {
       this.defaultDefault = defaultDefault;
     }
 
-    /**
-     * The default default value for fields of this type, if it's a primitive
-     * type.
-     */
+    /** The default default value for fields of this type, if it's a primitive type. */
     Object getDefaultDefault() {
       return defaultDefault;
     }
@@ -109,44 +105,48 @@ public final class WireFormat {
   }
 
   /**
-   * Lite equivalent to {@link Descriptors.FieldDescriptor.Type}.  This is
-   * only here to support the lite runtime and should not be used by users.
+   * Lite equivalent to {@link Descriptors.FieldDescriptor.Type}. This is only here to support the
+   * lite runtime and should not be used by users.
    */
   public enum FieldType {
-    DOUBLE  (JavaType.DOUBLE     , WIRETYPE_FIXED64         ),
-    FLOAT   (JavaType.FLOAT      , WIRETYPE_FIXED32         ),
-    INT64   (JavaType.LONG       , WIRETYPE_VARINT          ),
-    UINT64  (JavaType.LONG       , WIRETYPE_VARINT          ),
-    INT32   (JavaType.INT        , WIRETYPE_VARINT          ),
-    FIXED64 (JavaType.LONG       , WIRETYPE_FIXED64         ),
-    FIXED32 (JavaType.INT        , WIRETYPE_FIXED32         ),
-    BOOL    (JavaType.BOOLEAN    , WIRETYPE_VARINT          ),
-    STRING  (JavaType.STRING     , WIRETYPE_LENGTH_DELIMITED) {
+    DOUBLE(JavaType.DOUBLE, WIRETYPE_FIXED64),
+    FLOAT(JavaType.FLOAT, WIRETYPE_FIXED32),
+    INT64(JavaType.LONG, WIRETYPE_VARINT),
+    UINT64(JavaType.LONG, WIRETYPE_VARINT),
+    INT32(JavaType.INT, WIRETYPE_VARINT),
+    FIXED64(JavaType.LONG, WIRETYPE_FIXED64),
+    FIXED32(JavaType.INT, WIRETYPE_FIXED32),
+    BOOL(JavaType.BOOLEAN, WIRETYPE_VARINT),
+    STRING(JavaType.STRING, WIRETYPE_LENGTH_DELIMITED) {
       @Override
       public boolean isPackable() {
-        return false; }
+        return false;
+      }
     },
-    GROUP   (JavaType.MESSAGE    , WIRETYPE_START_GROUP     ) {
+    GROUP(JavaType.MESSAGE, WIRETYPE_START_GROUP) {
       @Override
       public boolean isPackable() {
-        return false; }
+        return false;
+      }
     },
-    MESSAGE (JavaType.MESSAGE    , WIRETYPE_LENGTH_DELIMITED) {
+    MESSAGE(JavaType.MESSAGE, WIRETYPE_LENGTH_DELIMITED) {
       @Override
       public boolean isPackable() {
-        return false; }
+        return false;
+      }
     },
-    BYTES   (JavaType.BYTE_STRING, WIRETYPE_LENGTH_DELIMITED) {
+    BYTES(JavaType.BYTE_STRING, WIRETYPE_LENGTH_DELIMITED) {
       @Override
       public boolean isPackable() {
-        return false; }
+        return false;
+      }
     },
-    UINT32  (JavaType.INT        , WIRETYPE_VARINT          ),
-    ENUM    (JavaType.ENUM       , WIRETYPE_VARINT          ),
-    SFIXED32(JavaType.INT        , WIRETYPE_FIXED32         ),
-    SFIXED64(JavaType.LONG       , WIRETYPE_FIXED64         ),
-    SINT32  (JavaType.INT        , WIRETYPE_VARINT          ),
-    SINT64  (JavaType.LONG       , WIRETYPE_VARINT          );
+    UINT32(JavaType.INT, WIRETYPE_VARINT),
+    ENUM(JavaType.ENUM, WIRETYPE_VARINT),
+    SFIXED32(JavaType.INT, WIRETYPE_FIXED32),
+    SFIXED64(JavaType.LONG, WIRETYPE_FIXED64),
+    SINT32(JavaType.INT, WIRETYPE_VARINT),
+    SINT64(JavaType.LONG, WIRETYPE_VARINT);
 
     FieldType(final JavaType javaType, final int wireType) {
       this.javaType = javaType;
@@ -156,30 +156,34 @@ public final class WireFormat {
     private final JavaType javaType;
     private final int wireType;
 
-    public JavaType getJavaType() { return javaType; }
-    public int getWireType() { return wireType; }
+    public JavaType getJavaType() {
+      return javaType;
+    }
 
-    public boolean isPackable() { return true; }
+    public int getWireType() {
+      return wireType;
+    }
+
+    public boolean isPackable() {
+      return true;
+    }
   }
 
   // Field numbers for fields in MessageSet wire format.
-  static final int MESSAGE_SET_ITEM    = 1;
+  static final int MESSAGE_SET_ITEM = 1;
   static final int MESSAGE_SET_TYPE_ID = 2;
   static final int MESSAGE_SET_MESSAGE = 3;
 
   // Tag numbers.
-  static final int MESSAGE_SET_ITEM_TAG =
-    makeTag(MESSAGE_SET_ITEM, WIRETYPE_START_GROUP);
-  static final int MESSAGE_SET_ITEM_END_TAG =
-    makeTag(MESSAGE_SET_ITEM, WIRETYPE_END_GROUP);
-  static final int MESSAGE_SET_TYPE_ID_TAG =
-    makeTag(MESSAGE_SET_TYPE_ID, WIRETYPE_VARINT);
+  static final int MESSAGE_SET_ITEM_TAG = makeTag(MESSAGE_SET_ITEM, WIRETYPE_START_GROUP);
+  static final int MESSAGE_SET_ITEM_END_TAG = makeTag(MESSAGE_SET_ITEM, WIRETYPE_END_GROUP);
+  static final int MESSAGE_SET_TYPE_ID_TAG = makeTag(MESSAGE_SET_TYPE_ID, WIRETYPE_VARINT);
   static final int MESSAGE_SET_MESSAGE_TAG =
-    makeTag(MESSAGE_SET_MESSAGE, WIRETYPE_LENGTH_DELIMITED);
+      makeTag(MESSAGE_SET_MESSAGE, WIRETYPE_LENGTH_DELIMITED);
 
   /**
-   * Validation level for handling incoming string field data which potentially
-   * contain non-UTF8 bytes.
+   * Validation level for handling incoming string field data which potentially contain non-UTF8
+   * bytes.
    */
   enum Utf8Validation {
     /** Eagerly parses to String; silently accepts invalid UTF8 bytes. */
@@ -209,54 +213,59 @@ public final class WireFormat {
   }
 
   /**
-   * Read a field of any primitive type for immutable messages from a
-   * CodedInputStream. Enums, groups, and embedded messages are not handled by
-   * this method.
+   * Read a field of any primitive type for immutable messages from a CodedInputStream. Enums,
+   * groups, and embedded messages are not handled by this method.
    *
    * @param input The stream from which to read.
    * @param type Declared type of the field.
-   * @param utf8Validation Different string UTF8 validation level for handling
-   *                       string fields.
-   * @return An object representing the field's value, of the exact
-   *         type which would be returned by
-   *         {@link Message#getField(Descriptors.FieldDescriptor)} for
-   *         this field.
+   * @param utf8Validation Different string UTF8 validation level for handling string fields.
+   * @return An object representing the field's value, of the exact type which would be returned by
+   *     {@link Message#getField(Descriptors.FieldDescriptor)} for this field.
    */
   static Object readPrimitiveField(
-      CodedInputStream input,
-      FieldType type,
-      Utf8Validation utf8Validation) throws IOException {
+      CodedInputStream input, FieldType type, Utf8Validation utf8Validation) throws IOException {
     switch (type) {
-      case DOUBLE  : return input.readDouble  ();
-      case FLOAT   : return input.readFloat   ();
-      case INT64   : return input.readInt64   ();
-      case UINT64  : return input.readUInt64  ();
-      case INT32   : return input.readInt32   ();
-      case FIXED64 : return input.readFixed64 ();
-      case FIXED32 : return input.readFixed32 ();
-      case BOOL    : return input.readBool    ();
-      case BYTES   : return input.readBytes   ();
-      case UINT32  : return input.readUInt32  ();
-      case SFIXED32: return input.readSFixed32();
-      case SFIXED64: return input.readSFixed64();
-      case SINT32  : return input.readSInt32  ();
-      case SINT64  : return input.readSInt64  ();
+      case DOUBLE:
+        return input.readDouble();
+      case FLOAT:
+        return input.readFloat();
+      case INT64:
+        return input.readInt64();
+      case UINT64:
+        return input.readUInt64();
+      case INT32:
+        return input.readInt32();
+      case FIXED64:
+        return input.readFixed64();
+      case FIXED32:
+        return input.readFixed32();
+      case BOOL:
+        return input.readBool();
+      case BYTES:
+        return input.readBytes();
+      case UINT32:
+        return input.readUInt32();
+      case SFIXED32:
+        return input.readSFixed32();
+      case SFIXED64:
+        return input.readSFixed64();
+      case SINT32:
+        return input.readSInt32();
+      case SINT64:
+        return input.readSInt64();
 
-      case STRING  : return utf8Validation.readString(input);
+      case STRING:
+        return utf8Validation.readString(input);
       case GROUP:
-        throw new IllegalArgumentException(
-          "readPrimitiveField() cannot handle nested groups.");
+        throw new IllegalArgumentException("readPrimitiveField() cannot handle nested groups.");
       case MESSAGE:
-        throw new IllegalArgumentException(
-          "readPrimitiveField() cannot handle embedded messages.");
+        throw new IllegalArgumentException("readPrimitiveField() cannot handle embedded messages.");
       case ENUM:
         // We don't handle enums because we don't know what to do if the
         // value is not recognized.
-        throw new IllegalArgumentException(
-          "readPrimitiveField() cannot handle enums.");
+        throw new IllegalArgumentException("readPrimitiveField() cannot handle enums.");
     }
 
-    throw new RuntimeException(
-      "There is no way to get here, but the compiler thinks otherwise.");
+    throw new RuntimeException("There is no way to get here, but the compiler thinks otherwise.");
   }
 }

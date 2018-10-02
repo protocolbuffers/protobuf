@@ -33,16 +33,14 @@ package com.google.protobuf;
 import java.util.List;
 
 /**
- * An interface extending {@code List<String>} used for repeated string fields
- * to provide optional access to the data as a list of ByteStrings. The
- * underlying implementation stores values as either ByteStrings or Strings
- * (see {@link LazyStringArrayList}) depending on how the value was initialized
- * or last read, and it is often more efficient to deal with lists of
- * ByteStrings when handling protos that have been deserialized from bytes.
+ * An interface extending {@code List<String>} used for repeated string fields to provide optional
+ * access to the data as a list of ByteStrings. The underlying implementation stores values as
+ * either ByteStrings or Strings (see {@link LazyStringArrayList}) depending on how the value was
+ * initialized or last read, and it is often more efficient to deal with lists of ByteStrings when
+ * handling protos that have been deserialized from bytes.
  */
 public interface ProtocolStringList extends List<String> {
 
   /** Returns a view of the data as a list of ByteStrings. */
   List<ByteString> asByteStringList();
-
 }

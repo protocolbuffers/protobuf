@@ -40,6 +40,7 @@ This files defines well known classes which need extra maintenance including:
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+import calendar
 import collections
 from datetime import datetime
 from datetime import timedelta
@@ -92,7 +93,7 @@ class Any(object):
 
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
-    return self.TypeName() == descriptor.full_name
+    return '/' in self.type_url and self.TypeName() == descriptor.full_name
 
 
 class Timestamp(object):
@@ -233,9 +234,15 @@ class Timestamp(object):
 
   def FromDatetime(self, dt):
     """Converts datetime to Timestamp."""
-    td = dt - datetime(1970, 1, 1)
-    self.seconds = td.seconds + td.days * _SECONDS_PER_DAY
-    self.nanos = td.microseconds * _NANOS_PER_MICROSECOND
+    # Using this guide: http://wiki.python.org/moin/WorkingWithTime
+    # And this conversion guide: http://docs.python.org/library/time.html
+
+    # Turn the date parameter into a tuple (struct_time) that can then be
+    # manipulated into a long value of seconds.  During the conversion from
+    # struct_time to long, the source date in UTC, and so it follows that the
+    # correct transformation is calendar.timegm()
+    self.seconds = calendar.timegm(dt.utctimetuple())
+    self.nanos = dt.microsecond * _NANOS_PER_MICROSECOND
 
 
 class Duration(object):

@@ -32,13 +32,11 @@ package com.google.protobuf;
 
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
-
 import junit.framework.TestCase;
 
 /**
- * Tests for {@link SingleFieldBuilderV3}. This tests basic functionality.
- * More extensive testing is provided via other tests that exercise the
- * builder.
+ * Tests for {@link SingleFieldBuilderV3}. This tests basic functionality. More extensive testing is
+ * provided via other tests that exercise the builder.
  *
  * @author jonp@google.com (Jon Perlow)
  */
@@ -46,16 +44,11 @@ public class SingleFieldBuilderV3Test extends TestCase {
 
   public void testBasicUseAndInvalidations() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder,
-        TestAllTypesOrBuilder> builder =
-        new SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder,
-            TestAllTypesOrBuilder>(
-            TestAllTypes.getDefaultInstance(),
-            mockParent,
-            false);
+    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        new SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>(
+            TestAllTypes.getDefaultInstance(), mockParent, false);
     assertSame(TestAllTypes.getDefaultInstance(), builder.getMessage());
-    assertEquals(TestAllTypes.getDefaultInstance(),
-        builder.getBuilder().buildPartial());
+    assertEquals(TestAllTypes.getDefaultInstance(), builder.getBuilder().buildPartial());
     assertEquals(0, mockParent.getInvalidationCount());
 
     builder.getBuilder().setOptionalInt32(10);
@@ -71,18 +64,13 @@ public class SingleFieldBuilderV3Test extends TestCase {
     // Test that we don't keep getting invalidations on every change
     builder.getBuilder().setOptionalInt32(30);
     assertEquals(1, mockParent.getInvalidationCount());
-
   }
 
   public void testSetMessage() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder,
-        TestAllTypesOrBuilder> builder =
-        new SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder,
-            TestAllTypesOrBuilder>(
-            TestAllTypes.getDefaultInstance(),
-            mockParent,
-            false);
+    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        new SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>(
+            TestAllTypes.getDefaultInstance(), mockParent, false);
     builder.setMessage(TestAllTypes.newBuilder().setOptionalInt32(0).build());
     assertEquals(0, builder.getMessage().getOptionalInt32());
 
@@ -102,13 +90,9 @@ public class SingleFieldBuilderV3Test extends TestCase {
 
   public void testClear() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder,
-        TestAllTypesOrBuilder> builder =
-        new SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder,
-            TestAllTypesOrBuilder>(
-            TestAllTypes.getDefaultInstance(),
-            mockParent,
-            false);
+    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        new SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>(
+            TestAllTypes.getDefaultInstance(), mockParent, false);
     builder.setMessage(TestAllTypes.newBuilder().setOptionalInt32(0).build());
     assertNotSame(TestAllTypes.getDefaultInstance(), builder.getMessage());
     builder.clear();
@@ -122,13 +106,9 @@ public class SingleFieldBuilderV3Test extends TestCase {
 
   public void testMerge() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
-    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder,
-        TestAllTypesOrBuilder> builder =
-        new SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder,
-            TestAllTypesOrBuilder>(
-            TestAllTypes.getDefaultInstance(),
-            mockParent,
-            false);
+    SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder> builder =
+        new SingleFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>(
+            TestAllTypes.getDefaultInstance(), mockParent, false);
 
     // Merge into default field.
     builder.mergeFrom(TestAllTypes.getDefaultInstance());
@@ -136,20 +116,14 @@ public class SingleFieldBuilderV3Test extends TestCase {
 
     // Merge into non-default field on existing builder.
     builder.getBuilder().setOptionalInt32(2);
-    builder.mergeFrom(TestAllTypes.newBuilder()
-        .setOptionalDouble(4.0)
-        .buildPartial());
+    builder.mergeFrom(TestAllTypes.newBuilder().setOptionalDouble(4.0).buildPartial());
     assertEquals(2, builder.getMessage().getOptionalInt32());
-    assertEquals(4.0, builder.getMessage().getOptionalDouble());
+    assertEquals(4.0, builder.getMessage().getOptionalDouble(), 0.0);
 
     // Merge into non-default field on existing message
-    builder.setMessage(TestAllTypes.newBuilder()
-        .setOptionalInt32(10)
-        .buildPartial());
-    builder.mergeFrom(TestAllTypes.newBuilder()
-        .setOptionalDouble(5.0)
-        .buildPartial());
+    builder.setMessage(TestAllTypes.newBuilder().setOptionalInt32(10).buildPartial());
+    builder.mergeFrom(TestAllTypes.newBuilder().setOptionalDouble(5.0).buildPartial());
     assertEquals(10, builder.getMessage().getOptionalInt32());
-    assertEquals(5.0, builder.getMessage().getOptionalDouble());
+    assertEquals(5.0, builder.getMessage().getOptionalDouble(), 0.0);
   }
 }

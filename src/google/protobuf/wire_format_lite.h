@@ -88,7 +88,7 @@ class StringPieceField;
 // reflection.
 //
 // This class is really a namespace that contains only static methods.
-class LIBPROTOBUF_EXPORT WireFormatLite {
+class PROTOBUF_EXPORT WireFormatLite {
  public:
   // -----------------------------------------------------------------
   // Helper constants and functions related to the format.  These are
@@ -256,7 +256,7 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // that file to use these.
 
 #ifdef NDEBUG
-#define INL GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE
+#define INL PROTOBUF_ALWAYS_INLINE
 #else
 // Avoid excessive inlining in non-optimized builds. Without other optimizations
 // the inlining is not going to provide benefits anyway and the huge resulting
@@ -324,16 +324,16 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
       io::CodedOutputStream* unknown_fields_stream, RepeatedField<int>* values);
 
   // Read a string.  ReadString(..., string* value) requires an existing string.
-  static inline bool ReadString(io::CodedInputStream* input, string* value);
+  static inline bool ReadString(io::CodedInputStream* input, std::string* value);
   // ReadString(..., string** p) is internal-only, and should only be called
   // from generated code. It starts by setting *p to "new string"
   // if *p == &GetEmptyStringAlreadyInited().  It then invokes
   // ReadString(io::CodedInputStream* input, *p).  This is useful for reducing
   // code size.
-  static inline bool ReadString(io::CodedInputStream* input, string** p);
+  static inline bool ReadString(io::CodedInputStream* input, std::string** p);
   // Analogous to ReadString().
-  static bool ReadBytes(io::CodedInputStream* input, string* value);
-  static bool ReadBytes(io::CodedInputStream* input, string** p);
+  static bool ReadBytes(io::CodedInputStream* input, std::string* value);
+  static bool ReadBytes(io::CodedInputStream* input, std::string** p);
 
   enum Operation {
     PARSE = 0,
@@ -438,13 +438,13 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static void WriteEnum(int field_number, int value,
                         io::CodedOutputStream* output);
 
-  static void WriteString(int field_number, const string& value,
+  static void WriteString(int field_number, const std::string& value,
                           io::CodedOutputStream* output);
-  static void WriteBytes(int field_number, const string& value,
+  static void WriteBytes(int field_number, const std::string& value,
                          io::CodedOutputStream* output);
-  static void WriteStringMaybeAliased(int field_number, const string& value,
+  static void WriteStringMaybeAliased(int field_number, const std::string& value,
                                       io::CodedOutputStream* output);
-  static void WriteBytesMaybeAliased(int field_number, const string& value,
+  static void WriteBytesMaybeAliased(int field_number, const std::string& value,
                                      io::CodedOutputStream* output);
 
   static void WriteGroup(int field_number, const MessageLite& value,
@@ -609,9 +609,9 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
                                      const RepeatedField<int>& value,
                                      uint8* output);
 
-  INL static uint8* WriteStringToArray(int field_number, const string& value,
+  INL static uint8* WriteStringToArray(int field_number, const std::string& value,
                                        uint8* target);
-  INL static uint8* WriteBytesToArray(int field_number, const string& value,
+  INL static uint8* WriteBytesToArray(int field_number, const std::string& value,
                                       uint8* target);
 
   // Whether to serialize deterministically (e.g., map keys are
@@ -700,8 +700,8 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static const size_t kDoubleSize = 8;
   static const size_t kBoolSize = 1;
 
-  static inline size_t StringSize(const string& value);
-  static inline size_t BytesSize(const string& value);
+  static inline size_t StringSize(const std::string& value);
+  static inline size_t BytesSize(const std::string& value);
 
   template <typename MessageType>
   static inline size_t GroupSize(const MessageType& value);
@@ -725,16 +725,14 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // optimizations for primitive types that have fixed size on the wire, and
   // can be read using potentially faster paths.
   template <typename CType, enum FieldType DeclaredType>
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE static bool
-  ReadRepeatedFixedSizePrimitive(int tag_size, uint32 tag,
-                                 io::CodedInputStream* input,
-                                 RepeatedField<CType>* value);
+  PROTOBUF_ALWAYS_INLINE static bool ReadRepeatedFixedSizePrimitive(
+      int tag_size, uint32 tag, io::CodedInputStream* input,
+      RepeatedField<CType>* value);
 
   // Like ReadRepeatedFixedSizePrimitive but for packed primitive fields.
   template <typename CType, enum FieldType DeclaredType>
-  GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE static bool
-  ReadPackedFixedSizePrimitive(io::CodedInputStream* input,
-                               RepeatedField<CType>* value);
+  PROTOBUF_ALWAYS_INLINE static bool ReadPackedFixedSizePrimitive(
+      io::CodedInputStream* input, RepeatedField<CType>* value);
 
   static const CppType kFieldTypeToCppTypeMap[];
   static const WireFormatLite::WireType kWireTypeForFieldType[];
@@ -746,7 +744,7 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 // discards them.  WireFormat defines a subclass which writes to an
 // UnknownFieldSet.  This class is used by ExtensionSet::ParseField(), since
 // ExtensionSet is part of the lite library but UnknownFieldSet is not.
-class LIBPROTOBUF_EXPORT FieldSkipper {
+class PROTOBUF_EXPORT FieldSkipper {
  public:
   FieldSkipper() {}
   virtual ~FieldSkipper() {}
@@ -766,7 +764,7 @@ class LIBPROTOBUF_EXPORT FieldSkipper {
 
 // Subclass of FieldSkipper which saves skipped fields to a CodedOutputStream.
 
-class LIBPROTOBUF_EXPORT CodedOutputStreamFieldSkipper : public FieldSkipper {
+class PROTOBUF_EXPORT CodedOutputStreamFieldSkipper : public FieldSkipper {
  public:
   explicit CodedOutputStreamFieldSkipper(io::CodedOutputStream* unknown_fields)
       : unknown_fields_(unknown_fields) {}
@@ -898,27 +896,21 @@ inline int64 WireFormatLite::ZigZagDecode64(uint64 n) {
 // call ReadBytes().
 
 inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
-                                       string* value) {
+                                       std::string* value) {
   return ReadBytes(input, value);
 }
 
 inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
-                                       string** p) {
+                                       std::string** p) {
   return ReadBytes(input, p);
 }
 
-inline void SerializeUnknownMessageSetItems(const string& unknown_fields,
+inline void SerializeUnknownMessageSetItems(const std::string& unknown_fields,
                                             io::CodedOutputStream* output) {
   output->WriteString(unknown_fields);
 }
 
-inline uint8* SerializeUnknownMessageSetItemsToArray(
-    const string& unknown_fields, uint8* target) {
-  return io::CodedOutputStream::WriteStringWithSizeToArray(unknown_fields,
-                                                           target);
-}
-
-inline size_t ComputeUnknownMessageSetItemsSize(const string& unknown_fields) {
+inline size_t ComputeUnknownMessageSetItemsSize(const std::string& unknown_fields) {
   return unknown_fields.size();
 }
 

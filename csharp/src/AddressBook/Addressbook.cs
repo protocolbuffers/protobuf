@@ -247,7 +247,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       phones_.Add(other.phones_);
       if (other.lastUpdated_ != null) {
         if (lastUpdated_ == null) {
-          lastUpdated_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+          LastUpdated = new global::Google.Protobuf.WellKnownTypes.Timestamp();
         }
         LastUpdated.MergeFrom(other.LastUpdated);
       }
@@ -280,9 +280,9 @@ namespace Google.Protobuf.Examples.AddressBook {
           }
           case 42: {
             if (lastUpdated_ == null) {
-              lastUpdated_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+              LastUpdated = new global::Google.Protobuf.WellKnownTypes.Timestamp();
             }
-            input.ReadMessage(lastUpdated_);
+            input.ReadMessage(LastUpdated);
             break;
           }
         }
@@ -447,7 +447,7 @@ namespace Google.Protobuf.Examples.AddressBook {
                 break;
               }
               case 16: {
-                type_ = (global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) input.ReadEnum();
+                Type = (global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) input.ReadEnum();
                 break;
               }
             }

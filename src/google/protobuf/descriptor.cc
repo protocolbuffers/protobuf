@@ -70,6 +70,8 @@
 #undef PACKAGE  // autoheader #defines this.  :(
 
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -776,7 +778,7 @@ class FileDescriptorTables {
   FieldsByNumberMap fields_by_number_;  // Not including extensions.
   EnumValuesByNumberMap enum_values_by_number_;
   mutable EnumValuesByNumberMap unknown_enum_values_by_number_
-      GOOGLE_GUARDED_BY(unknown_enum_values_mu_);
+      PROTOBUF_GUARDED_BY(unknown_enum_values_mu_);
 
   // Populated on first request to save space, hence constness games.
   mutable internal::once_flag locations_by_path_once_;

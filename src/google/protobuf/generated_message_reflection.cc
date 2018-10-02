@@ -1201,8 +1201,9 @@ void GeneratedMessageReflection::SetString(
           MutableField<ArenaStringPtr>(message, field)->UnsafeSetDefault(
               default_ptr);
         }
-        MutableField<ArenaStringPtr>(message, field)->Set(default_ptr,
-            value, GetArena(message));
+        MutableField<ArenaStringPtr>(message, field)
+            ->Mutable(default_ptr, GetArena(message))
+            ->assign(value);
         break;
       }
     }
@@ -1705,7 +1706,7 @@ void* GeneratedMessageReflection::MutableRawRepeatedField(
   if (field->cpp_type() != cpptype)
     ReportReflectionUsageTypeError(descriptor_,
         field, "MutableRawRepeatedField", cpptype);
-  if (ctype >= 0)
+  if (ctype >= 0 && !field->is_extension())
     GOOGLE_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
   if (desc != NULL)
     GOOGLE_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";

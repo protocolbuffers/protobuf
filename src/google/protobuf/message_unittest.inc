@@ -567,6 +567,68 @@ TEST(MESSAGE_FACTORY_TEST_NAME, GeneratedFactoryUnknownType) {
               nullptr);
 }
 
+TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
+  {
+    UNITTEST::TestAllTypes msg;
+    // Parser ends in last 16 bytes of buffer due to a 0.
+    string data;
+    // 12 bytes of data
+    for (int i = 0; i < 4; i++) data += "\370\1\1";
+    // 13 byte is terminator
+    data += '\0';  // Terminator
+    // followed by the rest of the stream
+    // space is ascii 32 so no end group
+    data += string(30, ' ');
+    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::CodedInputStream cis(&zcis);
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_EQ(cis.CurrentPosition(), 3 * 4 + 1);
+  }
+  {
+    // Parser ends in last 16 bytes of buffer due to a end-group.
+    // Must use a message that is a group. Otherwise ending on a group end is
+    // a failure.
+    UNITTEST::TestAllTypes::OptionalGroup msg;
+    string data;
+    for (int i = 0; i < 3; i++) data += "\370\1\1";
+    data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
+    data += string(30, ' ');
+    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::CodedInputStream cis(&zcis);
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_EQ(cis.CurrentPosition(), 3 * 3 + 1);
+    EXPECT_TRUE(cis.LastTagWas(12));
+  }
+  {
+    // Parser ends in last 16 bytes of buffer due to a end-group. But is inside
+    // a length delimited field.
+    // a failure.
+    UNITTEST::TestAllTypes::OptionalGroup msg;
+    string data;
+    data += "\22\3foo";
+    data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
+    data += string(30, ' ');
+    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::CodedInputStream cis(&zcis);
+    EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
+    EXPECT_EQ(cis.CurrentPosition(), 6);
+    EXPECT_TRUE(cis.LastTagWas(12));
+  }
+  {
+    // Parser fails when ending on 0 if from ZeroCopyInputStream
+    UNITTEST::TestAllTypes msg;
+    string data;
+    // 12 bytes of data
+    for (int i = 0; i < 4; i++) data += "\370\1\1";
+    // 13 byte is terminator
+    data += '\0';  // Terminator
+    data += string(30, ' ');
+    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    EXPECT_FALSE(msg.ParsePartialFromZeroCopyStream(&zcis));
+  }
+}
+
+
 
 }  // namespace protobuf
 }  // namespace google

@@ -53,7 +53,7 @@ inline ::std::string TranslatePathToOpensource(const ::std::string& google3_path
 }
 
 inline ::std::string MaybeTranslatePath(const ::std::string& google3_path) {
-  string path = google3_path;
+  std::string path = google3_path;
   path = TranslatePathToOpensource(path);
   return path;
 }

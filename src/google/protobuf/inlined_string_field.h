@@ -58,53 +58,49 @@ namespace internal {
 // default_value parameters are taken for consistency with ArenaStringPtr, but
 // are not used for most methods.  With inlining, these should be removed from
 // the generated binary.
-class LIBPROTOBUF_EXPORT InlinedStringField {
+class PROTOBUF_EXPORT InlinedStringField {
  public:
-  InlinedStringField() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  InlinedStringField() PROTOBUF_ALWAYS_INLINE;
   explicit InlinedStringField(const ::std::string& default_value);
 
   void AssignWithDefault(const ::std::string* default_value,
-                         const InlinedStringField& from)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+                         const InlinedStringField& from) PROTOBUF_ALWAYS_INLINE;
 
   void ClearToEmpty(const ::std::string* default_value,
-                    Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+                    Arena* arena) PROTOBUF_ALWAYS_INLINE {
     ClearToEmptyNoArena(default_value);
   }
-  void ClearNonDefaultToEmpty() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+  void ClearNonDefaultToEmpty() PROTOBUF_ALWAYS_INLINE {
     ClearNonDefaultToEmptyNoArena();
   }
   void ClearToEmptyNoArena(const ::std::string* default_value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+      PROTOBUF_ALWAYS_INLINE {
     ClearNonDefaultToEmptyNoArena();
   }
-  void ClearNonDefaultToEmptyNoArena() GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void ClearNonDefaultToEmptyNoArena() PROTOBUF_ALWAYS_INLINE;
 
   void ClearToDefault(const ::std::string* default_value,
-                      Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+                      Arena* arena) PROTOBUF_ALWAYS_INLINE {
     ClearToDefaultNoArena(default_value);
   }
   void ClearToDefaultNoArena(const ::std::string* default_value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+      PROTOBUF_ALWAYS_INLINE;
 
   void Destroy(const ::std::string* default_value,
-               Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+               Arena* arena) PROTOBUF_ALWAYS_INLINE {
     DestroyNoArena(default_value);
   }
-  void DestroyNoArena(const ::std::string* default_value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void DestroyNoArena(const ::std::string* default_value) PROTOBUF_ALWAYS_INLINE;
 
-  const ::std::string& Get() const GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
-    return GetNoArena();
-  }
-  const ::std::string& GetNoArena() const GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  const ::std::string& Get() const PROTOBUF_ALWAYS_INLINE { return GetNoArena(); }
+  const ::std::string& GetNoArena() const PROTOBUF_ALWAYS_INLINE;
 
   ::std::string* Mutable(const ::std::string* default_value,
-                    Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+                    Arena* arena) PROTOBUF_ALWAYS_INLINE {
     return MutableNoArena(default_value);
   }
   ::std::string* MutableNoArena(const ::std::string* default_value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+      PROTOBUF_ALWAYS_INLINE;
 
   ::std::string* Release(const ::std::string* default_value, Arena* arena) {
     return ReleaseNoArena(default_value);
@@ -118,30 +114,30 @@ class LIBPROTOBUF_EXPORT InlinedStringField {
   ::std::string* ReleaseNonDefaultNoArena(const ::std::string* default_value);
 
   void Set(const ::std::string* default_value, StringPiece value,
-           Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+           Arena* arena) PROTOBUF_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
   void SetLite(const ::std::string* default_value, StringPiece value,
-               Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+               Arena* arena) PROTOBUF_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetNoArena(const ::std::string* default_value, StringPiece value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void SetNoArena(const ::std::string* default_value,
+                  StringPiece value) PROTOBUF_ALWAYS_INLINE;
 
   void Set(const ::std::string* default_value, const ::std::string& value,
-           Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+           Arena* arena) PROTOBUF_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
   void SetLite(const ::std::string* default_value, const ::std::string& value,
-               Arena* arena) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE {
+               Arena* arena) PROTOBUF_ALWAYS_INLINE {
     SetNoArena(default_value, value);
   }
-  void SetNoArena(const ::std::string* default_value, const ::std::string& value)
-      GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void SetNoArena(const ::std::string* default_value,
+                  const ::std::string& value) PROTOBUF_ALWAYS_INLINE;
 
 #if LANG_CXX11
   void SetNoArena(const ::std::string* default_value,
-                  ::std::string&& value) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+                  ::std::string&& value) PROTOBUF_ALWAYS_INLINE;
 #endif
   void SetAllocated(const ::std::string* default_value,
                     ::std::string* value,
@@ -150,7 +146,7 @@ class LIBPROTOBUF_EXPORT InlinedStringField {
   }
   void SetAllocatedNoArena(const ::std::string* default_value,
                            ::std::string* value);
-  void Swap(InlinedStringField* from) GOOGLE_PROTOBUF_ATTRIBUTE_ALWAYS_INLINE;
+  void Swap(InlinedStringField* from) PROTOBUF_ALWAYS_INLINE;
   ::std::string* UnsafeMutablePointer();
   void UnsafeSetDefault(const ::std::string* default_value);
   ::std::string* UnsafeArenaRelease(const ::std::string* default_value, Arena* arena);

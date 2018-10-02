@@ -82,11 +82,11 @@ class ImmutablePrimitiveFieldLiteGenerator
   void GenerateHashCode(io::Printer* printer) const;
 
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  protected:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
@@ -143,11 +143,11 @@ class RepeatedImmutablePrimitiveFieldLiteGenerator
   void GenerateHashCode(io::Printer* printer) const;
 
 
-  string GetBoxedType() const;
+  std::string GetBoxedType() const;
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
