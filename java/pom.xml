@@ -207,6 +207,7 @@
   <modules>
     <module>core</module>
     <module>util</module>
+    <module>bom</module>
   </modules>
 
 </project>
