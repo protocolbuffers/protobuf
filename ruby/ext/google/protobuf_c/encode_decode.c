@@ -211,7 +211,6 @@ static void* appendbytes_handler(void *closure,
                                  size_t size_hint) {
   VALUE ary = (VALUE)closure;
   VALUE str = rb_str_new2("");
-  rb_enc_associate(str, kRubyString8bitEncoding);
   RepeatedField_push_native(ary, &str);
   return (void*)str;
 }
@@ -237,7 +236,6 @@ static void* bytes_handler(void *closure,
   const field_handlerdata_t *fieldhandler = hd;
 
   VALUE str = rb_str_new2("");
-  rb_enc_associate(str, kRubyString8bitEncoding);
   DEREF(msg, fieldhandler->ofs, VALUE) = str;
   set_hasbit(closure, fieldhandler->hasbit);
   return (void*)str;
@@ -470,7 +468,6 @@ static void *oneofbytes_handler(void *closure,
   MessageHeader* msg = closure;
   const oneof_handlerdata_t *oneofdata = hd;
   VALUE str = rb_str_new2("");
-  rb_enc_associate(str, kRubyString8bitEncoding);
   DEREF(msg, oneofdata->case_ofs, uint32_t) =
       oneofdata->oneof_case_num;
   DEREF(msg, oneofdata->ofs, VALUE) = str;
