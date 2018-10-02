@@ -5,12 +5,16 @@
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.google.protobuf</groupId>
+  <parent>
+    <groupId>com.google.protobuf</groupId>
+    <artifactId>protobuf-parent</artifactId>
+    <version>3.6.1</version>
+  </parent>
+
   <artifactId>protobuf-bom</artifactId>
-  <version>3.6.1</version>
   <packaging>pom</packaging>
 
-  <name>Protocol Buffers BOM</name>
+  <name>Protocol Buffers [BOM]</name>
   <description>A compatible set of open source libraries for working with protocol buffers.</description>
   <url>https://developers.google.com/protocol-buffers/</url>
 
