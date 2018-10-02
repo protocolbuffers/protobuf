@@ -62,6 +62,12 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-bom</artifactId>
+        <version>3.6.1</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.12</version>
@@ -205,9 +211,9 @@
   </profiles>
 
   <modules>
+    <module>bom</module>
     <module>core</module>
     <module>util</module>
-    <module>bom</module>
   </modules>
 
 </project>

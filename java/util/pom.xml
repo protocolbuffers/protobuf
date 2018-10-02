@@ -19,7 +19,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>${project.version}</version>
+      <version>3.6.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
