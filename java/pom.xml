@@ -64,7 +64,7 @@
       <dependency>
         <groupId>com.google.protobuf</groupId>
         <artifactId>protobuf-bom</artifactId>
-        <version>3.6.1</version>
+        <version>>${project.version}</version>
         <type>pom</type>
       </dependency>
       <dependency>
