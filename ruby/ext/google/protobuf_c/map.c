@@ -101,11 +101,11 @@ static VALUE table_key_to_ruby(Map* self, const char* buf, size_t length) {
   switch (self->key_type) {
     case UPB_TYPE_BYTES:
     case UPB_TYPE_STRING: {
-      VALUE ret = rb_str_new(buf, length);
-      rb_enc_associate(ret,
-                       (self->key_type == UPB_TYPE_BYTES) ?
-                       kRubyString8bitEncoding : kRubyStringUtf8Encoding);
-      return ret;
+      if (self->key_type == UPB_TYPE_BYTES) {
+	  return rb_str_new(buf, length);
+      } else {
+	  return rb_utf8_str_new(buf, length);
+      }
     }
 
     case UPB_TYPE_BOOL:

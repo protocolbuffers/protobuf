@@ -278,9 +278,11 @@ void native_slot_init(upb_fieldtype_t type, void* memory) {
       break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-      DEREF(memory, VALUE) = rb_str_new2("");
-      rb_enc_associate(DEREF(memory, VALUE), (type == UPB_TYPE_BYTES) ?
-                       kRubyString8bitEncoding : kRubyStringUtf8Encoding);
+      if (type == UPB_TYPE_BYTES) {
+	  DEREF(memory, VALUE) = rb_str_new2("");
+      } else {
+	  DEREF(memory, VALUE) = rb_utf8_str_new_cstr("");
+      }
       break;
     case UPB_TYPE_MESSAGE:
       DEREF(memory, VALUE) = Qnil;
@@ -688,10 +690,14 @@ VALUE layout_get_default(const upb_fielddef *field) {
     case UPB_TYPE_BYTES: {
       size_t size;
       const char *str = upb_fielddef_defaultstr(field, &size);
-      VALUE str_rb = rb_str_new(str, size);
+      VALUE str_rb;
 
-      rb_enc_associate(str_rb, (upb_fielddef_type(field) == UPB_TYPE_BYTES) ?
-                 kRubyString8bitEncoding : kRubyStringUtf8Encoding);
+      if (upb_fielddef_type(field) == UPB_TYPE_BYTES) {
+	  str_rb = rb_str_new(str, size);
+      } else {
+	  str_rb = rb_utf8_str_new(str, size);
+      }
+
       rb_obj_freeze(str_rb);
       return str_rb;
     }
