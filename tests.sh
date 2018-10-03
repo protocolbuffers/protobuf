@@ -285,6 +285,7 @@ generate_php_test_proto() {
   rm -rf generated
   mkdir generated
   ../../src/protoc --php_out=generated         \
+    -I../../src -I.                            \
     proto/empty/echo.proto                     \
     proto/test.proto                           \
     proto/test_include.proto                   \
