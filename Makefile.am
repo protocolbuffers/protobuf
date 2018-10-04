@@ -919,13 +919,21 @@ ruby_EXTRA_DIST=                                                             \
   ruby/src/main/java/com/google/protobuf/jruby/Utils.java                    \
   ruby/src/main/java/google/ProtobufJavaService.java                         \
   ruby/src/main/sentinel.proto                                               \
+  ruby/tests/basic_proto2.rb                                                 \
+  ruby/tests/basic_test_proto2.proto                                         \
+  ruby/tests/basic_test.proto                                                \
   ruby/tests/basic.rb                                                        \
+  ruby/tests/common_tests.rb                                                 \
   ruby/tests/encode_decode_test.rb                                           \
   ruby/tests/gc_test.rb                                                      \
   ruby/tests/repeated_field_test.rb                                          \
   ruby/tests/stress.rb                                                       \
+  ruby/tests/generated_code_proto2_test.rb                                   \
+  ruby/tests/generated_code_proto2.proto                                     \
   ruby/tests/generated_code.proto                                            \
+  ruby/tests/test_import_proto2.proto                                        \
   ruby/tests/test_import.proto                                               \
+  ruby/tests/test_ruby_package_proto2.proto                                  \
   ruby/tests/test_ruby_package.proto                                         \
   ruby/tests/generated_code_test.rb                                          \
   ruby/tests/well_known_types_test.rb                                        \
