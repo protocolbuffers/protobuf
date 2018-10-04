@@ -870,6 +870,14 @@ python_EXTRA_DIST=                                                           \
   python/README.md
 
 ruby_EXTRA_DIST=                                                             \
+  ruby/tests/test_ruby_package_proto2.proto                                  \
+  ruby/tests/test_import_proto2.proto                                        \
+  ruby/tests/generated_code_proto2_test.rb                                   \
+  ruby/tests/generated_code_proto2.proto                                     \
+  ruby/tests/common_tests.rb                                                 \
+  ruby/tests/basic_test_proto2.proto                                         \
+  ruby/tests/basic_test.proto                                                \
+  ruby/tests/basic_proto2.rb                                                 \
   ruby/Gemfile                                                               \
   ruby/.gitignore                                                            \
   ruby/README.md                                                             \
