@@ -1,5 +1,0 @@
-syntax = "proto2";
-
-package foo_bar.proto2;
-
-message TestImportedMessage {}
