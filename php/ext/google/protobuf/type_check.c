@@ -284,6 +284,7 @@ CONVERT_TO_INTEGER(uint64);
     int64_t lval;                                                           \
     double dval;                                                            \
                                                                             \
+    TSRMLS_FETCH();                                                         \
     switch (convert_numeric_string(val, len, &lval, &dval)) {               \
       case IS_DOUBLE: {                                                     \
         *type##_value = (type)dval;                                         \
@@ -302,6 +303,7 @@ CONVERT_TO_INTEGER(uint64);
   }                                                                         \
                                                                             \
   bool protobuf_convert_to_##type(zval* from, type* to) {                   \
+    TSRMLS_FETCH();                                                         \
     switch (Z_TYPE_P(from)) {                                               \
       case IS_LONG: {                                                       \
         return convert_int64_to_##type(Z_LVAL_P(from), to);                 \
@@ -329,6 +331,7 @@ CONVERT_TO_FLOAT(double);
 #undef CONVERT_TO_FLOAT
 
 bool protobuf_convert_to_bool(zval* from, int8_t* to) {
+  TSRMLS_FETCH();
   switch (Z_TYPE_P(from)) {
 #if PHP_MAJOR_VERSION < 7
     case IS_BOOL:
@@ -369,6 +372,7 @@ bool protobuf_convert_to_bool(zval* from, int8_t* to) {
 }
 
 bool protobuf_convert_to_string(zval* from) {
+  TSRMLS_FETCH();
   switch (Z_TYPE_P(from)) {
     case IS_STRING: {
       return true;
