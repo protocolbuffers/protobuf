@@ -222,7 +222,7 @@ process_double:
                                        type##_t* type##_value) {             \
     int64_t lval;                                                            \
     double dval;                                                             \
-                                                                             \
+    TSRMLS_FETCH();                                                          \
     switch (convert_numeric_string(val, len, &lval, &dval)) {                \
       case IS_DOUBLE: {                                                      \
         return convert_double_to_##type(dval, type##_value);                 \
@@ -239,6 +239,7 @@ process_double:
   }                                                                          \
                                                                              \
   bool protobuf_convert_to_##type(zval* from, type##_t* to) {                \
+    TSRMLS_FETCH();                                                          \
     switch (Z_TYPE_P(from)) {                                                \
       case IS_LONG: {                                                        \
         return convert_int64_to_##type(Z_LVAL_P(from), to);                  \
