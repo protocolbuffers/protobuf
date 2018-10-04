@@ -41,12 +41,16 @@ are:
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
-import collections
+try:
+    # This fallback applies for all versions of Python before 3.3
+    import collections.abc as collections_abc
+except ImportError:
+    import collections as collections_abc
 import sys
 
 if sys.version_info[0] < 3:
-  # We would use collections.MutableMapping all the time, but in Python 2 it
-  # doesn't define __slots__.  This causes two significant problems:
+  # We would use collections_abc.MutableMapping all the time, but in Python 2
+  # it doesn't define __slots__.  This causes two significant problems:
   #
   # 1. we can't disallow arbitrary attribute assignment, even if our derived
   #    classes *do* define __slots__.
@@ -59,7 +63,7 @@ if sys.version_info[0] < 3:
   # verbatim, except that:
   # 1. We declare __slots__.
   # 2. We don't declare this as a virtual base class.  The classes defined
-  #    in collections are the interesting base classes, not us.
+  #    in collections_abc are the interesting base classes, not us.
   #
   # Note: deriving from object is critical.  It is the only thing that makes
   # this a true type, allowing us to derive from it in C++ cleanly and making
@@ -106,7 +110,7 @@ if sys.version_info[0] < 3:
     __hash__ = None
 
     def __eq__(self, other):
-      if not isinstance(other, collections.Mapping):
+      if not isinstance(other, collections_abc.Mapping):
         return NotImplemented
       return dict(self.items()) == dict(other.items())
 
@@ -173,13 +177,13 @@ if sys.version_info[0] < 3:
         self[key] = default
       return default
 
-  collections.Mapping.register(Mapping)
-  collections.MutableMapping.register(MutableMapping)
+  collections_abc.Mapping.register(Mapping)
+  collections_abc.MutableMapping.register(MutableMapping)
 
 else:
   # In Python 3 we can just use MutableMapping directly, because it defines
   # __slots__.
-  MutableMapping = collections.MutableMapping
+  MutableMapping = collections_abc.MutableMapping
 
 
 class BaseContainer(object):
@@ -337,7 +341,7 @@ class RepeatedScalarFieldContainer(BaseContainer):
     # We are presumably comparing against some other sequence type.
     return other == self._values
 
-collections.MutableSequence.register(BaseContainer)
+collections_abc.MutableSequence.register(BaseContainer)
 
 
 class RepeatedCompositeFieldContainer(BaseContainer):
