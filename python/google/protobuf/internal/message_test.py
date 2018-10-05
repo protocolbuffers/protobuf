@@ -139,9 +139,10 @@ class MessageTest(BaseTestCase):
   def testGoldenPackedMessage(self, message_module):
     golden_data = test_util.GoldenFileData('golden_packed_fields_message')
     golden_message = message_module.TestPackedTypes()
-    golden_message.ParseFromString(golden_data)
+    parsed_bytes = golden_message.ParseFromString(golden_data)
     all_set = message_module.TestPackedTypes()
     test_util.SetAllPackedFields(all_set)
+    self.assertEqual(parsed_bytes, len(golden_data))
     self.assertEqual(all_set, golden_message)
     self.assertEqual(golden_data, all_set.SerializeToString())
     golden_copy = copy.deepcopy(golden_message)
