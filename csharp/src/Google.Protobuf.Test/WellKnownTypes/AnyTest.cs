@@ -140,5 +140,18 @@ namespace Google.Protobuf.WellKnownTypes
             var message = new TestWellKnownTypes { AnyField = new Any() };
             Assert.AreEqual("{ \"anyField\": { \"@type\": \"\", \"@value\": \"\" } }", message.ToString());
         }
+
+        [Test]
+        public void IsWrongType()
+        {
+            var any = Any.Pack(SampleMessages.CreateFullTestAllTypes());
+            Assert.False(any.Is(TestOneof.Descriptor));
+        }
+
+        public void IsRightType()
+        {
+            var any = Any.Pack(SampleMessages.CreateFullTestAllTypes());
+            Assert.True(any.Is(TestAllTypes.Descriptor));
+        }
     }
 }
