@@ -166,7 +166,7 @@ nobase_include_HEADERS =                                         \
 
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
-libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
+libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS) $(LIBATOMIC_LIBS)
 libprotobuf_lite_la_LDFLAGS = -version-info 17:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_lite_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf-lite.map
@@ -212,7 +212,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/zero_copy_stream.cc                       \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
-libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
+libprotobuf_la_LIBADD = $(PTHREAD_LIBS) $(LIBATOMIC_LIBS)
 libprotobuf_la_LDFLAGS = -version-info 17:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf.map

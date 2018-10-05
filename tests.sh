@@ -16,8 +16,8 @@ internal_build_cpp() {
   git submodule update --init --recursive
 
   ./autogen.sh
-  ./configure CXXFLAGS="-fPIC"  # -fPIC is needed for python cpp test.
-                                # See python/setup.py for more details
+  ./configure CXXFLAGS="-fPIC -std=c++11"  # -fPIC is needed for python cpp test.
+                                           # See python/setup.py for more details
   make -j4
 }
 
