@@ -111,6 +111,9 @@ typedef struct {
    * because |f| is the field in the *current* message (i.e., the map-entry
    * message itself), not the parent's field that leads to this map. */
   const upb_fielddef *mapfield;
+
+  /* True if the field to be parsed is unknown. */
+  bool is_unknown_field;
 } upb_jsonparser_frame;
 
 struct upb_json_parser {
@@ -916,6 +919,10 @@ static bool end_bool(upb_json_parser *p, bool val) {
     start_value_object(p, VALUE_BOOLVALUE);
   }
 
+  if (p->top->is_unknown_field) {
+    return true;
+  }
+
   if (!parser_putbool(p, val)) {
     return false;
   }
@@ -1022,6 +1029,7 @@ static bool start_stringval(upb_json_parser *p) {
     inner->name_table = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_unknown_field = false;
     p->top = inner;
 
     if (upb_fielddef_type(p->top->f) == UPB_TYPE_STRING) {
@@ -1513,6 +1521,7 @@ static bool handle_mapentry(upb_json_parser *p) {
   inner->name_table = NULL;
   inner->mapfield = mapfield;
   inner->is_map = false;
+  inner->is_unknown_field = false;
 
   /* Don't set this to true *yet* -- we reuse parsing handlers below to push
    * the key field value to the sink, and these handlers will pop the frame
@@ -1543,6 +1552,8 @@ static bool end_membername(upb_json_parser *p) {
   UPB_ASSERT(!p->top->f);
 
   if (!p->top->m) {
+    p->top->is_unknown_field = true;
+    multipart_end(p);
     return true;
   }
 
@@ -1559,6 +1570,7 @@ static bool end_membername(upb_json_parser *p) {
 
       return true;
     } else if (p->ignore_json_unknown) {
+      p->top->is_unknown_field = true;
       multipart_end(p);
       return true;
     } else {
@@ -1590,10 +1602,11 @@ static void end_member(upb_json_parser *p) {
   }
 
   p->top->f = NULL;
+  p->top->is_unknown_field = false;
 }
 
 static bool start_subobject(upb_json_parser *p) {
-  if (p->top->f == NULL) {
+  if (p->top->is_unknown_field) {
     upb_jsonparser_frame *inner;
     if (!check_stack(p)) return false;
 
@@ -1602,6 +1615,7 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_unknown_field = false;
     p->top = inner;
     return true;
   }
@@ -1623,6 +1637,7 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = true;
     inner->is_mapentry = false;
+    inner->is_unknown_field = false;
     p->top = inner;
 
     return true;
@@ -1643,6 +1658,7 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_unknown_field = false;
     p->top = inner;
 
     return true;
@@ -1742,7 +1758,18 @@ static bool start_array(upb_json_parser *p) {
     start_listvalue_object(p);
   }
 
-  UPB_ASSERT(p->top->f);
+  if (p->top->is_unknown_field) {
+    inner = p->top + 1;
+    inner->m = NULL;
+    inner->name_table = NULL;
+    inner->f = NULL;
+    inner->is_map = false;
+    inner->is_mapentry = false;
+    inner->is_unknown_field = true;
+    p->top = inner;
+
+    return true;
+  }
 
   if (!upb_fielddef_isseq(p->top->f)) {
     upb_status_seterrf(&p->status,
@@ -1762,6 +1789,7 @@ static bool start_array(upb_json_parser *p) {
   inner->f = p->top->f;
   inner->is_map = false;
   inner->is_mapentry = false;
+  inner->is_unknown_field = false;
   p->top = inner;
 
   return true;
@@ -1773,6 +1801,11 @@ static void end_array(upb_json_parser *p) {
   UPB_ASSERT(p->top > p->stack);
 
   p->top--;
+
+  if (p->top->is_unknown_field) {
+    return;
+  }
+
   sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSEQ);
   upb_sink_endseq(&p->top->sink, sel);
 
@@ -1792,13 +1825,13 @@ static void end_array(upb_json_parser *p) {
 }
 
 static void start_object(upb_json_parser *p) {
-  if (!p->top->is_map) {
+  if (!p->top->is_map && p->top->m != NULL) {
     upb_sink_startmsg(&p->top->sink);
   }
 }
 
 static void end_object(upb_json_parser *p) {
-  if (!p->top->is_map) {
+  if (!p->top->is_map && p->top->m != NULL) {
     upb_status status;
     upb_status_clear(&status);
     upb_sink_endmsg(&p->top->sink, &status);
@@ -1910,7 +1943,7 @@ static void end_structvalue_object(upb_json_parser *p) {
 }
 
 static bool is_top_level(upb_json_parser *p) {
-  return p->top == p->stack && p->top->f == NULL;
+  return p->top == p->stack && p->top->f == NULL && !p->top->is_unknown_field;
 }
 
 static bool is_wellknown_msg(upb_json_parser *p, upb_wellknowntype_t type) {
@@ -2177,6 +2210,7 @@ static void json_parser_reset(upb_json_parser *p) {
   p->top->f = NULL;
   p->top->is_map = false;
   p->top->is_mapentry = false;
+  p->top->is_unknown_field = false;
 
   /* Emit Ragel initialization of the parser. */
   %% write init;
