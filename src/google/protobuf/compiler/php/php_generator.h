@@ -62,6 +62,11 @@ PROTOC_EXPORT std::string GeneratedClassName(
 PROTOC_EXPORT std::string GeneratedClassName(
     const google::protobuf::ServiceDescriptor* desc);
 
+inline bool IsWrapperType(const FieldDescriptor* descriptor) {
+  return descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+      descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
+}
+
 }  // namespace php
 }  // namespace compiler
 }  // namespace protobuf
