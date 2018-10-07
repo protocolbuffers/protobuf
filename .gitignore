@@ -194,3 +194,7 @@ cmake/cmake-build-debug/
 
 # Visual Studio 2017
 .vs
+
+# IntelliJ
+.idea
+*.iml

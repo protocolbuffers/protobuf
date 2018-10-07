@@ -749,11 +749,13 @@ php_EXTRA_DIST=                                                       \
   php/tests/proto/test_reserved_message_upper.proto                   \
   php/tests/proto/test_service.proto                                  \
   php/tests/proto/test_service_namespace.proto                        \
+  php/tests/proto/test_wrapper_type_setters.proto                     \
   php/tests/test.sh                                                   \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
   php/tests/undefined_test.php                                        \
-  php/tests/well_known_test.php
+  php/tests/well_known_test.php                                       \
+  php/tests/wrapper_type_setters_test.php
 
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
