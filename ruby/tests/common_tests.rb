@@ -150,7 +150,7 @@ module CommonTests
 
     # Google::Protobuf::TypeError should inherit from TypeError for backwards compatibility
     # TODO: This can be removed when we can safely migrate to Google::Protobuf::TypeError
-    assert_true e.is_a?(::TypeError)
+    assert e.is_a?(::TypeError)
 
     assert_raise Google::Protobuf::TypeError do
       m.optional_string = 42

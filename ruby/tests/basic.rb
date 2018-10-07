@@ -34,15 +34,15 @@ module BasicTest
 
     def test_has_field
       m = TestMessage.new
-      assert_false m.has_optional_msg?
+      assert !m.has_optional_msg?
       m.optional_msg = TestMessage2.new
-      assert_true m.has_optional_msg?
-      assert_true TestMessage.descriptor.lookup('optional_msg').has?(m)
+      assert m.has_optional_msg?
+      assert TestMessage.descriptor.lookup('optional_msg').has?(m)
 
       m = OneofMessage.new
-      assert_false m.has_my_oneof?
+      assert !m.has_my_oneof?
       m.a = "foo"
-      assert_true m.has_my_oneof?
+      assert m.has_my_oneof?
       assert_raise NoMethodError do
         m.has_a?
       end
@@ -105,10 +105,10 @@ module BasicTest
 
       m.optional_msg = TestMessage2.new(:foo => 42)
       assert_equal TestMessage2.new(:foo => 42), m.optional_msg
-      assert_true m.has_optional_msg?
+      assert m.has_optional_msg?
       m.clear_optional_msg
       assert_equal nil, m.optional_msg
-      assert_false m.has_optional_msg?
+      assert !m.has_optional_msg?
 
       m.optional_msg = TestMessage2.new(:foo => 42)
       assert_equal TestMessage2.new(:foo => 42), m.optional_msg
@@ -128,20 +128,20 @@ module BasicTest
       m = OneofMessage.new
       m.a = "foo"
       assert_equal "foo", m.a
-      assert_true m.has_my_oneof?
+      assert m.has_my_oneof?
       m.clear_a
-      assert_false m.has_my_oneof?
+      assert !m.has_my_oneof?
 
       m.a = "foobar"
-      assert_true m.has_my_oneof?
+      assert m.has_my_oneof?
       m.clear_my_oneof
-      assert_false m.has_my_oneof?
+      assert !m.has_my_oneof?
 
       m.a = "bar"
       assert_equal "bar", m.a
-      assert_true m.has_my_oneof?
+      assert m.has_my_oneof?
       OneofMessage.descriptor.lookup('a').clear(m)
-      assert_false m.has_my_oneof?
+      assert !m.has_my_oneof?
     end
 
 
@@ -330,17 +330,17 @@ module BasicTest
 
     def test_file_descriptor
       file_descriptor = TestMessage.descriptor.file_descriptor
-      assert_true nil != file_descriptor
+      assert nil != file_descriptor
       assert_equal "tests/basic_test.proto", file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
 
       file_descriptor = TestEnum.descriptor.file_descriptor
-      assert_true nil != file_descriptor
+      assert nil != file_descriptor
       assert_equal "tests/basic_test.proto", file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
 
       file_descriptor = BadFieldNames.descriptor.file_descriptor
-      assert_true nil != file_descriptor
+      assert nil != file_descriptor
       assert_equal nil, file_descriptor.name
       assert_equal :proto3, file_descriptor.syntax
     end
