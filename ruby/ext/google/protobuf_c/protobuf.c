@@ -30,6 +30,26 @@
 
 #include "protobuf.h"
 
+#ifndef HAVE_RB_UTF8_STR_NEW_CSTR
+VALUE
+rb_utf8_str_new_cstr(const char *ptr)
+{
+    VALUE str = rb_str_new_cstr(ptr);
+    rb_enc_associate_index(str, rb_utf8_encindex());
+    return str;
+}
+#endif
+
+#ifndef HAVE_RB_UTF8_STR_NEW
+VALUE
+rb_utf8_str_new(const char *ptr, long len)
+{
+    VALUE str = str_new(rb_cString, ptr, len);
+    rb_enc_associate_index(str, rb_utf8_encindex());
+    return str;
+}
+#endif
+
 // -----------------------------------------------------------------------------
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.

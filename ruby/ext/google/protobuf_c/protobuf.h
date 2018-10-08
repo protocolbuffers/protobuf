@@ -608,4 +608,12 @@ void check_upb_status(const upb_status* status, const char* msg);
 
 extern ID descriptor_instancevar_interned;
 
+#ifndef HAVE_RB_UTF8_STR_NEW_CSTR
+VALUE rb_utf8_str_new_cstr(const char *ptr);
+#endif
+
+#ifndef HAVE_RB_UTF8_STR_NEW
+VALUE rb_utf8_str_new(const char *ptr, long len);
+#endif
+
 #endif  // __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__

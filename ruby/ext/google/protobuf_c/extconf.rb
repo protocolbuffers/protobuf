@@ -16,4 +16,7 @@ $objs = ["protobuf.o", "defs.o", "storage.o", "message.o",
          "repeated_field.o", "map.o", "encode_decode.o", "upb.o",
          "wrap_memcpy.o"]
 
+have_func("rb_utf8_str_new")
+have_func("rb_utf8_str_new_cstr")
+
 create_makefile("google/protobuf_c")
