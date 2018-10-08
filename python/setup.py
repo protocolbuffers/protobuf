@@ -183,7 +183,8 @@ if __name__ == '__main__':
         extra_compile_args.append('-std=c++11')
 
     if sys.platform == 'darwin':
-      extra_compile_args.append("-Wno-shorten-64-to-32");
+      os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
+      extra_compile_args.append("-Wno-shorten-64-to-32")
 
     # https://github.com/Theano/Theano/issues/4926
     if sys.platform == 'win32':
