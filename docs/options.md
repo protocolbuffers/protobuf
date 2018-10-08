@@ -193,4 +193,6 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://bitbucket.org/ooicgsn/cgsn-mooring
    * Extensions: 1058
    
-
+1. GRPC request validator(python version)
+   * Website: https://github.com/v1c77/py_grpc_validator
+   * Extensions: 1059
