@@ -151,12 +151,13 @@ wstring normalize(wstring path) {
 
   static const wstring dot(L".");
   static const wstring dotdot(L"..");
+  const wchar_t *p = path.c_str();
 
   std::vector<wstring> segments;
   int segment_start = -1;
   // Find the path segments in `path` (separated by "/").
   for (int i = 0;; ++i) {
-    if (!is_separator(path[i]) && path[i] != L'\0') {
+    if (!is_separator(p[i]) && p[i] != L'\0') {
       // The current character does not end a segment, so start one unless it's
       // already started.
       if (segment_start < 0) {
@@ -165,7 +166,7 @@ wstring normalize(wstring path) {
     } else if (segment_start >= 0 && i > segment_start) {
       // The current character is "/" or "\0", so this ends a segment.
       // Add that to `segments` if there's anything to add; handle "." and "..".
-      wstring segment(path, segment_start, i - segment_start);
+      wstring segment(p, segment_start, i - segment_start);
       segment_start = -1;
       if (segment == dotdot) {
         if (!segments.empty() &&
@@ -176,7 +177,7 @@ wstring normalize(wstring path) {
         segments.push_back(segment);
       }
     }
-    if (path[i] == L'\0') {
+    if (p[i] == L'\0') {
       break;
     }
   }
@@ -199,7 +200,7 @@ wstring normalize(wstring path) {
     result << segments[i];
   }
   // Preserve trailing separator if the input contained it.
-  if (!path.empty() && is_separator(path[path.size() - 1])) {
+  if (!path.empty() && is_separator(p[path.size() - 1])) {
     result << L'\\';
   }
   return result.str();
