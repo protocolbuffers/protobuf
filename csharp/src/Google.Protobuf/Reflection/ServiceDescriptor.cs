@@ -93,7 +93,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this service.
         /// </summary>
-        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+        public CustomOptions<ServiceOptionFieldId> CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions<ServiceOptionFieldId>.Empty;
 
         internal void CrossLink()
         {

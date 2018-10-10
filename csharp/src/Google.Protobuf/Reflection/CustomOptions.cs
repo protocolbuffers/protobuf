@@ -57,12 +57,12 @@ namespace Google.Protobuf.Reflection
     /// all the set values are merged together.
     /// </para>
     /// </remarks>
-    public sealed class CustomOptions
+    public sealed class CustomOptions<FieldId> where FieldId : OptionFieldId
     {
         /// <summary>
         /// Singleton for all descriptors with an empty set of options.
         /// </summary>
-        internal static readonly CustomOptions Empty = new CustomOptions();
+        internal static readonly CustomOptions<FieldId> Empty = new CustomOptions<FieldId>();
         
         /// <summary>
         /// A sequence of values per field. This needs to be per field rather than per tag to allow correct deserialization
@@ -79,9 +79,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetBool(int field, out bool value)
+        public bool TryGetBool(FieldId field, out bool value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             value = tmp == 1UL;
             return tmp != null;
         }
@@ -92,9 +92,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetInt32(int field, out int value)
+        public bool TryGetInt32(FieldId field, out int value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             value = (int) tmp.GetValueOrDefault();
             return tmp != null;
         }
@@ -105,9 +105,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetInt64(int field, out long value)
+        public bool TryGetInt64(FieldId field, out long value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             value = (long) tmp.GetValueOrDefault();
             return tmp != null;
         }
@@ -119,7 +119,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetFixed32(int field, out uint value) => TryGetUInt32(field, out value);
+        public bool TryGetFixed32(FieldId field, out uint value) => TryGetUInt32(field, out value);
 
         /// <summary>
         /// Retrieves an unsigned 64-bit integer value for the specified option field,
@@ -128,7 +128,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetFixed64(int field, out ulong value) => TryGetUInt64(field, out value);
+        public bool TryGetFixed64(FieldId field, out ulong value) => TryGetUInt64(field, out value);
 
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field,
@@ -137,7 +137,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetSFixed32(int field, out int value) => TryGetInt32(field, out value);
+        public bool TryGetSFixed32(FieldId field, out int value) => TryGetInt32(field, out value);
 
         /// <summary>
         /// Retrieves a signed 64-bit integer value for the specified option field,
@@ -146,7 +146,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetSFixed64(int field, out long value) => TryGetInt64(field, out value);
+        public bool TryGetSFixed64(FieldId field, out long value) => TryGetInt64(field, out value);
         
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field,
@@ -155,9 +155,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetSInt32(int field, out int value)
+        public bool TryGetSInt32(FieldId field, out int value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             value = CodedInputStream.DecodeZigZag32((uint) tmp.GetValueOrDefault());
             return tmp != null;
         }
@@ -169,9 +169,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetSInt64(int field, out long value)
+        public bool TryGetSInt64(FieldId field, out long value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             value = CodedInputStream.DecodeZigZag64(tmp.GetValueOrDefault());
             return tmp != null;
         }
@@ -182,9 +182,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetUInt32(int field, out uint value)
+        public bool TryGetUInt32(FieldId field, out uint value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             value = (uint) tmp.GetValueOrDefault();
             return tmp != null;
         }
@@ -195,9 +195,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetUInt64(int field, out ulong value)
+        public bool TryGetUInt64(FieldId field, out ulong value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             value = tmp.GetValueOrDefault();
             return tmp != null;
         }
@@ -208,9 +208,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetFloat(int field, out float value)
+        public bool TryGetFloat(FieldId field, out float value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             int int32 = (int) tmp.GetValueOrDefault();
             byte[] bytes = BitConverter.GetBytes(int32);
             value = BitConverter.ToSingle(bytes, 0);
@@ -223,9 +223,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetDouble(int field, out double value)
+        public bool TryGetDouble(FieldId field, out double value)
         {
-            ulong? tmp = GetLastNumericValue(field);
+            ulong? tmp = GetLastNumericValue(field.Id);
             value = BitConverter.Int64BitsToDouble((long) tmp.GetValueOrDefault());
             return tmp != null;
         }
@@ -236,9 +236,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetString(int field, out string value)
+        public bool TryGetString(FieldId field, out string value)
         {
-            ByteString bytes = GetLastByteStringValue(field);
+            ByteString bytes = GetLastByteStringValue(field.Id);
             value = bytes?.ToStringUtf8();
             return bytes != null;
         }
@@ -249,9 +249,9 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetBytes(int field, out ByteString value)
+        public bool TryGetBytes(FieldId field, out ByteString value)
         {
-            ByteString bytes = GetLastByteStringValue(field);
+            ByteString bytes = GetLastByteStringValue(field.Id);
             value = bytes;
             return bytes != null;
         }
@@ -262,11 +262,11 @@ namespace Google.Protobuf.Reflection
         /// <param name="field">The field to fetch the value for.</param>
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
-        public bool TryGetMessage<T>(int field, out T value) where T : class, IMessage, new()
+        public bool TryGetMessage<T>(FieldId field, out T value) where T : class, IMessage, new()
         {
             value = null;
             List<FieldValue> values;
-            if (!valuesByField.TryGetValue(field, out values))
+            if (!valuesByField.TryGetValue(field.Id, out values))
             {
                 return false;
             }
@@ -329,7 +329,7 @@ namespace Google.Protobuf.Reflection
         /// </remarks>
         /// <param name="input">Input stream to read from. </param>
         /// <returns>The resulting set of custom options, either <c>this</c> or a new set.</returns>
-        internal CustomOptions ReadOrSkipUnknownField(CodedInputStream input)
+        internal CustomOptions<FieldId> ReadOrSkipUnknownField(CodedInputStream input)
         {
             var tag = input.LastTag;
             var field = WireFormat.GetTagFieldNumber(tag);
@@ -351,9 +351,9 @@ namespace Google.Protobuf.Reflection
             }
         }
 
-        private CustomOptions AddValue(int field, FieldValue value)
+        private CustomOptions<FieldId> AddValue(int field, FieldValue value)
         {
-            var ret = valuesByField.Count == 0 ? new CustomOptions() : this;
+            var ret = valuesByField.Count == 0 ? new CustomOptions<FieldId>() : this;
             List<FieldValue> valuesForField;
             if (!ret.valuesByField.TryGetValue(field, out valuesForField))
             {
@@ -386,5 +386,54 @@ namespace Google.Protobuf.Reflection
                 ByteString = byteString;
             }
         }
+    }
+
+    public abstract class OptionFieldId
+    {
+        public int Id { get; private set; }
+
+        public OptionFieldId(int fieldId)
+        {
+            Id = fieldId;
+        }
+    }
+
+    public class FileOptionFieldId : OptionFieldId
+    {
+        public FileOptionFieldId(int fieldId) : base(fieldId) { }
+    }
+
+    public class MessageOptionFieldId : OptionFieldId
+    {
+        public MessageOptionFieldId(int fieldId) : base(fieldId) { }
+    }
+
+    public class FieldOptionFieldId : OptionFieldId
+    {
+        public FieldOptionFieldId(int fieldId) : base(fieldId) { }
+    }
+
+    public class EnumOptionFieldId : OptionFieldId
+    {
+        public EnumOptionFieldId(int fieldId) : base(fieldId) { }
+    }
+
+    public class EnumValueOptionFieldId : OptionFieldId
+    {
+        public EnumValueOptionFieldId(int fieldId) : base(fieldId) { }
+    }
+
+    public class ServiceOptionFieldId : OptionFieldId
+    {
+        public ServiceOptionFieldId(int fieldId) : base(fieldId) { }
+    }
+    public class MethodOptionFieldId : OptionFieldId
+    {
+        public MethodOptionFieldId(int fieldId) : base(fieldId) { }
+    }
+
+    public class OneOfOptionFieldId : OptionFieldId
+    {
+        public OneOfOptionFieldId(int fieldId) : base(fieldId) { }
     }
 }

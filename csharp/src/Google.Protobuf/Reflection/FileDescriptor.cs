@@ -464,7 +464,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this file.
         /// </summary>
-        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+        public CustomOptions<FileOptionFieldId> CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions<FileOptionFieldId>.Empty;
 
         /// <summary>
         /// Performs initialization for the given generic type argument.

@@ -3787,7 +3787,7 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+    internal CustomOptions<FileOptionFieldId> CustomOptions{ get; private set; } = CustomOptions<FileOptionFieldId>.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FileOptions() {
@@ -4847,7 +4847,7 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+    internal CustomOptions<MessageOptionFieldId> CustomOptions{ get; private set; } = CustomOptions<MessageOptionFieldId>.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MessageOptions() {
@@ -5193,7 +5193,7 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+    internal CustomOptions<FieldOptionFieldId> CustomOptions{ get; private set; } = CustomOptions<FieldOptionFieldId>.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FieldOptions() {
@@ -5661,7 +5661,7 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+    internal CustomOptions<OneOfOptionFieldId> CustomOptions{ get; private set; } = CustomOptions<OneOfOptionFieldId>.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public OneofOptions() {
@@ -5788,7 +5788,7 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+    internal CustomOptions<EnumOptionFieldId> CustomOptions{ get; private set; } = CustomOptions<EnumOptionFieldId>.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumOptions() {
@@ -6008,7 +6008,7 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+    internal CustomOptions<EnumValueOptionFieldId> CustomOptions{ get; private set; } = CustomOptions<EnumValueOptionFieldId>.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public EnumValueOptions() {
@@ -6183,7 +6183,7 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+    internal CustomOptions<ServiceOptionFieldId> CustomOptions{ get; private set; } = CustomOptions<ServiceOptionFieldId>.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ServiceOptions() {
@@ -6358,7 +6358,7 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;
+    internal CustomOptions<MethodOptionFieldId> CustomOptions{ get; private set; } = CustomOptions<MethodOptionFieldId>.Empty;
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MethodOptions() {

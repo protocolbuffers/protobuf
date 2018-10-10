@@ -70,7 +70,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this method.
         /// </summary>
-        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+        public CustomOptions<MethodOptionFieldId> CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions<MethodOptionFieldId>.Empty;
 
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)

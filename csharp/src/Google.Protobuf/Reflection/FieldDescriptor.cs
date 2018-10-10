@@ -257,7 +257,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this field.
         /// </summary>
-        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+        public CustomOptions<FieldOptionFieldId> CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions<FieldOptionFieldId>.Empty;
 
         /// <summary>
         /// Look up and cross-link all field types etc.

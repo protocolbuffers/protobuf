@@ -236,7 +236,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this message.
         /// </summary>
-        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+        public CustomOptions<MessageOptionFieldId> CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions<MessageOptionFieldId>.Empty;
 
         /// <summary>
         /// Looks up and cross-links all fields and nested types.
