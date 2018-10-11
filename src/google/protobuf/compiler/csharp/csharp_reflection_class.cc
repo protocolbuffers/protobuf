@@ -126,56 +126,12 @@ void ReflectionClassGenerator::WriteIntroduction(io::Printer* printer) {
   printer->Print("public static class Extensions {\n");
   printer->Indent();
   for (int i = 0; i < file_->extension_count(); ++i) {
-	  const FieldDescriptor& extension_field = *file_->extension(i);
+	  const FieldDescriptor* extension_field = file_->extension(i);
+	  string var_name = GetFieldConstantName(extension_field);
 
-	  if (extension_field.containing_type()->full_name() == FileOptions::descriptor()->full_name())
-	  {
-		  printer->Print("public static readonly pbr.FileOptionFieldId $var_name$ = new pbr.FileOptionFieldId($extension_id$);\n",
-			  "var_name", extension_field.name(),
-			  "extension_id", SimpleItoa(extension_field.number()));
-	  }
-	  else if (extension_field.containing_type()->full_name() == MessageOptions::descriptor()->full_name())
-	  {
-		  printer->Print("public static readonly pbr.MessageOptionFieldId $var_name$ = new pbr.MessageOptionFieldId($extension_id$);\n",
-			  "var_name", extension_field.name(),
-			  "extension_id", SimpleItoa(extension_field.number()));
-	  }
-	  else if (extension_field.containing_type()->full_name() == FieldOptions::descriptor()->full_name())
-	  {
-		  printer->Print("public static readonly pbr.FieldOptionFieldId $var_name$ = new pbr.FieldOptionFieldId($extension_id$);\n",
-			  "var_name", extension_field.name(),
-			  "extension_id", SimpleItoa(extension_field.number()));
-	  }
-	  else if (extension_field.containing_type()->full_name() == EnumOptions::descriptor()->full_name())
-	  {
-		  printer->Print("public static readonly pbr.EnumOptionFieldId $var_name$ = new pbr.EnumOptionFieldId($extension_id$);\n",
-			  "var_name", extension_field.name(),
-			  "extension_id", SimpleItoa(extension_field.number()));
-	  }
-	  else if (extension_field.containing_type()->full_name() == EnumValueOptions::descriptor()->full_name())
-	  {
-		  printer->Print("public static readonly pbr.EnumValueOptionFieldId $var_name$ = new pbr.EnumValueOptionFieldId($extension_id$);\n",
-			  "var_name", extension_field.name(),
-			  "extension_id", SimpleItoa(extension_field.number()));
-	  }
-	  else if (extension_field.containing_type()->full_name() == ServiceOptions::descriptor()->full_name())
-	  {
-		  printer->Print("public static readonly pbr.ServiceOptionFieldId $var_name$ = new pbr.ServiceOptionFieldId($extension_id$);\n",
-			  "var_name", extension_field.name(),
-			  "extension_id", SimpleItoa(extension_field.number()));
-	  }
-	  else if (extension_field.containing_type()->full_name() == MethodOptions::descriptor()->full_name())
-	  {
-		  printer->Print("public static readonly pbr.MethodOptionFieldId $var_name$ = new pbr.MethodOptionFieldId($extension_id$);\n",
-			  "var_name", extension_field.name(),
-			  "extension_id", SimpleItoa(extension_field.number()));
-	  }
-	  else if (extension_field.containing_type()->full_name() == OneofOptions::descriptor()->full_name())
-	  {
-		  printer->Print("public static readonly pbr.OneOfOptionFieldId $var_name$ = new pbr.OneOfOptionFieldId($extension_id$);\n",
-			  "var_name", extension_field.name(),
-			  "extension_id", SimpleItoa(extension_field.number()));
-	  }
+	  printer->Print("public const int $var_name$ = $extension_id$;\n",
+		  "var_name", var_name,
+		  "extension_id", SimpleItoa(extension_field->number()));
   }
   printer->Outdent();
   printer->Print("}\n");
