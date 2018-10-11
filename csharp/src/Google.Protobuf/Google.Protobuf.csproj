@@ -17,7 +17,6 @@
     <PackageLicenseUrl>https://github.com/protocolbuffers/protobuf/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/protocolbuffers/protobuf.git</RepositoryUrl>
-    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <!-- 
