@@ -33,7 +33,6 @@
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
-using System;
 using System.IO;
 using System.Linq;
 using UnitTest.Issues.TestProtos;
@@ -265,7 +264,7 @@ namespace Google.Protobuf.Test.Reflection
         private void AssertOption<T>(T expected, OptionFetcher<T> fetcher, CustomOptionNumber field)
         {
             T actual;
-            Assert.IsTrue(fetcher((int)field, out actual));
+            Assert.IsTrue(fetcher((int) field, out actual));
             Assert.AreEqual(expected, actual);
         }
     }
