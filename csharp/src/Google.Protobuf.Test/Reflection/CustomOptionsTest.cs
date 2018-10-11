@@ -98,7 +98,7 @@ namespace Google.Protobuf.Test.Reflection
     /// </summary>
     public class CustomOptionsTest
     {
-        delegate bool OptionFetcher<FieldId, T>(FieldId field, out T value);
+        delegate bool OptionFetcher<T>(int field, out T value);
 
         [Test]
         public void EmptyOptionsIsShared()
@@ -262,7 +262,7 @@ namespace Google.Protobuf.Test.Reflection
             AssertOption(new Aggregate { S = "FieldAnnotation" }, fieldOptions.TryGetMessage, AggregateFieldOpt);
         }
 
-        private void AssertOption<T>(T expected, OptionFetcher<int, T> fetcher, CustomOptionNumber field)
+        private void AssertOption<T>(T expected, OptionFetcher<T> fetcher, CustomOptionNumber field)
         {
             T actual;
             Assert.IsTrue(fetcher((int)field, out actual));
