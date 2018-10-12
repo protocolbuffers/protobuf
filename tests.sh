@@ -265,8 +265,6 @@ build_ruby25() {
   cd ruby && bash travis-test.sh ruby-2.5.0 && cd ..
 }
 build_ruby_all() {
-  build_ruby21
-  build_ruby22
   build_ruby23
   build_ruby24
   build_ruby25
@@ -575,6 +573,9 @@ Usage: $0 { cpp |
             python_compatibility |
             ruby21 |
             ruby22 |
+            ruby23 |
+            ruby24 |
+            ruby25 |
             jruby |
             ruby_all |
             php5.5   |
