@@ -264,6 +264,12 @@ def __parse_js_php_result(filename, language):
         })
 
 
+def __parse_js_result(filename, language):
+  return __parse_js_php_result(filename, language)
+
+def __parse_php_result(filename, language):
+  return __parse_js_php_result(filename, language)
+
 
 def get_result_from_file(cpp_file="",
                          java_file="",
@@ -285,10 +291,10 @@ def get_result_from_file(cpp_file="",
   if synthetic_file != "":
     __parse_synthetic_result(synthetic_file)
   if node_file != "":
-    __parse_js_php_result(node_file, "node")
+    __parse_js_result(node_file, "node")
   if php_file != "":
-    __parse_js_php_result(php_file, "php")
+    __parse_php_result(php_file, "php")
   if php_c_file != "":
-    __parse_js_php_result(php_c_file, "php")        
+    __parse_php_result(php_c_file, "php")        
 
   return __results
