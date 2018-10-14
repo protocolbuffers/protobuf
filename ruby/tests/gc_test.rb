@@ -6,9 +6,7 @@ $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 old_gc = GC.stress
 GC.stress = 0x01 | 0x04
 require 'generated_code_pb'
-# TODO(teboring): The following line is commented out for unblocking CI. Add
-# it back when it's fixed.
-# require 'generated_code_proto2_pb'
+require 'generated_code_proto2_pb'
 GC.stress = old_gc
 
 require 'test/unit'
@@ -95,11 +93,9 @@ class GCTest < Test::Unit::TestCase
     data = A::B::C::TestMessage.encode(from)
     to = A::B::C::TestMessage.decode(data)
 
-    # TODO(teboring): The following line is commented out for unblocking CI.
-    # Add it back when it's fixed.
-    # from = get_msg_proto2
-    # data = A::B::Proto2::TestMessage.encode(from)
-    # to = A::B::Proto2::TestMessage.decode(data)
+    from = get_msg_proto2
+    data = A::B::Proto2::TestMessage.encode(from)
+    to = A::B::Proto2::TestMessage.decode(data)
     GC.stress = old_gc
     puts "passed"
   end
