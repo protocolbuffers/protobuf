@@ -6,9 +6,6 @@ $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 # For ruby < 2.4, require a second file causes segment fault.
 $ver_min = Gem::Version.new('2.4.0')
 $ver = Gem::Version.new(RUBY_VERSION)
-if $ver >= $ver_min
-  print '!!!!!!!!!!!!!!!!!!!'
-end
 
 old_gc = GC.stress
 GC.stress = 0x01 | 0x04
