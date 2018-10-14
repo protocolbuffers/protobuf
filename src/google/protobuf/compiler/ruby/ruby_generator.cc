@@ -260,7 +260,7 @@ bool GenerateMessage(const google::protobuf::Descriptor* message,
   }
 
   printer->Print(
-    "add_message \"$name$\" do\n",
+    "add_message '$name$' do\n",
     "name", message->full_name());
   printer->Indent();
 
@@ -386,7 +386,7 @@ void GenerateMessageAssignment(
     "name", RubifyConstant(message->name()));
   printer->Print(
     "Google::Protobuf::DescriptorPool.generated_pool."
-    "lookup(\"$full_name$\").msgclass\n",
+    "lookup('$full_name$').msgclass\n",
     "full_name", message->full_name());
 
   std::string nested_prefix = prefix + message->name() + "::";
@@ -408,7 +408,7 @@ void GenerateEnumAssignment(
     "name", RubifyConstant(en->name()));
   printer->Print(
     "Google::Protobuf::DescriptorPool.generated_pool."
-    "lookup(\"$full_name$\").enummodule\n",
+    "lookup('$full_name$').enummodule\n",
     "full_name", en->full_name());
 }
 
@@ -547,7 +547,7 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
 
   printer->Print("Google::Protobuf::DescriptorPool.generated_pool.build do\n");
   printer->Indent();
-  printer->Print("add_file(\"$filename$\", :syntax => :$syntax$) do\n",
+  printer->Print("add_file('$filename$', :syntax => :$syntax$) do\n",
 		 "filename", file->name(), "syntax",
 		 StringifySyntax(file->syntax()));
   printer->Indent();
