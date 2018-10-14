@@ -3,10 +3,19 @@
 # generated_code.rb is in the same directory as this test.
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
+# For ruby < 2.4, require a second file causes segment fault.
+$ver_min = Gem::Version.new('2.4.0')
+$ver = Gem::Version.new(RUBY_VERSION)
+if $ver >= $ver_min
+  print '!!!!!!!!!!!!!!!!!!!'
+end
+
 old_gc = GC.stress
 GC.stress = 0x01 | 0x04
 require 'generated_code_pb'
-require 'generated_code_proto2_pb'
+if $ver >= $ver_min
+  require 'generated_code_proto2_pb'
+end
 GC.stress = old_gc
 
 require 'test/unit'
@@ -93,9 +102,11 @@ class GCTest < Test::Unit::TestCase
     data = A::B::C::TestMessage.encode(from)
     to = A::B::C::TestMessage.decode(data)
 
-    from = get_msg_proto2
-    data = A::B::Proto2::TestMessage.encode(from)
-    to = A::B::Proto2::TestMessage.decode(data)
+    if $ver >= $ver_min
+      from = get_msg_proto2
+      data = A::B::Proto2::TestMessage.encode(from)
+      to = A::B::Proto2::TestMessage.decode(data)
+    end
     GC.stress = old_gc
     puts "passed"
   end
