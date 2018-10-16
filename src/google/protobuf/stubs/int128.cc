@@ -34,6 +34,8 @@
 #include <ostream>  // NOLINT(readability/streams)
 #include <sstream>
 
+#include <google/protobuf/stubs/logging.h>
+
 #include <google/protobuf/port_def.inc>
 
 namespace google {

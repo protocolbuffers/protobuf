@@ -46,6 +46,7 @@
 #include <errno.h>
 
 #include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/stubs/logging.h>
 
 namespace google {
 namespace protobuf {
