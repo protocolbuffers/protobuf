@@ -234,7 +234,7 @@ def __parse_go_result(filename):
       })
 
 
-# Node/Php results example:
+# Self built json results example:
 #
 # [
 #   {
@@ -246,7 +246,7 @@ def __parse_go_result(filename):
 #   },
 #   ...
 # ]
-def __parse_js_php_result(filename, language):
+def __parse_custom_result(filename, language):
   if filename == "":
     return
   if filename[0] != '/':
@@ -265,10 +265,10 @@ def __parse_js_php_result(filename, language):
 
 
 def __parse_js_result(filename, language):
-  return __parse_js_php_result(filename, language)
+  return __parse_custom_result(filename, language)
 
 def __parse_php_result(filename, language):
-  return __parse_js_php_result(filename, language)
+  return __parse_custom_result(filename, language)
 
 
 def get_result_from_file(cpp_file="",
