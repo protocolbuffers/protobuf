@@ -106,7 +106,70 @@ public class JsonFormat {
   public static Printer printer() {
     return new Printer(
         TypeRegistry.getEmptyTypeRegistry(), false, Collections.<FieldDescriptor>emptySet(),
-        false, false, false);
+        false, false, false,
+        Collections.<AdditionalFieldRegistry>emptyList());
+  }
+
+  /**
+   * An interface to register additional fields to JSON.
+   */
+  interface AdditionalFieldRegistry {
+    /**
+     * Defines how you infer additional fields in JSON based on the protobuf
+     * message.
+     */
+    List<AdditionalField> add(MessageOrBuilder message);
+  }
+
+  /**
+   * Describes the additional field you want to register.
+   */
+  public static class AdditionalField {
+    private final String fieldName;
+    private final String fieldValue;
+    private final boolean withQuote;
+
+    /**
+     * Describes the additional field.
+     * With fieldName = "user_name", fieldValue = "Bob", withQuote=true
+     * It translates to:
+     * {
+     *   "user_name": "Bob"
+     * }
+     * in JSON.
+     *
+     * With fieldName = "age", fieldValue = "13", withQuote=false
+     * It translates to:
+     * {
+     *   "age": 13
+     * }
+     * in JSON.
+     *
+     * @param fieldName name of the field
+     * @param fieldValue value of the field
+     * @param withQuote add quote to the value of the field
+     */
+    public AdditionalField(String fieldName, String fieldValue,
+                           boolean withQuote) {
+      this.fieldName = fieldName;
+      this.fieldValue = fieldValue;
+      this.withQuote = withQuote;
+    }
+
+    private String addQuote(String s) {
+      return "\"" + s + "\"";
+    }
+
+    public String getFieldName() {
+      return addQuote(fieldName);
+    }
+
+    public String getFieldValue() {
+      if (withQuote) {
+        return addQuote(fieldValue);
+      }
+      return fieldValue;
+    }
   }
 
   /**
@@ -127,6 +190,7 @@ public class JsonFormat {
     private final boolean preservingProtoFieldNames;
     private final boolean omittingInsignificantWhitespace;
     private final boolean printingEnumsAsInts;
+    private final List<AdditionalFieldRegistry> additionalFieldRegistries;
 
     private Printer(
         TypeRegistry registry,
@@ -134,13 +198,15 @@ public class JsonFormat {
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
         boolean omittingInsignificantWhitespace,
-        boolean printingEnumsAsInts) {
+        boolean printingEnumsAsInts,
+        List<AdditionalFieldRegistry> additionalFieldRegistries) {
       this.registry = registry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
       this.printingEnumsAsInts = printingEnumsAsInts;
+      this.additionalFieldRegistries = additionalFieldRegistries;
     }
 
     /**
@@ -159,7 +225,8 @@ public class JsonFormat {
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          additionalFieldRegistries);
     }
 
     /**
@@ -176,7 +243,8 @@ public class JsonFormat {
           Collections.<FieldDescriptor>emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          additionalFieldRegistries);
     }
 
     /**
@@ -193,7 +261,8 @@ public class JsonFormat {
           Collections.<FieldDescriptor>emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
-          true);
+          true,
+          additionalFieldRegistries);
     }
 
     private void checkUnsetPrintingEnumsAsInts() {
@@ -221,7 +290,8 @@ public class JsonFormat {
           fieldsToAlwaysOutput,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          additionalFieldRegistries);
     }
 
     private void checkUnsetIncludingDefaultValueFields() {
@@ -244,7 +314,8 @@ public class JsonFormat {
           includingDefaultValueFields,
           true,
           omittingInsignificantWhitespace,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          additionalFieldRegistries);
     }
 
 
@@ -272,7 +343,24 @@ public class JsonFormat {
           includingDefaultValueFields,
           preservingProtoFieldNames,
           true,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          additionalFieldRegistries);
+    }
+
+    /**
+     * Creates a new {@link Printer} that includes additional fields registry.
+     */
+    public Printer includeAdditionalPrinter(
+        final List<AdditionalFieldRegistry> additionalFieldRegistries) {
+      return new Printer(
+          registry,
+          alwaysOutputDefaultValueFields,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          additionalFieldRegistries
+      );
     }
 
     /**
@@ -292,7 +380,8 @@ public class JsonFormat {
               preservingProtoFieldNames,
               output,
               omittingInsignificantWhitespace,
-              printingEnumsAsInts)
+              printingEnumsAsInts,
+              additionalFieldRegistries)
           .print(message);
     }
 
@@ -609,6 +698,7 @@ public class JsonFormat {
     private final Gson gson;
     private final CharSequence blankOrSpace;
     private final CharSequence blankOrNewLine;
+    private final List<AdditionalFieldRegistry> additionalFieldRegistries;
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().create();
@@ -621,12 +711,14 @@ public class JsonFormat {
         boolean preservingProtoFieldNames,
         Appendable jsonOutput,
         boolean omittingInsignificantWhitespace,
-        boolean printingEnumsAsInts) {
+        boolean printingEnumsAsInts,
+        List<AdditionalFieldRegistry> additionalFieldRegistries) {
       this.registry = registry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.printingEnumsAsInts = printingEnumsAsInts;
+      this.additionalFieldRegistries = additionalFieldRegistries;
       this.gson = GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
@@ -874,6 +966,19 @@ public class JsonFormat {
         generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl));
         printedField = true;
       }
+
+      for (AdditionalFieldRegistry additionalFieldRegistry : additionalFieldRegistries) {
+        List<AdditionalField> additionalFields = additionalFieldRegistry.add(message);
+        for (AdditionalField additionalField : additionalFields) {
+          if (printedField) {
+            generator.print("," + blankOrNewLine);
+          }
+          generator.print(String.format("%s: %s", additionalField.getFieldName(),
+              additionalField.getFieldValue()));
+          printedField = true;
+        }
+      }
+
       Map<FieldDescriptor, Object> fieldsToPrint = null;
       if (alwaysOutputDefaultValueFields || !includingDefaultValueFields.isEmpty()) {
         fieldsToPrint = new TreeMap<FieldDescriptor, Object>(message.getAllFields());

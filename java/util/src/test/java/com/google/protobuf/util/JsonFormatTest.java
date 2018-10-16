@@ -42,6 +42,7 @@ import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Message;
+import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.Struct;
@@ -71,8 +72,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+
 import junit.framework.TestCase;
 
 public class JsonFormatTest extends TestCase {
@@ -217,6 +221,40 @@ public class JsonFormatTest extends TestCase {
         toJsonString(message));
 
     assertRoundTripEquals(message);
+  }
+
+  public void testAdditionalFieldPrinter() throws Exception {
+    JsonTestProto.EmptyMessageWrapper emptyMessageWrapper = JsonTestProto.EmptyMessageWrapper
+        .newBuilder()
+        .mergeEmptyMessage(JsonTestProto.EmptyMessage.newBuilder().build())
+        .build();
+
+    List<JsonFormat.AdditionalFieldRegistry> additionalFieldRegistries = new LinkedList<>();
+
+    additionalFieldRegistries.add(new JsonFormat.AdditionalFieldRegistry() {
+      @Override
+      public List<JsonFormat.AdditionalField> add(MessageOrBuilder message) {
+        List<JsonFormat.AdditionalField> additionalFields = new LinkedList<>();
+        if (message.getDescriptorForType().getFields().isEmpty()) {
+          additionalFields.add(
+              new JsonFormat.AdditionalField("__is_empty__",
+                  "true", false)
+          );
+        }
+        return additionalFields;
+      }
+    });
+
+    JsonFormat.Printer printer = JsonFormat.printer()
+        .includingDefaultValueFields()
+        .preservingProtoFieldNames()
+        .includeAdditionalPrinter(additionalFieldRegistries);
+
+    assertEquals("{\n" +
+        "  \"empty_message\": {\n" +
+        "    \"__is_empty__\": true\n" +
+        "  }\n" +
+        "}", printer.print(emptyMessageWrapper));
   }
 
   public void testUnknownEnumValues() throws Exception {
