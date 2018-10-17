@@ -33,6 +33,8 @@
 #include <string.h>
 #include <algorithm>
 
+#include <google/protobuf/stubs/logging.h>
+
 namespace google {
 namespace protobuf {
 namespace strings {

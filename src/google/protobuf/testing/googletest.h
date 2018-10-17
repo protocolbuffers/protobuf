@@ -37,6 +37,7 @@
 #include <map>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <gmock/gmock.h>
 // Disable death tests if we use exceptions in CHECK().
 #if !PROTOBUF_USE_EXCEPTIONS && defined(GTEST_HAS_DEATH_TEST) && \
