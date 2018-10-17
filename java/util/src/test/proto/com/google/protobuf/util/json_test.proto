@@ -176,11 +176,3 @@ message TestRecursive {
   int32 value = 1;
   TestRecursive nested = 2;
 }
-
-message EmptyMessage {
-
-}
-
-message EmptyMessageWrapper {
-  EmptyMessage empty_message = 1;
-}

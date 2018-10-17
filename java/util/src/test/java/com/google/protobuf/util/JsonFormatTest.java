@@ -224,23 +224,27 @@ public class JsonFormatTest extends TestCase {
   }
 
   public void testAdditionalFieldPrinter() throws Exception {
-    JsonTestProto.EmptyMessageWrapper emptyMessageWrapper = JsonTestProto.EmptyMessageWrapper
-        .newBuilder()
-        .mergeEmptyMessage(JsonTestProto.EmptyMessage.newBuilder().build())
+    TestWrappers testWrappers = TestWrappers.newBuilder()
+        .mergeBoolValue(
+            BoolValue.newBuilder().build()
+        )
+        .mergeStringValue(
+            StringValue.newBuilder().build()
+        )
         .build();
 
-    List<JsonFormat.AdditionalFieldRegistry> additionalFieldRegistries = new LinkedList<>();
+    final List<JsonFormat.AdditionalFieldRegistry> additionalFieldRegistries = new LinkedList<>();
 
     additionalFieldRegistries.add(new JsonFormat.AdditionalFieldRegistry() {
       @Override
       public List<JsonFormat.AdditionalField> add(MessageOrBuilder message) {
         List<JsonFormat.AdditionalField> additionalFields = new LinkedList<>();
-        if (message.getDescriptorForType().getFields().isEmpty()) {
-          additionalFields.add(
-              new JsonFormat.AdditionalField("__is_empty__",
-                  "true", false)
-          );
-        }
+        additionalFields.add(
+            new JsonFormat.AdditionalField(
+            "number_of_fields_set",
+            String.valueOf(message.getAllFields().size()), false)
+        );
+
         return additionalFields;
       }
     });
@@ -251,10 +255,10 @@ public class JsonFormatTest extends TestCase {
         .includeAdditionalPrinter(additionalFieldRegistries);
 
     assertEquals("{\n" +
-        "  \"empty_message\": {\n" +
-        "    \"__is_empty__\": true\n" +
-        "  }\n" +
-        "}", printer.print(emptyMessageWrapper));
+        "  \"number_of_fields_set\": 2,\n" +
+        "  \"bool_value\": false,\n" +
+        "  \"string_value\": \"\"\n" +
+        "}", printer.print(testWrappers));
   }
 
   public void testUnknownEnumValues() throws Exception {
