@@ -10,9 +10,9 @@ $ver = Gem::Version.new(RUBY_VERSION)
 old_gc = GC.stress
 GC.stress = 0x01 | 0x04
 require 'generated_code_pb'
-if $ver >= $ver_min
-  require 'generated_code_proto2_pb'
-end
+# if $ver >= $ver_min
+require 'generated_code_proto2_pb'
+# end
 GC.stress = old_gc
 
 require 'test/unit'
@@ -99,11 +99,11 @@ class GCTest < Test::Unit::TestCase
     data = A::B::C::TestMessage.encode(from)
     to = A::B::C::TestMessage.decode(data)
 
-    if $ver >= $ver_min
-      from = get_msg_proto2
-      data = A::B::Proto2::TestMessage.encode(from)
-      to = A::B::Proto2::TestMessage.decode(data)
-    end
+    # if $ver >= $ver_min
+    from = get_msg_proto2
+    data = A::B::Proto2::TestMessage.encode(from)
+    to = A::B::Proto2::TestMessage.decode(data)
+    # end
     GC.stress = old_gc
     puts "passed"
   end
