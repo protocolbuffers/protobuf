@@ -540,8 +540,8 @@ void FileDescriptor_register(VALUE module) {
   rb_define_method(klass, "name", FileDescriptor_name, 0);
   rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
   rb_define_method(klass, "syntax=", FileDescriptor_syntax_set, 1);
-  cFileDescriptor = klass;
   rb_gc_register_address(&cFileDescriptor);
+  cFileDescriptor = klass;
 }
 
 /*
@@ -2130,7 +2130,7 @@ VALUE Builder_add_file(int argc, VALUE* argv, VALUE _self) {
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
 
   rb_ary_concat(self->pending_list,
-		FileBuilderContext_pending_descriptors(ctx));
+      FileBuilderContext_pending_descriptors(ctx));
   return Qnil;
 }
 
