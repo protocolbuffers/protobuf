@@ -115,7 +115,6 @@ def __parse_synthetic_result(filename):
 #         behavior: results,
 #         ...
 #       },
-#       "message_name": STRING
 #     },
 #     ...
 #   ], #pure-python
@@ -136,8 +135,7 @@ def __parse_python_result(filename):
             "language": "python",
             "dataFilename": __extract_file_name(result["filename"]),
             "behavior": behavior,
-            "throughput": avg_size /
-                          result["benchmarks"][behavior] * 1e9 / 2 ** 20
+            "throughput": result["benchmarks"][behavior]
           })
 
 
@@ -220,7 +218,7 @@ def __parse_go_result(filename):
         continue
       first_slash_index = result_list[0].find('/')
       last_slash_index = result_list[0].rfind('/')
-      full_filename = result_list[0][first_slash_index+4:last_slash_index] # delete ../ prefix
+      full_filename = result_list[0][first_slash_index+1:last_slash_index]
       total_bytes, _ = __get_data_size(full_filename)
       behavior_with_suffix = result_list[0][last_slash_index+1:]
       last_dash = behavior_with_suffix.rfind("-")
@@ -236,11 +234,51 @@ def __parse_go_result(filename):
       })
 
 
+# Self built json results example:
+#
+# [
+#   {
+#     "filename": string,
+#     "benchmarks": {
+#       behavior: results,
+#       ...
+#     },
+#   },
+#   ...
+# ]
+def __parse_custom_result(filename, language):
+  if filename == "":
+    return
+  if filename[0] != '/':
+    filename = os.path.dirname(os.path.abspath(__file__)) + '/' + filename
+  with open(filename) as f:
+    results = json.loads(f.read())
+    for result in results:
+      _, avg_size = __get_data_size(result["filename"])
+      for behavior in result["benchmarks"]:
+        __results.append({
+          "language": language,
+          "dataFilename": __extract_file_name(result["filename"]),
+          "behavior": behavior,
+          "throughput": result["benchmarks"][behavior]
+        })
+
+
+def __parse_js_result(filename, language):
+  return __parse_custom_result(filename, language)
+
+def __parse_php_result(filename, language):
+  return __parse_custom_result(filename, language)
+
+
 def get_result_from_file(cpp_file="",
                          java_file="",
                          python_file="",
                          go_file="",
-                         synthetic_file=""):
+                         synthetic_file="",
+                         node_file="",
+                         php_c_file="",
+                         php_file=""):
   results = {}
   if cpp_file != "":
     __parse_cpp_result(cpp_file)
@@ -252,5 +290,11 @@ def get_result_from_file(cpp_file="",
     __parse_go_result(go_file)
   if synthetic_file != "":
     __parse_synthetic_result(synthetic_file)
+  if node_file != "":
+    __parse_js_result(node_file, "node")
+  if php_file != "":
+    __parse_php_result(php_file, "php")
+  if php_c_file != "":
+    __parse_php_result(php_c_file, "php")        
 
   return __results
