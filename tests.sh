@@ -244,14 +244,6 @@ build_python_compatibility() {
   ./test.sh 3.0.0-beta-1
 }
 
-build_ruby21() {
-  internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-2.1 && cd ..
-}
-build_ruby22() {
-  internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-2.2 && cd ..
-}
 build_ruby23() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.3.8 && cd ..
@@ -571,8 +563,6 @@ Usage: $0 { cpp |
             python |
             python_cpp |
             python_compatibility |
-            ruby21 |
-            ruby22 |
             ruby23 |
             ruby24 |
             ruby25 |
