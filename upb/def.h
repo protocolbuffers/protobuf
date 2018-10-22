@@ -327,20 +327,12 @@ class upb::MessageDef {
   void setmapentry(bool map_entry);
   bool mapentry() const;
 
-  /* Is this message a duration? */
-  bool duration() const;
+  /* Return the type of well known type message. UPB_WELLKNOWN_UNSPECIFIED for
+   * non-well-known message. */
+  upb_wellknowntype_t wellknowntype() const;
 
-  /* Is this message a timestamp? */
-  bool timestamp() const;
-
-  /* Is this message a value? */
-  bool value() const;
-
-  /* Is this message a list value? */
-  bool listvalue() const;
-
-  /* Is this message a struct value? */
-  bool structvalue() const;
+  /* Whether is a number wrapper. */
+  bool isnumberwrapper() const;
 
   /* Iteration over fields.  The order is undefined. */
   class const_field_iterator
@@ -414,11 +406,9 @@ const char *upb_msgdef_name(const upb_msgdef *m);
 int upb_msgdef_numoneofs(const upb_msgdef *m);
 upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
-bool upb_msgdef_duration(const upb_msgdef *m);
-bool upb_msgdef_timestamp(const upb_msgdef *m);
-bool upb_msgdef_value(const upb_msgdef *m);
-bool upb_msgdef_listvalue(const upb_msgdef *m);
-bool upb_msgdef_structvalue(const upb_msgdef *m);
+upb_wellknowntype_t upb_msgdef_wellknowntype(const upb_msgdef *m);
+bool upb_msgdef_isnumberwrapper(const upb_msgdef *m);
+bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 
 /* Internal-only. */
 size_t upb_msgdef_selectorcount(const upb_msgdef *m);
@@ -912,20 +902,11 @@ inline const OneofDef* MessageDef::FindOneofByName(const char* name,
 inline bool MessageDef::mapentry() const {
   return upb_msgdef_mapentry(this);
 }
-inline bool MessageDef::duration() const {
-  return upb_msgdef_duration(this);
+inline upb_wellknowntype_t MessageDef::wellknowntype() const {
+  return upb_msgdef_wellknowntype(this);
 }
-inline bool MessageDef::timestamp() const {
-  return upb_msgdef_timestamp(this);
-}
-inline bool MessageDef::value() const {
-  return upb_msgdef_value(this);
-}
-inline bool MessageDef::listvalue() const {
-  return upb_msgdef_listvalue(this);
-}
-inline bool MessageDef::structvalue() const {
-  return upb_msgdef_structvalue(this);
+inline bool MessageDef::isnumberwrapper() const {
+  return upb_msgdef_isnumberwrapper(this);
 }
 inline MessageDef::const_field_iterator MessageDef::field_begin() const {
   return const_field_iterator(this);

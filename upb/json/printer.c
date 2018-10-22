@@ -708,6 +708,54 @@ static bool putnanos(void *closure, const void *handler_data,
   return true;
 }
 
+static void *scalar_startstr_nokey(void *closure, const void *handler_data,
+                                   size_t size_hint) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(size_hint);
+  print_data(p, "\"", 1);
+  return p;
+}
+
+static size_t putstr_nokey(void *closure, const void *handler_data,
+                           const char *str, size_t len,
+                           const upb_bufhandle *handle) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(handle);
+  print_data(p, "\"", 1);
+  putstring(p, str, len);
+  print_data(p, "\"", 1);
+  return len + 2;
+}
+
+static void *startseq_nokey(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "[", 1);
+  return closure;
+}
+
+static void *startmap_nokey(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  p->depth_++;
+  p->first_elem_[p->depth_] = true;
+  print_data(p, "{", 1);
+  return closure;
+}
+
+static bool putnull(void *closure, const void *handler_data,
+                    int32_t null) {
+  upb_json_printer *p = closure;
+  print_data(p, "null", 4);
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(null);
+  return true;
+}
+
 static bool printer_startdurationmsg(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
@@ -852,6 +900,26 @@ static bool printer_endtimestampmsg(void *closure, const void *handler_data,
   return true;
 }
 
+static bool printer_startmsg_noframe(void *closure, const void *handler_data) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  if (p->depth_ == 0) {
+    upb_bytessink_start(p->output_, 0, &p->subc_);
+  }
+  return true;
+}
+
+static bool printer_endmsg_noframe(
+    void *closure, const void *handler_data, upb_status *s) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(s);
+  if (p->depth_ == 0) {
+    upb_bytessink_end(p->output_);
+  }
+  return true;
+}
+
 /* Set up handlers for a duration submessage. */
 void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
@@ -891,6 +959,102 @@ void printer_sethandlers_timestamp(const void *closure, upb_handlers *h) {
   UPB_UNUSED(closure);
 }
 
+void printer_sethandlers_value(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  upb_msg_field_iter i;
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_msg_field_begin(&i, md);
+  for(; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
+    const upb_fielddef *f = upb_msg_iter_field(&i);
+
+    switch (upb_fielddef_type(f)) {
+      case UPB_TYPE_ENUM:
+        upb_handlers_setint32(h, f, putnull, &empty_attr);
+        break;
+      case UPB_TYPE_DOUBLE:
+        upb_handlers_setdouble(h, f, putdouble, &empty_attr);
+        break;
+      case UPB_TYPE_STRING:
+        upb_handlers_setstartstr(h, f, scalar_startstr_nokey, &empty_attr);
+        upb_handlers_setstring(h, f, scalar_str, &empty_attr);
+        upb_handlers_setendstr(h, f, scalar_endstr, &empty_attr);
+        break;
+      case UPB_TYPE_BOOL:
+        upb_handlers_setbool(h, f, putbool, &empty_attr);
+        break;
+      case UPB_TYPE_MESSAGE:
+        break;
+      default:
+        UPB_ASSERT(false);
+        break;
+    }
+  }
+
+  UPB_UNUSED(closure);
+}
+
+#define WRAPPER_SETHANDLERS(wrapper, type, putmethod)                      \
+void printer_sethandlers_##wrapper(const void *closure, upb_handlers *h) { \
+  const upb_msgdef *md = upb_handlers_msgdef(h);                           \
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);                          \
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;                \
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);      \
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);          \
+  upb_handlers_set##type(h, f, putmethod, &empty_attr);                    \
+  UPB_UNUSED(closure);                                                     \
+}
+
+WRAPPER_SETHANDLERS(doublevalue, double, putdouble)
+WRAPPER_SETHANDLERS(floatvalue,  float,  putfloat)
+WRAPPER_SETHANDLERS(int64value,  int64,  putint64_t)
+WRAPPER_SETHANDLERS(uint64value, uint64, putuint64_t)
+WRAPPER_SETHANDLERS(int32value,  int32,  putint32_t)
+WRAPPER_SETHANDLERS(uint32value, uint32, putuint32_t)
+WRAPPER_SETHANDLERS(boolvalue,   bool,   putbool)
+WRAPPER_SETHANDLERS(stringvalue, string, putstr_nokey)
+WRAPPER_SETHANDLERS(bytesvalue,  string, putbytes)
+
+#undef WRAPPER_SETHANDLERS
+
+void printer_sethandlers_listvalue(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartseq(h, f, startseq_nokey, &empty_attr);
+  upb_handlers_setendseq(h, f, endseq, &empty_attr);
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_handlers_setstartsubmsg(h, f, repeated_startsubmsg, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
+void printer_sethandlers_structvalue(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  const upb_fielddef* f = upb_msgdef_itof(md, 1);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  upb_handlers_setstartseq(h, f, startmap_nokey, &empty_attr);
+  upb_handlers_setendseq(h, f, endmap, &empty_attr);
+
+  upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
+
+  upb_handlers_setstartsubmsg(h, f, repeated_startsubmsg, &empty_attr);
+
+  UPB_UNUSED(closure);
+}
+
 void printer_sethandlers(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   bool is_mapentry = upb_msgdef_mapentry(md);
@@ -906,14 +1070,40 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     return;
   }
 
-  if (upb_msgdef_duration(md)) {
-    printer_sethandlers_duration(closure, h);
-    return;
-  }
+  switch (upb_msgdef_wellknowntype(md)) {
+    case UPB_WELLKNOWN_UNSPECIFIED:
+      break;
+    case UPB_WELLKNOWN_DURATION:
+      printer_sethandlers_duration(closure, h);
+      return;
+    case UPB_WELLKNOWN_TIMESTAMP:
+      printer_sethandlers_timestamp(closure, h);
+      return;
+    case UPB_WELLKNOWN_VALUE:
+      printer_sethandlers_value(closure, h);
+      return;
+    case UPB_WELLKNOWN_LISTVALUE:
+      printer_sethandlers_listvalue(closure, h);
+      return;
+    case UPB_WELLKNOWN_STRUCT:
+      printer_sethandlers_structvalue(closure, h);
+      return;
+#define WRAPPER(wellknowntype, name)        \
+  case wellknowntype:                       \
+    printer_sethandlers_##name(closure, h); \
+    return;                                 \
 
-  if (upb_msgdef_timestamp(md)) {
-    printer_sethandlers_timestamp(closure, h);
-    return;
+    WRAPPER(UPB_WELLKNOWN_DOUBLEVALUE, doublevalue);
+    WRAPPER(UPB_WELLKNOWN_FLOATVALUE, floatvalue);
+    WRAPPER(UPB_WELLKNOWN_INT64VALUE, int64value);
+    WRAPPER(UPB_WELLKNOWN_UINT64VALUE, uint64value);
+    WRAPPER(UPB_WELLKNOWN_INT32VALUE, int32value);
+    WRAPPER(UPB_WELLKNOWN_UINT32VALUE, uint32value);
+    WRAPPER(UPB_WELLKNOWN_BOOLVALUE, boolvalue);
+    WRAPPER(UPB_WELLKNOWN_STRINGVALUE, stringvalue);
+    WRAPPER(UPB_WELLKNOWN_BYTESVALUE, bytesvalue);
+
+#undef WRAPPER
   }
 
   upb_handlers_setstartmsg(h, printer_startmsg, &empty_attr);

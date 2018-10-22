@@ -37,16 +37,6 @@
 
 #define UPB_JSON_MAX_DEPTH 64
 
-static const char *kDoubleValueFullMessageName = "google.protobuf.DoubleValue";
-static const char *kFloatValueFullMessageName = "google.protobuf.FloatValue";
-static const char *kInt64ValueFullMessageName = "google.protobuf.Int64Value";
-static const char *kUInt64ValueFullMessageName = "google.protobuf.UInt64Value";
-static const char *kInt32ValueFullMessageName = "google.protobuf.Int32Value";
-static const char *kUInt32ValueFullMessageName = "google.protobuf.UInt32Value";
-static const char *kBoolValueFullMessageName = "google.protobuf.BoolValue";
-static const char *kStringValueFullMessageName = "google.protobuf.StringValue";
-static const char *kBytesValueFullMessageName = "google.protobuf.BytesValue";
-
 /* Type of value message */
 enum {
   VALUE_NULLVALUE   = 0,
@@ -59,6 +49,8 @@ enum {
 
 /* Forward declare */
 static bool is_top_level(upb_json_parser *p);
+static bool is_wellknown_msg(upb_json_parser *p, upb_wellknowntype_t type);
+static bool is_wellknown_field(upb_json_parser *p, upb_wellknowntype_t type);
 
 static bool is_number_wrapper_object(upb_json_parser *p);
 static bool does_number_wrapper_start(upb_json_parser *p);
@@ -67,30 +59,6 @@ static bool does_number_wrapper_end(upb_json_parser *p);
 static bool is_string_wrapper_object(upb_json_parser *p);
 static bool does_string_wrapper_start(upb_json_parser *p);
 static bool does_string_wrapper_end(upb_json_parser *p);
-
-static bool is_boolean_wrapper_object(upb_json_parser *p);
-static bool does_boolean_wrapper_start(upb_json_parser *p);
-static bool does_boolean_wrapper_end(upb_json_parser *p);
-
-static bool is_duration_object(upb_json_parser *p);
-static bool does_duration_start(upb_json_parser *p);
-static bool does_duration_end(upb_json_parser *p);
-
-static bool is_timestamp_object(upb_json_parser *p);
-static bool does_timestamp_start(upb_json_parser *p);
-static bool does_timestamp_end(upb_json_parser *p);
-
-static bool is_value_object(upb_json_parser *p);
-static bool does_value_start(upb_json_parser *p);
-static bool does_value_end(upb_json_parser *p);
-
-static bool is_listvalue_object(upb_json_parser *p);
-static bool does_listvalue_start(upb_json_parser *p);
-static bool does_listvalue_end(upb_json_parser *p);
-
-static bool is_structvalue_object(upb_json_parser *p);
-static bool does_structvalue_start(upb_json_parser *p);
-static bool does_structvalue_end(upb_json_parser *p);
 
 static void start_wrapper_object(upb_json_parser *p);
 static void end_wrapper_object(upb_json_parser *p);
@@ -143,6 +111,9 @@ typedef struct {
    * because |f| is the field in the *current* message (i.e., the map-entry
    * message itself), not the parent's field that leads to this map. */
   const upb_fielddef *mapfield;
+
+  /* True if the field to be parsed is unknown. */
+  bool is_unknown_field;
 } upb_jsonparser_frame;
 
 struct upb_json_parser {
@@ -699,7 +670,7 @@ static bool start_number(upb_json_parser *p, const char *ptr) {
   if (is_top_level(p)) {
     if (is_number_wrapper_object(p)) {
       start_wrapper_object(p);
-    } else if (is_value_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_NUMBERVALUE);
     } else {
       return false;
@@ -709,7 +680,7 @@ static bool start_number(upb_json_parser *p, const char *ptr) {
       return false;
     }
     start_wrapper_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -749,7 +720,7 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
     return true;
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -929,30 +900,34 @@ static bool parser_putbool(upb_json_parser *p, bool val) {
 
 static bool end_bool(upb_json_parser *p, bool val) {
   if (is_top_level(p)) {
-    if (is_boolean_wrapper_object(p)) {
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_BOOLVALUE)) {
       start_wrapper_object(p);
-    } else if (is_value_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_BOOLVALUE);
     } else {
       return false;
     }
-  } else if (does_boolean_wrapper_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_BOOLVALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
     start_wrapper_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
     start_value_object(p, VALUE_BOOLVALUE);
   }
 
+  if (p->top->is_unknown_field) {
+    return true;
+  }
+
   if (!parser_putbool(p, val)) {
     return false;
   }
 
-  if (does_boolean_wrapper_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_BOOLVALUE)) {
     end_wrapper_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -960,7 +935,7 @@ static bool end_bool(upb_json_parser *p, bool val) {
     return true;
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -975,12 +950,12 @@ static bool end_null(upb_json_parser *p) {
   const char *zero_ptr = "0";
 
   if (is_top_level(p)) {
-    if (is_value_object(p)) {
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_NULLVALUE);
     } else {
       return true;
     }
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -1007,9 +982,10 @@ static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
     if (is_string_wrapper_object(p)) {
       start_wrapper_object(p);
-    } else if (is_timestamp_object(p) || is_duration_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
+               is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
       start_object(p);
-    } else if (is_value_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_STRINGVALUE);
     } else {
       return false;
@@ -1019,12 +995,13 @@ static bool start_stringval(upb_json_parser *p) {
       return false;
     }
     start_wrapper_object(p);
-  } else if (does_timestamp_start(p) || does_duration_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_TIMESTAMP) ||
+             is_wellknown_field(p, UPB_WELLKNOWN_DURATION)) {
     if (!start_subobject(p)) {
       return false;
     }
     start_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) {
       return false;
     }
@@ -1052,6 +1029,7 @@ static bool start_stringval(upb_json_parser *p) {
     inner->name_table = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_unknown_field = false;
     p->top = inner;
 
     if (upb_fielddef_type(p->top->f) == UPB_TYPE_STRING) {
@@ -1085,7 +1063,8 @@ static bool start_stringval(upb_json_parser *p) {
 static bool end_stringval_nontop(upb_json_parser *p) {
   bool ok = true;
 
-  if (is_timestamp_object(p) || is_duration_object(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
+      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
     multipart_end(p);
     return true;
   }
@@ -1167,7 +1146,7 @@ static bool end_stringval(upb_json_parser *p) {
     return true;
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -1175,7 +1154,8 @@ static bool end_stringval(upb_json_parser *p) {
     return true;
   }
 
-  if (does_timestamp_end(p) || does_duration_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_TIMESTAMP) ||
+      is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
     end_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -1287,18 +1267,26 @@ static void start_timestamp_base(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
+#define UPB_TIMESTAMP_BASE_SIZE 19
+
 static bool end_timestamp_base(upb_json_parser *p, const char *ptr) {
   size_t len;
   const char *buf;
+  /* 3 for GMT and 1 for ending 0 */
+  char timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 4];
 
   if (!capture_end(p, ptr)) {
     return false;
   }
 
   buf = accumulate_getptr(p, &len);
+  UPB_ASSERT(len == UPB_TIMESTAMP_BASE_SIZE);
+  memcpy(timestamp_buf, buf, UPB_TIMESTAMP_BASE_SIZE);
+  memcpy(timestamp_buf + UPB_TIMESTAMP_BASE_SIZE, "GMT", 3);
+  timestamp_buf[UPB_TIMESTAMP_BASE_SIZE + 3] = 0;
 
   /* Parse seconds */
-  if (strptime(buf, "%FT%H:%M:%S", &p->tm) == NULL) {
+  if (strptime(timestamp_buf, "%FT%H:%M:%S%Z", &p->tm) == NULL) {
     upb_status_seterrf(&p->status, "error parsing timestamp: %s", buf);
     upb_env_reporterror(p->env, &p->status);
     return false;
@@ -1533,6 +1521,7 @@ static bool handle_mapentry(upb_json_parser *p) {
   inner->name_table = NULL;
   inner->mapfield = mapfield;
   inner->is_map = false;
+  inner->is_unknown_field = false;
 
   /* Don't set this to true *yet* -- we reuse parsing handlers below to push
    * the key field value to the sink, and these handlers will pop the frame
@@ -1563,6 +1552,8 @@ static bool end_membername(upb_json_parser *p) {
   UPB_ASSERT(!p->top->f);
 
   if (!p->top->m) {
+    p->top->is_unknown_field = true;
+    multipart_end(p);
     return true;
   }
 
@@ -1579,6 +1570,7 @@ static bool end_membername(upb_json_parser *p) {
 
       return true;
     } else if (p->ignore_json_unknown) {
+      p->top->is_unknown_field = true;
       multipart_end(p);
       return true;
     } else {
@@ -1610,10 +1602,11 @@ static void end_member(upb_json_parser *p) {
   }
 
   p->top->f = NULL;
+  p->top->is_unknown_field = false;
 }
 
 static bool start_subobject(upb_json_parser *p) {
-  if (p->top->f == NULL) {
+  if (p->top->is_unknown_field) {
     upb_jsonparser_frame *inner;
     if (!check_stack(p)) return false;
 
@@ -1622,6 +1615,7 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_unknown_field = false;
     p->top = inner;
     return true;
   }
@@ -1643,6 +1637,7 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = true;
     inner->is_mapentry = false;
+    inner->is_unknown_field = false;
     p->top = inner;
 
     return true;
@@ -1663,6 +1658,7 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_unknown_field = false;
     p->top = inner;
 
     return true;
@@ -1677,19 +1673,19 @@ static bool start_subobject(upb_json_parser *p) {
 
 static bool start_subobject_full(upb_json_parser *p) {
   if (is_top_level(p)) {
-    if (is_value_object(p)) {
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_STRUCTVALUE);
       if (!start_subobject(p)) return false;
       start_structvalue_object(p);
-    } else if (is_structvalue_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_STRUCT)) {
       start_structvalue_object(p);
     } else {
       return true;
     }
-  } else if (does_structvalue_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_STRUCT)) {
     if (!start_subobject(p)) return false;
     start_structvalue_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) return false;
     start_value_object(p, VALUE_STRUCTVALUE);
     if (!start_subobject(p)) return false;
@@ -1723,14 +1719,14 @@ static void end_subobject(upb_json_parser *p) {
 static void end_subobject_full(upb_json_parser *p) {
   end_subobject(p);
 
-  if (does_structvalue_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_STRUCT)) {
     end_structvalue_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
     }
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -1743,26 +1739,37 @@ static bool start_array(upb_json_parser *p) {
   upb_selector_t sel;
 
   if (is_top_level(p)) {
-    if (is_value_object(p)) {
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
       start_value_object(p, VALUE_LISTVALUE);
       if (!start_subobject(p)) return false;
       start_listvalue_object(p);
-    } else if (is_listvalue_object(p)) {
+    } else if (is_wellknown_msg(p, UPB_WELLKNOWN_LISTVALUE)) {
       start_listvalue_object(p);
     } else {
       return false;
     }
-  } else if (does_listvalue_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_LISTVALUE)) {
     if (!start_subobject(p)) return false;
     start_listvalue_object(p);
-  } else if (does_value_start(p)) {
+  } else if (is_wellknown_field(p, UPB_WELLKNOWN_VALUE)) {
     if (!start_subobject(p)) return false;
     start_value_object(p, VALUE_LISTVALUE);
     if (!start_subobject(p)) return false;
     start_listvalue_object(p);
   }
 
-  UPB_ASSERT(p->top->f);
+  if (p->top->is_unknown_field) {
+    inner = p->top + 1;
+    inner->m = NULL;
+    inner->name_table = NULL;
+    inner->f = NULL;
+    inner->is_map = false;
+    inner->is_mapentry = false;
+    inner->is_unknown_field = true;
+    p->top = inner;
+
+    return true;
+  }
 
   if (!upb_fielddef_isseq(p->top->f)) {
     upb_status_seterrf(&p->status,
@@ -1782,6 +1789,7 @@ static bool start_array(upb_json_parser *p) {
   inner->f = p->top->f;
   inner->is_map = false;
   inner->is_mapentry = false;
+  inner->is_unknown_field = false;
   p->top = inner;
 
   return true;
@@ -1793,17 +1801,22 @@ static void end_array(upb_json_parser *p) {
   UPB_ASSERT(p->top > p->stack);
 
   p->top--;
+
+  if (p->top->is_unknown_field) {
+    return;
+  }
+
   sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSEQ);
   upb_sink_endseq(&p->top->sink, sel);
 
-  if (does_listvalue_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_LISTVALUE)) {
     end_listvalue_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
     }
   }
 
-  if (does_value_end(p)) {
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_VALUE)) {
     end_value_object(p);
     if (!is_top_level(p)) {
       end_subobject(p);
@@ -1812,13 +1825,13 @@ static void end_array(upb_json_parser *p) {
 }
 
 static void start_object(upb_json_parser *p) {
-  if (!p->top->is_map) {
+  if (!p->top->is_map && p->top->m != NULL) {
     upb_sink_startmsg(&p->top->sink);
   }
 }
 
 static void end_object(upb_json_parser *p) {
-  if (!p->top->is_map) {
+  if (!p->top->is_map && p->top->m != NULL) {
     upb_status status;
     upb_status_clear(&status);
     upb_sink_endmsg(&p->top->sink, &status);
@@ -1828,54 +1841,10 @@ static void end_object(upb_json_parser *p) {
   }
 }
 
-static bool is_double_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kDoubleValueFullMessageName) == 0;
-}
-
-static bool is_float_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kFloatValueFullMessageName) == 0;
-}
-
-static bool is_int64_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kInt64ValueFullMessageName) == 0;
-}
-
-static bool is_uint64_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kUInt64ValueFullMessageName) == 0;
-}
-
-static bool is_int32_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kInt32ValueFullMessageName) == 0;
-}
-
-static bool is_uint32_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kUInt32ValueFullMessageName) == 0;
-}
-
-static bool is_bool_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kBoolValueFullMessageName) == 0;
-}
-
-static bool is_string_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kStringValueFullMessageName) == 0;
-}
-
-static bool is_bytes_value(const upb_msgdef *m) {
-  return strcmp(upb_msgdef_fullname(m), kBytesValueFullMessageName) == 0;
-}
-
-static bool is_number_wrapper(const upb_msgdef *m) {
-  return is_double_value(m) ||
-         is_float_value(m) ||
-         is_int64_value(m) ||
-         is_uint64_value(m) ||
-         is_int32_value(m) ||
-         is_uint32_value(m);
-}
-
 static bool is_string_wrapper(const upb_msgdef *m) {
-  return is_string_value(m) ||
-         is_bytes_value(m);
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type == UPB_WELLKNOWN_STRINGVALUE ||
+         type == UPB_WELLKNOWN_BYTESVALUE;
 }
 
 static void start_wrapper_object(upb_json_parser *p) {
@@ -1974,21 +1943,32 @@ static void end_structvalue_object(upb_json_parser *p) {
 }
 
 static bool is_top_level(upb_json_parser *p) {
-  return p->top == p->stack && p->top->f == NULL;
+  return p->top == p->stack && p->top->f == NULL && !p->top->is_unknown_field;
+}
+
+static bool is_wellknown_msg(upb_json_parser *p, upb_wellknowntype_t type) {
+  return p->top->m != NULL && upb_msgdef_wellknowntype(p->top->m) == type;
+}
+
+static bool is_wellknown_field(upb_json_parser *p, upb_wellknowntype_t type) {
+  return p->top->f != NULL &&
+         upb_fielddef_issubmsg(p->top->f) &&
+         (upb_msgdef_wellknowntype(upb_fielddef_msgsubdef(p->top->f))
+              == type);
 }
 
 static bool does_number_wrapper_start(upb_json_parser *p) {
   return p->top->f != NULL &&
          upb_fielddef_issubmsg(p->top->f) &&
-         is_number_wrapper(upb_fielddef_msgsubdef(p->top->f));
+         upb_msgdef_isnumberwrapper(upb_fielddef_msgsubdef(p->top->f));
 }
 
 static bool does_number_wrapper_end(upb_json_parser *p) {
-  return p->top->m != NULL && is_number_wrapper(p->top->m);
+  return p->top->m != NULL && upb_msgdef_isnumberwrapper(p->top->m);
 }
 
 static bool is_number_wrapper_object(upb_json_parser *p) {
-  return p->top->m != NULL && is_number_wrapper(p->top->m);
+  return p->top->m != NULL && upb_msgdef_isnumberwrapper(p->top->m);
 }
 
 static bool does_string_wrapper_start(upb_json_parser *p) {
@@ -2003,91 +1983,6 @@ static bool does_string_wrapper_end(upb_json_parser *p) {
 
 static bool is_string_wrapper_object(upb_json_parser *p) {
   return p->top->m != NULL && is_string_wrapper(p->top->m);
-}
-
-static bool does_boolean_wrapper_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         is_bool_value(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_boolean_wrapper_end(upb_json_parser *p) {
-  return p->top->m != NULL && is_bool_value(p->top->m);
-}
-
-static bool is_boolean_wrapper_object(upb_json_parser *p) {
-  return p->top->m != NULL && is_bool_value(p->top->m);
-}
-
-static bool does_duration_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_duration(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_duration_end(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_duration(p->top->m);
-}
-
-static bool is_duration_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_duration(p->top->m);
-}
-
-static bool does_timestamp_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_timestamp(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_timestamp_end(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_timestamp(p->top->m);
-}
-
-static bool is_timestamp_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_timestamp(p->top->m);
-}
-
-static bool does_value_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_value(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_value_end(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_value(p->top->m);
-}
-
-static bool is_value_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_value(p->top->m);
-}
-
-static bool does_listvalue_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_listvalue(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_listvalue_end(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_listvalue(p->top->m);
-}
-
-static bool is_listvalue_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_listvalue(p->top->m);
-}
-
-static bool does_structvalue_start(upb_json_parser *p) {
-  return p->top->f != NULL &&
-         upb_fielddef_issubmsg(p->top->f) &&
-         upb_msgdef_structvalue(upb_fielddef_msgsubdef(p->top->f));
-}
-
-static bool does_structvalue_end(upb_json_parser *p) {
-  /* return p->top != p->stack && upb_msgdef_structvalue((p->top - 1)->m); */
-  return p->top->m != NULL && upb_msgdef_structvalue(p->top->m);
-}
-
-static bool is_structvalue_object(upb_json_parser *p) {
-  return p->top->m != NULL && upb_msgdef_structvalue(p->top->m);
 }
 
 #define CHECK_RETURN_TOP(x) if (!(x)) goto error
@@ -2185,9 +2080,9 @@ static bool is_structvalue_object(upb_json_parser *p) {
   string =
     '"'
       @{
-        if (is_timestamp_object(parser)) {
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_TIMESTAMP)) {
           fcall timestamp_machine;
-        } else if (is_duration_object(parser)) {
+        } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_DURATION)) {
           fcall duration_machine;
         } else {
           fcall string_machine;
@@ -2315,6 +2210,7 @@ static void json_parser_reset(upb_json_parser *p) {
   p->top->f = NULL;
   p->top->is_map = false;
   p->top->is_mapentry = false;
+  p->top->is_unknown_field = false;
 
   /* Emit Ragel initialization of the parser. */
   %% write init;

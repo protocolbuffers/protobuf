@@ -20,14 +20,14 @@ static upb_inttable reftables[92];
 #endif
 
 static const upb_msgdef msgs[8] = {
-  UPB_MSGDEF_INIT("upb.test.json.SubMessage", 4, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[0], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[0]), false, UPB_SYNTAX_PROTO3, &reftables[0], &reftables[1]),
-  UPB_MSGDEF_INIT("upb.test.json.TestMessage", 73, 8, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[2], 26, 24), UPB_STRTABLE_INIT(24, 31, UPB_CTYPE_PTR, 5, &strentries[4]), false, UPB_SYNTAX_PROTO3, &reftables[2], &reftables[3]),
-  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapBoolStringEntry", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[28], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[36]), true, UPB_SYNTAX_PROTO3, &reftables[4], &reftables[5]),
-  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapInt32StringEntry", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[31], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[40]), true, UPB_SYNTAX_PROTO3, &reftables[6], &reftables[7]),
-  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapStringBoolEntry", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[34], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[44]), true, UPB_SYNTAX_PROTO3, &reftables[8], &reftables[9]),
-  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapStringInt32Entry", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[37], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[48]), true, UPB_SYNTAX_PROTO3, &reftables[10], &reftables[11]),
-  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapStringMsgEntry", 8, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[40], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[52]), true, UPB_SYNTAX_PROTO3, &reftables[12], &reftables[13]),
-  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapStringStringEntry", 9, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[43], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[56]), true, UPB_SYNTAX_PROTO3, &reftables[14], &reftables[15]),
+  UPB_MSGDEF_INIT("upb.test.json.SubMessage", 4, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[0], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[0]), false, UPB_SYNTAX_PROTO3, UPB_WELLKNOWN_UNSPECIFIED, &reftables[0], &reftables[1]),
+  UPB_MSGDEF_INIT("upb.test.json.TestMessage", 73, 8, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[2], 26, 24), UPB_STRTABLE_INIT(24, 31, UPB_CTYPE_PTR, 5, &strentries[4]), false, UPB_SYNTAX_PROTO3, UPB_WELLKNOWN_UNSPECIFIED, &reftables[2], &reftables[3]),
+  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapBoolStringEntry", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[28], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[36]), true, UPB_SYNTAX_PROTO3, UPB_WELLKNOWN_UNSPECIFIED, &reftables[4], &reftables[5]),
+  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapInt32StringEntry", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[31], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[40]), true, UPB_SYNTAX_PROTO3, UPB_WELLKNOWN_UNSPECIFIED, &reftables[6], &reftables[7]),
+  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapStringBoolEntry", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[34], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[44]), true, UPB_SYNTAX_PROTO3, UPB_WELLKNOWN_UNSPECIFIED, &reftables[8], &reftables[9]),
+  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapStringInt32Entry", 7, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[37], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[48]), true, UPB_SYNTAX_PROTO3, UPB_WELLKNOWN_UNSPECIFIED, &reftables[10], &reftables[11]),
+  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapStringMsgEntry", 8, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[40], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[52]), true, UPB_SYNTAX_PROTO3, UPB_WELLKNOWN_UNSPECIFIED, &reftables[12], &reftables[13]),
+  UPB_MSGDEF_INIT("upb.test.json.TestMessage.MapStringStringEntry", 9, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[43], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[56]), true, UPB_SYNTAX_PROTO3, UPB_WELLKNOWN_UNSPECIFIED, &reftables[14], &reftables[15]),
 };
 
 static const upb_fielddef fields[37] = {
