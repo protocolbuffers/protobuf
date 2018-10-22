@@ -211,7 +211,7 @@ public interface Parser<MessageType> {
       throws InvalidProtocolBufferException;
 
   /**
-   * Like {@link #parseFrom(InputStream)}, but does not read util EOF. Instead, the size of message
+   * Like {@link #parseFrom(InputStream)}, but does not read until EOF. Instead, the size of message
    * (encoded as a varint) is read first, then the message data. Use {@link
    * MessageLite#writeDelimitedTo(java.io.OutputStream)} to write messages in this format.
    *
