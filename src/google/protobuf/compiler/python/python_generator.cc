@@ -470,8 +470,10 @@ void Generator::PrintTopLevelEnums() const {
   }
 
   for (int i = 0; i < top_level_enum_values.size(); ++i) {
+    const string enum_name = top_level_enum_values[i].first;
+    const string print_enum_name = ContainsPythonKeyword(enum_name) ? enum_name + "_" : enum_name;
     printer_->Print("$name$ = $value$\n", "name",
-                    top_level_enum_values[i].first, "value",
+                    print_enum_name, "value",
                     SimpleItoa(top_level_enum_values[i].second));
   }
   printer_->Print("\n");
