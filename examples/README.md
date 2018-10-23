@@ -119,7 +119,7 @@ is created if it does not exist.  To view the data, run:
 
     ./list_people_go addressbook.data
 
-Observe that the C++, Python, and Java examples in this directory run in a
+Observe that the C++, Python, Java, and Dart examples in this directory run in a
 similar way and can view/modify files created by the Go example and vice
 versa.
 
@@ -134,9 +134,10 @@ Build the Dart samples in this directory with `make dart`.
 
 To run the examples:
 
+```sh
     $ dart add_person.dart addessbook.data
     $ dart list_people.dart addressbook.data
-
+```
 
 The two programs take a protocol buffer encoded file as their parameter.
 The first can be used to add a person to the file. The file is created

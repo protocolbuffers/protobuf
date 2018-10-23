@@ -4,7 +4,6 @@ import 'dart_tutorial/addressbook.pb.dart';
 
 // This function fills in a Person message based on user input.
 Person promtForAddress() {
-
   Person person = Person();
 
   print('Enter person ID: ');
@@ -20,9 +19,9 @@ Person promtForAddress() {
     person.email = email;
   }
 
-  while(true) {
+  while (true) {
     print('Enter a phone number (or leave blank to finish): ');
-    String number = stdin. readLineSync();
+    String number = stdin.readLineSync();
     if (number.isEmpty) break;
 
     Person_PhoneNumber phoneNumber = Person_PhoneNumber();
@@ -31,7 +30,7 @@ Person promtForAddress() {
     print('Is this a mobile, home, or work phone? ');
 
     String type = stdin.readLineSync();
-    switch(type) {
+    switch (type) {
       case 'mobile':
         phoneNumber.type = Person_PhoneType.MOBILE;
         break;
@@ -62,7 +61,7 @@ main(List<String> arguments) {
   AddressBook addressBook;
   if (!file.existsSync()) {
     print('File not found. Creating new file.');
-    addressBook =  AddressBook();
+    addressBook = AddressBook();
   } else {
     addressBook = AddressBook.fromBuffer(file.readAsBytesSync());
   }
