@@ -135,8 +135,8 @@ Build the Dart samples in this directory with `make dart`.
 To run the examples:
 
 ```sh
-    $ dart add_person.dart addessbook.data
-    $ dart list_people.dart addressbook.data
+$ dart add_person.dart addessbook.data
+$ dart list_people.dart addressbook.data
 ```
 
 The two programs take a protocol buffer encoded file as their parameter.

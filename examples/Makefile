@@ -35,8 +35,7 @@ protoc_middleman_go: addressbook.proto
 
 protoc_middleman_dart: addressbook.proto
 	mkdir -p dart_tutorial # make directory for the dart package
-	protoc $$PROTO_PATH --dart_out=dart_tutorial addressbook.proto
-	protoc -I../src/ --dart_out=dart_tutorial ../src/google/protobuf/timestamp.proto
+	protoc -I ../src/:. --dart_out=dart_tutorial addressbook.proto ../src/google/protobuf/timestamp.proto
 	pub get
 	@touch protoc_middleman_dart
 
