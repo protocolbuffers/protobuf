@@ -1980,6 +1980,51 @@
                  EnumTestMsg_MyEnum_NegTwo);
 }
 
+- (void)testReservedWordNaming {
+  // objectivec_helpers.cc has some special handing to make sure that
+  // some "reserved" objc names get renamed in a way so they
+  // don't conflict.
+  //
+  // This "test" confirms that the expected names are generated,
+  // otherwise the test itself will fail to compile.
+  self_Class *msg = [self_Class message];
+
+  // Some ObjC/C/C++ keywords.
+  msg.className_p = msg.hasClassName_p;
+  msg.cmd = msg.hasCmd;
+  msg.nullable_p = msg.hasNullable_p;
+  msg.typeof_p = msg.hasTypeof_p;
+  msg.instancetype_p = msg.hasInstancetype_p;
+  msg.nil_p = msg.hasNil_p;
+  msg.instancetype_p = msg.hasInstancetype_p;
+  msg.public_p = msg.hasPublic_p;
+
+  // Some that would override NSObject methods
+  msg.camltype = msg.hasCamltype;
+  msg.isNsdictionary = msg.hasIsNsdictionary;
+  msg.dealloc_p = msg.hasDealloc_p;
+  msg.zone_p = msg.hasZone_p;
+  msg.accessibilityLabel_p = msg.hasAccessibilityLabel_p;
+
+  // Some that we shouldn't need to handle.
+  msg.atomic = msg.hasAtomic;
+  msg.nonatomic = msg.hasNonatomic;
+  msg.strong = msg.hasStrong;
+  msg.nullResettable = msg.hasNullResettable;
+
+  // Some that would override GPBMessage methods
+  msg.clear_p = msg.hasClear_p;
+  msg.data_p = msg.hasData_p;
+
+  // Some MacTypes
+  msg.fixed = msg.hasFixed;
+  msg.style = msg.hasStyle;
+
+  // Some C Identifiers
+  msg.generic = msg.hasGeneric;
+  msg.block = msg.hasBlock;
+}
+
 - (void)testOneBasedEnumHolder {
   // Test case for https://github.com/protocolbuffers/protobuf/issues/1453
   // Message with no explicit defaults, but a non zero default for an enum.
