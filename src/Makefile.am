@@ -426,6 +426,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/objectivec/objectivec_message.h     \
   google/protobuf/compiler/objectivec/objectivec_message_field.cc \
   google/protobuf/compiler/objectivec/objectivec_message_field.h \
+  google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h  \
   google/protobuf/compiler/objectivec/objectivec_oneof.cc      \
   google/protobuf/compiler/objectivec/objectivec_oneof.h       \
   google/protobuf/compiler/objectivec/objectivec_primitive_field.cc \

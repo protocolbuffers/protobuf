@@ -43,6 +43,7 @@
 
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
+#include <google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
@@ -170,65 +171,90 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
 }
 
 const char* const kReservedWordList[] = {
-    // Objective C "keywords" that aren't in C
-    // From
-    // http://stackoverflow.com/questions/1873630/reserved-keywords-in-objective-c
-    "id", "_cmd", "super", "in", "out", "inout", "bycopy", "byref", "oneway",
-    "self",
+  // Note NSObject Methods:
+  // These are brought in from objectivec_nsobject_methods.h that is generated
+  // using method_dump.sh. See kNSObjectMethods below.
 
-    // C/C++ keywords (Incl C++ 0x11)
-    // From http://en.cppreference.com/w/cpp/keywords
-    "and", "and_eq", "alignas", "alignof", "asm", "auto", "bitand", "bitor",
-    "bool", "break", "case", "catch", "char", "char16_t", "char32_t", "class",
-    "compl", "const", "constexpr", "const_cast", "continue", "decltype",
-    "default", "delete", "double", "dynamic_cast", "else", "enum", "explicit",
-    "export", "extern ", "false", "float", "for", "friend", "goto", "if",
-    "inline", "int", "long", "mutable", "namespace", "new", "noexcept", "not",
-    "not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected",
-    "public", "register", "reinterpret_cast", "return", "short", "signed",
-    "sizeof", "static", "static_assert", "static_cast", "struct", "switch",
-    "template", "this", "thread_local", "throw", "true", "try", "typedef",
-    "typeid", "typename", "union", "unsigned", "using", "virtual", "void",
-    "volatile", "wchar_t", "while", "xor", "xor_eq",
+  // Objective C "keywords" that aren't in C
+  // From
+  // http://stackoverflow.com/questions/1873630/reserved-keywords-in-objective-c
+  // with some others added on.
+  "id", "_cmd", "super", "in", "out", "inout", "bycopy", "byref", "oneway",
+  "self", "instancetype", "nullable", "nonnull", "nil", "Nil",
+  "YES", "NO", "weak",
 
-    // C99 keywords
-    // From
-    // http://publib.boulder.ibm.com/infocenter/lnxpcomp/v8v101/index.jsp?topic=%2Fcom.ibm.xlcpp8l.doc%2Flanguage%2Fref%2Fkeyw.htm
-    "restrict",
+  // C/C++ keywords (Incl C++ 0x11)
+  // From http://en.cppreference.com/w/cpp/keywords
+  "and", "and_eq", "alignas", "alignof", "asm", "auto", "bitand", "bitor",
+  "bool", "break", "case", "catch", "char", "char16_t", "char32_t", "class",
+  "compl", "const", "constexpr", "const_cast", "continue", "decltype",
+  "default", "delete", "double", "dynamic_cast", "else", "enum", "explicit",
+  "export", "extern ", "false", "float", "for", "friend", "goto", "if",
+  "inline", "int", "long", "mutable", "namespace", "new", "noexcept", "not",
+  "not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected",
+  "public", "register", "reinterpret_cast", "return", "short", "signed",
+  "sizeof", "static", "static_assert", "static_cast", "struct", "switch",
+  "template", "this", "thread_local", "throw", "true", "try", "typedef",
+  "typeid", "typename", "union", "unsigned", "using", "virtual", "void",
+  "volatile", "wchar_t", "while", "xor", "xor_eq",
 
-    // Objective-C Runtime typedefs
-    // From <obc/runtime.h>
-    "Category", "Ivar", "Method", "Protocol",
+  // C99 keywords
+  // From
+  // http://publib.boulder.ibm.com/infocenter/lnxpcomp/v8v101/index.jsp?topic=%2Fcom.ibm.xlcpp8l.doc%2Flanguage%2Fref%2Fkeyw.htm
+  "restrict",
 
-    // NSObject Methods
-    // new is covered by C++ keywords.
-    "description", "debugDescription", "finalize", "hash", "dealloc", "init",
-    "class", "superclass", "retain", "release", "autorelease", "retainCount",
-    "zone", "isProxy", "copy", "mutableCopy", "classForCoder",
+  // GCC/Clang extension
+  "typeof",
 
-    // GPBMessage Methods
-    // Only need to add instance methods that may conflict with
-    // method declared in protos. The main cases are methods
-    // that take no arguments, or setFoo:/hasFoo: type methods.
-    "clear", "data", "delimitedData", "descriptor", "extensionRegistry",
-    "extensionsCurrentlySet", "initialized", "isInitialized", "serializedSize",
-    "sortedExtensionsInUse", "unknownFields",
+  // Not a keyword, but will break you
+  "NULL",
 
-    // MacTypes.h names
-    "Fixed", "Fract", "Size", "LogicalAddress", "PhysicalAddress", "ByteCount",
-    "ByteOffset", "Duration", "AbsoluteTime", "OptionBits", "ItemCount",
-    "PBVersion", "ScriptCode", "LangCode", "RegionCode", "OSType",
-    "ProcessSerialNumber", "Point", "Rect", "FixedPoint", "FixedRect", "Style",
-    "StyleParameter", "StyleField", "TimeScale", "TimeBase", "TimeRecord",
+  // Objective-C Runtime typedefs
+  // From <obc/runtime.h>
+  "Category", "Ivar", "Method", "Protocol",
+
+  // GPBMessage Methods
+  // Only need to add instance methods that may conflict with
+  // method declared in protos. The main cases are methods
+  // that take no arguments, or setFoo:/hasFoo: type methods.
+  "clear", "data", "delimitedData", "descriptor", "extensionRegistry",
+  "extensionsCurrentlySet", "initialized", "isInitialized", "serializedSize",
+  "sortedExtensionsInUse", "unknownFields",
+
+  // MacTypes.h names
+  "Fixed", "Fract", "Size", "LogicalAddress", "PhysicalAddress", "ByteCount",
+  "ByteOffset", "Duration", "AbsoluteTime", "OptionBits", "ItemCount",
+  "PBVersion", "ScriptCode", "LangCode", "RegionCode", "OSType",
+  "ProcessSerialNumber", "Point", "Rect", "FixedPoint", "FixedRect", "Style",
+  "StyleParameter", "StyleField", "TimeScale", "TimeBase", "TimeRecord",
 };
 
-std::unordered_set<string> kReservedWords =
-    MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
+// returns true is input starts with __ or _[A-Z] which are reserved identifiers
+// in C/ C++. All calls should go through UnderscoresToCamelCase before getting here
+// but this verifies and allows for future expansion if we decide to redefine what a
+// reserved C identifier is (for example the GNU list
+// https://www.gnu.org/software/libc/manual/html_node/Reserved-Names.html )
+bool IsReservedCIdentifier(const string& input) {
+  if (input.length() > 2) {
+    if (input.at(0) == '_') {
+      if (isupper(input.at(1)) || input.at(1) == '_') {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
 string SanitizeNameForObjC(const string& input,
                            const string& extension,
                            string* out_suffix_added) {
-  if (kReservedWords.count(input) > 0) {
+  static const std::unordered_set<string> kReservedWords =
+      MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
+  static const std::unordered_set<string> kNSObjectMethods =
+      MakeWordsMap(kNSObjectMethodsList, GOOGLE_ARRAYSIZE(kNSObjectMethodsList));
+  if (IsReservedCIdentifier(input) ||
+      (kReservedWords.count(input) > 0) ||
+      (kNSObjectMethods.count(input) > 0)) {
     if (out_suffix_added) *out_suffix_added = extension;
     return input + extension;
   }
