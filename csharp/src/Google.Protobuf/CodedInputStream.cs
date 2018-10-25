@@ -384,7 +384,7 @@ namespace Google.Protobuf
                 // If we actually read a tag with a field of 0, that's not a valid tag.
                 throw InvalidProtocolBufferException.InvalidTag();
             }
-            if (ReachedLimit)
+            if (ReachedLimit || ReachedTagLimit)
             {
                 return 0;
             }
