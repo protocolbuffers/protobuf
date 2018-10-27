@@ -2491,6 +2491,72 @@
   XCTAssertEqualObjects(@"bar", message.mapStringString[@"foo"]);
 }
 
+- (void)test_StringFieldsCopy {
+  // ObjC conventions call for NSString properites to be copy, ensure
+  // that is done correctly and the string isn't simply retained.
+
+  Message2 *msg1 = [Message2 message];
+  Message2 *msg2 = [Message2 message];
+
+  GPBFieldDescriptor *fieldDesc =
+      [[Message2 descriptor] fieldWithNumber:Message2_FieldNumber_OptionalString];
+  NSMutableString *mutableStr = [NSMutableString stringWithString:@"foo"];
+
+  msg1.optionalString = mutableStr;
+  GPBSetMessageStringField(msg2, fieldDesc, mutableStr);
+
+  XCTAssertEqualObjects(msg1.optionalString, mutableStr);
+  XCTAssertEqualObjects(msg1.optionalString, @"foo");
+  XCTAssertTrue(msg1.optionalString != mutableStr);  // Ptr comparision.
+
+  XCTAssertEqualObjects(msg2.optionalString, mutableStr);
+  XCTAssertEqualObjects(msg2.optionalString, @"foo");
+  XCTAssertTrue(msg2.optionalString != mutableStr);  // Ptr comparision.
+
+  [mutableStr appendString:@"bar"];
+
+  XCTAssertNotEqualObjects(msg1.optionalString, mutableStr);
+  XCTAssertEqualObjects(msg1.optionalString, @"foo");
+  XCTAssertTrue(msg1.optionalString != mutableStr);  // Ptr comparision.
+
+  XCTAssertNotEqualObjects(msg2.optionalString, mutableStr);
+  XCTAssertEqualObjects(msg2.optionalString, @"foo");
+  XCTAssertTrue(msg2.optionalString != mutableStr);  // Ptr comparision.
+}
+
+- (void)test_BytesFieldsCopy {
+  // ObjC conventions call for NSData properites to be copy, ensure
+  // that is done correctly and the data isn't simply retained.
+
+  Message2 *msg1 = [Message2 message];
+  Message2 *msg2 = [Message2 message];
+
+  GPBFieldDescriptor *fieldDesc =
+      [[Message2 descriptor] fieldWithNumber:Message2_FieldNumber_OptionalBytes];
+  NSMutableData *mutableData = [NSMutableData dataWithData:DataFromCStr("abc")];
+
+  msg1.optionalBytes = mutableData;
+  GPBSetMessageBytesField(msg2, fieldDesc, mutableData);
+
+  XCTAssertEqualObjects(msg1.optionalBytes, mutableData);
+  XCTAssertEqualObjects(msg1.optionalBytes, DataFromCStr("abc"));
+  XCTAssertTrue(msg1.optionalBytes != mutableData);  // Ptr comparision.
+
+  XCTAssertEqualObjects(msg2.optionalBytes, mutableData);
+  XCTAssertEqualObjects(msg2.optionalBytes, DataFromCStr("abc"));
+  XCTAssertTrue(msg2.optionalBytes != mutableData);  // Ptr comparision.
+
+  [mutableData appendData:DataFromCStr("123")];
+
+  XCTAssertNotEqualObjects(msg1.optionalBytes, mutableData);
+  XCTAssertEqualObjects(msg1.optionalBytes, DataFromCStr("abc"));
+  XCTAssertTrue(msg1.optionalBytes != mutableData);  // Ptr comparision.
+
+  XCTAssertNotEqualObjects(msg2.optionalBytes, mutableData);
+  XCTAssertEqualObjects(msg2.optionalBytes, DataFromCStr("abc"));
+  XCTAssertTrue(msg2.optionalBytes != mutableData);  // Ptr comparision.
+}
+
 #pragma mark - Subset from from map_tests.cc
 
 // TEST(GeneratedMapFieldTest, IsInitialized)

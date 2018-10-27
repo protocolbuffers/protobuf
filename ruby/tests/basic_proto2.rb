@@ -36,29 +36,29 @@ module BasicTestProto2
 
     def test_has_field
       m = TestMessage.new
-      assert_false m.has_optional_int32?
-      assert_false TestMessage.descriptor.lookup('optional_int32').has?(m)
-      assert_false m.has_optional_int64?
-      assert_false TestMessage.descriptor.lookup('optional_int64').has?(m)
-      assert_false m.has_optional_uint32?
-      assert_false TestMessage.descriptor.lookup('optional_uint32').has?(m)
-      assert_false m.has_optional_uint64?
-      assert_false TestMessage.descriptor.lookup('optional_uint64').has?(m)
-      assert_false m.has_optional_bool?
-      assert_false TestMessage.descriptor.lookup('optional_bool').has?(m)
-      assert_false m.has_optional_float?
-      assert_false TestMessage.descriptor.lookup('optional_float').has?(m)
-      assert_false m.has_optional_double?
-      assert_false TestMessage.descriptor.lookup('optional_double').has?(m)
-      assert_false m.has_optional_string?
-      assert_false TestMessage.descriptor.lookup('optional_string').has?(m)
-      assert_false m.has_optional_bytes?
-      assert_false TestMessage.descriptor.lookup('optional_bytes').has?(m)
-      assert_false m.has_optional_enum?
-      assert_false TestMessage.descriptor.lookup('optional_enum').has?(m)
+      assert !m.has_optional_int32?
+      assert !TestMessage.descriptor.lookup('optional_int32').has?(m)
+      assert !m.has_optional_int64?
+      assert !TestMessage.descriptor.lookup('optional_int64').has?(m)
+      assert !m.has_optional_uint32?
+      assert !TestMessage.descriptor.lookup('optional_uint32').has?(m)
+      assert !m.has_optional_uint64?
+      assert !TestMessage.descriptor.lookup('optional_uint64').has?(m)
+      assert !m.has_optional_bool?
+      assert !TestMessage.descriptor.lookup('optional_bool').has?(m)
+      assert !m.has_optional_float?
+      assert !TestMessage.descriptor.lookup('optional_float').has?(m)
+      assert !m.has_optional_double?
+      assert !TestMessage.descriptor.lookup('optional_double').has?(m)
+      assert !m.has_optional_string?
+      assert !TestMessage.descriptor.lookup('optional_string').has?(m)
+      assert !m.has_optional_bytes?
+      assert !TestMessage.descriptor.lookup('optional_bytes').has?(m)
+      assert !m.has_optional_enum?
+      assert !TestMessage.descriptor.lookup('optional_enum').has?(m)
 
       m = TestMessage.new(:optional_int32 => nil)
-      assert_false m.has_optional_int32?
+      assert !m.has_optional_int32?
 
       assert_raise NoMethodError do
         m.has_repeated_msg?
@@ -68,49 +68,49 @@ module BasicTestProto2
       end
 
       m.optional_msg = TestMessage2.new
-      assert_true m.has_optional_msg?
-      assert_true TestMessage.descriptor.lookup('optional_msg').has?(m)
+      assert m.has_optional_msg?
+      assert TestMessage.descriptor.lookup('optional_msg').has?(m)
 
       m = OneofMessage.new
-      assert_false m.has_my_oneof?
+      assert !m.has_my_oneof?
       m.a = "foo"
-      assert_true m.has_a?
-      assert_true OneofMessage.descriptor.lookup('a').has?(m)
+      assert m.has_a?
+      assert OneofMessage.descriptor.lookup('a').has?(m)
       assert_equal "foo", m.a
-      assert_true m.has_my_oneof?
-      assert_false m.has_b?
-      assert_false OneofMessage.descriptor.lookup('b').has?(m)
-      assert_false m.has_c?
-      assert_false OneofMessage.descriptor.lookup('c').has?(m)
-      assert_false m.has_d?
-      assert_false OneofMessage.descriptor.lookup('d').has?(m)
+      assert m.has_my_oneof?
+      assert !m.has_b?
+      assert !OneofMessage.descriptor.lookup('b').has?(m)
+      assert !m.has_c?
+      assert !OneofMessage.descriptor.lookup('c').has?(m)
+      assert !m.has_d?
+      assert !OneofMessage.descriptor.lookup('d').has?(m)
 
       m = OneofMessage.new
       m.b = 100
-      assert_true m.has_b?
+      assert m.has_b?
       assert_equal 100, m.b
-      assert_true m.has_my_oneof?
-      assert_false m.has_a?
-      assert_false m.has_c?
-      assert_false m.has_d?
+      assert m.has_my_oneof?
+      assert !m.has_a?
+      assert !m.has_c?
+      assert !m.has_d?
 
       m = OneofMessage.new
       m.c = TestMessage2.new
-      assert_true m.has_c?
+      assert m.has_c?
       assert_equal TestMessage2.new, m.c
-      assert_true m.has_my_oneof?
-      assert_false m.has_a?
-      assert_false m.has_b?
-      assert_false m.has_d?
+      assert m.has_my_oneof?
+      assert !m.has_a?
+      assert !m.has_b?
+      assert !m.has_d?
 
       m = OneofMessage.new
       m.d = :A
-      assert_true m.has_d?
+      assert m.has_d?
       assert_equal :A, m.d
-      assert_true m.has_my_oneof?
-      assert_false m.has_a?
-      assert_false m.has_b?
-      assert_false m.has_c?
+      assert m.has_my_oneof?
+      assert !m.has_a?
+      assert !m.has_b?
+      assert !m.has_c?
     end
 
     def test_defined_defaults
@@ -126,16 +126,16 @@ module BasicTestProto2
       assert_equal "\xCF\xA5s\xBD\xBA\xE6fubar".force_encoding("ASCII-8BIT"), m.optional_bytes
       assert_equal :B2, m.optional_enum
 
-      assert_false m.has_optional_int32?
-      assert_false m.has_optional_int64?
-      assert_false m.has_optional_uint32?
-      assert_false m.has_optional_uint64?
-      assert_false m.has_optional_bool?
-      assert_false m.has_optional_float?
-      assert_false m.has_optional_double?
-      assert_false m.has_optional_string?
-      assert_false m.has_optional_bytes?
-      assert_false m.has_optional_enum?
+      assert !m.has_optional_int32?
+      assert !m.has_optional_int64?
+      assert !m.has_optional_uint32?
+      assert !m.has_optional_uint64?
+      assert !m.has_optional_bool?
+      assert !m.has_optional_float?
+      assert !m.has_optional_double?
+      assert !m.has_optional_string?
+      assert !m.has_optional_bytes?
+      assert !m.has_optional_enum?
     end
 
     def test_set_clear_defaults
@@ -143,33 +143,33 @@ module BasicTestProto2
 
       m.optional_int32 = -42
       assert_equal -42, m.optional_int32
-      assert_true m.has_optional_int32?
+      assert m.has_optional_int32?
       m.clear_optional_int32
       assert_equal 1, m.optional_int32
-      assert_false m.has_optional_int32?
+      assert !m.has_optional_int32?
 
       m.optional_string = "foo bar"
       assert_equal "foo bar", m.optional_string
-      assert_true m.has_optional_string?
+      assert m.has_optional_string?
       m.clear_optional_string
       assert_equal "Default Str", m.optional_string
-      assert_false m.has_optional_string?
+      assert !m.has_optional_string?
 
       m.optional_msg = TestMessage2.new(:foo => 42)
       assert_equal TestMessage2.new(:foo => 42), m.optional_msg
-      assert_true m.has_optional_msg?
+      assert m.has_optional_msg?
 
       m.clear_optional_msg
       assert_equal nil, m.optional_msg
-      assert_false m.has_optional_msg?
+      assert !m.has_optional_msg?
 
       m.optional_msg = TestMessage2.new(:foo => 42)
       assert_equal TestMessage2.new(:foo => 42), m.optional_msg
-      assert_true TestMessageDefaults.descriptor.lookup('optional_msg').has?(m)
+      assert TestMessageDefaults.descriptor.lookup('optional_msg').has?(m)
 
       TestMessageDefaults.descriptor.lookup('optional_msg').clear(m)
       assert_equal nil, m.optional_msg
-      assert_false TestMessageDefaults.descriptor.lookup('optional_msg').has?(m)
+      assert !TestMessageDefaults.descriptor.lookup('optional_msg').has?(m)
 
       m = TestMessage.new
       m.repeated_int32.push(1)
@@ -180,22 +180,22 @@ module BasicTestProto2
       m = OneofMessage.new
       m.a = "foo"
       assert_equal "foo", m.a
-      assert_true m.has_a?
+      assert m.has_a?
       m.clear_a
-      assert_false m.has_a?
+      assert !m.has_a?
 
       m = OneofMessage.new
       m.a = "foobar"
-      assert_true m.has_my_oneof?
+      assert m.has_my_oneof?
       m.clear_my_oneof
-      assert_false m.has_my_oneof?
+      assert !m.has_my_oneof?
 
       m = OneofMessage.new
       m.a = "bar"
       assert_equal "bar", m.a
-      assert_true m.has_my_oneof?
+      assert m.has_my_oneof?
       OneofMessage.descriptor.lookup('a').clear(m)
-      assert_false m.has_my_oneof?
+      assert !m.has_my_oneof?
     end
 
     def test_initialization_map_errors
@@ -252,12 +252,12 @@ module BasicTestProto2
 
     def test_file_descriptor
       file_descriptor = TestMessage.descriptor.file_descriptor
-      assert_true nil != file_descriptor
+      assert nil != file_descriptor
       assert_equal "tests/basic_test_proto2.proto", file_descriptor.name
       assert_equal :proto2, file_descriptor.syntax
 
       file_descriptor = TestEnum.descriptor.file_descriptor
-      assert_true nil != file_descriptor
+      assert nil != file_descriptor
       assert_equal "tests/basic_test_proto2.proto", file_descriptor.name
       assert_equal :proto2, file_descriptor.syntax
     end

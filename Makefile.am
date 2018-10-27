@@ -93,6 +93,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/DeprecatedMemberTest.cs                    \
   csharp/src/Google.Protobuf.Test/EqualityTester.cs                          \
   csharp/src/Google.Protobuf.Test/FieldCodecTest.cs                          \
+  csharp/src/Google.Protobuf.Test/FieldMaskTreeTest.cs                       \
   csharp/src/Google.Protobuf.Test/GeneratedMessageTest.cs                    \
   csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj                \
   csharp/src/Google.Protobuf.Test/IssuesTest.cs                              \
@@ -140,6 +141,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Compatibility/StreamExtensions.cs               \
   csharp/src/Google.Protobuf/Compatibility/TypeExtensions.cs                 \
   csharp/src/Google.Protobuf/FieldCodec.cs                                   \
+  csharp/src/Google.Protobuf/FieldMaskTree.cs                                \
   csharp/src/Google.Protobuf/FrameworkPortability.cs                         \
   csharp/src/Google.Protobuf/Google.Protobuf.csproj                          \
   csharp/src/Google.Protobuf/ICustomDiagnosticMessage.cs                     \
@@ -749,11 +751,13 @@ php_EXTRA_DIST=                                                       \
   php/tests/proto/test_reserved_message_upper.proto                   \
   php/tests/proto/test_service.proto                                  \
   php/tests/proto/test_service_namespace.proto                        \
+  php/tests/proto/test_wrapper_type_setters.proto                     \
   php/tests/test.sh                                                   \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
   php/tests/undefined_test.php                                        \
-  php/tests/well_known_test.php
+  php/tests/well_known_test.php                                       \
+  php/tests/wrapper_type_setters_test.php
 
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
@@ -919,13 +923,21 @@ ruby_EXTRA_DIST=                                                             \
   ruby/src/main/java/com/google/protobuf/jruby/Utils.java                    \
   ruby/src/main/java/google/ProtobufJavaService.java                         \
   ruby/src/main/sentinel.proto                                               \
+  ruby/tests/basic_proto2.rb                                                 \
+  ruby/tests/basic_test_proto2.proto                                         \
+  ruby/tests/basic_test.proto                                                \
   ruby/tests/basic.rb                                                        \
+  ruby/tests/common_tests.rb                                                 \
   ruby/tests/encode_decode_test.rb                                           \
   ruby/tests/gc_test.rb                                                      \
   ruby/tests/repeated_field_test.rb                                          \
   ruby/tests/stress.rb                                                       \
+  ruby/tests/generated_code_proto2_test.rb                                   \
+  ruby/tests/generated_code_proto2.proto                                     \
   ruby/tests/generated_code.proto                                            \
+  ruby/tests/test_import_proto2.proto                                        \
   ruby/tests/test_import.proto                                               \
+  ruby/tests/test_ruby_package_proto2.proto                                  \
   ruby/tests/test_ruby_package.proto                                         \
   ruby/tests/generated_code_test.rb                                          \
   ruby/tests/well_known_types_test.rb                                        \

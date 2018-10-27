@@ -614,6 +614,9 @@ class _Parser(object):
     if not isinstance(value, dict):
       raise ParseError(
           'Struct must be in a dict which is {0}.'.format(value))
+    # Clear will mark the struct as modified so it will be created even if
+    # there are no values.
+    message.Clear()
     for key in value:
       self._ConvertValueMessage(value[key], message.fields[key])
     return

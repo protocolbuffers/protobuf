@@ -165,6 +165,22 @@ AS_IF([test "$with_zlib" != no], [
 ])
 AM_CONDITIONAL([HAVE_ZLIB], [test $HAVE_ZLIB = 1])
 
+dnl On some platforms, std::atomic needs a helper library
+AC_MSG_CHECKING(whether -latomic is needed)
+AC_LINK_IFELSE([AC_LANG_SOURCE([[
+  #include <atomic>
+  #include <cstdint>
+  std::atomic<std::int64_t> v;
+  int main() {
+    return v;
+  }
+]])], STD_ATOMIC_NEED_LIBATOMIC=no, STD_ATOMIC_NEED_LIBATOMIC=yes)
+AC_MSG_RESULT($STD_ATOMIC_NEED_LIBATOMIC)
+if test "x$STD_ATOMIC_NEED_LIBATOMIC" = xyes; then
+  LIBATOMIC_LIBS="-latomic"
+fi
+AC_SUBST([LIBATOMIC_LIBS])
+
 AS_IF([test "$with_protoc" != "no"], [
   PROTOC=$with_protoc
   AS_IF([test "$with_protoc" = "yes"], [

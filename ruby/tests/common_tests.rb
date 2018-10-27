@@ -150,7 +150,7 @@ module CommonTests
 
     # Google::Protobuf::TypeError should inherit from TypeError for backwards compatibility
     # TODO: This can be removed when we can safely migrate to Google::Protobuf::TypeError
-    assert_true e.is_a?(::TypeError)
+    assert e.is_a?(::TypeError)
 
     assert_raise Google::Protobuf::TypeError do
       m.optional_string = 42
@@ -203,10 +203,14 @@ module CommonTests
     # strings are immutable so we can't do this, but serialize should catch it.
     m.optional_string = "asdf".encode!('UTF-8')
     # Ruby 2.5 changed to raise FrozenError. However, assert_raise don't
-    # accept subclass. Don't specify type here.
-    assert_raise do
+    # accept subclass.
+    ok = true
+    begin
       m.optional_string.encode!('ASCII-8BIT')
+    rescue RuntimeError => e
+      ok = true
     end
+    assert ok
   end
 
   def test_rptfield_int32

@@ -36,11 +36,9 @@ These are projects we know about implementing Protocol Buffers for other program
 * Elixir: https://github.com/jeremyong/exprotoc
 * Elixir: https://github.com/tony612/protobuf-elixir
 * Elm: https://github.com/tiziano88/elm-protobuf
-* Erlang: http://github.com/ngerakines/erlang_protobuffs/tree/master
-* Erlang: http://piqi.org/
-* Erlang: https://code.google.com/p/protoc-gen-erl/
-* Erlang: https://github.com/basho/erlang_protobuffs
 * Erlang: https://github.com/tomas-abrahamsson/gpb
+* Erlang: http://piqi.org/
+* Erlang: https://github.com/basho/erlang_protobuffs (no longer maintained, use gpb instead)
 * GDScript: https://github.com/oniksan/godobuf (Godot v3 engine plugin)
 * Go: https://github.com/golang/protobuf (Google-official implementation)
 * Go: https://github.com/akunspy/gopbuf

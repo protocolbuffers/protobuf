@@ -68,6 +68,17 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         /// <summary>
+        /// Returns a bool indictating whether this Any message is of the target message type
+        /// </summary>
+        /// <param name="descriptor">The descriptor of the message type</param>
+        /// <returns><c>true</c> if the type name matches the descriptor's full name or <c>false</c> otherwise</returns>
+        public bool Is(MessageDescriptor descriptor)
+        {
+            ProtoPreconditions.CheckNotNull(descriptor, nameof(descriptor));
+            return GetTypeName(TypeUrl) == descriptor.FullName;
+        }
+
+        /// <summary>
         /// Unpacks the content of this Any message into the target message type,
         /// which must match the type URL within this Any message.
         /// </summary>

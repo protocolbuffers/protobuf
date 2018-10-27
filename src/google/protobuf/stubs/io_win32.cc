@@ -334,7 +334,7 @@ FILE* fopen(const char* path, const char* mode) {
 #endif
 }
 
-int close(int fd) { return ::close(fd); }
+int close(int fd) { return ::_close(fd); }
 
 int dup(int fd) { return ::_dup(fd); }
 

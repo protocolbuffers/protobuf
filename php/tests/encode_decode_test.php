@@ -23,6 +23,7 @@ use Google\Protobuf\BytesValue;
 use Google\Protobuf\Value;
 use Google\Protobuf\ListValue;
 use Google\Protobuf\Struct;
+use Google\Protobuf\GPBEmpty;
 
 class EncodeDecodeTest extends TestBase
 {
@@ -658,6 +659,129 @@ class EncodeDecodeTest extends TestBase
         $m->discardUnknownFields();
         $to = $m->serializeToString();
         $this->assertSame("9a0400", bin2hex($to));
+    }
+
+    public function testJsonUnknown()
+    {
+        // Test unknown number
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":1,
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown bool
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":true,
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown string
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":\"abc\",
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown null
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":null,
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown number array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[1],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown bool array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[true],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown string array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[\"a\"],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown null array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[null],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown array array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[[]],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown object array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[{}],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown double value array
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":[1, 2],
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown number object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":1},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown bool object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":true},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown string object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":\"a\"},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown null object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":null},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown array object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":[]},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown object object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":{}},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown double value object
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":{\"a\":1, \"b\":1},
+                                \"optionalInt32\":1}", true);
+        $this->assertSame(1, $m->getOptionalInt32());
     }
 
     public function testJsonEncode()
