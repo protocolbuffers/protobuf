@@ -28,7 +28,10 @@ class RepeatedFieldTest < Test::Unit::TestCase
     m = TestMessage.new
     repeated_field_names(TestMessage).each do |field_name|
       assert_nil m.send(field_name).first
+      assert_equal [], m.send(field_name).first(0)
+      assert_equal [], m.send(field_name).first(1)
     end
+
     fill_test_msg(m)
     assert_equal -10, m.repeated_int32.first
     assert_equal -1_000_000, m.repeated_int64.first
@@ -41,6 +44,11 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal "bar".encode!('ASCII-8BIT'), m.repeated_bytes.first
     assert_equal TestMessage2.new(:foo => 1), m.repeated_msg.first
     assert_equal :A, m.repeated_enum.first
+
+    assert_equal [], m.repeated_int32.first(0)
+    assert_equal [-10], m.repeated_int32.first(1)
+    assert_equal [-10, -11], m.repeated_int32.first(2)
+    assert_equal [-10, -11], m.repeated_int32.first(3)
   end
 
 
