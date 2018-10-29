@@ -342,7 +342,6 @@ uint32 ghtonl(uint32 x) {
 
 namespace internal {
 
-typedef void OnShutdownFunc();
 struct ShutdownData {
   ~ShutdownData() {
     std::reverse(functions.begin(), functions.end());
