@@ -79,7 +79,7 @@ module Google
 
 
       def first(n=nil)
-        n ? self[0..n] : self[0]
+        n ? self[0...n] : self[0]
       end
 
 
