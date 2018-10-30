@@ -26,6 +26,17 @@ __EOF__
   exit 1
 fi
 
+# Verify the third_party directory before we start writing to it below.
+if test ! -d third_party/googletest/googletest; then
+  cat >&2 << __EOF__
+Third party code is missing.  Please run the following command, if you have
+not yet done so:
+
+git submodule update --init --recursive
+__EOF__
+  exit 1
+fi
+
 set -ex
 
 # The absence of a m4 directory in googletest causes autoreconf to fail when
