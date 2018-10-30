@@ -188,4 +188,4 @@ Documentation
 The complete documentation for Protocol Buffers is available via the
 web at:
 
-    https://developers.google.com/protocol-buffers/
+https://developers.google.com/protocol-buffers/
