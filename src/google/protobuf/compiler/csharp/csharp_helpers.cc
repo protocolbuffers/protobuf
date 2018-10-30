@@ -50,12 +50,10 @@
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
 #include <google/protobuf/compiler/csharp/csharp_map_field.h>
 #include <google/protobuf/compiler/csharp/csharp_message_field.h>
-#include <google/protobuf/compiler/csharp/csharp_group_field.h>
 #include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_message_field.h>
-#include <google/protobuf/compiler/csharp/csharp_repeated_group_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
@@ -459,15 +457,6 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
                                          const Options* options) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_GROUP:
-      if (descriptor->is_repeated()) {
-        return new RepeatedGroupFieldGenerator(descriptor, presenceIndex, options);
-      } else {
-        if (descriptor->containing_oneof()) {
-          return new GroupOneofFieldGenerator(descriptor, presenceIndex, options);
-        } else {
-          return new GroupFieldGenerator(descriptor, presenceIndex, options);
-        }
-      }
     case FieldDescriptor::TYPE_MESSAGE:
       if (descriptor->is_repeated()) {
         if (descriptor->is_map()) {
