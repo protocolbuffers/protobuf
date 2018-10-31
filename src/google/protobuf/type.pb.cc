@@ -443,6 +443,10 @@ Type::Type(const Type& from)
   syntax_ = from.syntax_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
 }
+Type::Type(Type&& from) noexcept
+  : Type() {
+  *this = ::std::move(from);
+}
 
 void Type::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
@@ -1089,6 +1093,10 @@ Field::Field(const Field& from)
     static_cast<size_t>(reinterpret_cast<char*>(&packed_) -
     reinterpret_cast<char*>(&kind_)) + sizeof(packed_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Field)
+}
+Field::Field(Field&& from) noexcept
+  : Field() {
+  *this = ::std::move(from);
 }
 
 void Field::SharedCtor() {
@@ -1946,6 +1954,10 @@ Enum::Enum(const Enum& from)
   syntax_ = from.syntax_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
 }
+Enum::Enum(Enum&& from) noexcept
+  : Enum() {
+  *this = ::std::move(from);
+}
 
 void Enum::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
@@ -2503,6 +2515,10 @@ EnumValue::EnumValue(const EnumValue& from)
   number_ = from.number_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValue)
 }
+EnumValue::EnumValue(EnumValue&& from) noexcept
+  : EnumValue() {
+  *this = ::std::move(from);
+}
 
 void EnumValue::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
@@ -2967,6 +2983,10 @@ Option::Option(const Option& from)
     value_ = NULL;
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
+}
+Option::Option(Option&& from) noexcept
+  : Option() {
+  *this = ::std::move(from);
 }
 
 void Option::SharedCtor() {

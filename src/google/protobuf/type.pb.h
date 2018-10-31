@@ -174,10 +174,7 @@ class PROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_inse
     return *this;
   }
   #if LANG_CXX11
-  Type(Type&& from) noexcept
-    : Type() {
-    *this = ::std::move(from);
-  }
+  Type(Type&& from) noexcept;
 
   inline Type& operator=(Type&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
@@ -386,10 +383,7 @@ class PROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_ins
     return *this;
   }
   #if LANG_CXX11
-  Field(Field&& from) noexcept
-    : Field() {
-    *this = ::std::move(from);
-  }
+  Field(Field&& from) noexcept;
 
   inline Field& operator=(Field&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
@@ -928,10 +922,7 @@ class PROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@protoc
     return *this;
   }
   #if LANG_CXX11
-  EnumValue(EnumValue&& from) noexcept
-    : EnumValue() {
-    *this = ::std::move(from);
-  }
+  EnumValue(EnumValue&& from) noexcept;
 
   inline EnumValue& operator=(EnumValue&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
@@ -1091,10 +1082,7 @@ class PROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc_in
     return *this;
   }
   #if LANG_CXX11
-  Option(Option&& from) noexcept
-    : Option() {
-    *this = ::std::move(from);
-  }
+  Option(Option&& from) noexcept;
 
   inline Option& operator=(Option&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
