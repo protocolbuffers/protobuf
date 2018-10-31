@@ -280,7 +280,7 @@ void ExtensionSet::ClearExtension(int number) {
 
 namespace {
 
-enum Cardinality {
+enum {
   REPEATED,
   OPTIONAL
 };
