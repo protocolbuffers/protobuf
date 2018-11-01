@@ -268,7 +268,7 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -disable-concurrent-testing
       )
       ;;
-    9.3* )
+    9.[3-4]* )
       XCODEBUILD_TEST_BASE_IOS+=(
           # Xcode 9.3 chokes targeting iOS 8.x - http://www.openradar.me/39335367
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=9.0" # 32bit
@@ -277,11 +277,20 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -disable-concurrent-testing
       )
       ;;
+    10.[0-1]* )
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
+          # 10.x also seems to often fail running destinations in parallel (with
+          # 32bit one include atleast)
+          -disable-concurrent-destination-testing
+      )
+      ;;
     * )
       echo ""
       echo "ATTENTION: Time to update the simulator targets for Xcode ${XCODE_VERSION}"
       echo ""
-      echo "Build aborted!"
+      echo "ERROR: Build aborted!"
       exit 2
       ;;
   esac
@@ -334,3 +343,6 @@ if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
   wrapped_make -j "${NUM_MAKE_JOBS}" test_objc
   cd ..
 fi
+
+echo ""
+echo "$(basename "${0}"): Success!"
