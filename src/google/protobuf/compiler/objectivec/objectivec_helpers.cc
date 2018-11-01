@@ -1179,7 +1179,7 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                  files[i]->name())
           != generation_options.expected_prefixes_suppressions.end());
     if (should_skip) {
-      return true;
+      continue;
     }
 
     bool is_valid =
