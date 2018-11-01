@@ -89,6 +89,12 @@ bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& 
       // There is no validation that the prefixes are good prefixes, it is
       // assumed that they are when you create the file.
       generation_options.expected_prefixes_path = options[i].second;
+    } else if (options[i].first == "expected_prefixes_suppressions") {
+      // A semicolon delimited string that lists the paths of .proto files to
+      // exclude from the package prefix validations (expected_prefixes_path).
+      // This is provided as an "out", to skip some files being checked.
+      SplitStringUsing(options[i].second, ";",
+                       &generation_options.expected_prefixes_suppressions);
     } else if (options[i].first == "generate_for_named_framework") {
       // The name of the framework that protos are being generated for. This
       // will cause the #import statements to be framework based using this
