@@ -268,25 +268,18 @@ void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 
 void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   // TODO(jonskeet): We may be able to do better than this
+  printer->Print(
+    variables_,
+    "$type_name$ subBuilder = new $type_name$();\n"
+    "if ($has_property_check$) {\n"
+    "  subBuilder.MergeFrom($property_name$);\n"
+    "}\n");
   if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
-    printer->Print(
-      variables_,
-      "$type_name$ subBuilder = new $type_name$();\n"
-      "if ($has_property_check$) {\n"
-      "  subBuilder.MergeFrom($property_name$);\n"
-      "}\n"
-      "input.ReadMessage(subBuilder);\n"
-      "$property_name$ = subBuilder;\n");
+    printer->Print("input.ReadMessage(subBuilder);\n");
   } else {
-    printer->Print(
-      variables_,
-      "$type_name$ subBuilder = new $type_name$();\n"
-      "if ($has_property_check$) {\n"
-      "  subBuilder.MergeFrom($property_name$);\n"
-      "}\n"
-      "input.ReadGroup(subBuilder);\n"
-      "$property_name$ = subBuilder;\n");
+    printer->Print("input.ReadGroup(subBuilder);\n");
   }
+  printer->Print(variables_, "$property_name$ = subBuilder;\n");
 }
 
 void MessageOneofFieldGenerator::WriteToString(io::Printer* printer) {
