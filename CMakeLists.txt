@@ -91,12 +91,12 @@ if(LUA_FOUND)
 
   set_target_properties(upb_c
     PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "upb/bindings/lua"
+    LIBRARY_OUTPUT_DIRECTORY "lua"
     PREFIX ""
     SUFFIX ".so")
   set_target_properties(table_c pb_c
     PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "upb/bindings/lua/upb"
+    LIBRARY_OUTPUT_DIRECTORY "lua/upb"
     PREFIX ""
     SUFFIX ".so")
 
@@ -123,15 +123,16 @@ if(LUA_FOUND)
         DEPENDS ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
-                ${CMAKE_CURRENT_BINARY_DIR}/upb/bindings/lua)
+                ${CMAKE_CURRENT_BINARY_DIR}/lua)
   add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/table.lua
+               ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
         DEPENDS ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
                 ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
-                ${CMAKE_CURRENT_BINARY_DIR}/upb/bindings/lua/upb)
+                ${CMAKE_CURRENT_BINARY_DIR}/lua/upb)
 
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
@@ -141,6 +142,15 @@ if(LUA_FOUND)
         lua third_party/dynasm/dynasm.lua
         -c upb/pb/compile_decoder_x64.dasc
         > ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
+  )
+
+  add_custom_target(
+    upbc ALL
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_c_api.lua
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/upbc.lua
+            ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
+            ${CMAKE_CURRENT_BINARY_DIR}/lua/upb.lua
+            ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
   )
 
   add_custom_target(
@@ -169,15 +179,6 @@ if(LUA_FOUND AND PROTOBUF_FOUND)
   set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "enable shared libs for proto2" FORCE)
   set(protobuf_BUILD_CONFORMANCE ON CACHE BOOL "Build conformance tests" FORCE)
   add_subdirectory(third_party/protobuf/cmake)
-
-  add_custom_target(
-    upbc ALL
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_c_api.lua
-            ${CMAKE_CURRENT_SOURCE_DIR}/tools/upbc.lua
-            ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
-            ${CMAKE_CURRENT_BINARY_DIR}/lua/upb.lua
-            ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
-  )
 
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.h
