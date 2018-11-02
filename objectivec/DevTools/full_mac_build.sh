@@ -239,26 +239,10 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
   # just pick a mix of OS Versions and 32/64 bit.
   # NOTE: Different Xcode have different simulated hardware/os support.
   case "${XCODE_VERSION}" in
-    6.* )
-      echo "ERROR: Xcode 6.3/6.4 no longer supported for building, please use 8.0 or higher." 1>&2
-      exit 10
-      ;;
-    7.* )
-      echo "ERROR: Xcode 7.x no longer supported for building, please use 8.0 or higher." 1>&2
+    [6-8].* )
+      echo "ERROR: The unittests include Swift code that is now Swift 4.0." 1>&2
+      echo "ERROR: Xcode 9.0 or higher is required to build the test suite, but the library works with Xcode 7.x." 1>&2
       exit 11
-      ;;
-    8.0* )
-      # The 8.* device seem to hang and never start under Xcode 8.
-      XCODEBUILD_TEST_BASE_IOS+=(
-          -destination "platform=iOS Simulator,name=iPhone 4s,OS=9.0" # 32bit
-          -destination "platform=iOS Simulator,name=iPhone 7,OS=10.0" # 64bit
-      )
-      ;;
-    8.[1-3]* )
-      XCODEBUILD_TEST_BASE_IOS+=(
-          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
-      )
       ;;
     9.[0-2]* )
       XCODEBUILD_TEST_BASE_IOS+=(
@@ -317,13 +301,9 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
     XCODEBUILD_TEST_BASE_OSX+=( -quiet )
   fi
   case "${XCODE_VERSION}" in
-    6.* )
-      echo "ERROR: Xcode 6.3/6.4 no longer supported for building, please use 8.0 or higher." 1>&2
-      exit 10
-      ;;
-    7.* )
-      echo "ERROR: The unittests include Swift code that is now Swift 3.0." 1>&2
-      echo "ERROR: Xcode 8.0 or higher is required to build the test suite, but the library works with Xcode 7.x." 1>&2
+    [6-8].* )
+      echo "ERROR: The unittests include Swift code that is now Swift 4.0." 1>&2
+      echo "ERROR: Xcode 9.0 or higher is required to build the test suite, but the library works with Xcode 7.x." 1>&2
       exit 11
       ;;
   esac
