@@ -966,3 +966,93 @@ py_proto_library(
     default_runtime = "",
     protoc = ":protoc",
 )
+
+################################################################################
+# Conformance tests
+################################################################################
+
+proto_library(
+    name = "test_messages_proto2_proto",
+    srcs = [
+        "src/google/protobuf/test_messages_proto2.proto",
+    ],
+)
+
+proto_library(
+    name = "test_messages_proto3_proto",
+    srcs = [
+        "src/google/protobuf/test_messages_proto3.proto",
+    ],
+    deps = [
+        ":any_proto",
+        ":duration_proto",
+        ":field_mask_proto",
+        ":struct_proto",
+        ":timestamp_proto",
+        ":wrappers_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "test_messages_proto2_proto_cc",
+    srcs = [
+        "src/google/protobuf/test_messages_proto2.proto",
+    ],
+)
+
+cc_proto_library(
+    name = "test_messages_proto3_proto_cc",
+    srcs = [
+        "src/google/protobuf/test_messages_proto3.proto",
+    ],
+    deps = [
+        ":cc_wkt_protos",
+    ],
+)
+
+proto_library(
+    name = "conformance_proto",
+    srcs = [
+        "conformance/conformance.proto",
+    ],
+)
+
+cc_proto_library(
+    name = "conformance_proto_cc",
+    srcs = ["conformance/conformance.proto"],
+)
+
+cc_library(
+    name = "jsoncpp",
+    hdrs = ["conformance/third_party/jsoncpp/json.h"],
+    srcs = ["conformance/third_party/jsoncpp/jsoncpp.cpp"],
+    includes = ["conformance"],
+)
+
+cc_library(
+    name = "conformance_test",
+    srcs = [
+        "conformance/conformance_test.cc",
+        "conformance/conformance_test_impl.cc",
+    ],
+    hdrs = [
+        "conformance/conformance_test.h",
+    ],
+    deps = [
+        ":conformance_proto_cc",
+        ":jsoncpp",
+        ":test_messages_proto2_proto_cc",
+        ":test_messages_proto3_proto_cc",
+    ],
+    includes = ["conformance", "src"],
+)
+
+cc_binary(
+    name = "conformance_test_runner",
+    srcs = [
+        "conformance/conformance_test_runner.cc",
+    ],
+    deps = [
+        ":conformance_test",
+    ]
+)
