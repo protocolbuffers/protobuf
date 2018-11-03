@@ -976,6 +976,7 @@ proto_library(
     srcs = [
         "src/google/protobuf/test_messages_proto2.proto",
     ],
+    visibility = ["//visibility:public"],
 )
 
 proto_library(
@@ -991,6 +992,7 @@ proto_library(
         ":timestamp_proto",
         ":wrappers_proto",
     ],
+    visibility = ["//visibility:public"],
 )
 
 cc_proto_library(
@@ -1015,6 +1017,7 @@ proto_library(
     srcs = [
         "conformance/conformance.proto",
     ],
+    visibility = ["//visibility:public"],
 )
 
 cc_proto_library(
@@ -1054,5 +1057,6 @@ cc_binary(
     ],
     deps = [
         ":conformance_test",
-    ]
+    ],
+    visibility = ["//visibility:public"],
 )
