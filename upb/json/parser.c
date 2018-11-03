@@ -2366,7 +2366,7 @@ _match:
 	break;
 	case 2:
 #line 2023 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 24; goto _again;} }
+	{ p--; {stack[top++] = cs; cs = 24;goto _again;} }
 	break;
 	case 3:
 #line 2027 "upb/json/parser.rl"
@@ -2440,17 +2440,17 @@ _match:
 #line 2082 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_TIMESTAMP)) {
-          {stack[top++] = cs; cs = 48; goto _again;}
+          {stack[top++] = cs; cs = 48;goto _again;}
         } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_DURATION)) {
-          {stack[top++] = cs; cs = 41; goto _again;}
+          {stack[top++] = cs; cs = 41;goto _again;}
         } else {
-          {stack[top++] = cs; cs = 33; goto _again;}
+          {stack[top++] = cs; cs = 33;goto _again;}
         }
       }
 	break;
 	case 21:
 #line 2093 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 76; goto _again;} }
+	{ p--; {stack[top++] = cs; cs = 76;goto _again;} }
 	break;
 	case 22:
 #line 2098 "upb/json/parser.rl"
@@ -2538,7 +2538,9 @@ _again:
 		switch ( *__acts++ ) {
 	case 0:
 #line 2019 "upb/json/parser.rl"
-	{ p--; {cs = stack[--top]; goto _again;} }
+	{ p--; {cs = stack[--top]; 	if ( p == pe )
+		goto _test_eof;
+goto _again;} }
 	break;
 	case 26:
 #line 2111 "upb/json/parser.rl"
@@ -2564,7 +2566,7 @@ _again:
 #line 2139 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-#line 2568 "upb/json/parser.c"
+#line 2570 "upb/json/parser.c"
 		}
 	}
 	}
@@ -2589,7 +2591,7 @@ error:
   return p - buf;
 }
 
-bool end(void *closure, const void *hd) {
+static bool end(void *closure, const void *hd) {
   upb_json_parser *parser = closure;
 
   /* Prevent compile warning on unused static constants. */
@@ -2603,11 +2605,7 @@ bool end(void *closure, const void *hd) {
 
   parse(parser, hd, &eof_ch, 0, NULL);
 
-  return parser->current_state >= 
-#line 2608 "upb/json/parser.c"
-105
-#line 2202 "upb/json/parser.rl"
-;
+  return parser->current_state >= 105;
 }
 
 static void json_parser_reset(upb_json_parser *p) {
@@ -2622,7 +2620,7 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 2626 "upb/json/parser.c"
+#line 2624 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;

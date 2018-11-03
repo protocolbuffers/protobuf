@@ -62,8 +62,8 @@ def _remove_prefix(str, prefix):
         fail("%s doesn't start with %s" % (str, prefix))
     return str[len(prefix):]
 
-def lua_library(name, srcs, base, luadeps = []):
-    outs = [_remove_prefix(src, base + "/") for src in srcs]
+def lua_library(name, srcs, strip_prefix, luadeps = []):
+    outs = [_remove_prefix(src, strip_prefix + "/") for src in srcs]
     native.genrule(
         name = name + "_copy",
         srcs = srcs,
@@ -76,7 +76,7 @@ def lua_library(name, srcs, base, luadeps = []):
         data = outs + luadeps,
     )
 
-def lua_binary(name, main, luadeps=[]):
+def _lua_binary_or_test(name, luamain, luadeps, rule):
     script = name + ".sh"
 
     script_contents = (shell_find_runfiles + """
@@ -85,16 +85,110 @@ export LUA_CPATH="$BASE/?.so"
 export LUA_PATH="$BASE/?.lua"
 $(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
 """).replace("$", "$$")
-    print(native.repository_name())
 
     native.genrule(
         name = "gen_" + name,
         outs = [script],
         cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % script_contents,
     )
-    native.sh_binary(
+    rule(
         name = name,
         srcs = [script],
-        data = ["@lua//:lua", "@bazel_tools//tools/bash/runfiles", main] + luadeps,
+        data = ["@lua//:lua", "@bazel_tools//tools/bash/runfiles", luamain] + luadeps,
     )
 
+def lua_binary(name, luamain, luadeps=[]):
+    _lua_binary_or_test(name, luamain, luadeps, native.sh_binary)
+
+def lua_test(name, luamain, luadeps=[]):
+    _lua_binary_or_test(name, luamain, luadeps, native.sh_test)
+
+def generated_file_staleness_test(name, outs, generated_pattern):
+    """Tests that checked-in file(s) match the contents of generated file(s).
+
+    The resulting test will verify that all output files exist and have the
+    correct contents.  If the test fails, it can be invoked with --fix to
+    bring the checked-in files up to date.
+
+    Args:
+      name: Name of the rule.
+      outs: the checked-in files that are copied from generated files.
+      generated_pattern: the pattern for transforming each "out" file into a
+        generated file.  For example, if generated_pattern="generated/%s" then
+        a file foo.txt will look for generated file generated/foo.txt.
+    """
+
+    script_name = name + ".py"
+    script_src = "//:staleness_test.py"
+
+    # Filter out non-existing rules so Blaze doesn't error out before we even
+    # run the test.
+    existing_outs = native.glob(include = outs)
+
+    # The file list contains a few extra bits of information at the end.
+    # These get unpacked by the Config class in staleness_test_lib.py.
+    file_list = outs + [generated_pattern, native.package_name() or ".", name]
+
+    native.genrule(
+        name = name + "_makescript",
+        outs = [script_name],
+        srcs = [script_src],
+        testonly = 1,
+        cmd = "cat $(location " + script_src + ") > $@; " +
+              "sed -i 's|INSERT_FILE_LIST_HERE|" + "\\n  ".join(file_list) + "|' $@",
+    )
+
+    native.py_test(
+        name = name,
+        srcs = [script_name],
+        data = existing_outs + [generated_pattern % file for file in outs],
+        deps = [
+            "//:staleness_test_lib",
+        ],
+    )
+
+SrcList = provider(
+    fields = {
+        'srcs' : 'list of srcs',
+        'hdrs' : 'list of hdrs',
+    }
+)
+
+def _file_list_aspect_impl(target, ctx):
+    srcs = []
+    hdrs = []
+    for src in ctx.rule.attr.srcs:
+        srcs += src.files.to_list()
+    for hdr in ctx.rule.attr.hdrs:
+        hdrs += hdr.files.to_list()
+    return [SrcList(srcs = srcs, hdrs = hdrs)]
+
+_file_list_aspect = aspect(
+    implementation = _file_list_aspect_impl,
+)
+
+def _upb_amalgamation(ctx):
+    srcs = []
+    hdrs = []
+    for lib in ctx.attr.libs:
+        srcs += lib[SrcList].srcs
+        hdrs += lib[SrcList].hdrs
+    ctx.actions.run(
+        inputs = srcs + hdrs,
+        outputs = ctx.outputs.outs,
+        arguments = ["", ctx.bin_dir.path + "/"] + [f.path for f in srcs],
+        progress_message = "Making amalgamation",
+        executable = ctx.executable.amalgamator,
+    )
+
+upb_amalgamation = rule(
+    implementation = _upb_amalgamation,
+    attrs = {
+        "amalgamator": attr.label(
+            executable = True,
+            cfg = "host",
+        ),
+        "libs": attr.label_list(aspects = [_file_list_aspect]),
+        "outs": attr.output_list(),
+    }
+)
