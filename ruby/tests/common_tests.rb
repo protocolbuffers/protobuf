@@ -204,10 +204,10 @@ module CommonTests
     m.optional_string = "asdf".encode!('UTF-8')
     # Ruby 2.5 changed to raise FrozenError. However, assert_raise don't
     # accept subclass.
-    ok = true
+    ok = false
     begin
       m.optional_string.encode!('ASCII-8BIT')
-    rescue RuntimeError => e
+    rescue RuntimeError
       ok = true
     end
     assert ok
@@ -341,16 +341,16 @@ module CommonTests
 
   def test_rptfield_initialize
     assert_raise ArgumentError do
-      l = Google::Protobuf::RepeatedField.new
+      Google::Protobuf::RepeatedField.new
     end
     assert_raise ArgumentError do
-      l = Google::Protobuf::RepeatedField.new(:message)
+      Google::Protobuf::RepeatedField.new(:message)
     end
     assert_raise ArgumentError do
-      l = Google::Protobuf::RepeatedField.new([1, 2, 3])
+      Google::Protobuf::RepeatedField.new([1, 2, 3])
     end
     assert_raise ArgumentError do
-      l = Google::Protobuf::RepeatedField.new(:message, [proto_module::TestMessage2.new])
+      Google::Protobuf::RepeatedField.new(:message, [proto_module::TestMessage2.new])
     end
   end
 
@@ -614,7 +614,6 @@ module CommonTests
     assert d2 == d
 
     encoded_field_a = proto_module::OneofMessage.encode(proto_module::OneofMessage.new(:a => "string"))
-    encoded_field_b = proto_module::OneofMessage.encode(proto_module::OneofMessage.new(:b => 1000))
     encoded_field_c = proto_module::OneofMessage.encode(
       proto_module::OneofMessage.new(:c => proto_module::TestMessage2.new(:foo => 1)))
     encoded_field_d = proto_module::OneofMessage.encode(proto_module::OneofMessage.new(:d => :B))
@@ -800,7 +799,7 @@ module CommonTests
     m = proto_module::Recursive1.new(:foo => proto_module::Recursive2.new)
     m.foo.foo = m
     assert_raise RuntimeError do
-      serialized = proto_module::Recursive1.encode(m)
+      proto_module::Recursive1.encode(m)
     end
   end
 
@@ -933,7 +932,6 @@ module CommonTests
 
     data = proto_module::TestMessage.encode(m)
 
-    l = 0
     10_000.times do
       m = proto_module::TestMessage.decode(data)
       data_new = proto_module::TestMessage.encode(m)

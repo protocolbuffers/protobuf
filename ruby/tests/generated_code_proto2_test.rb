@@ -14,8 +14,8 @@ class GeneratedCodeProto2Test < Test::Unit::TestCase
     # is to ensure that the output of the code generator is valid Ruby and
     # successfully creates message definitions and classes, not to test every
     # aspect of the extension (basic.rb is for that).
-    m = A::B::Proto2::TestMessage.new()
-    m2 = FooBar::Proto2::TestImportedMessage.new()
-    m3 = A::B::Proto2::TestRubyPackageMessage.new()
+    A::B::Proto2::TestMessage.new
+    FooBar::Proto2::TestImportedMessage.new
+    A::B::Proto2::TestRubyPackageMessage.new
   end
 end
