@@ -5,7 +5,9 @@ load(
     "lua_binary",
     "lua_test",
     "generated_file_staleness_test",
+    "make_shell_script",
     "upb_amalgamation",
+    "upb_proto_library",
 )
 
 # C/C++ rules ##################################################################
@@ -202,6 +204,43 @@ cc_test(
     deps = [":upb_json", ":upb_test"],
 )
 
+upb_proto_library(
+    name = "conformance_proto_upb",
+    deps = [
+        "@com_google_protobuf//:conformance_proto",
+        "@com_google_protobuf//:test_messages_proto3_proto",
+    ],
+    upbc = ":upbc",
+)
+
+cc_binary(
+    name = "conformance_upb",
+    srcs = [
+        "tests/conformance_upb.c",
+    ],
+    deps = [
+        ":upb",
+        ":conformance_proto_upb",
+    ],
+)
+
+make_shell_script(
+    name = "gen_test_conformance_upb",
+    out = "test_conformance_upb.sh",
+    contents = "$(rlocation com_google_protobuf/conformance_test_runner) $(rlocation upb/conformance_upb)",
+)
+
+sh_test(
+    name = "test_conformance_upb",
+    srcs = ["test_conformance_upb.sh"],
+    data = [
+        ":conformance_upb",
+        "@com_google_protobuf//:conformance_test_runner",
+        "tests/conformance_upb_failures.txt",
+        "@bazel_tools//tools/bash/runfiles"
+    ]
+)
+
 # Lua libraries. ###############################################################
 
 lua_cclibrary(
@@ -222,33 +261,21 @@ lua_cclibrary(
 
 lua_library(
     name = "lua/upb",
-    srcs = [
-        "upb/bindings/lua/upb.lua",
-    ],
+    srcs = ["upb/bindings/lua/upb.lua"],
     strip_prefix = "upb/bindings/lua",
-    luadeps = [
-        "lua/upb_c",
-    ],
+    luadeps = ["lua/upb_c"],
 )
 
 lua_cclibrary(
     name = "lua/upb/table_c",
-    srcs = [
-        "upb/bindings/lua/upb/table.c",
-    ],
-    luadeps = [
-        "lua/upb_c",
-    ],
-    deps = [
-        "upb",
-    ],
+    srcs = ["upb/bindings/lua/upb/table.c"],
+    luadeps = ["lua/upb_c"],
+    deps = ["upb"],
 )
 
 lua_library(
     name = "lua/upb/table",
-    srcs = [
-        "upb/bindings/lua/upb/table.lua",
-    ],
+    srcs = ["upb/bindings/lua/upb/table.lua"],
     strip_prefix = "upb/bindings/lua",
     luadeps = [
         "lua/upb",
@@ -258,22 +285,14 @@ lua_library(
 
 lua_cclibrary(
     name = "lua/upb/pb_c",
-    srcs = [
-        "upb/bindings/lua/upb/pb.c",
-    ],
-    luadeps = [
-        "lua/upb_c",
-    ],
-    deps = [
-        "upb_pb",
-    ],
+    srcs = ["upb/bindings/lua/upb/pb.c"],
+    luadeps = ["lua/upb_c"],
+    deps = ["upb_pb"],
 )
 
 lua_library(
     name = "lua/upb/pb",
-    srcs = [
-        "upb/bindings/lua/upb/pb.lua",
-    ],
+    srcs = ["upb/bindings/lua/upb/pb.lua"],
     strip_prefix = "upb/bindings/lua",
     luadeps = [
         "lua/upb",

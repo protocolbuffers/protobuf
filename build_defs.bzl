@@ -1,5 +1,5 @@
 
-shell_find_runfiles = """
+_shell_find_runfiles = """
   # --- begin runfiles.bash initialization ---
   # Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
   set -euo pipefail
@@ -62,6 +62,11 @@ def _remove_prefix(str, prefix):
         fail("%s doesn't start with %s" % (str, prefix))
     return str[len(prefix):]
 
+def _remove_suffix(str, suffix):
+    if not str.endswith(suffix):
+        fail("%s doesn't end with %s" % (str, suffix))
+    return str[:-len(suffix)]
+
 def lua_library(name, srcs, strip_prefix, luadeps = []):
     outs = [_remove_prefix(src, strip_prefix + "/") for src in srcs]
     native.genrule(
@@ -76,21 +81,28 @@ def lua_library(name, srcs, strip_prefix, luadeps = []):
         data = outs + luadeps,
     )
 
+def make_shell_script(name, contents, out):
+    script_contents = (_shell_find_runfiles + contents).replace("$", "$$")
+    native.genrule(
+        name = "gen_" + name,
+        outs = [out],
+        cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % script_contents,
+    )
+
 def _lua_binary_or_test(name, luamain, luadeps, rule):
     script = name + ".sh"
 
-    script_contents = (shell_find_runfiles + """
+    make_shell_script(
+        name = "gen_" + name,
+        out = script,
+        contents = """
 BASE=$(dirname $(rlocation upb/upb_c.so))
 export LUA_CPATH="$BASE/?.so"
 export LUA_PATH="$BASE/?.lua"
 $(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
-""").replace("$", "$$")
-
-    native.genrule(
-        name = "gen_" + name,
-        outs = [script],
-        cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % script_contents,
+"""
     )
+
     rule(
         name = name,
         srcs = [script],
@@ -147,6 +159,8 @@ def generated_file_staleness_test(name, outs, generated_pattern):
         ],
     )
 
+# upb_amalgamation() rule, with file_list aspect.
+
 SrcList = provider(
     fields = {
         'srcs' : 'list of srcs',
@@ -192,3 +206,68 @@ upb_amalgamation = rule(
         "outs": attr.output_list(),
     }
 )
+
+# upb_proto_library() rule
+
+def _remove_up(string):
+    if string.startswith("../"):
+        string = string[3:]
+        pos = string.find("/")
+        string = string[pos + 1:]
+
+    return _remove_suffix(string, ".proto")
+
+def _upb_proto_library_srcs_impl(ctx):
+    descriptors = []
+    outs = []
+    for dep in ctx.attr.deps:
+        if hasattr(dep, 'proto'):
+            for desc in dep.proto.transitive_descriptor_sets:
+                descriptors.append(desc)
+            for src in dep.proto.transitive_sources:
+                outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + ".upb.h"))
+                outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + ".upb.c"))
+                outdir = _remove_suffix(outs[-1].path, _remove_up(src.short_path) + ".upb.c")
+
+    concatenated = ctx.actions.declare_file(ctx.label.name + "_concatenated_descriptor.bin")
+    descriptor_paths = [d.path for d in descriptors]
+
+    ctx.actions.run_shell(
+        inputs = descriptors,
+        outputs = [concatenated],
+        progress_message = "Concatenating descriptors",
+        command = "cat %s > %s" % (" ".join(descriptor_paths), concatenated.path),
+    )
+    ctx.actions.run(
+        inputs = [concatenated],
+        outputs = outs,
+        executable = ctx.executable.upbc,
+        arguments = ["--outdir", outdir, concatenated.path],
+        progress_message = "Generating upb protos",
+    )
+
+    return [DefaultInfo(files = depset(outs))]
+
+_upb_proto_library_srcs = rule(
+    implementation = _upb_proto_library_srcs_impl,
+    attrs = {
+        "upbc": attr.label(
+            executable = True,
+            cfg = "host",
+        ),
+        "deps": attr.label_list(),
+    }
+)
+
+def upb_proto_library(name, deps, upbc):
+    srcs_rule = name + "_srcs.cc"
+    _upb_proto_library_srcs(
+        name = srcs_rule,
+        upbc = upbc,
+        deps = deps,
+    )
+    native.cc_library(
+        name = name,
+        srcs = [":" + srcs_rule],
+        deps = [":upb"],
+    )
