@@ -539,7 +539,9 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   } else {
     printer->Print(
       "default:\n"
-      "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
+      "  if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {\n"
+      "    return;\n"
+      "  }\n"
       "  break;\n");
   }
   for (int i = 0; i < fields_by_number().size(); i++) {

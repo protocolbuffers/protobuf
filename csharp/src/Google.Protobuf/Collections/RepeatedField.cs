@@ -208,6 +208,10 @@ namespace Google.Protobuf.Collections
                 {
                     output.WriteTag(tag);
                     writer(output, array[i]);
+                    if (codec.EndTag != 0)
+                    {
+                        output.WriteTag(codec.EndTag);
+                    }
                 }
             }
         }

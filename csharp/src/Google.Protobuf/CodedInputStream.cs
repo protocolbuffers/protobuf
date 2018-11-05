@@ -373,7 +373,7 @@ namespace Google.Protobuf
                 if (IsAtEnd)
                 {
                     lastTag = 0;
-                    return 0; // This is the only case in which we return 0.
+                    return 0;
                 }
 
                 lastTag = ReadRawVarint32();
@@ -382,6 +382,10 @@ namespace Google.Protobuf
             {
                 // If we actually read a tag with a field of 0, that's not a valid tag.
                 throw InvalidProtocolBufferException.InvalidTag();
+            }
+            if (ReachedLimit)
+            {
+                return 0;
             }
             return lastTag;
         }
@@ -589,6 +593,20 @@ namespace Google.Protobuf
             }
             --recursionDepth;
             PopLimit(oldLimit);
+        }
+
+        /// <summary>
+        /// Reads an embedded group field from the stream.
+        /// </summary>
+        public void ReadGroup(IMessage builder)
+        {
+            if (recursionDepth >= recursionLimit)
+            {
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
+            ++recursionDepth;
+            builder.MergeFrom(this);
+            --recursionDepth;
         }
 
         /// <summary>
