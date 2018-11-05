@@ -1,5 +1,0 @@
-#!/bin/sh
-BASE=`dirname "$0"`
-export LUA_CPATH="$BASE/../lua/?.so"
-export LUA_PATH="$BASE/?.lua;$BASE/../lua/?.lua"
-lua $BASE/upbc.lua "$@"

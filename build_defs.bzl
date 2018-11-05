@@ -131,7 +131,7 @@ def generated_file_staleness_test(name, outs, generated_pattern):
     """
 
     script_name = name + ".py"
-    script_src = "//:staleness_test.py"
+    script_src = "//:tools/staleness_test.py"
 
     # Filter out non-existing rules so Blaze doesn't error out before we even
     # run the test.

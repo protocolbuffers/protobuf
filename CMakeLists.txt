@@ -1,3 +1,4 @@
+# This file was generated from BUILD using tools/make_cmakelists.py.
 
 cmake_minimum_required(VERSION 3.1)
 
@@ -9,15 +10,13 @@ endif()
 
 cmake_minimum_required (VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
-project (upb)
+
+project(upb)
+
 
 # Prevent CMake from setting -rdynamic on Linux (!!).
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
-
-# Options we define for users.
-option(UPB_ENABLE_ASAN "Enable address sanitizer." OFF)
-option(UPB_ENABLE_UBSAN "Enable undefined behavior sanitizer." OFF)
 
 # Set default build type.
 if(NOT CMAKE_BUILD_TYPE)
@@ -51,8 +50,6 @@ endif()
 
 include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_CXX_FLAGS "-std=c++11 -W -Wall -Wno-sign-compare")
-set(CMAKE_C_FLAGS "-std=c89 -W -Wall -Wno-sign-compare")
 
 if(APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup -flat_namespace")
@@ -60,250 +57,132 @@ elseif(UNIX)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--build-id")
 endif()
 
-FIND_PACKAGE(Lua)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/Makefile.am")
-  set(PROTOBUF_FOUND TRUE)
-endif()
-find_program(RAGEL NAMES ragel)
+enable_testing()
 
-if(LUA_FOUND)
-  include_directories(${LUA_INCLUDE_DIR})
-
-  add_library(upb_c SHARED
-    upb/bindings/lua/upb.c
-    upb/bindings/lua/def.c
-    upb/bindings/lua/msg.c
-  )
-  target_link_libraries(upb_c LINK_PRIVATE
-    upbpb_pic
-    upbdef_pic
-    upbhandlers_pic upb_pic )
-
-  add_library(table_c SHARED
-    upb/bindings/lua/upb/table.c
-  )
-  target_link_libraries(table_c LINK_PRIVATE upb_c upb_pic)
-
-  add_library(pb_c SHARED
-    upb/bindings/lua/upb/pb.c
-  )
-  target_link_libraries(pb_c LINK_PRIVATE upb_c upbpb_pic)
-
-  set_target_properties(upb_c
-    PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "lua"
-    PREFIX ""
-    SUFFIX ".so")
-  set_target_properties(table_c pb_c
-    PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "lua/upb"
-    PREFIX ""
-    SUFFIX ".so")
-
-  add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
-        DEPENDS ${CMAKE_SOURCE_DIR}/tools/upbc
-                ${CMAKE_SOURCE_DIR}/tools/upbc.lua
-                ${CMAKE_SOURCE_DIR}/tools/dump_cinit.lua
-                ${CMAKE_SOURCE_DIR}/tools/make_c_api.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
-                upb_c
-                table_c
-                pb_c
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_SOURCE_DIR}/tools/upbc
-                ${CMAKE_SOURCE_DIR}/tools/upbc.lua
-                ${CMAKE_SOURCE_DIR}/tools/dump_cinit.lua
-                ${CMAKE_SOURCE_DIR}/tools/make_c_api.lua
-                ${CMAKE_CURRENT_BINARY_DIR}/tools)
-  add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lua/upb.lua
-        DEPENDS ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb.lua
-                ${CMAKE_CURRENT_BINARY_DIR}/lua)
-  add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/table.lua
-               ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
-        DEPENDS ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/table.lua
-                ${CMAKE_SOURCE_DIR}/upb/bindings/lua/upb/pb.lua
-                ${CMAKE_CURRENT_BINARY_DIR}/lua/upb)
-
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
-    DEPENDS upb/pb/compile_decoder_x64.dasc
-    COMMAND
-        cd ${CMAKE_CURRENT_SOURCE_DIR} &&
-        lua third_party/dynasm/dynasm.lua
-        -c upb/pb/compile_decoder_x64.dasc
-        > ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
-  )
-
-  add_custom_target(
-    upbc ALL
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_c_api.lua
-            ${CMAKE_CURRENT_SOURCE_DIR}/tools/upbc.lua
-            ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
-            ${CMAKE_CURRENT_BINARY_DIR}/lua/upb.lua
-            ${CMAKE_CURRENT_BINARY_DIR}/lua/upb/pb.lua
-  )
-
-  add_custom_target(
-    genfiles2 ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/upb/pb/compile_decoder_x64.h
-  )
-
-  add_test(
-    NAME testlua
-    COMMAND lua ${CMAKE_SOURCE_DIR}/tests/bindings/lua/test_upb.lua
-                ${CMAKE_SOURCE_DIR}/tests/bindings/lua/test_upb.pb.lua
-  )
-  set_property(TEST testlua PROPERTY ENVIRONMENT
-      LUA_PATH=${CMAKE_SOURCE_DIR}/third_party/lunit/?.lua$<SEMICOLON>${CMAKE_SOURCE_DIR}/upb/bindings/lua/?.lua
-      LUA_CPATH=${CMAKE_BINARY_DIR}/upb/bindings/lua/?.so
-  )
-  set_tests_properties(testlua
-    PROPERTIES
-    DEPENDS "upb_c;pb_c"
-  )
-  enable_testing()
-endif()
-
-if(LUA_FOUND AND PROTOBUF_FOUND)
-  set(protobuf_BUILD_TESTS OFF CACHE BOOL "enable tests for proto2" FORCE)
-  set(protobuf_BUILD_SHARED_LIBS OFF CACHE BOOL "enable shared libs for proto2" FORCE)
-  set(protobuf_BUILD_CONFORMANCE ON CACHE BOOL "Build conformance tests" FORCE)
-  add_subdirectory(third_party/protobuf/cmake)
-
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.h
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.h
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.c
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/any.upb.c
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/duration.upb.c
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/field_mask.upb.c
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/struct.upb.c
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/timestamp.upb.c
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/wrappers.upb.c
-           ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.c
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
-            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/conformance/conformance.proto
-    COMMAND protoc --include_imports
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/conformance/conformance.proto
-        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/src/google/protobuf/test_messages_proto3.proto
-        -I${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/conformance
-        -I${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf/src
-        -o${CMAKE_CURRENT_BINARY_DIR}/conformance.pb &&
-        tools/upbc ${CMAKE_CURRENT_BINARY_DIR}/conformance.pb
-  )
-
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/descriptor.upb.h
-           ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/descriptor.upb.c
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/tools/upbc
-            ${CMAKE_CURRENT_SOURCE_DIR}/google/protobuf/descriptor.proto
-    COMMAND protoc
-        ${CMAKE_CURRENT_SOURCE_DIR}/google/protobuf/descriptor.proto
-        -I${CMAKE_CURRENT_SOURCE_DIR}
-        -o${CMAKE_CURRENT_BINARY_DIR}/descriptor.pb &&
-        tools/upbc ${CMAKE_CURRENT_BINARY_DIR}/descriptor.pb
-  )
-
-  add_custom_target(
-    genfiles ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.h
-            ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/descriptor.upb.h
-  )
-
-  add_executable(conformance_upb
-    tests/conformance_upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/conformance.upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/test_messages_proto3.upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/any.upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/duration.upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/field_mask.upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/struct.upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/timestamp.upb.c
-    ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/wrappers.upb.c
-  )
-  target_link_libraries(conformance_upb LINK_PRIVATE
-    upb
-  )
-
-  add_custom_target(
-    conformance
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conformance_upb
-            ${CMAKE_CURRENT_BINARY_DIR}/third_party/protobuf/cmake/conformance_test_runner
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/third_party/protobuf/cmake/conformance_test_runner ${CMAKE_CURRENT_BINARY_DIR}/conformance_upb
-  )
-
-endif()
-
-if (RAGEL)
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/upb/json/parser.c
-    DEPENDS upb/json/parser.rl
-    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && RAGEL -C -o ${CMAKE_CURRENT_BINARY_DIR}/upb/json/parser.c upb/json/parser.rl
-  )
-endif()
-
-configure_file(tools/copy_genfiles.sh.in tools/copy_genfiles.sh)
-
-set(UPB_SRCS
-    upb/decode.c
-    upb/encode.c
-    upb/msg.c
-    upb/table.c
-    upb/upb.c
-)
-
-set (UPBDEF_SRCS
-    upb/descriptor/descriptor.upbdefs.c
-    upb/descriptor/reader.c
-    upb/def.c
-    upb/msgfactory.c
-    upb/refcounted.c
-)
-
-set(UPBHANDLERS_SRCS
-    upb/sink.c
-    upb/handlers.c
-)
-
-set(UPBPB_SRCS
+add_library(upb
+  google/protobuf/descriptor.upb.c
+  upb/decode.c
+  upb/def.c
+  upb/encode.c
+  upb/handlers.c
+  upb/handlers-inl.h
+  upb/msg.c
+  upb/msgfactory.c
+  upb/port_def.inc
+  upb/port_undef.inc
+  upb/refcounted.c
+  upb/sink.c
+  upb/structdefs.int.h
+  upb/structs.int.h
+  upb/table.c
+  upb/table.int.h
+  upb/upb.c
+  google/protobuf/descriptor.upb.h
+  upb/decode.h
+  upb/def.h
+  upb/encode.h
+  upb/handlers.h
+  upb/msg.h
+  upb/msgfactory.h
+  upb/refcounted.h
+  upb/sink.h
+  upb/upb.h)
+add_library(upb_descriptor
+  upb/descriptor/descriptor.upbdefs.c
+  upb/descriptor/reader.c
+  upb/descriptor/descriptor.upbdefs.h
+  upb/descriptor/reader.h)
+target_link_libraries(upb_descriptor
+  upb)
+add_library(upb_pb
   upb/pb/compile_decoder.c
   upb/pb/decoder.c
+  upb/pb/decoder.int.h
   upb/pb/encoder.c
   upb/pb/glue.c
   upb/pb/textprinter.c
   upb/pb/varint.c
-)
-
-set(UPBJSON_SRCS
+  upb/pb/varint.int.h
+  upb/pb/decoder.h
+  upb/pb/encoder.h
+  upb/pb/glue.h
+  upb/pb/textprinter.h)
+target_link_libraries(upb_pb
+  upb
+  upb_descriptor)
+add_library(upb_json
   upb/json/parser.c
   upb/json/printer.c
-)
+  upb/json/parser.h
+  upb/json/printer.h)
+target_link_libraries(upb_json
+  upb)
+add_library(upb_cc_bindings
+  upb/bindings/stdc++/string.h)
+target_link_libraries(upb_cc_bindings
+  upb)
+set_target_properties(upb_cc_bindings PROPERTIES LINKER_LANGUAGE CXX)
+add_library(upb_test
+  tests/testmain.cc
+  tests/test_util.h
+  tests/upb_test.h)
+add_executable(test_varint
+  tests/pb/test_varint.c)
+add_test(NAME test_varint COMMAND test_varint)
+target_link_libraries(test_varint
+  upb_pb
+  upb_test)
+add_executable(test_def
+  tests/test_def.c)
+add_test(NAME test_def COMMAND test_def)
+target_link_libraries(test_def
+  upb_pb
+  upb_test)
+add_executable(test_handlers
+  tests/test_handlers.c)
+add_test(NAME test_handlers COMMAND test_handlers)
+target_link_libraries(test_handlers
+  upb_pb
+  upb_test)
+add_executable(test_decoder
+  tests/pb/test_decoder.cc)
+add_test(NAME test_decoder COMMAND test_decoder)
+target_link_libraries(test_decoder
+  upb_pb
+  upb_test)
+add_executable(test_encoder
+  tests/pb/test_encoder.cc)
+add_test(NAME test_encoder COMMAND test_encoder)
+add_custom_command(
+    TARGET test_encoder POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_SOURCE_DIR}/upb/descriptor/descriptor.pb
+            ${CMAKE_CURRENT_BINARY_DIR}/upb/descriptor/descriptor.pb)
+target_link_libraries(test_encoder
+  upb_cc_bindings
+  upb_pb
+  upb_test)
+add_executable(test_cpp
+  tests/test_cpp.cc)
+add_test(NAME test_cpp COMMAND test_cpp)
+target_link_libraries(test_cpp
+  upb
+  upb_descriptor
+  upb_pb
+  upb_test)
+add_executable(test_table
+  tests/test_table.cc)
+add_test(NAME test_table COMMAND test_table)
+target_link_libraries(test_table
+  upb
+  upb_test)
+add_executable(test_json
+  tests/json/test.upbdefs.c
+  tests/json/test.upbdefs.h
+  tests/json/test_json.cc)
+add_test(NAME test_json COMMAND test_json)
+target_link_libraries(test_json
+  upb_json
+  upb_test)
 
-add_library(upb ${UPB_SRCS})
-add_library(upbdef ${UPBDEF_SRCS})
-add_library(upbhandlers ${UPBHANDLERS_SRCS})
-add_library(upbpb ${UPBPB_SRCS})
-add_library(upbjson ${UPBJSON_SRCS})
-
-add_library(upb_pic ${UPB_SRCS})
-add_library(upbdef_pic ${UPBDEF_SRCS})
-add_library(upbhandlers_pic ${UPBHANDLERS_SRCS})
-add_library(upbpb_pic ${UPBPB_SRCS})
-add_library(upbjson_pic ${UPBJSON_SRCS})
-
-set_property(TARGET upb_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET upbdef_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET upbhandlers_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET upbpb_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_property(TARGET upbjson_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
 
