@@ -13,11 +13,17 @@ local make_c_api = require "make_c_api"
 local upb = require "upb"
 
 local generate_upbdefs = false
+local outdir = "."
 
-for _, argument in ipairs(arg) do
+i = 1
+while i <= #arg do
+  argument = arg[i]
   if argument.sub(argument, 1, 2) == "--" then
     if argument == "--generate-upbdefs" then
       generate_upbdefs = true
+    elseif argument == "--outdir" then
+      i = i + 1
+      outdir = arg[i]
     else
       print("Unknown flag: " .. argument)
       return 1
@@ -29,6 +35,7 @@ for _, argument in ipairs(arg) do
     end
     src = argument
   end
+  i = i + 1
 end
 
 if not src then
@@ -38,6 +45,11 @@ end
 
 function strip_proto(filename)
   return string.gsub(filename, '%.proto$','')
+end
+
+local function open(filename)
+  local full_name = outdir .. "/" .. filename
+  return assert(io.open(full_name, "w"), "couldn't open " .. full_name)
 end
 
 -- Open input/output files.
@@ -67,8 +79,8 @@ for _, file in ipairs(files) do
 
   if generate_upbdefs then
     -- Legacy generated defs.
-    local hfile = assert(io.open(hfilename, "w"), "couldn't open " .. hfilename)
-    local cfile = assert(io.open(cfilename, "w"), "couldn't open " .. cfilename)
+    local hfile = open(hfilename)
+    local cfile = open(cfilename)
 
     local happend = dump_cinit.file_appender(hfile)
     local cappend = dump_cinit.file_appender(cfile)
@@ -90,8 +102,8 @@ for _, file in ipairs(files) do
       print(string.format("  cfilename=%s", cfilename))
     end
 
-    local hfile = assert(io.open(hfilename, "w"), "couldn't open " .. hfilename)
-    local cfile = assert(io.open(cfilename, "w"), "couldn't open " .. cfilename)
+    local hfile = open(hfilename)
+    local cfile = open(cfilename)
 
     local happend = dump_cinit.file_appender(hfile)
     local cappend = dump_cinit.file_appender(cfile)
