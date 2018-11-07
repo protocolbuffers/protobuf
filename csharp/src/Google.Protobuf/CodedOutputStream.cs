@@ -304,6 +304,15 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Writes a group, without a tag, to the stream.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteGroup(IMessage value)
+        {
+            value.WriteTo(this);
+        }
+
+        /// <summary>
         /// Write a byte string, without a tag, to the stream.
         /// The data is length-prefixed.
         /// </summary>
