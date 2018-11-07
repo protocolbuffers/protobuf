@@ -55,7 +55,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <gtest/gtest.h>
-
+#include <google/protobuf/stubs/strutil.h>
 
 
 using proto2_arena_unittest::ArenaMessage;

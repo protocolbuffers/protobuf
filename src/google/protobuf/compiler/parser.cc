@@ -2184,25 +2184,21 @@ bool Parser::ParsePackage(FileDescriptorProto* file,
     file->clear_package();
   }
 
+  LocationRecorder location(root_location,
+                            FileDescriptorProto::kPackageFieldNumber);
+  location.RecordLegacyLocation(file, DescriptorPool::ErrorCollector::NAME);
+
   DO(Consume("package"));
 
-  {
-    LocationRecorder location(root_location,
-                              FileDescriptorProto::kPackageFieldNumber);
-    location.RecordLegacyLocation(file, DescriptorPool::ErrorCollector::NAME);
-
-    while (true) {
-      string identifier;
-      DO(ConsumeIdentifier(&identifier, "Expected identifier."));
-      file->mutable_package()->append(identifier);
-      if (!TryConsume(".")) break;
-      file->mutable_package()->append(".");
-    }
-
-    location.EndAt(input_->previous());
-
-    DO(ConsumeEndOfDeclaration(";", &location));
+  while (true) {
+    string identifier;
+    DO(ConsumeIdentifier(&identifier, "Expected identifier."));
+    file->mutable_package()->append(identifier);
+    if (!TryConsume(".")) break;
+    file->mutable_package()->append(".");
   }
+
+  DO(ConsumeEndOfDeclaration(";", &location));
 
   return true;
 }
@@ -2212,31 +2208,30 @@ bool Parser::ParseImport(RepeatedPtrField<string>* dependency,
                          RepeatedField<int32>* weak_dependency,
                          const LocationRecorder& root_location,
                          const FileDescriptorProto* containing_file) {
+  LocationRecorder location(root_location,
+                            FileDescriptorProto::kDependencyFieldNumber,
+                            dependency->size());
+
   DO(Consume("import"));
+
   if (LookingAt("public")) {
-    LocationRecorder location(
+    LocationRecorder public_location(
         root_location, FileDescriptorProto::kPublicDependencyFieldNumber,
         public_dependency->size());
     DO(Consume("public"));
     *public_dependency->Add() = dependency->size();
   } else if (LookingAt("weak")) {
-    LocationRecorder location(
+    LocationRecorder weak_location(
         root_location, FileDescriptorProto::kWeakDependencyFieldNumber,
         weak_dependency->size());
     DO(Consume("weak"));
     *weak_dependency->Add() = dependency->size();
   }
-  {
-    LocationRecorder location(root_location,
-                              FileDescriptorProto::kDependencyFieldNumber,
-                              dependency->size());
-    DO(ConsumeString(dependency->Add(),
-      "Expected a string naming the file to import."));
 
-    location.EndAt(input_->previous());
+  DO(ConsumeString(dependency->Add(),
+                   "Expected a string naming the file to import."));
+  DO(ConsumeEndOfDeclaration(";", &location));
 
-    DO(ConsumeEndOfDeclaration(";", &location));
-  }
   return true;
 }
 

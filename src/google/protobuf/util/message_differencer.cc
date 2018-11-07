@@ -58,6 +58,38 @@ namespace protobuf {
 
 namespace util {
 
+// A reporter to report the total number of diffs.
+// TODO(ykzhu): we can improve this to take into account the value differencers.
+class NumDiffsReporter : public google::protobuf::util::MessageDifferencer::Reporter {
+ public:
+  NumDiffsReporter() : num_diffs_(0) {}
+
+  // Returns the total number of diffs.
+  int32 GetNumDiffs() const { return num_diffs_; }
+  void Reset() { num_diffs_ = 0; }
+
+  // Report that a field has been added into Message2.
+  void ReportAdded(
+      const google::protobuf::Message& message1, const google::protobuf::Message& message2,
+      const std::vector<google::protobuf::util::MessageDifferencer::SpecificField>&
+          field_path) override { ++num_diffs_; }
+
+  // Report that a field has been deleted from Message1.
+  void ReportDeleted(
+      const google::protobuf::Message& message1, const google::protobuf::Message& message2,
+      const std::vector<google::protobuf::util::MessageDifferencer::SpecificField>&
+          field_path) override { ++num_diffs_; }
+
+  // Report that the value of a field has been modified.
+  void ReportModified(
+      const google::protobuf::Message& message1, const google::protobuf::Message& message2,
+      const std::vector<google::protobuf::util::MessageDifferencer::SpecificField>&
+          field_path) override { ++num_diffs_; }
+
+ private:
+  int32 num_diffs_;
+};
+
 // When comparing a repeated field as map, MultipleFieldMapKeyComparator can
 // be used to specify multiple fields as key for key comparison.
 // Two elements of a repeated field will be regarded as having the same key
@@ -144,6 +176,27 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MultipleFieldsMapKeyComparator);
 };
 
+// Preserve the order when treating repeated field as SMART_LIST. The current
+// implementation is to find the longest matching sequence from the first
+// element. The optimal solution requires to use //util/diff/lcs.h, which is
+// not open sourced yet. Overwrite this method if you want to have that.
+// TODO(ykzhu): change to use LCS once it is open sourced.
+void MatchIndicesPostProcessorForSmartList(
+    std::vector<int>* match_list1, std::vector<int>* match_list2) {
+  int last_matched_index = -1;
+  for (int i = 0; i < match_list1->size(); ++i) {
+    if (match_list1->at(i) < 0) {
+      continue;
+    }
+    if (last_matched_index < 0 || match_list1->at(i) > last_matched_index) {
+      last_matched_index = match_list1->at(i);
+    } else {
+      match_list2->at(match_list1->at(i)) = -1;
+      match_list1->at(i) = -1;
+    }
+  }
+}
+
 MessageDifferencer::MapEntryKeyComparator::MapEntryKeyComparator(
     MessageDifferencer* message_differencer)
     : message_differencer_(message_differencer) {}
@@ -215,7 +268,9 @@ MessageDifferencer::MessageDifferencer()
       report_matches_(false),
       report_moves_(true),
       report_ignores_(true),
-      output_string_(NULL) {}
+      output_string_(nullptr),
+      match_indices_for_smart_list_callback_(
+          MatchIndicesPostProcessorForSmartList) {}
 
 MessageDifferencer::~MessageDifferencer() {
   for (int i = 0; i < owned_key_comparators_.size(); ++i) {
@@ -255,36 +310,55 @@ void MessageDifferencer::set_repeated_field_comparison(
   repeated_field_comparison_ = comparison;
 }
 
-void MessageDifferencer::TreatAsSet(const FieldDescriptor* field) {
+void MessageDifferencer::CheckRepeatedFieldComparisons(
+    const FieldDescriptor* field,
+    const RepeatedFieldComparison& new_comparison) {
   GOOGLE_CHECK(field->is_repeated()) << "Field must be repeated: "
                                << field->full_name();
   const MapKeyComparator* key_comparator = GetMapKeyComparator(field);
   GOOGLE_CHECK(key_comparator == NULL)
-      << "Cannot treat this repeated field as both Map and Set for"
+      << "Cannot treat this repeated field as both MAP and "
+      << new_comparison
+      << " for"
       << " comparison.  Field name is: " << field->full_name();
-  GOOGLE_CHECK(list_fields_.find(field) == list_fields_.end())
-      << "Cannot treat the same field as both SET and LIST. Field name is: "
+  GOOGLE_CHECK(repeated_field_comparisons_.find(field) ==
+        repeated_field_comparisons_.end() ||
+        repeated_field_comparisons_[field] == new_comparison)
+      << "Cannot treat the same field as both "
+      << repeated_field_comparisons_[field]
+      << " and "
+      << new_comparison
+      <<". Field name is: "
       << field->full_name();
-  set_fields_.insert(field);
+}
+
+void MessageDifferencer::TreatAsSet(const FieldDescriptor* field) {
+  CheckRepeatedFieldComparisons(field, AS_SET);
+  repeated_field_comparisons_[field] = AS_SET;
+}
+
+void MessageDifferencer::TreatAsSmartSet(const FieldDescriptor* field) {
+  CheckRepeatedFieldComparisons(field, AS_SMART_SET);
+  repeated_field_comparisons_[field] = AS_SMART_SET;
+}
+
+void MessageDifferencer::SetMatchIndicesForSmartListCallback(
+    std::function<void(std::vector<int>*, std::vector<int>*)> callback) {
+  match_indices_for_smart_list_callback_ = callback;
 }
 
 void MessageDifferencer::TreatAsList(const FieldDescriptor* field) {
-  GOOGLE_CHECK(field->is_repeated()) << "Field must be repeated: "
-                              << field->full_name();
-  const MapKeyComparator* key_comparator = GetMapKeyComparator(field);
-  GOOGLE_CHECK(key_comparator == NULL)
-      << "Cannot treat this repeated field as both Map and Set for"
-      << " comparison.  Field name is: " << field->full_name();
-  GOOGLE_CHECK(set_fields_.find(field) == set_fields_.end())
-      << "Cannot treat the same field as both SET and LIST. Field name is: "
-      << field->full_name();
-  list_fields_.insert(field);
+  CheckRepeatedFieldComparisons(field, AS_LIST);
+  repeated_field_comparisons_[field] = AS_LIST;
+}
+
+void MessageDifferencer::TreatAsSmartList(const FieldDescriptor* field) {
+  CheckRepeatedFieldComparisons(field, AS_SMART_LIST);
+  repeated_field_comparisons_[field] = AS_SMART_LIST;
 }
 
 void MessageDifferencer::TreatAsMap(const FieldDescriptor* field,
                                     const FieldDescriptor* key) {
-  GOOGLE_CHECK(field->is_repeated()) << "Field must be repeated: "
-                               << field->full_name();
   GOOGLE_CHECK_EQ(FieldDescriptor::CPPTYPE_MESSAGE, field->cpp_type())
       << "Field has to be message type.  Field name is: "
       << field->full_name();
@@ -292,12 +366,12 @@ void MessageDifferencer::TreatAsMap(const FieldDescriptor* field,
       << key->full_name()
       << " must be a direct subfield within the repeated field "
       << field->full_name() << ", not " << key->containing_type()->full_name();
-  GOOGLE_CHECK(set_fields_.find(field) == set_fields_.end())
-      << "Cannot treat this repeated field as both Map and Set for "
-      << "comparison.";
-  GOOGLE_CHECK(list_fields_.find(field) == list_fields_.end())
-      << "Cannot treat this repeated field as both Map and List for "
-      << "comparison.";
+  GOOGLE_CHECK(repeated_field_comparisons_.find(field) ==
+        repeated_field_comparisons_.end())
+      << "Cannot treat the same field as both "
+      << repeated_field_comparisons_[field]
+      << " and MAP. Field name is: "
+      << field->full_name();
   MapKeyComparator* key_comparator =
       new MultipleFieldsMapKeyComparator(this, key);
   owned_key_comparators_.push_back(key_comparator);
@@ -343,9 +417,12 @@ void MessageDifferencer::TreatAsMapWithMultipleFieldPathsAsKey(
       }
     }
   }
-  GOOGLE_CHECK(set_fields_.find(field) == set_fields_.end())
-      << "Cannot treat this repeated field as both Map and Set for "
-      << "comparison.";
+  GOOGLE_CHECK(repeated_field_comparisons_.find(field) ==
+        repeated_field_comparisons_.end())
+    << "Cannot treat the same field as both "
+    << repeated_field_comparisons_[field]
+    << " and MAP. Field name is: "
+    << field->full_name();
   MapKeyComparator* key_comparator =
       new MultipleFieldsMapKeyComparator(this, key_field_paths);
   owned_key_comparators_.push_back(key_comparator);
@@ -357,9 +434,12 @@ void MessageDifferencer::TreatAsMapUsingKeyComparator(
     const MapKeyComparator* key_comparator) {
   GOOGLE_CHECK(field->is_repeated()) << "Field must be repeated: "
                                << field->full_name();
-  GOOGLE_CHECK(set_fields_.find(field) == set_fields_.end())
-      << "Cannot treat this repeated field as both Map and Set for "
-      << "comparison.";
+  GOOGLE_CHECK(repeated_field_comparisons_.find(field) ==
+        repeated_field_comparisons_.end())
+      << "Cannot treat the same field as both "
+      << repeated_field_comparisons_[field]
+      << " and MAP. Field name is: "
+      << field->full_name();
   map_field_key_comparator_[field] = key_comparator;
 }
 
@@ -795,7 +875,7 @@ bool MessageDifferencer::IsMatch(
     const FieldDescriptor* repeated_field,
     const MapKeyComparator* key_comparator, const Message* message1,
     const Message* message2, const std::vector<SpecificField>& parent_fields,
-    int index1, int index2) {
+    Reporter* reporter, int index1, int index2) {
   std::vector<SpecificField> current_parent_fields(parent_fields);
   if (repeated_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
     return CompareFieldValueUsingParentFields(
@@ -806,7 +886,7 @@ bool MessageDifferencer::IsMatch(
   // following code.
   Reporter* backup_reporter = reporter_;
   string* output_string = output_string_;
-  reporter_ = NULL;
+  reporter_ = reporter;
   output_string_ = NULL;
   bool match;
 
@@ -876,10 +956,38 @@ bool MessageDifferencer::CompareRepeatedField(
 
   // At this point, we have already matched pairs of fields (with the reporting
   // to be done later). Now to check if the paired elements are different.
+  int next_unmatched_index = 0;
   for (int i = 0; i < count1; i++) {
-    if (match_list1[i] == -1) continue;
+    if (match_list1[i] == -1) {
+      if (IsTreatedAsSmartList(repeated_field)) {
+        if (reporter_ == nullptr) return false;
+        specific_field.index = i;
+        parent_fields->push_back(specific_field);
+        reporter_->ReportDeleted(message1, message2, *parent_fields);
+        parent_fields->pop_back();
+        fieldDifferent = true;
+        // Use -2 to mark this element has been reported.
+        match_list1[i] = -2;
+      }
+      continue;
+    }
+    if (IsTreatedAsSmartList(repeated_field)) {
+      for (int j = next_unmatched_index; j < match_list1[i]; ++j) {
+        GOOGLE_CHECK_LE(0, j);
+        if (reporter_ == nullptr) return false;
+        specific_field.index = j;
+        specific_field.new_index = j;
+        parent_fields->push_back(specific_field);
+        reporter_->ReportAdded(message1, message2, *parent_fields);
+        parent_fields->pop_back();
+        fieldDifferent = true;
+        // Use -2 to mark this element has been reported.
+        match_list2[j] = -2;
+      }
+    }
     specific_field.index = i;
     specific_field.new_index = match_list1[i];
+    next_unmatched_index = match_list1[i] + 1;
 
     const bool result = CompareFieldValueUsingParentFields(
         message1, message2, repeated_field, i, specific_field.new_index,
@@ -996,9 +1104,29 @@ bool MessageDifferencer::CheckPathChanged(
 
 bool MessageDifferencer::IsTreatedAsSet(const FieldDescriptor* field) {
   if (!field->is_repeated()) return false;
-  if (repeated_field_comparison_ == AS_SET)
-    return list_fields_.find(field) == list_fields_.end();
-  return (set_fields_.find(field) != set_fields_.end());
+  if (repeated_field_comparisons_.find(field) !=
+      repeated_field_comparisons_.end()) {
+    return repeated_field_comparisons_[field] == AS_SET;
+  }
+  return repeated_field_comparison_ == AS_SET;
+}
+
+bool MessageDifferencer::IsTreatedAsSmartSet(const FieldDescriptor* field) {
+  if (!field->is_repeated()) return false;
+  if (repeated_field_comparisons_.find(field) !=
+      repeated_field_comparisons_.end()) {
+    return repeated_field_comparisons_[field] == AS_SMART_SET;
+  }
+  return repeated_field_comparison_ == AS_SMART_SET;
+}
+
+bool MessageDifferencer::IsTreatedAsSmartList(const FieldDescriptor* field) {
+  if (!field->is_repeated()) return false;
+  if (repeated_field_comparisons_.find(field) !=
+      repeated_field_comparisons_.end()) {
+    return repeated_field_comparisons_[field] == AS_SMART_LIST;
+  }
+  return repeated_field_comparison_ == AS_SMART_LIST;
 }
 
 bool MessageDifferencer::IsTreatedAsSubset(const FieldDescriptor* field) {
@@ -1443,10 +1571,18 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
   // before returning.
   Reporter* reporter = reporter_;
   reporter_ = NULL;
+  NumDiffsReporter num_diffs_reporter;
+  std::vector<int32> num_diffs_list1;
+  if (IsTreatedAsSmartSet(repeated_field)) {
+    num_diffs_list1.assign(count1, kint32max);
+  }
 
   bool success = true;
   // Find potential match if this is a special repeated field.
-  if (key_comparator != NULL || IsTreatedAsSet(repeated_field)) {
+  if (key_comparator != nullptr ||
+      IsTreatedAsSet(repeated_field) ||
+      IsTreatedAsSmartSet(repeated_field) ||
+      IsTreatedAsSmartList(repeated_field)) {
     if (scope_ == PARTIAL) {
       // When partial matching is enabled, Compare(a, b) && Compare(a, c)
       // doesn't necessarily imply Compare(b, c). Therefore a naive greedy
@@ -1456,7 +1592,7 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
           ::google::protobuf::NewPermanentCallback(
               this, &MessageDifferencer::IsMatch,
               repeated_field, key_comparator,
-              &message1, &message2, parent_fields);
+              &message1, &message2, parent_fields, nullptr);
       MaximumMatcher matcher(count1, count2, callback, match_list1,
                              match_list2);
       // If diff info is not needed, we should end the matching process as
@@ -1469,11 +1605,13 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
       int start_offset = 0;
       // If the two repeated fields are treated as sets, optimize for the case
       // where both start with same items stored in the same order.
-      if (IsTreatedAsSet(repeated_field)) {
+      if (IsTreatedAsSet(repeated_field) ||
+          IsTreatedAsSmartSet(repeated_field) ||
+          IsTreatedAsSmartList(repeated_field)) {
         start_offset = std::min(count1, count2);
         for (int i = 0; i < count1 && i < count2; i++) {
           if (IsMatch(repeated_field, key_comparator, &message1, &message2,
-                      parent_fields, i, i)) {
+                      parent_fields, nullptr, i, i)) {
             match_list1->at(i) = i;
             match_list2->at(i) = i;
           } else {
@@ -1487,15 +1625,45 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
         bool match = false;
 
         for (int j = start_offset; j < count2; j++) {
-          if (match_list2->at(j) != -1) continue;
+          if (match_list2->at(j) != -1) {
+            if (!IsTreatedAsSmartSet(repeated_field) ||
+                num_diffs_list1[i] == 0) {
+              continue;
+            }
+          }
 
-          match = IsMatch(repeated_field, key_comparator,
-                          &message1, &message2, parent_fields, i, j);
+          if (IsTreatedAsSmartSet(repeated_field)) {
+            num_diffs_reporter.Reset();
+            match = IsMatch(repeated_field, key_comparator,
+                            &message1, &message2, parent_fields,
+                            &num_diffs_reporter, i, j);
+          } else {
+            match = IsMatch(repeated_field, key_comparator,
+                            &message1, &message2, parent_fields,
+                            nullptr, i, j);
+          }
+
+          if (IsTreatedAsSmartSet(repeated_field)) {
+            if (match) {
+              num_diffs_list1[i] = 0;
+            } else if (repeated_field->cpp_type() ==
+                       FieldDescriptor::CPPTYPE_MESSAGE) {
+              // Replace with the one with fewer diffs.
+              const int32 num_diffs = num_diffs_reporter.GetNumDiffs();
+              if (num_diffs < num_diffs_list1[i]) {
+                num_diffs_list1[i] = num_diffs;
+                match = true;
+              }
+            }
+          }
 
           if (match) {
             match_list1->at(i) = j;
             match_list2->at(j) = i;
-            break;
+            if (!IsTreatedAsSmartSet(repeated_field)
+                || num_diffs_list1[i] == 0) {
+              break;
+            }
           }
         }
         if (!match && reporter == NULL) return false;
@@ -1508,6 +1676,10 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
       match_list1->at(i) = i;
       match_list2->at(i) = i;
     }
+  }
+
+  if (IsTreatedAsSmartList(repeated_field)) {
+    match_indices_for_smart_list_callback_(match_list1, match_list2);
   }
 
   reporter_ = reporter;

@@ -159,15 +159,6 @@ class MessageTest(BaseTestCase):
       with self.assertRaises(message.DecodeError) as context:
         msg.FromString(end_tag)
       self.assertEqual('Unexpected end-group tag.', str(context.exception))
-    else:
-      with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter('always')
-        msg.FromString(end_tag)
-        assert len(w) == 1
-        assert issubclass(w[-1].category, RuntimeWarning)
-        self.assertEqual('Unexpected end-group tag: Not all data was converted',
-                         str(w[-1].message))
 
   def testDeterminismParameters(self, message_module):
     # This message is always deterministically serialized, even if determinism

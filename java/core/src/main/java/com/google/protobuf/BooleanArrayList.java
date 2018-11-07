@@ -46,7 +46,6 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
     implements BooleanList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList();
-
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -237,7 +236,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
     ensureIsMutable();
     for (int i = 0; i < size; i++) {
       if (o.equals(array[i])) {
-        System.arraycopy(array, i + 1, array, i, size - i);
+        System.arraycopy(array, i + 1, array, i, size - i - 1);
         size--;
         modCount++;
         return true;
@@ -252,7 +251,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
     ensureIndexInRange(index);
     boolean value = array[index];
     if (index < size - 1) {
-      System.arraycopy(array, index + 1, array, index, size - index);
+      System.arraycopy(array, index + 1, array, index, size - index - 1);
     }
     size--;
     modCount++;

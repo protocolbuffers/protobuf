@@ -299,7 +299,6 @@ void CommandLineInterfaceTest::Run(const string& command) {
 void CommandLineInterfaceTest::RunWithArgs(std::vector<string> args) {
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
-#ifndef GOOGLE_THIRD_PARTY_PROTOBUF
     string plugin_path;
 #ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
     plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
@@ -330,11 +329,6 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<string> args) {
 #endif
 
     if (plugin_path.empty()) {
-#else
-    string plugin_path = "third_party/protobuf/test_plugin";
-
-    if (access(plugin_path.c_str(), F_OK) != 0) {
-#endif  // GOOGLE_THIRD_PARTY_PROTOBUF
       GOOGLE_LOG(ERROR)
           << "Plugin executable not found.  Plugin tests are likely to fail.";
     } else {
@@ -1761,13 +1755,49 @@ TEST_F(CommandLineInterfaceTest, ProtoPathNotFoundError) {
 TEST_F(CommandLineInterfaceTest, ProtoPathAndDescriptorSetIn) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir --descriptor_set_in=$tmpdir/foo.bin foo.proto");
-  ExpectErrorText(
-      "Only one of --descriptor_set_in and --proto_path can be specified.\n");
+  ExpectErrorText("$tmpdir/foo.bin: No such file or directory\n");
 
   Run("protocol_compiler --test_out=$tmpdir "
       "--descriptor_set_in=$tmpdir/foo.bin --proto_path=$tmpdir foo.proto");
-  ExpectErrorText(
-      "Only one of --proto_path and --descriptor_set_in can be specified.\n");
+  ExpectErrorText("$tmpdir/foo.bin: No such file or directory\n");
+}
+
+TEST_F(CommandLineInterfaceTest, ProtoPathAndDescriptorSetIn_CompileFiles) {
+  // Test what happens if a proto is in a --descriptor_set_in and also exists
+  // on disk.
+  FileDescriptorSet file_descriptor_set;
+
+  // NOTE: This file desc SHOULD be different from the one created as a temp
+  //       to make it easier to test that the file was output instead of the
+  //       contents of the --descriptor_set_in file.
+  FileDescriptorProto* file_descriptor_proto = file_descriptor_set.add_file();
+  file_descriptor_proto->set_name("foo.proto");
+  file_descriptor_proto->add_message_type()->set_name("Foo");
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message FooBar { required string foo_message = 1; }\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_in=$tmpdir/foo.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+
+  EXPECT_EQ(1, descriptor_set.file_size());
+  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
+  // Descriptor set SHOULD have source code info.
+  EXPECT_TRUE(descriptor_set.file(0).has_source_code_info());
+
+  EXPECT_EQ("FooBar", descriptor_set.file(0).message_type(0).name());
+  EXPECT_EQ("foo_message",
+            descriptor_set.file(0).message_type(0).field(0).name());
 }
 
 TEST_F(CommandLineInterfaceTest, ProtoPathAndDependencyOut) {

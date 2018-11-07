@@ -38,7 +38,9 @@ goog.require('jspb.debug');
 // CommonJS-LoadFromFile: test_pb
 goog.require('proto.jspb.test.HasExtensions');
 goog.require('proto.jspb.test.IsExtension');
+goog.require('proto.jspb.test.MapValueMessageNoBinary');
 goog.require('proto.jspb.test.Simple1');
+goog.require('proto.jspb.test.TestMapFieldsNoBinary');
 
 
 // CommonJS-LoadFromFile: testbinary_pb
@@ -111,6 +113,76 @@ describe('debugTest', function() {
         'repeatedSimpleList': []
       }
     }, jspb.debug.dump(extendable));
+  });
+
+  it('testMapsBasicTypes', function() {
+    if (COMPILED) {
+      return;
+    }
+
+    var message = new proto.jspb.test.TestMapFieldsNoBinary();
+    message.getMapBoolStringMap().set(true, 'bool_string_value1');
+    message.getMapBoolStringMap().set(false, 'bool_string_value2');
+    message.getMapStringInt32Map().set('key', 111);
+
+    assertObjectEquals({
+      '$name': 'proto.jspb.test.TestMapFieldsNoBinary',
+      'mapBoolStringMap': {
+        true: 'bool_string_value1',
+        false: 'bool_string_value2'
+      },
+      'mapInt32StringMap': {},
+      'mapInt64StringMap': {},
+      'mapStringBoolMap': {},
+      'mapStringDoubleMap': {},
+      'mapStringEnumMap': {},
+      'mapStringInt32Map': {
+        'key': 111
+      },
+      'mapStringInt64Map': {},
+      'mapStringMsgMap': {},
+      'mapStringStringMap': {},
+      'mapStringTestmapfieldsMap': {}
+    }, jspb.debug.dump(message));
+  });
+
+  it('testMapsMessageValues', function() {
+    if (COMPILED) {
+      return;
+    }
+
+    var value1 = new proto.jspb.test.MapValueMessageNoBinary();
+    value1.setFoo(1111);
+    var value2 = new proto.jspb.test.MapValueMessageNoBinary();
+    value2.setFoo(2222);
+
+    var message = new proto.jspb.test.TestMapFieldsNoBinary();
+    message.getMapStringMsgMap().set('key1', value1);
+    message.getMapStringMsgMap().set('key2', value2);
+
+    assertObjectEquals({
+      '$name': 'proto.jspb.test.TestMapFieldsNoBinary',
+      'mapBoolStringMap': {},
+      'mapInt32StringMap': {},
+      'mapInt64StringMap': {},
+      'mapStringBoolMap': {},
+      'mapStringDoubleMap': {},
+      'mapStringEnumMap': {},
+      'mapStringInt32Map': {},
+      'mapStringInt64Map': {},
+      'mapStringMsgMap': {
+        'key1': {
+          '$name': 'proto.jspb.test.MapValueMessageNoBinary',
+          'foo': 1111
+        },
+        'key2': {
+          '$name': 'proto.jspb.test.MapValueMessageNoBinary',
+          'foo': 2222
+        }
+      },
+      'mapStringStringMap': {},
+      'mapStringTestmapfieldsMap': {}
+    }, jspb.debug.dump(message));
   });
 
 });

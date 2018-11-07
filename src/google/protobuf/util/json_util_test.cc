@@ -363,11 +363,11 @@ TEST_F(JsonUtilTest, TestParsingUnknownAnyFields) {
       "{\n"
       "  \"value\": {\n"
       "    \"@type\": \"type.googleapis.com/proto3.TestMessage\",\n"
-      "    \"unknown_field\": \"UNKOWN_VALUE\",\n"
+      "    \"unknown_field\": \"UNKNOWN_VALUE\",\n"
       "    \"string_value\": \"expected_value\"\n"
       "  }\n"
       "}";
-      
+
   TestAny m;
   JsonParseOptions options;
   EXPECT_FALSE(FromJson(input, &m, options));

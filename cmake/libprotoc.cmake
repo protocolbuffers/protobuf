@@ -78,7 +78,6 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/scc.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
 )

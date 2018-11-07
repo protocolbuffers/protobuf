@@ -156,6 +156,9 @@ public class JsonFormatTest extends TestCase {
   private String toCompactJsonString(Message message) throws IOException {
     return JsonFormat.printer().omittingInsignificantWhitespace().print(message);
   }
+  private String toSortedJsonString(Message message) throws IOException {
+    return JsonFormat.printer().sortingMapKeys().print(message);
+  }
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
     JsonFormat.parser().merge(json, builder);
@@ -1634,5 +1637,51 @@ public class JsonFormatTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       // Expected.
     }
+  }
+
+  public void testSortedMapKeys() throws Exception {
+    TestMap.Builder mapBuilder = TestMap.newBuilder();
+    mapBuilder.putStringToInt32Map("\ud834\udd20", 3); // utf-8 F0 9D 84 A0
+    mapBuilder.putStringToInt32Map("foo", 99);
+    mapBuilder.putStringToInt32Map("xxx", 123);
+    mapBuilder.putStringToInt32Map("\u20ac", 1);  // utf-8 E2 82 AC
+    mapBuilder.putStringToInt32Map("abc", 20);
+    mapBuilder.putStringToInt32Map("19", 19);
+    mapBuilder.putStringToInt32Map("8", 8);
+    mapBuilder.putStringToInt32Map("\ufb00", 2);  // utf-8 EF AC 80
+    mapBuilder.putInt32ToInt32Map(3, 3);
+    mapBuilder.putInt32ToInt32Map(10, 10);
+    mapBuilder.putInt32ToInt32Map(5, 5);
+    mapBuilder.putInt32ToInt32Map(4, 4);
+    mapBuilder.putInt32ToInt32Map(1, 1);
+    mapBuilder.putInt32ToInt32Map(2, 2);
+    mapBuilder.putInt32ToInt32Map(-3, -3);
+    TestMap mapMessage = mapBuilder.build();
+    assertEquals(
+        "{\n"
+            + "  \"int32ToInt32Map\": {\n"
+            + "    \"-3\": -3,\n"
+            + "    \"1\": 1,\n"
+            + "    \"2\": 2,\n"
+            + "    \"3\": 3,\n"
+            + "    \"4\": 4,\n"
+            + "    \"5\": 5,\n"
+            + "    \"10\": 10\n"
+            + "  },\n"
+            + "  \"stringToInt32Map\": {\n"
+            + "    \"19\": 19,\n"
+            + "    \"8\": 8,\n"
+            + "    \"abc\": 20,\n"
+            + "    \"foo\": 99,\n"
+            + "    \"xxx\": 123,\n"
+            + "    \"\u20ac\": 1,\n"
+            + "    \"\ufb00\": 2,\n"
+            + "    \"\ud834\udd20\": 3\n"
+            + "  }\n"
+            + "}",
+        toSortedJsonString(mapMessage));
+
+    TestMap emptyMap = TestMap.getDefaultInstance();
+    assertEquals("{\n}", toSortedJsonString(emptyMap));
   }
 }

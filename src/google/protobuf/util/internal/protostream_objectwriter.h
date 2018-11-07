@@ -330,7 +330,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
                           const google::protobuf::Type& type,
                           strings::ByteSink* output, ErrorListener* listener);
 
- ProtoStreamObjectWriter(const TypeInfo* typeinfo,
+  ProtoStreamObjectWriter(const TypeInfo* typeinfo,
                           const google::protobuf::Type& type,
                           strings::ByteSink* output, ErrorListener* listener,
                           const ProtoStreamObjectWriter::Options& options);

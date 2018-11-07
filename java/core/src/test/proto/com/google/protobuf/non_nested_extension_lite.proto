@@ -42,10 +42,8 @@ message MessageLiteToBeExtended {
   extensions 1 to max;
 }
 
-message MyNonNestedExtensionLite {
-}
+message MyNonNestedExtensionLite {}
 
 extend MessageLiteToBeExtended {
   optional MyNonNestedExtensionLite nonNestedExtensionLite = 1;
 }
-

@@ -2783,7 +2783,8 @@ public abstract class CodedInputStream {
                   sizeLimit - totalBytesRetired - bufferSize));
       if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
         throw new IllegalStateException(
-            "InputStream#read(byte[]) returned invalid result: "
+            input.getClass()
+                + "#read(byte[]) returned invalid result: "
                 + bytesRead
                 + "\nThe InputStream implementation is buggy.");
       }
@@ -3005,20 +3006,46 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
 
-      // Skipping more bytes than are in the buffer.  First skip what we have.
-      int tempPos = bufferSize - pos;
-      pos = bufferSize;
-
-      // Keep refilling the buffer until we get to the point we wanted to skip to.
-      // This has the side effect of ensuring the limits are updated correctly.
-      refillBuffer(1);
-      while (size - tempPos > bufferSize) {
-        tempPos += bufferSize;
+      if (refillCallback != null) {
+        // Skipping more bytes than are in the buffer.  First skip what we have.
+        int tempPos = bufferSize - pos;
         pos = bufferSize;
-        refillBuffer(1);
-      }
 
-      pos = size - tempPos;
+        // Keep refilling the buffer until we get to the point we wanted to skip to.
+        // This has the side effect of ensuring the limits are updated correctly.
+        refillBuffer(1);
+        while (size - tempPos > bufferSize) {
+          tempPos += bufferSize;
+          pos = bufferSize;
+          refillBuffer(1);
+        }
+
+        pos = size - tempPos;
+      } else {
+        // Skipping more bytes than are in the buffer.  First skip what we have.
+        totalBytesRetired += pos;
+        int totalSkipped = bufferSize - pos;
+        bufferSize = 0;
+        pos = 0;
+
+        try {
+          while (totalSkipped < size) {
+            int toSkip = size - totalSkipped;
+            long skipped = input.skip(toSkip);
+            if (skipped < 0 || skipped > toSkip) {
+              throw new IllegalStateException(
+                  input.getClass()
+                      + "#skip returned invalid result: "
+                      + skipped
+                      + "\nThe InputStream implementation is buggy.");
+            }
+            totalSkipped += (int) skipped;
+          }
+        } finally {
+          totalBytesRetired += totalSkipped;
+          recomputeBufferSizeAfterLimit();
+        }
+      }
     }
   }
 

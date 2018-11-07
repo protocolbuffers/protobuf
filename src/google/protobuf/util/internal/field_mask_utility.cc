@@ -42,10 +42,6 @@ namespace util {
 namespace converter {
 
 namespace {
-inline util::Status CallPathSink(PathSinkCallback path_sink,
-                                   StringPiece arg) {
-  return path_sink->Run(arg);
-}
 
 // Appends a FieldMask path segment to a prefix.
 string AppendPathSegmentToPrefix(StringPiece prefix,
@@ -57,7 +53,7 @@ string AppendPathSegmentToPrefix(StringPiece prefix,
     return string(prefix);
   }
   // If the segment is a map key, appends it to the prefix without the ".".
-  if (StringStartsWith(segment, "[\"")) {
+  if (HasPrefixString(segment, "[\"")) {
     return StrCat(prefix, segment);
   }
   return StrCat(prefix, ".", segment);
@@ -192,8 +188,8 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
       // When the current charactor is ')', ',' or the current position has
       // passed the end of the input, builds and outputs a new paths by
       // concatenating the last prefix with the current segment.
-      RETURN_IF_ERROR(CallPathSink(
-          path_sink, AppendPathSegmentToPrefix(current_prefix, segment)));
+      RETURN_IF_ERROR(
+          path_sink(AppendPathSegmentToPrefix(current_prefix, segment)));
     }
 
     // Removes the last prefix after seeing a ')'.

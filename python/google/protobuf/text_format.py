@@ -225,7 +225,8 @@ def PrintField(field,
   """Print a single field name/value pair."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, message_formatter)
+                     use_index_order, float_format,
+                     message_formatter=message_formatter)
   printer.PrintField(field, value)
 
 
@@ -243,7 +244,8 @@ def PrintFieldValue(field,
   """Print a single field value (not including name)."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, message_formatter)
+                     use_index_order, float_format,
+                     message_formatter=message_formatter)
   printer.PrintFieldValue(field, value)
 
 
@@ -427,8 +429,8 @@ class _Printer(object):
   def _PrintShortRepeatedPrimitivesValue(self, field, value):
     # Note: this is called only when value has at least one element.
     self._PrintFieldName(field)
-    self.out.write('[')
-    for i in xrange(len(value) - 1):
+    self.out.write(' [')
+    for i in six.moves.range(len(value) - 1):
       self.PrintFieldValue(field, value[i])
       self.out.write(', ')
     self.PrintFieldValue(field, value[-1])

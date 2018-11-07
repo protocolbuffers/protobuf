@@ -38,7 +38,6 @@ message TestMessage2 {
     // This message's name is the same with the default outer class name of this
     // proto file. It's used to test if the compiler can avoid this conflict
     // correctly.
-    message OuterClassNameTest2 {
-    }
+    message OuterClassNameTest2 {}
   }
 }

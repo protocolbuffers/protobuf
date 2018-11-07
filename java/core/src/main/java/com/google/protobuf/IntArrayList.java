@@ -46,7 +46,6 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     implements IntList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final IntArrayList EMPTY_LIST = new IntArrayList();
-
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -236,7 +235,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     ensureIsMutable();
     for (int i = 0; i < size; i++) {
       if (o.equals(array[i])) {
-        System.arraycopy(array, i + 1, array, i, size - i);
+        System.arraycopy(array, i + 1, array, i, size - i - 1);
         size--;
         modCount++;
         return true;
@@ -251,7 +250,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     ensureIndexInRange(index);
     int value = array[index];
     if (index < size - 1) {
-      System.arraycopy(array, index + 1, array, index, size - index);
+      System.arraycopy(array, index + 1, array, index, size - index - 1);
     }
     size--;
     modCount++;

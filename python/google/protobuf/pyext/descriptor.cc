@@ -189,6 +189,21 @@ const FileDescriptor* GetFileDescriptor(const MethodDescriptor* descriptor) {
   return descriptor->service()->file();
 }
 
+bool Reparse(
+    PyMessageFactory* message_factory, const Message& from, Message* to) {
+  // Reparse message.
+  string serialized;
+  from.SerializeToString(&serialized);
+  io::CodedInputStream input(
+      reinterpret_cast<const uint8*>(serialized.c_str()), serialized.size());
+  input.SetExtensionRegistry(message_factory->pool->pool,
+                             message_factory->message_factory);
+  bool success = to->ParseFromCodedStream(&input);
+  if (!success) {
+    return false;
+  }
+  return true;
+}
 // Converts options into a Python protobuf, and cache the result.
 //
 // This is a bit tricky because options can contain extension fields defined in
@@ -251,15 +266,8 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
     cmsg->message->CopyFrom(options);
   } else {
     // Reparse options string!  XXX call cmessage::MergeFromString
-    string serialized;
-    options.SerializeToString(&serialized);
-    io::CodedInputStream input(
-        reinterpret_cast<const uint8*>(serialized.c_str()), serialized.size());
-    input.SetExtensionRegistry(message_factory->pool->pool,
-                               message_factory->message_factory);
-    bool success = cmsg->message->MergePartialFromCodedStream(&input);
-    if (!success) {
-      PyErr_Format(PyExc_ValueError, "Error parsing Options message");
+    if (!Reparse(message_factory, options, cmsg->message)) {
+      PyErr_Format(PyExc_ValueError, "Error reparsing Options message");
       return NULL;
     }
   }
@@ -290,6 +298,16 @@ static PyObject* CopyToPythonProto(const DescriptorClass *descriptor,
   DescriptorProtoClass* descriptor_message =
       static_cast<DescriptorProtoClass*>(message->message);
   descriptor->CopyTo(descriptor_message);
+  // Custom options might in unknown extensions. Reparse
+  // the descriptor_message. Can't skip reparse when options unknown
+  // fields is empty, because they might in sub descriptors' options.
+  PyMessageFactory* message_factory =
+      GetDefaultDescriptorPool()->py_message_factory;
+  if (!Reparse(message_factory, *descriptor_message, descriptor_message)) {
+    PyErr_Format(PyExc_ValueError, "Error reparsing descriptor message");
+    return nullptr;
+  }
+
   Py_RETURN_NONE;
 }
 

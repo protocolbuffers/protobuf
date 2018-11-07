@@ -50,6 +50,7 @@ namespace objectivec {
 struct Options {
   Options();
   string expected_prefixes_path;
+  std::vector<string> expected_prefixes_suppressions;
   string generate_for_named_framework;
   string named_framework_to_proto_path_mappings_path;
 };

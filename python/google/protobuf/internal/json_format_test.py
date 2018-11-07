@@ -523,7 +523,8 @@ class JsonFormatTest(JsonFormatBase):
             '}'))
     parsed_message = json_format_proto3_pb2.TestStruct()
     self.CheckParseBack(message, parsed_message)
-    parsed_message.value['empty_struct']  # check for regression; this used to raise
+    # check for regression; this used to raise
+    parsed_message.value['empty_struct']
     parsed_message.value['empty_list']
 
   def testValueMessage(self):

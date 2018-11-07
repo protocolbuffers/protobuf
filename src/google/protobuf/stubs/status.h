@@ -90,7 +90,13 @@ class PROTOBUF_EXPORT Status {
   int error_code() const {
     return error_code_;
   }
+  error::Code code() const {
+    return error_code_;
+  }
   StringPiece error_message() const {
+    return error_message_;
+  }
+  StringPiece message() const {
     return error_message_;
   }
 

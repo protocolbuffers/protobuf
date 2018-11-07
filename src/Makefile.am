@@ -74,7 +74,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/once.h                                   \
   google/protobuf/stubs/platform_macros.h                        \
   google/protobuf/stubs/port.h                                   \
-  google/protobuf/stubs/singleton.h                              \
   google/protobuf/stubs/status.h                                 \
   google/protobuf/stubs/stl_util.h                               \
   google/protobuf/stubs/stringpiece.h                            \
@@ -314,7 +313,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/command_line_interface.cc           \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
-  google/protobuf/compiler/scc.cc                              \
   google/protobuf/compiler/scc.h                               \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \

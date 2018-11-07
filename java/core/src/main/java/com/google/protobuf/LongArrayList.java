@@ -46,7 +46,6 @@ final class LongArrayList extends AbstractProtobufList<Long>
     implements LongList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final LongArrayList EMPTY_LIST = new LongArrayList();
-
   static {
     EMPTY_LIST.makeImmutable();
   }
@@ -236,7 +235,7 @@ final class LongArrayList extends AbstractProtobufList<Long>
     ensureIsMutable();
     for (int i = 0; i < size; i++) {
       if (o.equals(array[i])) {
-        System.arraycopy(array, i + 1, array, i, size - i);
+        System.arraycopy(array, i + 1, array, i, size - i - 1);
         size--;
         modCount++;
         return true;
@@ -251,7 +250,7 @@ final class LongArrayList extends AbstractProtobufList<Long>
     ensureIndexInRange(index);
     long value = array[index];
     if (index < size - 1) {
-      System.arraycopy(array, index + 1, array, index, size - index);
+      System.arraycopy(array, index + 1, array, index, size - index - 1);
     }
     size--;
     modCount++;

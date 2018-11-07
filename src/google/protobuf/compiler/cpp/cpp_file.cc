@@ -256,8 +256,6 @@ void FileGenerator::GenerateProtoHeader(io::Printer* printer,
 
   GenerateHeader(printer);
 
-  IncludeFile("net/proto2/public/port_undef.inc", printer);
-
   GenerateBottomHeaderGuard(printer, filename_identifier);
 }
 
@@ -320,13 +318,11 @@ void FileGenerator::DoIncludeFile(const string& google3_name, bool do_export,
     path = StringReplace(path, "internal/", "", false);
     path = StringReplace(path, "proto/", "", false);
     path = StringReplace(path, "public/", "", false);
-    if (options_.opensource_include_paths) {
+    if (options_.runtime_include_base.empty()) {
       format("#include <google/protobuf/$1$>", path);
     } else {
-      format(
-          "#include "
-          "\"third_party/protobuf/testing/extracted/src/google/protobuf/$1$\"",
-          path);
+      format("#include \"$1$google/protobuf/$2$\"",
+             options_.runtime_include_base, path);
     }
   } else {
     format("#include \"$1$\"", google3_name);
@@ -346,10 +342,10 @@ string FileGenerator::CreateHeaderInclude(const string& basename,
 
   if (options_.opensource_runtime) {
     if (IsWellKnownMessage(file)) {
-      if (options_.opensource_include_paths) {
+      if (options_.runtime_include_base.empty()) {
         use_system_include = true;
       } else {
-        name = "third_party/protobuf/testing/extracted/src/" + basename;
+        name = options_.runtime_include_base + basename;
       }
     }
   }
@@ -809,36 +805,56 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       "\n",
       message_generators_.size());
 
-  // Now generate the AddDescriptors() function.
-  format(
-      "::$proto_ns$::internal::DescriptorTable $1$ = {\n"
-      "  false, $init_defaults$, \n",
-      UniqueName("descriptor_table", file_, options_));
-  format.Indent();
-
   // Embed the descriptor.  We simply serialize the entire
-  // FileDescriptorProto
-  // and embed it as a string literal, which is parsed and built into real
-  // descriptors at initialization time.
+  // FileDescriptorProto/ and embed it as a string literal, which is parsed and
+  // built into real descriptors at initialization time.
+  const string protodef_name =
+      UniqueName("descriptor_table_protodef", file_, options_);
+  format( "const char $1$[] =\n", protodef_name);
+  format.Indent();
   FileDescriptorProto file_proto;
   file_->CopyTo(&file_proto);
   string file_data;
   file_proto.SerializeToString(&file_data);
 
   {
-    // Only write 40 bytes per line.
-    static const int kBytesPerLine = 40;
-    for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
-      format(
-          "\"$1$\"\n",
-          EscapeTrigraphs(CEscape(file_data.substr(i, kBytesPerLine))));
+    if (file_data.size() > 65535) {
+      // Workaround for MSVC: "Error C1091: compiler limit: string exceeds
+      // 65535 bytes in length". Declare a static array of chars rather than
+      // use a string literal. Only write 25 bytes per line.
+      static const int kBytesPerLine = 25;
+      format("{ ");
+      for (int i = 0; i < file_data.size();) {
+        for (int j = 0; j < kBytesPerLine && i < file_data.size(); ++i, ++j) {
+          format("'$1$', ", CEscape(file_data.substr(i, 1)));
+        }
+        format("\n");
+      }
+      format("'\\0' }");  // null-terminate
+    } else {
+      // Only write 40 bytes per line.
+      static const int kBytesPerLine = 40;
+      for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
+        format(
+            "\"$1$\"\n",
+            EscapeTrigraphs(CEscape(file_data.substr(i, kBytesPerLine))));
+      }
     }
+    format(";\n");
   }
-
   format.Outdent();
+
+  // Now generate the AddDescriptors() function.
+  format(
+      "::$proto_ns$::internal::DescriptorTable $1$ = {\n"
+      "  false, $init_defaults$, \n"
+      "  $2$,\n",
+      UniqueName("descriptor_table", file_, options_),
+      protodef_name);
+
   const int num_deps = file_->dependency_count();
   format(
-      ",\n  \"$filename$\", &$assign_desc_table$, $1$,\n"
+      "  \"$filename$\", &$assign_desc_table$, $1$,\n"
       "};\n\n"
       "void $add_descriptors$() {\n"
       "  static constexpr ::$proto_ns$::internal::InitFunc deps[$2$] =\n"
@@ -1277,7 +1293,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
     IncludeFile("net/proto2/public/unknown_field_set.h", printer);
   }
 
-  if (IsAnyMessage(file_)) {
+  if (IsAnyMessage(file_, options_)) {
     IncludeFile("net/proto2/internal/any.h", printer);
   }
 }

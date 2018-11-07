@@ -789,13 +789,17 @@ FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
   }
 }
 
-bool IsAnyMessage(const FileDescriptor* descriptor) {
-  return descriptor->name() == kAnyProtoFile;
+bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options) {
+  // For now we do not support Any in lite mode, so if we're building for lite
+  // then we just treat Any as if it's an ordinary message with no special
+  // behavior.
+  return descriptor->name() == kAnyProtoFile &&
+         GetOptimizeFor(descriptor, options) != FileOptions::LITE_RUNTIME;
 }
 
-bool IsAnyMessage(const Descriptor* descriptor) {
+bool IsAnyMessage(const Descriptor* descriptor, const Options& options) {
   return descriptor->name() == kAnyMessageName &&
-         descriptor->file()->name() == kAnyProtoFile;
+         IsAnyMessage(descriptor->file(), options);
 }
 
 bool IsWellKnownMessage(const FileDescriptor* descriptor) {
@@ -1170,6 +1174,52 @@ bool ShouldRepeat(const FieldDescriptor* descriptor,
           wiretype != internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
 }
 
+void GenerateStrings(const FieldDescriptor* field, const Options& options,
+                     const Formatter& format, bool check_utf8) {
+  string utf8;
+  if (check_utf8) {
+    utf8 = GetUtf8Suffix(field, options);
+    if (!utf8.empty()) {
+      string name = "nullptr";
+      if (HasDescriptorMethods(field->file(), options)) {
+        name = "\"" + field->full_name() + "\"";
+      }
+      format("ctx->extra_parse_data().SetFieldName($1$);\n", name);
+    }
+  }
+  format(
+      "auto str = msg->$1$_$2$();\n"
+      "if (size > end - ptr + "
+      "::$proto_ns$::internal::ParseContext::kSlopBytes) {\n"
+      "  object = str;\n",
+      field->is_repeated() && !field->is_packable() ? "add" : "mutable",
+      FieldName(field));
+  string name;
+  if (field->options().ctype() == FieldOptions::STRING ||
+      (IsProto1(field->file(), options) &&
+       field->options().ctype() == FieldOptions::STRING_PIECE)) {
+    name = "GreedyStringParser";
+    format("  str->clear();\n");
+    // TODO(gerbens) evaluate security
+    format("  str->reserve(size);\n");
+  } else if (field->options().ctype() == FieldOptions::CORD) {
+    name = "CordParser";
+    format("  str->Clear();\n");
+  } else if (field->options().ctype() == FieldOptions::STRING_PIECE) {
+    name = "StringPieceParser";
+    format("  str->Clear();\n");
+  }
+  format(
+      "  parser_till_end = ::$proto_ns$::internal::$1$$2$;\n"
+      "  goto len_delim_till_end;\n"
+      "}\n"
+      "$GOOGLE_PROTOBUF$_PARSER_ASSERT(::$proto_ns$::internal::StringCheck$2$("
+      "ptr, size, ctx));\n"
+      "::$proto_ns$::internal::Inline$1$(str, ptr, size, ctx);\n"
+      "ptr += size;\n",
+      name, utf8);
+}
+
 void GenerateLengthDelim(
                       const FieldDescriptor* field, const Options& options,
                       MessageSCCAnalyzer* scc_analyzer,
@@ -1212,72 +1262,13 @@ void GenerateLengthDelim(
         field_type = FieldDescriptor::TYPE_BYTES;
       }
     }
-    string utf8 = "";
     switch (field_type) {
       case FieldDescriptor::TYPE_STRING:
-        utf8 = GetUtf8Suffix(field, options);
-        if (!utf8.empty()) {
-          string name = "nullptr";
-          if (HasDescriptorMethods(field->file(), options)) {
-            name = "\"" + field->full_name() + "\"";
-          }
-          format("ctx->extra_parse_data().SetFieldName($1$);\n", name);
-        }
-        PROTOBUF_FALLTHROUGH_INTENDED;
-      case FieldDescriptor::TYPE_BYTES: {
-        if (field->options().ctype() == FieldOptions::STRING ||
-            (IsProto1(field->file(), options) &&
-             field->options().ctype() == FieldOptions::STRING_PIECE)) {
-          format(
-              "parser_till_end = ::$proto_ns$::internal::StringParser$1$;\n"
-              "$string$* str = msg->$2$_$3$();\n"
-              "str->clear();\n",
-              utf8,
-              field->is_repeated() && !field->is_map() &&
-                      !field->is_packable()
-                  ? "add"
-                  : "mutable",
-              FieldName(field));
-          if (utf8.empty()) {
-            // special case if there is no utf8 verification.
-            format(
-                "object = str;\n"
-                "if (size > end - ptr) goto len_delim_till_end;\n"
-                "str->append(ptr, size);\n"
-                "ptr += size;\n");
-            return;
-          }
-        } else if (field->options().ctype() == FieldOptions::CORD) {
-          string cord_parser = "CordParser" + utf8;
-          format(
-              "parser_till_end = ::$proto_ns$::internal::$1$;\n"
-              "auto* str = msg->$2$_$3$();\n"
-              "str->Clear();\n",
-              cord_parser,
-              field->is_repeated() && !field->is_map() ? "add" : "mutable",
-              FieldName(field));
-        } else if (field->options().ctype() == FieldOptions::STRING_PIECE) {
-          format(
-              "parser_till_end = "
-              "::$proto_ns$::internal::StringPieceParser$1$;\n"
-              "::$proto_ns$::internal::StringPieceField* str = "
-              "msg->$2$_$3$();\n"
-              "str->Clear();\n",
-              utf8,
-              field->is_repeated() && !field->is_map() ? "add" : "mutable",
-              FieldName(field));
-        }
-        format(
-            "object = str;\n"
-            "if (size > end - ptr) goto len_delim_till_end;\n"
-            "auto newend = ptr + size;\n"
-            "if (size) ptr = parser_till_end(ptr, newend, object, ctx);\n");
-        if (!utf8.empty()) {
-          // If utf8 verification is on this can fail.
-          format("$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr == newend);\n");
-        }
+        GenerateStrings(field, options, format, true /* utf8 */);
         break;
-      }
+      case FieldDescriptor::TYPE_BYTES:
+        GenerateStrings(field, options, format, false /* utf8 */);
+        break;
       case FieldDescriptor::TYPE_MESSAGE: {
         GOOGLE_CHECK(field->message_type());
         if (!IsProto1(field->file(), options) && field->is_map()) {
@@ -1304,6 +1295,36 @@ void GenerateLengthDelim(
               "object, ctx));\n"
               "ptr = newend;\n",
               QualifiedClassName(field->message_type()), FieldName(field));
+          break;
+        }
+        if (!IsProto1(field->file(), options) && IsLazy(field, options)) {
+          if (field->containing_oneof() != nullptr) {
+            format(
+                "if (!msg->has_$1$()) {\n"
+                "  msg->clear_$1$();\n"
+                "  msg->$2$_.$1$_ = ::google::protobuf::Arena::CreateMessage<\n"
+                "      ::google::protobuf::internal::LazyField>(msg->GetArenaNoVirtual());\n"
+                "  msg->set_has_$1$();\n"
+                "}\n"
+                "auto parse_closure = msg->$2$_.$1$_->_ParseClosure();\n",
+                FieldName(field), field->containing_oneof()->name());
+          } else if (HasFieldPresence(field->file())) {
+            format(
+                "HasBitSetters::set_has_$1$(msg);\n"
+                "auto parse_closure = msg->$1$_._ParseClosure();\n",
+                FieldName(field));
+          } else {
+            format(
+                "auto parse_closure = msg->$1$_._ParseClosure();\n",
+                FieldName(field));
+          }
+          format(
+              "parser_till_end = parse_closure.func;\n"
+              "object = parse_closure.object;\n"
+              "if (size > end - ptr) goto len_delim_till_end;\n"
+              "auto newend = ptr + size;\n"
+              "GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(parse_closure, ptr, newend));\n"
+              "ptr = newend;\n");
           break;
         }
         if (IsImplicitWeakField(field, options, scc_analyzer)) {
@@ -1428,11 +1449,12 @@ void GenerateCaseBody(internal::WireFormatLite::WireType wiretype,
       format(
           "parser_till_end = $1$::_InternalParse;\n"
           "object = msg->$2$_$3$();\n"
-          "bool ok = ctx->PrepareGroup(tag, &depth);\n"
-          "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ok);\n"
-          "ptr = parser_till_end(ptr, end, object, ctx);\n"
+          "auto res = ctx->ParseGroup(tag, {parser_till_end, object}, ptr, "
+          "end, "
+          "&depth);\n"
+          "ptr = res.first;\n"
           "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n"
-          "if (ctx->GroupContinues(depth)) goto group_continues;\n",
+          "if (res.second) goto group_continues;\n",
           QualifiedClassName(field->message_type()),
           field->is_repeated() ? "add" : "mutable", FieldName(field));
       break;
@@ -1542,11 +1564,11 @@ void GenerateParserLoop(const Descriptor* descriptor, const Options& options,
       "  auto msg = static_cast<$classname$*>(object);\n"
       "  $uint32$ size; (void)size;\n"
       "  int depth; (void)depth;\n"
+      "  $uint32$ tag;\n"
       "  ::$proto_ns$::internal::ParseFunc parser_till_end; "
       "(void)parser_till_end;\n"
       "  auto ptr = begin;\n"
       "  while (ptr < end) {\n"
-      "    $uint32$ tag;\n"
       "    ptr = Varint::Parse32Inline(ptr, &tag);\n"
       "    $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n"
       "    switch (tag >> 3) {\n");
@@ -1583,8 +1605,7 @@ void GenerateParserLoop(const Descriptor* descriptor, const Options& options,
       "default: {\n"
       "handle_unusual: (void)&&handle_unusual;\n"
       "  if ((tag & 7) == 4 || tag == 0) {\n"
-      "    bool ok = ctx->ValidEndGroup(tag);\n"
-      "    $GOOGLE_PROTOBUF$_PARSER_ASSERT(ok);\n"
+      "    ctx->EndGroup(tag);\n"
       "    return ptr;\n"
       "  }\n");
   if (IsMapEntryMessage(descriptor)) {
@@ -1617,6 +1638,7 @@ void GenerateParserLoop(const Descriptor* descriptor, const Options& options,
           "      internal_default_instance(), &msg->_internal_metadata_, "
           "ctx);\n"
           "  ptr = res.first;\n"
+          "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
           "  if (res.second) return ptr;\n"
           "  continue;\n"
           "}\n");
@@ -1626,6 +1648,7 @@ void GenerateParserLoop(const Descriptor* descriptor, const Options& options,
         "    ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), "
         "ctx);\n"
         "  ptr = res.first;\n"
+        "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr != nullptr);\n"
         "  if (res.second) return ptr;\n"
         "}\n");  // default case
   }
@@ -1643,8 +1666,8 @@ void GenerateParserLoop(const Descriptor* descriptor, const Options& options,
       "  $DCHK$(ptr >= end);\n"
       // Group crossed end and must be continued. Either this a parse failure
       // or we need to resume on the next chunk and thus save the state.
-      "  ctx->StoreGroup({_InternalParse, msg}, {parser_till_end, object}, "
-      "depth);\n"
+      "  $GOOGLE_PROTOBUF$_PARSER_ASSERT(ctx->StoreGroup({_InternalParse, msg},"
+      " {parser_till_end, object}, depth, tag));\n"
       "  return ptr;\n"
       "}\n");
 }

@@ -522,8 +522,8 @@ public class AbstractMessageTest extends TestCase {
   /**
    * Asserts that the given protos are not equal and have different hash codes.
    *
-   * @warning It's valid for non-equal objects to have the same hash code, so this test is stricter
-   *     than it needs to be. However, this should happen relatively rarely.
+   * <p><b>Note:</b> It's valid for non-equal objects to have the same hash code, so this test is
+   * stricter than it needs to be. However, this should happen relatively rarely.
    */
   private void checkNotEqual(Message m1, Message m2) {
     String equalsError = String.format("%s should not be equal to %s", m1, m2);
