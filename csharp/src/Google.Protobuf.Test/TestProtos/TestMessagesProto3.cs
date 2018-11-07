@@ -2867,7 +2867,9 @@ namespace ProtobufTestMessages.Proto3 {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             OptionalInt32 = input.ReadInt32();
@@ -3582,7 +3584,9 @@ namespace ProtobufTestMessages.Proto3 {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+                  return;
+                }
                 break;
               case 8: {
                 A = input.ReadInt32();
@@ -3723,7 +3727,9 @@ namespace ProtobufTestMessages.Proto3 {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             C = input.ReadInt32();

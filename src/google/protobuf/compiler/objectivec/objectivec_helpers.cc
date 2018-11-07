@@ -76,6 +76,10 @@ Options::Options() {
   if (file_path) {
     expected_prefixes_path = file_path;
   }
+  const char* suppressions = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES_SUPPRESSIONS");
+  if (suppressions) {
+    SplitStringUsing(suppressions, ";", &expected_prefixes_suppressions);
+  }
 }
 
 namespace {
@@ -1169,6 +1173,15 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
   }
 
   for (int i = 0; i < files.size(); i++) {
+    bool should_skip =
+      (std::find(generation_options.expected_prefixes_suppressions.begin(),
+                 generation_options.expected_prefixes_suppressions.end(),
+                 files[i]->name())
+          != generation_options.expected_prefixes_suppressions.end());
+    if (should_skip) {
+      continue;
+    }
+
     bool is_valid =
         ValidateObjCClassPrefix(files[i],
                                 generation_options.expected_prefixes_path,
