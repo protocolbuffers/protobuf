@@ -167,7 +167,7 @@ string GetOptionalDeprecatedAttribute(
     isDeprecated = file->options().deprecated();
   }
   if (isDeprecated) {
-    string result = "DEPRECATED_ATTRIBUTE";
+    string result = "GPB_DEPRECATED";
     if (preSpace) {
       result.insert(0, " ");
     }
