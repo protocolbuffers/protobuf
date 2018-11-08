@@ -6,7 +6,7 @@ function exec(command, cb) {
   execFile('sh', ['-c', command], cb);
 }
 
-var protoc = process.env.PROTOC || '../src/protoc';
+var protoc = process.env.PROTOC || '../src/protoc --lt-debug';
 
 var wellKnownTypes = [
   '../src/google/protobuf/any.proto',
