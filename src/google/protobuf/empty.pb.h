@@ -115,7 +115,7 @@ class PROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_ins
   // implements Message ----------------------------------------------
 
   inline Empty* New() const final {
-    return CreateMaybeMessage<Empty>(NULL);
+    return CreateMaybeMessage<Empty>(nullptr);
   }
 
   Empty* New(::google::protobuf::Arena* arena) const final {

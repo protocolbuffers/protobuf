@@ -216,7 +216,7 @@ class PROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_inse
   // implements Message ----------------------------------------------
 
   inline Type* New() const final {
-    return CreateMaybeMessage<Type>(NULL);
+    return CreateMaybeMessage<Type>(nullptr);
   }
 
   Type* New(::google::protobuf::Arena* arena) const final {
@@ -428,7 +428,7 @@ class PROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_ins
   // implements Message ----------------------------------------------
 
   inline Field* New() const final {
-    return CreateMaybeMessage<Field>(NULL);
+    return CreateMaybeMessage<Field>(nullptr);
   }
 
   Field* New(::google::protobuf::Arena* arena) const final {
@@ -781,7 +781,7 @@ class PROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_inse
   // implements Message ----------------------------------------------
 
   inline Enum* New() const final {
-    return CreateMaybeMessage<Enum>(NULL);
+    return CreateMaybeMessage<Enum>(nullptr);
   }
 
   Enum* New(::google::protobuf::Arena* arena) const final {
@@ -970,7 +970,7 @@ class PROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@protoc
   // implements Message ----------------------------------------------
 
   inline EnumValue* New() const final {
-    return CreateMaybeMessage<EnumValue>(NULL);
+    return CreateMaybeMessage<EnumValue>(nullptr);
   }
 
   EnumValue* New(::google::protobuf::Arena* arena) const final {
@@ -1133,7 +1133,7 @@ class PROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc_in
   // implements Message ----------------------------------------------
 
   inline Option* New() const final {
-    return CreateMaybeMessage<Option>(NULL);
+    return CreateMaybeMessage<Option>(nullptr);
   }
 
   Option* New(::google::protobuf::Arena* arena) const final {
@@ -1266,7 +1266,7 @@ inline void Type::set_name(::std::string&& value) {
 }
 #endif
 inline void Type::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -1290,7 +1290,7 @@ inline ::std::string* Type::release_name() {
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void Type::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     
   } else {
     
@@ -1301,15 +1301,15 @@ inline void Type::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* Type::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Type.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void Type::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     
   } else {
     
@@ -1375,7 +1375,7 @@ inline void Type::set_oneofs(int index, ::std::string&& value) {
 }
 #endif
 inline void Type::set_oneofs(int index, const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   oneofs_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.Type.oneofs)
 }
@@ -1399,7 +1399,7 @@ inline void Type::add_oneofs(::std::string&& value) {
 }
 #endif
 inline void Type::add_oneofs(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.Type.oneofs)
 }
@@ -1450,34 +1450,34 @@ Type::options() const {
 
 // .google.protobuf.SourceContext source_context = 5;
 inline bool Type::has_source_context() const {
-  return this != internal_default_instance() && source_context_ != NULL;
+  return this != internal_default_instance() && source_context_ != nullptr;
 }
 inline const ::google::protobuf::SourceContext& Type::source_context() const {
   const ::google::protobuf::SourceContext* p = source_context_;
   // @@protoc_insertion_point(field_get:google.protobuf.Type.source_context)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceContext*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::SourceContext*>(
       &::google::protobuf::_SourceContext_default_instance_);
 }
 inline ::google::protobuf::SourceContext* Type::release_source_context() {
   // @@protoc_insertion_point(field_release:google.protobuf.Type.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  source_context_ = NULL;
+  source_context_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::SourceContext* Type::unsafe_arena_release_source_context() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Type.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
-  source_context_ = NULL;
+  source_context_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::SourceContext* Type::mutable_source_context() {
   
-  if (source_context_ == NULL) {
+  if (source_context_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::SourceContext>(GetArenaNoVirtual());
     source_context_ = p;
   }
@@ -1486,11 +1486,11 @@ inline ::google::protobuf::SourceContext* Type::mutable_source_context() {
 }
 inline void Type::set_allocated_source_context(::google::protobuf::SourceContext* source_context) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete reinterpret_cast< ::google::protobuf::MessageLite*>(source_context_);
   }
   if (source_context) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
+    ::google::protobuf::Arena* submessage_arena = nullptr;
     if (message_arena != submessage_arena) {
       source_context = ::google::protobuf::internal::GetOwnedMessage(
           message_arena, source_context, submessage_arena);
@@ -1585,7 +1585,7 @@ inline void Field::set_name(::std::string&& value) {
 }
 #endif
 inline void Field::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -1609,7 +1609,7 @@ inline ::std::string* Field::release_name() {
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void Field::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     
   } else {
     
@@ -1620,15 +1620,15 @@ inline void Field::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* Field::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Field.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void Field::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     
   } else {
     
@@ -1660,7 +1660,7 @@ inline void Field::set_type_url(::std::string&& value) {
 }
 #endif
 inline void Field::set_type_url(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   type_url_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -1684,7 +1684,7 @@ inline ::std::string* Field::release_type_url() {
   return type_url_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void Field::set_allocated_type_url(::std::string* type_url) {
-  if (type_url != NULL) {
+  if (type_url != nullptr) {
     
   } else {
     
@@ -1695,15 +1695,15 @@ inline void Field::set_allocated_type_url(::std::string* type_url) {
 }
 inline ::std::string* Field::unsafe_arena_release_type_url() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Field.type_url)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return type_url_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void Field::unsafe_arena_set_allocated_type_url(
     ::std::string* type_url) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (type_url != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (type_url != nullptr) {
     
   } else {
     
@@ -1793,7 +1793,7 @@ inline void Field::set_json_name(::std::string&& value) {
 }
 #endif
 inline void Field::set_json_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   json_name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -1817,7 +1817,7 @@ inline ::std::string* Field::release_json_name() {
   return json_name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void Field::set_allocated_json_name(::std::string* json_name) {
-  if (json_name != NULL) {
+  if (json_name != nullptr) {
     
   } else {
     
@@ -1828,15 +1828,15 @@ inline void Field::set_allocated_json_name(::std::string* json_name) {
 }
 inline ::std::string* Field::unsafe_arena_release_json_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Field.json_name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return json_name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void Field::unsafe_arena_set_allocated_json_name(
     ::std::string* json_name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (json_name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (json_name != nullptr) {
     
   } else {
     
@@ -1868,7 +1868,7 @@ inline void Field::set_default_value(::std::string&& value) {
 }
 #endif
 inline void Field::set_default_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   default_value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -1892,7 +1892,7 @@ inline ::std::string* Field::release_default_value() {
   return default_value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void Field::set_allocated_default_value(::std::string* default_value) {
-  if (default_value != NULL) {
+  if (default_value != nullptr) {
     
   } else {
     
@@ -1903,15 +1903,15 @@ inline void Field::set_allocated_default_value(::std::string* default_value) {
 }
 inline ::std::string* Field::unsafe_arena_release_default_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Field.default_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return default_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void Field::unsafe_arena_set_allocated_default_value(
     ::std::string* default_value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (default_value != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (default_value != nullptr) {
     
   } else {
     
@@ -1947,7 +1947,7 @@ inline void Enum::set_name(::std::string&& value) {
 }
 #endif
 inline void Enum::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -1971,7 +1971,7 @@ inline ::std::string* Enum::release_name() {
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void Enum::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     
   } else {
     
@@ -1982,15 +1982,15 @@ inline void Enum::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* Enum::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Enum.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void Enum::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     
   } else {
     
@@ -2062,34 +2062,34 @@ Enum::options() const {
 
 // .google.protobuf.SourceContext source_context = 4;
 inline bool Enum::has_source_context() const {
-  return this != internal_default_instance() && source_context_ != NULL;
+  return this != internal_default_instance() && source_context_ != nullptr;
 }
 inline const ::google::protobuf::SourceContext& Enum::source_context() const {
   const ::google::protobuf::SourceContext* p = source_context_;
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.source_context)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceContext*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::SourceContext*>(
       &::google::protobuf::_SourceContext_default_instance_);
 }
 inline ::google::protobuf::SourceContext* Enum::release_source_context() {
   // @@protoc_insertion_point(field_release:google.protobuf.Enum.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  source_context_ = NULL;
+  source_context_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::SourceContext* Enum::unsafe_arena_release_source_context() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Enum.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
-  source_context_ = NULL;
+  source_context_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::SourceContext* Enum::mutable_source_context() {
   
-  if (source_context_ == NULL) {
+  if (source_context_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::SourceContext>(GetArenaNoVirtual());
     source_context_ = p;
   }
@@ -2098,11 +2098,11 @@ inline ::google::protobuf::SourceContext* Enum::mutable_source_context() {
 }
 inline void Enum::set_allocated_source_context(::google::protobuf::SourceContext* source_context) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete reinterpret_cast< ::google::protobuf::MessageLite*>(source_context_);
   }
   if (source_context) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
+    ::google::protobuf::Arena* submessage_arena = nullptr;
     if (message_arena != submessage_arena) {
       source_context = ::google::protobuf::internal::GetOwnedMessage(
           message_arena, source_context, submessage_arena);
@@ -2155,7 +2155,7 @@ inline void EnumValue::set_name(::std::string&& value) {
 }
 #endif
 inline void EnumValue::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -2179,7 +2179,7 @@ inline ::std::string* EnumValue::release_name() {
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void EnumValue::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     
   } else {
     
@@ -2190,15 +2190,15 @@ inline void EnumValue::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* EnumValue::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumValue.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void EnumValue::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     
   } else {
     
@@ -2278,7 +2278,7 @@ inline void Option::set_name(::std::string&& value) {
 }
 #endif
 inline void Option::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -2302,7 +2302,7 @@ inline ::std::string* Option::release_name() {
   return name_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void Option::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     
   } else {
     
@@ -2313,15 +2313,15 @@ inline void Option::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* Option::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Option.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void Option::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     
   } else {
     
@@ -2333,34 +2333,34 @@ inline void Option::unsafe_arena_set_allocated_name(
 
 // .google.protobuf.Any value = 2;
 inline bool Option::has_value() const {
-  return this != internal_default_instance() && value_ != NULL;
+  return this != internal_default_instance() && value_ != nullptr;
 }
 inline const ::google::protobuf::Any& Option::value() const {
   const ::google::protobuf::Any* p = value_;
   // @@protoc_insertion_point(field_get:google.protobuf.Option.value)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::Any*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::Any*>(
       &::google::protobuf::_Any_default_instance_);
 }
 inline ::google::protobuf::Any* Option::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Option.value)
   
   ::google::protobuf::Any* temp = value_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  value_ = NULL;
+  value_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::Any* Option::unsafe_arena_release_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Option.value)
   
   ::google::protobuf::Any* temp = value_;
-  value_ = NULL;
+  value_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::Any* Option::mutable_value() {
   
-  if (value_ == NULL) {
+  if (value_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::Any>(GetArenaNoVirtual());
     value_ = p;
   }
@@ -2369,11 +2369,11 @@ inline ::google::protobuf::Any* Option::mutable_value() {
 }
 inline void Option::set_allocated_value(::google::protobuf::Any* value) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete reinterpret_cast< ::google::protobuf::MessageLite*>(value_);
   }
   if (value) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
+    ::google::protobuf::Arena* submessage_arena = nullptr;
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(
           message_arena, value, submessage_arena);

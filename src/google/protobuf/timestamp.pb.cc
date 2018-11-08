@@ -109,7 +109,7 @@ const int Timestamp::kNanosFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Timestamp::Timestamp()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Timestamp)
 }
@@ -122,7 +122,7 @@ Timestamp::Timestamp(::google::protobuf::Arena* arena)
 }
 Timestamp::Timestamp(const Timestamp& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&seconds_, &from.seconds_,
     static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
@@ -142,7 +142,7 @@ Timestamp::~Timestamp() {
 }
 
 void Timestamp::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void Timestamp::ArenaDtor(void* object) {
@@ -372,7 +372,7 @@ void Timestamp::MergeFrom(const ::google::protobuf::Message& from) {
   const Timestamp* source =
       ::google::protobuf::DynamicCastToGenerated<Timestamp>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Timestamp)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -423,7 +423,7 @@ void Timestamp::Swap(Timestamp* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }

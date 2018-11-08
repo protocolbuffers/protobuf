@@ -108,7 +108,7 @@ class PROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @@pr
   // implements Message ----------------------------------------------
 
   inline SourceContext* New() const final {
-    return CreateMaybeMessage<SourceContext>(NULL);
+    return CreateMaybeMessage<SourceContext>(nullptr);
   }
 
   SourceContext* New(::google::protobuf::Arena* arena) const final {
@@ -142,10 +142,10 @@ class PROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @@pr
   void InternalSwap(SourceContext* other);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
+    return nullptr;
   }
   inline void* MaybeArenaPtr() const {
-    return NULL;
+    return nullptr;
   }
   public:
 
@@ -211,7 +211,7 @@ inline void SourceContext::set_file_name(::std::string&& value) {
 }
 #endif
 inline void SourceContext::set_file_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   file_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceContext.file_name)
@@ -233,7 +233,7 @@ inline ::std::string* SourceContext::release_file_name() {
   return file_name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void SourceContext::set_allocated_file_name(::std::string* file_name) {
-  if (file_name != NULL) {
+  if (file_name != nullptr) {
     
   } else {
     

@@ -800,7 +800,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
       } else {
         format(
             "inline bool $classname$::has_$name$() const {\n"
-            "  return this != internal_default_instance() && $name$_ != NULL;\n"
+            "  return this != internal_default_instance() && $name$_ != nullptr;\n"
             "}\n");
       }
     }
@@ -1116,7 +1116,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "// implements Message ----------------------------------------------\n"
       "\n"
       "inline $classname$* New() const$ new_final$ {\n"
-      "  return CreateMaybeMessage<$classname$>(NULL);\n"
+      "  return CreateMaybeMessage<$classname$>(nullptr);\n"
       "}\n"
       "\n"
       "$classname$* New(::$proto_ns$::Arena* arena) const$ new_final$ {\n"
@@ -1226,10 +1226,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format(
         "private:\n"
         "inline ::$proto_ns$::Arena* GetArenaNoVirtual() const {\n"
-        "  return NULL;\n"
+        "  return nullptr;\n"
         "}\n"
         "inline void* MaybeArenaPtr() const {\n"
-        "  return NULL;\n"
+        "  return nullptr;\n"
         "}\n");
   }
 
@@ -1490,7 +1490,7 @@ bool MessageGenerator::GenerateParseTable(io::Printer* printer, size_t offset,
   Formatter format(printer, variables_);
 
   if (!table_driven_) {
-    format("{ NULL, NULL, 0, -1, -1, -1, -1, NULL, false },\n");
+    format("{ nullptr, nullptr, 0, -1, -1, -1, -1, nullptr, false },\n");
     return false;
   }
 
@@ -1628,7 +1628,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       vars["hasbit"] = SimpleItoa(i);
       vars["type"] =
           SimpleItoa(CalcFieldNum(generator, field, options_));
-      vars["ptr"] = "NULL";
+      vars["ptr"] = "nullptr";
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         GOOGLE_CHECK(!IsMapEntryMessage(field->message_type()));
         if (!IsProto1(field->message_type()->file(), options_)) {
@@ -1654,7 +1654,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     return 2;
   }
   format(
-      "{PROTOBUF_FIELD_OFFSET($classtype$, _cached_size_), 0, 0, 0, NULL},\n");
+      "{PROTOBUF_FIELD_OFFSET($classtype$, _cached_size_), 0, 0, 0, nullptr},\n");
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
@@ -1690,7 +1690,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       classfieldname = field->containing_oneof()->name();
     }
     format.Set("field_name", classfieldname);
-    string ptr = "NULL";
+    string ptr = "nullptr";
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       if (IsMapEntryMessage(field->message_type())) {
         format(
@@ -1819,7 +1819,7 @@ void MessageGenerator::GenerateDefaultInstanceInitializer(
         format(
             "$package_ns$::$name$_ = reinterpret_cast<const "
             "::$proto_ns$::Message*>(&$1$);\n"
-            "if ($package_ns$::$name$_ == NULL) {\n"
+            "if ($package_ns$::$name$_ == nullptr) {\n"
             "  $package_ns$::$name$_ = "
             "::$proto_ns$::Empty::internal_default_instance();\n"
             "}\n",
@@ -2364,7 +2364,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* printer) {
   format("void $classname$::SharedDtor() {\n");
   format.Indent();
   if (SupportsArenas(descriptor_)) {
-    format("$DCHK$(GetArenaNoVirtual() == NULL);\n");
+    format("$DCHK$(GetArenaNoVirtual() == nullptr);\n");
   }
   // Write the destructors for each field except oneof members.
   // optimized_order_ does not contain oneof fields.
@@ -2440,7 +2440,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* printer) {
     format(
         "inline void $classname$::RegisterArenaDtor(::$proto_ns$::Arena* "
         "arena) {\n"
-        "  if (arena != NULL) {\n"
+        "  if (arena != nullptr) {\n"
         "    arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);\n"
         "  }\n"
         "}\n");
@@ -2555,7 +2555,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     initializer_with_arena += ", _weak_field_map_(arena)";
   }
 
-  string initializer_null = superclass + "(), _internal_metadata_(NULL)";
+  string initializer_null = superclass + "(), _internal_metadata_(nullptr)";
   if (IsAnyMessage(descriptor_, options_)) {
     initializer_null += ", _any_metadata_(&type_url_, &value_)";
   }
@@ -2600,7 +2600,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     format.Indent();
     format.Indent();
     format.Indent();
-    format(",\n_internal_metadata_(NULL)");
+    format(",\n_internal_metadata_(nullptr)");
 
     if (HasFieldPresence(descriptor_->file())) {
       if (!IsProto2MessageSet(descriptor_, options_)) {
@@ -3001,7 +3001,7 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
         "    temp->MergeFrom(*other);\n"
         "    other->CopyFrom(*this);\n"
         "    InternalSwap(temp);\n"
-        "    if (GetArenaNoVirtual() == NULL) {\n"
+        "    if (GetArenaNoVirtual() == nullptr) {\n"
         "      delete temp;\n"
         "    }\n"
         "  }\n"
@@ -3084,7 +3084,7 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* printer) {
         "const $classname$* source =\n"
         "    ::$proto_ns$::DynamicCastToGenerated<$classname$>(\n"
         "        &from);\n"
-        "if (source == NULL) {\n"
+        "if (source == nullptr) {\n"
         "// @@protoc_insertion_point(generalized_merge_from_cast_fail:"
         "$full_name$)\n"
         "  ::$proto_ns$::internal::ReflectionOps::Merge(from, this);\n"

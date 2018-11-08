@@ -274,7 +274,7 @@ static void GenerateSerializationLoop(const Formatter& format,
   // If entry is allocated by arena, its desctructor should be avoided.
   if (supports_arenas) {
     format(
-        "if (entry->GetArena() != NULL) {\n"
+        "if (entry->GetArena() != nullptr) {\n"
         "  entry.release();\n"
         "}\n");
   }
@@ -395,7 +395,7 @@ GenerateByteSize(io::Printer* printer) const {
   // If entry is allocated by arena, its desctructor should be avoided.
   if (SupportsArenas(descriptor_)) {
     format(
-        "    if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
+        "    if (entry.get() != nullptr && entry->GetArena() != nullptr) {\n"
         "      entry.release();\n"
         "    }\n");
   }
@@ -409,7 +409,7 @@ GenerateByteSize(io::Printer* printer) const {
   // If entry is allocated by arena, its desctructor should be avoided.
   if (SupportsArenas(descriptor_)) {
     format(
-        "  if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
+        "  if (entry.get() != nullptr && entry->GetArena() != nullptr) {\n"
         "    entry.release();\n"
         "  }\n");
   }

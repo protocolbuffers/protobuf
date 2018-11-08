@@ -175,7 +175,7 @@ class PROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc_in
   // implements Message ----------------------------------------------
 
   inline Struct* New() const final {
-    return CreateMaybeMessage<Struct>(NULL);
+    return CreateMaybeMessage<Struct>(nullptr);
   }
 
   Struct* New(::google::protobuf::Arena* arena) const final {
@@ -320,7 +320,7 @@ class PROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_ins
   // implements Message ----------------------------------------------
 
   inline Value* New() const final {
-    return CreateMaybeMessage<Value>(NULL);
+    return CreateMaybeMessage<Value>(nullptr);
   }
 
   Value* New(::google::protobuf::Arena* arena) const final {
@@ -538,7 +538,7 @@ class PROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@protoc
   // implements Message ----------------------------------------------
 
   inline ListValue* New() const final {
-    return CreateMaybeMessage<ListValue>(NULL);
+    return CreateMaybeMessage<ListValue>(nullptr);
   }
 
   ListValue* New(::google::protobuf::Arena* arena) const final {
@@ -752,7 +752,7 @@ inline void Value::set_string_value(::std::string&& value) {
 }
 #endif
 inline void Value::set_string_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   if (!has_string_value()) {
     clear_kind();
     set_has_string_value();
@@ -792,14 +792,14 @@ inline ::std::string* Value::release_string_value() {
     return kind_.string_value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
         GetArenaNoVirtual());
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 inline void Value::set_allocated_string_value(::std::string* string_value) {
   if (has_kind()) {
     clear_kind();
   }
-  if (string_value != NULL) {
+  if (string_value != nullptr) {
     set_has_string_value();
     kind_.string_value_.UnsafeSetDefault(string_value);
   }
@@ -807,17 +807,17 @@ inline void Value::set_allocated_string_value(::std::string* string_value) {
 }
 inline ::std::string* Value::unsafe_arena_release_string_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.string_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   if (has_string_value()) {
     clear_has_kind();
     return kind_.string_value_.UnsafeArenaRelease(
         &::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 inline void Value::unsafe_arena_set_allocated_string_value(::std::string* string_value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   if (!has_string_value()) {
     kind_.string_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
@@ -867,7 +867,7 @@ inline void Value::set_has_struct_value() {
 }
 inline void Value::clear_struct_value() {
   if (has_struct_value()) {
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete kind_.struct_value_;
     }
     clear_has_kind();
@@ -878,13 +878,13 @@ inline ::google::protobuf::Struct* Value::release_struct_value() {
   if (has_struct_value()) {
     clear_has_kind();
       ::google::protobuf::Struct* temp = kind_.struct_value_;
-    if (GetArenaNoVirtual() != NULL) {
+    if (GetArenaNoVirtual() != nullptr) {
       temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
     }
-    kind_.struct_value_ = NULL;
+    kind_.struct_value_ = nullptr;
     return temp;
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 inline const ::google::protobuf::Struct& Value::struct_value() const {
@@ -898,10 +898,10 @@ inline ::google::protobuf::Struct* Value::unsafe_arena_release_struct_value() {
   if (has_struct_value()) {
     clear_has_kind();
     ::google::protobuf::Struct* temp = kind_.struct_value_;
-    kind_.struct_value_ = NULL;
+    kind_.struct_value_ = nullptr;
     return temp;
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 inline void Value::unsafe_arena_set_allocated_struct_value(::google::protobuf::Struct* struct_value) {
@@ -932,7 +932,7 @@ inline void Value::set_has_list_value() {
 }
 inline void Value::clear_list_value() {
   if (has_list_value()) {
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete kind_.list_value_;
     }
     clear_has_kind();
@@ -943,13 +943,13 @@ inline ::google::protobuf::ListValue* Value::release_list_value() {
   if (has_list_value()) {
     clear_has_kind();
       ::google::protobuf::ListValue* temp = kind_.list_value_;
-    if (GetArenaNoVirtual() != NULL) {
+    if (GetArenaNoVirtual() != nullptr) {
       temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
     }
-    kind_.list_value_ = NULL;
+    kind_.list_value_ = nullptr;
     return temp;
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 inline const ::google::protobuf::ListValue& Value::list_value() const {
@@ -963,10 +963,10 @@ inline ::google::protobuf::ListValue* Value::unsafe_arena_release_list_value() {
   if (has_list_value()) {
     clear_has_kind();
     ::google::protobuf::ListValue* temp = kind_.list_value_;
-    kind_.list_value_ = NULL;
+    kind_.list_value_ = nullptr;
     return temp;
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 inline void Value::unsafe_arena_set_allocated_list_value(::google::protobuf::ListValue* list_value) {

@@ -362,7 +362,7 @@ class PROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message /* 
   // implements Message ----------------------------------------------
 
   inline FileDescriptorSet* New() const final {
-    return CreateMaybeMessage<FileDescriptorSet>(NULL);
+    return CreateMaybeMessage<FileDescriptorSet>(nullptr);
   }
 
   FileDescriptorSet* New(::google::protobuf::Arena* arena) const final {
@@ -502,7 +502,7 @@ class PROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Message /
   // implements Message ----------------------------------------------
 
   inline FileDescriptorProto* New() const final {
-    return CreateMaybeMessage<FileDescriptorProto>(NULL);
+    return CreateMaybeMessage<FileDescriptorProto>(nullptr);
   }
 
   FileDescriptorProto* New(::google::protobuf::Arena* arena) const final {
@@ -831,7 +831,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::protobuf
   // implements Message ----------------------------------------------
 
   inline DescriptorProto_ExtensionRange* New() const final {
-    return CreateMaybeMessage<DescriptorProto_ExtensionRange>(NULL);
+    return CreateMaybeMessage<DescriptorProto_ExtensionRange>(nullptr);
   }
 
   DescriptorProto_ExtensionRange* New(::google::protobuf::Arena* arena) const final {
@@ -987,7 +987,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protobuf:
   // implements Message ----------------------------------------------
 
   inline DescriptorProto_ReservedRange* New() const final {
-    return CreateMaybeMessage<DescriptorProto_ReservedRange>(NULL);
+    return CreateMaybeMessage<DescriptorProto_ReservedRange>(nullptr);
   }
 
   DescriptorProto_ReservedRange* New(::google::protobuf::Arena* arena) const final {
@@ -1130,7 +1130,7 @@ class PROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /* @@
   // implements Message ----------------------------------------------
 
   inline DescriptorProto* New() const final {
-    return CreateMaybeMessage<DescriptorProto>(NULL);
+    return CreateMaybeMessage<DescriptorProto>(nullptr);
   }
 
   DescriptorProto* New(::google::protobuf::Arena* arena) const final {
@@ -1412,7 +1412,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions : public ::google::protobuf::Message
   // implements Message ----------------------------------------------
 
   inline ExtensionRangeOptions* New() const final {
-    return CreateMaybeMessage<ExtensionRangeOptions>(NULL);
+    return CreateMaybeMessage<ExtensionRangeOptions>(nullptr);
   }
 
   ExtensionRangeOptions* New(::google::protobuf::Arena* arena) const final {
@@ -1555,7 +1555,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Message 
   // implements Message ----------------------------------------------
 
   inline FieldDescriptorProto* New() const final {
-    return CreateMaybeMessage<FieldDescriptorProto>(NULL);
+    return CreateMaybeMessage<FieldDescriptorProto>(nullptr);
   }
 
   FieldDescriptorProto* New(::google::protobuf::Arena* arena) const final {
@@ -1938,7 +1938,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Message 
   // implements Message ----------------------------------------------
 
   inline OneofDescriptorProto* New() const final {
-    return CreateMaybeMessage<OneofDescriptorProto>(NULL);
+    return CreateMaybeMessage<OneofDescriptorProto>(nullptr);
   }
 
   OneofDescriptorProto* New(::google::protobuf::Arena* arena) const final {
@@ -2103,7 +2103,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange : public ::google::p
   // implements Message ----------------------------------------------
 
   inline EnumDescriptorProto_EnumReservedRange* New() const final {
-    return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(NULL);
+    return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(nullptr);
   }
 
   EnumDescriptorProto_EnumReservedRange* New(::google::protobuf::Arena* arena) const final {
@@ -2246,7 +2246,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Message /
   // implements Message ----------------------------------------------
 
   inline EnumDescriptorProto* New() const final {
-    return CreateMaybeMessage<EnumDescriptorProto>(NULL);
+    return CreateMaybeMessage<EnumDescriptorProto>(nullptr);
   }
 
   EnumDescriptorProto* New(::google::protobuf::Arena* arena) const final {
@@ -2462,7 +2462,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::Mess
   // implements Message ----------------------------------------------
 
   inline EnumValueDescriptorProto* New() const final {
-    return CreateMaybeMessage<EnumValueDescriptorProto>(NULL);
+    return CreateMaybeMessage<EnumValueDescriptorProto>(nullptr);
   }
 
   EnumValueDescriptorProto* New(::google::protobuf::Arena* arena) const final {
@@ -2635,7 +2635,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Messag
   // implements Message ----------------------------------------------
 
   inline ServiceDescriptorProto* New() const final {
-    return CreateMaybeMessage<ServiceDescriptorProto>(NULL);
+    return CreateMaybeMessage<ServiceDescriptorProto>(nullptr);
   }
 
   ServiceDescriptorProto* New(::google::protobuf::Arena* arena) const final {
@@ -2813,7 +2813,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Message
   // implements Message ----------------------------------------------
 
   inline MethodDescriptorProto* New() const final {
-    return CreateMaybeMessage<MethodDescriptorProto>(NULL);
+    return CreateMaybeMessage<MethodDescriptorProto>(nullptr);
   }
 
   MethodDescriptorProto* New(::google::protobuf::Arena* arena) const final {
@@ -3044,7 +3044,7 @@ class PROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@prot
   // implements Message ----------------------------------------------
 
   inline FileOptions* New() const final {
-    return CreateMaybeMessage<FileOptions>(NULL);
+    return CreateMaybeMessage<FileOptions>(nullptr);
   }
 
   FileOptions* New(::google::protobuf::Arena* arena) const final {
@@ -3545,7 +3545,7 @@ class PROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* @@p
   // implements Message ----------------------------------------------
 
   inline MessageOptions* New() const final {
-    return CreateMaybeMessage<MessageOptions>(NULL);
+    return CreateMaybeMessage<MessageOptions>(nullptr);
   }
 
   MessageOptions* New(::google::protobuf::Arena* arena) const final {
@@ -3720,7 +3720,7 @@ class PROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@pro
   // implements Message ----------------------------------------------
 
   inline FieldOptions* New() const final {
-    return CreateMaybeMessage<FieldOptions>(NULL);
+    return CreateMaybeMessage<FieldOptions>(nullptr);
   }
 
   FieldOptions* New(::google::protobuf::Arena* arena) const final {
@@ -3967,7 +3967,7 @@ class PROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@pro
   // implements Message ----------------------------------------------
 
   inline OneofOptions* New() const final {
-    return CreateMaybeMessage<OneofOptions>(NULL);
+    return CreateMaybeMessage<OneofOptions>(nullptr);
   }
 
   OneofOptions* New(::google::protobuf::Arena* arena) const final {
@@ -4110,7 +4110,7 @@ class PROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@prot
   // implements Message ----------------------------------------------
 
   inline EnumOptions* New() const final {
-    return CreateMaybeMessage<EnumOptions>(NULL);
+    return CreateMaybeMessage<EnumOptions>(nullptr);
   }
 
   EnumOptions* New(::google::protobuf::Arena* arena) const final {
@@ -4269,7 +4269,7 @@ class PROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /* @
   // implements Message ----------------------------------------------
 
   inline EnumValueOptions* New() const final {
-    return CreateMaybeMessage<EnumValueOptions>(NULL);
+    return CreateMaybeMessage<EnumValueOptions>(nullptr);
   }
 
   EnumValueOptions* New(::google::protobuf::Arena* arena) const final {
@@ -4420,7 +4420,7 @@ class PROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* @@p
   // implements Message ----------------------------------------------
 
   inline ServiceOptions* New() const final {
-    return CreateMaybeMessage<ServiceOptions>(NULL);
+    return CreateMaybeMessage<ServiceOptions>(nullptr);
   }
 
   ServiceOptions* New(::google::protobuf::Arena* arena) const final {
@@ -4571,7 +4571,7 @@ class PROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @@pr
   // implements Message ----------------------------------------------
 
   inline MethodOptions* New() const final {
-    return CreateMaybeMessage<MethodOptions>(NULL);
+    return CreateMaybeMessage<MethodOptions>(nullptr);
   }
 
   MethodOptions* New(::google::protobuf::Arena* arena) const final {
@@ -4758,7 +4758,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobuf::
   // implements Message ----------------------------------------------
 
   inline UninterpretedOption_NamePart* New() const final {
-    return CreateMaybeMessage<UninterpretedOption_NamePart>(NULL);
+    return CreateMaybeMessage<UninterpretedOption_NamePart>(nullptr);
   }
 
   UninterpretedOption_NamePart* New(::google::protobuf::Arena* arena) const final {
@@ -4921,7 +4921,7 @@ class PROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Message /
   // implements Message ----------------------------------------------
 
   inline UninterpretedOption* New() const final {
-    return CreateMaybeMessage<UninterpretedOption>(NULL);
+    return CreateMaybeMessage<UninterpretedOption>(nullptr);
   }
 
   UninterpretedOption* New(::google::protobuf::Arena* arena) const final {
@@ -5162,7 +5162,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Messa
   // implements Message ----------------------------------------------
 
   inline SourceCodeInfo_Location* New() const final {
-    return CreateMaybeMessage<SourceCodeInfo_Location>(NULL);
+    return CreateMaybeMessage<SourceCodeInfo_Location>(nullptr);
   }
 
   SourceCodeInfo_Location* New(::google::protobuf::Arena* arena) const final {
@@ -5390,7 +5390,7 @@ class PROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* @@p
   // implements Message ----------------------------------------------
 
   inline SourceCodeInfo* New() const final {
-    return CreateMaybeMessage<SourceCodeInfo>(NULL);
+    return CreateMaybeMessage<SourceCodeInfo>(nullptr);
   }
 
   SourceCodeInfo* New(::google::protobuf::Arena* arena) const final {
@@ -5532,7 +5532,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobuf::
   // implements Message ----------------------------------------------
 
   inline GeneratedCodeInfo_Annotation* New() const final {
-    return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(NULL);
+    return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(nullptr);
   }
 
   GeneratedCodeInfo_Annotation* New(::google::protobuf::Arena* arena) const final {
@@ -5714,7 +5714,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message /* 
   // implements Message ----------------------------------------------
 
   inline GeneratedCodeInfo* New() const final {
-    return CreateMaybeMessage<GeneratedCodeInfo>(NULL);
+    return CreateMaybeMessage<GeneratedCodeInfo>(nullptr);
   }
 
   GeneratedCodeInfo* New(::google::protobuf::Arena* arena) const final {
@@ -5864,7 +5864,7 @@ inline void FileDescriptorProto::set_name(::std::string&& value) {
 }
 #endif
 inline void FileDescriptorProto::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -5885,13 +5885,13 @@ inline ::std::string* FileDescriptorProto::mutable_name() {
 inline ::std::string* FileDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.name)
   if (!has_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -5902,15 +5902,15 @@ inline void FileDescriptorProto::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* FileDescriptorProto::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -5946,7 +5946,7 @@ inline void FileDescriptorProto::set_package(::std::string&& value) {
 }
 #endif
 inline void FileDescriptorProto::set_package(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
   package_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -5967,13 +5967,13 @@ inline ::std::string* FileDescriptorProto::mutable_package() {
 inline ::std::string* FileDescriptorProto::release_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.package)
   if (!has_package()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
   return package_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::set_allocated_package(::std::string* package) {
-  if (package != NULL) {
+  if (package != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -5984,15 +5984,15 @@ inline void FileDescriptorProto::set_allocated_package(::std::string* package) {
 }
 inline ::std::string* FileDescriptorProto::unsafe_arena_release_package() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.package)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000002u;
   return package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_package(
     ::std::string* package) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (package != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (package != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -6028,7 +6028,7 @@ inline void FileDescriptorProto::set_dependency(int index, ::std::string&& value
 }
 #endif
 inline void FileDescriptorProto::set_dependency(int index, const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   dependency_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileDescriptorProto.dependency)
 }
@@ -6052,7 +6052,7 @@ inline void FileDescriptorProto::add_dependency(::std::string&& value) {
 }
 #endif
 inline void FileDescriptorProto::add_dependency(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   dependency_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FileDescriptorProto.dependency)
 }
@@ -6256,35 +6256,35 @@ inline bool FileDescriptorProto::has_options() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void FileDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000008u;
 }
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() const {
   const ::google::protobuf::FileOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::FileOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::FileOptions*>(
       &::google::protobuf::_FileOptions_default_instance_);
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.options)
   _has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::FileOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.options)
   _has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::FileOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
   _has_bits_[0] |= 0x00000008u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FileOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -6293,7 +6293,7 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
 }
 inline void FileDescriptorProto::set_allocated_options(::google::protobuf::FileOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -6316,35 +6316,35 @@ inline bool FileDescriptorProto::has_source_code_info() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void FileDescriptorProto::clear_source_code_info() {
-  if (source_code_info_ != NULL) source_code_info_->Clear();
+  if (source_code_info_ != nullptr) source_code_info_->Clear();
   _has_bits_[0] &= ~0x00000010u;
 }
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_code_info() const {
   const ::google::protobuf::SourceCodeInfo* p = source_code_info_;
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.source_code_info)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceCodeInfo*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::SourceCodeInfo*>(
       &::google::protobuf::_SourceCodeInfo_default_instance_);
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_code_info() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.source_code_info)
   _has_bits_[0] &= ~0x00000010u;
   ::google::protobuf::SourceCodeInfo* temp = source_code_info_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  source_code_info_ = NULL;
+  source_code_info_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_release_source_code_info() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.source_code_info)
   _has_bits_[0] &= ~0x00000010u;
   ::google::protobuf::SourceCodeInfo* temp = source_code_info_;
-  source_code_info_ = NULL;
+  source_code_info_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_code_info() {
   _has_bits_[0] |= 0x00000010u;
-  if (source_code_info_ == NULL) {
+  if (source_code_info_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::SourceCodeInfo>(GetArenaNoVirtual());
     source_code_info_ = p;
   }
@@ -6353,7 +6353,7 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_c
 }
 inline void FileDescriptorProto::set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* source_code_info) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete source_code_info_;
   }
   if (source_code_info) {
@@ -6397,7 +6397,7 @@ inline void FileDescriptorProto::set_syntax(::std::string&& value) {
 }
 #endif
 inline void FileDescriptorProto::set_syntax(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
   syntax_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -6418,13 +6418,13 @@ inline ::std::string* FileDescriptorProto::mutable_syntax() {
 inline ::std::string* FileDescriptorProto::release_syntax() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.syntax)
   if (!has_syntax()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
   return syntax_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::set_allocated_syntax(::std::string* syntax) {
-  if (syntax != NULL) {
+  if (syntax != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -6435,15 +6435,15 @@ inline void FileDescriptorProto::set_allocated_syntax(::std::string* syntax) {
 }
 inline ::std::string* FileDescriptorProto::unsafe_arena_release_syntax() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileDescriptorProto.syntax)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000004u;
   return syntax_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileDescriptorProto::unsafe_arena_set_allocated_syntax(
     ::std::string* syntax) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (syntax != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (syntax != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -6498,35 +6498,35 @@ inline bool DescriptorProto_ExtensionRange::has_options() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void DescriptorProto_ExtensionRange::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::options() const {
   const ::google::protobuf::ExtensionRangeOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.ExtensionRange.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::ExtensionRangeOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::ExtensionRangeOptions*>(
       &::google::protobuf::_ExtensionRangeOptions_default_instance_);
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.ExtensionRange.options)
   _has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::ExtensionRangeOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.ExtensionRange.options)
   _has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::ExtensionRangeOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::mutable_options() {
   _has_bits_[0] |= 0x00000001u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::ExtensionRangeOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -6535,7 +6535,7 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
 }
 inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::protobuf::ExtensionRangeOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -6623,7 +6623,7 @@ inline void DescriptorProto::set_name(::std::string&& value) {
 }
 #endif
 inline void DescriptorProto::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -6644,13 +6644,13 @@ inline ::std::string* DescriptorProto::mutable_name() {
 inline ::std::string* DescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.name)
   if (!has_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void DescriptorProto::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -6661,15 +6661,15 @@ inline void DescriptorProto::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* DescriptorProto::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void DescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -6864,35 +6864,35 @@ inline bool DescriptorProto::has_options() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void DescriptorProto::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::MessageOptions& DescriptorProto::options() const {
   const ::google::protobuf::MessageOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::MessageOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::MessageOptions*>(
       &::google::protobuf::_MessageOptions_default_instance_);
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::MessageOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.DescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::MessageOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
   _has_bits_[0] |= 0x00000002u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::MessageOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -6901,7 +6901,7 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
 }
 inline void DescriptorProto::set_allocated_options(::google::protobuf::MessageOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -6975,7 +6975,7 @@ inline void DescriptorProto::set_reserved_name(int index, ::std::string&& value)
 }
 #endif
 inline void DescriptorProto::set_reserved_name(int index, const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.DescriptorProto.reserved_name)
 }
@@ -6999,7 +6999,7 @@ inline void DescriptorProto::add_reserved_name(::std::string&& value) {
 }
 #endif
 inline void DescriptorProto::add_reserved_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.DescriptorProto.reserved_name)
 }
@@ -7082,7 +7082,7 @@ inline void FieldDescriptorProto::set_name(::std::string&& value) {
 }
 #endif
 inline void FieldDescriptorProto::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -7103,13 +7103,13 @@ inline ::std::string* FieldDescriptorProto::mutable_name() {
 inline ::std::string* FieldDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.name)
   if (!has_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -7120,15 +7120,15 @@ inline void FieldDescriptorProto::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* FieldDescriptorProto::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -7220,7 +7220,7 @@ inline void FieldDescriptorProto::set_type_name(::std::string&& value) {
 }
 #endif
 inline void FieldDescriptorProto::set_type_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
   type_name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -7241,13 +7241,13 @@ inline ::std::string* FieldDescriptorProto::mutable_type_name() {
 inline ::std::string* FieldDescriptorProto::release_type_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.type_name)
   if (!has_type_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
   return type_name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::set_allocated_type_name(::std::string* type_name) {
-  if (type_name != NULL) {
+  if (type_name != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -7258,15 +7258,15 @@ inline void FieldDescriptorProto::set_allocated_type_name(::std::string* type_na
 }
 inline ::std::string* FieldDescriptorProto::unsafe_arena_release_type_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.type_name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000004u;
   return type_name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_type_name(
     ::std::string* type_name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (type_name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (type_name != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -7302,7 +7302,7 @@ inline void FieldDescriptorProto::set_extendee(::std::string&& value) {
 }
 #endif
 inline void FieldDescriptorProto::set_extendee(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
   extendee_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -7323,13 +7323,13 @@ inline ::std::string* FieldDescriptorProto::mutable_extendee() {
 inline ::std::string* FieldDescriptorProto::release_extendee() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.extendee)
   if (!has_extendee()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
   return extendee_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::set_allocated_extendee(::std::string* extendee) {
-  if (extendee != NULL) {
+  if (extendee != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -7340,15 +7340,15 @@ inline void FieldDescriptorProto::set_allocated_extendee(::std::string* extendee
 }
 inline ::std::string* FieldDescriptorProto::unsafe_arena_release_extendee() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.extendee)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000002u;
   return extendee_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_extendee(
     ::std::string* extendee) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (extendee != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (extendee != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -7384,7 +7384,7 @@ inline void FieldDescriptorProto::set_default_value(::std::string&& value) {
 }
 #endif
 inline void FieldDescriptorProto::set_default_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000008u;
   default_value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -7405,13 +7405,13 @@ inline ::std::string* FieldDescriptorProto::mutable_default_value() {
 inline ::std::string* FieldDescriptorProto::release_default_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.default_value)
   if (!has_default_value()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000008u;
   return default_value_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::set_allocated_default_value(::std::string* default_value) {
-  if (default_value != NULL) {
+  if (default_value != nullptr) {
     _has_bits_[0] |= 0x00000008u;
   } else {
     _has_bits_[0] &= ~0x00000008u;
@@ -7422,15 +7422,15 @@ inline void FieldDescriptorProto::set_allocated_default_value(::std::string* def
 }
 inline ::std::string* FieldDescriptorProto::unsafe_arena_release_default_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.default_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000008u;
   return default_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_default_value(
     ::std::string* default_value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (default_value != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (default_value != nullptr) {
     _has_bits_[0] |= 0x00000008u;
   } else {
     _has_bits_[0] &= ~0x00000008u;
@@ -7484,7 +7484,7 @@ inline void FieldDescriptorProto::set_json_name(::std::string&& value) {
 }
 #endif
 inline void FieldDescriptorProto::set_json_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000010u;
   json_name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -7505,13 +7505,13 @@ inline ::std::string* FieldDescriptorProto::mutable_json_name() {
 inline ::std::string* FieldDescriptorProto::release_json_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.json_name)
   if (!has_json_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000010u;
   return json_name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::set_allocated_json_name(::std::string* json_name) {
-  if (json_name != NULL) {
+  if (json_name != nullptr) {
     _has_bits_[0] |= 0x00000010u;
   } else {
     _has_bits_[0] &= ~0x00000010u;
@@ -7522,15 +7522,15 @@ inline void FieldDescriptorProto::set_allocated_json_name(::std::string* json_na
 }
 inline ::std::string* FieldDescriptorProto::unsafe_arena_release_json_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.json_name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000010u;
   return json_name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FieldDescriptorProto::unsafe_arena_set_allocated_json_name(
     ::std::string* json_name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (json_name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (json_name != nullptr) {
     _has_bits_[0] |= 0x00000010u;
   } else {
     _has_bits_[0] &= ~0x00000010u;
@@ -7545,35 +7545,35 @@ inline bool FieldDescriptorProto::has_options() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void FieldDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000020u;
 }
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() const {
   const ::google::protobuf::FieldOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::FieldOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::FieldOptions*>(
       &::google::protobuf::_FieldOptions_default_instance_);
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.options)
   _has_bits_[0] &= ~0x00000020u;
   ::google::protobuf::FieldOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FieldDescriptorProto.options)
   _has_bits_[0] &= ~0x00000020u;
   ::google::protobuf::FieldOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options() {
   _has_bits_[0] |= 0x00000020u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::FieldOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -7582,7 +7582,7 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options()
 }
 inline void FieldDescriptorProto::set_allocated_options(::google::protobuf::FieldOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -7630,7 +7630,7 @@ inline void OneofDescriptorProto::set_name(::std::string&& value) {
 }
 #endif
 inline void OneofDescriptorProto::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -7651,13 +7651,13 @@ inline ::std::string* OneofDescriptorProto::mutable_name() {
 inline ::std::string* OneofDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.name)
   if (!has_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void OneofDescriptorProto::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -7668,15 +7668,15 @@ inline void OneofDescriptorProto::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* OneofDescriptorProto::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.OneofDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void OneofDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -7691,35 +7691,35 @@ inline bool OneofDescriptorProto::has_options() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void OneofDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() const {
   const ::google::protobuf::OneofOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::OneofOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::OneofOptions*>(
       &::google::protobuf::_OneofOptions_default_instance_);
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::OneofOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.OneofDescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::OneofOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options() {
   _has_bits_[0] |= 0x00000002u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::OneofOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -7728,7 +7728,7 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options()
 }
 inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::OneofOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -7816,7 +7816,7 @@ inline void EnumDescriptorProto::set_name(::std::string&& value) {
 }
 #endif
 inline void EnumDescriptorProto::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -7837,13 +7837,13 @@ inline ::std::string* EnumDescriptorProto::mutable_name() {
 inline ::std::string* EnumDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.name)
   if (!has_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void EnumDescriptorProto::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -7854,15 +7854,15 @@ inline void EnumDescriptorProto::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* EnumDescriptorProto::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void EnumDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -7907,35 +7907,35 @@ inline bool EnumDescriptorProto::has_options() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void EnumDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() const {
   const ::google::protobuf::EnumOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::EnumOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::EnumOptions*>(
       &::google::protobuf::_EnumOptions_default_instance_);
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::EnumOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumDescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::EnumOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
   _has_bits_[0] |= 0x00000002u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::EnumOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -7944,7 +7944,7 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
 }
 inline void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -8018,7 +8018,7 @@ inline void EnumDescriptorProto::set_reserved_name(int index, ::std::string&& va
 }
 #endif
 inline void EnumDescriptorProto::set_reserved_name(int index, const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
@@ -8042,7 +8042,7 @@ inline void EnumDescriptorProto::add_reserved_name(::std::string&& value) {
 }
 #endif
 inline void EnumDescriptorProto::add_reserved_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
@@ -8091,7 +8091,7 @@ inline void EnumValueDescriptorProto::set_name(::std::string&& value) {
 }
 #endif
 inline void EnumValueDescriptorProto::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -8112,13 +8112,13 @@ inline ::std::string* EnumValueDescriptorProto::mutable_name() {
 inline ::std::string* EnumValueDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.name)
   if (!has_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void EnumValueDescriptorProto::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -8129,15 +8129,15 @@ inline void EnumValueDescriptorProto::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* EnumValueDescriptorProto::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumValueDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void EnumValueDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -8170,35 +8170,35 @@ inline bool EnumValueDescriptorProto::has_options() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void EnumValueDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::options() const {
   const ::google::protobuf::EnumValueOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueDescriptorProto.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::EnumValueOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::EnumValueOptions*>(
       &::google::protobuf::_EnumValueOptions_default_instance_);
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::EnumValueOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.EnumValueDescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::EnumValueOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_options() {
   _has_bits_[0] |= 0x00000002u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::EnumValueOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -8207,7 +8207,7 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_o
 }
 inline void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::EnumValueOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -8255,7 +8255,7 @@ inline void ServiceDescriptorProto::set_name(::std::string&& value) {
 }
 #endif
 inline void ServiceDescriptorProto::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -8276,13 +8276,13 @@ inline ::std::string* ServiceDescriptorProto::mutable_name() {
 inline ::std::string* ServiceDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.name)
   if (!has_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void ServiceDescriptorProto::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -8293,15 +8293,15 @@ inline void ServiceDescriptorProto::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* ServiceDescriptorProto::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.ServiceDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void ServiceDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -8346,35 +8346,35 @@ inline bool ServiceDescriptorProto::has_options() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void ServiceDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options() const {
   const ::google::protobuf::ServiceOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::ServiceOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::ServiceOptions*>(
       &::google::protobuf::_ServiceOptions_default_instance_);
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::ServiceOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.ServiceDescriptorProto.options)
   _has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::ServiceOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_options() {
   _has_bits_[0] |= 0x00000002u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::ServiceOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -8383,7 +8383,7 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_optio
 }
 inline void ServiceDescriptorProto::set_allocated_options(::google::protobuf::ServiceOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -8431,7 +8431,7 @@ inline void MethodDescriptorProto::set_name(::std::string&& value) {
 }
 #endif
 inline void MethodDescriptorProto::set_name(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -8452,13 +8452,13 @@ inline ::std::string* MethodDescriptorProto::mutable_name() {
 inline ::std::string* MethodDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.name)
   if (!has_name()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::set_allocated_name(::std::string* name) {
-  if (name != NULL) {
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -8469,15 +8469,15 @@ inline void MethodDescriptorProto::set_allocated_name(::std::string* name) {
 }
 inline ::std::string* MethodDescriptorProto::unsafe_arena_release_name() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.name)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_name(
     ::std::string* name) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -8513,7 +8513,7 @@ inline void MethodDescriptorProto::set_input_type(::std::string&& value) {
 }
 #endif
 inline void MethodDescriptorProto::set_input_type(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
   input_type_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -8534,13 +8534,13 @@ inline ::std::string* MethodDescriptorProto::mutable_input_type() {
 inline ::std::string* MethodDescriptorProto::release_input_type() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.input_type)
   if (!has_input_type()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
   return input_type_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::set_allocated_input_type(::std::string* input_type) {
-  if (input_type != NULL) {
+  if (input_type != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -8551,15 +8551,15 @@ inline void MethodDescriptorProto::set_allocated_input_type(::std::string* input
 }
 inline ::std::string* MethodDescriptorProto::unsafe_arena_release_input_type() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.input_type)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000002u;
   return input_type_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_input_type(
     ::std::string* input_type) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (input_type != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (input_type != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -8595,7 +8595,7 @@ inline void MethodDescriptorProto::set_output_type(::std::string&& value) {
 }
 #endif
 inline void MethodDescriptorProto::set_output_type(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
   output_type_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -8616,13 +8616,13 @@ inline ::std::string* MethodDescriptorProto::mutable_output_type() {
 inline ::std::string* MethodDescriptorProto::release_output_type() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.output_type)
   if (!has_output_type()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
   return output_type_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::set_allocated_output_type(::std::string* output_type) {
-  if (output_type != NULL) {
+  if (output_type != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -8633,15 +8633,15 @@ inline void MethodDescriptorProto::set_allocated_output_type(::std::string* outp
 }
 inline ::std::string* MethodDescriptorProto::unsafe_arena_release_output_type() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.output_type)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000004u;
   return output_type_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void MethodDescriptorProto::unsafe_arena_set_allocated_output_type(
     ::std::string* output_type) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (output_type != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (output_type != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -8656,35 +8656,35 @@ inline bool MethodDescriptorProto::has_options() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void MethodDescriptorProto::clear_options() {
-  if (options_ != NULL) options_->Clear();
+  if (options_ != nullptr) options_->Clear();
   _has_bits_[0] &= ~0x00000008u;
 }
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options() const {
   const ::google::protobuf::MethodOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.options)
-  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::MethodOptions*>(
+  return p != nullptr ? *p : *reinterpret_cast<const ::google::protobuf::MethodOptions*>(
       &::google::protobuf::_MethodOptions_default_instance_);
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.options)
   _has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::MethodOptions* temp = options_;
-  if (GetArenaNoVirtual() != NULL) {
+  if (GetArenaNoVirtual() != nullptr) {
     temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
   }
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.MethodDescriptorProto.options)
   _has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::MethodOptions* temp = options_;
-  options_ = NULL;
+  options_ = nullptr;
   return temp;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options() {
   _has_bits_[0] |= 0x00000008u;
-  if (options_ == NULL) {
+  if (options_ == nullptr) {
     auto* p = CreateMaybeMessage<::google::protobuf::MethodOptions>(GetArenaNoVirtual());
     options_ = p;
   }
@@ -8693,7 +8693,7 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options
 }
 inline void MethodDescriptorProto::set_allocated_options(::google::protobuf::MethodOptions* options) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
+  if (message_arena == nullptr) {
     delete options_;
   }
   if (options) {
@@ -8777,7 +8777,7 @@ inline void FileOptions::set_java_package(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_java_package(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   java_package_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -8798,13 +8798,13 @@ inline ::std::string* FileOptions::mutable_java_package() {
 inline ::std::string* FileOptions::release_java_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_package)
   if (!has_java_package()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return java_package_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_java_package(::std::string* java_package) {
-  if (java_package != NULL) {
+  if (java_package != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -8815,15 +8815,15 @@ inline void FileOptions::set_allocated_java_package(::std::string* java_package)
 }
 inline ::std::string* FileOptions::unsafe_arena_release_java_package() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.java_package)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return java_package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_java_package(
     ::std::string* java_package) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (java_package != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (java_package != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -8859,7 +8859,7 @@ inline void FileOptions::set_java_outer_classname(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_java_outer_classname(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
   java_outer_classname_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -8880,13 +8880,13 @@ inline ::std::string* FileOptions::mutable_java_outer_classname() {
 inline ::std::string* FileOptions::release_java_outer_classname() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_outer_classname)
   if (!has_java_outer_classname()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
   return java_outer_classname_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_java_outer_classname(::std::string* java_outer_classname) {
-  if (java_outer_classname != NULL) {
+  if (java_outer_classname != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -8897,15 +8897,15 @@ inline void FileOptions::set_allocated_java_outer_classname(::std::string* java_
 }
 inline ::std::string* FileOptions::unsafe_arena_release_java_outer_classname() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.java_outer_classname)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000002u;
   return java_outer_classname_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_java_outer_classname(
     ::std::string* java_outer_classname) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (java_outer_classname != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (java_outer_classname != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -9014,7 +9014,7 @@ inline void FileOptions::set_go_package(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_go_package(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
   go_package_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -9035,13 +9035,13 @@ inline ::std::string* FileOptions::mutable_go_package() {
 inline ::std::string* FileOptions::release_go_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.go_package)
   if (!has_go_package()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
   return go_package_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_go_package(::std::string* go_package) {
-  if (go_package != NULL) {
+  if (go_package != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -9052,15 +9052,15 @@ inline void FileOptions::set_allocated_go_package(::std::string* go_package) {
 }
 inline ::std::string* FileOptions::unsafe_arena_release_go_package() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.go_package)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000004u;
   return go_package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_go_package(
     ::std::string* go_package) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (go_package != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (go_package != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -9204,7 +9204,7 @@ inline void FileOptions::set_objc_class_prefix(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_objc_class_prefix(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000008u;
   objc_class_prefix_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -9225,13 +9225,13 @@ inline ::std::string* FileOptions::mutable_objc_class_prefix() {
 inline ::std::string* FileOptions::release_objc_class_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.objc_class_prefix)
   if (!has_objc_class_prefix()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000008u;
   return objc_class_prefix_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_objc_class_prefix(::std::string* objc_class_prefix) {
-  if (objc_class_prefix != NULL) {
+  if (objc_class_prefix != nullptr) {
     _has_bits_[0] |= 0x00000008u;
   } else {
     _has_bits_[0] &= ~0x00000008u;
@@ -9242,15 +9242,15 @@ inline void FileOptions::set_allocated_objc_class_prefix(::std::string* objc_cla
 }
 inline ::std::string* FileOptions::unsafe_arena_release_objc_class_prefix() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.objc_class_prefix)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000008u;
   return objc_class_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_objc_class_prefix(
     ::std::string* objc_class_prefix) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (objc_class_prefix != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (objc_class_prefix != nullptr) {
     _has_bits_[0] |= 0x00000008u;
   } else {
     _has_bits_[0] &= ~0x00000008u;
@@ -9286,7 +9286,7 @@ inline void FileOptions::set_csharp_namespace(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_csharp_namespace(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000010u;
   csharp_namespace_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -9307,13 +9307,13 @@ inline ::std::string* FileOptions::mutable_csharp_namespace() {
 inline ::std::string* FileOptions::release_csharp_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.csharp_namespace)
   if (!has_csharp_namespace()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000010u;
   return csharp_namespace_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_namespace) {
-  if (csharp_namespace != NULL) {
+  if (csharp_namespace != nullptr) {
     _has_bits_[0] |= 0x00000010u;
   } else {
     _has_bits_[0] &= ~0x00000010u;
@@ -9324,15 +9324,15 @@ inline void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_na
 }
 inline ::std::string* FileOptions::unsafe_arena_release_csharp_namespace() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.csharp_namespace)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000010u;
   return csharp_namespace_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_csharp_namespace(
     ::std::string* csharp_namespace) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (csharp_namespace != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (csharp_namespace != nullptr) {
     _has_bits_[0] |= 0x00000010u;
   } else {
     _has_bits_[0] &= ~0x00000010u;
@@ -9368,7 +9368,7 @@ inline void FileOptions::set_swift_prefix(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_swift_prefix(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000020u;
   swift_prefix_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -9389,13 +9389,13 @@ inline ::std::string* FileOptions::mutable_swift_prefix() {
 inline ::std::string* FileOptions::release_swift_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.swift_prefix)
   if (!has_swift_prefix()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000020u;
   return swift_prefix_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_swift_prefix(::std::string* swift_prefix) {
-  if (swift_prefix != NULL) {
+  if (swift_prefix != nullptr) {
     _has_bits_[0] |= 0x00000020u;
   } else {
     _has_bits_[0] &= ~0x00000020u;
@@ -9406,15 +9406,15 @@ inline void FileOptions::set_allocated_swift_prefix(::std::string* swift_prefix)
 }
 inline ::std::string* FileOptions::unsafe_arena_release_swift_prefix() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.swift_prefix)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000020u;
   return swift_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_swift_prefix(
     ::std::string* swift_prefix) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (swift_prefix != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (swift_prefix != nullptr) {
     _has_bits_[0] |= 0x00000020u;
   } else {
     _has_bits_[0] &= ~0x00000020u;
@@ -9450,7 +9450,7 @@ inline void FileOptions::set_php_class_prefix(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_php_class_prefix(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000040u;
   php_class_prefix_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -9471,13 +9471,13 @@ inline ::std::string* FileOptions::mutable_php_class_prefix() {
 inline ::std::string* FileOptions::release_php_class_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_class_prefix)
   if (!has_php_class_prefix()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000040u;
   return php_class_prefix_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_php_class_prefix(::std::string* php_class_prefix) {
-  if (php_class_prefix != NULL) {
+  if (php_class_prefix != nullptr) {
     _has_bits_[0] |= 0x00000040u;
   } else {
     _has_bits_[0] &= ~0x00000040u;
@@ -9488,15 +9488,15 @@ inline void FileOptions::set_allocated_php_class_prefix(::std::string* php_class
 }
 inline ::std::string* FileOptions::unsafe_arena_release_php_class_prefix() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.php_class_prefix)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000040u;
   return php_class_prefix_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_php_class_prefix(
     ::std::string* php_class_prefix) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (php_class_prefix != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (php_class_prefix != nullptr) {
     _has_bits_[0] |= 0x00000040u;
   } else {
     _has_bits_[0] &= ~0x00000040u;
@@ -9532,7 +9532,7 @@ inline void FileOptions::set_php_namespace(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_php_namespace(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000080u;
   php_namespace_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -9553,13 +9553,13 @@ inline ::std::string* FileOptions::mutable_php_namespace() {
 inline ::std::string* FileOptions::release_php_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_namespace)
   if (!has_php_namespace()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000080u;
   return php_namespace_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_php_namespace(::std::string* php_namespace) {
-  if (php_namespace != NULL) {
+  if (php_namespace != nullptr) {
     _has_bits_[0] |= 0x00000080u;
   } else {
     _has_bits_[0] &= ~0x00000080u;
@@ -9570,15 +9570,15 @@ inline void FileOptions::set_allocated_php_namespace(::std::string* php_namespac
 }
 inline ::std::string* FileOptions::unsafe_arena_release_php_namespace() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.php_namespace)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000080u;
   return php_namespace_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_php_namespace(
     ::std::string* php_namespace) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (php_namespace != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (php_namespace != nullptr) {
     _has_bits_[0] |= 0x00000080u;
   } else {
     _has_bits_[0] &= ~0x00000080u;
@@ -9614,7 +9614,7 @@ inline void FileOptions::set_php_metadata_namespace(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_php_metadata_namespace(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000100u;
   php_metadata_namespace_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -9635,13 +9635,13 @@ inline ::std::string* FileOptions::mutable_php_metadata_namespace() {
 inline ::std::string* FileOptions::release_php_metadata_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_metadata_namespace)
   if (!has_php_metadata_namespace()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000100u;
   return php_metadata_namespace_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_php_metadata_namespace(::std::string* php_metadata_namespace) {
-  if (php_metadata_namespace != NULL) {
+  if (php_metadata_namespace != nullptr) {
     _has_bits_[0] |= 0x00000100u;
   } else {
     _has_bits_[0] &= ~0x00000100u;
@@ -9652,15 +9652,15 @@ inline void FileOptions::set_allocated_php_metadata_namespace(::std::string* php
 }
 inline ::std::string* FileOptions::unsafe_arena_release_php_metadata_namespace() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.php_metadata_namespace)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000100u;
   return php_metadata_namespace_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_php_metadata_namespace(
     ::std::string* php_metadata_namespace) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (php_metadata_namespace != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (php_metadata_namespace != nullptr) {
     _has_bits_[0] |= 0x00000100u;
   } else {
     _has_bits_[0] &= ~0x00000100u;
@@ -9696,7 +9696,7 @@ inline void FileOptions::set_ruby_package(::std::string&& value) {
 }
 #endif
 inline void FileOptions::set_ruby_package(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000200u;
   ruby_package_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -9717,13 +9717,13 @@ inline ::std::string* FileOptions::mutable_ruby_package() {
 inline ::std::string* FileOptions::release_ruby_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.ruby_package)
   if (!has_ruby_package()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000200u;
   return ruby_package_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void FileOptions::set_allocated_ruby_package(::std::string* ruby_package) {
-  if (ruby_package != NULL) {
+  if (ruby_package != nullptr) {
     _has_bits_[0] |= 0x00000200u;
   } else {
     _has_bits_[0] &= ~0x00000200u;
@@ -9734,15 +9734,15 @@ inline void FileOptions::set_allocated_ruby_package(::std::string* ruby_package)
 }
 inline ::std::string* FileOptions::unsafe_arena_release_ruby_package() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.FileOptions.ruby_package)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000200u;
   return ruby_package_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void FileOptions::unsafe_arena_set_allocated_ruby_package(
     ::std::string* ruby_package) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (ruby_package != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (ruby_package != nullptr) {
     _has_bits_[0] |= 0x00000200u;
   } else {
     _has_bits_[0] &= ~0x00000200u;
@@ -10341,7 +10341,7 @@ inline void UninterpretedOption_NamePart::set_name_part(::std::string&& value) {
 }
 #endif
 inline void UninterpretedOption_NamePart::set_name_part(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   name_part_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -10362,13 +10362,13 @@ inline ::std::string* UninterpretedOption_NamePart::mutable_name_part() {
 inline ::std::string* UninterpretedOption_NamePart::release_name_part() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.NamePart.name_part)
   if (!has_name_part()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return name_part_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void UninterpretedOption_NamePart::set_allocated_name_part(::std::string* name_part) {
-  if (name_part != NULL) {
+  if (name_part != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -10379,15 +10379,15 @@ inline void UninterpretedOption_NamePart::set_allocated_name_part(::std::string*
 }
 inline ::std::string* UninterpretedOption_NamePart::unsafe_arena_release_name_part() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.NamePart.name_part)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return name_part_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void UninterpretedOption_NamePart::unsafe_arena_set_allocated_name_part(
     ::std::string* name_part) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (name_part != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (name_part != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -10475,7 +10475,7 @@ inline void UninterpretedOption::set_identifier_value(::std::string&& value) {
 }
 #endif
 inline void UninterpretedOption::set_identifier_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   identifier_value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -10496,13 +10496,13 @@ inline ::std::string* UninterpretedOption::mutable_identifier_value() {
 inline ::std::string* UninterpretedOption::release_identifier_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.identifier_value)
   if (!has_identifier_value()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return identifier_value_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void UninterpretedOption::set_allocated_identifier_value(::std::string* identifier_value) {
-  if (identifier_value != NULL) {
+  if (identifier_value != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -10513,15 +10513,15 @@ inline void UninterpretedOption::set_allocated_identifier_value(::std::string* i
 }
 inline ::std::string* UninterpretedOption::unsafe_arena_release_identifier_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.identifier_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return identifier_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void UninterpretedOption::unsafe_arena_set_allocated_identifier_value(
     ::std::string* identifier_value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (identifier_value != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (identifier_value != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -10611,7 +10611,7 @@ inline void UninterpretedOption::set_string_value(::std::string&& value) {
 }
 #endif
 inline void UninterpretedOption::set_string_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
   string_value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -10632,13 +10632,13 @@ inline ::std::string* UninterpretedOption::mutable_string_value() {
 inline ::std::string* UninterpretedOption::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.string_value)
   if (!has_string_value()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
   return string_value_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void UninterpretedOption::set_allocated_string_value(::std::string* string_value) {
-  if (string_value != NULL) {
+  if (string_value != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -10649,15 +10649,15 @@ inline void UninterpretedOption::set_allocated_string_value(::std::string* strin
 }
 inline ::std::string* UninterpretedOption::unsafe_arena_release_string_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.string_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000002u;
   return string_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void UninterpretedOption::unsafe_arena_set_allocated_string_value(
     ::std::string* string_value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (string_value != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (string_value != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -10693,7 +10693,7 @@ inline void UninterpretedOption::set_aggregate_value(::std::string&& value) {
 }
 #endif
 inline void UninterpretedOption::set_aggregate_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
   aggregate_value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -10714,13 +10714,13 @@ inline ::std::string* UninterpretedOption::mutable_aggregate_value() {
 inline ::std::string* UninterpretedOption::release_aggregate_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.aggregate_value)
   if (!has_aggregate_value()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000004u;
   return aggregate_value_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void UninterpretedOption::set_allocated_aggregate_value(::std::string* aggregate_value) {
-  if (aggregate_value != NULL) {
+  if (aggregate_value != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -10731,15 +10731,15 @@ inline void UninterpretedOption::set_allocated_aggregate_value(::std::string* ag
 }
 inline ::std::string* UninterpretedOption::unsafe_arena_release_aggregate_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.UninterpretedOption.aggregate_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000004u;
   return aggregate_value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void UninterpretedOption::unsafe_arena_set_allocated_aggregate_value(
     ::std::string* aggregate_value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (aggregate_value != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (aggregate_value != nullptr) {
     _has_bits_[0] |= 0x00000004u;
   } else {
     _has_bits_[0] &= ~0x00000004u;
@@ -10839,7 +10839,7 @@ inline void SourceCodeInfo_Location::set_leading_comments(::std::string&& value)
 }
 #endif
 inline void SourceCodeInfo_Location::set_leading_comments(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   leading_comments_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -10860,13 +10860,13 @@ inline ::std::string* SourceCodeInfo_Location::mutable_leading_comments() {
 inline ::std::string* SourceCodeInfo_Location::release_leading_comments() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
   if (!has_leading_comments()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return leading_comments_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void SourceCodeInfo_Location::set_allocated_leading_comments(::std::string* leading_comments) {
-  if (leading_comments != NULL) {
+  if (leading_comments != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -10877,15 +10877,15 @@ inline void SourceCodeInfo_Location::set_allocated_leading_comments(::std::strin
 }
 inline ::std::string* SourceCodeInfo_Location::unsafe_arena_release_leading_comments() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return leading_comments_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void SourceCodeInfo_Location::unsafe_arena_set_allocated_leading_comments(
     ::std::string* leading_comments) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (leading_comments != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (leading_comments != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -10921,7 +10921,7 @@ inline void SourceCodeInfo_Location::set_trailing_comments(::std::string&& value
 }
 #endif
 inline void SourceCodeInfo_Location::set_trailing_comments(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
   trailing_comments_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -10942,13 +10942,13 @@ inline ::std::string* SourceCodeInfo_Location::mutable_trailing_comments() {
 inline ::std::string* SourceCodeInfo_Location::release_trailing_comments() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
   if (!has_trailing_comments()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000002u;
   return trailing_comments_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::string* trailing_comments) {
-  if (trailing_comments != NULL) {
+  if (trailing_comments != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -10959,15 +10959,15 @@ inline void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::stri
 }
 inline ::std::string* SourceCodeInfo_Location::unsafe_arena_release_trailing_comments() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000002u;
   return trailing_comments_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void SourceCodeInfo_Location::unsafe_arena_set_allocated_trailing_comments(
     ::std::string* trailing_comments) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (trailing_comments != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (trailing_comments != nullptr) {
     _has_bits_[0] |= 0x00000002u;
   } else {
     _has_bits_[0] &= ~0x00000002u;
@@ -11003,7 +11003,7 @@ inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, ::
 }
 #endif
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   leading_detached_comments_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
@@ -11027,7 +11027,7 @@ inline void SourceCodeInfo_Location::add_leading_detached_comments(::std::string
 }
 #endif
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   leading_detached_comments_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
@@ -11140,7 +11140,7 @@ inline void GeneratedCodeInfo_Annotation::set_source_file(::std::string&& value)
 }
 #endif
 inline void GeneratedCodeInfo_Annotation::set_source_file(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
   source_file_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -11161,13 +11161,13 @@ inline ::std::string* GeneratedCodeInfo_Annotation::mutable_source_file() {
 inline ::std::string* GeneratedCodeInfo_Annotation::release_source_file() {
   // @@protoc_insertion_point(field_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
   if (!has_source_file()) {
-    return NULL;
+    return nullptr;
   }
   _has_bits_[0] &= ~0x00000001u;
   return source_file_.ReleaseNonDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(::std::string* source_file) {
-  if (source_file != NULL) {
+  if (source_file != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;
@@ -11178,15 +11178,15 @@ inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(::std::strin
 }
 inline ::std::string* GeneratedCodeInfo_Annotation::unsafe_arena_release_source_file() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   _has_bits_[0] &= ~0x00000001u;
   return source_file_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void GeneratedCodeInfo_Annotation::unsafe_arena_set_allocated_source_file(
     ::std::string* source_file) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (source_file != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (source_file != nullptr) {
     _has_bits_[0] |= 0x00000001u;
   } else {
     _has_bits_[0] &= ~0x00000001u;

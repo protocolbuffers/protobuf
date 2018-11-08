@@ -782,10 +782,10 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
         // MSVC doesn't like empty arrays, so we add a dummy.
         "const $uint32$ $tablename$::offsets[1] = {};\n"
         "static constexpr ::$proto_ns$::internal::MigrationSchema* schemas = "
-        "NULL;"
+        "nullptr;"
         "\n"
         "static constexpr ::$proto_ns$::Message* const* "
-        "file_default_instances = NULL;\n"
+        "file_default_instances = nullptr;\n"
         "\n");
   }
 
@@ -1019,7 +1019,7 @@ void FileGenerator::GenerateTables(io::Printer* printer) {
     }
 
     if (message_generators_.empty()) {
-      format("{ NULL, NULL, 0, -1, -1, false },\n");
+      format("{ nullptr, nullptr, 0, -1, -1, false },\n");
     }
 
     format.Outdent();

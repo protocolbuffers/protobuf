@@ -109,7 +109,7 @@ const int Duration::kNanosFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Duration::Duration()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Duration)
 }
@@ -122,7 +122,7 @@ Duration::Duration(::google::protobuf::Arena* arena)
 }
 Duration::Duration(const Duration& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&seconds_, &from.seconds_,
     static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
@@ -142,7 +142,7 @@ Duration::~Duration() {
 }
 
 void Duration::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void Duration::ArenaDtor(void* object) {
@@ -372,7 +372,7 @@ void Duration::MergeFrom(const ::google::protobuf::Message& from) {
   const Duration* source =
       ::google::protobuf::DynamicCastToGenerated<Duration>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Duration)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -423,7 +423,7 @@ void Duration::Swap(Duration* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }

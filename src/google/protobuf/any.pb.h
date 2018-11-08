@@ -124,7 +124,7 @@ class PROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_inser
   // implements Message ----------------------------------------------
 
   inline Any* New() const final {
-    return CreateMaybeMessage<Any>(NULL);
+    return CreateMaybeMessage<Any>(nullptr);
   }
 
   Any* New(::google::protobuf::Arena* arena) const final {
@@ -158,10 +158,10 @@ class PROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_inser
   void InternalSwap(Any* other);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
+    return nullptr;
   }
   inline void* MaybeArenaPtr() const {
-    return NULL;
+    return nullptr;
   }
   public:
 
@@ -243,7 +243,7 @@ inline void Any::set_type_url(::std::string&& value) {
 }
 #endif
 inline void Any::set_type_url(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Any.type_url)
@@ -265,7 +265,7 @@ inline ::std::string* Any::release_type_url() {
   return type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Any::set_allocated_type_url(::std::string* type_url) {
-  if (type_url != NULL) {
+  if (type_url != nullptr) {
     
   } else {
     
@@ -296,7 +296,7 @@ inline void Any::set_value(::std::string&& value) {
 }
 #endif
 inline void Any::set_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.Any.value)
@@ -318,7 +318,7 @@ inline ::std::string* Any::release_value() {
   return value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Any::set_allocated_value(::std::string* value) {
-  if (value != NULL) {
+  if (value != nullptr) {
     
   } else {
     

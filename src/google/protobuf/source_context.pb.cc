@@ -108,13 +108,13 @@ const int SourceContext::kFileNameFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SourceContext::SourceContext()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.SourceContext)
 }
 SourceContext::SourceContext(const SourceContext& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   file_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.file_name().size() > 0) {
@@ -339,7 +339,7 @@ void SourceContext::MergeFrom(const ::google::protobuf::Message& from) {
   const SourceContext* source =
       ::google::protobuf::DynamicCastToGenerated<SourceContext>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.SourceContext)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {

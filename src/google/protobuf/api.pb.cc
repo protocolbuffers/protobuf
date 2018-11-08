@@ -204,10 +204,10 @@ void Api::clear_options() {
   options_.Clear();
 }
 void Api::clear_source_context() {
-  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) {
+  if (GetArenaNoVirtual() == nullptr && source_context_ != nullptr) {
     delete source_context_;
   }
-  source_context_ = NULL;
+  source_context_ = nullptr;
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Api::kNameFieldNumber;
@@ -220,13 +220,13 @@ const int Api::kSyntaxFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Api::Api()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Api)
 }
 Api::Api(const Api& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       methods_(from.methods_),
       options_(from.options_),
       mixins_(from.mixins_) {
@@ -242,7 +242,7 @@ Api::Api(const Api& from)
   if (from.has_source_context()) {
     source_context_ = new ::google::protobuf::SourceContext(*from.source_context_);
   } else {
-    source_context_ = NULL;
+    source_context_ = nullptr;
   }
   syntax_ = from.syntax_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
@@ -289,10 +289,10 @@ void Api::Clear() {
   mixins_.Clear();
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   version_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) {
+  if (GetArenaNoVirtual() == nullptr && source_context_ != nullptr) {
     delete source_context_;
   }
-  source_context_ = NULL;
+  source_context_ = nullptr;
   syntax_ = 0;
   _internal_metadata_.Clear();
 }
@@ -800,7 +800,7 @@ void Api::MergeFrom(const ::google::protobuf::Message& from) {
   const Api* source =
       ::google::protobuf::DynamicCastToGenerated<Api>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Api)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -899,13 +899,13 @@ const int Method::kSyntaxFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Method::Method()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Method)
 }
 Method::Method(const Method& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       options_(from.options_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1454,7 +1454,7 @@ void Method::MergeFrom(const ::google::protobuf::Message& from) {
   const Method* source =
       ::google::protobuf::DynamicCastToGenerated<Method>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Method)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1551,13 +1551,13 @@ const int Mixin::kRootFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Mixin::Mixin()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Mixin)
 }
 Mixin::Mixin(const Mixin& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.name().size() > 0) {
@@ -1851,7 +1851,7 @@ void Mixin::MergeFrom(const ::google::protobuf::Message& from) {
   const Mixin* source =
       ::google::protobuf::DynamicCastToGenerated<Mixin>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Mixin)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
