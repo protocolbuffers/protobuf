@@ -1039,6 +1039,11 @@ js_EXTRA_DIST=                                                         \
   js/test8.proto                                                       \
   js/test9.proto                                                       \
   js/test10.proto                                                      \
+  js/test11.proto                                                      \
+  js/test12.proto                                                      \
+  js/test13.proto                                                      \
+  js/test14.proto                                                      \
+  js/test15.proto                                                      \
   js/test_bootstrap.js                                                 \
   js/testbinary.proto                                                  \
   js/testempty.proto
@@ -1084,14 +1089,17 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/README.md                     \
   examples/WORKSPACE                     \
   examples/add_person.cc                 \
+  examples/add_person.dart               \
   examples/add_person.go                 \
   examples/add_person.py                 \
   examples/add_person_test.go            \
   examples/addressbook.proto             \
   examples/list_people.cc                \
+  examples/list_people.dart              \
   examples/list_people.go                \
   examples/list_people.py                \
   examples/list_people_test.go           \
+  examples/pubspec.yaml                  \
   protobuf.bzl                           \
   python/release/wheel/build_wheel_manylinux.sh  \
   python/release/wheel/Dockerfile                \
