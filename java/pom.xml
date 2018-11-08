@@ -82,7 +82,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava-testlib</artifactId>
-        <version>26.0</version>
+        <version>26.0-jre</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
