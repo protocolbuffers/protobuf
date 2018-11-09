@@ -266,6 +266,15 @@ public class FloatArrayListTest extends TestCase {
     assertFalse(list.addAll(FloatArrayList.emptyList()));
   }
 
+  public void testEquals() {
+    FloatArrayList list1 = new FloatArrayList();
+    FloatArrayList list2 = new FloatArrayList();
+
+    list1.addFloat(Float.intBitsToFloat(0xff800001));
+    list2.addFloat(Float.intBitsToFloat(0xff800002));
+    assertEquals(list1, list2);
+  }
+
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
     assertEquals(1F, (float) list.remove(0), 0.0f);
@@ -294,11 +303,20 @@ public class FloatArrayListTest extends TestCase {
     }
   }
 
-  public void testRemoveEndOfCapacity() {
+  public void testRemoveEnd_listAtCapacity() {
     FloatList toRemove = FloatArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addFloat(3);
     toRemove.remove(0);
     assertEquals(0, toRemove.size());
+  }
+
+  public void testRemove_listAtCapacity() {
+    FloatList toRemove = FloatArrayList.emptyList().mutableCopyWithCapacity(2);
+    toRemove.addFloat(3);
+    toRemove.addFloat(4);
+    toRemove.remove(0);
+    assertEquals(1, toRemove.size());
+    assertEquals(4F, (float) toRemove.get(0));
   }
 
   public void testSublistRemoveEndOfCapacity() {

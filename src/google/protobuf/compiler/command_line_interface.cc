@@ -834,35 +834,51 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   std::vector<const FileDescriptor*> parsed_files;
-  // null unless descriptor_set_in_names_.empty()
   std::unique_ptr<DiskSourceTree> disk_source_tree;
   std::unique_ptr<ErrorPrinter> error_collector;
   std::unique_ptr<DescriptorPool> descriptor_pool;
-  std::unique_ptr<DescriptorDatabase> descriptor_database;
-  if (descriptor_set_in_names_.empty()) {
-    disk_source_tree.reset(new DiskSourceTree());
-    if (!InitializeDiskSourceTree(disk_source_tree.get())) {
+  std::unique_ptr<SimpleDescriptorDatabase> descriptor_set_in_database;
+  std::unique_ptr<SourceTreeDescriptorDatabase> source_tree_database;
+
+  // Any --descriptor_set_in FileDescriptorSet objects will be used as a
+  // fallback to input_files on command line, so create that db first.
+  if (!descriptor_set_in_names_.empty()) {
+    descriptor_set_in_database.reset(new SimpleDescriptorDatabase());
+    if (!PopulateSimpleDescriptorDatabase(descriptor_set_in_database.get())) {
       return 1;
     }
+  }
+
+  if (proto_path_.empty()) {
+    // If there are no --proto_path flags, then just look in the specified
+    // --descriptor_set_in files.  But first, verify that the input files are
+    // there.
+    if (!VerifyInputFilesInDescriptors(descriptor_set_in_database.get())) {
+      return 1;
+    }
+
+    error_collector.reset(new ErrorPrinter(error_format_));
+    descriptor_pool.reset(new DescriptorPool(descriptor_set_in_database.get(),
+                                             error_collector.get()));
+  } else {
+    disk_source_tree.reset(new DiskSourceTree());
+    if (!InitializeDiskSourceTree(disk_source_tree.get(),
+                                  descriptor_set_in_database.get())) {
+      return 1;
+    }
+
     error_collector.reset(
         new ErrorPrinter(error_format_, disk_source_tree.get()));
 
-    SourceTreeDescriptorDatabase* database =
-        new SourceTreeDescriptorDatabase(disk_source_tree.get());
-    database->RecordErrorsTo(error_collector.get());
-    descriptor_database.reset(database);
-    descriptor_pool.reset(new DescriptorPool(
-        descriptor_database.get(), database->GetValidationErrorCollector()));
-  } else {
-    error_collector.reset(new ErrorPrinter(error_format_));
+    source_tree_database.reset(new SourceTreeDescriptorDatabase(
+        disk_source_tree.get(), descriptor_set_in_database.get()));
+    source_tree_database->RecordErrorsTo(error_collector.get());
 
-    SimpleDescriptorDatabase* database = new SimpleDescriptorDatabase();
-    descriptor_database.reset(database);
-    if (!PopulateSimpleDescriptorDatabase(database)) {
-      return 1;
-    }
-    descriptor_pool.reset(new DescriptorPool(database, error_collector.get()));
+    descriptor_pool.reset(new DescriptorPool(
+        source_tree_database.get(),
+        source_tree_database->GetValidationErrorCollector()));
   }
+
   descriptor_pool->EnforceWeakDependencies(true);
   if (!ParseInputFiles(descriptor_pool.get(), &parsed_files)) {
     return 1;
@@ -980,7 +996,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 }
 
 bool CommandLineInterface::InitializeDiskSourceTree(
-    DiskSourceTree* source_tree) {
+    DiskSourceTree* source_tree, DescriptorDatabase* fallback_database) {
   AddDefaultProtoPaths(&proto_path_);
 
   // Set up the source tree.
@@ -989,7 +1005,7 @@ bool CommandLineInterface::InitializeDiskSourceTree(
   }
 
   // Map input files to virtual paths if possible.
-  if (!MakeInputsBeProtoPathRelative(source_tree)) {
+  if (!MakeInputsBeProtoPathRelative(source_tree, fallback_database)) {
     return false;
   }
 
@@ -1039,6 +1055,27 @@ bool CommandLineInterface::PopulateSimpleDescriptorDatabase(
   return true;
 }
 
+bool CommandLineInterface::VerifyInputFilesInDescriptors(
+    DescriptorDatabase* database) {
+  for (const auto& input_file : input_files_) {
+    FileDescriptorProto file_descriptor;
+    if (!database->FindFileByName(input_file, &file_descriptor)) {
+      std::cerr << input_file << ": " << strerror(ENOENT) << std::endl;
+      return false;
+    }
+
+    // Enforce --disallow_services.
+    if (disallow_services_ && file_descriptor.service_size() > 0) {
+      std::cerr << file_descriptor.name()
+                << ": This file contains services, but "
+                   "--disallow_services was used."
+                << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CommandLineInterface::ParseInputFiles(
     DescriptorPool* descriptor_pool,
     std::vector<const FileDescriptor*>* parsed_files) {
@@ -1051,9 +1088,6 @@ bool CommandLineInterface::ParseInputFiles(
         descriptor_pool->FindFileByName(input_file);
     descriptor_pool->ClearUnusedImportTrackFiles();
     if (parsed_file == NULL) {
-      if (!descriptor_set_in_names_.empty()) {
-        std::cerr << input_file << ": " << strerror(ENOENT) << std::endl;
-      }
       return false;
     }
     parsed_files->push_back(parsed_file);
@@ -1111,18 +1145,27 @@ void CommandLineInterface::Clear() {
 }
 
 bool CommandLineInterface::MakeProtoProtoPathRelative(
-    DiskSourceTree* source_tree, string* proto) {
+    DiskSourceTree* source_tree, string* proto,
+    DescriptorDatabase* fallback_database) {
+  // If it's in the fallback db, don't report non-existent file errors.
+  FileDescriptorProto fallback_file;
+  bool in_fallback_database =
+      fallback_database != nullptr &&
+      fallback_database->FindFileByName(*proto, &fallback_file);
+
   // If the input file path is not a physical file path, it must be a virtual
   // path.
   if (access(proto->c_str(), F_OK) < 0) {
     string disk_file;
-    if (source_tree->VirtualFileToDiskFile(*proto, &disk_file)) {
+    if (source_tree->VirtualFileToDiskFile(*proto, &disk_file) ||
+        in_fallback_database) {
       return true;
     } else {
       std::cerr << *proto << ": " << strerror(ENOENT) << std::endl;
       return false;
     }
   }
+
   string virtual_file, shadowing_disk_file;
   switch (source_tree->DiskFileToVirtualFile(
       *proto, &virtual_file, &shadowing_disk_file)) {
@@ -1138,13 +1181,17 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
                    "comes first." << std::endl;
       return false;
     case DiskSourceTree::CANNOT_OPEN:
+      if (in_fallback_database) {
+        return true;
+      }
       std::cerr << *proto << ": " << strerror(errno) << std::endl;
       return false;
     case DiskSourceTree::NO_MAPPING: {
       // Try to interpret the path as a virtual path.
       string disk_file;
-      if (source_tree->VirtualFileToDiskFile(*proto, &disk_file)) {
-       return true;
+      if (source_tree->VirtualFileToDiskFile(*proto, &disk_file) ||
+          in_fallback_database) {
+        return true;
       } else {
         // The input file path can't be mapped to any --proto_path and it also
         // can't be interpreted as a virtual path.
@@ -1166,9 +1213,10 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
 }
 
 bool CommandLineInterface::MakeInputsBeProtoPathRelative(
-    DiskSourceTree* source_tree) {
+    DiskSourceTree* source_tree, DescriptorDatabase* fallback_database) {
   for (auto& input_file : input_files_) {
-    if (!MakeProtoProtoPathRelative(source_tree, &input_file)) {
+    if (!MakeProtoProtoPathRelative(source_tree, &input_file,
+                                    fallback_database)) {
       return false;
     }
   }
@@ -1270,15 +1318,16 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
     return PARSE_ARGUMENT_FAIL;
   }
 
-  // If no --proto_path was given, use the current working directory.
-  if (proto_path_.empty()) {
+  // The --proto_path & --descriptor_set_in flags both specify places to look
+  // for proto files. If neither were given, use the current working directory.
+  if (proto_path_.empty() && descriptor_set_in_names_.empty()) {
     // Don't use make_pair as the old/default standard library on Solaris
     // doesn't support it without explicit template parameters, which are
     // incompatible with C++0x's make_pair.
     proto_path_.push_back(std::pair<string, string>("", "."));
   }
 
-  // Check some errror cases.
+  // Check some error cases.
   bool decoding_raw = (mode_ == MODE_DECODE) && codec_type_.empty();
   if (decoding_raw && !input_files_.empty()) {
     std::cerr << "When using --decode_raw, no input files should be given."
@@ -1395,13 +1444,6 @@ CommandLineInterface::InterpretArgument(const string& name,
     input_files_.push_back(value);
 
   } else if (name == "-I" || name == "--proto_path") {
-    if (!descriptor_set_in_names_.empty()) {
-      std::cerr << "Only one of " << name
-                << " and --descriptor_set_in can be specified."
-                << std::endl;
-      return PARSE_ARGUMENT_FAIL;
-    }
-
     // Java's -classpath (and some other languages) delimits path components
     // with colons.  Let's accept that syntax too just to make things more
     // intuitive.
@@ -1475,12 +1517,6 @@ CommandLineInterface::InterpretArgument(const string& name,
     }
     if (value.empty()) {
       std::cerr << name << " requires a non-empty value." << std::endl;
-      return PARSE_ARGUMENT_FAIL;
-    }
-    if (!proto_path_.empty()) {
-      std::cerr << "Only one of " << name
-                << " and --proto_path can be specified."
-                << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
     if (!dependency_out_name_.empty()) {
@@ -1698,13 +1734,18 @@ CommandLineInterface::InterpretArgument(const string& name,
 
 void CommandLineInterface::PrintHelpText() {
   // Sorry for indentation here; line wrapping would be uglier.
-  std::cout <<
-"Usage: " << executable_name_ << " [OPTION] PROTO_FILES\n"
+  std::cout
+      <<
+      "Usage: " << executable_name_
+      << " [OPTION] PROTO_FILES\n"
 "Parse PROTO_FILES and generate output based on the options given:\n"
 "  -IPATH, --proto_path=PATH   Specify the directory in which to search for\n"
 "                              imports.  May be specified multiple times;\n"
 "                              directories will be searched in order.  If not\n"
 "                              given, the current working directory is used.\n"
+"                              If not found in any of the these directories,\n"
+"                              the --descriptor_set_in descriptors will be\n"
+"                              checked for required proto file.\n"
 "  --version                   Show version info and exit.\n"
 "  -h, --help                  Show this text and exit.\n"
 "  --encode=MESSAGE_TYPE       Read a text-format message of the given type\n"

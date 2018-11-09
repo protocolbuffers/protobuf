@@ -1085,7 +1085,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format("void UnsafeArenaSwap($classname$* other);\n");
   }
 
-  if (IsAnyMessage(descriptor_)) {
+  if (IsAnyMessage(descriptor_, options_)) {
     format(
         "// implements Any -----------------------------------------------\n"
         "\n"
@@ -1152,7 +1152,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format(
         "void CopyFrom(const $classname$& from);\n"
         "void MergeFrom(const $classname$& from);\n"
-        "void Clear()$ clear_final$;\n"
+        "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear()$ clear_final$;\n"
         "bool IsInitialized() const$ is_initialized_final$;\n"
         "\n"
         "size_t ByteSizeLong() const final;\n"
@@ -1430,7 +1430,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format("::$proto_ns$::internal::WeakFieldMap _weak_field_map_;\n");
   }
   // Generate _any_metadata_ for the Any type.
-  if (IsAnyMessage(descriptor_)) {
+  if (IsAnyMessage(descriptor_, options_)) {
     format("::$proto_ns$::internal::AnyMetadata _any_metadata_;\n");
   }
 
@@ -1931,7 +1931,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   format.Outdent();
   format("}\n");
 
-  if (IsAnyMessage(descriptor_)) {
+  if (IsAnyMessage(descriptor_, options_)) {
     format(
         "void $classname$::PackFrom(const ::$proto_ns$::Message& message) {\n"
         "  _any_metadata_.PackFrom(message);\n"
@@ -2240,7 +2240,7 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
             default_val = field->default_value_string().empty()
                               ? "&::" + variables_["proto_ns"] +
                                     "::internal::fixed_address_empty_string"
-                              : "&" + Namespace(field) + " ::" + classname_ +
+                              : "&" + QualifiedClassName(descriptor_) +
                                     "::" + MakeDefaultName(field);
             break;
           case FieldOptions::CORD:
@@ -2548,7 +2548,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     }
   }
 
-  if (IsAnyMessage(descriptor_)) {
+  if (IsAnyMessage(descriptor_, options_)) {
     initializer_with_arena += ",\n  _any_metadata_(&type_url_, &value_)";
   }
   if (num_weak_fields_ > 0) {
@@ -2556,7 +2556,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
   }
 
   string initializer_null = superclass + "(), _internal_metadata_(NULL)";
-  if (IsAnyMessage(descriptor_)) {
+  if (IsAnyMessage(descriptor_, options_)) {
     initializer_null += ", _any_metadata_(&type_url_, &value_)";
   }
   if (num_weak_fields_ > 0) {
@@ -2620,7 +2620,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
       format(",\n$1$_(from.$1$_)", FieldName(field));
     }
 
-    if (IsAnyMessage(descriptor_)) {
+    if (IsAnyMessage(descriptor_, options_)) {
       format(",\n_any_metadata_(&type_url_, &value_)");
     }
     if (num_weak_fields_ > 0) {

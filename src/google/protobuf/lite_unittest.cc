@@ -235,10 +235,10 @@ TEST(Lite, AllLite6) {
     TestUtilLite::ExpectClear(message);
     TestUtilLite::SetAllFields(&message);
     data = message.SerializeAsString();
-    empty_message.ParseFromString(data);
+    ASSERT_TRUE(empty_message.ParseFromString(data));
     data.clear();
     data = empty_message.SerializeAsString();
-    message2.ParseFromString(data);
+    EXPECT_TRUE(message2.ParseFromString(data));
     data = message2.SerializeAsString();
     TestUtilLite::ExpectAllFieldsSet(message2);
     message.Clear();

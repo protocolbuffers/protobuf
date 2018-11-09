@@ -185,7 +185,7 @@ class PROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc_in
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Struct& from);
   void MergeFrom(const Struct& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -330,7 +330,7 @@ class PROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_ins
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Value& from);
   void MergeFrom(const Value& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -548,7 +548,7 @@ class PROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@protoc
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const ListValue& from);
   void MergeFrom(const ListValue& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

@@ -39,6 +39,8 @@ syntax = "proto2";
 
 package google.protobuf.testing;
 
+import "google/protobuf/util/internal/testdata/anys.proto";
+
 // A book
 message Book {
   optional string title = 1;
@@ -71,6 +73,13 @@ message Book {
 
   // Useful for testing JSON snake/camel-case conversions.
   optional string snake_field = 12;
+
+  // Used to test type not found in type info. Messages defined in other files
+  // are not added when adding Book to type info.
+  optional AnyWrapper type_not_found = 13;
+
+  // Used to test invalid value inside of primitive repeated fields.
+  repeated int32 primitive_repeated = 14;
 
   extensions 200 to 499;
 }

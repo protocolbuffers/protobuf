@@ -440,12 +440,12 @@ public final class MapForProto2LiteTest extends TestCase {
 
     // We can't control the order of elements in a HashMap. The best we can do
     // here is to add elements in different order.
-    TestMap.Builder b1 =
+    TestMap m1 =
         TestMap.newBuilder()
             .putInt32ToInt32Field(1, 2)
             .putInt32ToInt32Field(3, 4)
-            .putInt32ToInt32Field(5, 6);
-    TestMap m1 = b1.build();
+            .putInt32ToInt32Field(5, 6)
+            .build();
 
     TestMap.Builder b2 =
         TestMap.newBuilder()
@@ -466,9 +466,12 @@ public final class MapForProto2LiteTest extends TestCase {
   }
 
   public void testUnknownEnumValues() throws Exception {
-    TestUnknownEnumValue.Builder builder =
-        TestUnknownEnumValue.newBuilder().putInt32ToInt32Field(1, 1).putInt32ToInt32Field(2, 54321);
-    ByteString data = builder.build().toByteString();
+    ByteString data =
+        TestUnknownEnumValue.newBuilder()
+            .putInt32ToInt32Field(1, 1)
+            .putInt32ToInt32Field(2, 54321)
+            .build()
+            .toByteString();
 
     TestMap message = TestMap.parseFrom(data);
     // Entries with unknown enum values will be stored into UnknownFieldSet so

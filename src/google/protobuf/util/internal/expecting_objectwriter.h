@@ -53,7 +53,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/object_writer.h>
 #include <gmock/gmock.h>
-
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {

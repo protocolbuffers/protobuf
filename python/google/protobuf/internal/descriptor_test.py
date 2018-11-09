@@ -192,6 +192,14 @@ class DescriptorTest(unittest.TestCase):
     self.assertTrue(enum_value_descriptor.has_options)
     self.assertFalse(other_enum_value_descriptor.has_options)
 
+  def testCustomOptionsCopyTo(self):
+    message_descriptor = (unittest_custom_options_pb2.
+                          TestMessageWithCustomOptions.DESCRIPTOR)
+    message_proto = descriptor_pb2.DescriptorProto()
+    message_descriptor.CopyToProto(message_proto)
+    self.assertEqual(len(message_proto.options.ListFields()),
+                     2)
+
   def testDifferentCustomOptionTypes(self):
     kint32min = -2**31
     kint64min = -2**63

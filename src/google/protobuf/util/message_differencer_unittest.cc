@@ -1049,6 +1049,132 @@ TEST(MessageDifferencerTest,
   EXPECT_TRUE(differencer.CompareWithFields(msg1, msg2, fields1, fields2));
 }
 
+TEST(MessageDifferencerTest, RepeatedFieldSmartListTest) {
+  // Create the testing protos
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+
+  msg1.add_rv(1);
+  msg1.add_rv(2);
+  msg1.add_rv(3);
+  msg1.add_rv(9);
+  msg1.add_rv(4);
+  msg1.add_rv(5);
+  msg1.add_rv(7);
+  msg1.add_rv(2);
+  msg2.add_rv(9);
+  msg2.add_rv(0);
+  msg2.add_rv(2);
+  msg2.add_rv(7);
+  msg2.add_rv(3);
+  msg2.add_rv(4);
+  msg2.add_rv(5);
+  msg2.add_rv(6);
+  msg2.add_rv(2);
+  // Compare
+  // a: 1,      2,    3, 9, 4, 5, 7,   2
+  // b:   9, 0, 2, 7, 3,    4, 5,   6, 2
+  string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_LIST);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("deleted: rv[0]: 1\n"
+            "added: rv[0]: 9\n"
+            "added: rv[1]: 0\n"
+            "moved: rv[1] -> rv[2] : 2\n"
+            "added: rv[3]: 7\n"
+            "moved: rv[2] -> rv[4] : 3\n"
+            "deleted: rv[3]: 9\n"
+            "moved: rv[4] -> rv[5] : 4\n"
+            "moved: rv[5] -> rv[6] : 5\n"
+            "deleted: rv[6]: 7\n"
+            "added: rv[7]: 6\n"
+            "moved: rv[7] -> rv[8] : 2\n", diff_report);
+
+  // Compare two sub messages
+  // a: 1, 2, 3,    4, 5
+  // b:    2,    6, 4,
+  msg1.Clear();
+  msg2.Clear();
+  msg1.add_rm()->set_a(1);
+  msg1.add_rm()->set_a(2);
+  msg1.add_rm()->set_a(3);
+  msg1.add_rm()->set_a(4);
+  msg1.add_rm()->set_a(5);
+  msg2.add_rm()->set_a(2);
+  msg2.add_rm()->set_a(6);
+  msg2.add_rm()->set_a(4);
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_LIST);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("deleted: rm[0]: { a: 1 }\n"
+            "moved: rm[1] -> rm[0] : { a: 2 }\n"
+            "deleted: rm[2]: { a: 3 }\n"
+            "added: rm[1]: { a: 6 }\n"
+            "moved: rm[3] -> rm[2] : { a: 4 }\n"
+            "deleted: rm[4]: { a: 5 }\n", diff_report);
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest) {
+  // Create the testing protos
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+  protobuf_unittest::TestField elem1_1, elem2_1, elem3_1;
+  protobuf_unittest::TestField elem1_2, elem2_2, elem3_2;
+
+  // Only one field is different for each pair of elememts
+  elem1_1.set_a(1);  elem1_2.set_a(0);
+  elem1_1.set_b(1);  elem1_2.set_b(1);
+  elem1_1.set_c(1);  elem1_2.set_c(1);
+  elem2_1.set_a(2);  elem2_2.set_a(2);
+  elem2_1.set_b(2);  elem2_2.set_b(0);
+  elem2_1.set_c(2);  elem2_2.set_c(2);
+  elem3_1.set_a(3);  elem3_2.set_a(3);
+  elem3_1.set_b(3);  elem3_2.set_b(0);
+  elem3_1.set_c(3);  elem3_2.set_c(3);
+
+  *msg1.add_rm() = elem1_1;
+  *msg1.add_rm() = elem2_1;
+  *msg1.add_rm() = elem3_1;
+  // Change the order of those elements for the second message.
+  *msg2.add_rm() = elem3_2;
+  *msg2.add_rm() = elem1_2;
+  *msg2.add_rm() = elem2_2;
+
+  string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_SET);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("modified: rm[0].a -> rm[1].a: 1 -> 0\n"
+            "modified: rm[1].b -> rm[2].b: 2 -> 0\n"
+            "modified: rm[2].b -> rm[0].b: 3 -> 0\n", diff_report);
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldSmartSet_NonMessageTypeTest) {
+  // Create the testing protos
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+
+  // Create 3 elements, but in different order.
+  msg1.add_rw("b");  msg2.add_rw("a");
+  msg1.add_rw("x");  msg2.add_rw("x");
+  msg1.add_rw("a");  msg2.add_rw("b");
+
+  string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_SET);
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("moved: rw[0] -> rw[2] : \"b\"\n"
+            "moved: rw[2] -> rw[0] : \"a\"\n", diff_report);
+}
+
 TEST(MessageDifferencerTest, RepeatedFieldSetTest_SetOfSet) {
   // Create the testing protos
   protobuf_unittest::TestDiffMessage msg1;

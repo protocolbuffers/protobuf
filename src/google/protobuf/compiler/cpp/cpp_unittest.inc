@@ -50,7 +50,7 @@
 #include <vector>
 
 #include <google/protobuf/unittest_no_arena.pb.h>
-
+#include <google/protobuf/stubs/strutil.h>
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
 // We exclude this large proto from cmake build because it's too large for
 // visual studio to compile (report internal errors).

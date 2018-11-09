@@ -34,7 +34,7 @@
 #include <google/protobuf/util/internal/error_listener.h>
 #include <google/protobuf/util/internal/location_tracker.h>
 #include <gmock/gmock.h>
-
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {

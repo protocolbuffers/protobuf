@@ -118,7 +118,7 @@ class PROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @@pr
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const SourceContext& from);
   void MergeFrom(const SourceContext& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

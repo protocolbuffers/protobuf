@@ -36,7 +36,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
-
+#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/port_def.inc>
 

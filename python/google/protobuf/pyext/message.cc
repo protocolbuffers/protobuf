@@ -585,10 +585,6 @@ static int VisitCompositeField(const FieldDescriptor* descriptor,
 // Returns -1 on error and 0 on success.
 template<class Visitor>
 int ForEachCompositeField(CMessage* self, Visitor visitor) {
-  Py_ssize_t pos = 0;
-  PyObject* key;
-  PyObject* field;
-
   // Visit normal fields.
   if (self->composite_fields) {
     for (CMessage::CompositeFieldsMap::iterator it =
@@ -1554,10 +1550,11 @@ const FieldDescriptor* FindFieldWithOneofs(
 }
 
 bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
+  auto message_name = field_descriptor->containing_type()->name();
   if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
     PyErr_Format(PyExc_ValueError,
-                 "Protocol message has no singular \"%s\" field.",
-                 field_descriptor->name().c_str());
+                 "Protocol message %s has no singular \"%s\" field.",
+                 message_name.c_str(), field_descriptor->name().c_str());
     return false;
   }
 
@@ -1565,8 +1562,8 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
     // HasField() for a oneof *itself* isn't supported.
     if (in_oneof) {
       PyErr_Format(PyExc_ValueError,
-                   "Can't test oneof field \"%s\" for presence in proto3, use "
-                   "WhichOneof instead.",
+                   "Can't test oneof field \"%s.%s\" for presence in proto3, "
+                   "use WhichOneof instead.", message_name.c_str(),
                    field_descriptor->containing_oneof()->name().c_str());
       return false;
     }
@@ -1579,8 +1576,8 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
     if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
       PyErr_Format(
           PyExc_ValueError,
-          "Can't test non-submessage field \"%s\" for presence in proto3.",
-          field_descriptor->name().c_str());
+          "Can't test non-submessage field \"%s.%s\" for presence in proto3.",
+          message_name.c_str(), field_descriptor->name().c_str());
       return false;
     }
   }
@@ -1608,7 +1605,8 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
       FindFieldWithOneofs(message, string(field_name, size), &is_in_oneof);
   if (field_descriptor == NULL) {
     if (!is_in_oneof) {
-      PyErr_Format(PyExc_ValueError, "Unknown field %s.", field_name);
+      PyErr_Format(PyExc_ValueError, "Protocol message %s has no field %s.",
+                   message->GetDescriptor()->name().c_str(), field_name);
       return NULL;
     } else {
       Py_RETURN_FALSE;
@@ -2140,6 +2138,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
       reinterpret_cast<const uint8*>(data), data_length);
   if (allow_oversize_protos) {
     input.SetTotalBytesLimit(INT_MAX, INT_MAX);
+    input.SetRecursionLimit(INT_MAX);
   }
   PyMessageFactory* factory = GetFactoryForMessage(self);
   input.SetExtensionRegistry(factory->pool->pool, factory->message_factory);
@@ -2822,8 +2821,6 @@ PyObject* GetFieldValue(CMessage* self,
     }
   }
 
-  const Descriptor* message_descriptor =
-      (reinterpret_cast<CMessageClass*>(Py_TYPE(self)))->message_descriptor;
   if (self->message->GetDescriptor() != field_descriptor->containing_type()) {
     PyErr_Format(PyExc_TypeError,
                  "descriptor to field '%s' doesn't apply to '%s' object",

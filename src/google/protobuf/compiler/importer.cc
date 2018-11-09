@@ -120,10 +120,19 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
 
 SourceTreeDescriptorDatabase::SourceTreeDescriptorDatabase(
     SourceTree* source_tree)
-  : source_tree_(source_tree),
-    error_collector_(NULL),
-    using_validation_error_collector_(false),
-    validation_error_collector_(this) {}
+    : source_tree_(source_tree),
+      fallback_database_(nullptr),
+      error_collector_(nullptr),
+      using_validation_error_collector_(false),
+      validation_error_collector_(this) {}
+
+SourceTreeDescriptorDatabase::SourceTreeDescriptorDatabase(
+    SourceTree* source_tree, DescriptorDatabase* fallback_database)
+    : source_tree_(source_tree),
+      fallback_database_(fallback_database),
+      error_collector_(nullptr),
+      using_validation_error_collector_(false),
+      validation_error_collector_(this) {}
 
 SourceTreeDescriptorDatabase::~SourceTreeDescriptorDatabase() {}
 
@@ -131,6 +140,10 @@ bool SourceTreeDescriptorDatabase::FindFileByName(
     const string& filename, FileDescriptorProto* output) {
   std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_->Open(filename));
   if (input == NULL) {
+    if (fallback_database_ != nullptr &&
+        fallback_database_->FindFileByName(filename, output)) {
+      return true;
+    }
     if (error_collector_ != NULL) {
       error_collector_->AddError(filename, -1, 0,
                                  source_tree_->GetLastErrorMessage());

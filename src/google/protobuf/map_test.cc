@@ -2032,6 +2032,31 @@ TEST(GeneratedMapFieldTest, CopyFromDynamicMessageMapReflection) {
   MapTestUtil::ExpectMapFieldsSet(message2);
 }
 
+TEST(GeneratedMapFieldTest, DynamicMessageMergeFromDynamicMessage) {
+  // Construct two dynamic message and sets via map reflection.
+  DynamicMessageFactory factory;
+  std::unique_ptr<Message> message1;
+  message1.reset(
+      factory.GetPrototype(unittest::TestMap::descriptor())->New());
+  MapReflectionTester reflection_tester(
+      unittest::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(message1.get());
+
+  std::unique_ptr<Message> message2;
+  message2.reset(
+      factory.GetPrototype(unittest::TestMap::descriptor())->New());
+  reflection_tester.SetMapFieldsViaMapReflection(message2.get());
+
+  message2->MergeFrom(*message1);
+
+  // Test MergeFrom does not sync to repeated fields and
+  // there is no duplicate keys in text format.
+  string output1, output2;
+  TextFormat::PrintToString(*message1, &output1);
+  TextFormat::PrintToString(*message2, &output2);
+  EXPECT_EQ(output1, output2);
+}
+
 TEST(GeneratedMapFieldTest, DynamicMessageCopyFrom) {
   // Test copying to a DynamicMessage, which must fall back to using reflection.
   unittest::TestMap message2;
@@ -2097,6 +2122,18 @@ TEST(GeneratedMapFieldTest, NonEmptyMergeFrom) {
 
   message1.MergeFrom(message2);
   MapTestUtil::ExpectMapFieldsSet(message1);
+
+  // Test reflection MergeFrom does not sync to repeated field
+  // and there is no duplicated keys.
+  MapTestUtil::SetMapFields(&message1);
+  MapTestUtil::SetMapFields(&message2);
+
+  message2.MergeFrom(message1);
+
+  string output1, output2;
+  TextFormat::PrintToString(message1, &output1);
+  TextFormat::PrintToString(message2, &output2);
+  EXPECT_EQ(output1, output2);
 }
 
 TEST(GeneratedMapFieldTest, MergeFromMessageMap) {

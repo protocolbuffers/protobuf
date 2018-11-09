@@ -96,6 +96,7 @@ class MapFieldBaseStub : public MapFieldBase {
   int size() const { return 0; }
   void MapBegin(MapIterator* map_iter) const {}
   void MapEnd(MapIterator* map_iter) const {}
+  void MergeFrom(const MapFieldBase& other) override {}
   void Swap(MapFieldBase* other) {}
   void InitializeIterator(MapIterator* map_iter) const {}
   void DeleteIterator(MapIterator* map_iter) const {}

@@ -266,6 +266,13 @@ public class LongArrayListTest extends TestCase {
     assertFalse(list.addAll(LongArrayList.emptyList()));
   }
 
+  public void testEquals() {
+    LongArrayList list1 = new LongArrayList();
+    LongArrayList list2 = new LongArrayList();
+
+    assertEquals(list1, list2);
+  }
+
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
     assertEquals(1L, (long) list.remove(0));
@@ -294,11 +301,20 @@ public class LongArrayListTest extends TestCase {
     }
   }
 
-  public void testRemoveEndOfCapacity() {
+  public void testRemoveEnd_listAtCapacity() {
     LongList toRemove = LongArrayList.emptyList().mutableCopyWithCapacity(1);
     toRemove.addLong(3);
     toRemove.remove(0);
     assertEquals(0, toRemove.size());
+  }
+
+  public void testRemove_listAtCapacity() {
+    LongList toRemove = LongArrayList.emptyList().mutableCopyWithCapacity(2);
+    toRemove.addLong(3);
+    toRemove.addLong(4);
+    toRemove.remove(0);
+    assertEquals(1, toRemove.size());
+    assertEquals(4L, (long) toRemove.get(0));
   }
 
   public void testSublistRemoveEndOfCapacity() {

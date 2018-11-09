@@ -78,19 +78,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   //
   Options file_options;
 
-  switch (runtime_) {
-    case Runtime::kGoogle3:
-      file_options.opensource_runtime = false;
-      break;
-    case Runtime::kOpensource:
-      file_options.opensource_runtime = true;
-      file_options.opensource_include_paths = true;
-      break;
-    case Runtime::kOpensourceGoogle3:
-      file_options.opensource_runtime = true;
-      file_options.opensource_include_paths = false;
-      break;
-  }
+  file_options.opensource_runtime = opensource_runtime_;
+  file_options.runtime_include_base = runtime_include_base_;
 
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "dllexport_decl") {

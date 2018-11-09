@@ -46,6 +46,7 @@ struct FileToc well_known_types_js[] = {
      "\n"
      "/**\n"
      " * Packs the given message instance into this Any.\n"
+     " * For binary format usage only.\n"
      " * @param {!Uint8Array} serialized The serialized data to pack.\n"
      " * @param {string} name The type name of this message object.\n"
      " * @param {string=} opt_typeUrlPrefix the type URL prefix.\n"
@@ -85,7 +86,8 @@ struct FileToc well_known_types_js[] = {
      "  } else {\n"
      "    return null;\n"
      "  }\n"
-     "};\n"},
+     "};\n"
+    },
     {"timestamp.js",
      "/* This code will be inserted into generated code for\n"
      " * google/protobuf/timestamp.proto. */\n"
@@ -109,6 +111,19 @@ struct FileToc well_known_types_js[] = {
      "proto.google.protobuf.Timestamp.prototype.fromDate = function(value) {\n"
      "  this.setSeconds(Math.floor(value.getTime() / 1000));\n"
      "  this.setNanos(value.getMilliseconds() * 1000000);\n"
+     "};\n"
+     "\n"
+     "\n"
+     "/**\n"
+     " * Factory method that returns a Timestamp object with value equal to\n"
+     " * the given Date.\n"
+     " * @param {!Date} value The value to set.\n"
+     " * @return {!proto.google.protobuf.Timestamp}\n"
+     " */\n"
+     "proto.google.protobuf.Timestamp.fromDate = function(value) {\n"
+     "  var timestamp = new proto.google.protobuf.Timestamp();\n"
+     "  timestamp.fromDate(value);\n"
+     "  return timestamp;\n"
      "};\n"},
     {"struct.js",
      "/* This code will be inserted into generated code for\n"

@@ -161,6 +161,10 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
     EXPECT_EQ("", error_collector.text_);
     CppGenerator generator;
     MockGeneratorContext context;
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+    generator.set_opensource_runtime(true);
+    generator.set_runtime_include_base(GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE);
+#endif
     string error;
     ASSERT_TRUE(generator.Generate(file, file_parameter[1], &context, &error));
 

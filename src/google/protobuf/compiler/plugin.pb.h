@@ -147,7 +147,7 @@ class PROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_ins
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Version& from);
   void MergeFrom(const Version& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -299,7 +299,7 @@ class PROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message /*
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const CodeGeneratorRequest& from);
   void MergeFrom(const CodeGeneratorRequest& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -473,7 +473,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::Mess
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const CodeGeneratorResponse_File& from);
   void MergeFrom(const CodeGeneratorResponse_File& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -633,7 +633,7 @@ class PROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Message /
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const CodeGeneratorResponse& from);
   void MergeFrom(const CodeGeneratorResponse& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

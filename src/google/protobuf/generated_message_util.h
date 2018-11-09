@@ -46,6 +46,7 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/has_bits.h>
 #include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/map_entry_lite.h>
@@ -53,17 +54,13 @@
 #include <google/protobuf/stubs/once.h>  // Add direct dep on port for pb.cc
 #include <google/protobuf/port.h>
 #include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
-
-#if GOOGLE_PROTOBUF_ENABLE_MOMI_PARSER
-#include <google/protobuf/parse_context.h>
-#endif
-
 
 namespace google {
 namespace protobuf {
@@ -353,6 +350,32 @@ inline void OnShutdownDestroyMessage(const void* ptr) {
 inline void OnShutdownDestroyString(const ::std::string* ptr) {
   OnShutdownRun(DestroyString, ptr);
 }
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+
+inline void InlineGreedyStringParser(std::string* str, const char* begin, int size,
+                               ParseContext*) {
+  str->assign(begin, size);
+}
+
+
+inline bool StringCheck(const char* begin, int size, ParseContext* ctx) {
+  return true;
+}
+
+inline bool StringCheckUTF8(const char* begin, int size, ParseContext* ctx) {
+  return VerifyUTF8(StringPiece(begin, size), ctx);
+}
+
+inline bool StringCheckUTF8Verify(const char* begin, int size,
+                                  ParseContext* ctx) {
+#ifndef NDEBUG
+  VerifyUTF8(StringPiece(begin, size), ctx);
+#endif
+  return true;
+}
+
+#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
 }  // namespace internal
 }  // namespace protobuf

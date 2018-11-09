@@ -408,13 +408,6 @@ bool SafeStrToFloat(StringPiece str, float* value) {
   return true;
 }
 
-bool StringStartsWith(StringPiece text, StringPiece prefix) {
-  return text.starts_with(prefix);
-}
-
-bool StringEndsWith(StringPiece text, StringPiece suffix) {
-  return text.ends_with(suffix);
-}
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf

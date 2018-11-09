@@ -125,7 +125,7 @@ class PROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@protoc_
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Duration& from);
   void MergeFrom(const Duration& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

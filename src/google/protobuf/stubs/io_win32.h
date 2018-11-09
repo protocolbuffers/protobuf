@@ -111,8 +111,8 @@ PROTOBUF_EXPORT bool wcs_to_utf8(const wchar_t* input, std::string* out);
 #define STDOUT_FILENO 1
 #endif
 
-#endif  // defined(_WIN32)
-
 #include <google/protobuf/port_undef.inc>
+
+#endif  // defined(_WIN32)
 
 #endif  // GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__

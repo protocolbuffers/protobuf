@@ -150,6 +150,7 @@ public final class Timestamps {
    * <p><b>Note:</b> Negative second values with fractional seconds must still have non-negative
    * nanos values that count forward in time.
    */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static boolean isValid(long seconds, int nanos) {
     if (seconds < TIMESTAMP_SECONDS_MIN || seconds > TIMESTAMP_SECONDS_MAX) {
       return false;
@@ -266,6 +267,7 @@ public final class Timestamps {
   }
 
   /** Create a Timestamp from the number of seconds elapsed from the epoch. */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static Timestamp fromSeconds(long seconds) {
     return normalizedTimestamp(seconds, 0);
   }
@@ -276,11 +278,13 @@ public final class Timestamps {
    * <p>The result will be rounded down to the nearest second. E.g., if the timestamp represents
    * "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 second.
    */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static long toSeconds(Timestamp timestamp) {
     return checkValid(timestamp).getSeconds();
   }
 
   /** Create a Timestamp from the number of milliseconds elapsed from the epoch. */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static Timestamp fromMillis(long milliseconds) {
     return normalizedTimestamp(
         milliseconds / MILLIS_PER_SECOND,
@@ -293,6 +297,7 @@ public final class Timestamps {
    * <p>The result will be rounded down to the nearest millisecond. E.g., if the timestamp
    * represents "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 millisecond.
    */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static long toMillis(Timestamp timestamp) {
     checkValid(timestamp);
     return checkedAdd(
@@ -301,6 +306,7 @@ public final class Timestamps {
   }
 
   /** Create a Timestamp from the number of microseconds elapsed from the epoch. */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static Timestamp fromMicros(long microseconds) {
     return normalizedTimestamp(
         microseconds / MICROS_PER_SECOND,
@@ -313,6 +319,7 @@ public final class Timestamps {
    * <p>The result will be rounded down to the nearest microsecond. E.g., if the timestamp
    * represents "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 microsecond.
    */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static long toMicros(Timestamp timestamp) {
     checkValid(timestamp);
     return checkedAdd(
@@ -321,12 +328,14 @@ public final class Timestamps {
   }
 
   /** Create a Timestamp from the number of nanoseconds elapsed from the epoch. */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static Timestamp fromNanos(long nanoseconds) {
     return normalizedTimestamp(
         nanoseconds / NANOS_PER_SECOND, (int) (nanoseconds % NANOS_PER_SECOND));
   }
 
   /** Convert a Timestamp to the number of nanoseconds elapsed from the epoch. */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static long toNanos(Timestamp timestamp) {
     checkValid(timestamp);
     return checkedAdd(

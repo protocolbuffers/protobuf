@@ -529,10 +529,6 @@ class DescriptorPoolTestBase(object):
     conflict_fd = copy.deepcopy(unittest_fd)
     conflict_fd.name = 'other_file'
     if api_implementation.Type() == 'cpp':
-      try:
-        self.pool.Add(unittest_fd)
-        self.pool.Add(conflict_fd)
-      except TypeError:
         pass
     else:
       with warnings.catch_warnings(record=True) as w:
