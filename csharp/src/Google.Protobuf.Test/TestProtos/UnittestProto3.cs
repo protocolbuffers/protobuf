@@ -1387,7 +1387,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             SingleInt32 = input.ReadInt32();
@@ -1755,7 +1757,9 @@ namespace Google.Protobuf.TestProtos {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+                  return;
+                }
                 break;
               case 8: {
                 Bb = input.ReadInt32();
@@ -1938,7 +1942,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             if (child_ == null) {
@@ -2082,7 +2088,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             DeprecatedInt32 = input.ReadInt32();
@@ -2215,7 +2223,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             C = input.ReadInt32();
@@ -2320,7 +2330,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
         }
       }
@@ -2451,7 +2463,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             if (foreignNested_ == null) {
@@ -2614,7 +2628,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             A = input.ReadInt32();
@@ -2774,7 +2790,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             if (a_ == null) {
@@ -2916,7 +2934,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             if (bb_ == null) {
@@ -3075,7 +3095,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             if (a_ == null) {
@@ -3211,7 +3233,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             Value = (global::Google.Protobuf.TestProtos.TestEnumWithDupValue) input.ReadEnum();
@@ -3483,7 +3507,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             PrimitiveField = input.ReadInt32();
@@ -3724,7 +3750,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             MyInt = input.ReadInt64();
@@ -3899,7 +3927,9 @@ namespace Google.Protobuf.TestProtos {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+                  return;
+                }
                 break;
               case 8: {
                 Bb = input.ReadInt32();
@@ -4037,7 +4067,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             SparseEnum = (global::Google.Protobuf.TestProtos.TestSparseEnum) input.ReadEnum();
@@ -4169,7 +4201,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             Data = input.ReadString();
@@ -4290,7 +4324,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             data_.AddEntriesFrom(input, _repeated_data_codec);
@@ -4419,7 +4455,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             Data = input.ReadBytes();
@@ -4548,7 +4586,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             Data = input.ReadBytes();
@@ -4680,7 +4720,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             Data = input.ReadInt32();
@@ -4809,7 +4851,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             Data = input.ReadUInt32();
@@ -4938,7 +4982,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             Data = input.ReadInt64();
@@ -5067,7 +5113,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             Data = input.ReadUInt64();
@@ -5196,7 +5244,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             Data = input.ReadBool();
@@ -5413,7 +5463,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 8: {
             FooInt = input.ReadInt32();
@@ -5755,7 +5807,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 722:
           case 720: {
@@ -6154,7 +6208,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 722:
           case 720: {
@@ -6435,7 +6491,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 98:
           case 101: {
@@ -6593,7 +6651,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             A = input.ReadString();
@@ -6701,7 +6761,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
         }
       }
@@ -6802,7 +6864,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
         }
       }
@@ -6903,7 +6967,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
         }
       }
@@ -7004,7 +7070,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
         }
       }
@@ -7105,7 +7173,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
         }
       }
@@ -7206,7 +7276,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
         }
       }
@@ -7307,7 +7379,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
         }
       }
@@ -7438,7 +7512,9 @@ namespace Google.Protobuf.TestProtos {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
             break;
           case 10: {
             Text = input.ReadString();
@@ -7585,7 +7661,9 @@ namespace Google.Protobuf.TestProtos {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+                  return;
+                }
                 break;
               case 10: {
                 NestedText = input.ReadString();

@@ -183,7 +183,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="input">The coded input stream containing the field</param>
         /// <returns>false if the tag is an "end group" tag, true otherwise</returns>
-        private void MergeFieldFrom(CodedInputStream input)
+        private bool MergeFieldFrom(CodedInputStream input)
         {
             uint tag = input.LastTag;
             int number = WireFormat.GetTagFieldNumber(tag);
@@ -193,34 +193,40 @@ namespace Google.Protobuf
                     {
                         ulong uint64 = input.ReadUInt64();
                         GetOrAddField(number).AddVarint(uint64);
-                        return;
+                        return true;
                     }
                 case WireFormat.WireType.Fixed32:
                     {
                         uint uint32 = input.ReadFixed32();
                         GetOrAddField(number).AddFixed32(uint32);
-                        return;
+                        return true;
                     }
                 case WireFormat.WireType.Fixed64:
                     {
                         ulong uint64 = input.ReadFixed64();
                         GetOrAddField(number).AddFixed64(uint64);
-                        return;
+                        return true;
                     }
                 case WireFormat.WireType.LengthDelimited:
                     {
                         ByteString bytes = input.ReadBytes();
                         GetOrAddField(number).AddLengthDelimited(bytes);
-                        return;
+                        return true;
                     }
                 case WireFormat.WireType.StartGroup:
                     {
-                        input.SkipGroup(tag);
-                        return;
+                        uint endTag = WireFormat.MakeTag(number, WireFormat.WireType.EndGroup);
+                        UnknownFieldSet set = new UnknownFieldSet();
+                        while (input.ReadTag() != endTag)
+                        {
+                            set.MergeFieldFrom(input);
+                        }
+                        GetOrAddField(number).AddGroup(set);
+                        return true;
                     }
                 case WireFormat.WireType.EndGroup:
                     {
-                        throw new InvalidProtocolBufferException("Merge an unknown field of end-group tag, indicating that the corresponding start-group was missing.");
+                        return false;
                     }
                 default:
                     throw new InvalidOperationException("Wire Type is invalid.");
@@ -248,8 +254,34 @@ namespace Google.Protobuf
             {
                 unknownFields = new UnknownFieldSet();
             }
-            unknownFields.MergeFieldFrom(input);
+            if (!unknownFields.MergeFieldFrom(input))
+            {
+                throw new InvalidProtocolBufferException("Merge an unknown field of end-group tag, indicating that the corresponding start-group was missing."); // match the old code-gen
+            }
             return unknownFields;
+        }
+
+        /// <summary>
+        /// Create a new UnknownFieldSet if unknownFields is null.
+        /// Parse a single field from <paramref name="input"/> and merge it
+        /// into unknownFields. If <paramref name="input"/> is configured to discard unknown fields,
+        /// <paramref name="unknownFields"/> will be returned as-is and the field will be skipped.
+        /// </summary>
+        /// <param name="unknownFields">The UnknownFieldSet which need to be merged</param>
+        /// <param name="input">The coded input stream containing the field</param>
+        /// <returns>The merged UnknownFieldSet</returns>
+        public static bool MergeFieldFrom(ref UnknownFieldSet unknownFields, CodedInputStream input)
+        {
+            if (input.DiscardUnknownFields)
+            {
+                input.SkipLastField();
+                return true;
+            }
+            if (unknownFields == null)
+            {
+                unknownFields = new UnknownFieldSet();
+            }
+            return unknownFields.MergeFieldFrom(input);
         }
 
         /// <summary>
