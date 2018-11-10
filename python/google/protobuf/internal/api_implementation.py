@@ -92,6 +92,12 @@ if 'PyPy' in sys.version and _implementation_type == 'cpp':
                 'Falling back to the python implementation.')
   _implementation_type = 'python'
 
+if _implementation_type == 'python' and 'PyPy' not in sys.version:
+    warnings.warn('pure python implementation may cause significant'
+                  'performance penalty, take care to use it in '
+                  'production environment.')
+
+
 # This environment variable can be used to switch between the two
 # 'cpp' implementations, overriding the compile-time constants in the
 # _api_implementation module. Right now only '2' is supported. Any other
