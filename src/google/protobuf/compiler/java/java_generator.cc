@@ -63,43 +63,11 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
                              GeneratorContext* context,
                              string* error) const {
   // -----------------------------------------------------------------
-  // parse generator options
+  // parse options
 
-
-  std::vector<std::pair<string, string> > options;
-  ParseGeneratorParameter(parameter, &options);
   Options file_options;
-
-  for (int i = 0; i < options.size(); i++) {
-    if (options[i].first == "output_list_file") {
-      file_options.output_list_file = options[i].second;
-    } else if (options[i].first == "immutable") {
-      file_options.generate_immutable_code = true;
-    } else if (options[i].first == "mutable") {
-      file_options.generate_mutable_code = true;
-    } else if (options[i].first == "shared") {
-      file_options.generate_shared_code = true;
-    } else if (options[i].first == "annotate_code") {
-      file_options.annotate_code = true;
-    } else if (options[i].first == "annotation_list_file") {
-      file_options.annotation_list_file = options[i].second;
-    } else {
-      *error = "Unknown generator option: " + options[i].first;
-      return false;
-    }
-  }
-
-  if (file_options.enforce_lite && file_options.generate_mutable_code) {
-    *error = "lite runtime generator option cannot be used with mutable API.";
+  if (!ParseGeneratorOptions(parameter, file_options, error)) {
     return false;
-  }
-
-  // By default we generate immutable code and shared code for immutable API.
-  if (!file_options.generate_immutable_code &&
-      !file_options.generate_mutable_code &&
-      !file_options.generate_shared_code) {
-    file_options.generate_immutable_code = true;
-    file_options.generate_shared_code = true;
   }
 
   // -----------------------------------------------------------------
@@ -195,6 +163,46 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
     }
   }
 
+  return true;
+}
+
+bool JavaGenerator::ParseGeneratorOptions(const string& parameter,
+                                          Options &file_options,
+                                          string *error) const {
+  std::vector<std::pair<string, string> > options;
+  ParseGeneratorParameter(parameter, &options);
+
+  for (int i = 0; i < options.size(); i++) {
+    if (options[i].first == "output_list_file") {
+      file_options.output_list_file = options[i].second;
+    } else if (options[i].first == "immutable") {
+      file_options.generate_immutable_code = true;
+    } else if (options[i].first == "mutable") {
+      file_options.generate_mutable_code = true;
+    } else if (options[i].first == "shared") {
+      file_options.generate_shared_code = true;
+    } else if (options[i].first == "annotate_code") {
+      file_options.annotate_code = true;
+    } else if (options[i].first == "annotation_list_file") {
+      file_options.annotation_list_file = options[i].second;
+    } else {
+      *error = "Unknown generator option: " + options[i].first;
+      return false;
+    }
+  }
+
+  if (file_options.enforce_lite && file_options.generate_mutable_code) {
+    *error = "lite runtime generator option cannot be used with mutable API.";
+    return false;
+  }
+
+  // By default we generate immutable code and shared code for immutable API.
+  if (!file_options.generate_immutable_code &&
+      !file_options.generate_mutable_code &&
+      !file_options.generate_shared_code) {
+    file_options.generate_immutable_code = true;
+    file_options.generate_shared_code = true;
+  }
   return true;
 }
 

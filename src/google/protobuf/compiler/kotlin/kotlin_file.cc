@@ -52,11 +52,13 @@ namespace protobuf {
 namespace compiler {
 namespace kotlin {
 
-FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
+FileGenerator::FileGenerator(const FileDescriptor* file,
+                             const java::Options& options,
                              bool immutable_api)
     : file_(file),
       java_package_(java::FileJavaPackage(file, immutable_api)),
-      name_resolver_(new java::ClassNameResolver),
+      context_(new java::Context(file, options)),
+      name_resolver_(context_->GetNameResolver()),
       options_(options),
       immutable_api_(immutable_api) {
   classname_ = name_resolver_->GetFileClassName(file, immutable_api) + "DSL";
@@ -91,14 +93,67 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Indent();
 
   // -----------------------------------------------------------------
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    const Descriptor *message_type = file_->message_type(i);
+
+    printer->Print(
+        "fun build$name$(\n"
+        "  block: $full_name$.Builder.() -> Unit\n"
+        ") = $full_name$.newBuilder()\n"
+        "  .apply(block)\n"
+        "  .build()\n\n",
+        "name", message_type->name(),
+        "full_name", name_resolver_->GetClassName(message_type, immutable_api_));
+  }
 
 
   printer->Print(
     "\n"
-    "// @@protoc_insertion_point(outer_class_scope)\n");
+    "// @@protoc_insertion_point(outer_dsl_object_scope)\n");
 
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print("}\n\n");
+
+  // -----------------------------------------------------------------
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    const Descriptor *message_type = file_->message_type(i);
+
+    for (int j = 0; j < message_type->field_count(); ++j) {
+      const FieldDescriptor *field = message_type->field(j);
+      if (field->type() == FieldDescriptor::TYPE_MESSAGE) {
+        const java::FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
+
+        if (field->is_repeated()) {
+          printer->Print(
+              "fun $full_name$.Builder.$field_name$(\n"
+              "  block: MutableList<$field_type$>.() -> Unit\n"
+              ") {\n"
+              "  addAll$capitalized_field_name$(\n"
+              "    mutableListOf<$field_type$>()\n"
+              "      .apply(block)\n"
+              "  )\n"
+              "}\n\n",
+              "field_name", field->name(),
+              "capitalized_field_name", info->capitalized_name,
+              "full_name", name_resolver_->GetClassName(message_type, immutable_api_),
+              "field_type", name_resolver_->GetClassName(field->message_type(), immutable_api_));
+
+          printer->Print(
+              "fun MutableList<$field_type$>.add$field_type_name$(\n"
+              "    block: $field_type$.Builder.() -> Unit\n"
+              ") {\n"
+              "    add(\n"
+              "      $field_type$.newBuilder()\n"
+              "       .apply(block)\n"
+              "       .build()\n"
+              "    )\n"
+              "}\n\n",
+              "field_type_name", field->message_type()->name(),
+              "field_type", name_resolver_->GetClassName(field->message_type(), immutable_api_));
+        }
+      }
+    }
+  }
 }
 
 }  // namespace kotlin

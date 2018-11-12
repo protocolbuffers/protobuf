@@ -39,6 +39,7 @@
 
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/java/java_options.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -61,6 +62,11 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
                 const std::string& parameter,
                 GeneratorContext* context,
                 std::string* error) const;
+
+ protected:
+  bool ParseGeneratorOptions(const string& parameter,
+                             Options &file_options,
+                             string *error) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JavaGenerator);

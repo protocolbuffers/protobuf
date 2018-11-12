@@ -37,7 +37,8 @@
 #include <string>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/kotlin/kotlin_options.h>
+#include <google/protobuf/compiler/java/java_options.h>
+#include <google/protobuf/compiler/java/java_context.h>
 
 namespace google {
 namespace protobuf {
@@ -64,7 +65,8 @@ namespace kotlin {
 
 class FileGenerator {
  public:
-  FileGenerator(const FileDescriptor* file, const Options& options,
+  FileGenerator(const FileDescriptor* file,
+                const java::Options& options,
                 bool immutable_api = true);
   ~FileGenerator();
 
@@ -84,8 +86,9 @@ class FileGenerator {
   std::string java_package_;
   std::string classname_;
 
+  std::unique_ptr<java::Context> context_;
   java::ClassNameResolver* name_resolver_;
-  const Options options_;
+  const java::Options options_;
   bool immutable_api_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
