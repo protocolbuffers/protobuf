@@ -201,14 +201,14 @@ class JsonFormatTest(JsonFormatBase):
     self.assertEqual(message, parsed_message)
 
   def testJsonParseDictToAnyDoesNotAlterInput(self):
-    my_dict_orig = {
+    orig_dict = {
         "int32Value": 20,
         "@type": "type.googleapis.com/proto3.TestMessage"
     }
-    my_dict = json.loads(json.dumps(my_dict_orig))
+    copied_dict = json.loads(json.dumps(orig_dict))
     parsed_message = any_pb2.Any()
-    json_format.ParseDict(my_dict, parsed_message)
-    self.assertEqual(my_dict, my_dict_orig)
+    json_format.ParseDict(copied_dict, parsed_message)
+    self.assertEqual(copied_dict, orig_dict)
 
   def testExtensionSerializationDictMatchesProto3Spec(self):
     """See go/proto3-json-spec for spec.
