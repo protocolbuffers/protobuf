@@ -32,6 +32,7 @@
 
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/java/java_generator.h>
+#include <google/protobuf/compiler/kotlin/kotlin_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/python/python_generator.h>
 
@@ -65,6 +66,12 @@ int ProtobufMain(int argc, char* argv[]) {
   java::JavaGenerator java_generator;
   cli.RegisterGenerator("--java_out", "--java_opt", &java_generator,
                         "Generate Java source file.");
+
+
+  // Proto2 Kotlin
+  kotlin::KotlinGenerator kotlin_generator;
+  cli.RegisterGenerator("--kotlin_out", "--kotlin_opt", &kotlin_generator,
+                        "Generate Kotlin source file.");
 
 
   // Proto2 Python
