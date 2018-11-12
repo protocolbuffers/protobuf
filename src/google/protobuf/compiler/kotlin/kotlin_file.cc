@@ -40,6 +40,7 @@
 #include <google/protobuf/compiler/java/java_message.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
 #include <google/protobuf/compiler/java/java_shared_code_generator.h>
+#include <google/protobuf/compiler/kotlin/kotlin_message.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -57,11 +58,16 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
                              bool immutable_api)
     : file_(file),
       java_package_(java::FileJavaPackage(file, immutable_api)),
+      message_generators_(file->message_type_count()),
       context_(new java::Context(file, options)),
       name_resolver_(context_->GetNameResolver()),
       options_(options),
       immutable_api_(immutable_api) {
   classname_ = name_resolver_->GetFileClassName(file, immutable_api) + "DSL";
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    const Descriptor *descriptor = file->message_type(i);
+    message_generators_[i].reset(new MessageGenerator(descriptor, context_.get(), immutable_api));
+  }
 }
 
 FileGenerator::~FileGenerator() {}
@@ -93,19 +99,9 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Indent();
 
   // -----------------------------------------------------------------
-  for (int i = 0; i < file_->message_type_count(); ++i) {
-    const Descriptor *message_type = file_->message_type(i);
-
-    printer->Print(
-        "fun build$name$(\n"
-        "  block: $full_name$.Builder.() -> Unit\n"
-        ") = $full_name$.newBuilder()\n"
-        "  .apply(block)\n"
-        "  .build()\n\n",
-        "name", message_type->name(),
-        "full_name", name_resolver_->GetClassName(message_type, immutable_api_));
+  for (int i = 0; i < file_->message_type_count(); i++) {
+    message_generators_[i]->GenerateBuildFunction(printer);
   }
-
 
   printer->Print(
     "\n"
@@ -114,45 +110,12 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n\n");
 
-  // -----------------------------------------------------------------
   for (int i = 0; i < file_->message_type_count(); ++i) {
-    const Descriptor *message_type = file_->message_type(i);
+    message_generators_[i]->GenerateAccessorBuilders(printer);
+  }
 
-    for (int j = 0; j < message_type->field_count(); ++j) {
-      const FieldDescriptor *field = message_type->field(j);
-      if (field->type() == FieldDescriptor::TYPE_MESSAGE) {
-        const java::FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
-
-        if (field->is_repeated()) {
-          printer->Print(
-              "fun $full_name$.Builder.$field_name$(\n"
-              "  block: MutableList<$field_type$>.() -> Unit\n"
-              ") {\n"
-              "  addAll$capitalized_field_name$(\n"
-              "    mutableListOf<$field_type$>()\n"
-              "      .apply(block)\n"
-              "  )\n"
-              "}\n\n",
-              "field_name", field->name(),
-              "capitalized_field_name", info->capitalized_name,
-              "full_name", name_resolver_->GetClassName(message_type, immutable_api_),
-              "field_type", name_resolver_->GetClassName(field->message_type(), immutable_api_));
-
-          printer->Print(
-              "fun MutableList<$field_type$>.add$field_type_name$(\n"
-              "    block: $field_type$.Builder.() -> Unit\n"
-              ") {\n"
-              "    add(\n"
-              "      $field_type$.newBuilder()\n"
-              "       .apply(block)\n"
-              "       .build()\n"
-              "    )\n"
-              "}\n\n",
-              "field_type_name", field->message_type()->name(),
-              "field_type", name_resolver_->GetClassName(field->message_type(), immutable_api_));
-        }
-      }
-    }
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    message_generators_[i]->GenerateMutableListAppender(printer);
   }
 }
 

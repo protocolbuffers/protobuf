@@ -28,33 +28,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: oleksiy.pylypenko@gmail.com
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__
-#define GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_KOTLIN_MESSAGE_H__
+#define GOOGLE_PROTOBUF_COMPILER_KOTLIN_MESSAGE_H__
 
-#include <memory>
 #include <string>
-#include <vector>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/java/java_options.h>
-#include <google/protobuf/compiler/java/java_context.h>
+#include <map>
+#include <google/protobuf/descriptor.h>
 
 namespace google {
 namespace protobuf {
-class FileDescriptor;          // descriptor.h
-namespace io {
-  class Printer;               // printer.h
-}
 namespace compiler {
-  class GeneratorContext;      // code_generator.h
-  namespace kotlin {
-    class Context;             // context.h
-    class MessageGenerator;    // message.h
-  }
-  namespace java {
-    class ClassNameResolver;   // name_resolver.h
-  }
+namespace java {
+class Context;            // context.h
+class ClassNameResolver;  // name_resolver.h
+}  // namespace java
+}  // namespace compiler
+namespace io {
+class Printer;  // printer.h
 }
 }  // namespace protobuf
 }  // namespace google
@@ -64,36 +58,25 @@ namespace protobuf {
 namespace compiler {
 namespace kotlin {
 
-class FileGenerator {
+class MessageGenerator {
  public:
-  FileGenerator(const FileDescriptor* file,
-                const java::Options& options,
-                bool immutable_api = true);
-  ~FileGenerator();
+  MessageGenerator(const Descriptor* descriptor, java::Context* context, bool immutable_api);
+  ~MessageGenerator();
 
-  // Checks for problems that would otherwise lead to cryptic compile errors.
-  // Returns true if there are no problems, or writes an error description to
-  // the given string and returns false otherwise.
-  bool Validate(std::string* error);
+  void GenerateBuildFunction(io::Printer* printer);
 
-  void Generate(io::Printer* printer);
+  void GenerateAccessorBuilders(io::Printer* printer);
 
-  const std::string& java_package() { return java_package_; }
-  const std::string& classname() { return classname_; }
+  void GenerateMutableListAppender(io::Printer* printer);
 
- private:
-
-  const FileDescriptor* file_;
-  std::string java_package_;
-  std::string classname_;
-
-  std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
-  std::unique_ptr<java::Context> context_;
+ protected:
+  java::Context* context_;
   java::ClassNameResolver* name_resolver_;
-  const java::Options options_;
+  const Descriptor* descriptor_;
   bool immutable_api_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
 };
 
 }  // namespace kotlin
@@ -101,4 +84,4 @@ class FileGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_KOTLIN_MESSAGE_H__

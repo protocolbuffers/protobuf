@@ -61,6 +61,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/kotlin/kotlin_file.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/kotlin/kotlin_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/kotlin/kotlin_message.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
@@ -145,6 +146,9 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_shared_code_generator.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field_lite.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/kotlin/kotlin_file.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/kotlin/kotlin_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/kotlin/kotlin_message.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_extension.h
