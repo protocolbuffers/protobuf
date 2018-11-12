@@ -47,15 +47,12 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
 
 #include <google/protobuf/port_def.inc>
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-#include <google/protobuf/parse_context.h>
-#endif
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -121,9 +118,16 @@ struct ExtensionInfo {
     const void* arg;
   };
 
+  struct MessageInfo {
+    const MessageLite* prototype;
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+    ParseFunc parse_func;
+#endif
+  };
+
   union {
     EnumValidityCheck enum_validity_check;
-    const MessageLite* message_prototype;
+    MessageInfo message_info;
   };
 
   // The descriptor for this extension, if one exists and is known.  May be
@@ -396,6 +400,11 @@ class PROTOBUF_EXPORT ExtensionSet {
                   io::CodedOutputStream* unknown_fields);
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  template <typename T>
+  std::pair<const char*, bool> ParseFieldWithExtensionInfo(
+      int number, bool was_packed_on_wire, const ExtensionInfo& info,
+      T* metadata, ParseClosure parent, const char* begin, const char* end,
+      internal::ParseContext* ctx);
   // Lite parser
   std::pair<const char*, bool> ParseField(
       uint64 tag, ParseClosure parent, const char* begin, const char* end,
@@ -404,6 +413,11 @@ class PROTOBUF_EXPORT ExtensionSet {
       internal::ParseContext* ctx);
   // Full parser
   std::pair<const char*, bool> ParseField(
+      uint64 tag, ParseClosure parent, const char* begin, const char* end,
+      const Message* containing_type,
+      internal::InternalMetadataWithArena* metadata,
+      internal::ParseContext* ctx);
+  std::pair<const char*, bool> ParseFieldMaybeLazily(
       uint64 tag, ParseClosure parent, const char* begin, const char* end,
       const Message* containing_type,
       internal::InternalMetadataWithArena* metadata,
@@ -799,6 +813,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 };
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+
 template <typename Msg, typename Metadata>
 const char* ParseMessageSet(const char* begin, const char* end, Msg* msg,
                             ExtensionSet* ext, Metadata* metadata,
@@ -811,25 +826,26 @@ const char* ParseMessageSet(const char* begin, const char* end, Msg* msg,
     ptr = Varint::Parse32Inline(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     if (tag == WireFormatLite::kMessageSetItemStartTag) {
-      bool ok = ctx->PrepareGroup(tag, &depth);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ok);
       ctx->extra_parse_data().payload.clear();
-      ptr = Msg::InternalParseMessageSetItem(ptr, end, msg, ctx);
+      auto res = ctx->ParseGroup(tag, {Msg::InternalParseMessageSetItem, msg},
+                                 ptr, end, &depth);
+      ptr = res.first;
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      if (ctx->GroupContinues(depth)) goto group_continues;
+      if (res.second) {
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->StoreGroup(
+            {Msg::_InternalParse, msg}, {Msg::InternalParseMessageSetItem, msg},
+            depth, tag));
+        return ptr;
+      }
     } else {
       auto res =
           ext->ParseField(tag, {Msg::_InternalParse, msg}, ptr, end,
                           Msg::internal_default_instance(), metadata, ctx);
       ptr = res.first;
+      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       if (res.second) break;
     }
   }
-  return ptr;
-group_continues:
-  GOOGLE_DCHECK(ptr >= end);
-  ctx->StoreGroup({Msg::_InternalParse, msg},
-                  {Msg::InternalParseMessageSetItem, msg}, depth);
   return ptr;
 }
 #endif

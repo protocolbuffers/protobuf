@@ -125,7 +125,7 @@ class PROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@protoc
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const FieldMask& from);
   void MergeFrom(const FieldMask& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

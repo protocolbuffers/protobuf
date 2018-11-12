@@ -117,8 +117,8 @@ public class LazyFieldLiteTest extends TestCase {
     LazyFieldLite original = createLazyFieldLiteFromMessage(message);
     LazyFieldLite merged = new LazyFieldLite();
     merged.merge(original);
-    TestAllExtensions value = (TestAllExtensions) merged.getValue(
-        TestAllExtensions.getDefaultInstance());
+    TestAllExtensions value =
+        (TestAllExtensions) merged.getValue(TestAllExtensions.getDefaultInstance());
     assertEquals(message, value);
   }
 
@@ -130,8 +130,8 @@ public class LazyFieldLiteTest extends TestCase {
 
   public void testInvalidProto() throws Exception {
     // Silently fails and uses the default instance.
-    LazyFieldLite field = new LazyFieldLite(
-        TestUtil.getExtensionRegistry(), ByteString.copyFromUtf8("invalid"));
+    LazyFieldLite field =
+        new LazyFieldLite(TestUtil.getExtensionRegistry(), ByteString.copyFromUtf8("invalid"));
     assertEquals(
         TestAllTypes.getDefaultInstance(), field.getValue(TestAllTypes.getDefaultInstance()));
     assertEquals(0, field.getSerializedSize());
@@ -158,7 +158,7 @@ public class LazyFieldLiteTest extends TestCase {
         TestAllTypes.newBuilder().setOptionalInt32(1).setOptionalInt64(2).build();
 
     LazyFieldLite field1 = LazyFieldLite.fromValue(message1);
-    field1.getValue(TestAllTypes.getDefaultInstance());  // Force parsing.
+    field1.getValue(TestAllTypes.getDefaultInstance()); // Force parsing.
     LazyFieldLite field2 = createLazyFieldLiteFromMessage(message2);
     field1.merge(field2);
     assertEquals(expected, field1.getValue(TestAllTypes.getDefaultInstance()));
@@ -166,7 +166,7 @@ public class LazyFieldLiteTest extends TestCase {
     // Now reverse which one is parsed first.
     field1 = LazyFieldLite.fromValue(message1);
     field2 = createLazyFieldLiteFromMessage(message2);
-    field2.getValue(TestAllTypes.getDefaultInstance());  // Force parsing.
+    field2.getValue(TestAllTypes.getDefaultInstance()); // Force parsing.
     field1.merge(field2);
     assertEquals(expected, field1.getValue(TestAllTypes.getDefaultInstance()));
   }
@@ -175,8 +175,8 @@ public class LazyFieldLiteTest extends TestCase {
     // Test a few different paths that involve one message that was not parsed.
     TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt32(1).build();
     LazyFieldLite valid = LazyFieldLite.fromValue(message);
-    LazyFieldLite invalid = new LazyFieldLite(
-        TestUtil.getExtensionRegistry(), ByteString.copyFromUtf8("invalid"));
+    LazyFieldLite invalid =
+        new LazyFieldLite(TestUtil.getExtensionRegistry(), ByteString.copyFromUtf8("invalid"));
     invalid.merge(valid);
 
     // We swallow the exception and just use the set field.
@@ -206,13 +206,13 @@ public class LazyFieldLiteTest extends TestCase {
     // Now try parsing the empty field first.
     field = LazyFieldLite.fromValue(messageWithExtensions);
     LazyFieldLite other = createLazyFieldLiteFromMessage(emptyRegistry, emptyMessage);
-    other.getValue(TestAllExtensions.getDefaultInstance());  // Force parsing.
+    other.getValue(TestAllExtensions.getDefaultInstance()); // Force parsing.
     field.merge(other);
     assertEquals(messageWithExtensions, field.getValue(TestAllExtensions.getDefaultInstance()));
 
     // And again reverse.
     field = createLazyFieldLiteFromMessage(emptyRegistry, emptyMessage);
-    field.getValue(TestAllExtensions.getDefaultInstance());  // Force parsing.
+    field.getValue(TestAllExtensions.getDefaultInstance()); // Force parsing.
     other = LazyFieldLite.fromValue(messageWithExtensions);
     field.merge(other);
     assertEquals(messageWithExtensions, field.getValue(TestAllExtensions.getDefaultInstance()));
@@ -239,8 +239,7 @@ public class LazyFieldLiteTest extends TestCase {
   }
 
   private void assertNotEqual(Object unexpected, Object actual) {
-    assertFalse(unexpected == actual
-        || (unexpected != null && unexpected.equals(actual)));
+    assertFalse(unexpected == actual || (unexpected != null && unexpected.equals(actual)));
   }
 
 }

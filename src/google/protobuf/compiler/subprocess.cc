@@ -125,8 +125,10 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
   }
 
   // Invoking cmd.exe allows for '.bat' files from the path as well as '.exe'.
-  // Using a malloc'ed string because CreateProcess() can mutate its second parameter.  (WTF).
-  char *command_line =  portable_strdup(("cmd.exe /c \"" + program + "\"").c_str());
+  // Using a malloc'ed string because CreateProcess() can mutate its second
+  // parameter.
+  char *command_line =
+      portable_strdup(("cmd.exe /c \"" + program + "\"").c_str());
 
   // Create the process.
   PROCESS_INFORMATION process_info;

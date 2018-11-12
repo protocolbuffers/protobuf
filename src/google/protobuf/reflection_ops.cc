@@ -84,6 +84,19 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
     const FieldDescriptor* field = fields[i];
 
     if (field->is_repeated()) {
+      if (field->is_map()) {
+        MapFieldBase* from_field =
+            from_reflection->MapData(const_cast<Message*>(&from), field);
+        MapFieldBase* to_field =
+            to_reflection->MapData(const_cast<Message*>(to), field);
+        // Use map reflection if both are in map status and have the
+        // same map type to avoid sync with repeated field.
+        if (to_field->IsMapValid() && from_field->IsMapValid()
+            && typeid(*from_field) == typeid(*to_field)) {
+          to_field->MergeFrom(*from_field);
+          continue;
+        }
+      }
       int count = from_reflection->FieldSize(from, field);
       for (int j = 0; j < count; j++) {
         switch (field->cpp_type()) {

@@ -125,7 +125,7 @@ class PROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_ins
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Empty& from);
   void MergeFrom(const Empty& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

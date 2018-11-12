@@ -74,7 +74,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/once.h                                   \
   google/protobuf/stubs/platform_macros.h                        \
   google/protobuf/stubs/port.h                                   \
-  google/protobuf/stubs/singleton.h                              \
   google/protobuf/stubs/status.h                                 \
   google/protobuf/stubs/stl_util.h                               \
   google/protobuf/stubs/stringpiece.h                            \
@@ -92,6 +91,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/dynamic_message.h                              \
   google/protobuf/empty.pb.h                                     \
   google/protobuf/extension_set.h                                \
+  google/protobuf/extension_set_inl.h                            \
   google/protobuf/field_mask.pb.h                                \
   google/protobuf/generated_enum_reflection.h                    \
   google/protobuf/generated_enum_util.h                          \
@@ -112,6 +112,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/message_lite.h                                 \
   google/protobuf/metadata.h                                     \
   google/protobuf/metadata_lite.h                                \
+  google/protobuf/parse_context.h                                \
   google/protobuf/port.h                                         \
   google/protobuf/port_def.inc                                   \
   google/protobuf/port_undef.inc                                 \
@@ -314,7 +315,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/command_line_interface.cc           \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
-  google/protobuf/compiler/scc.cc                              \
   google/protobuf/compiler/scc.h                               \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \
@@ -528,7 +528,6 @@ protoc_inputs =                                                   \
 
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
-  $(js_well_known_types_sources)                               \
   solaris/libstdc++.la                                         \
   google/protobuf/test_messages_proto3.proto                   \
   google/protobuf/test_messages_proto2.proto                   \

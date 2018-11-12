@@ -159,15 +159,6 @@ class MessageTest(BaseTestCase):
       with self.assertRaises(message.DecodeError) as context:
         msg.FromString(end_tag)
       self.assertEqual('Unexpected end-group tag.', str(context.exception))
-    else:
-      with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter('always')
-        msg.FromString(end_tag)
-        assert len(w) == 1
-        assert issubclass(w[-1].category, RuntimeWarning)
-        self.assertEqual('Unexpected end-group tag: Not all data was converted',
-                         str(w[-1].message))
 
   def testDeterminismParameters(self, message_module):
     # This message is always deterministically serialized, even if determinism
@@ -1791,6 +1782,13 @@ class Proto3Test(BaseTestCase):
     old_map_value = msg2.map_int32_foreign_message[222]
 
     msg2.MergeFrom(msg)
+    # Compare with expected message instead of call
+    # msg2.map_int32_foreign_message[222] to make sure MergeFrom does not
+    # sync with repeated field and there is no duplicated keys.
+    expected_msg = map_unittest_pb2.TestMap()
+    expected_msg.CopyFrom(msg)
+    expected_msg.map_int64_int64[88] = 99
+    self.assertEqual(msg2, expected_msg)
 
     self.assertEqual(34, msg2.map_int32_int32[12])
     self.assertEqual(78, msg2.map_int32_int32[56])
@@ -1854,9 +1852,13 @@ class Proto3Test(BaseTestCase):
     self.assertEqual(99, msg2.map_int64_int64[88])
 
     msg2.map_int32_foreign_message.MergeFrom(msg.map_int32_foreign_message)
-    self.assertEqual(5, msg2.map_int32_foreign_message[111].c)
-    self.assertEqual(10, msg2.map_int32_foreign_message[222].c)
-    self.assertFalse(msg2.map_int32_foreign_message[222].HasField('d'))
+    # Compare with expected message instead of call
+    # msg.map_int32_foreign_message[222] to make sure MergeFrom does not
+    # sync with repeated field and no duplicated keys.
+    expected_msg = map_unittest_pb2.TestMap()
+    expected_msg.CopyFrom(msg)
+    expected_msg.map_int64_int64[88] = 99
+    self.assertEqual(msg2, expected_msg)
 
     # Test when cpp extension cache a map.
     m1 = map_unittest_pb2.TestMap()

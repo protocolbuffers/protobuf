@@ -204,11 +204,6 @@ inline std::string ValueAsString(double value) {
 // value fits into double but not float (e.g., DBL_MAX).
 PROTOBUF_EXPORT bool SafeStrToFloat(StringPiece str, float* value);
 
-// Returns whether a StringPiece begins with the provided prefix.
-bool StringStartsWith(StringPiece text, StringPiece prefix);
-
-// Returns whether a StringPiece ends with the provided suffix.
-bool StringEndsWith(StringPiece text, StringPiece suffix);
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf

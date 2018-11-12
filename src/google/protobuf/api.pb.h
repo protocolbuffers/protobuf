@@ -128,7 +128,7 @@ class PROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_inser
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Api& from);
   void MergeFrom(const Api& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -318,7 +318,7 @@ class PROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc_in
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Method& from);
   void MergeFrom(const Method& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -501,7 +501,7 @@ class PROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_ins
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Mixin& from);
   void MergeFrom(const Mixin& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

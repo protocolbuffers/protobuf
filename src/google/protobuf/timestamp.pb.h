@@ -125,7 +125,7 @@ class PROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@protoc
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Timestamp& from);
   void MergeFrom(const Timestamp& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

@@ -82,6 +82,13 @@ final class NioByteString extends ByteString.LeafByteString {
   }
 
   @Override
+  public byte internalByteAt(int index) {
+    // it isn't possible to avoid the bounds checking inside of ByteBuffer, so just use the default
+    // implementation.
+    return byteAt(index);
+  }
+
+  @Override
   public int size() {
     return buffer.remaining();
   }

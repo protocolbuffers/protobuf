@@ -56,14 +56,6 @@ using internal::WireFormatLite;
 
 namespace {
 
-bool EnableJavaPrimitiveExperiment() {
-#ifdef PROTOBUF_JAVA_PRIMITIVE_EXPERIMENT
-  return PROTOBUF_JAVA_PRIMITIVE_EXPERIMENT;
-#else   // PROTOBUF_JAVA_PRIMITIVE_EXPERIMENT
-  return false;
-#endif  // !PROTOBUF_JAVA_PRIMITIVE_EXPERIMENT
-}
-
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            int messageBitIndex,
                            int builderBitIndex,
@@ -77,12 +69,11 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["boxed_type"] = BoxedPrimitiveTypeName(javaType);
   (*variables)["field_type"] = (*variables)["type"];
 
-  if (EnableJavaPrimitiveExperiment() &&
-      (javaType == JAVATYPE_BOOLEAN ||
-       javaType == JAVATYPE_DOUBLE ||
-       javaType == JAVATYPE_FLOAT ||
-       javaType == JAVATYPE_INT ||
-       javaType == JAVATYPE_LONG)) {
+  if (javaType == JAVATYPE_BOOLEAN ||
+      javaType == JAVATYPE_DOUBLE ||
+      javaType == JAVATYPE_FLOAT ||
+      javaType == JAVATYPE_INT ||
+      javaType == JAVATYPE_LONG) {
     string capitalized_type = UnderscoresToCamelCase(
         PrimitiveTypeName(javaType), /*cap_first_letter=*/true);
     (*variables)["field_list_type"] =

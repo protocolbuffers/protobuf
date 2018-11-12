@@ -39,21 +39,18 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 #include <google/protobuf/port_def.inc>
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-#include <google/protobuf/parse_context.h>
-#include "util/utf8/public/unilib.h"
-#include "util/utf8/public/unilib_utf8_utils.h"
-#endif
 
 namespace google {
 namespace protobuf {
@@ -106,375 +103,148 @@ string InitializationErrorMessage(const char* action,
   return result;
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-// This is wrapper to turn a ZeroCopyInputStream (ZCIS) into a
-// InputStreamWithOverlap. This is done by copying data around the seams,
-// hence the name EpsCopyInputStream, pictorially if ZCIS presents a stream
-// in chunks like so
-// [---------------------------------------------------------------]
-// [---------------------] chunk 1
-//                      [----------------------------] chunk 2
-//                                          chunk 3 [--------------]
-// where '-' depicts bytes of the stream or chunks vertically alligned with the
-// corresponding bytes between stream and chunk.
-//
-// This class will convert this into chunks
-// [-----------------....] chunk 1
-//                  [----....] patch
-//                      [------------------------....] chunk 2
-//                                              [----....] patch
-//                                          chunk 3 [----------....]
-//                                                      patch [----****]
-// by using a fixed size buffer to patch over the seams. This requires
-// copying of an "epsilon" neighboorhood around the seams. In the picture above
-// dots mean bytes beyond the end of the new chunks. Each chunk is kSlopBytes
-// smalller as its original chunk (above depicted as 4 dots) and the number of
-// of chunks is doubled because each seam in the original stream introduces a
-// new patch.
-//
-// The algorithm is simple but not entirely trivial. Two complications arise
-// 1) The original chunk could be less than kSlopBytes. Hence we can't simply
-// chop the last kSlopBytes of a chunk.
-// 2) We need to leave the underlying CodedInputStream (CIS) precisely at the
-// last byte read in the parse. In most cases a parse ends on a limit or end of
-// the ZeroCopyInputStream, which is not problematic because CIS will never give
-// us data beyond that. But the parse can end on a 0 end tag or an end group.
-// If that happens in the first kSlopBytes of the patch (which are copied
-// from the previous buffer) the CIS has already moved to the next chunk to
-// copy the remaining bytes of the patch buffer. There exist no API to rollback
-// to a previous buffer.
-//
-// We model this as a state machine. A call to get the next chunk either returns
-// an original chunk except the last kSlopBytes or it has to copy the last
-// kSlopBytes of the current chunk to the patch buffer and copy the first
-// kSlopBytes of the next chunk to the end of the patch buffer.
-//
-// In order to deal with problem 1, we need to deal with the case that a new
-// chunk can be less or equal than kSlopBytes big. We can just copy the chunk
-// to the end and return (buffer, chunk->size). Pictorially
-// [--------] chunk 1
-//         [--] chunk 2
-//           [---] chunk 3
-// will become
-// [----....] chunk 1
-//     [--....] patch (not full range of the buffer, only two hyphens)
-//         [--] chunk 2 (too small so never returned as buffer)
-//       [---....] patch (not full range of the buffer, only three hyphens)
-//           [---] chunk 3 (too small so never returned as buffer)
-//          [----****] patch (full range, last bytes are garbage)
-// Because of this the source (the dots in above) can overlap with the
-// destination buffer and so we have to use memmove.
-//
-// To solve problem 2, we verify after copying the last kSlopBytes the parse
-// won't end before we continue to get the next chunk.
-template <int kSlopBytes>
-class EpsCopyInputStream {
- public:
-  EpsCopyInputStream(io::CodedInputStream* input) : input_(input) {}
-  ~EpsCopyInputStream() {
-    ABSL_ASSERT(skip_ >= 0);
-    input_->Skip(skip_);
-  }
-
-  template <typename EnsureNotEnd>
-  StringPiece SafeNextWithOverlap(const EnsureNotEnd& ensure_not_end) {
-    switch (next_state_) {
-      case kEOS:
-        // End of stream
-        return nullptr;
-      case kChunk:
-        // chunk_ contains a buffer of sufficient size (> kSlopBytes).
-        // To parse the last kSlopBytes we need to copy the bytes into the
-        // buffer. Hence we set,
-        next_state_ = kBuffer;
-        skip_ = chunk_.size() - kSlopBytes;
-        return {chunk_.begin(), chunk_.size() - kSlopBytes};
-      case kBuffer: {
-        // We have to parse the last kSlopBytes of chunk_, which could alias
-        // buffer_ so we have to memmove.
-        std::memmove(buffer_, chunk_.end() - kSlopBytes, kSlopBytes);
-        skip_ += kSlopBytes;
-        // We need to fill in the other half of buffer_ with the start of the
-        // next chunk. So we need to continue to the next buffer in the ZCIS,
-        // which makes it impossible to rollback to the current buffer :(
-        // We need to verify this won't happen.
-        if (!ensure_not_end(buffer_, kSlopBytes)) {
-          // We are guaranteed to exit in this interval.
-          next_state_ = kEOS;
-          return {buffer_, kSlopBytes};
-        }
-        chunk_ = GetChunk();
-        auto size = chunk_.size();
-        if (size > kSlopBytes) {
-          next_state_ = kChunk;
-          std::memcpy(buffer_ + kSlopBytes, chunk_.begin(), kSlopBytes);
-          return {buffer_, kSlopBytes};
-        } else if (size == 0) {
-          next_state_ = kEOS;
-          return {buffer_, kSlopBytes};
-        } else {
-          // next_state_ = kBuffer, but this is unnecessary
-
-          // The next chunk is not big enough. So we copy it in the current
-          // after the current buffer. Resulting in a buffer with
-          // size + kSlopBytes bytes.
-          std::memcpy(buffer_ + kSlopBytes, chunk_.begin(), size);
-          // skip_ becomes negative here.
-          skip_ += size - kSlopBytes;
-          chunk_ = {buffer_, size + kSlopBytes};
-          return {buffer_, size};
-        }
-      }
-      case kStart: {
-        chunk_ = GetChunk();
-        auto size = chunk_.size();
-        if (PROTOBUF_PREDICT_TRUE(size > kSlopBytes)) {
-          next_state_ = kBuffer;
-          skip_ = size - kSlopBytes;
-          return {chunk_.begin(), size - kSlopBytes};
-        }
-        size_t i = 0;
-        do {
-          if (size == 0) {
-            next_state_ = kEOS;
-            return {buffer_, i};
-          }
-          std::memcpy(buffer_ + i, chunk_.begin(), size);
-          ABSL_ASSERT(skip_ == 0);
-          skip_ = size;
-          i += size;
-          if (i > kSlopBytes) {
-            skip_ -= kSlopBytes;
-            chunk_ = {buffer_, i};
-            next_state_ = kBuffer;
-            return {buffer_, i - kSlopBytes};
-          }
-          if (!ensure_not_end(buffer_, i)) {
-            next_state_ = kEOS;
-            return {buffer_, i};
-          }
-          chunk_ = GetChunk();
-          size = chunk_.size();
-        } while (size <= kSlopBytes);
-        std::memcpy(buffer_ + i, chunk_.begin(), kSlopBytes);
-        next_state_ = kChunk;
-        return {buffer_, i};
-      }
-    }
-  }
-
-  StringPiece NextWithOverlap() {
-    return SafeNextWithOverlap([](const char*, size_t) { return true; });
-  }
-
-  void AdjustPos(int delta) {
-    ABSL_ASSERT(delta <= kSlopBytes);
-    skip_ += delta;
-  }
-
-  void SetError() { skip_ = 0; }
-
- private:
-  io::CodedInputStream* input_;
-  StringPiece chunk_;
-  char buffer_[2 * kSlopBytes] = {};
-  enum State {
-    kStart,
-    kEOS,     // -> end of stream.
-    kChunk,   // -> chunk_ contains the data for Next.
-    kBuffer,  // -> We need to copy the left over from previous chunk_ and
-              //    load and patch the start of the next chunk in the
-              //    local buffer.
-  };
-  State next_state_ = kStart;
-  int skip_ = 0;  // how much bytes to skip to current position in the stream.
-
-  StringPiece GetChunk() {
-    const void* ptr;
-    ABSL_ASSERT(skip_ >= 0);
-    input_->Skip(skip_);
-    skip_ = 0;
-    int size;
-    if (!input_->GetDirectBufferPointer(&ptr, &size)) {
-      return nullptr;
-    }
-    return StringPiece(static_cast<const char*>(ptr), size);
-  }
-};
-#endif
-
-// Several of the Parse methods below just do one thing and then call another
-// method.  In a naive implementation, we might have ParseFromString() call
-// ParseFromArray() which would call ParseFromZeroCopyStream() which would call
-// ParseFromCodedStream() which would call MergeFromCodedStream() which would
-// call MergePartialFromCodedStream().  However, when parsing very small
-// messages, every function call introduces significant overhead.  To avoid
-// this without reproducing code, we use these forced-inline helpers.
-
-inline bool InlineMergeFromCodedStream(io::CodedInputStream* input,
-                                       MessageLite* message) {
-  if (!message->MergePartialFromCodedStream(input)) return false;
-  if (!message->IsInitialized()) {
-    GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *message);
-    return false;
-  }
-  return true;
-}
-
-inline bool InlineParsePartialFromCodedStream(io::CodedInputStream* input,
-                                              MessageLite* message) {
-  message->Clear();
-  return message->MergePartialFromCodedStream(input);
-}
-
-inline bool InlineParseFromCodedStream(io::CodedInputStream* input,
-                                       MessageLite* message) {
-  message->Clear();
-  return InlineMergeFromCodedStream(input, message);
-}
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-template <template <int> class Input>
-inline bool InlineMergePartialEntireInput(
-    Input<internal::ParseContext::kSlopBytes>* input, MessageLite* message) {
-  internal::ParseContext ctx;
-
-  auto chunk = input->NextWithOverlap();
-  if (chunk.empty()) {
-    return true;
-  }
-  auto res = ctx.StartParse({message->_ParseFunc(), message}, chunk);
-  while (res.first == internal::ParseContext::kContinue) {
-    int overrun = res.second;
-    chunk = input->NextWithOverlap();
-    if (chunk.empty()) {
-      if (!ctx.ValidEnd(overrun)) return false;
-      return true;
-    }
-    res = ctx.ResumeParse(chunk, overrun);
-  }
-  // Either failure or ended on a zero or end-group tag
-  return false;
-}
-#endif
-
-inline bool InlineMergePartialEntireStream(io::CodedInputStream* cis,
-                                           MessageLite* message) {
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  EpsCopyInputStream<internal::ParseContext::kSlopBytes> input(cis);
-  if (InlineMergePartialEntireInput(&input, message)) {
-    cis->SetConsumed();
-    return true;
-  }
-  return false;
-#else
-  return message->MergePartialFromCodedStream(cis) &&
-         cis->ConsumedEntireMessage();
-#endif
-}
-
-inline bool InlineMergeEntireStream(io::CodedInputStream* input,
-                                    MessageLite* message) {
-  if (!InlineMergePartialEntireStream(input, message)) return false;
-  if (!message->IsInitialized()) {
-    GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *message);
-    return false;
-  }
-  return true;
-}
-
-inline bool InlineParsePartialEntireStream(io::CodedInputStream* input,
-                                           MessageLite* message) {
-  message->Clear();
-  return InlineMergePartialEntireStream(input, message);
-}
-
-inline bool InlineParseEntireStream(io::CodedInputStream* input,
-                                    MessageLite* message) {
-  message->Clear();
-  return InlineMergeEntireStream(input, message);
-}
-
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-template <int kSlopBytes>
-class ArrayInput {
- public:
-  ArrayInput(StringPiece chunk) : chunk_(chunk) {}
-
-  StringPiece NextWithOverlap() {
-    auto s = chunk_.size();
-    if (s > 16) {
-      auto res = chunk_.substr(0, s - 16);
-      chunk_ = chunk_.substr(s - 16);
-      return res;
-    } else if (s == 0) {
-      return nullptr;
-    } else {
-      std::memcpy(buffer_, chunk_.begin(), s);
-      chunk_ = nullptr;
-      return {buffer_, s};
-    }
-  }
-
-  void SetError() {}
-
- private:
-  StringPiece chunk_;
-  char buffer_[32] = {};
-  int state_ = 0;
-};
-#endif
-
-inline bool InlineMergePartialFromArray(const void* data, int size,
-                                        MessageLite* msg,
-                                        bool aliasing = false) {
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-  auto begin = static_cast<const char*>(data);
-  if (aliasing) {
-    // TODO(gerbens) make this safe against corruption buffer overflow.
-    // Short cut to allow aliasing string_piece
-    internal::ParseContext ctx;
-    ctx.extra_parse_data().aliasing = true;
-    return ctx.ParseExactRange({msg->_ParseFunc(), msg}, begin, begin + size);
-  }
-  ArrayInput<internal::ParseContext::kSlopBytes> input(
-      StringPiece(begin, size));
-  return InlineMergePartialEntireInput(&input, msg);
-#else
-  io::CodedInputStream input(static_cast<const uint8*>(data), size);
-  return msg->MergePartialFromCodedStream(&input) &&
-         input.ConsumedEntireMessage();
-#endif
-}
-
-inline bool InlineMergeFromArray(const void* data, int size,
-                                 MessageLite* message, bool aliasing = false) {
-  if (!InlineMergePartialFromArray(data, size, message, aliasing)) return false;
-  if (!message->IsInitialized()) {
-    GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *message);
-    return false;
-  }
-  return true;
-}
-
-inline bool InlineParsePartialFromArray(const void* data, int size,
-                                        MessageLite* message,
-                                        bool aliasing = false) {
-  message->Clear();
-  return InlineMergePartialFromArray(data, size, message, aliasing);
-}
-
-inline bool InlineParseFromArray(const void* data, int size,
-                                 MessageLite* message, bool aliasing = false) {
-  if (!InlineParsePartialFromArray(data, size, message, aliasing)) return false;
-  if (!message->IsInitialized()) {
-    GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *message);
-    return false;
-  }
-  return true;
+inline StringPiece as_string_view(const void* data, int size) {
+  return StringPiece(static_cast<const char*>(data), size);
 }
 
 }  // namespace
+
+void MessageLite::LogInitializationErrorMessage() const {
+  GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *this);
+}
+
+namespace internal {
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+template <typename Next>
+bool ParseStream(const Next& next, MessageLite* msg) {
+  internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit());
+  EpsCopyParser<false> parser({msg->_ParseFunc(), msg}, &ctx);
+  auto range = next();
+  while (!range.empty()) {
+    if (!parser.Parse(range)) return false;
+    range = next();
+  }
+  return parser.Done();
+}
+
+template <bool aliasing>
+bool MergePartialFromImpl(StringPiece input, MessageLite* msg) {
+  auto begin = input.data();
+  int size = input.size();
+  ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit());
+  internal::ParseClosure parser = {msg->_ParseFunc(), msg};
+  // TODO(gerbens) fine tune
+  constexpr int kThreshold = 48;
+  static_assert(kThreshold >= ParseContext::kSlopBytes,
+                "Requires enough room for at least kSlopBytes to be copied.");
+  // TODO(gerbens) This could be left uninitialized and given an MSAN
+  // annotation instead.
+  char buffer[kThreshold + ParseContext::kSlopBytes] = {};
+  if (size <= kThreshold) {
+    std::memcpy(buffer, begin, size);
+    if (aliasing) {
+      ctx.extra_parse_data().aliasing =
+          reinterpret_cast<std::uintptr_t>(begin) -
+          reinterpret_cast<std::uintptr_t>(buffer);
+    }
+    return ctx.ParseExactRange(parser, buffer, buffer + size);
+  }
+  if (aliasing) {
+    ctx.extra_parse_data().aliasing = ParseContext::ExtraParseData::kNoDelta;
+  }
+  size -= ParseContext::kSlopBytes;
+  int overrun = 0;
+  ctx.StartParse(parser);
+  if (!ctx.ParseRange(StringPiece(begin, size), &overrun)) return false;
+  begin += size;
+  std::memcpy(buffer, begin, ParseContext::kSlopBytes);
+  if (aliasing) {
+    ctx.extra_parse_data().aliasing = reinterpret_cast<std::uintptr_t>(begin) -
+        reinterpret_cast<std::uintptr_t>(buffer);
+  }
+  return ctx.ParseRange({buffer, ParseContext::kSlopBytes}, &overrun) &&
+         ctx.ValidEnd(overrun);
+}
+
+StringPiece Next(BoundedZCIS* input) {
+  const void* data;
+  int size;
+  if (input->limit == 0) return {};
+  while (input->zcis->Next(&data, &size)) {
+    if (size != 0) {
+      input->limit -= size;
+      if (input->limit < 0) {
+        size += input->limit;
+        input->zcis->BackUp(-input->limit);
+        input->limit = 0;
+      }
+      return StringPiece(static_cast<const char*>(data), size);
+    }
+  }
+  return {};
+}
+
+template <bool aliasing>
+bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
+  // TODO(gerbens) implement aliasing
+  auto next = [&input]() { return Next(&input); };
+  return ParseStream(next, msg) && input.limit == 0;
+}
+
+template <bool aliasing>
+bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg) {
+  // TODO(gerbens) implement aliasing
+  BoundedZCIS bounded_zcis{input, INT_MAX};
+  auto next = [&bounded_zcis]() { return Next(&bounded_zcis); };
+  return ParseStream(next, msg) && bounded_zcis.limit > 0;
+}
+
+
+#else
+
+inline bool InlineMergePartialEntireStream(io::CodedInputStream* cis,
+                                           MessageLite* message,
+                                           bool aliasing) {
+  return message->MergePartialFromCodedStream(cis) &&
+         cis->ConsumedEntireMessage();
+}
+
+template <bool aliasing>
+bool MergePartialFromImpl(StringPiece input, MessageLite* msg) {
+  io::CodedInputStream decoder(reinterpret_cast<const uint8*>(input.data()),
+                               input.size());
+  return InlineMergePartialEntireStream(&decoder, msg, aliasing);
+}
+
+template <bool aliasing>
+bool MergePartialFromImpl(BoundedZCIS input, MessageLite* msg) {
+  io::CodedInputStream decoder(input.zcis);
+  decoder.PushLimit(input.limit);
+  return InlineMergePartialEntireStream(&decoder, msg, aliasing) &&
+         decoder.BytesUntilLimit() == 0;
+}
+
+template <bool aliasing>
+bool MergePartialFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg) {
+  io::CodedInputStream decoder(input);
+  return InlineMergePartialEntireStream(&decoder, msg, aliasing);
+}
+
+#endif
+
+template bool MergePartialFromImpl<false>(StringPiece input,
+                                          MessageLite* msg);
+template bool MergePartialFromImpl<true>(StringPiece input,
+                                         MessageLite* msg);
+template bool MergePartialFromImpl<false>(io::ZeroCopyInputStream* input,
+                                          MessageLite* msg);
+template bool MergePartialFromImpl<true>(io::ZeroCopyInputStream* input,
+                                         MessageLite* msg);
+template bool MergePartialFromImpl<false>(BoundedZCIS input, MessageLite* msg);
+template bool MergePartialFromImpl<true>(BoundedZCIS input, MessageLite* msg);
+
+}  // namespace internal
 
 MessageLite* MessageLite::New(Arena* arena) const {
   MessageLite* message = New();
@@ -485,100 +255,100 @@ MessageLite* MessageLite::New(Arena* arena) const {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* cis) {
-  EpsCopyInputStream<internal::ParseContext::kSlopBytes> input(cis);
-  internal::ParseContext ctx(cis->RecursionBudget());
-  ctx.extra_parse_data().pool = cis->GetExtensionPool();
-  ctx.extra_parse_data().factory = cis->GetExtensionFactory();
-
-  auto chunk = input.SafeNextWithOverlap(
-      [&ctx](const char* ptr, int n) { return ctx.EnsureNoEnd(ptr, n, 0); });
-  if (chunk.empty()) {
-    cis->SetConsumed();
-    return true;
-  }
-  auto res = ctx.StartParse({_ParseFunc(), this}, chunk);
-  while (res.first == internal::ParseContext::kContinue) {
-    int overrun = res.second;
-    chunk = input.SafeNextWithOverlap([&ctx, overrun](const char* ptr, int n) {
-      return ctx.EnsureNoEnd(ptr, n, overrun);
-    });
-    if (chunk.empty()) {
-      if (!ctx.ValidEnd(overrun)) goto error;
-      cis->SetConsumed();
+bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
+  // MergePartialFromCodedStream must leave input in "exactly" the same state
+  // as the old implementation. At least when the parse is successful. For
+  // MergePartialFromCodedStream a successful parse can also occur by ending
+  // on a zero tag or an end-group tag. In these cases input is left precisely
+  // past the terminating tag and last_tag_ is set to the terminating tags
+  // value. If the parse ended on a limit (either a pushed limit or end of the
+  // ZeroCopyInputStream) legitimate_end_ is set to true.
+  int size = 0;
+  auto next = [input, &size]() {
+    const void* ptr;
+    input->Skip(size);  // skip previous buffer
+    if (!input->GetDirectBufferPointer(&ptr, &size)) return StringPiece{};
+    return StringPiece(static_cast<const char*>(ptr), size);
+  };
+  internal::ParseContext ctx(input->RecursionBudget());
+  ctx.extra_parse_data().pool = input->GetExtensionPool();
+  ctx.extra_parse_data().factory = input->GetExtensionFactory();
+  internal::EpsCopyParser<true> parser({_ParseFunc(), this}, &ctx);
+  auto range = next();
+  while (!range.empty()) {
+    if (!parser.Parse(range)) {
+      if (!ctx.EndedOnTag()) return false;
+      // Parse ended on a zero or end-group tag, leave the stream in the
+      // appropriate state. Note we only skip forward, due to using
+      // ensure_non_negative_skip being set to true in parser.
+      input->Skip(parser.Skip());
+      input->SetLastTag(ctx.LastTag());
       return true;
     }
-    res = ctx.ResumeParse(chunk, overrun);
+    range = next();
   }
-  // Either failure or ended on a zero or end-group tag
-  if (res.first != internal::ParseContext::kFailure) {
-    cis->SetLastTag(res.first);
-    input.AdjustPos(res.second);
-    return true;
-  }
-error:
-  // Error can happen at a spot from which we can't back up. But in this case
-  // the user can't resume the stream as the error could be in an arbitrary
-  // location in the stream, so just leave the stream alone. This prevents
-  // triggering assertion fail.
-  input.SetError();
-  return false;
+  input->SetConsumed();
+  return parser.Done();
 }
 #endif
 
 bool MessageLite::MergeFromCodedStream(io::CodedInputStream* input) {
-  return InlineMergeFromCodedStream(input, this);
+  return MergePartialFromCodedStream(input) && IsInitializedWithErrors();
 }
 
 bool MessageLite::ParseFromCodedStream(io::CodedInputStream* input) {
-  return InlineParseFromCodedStream(input, this);
+  Clear();
+  return MergeFromCodedStream(input);
 }
 
 bool MessageLite::ParsePartialFromCodedStream(io::CodedInputStream* input) {
-  return InlineParsePartialFromCodedStream(input, this);
+  Clear();
+  return MergePartialFromCodedStream(input);
 }
 
 bool MessageLite::ParseFromZeroCopyStream(io::ZeroCopyInputStream* input) {
-  io::CodedInputStream decoder(input);
-  return InlineParseEntireStream(&decoder, this);
+  return ParseFrom<kParse>(input);
 }
 
 bool MessageLite::ParsePartialFromZeroCopyStream(
     io::ZeroCopyInputStream* input) {
-  io::CodedInputStream decoder(input);
-  return InlineParsePartialEntireStream(&decoder, this);
+  return ParseFrom<kParsePartial>(input);
+}
+
+bool MessageLite::MergePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
+                                                 int size) {
+  return ParseFrom<kMergePartial>(internal::BoundedZCIS{input, size});
+}
+
+bool MessageLite::MergeFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
+                                                 int size) {
+  return ParseFrom<kMerge>(internal::BoundedZCIS{input, size});
 }
 
 bool MessageLite::ParseFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
                                                  int size) {
-  io::CodedInputStream decoder(input);
-  decoder.PushLimit(size);
-  return InlineParseEntireStream(&decoder, this) &&
-         decoder.BytesUntilLimit() == 0;
+  return ParseFrom<kParse>(internal::BoundedZCIS{input, size});
 }
 
 bool MessageLite::ParsePartialFromBoundedZeroCopyStream(
     io::ZeroCopyInputStream* input, int size) {
-  io::CodedInputStream decoder(input);
-  decoder.PushLimit(size);
-  return InlineParsePartialEntireStream(&decoder, this) &&
-         decoder.BytesUntilLimit() == 0;
+  return ParseFrom<kParsePartial>(internal::BoundedZCIS{input, size});
 }
 
 bool MessageLite::ParseFromString(const string& data) {
-  return InlineParseFromArray(data.data(), data.size(), this);
+  return ParseFrom<kParse>(data);
 }
 
 bool MessageLite::ParsePartialFromString(const string& data) {
-  return InlineParsePartialFromArray(data.data(), data.size(), this);
+  return ParseFrom<kParsePartial>(data);
 }
 
 bool MessageLite::ParseFromArray(const void* data, int size) {
-  return InlineParseFromArray(data, size, this);
+  return ParseFrom<kParse>(as_string_view(data, size));
 }
 
 bool MessageLite::ParsePartialFromArray(const void* data, int size) {
-  return InlineParsePartialFromArray(data, size, this);
+  return ParseFrom<kParsePartial>(as_string_view(data, size));
 }
 
 

@@ -77,7 +77,9 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -106,7 +108,7 @@ public class JsonFormat {
   public static Printer printer() {
     return new Printer(
         TypeRegistry.getEmptyTypeRegistry(), false, Collections.<FieldDescriptor>emptySet(),
-        false, false, false);
+        false, false, false, false);
   }
 
   /**
@@ -127,6 +129,7 @@ public class JsonFormat {
     private final boolean preservingProtoFieldNames;
     private final boolean omittingInsignificantWhitespace;
     private final boolean printingEnumsAsInts;
+    private final boolean sortingMapKeys;
 
     private Printer(
         TypeRegistry registry,
@@ -134,13 +137,15 @@ public class JsonFormat {
         Set<FieldDescriptor> includingDefaultValueFields,
         boolean preservingProtoFieldNames,
         boolean omittingInsignificantWhitespace,
-        boolean printingEnumsAsInts) {
+        boolean printingEnumsAsInts,
+        boolean sortingMapKeys) {
       this.registry = registry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
       this.printingEnumsAsInts = printingEnumsAsInts;
+      this.sortingMapKeys = sortingMapKeys;
     }
 
     /**
@@ -159,7 +164,8 @@ public class JsonFormat {
           includingDefaultValueFields,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          sortingMapKeys);
     }
 
     /**
@@ -176,7 +182,8 @@ public class JsonFormat {
           Collections.<FieldDescriptor>emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          sortingMapKeys);
     }
 
     /**
@@ -193,7 +200,8 @@ public class JsonFormat {
           Collections.<FieldDescriptor>emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
-          true);
+          true,
+          sortingMapKeys);
     }
 
     private void checkUnsetPrintingEnumsAsInts() {
@@ -221,7 +229,8 @@ public class JsonFormat {
           fieldsToAlwaysOutput,
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          sortingMapKeys);
     }
 
     private void checkUnsetIncludingDefaultValueFields() {
@@ -244,7 +253,8 @@ public class JsonFormat {
           includingDefaultValueFields,
           true,
           omittingInsignificantWhitespace,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          sortingMapKeys);
     }
 
 
@@ -272,7 +282,31 @@ public class JsonFormat {
           includingDefaultValueFields,
           preservingProtoFieldNames,
           true,
-          printingEnumsAsInts);
+          printingEnumsAsInts,
+          sortingMapKeys);
+    }
+
+    /**
+     * Create a new {@link Printer} that will sort the map keys in the JSON output.
+     *
+     * Use of this modifier is discouraged, the generated JSON messages are equivalent
+     * with and without this option set, but there are some corner caseuse cases that
+     * demand a stable output, while order of map keys is otherwise arbitrary.
+     *
+     * The generated order is not well-defined and should not be depended on, but
+     * it's stable.
+     *
+     * This new Printer clones all other configurations from the current {@link Printer}.
+     */
+    public Printer sortingMapKeys() {
+      return new Printer(
+          registry,
+          alwaysOutputDefaultValueFields,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          true);
     }
 
     /**
@@ -292,7 +326,8 @@ public class JsonFormat {
               preservingProtoFieldNames,
               output,
               omittingInsignificantWhitespace,
-              printingEnumsAsInts)
+              printingEnumsAsInts,
+              sortingMapKeys)
           .print(message);
     }
 
@@ -604,6 +639,7 @@ public class JsonFormat {
     private final Set<FieldDescriptor> includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
     private final boolean printingEnumsAsInts;
+    private final boolean sortingMapKeys;
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
@@ -621,12 +657,14 @@ public class JsonFormat {
         boolean preservingProtoFieldNames,
         Appendable jsonOutput,
         boolean omittingInsignificantWhitespace,
-        boolean printingEnumsAsInts) {
+        boolean printingEnumsAsInts,
+        boolean sortingMapKeys) {
       this.registry = registry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.printingEnumsAsInts = printingEnumsAsInts;
+      this.sortingMapKeys = sortingMapKeys;
       this.gson = GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
@@ -957,8 +995,32 @@ public class JsonFormat {
       }
       generator.print("{" + blankOrNewLine);
       generator.indent();
+
+      @SuppressWarnings("unchecked") // Object guaranteed to be a List for a map field.
+      Collection<Object> elements = (List<Object>) value;
+      if (sortingMapKeys && !elements.isEmpty()) {
+        Comparator<Object> cmp = null;
+        if (keyField.getType() == FieldDescriptor.Type.STRING) {
+          cmp = new Comparator<Object>() {
+            @Override
+            public int compare(final Object o1, final Object o2) {
+              ByteString s1 = ByteString.copyFromUtf8((String) o1);
+              ByteString s2 = ByteString.copyFromUtf8((String) o2);
+              return ByteString.unsignedLexicographicalComparator().compare(s1, s2);
+            }
+          };
+        }
+        TreeMap<Object, Object> tm = new TreeMap<Object, Object>(cmp);
+        for (Object element : elements) {
+          Message entry = (Message) element;
+          Object entryKey = entry.getField(keyField);
+          tm.put(entryKey, element);
+        }
+        elements = tm.values();
+      }
+
       boolean printedElement = false;
-      for (Object element : (List) value) {
+      for (Object element : elements) {
         Message entry = (Message) element;
         Object entryKey = entry.getField(keyField);
         Object entryValue = entry.getField(valueField);

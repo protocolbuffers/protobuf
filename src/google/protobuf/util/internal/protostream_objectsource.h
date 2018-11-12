@@ -325,6 +325,11 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Whether to add trailing zeros for timestamp and duration.
   bool add_trailing_zeros_for_timestamp_and_duration_;
 
+  // Whether output the empty object or not. If false, output JSON string like:
+  // "'objectName' : {}". If true, then no outputs. This only happens when all
+  // the fields of the message are filtered out by field mask.
+  bool suppress_empty_object_;
+
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };
 

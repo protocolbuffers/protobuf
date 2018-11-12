@@ -103,6 +103,7 @@ class PROTOBUF_EXPORT MapFieldBase {
                              const MapIterator& b) const = 0;
   virtual void MapBegin(MapIterator* map_iter) const = 0;
   virtual void MapEnd(MapIterator* map_iter) const = 0;
+  virtual void MergeFrom(const MapFieldBase& other) = 0;
   virtual void Swap(MapFieldBase* other) = 0;
   // Sync Map with repeated field and returns the size of map.
   virtual int size() const = 0;
@@ -270,7 +271,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // Convenient methods for generated message implementation.
   int size() const override;
   void Clear();
-  void MergeFrom(const MapField& other);
+  void MergeFrom(const MapFieldBase& other) override;
   void Swap(MapFieldBase* other) override;
 
   // Used in the implementation of parsing. Caller should take the ownership iff
@@ -326,6 +327,7 @@ class PROTOBUF_EXPORT DynamicMapField
   bool ContainsMapKey(const MapKey& map_key) const override;
   bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) override;
   bool DeleteMapValue(const MapKey& map_key) override;
+  void MergeFrom(const MapFieldBase& other) override;
   void Swap(MapFieldBase* other) override;
 
   const Map<MapKey, MapValueRef>& GetMap() const override;
@@ -336,6 +338,8 @@ class PROTOBUF_EXPORT DynamicMapField
  private:
   Map<MapKey, MapValueRef> map_;
   const Message* default_entry_;
+
+  void AllocateMapValue(MapValueRef* map_val);
 
   // Implements MapFieldBase
   void SyncRepeatedFieldWithMapNoLock() const override;

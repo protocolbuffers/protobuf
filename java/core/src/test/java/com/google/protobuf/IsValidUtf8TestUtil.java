@@ -218,9 +218,9 @@ final class IsValidUtf8TestUtil {
   private static List<Shard> generateFourByteShards(int numShards, long[] expected) {
     assertEquals(numShards, expected.length);
     List<Shard> shards = new ArrayList<Shard>(numShards);
-    long LIM = 1L << 32;
-    long increment = LIM / numShards;
-    assertTrue(LIM % numShards == 0);
+    long lim = 1L << 32;
+    long increment = lim / numShards;
+    assertTrue(lim % numShards == 0);
     for (int i = 0; i < numShards; i++) {
       shards.add(new Shard(i, increment * i, increment * (i + 1), expected[i]));
     }

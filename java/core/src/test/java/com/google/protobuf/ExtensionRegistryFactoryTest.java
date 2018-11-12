@@ -238,7 +238,7 @@ public class ExtensionRegistryFactoryTest extends TestCase {
     classLoader.loadClass(ExtensionRegistryFactory.class.getName());
     Class<?> test = classLoader.loadClass(testClass.getName());
     String testName = getName();
-    test.getMethod(testName).invoke(test.newInstance());
+    test.getMethod(testName).invoke(test.getDeclaredConstructor().newInstance());
   }
 
   /**

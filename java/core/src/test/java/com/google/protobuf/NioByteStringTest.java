@@ -385,12 +385,12 @@ public class NioByteStringTest extends TestCase {
           }
 
           @Override
-          public void writeLazy(byte[] value, int offset, int length) throws IOException {
+          public void write(ByteBuffer value) throws IOException {
             throw new UnsupportedOperationException();
           }
 
           @Override
-          public void write(ByteBuffer value) throws IOException {
+          public void writeLazy(byte[] value, int offset, int length) throws IOException {
             throw new UnsupportedOperationException();
           }
 

@@ -83,6 +83,15 @@ final class UnsafeUtil {
   }
 
 
+  @SuppressWarnings("unchecked") // safe by method contract
+  static <T> T allocateInstance(Class<T> clazz) {
+    try {
+      return (T) UNSAFE.allocateInstance(clazz);
+    } catch (InstantiationException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   static long objectFieldOffset(Field field) {
     return MEMORY_ACCESSOR.objectFieldOffset(field);
   }

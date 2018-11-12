@@ -669,11 +669,7 @@ def _MergeMessage(
         destination.ClearField(_StrConvert(name))
       repeated_source = getattr(source, name)
       repeated_destination = getattr(destination, name)
-      if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
-        for item in repeated_source:
-          repeated_destination.add().MergeFrom(item)
-      else:
-        repeated_destination.extend(repeated_source)
+      repeated_destination.MergeFrom(repeated_source)
     else:
       if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
         if replace_message:

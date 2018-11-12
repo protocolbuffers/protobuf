@@ -367,7 +367,7 @@ bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
       WebSafeBase64Escape(*dest, &encoded);
       // Remove trailing padding '=' characters before comparison.
       StringPiece src_no_padding = StringPiece(src).substr(
-          0, StringEndsWith(src, "=") ? src.find_last_not_of('=') + 1
+          0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());
       return encoded == src_no_padding;
     }
@@ -381,7 +381,7 @@ bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
           reinterpret_cast<const unsigned char*>(dest->data()), dest->length(),
           &encoded, false);
       StringPiece src_no_padding = StringPiece(src).substr(
-          0, StringEndsWith(src, "=") ? src.find_last_not_of('=') + 1
+          0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());
       return encoded == src_no_padding;
     }

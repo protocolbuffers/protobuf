@@ -69,15 +69,17 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   file_level_metadata_google_2fprotobuf_2fduration_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fduration_2eproto, file_level_service_descriptors_google_2fprotobuf_2fduration_2eproto,
 };
 
-::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2eproto = {
-  false, InitDefaults_google_2fprotobuf_2fduration_2eproto, 
+const char descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto[] =
   "\n\036google/protobuf/duration.proto\022\017google"
   ".protobuf\"*\n\010Duration\022\017\n\007seconds\030\001 \001(\003\022\r"
   "\n\005nanos\030\002 \001(\005B|\n\023com.google.protobufB\rDu"
   "rationProtoP\001Z*github.com/golang/protobu"
   "f/ptypes/duration\370\001\001\242\002\003GPB\252\002\036Google.Prot"
   "obuf.WellKnownTypesb\006proto3"
-,
+  ;
+::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2eproto = {
+  false, InitDefaults_google_2fprotobuf_2fduration_2eproto, 
+  descriptor_table_protodef_google_2fprotobuf_2fduration_2eproto,
   "google/protobuf/duration.proto", &assign_descriptors_table_google_2fprotobuf_2fduration_2eproto, 227,
 };
 
@@ -176,10 +178,10 @@ const char* Duration::_InternalParse(const char* begin, const char* end, void* o
   auto msg = static_cast<Duration*>(object);
   ::google::protobuf::uint32 size; (void)size;
   int depth; (void)depth;
+  ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
   auto ptr = begin;
   while (ptr < end) {
-    ::google::protobuf::uint32 tag;
     ptr = Varint::Parse32Inline(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     switch (tag >> 3) {
@@ -206,13 +208,13 @@ const char* Duration::_InternalParse(const char* begin, const char* end, void* o
       default: {
       handle_unusual: (void)&&handle_unusual;
         if ((tag & 7) == 4 || tag == 0) {
-          bool ok = ctx->ValidEndGroup(tag);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ok);
+          ctx->EndGroup(tag);
           return ptr;
         }
         auto res = UnknownFieldParse(tag, {_InternalParse, msg},
           ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
         ptr = res.first;
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
         if (res.second) return ptr;
       }
     }  // switch
@@ -223,7 +225,7 @@ len_delim_till_end: (void)&&len_delim_till_end;
                                  {parser_till_end, object}, size);
 group_continues: (void)&&group_continues;
   GOOGLE_DCHECK(ptr >= end);
-  ctx->StoreGroup({_InternalParse, msg}, {parser_till_end, object}, depth);
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->StoreGroup({_InternalParse, msg}, {parser_till_end, object}, depth, tag));
   return ptr;
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER

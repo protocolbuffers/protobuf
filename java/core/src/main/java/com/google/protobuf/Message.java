@@ -149,8 +149,12 @@ public interface Message extends MessageLite, MessageOrBuilder {
     Descriptors.Descriptor getDescriptorForType();
 
     /**
-     * Create a Builder for messages of the appropriate type for the given field. Messages built
-     * with this can then be passed to setField(), setRepeatedField(), or addRepeatedField().
+     * Create a builder for messages of the appropriate type for the given field. The
+     * builder is NOT nested in the current builder. However, messages built with the
+     * builder can then be passed to the {@link #setField()}, {@link #setRepeatedField()}, or {@link
+     * #addRepeatedField()} method of the current builder.
+     *
+     * <p>To obtain a builder nested in the current builder, use {@link #getFieldBuilder()} instead.
      */
     Builder newBuilderForField(Descriptors.FieldDescriptor field);
 

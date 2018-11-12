@@ -306,8 +306,10 @@ class PROTOBUF_EXPORT ArenaImpl {
  public:
   // kBlockHeaderSize is sizeof(Block), aligned up to the nearest multiple of 8
   // to protect the invariant that pos is always at a multiple of 8.
-  static const size_t kBlockHeaderSize = (sizeof(Block) + 7) & static_cast<size_t>(-8);
-  static const size_t kSerialArenaSize = (sizeof(SerialArena) + 7) & static_cast<size_t>(-8);
+  static const size_t kBlockHeaderSize =
+      (sizeof(Block) + 7) & static_cast<size_t>(-8);
+  static const size_t kSerialArenaSize =
+      (sizeof(SerialArena) + 7) & static_cast<size_t>(-8);
   static_assert(kBlockHeaderSize % 8 == 0,
                 "kBlockHeaderSize must be a multiple of 8.");
   static_assert(kSerialArenaSize % 8 == 0,

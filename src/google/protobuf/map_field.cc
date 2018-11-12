@@ -162,6 +162,39 @@ bool DynamicMapField::ContainsMapKey(
   return iter != map.end();
 }
 
+void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
+  const FieldDescriptor* val_des =
+      default_entry_->GetDescriptor()->FindFieldByName("value");
+  map_val->SetType(val_des->cpp_type());
+  // Allocate memory for the MapValueRef, and initialize to
+  // default value.
+  switch (val_des->cpp_type()) {
+#define HANDLE_TYPE(CPPTYPE, TYPE)                      \
+    case FieldDescriptor::CPPTYPE_##CPPTYPE: {          \
+      TYPE* value = new TYPE();                         \
+      map_val->SetValue(value);                          \
+      break;                                            \
+    }
+    HANDLE_TYPE(INT32, int32);
+    HANDLE_TYPE(INT64, int64);
+    HANDLE_TYPE(UINT32, uint32);
+    HANDLE_TYPE(UINT64, uint64);
+    HANDLE_TYPE(DOUBLE, double);
+    HANDLE_TYPE(FLOAT, float);
+    HANDLE_TYPE(BOOL, bool);
+    HANDLE_TYPE(STRING, string);
+    HANDLE_TYPE(ENUM, int32);
+#undef HANDLE_TYPE
+    case FieldDescriptor::CPPTYPE_MESSAGE: {
+      const Message& message = default_entry_->GetReflection()->GetMessage(
+          *default_entry_, val_des);
+      Message* value = message.New();
+      map_val->SetValue(value);
+      break;
+    }
+  }
+}
+
 bool DynamicMapField::InsertOrLookupMapValue(
     const MapKey& map_key, MapValueRef* val) {
   // Always use mutable map because users may change the map value by
@@ -169,38 +202,8 @@ bool DynamicMapField::InsertOrLookupMapValue(
   Map<MapKey, MapValueRef>* map = MutableMap();
   Map<MapKey, MapValueRef>::iterator iter = map->find(map_key);
   if (iter == map->end()) {
-    // Insert
-    MapValueRef& map_val = (*map)[map_key];
-    const FieldDescriptor* val_des =
-        default_entry_->GetDescriptor()->FindFieldByName("value");
-    map_val.SetType(val_des->cpp_type());
-    // Allocate memory for the inserted MapValueRef, and initialize to
-    // default value.
-    switch (val_des->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, TYPE)           \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE: { \
-    TYPE* value = new TYPE();                \
-    map_val.SetValue(value);                 \
-    break;                                   \
-  }
-      HANDLE_TYPE(INT32, int32);
-      HANDLE_TYPE(INT64, int64);
-      HANDLE_TYPE(UINT32, uint32);
-      HANDLE_TYPE(UINT64, uint64);
-      HANDLE_TYPE(DOUBLE, double);
-      HANDLE_TYPE(FLOAT, float);
-      HANDLE_TYPE(BOOL, bool);
-      HANDLE_TYPE(STRING, string);
-      HANDLE_TYPE(ENUM, int32);
-#undef HANDLE_TYPE
-      case FieldDescriptor::CPPTYPE_MESSAGE: {
-        const Message& message = default_entry_->GetReflection()->GetMessage(
-            *default_entry_, val_des);
-        Message* value = message.New();
-        map_val.SetValue(value);
-        break;
-      }
-    }
+    MapValueRef& map_val = map_[map_key];
+    AllocateMapValue(&map_val);
     val->CopyFrom(map_val);
     return true;
   }
@@ -241,6 +244,72 @@ void DynamicMapField::SetMapIteratorValue(MapIterator* map_iter) const {
   if (iter == map_.end()) return;
   map_iter->key_.CopyFrom(iter->first);
   map_iter->value_.CopyFrom(iter->second);
+}
+
+void DynamicMapField::MergeFrom(const MapFieldBase& other) {
+  GOOGLE_DCHECK(IsMapValid() && other.IsMapValid());
+  Map<MapKey, MapValueRef>* map = MutableMap();
+  const DynamicMapField& other_field =
+      reinterpret_cast<const DynamicMapField&>(other);
+  for (typename Map<MapKey, MapValueRef>::const_iterator other_it =
+           other_field.map_.begin(); other_it != other_field.map_.end();
+       ++other_it) {
+    Map<MapKey, MapValueRef>::iterator iter = map->find(other_it->first);
+    MapValueRef* map_val;
+    if (iter == map->end()) {
+      map_val = &map_[other_it->first];
+      AllocateMapValue(map_val);
+    } else {
+      map_val = &iter->second;
+    }
+
+    // Copy map value
+    const FieldDescriptor* field_descriptor =
+        default_entry_->GetDescriptor()->FindFieldByName("value");
+    switch (field_descriptor->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32: {
+        map_val->SetInt32Value(other_it->second.GetInt32Value());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_INT64: {
+        map_val->SetInt64Value(other_it->second.GetInt64Value());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_UINT32: {
+        map_val->SetUInt32Value(other_it->second.GetUInt32Value());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_UINT64: {
+        map_val->SetUInt64Value(other_it->second.GetUInt64Value());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_FLOAT: {
+        map_val->SetFloatValue(other_it->second.GetFloatValue());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_DOUBLE: {
+        map_val->SetDoubleValue(other_it->second.GetDoubleValue());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_BOOL: {
+        map_val->SetBoolValue(other_it->second.GetBoolValue());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_STRING: {
+        map_val->SetStringValue(other_it->second.GetStringValue());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_ENUM: {
+        map_val->SetEnumValue(other_it->second.GetEnumValue());
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_MESSAGE: {
+        map_val->MutableMessageValue()->CopyFrom(
+            other_it->second.GetMessageValue());
+        break;
+      }
+    }
+  }
 }
 
 void DynamicMapField::Swap(MapFieldBase* other) {

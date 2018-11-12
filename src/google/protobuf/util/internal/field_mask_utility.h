@@ -46,8 +46,8 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-typedef std::string (*ConverterCallback)(StringPiece);
-typedef ResultCallback1<util::Status, StringPiece>* PathSinkCallback;
+typedef std::function<std::string(StringPiece)> ConverterCallback;
+typedef std::function<util::Status(StringPiece)> PathSinkCallback;
 
 // Applies a 'converter' to each segment of a FieldMask path and returns the
 // result. Quoted strings in the 'path' are copied to the output as-is without

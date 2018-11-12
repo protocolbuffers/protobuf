@@ -427,6 +427,24 @@ jspb.Message.isArray_ = function(o) {
                                             goog.isArray(o);
 };
 
+/**
+ * Returns true if the provided argument is an extension object.
+ * @param {*} o The object to classify as array or not.
+ * @return {boolean} True if the provided object is an extension object.
+ * @private
+ */
+jspb.Message.isExtensionObject_ = function(o) {
+  // Normal fields are never objects, so we can be sure that if we find an
+  // object here, then it's the extension object. However, we must ensure that
+  // the object is not an array, since arrays are valid field values (bytes
+  // fields can also be array).
+  // NOTE(lukestebbing): We avoid looking at .length to avoid a JIT bug
+  // in Safari on iOS 8. See the description of CL/86511464 for details.
+  return (o !== null && typeof o == 'object' &&
+      !jspb.Message.isArray_(o) &&
+      !(jspb.Message.SUPPORTS_UINT8ARRAY_ && o instanceof Uint8Array));
+};
+
 
 /**
  * If the array contains an extension object in its last position, then the
@@ -452,13 +470,7 @@ jspb.Message.initPivotAndExtensionObject_ = function(msg, suggestedPivot) {
   if (msgLength) {
     lastIndex = msgLength - 1;
     var obj = msg.array[lastIndex];
-    // Normal fields are never objects, so we can be sure that if we find an
-    // object here, then it's the extension object. However, we must ensure that
-    // the object is not an array, since arrays are valid field values.
-    // NOTE(lukestebbing): We avoid looking at .length to avoid a JIT bug
-    // in Safari on iOS 8. See the description of CL/86511464 for details.
-    if (obj && typeof obj == 'object' && !jspb.Message.isArray_(obj) &&
-        !(jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array)) {
+    if (jspb.Message.isExtensionObject_(obj)) {
       msg.pivot_ = jspb.Message.getFieldNumber_(msg, lastIndex);
       msg.extensionObject_ = obj;
       return;

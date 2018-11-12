@@ -477,12 +477,12 @@ public class MapTest extends TestCase {
   }
 
   public void testPutForUnknownEnumValues() throws Exception {
-    TestMap.Builder builder =
+    TestMap message =
         TestMap.newBuilder()
             .putInt32ToEnumFieldValue(0, 0)
             .putInt32ToEnumFieldValue(1, 1)
-            .putInt32ToEnumFieldValue(2, 1000); // unknown value.
-    TestMap message = builder.build();
+            .putInt32ToEnumFieldValue(2, 1000) // unknown value.
+            .build();
     assertEquals(0, message.getInt32ToEnumFieldValueOrThrow(0));
     assertEquals(1, message.getInt32ToEnumFieldValueOrThrow(1));
     assertEquals(1000, message.getInt32ToEnumFieldValueOrThrow(2));
@@ -608,12 +608,12 @@ public class MapTest extends TestCase {
 
     // We can't control the order of elements in a HashMap. The best we can do
     // here is to add elements in different order.
-    TestMap.Builder b1 =
+    TestMap m1 =
         TestMap.newBuilder()
             .putInt32ToInt32Field(1, 2)
             .putInt32ToInt32Field(3, 4)
-            .putInt32ToInt32Field(5, 6);
-    TestMap m1 = b1.build();
+            .putInt32ToInt32Field(5, 6)
+            .build();
 
     TestMap.Builder b2 =
         TestMap.newBuilder()
@@ -654,8 +654,8 @@ public class MapTest extends TestCase {
     assertEquals(3, message.getOptionalMessage().getInt32ToInt32Field().get(1).intValue());
 
     // Make another change using mergeFrom()
-    TestMap.Builder other = TestMap.newBuilder().putInt32ToInt32Field(1, 4);
-    parent.getOptionalMessageBuilder().mergeFrom(other.build());
+    TestMap other = TestMap.newBuilder().putInt32ToInt32Field(1, 4).build();
+    parent.getOptionalMessageBuilder().mergeFrom(other);
 
     // Should be able to observe the change.
     message = parent.build();
@@ -751,7 +751,7 @@ public class MapTest extends TestCase {
   }
 
   private static void setMapValues(Message.Builder builder, String name, Map<?, ?> values) {
-    List<Message> entryList = new ArrayList<Message>();
+    List<Message> entryList = new ArrayList<>();
     for (Map.Entry<?, ?> entry : values.entrySet()) {
       entryList.add(newMapEntry(builder, name, entry.getKey(), entry.getValue()));
     }
@@ -760,7 +760,7 @@ public class MapTest extends TestCase {
   }
 
   private static <K, V> Map<K, V> mapForValues(K key1, V value1, K key2, V value2) {
-    Map<K, V> map = new HashMap<K, V>();
+    Map<K, V> map = new HashMap<>();
     map.put(key1, value1);
     map.put(key2, value2);
     return map;
@@ -1002,8 +1002,7 @@ public class MapTest extends TestCase {
     TestMap message = builder.build();
 
     assertEquals(
-        Arrays.asList("1", "2", "3"),
-        new ArrayList<String>(message.getStringToInt32Field().keySet()));
+        Arrays.asList("1", "2", "3"), new ArrayList<>(message.getStringToInt32Field().keySet()));
   }
 
   public void testGetMap() {
@@ -1336,10 +1335,10 @@ public class MapTest extends TestCase {
     output.flush();
 
     CodedInputStream input = CodedInputStream.newInstance(serialized);
-    List<Integer> int32Keys = new ArrayList<Integer>();
-    List<Integer> uint32Keys = new ArrayList<Integer>();
-    List<Long> int64Keys = new ArrayList<Long>();
-    List<String> stringKeys = new ArrayList<String>();
+    List<Integer> int32Keys = new ArrayList<>();
+    List<Integer> uint32Keys = new ArrayList<>();
+    List<Long> int64Keys = new ArrayList<>();
+    List<String> stringKeys = new ArrayList<>();
     int tag;
     while (true) {
       tag = input.readTag();
@@ -1450,20 +1449,20 @@ public class MapTest extends TestCase {
   }
 
   private static <K, V> Map<K, V> newMap(K key1, V value1) {
-    Map<K, V> map = new HashMap<K, V>();
+    Map<K, V> map = new HashMap<>();
     map.put(key1, value1);
     return map;
   }
 
   private static <K, V> Map<K, V> newMap(K key1, V value1, K key2, V value2) {
-    Map<K, V> map = new HashMap<K, V>();
+    Map<K, V> map = new HashMap<>();
     map.put(key1, value1);
     map.put(key2, value2);
     return map;
   }
 
   private static <K, V> Map<K, V> newMap(K key1, V value1, K key2, V value2, K key3, V value3) {
-    Map<K, V> map = new HashMap<K, V>();
+    Map<K, V> map = new HashMap<>();
     map.put(key1, value1);
     map.put(key2, value2);
     map.put(key3, value3);

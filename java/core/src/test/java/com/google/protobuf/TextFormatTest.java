@@ -49,6 +49,7 @@ import protobuf_unittest.UnittestProto.TestRequired;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.StringReader;
 import java.util.List;
+import java.util.logging.Logger;
 import junit.framework.TestCase;
 
 /**
@@ -131,6 +132,8 @@ public class TextFormatTest extends TestCase {
           + "  i: 456\n"
           + "}\n";
 
+  private final TextFormat.Parser parserAllowingUnknownExtensions =
+      TextFormat.Parser.newBuilder().setAllowUnknownExtensions(true).build();
 
   private final TextFormat.Parser parserWithOverwriteForbidden =
       TextFormat.Parser.newBuilder()
@@ -467,7 +470,7 @@ public class TextFormatTest extends TestCase {
       fail("expected parse exception");
     } catch (TextFormat.ParseException e) {
       assertEquals(
-          "6:1: Non-repeated field "
+          "4:44: Non-repeated field "
               + "\"protobuf_unittest.TestMessageSetExtension1.message_set_extension\""
               + " cannot be overwritten.",
           e.getMessage());
@@ -518,6 +521,23 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+
+  private void assertParseErrorWithUnknownExtensions(String error, String text) {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    try {
+      parserAllowingUnknownExtensions.merge(text, builder);
+      fail("Expected parse exception.");
+    } catch (TextFormat.ParseException e) {
+      assertEquals(error, e.getMessage());
+    }
+  }
+
+  private TestAllTypes assertParseSuccessWithUnknownExtensions(String text)
+      throws TextFormat.ParseException {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    parserAllowingUnknownExtensions.merge(text, builder);
+    return builder.build();
+  }
 
   private void assertParseErrorWithOverwriteForbidden(String error, String text) {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -954,6 +974,54 @@ public class TextFormatTest extends TestCase {
   }
 
 
+  public void testParseUnknownExtensions() throws Exception {
+    TestUtil.TestLogHandler logHandler = new TestUtil.TestLogHandler();
+    Logger logger = Logger.getLogger(TextFormat.class.getName());
+    logger.addHandler(logHandler);
+    // Test unknown extension can pass.
+    assertParseSuccessWithUnknownExtensions("[unknown_extension]: 123");
+    assertParseSuccessWithUnknownExtensions("[unknown_extension]: 123\n"
+        + "[unknown_ext]: inf\n"
+        + "[unknown]: 1.234");
+    // Test warning messages.
+    assertEquals("Input contains unknown fields and/or extensions:\n"
+        + "1:2:\tprotobuf_unittest.TestAllTypes.[unknown_extension]",
+        logHandler.getStoredLogRecords().get(0).getMessage());
+    assertEquals("Input contains unknown fields and/or extensions:\n"
+        + "1:2:\tprotobuf_unittest.TestAllTypes.[unknown_extension]\n"
+        + "2:2:\tprotobuf_unittest.TestAllTypes.[unknown_ext]\n"
+        + "3:2:\tprotobuf_unittest.TestAllTypes.[unknown]",
+        logHandler.getStoredLogRecords().get(1).getMessage());
+
+    // Test unknown field can not pass.
+    assertParseErrorWithUnknownExtensions(
+        "2:1: Input contains unknown fields and/or extensions:\n"
+        + "1:2:\tprotobuf_unittest.TestAllTypes.[unknown_extension]\n"
+        + "2:1:\tprotobuf_unittest.TestAllTypes.unknown_field",
+        "[unknown_extension]: 1\n"
+        + "unknown_field: 12345");
+    assertParseErrorWithUnknownExtensions(
+        "3:1: Input contains unknown fields and/or extensions:\n"
+        + "1:2:\tprotobuf_unittest.TestAllTypes.[unknown_extension1]\n"
+        + "2:2:\tprotobuf_unittest.TestAllTypes.[unknown_extension2]\n"
+        + "3:1:\tprotobuf_unittest.TestAllTypes.unknown_field\n"
+        + "4:2:\tprotobuf_unittest.TestAllTypes.[unknown_extension3]",
+        "[unknown_extension1]: 1\n"
+        + "[unknown_extension2]: 2\n"
+        + "unknown_field: 12345\n"
+        + "[unknown_extension3]: 3\n");
+    assertParseErrorWithUnknownExtensions(
+        "1:1: Input contains unknown fields and/or extensions:\n"
+        + "1:1:\tprotobuf_unittest.TestAllTypes.unknown_field1\n"
+        + "2:1:\tprotobuf_unittest.TestAllTypes.unknown_field2\n"
+        + "3:2:\tprotobuf_unittest.TestAllTypes.[unknown_extension]\n"
+        + "4:1:\tprotobuf_unittest.TestAllTypes.unknown_field3",
+        "unknown_field1: 1\n"
+        + "unknown_field2: 2\n"
+        + "[unknown_extension]: 12345\n"
+        + "unknown_field3: 3\n");
+  }
+
   // See additional coverage in testOneofOverwriteForbidden and testMapOverwriteForbidden.
   public void testParseNonRepeatedFields() throws Exception {
     assertParseSuccessWithOverwriteForbidden("repeated_int32: 1\nrepeated_int32: 2\n");
@@ -962,29 +1030,29 @@ public class TextFormatTest extends TestCase {
         "repeated_nested_message { bb: 1 }\nrepeated_nested_message { bb: 2 }\n");
 
     assertParseErrorWithOverwriteForbidden(
-        "3:17: Non-repeated field "
+        "3:15: Non-repeated field "
             + "\"protobuf_unittest.TestAllTypes.optional_int32\" "
             + "cannot be overwritten.",
         "optional_int32: 1\noptional_bool: true\noptional_int32: 1\n");
     assertParseErrorWithOverwriteForbidden(
-        "2:17: Non-repeated field "
+        "2:1: Non-repeated field "
             + "\"protobuf_unittest.TestAllTypes.optionalgroup\" "
             + "cannot be overwritten.",
         "OptionalGroup { a: 1 }\nOptionalGroup { }\n");
     assertParseErrorWithOverwriteForbidden(
-        "2:33: Non-repeated field "
+        "2:1: Non-repeated field "
             + "\"protobuf_unittest.TestAllTypes.optional_nested_message\" "
             + "cannot be overwritten.",
         "optional_nested_message { }\noptional_nested_message { bb: 3 }\n");
     assertParseErrorWithOverwriteForbidden(
-        "2:16: Non-repeated field "
+        "2:14: Non-repeated field "
             + "\"protobuf_unittest.TestAllTypes.default_int32\" "
             + "cannot be overwritten.",
         "default_int32: 41\n"
             + // the default value
             "default_int32: 41\n");
     assertParseErrorWithOverwriteForbidden(
-        "2:17: Non-repeated field "
+        "2:15: Non-repeated field "
             + "\"protobuf_unittest.TestAllTypes.default_string\" "
             + "cannot be overwritten.",
         "default_string: \"zxcv\"\ndefault_string: \"asdf\"\n");
@@ -1044,7 +1112,7 @@ public class TextFormatTest extends TestCase {
       fail("Expected parse exception.");
     } catch (TextFormat.ParseException e) {
       assertEquals(
-          "1:36: Field \"protobuf_unittest.TestOneof2.foo_int\""
+          "1:34: Field \"protobuf_unittest.TestOneof2.foo_int\""
               + " is specified along with field \"protobuf_unittest.TestOneof2.foo_string\","
               + " another member of oneof \"foo\".",
           e.getMessage());

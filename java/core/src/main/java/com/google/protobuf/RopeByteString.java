@@ -38,12 +38,12 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Stack;
 
 /**
  * Class to represent {@code ByteStrings} formed by concatenation of other ByteStrings, without
@@ -240,18 +240,53 @@ final class RopeByteString extends ByteString {
   @Override
   public byte byteAt(int index) {
     checkIndex(index, totalLength);
+    return internalByteAt(index);
+  }
 
+  @Override
+  byte internalByteAt(int index) {
     // Find the relevant piece by recursive descent
     if (index < leftLength) {
-      return left.byteAt(index);
+      return left.internalByteAt(index);
     }
 
-    return right.byteAt(index - leftLength);
+    return right.internalByteAt(index - leftLength);
   }
 
   @Override
   public int size() {
     return totalLength;
+  }
+
+  @Override
+  public ByteIterator iterator() {
+    return new AbstractByteIterator() {
+      final PieceIterator pieces = new PieceIterator(RopeByteString.this);
+      ByteIterator current = nextPiece();
+
+      private ByteIterator nextPiece() {
+        // NOTE: PieceIterator is guaranteed to return non-empty pieces, so this method will always
+        // return non-empty iterators (or null)
+        return pieces.hasNext() ? pieces.next().iterator() : null;
+      }
+
+      @Override
+      public boolean hasNext() {
+        return current != null;
+      }
+
+      @Override
+      public byte nextByte() {
+        if (current == null) {
+          throw new NoSuchElementException();
+        }
+        byte b = current.nextByte();
+        if (!current.hasNext()) {
+          current = nextPiece();
+        }
+        return b;
+      }
+    };
   }
 
   // =================================================================
@@ -546,7 +581,7 @@ final class RopeByteString extends ByteString {
     // Stack containing the part of the string, starting from the left, that
     // we've already traversed.  The final string should be the equivalent of
     // concatenating the strings on the stack from bottom to top.
-    private final Stack<ByteString> prefixesStack = new Stack<ByteString>();
+    private final ArrayDeque<ByteString> prefixesStack = new ArrayDeque<>();
 
     private ByteString balance(ByteString left, ByteString right) {
       doBalance(left);
@@ -650,9 +685,8 @@ final class RopeByteString extends ByteString {
    *
    * <p>This iterator is used to implement {@link RopeByteString#equalsFragments(ByteString)}.
    */
-  private static class PieceIterator implements Iterator<LeafByteString> {
-
-    private final Stack<RopeByteString> breadCrumbs = new Stack<RopeByteString>();
+  private static final class PieceIterator implements Iterator<LeafByteString> {
+    private final ArrayDeque<RopeByteString> breadCrumbs = new ArrayDeque<>();
     private LeafByteString next;
 
     private PieceIterator(ByteString root) {

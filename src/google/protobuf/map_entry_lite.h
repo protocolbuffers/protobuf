@@ -35,6 +35,7 @@
 #include <string>
 
 #include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/map.h>
@@ -44,10 +45,6 @@
 #include <google/protobuf/wire_format_lite_inl.h>
 
 #include <google/protobuf/port_def.inc>
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-#include <google/protobuf/parse_context.h>
-#endif
-
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
@@ -403,7 +400,7 @@ class MapEntryImpl : public Base {
                                 Metadata* metadata,
                                 bool (*validate_enum)(int)) {
       io::CodedInputStream input(reinterpret_cast<const uint8*>(begin),
-                                 end - begin);
+                                 static_cast<int>(end - begin));
       auto entry = NewEntry();
       // TODO(gerbens) implement _InternalParse for maps. We can't use
       // ParseFromString as this will call _InternalParse

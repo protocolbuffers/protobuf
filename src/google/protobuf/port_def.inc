@@ -82,6 +82,9 @@
 #ifdef PROTOBUF_RETURNS_NONNULL
 #error PROTOBUF_RETURNS_NONNULL was previously defined
 #endif
+#ifdef PROTOBUF_ATTRIBUTE_REINITIALIZES
+#error PROTOBUF_ATTRIBUTE_REINITIALIZES was previously defined
+#endif
 #ifdef PROTOBUF_RTTI
 #error PROTOBUF_RTTI was previously defined
 #endif
@@ -206,7 +209,18 @@
 #else
 #ifdef __GNUC__
 #define PROTOBUF_RETURNS_NONNULL __attribute__((returns_nonnull))
+#else
+#define PROTOBUF_RETURNS_NONNULL
 #endif
+#endif
+
+#if defined(__has_cpp_attribute)
+#if __has_cpp_attribute(clang::reinitializes)
+#define PROTOBUF_ATTRIBUTE_REINITIALIZES [[clang::reinitializes]]
+#endif
+#endif
+#ifndef PROTOBUF_ATTRIBUTE_REINITIALIZES
+#define PROTOBUF_ATTRIBUTE_REINITIALIZES
 #endif
 
 #define PROTOBUF_GUARDED_BY(x)
@@ -305,4 +319,11 @@
 #ifdef _MSC_VER
 #pragma push_macro("GetMessage")
 #undef GetMessage
+#endif
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+// TODO(gerbens) ideally we cleanup the code. But a cursory try shows many
+// violations. So let's ignore for now.
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #endif

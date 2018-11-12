@@ -38,8 +38,6 @@ message TestMessage3 {
     // This enum's name is the same with the default outer class name of this
     // proto file. It's used to test if the compiler can avoid this conflict
     // correctly.
-    enum OuterClassNameTest3 {
-      DUMMY_VALUE = 1;
-    }
+    enum OuterClassNameTest3 { DUMMY_VALUE = 1; }
   }
 }

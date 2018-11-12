@@ -41,12 +41,12 @@ are:
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
-try:
-    # This fallback applies for all versions of Python before 3.3
-    import collections.abc as collections_abc
-except ImportError:
-    import collections as collections_abc
 import sys
+try:
+  # This fallback applies for all versions of Python before 3.3
+  import collections.abc as collections_abc
+except ImportError:
+  import collections as collections_abc
 
 if sys.version_info[0] < 3:
   # We would use collections_abc.MutableMapping all the time, but in Python 2

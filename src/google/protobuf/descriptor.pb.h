@@ -372,7 +372,7 @@ class PROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message /* 
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const FileDescriptorSet& from);
   void MergeFrom(const FileDescriptorSet& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -512,7 +512,7 @@ class PROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Message /
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const FileDescriptorProto& from);
   void MergeFrom(const FileDescriptorProto& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -841,7 +841,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::protobuf
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
   void MergeFrom(const DescriptorProto_ExtensionRange& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -997,7 +997,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protobuf:
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
   void MergeFrom(const DescriptorProto_ReservedRange& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -1140,7 +1140,7 @@ class PROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /* @@
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const DescriptorProto& from);
   void MergeFrom(const DescriptorProto& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -1422,7 +1422,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions : public ::google::protobuf::Message
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const ExtensionRangeOptions& from);
   void MergeFrom(const ExtensionRangeOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -1565,7 +1565,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Message 
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const FieldDescriptorProto& from);
   void MergeFrom(const FieldDescriptorProto& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -1948,7 +1948,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Message 
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const OneofDescriptorProto& from);
   void MergeFrom(const OneofDescriptorProto& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -2113,7 +2113,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange : public ::google::p
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
   void MergeFrom(const EnumDescriptorProto_EnumReservedRange& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -2256,7 +2256,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Message /
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const EnumDescriptorProto& from);
   void MergeFrom(const EnumDescriptorProto& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -2472,7 +2472,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::Mess
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const EnumValueDescriptorProto& from);
   void MergeFrom(const EnumValueDescriptorProto& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -2645,7 +2645,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Messag
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const ServiceDescriptorProto& from);
   void MergeFrom(const ServiceDescriptorProto& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -2823,7 +2823,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Message
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const MethodDescriptorProto& from);
   void MergeFrom(const MethodDescriptorProto& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -3054,7 +3054,7 @@ class PROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@prot
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const FileOptions& from);
   void MergeFrom(const FileOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -3555,7 +3555,7 @@ class PROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* @@p
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const MessageOptions& from);
   void MergeFrom(const MessageOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -3730,7 +3730,7 @@ class PROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@pro
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const FieldOptions& from);
   void MergeFrom(const FieldOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -3977,7 +3977,7 @@ class PROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@pro
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const OneofOptions& from);
   void MergeFrom(const OneofOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -4120,7 +4120,7 @@ class PROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@prot
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const EnumOptions& from);
   void MergeFrom(const EnumOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -4279,7 +4279,7 @@ class PROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /* @
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const EnumValueOptions& from);
   void MergeFrom(const EnumValueOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -4430,7 +4430,7 @@ class PROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* @@p
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const ServiceOptions& from);
   void MergeFrom(const ServiceOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -4581,7 +4581,7 @@ class PROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @@pr
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const MethodOptions& from);
   void MergeFrom(const MethodOptions& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -4768,7 +4768,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobuf::
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const UninterpretedOption_NamePart& from);
   void MergeFrom(const UninterpretedOption_NamePart& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -4931,7 +4931,7 @@ class PROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Message /
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const UninterpretedOption& from);
   void MergeFrom(const UninterpretedOption& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -5172,7 +5172,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Messa
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const SourceCodeInfo_Location& from);
   void MergeFrom(const SourceCodeInfo_Location& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -5400,7 +5400,7 @@ class PROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* @@p
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const SourceCodeInfo& from);
   void MergeFrom(const SourceCodeInfo& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -5542,7 +5542,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobuf::
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
   void MergeFrom(const GeneratedCodeInfo_Annotation& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -5724,7 +5724,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message /* 
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const GeneratedCodeInfo& from);
   void MergeFrom(const GeneratedCodeInfo& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;

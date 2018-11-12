@@ -40,6 +40,7 @@
 #include <google/protobuf/map_unittest.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/testing/googletest.h>
@@ -49,11 +50,12 @@ namespace google {
 namespace protobuf {
 namespace util {
 namespace {
-using google::protobuf::Type;
+using google::protobuf::BoolValue;
 using google::protobuf::Enum;
 using google::protobuf::Field;
+using google::protobuf::Int32Value;
 using google::protobuf::Option;
-using google::protobuf::BoolValue;
+using google::protobuf::Type;
 
 static const char kUrlPrefix[] = "type.googleapis.com";
 
@@ -127,12 +129,21 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
 
   bool HasBoolOption(const RepeatedPtrField<Option>& options,
                      const string& name, bool value) {
-    for (int i = 0; i < options.size(); ++i) {
-      const Option& option = options.Get(i);
+    return HasOption<BoolValue>(options, name, value);
+  }
+
+  bool HasInt32Option(const RepeatedPtrField<Option>& options,
+                      const string& name, int32 value) {
+    return HasOption<Int32Value>(options, name, value);
+  }
+
+  template <typename WrapperT, typename T>
+  bool HasOption(const RepeatedPtrField<Option>& options, const string& name,
+                 T value) {
+    for (const Option& option : options) {
       if (option.name() == name) {
-        BoolValue bool_value;
-        if (option.value().UnpackTo(&bool_value) &&
-            bool_value.value() == value) {
+        WrapperT wrapper;
+        if (option.value().UnpackTo(&wrapper) && wrapper.value() == value) {
           return true;
         }
       }
@@ -325,6 +336,18 @@ TEST_F(DescriptorPoolTypeResolverTest, TestMap) {
       GetTypeUrl("protobuf_unittest.TestMap.MapInt32Int32Entry"),
       &type).ok());
   EXPECT_TRUE(HasBoolOption(type.options(), "map_entry", true));
+}
+
+TEST_F(DescriptorPoolTypeResolverTest, TestCustomOptions) {
+  Type type;
+  ASSERT_TRUE(
+      resolver_
+          ->ResolveMessageType(
+              GetTypeUrl<protobuf_unittest::TestMessageWithCustomOptions>(),
+              &type)
+          .ok());
+  EXPECT_TRUE(
+      HasInt32Option(type.options(), "protobuf_unittest.message_opt1", -56));
 }
 
 TEST_F(DescriptorPoolTypeResolverTest, TestEnum) {

@@ -62,6 +62,7 @@ class MapReflectionFriend {
   static Py_ssize_t Length(PyObject* _self);
   static PyObject* GetIterator(PyObject *_self);
   static PyObject* IterNext(PyObject* _self);
+  static PyObject* MergeFrom(PyObject* _self, PyObject* arg);
 
   // Methods that differ between the map types.
   static PyObject* ScalarMapGetItem(PyObject* _self, PyObject* key);
@@ -338,20 +339,19 @@ PyObject* GetEntryClass(PyObject* _self) {
   return reinterpret_cast<PyObject*>(message_class);
 }
 
-PyObject* MergeFrom(PyObject* _self, PyObject* arg) {
+PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
   MapContainer* self = GetMap(_self);
   MapContainer* other_map = GetMap(arg);
   Message* message = self->GetMutableMessage();
   const Message* other_message = other_map->message;
   const Reflection* reflection = message->GetReflection();
   const Reflection* other_reflection = other_message->GetReflection();
-  int count = other_reflection->FieldSize(
-      *other_message, other_map->parent_field_descriptor);
-  for (int i = 0 ; i < count; i ++) {
-    reflection->AddMessage(message, self->parent_field_descriptor)->MergeFrom(
-        other_reflection->GetRepeatedMessage(
-            *other_message, other_map->parent_field_descriptor, i));
-  }
+  internal::MapFieldBase* field = reflection->MapData(
+      message, self->parent_field_descriptor);
+  internal::MapFieldBase* other_field =
+      other_reflection->MapData(const_cast<Message*>(other_message),
+                                self->parent_field_descriptor);
+  field->MergeFrom(*other_field);
   self->version++;
   Py_RETURN_NONE;
 }
@@ -589,7 +589,7 @@ static PyMethodDef ScalarMapMethods[] = {
     "Gets the value for the given key if present, or otherwise a default" },
   { "GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
     "Return the class used to build Entries of (key, value) pairs." },
-  { "MergeFrom", (PyCFunction)MergeFrom, METH_O,
+  { "MergeFrom", (PyCFunction)MapReflectionFriend::MergeFrom, METH_O,
     "Merges a map into the current map." },
   /*
   { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
@@ -908,7 +908,7 @@ static PyMethodDef MessageMapMethods[] = {
     "Alias for getitem, useful to make explicit that the map is mutated." },
   { "GetEntryClass", (PyCFunction)GetEntryClass, METH_NOARGS,
     "Return the class used to build Entries of (key, value) pairs." },
-  { "MergeFrom", (PyCFunction)MergeFrom, METH_O,
+  { "MergeFrom", (PyCFunction)MapReflectionFriend::MergeFrom, METH_O,
     "Merges a map into the current map." },
   /*
   { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,

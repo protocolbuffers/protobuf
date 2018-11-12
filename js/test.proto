@@ -241,6 +241,17 @@ message TestEndsWithBytes {
   optional bytes data = 2;
 }
 
+// This message is for testing extension handling doesn't affect fields before
+// pivot. Don't add new field to this message. See b/117298778 for more detail.
+message TestLastFieldBeforePivot {
+  optional int32 last_field_before_pivot = 1;
+  extensions 100 to max;
+}
+
+extend TestLastFieldBeforePivot {
+  optional int32 extend_test_last_field_before_pivot_field = 101;
+}
+
 
 message Int64Types {
   optional int64 int64_normal = 1 [jstype=JS_NORMAL];

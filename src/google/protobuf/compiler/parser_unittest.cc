@@ -1693,7 +1693,7 @@ TEST_F(ParserValidationErrorTest, PackageNameError) {
   // Now try to define it as a package.
   ExpectHasValidationErrors(
     "package foo.bar;",
-    "0:8: \"foo\" is already defined (as something other than a package) "
+    "0:0: \"foo\" is already defined (as something other than a package) "
       "in file \"bar.proto\".\n");
 }
 
@@ -2555,16 +2555,22 @@ class SourceInfoTest : public ParserTest {
 TEST_F(SourceInfoTest, BasicFileDecls) {
   EXPECT_TRUE(Parse(
       "$a$syntax = \"proto2\";$i$\n"
-      "package $b$foo.bar$c$;\n"
-      "import $d$\"baz.proto\"$e$;\n"
-      "import $f$\"qux.proto\"$g$;$h$\n"
+      "$b$package foo.bar;$c$\n"
+      "$d$import \"baz.proto\";$e$\n"
+      "$f$import\"qux.proto\";$h$\n"
+      "$j$import $k$public$l$ \"bar.proto\";$m$\n"
+      "$n$import $o$weak$p$ \"bar.proto\";$q$\n"
       "\n"
       "// comment ignored\n"));
 
-  EXPECT_TRUE(HasSpan('a', 'h', file_));
+  EXPECT_TRUE(HasSpan('a', 'q', file_));
   EXPECT_TRUE(HasSpan('b', 'c', file_, "package"));
   EXPECT_TRUE(HasSpan('d', 'e', file_, "dependency", 0));
-  EXPECT_TRUE(HasSpan('f', 'g', file_, "dependency", 1));
+  EXPECT_TRUE(HasSpan('f', 'h', file_, "dependency", 1));
+  EXPECT_TRUE(HasSpan('j', 'm', file_, "dependency", 2));
+  EXPECT_TRUE(HasSpan('k', 'l', file_, "public_dependency", 0));
+  EXPECT_TRUE(HasSpan('n', 'q', file_, "dependency", 3));
+  EXPECT_TRUE(HasSpan('o', 'p', file_, "weak_dependency", 0));
   EXPECT_TRUE(HasSpan('a', 'i', file_, "syntax"));
 }
 
@@ -3301,7 +3307,7 @@ TEST_F(SourceInfoTest, DocCommentsTopLevel) {
       "// detached after empty before package\n"
       "\n"
       "// package leading\n"
-      "package $c$foo$d$;\n"
+      "$c$package foo;$d$\n"
       "// package trailing\n"
       "\n"
       "// ignored detach\n"

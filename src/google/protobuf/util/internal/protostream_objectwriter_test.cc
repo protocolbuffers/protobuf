@@ -58,7 +58,6 @@
 #include <gtest/gtest.h>
 
 
-
 namespace google {
 namespace protobuf {
 namespace util {

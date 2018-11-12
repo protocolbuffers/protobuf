@@ -157,7 +157,7 @@ class PROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@prot
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const DoubleValue& from);
   void MergeFrom(const DoubleValue& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -283,7 +283,7 @@ class PROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@proto
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const FloatValue& from);
   void MergeFrom(const FloatValue& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -409,7 +409,7 @@ class PROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@proto
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Int64Value& from);
   void MergeFrom(const Int64Value& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -535,7 +535,7 @@ class PROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@prot
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const UInt64Value& from);
   void MergeFrom(const UInt64Value& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -661,7 +661,7 @@ class PROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@proto
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const Int32Value& from);
   void MergeFrom(const Int32Value& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -787,7 +787,7 @@ class PROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@prot
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const UInt32Value& from);
   void MergeFrom(const UInt32Value& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -913,7 +913,7 @@ class PROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@protoc
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const BoolValue& from);
   void MergeFrom(const BoolValue& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -1039,7 +1039,7 @@ class PROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@prot
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const StringValue& from);
   void MergeFrom(const StringValue& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
@@ -1182,7 +1182,7 @@ class PROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@proto
   void MergeFrom(const ::google::protobuf::Message& from) final;
   void CopyFrom(const BytesValue& from);
   void MergeFrom(const BytesValue& from);
-  void Clear() final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
   size_t ByteSizeLong() const final;
