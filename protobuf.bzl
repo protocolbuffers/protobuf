@@ -1,4 +1,4 @@
-load("@bazel_skylib//:lib.bzl", "versions")
+load("@bazel_skylib//lib:versions.bzl", "versions")
 
 def _GetPath(ctx, path):
   if ctx.label.workspace_root:
