@@ -93,7 +93,7 @@ namespace Google.Protobuf
         private uint nextTag = 0;
         private bool hasNextTag = false;
 
-        internal const int DefaultRecursionLimit = 64;
+        internal const int DefaultRecursionLimit = 100;
         internal const int DefaultSizeLimit = Int32.MaxValue;
         internal const int BufferSize = 4096;
 
@@ -260,7 +260,7 @@ namespace Google.Protobuf
         /// to avoid maliciously-recursive data.
         /// </summary>
         /// <remarks>
-        /// The default limit is 64.
+        /// The default limit is 100.
         /// </remarks>
         /// <value>
         /// The recursion limit for this stream.
