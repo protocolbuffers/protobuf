@@ -186,6 +186,9 @@ if __name__ == '__main__':
         extra_compile_args.append('-Wno-invalid-offsetof')
         extra_compile_args.append('-Wno-sign-compare')
 
+    if sys.platform == 'darwin':
+      os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
+
     # https://github.com/Theano/Theano/issues/4926
     if sys.platform == 'win32':
       extra_compile_args.append('-D_hypot=hypot')
