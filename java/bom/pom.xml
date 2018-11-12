@@ -58,20 +58,25 @@
 
   <profiles>
     <profile>
+      <!-- If you see the error message
+           gpg: signing failed: Inappropriate ioctl for device
+           when signing run the command
+           export GPG_TTY=$(tty)
+           and try again. -->
       <id>release</id>
       <build>
-      <plugins>
-        <plugin>
-          <artifactId>maven-gpg-plugin</artifactId>
-          <version>1.6</version>
-          <executions>
-            <execution>
-              <id>sign-artifacts</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>sign</goal>
-              </goals>
-             </execution>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+               </execution>
             </executions>
           </plugin>
           <plugin>
