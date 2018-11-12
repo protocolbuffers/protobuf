@@ -29,44 +29,71 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Author: oleksiy.pylypenko@gmail.com
-//
-// Generates Kotlin code for a given .proto file.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_KOTLIN_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_KOTLIN_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__
+#define GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__
 
+#include <memory>
 #include <string>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/code_generator.h>
-
-#include <google/protobuf/port_def.inc>
+#include <vector>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/kotlin/kotlin_options.h>
 
 namespace google {
-    namespace protobuf {
-        namespace compiler {
-            namespace kotlin {
-
-// CodeGenerator implementation which generates Kotlin DSL code and Java classes.
-                class PROTOC_EXPORT KotlinGenerator : public java::JavaGenerator {
-                public:
-                KotlinGenerator();
-                ~KotlinGenerator();
-
-                // implements CodeGenerator ----------------------------------------
-                bool Generate(const FileDescriptor* file,
-                              const std::string& parameter,
-                              GeneratorContext* context,
-                              std::string* error) const;
-
-                private:
-                GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(KotlinGenerator);
-            };
-
-        }  // namespace kotlin
-    }  // namespace compiler
+namespace protobuf {
+class FileDescriptor;          // descriptor.h
+namespace io {
+  class Printer;               // printer.h
+}
+namespace compiler {
+  class GeneratorContext;      // code_generator.h
+  namespace kotlin {
+    class Context;             // context.h
+  }
+  namespace java {
+    class ClassNameResolver;   // name_resolver.h
+  }
+}
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+namespace google {
+namespace protobuf {
+namespace compiler {
+namespace kotlin {
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_KOTLIN_GENERATOR_H__
+class FileGenerator {
+ public:
+  FileGenerator(const FileDescriptor* file, const Options& options,
+                bool immutable_api = true);
+  ~FileGenerator();
+
+  // Checks for problems that would otherwise lead to cryptic compile errors.
+  // Returns true if there are no problems, or writes an error description to
+  // the given string and returns false otherwise.
+  bool Validate(std::string* error);
+
+  void Generate(io::Printer* printer);
+
+  const std::string& java_package() { return java_package_; }
+  const std::string& classname() { return classname_; }
+
+ private:
+
+  const FileDescriptor* file_;
+  std::string java_package_;
+  std::string classname_;
+
+  java::ClassNameResolver* name_resolver_;
+  const Options options_;
+  bool immutable_api_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
+};
+
+}  // namespace kotlin
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
+
+#endif  // GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__

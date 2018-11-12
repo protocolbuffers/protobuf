@@ -28,45 +28,46 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: oleksiy.pylypenko@gmail.com
-//
-// Generates Kotlin code for a given .proto file.
-
-#ifndef GOOGLE_PROTOBUF_COMPILER_KOTLIN_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_KOTLIN_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_KOTLIN_OPTIONS_H__
+#define GOOGLE_PROTOBUF_COMPILER_KOTLIN_OPTIONS_H__
 
 #include <string>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/code_generator.h>
-
-#include <google/protobuf/port_def.inc>
 
 namespace google {
-    namespace protobuf {
-        namespace compiler {
-            namespace kotlin {
+namespace protobuf {
+namespace compiler {
+namespace kotlin {
 
-// CodeGenerator implementation which generates Kotlin DSL code and Java classes.
-                class PROTOC_EXPORT KotlinGenerator : public java::JavaGenerator {
-                public:
-                KotlinGenerator();
-                ~KotlinGenerator();
+// Generator options
+struct Options {
+  Options()
+      : generate_immutable_code(false),
+        generate_mutable_code(false),
+        generate_shared_code(false),
+        enforce_lite(false),
+        annotate_code(false) {
+  }
 
-                // implements CodeGenerator ----------------------------------------
-                bool Generate(const FileDescriptor* file,
-                              const std::string& parameter,
-                              GeneratorContext* context,
-                              std::string* error) const;
+  bool generate_immutable_code;
+  bool generate_mutable_code;
+  bool generate_shared_code;
+  // When set, the protoc will generate the current files and all the transitive
+  // dependencies as lite runtime.
+  bool enforce_lite;
+  // If true, we should build .meta files and emit @Generated annotations into
+  // generated code.
+  bool annotate_code;
+  // Name of a file where we will write a list of generated .meta file names,
+  // one per line.
+  std::string annotation_list_file;
+  // Name of a file where we will write a list of generated file names, one
+  // per line.
+  std::string output_list_file;
+};
 
-                private:
-                GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(KotlinGenerator);
-            };
-
-        }  // namespace kotlin
-    }  // namespace compiler
+}  // namespace kotlin
+}  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_KOTLIN_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_KOTLIN_OPTIONS_H__
