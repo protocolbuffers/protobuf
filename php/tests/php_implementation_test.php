@@ -13,7 +13,6 @@ use Google\Protobuf\Internal\GPBLabel;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\CodedOutputStream;
-use Google\Protobuf\Internal\EnumTrait;
 
 class ImplementationTest extends TestBase
 {

@@ -8,7 +8,6 @@ require_once('test_util.php');
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\EnumTrait;
 use Bar\TestLegacyMessage;
 use Bar\TestLegacyMessage_NestedEnum;
 use Bar\TestLegacyMessage_NestedMessage;
