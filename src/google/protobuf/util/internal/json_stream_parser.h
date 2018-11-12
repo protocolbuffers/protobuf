@@ -95,7 +95,7 @@ class PROTOBUF_EXPORT JsonStreamParser {
  private:
   friend class JsonStreamParserTest;
   // Return the current recursion depth.
-  const int recursion_depth() { return recursion_depth_; }
+  int recursion_depth() { return recursion_depth_; }
 
   enum TokenType {
     BEGIN_STRING,     // " or '
