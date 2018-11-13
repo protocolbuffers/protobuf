@@ -107,7 +107,7 @@ const int FieldMask::kPathsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FieldMask::FieldMask()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FieldMask)
 }
@@ -121,7 +121,7 @@ FieldMask::FieldMask(::google::protobuf::Arena* arena)
 }
 FieldMask::FieldMask(const FieldMask& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       paths_(from.paths_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
@@ -138,7 +138,7 @@ FieldMask::~FieldMask() {
 }
 
 void FieldMask::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void FieldMask::ArenaDtor(void* object) {
@@ -352,7 +352,7 @@ void FieldMask::MergeFrom(const ::google::protobuf::Message& from) {
   const FieldMask* source =
       ::google::protobuf::DynamicCastToGenerated<FieldMask>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FieldMask)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -398,7 +398,7 @@ void FieldMask::Swap(FieldMask* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }

@@ -115,7 +115,7 @@ class PROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@protoc_
   // implements Message ----------------------------------------------
 
   inline Duration* New() const final {
-    return CreateMaybeMessage<Duration>(NULL);
+    return CreateMaybeMessage<Duration>(nullptr);
   }
 
   Duration* New(::google::protobuf::Arena* arena) const final {

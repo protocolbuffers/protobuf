@@ -115,7 +115,7 @@ class PROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@protoc
   // implements Message ----------------------------------------------
 
   inline Timestamp* New() const final {
-    return CreateMaybeMessage<Timestamp>(NULL);
+    return CreateMaybeMessage<Timestamp>(nullptr);
   }
 
   Timestamp* New(::google::protobuf::Arena* arena) const final {

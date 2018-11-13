@@ -1403,7 +1403,7 @@ const int FileDescriptorSet::kFileFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FileDescriptorSet::FileDescriptorSet()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FileDescriptorSet)
 }
@@ -1417,7 +1417,7 @@ FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena)
 }
 FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       file_(from.file_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -1435,7 +1435,7 @@ FileDescriptorSet::~FileDescriptorSet() {
 }
 
 void FileDescriptorSet::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void FileDescriptorSet::ArenaDtor(void* object) {
@@ -1641,7 +1641,7 @@ void FileDescriptorSet::MergeFrom(const ::google::protobuf::Message& from) {
   const FileDescriptorSet* source =
       ::google::protobuf::DynamicCastToGenerated<FileDescriptorSet>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FileDescriptorSet)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1688,7 +1688,7 @@ void FileDescriptorSet::Swap(FileDescriptorSet* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -1750,7 +1750,7 @@ FileDescriptorProto::HasBitSetters::source_code_info(const FileDescriptorProto* 
 }
 void FileDescriptorProto::unsafe_arena_set_allocated_options(
     ::google::protobuf::FileOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -1763,7 +1763,7 @@ void FileDescriptorProto::unsafe_arena_set_allocated_options(
 }
 void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(
     ::google::protobuf::SourceCodeInfo* source_code_info) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete source_code_info_;
   }
   source_code_info_ = source_code_info;
@@ -1790,7 +1790,7 @@ const int FileDescriptorProto::kSyntaxFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FileDescriptorProto::FileDescriptorProto()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FileDescriptorProto)
 }
@@ -1810,7 +1810,7 @@ FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* arena)
 }
 FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       dependency_(from.dependency_),
       message_type_(from.message_type_),
@@ -1838,12 +1838,12 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
   if (from.has_options()) {
     options_ = new ::google::protobuf::FileOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   if (from.has_source_code_info()) {
     source_code_info_ = new ::google::protobuf::SourceCodeInfo(*from.source_code_info_);
   } else {
-    source_code_info_ = NULL;
+    source_code_info_ = nullptr;
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
 }
@@ -1865,7 +1865,7 @@ FileDescriptorProto::~FileDescriptorProto() {
 }
 
 void FileDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   package_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   syntax_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1913,11 +1913,11 @@ void FileDescriptorProto::Clear() {
       syntax_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
-      GOOGLE_DCHECK(options_ != NULL);
+      GOOGLE_DCHECK(options_ != nullptr);
       options_->Clear();
     }
     if (cached_has_bits & 0x00000010u) {
-      GOOGLE_DCHECK(source_code_info_ != NULL);
+      GOOGLE_DCHECK(source_code_info_ != nullptr);
       source_code_info_->Clear();
     }
   }
@@ -2738,7 +2738,7 @@ void FileDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
   const FileDescriptorProto* source =
       ::google::protobuf::DynamicCastToGenerated<FileDescriptorProto>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FileDescriptorProto)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -2815,7 +2815,7 @@ void FileDescriptorProto::Swap(FileDescriptorProto* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -2878,7 +2878,7 @@ DescriptorProto_ExtensionRange::HasBitSetters::options(const DescriptorProto_Ext
 }
 void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(
     ::google::protobuf::ExtensionRangeOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -2896,7 +2896,7 @@ const int DescriptorProto_ExtensionRange::kOptionsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.DescriptorProto.ExtensionRange)
 }
@@ -2909,13 +2909,13 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobu
 }
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.has_options()) {
     options_ = new ::google::protobuf::ExtensionRangeOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   ::memcpy(&start_, &from.start_,
     static_cast<size_t>(reinterpret_cast<char*>(&end_) -
@@ -2937,7 +2937,7 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 }
 
 void DescriptorProto_ExtensionRange::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   if (this != internal_default_instance()) delete options_;
 }
 
@@ -2964,7 +2964,7 @@ void DescriptorProto_ExtensionRange::Clear() {
 
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    GOOGLE_DCHECK(options_ != NULL);
+    GOOGLE_DCHECK(options_ != nullptr);
     options_->Clear();
   }
   if (cached_has_bits & 0x00000006u) {
@@ -3227,7 +3227,7 @@ void DescriptorProto_ExtensionRange::MergeFrom(const ::google::protobuf::Message
   const DescriptorProto_ExtensionRange* source =
       ::google::protobuf::DynamicCastToGenerated<DescriptorProto_ExtensionRange>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.DescriptorProto.ExtensionRange)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -3288,7 +3288,7 @@ void DescriptorProto_ExtensionRange::Swap(DescriptorProto_ExtensionRange* other)
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -3333,7 +3333,7 @@ const int DescriptorProto_ReservedRange::kEndFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
@@ -3346,7 +3346,7 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf:
 }
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&start_, &from.start_,
@@ -3367,7 +3367,7 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
 }
 
 void DescriptorProto_ReservedRange::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void DescriptorProto_ReservedRange::ArenaDtor(void* object) {
@@ -3606,7 +3606,7 @@ void DescriptorProto_ReservedRange::MergeFrom(const ::google::protobuf::Message&
   const DescriptorProto_ReservedRange* source =
       ::google::protobuf::DynamicCastToGenerated<DescriptorProto_ReservedRange>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.DescriptorProto.ReservedRange)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -3661,7 +3661,7 @@ void DescriptorProto_ReservedRange::Swap(DescriptorProto_ReservedRange* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -3708,7 +3708,7 @@ DescriptorProto::HasBitSetters::options(const DescriptorProto* msg) {
 }
 void DescriptorProto::unsafe_arena_set_allocated_options(
     ::google::protobuf::MessageOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -3733,7 +3733,7 @@ const int DescriptorProto::kReservedNameFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 DescriptorProto::DescriptorProto()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.DescriptorProto)
 }
@@ -3754,7 +3754,7 @@ DescriptorProto::DescriptorProto(::google::protobuf::Arena* arena)
 }
 DescriptorProto::DescriptorProto(const DescriptorProto& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       field_(from.field_),
       nested_type_(from.nested_type_),
@@ -3773,7 +3773,7 @@ DescriptorProto::DescriptorProto(const DescriptorProto& from)
   if (from.has_options()) {
     options_ = new ::google::protobuf::MessageOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
 }
@@ -3782,7 +3782,7 @@ void DescriptorProto::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
       &scc_info_DescriptorProto_google_2fprotobuf_2fdescriptor_2eproto.base);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  options_ = NULL;
+  options_ = nullptr;
 }
 
 DescriptorProto::~DescriptorProto() {
@@ -3791,7 +3791,7 @@ DescriptorProto::~DescriptorProto() {
 }
 
 void DescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete options_;
 }
@@ -3831,7 +3831,7 @@ void DescriptorProto::Clear() {
       name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(options_ != NULL);
+      GOOGLE_DCHECK(options_ != nullptr);
       options_->Clear();
     }
   }
@@ -4537,7 +4537,7 @@ void DescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
   const DescriptorProto* source =
       ::google::protobuf::DynamicCastToGenerated<DescriptorProto>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.DescriptorProto)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -4608,7 +4608,7 @@ void DescriptorProto::Swap(DescriptorProto* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -4654,7 +4654,7 @@ const int ExtensionRangeOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ExtensionRangeOptions::ExtensionRangeOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.ExtensionRangeOptions)
 }
@@ -4669,7 +4669,7 @@ ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* arena)
 }
 ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -4688,7 +4688,7 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
 }
 
 void ExtensionRangeOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void ExtensionRangeOptions::ArenaDtor(void* object) {
@@ -4918,7 +4918,7 @@ void ExtensionRangeOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const ExtensionRangeOptions* source =
       ::google::protobuf::DynamicCastToGenerated<ExtensionRangeOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.ExtensionRangeOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -4970,7 +4970,7 @@ void ExtensionRangeOptions::Swap(ExtensionRangeOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -5041,7 +5041,7 @@ FieldDescriptorProto::HasBitSetters::options(const FieldDescriptorProto* msg) {
 }
 void FieldDescriptorProto::unsafe_arena_set_allocated_options(
     ::google::protobuf::FieldOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -5066,7 +5066,7 @@ const int FieldDescriptorProto::kOptionsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FieldDescriptorProto::FieldDescriptorProto()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FieldDescriptorProto)
 }
@@ -5079,7 +5079,7 @@ FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* arena)
 }
 FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -5110,7 +5110,7 @@ FieldDescriptorProto::FieldDescriptorProto(const FieldDescriptorProto& from)
   if (from.has_options()) {
     options_ = new ::google::protobuf::FieldOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   ::memcpy(&number_, &from.number_,
     static_cast<size_t>(reinterpret_cast<char*>(&type_) -
@@ -5139,7 +5139,7 @@ FieldDescriptorProto::~FieldDescriptorProto() {
 }
 
 void FieldDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   extendee_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   type_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -5187,7 +5187,7 @@ void FieldDescriptorProto::Clear() {
       json_name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000020u) {
-      GOOGLE_DCHECK(options_ != NULL);
+      GOOGLE_DCHECK(options_ != nullptr);
       options_->Clear();
     }
   }
@@ -5869,7 +5869,7 @@ void FieldDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
   const FieldDescriptorProto* source =
       ::google::protobuf::DynamicCastToGenerated<FieldDescriptorProto>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FieldDescriptorProto)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -5954,7 +5954,7 @@ void FieldDescriptorProto::Swap(FieldDescriptorProto* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -6014,7 +6014,7 @@ OneofDescriptorProto::HasBitSetters::options(const OneofDescriptorProto* msg) {
 }
 void OneofDescriptorProto::unsafe_arena_set_allocated_options(
     ::google::protobuf::OneofOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -6031,7 +6031,7 @@ const int OneofDescriptorProto::kOptionsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 OneofDescriptorProto::OneofDescriptorProto()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.OneofDescriptorProto)
 }
@@ -6044,7 +6044,7 @@ OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* arena)
 }
 OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6055,7 +6055,7 @@ OneofDescriptorProto::OneofDescriptorProto(const OneofDescriptorProto& from)
   if (from.has_options()) {
     options_ = new ::google::protobuf::OneofOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
 }
@@ -6064,7 +6064,7 @@ void OneofDescriptorProto::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
       &scc_info_OneofDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto.base);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  options_ = NULL;
+  options_ = nullptr;
 }
 
 OneofDescriptorProto::~OneofDescriptorProto() {
@@ -6073,7 +6073,7 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 }
 
 void OneofDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete options_;
 }
@@ -6105,7 +6105,7 @@ void OneofDescriptorProto::Clear() {
       name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(options_ != NULL);
+      GOOGLE_DCHECK(options_ != nullptr);
       options_->Clear();
     }
   }
@@ -6346,7 +6346,7 @@ void OneofDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
   const OneofDescriptorProto* source =
       ::google::protobuf::DynamicCastToGenerated<OneofDescriptorProto>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.OneofDescriptorProto)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -6403,7 +6403,7 @@ void OneofDescriptorProto::Swap(OneofDescriptorProto* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -6448,7 +6448,7 @@ const int EnumDescriptorProto_EnumReservedRange::kEndFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
@@ -6461,7 +6461,7 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::g
 }
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&start_, &from.start_,
@@ -6482,7 +6482,7 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
 }
 
 void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void EnumDescriptorProto_EnumReservedRange::ArenaDtor(void* object) {
@@ -6721,7 +6721,7 @@ void EnumDescriptorProto_EnumReservedRange::MergeFrom(const ::google::protobuf::
   const EnumDescriptorProto_EnumReservedRange* source =
       ::google::protobuf::DynamicCastToGenerated<EnumDescriptorProto_EnumReservedRange>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.EnumDescriptorProto.EnumReservedRange)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -6776,7 +6776,7 @@ void EnumDescriptorProto_EnumReservedRange::Swap(EnumDescriptorProto_EnumReserve
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -6823,7 +6823,7 @@ EnumDescriptorProto::HasBitSetters::options(const EnumDescriptorProto* msg) {
 }
 void EnumDescriptorProto::unsafe_arena_set_allocated_options(
     ::google::protobuf::EnumOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -6843,7 +6843,7 @@ const int EnumDescriptorProto::kReservedNameFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumDescriptorProto::EnumDescriptorProto()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.EnumDescriptorProto)
 }
@@ -6859,7 +6859,7 @@ EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* arena)
 }
 EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       value_(from.value_),
       reserved_range_(from.reserved_range_),
@@ -6873,7 +6873,7 @@ EnumDescriptorProto::EnumDescriptorProto(const EnumDescriptorProto& from)
   if (from.has_options()) {
     options_ = new ::google::protobuf::EnumOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
 }
@@ -6882,7 +6882,7 @@ void EnumDescriptorProto::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
       &scc_info_EnumDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto.base);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  options_ = NULL;
+  options_ = nullptr;
 }
 
 EnumDescriptorProto::~EnumDescriptorProto() {
@@ -6891,7 +6891,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 }
 
 void EnumDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete options_;
 }
@@ -6926,7 +6926,7 @@ void EnumDescriptorProto::Clear() {
       name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(options_ != NULL);
+      GOOGLE_DCHECK(options_ != nullptr);
       options_->Clear();
     }
   }
@@ -7347,7 +7347,7 @@ void EnumDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
   const EnumDescriptorProto* source =
       ::google::protobuf::DynamicCastToGenerated<EnumDescriptorProto>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.EnumDescriptorProto)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -7408,7 +7408,7 @@ void EnumDescriptorProto::Swap(EnumDescriptorProto* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -7462,7 +7462,7 @@ EnumValueDescriptorProto::HasBitSetters::options(const EnumValueDescriptorProto*
 }
 void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(
     ::google::protobuf::EnumValueOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -7480,7 +7480,7 @@ const int EnumValueDescriptorProto::kOptionsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumValueDescriptorProto::EnumValueDescriptorProto()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.EnumValueDescriptorProto)
 }
@@ -7493,7 +7493,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* ar
 }
 EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProto& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -7504,7 +7504,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(const EnumValueDescriptorProt
   if (from.has_options()) {
     options_ = new ::google::protobuf::EnumValueOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   number_ = from.number_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
@@ -7525,7 +7525,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 }
 
 void EnumValueDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete options_;
 }
@@ -7557,7 +7557,7 @@ void EnumValueDescriptorProto::Clear() {
       name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(options_ != NULL);
+      GOOGLE_DCHECK(options_ != nullptr);
       options_->Clear();
     }
   }
@@ -7839,7 +7839,7 @@ void EnumValueDescriptorProto::MergeFrom(const ::google::protobuf::Message& from
   const EnumValueDescriptorProto* source =
       ::google::protobuf::DynamicCastToGenerated<EnumValueDescriptorProto>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.EnumValueDescriptorProto)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -7900,7 +7900,7 @@ void EnumValueDescriptorProto::Swap(EnumValueDescriptorProto* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -7949,7 +7949,7 @@ ServiceDescriptorProto::HasBitSetters::options(const ServiceDescriptorProto* msg
 }
 void ServiceDescriptorProto::unsafe_arena_set_allocated_options(
     ::google::protobuf::ServiceOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -7967,7 +7967,7 @@ const int ServiceDescriptorProto::kOptionsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ServiceDescriptorProto::ServiceDescriptorProto()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.ServiceDescriptorProto)
 }
@@ -7981,7 +7981,7 @@ ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* arena)
 }
 ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       method_(from.method_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -7993,7 +7993,7 @@ ServiceDescriptorProto::ServiceDescriptorProto(const ServiceDescriptorProto& fro
   if (from.has_options()) {
     options_ = new ::google::protobuf::ServiceOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
 }
@@ -8002,7 +8002,7 @@ void ServiceDescriptorProto::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
       &scc_info_ServiceDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto.base);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  options_ = NULL;
+  options_ = nullptr;
 }
 
 ServiceDescriptorProto::~ServiceDescriptorProto() {
@@ -8011,7 +8011,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 }
 
 void ServiceDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete options_;
 }
@@ -8044,7 +8044,7 @@ void ServiceDescriptorProto::Clear() {
       name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(options_ != NULL);
+      GOOGLE_DCHECK(options_ != nullptr);
       options_->Clear();
     }
   }
@@ -8342,7 +8342,7 @@ void ServiceDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) 
   const ServiceDescriptorProto* source =
       ::google::protobuf::DynamicCastToGenerated<ServiceDescriptorProto>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.ServiceDescriptorProto)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -8401,7 +8401,7 @@ void ServiceDescriptorProto::Swap(ServiceDescriptorProto* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -8462,7 +8462,7 @@ MethodDescriptorProto::HasBitSetters::options(const MethodDescriptorProto* msg) 
 }
 void MethodDescriptorProto::unsafe_arena_set_allocated_options(
     ::google::protobuf::MethodOptions* options) {
-  if (GetArenaNoVirtual() == NULL) {
+  if (GetArenaNoVirtual() == nullptr) {
     delete options_;
   }
   options_ = options;
@@ -8483,7 +8483,7 @@ const int MethodDescriptorProto::kServerStreamingFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 MethodDescriptorProto::MethodDescriptorProto()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.MethodDescriptorProto)
 }
@@ -8496,7 +8496,7 @@ MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* arena)
 }
 MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -8517,7 +8517,7 @@ MethodDescriptorProto::MethodDescriptorProto(const MethodDescriptorProto& from)
   if (from.has_options()) {
     options_ = new ::google::protobuf::MethodOptions(*from.options_);
   } else {
-    options_ = NULL;
+    options_ = nullptr;
   }
   ::memcpy(&client_streaming_, &from.client_streaming_,
     static_cast<size_t>(reinterpret_cast<char*>(&server_streaming_) -
@@ -8542,7 +8542,7 @@ MethodDescriptorProto::~MethodDescriptorProto() {
 }
 
 void MethodDescriptorProto::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   input_type_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   output_type_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -8582,7 +8582,7 @@ void MethodDescriptorProto::Clear() {
       output_type_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
-      GOOGLE_DCHECK(options_ != NULL);
+      GOOGLE_DCHECK(options_ != nullptr);
       options_->Clear();
     }
   }
@@ -9026,7 +9026,7 @@ void MethodDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
   const MethodDescriptorProto* source =
       ::google::protobuf::DynamicCastToGenerated<MethodDescriptorProto>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.MethodDescriptorProto)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -9096,7 +9096,7 @@ void MethodDescriptorProto::Swap(MethodDescriptorProto* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -9220,7 +9220,7 @@ const int FileOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FileOptions::FileOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FileOptions)
 }
@@ -9235,7 +9235,7 @@ FileOptions::FileOptions(::google::protobuf::Arena* arena)
 }
 FileOptions::FileOptions(const FileOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -9321,7 +9321,7 @@ FileOptions::~FileOptions() {
 }
 
 void FileOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   java_package_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   java_outer_classname_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   go_package_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -10629,7 +10629,7 @@ void FileOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const FileOptions* source =
       ::google::protobuf::DynamicCastToGenerated<FileOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FileOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -10750,7 +10750,7 @@ void FileOptions::Swap(FileOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -10833,7 +10833,7 @@ const int MessageOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 MessageOptions::MessageOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.MessageOptions)
 }
@@ -10848,7 +10848,7 @@ MessageOptions::MessageOptions(::google::protobuf::Arena* arena)
 }
 MessageOptions::MessageOptions(const MessageOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -10873,7 +10873,7 @@ MessageOptions::~MessageOptions() {
 }
 
 void MessageOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void MessageOptions::ArenaDtor(void* object) {
@@ -11263,7 +11263,7 @@ void MessageOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const MessageOptions* source =
       ::google::protobuf::DynamicCastToGenerated<MessageOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.MessageOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -11331,7 +11331,7 @@ void MessageOptions::Swap(MessageOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -11396,7 +11396,7 @@ const int FieldOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FieldOptions::FieldOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FieldOptions)
 }
@@ -11411,7 +11411,7 @@ FieldOptions::FieldOptions(::google::protobuf::Arena* arena)
 }
 FieldOptions::FieldOptions(const FieldOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -11436,7 +11436,7 @@ FieldOptions::~FieldOptions() {
 }
 
 void FieldOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void FieldOptions::ArenaDtor(void* object) {
@@ -11931,7 +11931,7 @@ void FieldOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const FieldOptions* source =
       ::google::protobuf::DynamicCastToGenerated<FieldOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FieldOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -12005,7 +12005,7 @@ void FieldOptions::Swap(FieldOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -12048,7 +12048,7 @@ const int OneofOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 OneofOptions::OneofOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.OneofOptions)
 }
@@ -12063,7 +12063,7 @@ OneofOptions::OneofOptions(::google::protobuf::Arena* arena)
 }
 OneofOptions::OneofOptions(const OneofOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -12082,7 +12082,7 @@ OneofOptions::~OneofOptions() {
 }
 
 void OneofOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void OneofOptions::ArenaDtor(void* object) {
@@ -12312,7 +12312,7 @@ void OneofOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const OneofOptions* source =
       ::google::protobuf::DynamicCastToGenerated<OneofOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.OneofOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -12364,7 +12364,7 @@ void OneofOptions::Swap(OneofOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -12409,7 +12409,7 @@ const int EnumOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumOptions::EnumOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.EnumOptions)
 }
@@ -12424,7 +12424,7 @@ EnumOptions::EnumOptions(::google::protobuf::Arena* arena)
 }
 EnumOptions::EnumOptions(const EnumOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -12449,7 +12449,7 @@ EnumOptions::~EnumOptions() {
 }
 
 void EnumOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void EnumOptions::ArenaDtor(void* object) {
@@ -12763,7 +12763,7 @@ void EnumOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const EnumOptions* source =
       ::google::protobuf::DynamicCastToGenerated<EnumOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.EnumOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -12825,7 +12825,7 @@ void EnumOptions::Swap(EnumOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -12868,7 +12868,7 @@ const int EnumValueOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumValueOptions::EnumValueOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.EnumValueOptions)
 }
@@ -12883,7 +12883,7 @@ EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* arena)
 }
 EnumValueOptions::EnumValueOptions(const EnumValueOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -12904,7 +12904,7 @@ EnumValueOptions::~EnumValueOptions() {
 }
 
 void EnumValueOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void EnumValueOptions::ArenaDtor(void* object) {
@@ -13176,7 +13176,7 @@ void EnumValueOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const EnumValueOptions* source =
       ::google::protobuf::DynamicCastToGenerated<EnumValueOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.EnumValueOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -13231,7 +13231,7 @@ void EnumValueOptions::Swap(EnumValueOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -13273,7 +13273,7 @@ const int ServiceOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ServiceOptions::ServiceOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.ServiceOptions)
 }
@@ -13288,7 +13288,7 @@ ServiceOptions::ServiceOptions(::google::protobuf::Arena* arena)
 }
 ServiceOptions::ServiceOptions(const ServiceOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -13309,7 +13309,7 @@ ServiceOptions::~ServiceOptions() {
 }
 
 void ServiceOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void ServiceOptions::ArenaDtor(void* object) {
@@ -13581,7 +13581,7 @@ void ServiceOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const ServiceOptions* source =
       ::google::protobuf::DynamicCastToGenerated<ServiceOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.ServiceOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -13636,7 +13636,7 @@ void ServiceOptions::Swap(ServiceOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -13682,7 +13682,7 @@ const int MethodOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 MethodOptions::MethodOptions()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.MethodOptions)
 }
@@ -13697,7 +13697,7 @@ MethodOptions::MethodOptions(::google::protobuf::Arena* arena)
 }
 MethodOptions::MethodOptions(const MethodOptions& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -13722,7 +13722,7 @@ MethodOptions::~MethodOptions() {
 }
 
 void MethodOptions::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void MethodOptions::ArenaDtor(void* object) {
@@ -14052,7 +14052,7 @@ void MethodOptions::MergeFrom(const ::google::protobuf::Message& from) {
   const MethodOptions* source =
       ::google::protobuf::DynamicCastToGenerated<MethodOptions>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.MethodOptions)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -14114,7 +14114,7 @@ void MethodOptions::Swap(MethodOptions* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -14160,7 +14160,7 @@ const int UninterpretedOption_NamePart::kIsExtensionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.UninterpretedOption.NamePart)
 }
@@ -14173,7 +14173,7 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::A
 }
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_part_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -14198,7 +14198,7 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
 }
 
 void UninterpretedOption_NamePart::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   name_part_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -14472,7 +14472,7 @@ void UninterpretedOption_NamePart::MergeFrom(const ::google::protobuf::Message& 
   const UninterpretedOption_NamePart* source =
       ::google::protobuf::DynamicCastToGenerated<UninterpretedOption_NamePart>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.UninterpretedOption.NamePart)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -14528,7 +14528,7 @@ void UninterpretedOption_NamePart::Swap(UninterpretedOption_NamePart* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -14590,7 +14590,7 @@ const int UninterpretedOption::kAggregateValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 UninterpretedOption::UninterpretedOption()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.UninterpretedOption)
 }
@@ -14604,7 +14604,7 @@ UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* arena)
 }
 UninterpretedOption::UninterpretedOption(const UninterpretedOption& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       name_(from.name_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -14646,7 +14646,7 @@ UninterpretedOption::~UninterpretedOption() {
 }
 
 void UninterpretedOption::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   identifier_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   string_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   aggregate_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -15167,7 +15167,7 @@ void UninterpretedOption::MergeFrom(const ::google::protobuf::Message& from) {
   const UninterpretedOption* source =
       ::google::protobuf::DynamicCastToGenerated<UninterpretedOption>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.UninterpretedOption)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -15236,7 +15236,7 @@ void UninterpretedOption::Swap(UninterpretedOption* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -15291,7 +15291,7 @@ const int SourceCodeInfo_Location::kLeadingDetachedCommentsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SourceCodeInfo_Location::SourceCodeInfo_Location()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.SourceCodeInfo.Location)
 }
@@ -15307,7 +15307,7 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* aren
 }
 SourceCodeInfo_Location::SourceCodeInfo_Location(const SourceCodeInfo_Location& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       path_(from.path_),
       span_(from.span_),
@@ -15339,7 +15339,7 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
 }
 
 void SourceCodeInfo_Location::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   leading_comments_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   trailing_comments_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -15852,7 +15852,7 @@ void SourceCodeInfo_Location::MergeFrom(const ::google::protobuf::Message& from)
   const SourceCodeInfo_Location* source =
       ::google::protobuf::DynamicCastToGenerated<SourceCodeInfo_Location>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.SourceCodeInfo.Location)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -15909,7 +15909,7 @@ void SourceCodeInfo_Location::Swap(SourceCodeInfo_Location* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -15951,7 +15951,7 @@ const int SourceCodeInfo::kLocationFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SourceCodeInfo::SourceCodeInfo()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.SourceCodeInfo)
 }
@@ -15965,7 +15965,7 @@ SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena)
 }
 SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       location_(from.location_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -15983,7 +15983,7 @@ SourceCodeInfo::~SourceCodeInfo() {
 }
 
 void SourceCodeInfo::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void SourceCodeInfo::ArenaDtor(void* object) {
@@ -16189,7 +16189,7 @@ void SourceCodeInfo::MergeFrom(const ::google::protobuf::Message& from) {
   const SourceCodeInfo* source =
       ::google::protobuf::DynamicCastToGenerated<SourceCodeInfo>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.SourceCodeInfo)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -16235,7 +16235,7 @@ void SourceCodeInfo::Swap(SourceCodeInfo* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -16283,7 +16283,7 @@ const int GeneratedCodeInfo_Annotation::kEndFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
@@ -16297,7 +16297,7 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::A
 }
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       path_(from.path_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -16327,7 +16327,7 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
 }
 
 void GeneratedCodeInfo_Annotation::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   source_file_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -16711,7 +16711,7 @@ void GeneratedCodeInfo_Annotation::MergeFrom(const ::google::protobuf::Message& 
   const GeneratedCodeInfo_Annotation* source =
       ::google::protobuf::DynamicCastToGenerated<GeneratedCodeInfo_Annotation>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.GeneratedCodeInfo.Annotation)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -16770,7 +16770,7 @@ void GeneratedCodeInfo_Annotation::Swap(GeneratedCodeInfo_Annotation* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -16810,7 +16810,7 @@ const int GeneratedCodeInfo::kAnnotationFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 GeneratedCodeInfo::GeneratedCodeInfo()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.GeneratedCodeInfo)
 }
@@ -16824,7 +16824,7 @@ GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena)
 }
 GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       annotation_(from.annotation_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -16842,7 +16842,7 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
 }
 
 void GeneratedCodeInfo::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void GeneratedCodeInfo::ArenaDtor(void* object) {
@@ -17048,7 +17048,7 @@ void GeneratedCodeInfo::MergeFrom(const ::google::protobuf::Message& from) {
   const GeneratedCodeInfo* source =
       ::google::protobuf::DynamicCastToGenerated<GeneratedCodeInfo>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.GeneratedCodeInfo)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -17094,7 +17094,7 @@ void GeneratedCodeInfo::Swap(GeneratedCodeInfo* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }

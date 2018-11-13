@@ -147,7 +147,7 @@ class PROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@prot
   // implements Message ----------------------------------------------
 
   inline DoubleValue* New() const final {
-    return CreateMaybeMessage<DoubleValue>(NULL);
+    return CreateMaybeMessage<DoubleValue>(nullptr);
   }
 
   DoubleValue* New(::google::protobuf::Arena* arena) const final {
@@ -273,7 +273,7 @@ class PROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@proto
   // implements Message ----------------------------------------------
 
   inline FloatValue* New() const final {
-    return CreateMaybeMessage<FloatValue>(NULL);
+    return CreateMaybeMessage<FloatValue>(nullptr);
   }
 
   FloatValue* New(::google::protobuf::Arena* arena) const final {
@@ -399,7 +399,7 @@ class PROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@proto
   // implements Message ----------------------------------------------
 
   inline Int64Value* New() const final {
-    return CreateMaybeMessage<Int64Value>(NULL);
+    return CreateMaybeMessage<Int64Value>(nullptr);
   }
 
   Int64Value* New(::google::protobuf::Arena* arena) const final {
@@ -525,7 +525,7 @@ class PROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@prot
   // implements Message ----------------------------------------------
 
   inline UInt64Value* New() const final {
-    return CreateMaybeMessage<UInt64Value>(NULL);
+    return CreateMaybeMessage<UInt64Value>(nullptr);
   }
 
   UInt64Value* New(::google::protobuf::Arena* arena) const final {
@@ -651,7 +651,7 @@ class PROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@proto
   // implements Message ----------------------------------------------
 
   inline Int32Value* New() const final {
-    return CreateMaybeMessage<Int32Value>(NULL);
+    return CreateMaybeMessage<Int32Value>(nullptr);
   }
 
   Int32Value* New(::google::protobuf::Arena* arena) const final {
@@ -777,7 +777,7 @@ class PROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@prot
   // implements Message ----------------------------------------------
 
   inline UInt32Value* New() const final {
-    return CreateMaybeMessage<UInt32Value>(NULL);
+    return CreateMaybeMessage<UInt32Value>(nullptr);
   }
 
   UInt32Value* New(::google::protobuf::Arena* arena) const final {
@@ -903,7 +903,7 @@ class PROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@protoc
   // implements Message ----------------------------------------------
 
   inline BoolValue* New() const final {
-    return CreateMaybeMessage<BoolValue>(NULL);
+    return CreateMaybeMessage<BoolValue>(nullptr);
   }
 
   BoolValue* New(::google::protobuf::Arena* arena) const final {
@@ -1029,7 +1029,7 @@ class PROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@prot
   // implements Message ----------------------------------------------
 
   inline StringValue* New() const final {
-    return CreateMaybeMessage<StringValue>(NULL);
+    return CreateMaybeMessage<StringValue>(nullptr);
   }
 
   StringValue* New(::google::protobuf::Arena* arena) const final {
@@ -1172,7 +1172,7 @@ class PROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@proto
   // implements Message ----------------------------------------------
 
   inline BytesValue* New() const final {
-    return CreateMaybeMessage<BytesValue>(NULL);
+    return CreateMaybeMessage<BytesValue>(nullptr);
   }
 
   BytesValue* New(::google::protobuf::Arena* arena) const final {
@@ -1418,7 +1418,7 @@ inline void StringValue::set_value(::std::string&& value) {
 }
 #endif
 inline void StringValue::set_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -1442,7 +1442,7 @@ inline ::std::string* StringValue::release_value() {
   return value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void StringValue::set_allocated_value(::std::string* value) {
-  if (value != NULL) {
+  if (value != nullptr) {
     
   } else {
     
@@ -1453,15 +1453,15 @@ inline void StringValue::set_allocated_value(::std::string* value) {
 }
 inline ::std::string* StringValue::unsafe_arena_release_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.StringValue.value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void StringValue::unsafe_arena_set_allocated_value(
     ::std::string* value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (value != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (value != nullptr) {
     
   } else {
     
@@ -1497,7 +1497,7 @@ inline void BytesValue::set_value(::std::string&& value) {
 }
 #endif
 inline void BytesValue::set_value(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   
   value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArenaNoVirtual());
@@ -1521,7 +1521,7 @@ inline ::std::string* BytesValue::release_value() {
   return value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline void BytesValue::set_allocated_value(::std::string* value) {
-  if (value != NULL) {
+  if (value != nullptr) {
     
   } else {
     
@@ -1532,15 +1532,15 @@ inline void BytesValue::set_allocated_value(::std::string* value) {
 }
 inline ::std::string* BytesValue::unsafe_arena_release_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.BytesValue.value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
   
   return value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       GetArenaNoVirtual());
 }
 inline void BytesValue::unsafe_arena_set_allocated_value(
     ::std::string* value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
-  if (value != NULL) {
+  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  if (value != nullptr) {
     
   } else {
     

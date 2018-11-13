@@ -329,7 +329,7 @@ const int DoubleValue::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 DoubleValue::DoubleValue()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.DoubleValue)
 }
@@ -342,7 +342,7 @@ DoubleValue::DoubleValue(::google::protobuf::Arena* arena)
 }
 DoubleValue::DoubleValue(const DoubleValue& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_ = from.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DoubleValue)
@@ -358,7 +358,7 @@ DoubleValue::~DoubleValue() {
 }
 
 void DoubleValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void DoubleValue::ArenaDtor(void* object) {
@@ -543,7 +543,7 @@ void DoubleValue::MergeFrom(const ::google::protobuf::Message& from) {
   const DoubleValue* source =
       ::google::protobuf::DynamicCastToGenerated<DoubleValue>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.DoubleValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -591,7 +591,7 @@ void DoubleValue::Swap(DoubleValue* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -626,7 +626,7 @@ const int FloatValue::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FloatValue::FloatValue()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FloatValue)
 }
@@ -639,7 +639,7 @@ FloatValue::FloatValue(::google::protobuf::Arena* arena)
 }
 FloatValue::FloatValue(const FloatValue& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_ = from.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FloatValue)
@@ -655,7 +655,7 @@ FloatValue::~FloatValue() {
 }
 
 void FloatValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void FloatValue::ArenaDtor(void* object) {
@@ -840,7 +840,7 @@ void FloatValue::MergeFrom(const ::google::protobuf::Message& from) {
   const FloatValue* source =
       ::google::protobuf::DynamicCastToGenerated<FloatValue>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FloatValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -888,7 +888,7 @@ void FloatValue::Swap(FloatValue* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -923,7 +923,7 @@ const int Int64Value::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Int64Value::Int64Value()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Int64Value)
 }
@@ -936,7 +936,7 @@ Int64Value::Int64Value(::google::protobuf::Arena* arena)
 }
 Int64Value::Int64Value(const Int64Value& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_ = from.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int64Value)
@@ -952,7 +952,7 @@ Int64Value::~Int64Value() {
 }
 
 void Int64Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void Int64Value::ArenaDtor(void* object) {
@@ -1140,7 +1140,7 @@ void Int64Value::MergeFrom(const ::google::protobuf::Message& from) {
   const Int64Value* source =
       ::google::protobuf::DynamicCastToGenerated<Int64Value>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Int64Value)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1188,7 +1188,7 @@ void Int64Value::Swap(Int64Value* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -1223,7 +1223,7 @@ const int UInt64Value::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 UInt64Value::UInt64Value()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.UInt64Value)
 }
@@ -1236,7 +1236,7 @@ UInt64Value::UInt64Value(::google::protobuf::Arena* arena)
 }
 UInt64Value::UInt64Value(const UInt64Value& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_ = from.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt64Value)
@@ -1252,7 +1252,7 @@ UInt64Value::~UInt64Value() {
 }
 
 void UInt64Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void UInt64Value::ArenaDtor(void* object) {
@@ -1440,7 +1440,7 @@ void UInt64Value::MergeFrom(const ::google::protobuf::Message& from) {
   const UInt64Value* source =
       ::google::protobuf::DynamicCastToGenerated<UInt64Value>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.UInt64Value)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1488,7 +1488,7 @@ void UInt64Value::Swap(UInt64Value* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -1523,7 +1523,7 @@ const int Int32Value::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Int32Value::Int32Value()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Int32Value)
 }
@@ -1536,7 +1536,7 @@ Int32Value::Int32Value(::google::protobuf::Arena* arena)
 }
 Int32Value::Int32Value(const Int32Value& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_ = from.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int32Value)
@@ -1552,7 +1552,7 @@ Int32Value::~Int32Value() {
 }
 
 void Int32Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void Int32Value::ArenaDtor(void* object) {
@@ -1740,7 +1740,7 @@ void Int32Value::MergeFrom(const ::google::protobuf::Message& from) {
   const Int32Value* source =
       ::google::protobuf::DynamicCastToGenerated<Int32Value>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Int32Value)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1788,7 +1788,7 @@ void Int32Value::Swap(Int32Value* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -1823,7 +1823,7 @@ const int UInt32Value::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 UInt32Value::UInt32Value()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.UInt32Value)
 }
@@ -1836,7 +1836,7 @@ UInt32Value::UInt32Value(::google::protobuf::Arena* arena)
 }
 UInt32Value::UInt32Value(const UInt32Value& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_ = from.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt32Value)
@@ -1852,7 +1852,7 @@ UInt32Value::~UInt32Value() {
 }
 
 void UInt32Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void UInt32Value::ArenaDtor(void* object) {
@@ -2040,7 +2040,7 @@ void UInt32Value::MergeFrom(const ::google::protobuf::Message& from) {
   const UInt32Value* source =
       ::google::protobuf::DynamicCastToGenerated<UInt32Value>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.UInt32Value)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -2088,7 +2088,7 @@ void UInt32Value::Swap(UInt32Value* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -2123,7 +2123,7 @@ const int BoolValue::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 BoolValue::BoolValue()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.BoolValue)
 }
@@ -2136,7 +2136,7 @@ BoolValue::BoolValue(::google::protobuf::Arena* arena)
 }
 BoolValue::BoolValue(const BoolValue& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_ = from.value_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BoolValue)
@@ -2152,7 +2152,7 @@ BoolValue::~BoolValue() {
 }
 
 void BoolValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void BoolValue::ArenaDtor(void* object) {
@@ -2338,7 +2338,7 @@ void BoolValue::MergeFrom(const ::google::protobuf::Message& from) {
   const BoolValue* source =
       ::google::protobuf::DynamicCastToGenerated<BoolValue>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.BoolValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -2386,7 +2386,7 @@ void BoolValue::Swap(BoolValue* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -2421,7 +2421,7 @@ const int StringValue::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 StringValue::StringValue()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.StringValue)
 }
@@ -2434,7 +2434,7 @@ StringValue::StringValue(::google::protobuf::Arena* arena)
 }
 StringValue::StringValue(const StringValue& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.value().size() > 0) {
@@ -2456,7 +2456,7 @@ StringValue::~StringValue() {
 }
 
 void StringValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -2667,7 +2667,7 @@ void StringValue::MergeFrom(const ::google::protobuf::Message& from) {
   const StringValue* source =
       ::google::protobuf::DynamicCastToGenerated<StringValue>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.StringValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -2715,7 +2715,7 @@ void StringValue::Swap(StringValue* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }
@@ -2751,7 +2751,7 @@ const int BytesValue::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 BytesValue::BytesValue()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.BytesValue)
 }
@@ -2764,7 +2764,7 @@ BytesValue::BytesValue(::google::protobuf::Arena* arena)
 }
 BytesValue::BytesValue(const BytesValue& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.value().size() > 0) {
@@ -2786,7 +2786,7 @@ BytesValue::~BytesValue() {
 }
 
 void BytesValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
   value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -2984,7 +2984,7 @@ void BytesValue::MergeFrom(const ::google::protobuf::Message& from) {
   const BytesValue* source =
       ::google::protobuf::DynamicCastToGenerated<BytesValue>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.BytesValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -3032,7 +3032,7 @@ void BytesValue::Swap(BytesValue* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }

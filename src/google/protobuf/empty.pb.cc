@@ -104,7 +104,7 @@ class Empty::HasBitSetters {
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Empty::Empty()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Empty)
 }
@@ -117,7 +117,7 @@ Empty::Empty(::google::protobuf::Arena* arena)
 }
 Empty::Empty(const Empty& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL) {
+      _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Empty)
 }
@@ -131,7 +131,7 @@ Empty::~Empty() {
 }
 
 void Empty::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
 }
 
 void Empty::ArenaDtor(void* object) {
@@ -273,7 +273,7 @@ void Empty::MergeFrom(const ::google::protobuf::Message& from) {
   const Empty* source =
       ::google::protobuf::DynamicCastToGenerated<Empty>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Empty)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -318,7 +318,7 @@ void Empty::Swap(Empty* other) {
     temp->MergeFrom(*other);
     other->CopyFrom(*this);
     InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
+    if (GetArenaNoVirtual() == nullptr) {
       delete temp;
     }
   }

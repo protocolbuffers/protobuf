@@ -134,13 +134,13 @@ const int Any::kValueFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Any::Any()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL), _any_metadata_(&type_url_, &value_) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr), _any_metadata_(&type_url_, &value_) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Any)
 }
 Any::Any(const Any& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _any_metadata_(&type_url_, &value_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   type_url_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -422,7 +422,7 @@ void Any::MergeFrom(const ::google::protobuf::Message& from) {
   const Any* source =
       ::google::protobuf::DynamicCastToGenerated<Any>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Any)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {

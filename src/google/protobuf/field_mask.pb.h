@@ -115,7 +115,7 @@ class PROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@protoc
   // implements Message ----------------------------------------------
 
   inline FieldMask* New() const final {
-    return CreateMaybeMessage<FieldMask>(NULL);
+    return CreateMaybeMessage<FieldMask>(nullptr);
   }
 
   FieldMask* New(::google::protobuf::Arena* arena) const final {
@@ -238,7 +238,7 @@ inline void FieldMask::set_paths(int index, ::std::string&& value) {
 }
 #endif
 inline void FieldMask::set_paths(int index, const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   paths_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldMask.paths)
 }
@@ -262,7 +262,7 @@ inline void FieldMask::add_paths(::std::string&& value) {
 }
 #endif
 inline void FieldMask::add_paths(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
+  GOOGLE_DCHECK(value != nullptr);
   paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)
 }

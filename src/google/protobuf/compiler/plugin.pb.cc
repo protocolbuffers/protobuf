@@ -245,13 +245,13 @@ const int Version::kSuffixFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Version::Version()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.compiler.Version)
 }
 Version::Version(const Version& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   suffix_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -617,7 +617,7 @@ void Version::MergeFrom(const ::google::protobuf::Message& from) {
   const Version* source =
       ::google::protobuf::DynamicCastToGenerated<Version>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.compiler.Version)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -723,13 +723,13 @@ const int CodeGeneratorRequest::kCompilerVersionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 CodeGeneratorRequest::CodeGeneratorRequest()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
 CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       file_to_generate_(from.file_to_generate_),
       proto_file_(from.proto_file_) {
@@ -741,7 +741,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
   if (from.has_compiler_version()) {
     compiler_version_ = new ::google::protobuf::compiler::Version(*from.compiler_version_);
   } else {
-    compiler_version_ = NULL;
+    compiler_version_ = nullptr;
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
@@ -750,7 +750,7 @@ void CodeGeneratorRequest::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
       &scc_info_CodeGeneratorRequest_google_2fprotobuf_2fcompiler_2fplugin_2eproto.base);
   parameter_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  compiler_version_ = NULL;
+  compiler_version_ = nullptr;
 }
 
 CodeGeneratorRequest::~CodeGeneratorRequest() {
@@ -786,7 +786,7 @@ void CodeGeneratorRequest::Clear() {
       parameter_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(compiler_version_ != NULL);
+      GOOGLE_DCHECK(compiler_version_ != nullptr);
       compiler_version_->Clear();
     }
   }
@@ -1150,7 +1150,7 @@ void CodeGeneratorRequest::MergeFrom(const ::google::protobuf::Message& from) {
   const CodeGeneratorRequest* source =
       ::google::protobuf::DynamicCastToGenerated<CodeGeneratorRequest>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.compiler.CodeGeneratorRequest)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1244,13 +1244,13 @@ const int CodeGeneratorResponse_File::kContentFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 CodeGeneratorResponse_File::CodeGeneratorResponse_File()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1629,7 +1629,7 @@ void CodeGeneratorResponse_File::MergeFrom(const ::google::protobuf::Message& fr
   const CodeGeneratorResponse_File* source =
       ::google::protobuf::DynamicCastToGenerated<CodeGeneratorResponse_File>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.compiler.CodeGeneratorResponse.File)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1719,13 +1719,13 @@ const int CodeGeneratorResponse::kFileFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 CodeGeneratorResponse::CodeGeneratorResponse()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
 CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
+      _internal_metadata_(nullptr),
       _has_bits_(from._has_bits_),
       file_(from.file_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -2017,7 +2017,7 @@ void CodeGeneratorResponse::MergeFrom(const ::google::protobuf::Message& from) {
   const CodeGeneratorResponse* source =
       ::google::protobuf::DynamicCastToGenerated<CodeGeneratorResponse>(
           &from);
-  if (source == NULL) {
+  if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.compiler.CodeGeneratorResponse)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
