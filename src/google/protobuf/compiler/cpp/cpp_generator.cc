@@ -92,9 +92,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.annotation_pragma_name = options[i].second;
     } else if (options[i].first == "annotation_guard_name") {
       file_options.annotation_guard_name = options[i].second;
+    } else if (options[i].first == "speed") {
+      file_options.enforce_mode = EnforceOptimizeMode::kSpeed;
     } else if (options[i].first == "lite") {
-      file_options.enforce_lite = true;
+      file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
     } else if (options[i].first == "lite_implicit_weak_fields") {
+      file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
       file_options.lite_implicit_weak_fields = true;
       if (!options[i].second.empty()) {
         file_options.num_cc_files = strto32(options[i].second.c_str(),
