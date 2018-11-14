@@ -3252,6 +3252,13 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
 #if defined(DEBUG) && DEBUG
   if (extensionMap_.count) {
     // Hint to go along with the docs on GPBMessage about this.
+    //
+    // Note: This is incomplete, in that it only checked the "root" message,
+    // if a sub message in a field has extensions, the issue still exists. A
+    // recursive check could be done here (like the work in
+    // GPBMessageDropUnknownFieldsRecursively()), but that has the potential to
+    // be expensive and could slow down serialization in DEBUG enought to cause
+    // developers other problems.
     NSLog(@"Warning: writing out a GPBMessage (%@) via NSCoding and it"
           @" has %ld extensions; when read back in, those fields will be"
           @" in the unknownFields property instead.",
