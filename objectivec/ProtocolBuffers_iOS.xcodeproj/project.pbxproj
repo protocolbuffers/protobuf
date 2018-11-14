@@ -152,7 +152,6 @@
 		8B210CCF159386920032D72D /* golden_packed_fields_message */ = {isa = PBXFileReference; lastKnownFileType = file; path = golden_packed_fields_message; sourceTree = "<group>"; };
 		8B4248B21A8BD96D00BC1EC6 /* UnitTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UnitTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		8B4248B31A8BD96E00BC1EC6 /* GPBSwiftTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GPBSwiftTests.swift; sourceTree = "<group>"; };
-		8B4248B71A8BDD9600BC1EC6 /* protobuf */ = {isa = PBXFileReference; lastKnownFileType = text; name = protobuf; path = ../../Intermediates/ProtocolBuffers_iOS.build/DerivedSources/protos/google/protobuf; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B4248DD1A929C7D00BC1EC6 /* Duration.pbobjc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Duration.pbobjc.h; path = google/protobuf/Duration.pbobjc.h; sourceTree = "<group>"; };
 		8B4248DE1A929C7D00BC1EC6 /* Duration.pbobjc.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Duration.pbobjc.m; path = google/protobuf/Duration.pbobjc.m; sourceTree = "<group>"; };
 		8B4248E01A929C7D00BC1EC6 /* Timestamp.pbobjc.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Timestamp.pbobjc.m; path = google/protobuf/Timestamp.pbobjc.m; sourceTree = "<group>"; };
@@ -444,7 +443,6 @@
 		7461B6940F94FDDD00A0C422 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				8B4248B71A8BDD9600BC1EC6 /* protobuf */,
 				8B210CCD159383D60032D72D /* golden_message */,
 				8B210CCF159386920032D72D /* golden_packed_fields_message */,
 				8B8B615C17DF7056002EE618 /* GPBARCUnittestProtos.m */,
@@ -826,9 +824,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = ProtocolBuffers;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Debug;
 		};
@@ -836,9 +834,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = ProtocolBuffers;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Release;
 		};
@@ -850,10 +848,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
 					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = (
-					"${PROJECT_DERIVED_FILE_DIR}/protos",
-					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -868,6 +862,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
@@ -886,10 +881,6 @@
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
 					"$(inherited)",
 				);
-				HEADER_SEARCH_PATHS = (
-					"${PROJECT_DERIVED_FILE_DIR}/protos",
-					"$(SRCROOT)",
-				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -902,6 +893,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
@@ -1055,9 +1047,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = TestSingleSourceBuild;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Debug;
 		};
@@ -1065,9 +1057,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)";
 				PRODUCT_NAME = TestSingleSourceBuild;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Release;
 		};
