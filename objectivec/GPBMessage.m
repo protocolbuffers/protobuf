@@ -3249,6 +3249,15 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
+#if defined(DEBUG) && DEBUG
+  if (extensionMap_.count) {
+    // Hint to go along with the docs on GPBMessage about this.
+    NSLog(@"Warning: writing out a GPBMessage (%@) via NSCoding and it"
+          @" has %ld extensions; when read back in, those fields will be"
+          @" in the unknownFields property instead.",
+          [self class], (long)extensionMap_.count);
+  }
+#endif
   NSData *data = [self data];
   if (data.length) {
     [aCoder encodeObject:data forKey:kGPBDataCoderKey];
