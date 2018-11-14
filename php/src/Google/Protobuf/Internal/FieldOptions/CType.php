@@ -4,15 +4,13 @@
 
 namespace Google\Protobuf\Internal\FieldOptions;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>google.protobuf.FieldOptions.CType</code>
  */
 class CType
 {
-    use EnumTrait;
-
     /**
      * Default mode.
      *
@@ -33,6 +31,14 @@ class CType
         self::CORD => 'CORD',
         self::STRING_PIECE => 'STRING_PIECE',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

@@ -4,7 +4,7 @@
 
 namespace Google\Protobuf\Internal\FileOptions;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Generated classes can be optimized for speed or code size.
@@ -13,8 +13,6 @@ use Google\Protobuf\Internal\EnumTrait;
  */
 class OptimizeMode
 {
-    use EnumTrait;
-
     /**
      * Generate complete code for parsing, serialization,
      *
@@ -39,6 +37,14 @@ class OptimizeMode
         self::CODE_SIZE => 'CODE_SIZE',
         self::LITE_RUNTIME => 'LITE_RUNTIME',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

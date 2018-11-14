@@ -4,15 +4,13 @@
 
 namespace Google\Protobuf\Internal\FieldDescriptorProto;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>google.protobuf.FieldDescriptorProto.Type</code>
  */
 class Type
 {
-    use EnumTrait;
-
     /**
      * 0 is reserved for errors.
      * Order is weird for historical reasons.
@@ -128,6 +126,14 @@ class Type
         self::TYPE_SINT32 => 'TYPE_SINT32',
         self::TYPE_SINT64 => 'TYPE_SINT64',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

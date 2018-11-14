@@ -4,15 +4,13 @@
 
 namespace Google\Protobuf\Internal\FieldDescriptorProto;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>google.protobuf.FieldDescriptorProto.Label</code>
  */
 class Label
 {
-    use EnumTrait;
-
     /**
      * 0 is reserved for errors
      *
@@ -33,6 +31,14 @@ class Label
         self::LABEL_REQUIRED => 'LABEL_REQUIRED',
         self::LABEL_REPEATED => 'LABEL_REPEATED',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

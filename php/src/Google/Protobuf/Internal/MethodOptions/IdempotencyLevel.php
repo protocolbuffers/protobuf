@@ -4,7 +4,7 @@
 
 namespace Google\Protobuf\Internal\MethodOptions;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
@@ -15,8 +15,6 @@ use Google\Protobuf\Internal\EnumTrait;
  */
 class IdempotencyLevel
 {
-    use EnumTrait;
-
     /**
      * Generated from protobuf enum <code>IDEMPOTENCY_UNKNOWN = 0;</code>
      */
@@ -39,6 +37,14 @@ class IdempotencyLevel
         self::NO_SIDE_EFFECTS => 'NO_SIDE_EFFECTS',
         self::IDEMPOTENT => 'IDEMPOTENT',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

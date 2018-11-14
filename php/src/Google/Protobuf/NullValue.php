@@ -4,7 +4,7 @@
 
 namespace Google\Protobuf;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * `NullValue` is a singleton enumeration to represent the null value for the
@@ -15,8 +15,6 @@ use Google\Protobuf\Internal\EnumTrait;
  */
 class NullValue
 {
-    use EnumTrait;
-
     /**
      * Null value.
      *
@@ -27,5 +25,13 @@ class NullValue
     private static $valueToName = [
         self::NULL_VALUE => 'NULL_VALUE',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 

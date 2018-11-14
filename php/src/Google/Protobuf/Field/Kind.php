@@ -4,7 +4,7 @@
 
 namespace Google\Protobuf\Field;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Basic field types.
@@ -13,8 +13,6 @@ use Google\Protobuf\Internal\EnumTrait;
  */
 class Kind
 {
-    use EnumTrait;
-
     /**
      * Field type unknown.
      *
@@ -151,6 +149,14 @@ class Kind
         self::TYPE_SINT32 => 'TYPE_SINT32',
         self::TYPE_SINT64 => 'TYPE_SINT64',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.

@@ -4,7 +4,7 @@
 
 namespace Google\Protobuf;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * The syntax in which a protocol buffer element is defined.
@@ -13,8 +13,6 @@ use Google\Protobuf\Internal\EnumTrait;
  */
 class Syntax
 {
-    use EnumTrait;
-
     /**
      * Syntax `proto2`.
      *
@@ -32,5 +30,13 @@ class Syntax
         self::SYNTAX_PROTO2 => 'SYNTAX_PROTO2',
         self::SYNTAX_PROTO3 => 'SYNTAX_PROTO3',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 

@@ -4,7 +4,7 @@
 
 namespace Google\Protobuf\Field;
 
-use Google\Protobuf\Internal\EnumTrait;
+use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Whether a field is optional, required, or repeated.
@@ -13,8 +13,6 @@ use Google\Protobuf\Internal\EnumTrait;
  */
 class Cardinality
 {
-    use EnumTrait;
-
     /**
      * For fields with unknown cardinality.
      *
@@ -46,6 +44,14 @@ class Cardinality
         self::CARDINALITY_REQUIRED => 'CARDINALITY_REQUIRED',
         self::CARDINALITY_REPEATED => 'CARDINALITY_REPEATED',
     ];
+
+    public static function name($value) {
+        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    }
+
+    public static function value($name) {
+        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    }
 }
 
 // Adding a class alias for backwards compatibility with the previous class name.
