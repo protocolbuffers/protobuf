@@ -227,7 +227,8 @@ namespace Google.Protobuf.Reflection
         /// containing type and number already exists.</exception>
         internal void AddFieldByNumber(FieldDescriptor field)
         {
-            DescriptorIntPair key = new DescriptorIntPair(field.ContainingType, field.FieldNumber);
+            // for extensions, we use the extended type, otherwise we use the containing type
+            DescriptorIntPair key = new DescriptorIntPair(field.Proto.HasExtendee ? field.ExtendeeType : field.ContainingType, field.FieldNumber);
             FieldDescriptor old;
             if (fieldsByNumber.TryGetValue(key, out old))
             {

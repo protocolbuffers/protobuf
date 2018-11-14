@@ -273,6 +273,11 @@ namespace Google.Protobuf
         internal bool DiscardUnknownFields { get; set; }
 
         /// <summary>
+        /// Internal-only property; provides extension identifiers to compatible messages while parsing.
+        /// </summary>
+        internal ExtensionRegistry ExtensionRegistry { get; set; }
+
+        /// <summary>
         /// Disposes of this instance, potentially closing any underlying stream.
         /// </summary>
         /// <remarks>
@@ -584,6 +589,10 @@ namespace Google.Protobuf
             }
             int oldLimit = PushLimit(length);
             ++recursionDepth;
+            if (builder is IExtensionMessage extensionMessage)
+            {
+                ExtensionRegistry?.RegisterExtensionsFor(extensionMessage);
+            }
             builder.MergeFrom(this);
             CheckReadEndOfStreamTag();
             // Check that we've read exactly as much data as expected.

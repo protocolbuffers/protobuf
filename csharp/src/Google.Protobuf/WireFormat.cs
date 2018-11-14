@@ -73,7 +73,7 @@ namespace Google.Protobuf
             /// </summary>
             Fixed32 = 5
         }
-        
+
         private const int TagTypeBits = 3;
         private const uint TagTypeMask = (1 << TagTypeBits) - 1;
 
@@ -99,6 +99,6 @@ namespace Google.Protobuf
         public static uint MakeTag(int fieldNumber, WireType wireType)
         {
             return (uint) (fieldNumber << TagTypeBits) | (uint) wireType;
-        }        
+        }
     }
 }
