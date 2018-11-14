@@ -209,6 +209,7 @@ csharp_EXTRA_DIST=                                                           \
 
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \
+  java/bom/pom.xml                                                                 \
   java/core/generate-sources-build.xml                                             \
   java/core/generate-test-sources-build.xml                                        \
   java/core/pom.xml                                                                \
