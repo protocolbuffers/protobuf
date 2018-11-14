@@ -1949,10 +1949,10 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
 
       }  // switch(extDataType)
 
-    }  //  for(numValues)
+      // End the line.
+      [toStr appendFormat:@"%@\n", lineEnding];
 
-    // End the line.
-    [toStr appendFormat:@"%@\n", lineEnding];
+    }  //  for(numValues)
 
   }  // for..in(activeExtensions)
 }
