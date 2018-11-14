@@ -93,6 +93,7 @@
 		F4E675D51B21D1620054530B /* Struct.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C21B21D1440054530B /* Struct.pbobjc.m */; };
 		F4E675D61B21D1620054530B /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C51B21D1440054530B /* Type.pbobjc.m */; };
 		F4E675D71B21D1620054530B /* Wrappers.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C71B21D1440054530B /* Wrappers.pbobjc.m */; };
+		F4F53F8C219CC5DF001EABF4 /* text_format_extensions_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F4F53F8B219CC5DF001EABF4 /* text_format_extensions_unittest_data.txt */; };
 		F4F8D8861D78A193002CE128 /* GPBUnittestProtos2.m in Sources */ = {isa = PBXBuildFile; fileRef = F4F8D8841D78A186002CE128 /* GPBUnittestProtos2.m */; };
 /* End PBXBuildFile section */
 
@@ -268,6 +269,7 @@
 		F4E675DD1B21D1DE0054530B /* struct.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = struct.proto; path = ../src/google/protobuf/struct.proto; sourceTree = "<group>"; };
 		F4E675DE1B21D1DE0054530B /* type.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = type.proto; path = ../src/google/protobuf/type.proto; sourceTree = "<group>"; };
 		F4E675DF1B21D1DE0054530B /* wrappers.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = wrappers.proto; path = ../src/google/protobuf/wrappers.proto; sourceTree = "<group>"; };
+		F4F53F8B219CC5DF001EABF4 /* text_format_extensions_unittest_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text_format_extensions_unittest_data.txt; sourceTree = "<group>"; };
 		F4F8D8841D78A186002CE128 /* GPBUnittestProtos2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnittestProtos2.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -500,6 +502,7 @@
 				7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */,
 				8B4248E51A929C9900BC1EC6 /* GPBWellKnownTypesTest.m */,
 				7461B6BC0F94FDF900A0C422 /* GPBWireFormatTests.m */,
+				F4F53F8B219CC5DF001EABF4 /* text_format_extensions_unittest_data.txt */,
 				F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */,
 				F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */,
 				8B7E6A7414893DBA00F8884A /* unittest_custom_options.proto */,
@@ -678,6 +681,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B210CCE159383D60032D72D /* golden_message in Resources */,
+				F4F53F8C219CC5DF001EABF4 /* text_format_extensions_unittest_data.txt in Resources */,
 				F43C88D0191D77FC009E917D /* text_format_unittest_data.txt in Resources */,
 				8B210CD0159386920032D72D /* golden_packed_fields_message in Resources */,
 				F45E57C91AE6DC98000B7D99 /* text_format_map_unittest_data.txt in Resources */,

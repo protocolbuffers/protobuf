@@ -558,6 +558,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBUtilitiesTests.m                                       \
   objectivec/Tests/GPBWellKnownTypesTest.m                                   \
   objectivec/Tests/GPBWireFormatTests.m                                      \
+  objectivec/Tests/text_format_extensions_unittest_data.txt                   \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
