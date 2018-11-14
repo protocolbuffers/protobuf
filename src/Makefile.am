@@ -77,6 +77,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/status.h                                 \
   google/protobuf/stubs/stl_util.h                               \
   google/protobuf/stubs/stringpiece.h                            \
+  google/protobuf/stubs/strutil.h                                \
   google/protobuf/stubs/template_util.h                          \
   google/protobuf/any.pb.h                                       \
   google/protobuf/api.pb.h                                       \
@@ -195,7 +196,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/stringprintf.h                         \
   google/protobuf/stubs/structurally_valid.cc                  \
   google/protobuf/stubs/strutil.cc                             \
-  google/protobuf/stubs/strutil.h                              \
   google/protobuf/stubs/time.cc                                \
   google/protobuf/stubs/time.h                                 \
   google/protobuf/arena.cc                                     \
