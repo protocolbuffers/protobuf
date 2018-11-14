@@ -353,7 +353,7 @@ inline bool HasFastArraySerialization(const FileDescriptor* file,
 inline bool IsProto2MessageSet(const Descriptor* descriptor,
                                const Options& options) {
   return !options.opensource_runtime &&
-         !options.enforce_lite &&
+         options.enforce_mode != EnforceOptimizeMode::kLiteRuntime &&
          !options.lite_implicit_weak_fields &&
          descriptor->options().message_set_wire_format() &&
          descriptor->full_name() == "google.protobuf.bridge.MessageSet";
@@ -362,7 +362,7 @@ inline bool IsProto2MessageSet(const Descriptor* descriptor,
 inline bool IsProto2MessageSetFile(const FileDescriptor* file,
                                    const Options& options) {
   return !options.opensource_runtime &&
-         !options.enforce_lite &&
+         options.enforce_mode != EnforceOptimizeMode::kLiteRuntime &&
          !options.lite_implicit_weak_fields &&
          file->name() == "net/proto2/bridge/proto/message_set.proto";
 }
@@ -419,9 +419,15 @@ bool IsWellKnownMessage(const FileDescriptor* descriptor);
 
 inline FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
                                                const Options& options) {
-  return options.enforce_lite
-      ? FileOptions::LITE_RUNTIME
-      : file->options().optimize_for();
+  switch (options.enforce_mode) {
+    case EnforceOptimizeMode::kSpeed:
+      return FileOptions::SPEED;
+    case EnforceOptimizeMode::kLiteRuntime:
+      return FileOptions::LITE_RUNTIME;
+    case EnforceOptimizeMode::kNoEnforcement:
+    default:
+      return file->options().optimize_for();
+  }
 }
 
 // This orders the messages in a .pb.cc as it's outputted by file.cc
