@@ -1865,7 +1865,7 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
       // Not there yet.
       continue;
     }
-    if (fieldNumber > end) {
+    if (fieldNumber >= end) {
       // Done.
       break;
     }
