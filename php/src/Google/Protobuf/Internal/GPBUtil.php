@@ -37,6 +37,7 @@ use Google\Protobuf\FieldMask;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
+use UnexpectedValueException;
 
 function camel2underscore($input) {
     preg_match_all(
@@ -596,5 +597,24 @@ class GPBUtil
                is_a($msg, "Google\Protobuf\BoolValue")   ||
                is_a($msg, "Google\Protobuf\StringValue") ||
                is_a($msg, "Google\Protobuf\BytesValue");
+    }
+
+    public static function enumValueToName($enumClass, $valueToNameMap, $value)
+    {
+        if (!isset($valueToNameMap[$value])) {
+            throw new UnexpectedValueException(sprintf(
+                    'Enum %s has no name defined for value %s', $enumClass, $value));
+        }
+        return $valueToNameMap[$value];
+    }
+
+    public static function enumNameToValue($enumClass, $name)
+    {
+        $const = $enumClass . '::' . strtoupper($name);
+        if (!defined($const)) {
+            throw new UnexpectedValueException(sprintf(
+                    'Enum %s has no value defined for name %s', $enumClass, $name));
+        }
+        return constant($const);
     }
 }

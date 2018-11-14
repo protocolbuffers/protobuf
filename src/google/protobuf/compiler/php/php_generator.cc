@@ -1148,7 +1148,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "name", fullname.substr(0, lastindex));
   }
 
-  printer.Print("use Google\\Protobuf\\Internal\\EnumTrait;\n\n");
+  printer.Print("use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
 
   GenerateEnumDocComment(&printer, en, is_descriptor);
 
@@ -1161,8 +1161,6 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
       "{\n",
       "name", fullname);
   Indent(&printer);
-
-  printer.Print("use EnumTrait;\n\n");
 
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
@@ -1181,6 +1179,22 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   }
   Outdent(&printer);
   printer.Print("];\n");
+
+  printer.Print(
+      "\npublic static function name($value)\n"
+      "{\n");
+  Indent(&printer);
+  printer.Print("return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);\n");
+  Outdent(&printer);
+  printer.Print("}\n\n");
+
+  printer.Print(
+      "public static function value($name)\n"
+      "{\n");
+  Indent(&printer);
+  printer.Print("return GPBUtil::enumNameToValue(__CLASS__, $name);\n");
+  Outdent(&printer);
+  printer.Print("}\n");
 
   Outdent(&printer);
   printer.Print("}\n\n");
