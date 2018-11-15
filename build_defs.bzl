@@ -218,31 +218,26 @@ def _remove_up(string):
     return _remove_suffix(string, ".proto")
 
 def _upb_proto_library_srcs_impl(ctx):
-    descriptors = []
+    sources = []
     outs = []
+    include_dirs = {}
     for dep in ctx.attr.deps:
         if hasattr(dep, 'proto'):
-            for desc in dep.proto.transitive_descriptor_sets:
-                descriptors.append(desc)
             for src in dep.proto.transitive_sources:
+                sources.append(src)
+                include_dirs[_remove_suffix(src.path, _remove_up(src.short_path) + "." + src.extension)] = True
                 outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + ".upb.h"))
                 outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + ".upb.c"))
                 outdir = _remove_suffix(outs[-1].path, _remove_up(src.short_path) + ".upb.c")
 
-    concatenated = ctx.actions.declare_file(ctx.label.name + "_concatenated_descriptor.bin")
-    descriptor_paths = [d.path for d in descriptors]
+    source_paths = [d.path for d in sources]
+    include_args = ["-I" + root for root in include_dirs.keys()]
 
-    ctx.actions.run_shell(
-        inputs = descriptors,
-        outputs = [concatenated],
-        progress_message = "Concatenating descriptors",
-        command = "cat %s > %s" % (" ".join(descriptor_paths), concatenated.path),
-    )
     ctx.actions.run(
-        inputs = [concatenated],
+        inputs = [ctx.executable.upbc] + sources,
         outputs = outs,
-        executable = ctx.executable.upbc,
-        arguments = ["--outdir", outdir, concatenated.path],
+        executable = ctx.executable.protoc,
+        arguments = ["--upb_out", outdir, "--plugin=protoc-gen-upb=" + ctx.executable.upbc.path] + include_args + source_paths,
         progress_message = "Generating upb protos",
     )
 
@@ -254,6 +249,11 @@ _upb_proto_library_srcs = rule(
         "upbc": attr.label(
             executable = True,
             cfg = "host",
+        ),
+        "protoc": attr.label(
+            executable = True,
+            cfg = "host",
+            default = "@com_google_protobuf//:protoc",
         ),
         "deps": attr.label_list(),
     }

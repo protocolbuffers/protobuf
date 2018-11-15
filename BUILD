@@ -249,7 +249,7 @@ cc_test(
 
 upb_proto_library(
     name = "conformance_proto_upb",
-    upbc = ":upbc",
+    upbc = ":protoc-gen-upb",
     deps = [
         "@com_google_protobuf//:conformance_proto",
         "@com_google_protobuf//:test_messages_proto3_proto",
@@ -373,11 +373,31 @@ lua_test(
 # upb compiler #################################################################
 
 lua_binary(
-    name = "upbc",
+    name = "lua_upbc",
     luadeps = [
         "lua/upbc_lib",
     ],
     luamain = "tools/upbc.lua",
+)
+
+cc_library(
+    name = "upbc_generator",
+    hdrs = ["upbc/generator.h"],
+    srcs = ["upbc/generator.cc", "upbc/message_layout.h", "upbc/message_layout.cc"],
+    deps = [
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protoc_lib",
+        "@absl//absl/strings",
+    ],
+)
+
+cc_binary(
+    name = "protoc-gen-upb",
+    srcs = ["upbc/main.cc"],
+    deps = [
+        ":upbc_generator",
+        "@com_google_protobuf//:protoc_lib",
+    ],
 )
 
 # Test the CMake build #########################################################
@@ -394,6 +414,7 @@ sh_test(
     data = glob([
         "CMakeLists.txt",
         "google/**/*",
+        "upbc/**/*",
         "upb/**/*",
         "tests/**/*",
     ]) + [
@@ -458,8 +479,8 @@ genrule(
         "generated/upb/descriptor/descriptor.upbdefs.h",
         "generated/upb/descriptor/descriptor.upbdefs.c",
     ],
-    cmd = "UPBC=$$PWD/$(location :upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
-    tools = [":upbc"],
+    cmd = "UPBC=$$PWD/$(location :lua_upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
+    tools = [":lua_upbc"],
 )
 
 proto_library(
@@ -478,13 +499,16 @@ genrule(
 
 genrule(
     name = "generate_descriptor_c",
-    srcs = ["generated/google/protobuf/descriptor.pb"],
+    srcs = ["google/protobuf/descriptor.proto"],
     outs = [
         "generated/google/protobuf/descriptor.upb.h",
         "generated/google/protobuf/descriptor.upb.c",
     ],
-    cmd = "UPBC=$$PWD/$(location :upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC $$INFILE",
-    tools = [":upbc"],
+    cmd = "$(location @com_google_protobuf//:protoc) $< --upb_out=$(GENDIR)/generated --plugin=protoc-gen-upb=$(location :protoc-gen-upb)",
+    tools = [
+        "@com_google_protobuf//:protoc",
+        ":protoc-gen-upb"
+    ],
 )
 
 proto_library(
@@ -506,8 +530,8 @@ genrule(
         "generated/tests/json/test.upbdefs.h",
         "generated/tests/json/test.upbdefs.c",
     ],
-    cmd = "UPBC=$$PWD/$(location :upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
-    tools = [":upbc"],
+    cmd = "UPBC=$$PWD/$(location :lua_upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
+    tools = [":lua_upbc"],
 )
 
 genrule(

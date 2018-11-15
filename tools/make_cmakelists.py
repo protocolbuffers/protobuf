@@ -34,7 +34,7 @@ class BuildFileFunctions(object):
     pass
 
   def cc_library(self, **kwargs):
-    if kwargs["name"] == "amalgamation":
+    if kwargs["name"] == "amalgamation" or kwargs["name"] == "upbc_generator":
       return
     files = kwargs.get("srcs", []) + kwargs.get("hdrs", [])
     self.converter.toplevel += "add_library(%s\n  %s)\n" % (

@@ -23,6 +23,12 @@ git_repository(
     #tag = "conformance-build-tag",
 )
 
+git_repository(
+    name = "absl",
+    commit = "070f6e47b33a2909d039e620c873204f78809492",
+    remote = "https://github.com/abseil/abseil-cpp.git",
+)
+
 http_archive(
     name = "ragel",
     sha256 = "5f156edb65d20b856d638dd9ee2dfb43285914d9aa2b6ec779dac0270cd56c3f",
