@@ -47,14 +47,15 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
  protected:
   MessageFieldGenerator(const FieldDescriptor* descriptor,
                         const Options& options);
+
+  MessageFieldGenerator(const MessageFieldGenerator&) = delete;
+  MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
+
   virtual ~MessageFieldGenerator();
   virtual bool WantsHasProperty(void) const;
 
  public:
   virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
 };
 
 class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
@@ -66,11 +67,11 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
                                 const Options& options);
   virtual ~RepeatedMessageFieldGenerator();
 
+  RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
+  RepeatedMessageFieldGenerator operator=(const RepeatedMessageFieldGenerator&) = delete;
+
  public:
   virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);
 };
 
 }  // namespace objectivec

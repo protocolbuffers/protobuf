@@ -49,13 +49,13 @@ class PrimitiveFieldGenerator : public SingleFieldGenerator {
                           const Options& options);
   virtual ~PrimitiveFieldGenerator();
 
+  PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
+  PrimitiveFieldGenerator& operator=(const PrimitiveFieldGenerator&) = delete;
+
   virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const;
 
   virtual int ExtraRuntimeHasBitsNeeded(void) const;
   virtual void SetExtraRuntimeHasBitsBase(int index_base);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
 };
 
 class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
@@ -67,8 +67,9 @@ class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
                              const Options& options);
   virtual ~PrimitiveObjFieldGenerator();
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveObjFieldGenerator);
+  PrimitiveObjFieldGenerator(const PrimitiveObjFieldGenerator&) = delete;
+  PrimitiveObjFieldGenerator& operator=(const PrimitiveObjFieldGenerator&) =
+      delete;
 };
 
 class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
@@ -80,8 +81,10 @@ class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
                                   const Options& options);
   virtual ~RepeatedPrimitiveFieldGenerator();
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPrimitiveFieldGenerator);
+  RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) =
+      delete;
+  RepeatedPrimitiveFieldGenerator& operator=(
+      const RepeatedPrimitiveFieldGenerator&) = delete;
 };
 
 }  // namespace objectivec

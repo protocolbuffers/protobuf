@@ -41,14 +41,12 @@
 #include <unordered_set>
 #include <vector>
 
-#include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/io_win32.h>
 #include <google/protobuf/stubs/strutil.h>
 
