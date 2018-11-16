@@ -4,7 +4,7 @@
 
 namespace Google\Protobuf\Internal\FileOptions;
 
-use Google\Protobuf\Internal\GPBUtil;
+use UnexpectedValueException;
 
 /**
  * Generated classes can be optimized for speed or code size.
@@ -38,12 +38,23 @@ class OptimizeMode
         self::LITE_RUNTIME => 'LITE_RUNTIME',
     ];
 
-    public static function name($value) {
-        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    public static function name($value)
+    {
+        if (!isset(self::$valueToName[$value])) {
+            throw new UnexpectedValueException(sprintf(
+                    'Enum %s has no name defined for value %s', __CLASS__, $value));
+        }
+        return self::$valueToName[$value];
     }
 
-    public static function value($name) {
-        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    public static function value($name)
+    {
+        $const = __CLASS__ . '::' . strtoupper($name);
+        if (!defined($const)) {
+            throw new UnexpectedValueException(sprintf(
+                    'Enum %s has no value defined for name %s', __CLASS__, $name));
+        }
+        return constant($const);
     }
 }
 

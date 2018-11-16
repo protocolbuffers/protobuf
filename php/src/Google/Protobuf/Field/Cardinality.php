@@ -4,7 +4,7 @@
 
 namespace Google\Protobuf\Field;
 
-use Google\Protobuf\Internal\GPBUtil;
+use UnexpectedValueException;
 
 /**
  * Whether a field is optional, required, or repeated.
@@ -40,17 +40,28 @@ class Cardinality
 
     private static $valueToName = [
         self::CARDINALITY_UNKNOWN => 'CARDINALITY_UNKNOWN',
-        self::CARDINALITY_OPTIONAL => 'CARDINALclITY_OPTIONAL',
+        self::CARDINALITY_OPTIONAL => 'CARDINALITY_OPTIONAL',
         self::CARDINALITY_REQUIRED => 'CARDINALITY_REQUIRED',
         self::CARDINALITY_REPEATED => 'CARDINALITY_REPEATED',
     ];
 
-    public static function name($value) {
-        return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);
+    public static function name($value)
+    {
+        if (!isset(self::$valueToName[$value])) {
+            throw new UnexpectedValueException(sprintf(
+                    'Enum %s has no name defined for value %s', __CLASS__, $value));
+        }
+        return self::$valueToName[$value];
     }
 
-    public static function value($name) {
-        return GPBUtil::enumNameToValue(__CLASS__, $name);
+    public static function value($name)
+    {
+        $const = __CLASS__ . '::' . strtoupper($name);
+        if (!defined($const)) {
+            throw new UnexpectedValueException(sprintf(
+                    'Enum %s has no value defined for name %s', __CLASS__, $name));
+        }
+        return constant($const);
     }
 }
 

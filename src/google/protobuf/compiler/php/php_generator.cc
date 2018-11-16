@@ -1148,7 +1148,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "name", fullname.substr(0, lastindex));
   }
 
-  printer.Print("use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
+  printer.Print("use UnexpectedValueException;\n\n");
 
   GenerateEnumDocComment(&printer, en, is_descriptor);
 
@@ -1184,15 +1184,36 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
       "\npublic static function name($value)\n"
       "{\n");
   Indent(&printer);
-  printer.Print("return GPBUtil::enumValueToName(__CLASS__, self::$valueToName, $value);\n");
+  printer.Print("if (!isset(self::$valueToName[$value])) {\n");
+  Indent(&printer);
+  printer.Print("throw new UnexpectedValueException(sprintf(\n");
+  Indent(&printer);
+  Indent(&printer);
+  printer.Print("'Enum %s has no name defined for value %s', __CLASS__, $value));\n");
+  Outdent(&printer);
+  Outdent(&printer);
+  Outdent(&printer);
+  printer.Print("}\n"
+                "return self::$valueToName[$value];\n");
   Outdent(&printer);
   printer.Print("}\n\n");
 
   printer.Print(
-      "public static function value($name)\n"
+      "\npublic static function value($name)\n"
       "{\n");
   Indent(&printer);
-  printer.Print("return GPBUtil::enumNameToValue(__CLASS__, $name);\n");
+  printer.Print("$const = __CLASS__ . '::' . strtoupper($name);\n"
+                "if (!defined($const)) {\n");
+  Indent(&printer);
+  printer.Print("throw new UnexpectedValueException(sprintf(\n");
+  Indent(&printer);
+  Indent(&printer);
+  printer.Print("'Enum %s has no value defined for name %s', __CLASS__, $name));\n");
+  Outdent(&printer);
+  Outdent(&printer);
+  Outdent(&printer);
+  printer.Print("}\n"
+                "return constant($const);\n");
   Outdent(&printer);
   printer.Print("}\n");
 
