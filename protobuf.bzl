@@ -132,7 +132,7 @@ def _proto_gen_impl(ctx):
       inputs += [plugin]
 
     if not in_gen_dir:
-      ctx.action(
+      ctx.actions.run(
           inputs=inputs,
           outputs=outs,
           arguments=args + import_flags + [src.path],
@@ -154,7 +154,7 @@ def _proto_gen_impl(ctx):
         generated_out = '/'.join([gen_dir,  out.basename])
         if generated_out != out.path:
             command += ";mv %s %s" % (generated_out, out.path)
-        ctx.action(
+        ctx.actions.run_shell(
             inputs=inputs + [ctx.executable.protoc],
             outputs=[out],
             command=command,
