@@ -49,7 +49,7 @@ namespace Google.Protobuf.Reflection
         private IFieldAccessor accessor;
 
         /// <summary>
-        /// Get the field's containing message type.
+        /// Get the field's containing message type, or <c>null</c> if it is a field defined at the top level of a file as an extension.
         /// </summary>
         public MessageDescriptor ContainingType { get; }
 
