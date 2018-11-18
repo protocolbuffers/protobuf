@@ -614,19 +614,20 @@ module CommonTests
     assert d2 == d
 
     encoded_field_a = proto_module::OneofMessage.encode(proto_module::OneofMessage.new(:a => "string"))
+    encoded_field_b = proto_module::OneofMessage.encode(proto_module::OneofMessage.new(:b => 1000))
     encoded_field_c = proto_module::OneofMessage.encode(
       proto_module::OneofMessage.new(:c => proto_module::TestMessage2.new(:foo => 1)))
     encoded_field_d = proto_module::OneofMessage.encode(proto_module::OneofMessage.new(:d => :B))
 
     d3 = proto_module::OneofMessage.decode(
-      encoded_field_c + encoded_field_a + encoded_field_d)
+      encoded_field_c + encoded_field_a + encoded_field_b + encoded_field_d)
     assert d3.a == ""
     assert d3.b == 0
     assert d3.c == nil
     assert d3.d == :B
 
     d4 = proto_module::OneofMessage.decode(
-      encoded_field_c + encoded_field_a + encoded_field_d +
+      encoded_field_c + encoded_field_a + encoded_field_b + encoded_field_d +
       encoded_field_c)
     assert d4.a == ""
     assert d4.b == 0
