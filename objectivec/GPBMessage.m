@@ -1289,14 +1289,14 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     if (i == fieldCount) {
       [self writeExtensionsToCodedOutputStream:output
                                          range:extensionRanges[j++]
-                                    extensions:sortedExtensions];
+                              sortedExtensions:sortedExtensions];
     } else if (j == extensionRangesCount ||
                GPBFieldNumber(fieldsArray[i]) < extensionRanges[j].start) {
       [self writeField:fieldsArray[i++] toCodedOutputStream:output];
     } else {
       [self writeExtensionsToCodedOutputStream:output
                                          range:extensionRanges[j++]
-                                    extensions:sortedExtensions];
+                              sortedExtensions:sortedExtensions];
     }
   }
   if (descriptor.isWireFormat) {
@@ -1813,7 +1813,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 - (void)writeExtensionsToCodedOutputStream:(GPBCodedOutputStream *)output
                                      range:(GPBExtensionRange)range
-                                extensions: sortedExtensions {
+                          sortedExtensions:(NSArray *)sortedExtensions {
   uint32_t start = range.start;
   uint32_t end = range.end;
   for (GPBExtensionDescriptor *extension in sortedExtensions) {
