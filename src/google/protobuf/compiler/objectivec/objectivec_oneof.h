@@ -35,14 +35,9 @@
 #include <set>
 #include <vector>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/io/printer.h>
 
 namespace google {
-namespace protobuf {
-namespace io {
-class Printer;  // printer.h
-}
-}
-
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
@@ -51,6 +46,9 @@ class OneofGenerator {
  public:
   explicit OneofGenerator(const OneofDescriptor* descriptor);
   ~OneofGenerator();
+
+  OneofGenerator(const OneofGenerator&) = delete;
+  OneofGenerator& operator=(const OneofGenerator&) = delete;
 
   void SetOneofIndexBase(int index_base);
 
@@ -68,12 +66,11 @@ class OneofGenerator {
  private:
   const OneofDescriptor* descriptor_;
   std::map<string, string> variables_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OneofGenerator);
 };
 
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ONEOF_H__

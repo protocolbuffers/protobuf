@@ -38,7 +38,6 @@
 #include <google/protobuf/compiler/objectivec/objectivec_primitive_field.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {

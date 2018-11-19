@@ -32,7 +32,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/compiler/objectivec/objectivec_message.h>
 #include <google/protobuf/compiler/objectivec/objectivec_enum.h>
 #include <google/protobuf/compiler/objectivec/objectivec_extension.h>

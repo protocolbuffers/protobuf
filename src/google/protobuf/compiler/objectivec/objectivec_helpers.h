@@ -230,6 +230,9 @@ class PROTOC_EXPORT TextFormatDecodeData {
   TextFormatDecodeData();
   ~TextFormatDecodeData();
 
+  TextFormatDecodeData(const TextFormatDecodeData&) = delete;
+  TextFormatDecodeData& operator=(const TextFormatDecodeData&) = delete;
+
   void AddString(int32 key, const string& input_for_decode,
                  const string& desired_output);
   size_t num_entries() const { return entries_.size(); }
@@ -239,8 +242,6 @@ class PROTOC_EXPORT TextFormatDecodeData {
                                     const string& desired_output);
 
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormatDecodeData);
-
   typedef std::pair<int32, string> DataEntry;
   std::vector<DataEntry> entries_;
 };

@@ -35,16 +35,10 @@
 #include <set>
 #include <vector>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/io/printer.h>
 
 namespace google {
-namespace protobuf {
-class FileDescriptor;  // descriptor.h
-namespace io {
-class Printer;  // printer.h
-}
-}
-
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
@@ -57,6 +51,9 @@ class FileGenerator {
  public:
   FileGenerator(const FileDescriptor* file, const Options& options);
   ~FileGenerator();
+
+  FileGenerator(const FileGenerator&) = delete;
+  FileGenerator& operator=(const FileGenerator&) = delete;
 
   void GenerateSource(io::Printer* printer);
   void GenerateHeader(io::Printer* printer);
@@ -76,8 +73,6 @@ class FileGenerator {
 
   void PrintFileRuntimePreamble(
       io::Printer* printer, const std::set<string>& headers_to_import) const;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };
 
 }  // namespace objectivec
