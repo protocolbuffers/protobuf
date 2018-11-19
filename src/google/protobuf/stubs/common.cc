@@ -338,7 +338,8 @@ struct ShutdownData {
 };
 
 static void RunZeroArgFunc(const void* arg) {
-  reinterpret_cast<void (*)()>(const_cast<void*>(arg))();
+  void (*func)() = reinterpret_cast<void (*)()>(const_cast<void*>(arg));
+  func();
 }
 
 void OnShutdown(void (*func)()) {
