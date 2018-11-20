@@ -292,7 +292,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
   output(
       "extern const upb_msglayout $0_msginit;\n"
       "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
-      "  return upb_msg_new(&$0_msginit, arena);\n"
+      "  return ($0 *)upb_msg_new(&$0_msginit, arena);\n"
       "}\n"
       "UPB_INLINE $0 *$0_parsenew(upb_stringview buf, upb_arena *arena) {\n"
       "  $0 *ret = $0_new(arena);\n"
