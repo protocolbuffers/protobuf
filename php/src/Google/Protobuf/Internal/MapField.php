@@ -131,8 +131,8 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @param object $key The key of the element to be fetched.
      * @return object The stored element at given key.
-     * @throws ErrorException Invalid type for index.
-     * @throws ErrorException Non-existing index.
+     * @throws \ErrorException Invalid type for index.
+     * @throws \ErrorException Non-existing index.
      */
     public function offsetGet($key)
     {
@@ -147,9 +147,9 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      * @param object $key The key of the element to be fetched.
      * @param object $value The element to be assigned.
      * @return void
-     * @throws ErrorException Invalid type for key.
-     * @throws ErrorException Invalid type for value.
-     * @throws ErrorException Non-existing key.
+     * @throws \ErrorException Invalid type for key.
+     * @throws \ErrorException Invalid type for value.
+     * @throws \ErrorException Non-existing key.
      */
     public function offsetSet($key, $value)
     {
@@ -207,7 +207,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @param object $key The key of the element to be removed.
      * @return void
-     * @throws ErrorException Invalid type for key.
+     * @throws \ErrorException Invalid type for key.
      */
     public function offsetUnset($key)
     {
@@ -222,7 +222,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * @param object $key The key of the element to be removed.
      * @return bool True if the element at the given key exists.
-     * @throws ErrorException Invalid type for key.
+     * @throws \ErrorException Invalid type for key.
      */
     public function offsetExists($key)
     {

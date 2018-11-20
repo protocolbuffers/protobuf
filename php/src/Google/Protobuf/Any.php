@@ -252,9 +252,9 @@ class Any extends \Google\Protobuf\Internal\Message
      * the method will create a message of the targeted type and fill it with
      * the decoded value in Any.
      * @return unpacked message
-     * @throws Exception Type url needs to be type.googleapis.com/fully-qulified.
-     * @throws Exception Class hasn't been added to descriptor pool.
-     * @throws Exception cannot decode data in value field.
+     * @throws \Exception Type url needs to be type.googleapis.com/fully-qulified.
+     * @throws \Exception Class hasn't been added to descriptor pool.
+     * @throws \Exception cannot decode data in value field.
      */
     public function unpack()
     {
