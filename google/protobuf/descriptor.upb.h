@@ -128,7 +128,7 @@ typedef enum {
 
 extern const upb_msglayout google_protobuf_FileDescriptorSet_msginit;
 UPB_INLINE google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_FileDescriptorSet_msginit, arena);
+  return (google_protobuf_FileDescriptorSet *)upb_msg_new(&google_protobuf_FileDescriptorSet_msginit, arena);
 }
 UPB_INLINE google_protobuf_FileDescriptorSet *google_protobuf_FileDescriptorSet_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_FileDescriptorSet *ret = google_protobuf_FileDescriptorSet_new(arena);
@@ -147,7 +147,7 @@ UPB_INLINE void google_protobuf_FileDescriptorSet_set_file(google_protobuf_FileD
 
 extern const upb_msglayout google_protobuf_FileDescriptorProto_msginit;
 UPB_INLINE google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_FileDescriptorProto_msginit, arena);
+  return (google_protobuf_FileDescriptorProto *)upb_msg_new(&google_protobuf_FileDescriptorProto_msginit, arena);
 }
 UPB_INLINE google_protobuf_FileDescriptorProto *google_protobuf_FileDescriptorProto_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_FileDescriptorProto *ret = google_protobuf_FileDescriptorProto_new(arena);
@@ -188,7 +188,7 @@ UPB_INLINE void google_protobuf_FileDescriptorProto_set_syntax(google_protobuf_F
 
 extern const upb_msglayout google_protobuf_DescriptorProto_msginit;
 UPB_INLINE google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_DescriptorProto_msginit, arena);
+  return (google_protobuf_DescriptorProto *)upb_msg_new(&google_protobuf_DescriptorProto_msginit, arena);
 }
 UPB_INLINE google_protobuf_DescriptorProto *google_protobuf_DescriptorProto_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_DescriptorProto *ret = google_protobuf_DescriptorProto_new(arena);
@@ -225,7 +225,7 @@ UPB_INLINE void google_protobuf_DescriptorProto_set_reserved_name(google_protobu
 
 extern const upb_msglayout google_protobuf_DescriptorProto_ExtensionRange_msginit;
 UPB_INLINE google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_DescriptorProto_ExtensionRange_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_DescriptorProto_ExtensionRange_msginit, arena);
+  return (google_protobuf_DescriptorProto_ExtensionRange *)upb_msg_new(&google_protobuf_DescriptorProto_ExtensionRange_msginit, arena);
 }
 UPB_INLINE google_protobuf_DescriptorProto_ExtensionRange *google_protobuf_DescriptorProto_ExtensionRange_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_DescriptorProto_ExtensionRange *ret = google_protobuf_DescriptorProto_ExtensionRange_new(arena);
@@ -248,7 +248,7 @@ UPB_INLINE void google_protobuf_DescriptorProto_ExtensionRange_set_options(googl
 
 extern const upb_msglayout google_protobuf_DescriptorProto_ReservedRange_msginit;
 UPB_INLINE google_protobuf_DescriptorProto_ReservedRange *google_protobuf_DescriptorProto_ReservedRange_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_DescriptorProto_ReservedRange_msginit, arena);
+  return (google_protobuf_DescriptorProto_ReservedRange *)upb_msg_new(&google_protobuf_DescriptorProto_ReservedRange_msginit, arena);
 }
 UPB_INLINE google_protobuf_DescriptorProto_ReservedRange *google_protobuf_DescriptorProto_ReservedRange_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_DescriptorProto_ReservedRange *ret = google_protobuf_DescriptorProto_ReservedRange_new(arena);
@@ -269,7 +269,7 @@ UPB_INLINE void google_protobuf_DescriptorProto_ReservedRange_set_end(google_pro
 
 extern const upb_msglayout google_protobuf_ExtensionRangeOptions_msginit;
 UPB_INLINE google_protobuf_ExtensionRangeOptions *google_protobuf_ExtensionRangeOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_ExtensionRangeOptions_msginit, arena);
+  return (google_protobuf_ExtensionRangeOptions *)upb_msg_new(&google_protobuf_ExtensionRangeOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_ExtensionRangeOptions *google_protobuf_ExtensionRangeOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_ExtensionRangeOptions *ret = google_protobuf_ExtensionRangeOptions_new(arena);
@@ -288,7 +288,7 @@ UPB_INLINE void google_protobuf_ExtensionRangeOptions_set_uninterpreted_option(g
 
 extern const upb_msglayout google_protobuf_FieldDescriptorProto_msginit;
 UPB_INLINE google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProto_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_FieldDescriptorProto_msginit, arena);
+  return (google_protobuf_FieldDescriptorProto *)upb_msg_new(&google_protobuf_FieldDescriptorProto_msginit, arena);
 }
 UPB_INLINE google_protobuf_FieldDescriptorProto *google_protobuf_FieldDescriptorProto_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_FieldDescriptorProto *ret = google_protobuf_FieldDescriptorProto_new(arena);
@@ -325,7 +325,7 @@ UPB_INLINE void google_protobuf_FieldDescriptorProto_set_json_name(google_protob
 
 extern const upb_msglayout google_protobuf_OneofDescriptorProto_msginit;
 UPB_INLINE google_protobuf_OneofDescriptorProto *google_protobuf_OneofDescriptorProto_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_OneofDescriptorProto_msginit, arena);
+  return (google_protobuf_OneofDescriptorProto *)upb_msg_new(&google_protobuf_OneofDescriptorProto_msginit, arena);
 }
 UPB_INLINE google_protobuf_OneofDescriptorProto *google_protobuf_OneofDescriptorProto_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_OneofDescriptorProto *ret = google_protobuf_OneofDescriptorProto_new(arena);
@@ -346,7 +346,7 @@ UPB_INLINE void google_protobuf_OneofDescriptorProto_set_options(google_protobuf
 
 extern const upb_msglayout google_protobuf_EnumDescriptorProto_msginit;
 UPB_INLINE google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_EnumDescriptorProto_msginit, arena);
+  return (google_protobuf_EnumDescriptorProto *)upb_msg_new(&google_protobuf_EnumDescriptorProto_msginit, arena);
 }
 UPB_INLINE google_protobuf_EnumDescriptorProto *google_protobuf_EnumDescriptorProto_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_EnumDescriptorProto *ret = google_protobuf_EnumDescriptorProto_new(arena);
@@ -373,7 +373,7 @@ UPB_INLINE void google_protobuf_EnumDescriptorProto_set_reserved_name(google_pro
 
 extern const upb_msglayout google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit;
 UPB_INLINE google_protobuf_EnumDescriptorProto_EnumReservedRange *google_protobuf_EnumDescriptorProto_EnumReservedRange_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit, arena);
+  return (google_protobuf_EnumDescriptorProto_EnumReservedRange *)upb_msg_new(&google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit, arena);
 }
 UPB_INLINE google_protobuf_EnumDescriptorProto_EnumReservedRange *google_protobuf_EnumDescriptorProto_EnumReservedRange_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_EnumDescriptorProto_EnumReservedRange *ret = google_protobuf_EnumDescriptorProto_EnumReservedRange_new(arena);
@@ -394,7 +394,7 @@ UPB_INLINE void google_protobuf_EnumDescriptorProto_EnumReservedRange_set_end(go
 
 extern const upb_msglayout google_protobuf_EnumValueDescriptorProto_msginit;
 UPB_INLINE google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescriptorProto_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_EnumValueDescriptorProto_msginit, arena);
+  return (google_protobuf_EnumValueDescriptorProto *)upb_msg_new(&google_protobuf_EnumValueDescriptorProto_msginit, arena);
 }
 UPB_INLINE google_protobuf_EnumValueDescriptorProto *google_protobuf_EnumValueDescriptorProto_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_EnumValueDescriptorProto *ret = google_protobuf_EnumValueDescriptorProto_new(arena);
@@ -417,7 +417,7 @@ UPB_INLINE void google_protobuf_EnumValueDescriptorProto_set_options(google_prot
 
 extern const upb_msglayout google_protobuf_ServiceDescriptorProto_msginit;
 UPB_INLINE google_protobuf_ServiceDescriptorProto *google_protobuf_ServiceDescriptorProto_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_ServiceDescriptorProto_msginit, arena);
+  return (google_protobuf_ServiceDescriptorProto *)upb_msg_new(&google_protobuf_ServiceDescriptorProto_msginit, arena);
 }
 UPB_INLINE google_protobuf_ServiceDescriptorProto *google_protobuf_ServiceDescriptorProto_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_ServiceDescriptorProto *ret = google_protobuf_ServiceDescriptorProto_new(arena);
@@ -440,7 +440,7 @@ UPB_INLINE void google_protobuf_ServiceDescriptorProto_set_options(google_protob
 
 extern const upb_msglayout google_protobuf_MethodDescriptorProto_msginit;
 UPB_INLINE google_protobuf_MethodDescriptorProto *google_protobuf_MethodDescriptorProto_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_MethodDescriptorProto_msginit, arena);
+  return (google_protobuf_MethodDescriptorProto *)upb_msg_new(&google_protobuf_MethodDescriptorProto_msginit, arena);
 }
 UPB_INLINE google_protobuf_MethodDescriptorProto *google_protobuf_MethodDescriptorProto_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_MethodDescriptorProto *ret = google_protobuf_MethodDescriptorProto_new(arena);
@@ -469,7 +469,7 @@ UPB_INLINE void google_protobuf_MethodDescriptorProto_set_server_streaming(googl
 
 extern const upb_msglayout google_protobuf_FileOptions_msginit;
 UPB_INLINE google_protobuf_FileOptions *google_protobuf_FileOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_FileOptions_msginit, arena);
+  return (google_protobuf_FileOptions *)upb_msg_new(&google_protobuf_FileOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_FileOptions *google_protobuf_FileOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_FileOptions *ret = google_protobuf_FileOptions_new(arena);
@@ -524,7 +524,7 @@ UPB_INLINE void google_protobuf_FileOptions_set_uninterpreted_option(google_prot
 
 extern const upb_msglayout google_protobuf_MessageOptions_msginit;
 UPB_INLINE google_protobuf_MessageOptions *google_protobuf_MessageOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_MessageOptions_msginit, arena);
+  return (google_protobuf_MessageOptions *)upb_msg_new(&google_protobuf_MessageOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_MessageOptions *google_protobuf_MessageOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_MessageOptions *ret = google_protobuf_MessageOptions_new(arena);
@@ -551,7 +551,7 @@ UPB_INLINE void google_protobuf_MessageOptions_set_uninterpreted_option(google_p
 
 extern const upb_msglayout google_protobuf_FieldOptions_msginit;
 UPB_INLINE google_protobuf_FieldOptions *google_protobuf_FieldOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_FieldOptions_msginit, arena);
+  return (google_protobuf_FieldOptions *)upb_msg_new(&google_protobuf_FieldOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_FieldOptions *google_protobuf_FieldOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_FieldOptions *ret = google_protobuf_FieldOptions_new(arena);
@@ -582,7 +582,7 @@ UPB_INLINE void google_protobuf_FieldOptions_set_uninterpreted_option(google_pro
 
 extern const upb_msglayout google_protobuf_OneofOptions_msginit;
 UPB_INLINE google_protobuf_OneofOptions *google_protobuf_OneofOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_OneofOptions_msginit, arena);
+  return (google_protobuf_OneofOptions *)upb_msg_new(&google_protobuf_OneofOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_OneofOptions *google_protobuf_OneofOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_OneofOptions *ret = google_protobuf_OneofOptions_new(arena);
@@ -601,7 +601,7 @@ UPB_INLINE void google_protobuf_OneofOptions_set_uninterpreted_option(google_pro
 
 extern const upb_msglayout google_protobuf_EnumOptions_msginit;
 UPB_INLINE google_protobuf_EnumOptions *google_protobuf_EnumOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_EnumOptions_msginit, arena);
+  return (google_protobuf_EnumOptions *)upb_msg_new(&google_protobuf_EnumOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_EnumOptions *google_protobuf_EnumOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_EnumOptions *ret = google_protobuf_EnumOptions_new(arena);
@@ -624,7 +624,7 @@ UPB_INLINE void google_protobuf_EnumOptions_set_uninterpreted_option(google_prot
 
 extern const upb_msglayout google_protobuf_EnumValueOptions_msginit;
 UPB_INLINE google_protobuf_EnumValueOptions *google_protobuf_EnumValueOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_EnumValueOptions_msginit, arena);
+  return (google_protobuf_EnumValueOptions *)upb_msg_new(&google_protobuf_EnumValueOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_EnumValueOptions *google_protobuf_EnumValueOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_EnumValueOptions *ret = google_protobuf_EnumValueOptions_new(arena);
@@ -645,7 +645,7 @@ UPB_INLINE void google_protobuf_EnumValueOptions_set_uninterpreted_option(google
 
 extern const upb_msglayout google_protobuf_ServiceOptions_msginit;
 UPB_INLINE google_protobuf_ServiceOptions *google_protobuf_ServiceOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_ServiceOptions_msginit, arena);
+  return (google_protobuf_ServiceOptions *)upb_msg_new(&google_protobuf_ServiceOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_ServiceOptions *google_protobuf_ServiceOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_ServiceOptions *ret = google_protobuf_ServiceOptions_new(arena);
@@ -666,7 +666,7 @@ UPB_INLINE void google_protobuf_ServiceOptions_set_uninterpreted_option(google_p
 
 extern const upb_msglayout google_protobuf_MethodOptions_msginit;
 UPB_INLINE google_protobuf_MethodOptions *google_protobuf_MethodOptions_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_MethodOptions_msginit, arena);
+  return (google_protobuf_MethodOptions *)upb_msg_new(&google_protobuf_MethodOptions_msginit, arena);
 }
 UPB_INLINE google_protobuf_MethodOptions *google_protobuf_MethodOptions_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_MethodOptions *ret = google_protobuf_MethodOptions_new(arena);
@@ -689,7 +689,7 @@ UPB_INLINE void google_protobuf_MethodOptions_set_uninterpreted_option(google_pr
 
 extern const upb_msglayout google_protobuf_UninterpretedOption_msginit;
 UPB_INLINE google_protobuf_UninterpretedOption *google_protobuf_UninterpretedOption_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_UninterpretedOption_msginit, arena);
+  return (google_protobuf_UninterpretedOption *)upb_msg_new(&google_protobuf_UninterpretedOption_msginit, arena);
 }
 UPB_INLINE google_protobuf_UninterpretedOption *google_protobuf_UninterpretedOption_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_UninterpretedOption *ret = google_protobuf_UninterpretedOption_new(arena);
@@ -720,7 +720,7 @@ UPB_INLINE void google_protobuf_UninterpretedOption_set_aggregate_value(google_p
 
 extern const upb_msglayout google_protobuf_UninterpretedOption_NamePart_msginit;
 UPB_INLINE google_protobuf_UninterpretedOption_NamePart *google_protobuf_UninterpretedOption_NamePart_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_UninterpretedOption_NamePart_msginit, arena);
+  return (google_protobuf_UninterpretedOption_NamePart *)upb_msg_new(&google_protobuf_UninterpretedOption_NamePart_msginit, arena);
 }
 UPB_INLINE google_protobuf_UninterpretedOption_NamePart *google_protobuf_UninterpretedOption_NamePart_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_UninterpretedOption_NamePart *ret = google_protobuf_UninterpretedOption_NamePart_new(arena);
@@ -741,7 +741,7 @@ UPB_INLINE void google_protobuf_UninterpretedOption_NamePart_set_is_extension(go
 
 extern const upb_msglayout google_protobuf_SourceCodeInfo_msginit;
 UPB_INLINE google_protobuf_SourceCodeInfo *google_protobuf_SourceCodeInfo_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_SourceCodeInfo_msginit, arena);
+  return (google_protobuf_SourceCodeInfo *)upb_msg_new(&google_protobuf_SourceCodeInfo_msginit, arena);
 }
 UPB_INLINE google_protobuf_SourceCodeInfo *google_protobuf_SourceCodeInfo_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_SourceCodeInfo *ret = google_protobuf_SourceCodeInfo_new(arena);
@@ -760,7 +760,7 @@ UPB_INLINE void google_protobuf_SourceCodeInfo_set_location(google_protobuf_Sour
 
 extern const upb_msglayout google_protobuf_SourceCodeInfo_Location_msginit;
 UPB_INLINE google_protobuf_SourceCodeInfo_Location *google_protobuf_SourceCodeInfo_Location_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_SourceCodeInfo_Location_msginit, arena);
+  return (google_protobuf_SourceCodeInfo_Location *)upb_msg_new(&google_protobuf_SourceCodeInfo_Location_msginit, arena);
 }
 UPB_INLINE google_protobuf_SourceCodeInfo_Location *google_protobuf_SourceCodeInfo_Location_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_SourceCodeInfo_Location *ret = google_protobuf_SourceCodeInfo_Location_new(arena);
@@ -787,7 +787,7 @@ UPB_INLINE void google_protobuf_SourceCodeInfo_Location_set_leading_detached_com
 
 extern const upb_msglayout google_protobuf_GeneratedCodeInfo_msginit;
 UPB_INLINE google_protobuf_GeneratedCodeInfo *google_protobuf_GeneratedCodeInfo_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_GeneratedCodeInfo_msginit, arena);
+  return (google_protobuf_GeneratedCodeInfo *)upb_msg_new(&google_protobuf_GeneratedCodeInfo_msginit, arena);
 }
 UPB_INLINE google_protobuf_GeneratedCodeInfo *google_protobuf_GeneratedCodeInfo_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_GeneratedCodeInfo *ret = google_protobuf_GeneratedCodeInfo_new(arena);
@@ -806,7 +806,7 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_set_annotation(google_protobuf
 
 extern const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit;
 UPB_INLINE google_protobuf_GeneratedCodeInfo_Annotation *google_protobuf_GeneratedCodeInfo_Annotation_new(upb_arena *arena) {
-  return upb_msg_new(&google_protobuf_GeneratedCodeInfo_Annotation_msginit, arena);
+  return (google_protobuf_GeneratedCodeInfo_Annotation *)upb_msg_new(&google_protobuf_GeneratedCodeInfo_Annotation_msginit, arena);
 }
 UPB_INLINE google_protobuf_GeneratedCodeInfo_Annotation *google_protobuf_GeneratedCodeInfo_Annotation_parsenew(upb_stringview buf, upb_arena *arena) {
   google_protobuf_GeneratedCodeInfo_Annotation *ret = google_protobuf_GeneratedCodeInfo_Annotation_new(arena);
