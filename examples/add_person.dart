@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart_tutorial/addressbook.pb.dart';
 
 // This function fills in a Person message based on user input.
-Person promtForAddress() {
+Person promptForAddress() {
   Person person = Person();
 
   print('Enter person ID: ');
@@ -65,6 +65,6 @@ main(List<String> arguments) {
   } else {
     addressBook = AddressBook.fromBuffer(file.readAsBytesSync());
   }
-  addressBook.people.add(promtForAddress());
+  addressBook.people.add(promptForAddress());
   file.writeAsBytes(addressBook.writeToBuffer());
 }
