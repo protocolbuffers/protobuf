@@ -16,6 +16,19 @@ config_setting(
 )
 
 ################################################################################
+# ZLIB configuration
+################################################################################
+
+config_setting(
+    name = "zlib",
+    values = {"define": "protobuf_zlib=true"},
+)
+
+ZLIB_COPTS = ["-DHAVE_ZLIB"]
+
+ZLIB_DEPS = ["//external:zlib"]
+
+################################################################################
 # Protobuf Runtime Library
 ################################################################################
 
@@ -50,6 +63,9 @@ COPTS = select({
         "-Wno-writable-strings",
         "-Wno-write-strings",
     ],
+}) + select({
+    ":zlib": ZLIB_COPTS,
+    "//conditions:default": [],
 })
 
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
@@ -117,6 +133,11 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+PROTOBUF_DEPS = select({
+    ":zlib": ZLIB_DEPS,
+    "//conditions:default": [],
+})
+
 cc_library(
     name = "protobuf",
     srcs = [
@@ -182,7 +203,7 @@ cc_library(
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = [":protobuf_lite"],
+    deps = [":protobuf_lite"] + PROTOBUF_DEPS,
 )
 
 # This provides just the header files for use in projects that need to build
@@ -590,7 +611,7 @@ cc_test(
         ":protobuf",
         ":protoc_lib",
         "//external:gtest_main",
-    ],
+    ] + PROTOBUF_DEPS,
 )
 
 ################################################################################
