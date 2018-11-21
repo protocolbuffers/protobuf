@@ -40,6 +40,7 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
+#import "google/protobuf/UnittestObjcOptions.pbobjc.h"
 
 @interface MessageTests : GPBTestCase
 @end
@@ -2097,7 +2098,7 @@
   XCTAssertEqual([msg1 hash], [msg1Prime hash]);
 }
 
-- (void)testCopyingMapFileds {
+- (void)testCopyingMapFields {
   TestMessageOfMaps *msg = [TestMessageOfMaps message];
 
   msg.strToStr[@"foo"] = @"bar";
@@ -2146,6 +2147,40 @@
   XCTAssertEqualObjects([msg.intToMsg objectForKey:222], [msg2.intToMsg objectForKey:222]);
   XCTAssertTrue([msg.boolToMsg objectForKey:YES] != [msg2.boolToMsg objectForKey:YES]);  // ptr compare
   XCTAssertEqualObjects([msg.boolToMsg objectForKey:YES], [msg2.boolToMsg objectForKey:YES]);
+}
+
+- (void)testPrefixedNames {
+  // The fact that this compiles is sufficient as a test.
+  // The assertions are just there to avoid "not-used" warnings.
+
+  // Verify that enum types and values get the prefix.
+  GPBTESTTestObjcProtoPrefixEnum value = GPBTESTTestObjcProtoPrefixEnum_Value;
+  XCTAssertNotEqual(value, 0);
+
+  // Verify that roots get the prefix.
+  GPBTESTUnittestObjcOptionsRoot *root = nil;
+  XCTAssertNil(root);
+
+  // Verify that messages that don't already have the prefix get a prefix.
+  GPBTESTTestObjcProtoPrefixMessage *prefixedMessage = nil;
+  XCTAssertNil(prefixedMessage);
+
+  // Verify that messages that already have a prefix aren't prefixed twice.
+  GPBTESTTestHasAPrefixMessage *alreadyPrefixedMessage = nil;
+  XCTAssertNil(alreadyPrefixedMessage);
+
+  // Verify that enums that already have a prefix aren't prefixed twice.
+  GPBTESTTestHasAPrefixEnum prefixedValue = GPBTESTTestHasAPrefixEnum_ValueB;
+  XCTAssertNotEqual(prefixedValue, 0);
+
+  // Verify that classes named the same as prefixes are prefixed.
+  GPBTESTGPBTEST *prefixMessage = nil;
+  XCTAssertNil(prefixMessage);
+
+  // Verify that classes that have the prefix followed by a lowercase
+  // letter DO get the prefix.
+  GPBTESTGPBTESTshouldGetAPrefixMessage *shouldGetAPrefixMessage = nil;
+  XCTAssertNil(shouldGetAPrefixMessage);
 }
 
 @end
