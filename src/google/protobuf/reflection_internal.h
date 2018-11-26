@@ -203,7 +203,7 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
  public:
   MapFieldAccessor() {}
   virtual ~MapFieldAccessor() {}
-  virtual bool IsEmpty(const Field* data) const {
+  bool IsEmpty(const Field* data) const override {
     return GetRepeatedField(data)->empty();
   }
   int Size(const Field* data) const override {
