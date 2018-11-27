@@ -186,6 +186,9 @@ if __name__ == '__main__':
         extra_compile_args.append('-Wno-invalid-offsetof')
         extra_compile_args.append('-Wno-sign-compare')
 
+    # https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes
+    # C++ projects must now migrate to libc++ and are recommended to set a
+    # deployment target of macOS 10.9 or later, or iOS 7 or later.
     if sys.platform == 'darwin':
       os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
 
