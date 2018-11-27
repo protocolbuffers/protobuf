@@ -51,3 +51,13 @@ SET PYTHON=C:\python36
 SET PYTHON_VERSION=3.6
 SET PYTHON_ARCH=64
 CALL build_single_artifact.bat
+
+SET PYTHON=C:\python37_32bit
+SET PYTHON_VERSION=3.7
+SET PYTHON_ARCH=32
+CALL build_single_artifact.bat
+
+SET PYTHON=C:\python37
+SET PYTHON_VERSION=3.7
+SET PYTHON_ARCH=64
+CALL build_single_artifact.bat
