@@ -1,8 +1,11 @@
 #! /usr/bin/env python
 #
 # See README for usage instructions.
+from distutils import util
 import glob
 import os
+import pkg_resources
+import re
 import subprocess
 import sys
 import sysconfig
