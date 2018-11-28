@@ -411,12 +411,6 @@ class WellKnownTest extends TestBase {
         return [
             ['\Google\Protobuf\Field\Cardinality'],
             ['\Google\Protobuf\Field\Kind'],
-            ['\Google\Protobuf\Internal\FieldDescriptorProto\Label'],
-            ['\Google\Protobuf\Internal\FieldDescriptorProto\Type'],
-            ['\Google\Protobuf\Internal\FieldOptions\CType'],
-            ['\Google\Protobuf\Internal\FieldOptions\JSType'],
-            ['\Google\Protobuf\Internal\FileOptions\OptimizeMode'],
-            ['\Google\Protobuf\Internal\MethodOptions\IdempotencyLevel'],
             ['\Google\Protobuf\NullValue'],
             ['\Google\Protobuf\Syntax'],
         ];
