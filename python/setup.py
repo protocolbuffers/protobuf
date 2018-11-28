@@ -5,6 +5,7 @@ import glob
 import os
 import subprocess
 import sys
+import sysconfig
 import platform
 
 # We must use setuptools, not distutils, because we need to use the
