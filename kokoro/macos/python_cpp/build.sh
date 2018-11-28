@@ -9,5 +9,4 @@ cd $(dirname $0)/../../..
 source kokoro/macos/prepare_build_macos_rc
 g++ --version
 
-export MACOSX_DEPLOYMENT_TARGET=10.9
 ./tests.sh python_cpp
