@@ -1146,9 +1146,11 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
-  }
 
-  printer.Print("use UnexpectedValueException;\n\n");
+    // We only need this 'use' statement if the enum has a namespace.
+    // Otherwise, we get a warning that the use statement has no effect.
+    printer.Print("use UnexpectedValueException;\n\n");
+  }
 
   GenerateEnumDocComment(&printer, en, is_descriptor);
 
