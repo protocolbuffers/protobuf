@@ -50,6 +50,7 @@ cc_library(
         "-pedantic",
         "-Wno-long-long",
     ],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
