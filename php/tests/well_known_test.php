@@ -392,4 +392,27 @@ class WellKnownTest extends TestBase {
         $m->setValue("a");
         $this->assertSame("a", $m->getValue());
     }
+
+    /**
+     * @dataProvider enumNameValueConversionDataProvider
+     */
+    public function testEnumNameValueConversion($class)
+    {
+        $reflectionClass = new ReflectionClass($class);
+        $constants = $reflectionClass->getConstants();
+        foreach ($constants as $k => $v) {
+            $this->assertSame($k, $class::name($v));
+            $this->assertSame($v, $class::value($k));
+        }
+    }
+
+    public function enumNameValueConversionDataProvider()
+    {
+        return [
+            ['\Google\Protobuf\Field\Cardinality'],
+            ['\Google\Protobuf\Field\Kind'],
+            ['\Google\Protobuf\NullValue'],
+            ['\Google\Protobuf\Syntax'],
+        ];
+    }
 }
