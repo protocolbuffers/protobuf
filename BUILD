@@ -266,6 +266,7 @@ cc_binary(
         ":conformance_proto_upb",
         ":upb",
     ],
+    copts = ["-Ibazel-out/k8-fastbuild/bin"],
 )
 
 make_shell_script(
