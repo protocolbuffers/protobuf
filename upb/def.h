@@ -285,6 +285,7 @@ typedef enum {
  */
 typedef enum {
   UPB_WELLKNOWN_UNSPECIFIED,
+  UPB_WELLKNOWN_ANY,
   UPB_WELLKNOWN_DURATION,
   UPB_WELLKNOWN_TIMESTAMP,
   /* number wrappers */
@@ -1543,6 +1544,8 @@ const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
                                   const char *sym);
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym);
 const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
+const upb_msgdef *upb_symtab_lookupmsg2(
+    const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
                     void *ref_donor, upb_status *status);

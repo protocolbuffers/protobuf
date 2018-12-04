@@ -115,7 +115,10 @@ cc_library(
         "-pedantic",
         "-Wno-long-long",
     ],
-    deps = [":upb"],
+    deps = [
+        ":upb",
+        ":upb_pb",
+    ],
 )
 
 cc_library(
