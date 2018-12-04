@@ -232,6 +232,28 @@ class GeneratedClassTest extends TestBase
         // Set string.
         $m->setOptionalEnum("1");
         $this->assertEquals(TestEnum::ONE, $m->getOptionalEnum());
+
+        // Test Enum methods
+        $this->assertEquals('ONE', TestEnum::name(1));
+        $this->assertEquals(1, TestEnum::value('ONE'));
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Enum Foo\TestEnum has no name defined for value -1
+     */
+    public function testInvalidEnumValueThrowsException()
+    {
+        TestEnum::name(-1);
+    }
+
+    /**
+     * @expectedException UnexpectedValueException
+     * @expectedExceptionMessage Enum Foo\TestEnum has no value defined for name DOES_NOT_EXIST
+     */
+    public function testInvalidEnumNameThrowsException()
+    {
+        TestEnum::value('DOES_NOT_EXIST');
     }
 
     public function testNestedEnum()

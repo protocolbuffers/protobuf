@@ -163,11 +163,22 @@ string GetOptionalDeprecatedAttribute(
   // The file is only passed when checking Messages & Enums, so those types
   // get tagged. At the moment, it doesn't seem to make sense to tag every
   // field or enum value with when the file is deprecated.
+  bool isFileLevelDeprecation = false;
   if (!isDeprecated && file) {
-    isDeprecated = file->options().deprecated();
+    isFileLevelDeprecation = file->options().deprecated();
+    isDeprecated = isFileLevelDeprecation;
   }
   if (isDeprecated) {
-    string result = "GPB_DEPRECATED";
+    string message;
+    const FileDescriptor* sourceFile = descriptor->file();
+    if (isFileLevelDeprecation) {
+      message = sourceFile->name() + " is deprecated.";
+    } else {
+      message = descriptor->full_name() + " is deprecated (see " +
+                sourceFile->name() + ").";
+    }
+
+    string result = string("GPB_DEPRECATED_MSG(\"") + message + "\")";
     if (preSpace) {
       result.insert(0, " ");
     }

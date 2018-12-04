@@ -146,4 +146,5 @@ compile_protos \
   objectivec/Tests/unittest_runtime_proto2.proto \
   objectivec/Tests/unittest_runtime_proto3.proto \
   objectivec/Tests/unittest_objc.proto \
-  objectivec/Tests/unittest_objc_startup.proto
+  objectivec/Tests/unittest_objc_startup.proto \
+  objectivec/Tests/unittest_objc_options.proto

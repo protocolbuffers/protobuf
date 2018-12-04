@@ -1301,6 +1301,12 @@ PHP_METHOD(Field, setJsonName);
 PHP_METHOD(Field, getDefaultValue);
 PHP_METHOD(Field, setDefaultValue);
 
+PHP_METHOD(Field_Cardinality, name);
+PHP_METHOD(Field_Cardinality, value);
+
+PHP_METHOD(Field_Kind, name);
+PHP_METHOD(Field_Kind, value);
+
 PHP_METHOD(FloatValue, __construct);
 PHP_METHOD(FloatValue, getValue);
 PHP_METHOD(FloatValue, setValue);
@@ -1341,6 +1347,9 @@ PHP_METHOD(Mixin, setName);
 PHP_METHOD(Mixin, getRoot);
 PHP_METHOD(Mixin, setRoot);
 
+PHP_METHOD(NullValue, name);
+PHP_METHOD(NullValue, value);
+
 PHP_METHOD(Option, __construct);
 PHP_METHOD(Option, getName);
 PHP_METHOD(Option, setName);
@@ -1358,6 +1367,9 @@ PHP_METHOD(StringValue, setValue);
 PHP_METHOD(Struct, __construct);
 PHP_METHOD(Struct, getFields);
 PHP_METHOD(Struct, setFields);
+
+PHP_METHOD(Syntax, name);
+PHP_METHOD(Syntax, value);
 
 PHP_METHOD(Type, __construct);
 PHP_METHOD(Type, getName);

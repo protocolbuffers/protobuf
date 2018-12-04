@@ -150,6 +150,7 @@
 		8B09AAF614B663A7007B4184 /* unittest_objc.proto */ = {isa = PBXFileReference; lastKnownFileType = text; path = unittest_objc.proto; sourceTree = "<group>"; };
 		8B210CCD159383D60032D72D /* golden_message */ = {isa = PBXFileReference; lastKnownFileType = file; path = golden_message; sourceTree = "<group>"; };
 		8B210CCF159386920032D72D /* golden_packed_fields_message */ = {isa = PBXFileReference; lastKnownFileType = file; path = golden_packed_fields_message; sourceTree = "<group>"; };
+		8B35468421A616F6000BD30D /* unittest_objc_options.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = unittest_objc_options.proto; sourceTree = "<group>"; };
 		8B4248B91A8C256900BC1EC6 /* UnitTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UnitTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		8B4248BA1A8C256A00BC1EC6 /* GPBSwiftTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GPBSwiftTests.swift; sourceTree = "<group>"; };
 		8B4248CF1A927E1500BC1EC6 /* GPBWellKnownTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBWellKnownTypes.h; sourceTree = "<group>"; };
@@ -508,6 +509,7 @@
 				8BBD9DB016DD1DC8008E1EC1 /* unittest_lite.proto */,
 				8B7E6A7B14893DBC00F8884A /* unittest_mset.proto */,
 				8B7E6A7C14893DBC00F8884A /* unittest_no_generic_services.proto */,
+				8B35468421A616F6000BD30D /* unittest_objc_options.proto */,
 				F4CF31701B162ED800BD9B06 /* unittest_objc_startup.proto */,
 				8B09AAF614B663A7007B4184 /* unittest_objc.proto */,
 				8B7E6A7D14893DBC00F8884A /* unittest_optimize_for.proto */,

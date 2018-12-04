@@ -119,7 +119,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   DefaultValueObjectWriter* RenderBytes(StringPiece name,
                                         StringPiece value) override;
 
-  virtual DefaultValueObjectWriter* RenderNull(StringPiece name);
+  DefaultValueObjectWriter* RenderNull(StringPiece name) override;
 
   // Register the callback for scrubbing of fields. Owership of
   // field_scrub_callback pointer is also transferred to this class

@@ -1960,11 +1960,12 @@ int Base64UnescapeInternal(const char *src_param, int szsrc,
 // #include <sys/time.h>
 // #include <stdlib.h>
 // #include <string.h>
+// #include <stdio.h>
 // main()
 // {
 //   static const char Base64[] =
 //     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-//   char *pos;
+//   const char *pos;
 //   int idx, i, j;
 //   printf("    ");
 //   for (i = 0; i < 255; i += 8) {
@@ -1977,7 +1978,7 @@ int Base64UnescapeInternal(const char *src_param, int szsrc,
 //       if (idx == -1)
 //         printf(" %2d,     ", idx);
 //       else
-//         printf(" %2d/*%c*/,", idx, j);
+//         printf(" %2d/""*%c*""/,", idx, j);
 //     }
 //     printf("\n    ");
 //   }
@@ -1995,7 +1996,7 @@ static const signed char kUnBase64[] = {
   52/*0*/, 53/*1*/, 54/*2*/, 55/*3*/, 56/*4*/, 57/*5*/, 58/*6*/, 59/*7*/,
   60/*8*/, 61/*9*/, -1,      -1,      -1,      -1,      -1,      -1,
   -1,       0/*A*/,  1/*B*/,  2/*C*/,  3/*D*/,  4/*E*/,  5/*F*/,  6/*G*/,
-  07/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
+   7/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
   15/*P*/, 16/*Q*/, 17/*R*/, 18/*S*/, 19/*T*/, 20/*U*/, 21/*V*/, 22/*W*/,
   23/*X*/, 24/*Y*/, 25/*Z*/, -1,      -1,      -1,      -1,      -1,
   -1,      26/*a*/, 27/*b*/, 28/*c*/, 29/*d*/, 30/*e*/, 31/*f*/, 32/*g*/,
@@ -2029,7 +2030,7 @@ static const signed char kUnWebSafeBase64[] = {
   52/*0*/, 53/*1*/, 54/*2*/, 55/*3*/, 56/*4*/, 57/*5*/, 58/*6*/, 59/*7*/,
   60/*8*/, 61/*9*/, -1,      -1,      -1,      -1,      -1,      -1,
   -1,       0/*A*/,  1/*B*/,  2/*C*/,  3/*D*/,  4/*E*/,  5/*F*/,  6/*G*/,
-  07/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
+   7/*H*/,  8/*I*/,  9/*J*/, 10/*K*/, 11/*L*/, 12/*M*/, 13/*N*/, 14/*O*/,
   15/*P*/, 16/*Q*/, 17/*R*/, 18/*S*/, 19/*T*/, 20/*U*/, 21/*V*/, 22/*W*/,
   23/*X*/, 24/*Y*/, 25/*Z*/, -1,      -1,      -1,      -1,      63/*_*/,
   -1,      26/*a*/, 27/*b*/, 28/*c*/, 29/*d*/, 30/*e*/, 31/*f*/, 32/*g*/,

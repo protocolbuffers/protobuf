@@ -572,6 +572,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/unittest_extension_chain_f.proto                           \
   objectivec/Tests/unittest_extension_chain_g.proto                           \
   objectivec/Tests/unittest_objc.proto                                        \
+  objectivec/Tests/unittest_objc_options.proto                                \
   objectivec/Tests/unittest_objc_startup.proto                                \
   objectivec/Tests/unittest_runtime_proto2.proto                              \
   objectivec/Tests/unittest_runtime_proto3.proto                              \

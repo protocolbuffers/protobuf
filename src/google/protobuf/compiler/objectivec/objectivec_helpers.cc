@@ -243,21 +243,37 @@ bool IsReservedCIdentifier(const string& input) {
   return false;
 }
 
-string SanitizeNameForObjC(const string& input,
+string SanitizeNameForObjC(const string& prefix,
+                           const string& input,
                            const string& extension,
                            string* out_suffix_added) {
   static const std::unordered_set<string> kReservedWords =
       MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
   static const std::unordered_set<string> kNSObjectMethods =
       MakeWordsMap(kNSObjectMethodsList, GOOGLE_ARRAYSIZE(kNSObjectMethodsList));
-  if (IsReservedCIdentifier(input) ||
-      (kReservedWords.count(input) > 0) ||
-      (kNSObjectMethods.count(input) > 0)) {
+  string sanitized;
+  // We add the prefix in the cases where the string is missing a prefix.
+  // We define "missing a prefix" as where 'input':
+  // a) Doesn't start with the prefix or
+  // b) Isn't equivalent to the prefix or
+  // c) Has the prefix, but the letter after the prefix is lowercase
+  if (HasPrefixString(input, prefix)) {
+    if (input.length() == prefix.length() || !ascii_isupper(input[prefix.length()])) {
+      sanitized = prefix + input;
+    } else {
+      sanitized = input;
+    }
+  } else {
+    sanitized = prefix + input;
+  }
+  if (IsReservedCIdentifier(sanitized) ||
+      (kReservedWords.count(sanitized) > 0) ||
+      (kNSObjectMethods.count(sanitized) > 0)) {
     if (out_suffix_added) *out_suffix_added = extension;
-    return input + extension;
+    return sanitized + extension;
   }
   if (out_suffix_added) out_suffix_added->clear();
-  return input;
+  return sanitized;
 }
 
 string NameFromFieldDescriptor(const FieldDescriptor* field) {
@@ -416,12 +432,11 @@ string FilePathBasename(const FileDescriptor* file) {
 }
 
 string FileClassName(const FileDescriptor* file) {
-  string name = FileClassPrefix(file);
-  name += UnderscoresToCamelCase(StripProto(BaseFileName(file)), true);
-  name += "Root";
+  const string prefix = FileClassPrefix(file);
+  const string name = UnderscoresToCamelCase(StripProto(BaseFileName(file)), true) + "Root";
   // There aren't really any reserved words that end in "Root", but playing
   // it safe and checking.
-  return SanitizeNameForObjC(name, "_RootClass", NULL);
+  return SanitizeNameForObjC(prefix, name, "_RootClass", NULL);
 }
 
 string ClassNameWorker(const Descriptor* descriptor) {
@@ -449,9 +464,9 @@ string ClassName(const Descriptor* descriptor) {
 string ClassName(const Descriptor* descriptor, string* out_suffix_added) {
   // 1. Message names are used as is (style calls for CamelCase, trust it).
   // 2. Check for reserved word at the very end and then suffix things.
-  string prefix = FileClassPrefix(descriptor->file());
-  string name = ClassNameWorker(descriptor);
-  return SanitizeNameForObjC(prefix + name, "_Class", out_suffix_added);
+  const string prefix = FileClassPrefix(descriptor->file());
+  const string name = ClassNameWorker(descriptor);
+  return SanitizeNameForObjC(prefix, name, "_Class", out_suffix_added);
 }
 
 string EnumName(const EnumDescriptor* descriptor) {
@@ -463,9 +478,9 @@ string EnumName(const EnumDescriptor* descriptor) {
   //      ...
   //      }
   //    yields Fixed_Class, Fixed_Size.
-  string name = FileClassPrefix(descriptor->file());
-  name += ClassNameWorker(descriptor);
-  return SanitizeNameForObjC(name, "_Enum", NULL);
+  const string prefix = FileClassPrefix(descriptor->file());
+  const string name = ClassNameWorker(descriptor);
+  return SanitizeNameForObjC(prefix, name, "_Enum", NULL);
 }
 
 string EnumValueName(const EnumValueDescriptor* descriptor) {
@@ -475,12 +490,12 @@ string EnumValueName(const EnumValueDescriptor* descriptor) {
   //     FOO = 1
   //   }
   // yields Fixed_Enum and Fixed_Enum_Foo (not Fixed_Foo).
-  const string& class_name = EnumName(descriptor->type());
-  const string& value_str = UnderscoresToCamelCase(descriptor->name(), true);
-  const string& name = class_name + "_" + value_str;
+  const string class_name = EnumName(descriptor->type());
+  const string value_str = UnderscoresToCamelCase(descriptor->name(), true);
+  const string name = class_name + "_" + value_str;
   // There aren't really any reserved words with an underscore and a leading
   // capital letter, but playing it safe and checking.
-  return SanitizeNameForObjC(name, "_Value", NULL);
+  return SanitizeNameForObjC("", name, "_Value", NULL);
 }
 
 string EnumValueShortName(const EnumValueDescriptor* descriptor) {
@@ -496,9 +511,9 @@ string EnumValueShortName(const EnumValueDescriptor* descriptor) {
   // So the right way to get the short name is to take the full enum name
   // and then strip off the enum name (leaving the value name and anything
   // done by sanitize).
-  const string& class_name = EnumName(descriptor->type());
-  const string& long_name_prefix = class_name + "_";
-  const string& long_name = EnumValueName(descriptor);
+  const string class_name = EnumName(descriptor->type());
+  const string long_name_prefix = class_name + "_";
+  const string long_name = EnumValueName(descriptor);
   return StripPrefixString(long_name, long_name_prefix);
 }
 
@@ -515,13 +530,13 @@ string UnCamelCaseEnumShortName(const string& name) {
 }
 
 string ExtensionMethodName(const FieldDescriptor* descriptor) {
-  const string& name = NameFromFieldDescriptor(descriptor);
-  const string& result = UnderscoresToCamelCase(name, false);
-  return SanitizeNameForObjC(result, "_Extension", NULL);
+  const string name = NameFromFieldDescriptor(descriptor);
+  const string result = UnderscoresToCamelCase(name, false);
+  return SanitizeNameForObjC("", result, "_Extension", NULL);
 }
 
 string FieldName(const FieldDescriptor* field) {
-  const string& name = NameFromFieldDescriptor(field);
+  const string name = NameFromFieldDescriptor(field);
   string result = UnderscoresToCamelCase(name, false);
   if (field->is_repeated() && !field->is_map()) {
     // Add "Array" before do check for reserved worlds.
@@ -532,7 +547,7 @@ string FieldName(const FieldDescriptor* field) {
       result += "_p";
     }
   }
-  return SanitizeNameForObjC(result, "_p", NULL);
+  return SanitizeNameForObjC("", result, "_p", NULL);
 }
 
 string FieldNameCapitalized(const FieldDescriptor* field) {

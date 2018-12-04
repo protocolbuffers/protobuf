@@ -92,10 +92,21 @@
 #endif
 
 /**
- * Attribute used for Objective-C proto interface deprecations.
+ * Attribute used for Objective-C proto interface deprecations without messages.
  **/
 #ifndef GPB_DEPRECATED
 #define GPB_DEPRECATED __attribute__((deprecated))
+#endif
+
+/**
+ * Attribute used for Objective-C proto interface deprecations with messages.
+ **/
+#ifndef GPB_DEPRECATED_MSG
+#if __has_extension(attribute_deprecated_with_message)
+#define GPB_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
+#else
+#define GPB_DEPRECATED_MSG(msg) __attribute__((deprecated))
+#endif
 #endif
 
 // If property name starts with init we need to annotate it to get past ARC.
