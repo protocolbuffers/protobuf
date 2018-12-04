@@ -24,8 +24,6 @@ config_setting(
     values = {"define": "protobuf_zlib=true"},
 )
 
-ZLIB_COPTS = ["-DHAVE_ZLIB"]
-
 ZLIB_DEPS = ["//external:zlib"]
 
 ################################################################################
@@ -55,6 +53,7 @@ COPTS = select({
     ":msvc" : MSVC_COPTS,
     "//conditions:default": [
         "-DHAVE_PTHREAD",
+        "-DHAVE_ZLIB",
         "-Wall",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
@@ -63,9 +62,6 @@ COPTS = select({
         "-Wno-writable-strings",
         "-Wno-write-strings",
     ],
-}) + select({
-    ":zlib": ZLIB_COPTS,
-    "//conditions:default": [],
 })
 
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
@@ -134,8 +130,8 @@ cc_library(
 )
 
 PROTOBUF_DEPS = select({
-    ":zlib": ZLIB_DEPS,
-    "//conditions:default": [],
+    ":msvc": [],
+    "//conditions:default": ZLIB_DEPS,
 })
 
 cc_library(
