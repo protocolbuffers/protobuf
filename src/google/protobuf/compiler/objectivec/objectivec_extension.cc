@@ -61,6 +61,11 @@ ExtensionGenerator::~ExtensionGenerator() {}
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
   std::map<string, string> vars;
   vars["method_name"] = method_name_;
+  if (IsRetainedName(method_name_)) {
+    vars["storage_attribute"] = " NS_RETURNS_NOT_RETAINED";
+  } else {
+    vars["storage_attribute"] = "";
+  }
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
     vars["comments"] = BuildCommentsString(location, true);
@@ -72,7 +77,7 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
   vars["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
   printer->Print(vars,
                  "$comments$"
-                 "+ (GPBExtensionDescriptor *)$method_name$$deprecated_attribute$;\n");
+                 "+ (GPBExtensionDescriptor *)$method_name$$storage_attribute$$deprecated_attribute$;\n");
 }
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
