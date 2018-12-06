@@ -92,15 +92,22 @@ PHP_PROTO_OBJECT_FREE_END
 PHP_PROTO_OBJECT_DTOR_START(MessageHeader, message)
 PHP_PROTO_OBJECT_DTOR_END
 
-// Define object create method.
-PHP_PROTO_OBJECT_CREATE_START(MessageHeader, message)
-// Because php call this create func before calling the sub-message's
-// constructor defined in PHP, it's possible that the decriptor of this class
-// hasn't been added to descritpor pool (when the class is first
-// instantiated). In that case, we will defer the initialization of the custom
-// data to the parent Message's constructor, which will be called by
-// sub-message's constructors after the descriptor has been added.
-PHP_PROTO_OBJECT_CREATE_END(MessageHeader, message)
+// // Define object create method.
+// PHP_PROTO_OBJECT_CREATE_START(MessageHeader, message)
+// // Because php call this create func before calling the sub-message's
+// // constructor defined in PHP, it's possible that the decriptor of this class
+// // hasn't been added to descritpor pool (when the class is first
+// // instantiated). In that case, we will defer the initialization of the custom
+// // data to the parent Message's constructor, which will be called by
+// // sub-message's constructors after the descriptor has been added.
+// PHP_PROTO_OBJECT_CREATE_END(MessageHeader, message)
+
+  static zend_object* message_create(zend_class_entry* ce TSRMLS_DC) {
+    PHP_PROTO_ALLOC_CLASS_OBJECT(MessageHeader, ce);                                
+    zend_object_std_init(&intern->std, ce TSRMLS_CC);                      
+    object_properties_init(&intern->std, ce);
+    PHP_PROTO_FREE_CLASS_OBJECT(MessageHeader, message_free, message_handlers);
+  }
 
 // Init class entry.
 PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\Message",
@@ -1231,7 +1238,8 @@ zend_class_entry* any_type;
 
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Any", Any, any)
-  zend_class_implements(any_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(any_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(any_type, message_type TSRMLS_CC);
   zend_declare_property_string(any_type, "type_url", strlen("type_url"),
                                "" ,ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_string(any_type, "value", strlen("value"),
@@ -1421,7 +1429,8 @@ zend_class_entry* duration_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Duration",
                                  Duration, duration)
-  zend_class_implements(duration_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(duration_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(duration_type, message_type TSRMLS_CC);
   zend_declare_property_long(duration_type, "seconds", strlen("seconds"),
                              0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_long(duration_type, "nanos", strlen("nanos"),
@@ -1457,7 +1466,8 @@ zend_class_entry* timestamp_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Timestamp",
                                  Timestamp, timestamp)
-  zend_class_implements(timestamp_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(timestamp_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(timestamp_type, message_type TSRMLS_CC);
   zend_declare_property_long(timestamp_type, "seconds", strlen("seconds"),
                              0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_long(timestamp_type, "nanos", strlen("nanos"),
@@ -1650,7 +1660,8 @@ zend_class_entry* api_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Api",
                                  Api, api)
-  zend_class_implements(api_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(api_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(api_type, message_type TSRMLS_CC);
   zend_declare_property_null(api_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(api_type, "methods", strlen("methods"),
@@ -1697,7 +1708,8 @@ zend_class_entry* bool_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\BoolValue",
                                  BoolValue, bool_value)
-  zend_class_implements(bool_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(bool_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(bool_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(bool_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -1726,7 +1738,8 @@ zend_class_entry* bytes_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\BytesValue",
                                  BytesValue, bytes_value)
-  zend_class_implements(bytes_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(bytes_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(bytes_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(bytes_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -1755,7 +1768,8 @@ zend_class_entry* double_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\DoubleValue",
                                  DoubleValue, double_value)
-  zend_class_implements(double_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(double_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(double_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(double_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -1792,7 +1806,8 @@ zend_class_entry* enum_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Enum",
                                  Enum, enum)
-  zend_class_implements(enum_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(enum_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(enum_type, message_type TSRMLS_CC);
   zend_declare_property_null(enum_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(enum_type, "enumvalue", strlen("enumvalue"),
@@ -1837,7 +1852,8 @@ zend_class_entry* enum_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\EnumValue",
                                  EnumValue, enum_value)
-  zend_class_implements(enum_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(enum_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(enum_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(enum_value_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(enum_value_type, "number", strlen("number"),
@@ -1872,7 +1888,8 @@ zend_class_entry* field_mask_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\FieldMask",
                                  FieldMask, field_mask)
-  zend_class_implements(field_mask_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(field_mask_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(field_mask_type, message_type TSRMLS_CC);
   zend_declare_property_null(field_mask_type, "paths", strlen("paths"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -1919,7 +1936,8 @@ zend_class_entry* field_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Field",
                                  Field, field)
-  zend_class_implements(field_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(field_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(field_type, message_type TSRMLS_CC);
   zend_declare_property_null(field_type, "kind", strlen("kind"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(field_type, "cardinality", strlen("cardinality"),
@@ -1975,7 +1993,8 @@ zend_class_entry* float_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\FloatValue",
                                  FloatValue, float_value)
-  zend_class_implements(float_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(float_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(float_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(float_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2002,7 +2021,8 @@ zend_class_entry* empty_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\GPBEmpty",
                                  GPBEmpty, empty)
-  zend_class_implements(empty_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(empty_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(empty_type, message_type TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
 PHP_METHOD(GPBEmpty, __construct) {
@@ -2028,7 +2048,8 @@ zend_class_entry* int32_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Int32Value",
                                  Int32Value, int32_value)
-  zend_class_implements(int32_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(int32_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(int32_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(int32_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2057,7 +2078,8 @@ zend_class_entry* int64_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Int64Value",
                                  Int64Value, int64_value)
-  zend_class_implements(int64_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(int64_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(int64_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(int64_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2086,7 +2108,8 @@ zend_class_entry* list_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\ListValue",
                                  ListValue, list_value)
-  zend_class_implements(list_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(list_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(list_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(list_value_type, "values", strlen("values"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2127,7 +2150,8 @@ zend_class_entry* method_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Method",
                                  Method, method)
-  zend_class_implements(method_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(method_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(method_type, message_type TSRMLS_CC);
   zend_declare_property_null(method_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(method_type, "request_type_url", strlen("request_type_url"),
@@ -2176,7 +2200,8 @@ zend_class_entry* mixin_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Mixin",
                                  Mixin, mixin)
-  zend_class_implements(mixin_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(mixin_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(mixin_type, message_type TSRMLS_CC);
   zend_declare_property_null(mixin_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(mixin_type, "root", strlen("root"),
@@ -2210,7 +2235,8 @@ zend_class_entry* option_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Option",
                                  Option, option)
-  zend_class_implements(option_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(option_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(option_type, message_type TSRMLS_CC);
   zend_declare_property_null(option_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(option_type, "value", strlen("value"),
@@ -2242,7 +2268,8 @@ zend_class_entry* source_context_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\SourceContext",
                                  SourceContext, source_context)
-  zend_class_implements(source_context_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(source_context_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(source_context_type, message_type TSRMLS_CC);
   zend_declare_property_null(source_context_type, "file_name", strlen("file_name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2271,7 +2298,8 @@ zend_class_entry* string_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\StringValue",
                                  StringValue, string_value)
-  zend_class_implements(string_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(string_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(string_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(string_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2300,7 +2328,8 @@ zend_class_entry* struct_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Struct",
                                  Struct, struct)
-  zend_class_implements(struct_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(struct_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(struct_type, message_type TSRMLS_CC);
   zend_declare_property_null(struct_type, "fields", strlen("fields"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2339,7 +2368,8 @@ zend_class_entry* type_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Type",
                                  Type, type)
-  zend_class_implements(type_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(type_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(type_type, message_type TSRMLS_CC);
   zend_declare_property_null(type_type, "name", strlen("name"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
   zend_declare_property_null(type_type, "fields", strlen("fields"),
@@ -2383,7 +2413,8 @@ zend_class_entry* u_int32_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\UInt32Value",
                                  UInt32Value, u_int32_value)
-  zend_class_implements(u_int32_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(u_int32_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(u_int32_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(u_int32_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2412,7 +2443,8 @@ zend_class_entry* u_int64_value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\UInt64Value",
                                  UInt64Value, u_int64_value)
-  zend_class_implements(u_int64_value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(u_int64_value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(u_int64_value_type, message_type TSRMLS_CC);
   zend_declare_property_null(u_int64_value_type, "value", strlen("value"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
@@ -2452,7 +2484,8 @@ zend_class_entry* value_type;
 // Init class entry.
 PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Value",
                                  Value, value)
-  zend_class_implements(value_type TSRMLS_CC, 1, message_type);
+  // zend_class_implements(value_type TSRMLS_CC, 1, message_type);
+  zend_do_inheritance(value_type, message_type TSRMLS_CC);
   zend_declare_property_null(value_type, "kind", strlen("kind"),
                              ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
