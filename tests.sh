@@ -302,34 +302,25 @@ generate_php_test_proto() {
 
 use_php() {
   VERSION=$1
-  PHP=`which php`
-  PHP_CONFIG=`which php-config`
-  PHPIZE=`which phpize`
-  ln -sfn "/usr/local/php-${VERSION}/bin/php" $PHP
-  ln -sfn "/usr/local/php-${VERSION}/bin/php-config" $PHP_CONFIG
-  ln -sfn "/usr/local/php-${VERSION}/bin/phpize" $PHPIZE
+  export PATH=/usr/local/php-${VERSION}/bin:$PATH
+  export CPLUS_INCLUDE_PATH=/usr/local/php-${VERSION}/include/php/main:/usr/local/php-${VERSION}/include/php/:$CPLUS_INCLUDE_PATH
+  export C_INCLUDE_PATH=/usr/local/php-${VERSION}/include/php/main:/usr/local/php-${VERSION}/include/php/:$C_INCLUDE_PATH
   generate_php_test_proto
 }
 
 use_php_zts() {
   VERSION=$1
-  PHP=`which php`
-  PHP_CONFIG=`which php-config`
-  PHPIZE=`which phpize`
-  ln -sfn "/usr/local/php-${VERSION}-zts/bin/php" $PHP
-  ln -sfn "/usr/local/php-${VERSION}-zts/bin/php-config" $PHP_CONFIG
-  ln -sfn "/usr/local/php-${VERSION}-zts/bin/phpize" $PHPIZE
+  export PATH=/usr/local/php-${VERSION}-zts/bin:$PATH
+  export CPLUS_INCLUDE_PATH=/usr/local/php-${VERSION}-zts/include/php/main:/usr/local/php-${VERSION}-zts/include/php/:$CPLUS_INCLUDE_PATH
+  export C_INCLUDE_PATH=/usr/local/php-${VERSION}-zts/include/php/main:/usr/local/php-${VERSION}-zts/include/php/:$C_INCLUDE_PATH
   generate_php_test_proto
 }
 
 use_php_bc() {
   VERSION=$1
-  PHP=`which php`
-  PHP_CONFIG=`which php-config`
-  PHPIZE=`which phpize`
-  ln -sfn "/usr/local/php-${VERSION}-bc/bin/php" $PHP
-  ln -sfn "/usr/local/php-${VERSION}-bc/bin/php-config" $PHP_CONFIG
-  ln -sfn "/usr/local/php-${VERSION}-bc/bin/phpize" $PHPIZE
+  export PATH=/usr/local/php-${VERSION}-bc/bin:$PATH
+  export CPLUS_INCLUDE_PATH=/usr/local/php-${VERSION}-bc/include/php/main:/usr/local/php-${VERSION}-bc/include/php/:$CPLUS_INCLUDE_PATH
+  export C_INCLUDE_PATH=/usr/local/php-${VERSION}-bc/include/php/main:/usr/local/php-${VERSION}-bc/include/php/:$C_INCLUDE_PATH
   generate_php_test_proto
 }
 

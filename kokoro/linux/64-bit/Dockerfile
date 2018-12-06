@@ -187,21 +187,33 @@ RUN cd /tmp && \
   ln -sfn /usr/local/php-5.5/bin/php /usr/bin/php && \
   ln -sfn /usr/local/php-5.5/bin/php-config /usr/bin/php-config && \
   ln -sfn /usr/local/php-5.5/bin/phpize /usr/bin/phpize && \
+  wget -O phpunit https://phar.phpunit.de/phpunit-4.phar && \
+  chmod +x phpunit && \
+  mv phpunit /usr/local/php-5.5/bin && \
   composer install && \
   mv vendor /usr/local/vendor-5.5 && \
   ln -sfn /usr/local/php-5.6/bin/php /usr/bin/php && \
   ln -sfn /usr/local/php-5.6/bin/php-config /usr/bin/php-config && \
   ln -sfn /usr/local/php-5.6/bin/phpize /usr/bin/phpize && \
+  wget -O phpunit https://phar.phpunit.de/phpunit-5.phar && \
+  chmod +x phpunit && \
+  mv phpunit /usr/local/php-5.6/bin && \
   composer install && \
   mv vendor /usr/local/vendor-5.6 && \
   ln -sfn /usr/local/php-7.0/bin/php /usr/bin/php && \
   ln -sfn /usr/local/php-7.0/bin/php-config /usr/bin/php-config && \
   ln -sfn /usr/local/php-7.0/bin/phpize /usr/bin/phpize && \
+  wget -O phpunit https://phar.phpunit.de/phpunit-6.phar && \
+  chmod +x phpunit && \
+  mv phpunit /usr/local/php-7.0/bin && \
   composer install && \
   mv vendor /usr/local/vendor-7.0 && \
   ln -sfn /usr/local/php-7.1/bin/php /usr/bin/php && \
   ln -sfn /usr/local/php-7.1/bin/php-config /usr/bin/php-config && \
   ln -sfn /usr/local/php-7.1/bin/phpize /usr/bin/phpize && \
+  wget -O phpunit https://phar.phpunit.de/phpunit-7.phar && \
+  chmod +x phpunit && \
+  mv phpunit /usr/local/php-7.1/bin && \
   composer install && \
   mv vendor /usr/local/vendor-7.1
 
