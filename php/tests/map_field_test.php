@@ -7,7 +7,7 @@ use Google\Protobuf\Internal\MapField;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 
-class MapFieldTest extends PHPUnit_Framework_TestCase {
+class MapFieldTest extends \PHPUnit\Framework\TestCase {
 
     #########################################################
     # Test int32 field.
