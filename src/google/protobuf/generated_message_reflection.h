@@ -670,8 +670,11 @@ class GeneratedMessageReflection final : public Reflection {
                                       Message* sub_message,
                                       const FieldDescriptor* field) const;
 
-  internal::MapFieldBase* MapData(Message* message,
-                                  const FieldDescriptor* field) const override;
+  internal::MapFieldBase* MutableMapData(
+      Message* message, const FieldDescriptor* field) const override;
+
+  const internal::MapFieldBase* GetMapData(
+      const Message& message, const FieldDescriptor* field) const override;
 
   friend inline  // inline so nobody can call this function.
       void
