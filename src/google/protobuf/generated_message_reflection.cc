@@ -2224,12 +2224,20 @@ void* GeneratedMessageReflection::RepeatedFieldData(
   }
 }
 
-MapFieldBase* GeneratedMessageReflection::MapData(
+MapFieldBase* GeneratedMessageReflection::MutableMapData(
     Message* message, const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field),
               "GetMapData",
               "Field is not a map field.");
   return MutableRaw<MapFieldBase>(message, field);
+}
+
+const MapFieldBase* GeneratedMessageReflection::GetMapData(
+    const Message& message, const FieldDescriptor* field) const {
+  USAGE_CHECK(IsMapFieldInApi(field),
+              "GetMapData",
+              "Field is not a map field.");
+  return &(GetRaw<MapFieldBase>(message, field));
 }
 
 namespace {

@@ -346,11 +346,11 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
   const Message* other_message = other_map->message;
   const Reflection* reflection = message->GetReflection();
   const Reflection* other_reflection = other_message->GetReflection();
-  internal::MapFieldBase* field = reflection->MapData(
+  internal::MapFieldBase* field = reflection->MutableMapData(
       message, self->parent_field_descriptor);
-  internal::MapFieldBase* other_field =
-      other_reflection->MapData(const_cast<Message*>(other_message),
-                                self->parent_field_descriptor);
+  const internal::MapFieldBase* other_field =
+      other_reflection->GetMapData(*other_message,
+                                   self->parent_field_descriptor);
   field->MergeFrom(*other_field);
   self->version++;
   Py_RETURN_NONE;
