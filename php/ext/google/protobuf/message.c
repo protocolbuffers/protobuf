@@ -92,22 +92,15 @@ PHP_PROTO_OBJECT_FREE_END
 PHP_PROTO_OBJECT_DTOR_START(MessageHeader, message)
 PHP_PROTO_OBJECT_DTOR_END
 
-// // Define object create method.
-// PHP_PROTO_OBJECT_CREATE_START(MessageHeader, message)
-// // Because php call this create func before calling the sub-message's
-// // constructor defined in PHP, it's possible that the decriptor of this class
-// // hasn't been added to descritpor pool (when the class is first
-// // instantiated). In that case, we will defer the initialization of the custom
-// // data to the parent Message's constructor, which will be called by
-// // sub-message's constructors after the descriptor has been added.
-// PHP_PROTO_OBJECT_CREATE_END(MessageHeader, message)
-
-  static zend_object* message_create(zend_class_entry* ce TSRMLS_DC) {
-    PHP_PROTO_ALLOC_CLASS_OBJECT(MessageHeader, ce);                                
-    zend_object_std_init(&intern->std, ce TSRMLS_CC);                      
-    object_properties_init(&intern->std, ce);
-    PHP_PROTO_FREE_CLASS_OBJECT(MessageHeader, message_free, message_handlers);
-  }
+// Define object create method.
+PHP_PROTO_OBJECT_CREATE_START(MessageHeader, message)
+// Because php call this create func before calling the sub-message's
+// constructor defined in PHP, it's possible that the decriptor of this class
+// hasn't been added to descritpor pool (when the class is first
+// instantiated). In that case, we will defer the initialization of the custom
+// data to the parent Message's constructor, which will be called by
+// sub-message's constructors after the descriptor has been added.
+PHP_PROTO_OBJECT_CREATE_END(MessageHeader, message)
 
 // Init class entry.
 PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\Message",
