@@ -34,6 +34,7 @@
 #include <time.h>
 
 #include "upb/json/parser.h"
+#include "upb/pb/encoder.h"
 
 #define UPB_JSON_MAX_DEPTH 64
 
@@ -75,6 +76,9 @@ static void end_structvalue_object(upb_json_parser *p);
 static void start_object(upb_json_parser *p);
 static void end_object(upb_json_parser *p);
 
+static void start_any_object(upb_json_parser *p, const char *ptr);
+static bool end_any_object(upb_json_parser *p, const char *ptr);
+
 static bool start_subobject(upb_json_parser *p);
 static void end_subobject(upb_json_parser *p);
 
@@ -82,7 +86,88 @@ static void start_member(upb_json_parser *p);
 static void end_member(upb_json_parser *p);
 static bool end_membername(upb_json_parser *p);
 
+static void start_any_member(upb_json_parser *p, const char *ptr);
+static void end_any_member(upb_json_parser *p, const char *ptr);
+static bool end_any_membername(upb_json_parser *p);
+
+size_t parse(void *closure, const void *hd, const char *buf, size_t size,
+             const upb_bufhandle *handle);
+static bool end(void *closure, const void *hd);
+
 static const char eof_ch = 'e';
+
+/* stringsink */
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} upb_stringsink;
+
+
+static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
+  upb_stringsink *sink = _sink;
+  sink->len = 0;
+  UPB_UNUSED(hd);
+  UPB_UNUSED(size_hint);
+  return sink;
+}
+
+static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                                size_t len, const upb_bufhandle *handle) {
+  upb_stringsink *sink = _sink;
+  size_t new_size = sink->size;
+
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+
+  while (sink->len + len > new_size) {
+    new_size *= 2;
+  }
+
+  if (new_size != sink->size) {
+    sink->ptr = realloc(sink->ptr, new_size);
+    sink->size = new_size;
+  }
+
+  memcpy(sink->ptr + sink->len, ptr, len);
+  sink->len += len;
+
+  return len;
+}
+
+void upb_stringsink_init(upb_stringsink *sink) {
+  upb_byteshandler_init(&sink->handler);
+  upb_byteshandler_setstartstr(&sink->handler, stringsink_start, NULL);
+  upb_byteshandler_setstring(&sink->handler, stringsink_string, NULL);
+
+  upb_bytessink_reset(&sink->sink, &sink->handler, sink);
+
+  sink->size = 32;
+  sink->ptr = malloc(sink->size);
+  sink->len = 0;
+}
+
+void upb_stringsink_uninit(upb_stringsink *sink) { free(sink->ptr); }
+
+typedef struct {
+  /* For encoding Any value field in binary format. */
+  const upb_handlers *encoder_handlers;
+  upb_pb_encoder *encoder;
+  upb_stringsink stringsink;
+
+  /* For decoding Any value field in json format. */
+  upb_json_parsermethod *parser_method;
+  upb_json_parser* parser;
+  upb_sink sink;
+
+  /* Mark the range of uninterpreted values in json input before type url. */
+  const char *before_type_url_start;
+  const char *before_type_url_end;
+
+  /* Mark the range of uninterpreted values in json input after type url. */
+  const char *after_type_url_start;
+} upb_jsonparser_any_frame;
 
 typedef struct {
   upb_sink sink;
@@ -111,6 +196,15 @@ typedef struct {
    * because |f| is the field in the *current* message (i.e., the map-entry
    * message itself), not the parent's field that leads to this map. */
   const upb_fielddef *mapfield;
+
+  /* We are in an Any message context. This flag is set when parsing the Any
+   * message and indicates to all field parsers (subobjects, strings, numbers,
+   * and bools) that the parsed field should be serialized as binary data or
+   * cached (type url not found yet). */
+  bool is_any;
+
+  /* The type of packed message in Any. */
+  upb_jsonparser_any_frame *any_frame;
 
   /* True if the field to be parsed is unknown. */
   bool is_unknown_field;
@@ -152,6 +246,9 @@ struct upb_json_parser {
   /* Intermediate result of parsing a unicode escape sequence. */
   uint32_t digit;
 
+  /* For resolve type url in Any. */
+  const upb_symtab *symtab;
+
   /* Whether to proceed if unknown field is met. */
   bool ignore_json_unknown;
 
@@ -174,6 +271,84 @@ struct upb_json_parsermethod {
 };
 
 #define PARSER_CHECK_RETURN(x) if (!(x)) return false
+
+static void json_parser_any_frame_reset(upb_jsonparser_any_frame *frame) {
+  frame->encoder_handlers = NULL;
+  frame->encoder = NULL;
+  frame->parser_method = NULL;
+  frame->parser = NULL;
+  frame->before_type_url_start = NULL;
+  frame->before_type_url_end = NULL;
+  frame->after_type_url_start = NULL;
+}
+
+static void json_parser_any_frame_set_payload_type(
+    upb_json_parser *p,
+    upb_jsonparser_any_frame *frame,
+    const upb_msgdef *payload_type) {
+  /* Initialize encoder. */
+  frame->encoder_handlers =
+      upb_pb_encoder_newhandlers(payload_type, &frame->encoder_handlers);
+  upb_stringsink_init(&frame->stringsink);
+  frame->encoder =
+      upb_pb_encoder_create(
+          p->env, frame->encoder_handlers,
+          &frame->stringsink.sink);
+
+  /* Initialize parser. */
+  frame->parser_method =
+      upb_json_parsermethod_new(payload_type, &frame->parser_method);
+  upb_sink_reset(&frame->sink, frame->encoder_handlers, frame->encoder);
+  frame->parser =
+      upb_json_parser_create(p->env, frame->parser_method, p->symtab,
+                             &frame->sink, p->ignore_json_unknown);
+}
+
+static void json_parser_any_frame_free(upb_jsonparser_any_frame *frame) {
+  upb_handlers_unref(frame->encoder_handlers,
+                     &frame->encoder_handlers);
+  upb_json_parsermethod_unref(frame->parser_method,
+                              &frame->parser_method);
+  upb_stringsink_uninit(&frame->stringsink);
+}
+
+static bool json_parser_any_frame_has_type_url(
+  upb_jsonparser_any_frame *frame) {
+  return frame->encoder != NULL;
+}
+
+static bool json_parser_any_frame_has_value_before_type_url(
+  upb_jsonparser_any_frame *frame) {
+  return frame->before_type_url_start != frame->before_type_url_end;
+}
+
+static bool json_parser_any_frame_has_value_after_type_url(
+  upb_jsonparser_any_frame *frame) {
+  return frame->after_type_url_start != NULL;
+}
+
+static bool json_parser_any_frame_has_value(
+  upb_jsonparser_any_frame *frame) {
+  return json_parser_any_frame_has_value_before_type_url(frame) ||
+         json_parser_any_frame_has_value_after_type_url(frame);
+}
+
+static void json_parser_any_frame_set_before_type_url_end(
+    upb_jsonparser_any_frame *frame,
+    const char *ptr) {
+  if (frame->encoder == NULL) {
+    frame->before_type_url_end = ptr;
+  }
+}
+
+static void json_parser_any_frame_set_after_type_url_start_once(
+    upb_jsonparser_any_frame *frame,
+    const char *ptr) {
+  if (json_parser_any_frame_has_type_url(frame) &&
+      frame->after_type_url_start == NULL) {
+    frame->after_type_url_start = ptr;
+  }
+}
 
 /* Used to signal that a capture has been suspended. */
 static char suspend_capture;
@@ -978,6 +1153,11 @@ static bool end_null(upb_json_parser *p) {
   return true;
 }
 
+static bool start_any_stringval(upb_json_parser *p) {
+  multipart_startaccum(p);
+  return true;
+}
+
 static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
     if (is_string_wrapper_object(p)) {
@@ -1013,6 +1193,10 @@ static bool start_stringval(upb_json_parser *p) {
     return true;
   }
 
+  if (p->top->is_any) {
+    return start_any_stringval(p);
+  }
+
   if (upb_fielddef_isstring(p->top->f)) {
     upb_jsonparser_frame *inner;
     upb_selector_t sel;
@@ -1029,6 +1213,8 @@ static bool start_stringval(upb_json_parser *p) {
     inner->name_table = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_any = false;
+    inner->any_frame = NULL;
     inner->is_unknown_field = false;
     p->top = inner;
 
@@ -1060,6 +1246,50 @@ static bool start_stringval(upb_json_parser *p) {
   }
 }
 
+static bool end_any_stringval(upb_json_parser *p) {
+  size_t len;
+  const char *buf = accumulate_getptr(p, &len);
+
+  /* Set type_url */
+  upb_selector_t sel;
+  upb_jsonparser_frame *inner;
+  if (!check_stack(p)) return false;
+  inner = p->top + 1;
+
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+  upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
+  upb_sink_putstring(&inner->sink, sel, buf, len, NULL);
+  sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+  upb_sink_endstr(&inner->sink, sel);
+
+  multipart_end(p);
+
+  /* Resolve type url */
+  if (strncmp(buf, "type.googleapis.com/", 20) == 0 && len > 20) {
+    const upb_msgdef *payload_type = NULL;
+    buf += 20;
+    len -= 20;
+
+    payload_type = upb_symtab_lookupmsg2(p->symtab, buf, len);
+    if (payload_type == NULL) {
+      upb_status_seterrf(
+          &p->status, "Cannot find packed type: %.*s\n", (int)len, buf);
+      upb_env_reporterror(p->env, &p->status);
+      return false;
+    }
+
+    json_parser_any_frame_set_payload_type(p, p->top->any_frame, payload_type);
+    
+    return true;
+  } else {
+    upb_status_seterrf(
+        &p->status, "Invalid type url: %.*s\n", (int)len, buf);
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+}
+
 static bool end_stringval_nontop(upb_json_parser *p) {
   bool ok = true;
 
@@ -1067,6 +1297,10 @@ static bool end_stringval_nontop(upb_json_parser *p) {
       is_wellknown_msg(p, UPB_WELLKNOWN_DURATION)) {
     multipart_end(p);
     return true;
+  }
+
+  if (p->top->is_any) {
+    return end_any_stringval(p);
   }
 
   if (p->top->f == NULL) {
@@ -1521,6 +1755,8 @@ static bool handle_mapentry(upb_json_parser *p) {
   inner->name_table = NULL;
   inner->mapfield = mapfield;
   inner->is_map = false;
+  inner->is_any = false;
+  inner->any_frame = NULL;
   inner->is_unknown_field = false;
 
   /* Don't set this to true *yet* -- we reuse parsing handlers below to push
@@ -1557,7 +1793,9 @@ static bool end_membername(upb_json_parser *p) {
     return true;
   }
 
-  if (p->top->is_map) {
+  if (p->top->is_any) {
+    return end_any_membername(p);
+  } else if (p->top->is_map) {
     return handle_mapentry(p);
   } else {
     size_t len;
@@ -1578,6 +1816,23 @@ static bool end_membername(upb_json_parser *p) {
       upb_env_reporterror(p->env, &p->status);
       return false;
     }
+  }
+}
+
+static bool end_any_membername(upb_json_parser *p) {
+  size_t len;
+  const char *buf = accumulate_getptr(p, &len);
+  upb_value v;
+
+  if (len == 5 && strncmp(buf, "@type", len) == 0) {
+    upb_strtable_lookup2(p->top->name_table, "type_url", 8, &v);
+    p->top->f = upb_value_getconstptr(v);
+    multipart_end(p);
+    return true;
+  } else {
+    p->top->is_unknown_field = true;
+    multipart_end(p);
+    return true;
   }
 }
 
@@ -1605,6 +1860,16 @@ static void end_member(upb_json_parser *p) {
   p->top->is_unknown_field = false;
 }
 
+static void start_any_member(upb_json_parser *p, const char *ptr) {
+  start_member(p);
+  json_parser_any_frame_set_after_type_url_start_once(p->top->any_frame, ptr);
+}
+
+static void end_any_member(upb_json_parser *p, const char *ptr) {
+  json_parser_any_frame_set_before_type_url_end(p->top->any_frame, ptr);
+  end_member(p);
+}
+
 static bool start_subobject(upb_json_parser *p) {
   if (p->top->is_unknown_field) {
     upb_jsonparser_frame *inner;
@@ -1615,6 +1880,8 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_any = false;
+    inner->any_frame = NULL;
     inner->is_unknown_field = false;
     p->top = inner;
     return true;
@@ -1637,6 +1904,8 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = true;
     inner->is_mapentry = false;
+    inner->is_any = false;
+    inner->any_frame = NULL;
     inner->is_unknown_field = false;
     p->top = inner;
 
@@ -1660,6 +1929,16 @@ static bool start_subobject(upb_json_parser *p) {
     inner->is_mapentry = false;
     inner->is_unknown_field = false;
     p->top = inner;
+
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_ANY)) {
+      p->top->is_any = true;
+      p->top->any_frame =
+          upb_env_malloc(p->env, sizeof(upb_jsonparser_any_frame));
+      json_parser_any_frame_reset(p->top->any_frame);
+    } else {
+      p->top->is_any = false;
+      p->top->any_frame = NULL;
+    }
 
     return true;
   } else {
@@ -1765,6 +2044,8 @@ static bool start_array(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_any = false;
+    inner->any_frame = NULL;
     inner->is_unknown_field = true;
     p->top = inner;
 
@@ -1789,6 +2070,8 @@ static bool start_array(upb_json_parser *p) {
   inner->f = p->top->f;
   inner->is_map = false;
   inner->is_mapentry = false;
+  inner->is_any = false;
+  inner->any_frame = NULL;
   inner->is_unknown_field = false;
   p->top = inner;
 
@@ -1839,6 +2122,129 @@ static void end_object(upb_json_parser *p) {
       upb_env_reporterror(p->env, &status);
     }
   }
+}
+
+static void start_any_object(upb_json_parser *p, const char *ptr) {
+  start_object(p);
+  p->top->any_frame->before_type_url_start = ptr;
+  p->top->any_frame->before_type_url_end = ptr;
+}
+
+static bool end_any_object(upb_json_parser *p, const char *ptr) {
+  const char *value_membername = "value";
+  bool is_well_known_packed = false;
+  const char *packed_end = ptr + 1;
+  upb_selector_t sel;
+  upb_jsonparser_frame *inner;
+
+  if (json_parser_any_frame_has_value(p->top->any_frame) &&
+      !json_parser_any_frame_has_type_url(p->top->any_frame)) {
+    upb_status_seterrmsg(&p->status, "No valid type url");
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  /* Well known types data is represented as value field. */
+  if (upb_msgdef_wellknowntype(p->top->any_frame->parser->top->m) !=
+          UPB_WELLKNOWN_UNSPECIFIED) {
+    is_well_known_packed = true;
+
+    if (json_parser_any_frame_has_value_before_type_url(p->top->any_frame)) {
+      p->top->any_frame->before_type_url_start =
+          memchr(p->top->any_frame->before_type_url_start, ':',
+                 p->top->any_frame->before_type_url_end -
+                 p->top->any_frame->before_type_url_start);
+      if (p->top->any_frame->before_type_url_start == NULL) {
+        upb_status_seterrmsg(&p->status, "invalid data for well known type.");
+        upb_env_reporterror(p->env, &p->status);
+        return false;
+      }
+      p->top->any_frame->before_type_url_start++;
+    }
+
+    if (json_parser_any_frame_has_value_after_type_url(p->top->any_frame)) {
+      p->top->any_frame->after_type_url_start =
+          memchr(p->top->any_frame->after_type_url_start, ':',
+                 (ptr + 1) -
+                 p->top->any_frame->after_type_url_start);
+      if (p->top->any_frame->after_type_url_start == NULL) {
+        upb_status_seterrmsg(&p->status, "Invalid data for well known type.");
+        upb_env_reporterror(p->env, &p->status);
+        return false;
+      }
+      p->top->any_frame->after_type_url_start++;
+      packed_end = ptr;
+    }
+  }
+
+  if (json_parser_any_frame_has_value_before_type_url(p->top->any_frame)) {
+    if (!parse(p->top->any_frame->parser, NULL,
+               p->top->any_frame->before_type_url_start,
+               p->top->any_frame->before_type_url_end -
+               p->top->any_frame->before_type_url_start, NULL)) {
+      return false;
+    }
+  } else {
+    if (!is_well_known_packed) {
+      if (!parse(p->top->any_frame->parser, NULL, "{", 1, NULL)) {
+        return false;
+      }
+    }
+  }
+
+  if (json_parser_any_frame_has_value_before_type_url(p->top->any_frame) &&
+      json_parser_any_frame_has_value_after_type_url(p->top->any_frame)) {
+    if (!parse(p->top->any_frame->parser, NULL, ",", 1, NULL)) {
+      return false;
+    }
+  }
+
+  if (json_parser_any_frame_has_value_after_type_url(p->top->any_frame)) {
+    if (!parse(p->top->any_frame->parser, NULL,
+               p->top->any_frame->after_type_url_start,
+               packed_end - p->top->any_frame->after_type_url_start, NULL)) {
+      return false;
+    }
+  } else {
+    if (!is_well_known_packed) {
+      if (!parse(p->top->any_frame->parser, NULL, "}", 1, NULL)) {
+        return false;
+      }
+    }
+  }
+
+  if (!end(p->top->any_frame->parser, NULL)) {
+    return false;
+  }
+
+  p->top->is_any = false;
+
+  /* Set value */
+  start_member(p);
+  capture_begin(p, value_membername);
+  capture_end(p, value_membername + 5);
+  end_membername(p);
+
+  if (!check_stack(p)) return false;
+  inner = p->top + 1;
+
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+  upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
+  upb_sink_putstring(&inner->sink, sel, p->top->any_frame->stringsink.ptr,
+                     p->top->any_frame->stringsink.len, NULL);
+  sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+  upb_sink_endstr(&inner->sink, sel);
+
+  end_member(p);
+
+  end_object(p);
+
+  /* Deallocate any parse frame. */
+  json_parser_any_frame_free(p->top->any_frame);
+  upb_env_free(p->env, p->top->any_frame);
+
+  return true;
 }
 
 static bool is_string_wrapper(const upb_msgdef *m) {
@@ -2095,20 +2501,43 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
   member =
     ws
     string
-      >{ start_member(parser); }
+      >{
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
+          start_any_member(parser, p);
+        } else {
+          start_member(parser);
+        }
+      }
       @{ CHECK_RETURN_TOP(end_membername(parser)); }
     ws ":" ws
     value2
-      %{ end_member(parser); }
+      %{
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
+          end_any_member(parser, p);
+        } else {
+          end_member(parser);
+        }
+      }
     ws;
 
   object =
-    "{"
-    ws
-      >{ start_object(parser); }
+    ("{" ws)
+      >{
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
+          start_any_object(parser, p);
+        } else {
+          start_object(parser);
+        }
+      }
     (member ("," member)*)?
     "}"
-      %{ end_object(parser); }
+      >{
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
+          CHECK_RETURN_TOP(end_any_object(parser, p));
+        } else {
+          end_object(parser);
+        }
+      }
     ;
 
   element = ws value2 ws;
@@ -2210,6 +2639,8 @@ static void json_parser_reset(upb_json_parser *p) {
   p->top->f = NULL;
   p->top->is_map = false;
   p->top->is_mapentry = false;
+  p->top->is_any = false;
+  p->top->any_frame = NULL;
   p->top->is_unknown_field = false;
 
   /* Emit Ragel initialization of the parser. */
@@ -2300,6 +2731,7 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
 
 upb_json_parser *upb_json_parser_create(upb_env *env,
                                         const upb_json_parsermethod *method,
+                                        const upb_symtab* symtab,
                                         upb_sink *output,
                                         bool ignore_json_unknown) {
 #ifndef NDEBUG
@@ -2318,7 +2750,17 @@ upb_json_parser *upb_json_parser_create(upb_env *env,
   json_parser_reset(p);
   upb_sink_reset(&p->top->sink, output->handlers, output->closure);
   p->top->m = upb_handlers_msgdef(output->handlers);
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_ANY)) {
+    p->top->is_any = true;
+    p->top->any_frame =
+        upb_env_malloc(p->env, sizeof(upb_jsonparser_any_frame));
+    json_parser_any_frame_reset(p->top->any_frame);
+  } else {
+    p->top->is_any = false;
+    p->top->any_frame = NULL;
+  }
   set_name_table(p, p->top);
+  p->symtab = symtab;
 
   p->ignore_json_unknown = ignore_json_unknown;
 

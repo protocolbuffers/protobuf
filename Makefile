@@ -191,6 +191,9 @@ endif
 upb_json_SRCS = \
   upb/json/parser.c \
   upb/json/printer.c \
+  upb/pb/encoder.c \
+  upb/pb/varint.c \
+  upb/sink.c \
 
 # Ideally we could keep this uncommented, but Git apparently sometimes skews
 # timestamps slightly at "clone" time, which makes "Make" think that it needs

@@ -116,7 +116,8 @@ add_library(upb_json
   upb/json/parser.h
   upb/json/printer.h)
 target_link_libraries(upb_json
-  upb)
+  upb
+  upb_pb)
 add_library(upb_cc_bindings INTERFACE)
 target_link_libraries(upb_cc_bindings INTERFACE
   upb)

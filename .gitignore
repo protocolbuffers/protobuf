@@ -1,3 +1,4 @@
 *.s??
 obj/
 lib/
+bazel-*
