@@ -104,19 +104,6 @@ const upb_enumdef *lupb_enumdef_check(lua_State *L, int narg);
 const upb_fielddef *lupb_fielddef_check(lua_State *L, int narg);
 upb_symtab *lupb_symtab_check(lua_State *L, int narg);
 
-void lupb_refcounted_pushnewrapper(lua_State *L, const upb_refcounted *obj,
-                                   const char *type, const void *ref_donor);
-bool lupb_def_pushwrapper(lua_State *L, const upb_def *def,
-                          const void *ref_donor);
-void lupb_def_pushnewrapper(lua_State *L, const upb_def *def,
-                            const void *ref_donor);
-void lupb_msgdef_pushwrapper(lua_State *L, const upb_msgdef *m,
-                             const void *ref_donor);
-void lupb_symtab_pushwrapper(lua_State *L, const upb_symtab *s,
-                             const void *ref_donor);
-void lupb_symtab_pushnewrapper(lua_State *L, const upb_symtab *s,
-                               const void *ref_donor);
-
 void lupb_def_registertypes(lua_State *L);
 
 int lupb_refcounted_gc(lua_State *L);

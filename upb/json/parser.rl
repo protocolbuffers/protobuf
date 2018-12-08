@@ -2185,7 +2185,7 @@ error:
   return p - buf;
 }
 
-bool end(void *closure, const void *hd) {
+static bool end(void *closure, const void *hd) {
   upb_json_parser *parser = closure;
 
   /* Prevent compile warning on unused static constants. */

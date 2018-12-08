@@ -6,24 +6,39 @@
 #include <string.h>
 #include "upb/handlers.h"
 
+typedef struct {
+  size_t len;
+  char str[1];  /* Null-terminated string data follows. */
+} str_t;
+
+static str_t *newstr(const char *data, size_t len) {
+  str_t *ret = upb_gmalloc(sizeof(*ret) + len);
+  if (!ret) return NULL;
+  ret->len = len;
+  memcpy(ret->str, data, len);
+  ret->str[len] = '\0';
+  return ret;
+}
+
+static void freestr(str_t *s) { upb_gfree(s); }
+
 struct upb_fielddef {
+  const char *full_name;
   union {
     int64_t sint;
     uint64_t uint;
     double dbl;
     float flt;
-    void *bytes;
+    str_t *str;
   } defaultval;
   const upb_msgdef *msgdef;
+  const upb_oneofdef *oneof;
   union {
     const upb_msgdef *msgdef;
-    const upb_msgdef *enumdef;
-    char *unresolved_name;
+    const upb_enumdef *enumdef;
   } sub;
-  union {
-    const upb_oneofdef *oneof;
-  }
   uint32_t number_;
+  uint32_t index_;
   uint32_t selector_base;  /* Used to index into a upb::Handlers table. */
   bool is_extension_;
   bool lazy_;
@@ -41,17 +56,19 @@ struct upb_msgdef {
   upb_fielddef **fields;
   upb_oneofdef **oneofs;
 
-  /* Tables for looking up fields by number and name.  Built lazily. */
-  upb_inttable *itof;  /* int to field */
-  upb_strtable *ntof;  /* name to field/oneof */
+  /* Tables for looking up fields by number and name. */
+  upb_inttable itof;
+  upb_strtable ntof;
 
   /* Is this a map-entry message? */
   bool map_entry;
+  upb_wellknowntype_t well_known_type;
 
   /* TODO(haberman): proper extension ranges (there can be multiple). */
 };
 
 struct upb_enumdef {
+  const char *full_name;
   upb_strtable ntoi;
   upb_inttable iton;
   int32_t defaultval;
@@ -60,8 +77,9 @@ struct upb_enumdef {
 struct upb_oneofdef {
   const upb_msgdef *parent;
   const char *name;
-  upb_strtable *ntof;
-  upb_inttable *itof;
+  uint32_t index;
+  upb_strtable ntof;
+  upb_inttable itof;
 };
 
 struct upb_symtab {
@@ -79,22 +97,6 @@ struct upb_filedef {
   upb_inttable defs;
   upb_inttable deps;
 };
-
-typedef struct {
-  size_t len;
-  char str[1];  /* Null-terminated string data follows. */
-} str_t;
-
-static str_t *newstr(const char *data, size_t len) {
-  str_t *ret = upb_gmalloc(sizeof(*ret) + len);
-  if (!ret) return NULL;
-  ret->len = len;
-  memcpy(ret->str, data, len);
-  ret->str[len] = '\0';
-  return ret;
-}
-
-static void freestr(str_t *s) { upb_gfree(s); }
 
 /* isalpha() etc. from <ctype.h> are locale-dependent, which we don't want. */
 static bool upb_isbetween(char c, char low, char high) {
@@ -137,6 +139,20 @@ static bool upb_isident(const char *str, size_t len, bool full, upb_status *s) {
     }
   }
   return !start;
+}
+
+static const char *shortname(const char *fullname) {
+  const char *p;
+
+  if (fullname == NULL) {
+    return NULL;
+  } else if ((p = strrchr(fullname, '.')) == NULL) {
+    /* No '.' in the name, return the full string. */
+    return fullname;
+  } else {
+    /* Return one past the last '.'. */
+    return p + 1;
+  }
 }
 
 static bool upb_isoneof(const void *def) {
@@ -381,11 +397,11 @@ bool upb_enumdef_init(upb_enumdef *e) {
 #endif
 
 const char *upb_enumdef_fullname(const upb_enumdef *e) {
-  return upb_def_fullname(upb_enumdef_upcast(e));
+  return e->full_name;
 }
 
 const char *upb_enumdef_name(const upb_enumdef *e) {
-  return upb_def_name(upb_enumdef_upcast(e));
+  return shortname(e->full_name);
 }
 
 #if 0
@@ -483,8 +499,8 @@ int32_t upb_enum_iter_number(upb_enum_iter *iter) {
 
 static void upb_fielddef_init_default(upb_fielddef *f);
 
-const char *upb_fielddef_fullname(const upb_fielddef *e) {
-  return upb_def_fullname(upb_fielddef_upcast(e));
+const char *upb_fielddef_fullname(const upb_fielddef *f) {
+  return f->full_name;
 }
 
 #if 0
@@ -519,6 +535,41 @@ upb_fielddef *upb_fielddef_new(const void *o) {
 #endif
 
 upb_fieldtype_t upb_fielddef_type(const upb_fielddef *f) {
+  switch (f->type_) {
+    case UPB_DESCRIPTOR_TYPE_DOUBLE:
+      return UPB_TYPE_DOUBLE;
+    case UPB_DESCRIPTOR_TYPE_FLOAT:
+      return UPB_TYPE_FLOAT;
+    case UPB_DESCRIPTOR_TYPE_INT64:
+    case UPB_DESCRIPTOR_TYPE_SINT64:
+    case UPB_DESCRIPTOR_TYPE_SFIXED64:
+      return UPB_TYPE_INT64;
+    case UPB_DESCRIPTOR_TYPE_INT32:
+    case UPB_DESCRIPTOR_TYPE_SFIXED32:
+    case UPB_DESCRIPTOR_TYPE_SINT32:
+      return UPB_TYPE_INT32;
+    case UPB_DESCRIPTOR_TYPE_UINT64:
+    case UPB_DESCRIPTOR_TYPE_FIXED64:
+      return UPB_TYPE_UINT64;
+    case UPB_DESCRIPTOR_TYPE_UINT32:
+    case UPB_DESCRIPTOR_TYPE_FIXED32:
+      return UPB_TYPE_UINT32;
+    case UPB_DESCRIPTOR_TYPE_ENUM:
+      return UPB_TYPE_ENUM;
+    case UPB_DESCRIPTOR_TYPE_BOOL:
+      return UPB_TYPE_BOOL;
+    case UPB_DESCRIPTOR_TYPE_STRING:
+      return UPB_TYPE_STRING;
+    case UPB_DESCRIPTOR_TYPE_BYTES:
+      return UPB_TYPE_BYTES;
+    case UPB_DESCRIPTOR_TYPE_GROUP:
+    case UPB_DESCRIPTOR_TYPE_MESSAGE:
+      return UPB_TYPE_MESSAGE;
+  }
+  UPB_UNREACHABLE();
+}
+
+upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
   return f->type_;
 }
 
@@ -528,14 +579,6 @@ uint32_t upb_fielddef_index(const upb_fielddef *f) {
 
 upb_label_t upb_fielddef_label(const upb_fielddef *f) {
   return f->label_;
-}
-
-upb_intfmt_t upb_fielddef_intfmt(const upb_fielddef *f) {
-  return f->intfmt;
-}
-
-bool upb_fielddef_istagdelim(const upb_fielddef *f) {
-  return f->tagdelim;
 }
 
 uint32_t upb_fielddef_number(const upb_fielddef *f) {
@@ -555,7 +598,7 @@ bool upb_fielddef_packed(const upb_fielddef *f) {
 }
 
 const char *upb_fielddef_name(const upb_fielddef *f) {
-  return upb_def_fullname(upb_fielddef_upcast(f));
+  return f->full_name;
 }
 
 size_t upb_fielddef_getjsonname(const upb_fielddef *f, char *buf, size_t len) {
@@ -646,28 +689,15 @@ double upb_fielddef_defaultdouble(const upb_fielddef *f) {
 }
 
 const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len) {
-  UPB_ASSERT(f->type_is_set_);
+  str_t *str = f->defaultval.str;
   UPB_ASSERT(upb_fielddef_type(f) == UPB_TYPE_STRING ||
          upb_fielddef_type(f) == UPB_TYPE_BYTES ||
          upb_fielddef_type(f) == UPB_TYPE_ENUM);
-
-  if (upb_fielddef_type(f) == UPB_TYPE_ENUM) {
-    const char *ret = enumdefaultstr(f);
-    UPB_ASSERT(ret);
-    /* Enum defaults can't have embedded NULLs. */
-    if (len) *len = strlen(ret);
-    return ret;
-  }
-
-  if (f->default_is_string) {
-    str_t *str = f->defaultval.bytes;
-    if (len) *len = str->len;
-    return str->str;
-  }
-
-  return NULL;
+  if (len) *len = str->len;
+  return str->str;
 }
 
+#if 0
 static void upb_fielddef_init_default(upb_fielddef *f) {
   f->default_is_string = false;
   switch (upb_fielddef_type(f)) {
@@ -691,27 +721,19 @@ static void upb_fielddef_init_default(upb_fielddef *f) {
       break;
   }
 }
+#endif
 
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f) {
-  const upb_def *def = upb_fielddef_subdef(f);
-  return def ? upb_dyncast_msgdef(def) : NULL;
+  UPB_ASSERT(upb_fielddef_type(f) == UPB_TYPE_MESSAGE);
+  return f->sub.msgdef;
 }
 
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f) {
-  const upb_def *def = upb_fielddef_subdef(f);
-  return def ? upb_dyncast_enumdef(def) : NULL;
+  UPB_ASSERT(upb_fielddef_type(f) == UPB_TYPE_ENUM);
+  return f->sub.enumdef;
 }
 
-const char *upb_fielddef_subdefname(const upb_fielddef *f) {
-  if (f->subdef_is_symbolic) {
-    return f->sub.name;
-  } else if (f->sub.def) {
-    return upb_def_fullname(f->sub.def);
-  } else {
-    return NULL;
-  }
-}
-
+#if 0
 bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s) {
   if (upb_fielddef_containingtype(f)) {
     upb_status_seterrmsg(
@@ -724,10 +746,6 @@ bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s) {
   }
   f->number_ = number;
   return true;
-}
-
-upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
-  return f->type;
 }
 
 static bool upb_subdef_typecheck(upb_fielddef *f, const upb_def *subdef,
@@ -745,6 +763,7 @@ static bool upb_subdef_typecheck(upb_fielddef *f, const upb_def *subdef,
     return false;
   }
 }
+#endif
 
 bool upb_fielddef_issubmsg(const upb_fielddef *f) {
   return upb_fielddef_type(f) == UPB_TYPE_MESSAGE;
@@ -768,16 +787,6 @@ bool upb_fielddef_ismap(const upb_fielddef *f) {
          upb_msgdef_mapentry(upb_fielddef_msgsubdef(f));
 }
 
-bool upb_fielddef_haspresence(const upb_fielddef *f) {
-  if (upb_fielddef_isseq(f)) return false;
-  if (upb_fielddef_issubmsg(f)) return true;
-
-  /* Primitive field: return true unless there is a message that specifies
-   * presence should not exist. */
-  if (f->msg_is_symbolic || !f->msg.def) return true;
-  return f->msg.def->syntax == UPB_SYNTAX_PROTO2;
-}
-
 bool upb_fielddef_hassubdef(const upb_fielddef *f) {
   return upb_fielddef_issubmsg(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM;
 }
@@ -797,17 +806,18 @@ bool upb_fielddef_checkdescriptortype(int32_t type) {
 /* upb_msgdef *****************************************************************/
 
 const char *upb_msgdef_fullname(const upb_msgdef *m) {
-  return upb_def_fullname(upb_msgdef_upcast(m));
+  return m->full_name;
 }
 
 const char *upb_msgdef_name(const upb_msgdef *m) {
-  return upb_def_name(upb_msgdef_upcast(m));
+  return shortname(m->full_name);
 }
 
 upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m) {
-  return m->syntax;
+  return m->file->syntax;
 }
 
+#if 0
 /* Helper: check that the field |f| is safe to add to msgdef |m|. Set an error
  * on status |s| and return false if not. */
 static bool check_field_add(const upb_msgdef *m, const upb_fielddef *f,
@@ -905,6 +915,7 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
 
   return true;
 }
+#endif
 
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
   upb_value val;
@@ -1035,12 +1046,10 @@ uint32_t upb_oneofdef_index(const upb_oneofdef *o) {
   return o->index;
 }
 
+#if 0
 bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
                            const void *ref_donor,
                            upb_status *s) {
-  UPB_ASSERT(!upb_oneofdef_isfrozen(o));
-  UPB_ASSERT(!o->parent || !upb_msgdef_isfrozen(o->parent));
-
   /* This method is idempotent. Check if |f| is already part of this oneofdef
    * and return immediately if so. */
   if (upb_fielddef_containingoneof(f) == o) {
@@ -1108,6 +1117,7 @@ bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
 
   return true;
 }
+#endif
 
 const upb_fielddef *upb_oneofdef_ntof(const upb_oneofdef *o,
                                       const char *name, size_t length) {

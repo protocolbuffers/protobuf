@@ -532,7 +532,7 @@ UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
 }
 UPB_INLINE void *upb_arena_realloc(upb_arena *a, void *ptr, size_t oldsize,
                                    size_t size) {
-  return upb_malloc(upb_arena_realloc(a), ptr, oldsize, size);
+  return upb_realloc(upb_arena_alloc(a), ptr, oldsize, size);
 }
 
 UPB_END_EXTERN_C
@@ -803,6 +803,30 @@ typedef enum {
   UPB_SYNTAX_PROTO2 = 2,
   UPB_SYNTAX_PROTO3 = 3
 } upb_syntax_t;
+
+/* All the different kind of well known type messages. For simplicity of check,
+ * number wrappers and string wrappers are grouped together. Make sure the
+ * order and merber of these groups are not changed.
+ */
+typedef enum {
+  UPB_WELLKNOWN_UNSPECIFIED,
+  UPB_WELLKNOWN_DURATION,
+  UPB_WELLKNOWN_TIMESTAMP,
+  /* number wrappers */
+  UPB_WELLKNOWN_DOUBLEVALUE,
+  UPB_WELLKNOWN_FLOATVALUE,
+  UPB_WELLKNOWN_INT64VALUE,
+  UPB_WELLKNOWN_UINT64VALUE,
+  UPB_WELLKNOWN_INT32VALUE,
+  UPB_WELLKNOWN_UINT32VALUE,
+  /* string wrappers */
+  UPB_WELLKNOWN_STRINGVALUE,
+  UPB_WELLKNOWN_BYTESVALUE,
+  UPB_WELLKNOWN_BOOLVALUE,
+  UPB_WELLKNOWN_VALUE,
+  UPB_WELLKNOWN_LISTVALUE,
+  UPB_WELLKNOWN_STRUCT
+} upb_wellknowntype_t;
 
 extern const uint8_t upb_desctype_to_fieldtype[];
 

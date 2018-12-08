@@ -60,7 +60,6 @@ class upb::FieldDef {
  public:
   typedef upb_fieldtype_t Type;
   typedef upb_label_t Label;
-  typedef upb_intfmt_t IntegerFormat;
   typedef upb_descriptortype_t DescriptorType;
 
   const char* full_name() const;
@@ -142,20 +141,6 @@ class upb::FieldDef {
   bool IsPrimitive() const;
   bool IsMap() const;
 
-  /* Returns whether this field explicitly represents presence.
-   *
-   * For proto2 messages: Returns true for any scalar (non-repeated) field.
-   * For proto3 messages: Returns true for scalar submessage or oneof fields. */
-  bool HasPresence() const;
-
-  /* How integers are encoded.  Only meaningful for integer types.
-   * Defaults to UPB_INTFMT_VARIABLE, and is reset when "type" changes. */
-  IntegerFormat integer_format() const;
-
-  /* Whether a submessage field is tag-delimited or not (if false, then
-   * length-delimited).  May only be set when type() == UPB_TYPE_MESSAGE. */
-  bool is_tag_delimited() const;
-
   /* Returns the non-string default value for this fielddef, which may either
    * be something the client set explicitly or the "default default" (0 for
    * numbers, empty for strings).  The field's type indicates the type of the
@@ -174,42 +159,11 @@ class upb::FieldDef {
    * will be stored in *len. */
   const char *default_string(size_t* len) const;
 
-  /* For frozen UPB_TYPE_ENUM fields, enum defaults can always be read as either
-   * string or int32, and both of these methods will always return true.
-   *
-   * For mutable UPB_TYPE_ENUM fields, the story is a bit more complicated.
-   * Enum defaults are unusual. They can be specified either as string or int32,
-   * but to be valid the enum must have that value as a member.  And if no
-   * default is specified, the "default default" comes from the EnumDef.
-   *
-   * We allow reading the default as either an int32 or a string, but only if
-   * we have a meaningful value to report.  We have a meaningful value if it was
-   * set explicitly, or if we could get the "default default" from the EnumDef.
-   * Also if you explicitly set the name and we find the number in the EnumDef */
-  bool EnumHasStringDefault() const;
-  bool EnumHasInt32Default() const;
-
-  /* Submessage and enum fields must reference a "subdef", which is the
-   * upb::MessageDef or upb::EnumDef that defines their type.  Note that when
-   * the FieldDef is mutable it may not have a subdef *yet*, but this function
-   * still returns true to indicate that the field's type requires a subdef. */
-  bool HasSubDef() const;
-
   /* Returns the enum or submessage def for this field, if any.  The field's
    * type must match (ie. you may only call enum_subdef() for fields where
-   * type() == UPB_TYPE_ENUM).  Returns NULL if the subdef has not been set or
-   * is currently set symbolically. */
+   * type() == UPB_TYPE_ENUM). */
   const EnumDef* enum_subdef() const;
   const MessageDef* message_subdef() const;
-
-  /* Returns the generic subdef for this field.  Requires that HasSubDef() (ie.
-   * only works for UPB_TYPE_ENUM and UPB_TYPE_MESSAGE fields). */
-  const Def* subdef() const;
-
-  /* Returns the symbolic name of the subdef.  If the subdef is currently set
-   * unresolved (ie. set symbolically) returns the symbolic name.  If it has
-   * been resolved to a specific subdef, returns the name from that subdef. */
-  const char* subdef_name() const;
 
  private:
   UPB_DISALLOW_POD_OPS(FieldDef, upb::FieldDef)
@@ -234,15 +188,12 @@ size_t upb_fielddef_getjsonname(const upb_fielddef *f, char *buf, size_t len);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
 upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
-upb_intfmt_t upb_fielddef_intfmt(const upb_fielddef *f);
 uint32_t upb_fielddef_index(const upb_fielddef *f);
-bool upb_fielddef_istagdelim(const upb_fielddef *f);
 bool upb_fielddef_issubmsg(const upb_fielddef *f);
 bool upb_fielddef_isstring(const upb_fielddef *f);
 bool upb_fielddef_isseq(const upb_fielddef *f);
 bool upb_fielddef_isprimitive(const upb_fielddef *f);
 bool upb_fielddef_ismap(const upb_fielddef *f);
-bool upb_fielddef_haspresence(const upb_fielddef *f);
 int64_t upb_fielddef_defaultint64(const upb_fielddef *f);
 int32_t upb_fielddef_defaultint32(const upb_fielddef *f);
 uint64_t upb_fielddef_defaultuint64(const upb_fielddef *f);
@@ -254,7 +205,6 @@ const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len);
 bool upb_fielddef_hassubdef(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
-const char *upb_fielddef_subdefname(const upb_fielddef *f);
 
 /* Internal only. */
 uint32_t upb_fielddef_selectorbase(const upb_fielddef *f);
@@ -861,16 +811,11 @@ inline double FieldDef::default_double() const {
 inline const char* FieldDef::default_string(size_t* len) const {
   return upb_fielddef_defaultstr(this, len);
 }
-inline bool FieldDef::HasSubDef() const { return upb_fielddef_hassubdef(this); }
-inline const Def* FieldDef::subdef() const { return upb_fielddef_subdef(this); }
 inline const MessageDef *FieldDef::message_subdef() const {
   return upb_fielddef_msgsubdef(this);
 }
 inline const EnumDef *FieldDef::enum_subdef() const {
   return upb_fielddef_enumsubdef(this);
-}
-inline const char* FieldDef::subdef_name() const {
-  return upb_fielddef_subdefname(this);
 }
 
 inline const char *MessageDef::full_name() const {

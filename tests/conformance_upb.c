@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "conformance.upb.h"
-#include "google/protobuf/test_messages_proto3.upb.h"
+#include "conformance/conformance.upb.h"
+#include "src/google/protobuf/test_messages_proto3.upb.h"
 
 int test_count = 0;
 

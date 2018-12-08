@@ -381,7 +381,7 @@ local function write_h_file(filedef, append)
     local msgname = to_cident(msg:full_name())
     append('extern const upb_msglayout %s_msginit;\n', msgname)
     append('UPB_INLINE %s *%s_new(upb_arena *arena) {\n', msgname, msgname)
-    append('  return upb_msg_new(&%s_msginit, arena);\n', msgname)
+    append('  return (%s *)upb_msg_new(&%s_msginit, arena);\n', msgname, msgname)
     append('}\n')
     append('UPB_INLINE %s *%s_parsenew(upb_stringview buf, upb_arena *arena) {\n',
            msgname, msgname)
