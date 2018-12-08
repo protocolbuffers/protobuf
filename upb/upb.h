@@ -810,6 +810,7 @@ typedef enum {
  */
 typedef enum {
   UPB_WELLKNOWN_UNSPECIFIED,
+  UPB_WELLKNOWN_ANY,
   UPB_WELLKNOWN_DURATION,
   UPB_WELLKNOWN_TIMESTAMP,
   /* number wrappers */

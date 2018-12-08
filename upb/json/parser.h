@@ -29,7 +29,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the parser library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_JSON_PARSER_SIZE 4672
+#define UPB_JSON_PARSER_SIZE 5712
 
 #ifdef __cplusplus
 
@@ -38,6 +38,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
 class upb::json::Parser {
  public:
   static Parser* Create(Environment* env, const ParserMethod* method,
+                        const SymbolTable* symtab,
                         Sink* output, bool ignore_json_unknown);
 
   BytesSink* input();
@@ -72,6 +73,7 @@ UPB_BEGIN_EXTERN_C
 
 upb_json_parser* upb_json_parser_create(upb_env* e,
                                         const upb_json_parsermethod* m,
+                                        const upb_symtab* symtab,
                                         upb_sink* output,
                                         bool ignore_json_unknown);
 upb_bytessink *upb_json_parser_input(upb_json_parser *p);
@@ -93,8 +95,10 @@ UPB_END_EXTERN_C
 namespace upb {
 namespace json {
 inline Parser* Parser::Create(Environment* env, const ParserMethod* method,
+                              const SymbolTable* symtab,
                               Sink* output, bool ignore_json_unknown) {
-  return upb_json_parser_create(env, method, output, ignore_json_unknown);
+  return upb_json_parser_create(
+      env, method, symtab, output, ignore_json_unknown);
 }
 inline BytesSink* Parser::input() {
   return upb_json_parser_input(this);

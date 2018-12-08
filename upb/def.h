@@ -705,6 +705,8 @@ UPB_BEGIN_EXTERN_C
 upb_symtab *upb_symtab_new();
 void upb_symtab_free(upb_symtab* s);
 const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
+const upb_msgdef *upb_symtab_lookupmsg2(
+    const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 bool upb_symtab_addfile(upb_symtab *s, const char *buf, size_t len,
                         upb_status *status);

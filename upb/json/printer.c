@@ -1073,6 +1073,8 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
   switch (upb_msgdef_wellknowntype(md)) {
     case UPB_WELLKNOWN_UNSPECIFIED:
       break;
+    case UPB_WELLKNOWN_ANY:
+      break;
     case UPB_WELLKNOWN_DURATION:
       printer_sethandlers_duration(closure, h);
       return;

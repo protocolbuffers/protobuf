@@ -294,7 +294,9 @@ static void assign_msg_wellknowntype(upb_msgdef *m) {
     m->well_known_type = UPB_WELLKNOWN_UNSPECIFIED;
     return;
   }
-  if (!strcmp(name, "google.protobuf.Duration")) {
+  if (!strcmp(name, "google.protobuf.Any")) {
+    m->well_known_type = UPB_WELLKNOWN_ANY;
+  } else if (!strcmp(name, "google.protobuf.Duration")) {
     m->well_known_type = UPB_WELLKNOWN_DURATION;
   } else if (!strcmp(name, "google.protobuf.Timestamp")) {
     m->well_known_type = UPB_WELLKNOWN_TIMESTAMP;
@@ -1269,6 +1271,14 @@ const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym) {
 const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym) {
   upb_value v;
   upb_def *def = upb_strtable_lookup(&s->symtab, sym, &v) ?
+      upb_value_getptr(v) : NULL;
+  return def ? upb_dyncast_msgdef(def) : NULL;
+}
+
+const upb_msgdef *upb_symtab_lookupmsg2(const upb_symtab *s, const char *sym,
+                                        size_t len) {
+  upb_value v;
+  upb_def *def = upb_strtable_lookup2(&s->symtab, sym, len, &v) ?
       upb_value_getptr(v) : NULL;
   return def ? upb_dyncast_msgdef(def) : NULL;
 }
