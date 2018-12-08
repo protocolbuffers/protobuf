@@ -118,11 +118,9 @@ add_library(upb_json
 target_link_libraries(upb_json
   upb
   upb_pb)
-add_library(upb_cc_bindings
-  upb/bindings/stdc++/string.h)
-target_link_libraries(upb_cc_bindings
+add_library(upb_cc_bindings INTERFACE)
+target_link_libraries(upb_cc_bindings INTERFACE
   upb)
-set_target_properties(upb_cc_bindings PROPERTIES LINKER_LANGUAGE CXX)
 add_library(upb_test
   tests/testmain.cc
   tests/test_util.h

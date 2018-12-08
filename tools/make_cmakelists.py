@@ -22,11 +22,12 @@ class BuildFileFunctions(object):
   def __init__(self, converter):
     self.converter = converter
 
-  def _add_deps(self, kwargs):
+  def _add_deps(self, kwargs, keyword=""):
     if "deps" not in kwargs:
       return
-    self.converter.toplevel += "target_link_libraries(%s\n  %s)\n" % (
+    self.converter.toplevel += "target_link_libraries(%s%s\n  %s)\n" % (
         kwargs["name"],
+        keyword,
         "\n  ".join(StripColons(kwargs["deps"]))
     )
 
@@ -37,17 +38,22 @@ class BuildFileFunctions(object):
     if kwargs["name"] == "amalgamation" or kwargs["name"] == "upbc_generator":
       return
     files = kwargs.get("srcs", []) + kwargs.get("hdrs", [])
-    self.converter.toplevel += "add_library(%s\n  %s)\n" % (
-        kwargs["name"],
-        "\n  ".join(files)
-    )
-    self._add_deps(kwargs)
 
-    # CMake wants to know if each library is C or C++.
-    # If there are only .h files, it can't infer. Assume C++.
-    if not filter(IsSourceFile, files):
-      line = "set_target_properties(%s PROPERTIES LINKER_LANGUAGE CXX)\n"
-      self.converter.toplevel += line % (kwargs["name"])
+    if filter(IsSourceFile, files):
+      # Has sources, make this a normal library.
+      self.converter.toplevel += "add_library(%s\n  %s)\n" % (
+          kwargs["name"],
+          "\n  ".join(files)
+      )
+      self._add_deps(kwargs)
+    else:
+      # Header-only library, have to do a couple things differently.
+      # For some info, see:
+      #  http://mariobadr.com/creating-a-header-only-library-with-cmake.html
+      self.converter.toplevel += "add_library(%s INTERFACE)\n" % (
+          kwargs["name"]
+      )
+      self._add_deps(kwargs, " INTERFACE")
 
   def cc_binary(self, **kwargs):
     pass

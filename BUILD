@@ -410,7 +410,7 @@ cc_binary(
 make_shell_script(
     name = "gen_run_cmake_build",
     out = "run_cmake_build.sh",
-    contents = "mkdir build && cd build && cmake .. && make -j8"
+    contents = "mkdir build && cd build && cmake .. && make -j8 && make test"
 )
 
 sh_test(

@@ -147,7 +147,7 @@ def generated_file_staleness_test(name, outs, generated_pattern):
         srcs = [script_src],
         testonly = 1,
         cmd = "cat $(location " + script_src + ") > $@; " +
-              "sed -i 's|INSERT_FILE_LIST_HERE|" + "\\n  ".join(file_list) + "|' $@",
+              "sed -i.bak -e 's|INSERT_FILE_LIST_HERE|" + "\\\n  ".join(file_list) + "|' $@",
     )
 
     native.py_test(
