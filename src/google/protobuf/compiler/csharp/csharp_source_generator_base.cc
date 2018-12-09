@@ -59,7 +59,7 @@ void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
 }
 
 std::string SourceGeneratorBase::class_access_level() {
-  return this->options()->internal_access ? "internal" : "public";
+  return (IsDescriptorProto(descriptor_) || this->options()->internal_access) ? "internal" : "public";
 }
 
 const Options* SourceGeneratorBase::options() {

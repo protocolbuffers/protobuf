@@ -144,7 +144,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "private pb::UnknownFieldSet _unknownFields;\n");
 
   if (has_extension_ranges_) {
-    printer->Print(vars, "private pb::ExtensionSet<$class_name$> _extensions;\n");
+    if (IsDescriptorProto(descriptor_->file())) {
+      printer->Print(vars, "internal pb::ExtensionSet<$class_name$> _extensions;\n"); // CustomOptions compatibility
+    } else {
+      printer->Print(vars, "private pb::ExtensionSet<$class_name$> _extensions;\n");
+    }
   }
 
   for (int i = 0; i < has_bit_field_count_; i++) {
@@ -182,12 +186,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return Descriptor; }\n"
     "}\n"
     "\n");
-  // CustomOptions property, only for options messages
-  if (IsDescriptorOptionMessage(descriptor_)) {
-    printer->Print(
-      "internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;\n"
-       "\n");
-  }
 
   // Parameterless constructor and partial OnConstruction method.
   WriteGeneratedCodeAttributes(printer);

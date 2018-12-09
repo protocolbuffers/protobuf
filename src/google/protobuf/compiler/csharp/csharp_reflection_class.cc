@@ -295,10 +295,10 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   }
 
   // Extensions
-  if (file_->extension_count() > 0) {
+  if (descriptor->extension_count() > 0) {
     std::vector<std::string> extensions;
-    for (int i = 0; i < file_->extension_count(); i++) {
-      extensions.push_back(GetFullExtensionName(file_->extension(i)));
+    for (int i = 0; i < descriptor->extension_count(); i++) {
+      extensions.push_back(GetFullExtensionName(descriptor->extension(i)));
     }
     printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", JoinStrings(extensions, ", "));
   }
