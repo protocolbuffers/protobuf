@@ -579,7 +579,7 @@ namespace Google.Protobuf
 
         /// <summary>
         /// Reads an embedded message field value from the stream.
-        /// </summary>   
+        /// </summary>
         public void ReadMessage(IMessage builder)
         {
             int length = ReadLength();

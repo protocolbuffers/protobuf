@@ -238,7 +238,15 @@ namespace Google.Protobuf
         public static FieldCodec<T> ForMessage<T>(uint tag, MessageParser<T> parser) where T : class, IMessage<T>
         {
             return new FieldCodec<T>(input => { T message = parser.CreateTemplate(); input.ReadMessage(message); return message; },
-                (output, value) => output.WriteMessage(value), (CodedInputStream i, ref T v) => i.ReadMessage(v),
+                (output, value) => output.WriteMessage(value), (CodedInputStream i, ref T v) => 
+                {
+                    if (v is null)
+                    {
+                        v = parser.CreateTemplate();
+                    }
+
+                    i.ReadMessage(v);
+                },
                 (ref T v, T v2) =>
                 {
                     if (v2 is null)
@@ -267,7 +275,14 @@ namespace Google.Protobuf
         public static FieldCodec<T> ForGroup<T>(uint startTag, uint endTag, MessageParser<T> parser) where T : class, IMessage<T>
         {
             return new FieldCodec<T>(input => { T message = parser.CreateTemplate(); input.ReadGroup(message); return message; },
-                (output, value) => output.WriteGroup(value), (CodedInputStream i, ref T v) => i.ReadGroup(v),
+                (output, value) => output.WriteGroup(value), (CodedInputStream i, ref T v) => {
+                    if (v is null)
+                    {
+                        v = parser.CreateTemplate();
+                    }
+
+                    i.ReadGroup(v);
+                },
                 (ref T v, T v2) =>
                 {
                     if (v2 is null)
@@ -546,6 +561,8 @@ namespace Google.Protobuf
         {
             ValueReader = reader;
             ValueWriter = writer;
+            ValueMerger = inputMerger;
+            FieldMerger = valuesMerger;
             ValueSizeCalculator = sizeCalculator;
             FixedSize = 0;
             Tag = tag;

@@ -62,6 +62,10 @@ namespace Google.Protobuf
             {
                 set = new ExtensionSet<TTarget>();
             }
+            if (set.ValuesByIdentifier.ContainsKey(extension))
+            {
+                return;
+            }
             if (extension.TargetType != typeof(TTarget))
             {
                 throw new ArgumentException("Cannot register extension for wrong target type");
@@ -69,10 +73,6 @@ namespace Google.Protobuf
             if (set.ValuesByNumber.ContainsKey(extension.FieldNumber))
             {
                 throw new ArgumentException("Set already contains an extension with the specified field number");
-            }
-            if (set.ValuesByIdentifier.ContainsKey(extension))
-            {
-                return;
             }
             var value = extension.CreateValue();
             set.ValuesByIdentifier.Add(extension, value);
