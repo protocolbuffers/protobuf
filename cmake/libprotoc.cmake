@@ -151,6 +151,7 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_map_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_message.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_message_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_oneof.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/scc.h
