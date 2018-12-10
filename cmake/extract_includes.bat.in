@@ -99,6 +99,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\status.h" inclu
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\stl_util.h" include\google\protobuf\stubs\stl_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\strutil.h" include\google\protobuf\stubs\strutil.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\stringpiece.h" include\google\protobuf\stubs\stringpiece.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\strutil.h" include\google\protobuf\stubs\strutil.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\template_util.h" include\google\protobuf\stubs\template_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\text_format.h" include\google\protobuf\text_format.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\timestamp.pb.h" include\google\protobuf\timestamp.pb.h
