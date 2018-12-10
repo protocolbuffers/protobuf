@@ -72,6 +72,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\message.h" include\go
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\message_lite.h" include\google\protobuf\message_lite.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\metadata.h" include\google\protobuf\metadata.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\metadata_lite.h" include\google\protobuf\metadata_lite.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\parse_context.h" include\google\protobuf\parse_context.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\port.h" include\google\protobuf\port.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\port_def.inc" include\google\protobuf\port_def.inc
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\port_undef.inc" include\google\protobuf\port_undef.inc
@@ -96,6 +97,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\port.h" include
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\singleton.h" include\google\protobuf\stubs\singleton.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\status.h" include\google\protobuf\stubs\status.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\stl_util.h" include\google\protobuf\stubs\stl_util.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\strutil.h" include\google\protobuf\stubs\strutil.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\stringpiece.h" include\google\protobuf\stubs\stringpiece.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\template_util.h" include\google\protobuf\stubs\template_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\text_format.h" include\google\protobuf\text_format.h
