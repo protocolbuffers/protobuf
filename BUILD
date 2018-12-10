@@ -19,11 +19,6 @@ config_setting(
 # ZLIB configuration
 ################################################################################
 
-config_setting(
-    name = "zlib",
-    values = {"define": "protobuf_zlib=true"},
-)
-
 ZLIB_DEPS = ["//external:zlib"]
 
 ################################################################################
