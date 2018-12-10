@@ -183,7 +183,7 @@ static bool textprinter_putenum(void *closure, const void *handler_data,
                                 int32_t val) {
   upb_textprinter *p = closure;
   const upb_fielddef *f = handler_data;
-  const upb_enumdef *enum_def = upb_downcast_enumdef(upb_fielddef_subdef(f));
+  const upb_enumdef *enum_def = upb_fielddef_enumsubdef(f);
   const char *label = upb_enumdef_iton(enum_def, val);
   if (label) {
     indent(p);
@@ -292,7 +292,7 @@ static void onmreg(const void *c, upb_handlers *h) {
         break;
       case UPB_TYPE_MESSAGE: {
         const char *name =
-            upb_fielddef_istagdelim(f)
+            upb_fielddef_descriptortype(f) == UPB_DESCRIPTOR_TYPE_GROUP
                 ? shortname(upb_msgdef_fullname(upb_fielddef_msgsubdef(f)))
                 : upb_fielddef_name(f);
         upb_handlerattr_sethandlerdata(&attr, name);

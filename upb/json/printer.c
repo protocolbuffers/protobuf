@@ -585,7 +585,7 @@ static void set_enum_hd(upb_handlers *h,
                         bool preserve_fieldnames,
                         upb_handlerattr *attr) {
   EnumHandlerData *hd = upb_gmalloc(sizeof(EnumHandlerData));
-  hd->enumdef = (const upb_enumdef *)upb_fielddef_subdef(f);
+  hd->enumdef = upb_fielddef_enumsubdef(f);
   hd->keyname = newstrpc(h, f, preserve_fieldnames);
   upb_handlers_addcleanup(h, hd, upb_gfree);
   upb_handlerattr_sethandlerdata(attr, hd);

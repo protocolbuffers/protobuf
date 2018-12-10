@@ -27,7 +27,6 @@ cc_library(
         "upb/port_undef.inc",
         "upb/refcounted.c",
         "upb/sink.c",
-        "upb/structdefs.int.h",
         "upb/structs.int.h",
         "upb/table.c",
         "upb/table.int.h",
@@ -430,13 +429,6 @@ proto_library(
 )
 
 genrule(
-    name = "copy_google_descriptor_pb",
-    srcs = [":google_descriptor_proto"],
-    outs = ["generated/google/protobuf/descriptor.pb"],
-    cmd = "cp $< $@",
-)
-
-genrule(
     name = "generate_descriptor_c",
     srcs = ["google/protobuf/descriptor.proto"],
     outs = [
@@ -462,16 +454,16 @@ genrule(
     cmd = "cp $< $@",
 )
 
-genrule(
-    name = "generated_json_test_proto_upbdefs",
-    srcs = ["generated/tests/json/test.proto.pb"],
-    outs = [
-        "generated/tests/json/test.upbdefs.h",
-        "generated/tests/json/test.upbdefs.c",
-    ],
-    cmd = "UPBC=$$PWD/$(location :lua_upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
-    tools = [":lua_upbc"],
-)
+#genrule(
+#    name = "generated_json_test_proto_upbdefs",
+#    srcs = ["generated/tests/json/test.proto.pb"],
+#    outs = [
+#        "generated/tests/json/test.upbdefs.h",
+#        "generated/tests/json/test.upbdefs.c",
+#    ],
+#    cmd = "UPBC=$$PWD/$(location :lua_upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
+#    tools = [":lua_upbc"],
+#)
 
 genrule(
     name = "generate_json_ragel",
@@ -488,11 +480,6 @@ generated_file_staleness_test(
         "google/protobuf/descriptor.upb.c",
         "google/protobuf/descriptor.upb.h",
         "tests/json/test.proto.pb",
-        "tests/json/test.upbdefs.c",
-        "tests/json/test.upbdefs.h",
-        "upb/descriptor/descriptor.pb",
-        "upb/descriptor/descriptor.upbdefs.c",
-        "upb/descriptor/descriptor.upbdefs.h",
         "upb/json/parser.c",
         "upb/pb/compile_decoder_x64.h",
     ],

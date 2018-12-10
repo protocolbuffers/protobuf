@@ -262,10 +262,6 @@ struct upb_json_parsermethod {
 
   upb_byteshandler input_handler_;
 
-  /* Mainly for the purposes of refcounting, so all the fielddefs we point
-   * to stay alive. */
-  const upb_msgdef *msg;
-
   /* Keys are upb_msgdef*, values are upb_strtable (json_name -> fielddef) */
   upb_inttable name_tables;
 };
@@ -1325,8 +1321,7 @@ static bool end_stringval_nontop(upb_json_parser *p) {
 
     case UPB_TYPE_ENUM: {
       /* Resolve enum symbolic name to integer value. */
-      const upb_enumdef *enumdef =
-          (const upb_enumdef*)upb_fielddef_subdef(p->top->f);
+      const upb_enumdef *enumdef = upb_fielddef_enumsubdef(p->top->f);
 
       size_t len;
       const char *buf = accumulate_getptr(p, &len);
@@ -2654,13 +2649,6 @@ static void json_parser_reset(upb_json_parser *p) {
   upb_status_clear(&p->status);
 }
 
-static void visit_json_parsermethod(const upb_refcounted *r,
-                                    upb_refcounted_visit *visit,
-                                    void *closure) {
-  const upb_json_parsermethod *method = (upb_json_parsermethod*)r;
-  visit(r, upb_msgdef_upcast2(method->msg), closure);
-}
-
 static void free_json_parsermethod(upb_refcounted *r) {
   upb_json_parsermethod *method = (upb_json_parsermethod*)r;
 
@@ -2777,13 +2765,9 @@ upb_bytessink *upb_json_parser_input(upb_json_parser *p) {
 
 upb_json_parsermethod *upb_json_parsermethod_new(const upb_msgdef* md,
                                                  const void* owner) {
-  static const struct upb_refcounted_vtbl vtbl = {visit_json_parsermethod,
-                                                  free_json_parsermethod};
+  static const struct upb_refcounted_vtbl vtbl = {NULL, free_json_parsermethod};
   upb_json_parsermethod *ret = upb_gmalloc(sizeof(*ret));
   upb_refcounted_init(upb_json_parsermethod_upcast_mutable(ret), &vtbl, owner);
-
-  ret->msg = md;
-  upb_ref2(md, ret);
 
   upb_byteshandler_init(&ret->input_handler_);
   upb_byteshandler_setstring(&ret->input_handler_, parse, ret);

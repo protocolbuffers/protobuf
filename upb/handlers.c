@@ -84,7 +84,7 @@ static upb_handlers *newformsg(const upb_msgdef *m, const void *owner,
 
     if (!upb_fielddef_issubmsg(f)) continue;
 
-    subdef = upb_downcast_msgdef(upb_fielddef_subdef(f));
+    subdef = upb_fielddef_msgsubdef(f);
     if (upb_inttable_lookupptr(&s->tab, subdef, &subm_ent)) {
       upb_handlers_setsubhandlers(h, f, upb_value_getptr(subm_ent));
     } else {
@@ -392,7 +392,7 @@ bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
   UPB_ASSERT(!upb_handlers_isfrozen(h));
   UPB_ASSERT(upb_fielddef_issubmsg(f));
   if (SUBH_F(h, f)) return false;  /* Can't reset. */
-  if (upb_msgdef_upcast(upb_handlers_msgdef(sub)) != upb_fielddef_subdef(f)) {
+  if (upb_handlers_msgdef(sub) != upb_fielddef_msgsubdef(f)) {
     return false;
   }
   SUBH_F(h, f) = sub;

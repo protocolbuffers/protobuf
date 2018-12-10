@@ -19,6 +19,7 @@
 
 #include "upb/upb.h"
 #include "upb/table.int.h"
+#include "google/protobuf/descriptor.upb.h"
 
 #ifdef __cplusplus
 #include <cstring>
@@ -665,6 +666,13 @@ const char *upb_filedef_package(const upb_filedef *f);
 const char *upb_filedef_phpprefix(const upb_filedef *f);
 const char *upb_filedef_phpnamespace(const upb_filedef *f);
 upb_syntax_t upb_filedef_syntax(const upb_filedef *f);
+int upb_filedef_depcount(const upb_filedef *f);
+int upb_filedef_msgcount(const upb_filedef *f);
+int upb_filedef_enumcount(const upb_filedef *f);
+const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i);
+const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i);
+const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i);
+
 
 UPB_END_EXTERN_C
 
@@ -708,10 +716,9 @@ const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
 const upb_msgdef *upb_symtab_lookupmsg2(
     const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
-bool upb_symtab_addfile(upb_symtab *s, const char *buf, size_t len,
+bool upb_symtab_addfile(upb_symtab *s,
+                        const google_protobuf_FileDescriptorProto* file,
                         upb_status *status);
-bool upb_symtab_addset(upb_symtab *s, const char *buf, size_t len,
-                       upb_status *status);
 
 UPB_END_EXTERN_C
 

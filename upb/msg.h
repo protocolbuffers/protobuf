@@ -22,6 +22,7 @@
 #define UPB_MSG_H_
 
 #include <stdint.h>
+#include <string.h>
 #include "upb/upb.h"
 
 #ifdef __cplusplus
@@ -84,6 +85,14 @@ UPB_INLINE upb_stringview upb_stringview_make(const char *data, size_t size) {
   ret.data = data;
   ret.size = size;
   return ret;
+}
+
+UPB_INLINE upb_stringview upb_stringview_makez(const char *data) {
+  return upb_stringview_make(data, strlen(data));
+}
+
+UPB_INLINE bool upb_stringview_eql(upb_stringview a, upb_stringview b) {
+  return a.size == b.size && memcmp(a.data, b.data, a.size) == 0;
 }
 
 #define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}

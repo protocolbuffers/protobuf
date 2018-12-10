@@ -52,7 +52,8 @@ class upb::json::ParserMethod {
   /* Include base methods from upb::ReferenceCounted. */
   UPB_REFCOUNTED_CPPMETHODS
 
-  /* Returns handlers for parsing according to the specified schema. */
+  /* Returns handlers for parsing according to the specified schema.
+   * The MessageDef must outlive the ParserMethod. */
   static reffed_ptr<const ParserMethod> New(const upb::MessageDef* md);
 
   /* The destination handlers that are statically bound to this method.
