@@ -329,7 +329,7 @@ build_php5.5() {
 
   pushd php
   rm -rf vendor
-  cp -r /usr/local/vendor-5.5 vendor
+  composer update
   wget https://phar.phpunit.de/phpunit-4.8.0.phar -O /usr/bin/phpunit
   phpunit
   popd
@@ -364,7 +364,7 @@ build_php5.6() {
   use_php 5.6
   pushd php
   rm -rf vendor
-  cp -r /usr/local/vendor-5.6 vendor
+  composer update
   wget https://phar.phpunit.de/phpunit-5.7.0.phar -O /usr/bin/phpunit
   phpunit
   popd
@@ -422,7 +422,7 @@ build_php7.0() {
   use_php 7.0
   pushd php
   rm -rf vendor
-  cp -r /usr/local/vendor-7.0 vendor
+  composer update
   wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   phpunit
   popd
@@ -485,7 +485,7 @@ build_php7.1() {
   use_php 7.1
   pushd php
   rm -rf vendor
-  cp -r /usr/local/vendor-7.1 vendor
+  composer update
   wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   phpunit
   popd
