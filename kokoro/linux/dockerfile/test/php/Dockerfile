@@ -164,3 +164,6 @@ RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.phar \
   && chmod +x phpunit \
   && cp phpunit /usr/local/php-7.3 \
   && mv phpunit /usr/local/php-7.3-zts
+
+# Additional config
+RUN composer config -g -- disable-tls true
