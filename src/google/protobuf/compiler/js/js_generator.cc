@@ -2840,6 +2840,21 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
     }
   }
 
+  // Define getter method
+  printer->Print(
+      "Object.defineProperty($class$.prototype, \"$fieldname$\", {\n"
+      "  set: function(value) {\n"
+      "    this.$settername$(value);\n"
+      "  },\n"
+      "  get: function() {\n"
+      "    return this.$gettername$();\n"
+      "  },\n"
+      "});\n\n\n",
+      "class", GetMessagePath(options, field->containing_type()),
+      "fieldname", JSObjectFieldName(options, field),
+      "gettername", "get" + JSGetterName(options, field),
+      "settername", "set" + JSGetterName(options, field));
+
   // Generate clearFoo() method for map fields, repeated fields, and other
   // fields with presence.
   if (field->is_map()) {
