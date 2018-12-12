@@ -44,10 +44,32 @@ update_version "s/^  s.version     = \".*\"/  s.version     = \"$VERSION\"/g" ru
 # Special handling for C++ file, where version is X.Y.Z is transformed to X00Y00Z
 CPP_VERSION=${VERSION_INFO[0]}00${VERSION_INFO[1]}00${VERSION_INFO[2]}
 sed -ri "s/^#define GOOGLE_PROTOBUF_VERSION .*/#define GOOGLE_PROTOBUF_VERSION $CPP_VERSION/g" src/google/protobuf/stubs/common.h
+sed -ri "s/^#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION .*/#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION $CPP_VERSION/g" src/google/protobuf/stubs/common.h
+sed -ri "s/^#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION .*/#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION $CPP_VERSION/g" src/google/protobuf/stubs/common.h
+sed -ri "s/^static const int kMinHeaderVersionForLibrary = .*/static const int kMinHeaderVersionForLibrary = $CPP_VERSION;/g" src/google/protobuf/stubs/common.h
+sed -ri "s/^static const int kMinHeaderVersionForProtoc = .*/static const int kMinHeaderVersionForProtoc = $CPP_VERSION;/g" src/google/protobuf/stubs/common.h
 if [ $(grep -c $CPP_VERSION src/google/protobuf/stubs/common.h) -eq 0 ]; then
-  echo "src/google/protobuf/stubs/common.h version is not updated"
+  echo "src/google/protobuf/stubs/common.h version is not updated successfully. Please verify."
   exit 1
 fi
 
-# Increment PROTOBUF_VERSION by 1.
-sed -ri 's/^(PROTOBUF_VERSION = )([0-9]+)/echo "\1$((\2+1))"/ge' src/Makefile.am
+# Special handling for src/Makefile.am. If version is X.Y.Z, then the
+# version here should be [Y+OFFSET]:Z:0 where OFFSET is some constant
+# such that the version number is always increasing. 
+PROTOBUF_VERSION_OFFSET=11
+EXPECTED_MAJOR_VERSION=3
+if [ ${VERSION_INFO[0]} -ne ${EXPECTED_MAJOR_VERSION} ]; then
+  echo "Major protobuf version has changed. Please update $0 to readjust
+the PROTOBUF_VERSION_OFFSET and EXPECTED_MAJOR_VERSION such that the
+PROTOBUF_VERSION in src/Makefile.am is always increasing.
+  "
+  exit 1
+fi
+
+PROTOBUF_VERSION_INFO=$((${VERSION_INFO[1]} + $PROTOBUF_VERSION_OFFSET)):${VERSION_INFO[2]}:0
+sed -ri "s/^PROTOBUF_VERSION = .*/PROTOBUF_VERSION = $PROTOBUF_VERSION_INFO/g" src/Makefile.am
+
+if [ $(grep -c $PROTOBUF_VERSION_INFO src/Makefile.am) -eq 0 ]; then
+  echo "src/Makefile.am version is not updated successfully. Please verify."
+  exit 1
+fi
