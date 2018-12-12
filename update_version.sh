@@ -20,9 +20,11 @@ fi
 
 update_version() {
   file=$2
+  # Replace the version number in the given file.
   sed -ri "$1" $file
+  # Verify that the version number is updated successfully.
   if [ $(grep -c $VERSION $file) -eq 0 ]; then
-    echo "$file version is not updated"
+    echo "$file version is not updated successfully. Please verify."
     exit 1
   fi
 }
