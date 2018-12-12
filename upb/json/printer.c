@@ -963,6 +963,8 @@ void printer_sethandlers_any(const void *closure, upb_handlers *h) {
 
   upb_handlers_setstartstr(h, value_field, scalar_startstr_onlykey,
                            &value_name_attr);
+
+  UPB_UNUSED(closure);
 }
 
 /* Set up handlers for a duration submessage. */
