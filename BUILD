@@ -352,7 +352,6 @@ lua_library(
     name = "lua/upbc_lib",
     srcs = [
         "tools/dump_cinit.lua",
-        "tools/make_c_api.lua",
     ],
     luadeps = [
         "lua/upb",
