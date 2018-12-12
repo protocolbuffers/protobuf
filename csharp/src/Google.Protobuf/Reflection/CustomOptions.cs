@@ -267,7 +267,7 @@ namespace Google.Protobuf.Reflection
                         var typeArgs = typeInfo.GenericTypeArguments;
                         if (typeArgs.Length == 1 && typeArgs[0].GetTypeInfo().IsEnum)
                         {
-                            if ((bool)typeInfo.GetDeclaredMethod(nameof(ExtensionValue<T>.HasValue)).Invoke(extensionValue, EmptyParameters))
+                            if ((bool)typeInfo.GetDeclaredProperty(nameof(ExtensionValue<T>.HasValue)).GetValue(extensionValue))
                             {
                                 value = (T)typeInfo.GetDeclaredMethod(nameof(ExtensionValue<T>.GetValue)).Invoke(extensionValue, EmptyParameters);
                                 return true;
