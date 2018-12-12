@@ -689,6 +689,10 @@ typedef upb_strtable_iter upb_msg_oneof_iter;
 #define UPB_MAPENTRY_KEY   1
 #define UPB_MAPENTRY_VALUE 2
 
+/* Well-known field tag numbers for Any messages. */
+#define UPB_ANY_TYPE 1
+#define UPB_ANY_VALUE 2
+
 /* Well-known field tag numbers for timestamp messages. */
 #define UPB_DURATION_SECONDS 1
 #define UPB_DURATION_NANOS 2

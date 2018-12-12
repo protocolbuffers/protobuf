@@ -1299,13 +1299,13 @@ static bool end_stringval_nontop(upb_json_parser *p) {
     return true;
   }
 
-  if (p->top->is_any) {
-    return end_any_stringval(p);
-  }
-
   if (p->top->f == NULL) {
     multipart_end(p);
     return true;
+  }
+
+  if (p->top->is_any) {
+    return end_any_stringval(p);
   }
 
   switch (upb_fielddef_type(p->top->f)) {

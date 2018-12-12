@@ -350,6 +350,7 @@ end
 
 local function well_known_type(m)
   local type_map = {}
+  type_map["google.protobuf.Any"]         = "UPB_WELLKNOWN_ANY"
   type_map["google.protobuf.Duration"]    = "UPB_WELLKNOWN_DURATION"
   type_map["google.protobuf.Timestamp"]   = "UPB_WELLKNOWN_TIMESTAMP"
   type_map["google.protobuf.Value"]       = "UPB_WELLKNOWN_VALUE"
