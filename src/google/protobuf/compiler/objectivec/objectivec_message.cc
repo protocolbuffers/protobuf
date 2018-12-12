@@ -604,7 +604,9 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "suffix", suffix_added);
     }
     printer->Print(
-        "    NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
+        "    #if defined(DEBUG) && DEBUG\n"
+        "      NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
+        "    #endif  // DEBUG\n"
         "    descriptor = localDescriptor;\n"
         "  }\n"
         "  return descriptor;\n"
