@@ -364,7 +364,7 @@ string StripProto(const string& filename) {
   }
 }
 
-void StringPieceTrimWhitespace(StringPiece* input) {
+void TrimWhitespace(StringPiece* input) {
   while (!input->empty() && ascii_isspace(*input->data())) {
     input->remove_prefix(1);
   }
@@ -1054,8 +1054,8 @@ bool ExpectedPrefixesCollector::ConsumeLine(
   }
   StringPiece package(line, 0, offset);
   StringPiece prefix(line, offset + 1, line.length() - offset - 1);
-  StringPieceTrimWhitespace(&package);
-  StringPieceTrimWhitespace(&prefix);
+  TrimWhitespace(&package);
+  TrimWhitespace(&prefix);
   // Don't really worry about error checking the package/prefix for
   // being valid.  Assume the file is validated when it is created/edited.
   (*prefix_map_)[package.ToString()] = prefix.ToString();
