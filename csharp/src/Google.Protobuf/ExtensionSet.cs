@@ -58,7 +58,7 @@ namespace Google.Protobuf
         /// </summary>
         public static void Register<TTarget>(ref ExtensionSet<TTarget> set, Extension extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set is null)
+            if (set == null)
             {
                 set = new ExtensionSet<TTarget>();
             }
@@ -84,7 +84,7 @@ namespace Google.Protobuf
         /// </summary>
         public static TValue Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set is null)
+            if (set == null)
             {
                 set = new ExtensionSet<TTarget>();
             }
@@ -96,7 +96,7 @@ namespace Google.Protobuf
         /// </summary>
         public static RepeatedField<TValue> Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set is null)
+            if (set == null)
             {
                 set = new ExtensionSet<TTarget>();
             }
@@ -108,7 +108,7 @@ namespace Google.Protobuf
         /// </summary>
         public static void Set<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, TValue value) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set is null)
+            if (set == null)
             {
                 set = new ExtensionSet<TTarget>();
             }
@@ -120,7 +120,7 @@ namespace Google.Protobuf
         /// </summary>
         public static bool Has<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set is null)
+            if (set == null)
             {
                 set = new ExtensionSet<TTarget>();
             }
@@ -132,7 +132,7 @@ namespace Google.Protobuf
         /// </summary>
         public static void Clear<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set is null)
+            if (set == null)
             {
                 set = new ExtensionSet<TTarget>();
             }
@@ -145,11 +145,12 @@ namespace Google.Protobuf
         /// </summary>
         public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, CodedInputStream stream) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set is null)
+            if (set == null)
             {
                 return false;
             }
-            if (set.ValuesByNumber.TryGetValue(WireFormat.GetTagFieldNumber(stream.LastTag), out var extensionValue))
+            IExtensionValue extensionValue;
+            if (set.ValuesByNumber.TryGetValue(WireFormat.GetTagFieldNumber(stream.LastTag), out extensionValue))
             {
                 extensionValue.MergeFrom(stream);
                 return true;
@@ -165,17 +166,18 @@ namespace Google.Protobuf
         /// </summary>
         public static void MergeFrom<TTarget>(ref ExtensionSet<TTarget> first, ExtensionSet<TTarget> second) where TTarget : IExtensionMessage<TTarget>
         {
-            if (second is null)
+            if (second == null)
             {
                 return;
             }
-            if (first is null)
+            if (first == null)
             {
                 first = new ExtensionSet<TTarget>();
             }
             foreach (var pair in second.ValuesByIdentifier)
             {
-                if (first.ValuesByIdentifier.TryGetValue(pair.Key, out var value))
+                IExtensionValue value;
+                if (first.ValuesByIdentifier.TryGetValue(pair.Key, out value))
                 {
                     value.MergeFrom(pair.Value);
                 }
@@ -193,7 +195,7 @@ namespace Google.Protobuf
         /// </summary>
         public static ExtensionSet<TTarget> Clone<TTarget>(ExtensionSet<TTarget> set) where TTarget : IExtensionMessage<TTarget>
         {
-            if (set is null)
+            if (set == null)
             {
                 return null;
             }
@@ -252,7 +254,8 @@ namespace Google.Protobuf
             }
             foreach (var pair in ValuesByIdentifier)
             {
-                if (!otherSet.ValuesByIdentifier.TryGetValue(pair.Key, out var secondValue))
+                IExtensionValue secondValue;
+                if (!otherSet.ValuesByIdentifier.TryGetValue(pair.Key, out secondValue))
                 {
                     return false;
                 }

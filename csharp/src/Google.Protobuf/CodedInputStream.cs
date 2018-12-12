@@ -589,9 +589,9 @@ namespace Google.Protobuf
             }
             int oldLimit = PushLimit(length);
             ++recursionDepth;
-            if (builder is IExtensionMessage extensionMessage)
+            if (builder is IExtensionMessage)
             {
-                ExtensionRegistry?.RegisterExtensionsFor(extensionMessage);
+                ExtensionRegistry?.RegisterExtensionsFor(builder as IExtensionMessage);
             }
             builder.MergeFrom(this);
             CheckReadEndOfStreamTag();

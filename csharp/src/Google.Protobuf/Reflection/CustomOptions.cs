@@ -205,22 +205,27 @@ namespace Google.Protobuf.Reflection
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetMessage<T>(int field, out T value) where T : class, IMessage, new()
         {
-            if (values.TryGetValue(field, out var extensionValue))
+            IExtensionValue extensionValue;
+            if (values.TryGetValue(field, out extensionValue))
             {
-                if (extensionValue is ExtensionValue<T> single)
+                if (extensionValue is ExtensionValue<T>)
                 {
+                    ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
                     ByteString bytes = single.GetValue().ToByteString();
                     value = new T();
                     value.MergeFrom(bytes);
                     return true;
                 }
-                else if (extensionValue is RepeatedExtensionValue<T> repeated)
+                else if (extensionValue is RepeatedExtensionValue<T>)
                 {
-                    value = repeated.GetValue().Select(v => v.ToByteString()).Aggregate(new T(), (t, b) =>
-                    {
-                        t.MergeFrom(b);
-                        return t;
-                    });
+                    RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
+                    value = repeated.GetValue()
+                        .Select(v => v.ToByteString())
+                        .Aggregate(new T(), (t, b) =>
+                        {
+                            t.MergeFrom(b);
+                            return t;
+                        });
                     return true;
                 }
             }
@@ -231,18 +236,21 @@ namespace Google.Protobuf.Reflection
 
         private bool TryGetPrimitiveValue<T>(int field, out T value)
         {
-            if (values.TryGetValue(field, out var extensionValue))
+            IExtensionValue extensionValue;
+            if (values.TryGetValue(field, out extensionValue))
             {
-                if (extensionValue is ExtensionValue<T> single)
+                if (extensionValue is ExtensionValue<T>)
                 {
+                    ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
                     if (single.HasValue)
                     {
                         value = single.GetValue();
                         return true;
                     }
                 }
-                else if (extensionValue is RepeatedExtensionValue<T> repeated)
+                else if (extensionValue is RepeatedExtensionValue<T>)
                 {
+                    RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
                     if (repeated.GetValue().Count != 0)
                     {
                         RepeatedField<T> repeatedField = repeated.GetValue();

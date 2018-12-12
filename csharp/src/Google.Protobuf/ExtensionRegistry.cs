@@ -74,7 +74,8 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(extension, nameof(extension));
 
-            if (extensions.TryGetValue(extension.TargetType, out var collection))
+            ICollection<Extension> collection;
+            if (extensions.TryGetValue(extension.TargetType, out collection))
             {
                 collection.Add(extension);
             }
@@ -120,7 +121,8 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(item, nameof(item));
 
-            return extensions.TryGetValue(item.TargetType, out var collection) && collection.Contains(item);
+            ICollection<Extension> collection;
+            return extensions.TryGetValue(item.TargetType, out collection) && collection.Contains(item);
         }
 
         /// <summary>
@@ -161,7 +163,8 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
 
-            if (extensions.TryGetValue(message.GetType(), out var collection))
+            ICollection<Extension> collection;
+            if (extensions.TryGetValue(message.GetType(), out collection))
             {
                 foreach (var extension in collection)
                 {
@@ -179,7 +182,8 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(item, nameof(item));
 
-            return extensions.TryGetValue(item.TargetType, out var collection) && collection.Remove(item);
+            ICollection<Extension> collection;
+            return extensions.TryGetValue(item.TargetType, out collection) && collection.Remove(item);
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

@@ -240,7 +240,7 @@ namespace Google.Protobuf
             return new FieldCodec<T>(input => { T message = parser.CreateTemplate(); input.ReadMessage(message); return message; },
                 (output, value) => output.WriteMessage(value), (CodedInputStream i, ref T v) => 
                 {
-                    if (v is null)
+                    if (v == null)
                     {
                         v = parser.CreateTemplate();
                     }
@@ -249,11 +249,11 @@ namespace Google.Protobuf
                 },
                 (ref T v, T v2) =>
                 {
-                    if (v2 is null)
+                    if (v2 == null)
                     {
                         return false;
                     }
-                    else if (v is null)
+                    else if (v == null)
                     {
                         v = v2.Clone();
                     }
@@ -276,7 +276,7 @@ namespace Google.Protobuf
         {
             return new FieldCodec<T>(input => { T message = parser.CreateTemplate(); input.ReadGroup(message); return message; },
                 (output, value) => output.WriteGroup(value), (CodedInputStream i, ref T v) => {
-                    if (v is null)
+                    if (v == null)
                     {
                         v = parser.CreateTemplate();
                     }
@@ -285,11 +285,11 @@ namespace Google.Protobuf
                 },
                 (ref T v, T v2) =>
                 {
-                    if (v2 is null)
+                    if (v2 == null)
                     {
-                        return v is null;
+                        return v == null;
                     }
-                    else if (v is null)
+                    else if (v == null)
                     {
                         v = v2.Clone();
                     }
@@ -311,7 +311,7 @@ namespace Google.Protobuf
                 input => WrapperCodecs.Read<T>(input, nestedCodec),
                 (output, value) => WrapperCodecs.Write<T>(output, value, nestedCodec),
                 (CodedInputStream i, ref T v) => v = WrapperCodecs.Read<T>(i, nestedCodec),
-                (ref T v, T v2) => { v = v2; return v is null; },
+                (ref T v, T v2) => { v = v2; return v == null; },
                 value => WrapperCodecs.CalculateSize<T>(value, nestedCodec),
                 tag, 0,
                 null); // Default value for the wrapper

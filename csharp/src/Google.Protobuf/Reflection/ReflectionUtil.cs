@@ -209,18 +209,20 @@ namespace Google.Protobuf.Reflection
 
             public object GetExtension(IMessage message)
             {
-                if (!(message is T1 extensionMessage))
+                if (!(message is T1))
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
-                if (extension is Extension<T1, T3> single)
+                T1 extensionMessage = (T1)message;
+
+                if (extension is Extension<T1, T3>)
                 {
-                    return extensionMessage.GetExtension(single);
+                    return extensionMessage.GetExtension(extension as Extension<T1, T3>);
                 }
-                else if (extension is RepeatedExtension<T1, T3> repeated)
+                else if (extension is RepeatedExtension<T1, T3>)
                 {
-                    return extensionMessage.GetExtension(repeated);
+                    return extensionMessage.GetExtension(extension as RepeatedExtension<T1, T3>);
                 }
                 else
                 {
@@ -230,16 +232,18 @@ namespace Google.Protobuf.Reflection
 
             public bool HasExtension(IMessage message)
             {
-                if (!(message is T1 extensionMessage))
+                if (!(message is T1))
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
-                if (extension is Extension<T1, T3> single)
+                T1 extensionMessage = (T1)message;
+
+                if (extension is Extension<T1, T3>)
                 {
-                    return extensionMessage.HasExtension(single);
+                    return extensionMessage.HasExtension(extension as Extension<T1, T3>);
                 }
-                else if (extension is RepeatedExtension<T1, T3> repeated)
+                else if (extension is RepeatedExtension<T1, T3>)
                 {
                     throw new InvalidOperationException("HasValue is not implemented for repeated extensions");
                 }
@@ -251,16 +255,18 @@ namespace Google.Protobuf.Reflection
 
             public void SetExtension(IMessage message, object value)
             {
-                if (!(message is T1 extensionMessage))
+                if (!(message is T1))
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
-                if (extension is Extension<T1, T3> single)
+                T1 extensionMessage = (T1)message;
+
+                if (extension is Extension<T1, T3>)
                 {
-                    extensionMessage.SetExtension(single, (T3)value);
+                    extensionMessage.SetExtension(extension as Extension<T1, T3>, (T3)value);
                 }
-                else if (extension is RepeatedExtension<T1, T3> repeated)
+                else if (extension is RepeatedExtension<T1, T3>)
                 {
                     throw new InvalidOperationException("SetValue is not implemented for repeated extensions");
                 }
@@ -272,18 +278,20 @@ namespace Google.Protobuf.Reflection
 
             public void ClearExtension(IMessage message)
             {
-                if (!(message is T1 extensionMessage))
+                if (!(message is T1))
                 {
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
-                if (extension is Extension<T1, T3> single)
+                T1 extensionMessage = (T1)message;
+
+                if (extension is Extension<T1, T3>)
                 {
-                    extensionMessage.ClearExtension(single);
+                    extensionMessage.ClearExtension(extension as Extension<T1, T3>);
                 }
-                else if (extension is RepeatedExtension<T1, T3> repeated)
+                else if (extension is RepeatedExtension<T1, T3>)
                 {
-                    extensionMessage.GetExtension(repeated).Clear();
+                    extensionMessage.GetExtension(extension as RepeatedExtension<T1, T3>).Clear();
                 }
                 else
                 {

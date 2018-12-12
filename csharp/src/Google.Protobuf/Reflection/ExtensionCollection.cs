@@ -94,6 +94,7 @@ namespace Google.Protobuf.Reflection
             {
                 descriptor.CrossLink();
 
+                IList<FieldDescriptor> _;
                 if (!declarationOrder.TryGetValue(descriptor.ExtendeeType, out _))
                     declarationOrder.Add(descriptor.ExtendeeType, new List<FieldDescriptor>());
 

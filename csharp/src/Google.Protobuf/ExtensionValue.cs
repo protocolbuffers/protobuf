@@ -70,7 +70,7 @@ namespace Google.Protobuf
             return new ExtensionValue<T>(codec)
             {
                 hasValue = hasValue,
-                field = field is IDeepCloneable<T> cloneable ? cloneable.Clone() : field
+                field = field is IDeepCloneable<T> ? (field as IDeepCloneable<T>).Clone() : field
             };
         }
 
@@ -79,10 +79,10 @@ namespace Google.Protobuf
             if (ReferenceEquals(this, other))
                 return true;
 
-            return other is ExtensionValue<T> value
-                && codec.Equals(value.codec)
-                && hasValue.Equals(value.hasValue)
-                && Equals(field, value.field);
+            return other is ExtensionValue<T>
+                && codec.Equals((other as ExtensionValue<T>).codec)
+                && hasValue.Equals((other as ExtensionValue<T>).hasValue)
+                && Equals(field, (other as ExtensionValue<T>).field);
             // we check for equality in the codec since we could have equal field values however the values could be written in different ways
         }
 
@@ -106,8 +106,9 @@ namespace Google.Protobuf
 
         public void MergeFrom(IExtensionValue value)
         {
-            if (value is ExtensionValue<T> extensionValue)
+            if (value is ExtensionValue<T>)
             {
+                var extensionValue = value as ExtensionValue<T>;
                 if (extensionValue.hasValue)
                 {
                     hasValue |= codec.FieldMerger(ref field, extensionValue.field);
@@ -130,7 +131,7 @@ namespace Google.Protobuf
 
         public bool IsInitialized()
         {
-            return field is IMessage message ? message.IsInitialized() : true;
+            return field is IMessage ? (field as IMessage).IsInitialized() : true;
         }
 
         public T GetValue() => field;
@@ -179,7 +180,9 @@ namespace Google.Protobuf
             if (ReferenceEquals(this, other))
                 return true;
 
-            return other is RepeatedExtensionValue<T> value && field.Equals(value.field) && codec.Equals(value.codec);
+            return other is RepeatedExtensionValue<T> 
+                && field.Equals((other as RepeatedExtensionValue<T>).field) 
+                && codec.Equals((other as RepeatedExtensionValue<T>).codec);
         }
 
         public override int GetHashCode()
@@ -200,9 +203,9 @@ namespace Google.Protobuf
 
         public void MergeFrom(IExtensionValue value)
         {
-            if (value is RepeatedExtensionValue<T> repeated)
+            if (value is RepeatedExtensionValue<T>)
             {
-                field.Add(repeated.field);
+                field.Add((value as RepeatedExtensionValue<T>).field);
             }
         }
 
@@ -215,9 +218,9 @@ namespace Google.Protobuf
         {
             for (int i = 0; i < field.Count; i++)
             {
-                if (field[i] is IMessage message)
+                if (field[i] is IMessage)
                 {
-                    if (!message.IsInitialized())
+                    if (!(field[i] as IMessage).IsInitialized())
                     {
                         return false;
                     }
