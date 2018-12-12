@@ -1389,9 +1389,12 @@ class Message
             }
             $fields = $this->desc->getField();
             $first = true;
+            $empty = true;
             foreach ($fields as $field) {
-                if ($this->existField($field) ||
-                    GPBUtil::hasJsonValue($this)) {
+                if ($this->existField($field) || GPBUtil::hasJsonValue($this)) {
+                    if ($empty) {
+                        $empty = false;
+                    }
                     if ($first) {
                         $first = false;
                     } else {
@@ -1401,6 +1404,9 @@ class Message
                         return false;
                     }
                 }
+            }
+            if (get_class($this) === ListValue::class && $empty) {
+                $output->writeRaw("[]", 2);
             }
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $output->writeRaw("}", 1);
@@ -1858,6 +1864,9 @@ class Message
                 if ($field_size != 0) {
                   $count++;
                 }
+            }
+            if (get_class($this) === ListValue::class && $count === 0) {
+                $size += 2;
             }
             // size for comma
             $size += $count > 0 ? ($count - 1) : 0;
