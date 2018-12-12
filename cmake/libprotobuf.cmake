@@ -113,7 +113,7 @@ set(libprotobuf_includes
 )
 
 if (MSVC)
-set(libprotoc_rc_files
+set(libprotobuf_rc_files
   ${CMAKE_CURRENT_BINARY_DIR}/version.rc
 )
 endif()

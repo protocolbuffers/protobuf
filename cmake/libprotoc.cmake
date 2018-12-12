@@ -167,6 +167,7 @@ set(libprotoc_rc_files
 )
 endif()
 
+
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
   ${libprotoc_files} ${libprotoc_headers} ${libprotoc_rc_files})
 target_link_libraries(libprotoc libprotobuf)
