@@ -692,14 +692,6 @@ void printer_sethandlers_mapentry(const void *closure, bool preserve_fieldnames,
   upb_handlerattr_uninit(&empty_attr);
 }
 
-static void *scalar_startstr_any_typeurl(void *closure, const void *handler_data,
-                                         size_t size_hint) {
-  upb_json_printer *p = closure;
-  UPB_UNUSED(handler_data);
-  UPB_UNUSED(size_hint);
-  return p;
-}
-
 static bool putseconds(void *closure, const void *handler_data,
                        int64_t seconds) {
   upb_json_printer *p = closure;
