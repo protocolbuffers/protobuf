@@ -54,9 +54,7 @@ UPB_DECLARE_TYPE(upb::SymbolTable, upb_symtab)
 
 /* A upb_fielddef describes a single field in a message.  It is most often
  * found as a part of a upb_msgdef, but can also stand alone to represent
- * an extension.
- *
- * Its base class is upb::Def (use upb::upcast() to convert). */
+ * an extension. */
 class upb::FieldDef {
  public:
   typedef upb_fieldtype_t Type;
@@ -232,9 +230,7 @@ typedef upb_strtable_iter upb_msg_oneof_iter;
 
 #ifdef __cplusplus
 
-/* Structure that describes a single .proto message type.
- *
- * Its base class is upb::Def (use upb::upcast() to convert). */
+/* Structure that describes a single .proto message type. */
 class upb::MessageDef {
  public:
   const char* full_name() const;
@@ -439,8 +435,6 @@ typedef upb_strtable_iter upb_enum_iter;
 
 #ifdef __cplusplus
 
-/* Class that represents an enum.  Its base class is upb::Def (convert with
- * upb::upcast()). */
 class upb::EnumDef {
  public:
   const char* full_name() const;
@@ -642,12 +636,6 @@ class upb::FileDef {
   /* Syntax for the file.  Defaults to proto2. */
   upb_syntax_t syntax() const;
 
-  /* Get the list of defs from the file.  These are returned in the order that
-   * they were added to the FileDef. */
-  int def_count() const;
-  const Def* def(int index) const;
-  Def* def(int index);
-
   /* Get the list of dependencies from the file.  These are returned in the
    * order that they were added to the FileDef. */
   int dependency_count() const;
@@ -688,7 +676,6 @@ class upb::SymbolTable {
 
   /* Finds an entry in the symbol table with this exact name.  If not found,
    * returns NULL. */
-  const Def* Lookup(const char *sym) const;
   const MessageDef* LookupMessage(const char *sym) const;
   const EnumDef* LookupEnum(const char *sym) const;
 
@@ -731,9 +718,6 @@ inline SymbolTable* SymbolTable::New() {
 inline void SymbolTable::Free(SymbolTable* s) {
   upb_symtab_free(s);
 }
-inline const Def* SymbolTable::Lookup(const char *sym) const {
-  return upb_symtab_lookup(this, sym);
-}
 inline const MessageDef *SymbolTable::LookupMessage(const char *sym) const {
   return upb_symtab_lookupmsg(this, sym);
 }
@@ -749,10 +733,6 @@ UPB_INLINE const char* upb_safecstr(const std::string& str) {
 
 /* Inline C++ wrappers. */
 namespace upb {
-
-inline Def::Type Def::def_type() const { return upb_def_type(this); }
-inline const char* Def::full_name() const { return upb_def_fullname(this); }
-inline const char* Def::name() const { return upb_def_name(this); }
 
 inline const char* FieldDef::full_name() const {
   return upb_fielddef_fullname(this);
@@ -1016,12 +996,6 @@ inline const char* FileDef::phpnamespace() const {
 }
 inline int FileDef::def_count() const {
   return upb_filedef_defcount(this);
-}
-inline const Def* FileDef::def(int index) const {
-  return upb_filedef_def(this, index);
-}
-inline Def* FileDef::def(int index) {
-  return const_cast<Def*>(upb_filedef_def(this, index));
 }
 inline int FileDef::dependency_count() const {
   return upb_filedef_depcount(this);
