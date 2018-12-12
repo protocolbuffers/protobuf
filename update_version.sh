@@ -44,13 +44,23 @@ update_version "s/^  s.version     = \".*\"/  s.version     = \"$VERSION\"/g" ru
 # Special handling for C++ file, where version is X.Y.Z is transformed to X00Y00Z
 CPP_VERSION=${VERSION_INFO[0]}00${VERSION_INFO[1]}00${VERSION_INFO[2]}
 sed -ri "s/^#define GOOGLE_PROTOBUF_VERSION .*/#define GOOGLE_PROTOBUF_VERSION $CPP_VERSION/g" src/google/protobuf/stubs/common.h
-sed -ri "s/^#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION .*/#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION $CPP_VERSION/g" src/google/protobuf/stubs/common.h
-sed -ri "s/^#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION .*/#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION $CPP_VERSION/g" src/google/protobuf/stubs/common.h
-sed -ri "s/^static const int kMinHeaderVersionForLibrary = .*/static const int kMinHeaderVersionForLibrary = $CPP_VERSION;/g" src/google/protobuf/stubs/common.h
-sed -ri "s/^static const int kMinHeaderVersionForProtoc = .*/static const int kMinHeaderVersionForProtoc = $CPP_VERSION;/g" src/google/protobuf/stubs/common.h
-if [ $(grep -c $CPP_VERSION src/google/protobuf/stubs/common.h) -eq 0 ]; then
-  echo "src/google/protobuf/stubs/common.h version is not updated successfully. Please verify."
-  exit 1
+
+# Only update these constants if it is a major release.
+if [ ${VERSION_INFO[2]} -eq 0 ]; then
+  sed -ri "s/^#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION .*/#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION $CPP_VERSION/g" src/google/protobuf/stubs/common.h
+  sed -ri "s/^#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION .*/#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION $CPP_VERSION/g" src/google/protobuf/stubs/common.h
+  sed -ri "s/^static const int kMinHeaderVersionForLibrary = .*/static const int kMinHeaderVersionForLibrary = $CPP_VERSION;/g" src/google/protobuf/stubs/common.h
+  sed -ri "s/^static const int kMinHeaderVersionForProtoc = .*/static const int kMinHeaderVersionForProtoc = $CPP_VERSION;/g" src/google/protobuf/stubs/common.h
+
+  if [ $(grep -c $CPP_VERSION src/google/protobuf/stubs/common.h) -ne 5 ]; then
+    echo "src/google/protobuf/stubs/common.h version is not updated successfully. Please verify."
+    exit 1
+  fi
+else
+  if [ $(grep -c $CPP_VERSION src/google/protobuf/stubs/common.h) -ne 1 ]; then
+    echo "src/google/protobuf/stubs/common.h version is not updated successfully. Please verify."
+    exit 1
+  fi
 fi
 
 # Special handling for src/Makefile.am. If version is X.Y.Z, then the
