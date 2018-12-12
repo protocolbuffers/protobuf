@@ -18,6 +18,8 @@ else
 PTHREAD_DEF =
 endif
 
+PROTOBUF_VERSION = 17:0:0
+
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
 # in Google so our code base have tons of such warnings).
@@ -169,7 +171,7 @@ nobase_include_HEADERS =                                         \
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS) $(LIBATOMIC_LIBS)
-libprotobuf_lite_la_LDFLAGS = -version-info 17:0:0 -export-dynamic -no-undefined
+libprotobuf_lite_la_LDFLAGS = -version-info $(PROTOBUF_VERSION) -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_lite_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf-lite.map
 EXTRA_libprotobuf_lite_la_DEPENDENCIES = libprotobuf-lite.map
@@ -214,7 +216,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS) $(LIBATOMIC_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 17:0:0 -export-dynamic -no-undefined
+libprotobuf_la_LDFLAGS = -version-info $(PROTOBUF_VERSION) -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf.map
 EXTRA_libprotobuf_la_DEPENDENCIES = libprotobuf.map
@@ -305,7 +307,7 @@ libprotobuf_la_SOURCES =                                       \
 nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
-libprotoc_la_LDFLAGS = -version-info 17:0:0 -export-dynamic -no-undefined
+libprotoc_la_LDFLAGS = -version-info $(PROTOBUF_VERSION) -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotoc_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotoc.map
 EXTRA_libprotoc_la_DEPENDENCIES = libprotoc.map
