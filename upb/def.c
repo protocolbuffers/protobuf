@@ -1133,7 +1133,7 @@ static bool create_fielddef(
   upb_alloc *alloc = ctx->alloc;
   upb_fielddef *f;
   const google_protobuf_FieldOptions *options;
-  upb_stringview defaultval, name;
+  upb_stringview name;
   upb_value packed_v = pack_def(f, UPB_DEFTYPE_FIELD);
   upb_value v = upb_value_constptr(f);
   const char *full_name;
@@ -1220,17 +1220,20 @@ static bool create_fielddef(
     f->oneof = NULL;
   }
 
-  defaultval = google_protobuf_FieldDescriptorProto_default_value(field_proto);
-
-  if (defaultval.data) {
+  if (google_protobuf_FieldDescriptorProto_has_default_value(field_proto)) {
+    upb_stringview defaultval =
+        google_protobuf_FieldDescriptorProto_default_value(field_proto);
     CHK(parse_default(ctx, defaultval.data, defaultval.size, f));
   }
 
-  options = google_protobuf_FieldDescriptorProto_options(field_proto);
 
-  if (options) {
+  if (google_protobuf_FieldDescriptorProto_has_options(field_proto)) {
+    options = google_protobuf_FieldDescriptorProto_options(field_proto);
     f->lazy_ = google_protobuf_FieldOptions_lazy(options);
     f->packed_ = google_protobuf_FieldOptions_packed(options);
+  } else {
+    f->lazy_ = false;
+    f->packed_ = false;
   }
 
   return true;
