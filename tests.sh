@@ -330,8 +330,7 @@ build_php5.5() {
   pushd php
   rm -rf vendor
   composer update
-  wget https://phar.phpunit.de/phpunit-4.8.0.phar -O /usr/bin/phpunit
-  phpunit
+  ./vendor/bin/phpunit
   popd
   pushd conformance
   make test_php
@@ -340,7 +339,6 @@ build_php5.5() {
 
 build_php5.5_c() {
   use_php 5.5
-  wget https://phar.phpunit.de/phpunit-4.8.0.phar -O /usr/bin/phpunit
   pushd php/tests
   /bin/bash ./test.sh 5.5
   popd
@@ -352,7 +350,6 @@ build_php5.5_c() {
 
 build_php5.5_zts_c() {
   use_php_zts 5.5
-  wget https://phar.phpunit.de/phpunit-4.8.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 5.5-zts && cd ../..
   # TODO(teboring): Add it back
   # pushd conformance
@@ -365,8 +362,7 @@ build_php5.6() {
   pushd php
   rm -rf vendor
   composer update
-  wget https://phar.phpunit.de/phpunit-5.7.0.phar -O /usr/bin/phpunit
-  phpunit
+  ./vendor/bin/phpunit
   popd
   pushd conformance
   make test_php
@@ -375,7 +371,6 @@ build_php5.6() {
 
 build_php5.6_c() {
   use_php 5.6
-  wget https://phar.phpunit.de/phpunit-5.7.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 5.6 && cd ../..
   # TODO(teboring): Add it back
   # pushd conformance
@@ -385,7 +380,6 @@ build_php5.6_c() {
 
 build_php5.6_zts_c() {
   use_php_zts 5.6
-  wget https://phar.phpunit.de/phpunit-5.7.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 5.6-zts && cd ../..
   # TODO(teboring): Add it back
   # pushd conformance
@@ -423,8 +417,7 @@ build_php7.0() {
   pushd php
   rm -rf vendor
   composer update
-  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
-  phpunit
+  ./vendor/bin/phpunit
   popd
   pushd conformance
   make test_php
@@ -433,7 +426,6 @@ build_php7.0() {
 
 build_php7.0_c() {
   use_php 7.0
-  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 7.0 && cd ../..
   # TODO(teboring): Add it back
   # pushd conformance
@@ -443,7 +435,6 @@ build_php7.0_c() {
 
 build_php7.0_zts_c() {
   use_php_zts 7.0
-  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 7.0-zts && cd ../..
   # TODO(teboring): Add it back.
   # pushd conformance
@@ -486,8 +477,7 @@ build_php7.1() {
   pushd php
   rm -rf vendor
   composer update
-  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
-  phpunit
+  ./vendor/bin/phpunit
   popd
   pushd conformance
   make test_php
@@ -497,7 +487,6 @@ build_php7.1() {
 build_php7.1_c() {
   ENABLE_CONFORMANCE_TEST=$1
   use_php 7.1
-  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 7.1 && cd ../..
   if [ "$ENABLE_CONFORMANCE_TEST" = "true" ]
   then
@@ -509,7 +498,6 @@ build_php7.1_c() {
 
 build_php7.1_zts_c() {
   use_php_zts 7.1
-  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh 7.1-zts && cd ../..
   pushd conformance
   # make test_php_c
