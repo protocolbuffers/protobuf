@@ -564,8 +564,6 @@ class upb::OneofDef {
     upb_oneof_iter iter_;
   };
 
-  iterator begin();
-  iterator end();
   const_iterator begin() const;
   const_iterator end() const;
 
@@ -682,7 +680,8 @@ class upb::SymbolTable {
   /* TODO: iteration? */
 
   /* Adds the given serialized FileDescriptorProto to the pool. */
-  bool AddFile(const char *file, size_t len, Status *status);
+  bool AddFile(const google_protobuf_FileDescriptorProto *file_proto,
+               Status *status);
 
   /* Adds the given serialized FileDescriptorSet to the pool. */
   bool AddSet(const char *set, size_t len, Status *status);
@@ -703,6 +702,7 @@ const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
 const upb_msgdef *upb_symtab_lookupmsg2(
     const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
+int upb_symtab_filecount(const upb_symtab *s);
 bool upb_symtab_addfile(upb_symtab *s,
                         const google_protobuf_FileDescriptorProto* file,
                         upb_status *status);
@@ -720,6 +720,10 @@ inline void SymbolTable::Free(SymbolTable* s) {
 }
 inline const MessageDef *SymbolTable::LookupMessage(const char *sym) const {
   return upb_symtab_lookupmsg(this, sym);
+}
+inline bool SymbolTable::AddFile(
+    const google_protobuf_FileDescriptorProto *file_proto, Status *status) {
+  return upb_symtab_addfile(this, file_proto, status);
 }
 }  /* namespace upb */
 #endif
@@ -766,9 +770,6 @@ inline const MessageDef* FieldDef::containing_type() const {
 }
 inline const OneofDef* FieldDef::containing_oneof() const {
   return upb_fielddef_containingoneof(this);
-}
-inline void FieldDef::clear_json_name() {
-  upb_fielddef_clearjsonname(this);
 }
 inline bool FieldDef::IsSubMessage() const {
   return upb_fielddef_issubmsg(this);
@@ -993,9 +994,6 @@ inline const char* FileDef::phpprefix() const {
 }
 inline const char* FileDef::phpnamespace() const {
   return upb_filedef_phpnamespace(this);
-}
-inline int FileDef::def_count() const {
-  return upb_filedef_defcount(this);
 }
 inline int FileDef::dependency_count() const {
   return upb_filedef_depcount(this);

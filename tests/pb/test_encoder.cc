@@ -2,10 +2,9 @@
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/bindings/stdc++/string.h"
-#include "upb/descriptor/descriptor.upbdefs.h"
+#include "google/protobuf/descriptor.upb.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/encoder.h"
-#include "upb/pb/glue.h"
 
 std::string read_string(const char *filename) {
   size_t len;
@@ -18,16 +17,30 @@ std::string read_string(const char *filename) {
 }
 
 void test_pb_roundtrip() {
-  upb::reffed_ptr<const upb::MessageDef> md(
-      upbdefs::google::protobuf::FileDescriptorSet::get());
+  std::string input = read_string("google/protobuf/descriptor.pb");
+  upb::SymbolTable* symtab = upb::SymbolTable::New();
+  upb::Arena arena;
+  google_protobuf_FileDescriptorSet *set =
+      google_protobuf_FileDescriptorSet_parsenew(
+          upb_stringview_make(input.c_str(), input.size()), &arena);
+  ASSERT(set);
+  const upb_array *arr = google_protobuf_FileDescriptorSet_file(set);
+  const google_protobuf_FileDescriptorProto *file_proto =
+      static_cast<const google_protobuf_FileDescriptorProto *>(
+          upb_msgval_getptr(upb_array_get(arr, 0)));
+  upb::Status status;
+  bool ok = symtab->AddFile(file_proto, &status);
+  ASSERT(ok);
+  const upb::MessageDef *md =
+      symtab->LookupMessage("google.protobuf.FileDescriptorSet");
+  ASSERT(md);
   upb::reffed_ptr<const upb::Handlers> encoder_handlers(
-      upb::pb::Encoder::NewHandlers(md.get()));
+      upb::pb::Encoder::NewHandlers(md));
   upb::reffed_ptr<const upb::pb::DecoderMethod> method(
       upb::pb::DecoderMethod::New(
           upb::pb::DecoderMethodOptions(encoder_handlers.get())));
 
   upb::InlinedEnvironment<512> env;
-  std::string input = read_string("upb/descriptor/descriptor.pb");
   std::string output;
   upb::StringSink string_sink(&output);
   upb::pb::Encoder* encoder =
@@ -35,9 +48,10 @@ void test_pb_roundtrip() {
                                string_sink.input());
   upb::pb::Decoder* decoder =
       upb::pb::Decoder::Create(&env, method.get(), encoder->input());
-  bool ok = upb::BufferSource::PutBuffer(input, decoder->input());
+  ok = upb::BufferSource::PutBuffer(input, decoder->input());
   ASSERT(ok);
   ASSERT(input == output);
+  upb::SymbolTable::Free(symtab);
 }
 
 extern "C" {

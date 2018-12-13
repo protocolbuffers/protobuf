@@ -120,12 +120,6 @@ add_test(NAME test_varint COMMAND test_varint)
 target_link_libraries(test_varint
   upb_pb
   upb_test)
-add_executable(test_def
-  tests/test_def.c)
-add_test(NAME test_def COMMAND test_def)
-target_link_libraries(test_def
-  upb_pb
-  upb_test)
 add_executable(test_handlers
   tests/test_handlers.c)
 add_test(NAME test_handlers COMMAND test_handlers)
@@ -144,8 +138,8 @@ add_test(NAME test_encoder COMMAND test_encoder)
 add_custom_command(
     TARGET test_encoder POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_SOURCE_DIR}/upb/descriptor/descriptor.pb
-            ${CMAKE_CURRENT_BINARY_DIR}/upb/descriptor/descriptor.pb)
+            ${CMAKE_SOURCE_DIR}/google/protobuf/descriptor.pb
+            ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/descriptor.pb)
 target_link_libraries(test_encoder
   upb_cc_bindings
   upb_pb

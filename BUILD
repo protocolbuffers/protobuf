@@ -158,15 +158,6 @@ cc_test(
 )
 
 cc_test(
-    name = "test_def",
-    srcs = ["tests/test_def.c"],
-    deps = [
-        ":upb_pb",
-        ":upb_test",
-    ],
-)
-
-cc_test(
     name = "test_handlers",
     srcs = ["tests/test_handlers.c"],
     deps = [
@@ -187,7 +178,7 @@ cc_test(
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
-    data = ["upb/descriptor/descriptor.pb"],
+    data = ["google/protobuf/descriptor.pb"],
     deps = [
         ":upb_cc_bindings",
         ":upb_pb",
@@ -413,6 +404,20 @@ py_binary(
     srcs = ["tools/make_cmakelists.py"],
 )
 
+proto_library(
+    name = "descriptor_proto",
+    srcs = [
+        "google/protobuf/descriptor.proto",
+    ],
+)
+
+genrule(
+    name = "copy_upb_descriptor_pb",
+    srcs = [":descriptor_proto"],
+    outs = ["generated/google/protobuf/descriptor.pb"],
+    cmd = "cp $< $@",
+)
+
 genrule(
     name = "gen_cmakelists",
     outs = ["generated/CMakeLists.txt"],
@@ -477,6 +482,7 @@ generated_file_staleness_test(
     name = "test_generated_files",
     outs = [
         "CMakeLists.txt",
+        "google/protobuf/descriptor.pb",
         "google/protobuf/descriptor.upb.c",
         "google/protobuf/descriptor.upb.h",
         "tests/json/test.proto.pb",

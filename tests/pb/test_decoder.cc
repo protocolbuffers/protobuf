@@ -399,107 +399,8 @@ void reg_str(upb_handlers *h, uint32_t num) {
   ASSERT(h->SetStringHandler(f, UpbBind(value_string, new uint32_t(num))));
 }
 
-void AddField(upb_descriptortype_t descriptor_type, const std::string& name,
-              uint32_t fn, bool repeated, upb::MessageDef* md) {
-  // TODO: Fluent interface?  ie.
-  //   ASSERT(md->AddField(upb::BuildFieldDef()
-  //       .SetName("f_message")
-  //       .SetNumber(UPB_DESCRIPTOR_TYPE_MESSAGE)
-  //       .SetDescriptorType(UPB_DESCRIPTOR_TYPE_MESSAGE)
-  //       .SetMessageSubdef(md.get())));
-  upb::reffed_ptr<upb::FieldDef> f = upb::FieldDef::New();
-  ASSERT(f->set_name(name, NULL));
-  ASSERT(f->set_number(fn, NULL));
-  f->set_label(repeated ? UPB_LABEL_REPEATED : UPB_LABEL_OPTIONAL);
-  f->set_descriptor_type(descriptor_type);
-  ASSERT(md->AddField(f.get(), NULL));
-}
-
-void AddFieldsForType(upb_descriptortype_t descriptor_type,
-                      const char* basename, upb::MessageDef* md) {
-  const upb_descriptortype_t t = descriptor_type;
-  AddField(t, std::string("f_") + basename, t, false, md);
-  AddField(t, std::string("r_") + basename, rep_fn(t), true, md);
-}
-
-upb::reffed_ptr<const upb::MessageDef> NewMessageDef() {
-  upb::reffed_ptr<upb::MessageDef> md = upb::MessageDef::New();
-
-  md->set_full_name("DecoderTest", NULL);
-
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_DOUBLE, "double", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_FLOAT, "float", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_INT64, "int64", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_UINT64, "uint64", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_INT32, "int32", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_FIXED64, "fixed64", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_FIXED32, "fixed32", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_BOOL, "bool", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_STRING, "string", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_BYTES, "bytes", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_UINT32, "uint32", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_SFIXED32, "sfixed32", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_SFIXED64, "sfixed64", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_SINT32, "sint32", md.get());
-  AddFieldsForType(UPB_DESCRIPTOR_TYPE_SINT64, "sint64", md.get());
-
-  AddField(UPB_DESCRIPTOR_TYPE_STRING, "nop_field", 40, false, md.get());
-
-  upb::reffed_ptr<upb::FieldDef> f = upb::FieldDef::New();
-  ASSERT(f->set_name("f_message", NULL));
-  ASSERT(f->set_number(UPB_DESCRIPTOR_TYPE_MESSAGE, NULL));
-  f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_MESSAGE);
-  ASSERT(f->set_message_subdef(md.get(), NULL));
-  ASSERT(md->AddField(f.get(), NULL));
-
-  f = upb::FieldDef::New();
-  ASSERT(f->set_name("r_message", NULL));
-  ASSERT(f->set_number(rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE), NULL));
-  f->set_label(UPB_LABEL_REPEATED);
-  f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_MESSAGE);
-  ASSERT(f->set_message_subdef(md.get(), NULL));
-  ASSERT(md->AddField(f.get(), NULL));
-
-  f = upb::FieldDef::New();
-  ASSERT(f->set_name("f_group", NULL));
-  ASSERT(f->set_number(UPB_DESCRIPTOR_TYPE_GROUP, NULL));
-  f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_GROUP);
-  ASSERT(f->set_message_subdef(md.get(), NULL));
-  ASSERT(md->AddField(f.get(), NULL));
-
-  f = upb::FieldDef::New();
-  ASSERT(f->set_name("r_group", NULL));
-  ASSERT(f->set_number(rep_fn(UPB_DESCRIPTOR_TYPE_GROUP), NULL));
-  f->set_label(UPB_LABEL_REPEATED);
-  f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_GROUP);
-  ASSERT(f->set_message_subdef(md.get(), NULL));
-  ASSERT(md->AddField(f.get(), NULL));
-
-  upb::reffed_ptr<upb::EnumDef> e = upb::EnumDef::New();
-  ASSERT(e->AddValue("FOO", 1, NULL));
-  ASSERT(e->Freeze(NULL));
-
-  f = upb::FieldDef::New();
-  ASSERT(f->set_name("f_enum", NULL));
-  ASSERT(f->set_number(UPB_DESCRIPTOR_TYPE_ENUM, NULL));
-  f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_ENUM);
-  ASSERT(f->set_enum_subdef(e.get(), NULL));
-  ASSERT(md->AddField(f.get(), NULL));
-
-  f = upb::FieldDef::New();
-  ASSERT(f->set_name("r_enum", NULL));
-  ASSERT(f->set_number(rep_fn(UPB_DESCRIPTOR_TYPE_ENUM), NULL));
-  f->set_label(UPB_LABEL_REPEATED);
-  f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_ENUM);
-  ASSERT(f->set_enum_subdef(e.get(), NULL));
-  ASSERT(md->AddField(f.get(), NULL));
-
-  ASSERT(md->Freeze(NULL));
-
-  return md;
-}
-
 upb::reffed_ptr<const upb::Handlers> NewHandlers(TestMode mode) {
+  
   upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(NewMessageDef().get()));
 
   if (mode == ALL_HANDLERS) {
@@ -1277,6 +1178,7 @@ upb::reffed_ptr<const upb::pb::DecoderMethod> method =
 void run_tests(bool use_jit) {
   upb::reffed_ptr<const upb::pb::DecoderMethod> method;
   upb::reffed_ptr<const upb::Handlers> handlers;
+  upb::SymbolTable symtab;
 
   handlers = NewHandlers(test_mode);
   global_handlers = handlers.get();

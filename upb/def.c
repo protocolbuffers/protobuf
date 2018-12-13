@@ -1359,14 +1359,21 @@ static void count_types_in_msg(
   size_t i;
 
   arr = google_protobuf_DescriptorProto_nested_type(msg_proto);
-  for (i = 0; i < upb_array_size(arr); i++) {
-    count_types_in_msg(upb_msgval_getptr(upb_array_get(arr, i)), counts);
+  if (arr) {
+    for (i = 0; i < upb_array_size(arr); i++) {
+      count_types_in_msg(upb_msgval_getptr(upb_array_get(arr, i)), counts);
+    }
   }
 
   arr = google_protobuf_DescriptorProto_enum_type(msg_proto);
-  counts->enum_count += upb_array_size(arr);
+  if (arr) {
+    counts->enum_count += upb_array_size(arr);
+  }
+
   arr = google_protobuf_DescriptorProto_extension(msg_proto);
-  counts->ext_count += upb_array_size(arr);
+  if (arr) {
+    counts->ext_count += upb_array_size(arr);
+  }
 }
 
 static void count_types_in_file(
