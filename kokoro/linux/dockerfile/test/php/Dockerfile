@@ -1,8 +1,8 @@
-FROM debian:stretch
+FROM debian:jessie
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
-RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
+RUN apt-get update && apt-get install -y \
   autoconf \
   autotools-dev \
   build-essential \
@@ -24,8 +24,15 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
 
 # Install php dependencies
 RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
-  php \
+  php5 \
+  libcurl4-openssl-dev \
+  libgmp-dev \
+  libgmp3-dev \
+  libssl-dev \
   libxml2-dev \
+  unzip \
+  zlib1g-dev \
+  pkg-config \
   && apt-get clean
 
 # Install other dependencies
@@ -50,12 +57,22 @@ RUN cd php-src \
   && git checkout PHP-5.5.38 \
   && ./buildconf --force
 RUN cd php-src \
-  && ./configure --enable-bcmath --prefix=/usr/local/php-5.5 \
+  && ./configure \
+  --enable-bcmath \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-5.5 \
   && make \
   && make install \
   && make clean
 RUN cd php-src \
-  && ./configure --enable-maintainer-zts --prefix=/usr/local/php-5.5-zts \
+  && ./configure \
+  --enable-maintainer-zts \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-5.5-zts \
   && make \
   && make install \
   && make clean
@@ -70,12 +87,22 @@ RUN cd php-src \
   && git checkout PHP-5.6.39 \
   && ./buildconf --force
 RUN cd php-src \
-  && ./configure --enable-bcmath --prefix=/usr/local/php-5.6 \
+  && ./configure \
+  --enable-bcmath \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-5.6 \
   && make \
   && make install \
   && make clean
 RUN cd php-src \
-  && ./configure --enable-maintainer-zts --prefix=/usr/local/php-5.6-zts \
+  && ./configure \
+  --enable-maintainer-zts \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-5.6-zts \
   && make \
   && make install \
   && make clean
@@ -90,12 +117,22 @@ RUN cd php-src \
   && git checkout PHP-7.0.33 \
   && ./buildconf --force
 RUN cd php-src \
-  && ./configure --enable-bcmath --prefix=/usr/local/php-7.0 \
+  && ./configure \
+  --enable-bcmath \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.0 \
   && make \
   && make install \
   && make clean
 RUN cd php-src \
-  && ./configure --enable-maintainer-zts --prefix=/usr/local/php-7.0-zts \
+  && ./configure \
+  --enable-maintainer-zts \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.0-zts \
   && make \
   && make install \
   && make clean
@@ -110,12 +147,22 @@ RUN cd php-src \
   && git checkout PHP-7.1.25 \
   && ./buildconf --force
 RUN cd php-src \
-  && ./configure --enable-bcmath --prefix=/usr/local/php-7.1 \
+  && ./configure \
+  --enable-bcmath \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.1 \
   && make \
   && make install \
   && make clean
 RUN cd php-src \
-  && ./configure --enable-maintainer-zts --prefix=/usr/local/php-7.1-zts \
+  && ./configure \
+  --enable-maintainer-zts \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.1-zts \
   && make \
   && make install \
   && make clean
@@ -130,12 +177,22 @@ RUN cd php-src \
   && git checkout PHP-7.2.13 \
   && ./buildconf --force
 RUN cd php-src \
-  && ./configure --enable-bcmath --prefix=/usr/local/php-7.2 \
+  && ./configure \
+  --enable-bcmath \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.2 \
   && make \
   && make install \
   && make clean
 RUN cd php-src \
-  && ./configure --enable-maintainer-zts --prefix=/usr/local/php-7.2-zts \
+  && ./configure \
+  --enable-maintainer-zts \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.2-zts \
   && make \
   && make install \
   && make clean
@@ -150,12 +207,22 @@ RUN cd php-src \
   && git checkout PHP-7.3.0 \
   && ./buildconf --force
 RUN cd php-src \
-  && ./configure --enable-bcmath --prefix=/usr/local/php-7.3 \
+  && ./configure \
+  --enable-bcmath \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.3 \
   && make \
   && make install \
   && make clean
 RUN cd php-src \
-  && ./configure --enable-maintainer-zts --prefix=/usr/local/php-7.3-zts \
+  && ./configure \
+  --enable-maintainer-zts \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.3-zts \
   && make \
   && make install \
   && make clean
@@ -164,6 +231,3 @@ RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.phar \
   && chmod +x phpunit \
   && cp phpunit /usr/local/php-7.3 \
   && mv phpunit /usr/local/php-7.3-zts
-
-# Additional config
-RUN composer config -g -- disable-tls true
