@@ -9,7 +9,6 @@
 --]]
 
 local dump_cinit = require "dump_cinit"
-local make_c_api = require "make_c_api"
 local upb = require "upb"
 
 local generate_upbdefs = false
@@ -77,40 +76,16 @@ for _, file in ipairs(files) do
 
   os.execute(string.format("mkdir -p `dirname %s`", outbase))
 
-  if generate_upbdefs then
-    -- Legacy generated defs.
-    local hfile = open(hfilename)
-    local cfile = open(cfilename)
+  assert(generate_upbdefs)
+  -- Legacy generated defs.
+  local hfile = open(hfilename)
+  local cfile = open(cfilename)
 
-    local happend = dump_cinit.file_appender(hfile)
-    local cappend = dump_cinit.file_appender(cfile)
+  local happend = dump_cinit.file_appender(hfile)
+  local cappend = dump_cinit.file_appender(cfile)
 
-    dump_cinit.dump_defs(file, happend, cappend)
+  dump_cinit.dump_defs(file, happend, cappend)
 
-    hfile:close()
-    cfile:close()
-  else
-    -- Write C API.
-    hfilename = outbase .. ".upb.h"
-    cfilename = outbase .. ".upb.c"
-
-    if os.getenv("UPBC_VERBOSE") then
-      print("upbc:")
-      print(string.format("  source file=%s", src))
-      print(string.format("  output file base=%s", outbase))
-      print(string.format("  hfilename=%s", hfilename))
-      print(string.format("  cfilename=%s", cfilename))
-    end
-
-    local hfile = open(hfilename)
-    local cfile = open(cfilename)
-
-    local happend = dump_cinit.file_appender(hfile)
-    local cappend = dump_cinit.file_appender(cfile)
-
-    make_c_api.write_gencode(file, hfilename, happend, cappend)
-
-    hfile:close()
-    cfile:close()
-  end
+  hfile:close()
+  cfile:close()
 end
