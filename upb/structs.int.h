@@ -5,6 +5,9 @@
 #ifndef UPB_STRUCTS_H_
 #define UPB_STRUCTS_H_
 
+#include "upb/def.h"
+#include "upb/msg.h"
+
 struct upb_array {
   upb_fieldtype_t type;
   uint8_t element_size;

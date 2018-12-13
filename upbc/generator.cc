@@ -322,25 +322,41 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
   }
 
   for (auto field : FieldNumberOrder(message)) {
+
+    if (layout.HasHasbit(field)) {
+      output(
+          "UPB_INLINE bool $0_has_$1(const $0 *msg) { "
+          "return _upb_has_field(msg, $2); }\n",
+          msgname, field->name(), layout.GetHasbitIndex(field));
+    } else if (field->containing_oneof()) {
+      output(
+          "UPB_INLINE bool $0_has_$1(const $0 *msg) { "
+          "return _upb_has_oneof_field(msg, $2, $3); }\n",
+          msgname, field->name(),
+          GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
+          field->number());
+    }
+
     if (field->is_repeated()) {
       output(
           "UPB_INLINE $0 const* $1_$2(const $1 *msg, size_t *len) { "
-          "return _upb_array_accessor(UPB_FIELD_AT(msg, const upb_array*, $3), "
-          "len); }\n",
+          "return _upb_array_accessor(msg, $3, len); }\n",
           CTypeConst(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)));
+    } else if (field->containing_oneof()) {
+      output(
+          "UPB_INLINE $0 $1_$2(const $1 *msg) { "
+          "return UPB_READ_ONEOF(msg, $0, $3, $4, $5, $6); }\n",
+          CTypeConst(field), msgname, field->name(),
+          GetSizeInit(layout.GetFieldOffset(field)),
+          GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
+          field->number(), FieldDefault(field));
     } else {
-      output("UPB_INLINE $0 $1_$2(const $1 *msg) {", CTypeConst(field), msgname,
-             field->name());
-      if (field->containing_oneof()) {
-        output(" return UPB_READ_ONEOF(msg, $0, $1, $2, $3, $4); }\n",
-               CTypeConst(field), GetSizeInit(layout.GetFieldOffset(field)),
-               GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
-               field->number(), FieldDefault(field));
-      } else {
-        output(" return UPB_FIELD_AT(msg, $0, $1); }\n", CTypeConst(field),
-               GetSizeInit(layout.GetFieldOffset(field)));
-      }
+      output(
+          "UPB_INLINE $0 $1_$2(const $1 *msg) { "
+          "return UPB_FIELD_AT(msg, $0, $3); }\n",
+          CTypeConst(field), msgname, field->name(),
+          GetSizeInit(layout.GetFieldOffset(field)));
     }
   }
 
@@ -350,17 +366,17 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
     if (field->is_repeated()) {
       output(
           "UPB_INLINE $0* $1_$2_mutable($1 *msg, size_t *len) { "
-          "return _upb_array_mutable_accessor(UPB_FIELD_AT(msg, upb_array*, "
-          "$3), len); }\n",
+          "return _upb_array_mutable_accessor(msg, $3, len); }\n",
           CType(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)));
       output(
-          "UPB_INLINE $0* $1_$2_resize($1 *msg, size_t len) { "
-          "return _upb_array_resize_accessor(UPB_FIELD_AT(msg, upb_array*, "
-          "$3), len, $4); }\n",
+          "UPB_INLINE $0* $1_$2_resize($1 *msg, size_t len, "
+          "upb_arena *arena) { "
+          "return _upb_array_resize_accessor(msg, $3, len, $4, $5, arena); }\n",
           CType(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)),
-          GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size));
+          GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size),
+          0 /* TODO */);
     } else {
       output("UPB_INLINE void $0_set_$1($0 *msg, $2 value) { ", msgname,
              field->name(), CType(field));
@@ -384,6 +400,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
+      "#include \"upb/generated_util.h\"\n\n"
       "#include \"upb/msg.h\"\n\n"
       "#include \"upb/decode.h\"\n"
       "#include \"upb/encode.h\"\n"
