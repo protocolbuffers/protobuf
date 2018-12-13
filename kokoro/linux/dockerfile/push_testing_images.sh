@@ -6,7 +6,7 @@ cd $(dirname $0)/../../..
 git_root=$(pwd)
 cd -
 
-DOCKERHUB_ORGANIZATION=protobuf
+DOCKERHUB_ORGANIZATION=protobuftesting
 
 for DOCKERFILE_DIR in test/*
 do
