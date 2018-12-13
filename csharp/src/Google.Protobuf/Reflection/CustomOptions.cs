@@ -205,6 +205,12 @@ namespace Google.Protobuf.Reflection
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetMessage<T>(int field, out T value) where T : class, IMessage, new()
         {
+            if (values == null)
+            {
+                value = default(T);
+                return false;
+            }
+
             IExtensionValue extensionValue;
             if (values.TryGetValue(field, out extensionValue))
             {
@@ -236,6 +242,12 @@ namespace Google.Protobuf.Reflection
 
         private bool TryGetPrimitiveValue<T>(int field, out T value)
         {
+            if (values == null)
+            {
+                value = default(T);
+                return false;
+            }
+
             IExtensionValue extensionValue;
             if (values.TryGetValue(field, out extensionValue))
             {
