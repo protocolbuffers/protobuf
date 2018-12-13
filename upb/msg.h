@@ -24,6 +24,7 @@
 #include "upb/def.h"
 #include "upb/handlers.h"
 #include "upb/sink.h"
+#include "upb/structs.int.h"
 
 #ifdef __cplusplus
 
@@ -208,6 +209,31 @@ bool upb_msg_clearfield(upb_msg *msg,
 /* A upb_array stores data for a repeated field.  The memory management
  * semantics are the same as upb_msg.  A upb_array allocates dynamic
  * memory internally for the array elements. */
+
+UPB_INLINE const void *_upb_array_accessor(const upb_array *arr, size_t *size) {
+  if (size) *size = arr->size;
+  return arr->data;
+}
+
+UPB_INLINE void *_upb_array_mutable_accessor(upb_array *arr, size_t *size) {
+  if (size) *size = arr->size;
+  return arr->data;
+}
+
+UPB_INLINE void *_upb_array_resize_accessor(upb_array *arr, size_t size,
+                                            size_t elem_size) {
+  if (size > arr->size) {
+    size_t new_size = UPB_MAX(arr->size, 4);
+    size_t old_bytes = arr->size * elem_size;
+    size_t new_bytes;
+    upb_alloc *alloc = upb_arena_alloc(arr->arena);
+    while (new_size < size) new_size *= 2;
+    new_bytes = new_size * elem_size;
+    arr->data = upb_realloc(alloc, arr->data, old_bytes, new_bytes);
+  }
+  arr->len = size;
+  return arr->data;
+}
 
 upb_array *upb_array_new(upb_fieldtype_t type, upb_arena *a);
 upb_fieldtype_t upb_array_type(const upb_array *arr);
