@@ -1232,9 +1232,9 @@ static bool create_enumdef(
     const symtab_addctx *ctx, const char *prefix,
     const google_protobuf_EnumDescriptorProto *enum_proto) {
   upb_enumdef *e;
-  const upb_array *arr;
+  const google_protobuf_EnumValueDescriptorProto *const *values;
   upb_stringview name;
-  size_t i;
+  size_t i, n;
 
   name = google_protobuf_EnumDescriptorProto_name(enum_proto);
   CHK(upb_isident(name, false, ctx->status));
@@ -1248,11 +1248,10 @@ static bool create_enumdef(
 
   e->defaultval = 0;
 
-  arr = google_protobuf_EnumDescriptorProto_value(enum_proto);
+  values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n);
 
-  for (i = 0; i < upb_array_size(arr); i++) {
-    const google_protobuf_EnumValueDescriptorProto *value =
-        upb_msgval_getptr(upb_array_get(arr, i));
+  for (i = 0; i < n; i++) {
+    const google_protobuf_EnumValueDescriptorProto *value = values[i];
     upb_stringview name = google_protobuf_EnumValueDescriptorProto_name(value);
     char *name2 = upb_strdup2(name.data, name.size, ctx->alloc);
     int32_t num = google_protobuf_EnumValueDescriptorProto_number(value);
@@ -1277,7 +1276,10 @@ static bool create_msgdef(const symtab_addctx *ctx, const char *prefix,
                           const google_protobuf_DescriptorProto *msg_proto) {
   upb_msgdef *m;
   const google_protobuf_MessageOptions *options;
-  const upb_array *arr;
+  const google_protobuf_OneofDescriptorProto *const *oneofs;
+  const google_protobuf_FieldDescriptorProto *const *fields;
+  const google_protobuf_EnumDescriptorProto *const *enums;
+  const google_protobuf_DescriptorProto *const *msgs;
   size_t i, n;
   upb_stringview name;
 
@@ -1300,21 +1302,16 @@ static bool create_msgdef(const symtab_addctx *ctx, const char *prefix,
     m->map_entry = google_protobuf_MessageOptions_map_entry(options);
   }
 
-  arr = google_protobuf_DescriptorProto_oneof_decl(msg_proto);
+  oneofs = google_protobuf_DescriptorProto_oneof_decl(msg_proto, &n);
   m->oneof_count = 0;
-  n = upb_array_size(arr);
   m->oneofs = upb_malloc(ctx->alloc, sizeof(*m->oneofs) * n);
   for (i = 0; i < n; i++) {
-    const google_protobuf_OneofDescriptorProto *oneof_proto =
-        upb_msgval_getptr(upb_array_get(arr, i));
-    CHK(create_oneofdef(ctx, m, oneof_proto));
+    CHK(create_oneofdef(ctx, m, oneofs[i]));
   }
 
-  arr = google_protobuf_DescriptorProto_field(msg_proto);
-  for (i = 0; i < upb_array_size(arr); i++) {
-    const google_protobuf_FieldDescriptorProto *field_proto =
-        upb_msgval_getptr(upb_array_get(arr, i));
-    CHK(create_fielddef(ctx, m->full_name, m, field_proto));
+  fields = google_protobuf_DescriptorProto_field(msg_proto, &n);
+  for (i = 0; i < n; i++) {
+    CHK(create_fielddef(ctx, m->full_name, m, fields[i]));
   }
 
   CHK(assign_msg_indices(m, ctx->status));
@@ -1322,18 +1319,14 @@ static bool create_msgdef(const symtab_addctx *ctx, const char *prefix,
 
   /* This message is built.  Now build nested messages and enums. */
 
-  arr = google_protobuf_DescriptorProto_enum_type(msg_proto);
-  for (i = 0; i < upb_array_size(arr); i++) {
-    const google_protobuf_EnumDescriptorProto *enum_proto =
-        upb_msgval_getptr(upb_array_get(arr, i));
-    CHK(create_enumdef(ctx, m->full_name, enum_proto));
+  enums = google_protobuf_DescriptorProto_enum_type(msg_proto, &n);
+  for (i = 0; i < n; i++) {
+    CHK(create_enumdef(ctx, m->full_name, enums[i]));
   }
 
-  arr = google_protobuf_DescriptorProto_nested_type(msg_proto);
-  for (i = 0; i < upb_array_size(arr); i++) {
-    const google_protobuf_DescriptorProto *msg_proto2 =
-        upb_msgval_getptr(upb_array_get(arr, i));
-    CHK(create_msgdef(ctx, m->full_name, msg_proto2));
+  msgs = google_protobuf_DescriptorProto_nested_type(msg_proto, &n);
+  for (i = 0; i < n; i++) {
+    CHK(create_msgdef(ctx, m->full_name, msgs[i]));
   }
 
   return true;
@@ -1352,45 +1345,39 @@ typedef struct {
   int ext_count;
 } decl_counts;
 
-static void count_types_in_msg(
-    const google_protobuf_DescriptorProto *msg_proto,
-    decl_counts *counts) {
-  const upb_array *arr;
-  size_t i;
+static void count_types_in_msg(const google_protobuf_DescriptorProto *msg_proto,
+                               decl_counts *counts) {
+  const google_protobuf_DescriptorProto *const *msgs;
+  size_t i, n;
 
-  arr = google_protobuf_DescriptorProto_nested_type(msg_proto);
-  if (arr) {
-    for (i = 0; i < upb_array_size(arr); i++) {
-      count_types_in_msg(upb_msgval_getptr(upb_array_get(arr, i)), counts);
-    }
+  msgs = google_protobuf_DescriptorProto_nested_type(msg_proto, &n);
+  for (i = 0; i < n; i++) {
+    count_types_in_msg(msgs[i], counts);
   }
 
-  arr = google_protobuf_DescriptorProto_enum_type(msg_proto);
-  if (arr) {
-    counts->enum_count += upb_array_size(arr);
-  }
+  google_protobuf_DescriptorProto_enum_type(msg_proto, &n);
+  counts->enum_count += n;
 
-  arr = google_protobuf_DescriptorProto_extension(msg_proto);
-  if (arr) {
-    counts->ext_count += upb_array_size(arr);
-  }
+  google_protobuf_DescriptorProto_extension(msg_proto, &n);
+  counts->ext_count += n;
 }
 
 static void count_types_in_file(
     const google_protobuf_FileDescriptorProto *file_proto,
     decl_counts *counts) {
-  const upb_array *arr;
-  size_t i;
+  const google_protobuf_DescriptorProto *const *msgs;
+  size_t i, n;
 
-  arr = google_protobuf_FileDescriptorProto_message_type(file_proto);
-  for (i = 0; i < upb_array_size(arr); i++) {
-    count_types_in_msg(upb_msgval_getptr(upb_array_get(arr, i)), counts);
+  msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
+  for (i = 0; i < n; i++) {
+    count_types_in_msg(msgs[i], counts);
   }
 
-  arr = google_protobuf_FileDescriptorProto_enum_type(file_proto);
-  counts->enum_count += upb_array_size(arr);
-  arr = google_protobuf_FileDescriptorProto_extension(file_proto);
-  counts->ext_count += upb_array_size(arr);
+  google_protobuf_FileDescriptorProto_enum_type(file_proto, &n);
+  counts->enum_count += n;
+
+  google_protobuf_FileDescriptorProto_extension(file_proto, &n);
+  counts->ext_count += n;
 }
 
 static bool resolve_fielddef(const symtab_addctx *ctx, const char *prefix,
@@ -1424,11 +1411,13 @@ static bool resolve_fielddef(const symtab_addctx *ctx, const char *prefix,
 static bool build_filedef(
     const symtab_addctx *ctx, upb_filedef *file,
     const google_protobuf_FileDescriptorProto *file_proto) {
-  const google_protobuf_FileOptions *file_options_proto;
   upb_alloc *alloc = ctx->alloc;
-  const upb_array *arr;
+  const google_protobuf_FileOptions *file_options_proto;
+  const google_protobuf_DescriptorProto *const *msgs;
+  const google_protobuf_EnumDescriptorProto *const *enums;
+  const google_protobuf_FieldDescriptorProto *const *exts;
+  const upb_stringview* strs;
   size_t i, n;
-  int j;
   decl_counts counts;
   upb_stringview syntax, package;
 
@@ -1473,12 +1462,12 @@ static bool build_filedef(
   }
 
   /* Verify dependencies. */
-  arr = google_protobuf_FileDescriptorProto_dependency(file_proto);
-  n = upb_array_size(arr);
+  strs = google_protobuf_FileDescriptorProto_dependency(file_proto, &n);
   file->deps = upb_malloc(alloc, sizeof(*file->deps) * n) ;
   CHK_OOM(file->deps);
+
   for (i = 0; i < n; i++) {
-    upb_stringview dep_name = upb_msgval_getstr(upb_array_get(arr, i));
+    upb_stringview dep_name = strs[i];
     upb_value v;
     if (!upb_strtable_lookup2(&ctx->symtab->files, dep_name.data,
                               dep_name.size, &v)) {
@@ -1491,30 +1480,23 @@ static bool build_filedef(
   }
 
   /* Create messages. */
-  arr = google_protobuf_FileDescriptorProto_message_type(file_proto);
-  for (i = 0; i < upb_array_size(arr); i++) {
-    const google_protobuf_DescriptorProto *msg_proto =
-        upb_msgval_getptr(upb_array_get(arr, i));
-    CHK(create_msgdef(ctx, file->package, msg_proto));
+  msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
+  for (i = 0; i < n; i++) {
+    CHK(create_msgdef(ctx, file->package, msgs[i]));
   }
 
   /* Create enums. */
-  arr = google_protobuf_FileDescriptorProto_enum_type(file_proto);
-  for (i = 0; i < upb_array_size(arr); i++) {
-    const google_protobuf_EnumDescriptorProto *enum_proto =
-        upb_msgval_getptr(upb_array_get(arr, i));
-    CHK(create_enumdef(ctx, file->package, enum_proto));
+  enums = google_protobuf_FileDescriptorProto_enum_type(file_proto, &n);
+  for (i = 0; i < n; i++) {
+    CHK(create_enumdef(ctx, file->package, enums[i]));
   }
 
   /* Create extensions. */
-  arr = google_protobuf_FileDescriptorProto_extension(file_proto);
-  n = upb_array_size(arr);
+  exts = google_protobuf_FileDescriptorProto_extension(file_proto, &n);
   file->exts = upb_malloc(alloc, sizeof(*file->exts) * n);
   CHK_OOM(file->exts);
   for (i = 0; i < n; i++) {
-    const google_protobuf_FieldDescriptorProto *field_proto =
-        upb_msgval_getptr(upb_array_get(arr, i));
-    CHK(create_fielddef(ctx, file->package, NULL, field_proto));
+    CHK(create_fielddef(ctx, file->package, NULL, exts[i]));
   }
 
   /* Now that all names are in the table, resolve references. */
@@ -1524,6 +1506,7 @@ static bool build_filedef(
 
   for (i = 0; i < file->msg_count; i++) {
     const upb_msgdef *m = &file->msgs[i];
+    int j;
     for (j = 0; i < m->field_count; i++) {
       CHK(resolve_fielddef(ctx, m->full_name, (upb_fielddef*)&m->fields[j]));
     }

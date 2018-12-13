@@ -634,10 +634,9 @@ static int lupb_symtab_gc(lua_State *L) {
  * serialized string once we have a good story for vending compiled-in
  * messages. */
 static int lupb_symtab_add(lua_State *L) {
-  size_t len;
   upb_arena *arena;
-  size_t i;
-  upb_array *file_arr;
+  size_t i, n, len;
+  const google_protobuf_FileDescriptorProto *const *files;
   google_protobuf_FileDescriptorSet *set;
   upb_symtab *s = lupb_symtab_check(L, 1);
   const char *str = luaL_checklstring(L, 2, &len);
@@ -652,12 +651,9 @@ static int lupb_symtab_add(lua_State *L) {
     luaL_argerror(L, 2, "failed to parse descriptor");
   }
 
-  file_arr = (upb_array*)google_protobuf_FileDescriptorSet_file(set);
-  for (i = 0; i < upb_array_size(file_arr); i++) {
-    upb_msgval entry = upb_array_get(file_arr, i);
-    google_protobuf_FileDescriptorProto *file =
-        (void *)upb_msgval_getmsg(entry);
-    CHK(upb_symtab_addfile(s, file, &status));
+  files = google_protobuf_FileDescriptorSet_file(set, &n);
+  for (i = 0; i < n; i++) {
+    CHK(upb_symtab_addfile(s, files[i], &status));
   }
 
   return 0;
