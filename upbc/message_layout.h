@@ -60,6 +60,8 @@ class MessageLayout {
   Size message_size() const { return size_; }
 
   static bool HasHasbit(const google::protobuf::FieldDescriptor* field);
+  static SizeAndAlign SizeOfUnwrapped(
+      const google::protobuf::FieldDescriptor* field);
 
  private:
   void ComputeLayout(const google::protobuf::Descriptor* descriptor);
@@ -87,7 +89,8 @@ class MessageLayout {
   }
 
   static SizeAndAlign SizeOf(const google::protobuf::FieldDescriptor* field);
-  static int64_t FieldLayoutRank(const google::protobuf::FieldDescriptor* field);
+  static int64_t FieldLayoutRank(
+      const google::protobuf::FieldDescriptor* field);
 
   std::unordered_map<const google::protobuf::FieldDescriptor*, Size>
       field_offsets_;
