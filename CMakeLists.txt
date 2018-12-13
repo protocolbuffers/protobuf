@@ -80,6 +80,7 @@ add_library(upb
   upb/decode.h
   upb/def.h
   upb/encode.h
+  upb/generated_util.h
   upb/handlers.h
   upb/msg.h
   upb/msgfactory.h

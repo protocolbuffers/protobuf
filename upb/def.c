@@ -1138,12 +1138,24 @@ static bool create_fielddef(
   upb_value v = upb_value_constptr(f);
   const char *full_name;
   const char *shortname;
-  int oneof_index;
+  uint32_t field_number;
+
+  if (!google_protobuf_FieldDescriptorProto_has_name(field_proto)) {
+    upb_status_seterrmsg(ctx->status, "field has no name");
+    return false;
+  }
 
   name = google_protobuf_FieldDescriptorProto_name(field_proto);
   CHK(upb_isident(name, false, ctx->status));
   full_name = makefullname(prefix, name);
   shortname = shortdefname(full_name);
+
+  field_number = google_protobuf_FieldDescriptorProto_number(field_proto);
+
+  if (field_number == 0 || field_number > UPB_MAX_FIELDNUMBER) {
+    upb_status_seterrf(ctx->status, "invalid field number (%u)", field_number);
+    return false;
+  }
 
   if (m) {
     /* direct message field. */
@@ -1156,7 +1168,7 @@ static bool create_fielddef(
       return false;
     }
 
-    if (!upb_inttable_insert2(&m->itof, f->number_, v, alloc)) {
+    if (!upb_inttable_insert2(&m->itof, field_number, v, alloc)) {
       upb_status_seterrf(ctx->status, "duplicate field number (%u)", f->number_);
       return false;
     }
@@ -1171,45 +1183,41 @@ static bool create_fielddef(
   f->file = ctx->file;
   f->type_ = (int)google_protobuf_FieldDescriptorProto_type(field_proto);
   f->label_ = (int)google_protobuf_FieldDescriptorProto_label(field_proto);
-  f->number_ = google_protobuf_FieldDescriptorProto_number(field_proto);
+  f->number_ = field_number;
   f->oneof = NULL;
-
-  /* TODO(haberman): use hazzers. */
-  if (name.size == 0 || f->number_ == 0) {
-    upb_status_seterrmsg(ctx->status, "field name or number were not set");
-    return false;
-  }
 
   /* We can't resolve the subdef or (in the case of extensions) the containing
    * message yet, because it may not have been defined yet.  We stash a pointer
    * to the field_proto until later when we can properly resolve it. */
   f->sub.unresolved = field_proto;
 
-  if (m) {
-    /* XXX: need hazzers. */
-    oneof_index = google_protobuf_FieldDescriptorProto_oneof_index(field_proto);
-    if (oneof_index) {
-      if (upb_fielddef_label(f) != UPB_LABEL_OPTIONAL) {
-        upb_status_seterrf(ctx->status,
-                           "fields in oneof must have OPTIONAL label (%s)",
-                           f->full_name);
-        return false;
-      }
+  if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
+    int oneof_index =
+        google_protobuf_FieldDescriptorProto_oneof_index(field_proto);
 
-      if (oneof_index >= m->oneof_count) {
-        upb_status_seterrf(ctx->status, "oneof_index out of range (%s)",
-                           f->full_name);
-        return false;
-      }
-      f->oneof = &m->oneofs[oneof_index];
-    } else {
-      f->oneof = NULL;
+    if (upb_fielddef_label(f) != UPB_LABEL_OPTIONAL) {
+      upb_status_seterrf(ctx->status,
+                         "fields in oneof must have OPTIONAL label (%s)",
+                         f->full_name);
+      return false;
     }
-  }
 
-  if (f->number_ == 0 || f->number_ > UPB_MAX_FIELDNUMBER) {
-    upb_status_seterrf(ctx->status, "invalid field number (%u)", f->number_);
-    return false;
+    if (!m) {
+      upb_status_seterrf(ctx->status,
+                         "oneof_index provided for extension field (%s)",
+                         f->full_name);
+      return false;
+    }
+
+    if (oneof_index >= m->oneof_count) {
+      upb_status_seterrf(ctx->status, "oneof_index out of range (%s)",
+                         f->full_name);
+      return false;
+    }
+
+    f->oneof = &m->oneofs[oneof_index];
+  } else {
+    f->oneof = NULL;
   }
 
   defaultval = google_protobuf_FieldDescriptorProto_default_value(field_proto);
