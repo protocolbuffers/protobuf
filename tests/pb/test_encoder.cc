@@ -24,12 +24,13 @@ void test_pb_roundtrip() {
       google_protobuf_FileDescriptorSet_parsenew(
           upb_stringview_make(input.c_str(), input.size()), &arena);
   ASSERT(set);
-  const upb_array *arr = google_protobuf_FileDescriptorSet_file(set);
-  const google_protobuf_FileDescriptorProto *file_proto =
-      static_cast<const google_protobuf_FileDescriptorProto *>(
-          upb_msgval_getptr(upb_array_get(arr, 0)));
+  size_t n;
+  const google_protobuf_FileDescriptorProto *const *files =
+      google_protobuf_FileDescriptorSet_file(set, &n);
+  fprintf(stderr, "n: %d\n", (int)n);
+  ASSERT(n == 1);
   upb::Status status;
-  bool ok = symtab->AddFile(file_proto, &status);
+  bool ok = symtab->AddFile(files[0], &status);
   ASSERT(ok);
   const upb::MessageDef *md =
       symtab->LookupMessage("google.protobuf.FileDescriptorSet");
