@@ -2768,7 +2768,7 @@ _match:
 	break;
 	case 2:
 #line 2429 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 23; goto _again;} }
+	{ p--; {stack[top++] = cs; cs = 23;goto _again;} }
 	break;
 	case 3:
 #line 2433 "upb/json/parser.rl"
@@ -2842,17 +2842,17 @@ _match:
 #line 2488 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_TIMESTAMP)) {
-          {stack[top++] = cs; cs = 47; goto _again;}
+          {stack[top++] = cs; cs = 47;goto _again;}
         } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_DURATION)) {
-          {stack[top++] = cs; cs = 40; goto _again;}
+          {stack[top++] = cs; cs = 40;goto _again;}
         } else {
-          {stack[top++] = cs; cs = 32; goto _again;}
+          {stack[top++] = cs; cs = 32;goto _again;}
         }
       }
 	break;
 	case 21:
 #line 2499 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 75; goto _again;} }
+	{ p--; {stack[top++] = cs; cs = 75;goto _again;} }
 	break;
 	case 22:
 #line 2504 "upb/json/parser.rl"
@@ -2964,7 +2964,9 @@ _again:
 		switch ( *__acts++ ) {
 	case 0:
 #line 2425 "upb/json/parser.rl"
-	{ p--; {cs = stack[--top]; goto _again;} }
+	{ p--; {cs = stack[--top]; 	if ( p == pe )
+		goto _test_eof;
+goto _again;} }
 	break;
 	case 30:
 #line 2556 "upb/json/parser.rl"
@@ -2986,7 +2988,7 @@ _again:
 #line 2568 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-#line 2990 "upb/json/parser.c"
+#line 2992 "upb/json/parser.c"
 		}
 	}
 	}
@@ -3025,11 +3027,7 @@ static bool end(void *closure, const void *hd) {
 
   parse(parser, hd, &eof_ch, 0, NULL);
 
-  return parser->current_state >= 
-#line 3030 "upb/json/parser.c"
-103
-#line 2631 "upb/json/parser.rl"
-;
+  return parser->current_state >= 103;
 }
 
 static void json_parser_reset(upb_json_parser *p) {
@@ -3046,7 +3044,7 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 3050 "upb/json/parser.c"
+#line 3048 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
