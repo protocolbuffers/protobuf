@@ -24,26 +24,31 @@ namespace Conformance {
     static ConformanceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2Ui1QEKEkNvbmZvcm1h",
+            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UirQIKEkNvbmZvcm1h",
             "bmNlUmVxdWVzdBIaChBwcm90b2J1Zl9wYXlsb2FkGAEgASgMSAASFgoManNv",
-            "bl9wYXlsb2FkGAIgASgJSAASOAoXcmVxdWVzdGVkX291dHB1dF9mb3JtYXQY",
-            "AyABKA4yFy5jb25mb3JtYW5jZS5XaXJlRm9ybWF0EhQKDG1lc3NhZ2VfdHlw",
-            "ZRgEIAEoCRIwCg10ZXN0X2NhdGVnb3J5GAUgASgOMhkuY29uZm9ybWFuY2Uu",
-            "VGVzdENhdGVnb3J5QgkKB3BheWxvYWQisQEKE0NvbmZvcm1hbmNlUmVzcG9u",
-            "c2USFQoLcGFyc2VfZXJyb3IYASABKAlIABIZCg9zZXJpYWxpemVfZXJyb3IY",
-            "BiABKAlIABIXCg1ydW50aW1lX2Vycm9yGAIgASgJSAASGgoQcHJvdG9idWZf",
-            "cGF5bG9hZBgDIAEoDEgAEhYKDGpzb25fcGF5bG9hZBgEIAEoCUgAEhEKB3Nr",
-            "aXBwZWQYBSABKAlIAEIICgZyZXN1bHQqNQoKV2lyZUZvcm1hdBIPCgtVTlNQ",
-            "RUNJRklFRBAAEgwKCFBST1RPQlVGEAESCAoESlNPThACKmoKDFRlc3RDYXRl",
-            "Z29yeRIUChBVTlNQRUNJRklFRF9URVNUEAASDwoLQklOQVJZX1RFU1QQARIN",
-            "CglKU09OX1RFU1QQAhIkCiBKU09OX0lHTk9SRV9VTktOT1dOX1BBUlNJTkdf",
-            "VEVTVBADQiEKH2NvbS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFuY2ViBnBy",
-            "b3RvMw=="));
+            "bl9wYXlsb2FkGAIgASgJSAASFgoManNwYl9wYXlsb2FkGAcgASgJSAASOAoX",
+            "cmVxdWVzdGVkX291dHB1dF9mb3JtYXQYAyABKA4yFy5jb25mb3JtYW5jZS5X",
+            "aXJlRm9ybWF0EhQKDG1lc3NhZ2VfdHlwZRgEIAEoCRIwCg10ZXN0X2NhdGVn",
+            "b3J5GAUgASgOMhkuY29uZm9ybWFuY2UuVGVzdENhdGVnb3J5Ej4KFWpzcGJf",
+            "ZW5jb2Rpbmdfb3B0aW9ucxgGIAEoCzIfLmNvbmZvcm1hbmNlLkpzcGJFbmNv",
+            "ZGluZ0NvbmZpZ0IJCgdwYXlsb2FkIskBChNDb25mb3JtYW5jZVJlc3BvbnNl",
+            "EhUKC3BhcnNlX2Vycm9yGAEgASgJSAASGQoPc2VyaWFsaXplX2Vycm9yGAYg",
+            "ASgJSAASFwoNcnVudGltZV9lcnJvchgCIAEoCUgAEhoKEHByb3RvYnVmX3Bh",
+            "eWxvYWQYAyABKAxIABIWCgxqc29uX3BheWxvYWQYBCABKAlIABIRCgdza2lw",
+            "cGVkGAUgASgJSAASFgoManNwYl9wYXlsb2FkGAcgASgJSABCCAoGcmVzdWx0",
+            "IjcKEkpzcGJFbmNvZGluZ0NvbmZpZxIhChl1c2VfanNwYl9hcnJheV9hbnlf",
+            "Zm9ybWF0GAEgASgIKj8KCldpcmVGb3JtYXQSDwoLVU5TUEVDSUZJRUQQABIM",
+            "CghQUk9UT0JVRhABEggKBEpTT04QAhIICgRKU1BCEAMqeQoMVGVzdENhdGVn",
+            "b3J5EhQKEFVOU1BFQ0lGSUVEX1RFU1QQABIPCgtCSU5BUllfVEVTVBABEg0K",
+            "CUpTT05fVEVTVBACEiQKIEpTT05fSUdOT1JFX1VOS05PV05fUEFSU0lOR19U",
+            "RVNUEAMSDQoJSlNQQl9URVNUEARCIQofY29tLmdvb2dsZS5wcm90b2J1Zi5j",
+            "b25mb3JtYW5jZWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat", "MessageType", "TestCategory" }, new[]{ "Payload" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions" }, new[]{ "Payload" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload" }, new[]{ "Result" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.JspbEncodingConfig), global::Conformance.JspbEncodingConfig.Parser, new[]{ "UseJspbArrayAnyFormat" }, null, null, null)
           }));
     }
     #endregion
@@ -54,6 +59,10 @@ namespace Conformance {
     [pbr::OriginalName("UNSPECIFIED")] Unspecified = 0,
     [pbr::OriginalName("PROTOBUF")] Protobuf = 1,
     [pbr::OriginalName("JSON")] Json = 2,
+    /// <summary>
+    /// Google internal only. Opensource testees just skip it.
+    /// </summary>
+    [pbr::OriginalName("JSPB")] Jspb = 3,
   }
 
   public enum TestCategory {
@@ -74,6 +83,10 @@ namespace Conformance {
     /// for more detail.
     /// </summary>
     [pbr::OriginalName("JSON_IGNORE_UNKNOWN_PARSING_TEST")] JsonIgnoreUnknownParsingTest = 3,
+    /// <summary>
+    /// Test jspb wire format. Google internal only.
+    /// </summary>
+    [pbr::OriginalName("JSPB_TEST")] JspbTest = 4,
   }
 
   #endregion
@@ -114,12 +127,16 @@ namespace Conformance {
       requestedOutputFormat_ = other.requestedOutputFormat_;
       messageType_ = other.messageType_;
       testCategory_ = other.testCategory_;
+      jspbEncodingOptions_ = other.jspbEncodingOptions_ != null ? other.jspbEncodingOptions_.Clone() : null;
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
           ProtobufPayload = other.ProtobufPayload;
           break;
         case PayloadOneofCase.JsonPayload:
           JsonPayload = other.JsonPayload;
+          break;
+        case PayloadOneofCase.JspbPayload:
+          JspbPayload = other.JspbPayload;
           break;
       }
 
@@ -150,6 +167,20 @@ namespace Conformance {
       set {
         payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.JsonPayload;
+      }
+    }
+
+    /// <summary>Field number for the "jspb_payload" field.</summary>
+    public const int JspbPayloadFieldNumber = 7;
+    /// <summary>
+    /// Google internal only.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string JspbPayload {
+      get { return payloadCase_ == PayloadOneofCase.JspbPayload ? (string) payload_ : ""; }
+      set {
+        payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        payloadCase_ = PayloadOneofCase.JspbPayload;
       }
     }
 
@@ -199,12 +230,27 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "jspb_encoding_options" field.</summary>
+    public const int JspbEncodingOptionsFieldNumber = 6;
+    private global::Conformance.JspbEncodingConfig jspbEncodingOptions_;
+    /// <summary>
+    /// Specify details for how to encode jspb.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Conformance.JspbEncodingConfig JspbEncodingOptions {
+      get { return jspbEncodingOptions_; }
+      set {
+        jspbEncodingOptions_ = value;
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
       None = 0,
       ProtobufPayload = 1,
       JsonPayload = 2,
+      JspbPayload = 7,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -233,9 +279,11 @@ namespace Conformance {
       }
       if (ProtobufPayload != other.ProtobufPayload) return false;
       if (JsonPayload != other.JsonPayload) return false;
+      if (JspbPayload != other.JspbPayload) return false;
       if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
       if (MessageType != other.MessageType) return false;
       if (TestCategory != other.TestCategory) return false;
+      if (!object.Equals(JspbEncodingOptions, other.JspbEncodingOptions)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -245,9 +293,11 @@ namespace Conformance {
       int hash = 1;
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.JspbPayload) hash ^= JspbPayload.GetHashCode();
       if (RequestedOutputFormat != 0) hash ^= RequestedOutputFormat.GetHashCode();
       if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
       if (TestCategory != 0) hash ^= TestCategory.GetHashCode();
+      if (jspbEncodingOptions_ != null) hash ^= JspbEncodingOptions.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -282,6 +332,14 @@ namespace Conformance {
         output.WriteRawTag(40);
         output.WriteEnum((int) TestCategory);
       }
+      if (jspbEncodingOptions_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(JspbEncodingOptions);
+      }
+      if (payloadCase_ == PayloadOneofCase.JspbPayload) {
+        output.WriteRawTag(58);
+        output.WriteString(JspbPayload);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -296,6 +354,9 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.JsonPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(JsonPayload);
       }
+      if (payloadCase_ == PayloadOneofCase.JspbPayload) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(JspbPayload);
+      }
       if (RequestedOutputFormat != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) RequestedOutputFormat);
       }
@@ -304,6 +365,9 @@ namespace Conformance {
       }
       if (TestCategory != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) TestCategory);
+      }
+      if (jspbEncodingOptions_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(JspbEncodingOptions);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -325,12 +389,21 @@ namespace Conformance {
       if (other.TestCategory != 0) {
         TestCategory = other.TestCategory;
       }
+      if (other.jspbEncodingOptions_ != null) {
+        if (jspbEncodingOptions_ == null) {
+          JspbEncodingOptions = new global::Conformance.JspbEncodingConfig();
+        }
+        JspbEncodingOptions.MergeFrom(other.JspbEncodingOptions);
+      }
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
           ProtobufPayload = other.ProtobufPayload;
           break;
         case PayloadOneofCase.JsonPayload:
           JsonPayload = other.JsonPayload;
+          break;
+        case PayloadOneofCase.JspbPayload:
+          JspbPayload = other.JspbPayload;
           break;
       }
 
@@ -365,6 +438,17 @@ namespace Conformance {
           }
           case 40: {
             TestCategory = (global::Conformance.TestCategory) input.ReadEnum();
+            break;
+          }
+          case 50: {
+            if (jspbEncodingOptions_ == null) {
+              JspbEncodingOptions = new global::Conformance.JspbEncodingConfig();
+            }
+            input.ReadMessage(JspbEncodingOptions);
+            break;
+          }
+          case 58: {
+            JspbPayload = input.ReadString();
             break;
           }
         }
@@ -419,6 +503,9 @@ namespace Conformance {
           break;
         case ResultOneofCase.Skipped:
           Skipped = other.Skipped;
+          break;
+        case ResultOneofCase.JspbPayload:
+          JspbPayload = other.JspbPayload;
           break;
       }
 
@@ -525,6 +612,22 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "jspb_payload" field.</summary>
+    public const int JspbPayloadFieldNumber = 7;
+    /// <summary>
+    /// If the input was successfully parsed and the requested output was JSPB,
+    /// serialize to JSPB and set it in this field. JSPB is google internal only
+    /// format. Opensource testees can just skip it.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string JspbPayload {
+      get { return resultCase_ == ResultOneofCase.JspbPayload ? (string) result_ : ""; }
+      set {
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        resultCase_ = ResultOneofCase.JspbPayload;
+      }
+    }
+
     private object result_;
     /// <summary>Enum of possible cases for the "result" oneof.</summary>
     public enum ResultOneofCase {
@@ -535,6 +638,7 @@ namespace Conformance {
       ProtobufPayload = 3,
       JsonPayload = 4,
       Skipped = 5,
+      JspbPayload = 7,
     }
     private ResultOneofCase resultCase_ = ResultOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -567,6 +671,7 @@ namespace Conformance {
       if (ProtobufPayload != other.ProtobufPayload) return false;
       if (JsonPayload != other.JsonPayload) return false;
       if (Skipped != other.Skipped) return false;
+      if (JspbPayload != other.JspbPayload) return false;
       if (ResultCase != other.ResultCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -580,6 +685,7 @@ namespace Conformance {
       if (resultCase_ == ResultOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.Skipped) hash ^= Skipped.GetHashCode();
+      if (resultCase_ == ResultOneofCase.JspbPayload) hash ^= JspbPayload.GetHashCode();
       hash ^= (int) resultCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -618,6 +724,10 @@ namespace Conformance {
         output.WriteRawTag(50);
         output.WriteString(SerializeError);
       }
+      if (resultCase_ == ResultOneofCase.JspbPayload) {
+        output.WriteRawTag(58);
+        output.WriteString(JspbPayload);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -643,6 +753,9 @@ namespace Conformance {
       }
       if (resultCase_ == ResultOneofCase.Skipped) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Skipped);
+      }
+      if (resultCase_ == ResultOneofCase.JspbPayload) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(JspbPayload);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -673,6 +786,9 @@ namespace Conformance {
           break;
         case ResultOneofCase.Skipped:
           Skipped = other.Skipped;
+          break;
+        case ResultOneofCase.JspbPayload:
+          JspbPayload = other.JspbPayload;
           break;
       }
 
@@ -711,6 +827,147 @@ namespace Conformance {
           }
           case 50: {
             SerializeError = input.ReadString();
+            break;
+          }
+          case 58: {
+            JspbPayload = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  /// <summary>
+  /// Encoding options for jspb format.
+  /// </summary>
+  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig> {
+    private static readonly pb::MessageParser<JspbEncodingConfig> _parser = new pb::MessageParser<JspbEncodingConfig>(() => new JspbEncodingConfig());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<JspbEncodingConfig> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public JspbEncodingConfig() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public JspbEncodingConfig(JspbEncodingConfig other) : this() {
+      useJspbArrayAnyFormat_ = other.useJspbArrayAnyFormat_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public JspbEncodingConfig Clone() {
+      return new JspbEncodingConfig(this);
+    }
+
+    /// <summary>Field number for the "use_jspb_array_any_format" field.</summary>
+    public const int UseJspbArrayAnyFormatFieldNumber = 1;
+    private bool useJspbArrayAnyFormat_;
+    /// <summary>
+    /// Encode the value field of Any as jspb array if ture, otherwise binary.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool UseJspbArrayAnyFormat {
+      get { return useJspbArrayAnyFormat_; }
+      set {
+        useJspbArrayAnyFormat_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as JspbEncodingConfig);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(JspbEncodingConfig other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (UseJspbArrayAnyFormat != other.UseJspbArrayAnyFormat) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (UseJspbArrayAnyFormat != false) hash ^= UseJspbArrayAnyFormat.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (UseJspbArrayAnyFormat != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(UseJspbArrayAnyFormat);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (UseJspbArrayAnyFormat != false) {
+        size += 1 + 1;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(JspbEncodingConfig other) {
+      if (other == null) {
+        return;
+      }
+      if (other.UseJspbArrayAnyFormat != false) {
+        UseJspbArrayAnyFormat = other.UseJspbArrayAnyFormat;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
+            break;
+          case 8: {
+            UseJspbArrayAnyFormat = input.ReadBool();
             break;
           }
         }
