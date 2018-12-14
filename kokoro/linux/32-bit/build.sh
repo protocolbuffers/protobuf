@@ -10,8 +10,9 @@
 # Change to repo root
 cd $(dirname $0)/../../..
 
-export DOCKERFILE_DIR=kokoro/linux/32-bit
-export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker.sh
+export DOCKERHUB_ORGANIZATION=protobuftesting
+export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/php_32bit
+export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker2.sh
 export OUTPUT_DIR=testoutput
 export TEST_SET="php_all_32"
 ./kokoro/linux/build_and_run_docker.sh
