@@ -231,3 +231,8 @@ RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.phar \
   && chmod +x phpunit \
   && cp phpunit /usr/local/php-7.3/bin \
   && mv phpunit /usr/local/php-7.3-zts/bin
+
+# Install php dependencies
+RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
+  valgrind \
+  && apt-get clean
