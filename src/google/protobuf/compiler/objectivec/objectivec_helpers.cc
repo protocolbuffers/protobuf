@@ -787,7 +787,7 @@ string GPBGenericValueFieldName(const FieldDescriptor* field) {
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
+  return string();
 }
 
 
@@ -1706,21 +1706,23 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
       offset = proto_file_list.length();
     }
 
-    StringPiece proto_file(proto_file_list, start, offset - start);
+    StringPiece proto_file = proto_file_list.substr(start, offset - start);
     TrimWhitespace(&proto_file);
     if (proto_file.size() != 0) {
       std::map<string, string>::iterator existing_entry =
           map_->find(string(proto_file));
       if (existing_entry != map_->end()) {
-        std::cerr << "warning: duplicate proto file reference, replacing framework entry for '"
-             << string(proto_file) << "' with '" << string(framework_name)
-             << "' (was '" << existing_entry->second << "')." << std::endl;
+        std::cerr << "warning: duplicate proto file reference, replacing "
+                     "framework entry for '"
+                  << string(proto_file) << "' with '" << string(framework_name)
+                  << "' (was '" << existing_entry->second << "')." << std::endl;
         std::cerr.flush();
       }
 
       if (proto_file.find(' ') != StringPiece::npos) {
-        std::cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
-             << string(proto_file) << "'" << std::endl;
+        std::cerr << "note: framework mapping file had a proto file with a "
+                     "space in, hopefully that isn't a missing comma: '"
+                  << string(proto_file) << "'" << std::endl;
         std::cerr.flush();
       }
 
