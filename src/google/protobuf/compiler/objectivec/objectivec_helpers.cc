@@ -48,8 +48,8 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/strutil.h>
-
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -364,7 +364,7 @@ string StripProto(const string& filename) {
   }
 }
 
-void StringPieceTrimWhitespace(StringPiece* input) {
+void TrimWhitespace(StringPiece* input) {
   while (!input->empty() && ascii_isspace(*input->data())) {
     input->remove_prefix(1);
   }
@@ -659,7 +659,7 @@ string GetCapitalizedType(const FieldDescriptor* field) {
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
+  return string();
 }
 
 ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type) {
@@ -787,7 +787,7 @@ string GPBGenericValueFieldName(const FieldDescriptor* field) {
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
+  return string();
 }
 
 
@@ -859,7 +859,7 @@ string DefaultValue(const FieldDescriptor* field) {
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
+  return string();
 }
 
 bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
@@ -1047,18 +1047,17 @@ bool ExpectedPrefixesCollector::ConsumeLine(
     const StringPiece& line, string* out_error) {
   int offset = line.find('=');
   if (offset == StringPiece::npos) {
-    *out_error =
-        string("Expected prefixes file line without equal sign: '") +
-        line.ToString() + "'.";
+    *out_error = string("Expected prefixes file line without equal sign: '") +
+                 string(line) + "'.";
     return false;
   }
-  StringPiece package(line, 0, offset);
-  StringPiece prefix(line, offset + 1, line.length() - offset - 1);
-  StringPieceTrimWhitespace(&package);
-  StringPieceTrimWhitespace(&prefix);
+  StringPiece package = line.substr(0, offset);
+  StringPiece prefix = line.substr(offset + 1);
+  TrimWhitespace(&package);
+  TrimWhitespace(&prefix);
   // Don't really worry about error checking the package/prefix for
   // being valid.  Assume the file is validated when it is created/edited.
-  (*prefix_map_)[package.ToString()] = prefix.ToString();
+  (*prefix_map_)[string(package)] = string(prefix);
   return true;
 }
 
@@ -1474,7 +1473,7 @@ class Parser {
 
 bool Parser::ParseChunk(StringPiece chunk) {
   if (!leftover_.empty()) {
-    chunk.AppendToString(&leftover_);
+    leftover_ += string(chunk);
     p_ = StringPiece(leftover_);
   } else {
     p_ = chunk;
@@ -1483,7 +1482,7 @@ bool Parser::ParseChunk(StringPiece chunk) {
   if (p_.empty()) {
     leftover_.clear();
   } else {
-    leftover_ = p_.ToString();
+    leftover_ = string(p_);
   }
   return result;
 }
@@ -1506,7 +1505,7 @@ bool Parser::ParseLoop() {
   while (ReadLine(&p_, &line)) {
     ++line_;
     RemoveComment(&line);
-    StringPieceTrimWhitespace(&line);
+    TrimWhitespace(&line);
     if (line.size() == 0) {
       continue;  // Blank line.
     }
@@ -1693,12 +1692,12 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
   if (offset == StringPiece::npos) {
     *out_error =
         string("Framework/proto file mapping line without colon sign: '") +
-        line.ToString() + "'.";
+        string(line) + "'.";
     return false;
   }
-  StringPiece framework_name(line, 0, offset);
-  StringPiece proto_file_list(line, offset + 1, line.length() - offset - 1);
-  StringPieceTrimWhitespace(&framework_name);
+  StringPiece framework_name = line.substr(0, offset);
+  StringPiece proto_file_list = line.substr(offset + 1);
+  TrimWhitespace(&framework_name);
 
   int start = 0;
   while (start < proto_file_list.length()) {
@@ -1707,25 +1706,27 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
       offset = proto_file_list.length();
     }
 
-    StringPiece proto_file(proto_file_list, start, offset - start);
-    StringPieceTrimWhitespace(&proto_file);
+    StringPiece proto_file = proto_file_list.substr(start, offset - start);
+    TrimWhitespace(&proto_file);
     if (proto_file.size() != 0) {
       std::map<string, string>::iterator existing_entry =
-          map_->find(proto_file.ToString());
+          map_->find(string(proto_file));
       if (existing_entry != map_->end()) {
-        std::cerr << "warning: duplicate proto file reference, replacing framework entry for '"
-             << proto_file.ToString() << "' with '" << framework_name.ToString()
-             << "' (was '" << existing_entry->second << "')." << std::endl;
+        std::cerr << "warning: duplicate proto file reference, replacing "
+                     "framework entry for '"
+                  << string(proto_file) << "' with '" << string(framework_name)
+                  << "' (was '" << existing_entry->second << "')." << std::endl;
         std::cerr.flush();
       }
 
       if (proto_file.find(' ') != StringPiece::npos) {
-        std::cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
-             << proto_file.ToString() << "'" << std::endl;
+        std::cerr << "note: framework mapping file had a proto file with a "
+                     "space in, hopefully that isn't a missing comma: '"
+                  << string(proto_file) << "'" << std::endl;
         std::cerr.flush();
       }
 
-      (*map_)[proto_file.ToString()] = framework_name.ToString();
+      (*map_)[string(proto_file)] = string(framework_name);
     }
 
     start = offset + 1;
