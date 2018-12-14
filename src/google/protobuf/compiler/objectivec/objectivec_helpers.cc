@@ -48,8 +48,8 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/strutil.h>
-
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -859,7 +859,7 @@ string DefaultValue(const FieldDescriptor* field) {
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
+  return string();
 }
 
 bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
@@ -1047,9 +1047,8 @@ bool ExpectedPrefixesCollector::ConsumeLine(
     const StringPiece& line, string* out_error) {
   int offset = line.find('=');
   if (offset == StringPiece::npos) {
-    *out_error =
-        string("Expected prefixes file line without equal sign: '") +
-        line.ToString() + "'.";
+    *out_error = string("Expected prefixes file line without equal sign: '") +
+                 string(line) + "'.";
     return false;
   }
   StringPiece package = line.substr(0, offset);
@@ -1474,7 +1473,7 @@ class Parser {
 
 bool Parser::ParseChunk(StringPiece chunk) {
   if (!leftover_.empty()) {
-    leftover_ += chunk;
+    leftover_ += string(chunk);
     p_ = StringPiece(leftover_);
   } else {
     p_ = chunk;
@@ -1693,11 +1692,11 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
   if (offset == StringPiece::npos) {
     *out_error =
         string("Framework/proto file mapping line without colon sign: '") +
-        line.ToString() + "'.";
+        string(line) + "'.";
     return false;
   }
-  StringPiece framework_name(line, 0, offset);
-  StringPiece proto_file_list(line, offset + 1, line.length() - offset - 1);
+  StringPiece framework_name = line.substr(0, offset);
+  StringPiece proto_file_list = line.substr(offset + 1);
   TrimWhitespace(&framework_name);
 
   int start = 0;
