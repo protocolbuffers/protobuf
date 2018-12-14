@@ -305,6 +305,7 @@ use_php() {
   export PATH=/usr/local/php-${VERSION}/bin:$PATH
   export CPLUS_INCLUDE_PATH=/usr/local/php-${VERSION}/include/php/main:/usr/local/php-${VERSION}/include/php/:$CPLUS_INCLUDE_PATH
   export C_INCLUDE_PATH=/usr/local/php-${VERSION}/include/php/main:/usr/local/php-${VERSION}/include/php/:$C_INCLUDE_PATH
+  ls /usr/local/php-${VERSION}/bin
   generate_php_test_proto
 }
 
@@ -339,6 +340,7 @@ build_php5.5() {
 
 build_php5.5_c() {
   use_php 5.5
+  ls /usr/local/php-5.5/bin
   pushd php/tests
   /bin/bash ./test.sh 5.5
   popd
