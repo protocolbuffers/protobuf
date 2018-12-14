@@ -53,6 +53,7 @@ def RewriteXml(filename, rewriter, add_xml_prefix=True):
   if add_xml_prefix:
     file_handle.write('<?xml version="1.0" encoding="UTF-8"?>\n')
   file_handle.write(content)
+  file_handle.write('\n')
   file_handle.close()
 
 
