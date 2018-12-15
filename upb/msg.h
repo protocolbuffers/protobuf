@@ -37,9 +37,11 @@ class MessageLayout;
 
 #endif
 
-UPB_DECLARE_TYPE(upb::Array, upb_array)
 UPB_DECLARE_TYPE(upb::Map, upb_map)
 UPB_DECLARE_TYPE(upb::MapIterator, upb_mapiter)
+
+struct upb_array;
+typedef struct upb_array upb_array;
 
 /* TODO(haberman): C++ accessors */
 
