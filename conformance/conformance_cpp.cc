@@ -137,6 +137,11 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
     case ConformanceRequest::PAYLOAD_NOT_SET:
       GOOGLE_LOG(FATAL) << "Request didn't have payload.";
       break;
+
+    default:
+      GOOGLE_LOG(FATAL) << "unknown payload type: "
+                        << request.payload_case();
+      break;
   }
 
   switch (request.requested_output_format()) {

@@ -3,6 +3,7 @@
 require_once("Conformance/WireFormat.php");
 require_once("Conformance/ConformanceResponse.php");
 require_once("Conformance/ConformanceRequest.php");
+require_once("Conformance/JspbEncodingConfig.php");
 require_once("Conformance/TestCategory.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
 require_once("Protobuf_test_messages/Proto3/ForeignEnum.php");
