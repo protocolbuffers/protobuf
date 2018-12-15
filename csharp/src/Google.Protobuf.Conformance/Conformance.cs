@@ -542,7 +542,7 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.TextPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(TextPayload);
       }
-      if (RequestedOutputFormat != 0) {
+      if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) RequestedOutputFormat);
       }
       if (MessageType.Length != 0) {
