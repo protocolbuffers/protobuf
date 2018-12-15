@@ -212,6 +212,24 @@ int ForkPipeRunner::Run(
   return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+// TODO(haberman): make this work on Windows, instead of using these
+// UNIX-specific APIs.
+//
+// There is a platform-agnostic API in
+//    src/google/protobuf/compiler/subprocess.h
+//
+// However that API only supports sending a single message to the subprocess.
+// We really want to be able to send messages and receive responses one at a
+// time:
+//
+// 1. Spawning a new process for each test would take way too long for thousands
+//    of tests and subprocesses like java that can take 100ms or more to start
+//    up.
+//
+// 2. Sending all the tests in one big message and receiving all results in one
+//    big message would take away our visibility about which test(s) caused a
+//    crash or other fatal error.  It would also give us only a single failure
+//    instead of all of them.
 void ForkPipeRunner::SpawnTestProgram() {
   int toproc_pipe_fd[2];
   int fromproc_pipe_fd[2];
