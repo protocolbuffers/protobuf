@@ -16,7 +16,7 @@ UPB_INLINE const void *_upb_array_accessor(const void *msg, size_t ofs,
                                            size_t *size) {
   const upb_array *arr = *PTR_AT(msg, ofs, const upb_array*);
   if (arr) {
-    if (size) *size = arr->size;
+    if (size) *size = arr->len;
     return arr->data;
   } else {
     if (size) *size = 0;
@@ -28,7 +28,7 @@ UPB_INLINE void *_upb_array_mutable_accessor(void *msg, size_t ofs,
                                              size_t *size) {
   upb_array *arr = *PTR_AT(msg, ofs, upb_array*);
   if (arr) {
-    if (size) *size = arr->size;
+    if (size) *size = arr->len;
     return arr->data;
   } else {
     if (size) size = 0;
@@ -66,7 +66,7 @@ UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
 }
 
 UPB_INLINE bool _upb_has_field(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, const char) & (idx % 8)) != 0;
+  return (*PTR_AT(msg, idx / 8, const char) & (1 << (idx % 8))) != 0;
 }
 
 UPB_INLINE bool _upb_has_oneof_field(const void *msg, size_t case_ofs, int32_t num) {

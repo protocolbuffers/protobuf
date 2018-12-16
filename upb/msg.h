@@ -98,6 +98,9 @@ UPB_INLINE bool upb_stringview_eql(upb_stringview a, upb_stringview b) {
   return a.size == b.size && memcmp(a.data, b.data, a.size) == 0;
 }
 
+#define UPB_STRINGVIEW_FORMAT "%.*s"
+#define UPB_STRINGVIEW_ARGS(view) view.size, view.data
+
 #define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
 
 

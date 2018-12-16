@@ -521,7 +521,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
         }
 
         if (MessageLayout::HasHasbit(field)) {
-          presence = absl::StrCat(layout.GetHasbitIndex(field) + 1);
+          presence = absl::StrCat(layout.GetHasbitIndex(field));
         } else if (field->containing_oneof()) {
           MessageLayout::Size case_offset =
               layout.GetOneofCaseOffset(field->containing_oneof());

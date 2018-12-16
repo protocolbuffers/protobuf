@@ -27,14 +27,17 @@ void test_pb_roundtrip() {
   size_t n;
   const google_protobuf_FileDescriptorProto *const *files =
       google_protobuf_FileDescriptorSet_file(set, &n);
-  fprintf(stderr, "n: %d\n", (int)n);
   ASSERT(n == 1);
   upb::Status status;
   bool ok = symtab->AddFile(files[0], &status);
-  ASSERT(ok);
+  if (!ok) {
+    fprintf(stderr, "Error building def: %s\n", upb_status_errmsg(&status));
+    ASSERT(false);
+  }
   const upb::MessageDef *md =
       symtab->LookupMessage("google.protobuf.FileDescriptorSet");
   ASSERT(md);
+  printf("name: %s\n", md->full_name());
   upb::reffed_ptr<const upb::Handlers> encoder_handlers(
       upb::pb::Encoder::NewHandlers(md));
   upb::reffed_ptr<const upb::pb::DecoderMethod> method(
