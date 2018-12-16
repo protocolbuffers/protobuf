@@ -8,6 +8,7 @@ load(
     "make_shell_script",
     "upb_amalgamation",
     "upb_proto_library",
+    "upb_proto_reflection_library",
 )
 
 # C/C++ rules ##################################################################
@@ -167,10 +168,24 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "test_decoder_proto",
+    srcs = [
+        "tests/pb/test_decoder.proto"
+    ]
+)
+
+upb_proto_reflection_library(
+    name = "test_decoder_upbproto",
+    deps = ["test_decoder_proto"],
+    upbc = ":protoc-gen-upb",
+)
+
 cc_test(
     name = "test_decoder",
     srcs = ["tests/pb/test_decoder.cc"],
     deps = [
+        ":test_decoder_upbproto",
         ":upb_pb",
         ":upb_test",
     ],

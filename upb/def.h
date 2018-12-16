@@ -659,7 +659,6 @@ const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i);
 const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i);
 const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i);
 
-
 UPB_END_EXTERN_C
 
 #ifdef __cplusplus
@@ -706,6 +705,15 @@ int upb_symtab_filecount(const upb_symtab *s);
 bool upb_symtab_addfile(upb_symtab *s,
                         const google_protobuf_FileDescriptorProto* file,
                         upb_status *status);
+
+/* For generated code only: loads a generated descriptor. */
+typedef struct upb_def_init {
+  struct upb_def_init **deps;
+  const char *filename;
+  upb_stringview descriptor;
+} upb_def_init;
+
+bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init);
 
 UPB_END_EXTERN_C
 

@@ -643,7 +643,7 @@ uint32_t upb_msgdef_submsgfieldcount(const upb_msgdef *m) {
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
   upb_value val;
   return upb_inttable_lookup32(&m->itof, i, &val) ?
-      upb_value_getptr(val) : NULL;
+      upb_value_getconstptr(val) : NULL;
 }
 
 const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name,
@@ -1128,12 +1128,14 @@ static bool create_fielddef(
 
   if (m) {
     /* direct message field. */
+    upb_value v, packed_v;
+
     f = (upb_fielddef*)&m->fields[m->field_count++];
     f->msgdef = m;
     f->is_extension_ = false;
 
-    upb_value packed_v = pack_def(f, UPB_DEFTYPE_FIELD);
-    upb_value v = upb_value_constptr(f);
+    packed_v = pack_def(f, UPB_DEFTYPE_FIELD);
+    v = upb_value_constptr(f);
 
     if (!upb_strtable_insert3(&m->ntof, name.data, name.size, packed_v, alloc)) {
       upb_status_seterrf(ctx->status, "duplicate field name (%s)", shortname);
@@ -1578,6 +1580,49 @@ bool upb_symtab_addfile(upb_symtab *s,
 
   upb_arena_uninit(&tmparena);
   return ok;
+}
+
+/* Include here since we want most of this file to be stdio-free. */
+#include <stdio.h>
+
+bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init) {
+  /* Since this function should never fail (it would indicate a bug in upb) we
+   * print errors to stderr instead of returning error status to the user. */
+  upb_def_init **deps = init->deps;
+  google_protobuf_FileDescriptorProto *file;
+  upb_arena arena;
+  upb_status status = UPB_STATUS_INIT;
+
+  if (upb_strtable_lookup(&s->files, init->filename, NULL)) {
+    return true;
+  }
+
+  for (; *deps; deps++) {
+    if (!_upb_symtab_loaddefinit(s, *deps)) goto err;
+  }
+
+  upb_arena_init(&arena);
+  file = google_protobuf_FileDescriptorProto_parsenew(init->descriptor, &arena);
+
+  if (!file) {
+    upb_status_seterrf(
+        &status,
+        "Failed to parse compiled-in descriptor for file '%s'. This should "
+        "never happen.",
+        init->filename);
+    goto err;
+  }
+
+  if (!upb_symtab_addfile(s, file, &status)) goto err;
+
+  upb_arena_uninit(&arena);
+  return true;
+
+err:
+  fprintf(stderr, "Error loading compiled-in descriptor: %s\n",
+          upb_status_errmsg(&status));
+  upb_arena_uninit(&arena);
+  return false;
 }
 
 #undef CHK

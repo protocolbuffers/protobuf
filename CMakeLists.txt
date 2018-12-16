@@ -131,6 +131,7 @@ add_executable(test_decoder
   tests/pb/test_decoder.cc)
 add_test(NAME test_decoder COMMAND test_decoder)
 target_link_libraries(test_decoder
+  test_decoder_upbproto
   upb_pb
   upb_test)
 add_executable(test_encoder

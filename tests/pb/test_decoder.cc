@@ -36,6 +36,7 @@
 
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
+#include "tests/pb/test_decoder.upbdefs.h"
 
 #ifdef AMALGAMATED
 #include "upb.h"
@@ -387,7 +388,6 @@ void reg_subm(upb_handlers *h, uint32_t num) {
   ASSERT(
       h->SetStartSubMessageHandler(f, UpbBind(startsubmsg, new uint32_t(num))));
   ASSERT(h->SetEndSubMessageHandler(f, UpbBind(endsubmsg, new uint32_t(num))));
-  ASSERT(upb_handlers_setsubhandlers(h, f, h));
 }
 
 void reg_str(upb_handlers *h, uint32_t num) {
@@ -399,52 +399,60 @@ void reg_str(upb_handlers *h, uint32_t num) {
   ASSERT(h->SetStringHandler(f, UpbBind(value_string, new uint32_t(num))));
 }
 
-upb::reffed_ptr<const upb::Handlers> NewHandlers(TestMode mode) {
-  
-  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(NewMessageDef().get()));
+struct HandlerRegisterData {
+  TestMode mode;
+};
 
-  if (mode == ALL_HANDLERS) {
+void callback(const void *closure, upb_handlers *h) {
+  const HandlerRegisterData* data =
+      static_cast<const HandlerRegisterData*>(closure);
+  if (data->mode == ALL_HANDLERS) {
     h->SetStartMessageHandler(UpbMakeHandler(startmsg));
     h->SetEndMessageHandler(UpbMakeHandler(endmsg));
 
     // Register handlers for each type.
-    reg<double,   value_double>(h.get(), UPB_DESCRIPTOR_TYPE_DOUBLE);
-    reg<float,    value_float> (h.get(), UPB_DESCRIPTOR_TYPE_FLOAT);
-    reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_INT64);
-    reg<uint64_t, value_uint64>(h.get(), UPB_DESCRIPTOR_TYPE_UINT64);
-    reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_INT32);
-    reg<uint64_t, value_uint64>(h.get(), UPB_DESCRIPTOR_TYPE_FIXED64);
-    reg<uint32_t, value_uint32>(h.get(), UPB_DESCRIPTOR_TYPE_FIXED32);
-    reg<bool,     value_bool>  (h.get(), UPB_DESCRIPTOR_TYPE_BOOL);
-    reg<uint32_t, value_uint32>(h.get(), UPB_DESCRIPTOR_TYPE_UINT32);
-    reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_ENUM);
-    reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_SFIXED32);
-    reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_SFIXED64);
-    reg<int32_t,  value_int32> (h.get(), UPB_DESCRIPTOR_TYPE_SINT32);
-    reg<int64_t,  value_int64> (h.get(), UPB_DESCRIPTOR_TYPE_SINT64);
+    reg<double,   value_double>(h, UPB_DESCRIPTOR_TYPE_DOUBLE);
+    reg<float,    value_float> (h, UPB_DESCRIPTOR_TYPE_FLOAT);
+    reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_INT64);
+    reg<uint64_t, value_uint64>(h, UPB_DESCRIPTOR_TYPE_UINT64);
+    reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_INT32);
+    reg<uint64_t, value_uint64>(h, UPB_DESCRIPTOR_TYPE_FIXED64);
+    reg<uint32_t, value_uint32>(h, UPB_DESCRIPTOR_TYPE_FIXED32);
+    reg<bool,     value_bool>  (h, UPB_DESCRIPTOR_TYPE_BOOL);
+    reg<uint32_t, value_uint32>(h, UPB_DESCRIPTOR_TYPE_UINT32);
+    reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_ENUM);
+    reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_SFIXED32);
+    reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_SFIXED64);
+    reg<int32_t,  value_int32> (h, UPB_DESCRIPTOR_TYPE_SINT32);
+    reg<int64_t,  value_int64> (h, UPB_DESCRIPTOR_TYPE_SINT64);
 
-    reg_str(h.get(), UPB_DESCRIPTOR_TYPE_STRING);
-    reg_str(h.get(), UPB_DESCRIPTOR_TYPE_BYTES);
-    reg_str(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_STRING));
-    reg_str(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_BYTES));
+    reg_str(h, UPB_DESCRIPTOR_TYPE_STRING);
+    reg_str(h, UPB_DESCRIPTOR_TYPE_BYTES);
+    reg_str(h, rep_fn(UPB_DESCRIPTOR_TYPE_STRING));
+    reg_str(h, rep_fn(UPB_DESCRIPTOR_TYPE_BYTES));
 
     // Register submessage/group handlers that are self-recursive
     // to this type, eg: message M { optional M m = 1; }
-    reg_subm(h.get(), UPB_DESCRIPTOR_TYPE_MESSAGE);
-    reg_subm(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
-    reg_subm(h.get(), UPB_DESCRIPTOR_TYPE_GROUP);
-    reg_subm(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_GROUP));
+    reg_subm(h, UPB_DESCRIPTOR_TYPE_MESSAGE);
+    reg_subm(h, rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
+
+    if (h->message_def()->full_name() == std::string("DecoderTest")) {
+      reg_subm(h, UPB_DESCRIPTOR_TYPE_GROUP);
+      reg_subm(h, rep_fn(UPB_DESCRIPTOR_TYPE_GROUP));
+    }
 
     // For NOP_FIELD we register no handlers, so we can pad a proto freely without
     // changing the output.
   }
-
-  bool ok = h->Freeze(NULL);
-  ASSERT(ok);
-
-  return h;
 }
 
+upb::reffed_ptr<const upb::Handlers> NewHandlers(upb::SymbolTable* symtab,
+                                                 TestMode mode) {
+  HandlerRegisterData handlerdata;
+  handlerdata.mode = mode;
+  return upb::Handlers::NewFrozen(DecoderTest_getmsgdef(symtab), callback,
+                                  &handlerdata);
+}
 
 /* Running of test cases ******************************************************/
 
@@ -1132,14 +1140,11 @@ upb::reffed_ptr<const upb::pb::DecoderMethod> NewMethod(
   return cache.GetDecoderMethod(upb::pb::DecoderMethodOptions(dest_handlers));
 }
 
-void test_emptyhandlers(bool allowjit) {
+void test_emptyhandlers(upb::SymbolTable* symtab, bool allowjit) {
   // Create an empty handlers to make sure that the decoder can handle empty
   // messages.
-  upb::reffed_ptr<upb::MessageDef> md = upb::MessageDef::New();
-  ASSERT(md->set_full_name("Empty", NULL));
-  ASSERT(md->Freeze(NULL));
-
-  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md.get()));
+  const upb::MessageDef* md = Empty_getmsgdef(symtab);
+  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md));
   bool ok = h->Freeze(NULL);
   ASSERT(ok);
 upb::reffed_ptr<const upb::pb::DecoderMethod> method =
@@ -1178,9 +1183,9 @@ upb::reffed_ptr<const upb::pb::DecoderMethod> method =
 void run_tests(bool use_jit) {
   upb::reffed_ptr<const upb::pb::DecoderMethod> method;
   upb::reffed_ptr<const upb::Handlers> handlers;
-  upb::SymbolTable symtab;
+  upb::SymbolTable* symtab = upb::SymbolTable::New();
 
-  handlers = NewHandlers(test_mode);
+  handlers = NewHandlers(symtab, test_mode);
   global_handlers = handlers.get();
 
   method = NewMethod(handlers.get(), use_jit);
@@ -1191,7 +1196,9 @@ void run_tests(bool use_jit) {
   test_invalid();
   test_valid();
 
-  test_emptyhandlers(use_jit);
+  test_emptyhandlers(symtab, use_jit);
+
+  upb::SymbolTable::Free(symtab);
 }
 
 void run_test_suite() {

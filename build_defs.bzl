@@ -217,7 +217,7 @@ def _remove_up(string):
 
     return _remove_suffix(string, ".proto")
 
-def _upb_proto_library_srcs_impl(ctx):
+def _upb_proto_srcs_impl(ctx, suffix):
     sources = []
     outs = []
     include_dirs = {}
@@ -225,13 +225,18 @@ def _upb_proto_library_srcs_impl(ctx):
         if hasattr(dep, 'proto'):
             for src in dep.proto.transitive_sources:
                 sources.append(src)
-                include_dirs[_remove_suffix(src.path, _remove_up(src.short_path) + "." + src.extension)] = True
-                outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + ".upb.h"))
-                outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + ".upb.c"))
-                outdir = _remove_suffix(outs[-1].path, _remove_up(src.short_path) + ".upb.c")
+                include_dir = _remove_suffix(src.path, _remove_up(src.short_path) + "." + src.extension)
+                if include_dir:
+                    include_dirs[include_dir] = True
+                outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + suffix + ".h"))
+                outs.append(ctx.actions.declare_file(_remove_up(src.short_path) + suffix + ".c"))
+                outdir = _remove_suffix(outs[-1].path, _remove_up(src.short_path) + suffix + ".c")
 
     source_paths = [d.path for d in sources]
     include_args = ["-I" + root for root in include_dirs.keys()]
+
+    print(source_paths)
+    print(include_args)
 
     ctx.actions.run(
         inputs = [ctx.executable.upbc] + sources,
@@ -242,6 +247,12 @@ def _upb_proto_library_srcs_impl(ctx):
     )
 
     return [DefaultInfo(files = depset(outs))]
+
+def _upb_proto_library_srcs_impl(ctx):
+    return _upb_proto_srcs_impl(ctx, ".upb")
+
+def _upb_proto_reflection_library_srcs_impl(ctx):
+    return _upb_proto_srcs_impl(ctx, ".upbdefs")
 
 _upb_proto_library_srcs = rule(
     implementation = _upb_proto_library_srcs_impl,
@@ -262,6 +273,36 @@ _upb_proto_library_srcs = rule(
 def upb_proto_library(name, deps, upbc):
     srcs_rule = name + "_srcs.cc"
     _upb_proto_library_srcs(
+        name = srcs_rule,
+        upbc = upbc,
+        deps = deps,
+    )
+    native.cc_library(
+        name = name,
+        srcs = [":" + srcs_rule],
+        deps = [":upb"],
+        copts = ["-Ibazel-out/k8-fastbuild/bin"],
+    )
+
+_upb_proto_reflection_library_srcs = rule(
+    implementation = _upb_proto_reflection_library_srcs_impl,
+    attrs = {
+        "upbc": attr.label(
+            executable = True,
+            cfg = "host",
+        ),
+        "protoc": attr.label(
+            executable = True,
+            cfg = "host",
+            default = "@com_google_protobuf//:protoc",
+        ),
+        "deps": attr.label_list(),
+    }
+)
+
+def upb_proto_reflection_library(name, deps, upbc):
+    srcs_rule = name + "_defsrcs.cc"
+    _upb_proto_reflection_library_srcs(
         name = srcs_rule,
         upbc = upbc,
         deps = deps,

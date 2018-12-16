@@ -5,6 +5,8 @@ enum TestEnum {
   FOO = 1;
 }
 
+message Empty {}
+
 message DecoderTest {
   optional double      f_double   = 1;
   optional float       f_float    = 2;
@@ -62,6 +64,26 @@ message DecoderTest {
     optional sfixed64    f_sfixed64 = 16;
     optional sint32      f_sint32   = 17;
     optional sint64      f_sint64   = 18;
+
+    optional string      nop_field  = 40;
+
+    repeated double      r_double   = 536869912;
+    repeated float       r_float    = 536869913;
+    repeated int64       r_int64    = 536869914;
+    repeated uint64      r_uint64   = 536869915;
+    repeated int32       r_int32    = 536869916;
+    repeated fixed64     r_fixed64  = 536869917;
+    repeated fixed32     r_fixed32  = 536869918;
+    repeated bool        r_bool     = 536869919;
+    repeated string      r_string   = 536869920;
+    repeated DecoderTest r_message  = 536869922;
+    repeated bytes       r_bytes    = 536869923;
+    repeated uint32      r_uint32   = 536869924;
+    repeated TestEnum    r_enum     = 536869925;
+    repeated sfixed32    r_sfixed32 = 536869926;
+    repeated sfixed64    r_sfixed64 = 536869927;
+    repeated sint32      r_sint32   = 536869928;
+    repeated sint64      r_sint64   = 536869929;
   }
 
   optional group R_group = 536869921 {
@@ -82,5 +104,25 @@ message DecoderTest {
     optional sfixed64    f_sfixed64 = 16;
     optional sint32      f_sint32   = 17;
     optional sint64      f_sint64   = 18;
+
+    optional string      nop_field  = 40;
+
+    repeated double      r_double   = 536869912;
+    repeated float       r_float    = 536869913;
+    repeated int64       r_int64    = 536869914;
+    repeated uint64      r_uint64   = 536869915;
+    repeated int32       r_int32    = 536869916;
+    repeated fixed64     r_fixed64  = 536869917;
+    repeated fixed32     r_fixed32  = 536869918;
+    repeated bool        r_bool     = 536869919;
+    repeated string      r_string   = 536869920;
+    repeated DecoderTest r_message  = 536869922;
+    repeated bytes       r_bytes    = 536869923;
+    repeated uint32      r_uint32   = 536869924;
+    repeated TestEnum    r_enum     = 536869925;
+    repeated sfixed32    r_sfixed32 = 536869926;
+    repeated sfixed64    r_sfixed64 = 536869927;
+    repeated sint32      r_sint32   = 536869928;
+    repeated sint64      r_sint64   = 536869929;
   }
 }

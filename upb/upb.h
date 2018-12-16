@@ -463,7 +463,6 @@ struct upb_alloc {
 
 UPB_INLINE void *upb_malloc(upb_alloc *alloc, size_t size) {
   UPB_ASSERT(alloc);
-  UPB_ASSERT(size < 65535);
   return alloc->func(alloc, NULL, 0, size);
 }
 

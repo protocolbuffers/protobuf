@@ -8,6 +8,7 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 #include "upbc/generator.h"
@@ -30,6 +31,14 @@ static std::string HeaderFilename(std::string proto_filename) {
 
 static std::string SourceFilename(std::string proto_filename) {
   return StripExtension(proto_filename) + ".upb.c";
+}
+
+static std::string DefHeaderFilename(std::string proto_filename) {
+  return StripExtension(proto_filename) + ".upbdefs.h";
+}
+
+static std::string DefSourceFilename(std::string proto_filename) {
+  return StripExtension(proto_filename) + ".upbdefs.c";
 }
 
 class Output {
@@ -163,6 +172,10 @@ std::vector<const protobuf::FieldDescriptor*> SortedSubmessages(
 
 std::string ToCIdent(absl::string_view str) {
   return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}});
+}
+
+std::string DefInitSymbol(const protobuf::FileDescriptor *file) {
+  return ToCIdent(file->name()) + "_upbdefinit";
 }
 
 std::string ToPreproc(absl::string_view str) {
@@ -558,6 +571,91 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
   output("\n");
 }
 
+void GenerateMessageDefAccessor(const protobuf::Descriptor* d, Output& output) {
+  output("UPB_INLINE const upb_msgdef *$0_getmsgdef(upb_symtab *s) {\n",
+         ToCIdent(d->full_name()));
+  output("  _upb_symtab_loaddefinit(s, &$0);\n", DefInitSymbol(d->file()));
+  output("  return upb_symtab_lookupmsg(s, \"$0\");\n", d->full_name());
+  output("}\n");
+  output("\n");
+
+  for (int i = 0; i < d->nested_type_count(); i++) {
+    GenerateMessageDefAccessor(d->nested_type(i), output);
+  }
+}
+
+void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
+  EmitFileWarning(file, output);
+
+  output("extern upb_def_init $0;\n", DefInitSymbol(file));
+
+  for (int i = 0; i < file->message_type_count(); i++) {
+    GenerateMessageDefAccessor(file->message_type(i), output);
+  }
+}
+
+// Escape C++ trigraphs by escaping question marks to \?
+std::string EscapeTrigraphs(absl::string_view to_escape) {
+  return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
+}
+
+void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
+  EmitFileWarning(file, output);
+
+  output("#include \"upb/def.h\"\n");
+  output("\n");
+
+  for (int i = 0; i < file->dependency_count(); i++) {
+    output("extern upb_def_init $0;\n", DefInitSymbol(file->dependency(i)));
+  }
+
+  protobuf::FileDescriptorProto file_proto;
+  file->CopyTo(&file_proto);
+  std::string file_data;
+  file_proto.SerializeToString(&file_data);
+
+  output("static const char descriptor[$0] =\n", file_data.size());
+
+  {
+    if (file_data.size() > 65535) {
+      // Workaround for MSVC: "Error C1091: compiler limit: string exceeds
+      // 65535 bytes in length". Declare a static array of chars rather than
+      // use a string literal. Only write 25 bytes per line.
+      static const int kBytesPerLine = 25;
+      output("{ ");
+      for (int i = 0; i < file_data.size();) {
+        for (int j = 0; j < kBytesPerLine && i < file_data.size(); ++i, ++j) {
+          output("'$0', ", absl::CEscape(file_data.substr(i, 1)));
+        }
+        output("\n");
+      }
+      output("'\\0' }");  // null-terminate
+    } else {
+      // Only write 40 bytes per line.
+      static const int kBytesPerLine = 40;
+      for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
+        output(
+            "\"$0\"\n",
+            EscapeTrigraphs(absl::CEscape(file_data.substr(i, kBytesPerLine))));
+      }
+    }
+    output(";\n");
+  }
+
+  output("static upb_def_init *deps[$0] = {\n", file->dependency_count() + 1);
+  for (int i = 0; i < file->dependency_count(); i++) {
+    output("  $0,\n", DefInitSymbol(file->dependency(i)));
+  }
+  output("  NULL\n");
+  output("};\n");
+
+  output("upb_def_init $0 = {\n", DefInitSymbol(file));
+  output("  deps,\n");
+  output("  \"$0\",\n", file->name());
+  output("  UPB_STRINGVIEW_INIT(descriptor, $0)\n", file_data.size());
+  output("};\n");
+}
+
 bool Generator::Generate(const protobuf::FileDescriptor* file,
                          const std::string& parameter,
                          protoc::GeneratorContext* context,
@@ -567,6 +665,12 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
 
   Output c_output(context->Open(SourceFilename(file->name())));
   WriteSource(file, c_output);
+
+  Output h_def_output(context->Open(DefHeaderFilename(file->name())));
+  WriteDefHeader(file, h_def_output);
+
+  Output c_def_output(context->Open(DefSourceFilename(file->name())));
+  WriteDefSource(file, c_def_output);
 
   return true;
 }
