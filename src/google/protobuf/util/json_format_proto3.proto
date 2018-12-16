@@ -64,6 +64,7 @@ message TestMessage {
   bytes bytes_value = 9;
   EnumType enum_value = 10;
   MessageType message_value = 11;
+  string PascalCaseNaming = 12;
 
   repeated bool repeated_bool_value = 21;
   repeated int32 repeated_int32_value = 22;

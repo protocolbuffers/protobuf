@@ -118,6 +118,7 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       "\"stringValue\":\"\","
       "\"bytesValue\":\"\","
       "\"enumValue\":\"FOO\","
+      "\"PascalCaseNaming\":\"\","
       "\"repeatedBoolValue\":[],"
       "\"repeatedInt32Value\":[],"
       "\"repeatedInt64Value\":[],"
@@ -146,6 +147,7 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       "\"stringValue\":\"i am a test string value\","
       "\"bytesValue\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
       "\"enumValue\":\"FOO\","
+      "\"PascalCaseNaming\":\"\","
       "\"repeatedBoolValue\":[],"
       "\"repeatedInt32Value\":[],"
       "\"repeatedInt64Value\":[],"
@@ -174,6 +176,7 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       "\"string_value\":\"i am a test string value\","
       "\"bytes_value\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
       "\"enum_value\":\"FOO\","
+      "\"PascalCaseNaming\":\"\","
       "\"repeated_bool_value\":[],"
       "\"repeated_int32_value\":[],"
       "\"repeated_int64_value\":[],"
@@ -308,6 +311,15 @@ TEST_F(JsonUtilTest, TestParseIgnoreUnknownFields) {
   JsonParseOptions options;
   options.ignore_unknown_fields = true;
   EXPECT_TRUE(FromJson("{\"unknownName\":0}", &m, options));
+}
+
+TEST_F(JsonUtilTest, TestParseTryLowerCamelForUnknownFields) {
+  TestMessage m;
+  JsonParseOptions options;
+  EXPECT_FALSE(FromJson("{\"pascalCaseNaming\":\"1\"}", &m, options));
+  EXPECT_TRUE(FromJson("{\"PascalCaseNaming\":\"1\"}", &m, options));
+  options.try_lower_camel_for_unknown_fields = true;
+  EXPECT_TRUE(FromJson("{\"pascalCaseNaming\":\"1\"}", &m, options));
 }
 
 TEST_F(JsonUtilTest, TestParseErrors) {
