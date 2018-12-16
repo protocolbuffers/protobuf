@@ -154,6 +154,10 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     ignore_unknown_fields_ = ignore_unknown_fields;
   }
 
+  void set_try_lower_camel_for_unknown_fields(bool try_lower_camel_for_unknown_fields) {
+    try_lower_camel_for_unknown_fields_ = try_lower_camel_for_unknown_fields;
+  }
+
   void set_ignore_unknown_enum_values(bool ignore_unknown_enum_values) {
     ignore_unknown_enum_values_ = ignore_unknown_enum_values;
   }
@@ -337,6 +341,9 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   // If true, check if enum name in camel case or without underscore matches the
   // field name.
   bool use_lower_camel_for_enums_;
+
+  // If true, will try to match unknown JSON fields names with lower camel case of fields name.
+  bool try_lower_camel_for_unknown_fields_;
 
   // Variable for internal state processing:
   // element_    : the current element.

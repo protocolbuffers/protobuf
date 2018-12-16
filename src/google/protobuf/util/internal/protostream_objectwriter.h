@@ -104,6 +104,9 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // the field name.
     bool use_lower_camel_for_enums;
 
+    // If true, will try to match unknown JSON fields names with lower camel case of fields name.
+    bool try_lower_camel_for_unknown_fields;
+
     // If true, skips rendering the map entry if map value is null unless the
     // value type is google.protobuf.NullType.
     bool ignore_null_value_map_entry;
@@ -113,6 +116,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
           ignore_unknown_fields(false),
           ignore_unknown_enum_values(false),
           use_lower_camel_for_enums(false),
+          try_lower_camel_for_unknown_fields(false),
           ignore_null_value_map_entry(false) {}
 
     // Default instance of Options with all options set to defaults.

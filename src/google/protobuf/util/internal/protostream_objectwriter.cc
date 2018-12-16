@@ -73,6 +73,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
   set_ignore_unknown_enum_values(options_.ignore_unknown_enum_values);
   set_use_lower_camel_for_enums(options_.use_lower_camel_for_enums);
+  set_try_lower_camel_for_unknown_fields(options_.try_lower_camel_for_unknown_fields);
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -84,7 +85,8 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
       current_(nullptr),
       options_(options) {
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
-  set_use_lower_camel_for_enums(options.use_lower_camel_for_enums);
+  set_use_lower_camel_for_enums(options_.use_lower_camel_for_enums);
+  set_try_lower_camel_for_unknown_fields(options_.try_lower_camel_for_unknown_fields);
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(

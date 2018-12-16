@@ -162,6 +162,21 @@ const google::protobuf::Field* FindFieldInTypeOrNull(
   return nullptr;
 }
 
+const google::protobuf::Field* FindLowerCamelFieldInTypeOrNull(
+    const google::protobuf::Type* type, StringPiece field_name) {
+  if (type != nullptr && !field_name.empty()) {
+    string upper_camel_field_name = field_name.as_string();
+    upper_camel_field_name[0] = toupper(upper_camel_field_name[0]);
+    for (int i = 0; i < type->fields_size(); ++i) {
+      const google::protobuf::Field& field = type->fields(i);
+      if (field.json_name() == upper_camel_field_name) {
+        return &field;
+      }
+    }
+  }
+  return nullptr;
+}
+
 const google::protobuf::Field* FindJsonFieldInTypeOrNull(
     const google::protobuf::Type* type, StringPiece json_name) {
   if (type != nullptr) {

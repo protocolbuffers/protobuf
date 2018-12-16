@@ -52,7 +52,16 @@ struct JsonParseOptions {
   // Whether to ignore unknown JSON fields during parsing
   bool ignore_unknown_fields;
 
-  JsonParseOptions() : ignore_unknown_fields(false) {}
+  // If true, will try to match unknown JSON fields names with lower camel case of fields name.
+  // For example, if the proto field name is "SomeField" and json field name is "someField", it
+  // would be recognized if this flag value equals to true.
+  // If the flag value equals to false, it would be either ignored (depending on ignore_unknown_fields flag)
+  // or "can not find field" error would occur.
+  bool try_lower_camel_for_unknown_fields;
+
+  JsonParseOptions()
+    : ignore_unknown_fields(false),
+      try_lower_camel_for_unknown_fields(false) {}
 };
 
 struct JsonPrintOptions {

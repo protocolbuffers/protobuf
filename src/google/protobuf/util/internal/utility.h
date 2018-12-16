@@ -131,6 +131,12 @@ const google::protobuf::Option* FindOptionOrNull(
 const google::protobuf::Field* FindFieldInTypeOrNull(
     const google::protobuf::Type* type, StringPiece field_name);
 
+
+// Finds and returns the field identified by field_name in the passed tech Type
+// object. Returns nullptr if none found.
+const google::protobuf::Field* FindLowerCamelFieldInTypeOrNull(
+    const google::protobuf::Type* type, StringPiece field_name);
+
 // Similar to FindFieldInTypeOrNull, but this looks up fields with given
 // json_name.
 const google::protobuf::Field* FindJsonFieldInTypeOrNull(
