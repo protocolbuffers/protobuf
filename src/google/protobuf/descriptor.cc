@@ -5885,13 +5885,28 @@ void DescriptorBuilder::ValidateProto3Message(
         message->field(i)->name());
     if (name_to_field.find(lowercase_name) != name_to_field.end()) {
       AddError(message->full_name(), proto,
-               DescriptorPool::ErrorCollector::OTHER,
+               DescriptorPool::ErrorCollector::JSON_NAME,
                "The JSON camel-case name of field \"" +
                message->field(i)->name() + "\" conflicts with field \"" +
                name_to_field[lowercase_name]->name() + "\". This is not " +
                "allowed in proto3.");
     } else {
       name_to_field[lowercase_name] = message->field(i);
+    }
+  }
+
+  HASH_MAP<string, const FieldDescriptor*> reserved_json_name_map;
+  for (int i = 0; i < message->field_count(); i++) {
+    const string &json_name = message->field(i)->json_name();
+    auto it = reserved_json_name_map.find(json_name);
+    if (it == reserved_json_name_map.end()) {
+      reserved_json_name_map.insert({json_name, message->field(i)});
+    } else {
+      AddWarning(json_name, proto,
+                 DescriptorPool::ErrorCollector::JSON_NAME,
+                 strings::Substitute(
+                         "Fields with names \"$0\" and \"$1\" have the same JSON name \"$2\". This may cause problems.",
+                         message->field(i)->full_name(), it->second->full_name(), json_name));
     }
   }
 }

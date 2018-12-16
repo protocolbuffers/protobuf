@@ -1600,6 +1600,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     enum ErrorLocation {
       NAME,              // the symbol name, or the package name for files
       NUMBER,            // field or extension range number
+      JSON_NAME,         // field json name
       TYPE,              // field type
       EXTENDEE,          // field extendee
       DEFAULT_VALUE,     // field default value
