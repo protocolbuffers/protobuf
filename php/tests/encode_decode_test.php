@@ -31,7 +31,7 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $m->mergeFromJsonString("{\"optionalInt32\":1}");
-        $this->assertTrue(true);
+        $this->assertEquals(1, $m->getOptionalInt32());
     }
 
     public function testDecodeTopLevelBoolValue()
