@@ -4576,6 +4576,21 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     }
   }
 
+  HASH_MAP<string, const FieldDescriptor*> reserved_json_name_map;
+  for (int i = 0; i < result->field_count(); i++) {
+    const string &json_name = result->field(i)->json_name();
+    auto it = reserved_json_name_map.find(json_name);
+    if (it == reserved_json_name_map.end()) {
+      reserved_json_name_map.insert({json_name, result->field(i)});
+    } else if (result->field(i)->name() != it->second->name()) {
+        AddError(result->name(), proto,
+                 DescriptorPool::ErrorCollector::JSON_NAME,
+                 strings::Substitute(
+                         "Fields \"$0\" and \"$1\" in \"$2\" have the same JSON name \"$3\".",
+                         result->field(i)->name(), it->second->name(), result->name(), json_name));
+    }
+  }
+
   for (int i = 0; i < result->field_count(); i++) {
     const FieldDescriptor* field = result->field(i);
     for (int j = 0; j < result->extension_range_count(); j++) {
@@ -5892,21 +5907,6 @@ void DescriptorBuilder::ValidateProto3Message(
                "allowed in proto3.");
     } else {
       name_to_field[lowercase_name] = message->field(i);
-    }
-  }
-
-  HASH_MAP<string, const FieldDescriptor*> reserved_json_name_map;
-  for (int i = 0; i < message->field_count(); i++) {
-    const string &json_name = message->field(i)->json_name();
-    auto it = reserved_json_name_map.find(json_name);
-    if (it == reserved_json_name_map.end()) {
-      reserved_json_name_map.insert({json_name, message->field(i)});
-    } else {
-      AddWarning(json_name, proto,
-                 DescriptorPool::ErrorCollector::JSON_NAME,
-                 strings::Substitute(
-                         "Fields with names \"$0\" and \"$1\" have the same JSON name \"$2\". This may cause problems.",
-                         message->field(i)->full_name(), it->second->full_name(), json_name));
     }
   }
 }
