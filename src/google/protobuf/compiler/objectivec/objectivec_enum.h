@@ -59,6 +59,7 @@ class EnumGenerator {
   const EnumDescriptor* descriptor_;
   std::vector<const EnumValueDescriptor*> base_values_;
   std::vector<const EnumValueDescriptor*> all_values_;
+  std::set<const EnumValueDescriptor*> alias_values_to_skip_;
   const string name_;
 };
 
