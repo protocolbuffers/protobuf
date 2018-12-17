@@ -235,9 +235,6 @@ def _upb_proto_srcs_impl(ctx, suffix):
     source_paths = [d.path for d in sources]
     include_args = ["-I" + root for root in include_dirs.keys()]
 
-    print(source_paths)
-    print(include_args)
-
     ctx.actions.run(
         inputs = [ctx.executable.upbc] + sources,
         outputs = outs,

@@ -11,194 +11,17 @@
 #include <set>
 #include <sstream>
 
+#include "tests/test_cpp.upbdefs.h"
 #include "upb/def.h"
-#include "upb/descriptor/reader.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
-#include "upb/pb/glue.h"
-#include "upb_test.h"
 #include "upb/upb.h"
+#include "upb_test.h"
 
 template <class T>
 void AssertInsert(T* const container, const typename T::value_type& val) {
   bool inserted = container->insert(val).second;
   ASSERT(inserted);
-}
-
-static void TestCastsUpDown() {
-  upb::reffed_ptr<const upb::MessageDef> reffed_md(upb::MessageDef::New());
-  const upb::MessageDef* md = reffed_md.get();
-
-  // Upcast to reffed_ptr implicitly.
-  upb::reffed_ptr<const upb::Def> reffed_def = reffed_md;
-  ASSERT(reffed_def.get() == upb::upcast(reffed_md.get()));
-
-  // Upcast to raw pointer must be explicit.
-  const upb::Def* def = upb::upcast(md);
-  ASSERT(def == reffed_def.get());
-  const upb::Def* def2 = upb::upcast(reffed_md.get());
-  ASSERT(def2 == reffed_def.get());
-
-  // Downcast/dyncast of raw pointer uses upb::down_cast/upb::dyn_cast.
-  const upb::MessageDef* md2 = upb::down_cast<const upb::MessageDef*>(def);
-  const upb::MessageDef* md3 = upb::dyn_cast<const upb::MessageDef*>(def);
-  ASSERT(md == md2);
-  ASSERT(md == md3);
-
-  // Downcast/dyncast of reffed_ptr uses down_cast/dyn_cast members.
-  upb::reffed_ptr<const upb::MessageDef> md4(
-      reffed_def.down_cast<const upb::MessageDef>());
-  upb::reffed_ptr<const upb::MessageDef> md5(
-      reffed_def.dyn_cast<const upb::MessageDef>());
-  ASSERT(md == md4.get());
-  ASSERT(md == md5.get());
-
-  // Failed dyncast returns NULL.
-  ASSERT(upb::dyn_cast<const upb::EnumDef*>(def) == NULL);
-  ASSERT(reffed_def.dyn_cast<const upb::EnumDef>().get() == NULL);
-}
-
-static void TestCastsConst0() {
-  // Should clean up properly even if it is not assigned to anything.
-  upb::MessageDef::New();
-}
-
-static void TestCastsConst1() {
-  // Test reffed mutable -> reffed mutable construction/assignment.
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  upb::MessageDef *md2 = md.get();
-  md = upb::MessageDef::New();
-  ASSERT(md.get());
-  ASSERT(md.get() != md2);
-}
-
-static void TestCastsConst2() {
-  // Test reffed mutable -> reffed mutable upcast construction/assignment.
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  upb::reffed_ptr<upb::Def> def = md;
-  ASSERT(upb::upcast(md.get()) == def.get());
-  def = md;
-  ASSERT(upb::upcast(md.get()) == def.get());
-}
-
-static void TestCastsConst3() {
-  // Test reffed mutable -> reffed mutable downcast.
-  upb::reffed_ptr<upb::Def> def(upb::MessageDef::New());
-  upb::reffed_ptr<upb::MessageDef> md = def.down_cast<upb::MessageDef>();
-  ASSERT(upb::upcast(md.get()) == def.get());
-}
-
-static void TestCastsConst4() {
-  // Test reffed mutable -> reffed mutable dyncast.
-  upb::reffed_ptr<upb::Def> def(upb::MessageDef::New());
-  upb::reffed_ptr<upb::MessageDef> md = def.dyn_cast<upb::MessageDef>();
-  ASSERT(upb::upcast(md.get()) == def.get());
-}
-
-static void TestCastsConst5() {
-  // Test reffed mutable -> reffed const construction/assignment.
-  upb::reffed_ptr<const upb::MessageDef> md(upb::MessageDef::New());
-  const upb::MessageDef *md2 = md.get();
-  md = upb::MessageDef::New();
-  ASSERT(md.get());
-  ASSERT(md.get() != md2);
-}
-
-static void TestCastsConst6() {
-  // Test reffed mutable -> reffed const upcast construction/assignment.
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  upb::reffed_ptr<const upb::Def> def = md;
-  ASSERT(upb::upcast(md.get()) == def.get());
-  def = md;
-  ASSERT(upb::upcast(md.get()) == def.get());
-}
-
-static void TestCastsConst7() {
-  // Test reffed mutable -> reffed const downcast.
-  upb::reffed_ptr<upb::Def> def(upb::MessageDef::New());
-  upb::reffed_ptr<const upb::MessageDef> md =
-      def.down_cast<const upb::MessageDef>();
-  ASSERT(upb::upcast(md.get()) == def.get());
-}
-
-static void TestCastsConst8() {
-  // Test reffed mutable -> reffed const dyncast.
-  upb::reffed_ptr<upb::Def> def(upb::MessageDef::New());
-  upb::reffed_ptr<const upb::MessageDef> md =
-      def.dyn_cast<const upb::MessageDef>();
-  ASSERT(upb::upcast(md.get()) == def.get());
-}
-
-static void TestCastsConst9() {
-  // Test plain mutable -> plain mutable upcast
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  upb::Def* def = upb::upcast(md.get());
-  ASSERT(upb::down_cast<upb::MessageDef*>(def) == md.get());
-}
-
-static void TestCastsConst10() {
-  // Test plain const -> plain const upcast
-  upb::reffed_ptr<const upb::MessageDef> md(upb::MessageDef::New());
-  const upb::Def* def = upb::upcast(md.get());
-  ASSERT(upb::down_cast<const upb::MessageDef*>(def) == md.get());
-}
-
-static void TestSymbolTable(const char *descriptor_file) {
-  upb::Status status;
-  std::ifstream file_in(descriptor_file, std::ios::binary);
-  std::string descriptor((std::istreambuf_iterator<char>(file_in)),
-                         (std::istreambuf_iterator<char>()));
-  std::vector<upb::reffed_ptr<upb::FileDef> > files;
-  if (!upb::LoadDescriptor(descriptor, &status, &files)) {
-    std::cerr << "Couldn't load descriptor: " << status.error_message();
-    exit(1);
-  }
-
-  upb::SymbolTable* s = upb::SymbolTable::New();
-
-  for (size_t i = 0; i < files.size(); i++) {
-    ASSERT(s->AddFile(files[i].get(), &status));
-  }
-
-  upb::reffed_ptr<const upb::MessageDef> md(s->LookupMessage("C"));
-  ASSERT(md.get());
-
-  // We want a def that satisfies this to test iteration.
-  ASSERT(md->field_count() > 1);
-
-#ifdef UPB_CXX11
-  // Test range-based for.
-  std::set<const upb::FieldDef*> fielddefs;
-  for (const upb::FieldDef* f : md.get()->fields()) {
-    AssertInsert(&fielddefs, f);
-    ASSERT(f->containing_type() == md.get());
-  }
-  ASSERT(fielddefs.size() == md->field_count());
-#endif
-
-  ASSERT(md.get());
-  upb::SymbolTable::Free(s);
-}
-
-static void TestCasts1() {
-  upb::reffed_ptr<const upb::MessageDef> md(upb::MessageDef::New());
-  const upb::Def* def = upb::upcast(md.get());
-  const upb::MessageDef* md2 = upb::down_cast<const upb::MessageDef*>(def);
-  const upb::MessageDef* md3 = upb::dyn_cast<const upb::MessageDef*>(def);
-
-  ASSERT(md.get() == md2);
-  ASSERT(md.get() == md3);
-
-  const upb::EnumDef* ed = upb::dyn_cast<const upb::EnumDef*>(def);
-  ASSERT(!ed);
-}
-
-static void TestCasts2() {
-  // Test mutable -> const cast.
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  upb::Def* def = upb::upcast(md.get());
-  const upb::MessageDef* const_md = upb::down_cast<const upb::MessageDef*>(def);
-  ASSERT(const_md == md.get());
 }
 
 //
@@ -225,7 +48,7 @@ static const int kExpectedHandlerData = 1232323;
 
 class StringBufTesterBase {
  public:
-  static const upb::FieldDef::Type kFieldType = UPB_TYPE_STRING;
+  static const int kFieldNumber = 3;
 
   StringBufTesterBase() : seen_(false), handler_data_val_(0) {}
 
@@ -461,7 +284,7 @@ class StartMsgTesterBase {
  public:
   // We don't need the FieldDef it will create, but the test harness still
   // requires that we provide one.
-  static const upb::FieldDef::Type kFieldType = UPB_TYPE_STRING;
+  static const int kFieldNumber = 3;
 
   StartMsgTesterBase() : seen_(false), handler_data_val_(0) {}
 
@@ -612,7 +435,7 @@ class StartMsgTesterBoolMethodWithHandlerData : public StartMsgTesterBase {
 
 class Int32ValueTesterBase {
  public:
-  static const upb::FieldDef::Type kFieldType = UPB_TYPE_INT32;
+  static const int kFieldNumber = 1;
 
   Int32ValueTesterBase() : seen_(false), val_(0), handler_data_val_(0) {}
 
@@ -770,21 +593,20 @@ class ValueTesterInt32BoolMethodWithHandlerData : public Int32ValueTesterBase {
 
 template <class T>
 void TestHandler() {
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  upb::reffed_ptr<upb::FieldDef> f(upb::FieldDef::New());
-  f->set_type(T::kFieldType);
-  ASSERT(f->set_name("test", NULL));
-  ASSERT(f->set_number(1, NULL));
-  ASSERT(md->AddField(f, NULL));
-  ASSERT(md->Freeze(NULL));
+  upb::SymbolTable* symtab = upb::SymbolTable::New();
+  const upb::MessageDef* md = upb_test_TestMessage_getmsgdef(symtab);
+  ASSERT(md);
+  const upb::FieldDef* f = md->FindFieldByNumber(T::kFieldNumber);
+  ASSERT(f);
 
-  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md.get()));
+  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md));
   T tester;
-  tester.Register(h.get(), f.get());
+  tester.Register(h.get(), f);
   ASSERT(h->Freeze(NULL));
 
   upb::Sink sink(h.get(), &tester);
-  tester.CallAndVerify(&sink, f.get());
+  tester.CallAndVerify(&sink, f);
+  upb::SymbolTable::Free(symtab);
 }
 
 class T1 {};
@@ -850,59 +672,24 @@ void DoNothingEndMessageHandler(C* closure, upb::Status *status) {
 
 void TestMismatchedTypes() {
   // First create a schema for our test.
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-
-  upb::reffed_ptr<upb::FieldDef> f(upb::FieldDef::New());
-  f->set_type(UPB_TYPE_INT32);
-  ASSERT(f->set_name("i32", NULL));
-  ASSERT(f->set_number(1, NULL));
-  ASSERT(md->AddField(f, NULL));
-  const upb::FieldDef* i32 = f.get();
-
-  f = upb::FieldDef::New();
-  f->set_type(UPB_TYPE_INT32);
-  ASSERT(f->set_name("r_i32", NULL));
-  ASSERT(f->set_number(2, NULL));
-  f->set_label(UPB_LABEL_REPEATED);
-  ASSERT(md->AddField(f, NULL));
-  const upb::FieldDef* r_i32 = f.get();
-
-  f = upb::FieldDef::New();
-  f->set_type(UPB_TYPE_STRING);
-  ASSERT(f->set_name("str", NULL));
-  ASSERT(f->set_number(3, NULL));
-  ASSERT(md->AddField(f, NULL));
-  const upb::FieldDef* str = f.get();
-
-  f = upb::FieldDef::New();
-  f->set_type(UPB_TYPE_STRING);
-  ASSERT(f->set_name("r_str", NULL));
-  ASSERT(f->set_number(4, NULL));
-  f->set_label(UPB_LABEL_REPEATED);
-  ASSERT(md->AddField(f, NULL));
-  const upb::FieldDef* r_str = f.get();
-
-  f = upb::FieldDef::New();
-  f->set_type(UPB_TYPE_MESSAGE);
-  ASSERT(f->set_name("msg", NULL));
-  ASSERT(f->set_number(5, NULL));
-  ASSERT(f->set_message_subdef(md.get(), NULL));
-  ASSERT(md->AddField(f, NULL));
-  const upb::FieldDef* msg = f.get();
-
-  f = upb::FieldDef::New();
-  f->set_type(UPB_TYPE_MESSAGE);
-  ASSERT(f->set_name("r_msg", NULL));
-  ASSERT(f->set_number(6, NULL));
-  ASSERT(f->set_message_subdef(md.get(), NULL));
-  f->set_label(UPB_LABEL_REPEATED);
-  ASSERT(md->AddField(f, NULL));
-  const upb::FieldDef* r_msg = f.get();
-
-  ASSERT(md->Freeze(NULL));
+  upb::SymbolTable* symtab = upb::SymbolTable::New();
+  const upb::MessageDef* md = upb_test_TestMessage_getmsgdef(symtab);
+  ASSERT(md);
+  const upb::FieldDef* i32 = md->FindFieldByName("i32");
+  const upb::FieldDef* r_i32 = md->FindFieldByName("r_i32");
+  const upb::FieldDef* str = md->FindFieldByName("str");
+  const upb::FieldDef* r_str = md->FindFieldByName("r_str");
+  const upb::FieldDef* msg = md->FindFieldByName("msg");
+  const upb::FieldDef* r_msg = md->FindFieldByName("r_msg");
+  ASSERT(i32);
+  ASSERT(r_i32);
+  ASSERT(str);
+  ASSERT(r_str);
+  ASSERT(msg);
+  ASSERT(r_msg);
 
   // Now test the type-checking in handler registration.
-  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md.get()));
+  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md));
 
   // Establish T1 as the top-level closure type.
   ASSERT(h->SetInt32Handler(i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
@@ -1007,7 +794,7 @@ void TestMismatchedTypes() {
   // For our second test we do the same in reverse.  We directly set the type of
   // the frame and then observe failures at registering a Start* handler that
   // returns a different type.
-  h = upb::Handlers::New(md.get());
+  h = upb::Handlers::New(md);
 
   // First establish the type of a sequence frame directly.
   ASSERT(h->SetInt32Handler(r_i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
@@ -1040,7 +827,7 @@ void TestMismatchedTypes() {
   // should exist to return the closure type of the inner frame but no
   // StartSequence/StartString handler is registered.
 
-  h = upb::Handlers::New(md.get());
+  h = upb::Handlers::New(md);
 
   // Establish T1 as top-level closure type.
   ASSERT(h->SetInt32Handler(i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
@@ -1061,7 +848,7 @@ void TestMismatchedTypes() {
   ASSERT(h->Freeze(NULL));
 
   // Test for a broken chain that is two deep.
-  h = upb::Handlers::New(md.get());
+  h = upb::Handlers::New(md);
 
   // Establish T1 as top-level closure type.
   ASSERT(h->SetInt32Handler(i32, UpbMakeHandler(DoNothingInt32Handler<T1>)));
@@ -1104,145 +891,24 @@ class IntIncrementer {
 
 
 void TestHandlerDataDestruction() {
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  upb::reffed_ptr<upb::FieldDef> f(upb::FieldDef::New());
-  f->set_type(UPB_TYPE_INT32);
-  ASSERT(f->set_name("test", NULL));
-  ASSERT(f->set_number(1, NULL));
-  ASSERT(md->AddField(f, NULL));
-  ASSERT(md->Freeze(NULL));
+  upb::SymbolTable* symtab = upb::SymbolTable::New();
+  const upb::MessageDef* md = upb_test_TestMessage_getmsgdef(symtab);
+  const upb::FieldDef* f = md->FindFieldByName("i32");
 
   int x = 0;
   {
-    upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md.get()));
+    upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md));
     h->SetInt32Handler(
-        f.get(), UpbBind(&IntIncrementer::Handler, new IntIncrementer(&x)));
+        f, UpbBind(&IntIncrementer::Handler, new IntIncrementer(&x)));
     ASSERT(x == 1);
   }
 
   ASSERT(x == 0);
 }
 
-void TestOneofs() {
-  upb::Status status;
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  upb::reffed_ptr<upb::OneofDef> o(upb::OneofDef::New());
-
-  o->set_name("test_oneof", &status);
-  ASSERT(status.ok());
-
-  for (int i = 0; i < 5; i++) {
-    std::ostringstream fieldname;
-    fieldname << "field_" << i;
-    upb::reffed_ptr<upb::FieldDef> f(upb::FieldDef::New());
-    f->set_name(fieldname.str(), &status);
-    ASSERT(status.ok());
-    f->set_type(UPB_TYPE_INT32);
-    f->set_number(i + 1, &status);
-    ASSERT(status.ok());
-    f->set_label(UPB_LABEL_OPTIONAL);
-
-    o->AddField(f.get(), &status);
-    ASSERT(status.ok());
-  }
-
-  md->AddOneof(o.get(), &status);
-  ASSERT(status.ok());
-
-  int field_count = 0;
-  for (upb::OneofDef::iterator it = o->begin(); it != o->end(); ++it) {
-    upb::FieldDef* f = *it;
-    ASSERT(f->type() == UPB_TYPE_INT32);
-    field_count++;
-  }
-  ASSERT(field_count == 5);
-
-  upb::MessageDef::oneof_iterator msg_it = md->oneof_begin();
-  ASSERT(msg_it != md->oneof_end());
-  ASSERT((*msg_it) == o.get());
-
-#ifdef UPB_CXX11
-  // Test range-based for on both fields and oneofs (with the iterator adaptor).
-  field_count = 0;
-  for (auto* field : md->fields()) {
-    UPB_UNUSED(field);
-    field_count++;
-  }
-  ASSERT(field_count == 5);
-
-  int oneof_count = 0;
-  for (auto* oneof : md->oneofs()) {
-    UPB_UNUSED(oneof);
-    oneof_count++;
-  }
-  ASSERT(oneof_count == 1);
-#endif  //  UPB_CXX11
-
-  // Test that we can add a new field to the oneof and that it becomes a member
-  // of the msgdef as well.
-  upb::reffed_ptr<upb::FieldDef> newf(upb::FieldDef::New());
-  newf->set_name("new_field_10", &status);
-  ASSERT(status.ok());
-  newf->set_number(10, &status);
-  ASSERT(status.ok());
-  newf->set_label(UPB_LABEL_OPTIONAL);
-  newf->set_type(UPB_TYPE_INT32);
-  o->AddField(newf.get(), &status);
-  ASSERT(status.ok());
-  ASSERT(newf->containing_type() == md.get());
-
-  // Test that we can add a new field to the msgdef first and then to the oneof.
-  upb::reffed_ptr<upb::FieldDef> newf2(upb::FieldDef::New());
-  newf2->set_name("new_field_11", &status);
-  ASSERT(status.ok());
-  newf2->set_number(11, &status);
-  ASSERT(status.ok());
-  newf2->set_label(UPB_LABEL_OPTIONAL);
-  newf2->set_type(UPB_TYPE_INT32);
-  md->AddField(newf2.get(), &status);
-  ASSERT(status.ok());
-  o->AddField(newf2.get(), &status);
-  ASSERT(status.ok());
-  ASSERT(newf2->containing_oneof() == o.get());
-
-  // Test that we cannot add REQUIRED or REPEATED fields to the oneof.
-  upb::reffed_ptr<upb::FieldDef> newf3(upb::FieldDef::New());
-  newf3->set_name("new_field_12", &status);
-  ASSERT(status.ok());
-  newf3->set_number(12, &status);
-  ASSERT(status.ok());
-  newf3->set_label(UPB_LABEL_REQUIRED);
-  newf3->set_type(UPB_TYPE_INT32);
-  o->AddField(newf3.get(), &status);
-  ASSERT(!status.ok());
-  newf->set_label(UPB_LABEL_REPEATED);
-  o->AddField(newf3.get(), &status);
-  ASSERT(!status.ok());
-}
-
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
-  if (argc < 2) {
-    fprintf(stderr, "Usage: test_cpp <descriptor file>\n");
-    return 1;
-  }
-  TestSymbolTable(argv[1]);
-  TestCastsUpDown();
-  TestCasts1();
-  TestCasts2();
-  TestCastsConst0();
-  TestCastsConst1();
-  TestCastsConst2();
-  TestCastsConst3();
-  TestCastsConst4();
-  TestCastsConst5();
-  TestCastsConst6();
-  TestCastsConst7();
-  TestCastsConst8();
-  TestCastsConst9();
-  TestCastsConst10();
-
   TestHandler<ValueTesterInt32VoidFunctionNoHandlerData>();
   TestHandler<ValueTesterInt32BoolFunctionNoHandlerData>();
   TestHandler<ValueTesterInt32VoidMethodNoHandlerData>();
@@ -1275,8 +941,6 @@ int run_tests(int argc, char *argv[]) {
   TestMismatchedTypes();
 
   TestHandlerDataDestruction();
-
-  TestOneofs();
 
   return 0;
 }

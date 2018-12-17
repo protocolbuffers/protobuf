@@ -209,10 +209,24 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "test_cpp_proto",
+    srcs = [
+        "tests/test_cpp.proto"
+    ]
+)
+
+upb_proto_reflection_library(
+    name = "test_cpp_upbproto",
+    deps = ["test_cpp_proto"],
+    upbc = ":protoc-gen-upb",
+)
+
 cc_test(
     name = "test_cpp",
     srcs = ["tests/test_cpp.cc"],
     deps = [
+        ":test_cpp_upbproto",
         ":upb",
         ":upb_pb",
         ":upb_test",
@@ -331,17 +345,6 @@ lua_library(
     strip_prefix = "upb/bindings/lua",
 )
 
-lua_library(
-    name = "lua/upbc_lib",
-    srcs = [
-        "tools/dump_cinit.lua",
-    ],
-    luadeps = [
-        "lua/upb",
-    ],
-    strip_prefix = "tools",
-)
-
 # Lua tests. ###################################################################
 
 lua_test(
@@ -357,14 +360,6 @@ lua_test(
 )
 
 # upb compiler #################################################################
-
-lua_binary(
-    name = "lua_upbc",
-    luadeps = [
-        "lua/upbc_lib",
-    ],
-    luamain = "tools/upbc.lua",
-)
 
 cc_library(
     name = "upbc_generator",
@@ -490,17 +485,6 @@ genrule(
     outs = ["generated/tests/json/test.proto.pb"],
     cmd = "cp $< $@",
 )
-
-#genrule(
-#    name = "generated_json_test_proto_upbdefs",
-#    srcs = ["generated/tests/json/test.proto.pb"],
-#    outs = [
-#        "generated/tests/json/test.upbdefs.h",
-#        "generated/tests/json/test.upbdefs.c",
-#    ],
-#    cmd = "UPBC=$$PWD/$(location :lua_upbc); INFILE=$$PWD/$<; cd $(GENDIR)/generated && $$UPBC --generate-upbdefs $$INFILE",
-#    tools = [":lua_upbc"],
-#)
 
 genrule(
     name = "generate_json_ragel",

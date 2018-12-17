@@ -921,12 +921,12 @@ static char* strviewdup(const symtab_addctx *ctx, upb_stringview view) {
   return upb_strdup2(view.data, view.size, ctx->alloc);
 }
 
-static bool streql(const char *a, size_t n, const char *b) {
+static bool streql2(const char *a, size_t n, const char *b) {
   return n == strlen(b) && memcmp(a, b, n) == 0;
 }
 
 static bool streql_view(upb_stringview view, const char *b) {
-  return streql(view.data, view.size, b);
+  return streql2(view.data, view.size, b);
 }
 
 static const char *makefullname(const symtab_addctx *ctx, const char *prefix,
@@ -1077,9 +1077,9 @@ static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
       break;
     }
     case UPB_TYPE_BOOL: {
-      if (streql(str, len, "false")) {
+      if (streql2(str, len, "false")) {
         f->defaultval.boolean = false;
-      } else if (streql(str, len, "true")) {
+      } else if (streql2(str, len, "true")) {
         f->defaultval.boolean = true;
       } else {
         return false;
