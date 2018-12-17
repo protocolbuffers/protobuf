@@ -203,12 +203,13 @@ void test_json_roundtrip_message(const char* json_src,
 // Starts with a message in JSON format, parses and directly serializes again,
 // and compares the result.
 void test_json_roundtrip() {
-  upb::reffed_ptr<const upb::MessageDef> md(
-      upbdefs::upb::test::json::TestMessage::get());
+  upb::SymbolTable* symtab = upb::SymbolTable::New();
+  const upb::MessageDef* md = upb_test_json_TestMessage_getmsgdef(symtab);
+  ASSERT(md);
   upb::reffed_ptr<const upb::Handlers> serialize_handlers(
-      upb::json::Printer::NewHandlers(md.get(), false));
+      upb::json::Printer::NewHandlers(md, false));
   upb::reffed_ptr<const upb::json::ParserMethod> parser_method(
-      upb::json::ParserMethod::New(md.get()));
+      upb::json::ParserMethod::New(md));
 
   for (const TestCase* test_case = kTestRoundtripMessages;
        test_case->input != NULL; test_case++) {
@@ -224,7 +225,7 @@ void test_json_roundtrip() {
     }
   }
 
-  serialize_handlers = upb::json::Printer::NewHandlers(md.get(), true);
+  serialize_handlers = upb::json::Printer::NewHandlers(md, true);
 
   for (const TestCase* test_case = kTestRoundtripMessagesPreserve;
        test_case->input != NULL; test_case++) {
@@ -239,6 +240,8 @@ void test_json_roundtrip() {
                                   i);
     }
   }
+
+  upb::SymbolTable::Free(symtab);
 }
 
 extern "C" {

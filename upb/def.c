@@ -467,7 +467,7 @@ bool upb_fielddef_packed(const upb_fielddef *f) {
 }
 
 const char *upb_fielddef_name(const upb_fielddef *f) {
-  return f->full_name;
+  return shortdefname(f->full_name);
 }
 
 uint32_t upb_fielddef_selectorbase(const upb_fielddef *f) {

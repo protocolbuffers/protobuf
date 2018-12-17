@@ -125,6 +125,7 @@ add_executable(test_handlers
   tests/test_handlers.c)
 add_test(NAME test_handlers COMMAND test_handlers)
 target_link_libraries(test_handlers
+  descriptor_upbproto
   upb_pb
   upb_test)
 add_executable(test_decoder

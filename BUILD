@@ -159,10 +159,17 @@ cc_test(
     ],
 )
 
+upb_proto_reflection_library(
+    name = "descriptor_upbproto",
+    deps = ["descriptor_proto"],
+    upbc = ":protoc-gen-upb",
+)
+
 cc_test(
     name = "test_handlers",
     srcs = ["tests/test_handlers.c"],
     deps = [
+        ":descriptor_upbproto",
         ":upb_pb",
         ":upb_test",
     ],
@@ -221,14 +228,24 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "test_json_proto",
+    srcs = ["tests/json/test.proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_json_upbproto",
+    deps = ["test_json_proto"],
+    upbc = ":protoc-gen-upb",
+)
+
 cc_test(
     name = "test_json",
     srcs = [
-        "tests/json/test.upbdefs.c",
-        "tests/json/test.upbdefs.h",
         "tests/json/test_json.cc",
     ],
     deps = [
+        ":test_json_upbproto",
         ":upb_json",
         ":upb_test",
     ],

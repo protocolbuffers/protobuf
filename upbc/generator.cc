@@ -587,7 +587,11 @@ void GenerateMessageDefAccessor(const protobuf::Descriptor* d, Output& output) {
 void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
   EmitFileWarning(file, output);
 
+  output("#include \"upb/def.h\"\n");
+  output("\n");
+
   output("extern upb_def_init $0;\n", DefInitSymbol(file));
+  output("\n");
 
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessageDefAccessor(file->message_type(i), output);
@@ -621,10 +625,10 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
       // Workaround for MSVC: "Error C1091: compiler limit: string exceeds
       // 65535 bytes in length". Declare a static array of chars rather than
       // use a string literal. Only write 25 bytes per line.
-      static const int kBytesPerLine = 25;
+      static const size_t kBytesPerLine = 25;
       output("{ ");
-      for (int i = 0; i < file_data.size();) {
-        for (int j = 0; j < kBytesPerLine && i < file_data.size(); ++i, ++j) {
+      for (size_t i = 0; i < file_data.size();) {
+        for (size_t j = 0; j < kBytesPerLine && i < file_data.size(); ++i, ++j) {
           output("'$0', ", absl::CEscape(file_data.substr(i, 1)));
         }
         output("\n");
@@ -632,8 +636,8 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
       output("'\\0' }");  // null-terminate
     } else {
       // Only write 40 bytes per line.
-      static const int kBytesPerLine = 40;
-      for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
+      static const size_t kBytesPerLine = 40;
+      for (size_t i = 0; i < file_data.size(); i += kBytesPerLine) {
         output(
             "\"$0\"\n",
             EscapeTrigraphs(absl::CEscape(file_data.substr(i, kBytesPerLine))));
