@@ -15,7 +15,7 @@ git_root=$(pwd)
 cd -
 
 # Use image name based on Dockerfile sha1
-DOCKERFILE_PREFIX= $(basename $DOCKERFILE_DIR)
+DOCKERFILE_PREFIX=$(basename $DOCKERFILE_DIR)
 DOCKER_IMAGE_NAME=${DOCKERHUB_ORGANIZATION}/${DOCKERFILE_PREFIX}_$(sha1sum $DOCKERFILE_DIR/Dockerfile | cut -f1 -d\ )
 
 # Pull dockerimage from Dockerhub
