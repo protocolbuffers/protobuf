@@ -151,6 +151,7 @@ add_executable(test_cpp
   tests/test_cpp.cc)
 add_test(NAME test_cpp COMMAND test_cpp)
 target_link_libraries(test_cpp
+  test_cpp_upbproto
   upb
   upb_pb
   upb_test)
@@ -161,11 +162,10 @@ target_link_libraries(test_table
   upb
   upb_test)
 add_executable(test_json
-  tests/json/test.upbdefs.c
-  tests/json/test.upbdefs.h
   tests/json/test_json.cc)
 add_test(NAME test_json COMMAND test_json)
 target_link_libraries(test_json
+  test_json_upbproto
   upb_json
   upb_test)
 
