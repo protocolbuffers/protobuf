@@ -890,6 +890,16 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("[1.5]", $m->serializeToJsonString());
     }
 
+    public function testEncodeEmptyListValue()
+    {
+        $m = new ListValue();
+        $this->assertSame("[]", $m->serializeToJsonString());
+
+        $m = new Struct();
+        $m->setFields(['test' => (new Value())->setListValue(new ListValue())]);
+        $this->assertSame('{"test":[]}', $m->serializeToJsonString());
+    }
+
     public function testDecodeTopLevelStruct()
     {
         $m = new Struct();
