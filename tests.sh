@@ -220,6 +220,18 @@ build_python() {
   cd ..
 }
 
+build_python_jessie() {
+  internal_build_cpp
+  cd python
+  if [ $(uname -s) == "Linux" ]; then
+    envlist=py\{27,33,34\}-python
+  else
+    envlist=py27-python
+  fi
+  tox -e $envlist
+  cd ..
+}
+
 build_python_cpp() {
   internal_build_cpp
   export LD_LIBRARY_PATH=../src/.libs # for Linux
@@ -227,6 +239,20 @@ build_python_cpp() {
   cd python
   if [ $(uname -s) == "Linux" ]; then
     envlist=py\{27,33,34,35,36\}-cpp
+  else
+    envlist=py27-cpp
+  fi
+  tox -e $envlist
+  cd ..
+}
+
+build_python_jessie_cpp() {
+  internal_build_cpp
+  export LD_LIBRARY_PATH=../src/.libs # for Linux
+  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
+  cd python
+  if [ $(uname -s) == "Linux" ]; then
+    envlist=py\{27,33,34\}-cpp
   else
     envlist=py27-cpp
   fi
