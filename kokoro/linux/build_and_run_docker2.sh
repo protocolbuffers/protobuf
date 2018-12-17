@@ -3,10 +3,16 @@
 # Builds docker image and runs a command under it.
 # This is a generic script that is configured with the following variables:
 #
+# DOCKERHUB_ORGANIZATION - The organization on docker hub storing the
+# Dockerfile.
 # DOCKERFILE_DIR - Directory in which Dockerfile file is located.
 # DOCKER_RUN_SCRIPT - Script to run under docker (relative to protobuf repo root)
 # OUTPUT_DIR - Directory that will be copied from inside docker after finishing.
 # $@ - Extra args to pass to docker run
+#
+# This is the same as build_and_run_docker.sh, except that this file allows
+# custom docker organization. After migration to this file, we can remove
+# build_and_run_docker.sh
 
 set -ex
 
