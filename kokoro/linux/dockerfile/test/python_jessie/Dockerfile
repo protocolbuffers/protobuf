@@ -24,11 +24,10 @@ RUN apt-get update && apt-get install -y \
 
 # Install python dependencies
 RUN apt-get update && apt-get install -y \
-    python-setuptools \
-    python2.7-dev \
-    python3.3-dev \
-    python3.4-dev \
-    python-pip
+  python-setuptools \
+  python-all-dev \
+  python3-all-dev \
+  python-pip
 
 # Install Python packages from PyPI
 RUN pip install --upgrade pip==10.0.1
