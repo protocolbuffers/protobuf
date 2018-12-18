@@ -94,15 +94,12 @@ proto3_datasets=$(for file in $datasets; do echo $(pwd)/tmp/proto3_data/${file#$
 echo $proto3_datasets
 
 # build php benchmark
-make -j8 php-benchmark
-echo "benchmarking php..."
-./php-benchmark $proto3_datasets --json --behavior_prefix="php" > tmp/php_result.json
 make -j8 php-c-benchmark
 echo "benchmarking php_c..."
 ./php-c-benchmark $proto3_datasets --json --behavior_prefix="php_c" > tmp/php_c_result.json
 
 # upload result to bq
 make python_add_init
-env LD_LIBRARY_PATH="$oldpwd/src/.libs" python -m util.result_uploader -php="../tmp/php_result.json" -php_c="../tmp/php_c_result.json"  \
+env LD_LIBRARY_PATH="$oldpwd/src/.libs" python -m util.result_uploader -php_c="../tmp/php_c_result.json"  \
 	-cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" -go="../tmp/go_result.txt" -python="../tmp/python_result.json" -node="../tmp/node_result.json"
 cd $oldpwd
