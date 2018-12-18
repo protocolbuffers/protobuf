@@ -1386,6 +1386,10 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       "EnumField", REQUIRED,
       R"({"optionalNestedEnum": "FOO"})",
       "optional_nested_enum: FOO");
+  // Enum fields ignore case when parsing as JSON.
+  ExpectParseFailureForJson(
+      "EnumFieldCaseSensitive", REQUIRED,
+      R"({"optionalNestedEnum": "foo"})");
   // Enum values must be represented as strings.
   ExpectParseFailureForJson(
       "EnumFieldNotQuoted", REQUIRED,

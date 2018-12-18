@@ -117,6 +117,7 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       options.ignore_unknown_fields =
           (request.test_category() ==
               conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
+      options.case_insensitive_enum_parsing = false;
       Status status = JsonToBinaryString(type_resolver, *type_url,
                                          request.json_payload(), &proto_binary,
                                          options);
