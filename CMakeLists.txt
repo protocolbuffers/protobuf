@@ -115,58 +115,5 @@ add_library(upb_test
   tests/testmain.cc
   tests/test_util.h
   tests/upb_test.h)
-add_executable(test_varint
-  tests/pb/test_varint.c)
-add_test(NAME test_varint COMMAND test_varint)
-target_link_libraries(test_varint
-  upb_pb
-  upb_test)
-add_executable(test_handlers
-  tests/test_handlers.c)
-add_test(NAME test_handlers COMMAND test_handlers)
-target_link_libraries(test_handlers
-  descriptor_upbproto
-  upb_pb
-  upb_test)
-add_executable(test_decoder
-  tests/pb/test_decoder.cc)
-add_test(NAME test_decoder COMMAND test_decoder)
-target_link_libraries(test_decoder
-  test_decoder_upbproto
-  upb_pb
-  upb_test)
-add_executable(test_encoder
-  tests/pb/test_encoder.cc)
-add_test(NAME test_encoder COMMAND test_encoder)
-add_custom_command(
-    TARGET test_encoder POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_SOURCE_DIR}/google/protobuf/descriptor.pb
-            ${CMAKE_CURRENT_BINARY_DIR}/google/protobuf/descriptor.pb)
-target_link_libraries(test_encoder
-  upb_cc_bindings
-  upb_pb
-  upb_test)
-add_executable(test_cpp
-  tests/test_cpp.cc)
-add_test(NAME test_cpp COMMAND test_cpp)
-target_link_libraries(test_cpp
-  test_cpp_upbproto
-  upb
-  upb_pb
-  upb_test)
-add_executable(test_table
-  tests/test_table.cc)
-add_test(NAME test_table COMMAND test_table)
-target_link_libraries(test_table
-  upb
-  upb_test)
-add_executable(test_json
-  tests/json/test_json.cc)
-add_test(NAME test_json COMMAND test_json)
-target_link_libraries(test_json
-  test_json_upbproto
-  upb_json
-  upb_test)
 
 

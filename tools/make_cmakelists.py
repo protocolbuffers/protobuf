@@ -59,27 +59,29 @@ class BuildFileFunctions(object):
     pass
 
   def cc_test(self, **kwargs):
-    self.converter.toplevel += "add_executable(%s\n  %s)\n" % (
-        kwargs["name"],
-        "\n  ".join(kwargs["srcs"])
-    )
-    self.converter.toplevel += "add_test(NAME %s COMMAND %s)\n" % (
-        kwargs["name"],
-        kwargs["name"],
-    )
+    # Disable this until we properly support upb_proto_library().
+    # self.converter.toplevel += "add_executable(%s\n  %s)\n" % (
+    #     kwargs["name"],
+    #     "\n  ".join(kwargs["srcs"])
+    # )
+    # self.converter.toplevel += "add_test(NAME %s COMMAND %s)\n" % (
+    #     kwargs["name"],
+    #     kwargs["name"],
+    # )
 
-    if "data" in kwargs:
-      for data_dep in kwargs["data"]:
-        self.converter.toplevel += textwrap.dedent("""\
-          add_custom_command(
-              TARGET %s POST_BUILD
-              COMMAND ${CMAKE_COMMAND} -E copy
-                      ${CMAKE_SOURCE_DIR}/%s
-                      ${CMAKE_CURRENT_BINARY_DIR}/%s)\n""" % (
-          kwargs["name"], data_dep, data_dep
-        ))
+    # if "data" in kwargs:
+    #   for data_dep in kwargs["data"]:
+    #     self.converter.toplevel += textwrap.dedent("""\
+    #       add_custom_command(
+    #           TARGET %s POST_BUILD
+    #           COMMAND ${CMAKE_COMMAND} -E copy
+    #                   ${CMAKE_SOURCE_DIR}/%s
+    #                   ${CMAKE_CURRENT_BINARY_DIR}/%s)\n""" % (
+    #       kwargs["name"], data_dep, data_dep
+    #     ))
 
-    self._add_deps(kwargs)
+    # self._add_deps(kwargs)
+    pass
 
   def py_library(self, **kwargs):
     pass
