@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM 32bit/debian:jessie
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
@@ -24,10 +24,9 @@ RUN apt-get update && apt-get install -y \
 
 # Install php dependencies
 RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
+  bison \
   php5 \
   libcurl4-openssl-dev \
-  libgmp-dev \
-  libgmp3-dev \
   libssl-dev \
   libxml2-dev \
   unzip \
@@ -36,7 +35,6 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   && apt-get clean
 
 # Install other dependencies
-RUN ln -sf /usr/include/x86_64-linux-gnu/gmp.h /usr/include/gmp.h
 RUN wget http://ftp.gnu.org/gnu/bison/bison-2.6.4.tar.gz -O /var/local/bison-2.6.4.tar.gz
 RUN cd /var/local \
   && tar -zxvf bison-2.6.4.tar.gz \
@@ -59,7 +57,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-bcmath \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-5.5 \
@@ -69,7 +66,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-maintainer-zts \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-5.5-zts \
@@ -89,7 +85,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-bcmath \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-5.6 \
@@ -99,7 +94,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-maintainer-zts \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-5.6-zts \
@@ -119,7 +113,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-bcmath \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-7.0 \
@@ -129,7 +122,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-maintainer-zts \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-7.0-zts \
@@ -149,7 +141,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-bcmath \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-7.1 \
@@ -159,7 +150,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-maintainer-zts \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-7.1-zts \
@@ -179,7 +169,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-bcmath \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-7.2 \
@@ -189,7 +178,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-maintainer-zts \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-7.2-zts \
@@ -209,7 +197,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-bcmath \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-7.3 \
@@ -219,7 +206,6 @@ RUN cd php-src \
 RUN cd php-src \
   && ./configure \
   --enable-maintainer-zts \
-  --with-gmp \
   --with-openssl \
   --with-zlib \
   --prefix=/usr/local/php-7.3-zts \

@@ -31,6 +31,7 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $m->mergeFromJsonString("{\"optionalInt32\":1}");
+        $this->assertEquals(1, $m->getOptionalInt32());
     }
 
     public function testDecodeTopLevelBoolValue()
@@ -276,6 +277,7 @@ class EncodeDecodeTest extends TestBase
         $to = new TestPackedMessage();
         $to->mergeFromString(TestUtil::getGoldenTestPackedMessage());
         TestUtil::assertTestPackedMessage($to);
+        $this->assertTrue(true);
     }
 
     public function testPackedDecodeUnpacked()
@@ -283,6 +285,7 @@ class EncodeDecodeTest extends TestBase
         $to = new TestPackedMessage();
         $to->mergeFromString(TestUtil::getGoldenTestUnpackedMessage());
         TestUtil::assertTestPackedMessage($to);
+        $this->assertTrue(true);
     }
 
     public function testUnpackedEncode()
@@ -298,6 +301,7 @@ class EncodeDecodeTest extends TestBase
         $to = new TestUnpackedMessage();
         $to->mergeFromString(TestUtil::getGoldenTestPackedMessage());
         TestUtil::assertTestPackedMessage($to);
+        $this->assertTrue(true);
     }
 
     public function testUnpackedDecodeUnpacked()
@@ -305,6 +309,7 @@ class EncodeDecodeTest extends TestBase
         $to = new TestUnpackedMessage();
         $to->mergeFromString(TestUtil::getGoldenTestUnpackedMessage());
         TestUtil::assertTestPackedMessage($to);
+        $this->assertTrue(true);
     }
 
     public function testDecodeInt64()
@@ -361,6 +366,7 @@ class EncodeDecodeTest extends TestBase
         $data = hex2bin('c80501');
         $m = new TestMessage();
         $m->mergeFromString($data);
+        $this->assertTrue(true);
     }
 
     public function testEncodeNegativeInt32()

@@ -7,7 +7,7 @@ use Google\Protobuf\Internal\GPBType;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 
-class RepeatedFieldTest extends PHPUnit_Framework_TestCase
+class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
 {
 
     #########################################################
