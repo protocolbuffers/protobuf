@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package upb.test;
+
+message TestMessage {
+  optional int32 i32 = 1;
+  repeated int32 r_i32 = 2;
+  optional string str = 3;
+  repeated string r_str = 4;
+  optional TestMessage msg = 5;
+  repeated TestMessage r_msg = 6;
+}
