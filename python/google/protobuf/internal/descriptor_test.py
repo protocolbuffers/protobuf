@@ -1037,9 +1037,9 @@ class MakeDescriptorTest(unittest.TestCase):
     descriptor_proto = descriptor_pb2.DescriptorProto()
     descriptor_proto.name = 'TestJsonName'
     names = ['field_name_x', 'fieldName', 'FieldName',
-             '_field_name', 'FIELD_NAME', 'json_name']
+             '_field_name_x', 'FIELD_NAME', 'json_name']
     json_names = ['fieldNameX', 'fieldName', 'FieldName',
-                  'FieldName', 'FIELDNAME', '@type']
+                  'FieldNameX', 'FIELDNAME', '@type']
     for index in range(len(names)):
       field = descriptor_proto.field.add()
       field.number = index + 1
