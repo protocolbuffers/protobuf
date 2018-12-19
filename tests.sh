@@ -524,6 +524,11 @@ build_php_all() {
   build_php_compatibility
 }
 
+build_benchmark() {
+  use_php 7.1
+  cd kokoro/linux/benchmark && ./run.sh
+}
+
 # -------- main --------
 
 if [ "$#" -ne 1 ]; then
@@ -556,7 +561,8 @@ Usage: $0 { cpp |
             php_compatibility |
             php7.1   |
             php7.1_c |
-            php_all)
+            php_all |
+			benchmark)
 "
   exit 1
 fi

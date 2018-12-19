@@ -134,9 +134,10 @@ class Benchmark:
     t = self.dry_run(test_method_args, setup_method_args);
     if t < 3 :
       reps = int(math.ceil(3 / t)) * self.full_iteration
-    t = timeit.timeit(stmt="%s(%s)" % (self.test_method, test_method_args),
-                      setup=self.full_setup_code(setup_method_args),
-                      number=reps);
+    if reps != self.full_iteration:
+        t = timeit.timeit(stmt="%s(%s)" % (self.test_method, test_method_args),
+                          setup=self.full_setup_code(setup_method_args),
+                          number=reps);
     return self.total_bytes * 1.0 / 2 ** 20 / (1.0 * t / reps)
   
 
