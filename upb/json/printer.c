@@ -69,6 +69,15 @@ strpc *newstrpc(upb_handlers *h, const upb_fielddef *f,
   return ret;
 }
 
+/* Convert a null-terminated const char* to a string piece. */
+strpc *newstrpc_str(upb_handlers *h, const char * str) {
+  strpc * ret = upb_gmalloc(sizeof(*ret));
+  ret->ptr = upb_gstrdup(str);
+  ret->len = strlen(str);
+  upb_handlers_addcleanup(h, ret, freestrpc);
+  return ret;
+}
+
 /* ------------ JSON string printing: values, maps, arrays ------------------ */
 
 static void print_data(
@@ -920,6 +929,49 @@ static bool printer_endmsg_noframe(
   return true;
 }
 
+static void *scalar_startstr_onlykey(
+    void *closure, const void *handler_data, size_t size_hint) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(size_hint);
+  CHK(putkey(closure, handler_data));
+  return p;
+}
+
+/* Set up handlers for an Any submessage. */
+void printer_sethandlers_any(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+
+  const upb_fielddef* type_field = upb_msgdef_itof(md, UPB_ANY_TYPE);
+  const upb_fielddef* value_field = upb_msgdef_itof(md, UPB_ANY_VALUE);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  /* type_url's json name is "@type" */
+  upb_handlerattr type_name_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr value_name_attr = UPB_HANDLERATTR_INITIALIZER;
+  strpc *type_url_json_name = newstrpc_str(h, "@type");
+  strpc *value_json_name = newstrpc_str(h, "value");
+
+  upb_handlerattr_sethandlerdata(&type_name_attr, type_url_json_name);
+  upb_handlerattr_sethandlerdata(&value_name_attr, value_json_name);
+
+  /* Set up handlers. */
+  upb_handlers_setstartmsg(h, printer_startmsg, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg, &empty_attr);
+
+  upb_handlers_setstartstr(h, type_field, scalar_startstr, &type_name_attr);
+  upb_handlers_setstring(h, type_field, scalar_str, &empty_attr);
+  upb_handlers_setendstr(h, type_field, scalar_endstr, &empty_attr);
+
+  /* This is not the full and correct JSON encoding for the Any value field. It
+   * requires further processing by the wrapper code based on the type URL.
+   */
+  upb_handlers_setstartstr(h, value_field, scalar_startstr_onlykey,
+                           &value_name_attr);
+
+  UPB_UNUSED(closure);
+}
+
 /* Set up handlers for a duration submessage. */
 void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
@@ -1074,7 +1126,8 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     case UPB_WELLKNOWN_UNSPECIFIED:
       break;
     case UPB_WELLKNOWN_ANY:
-      break;
+      printer_sethandlers_any(closure, h);
+      return;
     case UPB_WELLKNOWN_DURATION:
       printer_sethandlers_duration(closure, h);
       return;
