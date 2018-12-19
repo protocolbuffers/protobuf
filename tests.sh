@@ -220,52 +220,36 @@ build_python() {
   cd ..
 }
 
-build_python27() {
+build_python_version() {
   internal_build_cpp
   cd python
-  envlist=py27-python
+  envlist=$1
   tox -e $envlist
   cd ..
+}
+
+build_python27() {
+  build_python_version py27-python
 }
 
 build_python33() {
-  internal_build_cpp
-  cd python
-  envlist=py33-python
-  tox -e $envlist
-  cd ..
+  build_python_version py33-python
 }
 
 build_python34() {
-  internal_build_cpp
-  cd python
-  envlist=py34-python
-  tox -e $envlist
-  cd ..
+  build_python_version py34-python
 }
 
 build_python35() {
-  internal_build_cpp
-  cd python
-  envlist=py35-python
-  tox -e $envlist
-  cd ..
+  build_python_version py35-python
 }
 
 build_python36() {
-  internal_build_cpp
-  cd python
-  envlist=py36-python
-  tox -e $envlist
-  cd ..
+  build_python_version py36-python
 }
 
 build_python37() {
-  internal_build_cpp
-  cd python
-  envlist=py37-python
-  tox -e $envlist
-  cd ..
+  build_python_version py37-python
 }
 
 build_python_cpp() {
@@ -282,64 +266,38 @@ build_python_cpp() {
   cd ..
 }
 
-build_python27_cpp() {
+build_python_cpp_version() {
   internal_build_cpp
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
-    envlist=py27-cpp
+  envlist=$1
   tox -e $envlist
   cd ..
+}
+
+build_python27_cpp() {
+  build_python_cpp_version py27-cpp
 }
 
 build_python33_cpp() {
-  internal_build_cpp
-  export LD_LIBRARY_PATH=../src/.libs # for Linux
-  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
-  cd python
-    envlist=py33-cpp
-  tox -e $envlist
-  cd ..
+  build_python_cpp_version py33-cpp
 }
 
 build_python34_cpp() {
-  internal_build_cpp
-  export LD_LIBRARY_PATH=../src/.libs # for Linux
-  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
-  cd python
-    envlist=py34-cpp
-  tox -e $envlist
-  cd ..
+  build_python_cpp_version py34-cpp
 }
 
 build_python35_cpp() {
-  internal_build_cpp
-  export LD_LIBRARY_PATH=../src/.libs # for Linux
-  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
-  cd python
-    envlist=py35-cpp
-  tox -e $envlist
-  cd ..
+  build_python_cpp_version py35-cpp
 }
 
 build_python36_cpp() {
-  internal_build_cpp
-  export LD_LIBRARY_PATH=../src/.libs # for Linux
-  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
-  cd python
-    envlist=py36-cpp
-  tox -e $envlist
-  cd ..
+  build_python_cpp_version py36-cpp
 }
 
 build_python37_cpp() {
-  internal_build_cpp
-  export LD_LIBRARY_PATH=../src/.libs # for Linux
-  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
-  cd python
-    envlist=py37-cpp
-  tox -e $envlist
-  cd ..
+  build_python_cpp_version py37-cpp
 }
 
 build_python_compatibility() {
