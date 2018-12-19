@@ -220,6 +220,38 @@ build_python() {
   cd ..
 }
 
+build_python_version() {
+  internal_build_cpp
+  cd python
+  envlist=$1
+  tox -e $envlist
+  cd ..
+}
+
+build_python27() {
+  build_python_version py27-python
+}
+
+build_python33() {
+  build_python_version py33-python
+}
+
+build_python34() {
+  build_python_version py34-python
+}
+
+build_python35() {
+  build_python_version py35-python
+}
+
+build_python36() {
+  build_python_version py36-python
+}
+
+build_python37() {
+  build_python_version py37-python
+}
+
 build_python_cpp() {
   internal_build_cpp
   export LD_LIBRARY_PATH=../src/.libs # for Linux
@@ -232,6 +264,40 @@ build_python_cpp() {
   fi
   tox -e $envlist
   cd ..
+}
+
+build_python_cpp_version() {
+  internal_build_cpp
+  export LD_LIBRARY_PATH=../src/.libs # for Linux
+  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
+  cd python
+  envlist=$1
+  tox -e $envlist
+  cd ..
+}
+
+build_python27_cpp() {
+  build_python_cpp_version py27-cpp
+}
+
+build_python33_cpp() {
+  build_python_cpp_version py33-cpp
+}
+
+build_python34_cpp() {
+  build_python_cpp_version py34-cpp
+}
+
+build_python35_cpp() {
+  build_python_cpp_version py35-cpp
+}
+
+build_python36_cpp() {
+  build_python_cpp_version py36-cpp
+}
+
+build_python37_cpp() {
+  build_python_cpp_version py37-cpp
 }
 
 build_python_compatibility() {
