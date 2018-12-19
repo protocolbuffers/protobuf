@@ -117,6 +117,8 @@ using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestRequired;
 using protobuf_unittest::TestRequiredMessage;
 using protobuf_unittest::NestedTestAllTypes;
+using protobuf_unittest::TestOneOfMerging;
+using protobuf_unittest::OneOfSubMsg;
 using google::protobuf::FieldMask;
 
 TEST(FieldMaskUtilTest, StringFormat) {
@@ -745,6 +747,36 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   FieldMaskUtil::FromString("oneof_uint32,oneof_nested_message.bb", &mask);
   FieldMaskUtil::TrimMessage(mask, &oneof_msg);
   EXPECT_EQ(11, oneof_msg.oneof_uint32());
+}
+
+TEST(OneofMergeMaskTest, OneofMergeMaskTests) {
+  TestOneOfMerging demo;
+  demo.set_id(100500);
+  demo.set_foo("foo_value");
+
+  FieldMask mask;
+  mask.add_paths("bar.baz");
+
+  TestOneOfMerging dest1;
+  google::protobuf::util::FieldMaskUtil::MergeMessageTo(demo, mask, {}, &dest1);
+
+  EXPECT_EQ(dest1.demo_case(), TestOneOfMerging::DEMO_NOT_SET);
+  EXPECT_NE(dest1.demo_case(), TestOneOfMerging::kBar);
+  EXPECT_FALSE(dest1.has_bar());
+  EXPECT_FALSE(dest1.has_foo());
+
+  OneOfSubMsg* sub_msg = new OneOfSubMsg();
+  sub_msg->set_baz("baz_value");
+  demo.set_allocated_bar(sub_msg);
+
+  TestOneOfMerging dest2;
+  mask.add_paths("foo");
+  google::protobuf::util::FieldMaskUtil::MergeMessageTo(demo, mask, {}, &dest2);
+
+  EXPECT_NE(dest2.demo_case(), TestOneOfMerging::DEMO_NOT_SET);
+  EXPECT_EQ(dest2.demo_case(), TestOneOfMerging::kBar);
+  EXPECT_TRUE(dest2.has_bar());
+  EXPECT_FALSE(dest2.has_foo());
 }
 
 TEST(FieldMaskUtilTest, TrimMessageReturnValue) {

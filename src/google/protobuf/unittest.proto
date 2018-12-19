@@ -1002,3 +1002,17 @@ extend TestExtensionInsideTable {
   optional int32 test_extension_inside_table_extension = 5;
 }
 
+
+message TestOneOfMerging {
+  optional int64 id = 1;
+
+  oneof demo {
+    string foo = 2;
+    OneOfSubMsg bar = 3;
+  }
+}
+
+message OneOfSubMsg {
+  optional string baz = 1;
+}
+

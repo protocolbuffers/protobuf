@@ -469,8 +469,13 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
                    << "have sub-fields.";
         continue;
       }
-      MergeMessage(child, source_reflection->GetMessage(source, field), options,
-                   destination_reflection->MutableMessage(destination, field));
+
+      if (!source_reflection->HasField(source, field)) {
+        destination_reflection->ClearField(destination, field);
+      } else {
+        MergeMessage(child, source_reflection->GetMessage(source, field), options,
+                     destination_reflection->MutableMessage(destination, field));
+      }
       continue;
     }
     if (!field->is_repeated()) {
