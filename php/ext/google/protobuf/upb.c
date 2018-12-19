@@ -1458,7 +1458,9 @@ static void assign_msg_wellknowntype(upb_msgdef *m) {
     m->well_known_type = UPB_WELLKNOWN_UNSPECIFIED;
     return;
   }
-  if (!strcmp(name, "google.protobuf.Duration")) {
+  if (!strcmp(name, "google.protobuf.Any")) {
+    m->well_known_type = UPB_WELLKNOWN_ANY;
+  } else if (!strcmp(name, "google.protobuf.Duration")) {
     m->well_known_type = UPB_WELLKNOWN_DURATION;
   } else if (!strcmp(name, "google.protobuf.Timestamp")) {
     m->well_known_type = UPB_WELLKNOWN_TIMESTAMP;
@@ -3229,6 +3231,14 @@ const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym) {
 const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym) {
   upb_value v;
   upb_def *def = upb_strtable_lookup(&s->symtab, sym, &v) ?
+      upb_value_getptr(v) : NULL;
+  return def ? upb_dyncast_msgdef(def) : NULL;
+}
+
+const upb_msgdef *upb_symtab_lookupmsg2(const upb_symtab *s, const char *sym,
+                                        size_t len) {
+  upb_value v;
+  upb_def *def = upb_strtable_lookup2(&s->symtab, sym, len, &v) ?
       upb_value_getptr(v) : NULL;
   return def ? upb_dyncast_msgdef(def) : NULL;
 }
@@ -12546,7 +12556,7 @@ done:
   return r;
 }
 
-//#line 1 "upb/json/parser.rl"
+#line 1 "upb/json/parser.rl"
 /*
 ** upb::json::Parser (upb_json_parser)
 **
@@ -12623,6 +12633,9 @@ static void end_structvalue_object(upb_json_parser *p);
 static void start_object(upb_json_parser *p);
 static void end_object(upb_json_parser *p);
 
+static void start_any_object(upb_json_parser *p, const char *ptr);
+static bool end_any_object(upb_json_parser *p, const char *ptr);
+
 static bool start_subobject(upb_json_parser *p);
 static void end_subobject(upb_json_parser *p);
 
@@ -12630,7 +12643,88 @@ static void start_member(upb_json_parser *p);
 static void end_member(upb_json_parser *p);
 static bool end_membername(upb_json_parser *p);
 
+static void start_any_member(upb_json_parser *p, const char *ptr);
+static void end_any_member(upb_json_parser *p, const char *ptr);
+static bool end_any_membername(upb_json_parser *p);
+
+size_t parse(void *closure, const void *hd, const char *buf, size_t size,
+             const upb_bufhandle *handle);
+static bool end(void *closure, const void *hd);
+
 static const char eof_ch = 'e';
+
+/* stringsink */
+typedef struct {
+  upb_byteshandler handler;
+  upb_bytessink sink;
+  char *ptr;
+  size_t len, size;
+} upb_stringsink;
+
+
+static void *stringsink_start(void *_sink, const void *hd, size_t size_hint) {
+  upb_stringsink *sink = _sink;
+  sink->len = 0;
+  UPB_UNUSED(hd);
+  UPB_UNUSED(size_hint);
+  return sink;
+}
+
+static size_t stringsink_string(void *_sink, const void *hd, const char *ptr,
+                                size_t len, const upb_bufhandle *handle) {
+  upb_stringsink *sink = _sink;
+  size_t new_size = sink->size;
+
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+
+  while (sink->len + len > new_size) {
+    new_size *= 2;
+  }
+
+  if (new_size != sink->size) {
+    sink->ptr = realloc(sink->ptr, new_size);
+    sink->size = new_size;
+  }
+
+  memcpy(sink->ptr + sink->len, ptr, len);
+  sink->len += len;
+
+  return len;
+}
+
+void upb_stringsink_init(upb_stringsink *sink) {
+  upb_byteshandler_init(&sink->handler);
+  upb_byteshandler_setstartstr(&sink->handler, stringsink_start, NULL);
+  upb_byteshandler_setstring(&sink->handler, stringsink_string, NULL);
+
+  upb_bytessink_reset(&sink->sink, &sink->handler, sink);
+
+  sink->size = 32;
+  sink->ptr = malloc(sink->size);
+  sink->len = 0;
+}
+
+void upb_stringsink_uninit(upb_stringsink *sink) { free(sink->ptr); }
+
+typedef struct {
+  /* For encoding Any value field in binary format. */
+  const upb_handlers *encoder_handlers;
+  upb_pb_encoder *encoder;
+  upb_stringsink stringsink;
+
+  /* For decoding Any value field in json format. */
+  upb_json_parsermethod *parser_method;
+  upb_json_parser* parser;
+  upb_sink sink;
+
+  /* Mark the range of uninterpreted values in json input before type url. */
+  const char *before_type_url_start;
+  const char *before_type_url_end;
+
+  /* Mark the range of uninterpreted values in json input after type url. */
+  const char *after_type_url_start;
+} upb_jsonparser_any_frame;
 
 typedef struct {
   upb_sink sink;
@@ -12659,6 +12753,15 @@ typedef struct {
    * because |f| is the field in the *current* message (i.e., the map-entry
    * message itself), not the parent's field that leads to this map. */
   const upb_fielddef *mapfield;
+
+  /* We are in an Any message context. This flag is set when parsing the Any
+   * message and indicates to all field parsers (subobjects, strings, numbers,
+   * and bools) that the parsed field should be serialized as binary data or
+   * cached (type url not found yet). */
+  bool is_any;
+
+  /* The type of packed message in Any. */
+  upb_jsonparser_any_frame *any_frame;
 
   /* True if the field to be parsed is unknown. */
   bool is_unknown_field;
@@ -12700,6 +12803,9 @@ struct upb_json_parser {
   /* Intermediate result of parsing a unicode escape sequence. */
   uint32_t digit;
 
+  /* For resolve type url in Any. */
+  const upb_symtab *symtab;
+
   /* Whether to proceed if unknown field is met. */
   bool ignore_json_unknown;
 
@@ -12722,6 +12828,84 @@ struct upb_json_parsermethod {
 };
 
 #define PARSER_CHECK_RETURN(x) if (!(x)) return false
+
+static void json_parser_any_frame_reset(upb_jsonparser_any_frame *frame) {
+  frame->encoder_handlers = NULL;
+  frame->encoder = NULL;
+  frame->parser_method = NULL;
+  frame->parser = NULL;
+  frame->before_type_url_start = NULL;
+  frame->before_type_url_end = NULL;
+  frame->after_type_url_start = NULL;
+}
+
+static void json_parser_any_frame_set_payload_type(
+    upb_json_parser *p,
+    upb_jsonparser_any_frame *frame,
+    const upb_msgdef *payload_type) {
+  /* Initialize encoder. */
+  frame->encoder_handlers =
+      upb_pb_encoder_newhandlers(payload_type, &frame->encoder_handlers);
+  upb_stringsink_init(&frame->stringsink);
+  frame->encoder =
+      upb_pb_encoder_create(
+          p->env, frame->encoder_handlers,
+          &frame->stringsink.sink);
+
+  /* Initialize parser. */
+  frame->parser_method =
+      upb_json_parsermethod_new(payload_type, &frame->parser_method);
+  upb_sink_reset(&frame->sink, frame->encoder_handlers, frame->encoder);
+  frame->parser =
+      upb_json_parser_create(p->env, frame->parser_method, p->symtab,
+                             &frame->sink, p->ignore_json_unknown);
+}
+
+static void json_parser_any_frame_free(upb_jsonparser_any_frame *frame) {
+  upb_handlers_unref(frame->encoder_handlers,
+                     &frame->encoder_handlers);
+  upb_json_parsermethod_unref(frame->parser_method,
+                              &frame->parser_method);
+  upb_stringsink_uninit(&frame->stringsink);
+}
+
+static bool json_parser_any_frame_has_type_url(
+  upb_jsonparser_any_frame *frame) {
+  return frame->encoder != NULL;
+}
+
+static bool json_parser_any_frame_has_value_before_type_url(
+  upb_jsonparser_any_frame *frame) {
+  return frame->before_type_url_start != frame->before_type_url_end;
+}
+
+static bool json_parser_any_frame_has_value_after_type_url(
+  upb_jsonparser_any_frame *frame) {
+  return frame->after_type_url_start != NULL;
+}
+
+static bool json_parser_any_frame_has_value(
+  upb_jsonparser_any_frame *frame) {
+  return json_parser_any_frame_has_value_before_type_url(frame) ||
+         json_parser_any_frame_has_value_after_type_url(frame);
+}
+
+static void json_parser_any_frame_set_before_type_url_end(
+    upb_jsonparser_any_frame *frame,
+    const char *ptr) {
+  if (frame->encoder == NULL) {
+    frame->before_type_url_end = ptr;
+  }
+}
+
+static void json_parser_any_frame_set_after_type_url_start_once(
+    upb_jsonparser_any_frame *frame,
+    const char *ptr) {
+  if (json_parser_any_frame_has_type_url(frame) &&
+      frame->after_type_url_start == NULL) {
+    frame->after_type_url_start = ptr;
+  }
+}
 
 /* Used to signal that a capture has been suspended. */
 static char suspend_capture;
@@ -13526,6 +13710,11 @@ static bool end_null(upb_json_parser *p) {
   return true;
 }
 
+static bool start_any_stringval(upb_json_parser *p) {
+  multipart_startaccum(p);
+  return true;
+}
+
 static bool start_stringval(upb_json_parser *p) {
   if (is_top_level(p)) {
     if (is_string_wrapper_object(p)) {
@@ -13561,6 +13750,10 @@ static bool start_stringval(upb_json_parser *p) {
     return true;
   }
 
+  if (p->top->is_any) {
+    return start_any_stringval(p);
+  }
+
   if (upb_fielddef_isstring(p->top->f)) {
     upb_jsonparser_frame *inner;
     upb_selector_t sel;
@@ -13577,6 +13770,8 @@ static bool start_stringval(upb_json_parser *p) {
     inner->name_table = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_any = false;
+    inner->any_frame = NULL;
     inner->is_unknown_field = false;
     p->top = inner;
 
@@ -13608,6 +13803,50 @@ static bool start_stringval(upb_json_parser *p) {
   }
 }
 
+static bool end_any_stringval(upb_json_parser *p) {
+  size_t len;
+  const char *buf = accumulate_getptr(p, &len);
+
+  /* Set type_url */
+  upb_selector_t sel;
+  upb_jsonparser_frame *inner;
+  if (!check_stack(p)) return false;
+  inner = p->top + 1;
+
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+  upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
+  upb_sink_putstring(&inner->sink, sel, buf, len, NULL);
+  sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+  upb_sink_endstr(&inner->sink, sel);
+
+  multipart_end(p);
+
+  /* Resolve type url */
+  if (strncmp(buf, "type.googleapis.com/", 20) == 0 && len > 20) {
+    const upb_msgdef *payload_type = NULL;
+    buf += 20;
+    len -= 20;
+
+    payload_type = upb_symtab_lookupmsg2(p->symtab, buf, len);
+    if (payload_type == NULL) {
+      upb_status_seterrf(
+          &p->status, "Cannot find packed type: %.*s\n", (int)len, buf);
+      upb_env_reporterror(p->env, &p->status);
+      return false;
+    }
+
+    json_parser_any_frame_set_payload_type(p, p->top->any_frame, payload_type);
+    
+    return true;
+  } else {
+    upb_status_seterrf(
+        &p->status, "Invalid type url: %.*s\n", (int)len, buf);
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+}
+
 static bool end_stringval_nontop(upb_json_parser *p) {
   bool ok = true;
 
@@ -13620,6 +13859,10 @@ static bool end_stringval_nontop(upb_json_parser *p) {
   if (p->top->f == NULL) {
     multipart_end(p);
     return true;
+  }
+
+  if (p->top->is_any) {
+    return end_any_stringval(p);
   }
 
   switch (upb_fielddef_type(p->top->f)) {
@@ -14069,6 +14312,8 @@ static bool handle_mapentry(upb_json_parser *p) {
   inner->name_table = NULL;
   inner->mapfield = mapfield;
   inner->is_map = false;
+  inner->is_any = false;
+  inner->any_frame = NULL;
   inner->is_unknown_field = false;
 
   /* Don't set this to true *yet* -- we reuse parsing handlers below to push
@@ -14105,7 +14350,9 @@ static bool end_membername(upb_json_parser *p) {
     return true;
   }
 
-  if (p->top->is_map) {
+  if (p->top->is_any) {
+    return end_any_membername(p);
+  } else if (p->top->is_map) {
     return handle_mapentry(p);
   } else {
     size_t len;
@@ -14126,6 +14373,23 @@ static bool end_membername(upb_json_parser *p) {
       upb_env_reporterror(p->env, &p->status);
       return false;
     }
+  }
+}
+
+static bool end_any_membername(upb_json_parser *p) {
+  size_t len;
+  const char *buf = accumulate_getptr(p, &len);
+  upb_value v;
+
+  if (len == 5 && strncmp(buf, "@type", len) == 0) {
+    upb_strtable_lookup2(p->top->name_table, "type_url", 8, &v);
+    p->top->f = upb_value_getconstptr(v);
+    multipart_end(p);
+    return true;
+  } else {
+    p->top->is_unknown_field = true;
+    multipart_end(p);
+    return true;
   }
 }
 
@@ -14153,6 +14417,16 @@ static void end_member(upb_json_parser *p) {
   p->top->is_unknown_field = false;
 }
 
+static void start_any_member(upb_json_parser *p, const char *ptr) {
+  start_member(p);
+  json_parser_any_frame_set_after_type_url_start_once(p->top->any_frame, ptr);
+}
+
+static void end_any_member(upb_json_parser *p, const char *ptr) {
+  json_parser_any_frame_set_before_type_url_end(p->top->any_frame, ptr);
+  end_member(p);
+}
+
 static bool start_subobject(upb_json_parser *p) {
   if (p->top->is_unknown_field) {
     upb_jsonparser_frame *inner;
@@ -14163,6 +14437,8 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_any = false;
+    inner->any_frame = NULL;
     inner->is_unknown_field = false;
     p->top = inner;
     return true;
@@ -14185,6 +14461,8 @@ static bool start_subobject(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = true;
     inner->is_mapentry = false;
+    inner->is_any = false;
+    inner->any_frame = NULL;
     inner->is_unknown_field = false;
     p->top = inner;
 
@@ -14208,6 +14486,16 @@ static bool start_subobject(upb_json_parser *p) {
     inner->is_mapentry = false;
     inner->is_unknown_field = false;
     p->top = inner;
+
+    if (is_wellknown_msg(p, UPB_WELLKNOWN_ANY)) {
+      p->top->is_any = true;
+      p->top->any_frame =
+          upb_env_malloc(p->env, sizeof(upb_jsonparser_any_frame));
+      json_parser_any_frame_reset(p->top->any_frame);
+    } else {
+      p->top->is_any = false;
+      p->top->any_frame = NULL;
+    }
 
     return true;
   } else {
@@ -14313,6 +14601,8 @@ static bool start_array(upb_json_parser *p) {
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
+    inner->is_any = false;
+    inner->any_frame = NULL;
     inner->is_unknown_field = true;
     p->top = inner;
 
@@ -14337,6 +14627,8 @@ static bool start_array(upb_json_parser *p) {
   inner->f = p->top->f;
   inner->is_map = false;
   inner->is_mapentry = false;
+  inner->is_any = false;
+  inner->any_frame = NULL;
   inner->is_unknown_field = false;
   p->top = inner;
 
@@ -14387,6 +14679,129 @@ static void end_object(upb_json_parser *p) {
       upb_env_reporterror(p->env, &status);
     }
   }
+}
+
+static void start_any_object(upb_json_parser *p, const char *ptr) {
+  start_object(p);
+  p->top->any_frame->before_type_url_start = ptr;
+  p->top->any_frame->before_type_url_end = ptr;
+}
+
+static bool end_any_object(upb_json_parser *p, const char *ptr) {
+  const char *value_membername = "value";
+  bool is_well_known_packed = false;
+  const char *packed_end = ptr + 1;
+  upb_selector_t sel;
+  upb_jsonparser_frame *inner;
+
+  if (json_parser_any_frame_has_value(p->top->any_frame) &&
+      !json_parser_any_frame_has_type_url(p->top->any_frame)) {
+    upb_status_seterrmsg(&p->status, "No valid type url");
+    upb_env_reporterror(p->env, &p->status);
+    return false;
+  }
+
+  /* Well known types data is represented as value field. */
+  if (upb_msgdef_wellknowntype(p->top->any_frame->parser->top->m) !=
+          UPB_WELLKNOWN_UNSPECIFIED) {
+    is_well_known_packed = true;
+
+    if (json_parser_any_frame_has_value_before_type_url(p->top->any_frame)) {
+      p->top->any_frame->before_type_url_start =
+          memchr(p->top->any_frame->before_type_url_start, ':',
+                 p->top->any_frame->before_type_url_end -
+                 p->top->any_frame->before_type_url_start);
+      if (p->top->any_frame->before_type_url_start == NULL) {
+        upb_status_seterrmsg(&p->status, "invalid data for well known type.");
+        upb_env_reporterror(p->env, &p->status);
+        return false;
+      }
+      p->top->any_frame->before_type_url_start++;
+    }
+
+    if (json_parser_any_frame_has_value_after_type_url(p->top->any_frame)) {
+      p->top->any_frame->after_type_url_start =
+          memchr(p->top->any_frame->after_type_url_start, ':',
+                 (ptr + 1) -
+                 p->top->any_frame->after_type_url_start);
+      if (p->top->any_frame->after_type_url_start == NULL) {
+        upb_status_seterrmsg(&p->status, "Invalid data for well known type.");
+        upb_env_reporterror(p->env, &p->status);
+        return false;
+      }
+      p->top->any_frame->after_type_url_start++;
+      packed_end = ptr;
+    }
+  }
+
+  if (json_parser_any_frame_has_value_before_type_url(p->top->any_frame)) {
+    if (!parse(p->top->any_frame->parser, NULL,
+               p->top->any_frame->before_type_url_start,
+               p->top->any_frame->before_type_url_end -
+               p->top->any_frame->before_type_url_start, NULL)) {
+      return false;
+    }
+  } else {
+    if (!is_well_known_packed) {
+      if (!parse(p->top->any_frame->parser, NULL, "{", 1, NULL)) {
+        return false;
+      }
+    }
+  }
+
+  if (json_parser_any_frame_has_value_before_type_url(p->top->any_frame) &&
+      json_parser_any_frame_has_value_after_type_url(p->top->any_frame)) {
+    if (!parse(p->top->any_frame->parser, NULL, ",", 1, NULL)) {
+      return false;
+    }
+  }
+
+  if (json_parser_any_frame_has_value_after_type_url(p->top->any_frame)) {
+    if (!parse(p->top->any_frame->parser, NULL,
+               p->top->any_frame->after_type_url_start,
+               packed_end - p->top->any_frame->after_type_url_start, NULL)) {
+      return false;
+    }
+  } else {
+    if (!is_well_known_packed) {
+      if (!parse(p->top->any_frame->parser, NULL, "}", 1, NULL)) {
+        return false;
+      }
+    }
+  }
+
+  if (!end(p->top->any_frame->parser, NULL)) {
+    return false;
+  }
+
+  p->top->is_any = false;
+
+  /* Set value */
+  start_member(p);
+  capture_begin(p, value_membername);
+  capture_end(p, value_membername + 5);
+  end_membername(p);
+
+  if (!check_stack(p)) return false;
+  inner = p->top + 1;
+
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSTR);
+  upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
+  sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
+  upb_sink_putstring(&inner->sink, sel, p->top->any_frame->stringsink.ptr,
+                     p->top->any_frame->stringsink.len, NULL);
+  sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
+  upb_sink_endstr(&inner->sink, sel);
+
+  end_member(p);
+
+  end_object(p);
+
+  /* Deallocate any parse frame. */
+  json_parser_any_frame_free(p->top->any_frame);
+  upb_env_free(p->env, p->top->any_frame);
+
+  return true;
 }
 
 static bool is_string_wrapper(const upb_msgdef *m) {
@@ -14554,44 +14969,44 @@ static bool is_string_wrapper_object(upb_json_parser *p) {
  * final state once, when the closing '"' is seen. */
 
 
-//#line 2147 "upb/json/parser.rl"
+#line 2576 "upb/json/parser.rl"
 
 
 
-//#line 2016 "upb/json/parser.c"
+#line 2422 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 1, 1, 3, 1, 
 	4, 1, 6, 1, 7, 1, 8, 1, 
 	9, 1, 10, 1, 11, 1, 12, 1, 
 	13, 1, 21, 1, 23, 1, 24, 1, 
-	25, 1, 27, 1, 28, 1, 30, 1, 
+	26, 1, 27, 1, 28, 1, 30, 1, 
 	32, 1, 33, 1, 34, 1, 35, 1, 
-	36, 1, 38, 2, 4, 9, 2, 5, 
+	37, 1, 38, 2, 4, 9, 2, 5, 
 	6, 2, 7, 3, 2, 7, 9, 2, 
 	14, 15, 2, 16, 17, 2, 18, 19, 
-	2, 22, 20, 2, 26, 37, 2, 29, 
+	2, 22, 20, 2, 24, 26, 2, 29, 
 	2, 2, 30, 38, 2, 31, 20, 2, 
 	33, 38, 2, 34, 38, 2, 35, 38, 
-	3, 25, 22, 20, 3, 26, 37, 38, 
-	4, 14, 15, 16, 17
+	2, 36, 25, 2, 37, 38, 4, 14, 
+	15, 16, 17
 };
 
 static const short _json_key_offsets[] = {
 	0, 0, 12, 13, 18, 23, 28, 29, 
 	30, 31, 32, 33, 34, 35, 36, 37, 
-	38, 43, 48, 49, 53, 58, 63, 68, 
-	72, 76, 79, 82, 84, 88, 92, 94, 
-	96, 101, 103, 105, 114, 120, 126, 132, 
-	138, 140, 144, 147, 149, 151, 154, 155, 
-	159, 161, 163, 165, 167, 168, 170, 172, 
-	173, 175, 177, 178, 180, 182, 183, 185, 
-	187, 188, 190, 192, 196, 198, 200, 201, 
-	202, 203, 204, 206, 211, 220, 221, 221, 
-	221, 226, 231, 236, 237, 238, 239, 240, 
-	240, 241, 242, 243, 243, 244, 245, 246, 
-	246, 251, 256, 257, 261, 266, 271, 276, 
-	280, 280, 283, 286, 289, 292, 295, 298, 
-	298, 298, 298, 298
+	38, 43, 44, 48, 53, 58, 63, 67, 
+	71, 74, 77, 79, 83, 87, 89, 91, 
+	96, 98, 100, 109, 115, 121, 127, 133, 
+	135, 139, 142, 144, 146, 149, 150, 154, 
+	156, 158, 160, 162, 163, 165, 167, 168, 
+	170, 172, 173, 175, 177, 178, 180, 182, 
+	183, 185, 187, 191, 193, 195, 196, 197, 
+	198, 199, 201, 206, 215, 216, 216, 216, 
+	221, 226, 231, 232, 233, 234, 235, 235, 
+	236, 237, 238, 238, 239, 240, 241, 241, 
+	246, 247, 251, 256, 261, 266, 270, 270, 
+	273, 276, 279, 282, 285, 288, 288, 288, 
+	288, 288
 };
 
 static const char _json_trans_keys[] = {
@@ -14600,93 +15015,92 @@ static const char _json_trans_keys[] = {
 	9, 13, 32, 44, 93, 9, 13, 32, 
 	93, 125, 9, 13, 97, 108, 115, 101, 
 	117, 108, 108, 114, 117, 101, 32, 34, 
-	125, 9, 13, 32, 34, 125, 9, 13, 
-	34, 32, 58, 9, 13, 32, 93, 125, 
+	125, 9, 13, 34, 32, 58, 9, 13, 
+	32, 93, 125, 9, 13, 32, 44, 125, 
 	9, 13, 32, 44, 125, 9, 13, 32, 
-	44, 125, 9, 13, 32, 34, 9, 13, 
-	45, 48, 49, 57, 48, 49, 57, 46, 
-	69, 101, 48, 57, 69, 101, 48, 57, 
-	43, 45, 48, 57, 48, 57, 48, 57, 
-	46, 69, 101, 48, 57, 34, 92, 34, 
-	92, 34, 47, 92, 98, 102, 110, 114, 
-	116, 117, 48, 57, 65, 70, 97, 102, 
-	48, 57, 65, 70, 97, 102, 48, 57, 
-	65, 70, 97, 102, 48, 57, 65, 70, 
-	97, 102, 34, 92, 45, 48, 49, 57, 
-	48, 49, 57, 46, 115, 48, 57, 115, 
-	48, 57, 34, 46, 115, 48, 57, 48, 
-	57, 48, 57, 48, 57, 48, 57, 45, 
-	48, 57, 48, 57, 45, 48, 57, 48, 
-	57, 84, 48, 57, 48, 57, 58, 48, 
-	57, 48, 57, 58, 48, 57, 48, 57, 
-	43, 45, 46, 90, 48, 57, 48, 57, 
-	58, 48, 48, 34, 48, 57, 43, 45, 
-	90, 48, 57, 34, 45, 91, 102, 110, 
-	116, 123, 48, 57, 34, 32, 93, 125, 
-	9, 13, 32, 44, 93, 9, 13, 32, 
-	93, 125, 9, 13, 97, 108, 115, 101, 
-	117, 108, 108, 114, 117, 101, 32, 34, 
-	125, 9, 13, 32, 34, 125, 9, 13, 
-	34, 32, 58, 9, 13, 32, 93, 125, 
-	9, 13, 32, 44, 125, 9, 13, 32, 
-	44, 125, 9, 13, 32, 34, 9, 13, 
-	32, 9, 13, 32, 9, 13, 32, 9, 
+	34, 9, 13, 45, 48, 49, 57, 48, 
+	49, 57, 46, 69, 101, 48, 57, 69, 
+	101, 48, 57, 43, 45, 48, 57, 48, 
+	57, 48, 57, 46, 69, 101, 48, 57, 
+	34, 92, 34, 92, 34, 47, 92, 98, 
+	102, 110, 114, 116, 117, 48, 57, 65, 
+	70, 97, 102, 48, 57, 65, 70, 97, 
+	102, 48, 57, 65, 70, 97, 102, 48, 
+	57, 65, 70, 97, 102, 34, 92, 45, 
+	48, 49, 57, 48, 49, 57, 46, 115, 
+	48, 57, 115, 48, 57, 34, 46, 115, 
+	48, 57, 48, 57, 48, 57, 48, 57, 
+	48, 57, 45, 48, 57, 48, 57, 45, 
+	48, 57, 48, 57, 84, 48, 57, 48, 
+	57, 58, 48, 57, 48, 57, 58, 48, 
+	57, 48, 57, 43, 45, 46, 90, 48, 
+	57, 48, 57, 58, 48, 48, 34, 48, 
+	57, 43, 45, 90, 48, 57, 34, 45, 
+	91, 102, 110, 116, 123, 48, 57, 34, 
+	32, 93, 125, 9, 13, 32, 44, 93, 
+	9, 13, 32, 93, 125, 9, 13, 97, 
+	108, 115, 101, 117, 108, 108, 114, 117, 
+	101, 32, 34, 125, 9, 13, 34, 32, 
+	58, 9, 13, 32, 93, 125, 9, 13, 
+	32, 44, 125, 9, 13, 32, 44, 125, 
+	9, 13, 32, 34, 9, 13, 32, 9, 
 	13, 32, 9, 13, 32, 9, 13, 32, 
-	9, 13, 0
+	9, 13, 32, 9, 13, 32, 9, 13, 
+	0
 };
 
 static const char _json_single_lengths[] = {
 	0, 8, 1, 3, 3, 3, 1, 1, 
 	1, 1, 1, 1, 1, 1, 1, 1, 
-	3, 3, 1, 2, 3, 3, 3, 2, 
-	2, 1, 3, 0, 2, 2, 0, 0, 
-	3, 2, 2, 9, 0, 0, 0, 0, 
-	2, 2, 1, 2, 0, 1, 1, 2, 
-	0, 0, 0, 0, 1, 0, 0, 1, 
-	0, 0, 1, 0, 0, 1, 0, 0, 
-	1, 0, 0, 4, 0, 0, 1, 1, 
-	1, 1, 0, 3, 7, 1, 0, 0, 
-	3, 3, 3, 1, 1, 1, 1, 0, 
-	1, 1, 1, 0, 1, 1, 1, 0, 
-	3, 3, 1, 2, 3, 3, 3, 2, 
-	0, 1, 1, 1, 1, 1, 1, 0, 
-	0, 0, 0, 0
+	3, 1, 2, 3, 3, 3, 2, 2, 
+	1, 3, 0, 2, 2, 0, 0, 3, 
+	2, 2, 9, 0, 0, 0, 0, 2, 
+	2, 1, 2, 0, 1, 1, 2, 0, 
+	0, 0, 0, 1, 0, 0, 1, 0, 
+	0, 1, 0, 0, 1, 0, 0, 1, 
+	0, 0, 4, 0, 0, 1, 1, 1, 
+	1, 0, 3, 7, 1, 0, 0, 3, 
+	3, 3, 1, 1, 1, 1, 0, 1, 
+	1, 1, 0, 1, 1, 1, 0, 3, 
+	1, 2, 3, 3, 3, 2, 0, 1, 
+	1, 1, 1, 1, 1, 0, 0, 0, 
+	0, 0
 };
 
 static const char _json_range_lengths[] = {
 	0, 2, 0, 1, 1, 1, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	1, 1, 0, 1, 1, 1, 1, 1, 
-	1, 1, 0, 1, 1, 1, 1, 1, 
-	1, 0, 0, 0, 3, 3, 3, 3, 
-	0, 1, 1, 0, 1, 1, 0, 1, 
-	1, 1, 1, 1, 0, 1, 1, 0, 
+	1, 0, 1, 1, 1, 1, 1, 1, 
+	1, 0, 1, 1, 1, 1, 1, 1, 
+	0, 0, 0, 3, 3, 3, 3, 0, 
 	1, 1, 0, 1, 1, 0, 1, 1, 
-	0, 1, 1, 0, 1, 1, 0, 0, 
-	0, 0, 1, 1, 1, 0, 0, 0, 
-	1, 1, 1, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 0, 0, 
-	1, 1, 0, 1, 1, 1, 1, 1, 
-	0, 1, 1, 1, 1, 1, 1, 0, 
-	0, 0, 0, 0
+	1, 1, 1, 0, 1, 1, 0, 1, 
+	1, 0, 1, 1, 0, 1, 1, 0, 
+	1, 1, 0, 1, 1, 0, 0, 0, 
+	0, 1, 1, 1, 0, 0, 0, 1, 
+	1, 1, 0, 0, 0, 0, 0, 0, 
+	0, 0, 0, 0, 0, 0, 0, 1, 
+	0, 1, 1, 1, 1, 1, 0, 1, 
+	1, 1, 1, 1, 1, 0, 0, 0, 
+	0, 0
 };
 
 static const short _json_index_offsets[] = {
 	0, 0, 11, 13, 18, 23, 28, 30, 
 	32, 34, 36, 38, 40, 42, 44, 46, 
-	48, 53, 58, 60, 64, 69, 74, 79, 
-	83, 87, 90, 94, 96, 100, 104, 106, 
-	108, 113, 116, 119, 129, 133, 137, 141, 
-	145, 148, 152, 155, 158, 160, 163, 165, 
-	169, 171, 173, 175, 177, 179, 181, 183, 
-	185, 187, 189, 191, 193, 195, 197, 199, 
-	201, 203, 205, 207, 212, 214, 216, 218, 
-	220, 222, 224, 226, 231, 240, 242, 243, 
-	244, 249, 254, 259, 261, 263, 265, 267, 
-	268, 270, 272, 274, 275, 277, 279, 281, 
-	282, 287, 292, 294, 298, 303, 308, 313, 
-	317, 318, 321, 324, 327, 330, 333, 336, 
-	337, 338, 339, 340
+	48, 53, 55, 59, 64, 69, 74, 78, 
+	82, 85, 89, 91, 95, 99, 101, 103, 
+	108, 111, 114, 124, 128, 132, 136, 140, 
+	143, 147, 150, 153, 155, 158, 160, 164, 
+	166, 168, 170, 172, 174, 176, 178, 180, 
+	182, 184, 186, 188, 190, 192, 194, 196, 
+	198, 200, 202, 207, 209, 211, 213, 215, 
+	217, 219, 221, 226, 235, 237, 238, 239, 
+	244, 249, 254, 256, 258, 260, 262, 263, 
+	265, 267, 269, 270, 272, 274, 276, 277, 
+	282, 284, 288, 293, 298, 303, 307, 308, 
+	311, 314, 317, 320, 323, 326, 327, 328, 
+	329, 330
 };
 
 static const unsigned char _json_indicies[] = {
@@ -14696,97 +15110,93 @@ static const unsigned char _json_indicies[] = {
 	1, 1, 14, 10, 15, 1, 16, 1, 
 	17, 1, 18, 1, 19, 1, 20, 1, 
 	21, 1, 22, 1, 23, 1, 24, 1, 
-	25, 26, 27, 25, 1, 28, 29, 30, 
-	28, 1, 31, 1, 32, 33, 32, 1, 
-	33, 1, 1, 33, 34, 35, 36, 37, 
-	35, 1, 38, 39, 30, 38, 1, 39, 
-	29, 39, 1, 40, 41, 42, 1, 41, 
-	42, 1, 44, 45, 45, 43, 46, 1, 
-	45, 45, 46, 43, 47, 47, 48, 1, 
-	48, 1, 48, 43, 44, 45, 45, 42, 
-	43, 50, 51, 49, 53, 54, 52, 55, 
-	55, 55, 55, 55, 55, 55, 55, 56, 
-	1, 57, 57, 57, 1, 58, 58, 58, 
-	1, 59, 59, 59, 1, 60, 60, 60, 
-	1, 62, 63, 61, 64, 65, 66, 1, 
-	67, 68, 1, 69, 70, 1, 71, 1, 
-	70, 71, 1, 72, 1, 69, 70, 68, 
-	1, 73, 1, 74, 1, 75, 1, 76, 
-	1, 77, 1, 78, 1, 79, 1, 80, 
-	1, 81, 1, 82, 1, 83, 1, 84, 
-	1, 85, 1, 86, 1, 87, 1, 88, 
-	1, 89, 1, 90, 1, 91, 1, 92, 
-	92, 93, 94, 1, 95, 1, 96, 1, 
-	97, 1, 98, 1, 99, 1, 100, 1, 
-	101, 1, 102, 102, 103, 101, 1, 104, 
-	105, 106, 107, 108, 109, 110, 105, 1, 
-	111, 1, 112, 113, 115, 116, 1, 115, 
-	114, 117, 118, 116, 117, 1, 118, 1, 
-	1, 118, 114, 119, 1, 120, 1, 121, 
-	1, 122, 1, 123, 124, 1, 125, 1, 
-	126, 1, 127, 128, 1, 129, 1, 130, 
-	1, 131, 132, 133, 134, 132, 1, 135, 
-	136, 137, 135, 1, 138, 1, 139, 140, 
-	139, 1, 140, 1, 1, 140, 141, 142, 
-	143, 144, 142, 1, 145, 146, 137, 145, 
-	1, 146, 136, 146, 1, 147, 148, 148, 
-	1, 149, 149, 1, 150, 150, 1, 151, 
-	151, 1, 152, 152, 1, 153, 153, 1, 
-	1, 1, 1, 1, 1, 0
+	25, 26, 27, 25, 1, 28, 1, 29, 
+	30, 29, 1, 30, 1, 1, 30, 31, 
+	32, 33, 34, 32, 1, 35, 36, 27, 
+	35, 1, 36, 26, 36, 1, 37, 38, 
+	39, 1, 38, 39, 1, 41, 42, 42, 
+	40, 43, 1, 42, 42, 43, 40, 44, 
+	44, 45, 1, 45, 1, 45, 40, 41, 
+	42, 42, 39, 40, 47, 48, 46, 50, 
+	51, 49, 52, 52, 52, 52, 52, 52, 
+	52, 52, 53, 1, 54, 54, 54, 1, 
+	55, 55, 55, 1, 56, 56, 56, 1, 
+	57, 57, 57, 1, 59, 60, 58, 61, 
+	62, 63, 1, 64, 65, 1, 66, 67, 
+	1, 68, 1, 67, 68, 1, 69, 1, 
+	66, 67, 65, 1, 70, 1, 71, 1, 
+	72, 1, 73, 1, 74, 1, 75, 1, 
+	76, 1, 77, 1, 78, 1, 79, 1, 
+	80, 1, 81, 1, 82, 1, 83, 1, 
+	84, 1, 85, 1, 86, 1, 87, 1, 
+	88, 1, 89, 89, 90, 91, 1, 92, 
+	1, 93, 1, 94, 1, 95, 1, 96, 
+	1, 97, 1, 98, 1, 99, 99, 100, 
+	98, 1, 101, 102, 103, 104, 105, 106, 
+	107, 102, 1, 108, 1, 109, 110, 112, 
+	113, 1, 112, 111, 114, 115, 113, 114, 
+	1, 115, 1, 1, 115, 111, 116, 1, 
+	117, 1, 118, 1, 119, 1, 120, 121, 
+	1, 122, 1, 123, 1, 124, 125, 1, 
+	126, 1, 127, 1, 128, 129, 130, 131, 
+	129, 1, 132, 1, 133, 134, 133, 1, 
+	134, 1, 1, 134, 135, 136, 137, 138, 
+	136, 1, 139, 140, 131, 139, 1, 140, 
+	130, 140, 1, 141, 142, 142, 1, 143, 
+	143, 1, 144, 144, 1, 145, 145, 1, 
+	146, 146, 1, 147, 147, 1, 1, 1, 
+	1, 1, 1, 0
 };
 
 static const char _json_trans_targs[] = {
-	1, 0, 2, 106, 3, 6, 10, 13, 
-	16, 105, 4, 3, 105, 4, 5, 7, 
-	8, 9, 107, 11, 12, 108, 14, 15, 
-	109, 17, 18, 110, 17, 18, 110, 19, 
-	19, 20, 21, 22, 23, 110, 22, 23, 
-	25, 26, 32, 111, 27, 29, 28, 30, 
-	31, 34, 112, 35, 34, 112, 35, 33, 
-	36, 37, 38, 39, 40, 34, 112, 35, 
-	42, 43, 47, 43, 47, 44, 46, 45, 
-	113, 49, 50, 51, 52, 53, 54, 55, 
-	56, 57, 58, 59, 60, 61, 62, 63, 
-	64, 65, 66, 67, 68, 74, 73, 69, 
-	70, 71, 72, 73, 114, 75, 68, 73, 
-	77, 79, 80, 83, 88, 92, 96, 78, 
-	115, 115, 81, 80, 78, 81, 82, 84, 
-	85, 86, 87, 115, 89, 90, 91, 115, 
-	93, 94, 95, 115, 97, 98, 104, 97, 
-	98, 104, 99, 99, 100, 101, 102, 103, 
-	104, 102, 103, 115, 105, 105, 105, 105, 
-	105, 105
+	1, 0, 2, 104, 3, 6, 10, 13, 
+	16, 103, 4, 3, 103, 4, 5, 7, 
+	8, 9, 105, 11, 12, 106, 14, 15, 
+	107, 16, 17, 108, 18, 18, 19, 20, 
+	21, 22, 108, 21, 22, 24, 25, 31, 
+	109, 26, 28, 27, 29, 30, 33, 110, 
+	34, 33, 110, 34, 32, 35, 36, 37, 
+	38, 39, 33, 110, 34, 41, 42, 46, 
+	42, 46, 43, 45, 44, 111, 48, 49, 
+	50, 51, 52, 53, 54, 55, 56, 57, 
+	58, 59, 60, 61, 62, 63, 64, 65, 
+	66, 67, 73, 72, 68, 69, 70, 71, 
+	72, 112, 74, 67, 72, 76, 78, 79, 
+	82, 87, 91, 95, 77, 113, 113, 80, 
+	79, 77, 80, 81, 83, 84, 85, 86, 
+	113, 88, 89, 90, 113, 92, 93, 94, 
+	113, 95, 96, 102, 97, 97, 98, 99, 
+	100, 101, 102, 100, 101, 113, 103, 103, 
+	103, 103, 103, 103
 };
 
 static const char _json_trans_actions[] = {
 	0, 0, 84, 78, 33, 0, 0, 0, 
-	47, 39, 25, 0, 35, 0, 0, 0, 
+	96, 39, 25, 0, 35, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 31, 96, 31, 0, 72, 0, 27, 
-	0, 0, 25, 29, 29, 29, 0, 0, 
-	0, 0, 0, 3, 0, 0, 0, 0, 
-	0, 5, 15, 0, 0, 51, 7, 13, 
-	0, 54, 9, 9, 9, 57, 60, 11, 
-	17, 17, 17, 0, 0, 0, 19, 0, 
-	21, 23, 0, 0, 0, 0, 0, 0, 
+	0, 0, 72, 31, 27, 0, 0, 25, 
+	29, 29, 75, 0, 0, 0, 0, 0, 
+	3, 0, 0, 0, 0, 0, 5, 15, 
+	0, 0, 51, 7, 13, 0, 54, 9, 
+	9, 9, 57, 60, 11, 17, 17, 17, 
+	0, 0, 0, 19, 0, 21, 23, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 104, 63, 104, 0, 
-	0, 0, 0, 0, 69, 0, 66, 66, 
-	84, 78, 33, 0, 0, 0, 47, 39, 
-	49, 81, 25, 0, 35, 0, 0, 0, 
-	0, 0, 0, 90, 0, 0, 0, 93, 
-	0, 0, 0, 87, 31, 96, 31, 0, 
-	72, 0, 27, 0, 0, 25, 29, 29, 
-	29, 0, 0, 100, 0, 37, 43, 45, 
-	41, 75
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 102, 63, 102, 0, 0, 0, 0, 
+	0, 69, 0, 66, 66, 84, 78, 33, 
+	0, 0, 0, 96, 39, 49, 81, 25, 
+	0, 35, 0, 0, 0, 0, 0, 0, 
+	90, 0, 0, 0, 93, 0, 0, 0, 
+	87, 0, 72, 31, 27, 0, 0, 25, 
+	29, 29, 75, 0, 0, 99, 0, 37, 
+	43, 45, 41, 47
 };
 
 static const char _json_eof_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 1, 0, 1, 0, 0, 1, 
-	1, 0, 0, 0, 0, 0, 0, 0, 
+	0, 1, 0, 1, 0, 0, 1, 1, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
@@ -14795,21 +15205,22 @@ static const char _json_eof_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 37, 43, 45, 41, 75, 0, 
-	0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	37, 43, 45, 41, 47, 0, 0, 0, 
+	0, 0
 };
 
 static const int json_start = 1;
 
-static const int json_en_number_machine = 24;
-static const int json_en_string_machine = 33;
-static const int json_en_duration_machine = 41;
-static const int json_en_timestamp_machine = 48;
-static const int json_en_value_machine = 76;
+static const int json_en_number_machine = 23;
+static const int json_en_string_machine = 32;
+static const int json_en_duration_machine = 40;
+static const int json_en_timestamp_machine = 47;
+static const int json_en_value_machine = 75;
 static const int json_en_main = 1;
 
 
-//#line 2150 "upb/json/parser.rl"
+#line 2579 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -14832,7 +15243,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-//#line 2290 "upb/json/parser.c"
+#line 2692 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -14907,166 +15318,190 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 1:
-//#line 2021 "upb/json/parser.rl"
+#line 2427 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 2:
-//#line 2023 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 24; goto _again;} }
+#line 2429 "upb/json/parser.rl"
+	{ p--; {stack[top++] = cs; cs = 23; goto _again;} }
 	break;
 	case 3:
-//#line 2027 "upb/json/parser.rl"
+#line 2433 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 4:
-//#line 2028 "upb/json/parser.rl"
+#line 2434 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 5:
-//#line 2034 "upb/json/parser.rl"
+#line 2440 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 6:
-//#line 2035 "upb/json/parser.rl"
+#line 2441 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 7:
-//#line 2036 "upb/json/parser.rl"
+#line 2442 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 8:
-//#line 2042 "upb/json/parser.rl"
+#line 2448 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 9:
-//#line 2048 "upb/json/parser.rl"
+#line 2454 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 10:
-//#line 2060 "upb/json/parser.rl"
+#line 2466 "upb/json/parser.rl"
 	{ start_duration_base(parser, p); }
 	break;
 	case 11:
-//#line 2061 "upb/json/parser.rl"
+#line 2467 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_duration_base(parser, p)); }
 	break;
 	case 12:
-//#line 2063 "upb/json/parser.rl"
+#line 2469 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 13:
-//#line 2068 "upb/json/parser.rl"
+#line 2474 "upb/json/parser.rl"
 	{ start_timestamp_base(parser, p); }
 	break;
 	case 14:
-//#line 2069 "upb/json/parser.rl"
+#line 2475 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_base(parser, p)); }
 	break;
 	case 15:
-//#line 2071 "upb/json/parser.rl"
+#line 2477 "upb/json/parser.rl"
 	{ start_timestamp_fraction(parser, p); }
 	break;
 	case 16:
-//#line 2072 "upb/json/parser.rl"
+#line 2478 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_fraction(parser, p)); }
 	break;
 	case 17:
-//#line 2074 "upb/json/parser.rl"
+#line 2480 "upb/json/parser.rl"
 	{ start_timestamp_zone(parser, p); }
 	break;
 	case 18:
-//#line 2075 "upb/json/parser.rl"
+#line 2481 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_timestamp_zone(parser, p)); }
 	break;
 	case 19:
-//#line 2077 "upb/json/parser.rl"
+#line 2483 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 20:
-//#line 2082 "upb/json/parser.rl"
+#line 2488 "upb/json/parser.rl"
 	{
         if (is_wellknown_msg(parser, UPB_WELLKNOWN_TIMESTAMP)) {
-          {stack[top++] = cs; cs = 48; goto _again;}
+          {stack[top++] = cs; cs = 47; goto _again;}
         } else if (is_wellknown_msg(parser, UPB_WELLKNOWN_DURATION)) {
-          {stack[top++] = cs; cs = 41; goto _again;}
+          {stack[top++] = cs; cs = 40; goto _again;}
         } else {
-          {stack[top++] = cs; cs = 33; goto _again;}
+          {stack[top++] = cs; cs = 32; goto _again;}
         }
       }
 	break;
 	case 21:
-//#line 2093 "upb/json/parser.rl"
-	{ p--; {stack[top++] = cs; cs = 76; goto _again;} }
+#line 2499 "upb/json/parser.rl"
+	{ p--; {stack[top++] = cs; cs = 75; goto _again;} }
 	break;
 	case 22:
-//#line 2098 "upb/json/parser.rl"
-	{ start_member(parser); }
+#line 2504 "upb/json/parser.rl"
+	{
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
+          start_any_member(parser, p);
+        } else {
+          start_member(parser);
+        }
+      }
 	break;
 	case 23:
-//#line 2099 "upb/json/parser.rl"
+#line 2511 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
 	case 24:
-//#line 2102 "upb/json/parser.rl"
-	{ end_member(parser); }
+#line 2514 "upb/json/parser.rl"
+	{
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
+          end_any_member(parser, p);
+        } else {
+          end_member(parser);
+        }
+      }
 	break;
 	case 25:
-//#line 2108 "upb/json/parser.rl"
-	{ start_object(parser); }
+#line 2525 "upb/json/parser.rl"
+	{
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
+          start_any_object(parser, p);
+        } else {
+          start_object(parser);
+        }
+      }
 	break;
 	case 26:
-//#line 2111 "upb/json/parser.rl"
-	{ end_object(parser); }
+#line 2534 "upb/json/parser.rl"
+	{
+        if (is_wellknown_msg(parser, UPB_WELLKNOWN_ANY)) {
+          CHECK_RETURN_TOP(end_any_object(parser, p));
+        } else {
+          end_object(parser);
+        }
+      }
 	break;
 	case 27:
-//#line 2117 "upb/json/parser.rl"
+#line 2546 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
 	case 28:
-//#line 2121 "upb/json/parser.rl"
+#line 2550 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
 	case 29:
-//#line 2126 "upb/json/parser.rl"
+#line 2555 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_number(parser, p)); }
 	break;
 	case 30:
-//#line 2127 "upb/json/parser.rl"
+#line 2556 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 31:
-//#line 2129 "upb/json/parser.rl"
+#line 2558 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
 	case 32:
-//#line 2130 "upb/json/parser.rl"
+#line 2559 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
 	case 33:
-//#line 2132 "upb/json/parser.rl"
+#line 2561 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
 	case 34:
-//#line 2134 "upb/json/parser.rl"
+#line 2563 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
 	case 35:
-//#line 2136 "upb/json/parser.rl"
+#line 2565 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
 	case 36:
-//#line 2138 "upb/json/parser.rl"
+#line 2567 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject_full(parser)); }
 	break;
 	case 37:
-//#line 2139 "upb/json/parser.rl"
+#line 2568 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
 	case 38:
-//#line 2144 "upb/json/parser.rl"
+#line 2573 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-//#line 2524 "upb/json/parser.c"
+#line 2950 "upb/json/parser.c"
 		}
 	}
 
@@ -15083,34 +15518,30 @@ _again:
 	while ( __nacts-- > 0 ) {
 		switch ( *__acts++ ) {
 	case 0:
-//#line 2019 "upb/json/parser.rl"
+#line 2425 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-	case 26:
-//#line 2111 "upb/json/parser.rl"
-	{ end_object(parser); }
-	break;
 	case 30:
-//#line 2127 "upb/json/parser.rl"
+#line 2556 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 33:
-//#line 2132 "upb/json/parser.rl"
+#line 2561 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, true)); }
 	break;
 	case 34:
-//#line 2134 "upb/json/parser.rl"
+#line 2563 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_bool(parser, false)); }
 	break;
 	case 35:
-//#line 2136 "upb/json/parser.rl"
+#line 2565 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_null(parser)); }
 	break;
 	case 37:
-//#line 2139 "upb/json/parser.rl"
+#line 2568 "upb/json/parser.rl"
 	{ end_subobject_full(parser); }
 	break;
-//#line 2568 "upb/json/parser.c"
+#line 2990 "upb/json/parser.c"
 		}
 	}
 	}
@@ -15118,7 +15549,7 @@ _again:
 	_out: {}
 	}
 
-//#line 2172 "upb/json/parser.rl"
+#line 2601 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(&parser->status, "Parse error at '%.*s'\n", pe - p, p);
@@ -15135,7 +15566,7 @@ error:
   return p - buf;
 }
 
-bool end(void *closure, const void *hd) {
+static bool end(void *closure, const void *hd) {
   upb_json_parser *parser = closure;
 
   /* Prevent compile warning on unused static constants. */
@@ -15150,9 +15581,9 @@ bool end(void *closure, const void *hd) {
   parse(parser, hd, &eof_ch, 0, NULL);
 
   return parser->current_state >= 
-//#line 2608 "upb/json/parser.c"
-105
-//#line 2202 "upb/json/parser.rl"
+#line 3030 "upb/json/parser.c"
+103
+#line 2631 "upb/json/parser.rl"
 ;
 }
 
@@ -15164,17 +15595,19 @@ static void json_parser_reset(upb_json_parser *p) {
   p->top->f = NULL;
   p->top->is_map = false;
   p->top->is_mapentry = false;
+  p->top->is_any = false;
+  p->top->any_frame = NULL;
   p->top->is_unknown_field = false;
 
   /* Emit Ragel initialization of the parser. */
   
-//#line 2626 "upb/json/parser.c"
+#line 3050 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-//#line 2217 "upb/json/parser.rl"
+#line 2648 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);
@@ -15261,6 +15694,7 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
 
 upb_json_parser *upb_json_parser_create(upb_env *env,
                                         const upb_json_parsermethod *method,
+                                        const upb_symtab* symtab,
                                         upb_sink *output,
                                         bool ignore_json_unknown) {
 #ifndef NDEBUG
@@ -15279,7 +15713,17 @@ upb_json_parser *upb_json_parser_create(upb_env *env,
   json_parser_reset(p);
   upb_sink_reset(&p->top->sink, output->handlers, output->closure);
   p->top->m = upb_handlers_msgdef(output->handlers);
+  if (is_wellknown_msg(p, UPB_WELLKNOWN_ANY)) {
+    p->top->is_any = true;
+    p->top->any_frame =
+        upb_env_malloc(p->env, sizeof(upb_jsonparser_any_frame));
+    json_parser_any_frame_reset(p->top->any_frame);
+  } else {
+    p->top->is_any = false;
+    p->top->any_frame = NULL;
+  }
   set_name_table(p, p->top);
+  p->symtab = symtab;
 
   p->ignore_json_unknown = ignore_json_unknown;
 
@@ -15385,6 +15829,15 @@ strpc *newstrpc(upb_handlers *h, const upb_fielddef *f,
     ret->len--;  /* NULL */
   }
 
+  upb_handlers_addcleanup(h, ret, freestrpc);
+  return ret;
+}
+
+/* Convert a null-terminated const char* to a string piece. */
+strpc *newstrpc_str(upb_handlers *h, const char * str) {
+  strpc * ret = upb_gmalloc(sizeof(*ret));
+  ret->ptr = upb_gstrdup(str);
+  ret->len = strlen(str);
   upb_handlers_addcleanup(h, ret, freestrpc);
   return ret;
 }
@@ -16240,6 +16693,49 @@ static bool printer_endmsg_noframe(
   return true;
 }
 
+static void *scalar_startstr_onlykey(
+    void *closure, const void *handler_data, size_t size_hint) {
+  upb_json_printer *p = closure;
+  UPB_UNUSED(size_hint);
+  CHK(putkey(closure, handler_data));
+  return p;
+}
+
+/* Set up handlers for an Any submessage. */
+void printer_sethandlers_any(const void *closure, upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+
+  const upb_fielddef* type_field = upb_msgdef_itof(md, UPB_ANY_TYPE);
+  const upb_fielddef* value_field = upb_msgdef_itof(md, UPB_ANY_VALUE);
+
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  /* type_url's json name is "@type" */
+  upb_handlerattr type_name_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr value_name_attr = UPB_HANDLERATTR_INITIALIZER;
+  strpc *type_url_json_name = newstrpc_str(h, "@type");
+  strpc *value_json_name = newstrpc_str(h, "value");
+
+  upb_handlerattr_sethandlerdata(&type_name_attr, type_url_json_name);
+  upb_handlerattr_sethandlerdata(&value_name_attr, value_json_name);
+
+  /* Set up handlers. */
+  upb_handlers_setstartmsg(h, printer_startmsg, &empty_attr);
+  upb_handlers_setendmsg(h, printer_endmsg, &empty_attr);
+
+  upb_handlers_setstartstr(h, type_field, scalar_startstr, &type_name_attr);
+  upb_handlers_setstring(h, type_field, scalar_str, &empty_attr);
+  upb_handlers_setendstr(h, type_field, scalar_endstr, &empty_attr);
+
+  /* This is not the full and correct JSON encoding for the Any value field. It
+   * requires further processing by the wrapper code based on the type URL.
+   */
+  upb_handlers_setstartstr(h, value_field, scalar_startstr_onlykey,
+                           &value_name_attr);
+
+  UPB_UNUSED(closure);
+}
+
 /* Set up handlers for a duration submessage. */
 void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
@@ -16393,6 +16889,9 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
   switch (upb_msgdef_wellknowntype(md)) {
     case UPB_WELLKNOWN_UNSPECIFIED:
       break;
+    case UPB_WELLKNOWN_ANY:
+      printer_sethandlers_any(closure, h);
+      return;
     case UPB_WELLKNOWN_DURATION:
       printer_sethandlers_duration(closure, h);
       return;
