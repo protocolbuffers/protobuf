@@ -69,6 +69,15 @@ strpc *newstrpc(upb_handlers *h, const upb_fielddef *f,
   return ret;
 }
 
+/* Convert a null-terminated const char* to a string piece. */
+strpc *newstrpc_str(upb_handlers *h, const char * str) {
+  strpc * ret = upb_gmalloc(sizeof(*ret));
+  ret->ptr = upb_gstrdup(str);
+  ret->len = strlen(str);
+  upb_handlers_addcleanup(h, ret, freestrpc);
+  return ret;
+}
+
 /* ------------ JSON string printing: values, maps, arrays ------------------ */
 
 static void print_data(
@@ -940,17 +949,10 @@ void printer_sethandlers_any(const void *closure, upb_handlers *h) {
   /* type_url's json name is "@type" */
   upb_handlerattr type_name_attr = UPB_HANDLERATTR_INITIALIZER;
   upb_handlerattr value_name_attr = UPB_HANDLERATTR_INITIALIZER;
-  strpc *type_url_json_name = upb_gmalloc(sizeof(*type_url_json_name));
-  strpc *value_json_name = upb_gmalloc(sizeof(*type_url_json_name));
+  strpc *type_url_json_name = newstrpc_str(h, "@type");
+  strpc *value_json_name = newstrpc_str(h, "value");
 
-  type_url_json_name->ptr = upb_gstrdup("@type");
-  type_url_json_name->len = strlen(type_url_json_name->ptr);
-  upb_handlers_addcleanup(h, type_url_json_name, freestrpc);
   upb_handlerattr_sethandlerdata(&type_name_attr, type_url_json_name);
-
-  value_json_name->ptr = upb_gstrdup("value");
-  value_json_name->len = strlen(value_json_name->ptr);
-  upb_handlers_addcleanup(h, value_json_name, freestrpc);
   upb_handlerattr_sethandlerdata(&value_name_attr, value_json_name);
 
   /* Set up handlers. */
@@ -961,6 +963,9 @@ void printer_sethandlers_any(const void *closure, upb_handlers *h) {
   upb_handlers_setstring(h, type_field, scalar_str, &empty_attr);
   upb_handlers_setendstr(h, type_field, scalar_endstr, &empty_attr);
 
+  /* This is not the full and correct JSON encoding for the Any value field. It
+   * requires further processing by the wrapper code based on the type URL.
+   */
   upb_handlers_setstartstr(h, value_field, scalar_startstr_onlykey,
                            &value_name_attr);
 
