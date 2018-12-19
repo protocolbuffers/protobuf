@@ -180,7 +180,8 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
       PHP_PROTO_ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value),
                              Z_STRLEN_P(value), 1);
 #else
-      *(zend_string**)memory = zend_string_dup(Z_STR_P(value), 0);
+      *(zend_string**)memory =
+          zend_string_init(Z_STRVAL_P(value), Z_STRLEN_P(value), 0);
 #endif
       break;
     }
@@ -231,7 +232,8 @@ bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
       PHP_PROTO_ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value),
                              Z_STRLEN_P(value), 1);
 #else
-      *(zend_string**)memory = zend_string_dup(Z_STR_P(value), 0);
+      *(zend_string**)memory =
+          zend_string_init(Z_STRVAL_P(value), Z_STRLEN_P(value), 0);
 #endif
       break;
     }
