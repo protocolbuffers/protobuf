@@ -41,7 +41,10 @@
 #include <gtest/gtest.h>
 
 typedef int int32;
+// IBM AIX typedefs `int64` in `sys/inttypes.h`, included transitively above.
+#ifndef _AIX
 typedef long int64;
+#endif
 
 using std::string;
 using std::vector;
