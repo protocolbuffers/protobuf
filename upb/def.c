@@ -355,6 +355,10 @@ const char *upb_enumdef_name(const upb_enumdef *e) {
   return shortdefname(e->full_name);
 }
 
+const upb_filedef *upb_enumdef_file(const upb_enumdef *e) {
+  return e->file;
+}
+
 int32_t upb_enumdef_default(const upb_enumdef *e) {
   UPB_ASSERT(upb_enumdef_iton(e, e->defaultval));
   return e->defaultval;
@@ -606,6 +610,12 @@ bool upb_fielddef_hassubdef(const upb_fielddef *f) {
   return upb_fielddef_issubmsg(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM;
 }
 
+bool upb_fielddef_haspresence(const upb_fielddef *f) {
+  if (upb_fielddef_isseq(f)) return false;
+  if (upb_fielddef_issubmsg(f)) return true;
+  return f->file->syntax == UPB_SYNTAX_PROTO2;
+}
+
 static bool between(int32_t x, int32_t low, int32_t high) {
   return x >= low && x <= high;
 }
@@ -622,6 +632,10 @@ bool upb_fielddef_checkdescriptortype(int32_t type) {
 
 const char *upb_msgdef_fullname(const upb_msgdef *m) {
   return m->full_name;
+}
+
+const upb_filedef *upb_msgdef_file(const upb_msgdef *m) {
+  return m->file;
 }
 
 const char *upb_msgdef_name(const upb_msgdef *m) {
@@ -1166,6 +1180,12 @@ static bool create_fielddef(
    * to the field_proto until later when we can properly resolve it. */
   f->sub.unresolved = field_proto;
 
+  if (f->label_ == UPB_LABEL_REQUIRED && f->file->syntax == UPB_SYNTAX_PROTO3) {
+    upb_status_seterrf(ctx->status, "proto3 fields cannot be required (%s)",
+                       f->full_name);
+    return false;
+  }
+
   if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
     int oneof_index =
         google_protobuf_FieldDescriptorProto_oneof_index(field_proto);
@@ -1229,12 +1249,26 @@ static bool create_enumdef(
 
   values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n);
 
+  if (n == 0) {
+    upb_status_seterrf(ctx->status,
+                       "enums must contain at least one value (%s)",
+                       e->full_name);
+    return false;
+  }
+
   for (i = 0; i < n; i++) {
     const google_protobuf_EnumValueDescriptorProto *value = values[i];
     upb_stringview name = google_protobuf_EnumValueDescriptorProto_name(value);
     char *name2 = strviewdup(ctx, name);
     int32_t num = google_protobuf_EnumValueDescriptorProto_number(value);
     upb_value v = upb_value_int32(num);
+
+    if (n == 0 && e->file->syntax == UPB_SYNTAX_PROTO3 && num != 0) {
+      upb_status_seterrf(ctx->status,
+                         "for proto3, the first enum value must be zero (%s)",
+                         e->full_name);
+      return false;
+    }
 
     if (upb_strtable_lookup(&e->ntoi, name2, NULL)) {
       upb_status_seterrf(ctx->status, "duplicate enum label '%s'", name2);
@@ -1399,9 +1433,24 @@ static bool resolve_fielddef(const symtab_addctx *ctx, const char *prefix,
   if (google_protobuf_FieldDescriptorProto_has_default_value(field_proto)) {
     upb_stringview defaultval =
         google_protobuf_FieldDescriptorProto_default_value(field_proto);
+
+    if (f->file->syntax == UPB_SYNTAX_PROTO3) {
+      upb_status_seterrf(ctx->status,
+                         "proto3 fields cannot have explicit defaults (%s)",
+                         f->full_name);
+      return false;
+    }
+
+    if (upb_fielddef_issubmsg(f)) {
+      upb_status_seterrf(ctx->status,
+                         "message fields cannot have explicit defaults (%s)",
+                         f->full_name);
+      return false;
+    }
+
     if (!parse_default(ctx, defaultval.data, defaultval.size, f)) {
-      upb_status_seterrf(ctx->status, "bad default '" UPB_STRINGVIEW_FORMAT "'",
-                         UPB_STRINGVIEW_ARGS(defaultval));
+      upb_status_seterrf(ctx->status, "couldn't parse default for field (%s)",
+                         f->full_name);
       return false;
     }
   }
@@ -1532,7 +1581,7 @@ static bool build_filedef(
   }
 
   return true;
-}
+ }
 
 static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
                                  upb_status *status) {

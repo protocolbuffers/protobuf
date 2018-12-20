@@ -46,15 +46,6 @@ static uint8_t upb_msg_fielddefsize(const upb_fielddef *f) {
   }
 }
 
-static bool upb_fielddef_haspresence(const upb_fielddef *f) {
-  if (upb_fielddef_isseq(f)) return false;
-  if (upb_fielddef_issubmsg(f)) return true;
-
-  /* Primitive field: return true unless there is a message that specifies
-   * presence should not exist. */
-  return upb_msgdef_syntax(upb_fielddef_containingtype(f)) == UPB_SYNTAX_PROTO2;
-}
-
 
 /** upb_msglayout *************************************************************/
 

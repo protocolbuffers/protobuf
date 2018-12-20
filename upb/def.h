@@ -202,6 +202,7 @@ float upb_fielddef_defaultfloat(const upb_fielddef *f);
 double upb_fielddef_defaultdouble(const upb_fielddef *f);
 const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len);
 bool upb_fielddef_hassubdef(const upb_fielddef *f);
+bool upb_fielddef_haspresence(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
 
@@ -349,6 +350,7 @@ class upb::MessageDef {
 UPB_BEGIN_EXTERN_C
 
 const char *upb_msgdef_fullname(const upb_msgdef *m);
+const upb_filedef *upb_msgdef_file(const upb_msgdef *m);
 const char *upb_msgdef_name(const upb_msgdef *m);
 int upb_msgdef_numoneofs(const upb_msgdef *m);
 upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m);
@@ -485,6 +487,7 @@ UPB_BEGIN_EXTERN_C
 
 const char *upb_enumdef_fullname(const upb_enumdef *e);
 const char *upb_enumdef_name(const upb_enumdef *e);
+const upb_filedef *upb_enumdef_file(const upb_enumdef *e);
 int32_t upb_enumdef_default(const upb_enumdef *e);
 int upb_enumdef_numvals(const upb_enumdef *e);
 
