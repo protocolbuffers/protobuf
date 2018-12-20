@@ -92,7 +92,7 @@ std::pair<const char*, bool> ExtensionSet::ParseFieldWithExtensionInfo(
 #define HANDLE_VARINT_TYPE(UPPERCASE, CPP_CAMELCASE)                        \
   case WireFormatLite::TYPE_##UPPERCASE: {                                  \
     uint64 value;                                                           \
-    ptr = Varint::Parse64(ptr, &value);                                     \
+    ptr = io::Parse64(ptr, &value);                                     \
     GOOGLE_PROTOBUF_ASSERT_RETURN(ptr, std::make_pair(nullptr, true));     \
     if (extension.is_repeated) {                                            \
       Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
@@ -111,7 +111,7 @@ std::pair<const char*, bool> ExtensionSet::ParseFieldWithExtensionInfo(
 #define HANDLE_SVARINT_TYPE(UPPERCASE, CPP_CAMELCASE, SIZE)                 \
   case WireFormatLite::TYPE_##UPPERCASE: {                                  \
     uint64 val;                                                             \
-    ptr = Varint::Parse64(ptr, &val);                                       \
+    ptr = io::Parse64(ptr, &val);                                       \
     GOOGLE_PROTOBUF_ASSERT_RETURN(ptr, std::make_pair(nullptr, true));     \
     auto value = WireFormatLite::ZigZagDecode##SIZE(val);                   \
     if (extension.is_repeated) {                                            \
@@ -151,7 +151,7 @@ std::pair<const char*, bool> ExtensionSet::ParseFieldWithExtensionInfo(
 
       case WireFormatLite::TYPE_ENUM: {
         uint64 val;
-        ptr = Varint::Parse64(ptr, &val);
+        ptr = io::Parse64(ptr, &val);
         GOOGLE_PROTOBUF_ASSERT_RETURN(ptr, std::make_pair(nullptr, true));
         int value = val;
 
@@ -221,7 +221,7 @@ std::pair<const char*, bool> ExtensionSet::ParseFieldWithExtensionInfo(
 
 length_delim:
   uint32 size;
-  ptr = Varint::Parse32Inline(ptr, &size);
+  ptr = io::Parse32(ptr, &size);
   GOOGLE_PROTOBUF_ASSERT_RETURN(ptr, std::make_pair(nullptr, true));
   if (size > end - ptr) goto len_delim_till_end;
   {

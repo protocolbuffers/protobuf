@@ -1603,10 +1603,10 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
       success = success && (match_count == count1);
     } else {
       int start_offset = 0;
+      const bool is_treated_as_smart_set = IsTreatedAsSmartSet(repeated_field);
       // If the two repeated fields are treated as sets, optimize for the case
       // where both start with same items stored in the same order.
-      if (IsTreatedAsSet(repeated_field) ||
-          IsTreatedAsSmartSet(repeated_field) ||
+      if (IsTreatedAsSet(repeated_field) || is_treated_as_smart_set ||
           IsTreatedAsSmartList(repeated_field)) {
         start_offset = std::min(count1, count2);
         for (int i = 0; i < count1 && i < count2; i++) {
@@ -1623,16 +1623,16 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
       for (int i = start_offset; i < count1; ++i) {
         // Indicates any matched elements for this repeated field.
         bool match = false;
+        int matched_j = -1;
 
         for (int j = start_offset; j < count2; j++) {
           if (match_list2->at(j) != -1) {
-            if (!IsTreatedAsSmartSet(repeated_field) ||
-                num_diffs_list1[i] == 0) {
+            if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
               continue;
             }
           }
 
-          if (IsTreatedAsSmartSet(repeated_field)) {
+          if (is_treated_as_smart_set) {
             num_diffs_reporter.Reset();
             match = IsMatch(repeated_field, key_comparator,
                             &message1, &message2, parent_fields,
@@ -1643,7 +1643,7 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
                             nullptr, i, j);
           }
 
-          if (IsTreatedAsSmartSet(repeated_field)) {
+          if (is_treated_as_smart_set) {
             if (match) {
               num_diffs_list1[i] = 0;
             } else if (repeated_field->cpp_type() ==
@@ -1658,13 +1658,23 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
           }
 
           if (match) {
-            match_list1->at(i) = j;
-            match_list2->at(j) = i;
-            if (!IsTreatedAsSmartSet(repeated_field)
-                || num_diffs_list1[i] == 0) {
+            matched_j = j;
+            if (!is_treated_as_smart_set || num_diffs_list1[i] == 0) {
               break;
             }
           }
+        }
+
+        match = (matched_j != -1);
+        if (match) {
+          if (is_treated_as_smart_set &&
+              match_list2->at(matched_j) != -1) {
+            // This is to revert the previously matched index in list2.
+            match_list1->at(match_list2->at(matched_j)) = -1;
+            match = false;
+          }
+          match_list1->at(i) = matched_j;
+          match_list2->at(matched_j) = i;
         }
         if (!match && reporter == NULL) return false;
         success = success && match;

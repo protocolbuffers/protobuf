@@ -2430,6 +2430,9 @@ void Generator::GenerateClassFromObject(const GeneratorOptions& options,
       " * @param {!Object} obj The object representation of this proto to\n"
       " *     load the data from.\n"
       " * @return {!$classname$}\n"
+      " * @suppress {missingProperties} To prevent JSCompiler errors at "
+      "the\n"
+      " *     `goog.isDef(obj.<fieldName>)` lookups.\n"
       " */\n"
       "$classname$.fromObject = function(obj) {\n"
       "  var msg = new $classname$();\n",
@@ -2437,7 +2440,9 @@ void Generator::GenerateClassFromObject(const GeneratorOptions& options,
 
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
-    GenerateClassFieldFromObject(options, printer, field);
+    if (!IgnoreField(field)) {
+      GenerateClassFieldFromObject(options, printer, field);
+    }
   }
 
   printer->Print(
@@ -2479,9 +2484,8 @@ void Generator::GenerateClassFieldFromObject(
         printer->Print(
             "  goog.isDef(obj.$name$) && "
             "jspb.Message.setRepeatedWrapperField(\n"
-            "      msg, $index$, goog.array.map(obj.$name$, function(i) {\n"
-            "        return $fieldclass$.fromObject(i);\n"
-            "      }));\n",
+            "      msg, $index$, obj.$name$.map(\n"
+            "          $fieldclass$.fromObject));\n",
             "name", JSObjectFieldName(options, field),
             "index", JSFieldIndex(field),
             "fieldclass", SubmessageTypeRef(options, field));

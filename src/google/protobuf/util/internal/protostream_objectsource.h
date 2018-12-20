@@ -155,9 +155,9 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
       const google::protobuf::Type& type, uint32 tag) const;
 
   // Renders a field value to the ObjectWriter.
-  util::Status RenderField(const google::protobuf::Field* field,
-                             StringPiece field_name,
-                             ObjectWriter* ow) const;
+  virtual util::Status RenderField(const google::protobuf::Field* field,
+                                     StringPiece field_name,
+                                     ObjectWriter* ow) const;
 
   // Reads field value according to Field spec in 'field' and returns the read
   // value as string. This only works for primitive datatypes (no message

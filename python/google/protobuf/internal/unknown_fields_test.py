@@ -39,6 +39,7 @@ try:
   import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
@@ -137,6 +138,18 @@ class UnknownFieldsTest(BaseTestCase):
     self.assertEqual(b'', message.optional_nested_message.SerializeToString())
     self.assertEqual(
         b'', message.repeated_nested_message[0].SerializeToString())
+
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_all_types[1].optional_nested_message.ParseFromString(
+        other_message.SerializeToString())
+    msg.map_string_string['1'] = 'test'
+    self.assertNotEqual(
+        b'',
+        msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
+    msg.DiscardUnknownFields()
+    self.assertEqual(
+        b'',
+        msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
 
 
 class UnknownFieldsAccessorsTest(BaseTestCase):

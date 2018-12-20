@@ -49,19 +49,20 @@ import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
-import com.google.protobuf.util.JsonTestProto.TestAllTypes;
-import com.google.protobuf.util.JsonTestProto.TestAllTypes.NestedEnum;
-import com.google.protobuf.util.JsonTestProto.TestAllTypes.NestedMessage;
-import com.google.protobuf.util.JsonTestProto.TestAny;
-import com.google.protobuf.util.JsonTestProto.TestCustomJsonName;
-import com.google.protobuf.util.JsonTestProto.TestDuration;
-import com.google.protobuf.util.JsonTestProto.TestFieldMask;
-import com.google.protobuf.util.JsonTestProto.TestMap;
-import com.google.protobuf.util.JsonTestProto.TestOneof;
-import com.google.protobuf.util.JsonTestProto.TestRecursive;
-import com.google.protobuf.util.JsonTestProto.TestStruct;
-import com.google.protobuf.util.JsonTestProto.TestTimestamp;
-import com.google.protobuf.util.JsonTestProto.TestWrappers;
+import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes;
+import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes.AliasedEnum;
+import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes.NestedEnum;
+import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes.NestedMessage;
+import com.google.protobuf.util.proto.JsonTestProto.TestAny;
+import com.google.protobuf.util.proto.JsonTestProto.TestCustomJsonName;
+import com.google.protobuf.util.proto.JsonTestProto.TestDuration;
+import com.google.protobuf.util.proto.JsonTestProto.TestFieldMask;
+import com.google.protobuf.util.proto.JsonTestProto.TestMap;
+import com.google.protobuf.util.proto.JsonTestProto.TestOneof;
+import com.google.protobuf.util.proto.JsonTestProto.TestRecursive;
+import com.google.protobuf.util.proto.JsonTestProto.TestStruct;
+import com.google.protobuf.util.proto.JsonTestProto.TestTimestamp;
+import com.google.protobuf.util.proto.JsonTestProto.TestWrappers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -676,7 +677,7 @@ public class JsonFormatTest extends TestCase {
               + "}",
           builder);
       fail();
-        
+
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
     }
@@ -1159,8 +1160,8 @@ public class JsonFormatTest extends TestCase {
   }
 
   public void testParserAcceptBase64Variants() throws Exception {
-    assertAccepts("optionalBytes", "AQI");  // No padding
-    assertAccepts("optionalBytes", "-_w");  // base64Url, no padding
+    assertAccepts("optionalBytes", "AQI"); // No padding
+    assertAccepts("optionalBytes", "-_w"); // base64Url, no padding
   }
 
   public void testParserRejectInvalidEnumValue() throws Exception {
@@ -1195,6 +1196,23 @@ public class JsonFormatTest extends TestCase {
     String json = "{\n" + "  \"optionalNestedEnum\": \"XXX\"\n" + "}";
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
     assertEquals(0, builder.getOptionalNestedEnumValue());
+  }
+
+  public void testParserSupportAliasEnums() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    String json = "{\n" + "  \"optionalAliasedEnum\": \"QUX\"\n" + "}";
+    JsonFormat.parser().merge(json, builder);
+    assertEquals(AliasedEnum.ALIAS_BAZ, builder.getOptionalAliasedEnum());
+
+    builder = TestAllTypes.newBuilder();
+    json = "{\n" + "  \"optionalAliasedEnum\": \"qux\"\n" + "}";
+    JsonFormat.parser().merge(json, builder);
+    assertEquals(AliasedEnum.ALIAS_BAZ, builder.getOptionalAliasedEnum());
+
+    builder = TestAllTypes.newBuilder();
+    json = "{\n" + "  \"optionalAliasedEnum\": \"bAz\"\n" + "}";
+    JsonFormat.parser().merge(json, builder);
+    assertEquals(AliasedEnum.ALIAS_BAZ, builder.getOptionalAliasedEnum());
   }
 
   public void testUnknownEnumMap() throws Exception {
@@ -1280,7 +1298,8 @@ public class JsonFormatTest extends TestCase {
             + "  \"repeatedString\": [],\n"
             + "  \"repeatedBytes\": [],\n"
             + "  \"repeatedNestedMessage\": [],\n"
-            + "  \"repeatedNestedEnum\": []\n"
+            + "  \"repeatedNestedEnum\": [],\n"
+            + "  \"optionalAliasedEnum\": \"ALIAS_FOO\"\n"
             + "}",
         JsonFormat.printer().includingDefaultValueFields().print(message));
 
@@ -1644,11 +1663,11 @@ public class JsonFormatTest extends TestCase {
     mapBuilder.putStringToInt32Map("\ud834\udd20", 3); // utf-8 F0 9D 84 A0
     mapBuilder.putStringToInt32Map("foo", 99);
     mapBuilder.putStringToInt32Map("xxx", 123);
-    mapBuilder.putStringToInt32Map("\u20ac", 1);  // utf-8 E2 82 AC
+    mapBuilder.putStringToInt32Map("\u20ac", 1); // utf-8 E2 82 AC
     mapBuilder.putStringToInt32Map("abc", 20);
     mapBuilder.putStringToInt32Map("19", 19);
     mapBuilder.putStringToInt32Map("8", 8);
-    mapBuilder.putStringToInt32Map("\ufb00", 2);  // utf-8 EF AC 80
+    mapBuilder.putStringToInt32Map("\ufb00", 2); // utf-8 EF AC 80
     mapBuilder.putInt32ToInt32Map(3, 3);
     mapBuilder.putInt32ToInt32Map(10, 10);
     mapBuilder.putInt32ToInt32Map(5, 5);

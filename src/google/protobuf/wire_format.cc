@@ -907,8 +907,8 @@ void WireFormat::SerializeFieldWithCachedSizes(
   // internal state and existing references that came from map reflection remain
   // valid for both reading and writing.
   if (field->is_map()) {
-    MapFieldBase* map_field =
-        message_reflection->MapData(const_cast<Message*>(&message), field);
+    const MapFieldBase* map_field =
+        message_reflection->GetMapData(message, field);
     if (map_field->IsMapValid()) {
       if (output->IsSerializationDeterministic()) {
         std::vector<MapKey> sorted_key_list =
@@ -1243,8 +1243,8 @@ size_t WireFormat::FieldDataOnlyByteSize(
   size_t data_size = 0;
 
   if (field->is_map()) {
-    MapFieldBase* map_field =
-        message_reflection->MapData(const_cast<Message*>(&message), field);
+    const MapFieldBase* map_field =
+        message_reflection->GetMapData(message, field);
     if (map_field->IsMapValid()) {
       MapIterator iter(const_cast<Message*>(&message), field);
       MapIterator end(const_cast<Message*>(&message), field);

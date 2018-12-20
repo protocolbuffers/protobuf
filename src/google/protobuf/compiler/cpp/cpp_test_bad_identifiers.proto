@@ -147,6 +147,7 @@ enum ConflictingEnum {  // NO_PROTO3
   NOT_EQ = 1;           // NO_PROTO3
   volatile = 2;         // NO_PROTO3
   return = 3;           // NO_PROTO3
+  NULL = 4;             // NO_PROTO3
 }  // NO_PROTO3
 
 message DummyMessage {}

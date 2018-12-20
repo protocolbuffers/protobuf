@@ -48,6 +48,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/parse_context.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -461,13 +462,11 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Returns a pointer past the last written byte.
   uint8* InternalSerializeWithCachedSizesToArray(int start_field_number,
                                                  int end_field_number,
-                                                 bool deterministic,
                                                  uint8* target) const;
 
   // Like above but serializes in MessageSet format.
   void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const;
-  uint8* InternalSerializeMessageSetWithCachedSizesToArray(bool deterministic,
-                                                           uint8* target) const;
+  uint8* InternalSerializeMessageSetWithCachedSizesToArray(uint8* target) const;
 
   // For backward-compatibility, versions of two of the above methods that
   // serialize deterministically iff SetDefaultSerializationDeterministic()
@@ -531,12 +530,6 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void WriteMessage(int number,
                               io::CodedOutputStream* output) const = 0;
     virtual uint8* WriteMessageToArray(int number, uint8* target) const = 0;
-    virtual uint8* InternalWriteMessageToArray(int number, bool,
-                                               uint8* target) const {
-      // TODO(gpike): make this pure virtual. This is a placeholder because we
-      // need to update third_party/upb, for example.
-      return WriteMessageToArray(number, target);
-    }
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
@@ -606,12 +599,11 @@ class PROTOBUF_EXPORT ExtensionSet {
     void SerializeFieldWithCachedSizes(int number,
                                        io::CodedOutputStream* output) const;
     uint8* InternalSerializeFieldWithCachedSizesToArray(int number,
-                                                        bool deterministic,
                                                         uint8* target) const;
     void SerializeMessageSetItemWithCachedSizes(
         int number, io::CodedOutputStream* output) const;
     uint8* InternalSerializeMessageSetItemWithCachedSizesToArray(
-        int number, bool deterministic, uint8* target) const;
+        int number, uint8* target) const;
     size_t ByteSize(int number) const;
     size_t MessageSetItemByteSize(int number) const;
     void Clear();
@@ -819,11 +811,10 @@ const char* ParseMessageSet(const char* begin, const char* end, Msg* msg,
                             ExtensionSet* ext, Metadata* metadata,
                             internal::ParseContext* ctx) {
   auto ptr = begin;
-  int depth;
-  (void)depth;
+  int depth = 0;
   while (ptr < end) {
     uint32 tag;
-    ptr = Varint::Parse32Inline(ptr, &tag);
+    ptr = io::Parse32(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     if (tag == WireFormatLite::kMessageSetItemStartTag) {
       ctx->extra_parse_data().payload.clear();
@@ -848,6 +839,7 @@ const char* ParseMessageSet(const char* begin, const char* end, Msg* msg,
   }
   return ptr;
 }
+
 #endif
 
 // These are just for convenience...
