@@ -275,14 +275,11 @@ VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
 }
 
 VALUE create_submsg_from_hash(const upb_fielddef *f, VALUE hash) {
-  const upb_def *d = upb_fielddef_subdef(f);
+  const upb_msgdef *d = upb_fielddef_msgsubdef(f);
   assert(d != NULL);
 
-  VALUE descriptor = get_def_obj(d);
-  VALUE msgclass = rb_funcall(descriptor, rb_intern("msgclass"), 0, NULL);
-
   VALUE args[1] = { hash };
-  return rb_class_new_instance(1, args, msgclass);
+  return rb_class_new_instance(1, args, field_type_class(f));
 }
 
 int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
@@ -604,7 +601,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
       rb_intern("Message"),
       rb_cObject);
   rb_ivar_set(klass, descriptor_instancevar_interned,
-              get_def_obj(desc->msgdef));
+              get_msgdef_obj(desc->msgdef));
   rb_define_alloc_func(klass, Message_alloc);
   rb_require("google/protobuf/message_exts");
   rb_include_module(klass, rb_eval_string("::Google::Protobuf::MessageExts"));
@@ -710,7 +707,7 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
   rb_define_singleton_method(mod, "resolve", enum_resolve, 1);
   rb_define_singleton_method(mod, "descriptor", enum_descriptor, 0);
   rb_ivar_set(mod, descriptor_instancevar_interned,
-              get_def_obj(enumdesc->enumdef));
+              get_enumdef_obj(enumdesc->enumdef));
 
   return mod;
 }

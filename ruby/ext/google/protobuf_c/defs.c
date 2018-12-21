@@ -46,31 +46,6 @@ static VALUE rb_str_maybe_null(const char* s) {
   return rb_str_new2(s);
 }
 
-static upb_def* check_notfrozen(const upb_def* def) {
-  if (upb_def_isfrozen(def)) {
-    rb_raise(rb_eRuntimeError,
-             "Attempt to modify a frozen descriptor. Once descriptors are "
-             "added to the descriptor pool, they may not be modified.");
-  }
-  return (upb_def*)def;
-}
-
-static upb_msgdef* check_msg_notfrozen(const upb_msgdef* def) {
-  return upb_downcast_msgdef_mutable(check_notfrozen((const upb_def*)def));
-}
-
-static upb_fielddef* check_field_notfrozen(const upb_fielddef* def) {
-  return upb_downcast_fielddef_mutable(check_notfrozen((const upb_def*)def));
-}
-
-static upb_oneofdef* check_oneof_notfrozen(const upb_oneofdef* def) {
-  return (upb_oneofdef*)check_notfrozen((const upb_def*)def);
-}
-
-static upb_enumdef* check_enum_notfrozen(const upb_enumdef* def) {
-  return (upb_enumdef*)check_notfrozen((const upb_def*)def);
-}
-
 // -----------------------------------------------------------------------------
 // DescriptorPool.
 // -----------------------------------------------------------------------------
@@ -121,7 +96,6 @@ void DescriptorPool_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "DescriptorPool", rb_cObject);
   rb_define_alloc_func(klass, DescriptorPool_alloc);
-  rb_define_method(klass, "add", DescriptorPool_add, 1);
   rb_define_method(klass, "build", DescriptorPool_build, -1);
   rb_define_method(klass, "lookup", DescriptorPool_lookup, 1);
   rb_define_singleton_method(klass, "generated_pool",
@@ -131,44 +105,6 @@ void DescriptorPool_register(VALUE module) {
 
   rb_gc_register_address(&generated_pool);
   generated_pool = rb_class_new_instance(0, NULL, klass);
-}
-
-static void add_descriptor_to_pool(DescriptorPool* self,
-                                   Descriptor* descriptor) {
-  CHECK_UPB(
-      upb_symtab_add(self->symtab, (upb_def**)&descriptor->msgdef, 1,
-                     NULL, &status),
-      "Adding Descriptor to DescriptorPool failed");
-}
-
-static void add_enumdesc_to_pool(DescriptorPool* self,
-                                 EnumDescriptor* enumdesc) {
-  CHECK_UPB(
-      upb_symtab_add(self->symtab, (upb_def**)&enumdesc->enumdef, 1,
-                     NULL, &status),
-      "Adding EnumDescriptor to DescriptorPool failed");
-}
-
-/*
- * call-seq:
- *     DescriptorPool.add(descriptor)
- *
- * Adds the given Descriptor or EnumDescriptor to this pool. All references to
- * other types in a Descriptor's fields must be resolvable within this pool or
- * an exception will be raised.
- */
-VALUE DescriptorPool_add(VALUE _self, VALUE def) {
-  DEFINE_SELF(DescriptorPool, self, _self);
-  VALUE def_klass = rb_obj_class(def);
-  if (def_klass == cDescriptor) {
-    add_descriptor_to_pool(self, ruby_to_Descriptor(def));
-  } else if (def_klass == cEnumDescriptor) {
-    add_enumdesc_to_pool(self, ruby_to_EnumDescriptor(def));
-  } else {
-    rb_raise(rb_eArgError,
-             "Second argument must be a Descriptor or EnumDescriptor.");
-  }
-  return Qnil;
 }
 
 /*
@@ -182,10 +118,10 @@ VALUE DescriptorPool_add(VALUE _self, VALUE def) {
  * idiomatic way to define new message and enum types.
  */
 VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self) {
-  VALUE ctx = rb_class_new_instance(0, NULL, cBuilder);
+  VALUE ctx = rb_class_new_instance(1, &_self, cBuilder);
   VALUE block = rb_block_proc();
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
-  rb_funcall(ctx, rb_intern("finalize_to_pool"), 1, _self);
+  Builder_build(ctx);
   return Qnil;
 }
 
@@ -199,11 +135,18 @@ VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self) {
 VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   DEFINE_SELF(DescriptorPool, self, _self);
   const char* name_str = get_str(name);
-  const upb_def* def = upb_symtab_lookup(self->symtab, name_str);
-  if (!def) {
-    return Qnil;
+
+  const upb_msgdef* msgdef = upb_symtab_lookupmsg(self->symtab, name_str);
+  if (msgdef) {
+    return get_msgdef_obj(msgdef);
   }
-  return get_def_obj(def);
+
+  const upb_enumdef* enumdef = upb_symtab_lookupenum(self->symtab, name_str);
+  if (enumdef) {
+    return get_enumdef_obj(enumdef);
+  }
+
+  return Qnil;
 }
 
 /*
@@ -228,37 +171,11 @@ DEFINE_CLASS(Descriptor, "Google::Protobuf::Descriptor");
 void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
+  rb_gc_mark(self->descriptor_pool);
 }
 
 void Descriptor_free(void* _self) {
-  Descriptor* self = _self;
-  upb_msgdef_unref(self->msgdef, &self->msgdef);
-  if (self->layout) {
-    free_layout(self->layout);
-  }
-  if (self->fill_handlers) {
-    upb_handlers_unref(self->fill_handlers, &self->fill_handlers);
-  }
-  if (self->fill_method) {
-    upb_pbdecodermethod_unref(self->fill_method, &self->fill_method);
-  }
-  if (self->json_fill_method) {
-    upb_json_parsermethod_unref(self->json_fill_method,
-                                &self->json_fill_method);
-  }
-  if (self->pb_serialize_handlers) {
-    upb_handlers_unref(self->pb_serialize_handlers,
-                       &self->pb_serialize_handlers);
-  }
-  if (self->json_serialize_handlers) {
-    upb_handlers_unref(self->json_serialize_handlers,
-                       &self->json_serialize_handlers);
-  }
-  if (self->json_serialize_handlers_preserve) {
-    upb_handlers_unref(self->json_serialize_handlers_preserve,
-                       &self->json_serialize_handlers_preserve);
-  }
-  xfree(self);
+  xfree(_self);
 }
 
 /*
@@ -273,8 +190,9 @@ void Descriptor_free(void* _self) {
 VALUE Descriptor_alloc(VALUE klass) {
   Descriptor* self = ALLOC(Descriptor);
   VALUE ret = TypedData_Wrap_Struct(klass, &_Descriptor_type, self);
-  self->msgdef = upb_msgdef_new(&self->msgdef);
+  self->msgdef = NULL;
   self->klass = Qnil;
+  self->descriptor_pool = Qnil;
   self->layout = NULL;
   self->fill_handlers = NULL;
   self->fill_method = NULL;
@@ -307,32 +225,13 @@ void Descriptor_register(VALUE module) {
 
 /*
  * call-seq:
- *    Descriptor.new(file_descriptor)
- *
- * Initializes a new descriptor and assigns a file descriptor to it.
- */
-VALUE Descriptor_initialize(VALUE _self, VALUE file_descriptor_rb) {
-  DEFINE_SELF(Descriptor, self, _self);
-
-  FileDescriptor* file_descriptor = ruby_to_FileDescriptor(file_descriptor_rb);
-
-  CHECK_UPB(
-        upb_filedef_addmsg(file_descriptor->filedef, self->msgdef, NULL, &status),
-        "Failed to associate message to file descriptor.");
-  add_def_obj(file_descriptor->filedef, file_descriptor_rb);
-
-  return Qnil;
-}
-
-/*
- * call-seq:
  *    Descriptor.file_descriptor
  *
  * Returns the FileDescriptor object this message belongs to.
  */
 VALUE Descriptor_file_descriptor(VALUE _self) {
   DEFINE_SELF(Descriptor, self, _self);
-  return get_def_obj(upb_def_file(self->msgdef));
+  return get_filedef_obj(upb_msgdef_file(self->msgdef));
 }
 
 /*
@@ -349,23 +248,6 @@ VALUE Descriptor_name(VALUE _self) {
 
 /*
  * call-seq:
- *    Descriptor.name = name
- *
- * Assigns a name to this message type. The descriptor must not have been added
- * to a pool yet.
- */
-VALUE Descriptor_name_set(VALUE _self, VALUE str) {
-  DEFINE_SELF(Descriptor, self, _self);
-  upb_msgdef* mut_def = check_msg_notfrozen(self->msgdef);
-  const char* name = get_str(str);
-  CHECK_UPB(
-      upb_msgdef_setfullname(mut_def, name, &status),
-      "Error setting Descriptor name");
-  return Qnil;
-}
-
-/*
- * call-seq:
  *     Descriptor.each(&block)
  *
  * Iterates over fields in this message type, yielding to the block on each one.
@@ -378,7 +260,7 @@ VALUE Descriptor_each(VALUE _self) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE obj = get_def_obj(field);
+    VALUE obj = get_fielddef_obj(field);
     rb_yield(obj);
   }
   return Qnil;
@@ -398,51 +280,7 @@ VALUE Descriptor_lookup(VALUE _self, VALUE name) {
   if (field == NULL) {
     return Qnil;
   }
-  return get_def_obj(field);
-}
-
-/*
- * call-seq:
- *     Descriptor.add_field(field) => nil
- *
- * Adds the given FieldDescriptor to this message type. This descriptor must not
- * have been added to a pool yet. Raises an exception if a field with the same
- * name or number already exists. Sub-type references (e.g. for fields of type
- * message) are not resolved at this point.
- */
-VALUE Descriptor_add_field(VALUE _self, VALUE obj) {
-  DEFINE_SELF(Descriptor, self, _self);
-  upb_msgdef* mut_def = check_msg_notfrozen(self->msgdef);
-  FieldDescriptor* def = ruby_to_FieldDescriptor(obj);
-  upb_fielddef* mut_field_def = check_field_notfrozen(def->fielddef);
-  CHECK_UPB(
-      upb_msgdef_addfield(mut_def, mut_field_def, NULL, &status),
-      "Adding field to Descriptor failed");
-  add_def_obj(def->fielddef, obj);
-  return Qnil;
-}
-
-/*
- * call-seq:
- *     Descriptor.add_oneof(oneof) => nil
- *
- * Adds the given OneofDescriptor to this message type. This descriptor must not
- * have been added to a pool yet. Raises an exception if a oneof with the same
- * name already exists, or if any of the oneof's fields' names or numbers
- * conflict with an existing field in this message type. All fields in the oneof
- * are added to the message descriptor. Sub-type references (e.g. for fields of
- * type message) are not resolved at this point.
- */
-VALUE Descriptor_add_oneof(VALUE _self, VALUE obj) {
-  DEFINE_SELF(Descriptor, self, _self);
-  upb_msgdef* mut_def = check_msg_notfrozen(self->msgdef);
-  OneofDescriptor* def = ruby_to_OneofDescriptor(obj);
-  upb_oneofdef* mut_oneof_def = check_oneof_notfrozen(def->oneofdef);
-  CHECK_UPB(
-      upb_msgdef_addoneof(mut_def, mut_oneof_def, NULL, &status),
-      "Adding oneof to Descriptor failed");
-  add_def_obj(def->oneofdef, obj);
-  return Qnil;
+  return get_fielddef_obj(field);
 }
 
 /*
@@ -460,7 +298,7 @@ VALUE Descriptor_each_oneof(VALUE _self) {
        !upb_msg_oneof_done(&it);
        upb_msg_oneof_next(&it)) {
     const upb_oneofdef* oneof = upb_msg_iter_oneof(&it);
-    VALUE obj = get_def_obj(oneof);
+    VALUE obj = get_oneofdef_obj(oneof);
     rb_yield(obj);
   }
   return Qnil;
@@ -480,7 +318,7 @@ VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name) {
   if (oneof == NULL) {
     return Qnil;
   }
-  return get_def_obj(oneof);
+  return get_oneofdef_obj(oneof);
 }
 
 /*
@@ -492,10 +330,6 @@ VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name) {
  */
 VALUE Descriptor_msgclass(VALUE _self) {
   DEFINE_SELF(Descriptor, self, _self);
-  if (!upb_def_isfrozen((const upb_def*)self->msgdef)) {
-    rb_raise(rb_eRuntimeError,
-             "Cannot fetch message class from a Descriptor not yet in a pool.");
-  }
   if (self->klass == Qnil) {
     self->klass = build_class_from_descriptor(self);
   }
@@ -509,12 +343,12 @@ VALUE Descriptor_msgclass(VALUE _self) {
 DEFINE_CLASS(FileDescriptor, "Google::Protobuf::FileDescriptor");
 
 void FileDescriptor_mark(void* _self) {
+  FileDescriptor* self = _self;
+  rb_gc_mark(self->descriptor_pool);
 }
 
 void FileDescriptor_free(void* _self) {
-  FileDescriptor* self = _self;
-  upb_filedef_unref(self->filedef, &self->filedef);
-  xfree(self);
+  xfree(_self);
 }
 
 /*
@@ -527,8 +361,7 @@ void FileDescriptor_free(void* _self) {
 VALUE FileDescriptor_alloc(VALUE klass) {
   FileDescriptor* self = ALLOC(FileDescriptor);
   VALUE ret = TypedData_Wrap_Struct(klass, &_FileDescriptor_type, self);
-  upb_filedef* filedef = upb_filedef_new(&self->filedef);
-  self->filedef = filedef;
+  self->filedef = NULL;
   return ret;
 }
 
@@ -542,44 +375,6 @@ void FileDescriptor_register(VALUE module) {
   rb_define_method(klass, "syntax=", FileDescriptor_syntax_set, 1);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
-}
-
-/*
- * call-seq:
- *     FileDescriptor.new(name, options = nil) => file
- *
- * Initializes a new file descriptor with the given file name.
- * Also accepts an optional "options" hash, specifying other optional
- * metadata about the file. The options hash currently accepts the following
- *   * "syntax": :proto2 or :proto3 (default: :proto3)
- */
-VALUE FileDescriptor_initialize(int argc, VALUE* argv, VALUE _self) {
-  DEFINE_SELF(FileDescriptor, self, _self);
-
-  VALUE name_rb;
-  VALUE options = Qnil;
-  rb_scan_args(argc, argv, "11", &name_rb, &options);
-
-  if (name_rb != Qnil) {
-    Check_Type(name_rb, T_STRING);
-    const char* name = get_str(name_rb);
-    CHECK_UPB(upb_filedef_setname(self->filedef, name, &status),
-	      "Error setting file name");
-  }
-
-  // Default syntax is proto3.
-  VALUE syntax = ID2SYM(rb_intern("proto3"));
-  if (options != Qnil) {
-    Check_Type(options, T_HASH);
-
-    if (rb_funcall(options, rb_intern("key?"), 1,
-		   ID2SYM(rb_intern("syntax"))) == Qtrue) {
-      syntax = rb_hash_lookup(options, ID2SYM(rb_intern("syntax")));
-    }
-  }
-  FileDescriptor_syntax_set(_self, syntax);
-
-  return Qnil;
 }
 
 /*
@@ -613,31 +408,6 @@ VALUE FileDescriptor_syntax(VALUE _self) {
   }
 }
 
-/*
- * call-seq:
- *     FileDescriptor.syntax = version
- *
- * Sets this file descriptor's syntax, can be :proto3 or :proto2.
- */
-VALUE FileDescriptor_syntax_set(VALUE _self, VALUE syntax_rb) {
-  DEFINE_SELF(FileDescriptor, self, _self);
-  Check_Type(syntax_rb, T_SYMBOL);
-
-  upb_syntax_t syntax;
-  if (SYM2ID(syntax_rb) == rb_intern("proto3")) {
-    syntax = UPB_SYNTAX_PROTO3;
-  } else if (SYM2ID(syntax_rb) == rb_intern("proto2")) {
-    syntax = UPB_SYNTAX_PROTO2;
-  } else {
-    rb_raise(rb_eArgError, "Expected :proto3 or :proto3, received '%s'",
-	     rb_id2name(SYM2ID(syntax_rb)));
-  }
-
-  CHECK_UPB(upb_filedef_setsyntax(self->filedef, syntax, &status),
-          "Error setting file syntax for proto");
-  return Qnil;
-}
-
 // -----------------------------------------------------------------------------
 // FieldDescriptor.
 // -----------------------------------------------------------------------------
@@ -645,12 +415,12 @@ VALUE FileDescriptor_syntax_set(VALUE _self, VALUE syntax_rb) {
 DEFINE_CLASS(FieldDescriptor, "Google::Protobuf::FieldDescriptor");
 
 void FieldDescriptor_mark(void* _self) {
+  FieldDescriptor* self = _self;
+  rb_gc_mark(self->descriptor_pool);
 }
 
 void FieldDescriptor_free(void* _self) {
-  FieldDescriptor* self = _self;
-  upb_fielddef_unref(self->fielddef, &self->fielddef);
-  xfree(self);
+  xfree(_self);
 }
 
 /*
@@ -663,9 +433,7 @@ void FieldDescriptor_free(void* _self) {
 VALUE FieldDescriptor_alloc(VALUE klass) {
   FieldDescriptor* self = ALLOC(FieldDescriptor);
   VALUE ret = TypedData_Wrap_Struct(klass, &_FieldDescriptor_type, self);
-  upb_fielddef* fielddef = upb_fielddef_new(&self->fielddef);
-  upb_fielddef_setpacked(fielddef, false);
-  self->fielddef = fielddef;
+  self->fielddef = NULL;
   return ret;
 }
 
@@ -674,17 +442,11 @@ void FieldDescriptor_register(VALUE module) {
       module, "FieldDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FieldDescriptor_alloc);
   rb_define_method(klass, "name", FieldDescriptor_name, 0);
-  rb_define_method(klass, "name=", FieldDescriptor_name_set, 1);
   rb_define_method(klass, "type", FieldDescriptor_type, 0);
-  rb_define_method(klass, "type=", FieldDescriptor_type_set, 1);
   rb_define_method(klass, "default", FieldDescriptor_default, 0);
-  rb_define_method(klass, "default=", FieldDescriptor_default_set, 1);
   rb_define_method(klass, "label", FieldDescriptor_label, 0);
-  rb_define_method(klass, "label=", FieldDescriptor_label_set, 1);
   rb_define_method(klass, "number", FieldDescriptor_number, 0);
-  rb_define_method(klass, "number=", FieldDescriptor_number_set, 1);
   rb_define_method(klass, "submsg_name", FieldDescriptor_submsg_name, 0);
-  rb_define_method(klass, "submsg_name=", FieldDescriptor_submsg_name_set, 1);
   rb_define_method(klass, "subtype", FieldDescriptor_subtype, 0);
   rb_define_method(klass, "has?", FieldDescriptor_has, 1);
   rb_define_method(klass, "clear", FieldDescriptor_clear, 1);
@@ -703,22 +465,6 @@ void FieldDescriptor_register(VALUE module) {
 VALUE FieldDescriptor_name(VALUE _self) {
   DEFINE_SELF(FieldDescriptor, self, _self);
   return rb_str_maybe_null(upb_fielddef_name(self->fielddef));
-}
-
-/*
- * call-seq:
- *     FieldDescriptor.name = name
- *
- * Sets the name of this field. Cannot be called once the containing message
- * type, if any, is added to a pool.
- */
-VALUE FieldDescriptor_name_set(VALUE _self, VALUE str) {
-  DEFINE_SELF(FieldDescriptor, self, _self);
-  upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
-  const char* name = get_str(str);
-  CHECK_UPB(upb_fielddef_setname(mut_def, name, &status),
-            "Error setting FieldDescriptor name");
-  return Qnil;
 }
 
 upb_fieldtype_t ruby_to_fieldtype(VALUE type) {
@@ -831,6 +577,29 @@ VALUE descriptortype_to_ruby(upb_descriptortype_t type) {
   return Qnil;
 }
 
+VALUE ruby_to_label(VALUE label) {
+  upb_label_t upb_label;
+  bool converted = false;
+
+#define CONVERT(upb, ruby)                                           \
+  if (SYM2ID(label) == rb_intern( # ruby )) {                        \
+    upb_label = UPB_LABEL_ ## upb;                                   \
+    converted = true;                                                \
+  }
+
+  CONVERT(OPTIONAL, optional);
+  CONVERT(REQUIRED, required);
+  CONVERT(REPEATED, repeated);
+
+#undef CONVERT
+
+  if (!converted) {
+    rb_raise(rb_eArgError, "Unknown field label.");
+  }
+
+  return upb_label;
+}
+
 /*
  * call-seq:
  *     FieldDescriptor.type => type
@@ -851,20 +620,6 @@ VALUE FieldDescriptor_type(VALUE _self) {
 
 /*
  * call-seq:
- *     FieldDescriptor.type = type
- *
- * Sets this field's type. Cannot be called if field is part of a message type
- * already in a pool.
- */
-VALUE FieldDescriptor_type_set(VALUE _self, VALUE type) {
-  DEFINE_SELF(FieldDescriptor, self, _self);
-  upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
-  upb_fielddef_setdescriptortype(mut_def, ruby_to_descriptortype(type));
-  return Qnil;
-}
-
-/*
- * call-seq:
  *     FieldDescriptor.default => default
  *
  * Returns this field's default, as a Ruby object, or nil if not yet set.
@@ -881,52 +636,6 @@ VALUE FieldDescriptor_default(VALUE _self) {
  * Sets this field's default value. Raises an exception when calling with
  * proto syntax 3.
  */
-VALUE FieldDescriptor_default_set(VALUE _self, VALUE default_value) {
-  DEFINE_SELF(FieldDescriptor, self, _self);
-  upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
-
-  switch (upb_fielddef_type(mut_def)) {
-    case UPB_TYPE_FLOAT: 
-      upb_fielddef_setdefaultfloat(mut_def, NUM2DBL(default_value));
-      break;
-    case UPB_TYPE_DOUBLE:
-      upb_fielddef_setdefaultdouble(mut_def, NUM2DBL(default_value));
-      break;
-    case UPB_TYPE_BOOL:
-      if (!RB_TYPE_P(default_value, T_TRUE) &&
-	  !RB_TYPE_P(default_value, T_FALSE) &&
-	  !RB_TYPE_P(default_value, T_NIL)) {
-        rb_raise(cTypeError, "Expected boolean for default value.");
-      }
-
-      upb_fielddef_setdefaultbool(mut_def, RTEST(default_value));
-      break;
-    case UPB_TYPE_ENUM:
-    case UPB_TYPE_INT32: 
-      upb_fielddef_setdefaultint32(mut_def, NUM2INT(default_value));
-      break;
-    case UPB_TYPE_INT64: 
-      upb_fielddef_setdefaultint64(mut_def, NUM2INT(default_value));
-      break;
-    case UPB_TYPE_UINT32: 
-      upb_fielddef_setdefaultuint32(mut_def, NUM2UINT(default_value));
-      break;
-    case UPB_TYPE_UINT64: 
-      upb_fielddef_setdefaultuint64(mut_def, NUM2UINT(default_value));
-      break;
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
-      CHECK_UPB(upb_fielddef_setdefaultcstr(mut_def, StringValuePtr(default_value),
-					    &status),
-                "Error setting default string");
-      break;
-    default:
-      rb_raise(rb_eArgError, "Defaults not supported on field %s.%s",
-	       upb_fielddef_fullname(mut_def), upb_fielddef_name(mut_def));
-  }
-
-  return Qnil;
-}
 
 /*
  * call-seq:
@@ -955,44 +664,6 @@ VALUE FieldDescriptor_label(VALUE _self) {
 
 /*
  * call-seq:
- *     FieldDescriptor.label = label
- *
- * Sets the label on this field. Cannot be called if field is part of a message
- * type already in a pool.
- */
-VALUE FieldDescriptor_label_set(VALUE _self, VALUE label) {
-  DEFINE_SELF(FieldDescriptor, self, _self);
-  upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
-  upb_label_t upb_label = -1;
-  bool converted = false;
-
-  if (TYPE(label) != T_SYMBOL) {
-    rb_raise(rb_eArgError, "Expected symbol for field label.");
-  }
-
-#define CONVERT(upb, ruby)                                           \
-  if (SYM2ID(label) == rb_intern( # ruby )) {                        \
-    upb_label = UPB_LABEL_ ## upb;                                   \
-    converted = true;                                                \
-  }
-
-  CONVERT(OPTIONAL, optional);
-  CONVERT(REQUIRED, required);
-  CONVERT(REPEATED, repeated);
-
-#undef CONVERT
-
-  if (!converted) {
-    rb_raise(rb_eArgError, "Unknown field label.");
-  }
-
-  upb_fielddef_setlabel(mut_def, upb_label);
-
-  return Qnil;
-}
-
-/*
- * call-seq:
  *     FieldDescriptor.number => number
  *
  * Returns the tag number for this field.
@@ -1000,21 +671,6 @@ VALUE FieldDescriptor_label_set(VALUE _self, VALUE label) {
 VALUE FieldDescriptor_number(VALUE _self) {
   DEFINE_SELF(FieldDescriptor, self, _self);
   return INT2NUM(upb_fielddef_number(self->fielddef));
-}
-
-/*
- * call-seq:
- *     FieldDescriptor.number = number
- *
- * Sets the tag number for this field. Cannot be called if field is part of a
- * message type already in a pool.
- */
-VALUE FieldDescriptor_number_set(VALUE _self, VALUE number) {
-  DEFINE_SELF(FieldDescriptor, self, _self);
-  upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
-  CHECK_UPB(upb_fielddef_setnumber(mut_def, NUM2INT(number), &status),
-            "Error setting field number");
-  return Qnil;
 }
 
 /*
@@ -1028,32 +684,16 @@ VALUE FieldDescriptor_number_set(VALUE _self, VALUE number) {
  */
 VALUE FieldDescriptor_submsg_name(VALUE _self) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  if (!upb_fielddef_hassubdef(self->fielddef)) {
-    return Qnil;
+  switch (upb_fielddef_type(self->fielddef)) {
+    case UPB_TYPE_ENUM:
+      return rb_str_new2(
+          upb_enumdef_fullname(upb_fielddef_enumsubdef(self->fielddef)));
+    case UPB_TYPE_MESSAGE:
+      return rb_str_new2(
+          upb_msgdef_fullname(upb_fielddef_msgsubdef(self->fielddef)));
+    default:
+      return Qnil;
   }
-  return rb_str_maybe_null(upb_fielddef_subdefname(self->fielddef));
-}
-
-/*
- * call-seq:
- *     FieldDescriptor.submsg_name = submsg_name
- *
- * Sets the name of the message or enum type corresponding to this field, if it
- * is a message or enum field (respectively). This type name will be resolved
- * within the context of the pool to which the containing message type is added.
- * Cannot be called on field that are not of message or enum type, or on fields
- * that are part of a message type already added to a pool.
- */
-VALUE FieldDescriptor_submsg_name_set(VALUE _self, VALUE value) {
-  DEFINE_SELF(FieldDescriptor, self, _self);
-  upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
-  const char* str = get_str(value);
-  if (!upb_fielddef_hassubdef(self->fielddef)) {
-    rb_raise(cTypeError, "FieldDescriptor does not have subdef.");
-  }
-  CHECK_UPB(upb_fielddef_setsubdefname(mut_def, str, &status),
-            "Error setting submessage name");
-  return Qnil;
 }
 
 /*
@@ -1067,16 +707,14 @@ VALUE FieldDescriptor_submsg_name_set(VALUE _self, VALUE value) {
  */
 VALUE FieldDescriptor_subtype(VALUE _self) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  const upb_def* def;
-
-  if (!upb_fielddef_hassubdef(self->fielddef)) {
-    return Qnil;
+  switch (upb_fielddef_type(self->fielddef)) {
+    case UPB_TYPE_ENUM:
+      return get_enumdef_obj(upb_fielddef_enumsubdef(self->fielddef));
+    case UPB_TYPE_MESSAGE:
+      return get_msgdef_obj(upb_fielddef_msgsubdef(self->fielddef));
+    default:
+      return Qnil;
   }
-  def = upb_fielddef_subdef(self->fielddef);
-  if (def == NULL) {
-    return Qnil;
-  }
-  return get_def_obj(def);
 }
 
 /*
@@ -1160,12 +798,12 @@ VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
 DEFINE_CLASS(OneofDescriptor, "Google::Protobuf::OneofDescriptor");
 
 void OneofDescriptor_mark(void* _self) {
+  OneofDescriptor* self = _self;
+  rb_gc_mark(self->descriptor_pool);
 }
 
 void OneofDescriptor_free(void* _self) {
-  OneofDescriptor* self = _self;
-  upb_oneofdef_unref(self->oneofdef, &self->oneofdef);
-  xfree(self);
+  xfree(_self);
 }
 
 /*
@@ -1178,7 +816,8 @@ void OneofDescriptor_free(void* _self) {
 VALUE OneofDescriptor_alloc(VALUE klass) {
   OneofDescriptor* self = ALLOC(OneofDescriptor);
   VALUE ret = TypedData_Wrap_Struct(klass, &_OneofDescriptor_type, self);
-  self->oneofdef = upb_oneofdef_new(&self->oneofdef);
+  self->oneofdef = NULL;
+  self->descriptor_pool = Qnil;
   return ret;
 }
 
@@ -1208,48 +847,6 @@ VALUE OneofDescriptor_name(VALUE _self) {
 
 /*
  * call-seq:
- *     OneofDescriptor.name = name
- *
- * Sets a new name for this oneof. The oneof must not have been added to a
- * message descriptor yet.
- */
-VALUE OneofDescriptor_name_set(VALUE _self, VALUE value) {
-  DEFINE_SELF(OneofDescriptor, self, _self);
-  upb_oneofdef* mut_def = check_oneof_notfrozen(self->oneofdef);
-  const char* str = get_str(value);
-  CHECK_UPB(upb_oneofdef_setname(mut_def, str, &status),
-            "Error setting oneof name");
-  return Qnil;
-}
-
-/*
- * call-seq:
- *     OneofDescriptor.add_field(field) => nil
- *
- * Adds a field to this oneof. The field may have been added to this oneof in
- * the past, or the message to which this oneof belongs (if any), but may not
- * have already been added to any other oneof or message. Otherwise, an
- * exception is raised.
- *
- * All fields added to the oneof via this method will be automatically added to
- * the message to which this oneof belongs, if it belongs to one currently, or
- * else will be added to any message to which the oneof is later added at the
- * time that it is added.
- */
-VALUE OneofDescriptor_add_field(VALUE _self, VALUE obj) {
-  DEFINE_SELF(OneofDescriptor, self, _self);
-  upb_oneofdef* mut_def = check_oneof_notfrozen(self->oneofdef);
-  FieldDescriptor* def = ruby_to_FieldDescriptor(obj);
-  upb_fielddef* mut_field_def = check_field_notfrozen(def->fielddef);
-  CHECK_UPB(
-      upb_oneofdef_addfield(mut_def, mut_field_def, NULL, &status),
-      "Adding field to OneofDescriptor failed");
-  add_def_obj(def->fielddef, obj);
-  return Qnil;
-}
-
-/*
- * call-seq:
  *     OneofDescriptor.each(&block) => nil
  *
  * Iterates through fields in this oneof, yielding to the block on each one.
@@ -1261,7 +858,7 @@ VALUE OneofDescriptor_each(VALUE _self, VALUE field) {
        !upb_oneof_done(&it);
        upb_oneof_next(&it)) {
     const upb_fielddef* f = upb_oneof_iter_field(&it);
-    VALUE obj = get_def_obj(f);
+    VALUE obj = get_fielddef_obj(f);
     rb_yield(obj);
   }
   return Qnil;
@@ -1276,12 +873,11 @@ DEFINE_CLASS(EnumDescriptor, "Google::Protobuf::EnumDescriptor");
 void EnumDescriptor_mark(void* _self) {
   EnumDescriptor* self = _self;
   rb_gc_mark(self->module);
+  rb_gc_mark(self->descriptor_pool);
 }
 
 void EnumDescriptor_free(void* _self) {
-  EnumDescriptor* self = _self;
-  upb_enumdef_unref(self->enumdef, &self->enumdef);
-  xfree(self);
+  xfree(_self);
 }
 
 /*
@@ -1295,8 +891,9 @@ void EnumDescriptor_free(void* _self) {
 VALUE EnumDescriptor_alloc(VALUE klass) {
   EnumDescriptor* self = ALLOC(EnumDescriptor);
   VALUE ret = TypedData_Wrap_Struct(klass, &_EnumDescriptor_type, self);
-  self->enumdef = upb_enumdef_new(&self->enumdef);
+  self->enumdef = NULL;
   self->module = Qnil;
+  self->descriptor_pool = Qnil;
   return ret;
 }
 
@@ -1320,31 +917,26 @@ void EnumDescriptor_register(VALUE module) {
 
 /*
  * call-seq:
- *    Descriptor.new(file_descriptor)
+ *    EnumDescriptor.new(file_descriptor)
  *
  * Initializes a new descriptor and assigns a file descriptor to it.
  */
 VALUE EnumDescriptor_initialize(VALUE _self, VALUE file_descriptor_rb) {
   DEFINE_SELF(EnumDescriptor, self, _self);
   FileDescriptor* file_descriptor = ruby_to_FileDescriptor(file_descriptor_rb);
-  CHECK_UPB(
-        upb_filedef_addenum(file_descriptor->filedef, self->enumdef,
-			    NULL, &status),
-        "Failed to associate enum to file descriptor.");
   add_def_obj(file_descriptor->filedef, file_descriptor_rb);
-
   return Qnil;
 }
 
 /*
  * call-seq:
- *    Descriptor.file_descriptor
+ *    EnumDescriptor.file_descriptor
  *
  * Returns the FileDescriptor object this enum belongs to.
  */
 VALUE EnumDescriptor_file_descriptor(VALUE _self) {
   DEFINE_SELF(EnumDescriptor, self, _self);
-  return get_def_obj(upb_def_file(self->enumdef));
+  return get_filedef_obj(upb_enumdef_file(self->enumdef));
 }
 
 /*
@@ -1356,40 +948,6 @@ VALUE EnumDescriptor_file_descriptor(VALUE _self) {
 VALUE EnumDescriptor_name(VALUE _self) {
   DEFINE_SELF(EnumDescriptor, self, _self);
   return rb_str_maybe_null(upb_enumdef_fullname(self->enumdef));
-}
-
-/*
- * call-seq:
- *     EnumDescriptor.name = name
- *
- * Sets the name of this enum type. Cannot be called if the enum type has
- * already been added to a pool.
- */
-VALUE EnumDescriptor_name_set(VALUE _self, VALUE str) {
-  DEFINE_SELF(EnumDescriptor, self, _self);
-  upb_enumdef* mut_def = check_enum_notfrozen(self->enumdef);
-  const char* name = get_str(str);
-  CHECK_UPB(upb_enumdef_setfullname(mut_def, name, &status),
-            "Error setting EnumDescriptor name");
-  return Qnil;
-}
-
-/*
- * call-seq:
- *     EnumDescriptor.add_value(key, value)
- *
- * Adds a new key => value mapping to this enum type. Key must be given as a
- * Ruby symbol. Cannot be called if the enum type has already been added to a
- * pool. Will raise an exception if the key or value is already in use.
- */
-VALUE EnumDescriptor_add_value(VALUE _self, VALUE name, VALUE number) {
-  DEFINE_SELF(EnumDescriptor, self, _self);
-  upb_enumdef* mut_def = check_enum_notfrozen(self->enumdef);
-  const char* name_str = rb_id2name(SYM2ID(name));
-  int32_t val = NUM2INT(number);
-  CHECK_UPB(upb_enumdef_addval(mut_def, name_str, val, &status),
-            "Error adding value to enum");
-  return Qnil;
 }
 
 /*
@@ -1459,11 +1017,6 @@ VALUE EnumDescriptor_each(VALUE _self) {
  */
 VALUE EnumDescriptor_enummodule(VALUE _self) {
   DEFINE_SELF(EnumDescriptor, self, _self);
-  if (!upb_def_isfrozen((const upb_def*)self->enumdef)) {
-    rb_raise(rb_eRuntimeError,
-             "Cannot fetch enum module from an EnumDescriptor not yet "
-             "in a pool.");
-  }
   if (self->module == Qnil) {
     self->module = build_module_from_enumdesc(self);
   }
@@ -1479,8 +1032,7 @@ DEFINE_CLASS(MessageBuilderContext,
 
 void MessageBuilderContext_mark(void* _self) {
   MessageBuilderContext* self = _self;
-  rb_gc_mark(self->descriptor);
-  rb_gc_mark(self->builder);
+  rb_gc_mark(self->file_builder);
 }
 
 void MessageBuilderContext_free(void* _self) {
@@ -1492,8 +1044,7 @@ VALUE MessageBuilderContext_alloc(VALUE klass) {
   MessageBuilderContext* self = ALLOC(MessageBuilderContext);
   VALUE ret = TypedData_Wrap_Struct(
       klass, &_MessageBuilderContext_type, self);
-  self->descriptor = Qnil;
-  self->builder = Qnil;
+  self->file_builder = Qnil;
   return ret;
 }
 
@@ -1514,65 +1065,93 @@ void MessageBuilderContext_register(VALUE module) {
 
 /*
  * call-seq:
- *     MessageBuilderContext.new(desc, builder) => context
+ *     MessageBuilderContext.new(file_builder, name) => context
  *
  * Create a new message builder context around the given message descriptor and
  * builder context. This class is intended to serve as a DSL context to be used
  * with #instance_eval.
  */
 VALUE MessageBuilderContext_initialize(VALUE _self,
-                                       VALUE msgdef,
-                                       VALUE builder) {
+                                       VALUE _file_builder,
+                                       VALUE name) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
-  self->descriptor = msgdef;
-  self->builder = builder;
+  FileBuilderContext* file_builder = ruby_to_FileBuilderContext(_file_builder);
+  google_protobuf_FileDescriptorProto* file_proto = file_builder->file_proto;
+  self->file_builder = _file_builder;
+  self->msg_proto = google_protobuf_DescriptorProto_new(&file_builder->arena);
+  google_protobuf_FileDescriptorProto_add_message_type(
+      file_proto, self->msg_proto, &file_builder->arena);
   return Qnil;
 }
 
-static VALUE msgdef_add_field(VALUE msgdef_rb,
-                              const char* label, VALUE name,
-                              VALUE type, VALUE number,
-                              VALUE type_class,
-                              VALUE options) {
-  VALUE fielddef_rb = rb_class_new_instance(0, NULL, cFieldDescriptor);
-  VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
+static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
+                             VALUE type, VALUE number, VALUE type_class,
+                             VALUE options, int oneof_index) {
+  DEFINE_SELF(MessageBuilderContext, self, msgbuilder_rb);
+  FileBuilderContext* file_context =
+      ruby_to_FileBuilderContext(self->file_builder);
+  google_protobuf_FieldDescriptorProto* field_proto =
+      google_protobuf_FieldDescriptorProto_new(&file_context->arena);
+  google_protobuf_DescriptorProto_add_field(self->msg_proto, field_proto,
+                                            &file_context->arena);
 
-  rb_funcall(fielddef_rb, rb_intern("label="), 1, ID2SYM(rb_intern(label)));
-  rb_funcall(fielddef_rb, rb_intern("name="), 1, name_str);
-  rb_funcall(fielddef_rb, rb_intern("type="), 1, type);
-  rb_funcall(fielddef_rb, rb_intern("number="), 1, number);
+  google_protobuf_FieldDescriptorProto_set_name(
+      field_proto, FileBuilderContext_strdup(self->file_builder, name));
+  google_protobuf_FieldDescriptorProto_set_number(field_proto, NUM2INT(number));
+  google_protobuf_FieldDescriptorProto_set_label(field_proto,
+                                                 ruby_to_label(label));
+  google_protobuf_FieldDescriptorProto_set_type(field_proto,
+                                                ruby_to_fieldtype(type));
 
   if (type_class != Qnil) {
     Check_Type(type_class, T_STRING);
 
     // Make it an absolute type name by prepending a dot.
     type_class = rb_str_append(rb_str_new2("."), type_class);
-    rb_funcall(fielddef_rb, rb_intern("submsg_name="), 1, type_class);
+    google_protobuf_FieldDescriptorProto_set_type_name(
+        field_proto, FileBuilderContext_strdup(self->file_builder, type_class));
   }
 
   if (options != Qnil) {
     Check_Type(options, T_HASH);
 
     if (rb_funcall(options, rb_intern("key?"), 1,
-		   ID2SYM(rb_intern("default"))) == Qtrue) {
-      Descriptor* msgdef = ruby_to_Descriptor(msgdef_rb);
-      if (upb_msgdef_syntax((upb_msgdef*)msgdef->msgdef) == UPB_SYNTAX_PROTO3) {
-        rb_raise(rb_eArgError, "Cannot set :default when using proto3 syntax.");
-      }
-
-      FieldDescriptor* fielddef = ruby_to_FieldDescriptor(fielddef_rb);
-      if (!upb_fielddef_haspresence((upb_fielddef*)fielddef->fielddef) ||
-	  upb_fielddef_issubmsg((upb_fielddef*)fielddef->fielddef)) {
-        rb_raise(rb_eArgError, "Cannot set :default on this kind of field.");
-      }
-
-      rb_funcall(fielddef_rb, rb_intern("default="), 1,
-		 rb_hash_lookup(options, ID2SYM(rb_intern("default"))));
+                   ID2SYM(rb_intern("default"))) == Qtrue) {
+      VALUE default_value = rb_hash_lookup(options, ID2SYM(rb_intern("default")));
+      google_protobuf_FieldDescriptorProto_set_default_value(
+          field_proto,
+          FileBuilderContext_strdup(self->file_builder, default_value));
     }
   }
 
-  rb_funcall(msgdef_rb, rb_intern("add_field"), 1, fielddef_rb);
-  return fielddef_rb;
+  if (oneof_index >= 0) {
+    google_protobuf_FieldDescriptorProto_set_oneof_index(field_proto,
+                                                         oneof_index);
+  }
+}
+
+static VALUE make_mapentry(VALUE _message_builder, VALUE types, int argc,
+                           VALUE* argv) {
+  DEFINE_SELF(MessageBuilderContext, message_builder, _message_builder);
+  VALUE type_class = rb_ary_entry(types, 2);
+  google_protobuf_MessageOptions* options;
+
+  google_protobuf_MessageOptions_set_map_entry(options, true);
+
+  // optional <type> key = 1;
+  rb_funcall(_message_builder, rb_intern("optional"), 3, rb_str_new2("key"),
+             rb_ary_entry(types, 0), INT2NUM(1));
+
+  // optional <type> value = 2;
+  if (type_class != Qnil) {
+    rb_funcall(_message_builder, rb_intern("optional"), 3, rb_str_new2("value"),
+               rb_ary_entry(types, 1), INT2NUM(2));
+  } else {
+    rb_funcall(_message_builder, rb_intern("optional"), 4, rb_str_new2("value"),
+               rb_ary_entry(types, 1), INT2NUM(2), type_class);
+  }
+
+  return Qnil;
 }
 
 /*
@@ -1599,8 +1178,10 @@ VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
     type_class = Qnil;
   }
 
-  return msgdef_add_field(self->descriptor, "optional",
-                          name, type, number, type_class, options);
+  msgdef_add_field(_self, UPB_LABEL_OPTIONAL, name, type, number, type_class,
+                   options, -1);
+
+  return Qnil;
 }
 
 /*
@@ -1631,8 +1212,10 @@ VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self) {
     type_class = Qnil;
   }
 
-  return msgdef_add_field(self->descriptor, "required",
-                          name, type, number, type_class, options);
+  msgdef_add_field(_self, UPB_LABEL_REQUIRED, name, type, number, type_class,
+                   options, -1);
+
+  return Qnil;
 }
 
 /*
@@ -1656,8 +1239,10 @@ VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self) {
   number = argv[2];
   type_class = (argc > 3) ? argv[3] : Qnil;
 
-  return msgdef_add_field(self->descriptor, "repeated",
-                          name, type, number, type_class, Qnil);
+  msgdef_add_field(_self, UPB_LABEL_REPEATED, name, type, number, type_class,
+                   Qnil, -1);
+
+  return Qnil;
 }
 
 /*
@@ -1698,77 +1283,33 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
              "type.");
   }
 
-  Descriptor* descriptor = ruby_to_Descriptor(self->descriptor);
-  if (upb_msgdef_syntax(descriptor->msgdef) == UPB_SYNTAX_PROTO2) {
+  FileBuilderContext* file_builder =
+      ruby_to_FileBuilderContext(self->file_builder);
+  // TODO(haberman): what is the reason for this restriction?
+  if (file_builder->syntax == UPB_SYNTAX_PROTO2) {
     rb_raise(rb_eArgError,
-	     "Cannot add a native map field using proto2 syntax.");
+             "Cannot add a native map field using proto2 syntax.");
   }
 
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
-  VALUE file_descriptor_rb =
-      rb_funcall(self->descriptor, rb_intern("file_descriptor"), 0);
-  mapentry_desc = rb_class_new_instance(1, &file_descriptor_rb, cDescriptor);
-  mapentry_desc_name = rb_funcall(self->descriptor, rb_intern("name"), 0);
+  upb_stringview msg_name =
+      google_protobuf_DescriptorProto_name(self->msg_proto);
+  mapentry_desc_name = rb_str_new(msg_name.data, msg_name.size);
   mapentry_desc_name = rb_str_cat2(mapentry_desc_name, "_MapEntry_");
-  mapentry_desc_name = rb_str_cat2(mapentry_desc_name,
-                                   rb_id2name(SYM2ID(name)));
+  mapentry_desc_name =
+      rb_str_cat2(mapentry_desc_name, rb_id2name(SYM2ID(name)));
   Descriptor_name_set(mapentry_desc, mapentry_desc_name);
 
-  {
-    // The 'mapentry' attribute has no Ruby setter because we do not want the
-    // user attempting to DIY the setup below; we want to ensure that the fields
-    // are correct. So we reach into the msgdef here to set the bit manually.
-    Descriptor* mapentry_desc_self = ruby_to_Descriptor(mapentry_desc);
-    upb_msgdef_setmapentry((upb_msgdef*)mapentry_desc_self->msgdef, true);
-  }
+  // message <msgname>_MapEntry_ { /* ... */ }
+  VALUE args[1] = { mapentry_desc_name };
+  VALUE types = rb_ary_new3(3, key_type, value_type, type_class);
+  rb_block_call(self->file_builder, rb_intern("add_message"), 1, args,
+                make_mapentry, types);
 
-  {
-    // optional <type> key = 1;
-    VALUE key_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
-    FieldDescriptor_name_set(key_field, rb_str_new2("key"));
-    FieldDescriptor_label_set(key_field, ID2SYM(rb_intern("optional")));
-    FieldDescriptor_number_set(key_field, INT2NUM(1));
-    FieldDescriptor_type_set(key_field, key_type);
-    Descriptor_add_field(mapentry_desc, key_field);
-  }
-
-  {
-    // optional <type> value = 2;
-    VALUE value_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
-    FieldDescriptor_name_set(value_field, rb_str_new2("value"));
-    FieldDescriptor_label_set(value_field, ID2SYM(rb_intern("optional")));
-    FieldDescriptor_number_set(value_field, INT2NUM(2));
-    FieldDescriptor_type_set(value_field, value_type);
-    if (type_class != Qnil) {
-      VALUE submsg_name = rb_str_new2("."); // prepend '.' to make absolute.
-      submsg_name = rb_str_append(submsg_name, type_class);
-      FieldDescriptor_submsg_name_set(value_field, submsg_name);
-    }
-    Descriptor_add_field(mapentry_desc, value_field);
-  }
-
-  {
-    // Add the map-entry message type to the current builder, and use the type
-    // to create the map field itself.
-    Builder* builder = ruby_to_Builder(self->builder);
-    rb_ary_push(builder->pending_list, mapentry_desc);
-  }
-
-  {
-    VALUE map_field = rb_class_new_instance(0, NULL, cFieldDescriptor);
-    VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
-    VALUE submsg_name;
-
-    FieldDescriptor_name_set(map_field, name_str);
-    FieldDescriptor_number_set(map_field, number);
-    FieldDescriptor_label_set(map_field, ID2SYM(rb_intern("repeated")));
-    FieldDescriptor_type_set(map_field, ID2SYM(rb_intern("message")));
-    submsg_name = rb_str_new2("."); // prepend '.' to make name absolute.
-    submsg_name = rb_str_append(submsg_name, mapentry_desc_name);
-    FieldDescriptor_submsg_name_set(map_field, submsg_name);
-    Descriptor_add_field(self->descriptor, map_field);
-  }
+  // repeated MapEntry <name> = <number>;
+  rb_funcall(_self, rb_intern("repeated"), 4, name, rb_intern("message"), number,
+             mapentry_desc_name);
 
   return Qnil;
 }
@@ -1786,14 +1327,26 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
  */
 VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
-  VALUE oneofdef = rb_class_new_instance(0, NULL, cOneofDescriptor);
-  VALUE args[2] = { oneofdef, self->builder };
+  size_t oneof_count;
+  FileBuilderContext* file_context =
+      ruby_to_FileBuilderContext(self->file_builder);
+
+  // Existing oneof_count becomes oneof_index.
+  google_protobuf_DescriptorProto_oneof_decl(self->msg_proto, &oneof_count);
+
+  // Create oneof_proto and set its name.
+  google_protobuf_OneofDescriptorProto* oneof_proto =
+      google_protobuf_DescriptorProto_new_oneof_decl(self->msg_proto,
+                                                     &file_context->arena);
+  VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
+  upb_stringview name_strview = upb_stringview_makez(StringValueCStr(name_str));
+  google_protobuf_OneofDescriptorProto_set_name(oneof_proto, name_strview);
+
+  // Evaluate the block with the builder as argument.
+  VALUE args[2] = { INT2NUM(oneof_count), _self };
   VALUE ctx = rb_class_new_instance(2, args, cOneofBuilderContext);
   VALUE block = rb_block_proc();
-  VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
-  rb_funcall(oneofdef, rb_intern("name="), 1, name_str);
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
-  Descriptor_add_oneof(self->descriptor, oneofdef);
 
   return Qnil;
 }
@@ -1807,21 +1360,19 @@ DEFINE_CLASS(OneofBuilderContext,
 
 void OneofBuilderContext_mark(void* _self) {
   OneofBuilderContext* self = _self;
-  rb_gc_mark(self->descriptor);
-  rb_gc_mark(self->builder);
+  rb_gc_mark(self->message_builder);
 }
 
 void OneofBuilderContext_free(void* _self) {
-  OneofBuilderContext* self = _self;
-  xfree(self);
+  xfree(_self);
 }
 
 VALUE OneofBuilderContext_alloc(VALUE klass) {
   OneofBuilderContext* self = ALLOC(OneofBuilderContext);
   VALUE ret = TypedData_Wrap_Struct(
       klass, &_OneofBuilderContext_type, self);
-  self->descriptor = Qnil;
-  self->builder = Qnil;
+  self->oneof_index = 0;
+  self->message_builder = Qnil;
   return ret;
 }
 
@@ -1838,18 +1389,18 @@ void OneofBuilderContext_register(VALUE module) {
 
 /*
  * call-seq:
- *     OneofBuilderContext.new(desc, builder) => context
+ *     OneofBuilderContext.new(oneof_index, message_builder) => context
  *
  * Create a new oneof builder context around the given oneof descriptor and
  * builder context. This class is intended to serve as a DSL context to be used
  * with #instance_eval.
  */
 VALUE OneofBuilderContext_initialize(VALUE _self,
-                                     VALUE oneofdef,
-                                     VALUE builder) {
+                                     VALUE oneof_index,
+                                     VALUE message_builder) {
   DEFINE_SELF(OneofBuilderContext, self, _self);
-  self->descriptor = oneofdef;
-  self->builder = builder;
+  self->oneof_index = NUM2INT(oneof_index);
+  self->message_builder = message_builder;
   return Qnil;
 }
 
@@ -1870,8 +1421,10 @@ VALUE OneofBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
 
   rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
 
-  return msgdef_add_field(self->descriptor, "optional",
-                          name, type, number, type_class, options);
+  msgdef_add_field(self->message_builder, UPB_LABEL_OPTIONAL, name, type,
+                   number, type_class, options, self->oneof_index);
+
+  return Qnil;
 }
 
 // -----------------------------------------------------------------------------
@@ -1883,19 +1436,19 @@ DEFINE_CLASS(EnumBuilderContext,
 
 void EnumBuilderContext_mark(void* _self) {
   EnumBuilderContext* self = _self;
-  rb_gc_mark(self->enumdesc);
+  rb_gc_mark(self->file_builder);
 }
 
 void EnumBuilderContext_free(void* _self) {
-  EnumBuilderContext* self = _self;
-  xfree(self);
+  xfree(_self);
 }
 
 VALUE EnumBuilderContext_alloc(VALUE klass) {
   EnumBuilderContext* self = ALLOC(EnumBuilderContext);
   VALUE ret = TypedData_Wrap_Struct(
       klass, &_EnumBuilderContext_type, self);
-  self->enumdesc = Qnil;
+  self->enum_proto = NULL;
+  self->file_builder = Qnil;
   return ret;
 }
 
@@ -1912,20 +1465,23 @@ void EnumBuilderContext_register(VALUE module) {
 
 /*
  * call-seq:
- *     EnumBuilderContext.new(enumdesc) => context
+ *     EnumBuilderContext.new(file_builder) => context
  *
  * Create a new builder context around the given enum descriptor. This class is
  * intended to serve as a DSL context to be used with #instance_eval.
  */
-VALUE EnumBuilderContext_initialize(VALUE _self, VALUE enumdef) {
+VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder) {
   DEFINE_SELF(EnumBuilderContext, self, _self);
-  self->enumdesc = enumdef;
-  return Qnil;
-}
+  FileBuilderContext* file_builder = ruby_to_FileBuilderContext(_file_builder);
+  google_protobuf_FileDescriptorProto* file_proto = file_builder->file_proto;
 
-static VALUE enumdef_add_value(VALUE enumdef,
-                               VALUE name, VALUE number) {
-  rb_funcall(enumdef, rb_intern("add_value"), 2, name, number);
+  self->file_builder = _file_builder;
+  self->enum_proto =
+      google_protobuf_EnumDescriptorProto_new(&file_builder->arena);
+
+  google_protobuf_FileDescriptorProto_add_enum_type(
+      file_proto, self->enum_proto, &file_builder->arena);
+
   return Qnil;
 }
 
@@ -1938,7 +1494,20 @@ static VALUE enumdef_add_value(VALUE enumdef,
  */
 VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number) {
   DEFINE_SELF(EnumBuilderContext, self, _self);
-  return enumdef_add_value(self->enumdesc, name, number);
+  FileBuilderContext* file_builder =
+      ruby_to_FileBuilderContext(self->file_builder);
+
+  google_protobuf_EnumValueDescriptorProto* enum_value =
+      google_protobuf_EnumValueDescriptorProto_new(&file_builder->arena);
+  google_protobuf_EnumDescriptorProto_add_enum_value(self->enum_proto,
+                                                     enum_value);
+
+  google_protobuf_EnumValueDescriptorProto_set_name(
+      enum_value, FileBuilderContext_strdup(self->file_builder, name));
+  google_protobuf_EnumValueDescriptorProto_set_number(enum_value,
+                                                      NUM2INT(number));
+
+  return Qnil;
 }
 
 
@@ -1947,26 +1516,36 @@ VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number) {
 // -----------------------------------------------------------------------------
 
 DEFINE_CLASS(FileBuilderContext,
-	     "Google::Protobuf::Internal::FileBuilderContext");
+             "Google::Protobuf::Internal::FileBuilderContext");
 
 void FileBuilderContext_mark(void* _self) {
   FileBuilderContext* self = _self;
-  rb_gc_mark(self->pending_list);
-  rb_gc_mark(self->file_descriptor);
-  rb_gc_mark(self->builder);
+  rb_gc_mark(self->descriptor_pool);
 }
 
 void FileBuilderContext_free(void* _self) {
   FileBuilderContext* self = _self;
+  upb_arena_uninit(&self->arena);
   xfree(self);
+}
+
+upb_stringview FileBuilderContext_strdup(VALUE _self, VALUE rb_str) {
+  DEFINE_SELF(FileBuilderContext, self, _self);
+  upb_stringview ret;
+  const char *str = get_str(rb_str);
+  ret.size = strlen(str);
+  char *data = upb_malloc(upb_arena_alloc(&self->arena), ret.size);
+  ret.data = data;
+  memcpy(data, str, ret.size);
+  return ret;
 }
 
 VALUE FileBuilderContext_alloc(VALUE klass) {
   FileBuilderContext* self = ALLOC(FileBuilderContext);
   VALUE ret = TypedData_Wrap_Struct(klass, &_FileBuilderContext_type, self);
-  self->pending_list = Qnil;
-  self->file_descriptor = Qnil;
-  self->builder = Qnil;
+  upb_arena_init(&self->arena);
+  self->file_proto = google_protobuf_FileDescriptorProto_new(&self->arena);
+  self->descriptor_pool = Qnil;
   return ret;
 }
 
@@ -1982,18 +1561,15 @@ void FileBuilderContext_register(VALUE module) {
 
 /*
  * call-seq:
- *     FileBuilderContext.new(file_descriptor, builder) => context
+ *     FileBuilderContext.new(descriptor_pool) => context
  *
  * Create a new file builder context for the given file descriptor and
  * builder context. This class is intended to serve as a DSL context to be used
  * with #instance_eval.
  */
-VALUE FileBuilderContext_initialize(VALUE _self, VALUE file_descriptor,
-				    VALUE builder) {
+VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool) {
   DEFINE_SELF(FileBuilderContext, self, _self);
-  self->pending_list = rb_ary_new();
-  self->file_descriptor = file_descriptor;
-  self->builder = builder;
+  self->descriptor_pool = descriptor_pool;
   return Qnil;
 }
 
@@ -2010,13 +1586,10 @@ VALUE FileBuilderContext_initialize(VALUE _self, VALUE file_descriptor,
  */
 VALUE FileBuilderContext_add_message(VALUE _self, VALUE name) {
   DEFINE_SELF(FileBuilderContext, self, _self);
-  VALUE msgdef = rb_class_new_instance(1, &self->file_descriptor, cDescriptor);
-  VALUE args[2] = { msgdef, self->builder };
+  VALUE args[2] = { _self, name };
   VALUE ctx = rb_class_new_instance(2, args, cMessageBuilderContext);
   VALUE block = rb_block_proc();
-  rb_funcall(msgdef, rb_intern("name="), 1, name);
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
-  rb_ary_push(self->pending_list, msgdef);
   return Qnil;
 }
 
@@ -2032,19 +1605,18 @@ VALUE FileBuilderContext_add_message(VALUE _self, VALUE name) {
  */
 VALUE FileBuilderContext_add_enum(VALUE _self, VALUE name) {
   DEFINE_SELF(FileBuilderContext, self, _self);
-  VALUE enumdef =
-      rb_class_new_instance(1, &self->file_descriptor, cEnumDescriptor);
-  VALUE ctx = rb_class_new_instance(1, &enumdef, cEnumBuilderContext);
+  VALUE args[2] = { _self, name };
+  VALUE ctx = rb_class_new_instance(2, args, cEnumBuilderContext);
   VALUE block = rb_block_proc();
-  rb_funcall(enumdef, rb_intern("name="), 1, name);
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
-  rb_ary_push(self->pending_list, enumdef);
   return Qnil;
 }
 
-VALUE FileBuilderContext_pending_descriptors(VALUE _self) {
+void FileBuilderContext_build(VALUE _self) {
   DEFINE_SELF(FileBuilderContext, self, _self);
-  return self->pending_list;
+  DescriptorPool* pool = ruby_to_DescriptorPool(self->descriptor_pool);
+  CHECK_UPB(upb_symtab_addfile(pool->symtab, self->file_proto, &status),
+            "Unable to add defs to DescriptorPool");
 }
 
 // -----------------------------------------------------------------------------
@@ -2055,58 +1627,46 @@ DEFINE_CLASS(Builder, "Google::Protobuf::Internal::Builder");
 
 void Builder_mark(void* _self) {
   Builder* self = _self;
-  rb_gc_mark(self->pending_list);
-  rb_gc_mark(self->default_file_descriptor);
+  rb_gc_mark(self->descriptor_pool);
+  rb_gc_mark(self->default_file_builder);
 }
 
 void Builder_free(void* _self) {
-  Builder* self = _self;
-  xfree(self->defs);
-  xfree(self);
+  xfree(_self);
 }
 
-/*
- * call-seq:
- *     Builder.new => builder
- *
- * Creates a new Builder. A Builder can accumulate a set of new message and enum
- * descriptors and atomically register them into a pool in a way that allows for
- * (co)recursive type references.
- */
 VALUE Builder_alloc(VALUE klass) {
   Builder* self = ALLOC(Builder);
   VALUE ret = TypedData_Wrap_Struct(
       klass, &_Builder_type, self);
-  self->pending_list = Qnil;
-  self->defs = NULL;
-  self->default_file_descriptor = Qnil;
+  self->descriptor_pool = Qnil;
+  self->default_file_builder = Qnil;
   return ret;
 }
 
 void Builder_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "Builder", rb_cObject);
   rb_define_alloc_func(klass, Builder_alloc); 
-  rb_define_method(klass, "initialize", Builder_initialize, 0);
+  rb_define_method(klass, "initialize", Builder_initialize, 1);
   rb_define_method(klass, "add_file", Builder_add_file, -1);
   rb_define_method(klass, "add_message", Builder_add_message, 1);
   rb_define_method(klass, "add_enum", Builder_add_enum, 1);
-  rb_define_method(klass, "finalize_to_pool", Builder_finalize_to_pool, 1);
   rb_gc_register_address(&cBuilder);
   cBuilder = klass;
 }
 
 /*
  * call-seq:
- *    Builder.new
+ *     Builder.new(descriptor_pool) => builder
  *
- * Initializes a new builder.
+ * Creates a new Builder. A Builder can accumulate a set of new message and enum
+ * descriptors and atomically register them into a pool in a way that allows for
+ * (co)recursive type references.
  */
-VALUE Builder_initialize(VALUE _self) {
+VALUE Builder_initialize(VALUE _self, VALUE pool) {
   DEFINE_SELF(Builder, self, _self);
-  self->pending_list = rb_ary_new();
-  VALUE file_name = Qnil;
-  self->default_file_descriptor =
-      rb_class_new_instance(1, &file_name, cFileDescriptor);
+  self->descriptor_pool = pool;
+  self->default_file_builder = Qnil;  // Created lazily if needed.
   return Qnil;
 }
 
@@ -2128,10 +1688,21 @@ VALUE Builder_add_file(int argc, VALUE* argv, VALUE _self) {
   VALUE ctx = rb_class_new_instance(2, args, cFileBuilderContext);
   VALUE block = rb_block_proc();
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
+  FileBuilderContext_build(ctx);
 
-  rb_ary_concat(self->pending_list,
-      FileBuilderContext_pending_descriptors(ctx));
   return Qnil;
+}
+
+static VALUE Builder_get_default_file(VALUE _self) {
+  DEFINE_SELF(Builder, self, _self);
+
+  /* Lazily create only if legacy builder-level methods are called. */
+  if (self->default_file_builder == Qnil) {
+    self->default_file_builder =
+        rb_class_new_instance(1, &self->descriptor_pool, cFileBuilderContext);
+  }
+
+  return self->default_file_builder;
 }
 
 /*
@@ -2147,14 +1718,9 @@ VALUE Builder_add_file(int argc, VALUE* argv, VALUE _self) {
  */
 VALUE Builder_add_message(VALUE _self, VALUE name) {
   DEFINE_SELF(Builder, self, _self);
-  VALUE msgdef =
-      rb_class_new_instance(1, &self->default_file_descriptor, cDescriptor);
-  VALUE args[2] = { msgdef, _self };
-  VALUE ctx = rb_class_new_instance(2, args, cMessageBuilderContext);
-  VALUE block = rb_block_proc();
-  rb_funcall(msgdef, rb_intern("name="), 1, name);
-  rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
-  rb_ary_push(self->pending_list, msgdef);
+  VALUE file_builder = Builder_get_default_file(_self);
+  rb_funcall_with_block(file_builder, rb_intern("add_message"), 1, &name,
+                        rb_block_proc());
   return Qnil;
 }
 
@@ -2172,86 +1738,69 @@ VALUE Builder_add_message(VALUE _self, VALUE name) {
  */
 VALUE Builder_add_enum(VALUE _self, VALUE name) {
   DEFINE_SELF(Builder, self, _self);
-  VALUE enumdef =
-      rb_class_new_instance(1, &self->default_file_descriptor, cEnumDescriptor);
-  VALUE ctx = rb_class_new_instance(1, &enumdef, cEnumBuilderContext);
-  VALUE block = rb_block_proc();
-  rb_funcall(enumdef, rb_intern("name="), 1, name);
-  rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
-  rb_ary_push(self->pending_list, enumdef);
+  VALUE file_builder = Builder_get_default_file(_self);
+  rb_funcall_with_block(file_builder, rb_intern("add_enum"), 1, &name,
+                        rb_block_proc());
   return Qnil;
 }
 
-static void proto3_validate_msgdef(const upb_msgdef* msgdef) {
-  // Verify that no required fields exist. proto3 does not support these.
-  upb_msg_field_iter it;
-  for (upb_msg_field_begin(&it, msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_label(field) == UPB_LABEL_REQUIRED) {
-      rb_raise(cTypeError, "Required fields are unsupported in proto3.");
-    }
-  }
-}
-
-static void proto3_validate_enumdef(const upb_enumdef* enumdef) {
-  // Verify that an entry exists with integer value 0. (This is the default
-  // value.)
-  const char* lookup = upb_enumdef_iton(enumdef, 0);
-  if (lookup == NULL) {
-    rb_raise(cTypeError,
-             "Enum definition does not contain a value for '0'.");
-  }
-}
-
-/*
- * call-seq:
- *     Builder.finalize_to_pool(pool)
- *
- * Adds all accumulated message and enum descriptors created in this builder
- * context to the given pool. The operation occurs atomically, and all
- * descriptors can refer to each other (including in cycles). This is the only
- * way to build (co)recursive message definitions.
- *
- * This method is usually called automatically by DescriptorPool#build after it
- * invokes the given user block in the context of the builder. The user should
- * not normally need to call this manually because a Builder is not normally
- * created manually.
- */
-VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb) {
+/* This method is hidden from Ruby, and only called directly from
+ * DescriptorPool_build(). */
+VALUE Builder_build(VALUE _self) {
   DEFINE_SELF(Builder, self, _self);
 
-  DescriptorPool* pool = ruby_to_DescriptorPool(pool_rb);
-
-  REALLOC_N(self->defs, upb_def*, RARRAY_LEN(self->pending_list));
-
-  for (int i = 0; i < RARRAY_LEN(self->pending_list); i++) {
-    VALUE def_rb = rb_ary_entry(self->pending_list, i);
-    if (CLASS_OF(def_rb) == cDescriptor) {
-      self->defs[i] = (upb_def*)ruby_to_Descriptor(def_rb)->msgdef;
-      
-      if (upb_filedef_syntax(upb_def_file(self->defs[i])) == UPB_SYNTAX_PROTO3) {
-        proto3_validate_msgdef((const upb_msgdef*)self->defs[i]);
-      }
-    } else if (CLASS_OF(def_rb) == cEnumDescriptor) {
-      self->defs[i] = (upb_def*)ruby_to_EnumDescriptor(def_rb)->enumdef;
-
-      if (upb_filedef_syntax(upb_def_file(self->defs[i])) == UPB_SYNTAX_PROTO3) {
-        proto3_validate_enumdef((const upb_enumdef*)self->defs[i]);
-      }
-    }
+  if (self->default_file_builder != Qnil) {
+    FileBuilderContext_build(self->default_file_builder);
+    self->default_file_builder = Qnil;
   }
 
-  CHECK_UPB(upb_symtab_add(pool->symtab, (upb_def**)self->defs,
-                           RARRAY_LEN(self->pending_list), NULL, &status),
-            "Unable to add defs to DescriptorPool");
-
-  for (int i = 0; i < RARRAY_LEN(self->pending_list); i++) {
-    VALUE def_rb = rb_ary_entry(self->pending_list, i);
-    add_def_obj(self->defs[i], def_rb);
-  }
-
-  self->pending_list = rb_ary_new();
   return Qnil;
+}
+
+// -----------------------------------------------------------------------------
+// Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
+// instances.
+// -----------------------------------------------------------------------------
+
+// This is a hash table from def objects (encoded by converting pointers to
+// Ruby integers) to MessageDef/EnumDef instances (as Ruby values).
+// We populate it lazily.
+VALUE upb_def_to_ruby_obj_map;
+
+static VALUE get_def_obj(const void* ptr, VALUE klass) {
+  VALUE key = ULL2NUM((intptr_t)ptr);
+  VALUE def = rb_hash_aref(upb_def_to_ruby_obj_map, key);
+
+  if (ptr == NULL) {
+    return Qnil;
+  }
+
+  if (def == Qnil) {
+    // Lazily create wrapper object.
+    VALUE args[2] = { c_only_cookie, key };
+    def = rb_class_new_instance(2, args, klass);
+    rb_hash_aset(upb_def_to_ruby_obj_map, key, def);
+  }
+
+  return def;
+}
+
+VALUE get_msgdef_obj(const upb_msgdef* def) {
+  return get_def_obj(def, cDescriptor);
+}
+
+VALUE get_enumdef_obj(const upb_enumdef* def) {
+  return get_def_obj(def, cEnumDescriptor);
+}
+
+VALUE get_fielddef_obj(const upb_fielddef* def) {
+  return get_def_obj(def, cFieldDescriptor);
+}
+
+VALUE get_filedef_obj(const upb_filedef* def) {
+  return get_def_obj(def, cFileDescriptor);
+}
+
+VALUE get_oneofdef_obj(const upb_oneofdef* def) {
+  return get_def_obj(def, cOneofDescriptor);
 }

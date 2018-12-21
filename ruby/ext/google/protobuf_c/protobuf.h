@@ -114,6 +114,7 @@ struct Descriptor {
   const upb_msgdef* msgdef;
   MessageLayout* layout;
   VALUE klass;  // begins as nil
+  VALUE descriptor_pool;  // Owns the upb_msgdef and keeps it alive.
   const upb_handlers* fill_handlers;
   const upb_pbdecodermethod* fill_method;
   const upb_json_parsermethod* json_fill_method;
@@ -124,45 +125,50 @@ struct Descriptor {
 
 struct FileDescriptor {
   const upb_filedef* filedef;
+  VALUE descriptor_pool;  // Owns the upb_filedef.
 };
 
 struct FieldDescriptor {
   const upb_fielddef* fielddef;
+  VALUE descriptor_pool;  // Owns the upb_fielddef.
 };
 
 struct OneofDescriptor {
   const upb_oneofdef* oneofdef;
+  VALUE descriptor_pool;  // Owns the upb_oneofdef.
 };
 
 struct EnumDescriptor {
   const upb_enumdef* enumdef;
   VALUE module;  // begins as nil
+  VALUE descriptor_pool;  // Owns the upb_enumdef.
 };
 
 struct MessageBuilderContext {
-  VALUE descriptor;
-  VALUE builder;
+  google_protobuf_DescriptorProto* msg_proto;
+  VALUE file_builder;
 };
 
 struct OneofBuilderContext {
-  VALUE descriptor;
-  VALUE builder;
+  int oneof_index;
+  VALUE message_builder;
 };
 
 struct EnumBuilderContext {
-  VALUE enumdesc;
+  google_protobuf_EnumDescriptorProto* enum_proto;
+  VALUE file_builder;
 };
 
 struct FileBuilderContext {
-  VALUE pending_list;
-  VALUE file_descriptor;
-  VALUE builder;
+  upb_arena arena;
+  google_protobuf_FileDescriptorProto* file_proto;
+  upb_syntax_t syntax;
+  VALUE descriptor_pool;
 };
 
 struct Builder {
-  VALUE pending_list;
-  VALUE default_file_descriptor;
-  upb_def** defs;  // used only while finalizing
+  VALUE descriptor_pool;
+  VALUE default_file_builder;
 };
 
 extern VALUE cDescriptorPool;
@@ -311,8 +317,9 @@ void FileBuilderContext_mark(void* _self);
 void FileBuilderContext_free(void* _self);
 VALUE FileBuilderContext_alloc(VALUE klass);
 void FileBuilderContext_register(VALUE module);
-VALUE FileBuilderContext_initialize(VALUE _self, VALUE file_descriptor,
-				    VALUE builder);
+FileBuilderContext* ruby_to_FileBuilderContext(VALUE _self);
+upb_stringview FileBuilderContext_strdup(VALUE _self, VALUE rb_str);
+VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool);
 VALUE FileBuilderContext_add_message(VALUE _self, VALUE name);
 VALUE FileBuilderContext_add_enum(VALUE _self, VALUE name);
 VALUE FileBuilderContext_pending_descriptors(VALUE _self);
@@ -322,7 +329,8 @@ void Builder_free(void* _self);
 VALUE Builder_alloc(VALUE klass);
 void Builder_register(VALUE module);
 Builder* ruby_to_Builder(VALUE value);
-VALUE Builder_initialize(VALUE _self);
+VALUE Builder_build(VALUE _self);
+VALUE Builder_initialize(VALUE _self, VALUE descriptor_pool);
 VALUE Builder_add_file(int argc, VALUE *argv, VALUE _self);
 VALUE Builder_add_message(VALUE _self, VALUE name);
 VALUE Builder_add_enum(VALUE _self, VALUE name);
@@ -497,6 +505,7 @@ struct MessageField {
   size_t hasbit;
 };
 
+// MessageLayout is owned by the enclosing Descriptor, which must outlive us.
 struct MessageLayout {
   const upb_msgdef* msgdef;
   MessageField* fields;
@@ -591,8 +600,11 @@ const upb_pbdecodermethod *new_fillmsg_decodermethod(
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
 // -----------------------------------------------------------------------------
-void add_def_obj(const void* def, VALUE value);
-VALUE get_def_obj(const void* def);
+VALUE get_msgdef_obj(const upb_msgdef* def);
+VALUE get_enumdef_obj(const upb_enumdef* def);
+VALUE get_fielddef_obj(const upb_fielddef* def);
+VALUE get_filedef_obj(const upb_filedef* def);
+VALUE get_oneofdef_obj(const upb_oneofdef* def);
 
 // -----------------------------------------------------------------------------
 // Utilities.
@@ -607,5 +619,11 @@ void check_upb_status(const upb_status* status, const char* msg);
 } while (0)
 
 extern ID descriptor_instancevar_interned;
+extern VALUE upb_def_to_ruby_obj_map;
+
+// A distinct object that is not accessible from Ruby.  We use this as a
+// constructor argument to enforce that certain objects cannot be created from
+// Ruby.
+extern VALUE c_only_cookie;
 
 #endif  // __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__

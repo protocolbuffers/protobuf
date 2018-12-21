@@ -117,7 +117,7 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs, int32_t hasbit)
 typedef struct {
   size_t ofs;
   int32_t hasbit;
-  const upb_msgdef *md;
+  const upb_fielddef *field;
 } submsg_handlerdata_t;
 
 // Creates a handlerdata that contains offset and submessage type information.
@@ -128,7 +128,7 @@ static const void *newsubmsghandlerdata(upb_handlers* h,
   submsg_handlerdata_t *hd = ALLOC(submsg_handlerdata_t);
   hd->ofs = ofs;
   hd->hasbit = hasbit;
-  hd->md = upb_fielddef_msgsubdef(f);
+  hd->field = f;
   upb_handlers_addcleanup(h, hd, xfree);
   return hd;
 }
@@ -137,7 +137,7 @@ typedef struct {
   size_t ofs;              // union data slot
   size_t case_ofs;         // oneof_case field
   uint32_t oneof_case_num; // oneof-case number to place in oneof_case field
-  const upb_msgdef *md;    // msgdef, for oneof submessage handler
+  const upb_fielddef *field;   // for oneof submessage handler
 } oneof_handlerdata_t;
 
 static const void *newoneofhandlerdata(upb_handlers *h,
@@ -154,11 +154,7 @@ static const void *newoneofhandlerdata(upb_handlers *h,
   // create a separate ID space. In addition, using the field tag number here
   // lets us easily look up the field in the oneof accessor.
   hd->oneof_case_num = upb_fielddef_number(f);
-  if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
-    hd->md = upb_fielddef_msgsubdef(f);
-  } else {
-    hd->md = NULL;
-  }
+  hd->field = f;
   upb_handlers_addcleanup(h, hd, xfree);
   return hd;
 }
@@ -274,9 +270,7 @@ static bool appendstring_end_handler(void* closure, const void* hd) {
 static void *appendsubmsg_handler(void *closure, const void *hd) {
   VALUE ary = (VALUE)closure;
   const submsg_handlerdata_t *submsgdata = hd;
-  VALUE subdesc =
-      get_def_obj((void*)submsgdata->md);
-  VALUE subklass = Descriptor_msgclass(subdesc);
+  VALUE subklass = field_type_class(submsgdata->field);
   MessageHeader* submsg;
 
   VALUE submsg_rb = rb_class_new_instance(0, NULL, subklass);
@@ -290,9 +284,7 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
 static void *submsg_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const submsg_handlerdata_t* submsgdata = hd;
-  VALUE subdesc =
-      get_def_obj((void*)submsgdata->md);
-  VALUE subklass = Descriptor_msgclass(subdesc);
+  VALUE subklass = field_type_class(submsgdata->field);
   VALUE submsg_rb;
   MessageHeader* submsg;
 
@@ -318,7 +310,7 @@ typedef struct {
   // We know that we can hold this reference because the handlerdata has the
   // same lifetime as the upb_handlers struct, and the upb_handlers struct holds
   // a reference to the upb_msgdef, which in turn has references to its subdefs.
-  const upb_def* value_field_subdef;
+  const upb_fielddef* field;
 } map_handlerdata_t;
 
 // Temporary frame for map parsing: at the beginning of a map entry message, a
@@ -393,7 +385,7 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
 
   if (mapdata->value_field_type == UPB_TYPE_MESSAGE ||
       mapdata->value_field_type == UPB_TYPE_ENUM) {
-    value_field_typeclass = get_def_obj(mapdata->value_field_subdef);
+    value_field_typeclass = field_type_class(mapdata->field);
   }
 
   value = native_slot_get(
@@ -427,7 +419,7 @@ static map_handlerdata_t* new_map_handlerdata(
   value_field = upb_msgdef_itof(mapentry_def, MAP_VALUE_FIELD);
   assert(value_field != NULL);
   hd->value_field_type = upb_fielddef_type(value_field);
-  hd->value_field_subdef = upb_fielddef_subdef(value_field);
+  hd->field = value_field;
 
   return hd;
 }
@@ -494,9 +486,7 @@ static void *oneofsubmsg_handler(void *closure,
   const oneof_handlerdata_t *oneofdata = hd;
   uint32_t oldcase = DEREF(msg, oneofdata->case_ofs, uint32_t);
 
-  VALUE subdesc =
-      get_def_obj((void*)oneofdata->md);
-  VALUE subklass = Descriptor_msgclass(subdesc);
+  VALUE subklass = field_type_class(oneofdata->field);
   VALUE submsg_rb;
   MessageHeader* submsg;
 
@@ -716,7 +706,7 @@ static bool unknown_field_handler(void* closure, const void* hd,
 
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
-  Descriptor* desc = ruby_to_Descriptor(get_def_obj((void*)msgdef));
+  Descriptor* desc = ruby_to_Descriptor(get_msgdef_obj(msgdef));
   upb_msg_field_iter i;
 
   // If this is a mapentry message type, set up a special set of handlers and
