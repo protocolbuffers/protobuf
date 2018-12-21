@@ -591,7 +591,7 @@ build_php_all() {
 }
 
 build_benchmark() {
-  use_php 7.1
+  use_php 7.2
   cd kokoro/linux/benchmark && ./run.sh
 }
 
@@ -628,7 +628,7 @@ Usage: $0 { cpp |
             php7.1   |
             php7.1_c |
             php_all |
-			benchmark)
+            benchmark)
 "
   exit 1
 fi
