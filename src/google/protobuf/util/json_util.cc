@@ -129,9 +129,9 @@ class StatusErrorListener : public converter::ErrorListener {
 
   util::Status GetStatus() { return status_; }
 
-  void InvalidName(const converter::LocationTrackerInterface& loc,
-                   StringPiece unknown_name,
-                   StringPiece message) override {
+  virtual void InvalidName(const converter::LocationTrackerInterface& loc,
+                           StringPiece unknown_name,
+                           StringPiece message) {
     string loc_string = GetLocString(loc);
     if (!loc_string.empty()) {
       loc_string.append(" ");
@@ -141,17 +141,17 @@ class StatusErrorListener : public converter::ErrorListener {
                        StrCat(loc_string, unknown_name, ": ", message));
   }
 
-  void InvalidValue(const converter::LocationTrackerInterface& loc,
-                    StringPiece type_name,
-                    StringPiece value) override {
+  virtual void InvalidValue(const converter::LocationTrackerInterface& loc,
+                            StringPiece type_name,
+                            StringPiece value) {
     status_ = util::Status(
         util::error::INVALID_ARGUMENT,
         StrCat(GetLocString(loc), ": invalid value ", string(value),
                      " for type ", string(type_name)));
   }
 
-  void MissingField(const converter::LocationTrackerInterface& loc,
-                    StringPiece missing_name) override {
+  virtual void MissingField(const converter::LocationTrackerInterface& loc,
+                            StringPiece missing_name) {
     status_ = util::Status(util::error::INVALID_ARGUMENT,
                              StrCat(GetLocString(loc), ": missing field ",
                                           string(missing_name)));
@@ -186,6 +186,8 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
   proto_writer_options.ignore_unknown_fields = options.ignore_unknown_fields;
   proto_writer_options.ignore_unknown_enum_values =
       options.ignore_unknown_fields;
+  proto_writer_options.case_insensitive_enum_parsing =
+      options.case_insensitive_enum_parsing;
   converter::ProtoStreamObjectWriter proto_writer(resolver, type, &sink,
                                                   &listener,
                                                   proto_writer_options);

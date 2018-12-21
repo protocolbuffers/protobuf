@@ -60,9 +60,6 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__
-#define GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__
-
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -94,5 +91,3 @@ class ZipWriter {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_ZIP_WRITER_H__

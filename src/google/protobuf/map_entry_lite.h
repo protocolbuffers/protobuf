@@ -249,11 +249,9 @@ class MapEntryImpl : public Base {
   }
 
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* output) const override {
-    output = KeyTypeHandler::InternalWriteToArray(kKeyFieldNumber, key(),
-                                                  deterministic, output);
-    output = ValueTypeHandler::InternalWriteToArray(kValueFieldNumber, value(),
-                                                    deterministic, output);
+      ::google::protobuf::uint8* output) const override {
+    output = KeyTypeHandler::WriteToArray(kKeyFieldNumber, key(), output);
+    output = ValueTypeHandler::WriteToArray(kValueFieldNumber, value(), output);
     return output;
   }
 

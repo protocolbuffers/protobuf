@@ -889,46 +889,44 @@ inline uint8* WireFormatLite::WriteBytesToArray(int field_number,
 }
 
 
-template<typename MessageType>
+template <typename MessageType>
 inline uint8* WireFormatLite::InternalWriteGroupToArray(
-    int field_number, const MessageType& value, bool deterministic,
-    uint8* target) {
+    int field_number, const MessageType& value, uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
-  target = value.InternalSerializeWithCachedSizesToArray(deterministic, target);
+  target = value.InternalSerializeWithCachedSizesToArray(target);
   return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
 }
-template<typename MessageType>
+template <typename MessageType>
 inline uint8* WireFormatLite::InternalWriteMessageToArray(
-    int field_number, const MessageType& value, bool deterministic,
-    uint8* target) {
+    int field_number, const MessageType& value, uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
     static_cast<uint32>(value.GetCachedSize()), target);
-  return value.InternalSerializeWithCachedSizesToArray(deterministic, target);
+  return value.InternalSerializeWithCachedSizesToArray(target);
 }
 
 // See comment on ReadGroupNoVirtual to understand the need for this template
 // parameter name.
-template<typename MessageType_WorkAroundCppLookupDefect>
+template <typename MessageType_WorkAroundCppLookupDefect>
 inline uint8* WireFormatLite::InternalWriteGroupNoVirtualToArray(
     int field_number, const MessageType_WorkAroundCppLookupDefect& value,
-    bool deterministic, uint8* target) {
+    uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
   target = value.MessageType_WorkAroundCppLookupDefect::
-      InternalSerializeWithCachedSizesToArray(deterministic, target);
+               InternalSerializeWithCachedSizesToArray(target);
   return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
 }
-template<typename MessageType_WorkAroundCppLookupDefect>
+template <typename MessageType_WorkAroundCppLookupDefect>
 inline uint8* WireFormatLite::InternalWriteMessageNoVirtualToArray(
     int field_number, const MessageType_WorkAroundCppLookupDefect& value,
-    bool deterministic, uint8* target) {
+    uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
         static_cast<uint32>(
             value.MessageType_WorkAroundCppLookupDefect::GetCachedSize()),
         target);
   return value.MessageType_WorkAroundCppLookupDefect::
-      InternalSerializeWithCachedSizesToArray(deterministic, target);
+      InternalSerializeWithCachedSizesToArray(target);
 }
 
 // ===================================================================

@@ -182,14 +182,14 @@ const char* Timestamp::_InternalParse(const char* begin, const char* end, void* 
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
   auto ptr = begin;
   while (ptr < end) {
-    ptr = Varint::Parse32Inline(ptr, &tag);
+    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     switch (tag >> 3) {
       // int64 seconds = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
         ::google::protobuf::uint64 val;
-        ptr = Varint::Parse64(ptr, &val);
+        ptr = ::google::protobuf::io::Parse64(ptr, &val);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ::google::protobuf::int64 value = val;
         msg->set_seconds(value);
@@ -199,14 +199,14 @@ const char* Timestamp::_InternalParse(const char* begin, const char* end, void* 
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) != 16) goto handle_unusual;
         ::google::protobuf::uint64 val;
-        ptr = Varint::Parse64(ptr, &val);
+        ptr = ::google::protobuf::io::Parse64(ptr, &val);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ::google::protobuf::int32 value = val;
         msg->set_nanos(value);
         break;
       }
       default: {
-      handle_unusual: (void)&&handle_unusual;
+      handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
           ctx->EndGroup(tag);
           return ptr;
@@ -219,13 +219,6 @@ const char* Timestamp::_InternalParse(const char* begin, const char* end, void* 
       }
     }  // switch
   }  // while
-  return ptr;
-len_delim_till_end: (void)&&len_delim_till_end;
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                                 {parser_till_end, object}, size);
-group_continues: (void)&&group_continues;
-  GOOGLE_DCHECK(ptr >= end);
-  GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->StoreGroup({_InternalParse, msg}, {parser_till_end, object}, depth, tag));
   return ptr;
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
@@ -310,8 +303,7 @@ void Timestamp::SerializeWithCachedSizes(
 }
 
 ::google::protobuf::uint8* Timestamp::InternalSerializeWithCachedSizesToArray(
-    bool deterministic, ::google::protobuf::uint8* target) const {
-  (void)deterministic; // Unused
+    ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;

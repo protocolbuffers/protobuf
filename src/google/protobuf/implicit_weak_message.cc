@@ -34,7 +34,6 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/wire_format_lite_inl.h>
 
 #include <google/protobuf/port_def.inc>
 

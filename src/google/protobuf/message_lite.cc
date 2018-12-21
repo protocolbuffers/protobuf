@@ -45,6 +45,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -287,8 +288,9 @@ bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {
     }
     range = next();
   }
+  if (!parser.Done()) return false;
   input->SetConsumed();
-  return parser.Done();
+  return true;
 }
 #endif
 
@@ -355,8 +357,27 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
 // ===================================================================
 
 uint8* MessageLite::SerializeWithCachedSizesToArray(uint8* target) const {
-  return InternalSerializeWithCachedSizesToArray(
-      io::CodedOutputStream::IsDefaultSerializationDeterministic(), target);
+  const internal::SerializationTable* table =
+      static_cast<const internal::SerializationTable*>(InternalGetTable());
+  auto deterministic =
+      io::CodedOutputStream::IsDefaultSerializationDeterministic();
+  if (table) {
+    return internal::TableSerializeToArray(*this, table, deterministic, target);
+  } else {
+    if (deterministic) {
+      // We only optimize this when using optimize_for = SPEED.  In other cases
+      // we just use the CodedOutputStream path.
+      int size = GetCachedSize();
+      io::ArrayOutputStream out(target, size);
+      io::CodedOutputStream coded_out(&out);
+      coded_out.SetSerializationDeterministic(true);
+      SerializeWithCachedSizes(&coded_out);
+      GOOGLE_CHECK(!coded_out.HadError());
+      return target + size;
+    } else {
+      return InternalSerializeWithCachedSizesToArray(target);
+    }
+  }
 }
 
 bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
@@ -373,29 +394,29 @@ bool MessageLite::SerializePartialToCodedStream(
     return false;
   }
 
-  uint8* buffer = output->GetDirectBufferForNBytesAndAdvance(size);
-  if (buffer != NULL) {
-    uint8* end = InternalSerializeWithCachedSizesToArray(
-        output->IsSerializationDeterministic(), buffer);
-    if (end - buffer != size) {
-      ByteSizeConsistencyError(size, ByteSizeLong(), end - buffer, *this);
+  if (!output->IsSerializationDeterministic()) {
+    uint8* buffer = output->GetDirectBufferForNBytesAndAdvance(size);
+    if (buffer != nullptr) {
+      uint8* end = InternalSerializeWithCachedSizesToArray(buffer);
+      if (end - buffer != size) {
+        ByteSizeConsistencyError(size, ByteSizeLong(), end - buffer, *this);
+      }
+      return true;
     }
-    return true;
-  } else {
-    int original_byte_count = output->ByteCount();
-    SerializeWithCachedSizes(output);
-    if (output->HadError()) {
-      return false;
-    }
-    int final_byte_count = output->ByteCount();
-
-    if (final_byte_count - original_byte_count != size) {
-      ByteSizeConsistencyError(size, ByteSizeLong(),
-                               final_byte_count - original_byte_count, *this);
-    }
-
-    return true;
   }
+  int original_byte_count = output->ByteCount();
+  SerializeWithCachedSizes(output);
+  if (output->HadError()) {
+    return false;
+  }
+  int final_byte_count = output->ByteCount();
+
+  if (final_byte_count - original_byte_count != size) {
+    ByteSizeConsistencyError(size, ByteSizeLong(),
+                             final_byte_count - original_byte_count, *this);
+  }
+
+  return true;
 }
 
 bool MessageLite::SerializeToZeroCopyStream(
@@ -496,7 +517,7 @@ void MessageLite::SerializeWithCachedSizes(
 // generated code for maximum speed. If the proto is optimized for size or
 // is lite, then we need to specialize this to avoid infinite recursion.
 uint8* MessageLite::InternalSerializeWithCachedSizesToArray(
-    bool deterministic, uint8* target) const {
+    uint8* target) const {
   const internal::SerializationTable* table =
       static_cast<const internal::SerializationTable*>(InternalGetTable());
   if (table == NULL) {
@@ -505,12 +526,11 @@ uint8* MessageLite::InternalSerializeWithCachedSizesToArray(
     int size = GetCachedSize();
     io::ArrayOutputStream out(target, size);
     io::CodedOutputStream coded_out(&out);
-    coded_out.SetSerializationDeterministic(deterministic);
     SerializeWithCachedSizes(&coded_out);
     GOOGLE_CHECK(!coded_out.HadError());
     return target + size;
   } else {
-    return internal::TableSerializeToArray(*this, table, deterministic, target);
+    return internal::TableSerializeToArray(*this, table, false, target);
   }
 }
 

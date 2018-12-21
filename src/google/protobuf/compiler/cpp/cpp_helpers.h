@@ -271,6 +271,8 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
+bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
+
 // For a string field, returns the effective ctype.  If the actual ctype is
 // not supported, returns the default of STRING.
 FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
