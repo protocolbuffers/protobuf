@@ -622,12 +622,10 @@ class PROTOBUF_EXPORT WireFormatLite {
   template <typename MessageType>
   INL static uint8* InternalWriteGroupToArray(int field_number,
                                               const MessageType& value,
-                                              bool deterministic,
                                               uint8* target);
   template <typename MessageType>
   INL static uint8* InternalWriteMessageToArray(int field_number,
                                                 const MessageType& value,
-                                                bool deterministic,
                                                 uint8* target);
 
   // Like above, but de-virtualize the call to SerializeWithCachedSizes().  The
@@ -636,23 +634,21 @@ class PROTOBUF_EXPORT WireFormatLite {
   template <typename MessageType>
   INL static uint8* InternalWriteGroupNoVirtualToArray(int field_number,
                                                        const MessageType& value,
-                                                       bool deterministic,
                                                        uint8* target);
   template <typename MessageType>
   INL static uint8* InternalWriteMessageNoVirtualToArray(
-      int field_number, const MessageType& value, bool deterministic,
-      uint8* target);
+      int field_number, const MessageType& value, uint8* target);
 
   // For backward-compatibility, the last four methods also have versions
   // that are non-deterministic always.
   INL static uint8* WriteGroupToArray(int field_number,
                                       const MessageLite& value, uint8* target) {
-    return InternalWriteGroupToArray(field_number, value, false, target);
+    return InternalWriteGroupToArray(field_number, value, target);
   }
   INL static uint8* WriteMessageToArray(int field_number,
                                         const MessageLite& value,
                                         uint8* target) {
-    return InternalWriteMessageToArray(field_number, value, false, target);
+    return InternalWriteMessageToArray(field_number, value, target);
   }
   template <typename MessageType>
   INL static uint8* WriteGroupNoVirtualToArray(int field_number,
@@ -736,6 +732,8 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   static const CppType kFieldTypeToCppTypeMap[];
   static const WireFormatLite::WireType kWireTypeForFieldType[];
+  static void WriteSubMessageMaybeToArray(int size, const MessageLite& value,
+                                          io::CodedOutputStream* output);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormatLite);
 };

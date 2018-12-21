@@ -96,12 +96,14 @@ class ParseError(Error):
   """Thrown in case of parsing error."""
 
 
-def MessageToJson(message,
-                  including_default_value_fields=False,
-                  preserving_proto_field_name=False,
-                  indent=2,
-                  sort_keys=False,
-                  use_integers_for_enums=False):
+def MessageToJson(
+    message,
+    including_default_value_fields=False,
+    preserving_proto_field_name=False,
+    indent=2,
+    sort_keys=False,
+    use_integers_for_enums=False,
+    descriptor_pool=None):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -117,20 +119,26 @@ def MessageToJson(message,
         An indent level of 0 or negative will only insert newlines.
     sort_keys: If True, then the output will be sorted by field names.
     use_integers_for_enums: If true, print integers instead of enum names.
+    descriptor_pool: A Descriptor Pool for resolving types. If None use the
+        default.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
   """
-  printer = _Printer(including_default_value_fields,
-                     preserving_proto_field_name,
-                     use_integers_for_enums)
+  printer = _Printer(
+      including_default_value_fields,
+      preserving_proto_field_name,
+      use_integers_for_enums,
+      descriptor_pool)
   return printer.ToJsonString(message, indent, sort_keys)
 
 
-def MessageToDict(message,
-                  including_default_value_fields=False,
-                  preserving_proto_field_name=False,
-                  use_integers_for_enums=False):
+def MessageToDict(
+    message,
+    including_default_value_fields=False,
+    preserving_proto_field_name=False,
+    use_integers_for_enums=False,
+    descriptor_pool=None):
   """Converts protobuf message to a dictionary.
 
   When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
@@ -145,13 +153,17 @@ def MessageToDict(message,
         names as defined in the .proto file. If False, convert the field
         names to lowerCamelCase.
     use_integers_for_enums: If true, print integers instead of enum names.
+    descriptor_pool: A Descriptor Pool for resolving types. If None use the
+        default.
 
   Returns:
     A dict representation of the protocol buffer message.
   """
-  printer = _Printer(including_default_value_fields,
-                     preserving_proto_field_name,
-                     use_integers_for_enums)
+  printer = _Printer(
+      including_default_value_fields,
+      preserving_proto_field_name,
+      use_integers_for_enums,
+      descriptor_pool)
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
 
@@ -165,13 +177,16 @@ def _IsMapEntry(field):
 class _Printer(object):
   """JSON format printer for protocol message."""
 
-  def __init__(self,
-               including_default_value_fields=False,
-               preserving_proto_field_name=False,
-               use_integers_for_enums=False):
+  def __init__(
+      self,
+      including_default_value_fields=False,
+      preserving_proto_field_name=False,
+      use_integers_for_enums=False,
+      descriptor_pool=None):
     self.including_default_value_fields = including_default_value_fields
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
+    self.descriptor_pool = descriptor_pool
 
   def ToJsonString(self, message, indent, sort_keys):
     js = self._MessageToJsonObject(message)
@@ -300,7 +315,7 @@ class _Printer(object):
     js = OrderedDict()
     type_url = message.type_url
     js['@type'] = type_url
-    sub_message = _CreateMessageFromTypeUrl(type_url)
+    sub_message = _CreateMessageFromTypeUrl(type_url, self.descriptor_pool)
     sub_message.ParseFromString(message.value)
     message_descriptor = sub_message.DESCRIPTOR
     full_name = message_descriptor.full_name
@@ -366,13 +381,13 @@ def _DuplicateChecker(js):
   return result
 
 
-def _CreateMessageFromTypeUrl(type_url):
-  # TODO(jieluo): Should add a way that users can register the type resolver
-  # instead of the default one.
+def _CreateMessageFromTypeUrl(type_url, descriptor_pool):
+  """Creates a message from a type URL."""
   db = symbol_database.Default()
+  pool = db.pool if descriptor_pool is None else descriptor_pool
   type_name = type_url.split('/')[-1]
   try:
-    message_descriptor = db.pool.FindMessageTypeByName(type_name)
+    message_descriptor = pool.FindMessageTypeByName(type_name)
   except KeyError:
     raise TypeError(
         'Can not find message descriptor by type_url: {0}.'.format(type_url))
@@ -380,13 +395,15 @@ def _CreateMessageFromTypeUrl(type_url):
   return message_class()
 
 
-def Parse(text, message, ignore_unknown_fields=False):
+def Parse(text, message, ignore_unknown_fields=False, descriptor_pool=None):
   """Parses a JSON representation of a protocol message into a message.
 
   Args:
     text: Message JSON representation.
     message: A protocol buffer message to merge into.
     ignore_unknown_fields: If True, do not raise errors for unknown fields.
+    descriptor_pool: A Descriptor Pool for resolving types. If None use the
+        default.
 
   Returns:
     The same message passed as argument.
@@ -399,21 +416,26 @@ def Parse(text, message, ignore_unknown_fields=False):
     js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
     raise ParseError('Failed to load JSON: {0}.'.format(str(e)))
-  return ParseDict(js, message, ignore_unknown_fields)
+  return ParseDict(js, message, ignore_unknown_fields, descriptor_pool)
 
 
-def ParseDict(js_dict, message, ignore_unknown_fields=False):
+def ParseDict(js_dict,
+              message,
+              ignore_unknown_fields=False,
+              descriptor_pool=None):
   """Parses a JSON dictionary representation into a message.
 
   Args:
     js_dict: Dict representation of a JSON message.
     message: A protocol buffer message to merge into.
     ignore_unknown_fields: If True, do not raise errors for unknown fields.
+    descriptor_pool: A Descriptor Pool for resolving types. If None use the
+      default.
 
   Returns:
     The same message passed as argument.
   """
-  parser = _Parser(ignore_unknown_fields)
+  parser = _Parser(ignore_unknown_fields, descriptor_pool)
   parser.ConvertMessage(js_dict, message)
   return message
 
@@ -424,9 +446,9 @@ _INT_OR_FLOAT = six.integer_types + (float,)
 class _Parser(object):
   """JSON format parser for protocol message."""
 
-  def __init__(self,
-               ignore_unknown_fields):
+  def __init__(self, ignore_unknown_fields, descriptor_pool):
     self.ignore_unknown_fields = ignore_unknown_fields
+    self.descriptor_pool = descriptor_pool
 
   def ConvertMessage(self, value, message):
     """Convert a JSON object into a message.
@@ -562,7 +584,7 @@ class _Parser(object):
     except KeyError:
       raise ParseError('@type is missing when parsing any message.')
 
-    sub_message = _CreateMessageFromTypeUrl(type_url)
+    sub_message = _CreateMessageFromTypeUrl(type_url, self.descriptor_pool)
     message_descriptor = sub_message.DESCRIPTOR
     full_name = message_descriptor.full_name
     if _IsWrapperMessage(message_descriptor):

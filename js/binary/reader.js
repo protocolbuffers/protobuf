@@ -97,7 +97,7 @@ jspb.BinaryReader = function(opt_bytes, opt_start, opt_length) {
 
   /**
    * User-defined reader callbacks.
-   * @private {Object<string, function(!jspb.BinaryReader):*>}
+   * @private {?Object<string, function(!jspb.BinaryReader):*>}
    */
   this.readCallbacks_ = null;
 };

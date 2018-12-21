@@ -161,7 +161,7 @@ class PROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_ins
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -313,7 +313,7 @@ class PROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message /*
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -487,7 +487,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::Mess
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:
@@ -647,7 +647,7 @@ class PROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Message /
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const final;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
+      ::google::protobuf::uint8* target) const final;
   int GetCachedSize() const final { return _cached_size_.Get(); }
 
   private:

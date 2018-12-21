@@ -32,7 +32,22 @@ package com.google.protobuf;
 
 import static com.google.protobuf.Internal.checkNotNull;
 
-import com.google.protobuf.DescriptorProtos.*;
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
+import com.google.protobuf.DescriptorProtos.EnumOptions;
+import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
+import com.google.protobuf.DescriptorProtos.EnumValueOptions;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FieldOptions;
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FileOptions;
+import com.google.protobuf.DescriptorProtos.MessageOptions;
+import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
+import com.google.protobuf.DescriptorProtos.MethodOptions;
+import com.google.protobuf.DescriptorProtos.OneofDescriptorProto;
+import com.google.protobuf.DescriptorProtos.OneofOptions;
+import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
+import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.Descriptors.FileDescriptor.Syntax;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -1211,7 +1226,7 @@ public final class Descriptors {
       StringBuilder result = new StringBuilder(name.length());
       boolean isNextUpperCase = false;
       for (int i = 0; i < name.length(); i++) {
-        Character ch = name.charAt(i);
+        char ch = name.charAt(i);
         if (ch == '_') {
           isNextUpperCase = true;
         } else if (isNextUpperCase) {

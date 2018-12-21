@@ -73,6 +73,17 @@ message TestAllTypesProto3 {
     NEG = -1;  // Intentionally negative.
   }
 
+  enum AliasedEnum {
+    option allow_alias = true;
+
+    ALIAS_FOO = 0;
+    ALIAS_BAR = 1;
+    ALIAS_BAZ = 2;
+    QUX = 2;
+    qux = 2;
+    bAz = 2;
+  }
+
   // Singular
   int32 optional_int32    =  1;
   int64 optional_int64    =  2;
@@ -95,6 +106,7 @@ message TestAllTypesProto3 {
 
   NestedEnum                           optional_nested_enum     = 21;
   ForeignEnum                          optional_foreign_enum    = 22;
+  AliasedEnum                          optional_aliased_enum    = 23;
 
   string optional_string_piece = 24 [ctype=STRING_PIECE];
   string optional_cord = 25 [ctype=CORD];

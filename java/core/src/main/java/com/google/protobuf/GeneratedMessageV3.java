@@ -1681,6 +1681,15 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       }
     }
 
+    @Override
+    public Message.Builder newBuilderForField(final FieldDescriptor field) {
+      if (field.isExtension()) {
+        return DynamicMessage.newBuilder(field.getMessageType());
+      } else {
+        return super.newBuilderForField(field);
+      }
+    }
+
     protected final void mergeExtensionFields(final ExtendableMessage other) {
       ensureExtensionsIsMutable();
       extensions.mergeFrom(other.extensions);

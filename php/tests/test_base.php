@@ -4,7 +4,7 @@ use Foo\TestMessage;
 use Foo\TestEnum;
 use Foo\TestMessage\Sub;
 
-class TestBase extends PHPUnit_Framework_TestCase
+class TestBase extends \PHPUnit\Framework\TestCase
 {
 
     public function setFields(TestMessage $m)
@@ -338,5 +338,6 @@ class TestBase extends PHPUnit_Framework_TestCase
   // This test is to avoid the warning of no test by php unit.
   public function testNone()
   {
+      $this->assertTrue(true);
   }
 }

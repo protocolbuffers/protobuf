@@ -166,6 +166,10 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     use_lower_camel_for_enums_ = use_lower_camel_for_enums;
   }
 
+  void set_case_insensitive_enum_parsing(bool case_insensitive_enum_parsing) {
+    case_insensitive_enum_parsing_ = case_insensitive_enum_parsing;
+  }
+
  protected:
   class PROTOBUF_EXPORT ProtoElement : public BaseElement,
                                        public LocationTrackerInterface {
@@ -319,6 +323,7 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
                                   const google::protobuf::Enum* enum_type,
                                   io::CodedOutputStream* stream,
                                   bool use_lower_camel_for_enums,
+                                  bool case_insensitive_enum_parsing,
                                   bool ignore_unknown_values);
 
   // Variables for describing the structure of the input tree:
@@ -344,6 +349,9 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // If true, will try to match unknown JSON fields names with lower camel case of fields name.
   bool try_lower_camel_for_unknown_fields_;
+
+  // If true, check if enum name in UPPER_CASE matches the field name.
+  bool case_insensitive_enum_parsing_;
 
   // Variable for internal state processing:
   // element_    : the current element.

@@ -79,8 +79,8 @@ RUN cd php-src \
 
 RUN wget -O phpunit https://phar.phpunit.de/phpunit-4.phar \
   && chmod +x phpunit \
-  && cp phpunit /usr/local/php-5.5 \
-  && mv phpunit /usr/local/php-5.5-zts
+  && cp phpunit /usr/local/php-5.5/bin \
+  && mv phpunit /usr/local/php-5.5-zts/bin
 
 # php 5.6
 RUN cd php-src \
@@ -109,8 +109,8 @@ RUN cd php-src \
 
 RUN wget -O phpunit https://phar.phpunit.de/phpunit-5.phar \
   && chmod +x phpunit \
-  && cp phpunit /usr/local/php-5.6 \
-  && mv phpunit /usr/local/php-5.6-zts
+  && cp phpunit /usr/local/php-5.6/bin \
+  && mv phpunit /usr/local/php-5.6-zts/bin
 
 # php 7.0
 RUN cd php-src \
@@ -139,8 +139,8 @@ RUN cd php-src \
 
 RUN wget -O phpunit https://phar.phpunit.de/phpunit-6.phar \
   && chmod +x phpunit \
-  && cp phpunit /usr/local/php-7.0 \
-  && mv phpunit /usr/local/php-7.0-zts
+  && cp phpunit /usr/local/php-7.0/bin \
+  && mv phpunit /usr/local/php-7.0-zts/bin
 
 # php 7.1
 RUN cd php-src \
@@ -169,8 +169,8 @@ RUN cd php-src \
 
 RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.phar \
   && chmod +x phpunit \
-  && cp phpunit /usr/local/php-7.1 \
-  && mv phpunit /usr/local/php-7.1-zts
+  && cp phpunit /usr/local/php-7.1/bin \
+  && mv phpunit /usr/local/php-7.1-zts/bin
 
 # php 7.2
 RUN cd php-src \
@@ -199,8 +199,8 @@ RUN cd php-src \
 
 RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.phar \
   && chmod +x phpunit \
-  && cp phpunit /usr/local/php-7.2 \
-  && mv phpunit /usr/local/php-7.2-zts
+  && cp phpunit /usr/local/php-7.2/bin \
+  && mv phpunit /usr/local/php-7.2-zts/bin
 
 # php 7.3
 RUN cd php-src \
@@ -229,5 +229,10 @@ RUN cd php-src \
 
 RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.phar \
   && chmod +x phpunit \
-  && cp phpunit /usr/local/php-7.3 \
-  && mv phpunit /usr/local/php-7.3-zts
+  && cp phpunit /usr/local/php-7.3/bin \
+  && mv phpunit /usr/local/php-7.3-zts/bin
+
+# Install php dependencies
+RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
+  valgrind \
+  && apt-get clean

@@ -1104,7 +1104,8 @@ final class Utf8 {
 
     private static int partialIsValidUtf8NonAscii(byte[] bytes, int index, int limit) {
       for (; ; ) {
-        int byte1, byte2;
+        int byte1;
+        int byte2;
 
         // Optimize for interior runs of ASCII bytes.
         do {

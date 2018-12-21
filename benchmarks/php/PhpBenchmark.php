@@ -1,6 +1,7 @@
 <?php
 
 namespace Google\Protobuf\Benchmark;
+ini_set('memory_limit', '4096M');
 
 const NAME = "PhpBenchmark.php";
 
@@ -62,7 +63,7 @@ class Benchmark
         $t = $this->runBenchmarkWithTimes(1);
         $times = ceil($this->benchmark_time / $t);
         return $this->total_bytes * $times /
-        $this->runBenchmarkWithTimes($times) *
+        ($times == 1 ? $t : $this->runBenchmarkWithTimes($times)) *
         $this->coefficient;
     }
     

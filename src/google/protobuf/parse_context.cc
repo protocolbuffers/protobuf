@@ -30,18 +30,12 @@
 
 #include <google/protobuf/parse_context.h>
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/string_piece_field_support.h>
 #include <google/protobuf/wire_format_lite.h>
-#include "third_party/absl/strings/str_format.h"
 #include <google/protobuf/stubs/strutil.h>
-#include "util/coding/varint.h"
-#include "util/utf8/public/unilib.h"
 
 #include <google/protobuf/port_def.inc>
 
@@ -50,8 +44,8 @@ namespace protobuf {
 namespace internal {
 
 bool ParseContext::ParseEndsInSlopRegion(const char* begin, int overrun) const {
-  ABSL_ASSERT(overrun >= 0);
-  ABSL_ASSERT(overrun <= kSlopBytes);
+  GOOGLE_DCHECK(overrun >= 0);
+  GOOGLE_DCHECK(overrun <= kSlopBytes);
   auto ptr = begin + overrun;
   auto end = begin + kSlopBytes;
   int n = end - ptr;
@@ -60,7 +54,7 @@ bool ParseContext::ParseEndsInSlopRegion(const char* begin, int overrun) const {
   // bytes (or more if on the stack there are further limits)
   int d = depth_;
   if (limit_ != -1) {
-    ABSL_ASSERT(d < start_depth_);  // Top-level never has a limit.
+    GOOGLE_DCHECK(d < start_depth_);  // Top-level never has a limit.
     // rewind the stack until all limits disappear.
     int limit = limit_;
     if (limit >= n) return false;
@@ -93,7 +87,7 @@ bool ParseContext::ParseEndsInSlopRegion(const char* begin, int overrun) const {
   // any way so we make no attempt to leave the stream at a well specified pos.
   while (ptr < end) {
     uint32 tag;
-    ptr = Varint::Parse32(ptr, &tag);
+    ptr = io::Parse32(ptr, &tag);
     if (ptr == nullptr || ptr > end) return false;
     // ending on 0 tag is allowed and is the major reason for the necessity of
     // this function.
@@ -101,7 +95,7 @@ bool ParseContext::ParseEndsInSlopRegion(const char* begin, int overrun) const {
     switch (tag & 7) {
       case 0: {  // Varint
         uint64 val;
-        ptr = Varint::Parse64(ptr, &val);
+        ptr = io::Parse64(ptr, &val);
         if (ptr == nullptr) return false;
         break;
       }
@@ -111,7 +105,7 @@ bool ParseContext::ParseEndsInSlopRegion(const char* begin, int overrun) const {
       }
       case 2: {  // len delim
         uint32 size;
-        ptr = Varint::Parse32(ptr, &size);
+        ptr = io::Parse32(ptr, &size);
         if (ptr == nullptr) return false;
         ptr += size;
         break;
@@ -145,12 +139,12 @@ std::pair<bool, int> ParseContext::ParseRangeWithLimit(const char* begin,
                                                        const char* end) {
   auto ptr = begin;
   do {
-    ABSL_ASSERT(ptr < end);
+    GOOGLE_DCHECK(ptr < end);
     const char* limited_end;
     if (limit_ == -1) {
       limited_end = end;
     } else {
-      ABSL_ASSERT(limit_ > 0);
+      GOOGLE_DCHECK(limit_ > 0);
       limited_end = ptr + std::min(static_cast<int32>(end - ptr), limit_);
       limit_ -= limited_end - ptr;
     }
@@ -159,7 +153,7 @@ std::pair<bool, int> ParseContext::ParseRangeWithLimit(const char* begin,
     // an end-group. If this is the case we continue parsing the range with
     // the parent parser.
     do {
-      ABSL_ASSERT(ptr < limited_end);
+      GOOGLE_DCHECK(ptr < limited_end);
       ptr = parser_(ptr, limited_end, this);
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
         // Clear last_tag_minus_1_ so that the hard error encountered is not
@@ -170,16 +164,16 @@ std::pair<bool, int> ParseContext::ParseRangeWithLimit(const char* begin,
       if (!EndedOnTag()) {
         // The parser ended still parsing the initial message. This can only
         // happen because it crossed the end.
-        ABSL_ASSERT(ptr >= limited_end);
+        GOOGLE_DCHECK(ptr >= limited_end);
         break;
       }
       // Child parser terminated on an end-group / 0 tag.
-      ABSL_ASSERT(depth_ <= start_depth_);
+      GOOGLE_DCHECK(depth_ <= start_depth_);
       if (depth_ == start_depth_) {
         // The parse was already at the top-level and there is no parent.
         // This can happen due to encountering 0 or due to this parser being
         // called for parsing a sub-group message in custom parsing code.
-        return {false, ptr - end};
+        return {false, static_cast<int>(ptr - end)};
       }
       auto state = Pop();
       // Verify the ending tag is correct and continue parsing the range with
@@ -192,8 +186,8 @@ std::pair<bool, int> ParseContext::ParseRangeWithLimit(const char* begin,
       parser_ = state.parser;  // Load parent parser
     } while (ptr < limited_end);
     int overrun = ptr - limited_end;
-    ABSL_ASSERT(overrun >= 0);
-    ABSL_ASSERT(overrun <= kSlopBytes);  // wireformat guarantees this limit
+    GOOGLE_DCHECK(overrun >= 0);
+    GOOGLE_DCHECK(overrun <= kSlopBytes);  // wireformat guarantees this limit
     if (limit_ != -1) {
       limit_ -= overrun;  // Adjust limit relative to new position.
       if (limit_ < 0) return {};  // We overrun the limit
@@ -201,7 +195,7 @@ std::pair<bool, int> ParseContext::ParseRangeWithLimit(const char* begin,
         // We are at an actual ending of a length delimited field.
         // The top level has no limit (ie. limit_ == -1) so we can assert
         // that the stack is non-empty.
-        ABSL_ASSERT(depth_ < start_depth_);
+        GOOGLE_DCHECK(depth_ < start_depth_);
         // else continue parsing the parent message.
         auto state = Pop();
         parser_ = state.parser;
@@ -212,7 +206,7 @@ std::pair<bool, int> ParseContext::ParseRangeWithLimit(const char* begin,
       }
     }
   } while (ptr < end);
-  return {true, ptr - end};
+  return {true, static_cast<int>(ptr - end)};
 }
 
 const char* StringParser(const char* begin, const char* end, void* object,
@@ -222,55 +216,12 @@ const char* StringParser(const char* begin, const char* end, void* object,
   return end;
 }
 
-const char* CordParser(const char* begin, const char* end, void* object,
-                       ParseContext* ctx) {
-  auto cord = static_cast<Cord*>(object);
-  cord->Append(StringPiece(begin, end - begin));
-  return end;
-}
-
-void StringPieceField::Append(const char *begin, size_t chunk_size, int limit) {
-  if (size_ == 0) {
-    auto tot = chunk_size + limit;
-    if (tot > scratch_size_) {
-      auto old_scratch_size = scratch_size_;
-      scratch_size_ = tot;
-      // TODO(gerbens) Security against big
-      if (arena_ != NULL) {
-        scratch_ = ::google::protobuf::Arena::CreateArray<char>(arena_, scratch_size_);
-      } else {
-        std::allocator<char>().deallocate(scratch_, old_scratch_size);
-        scratch_ = std::allocator<char>().allocate(scratch_size_);
-      }
-    }
-    data_ = scratch_;
-  }
-  std::memcpy(scratch_ + size_, begin, chunk_size);
-  size_ += chunk_size;
-}
-
-const char* StringPieceParser(const char* begin, const char* end, void* object,
-                              ParseContext* ctx) {
-  auto s = static_cast<StringPieceField*>(object);
-  auto limit = ctx->CurrentLimit();
-  s->Append(begin, end - begin, limit);
-  return end;
-}
-
 // Defined in wire_format_lite.cc
 void PrintUTF8ErrorLog(const char* field_name, const char* operation_str,
                        bool emit_stacktrace);
 
 bool VerifyUTF8(StringPiece str, ParseContext* ctx) {
   if (!IsStructurallyValidUTF8(str)) {
-    PrintUTF8ErrorLog(ctx->extra_parse_data().FieldName(), "parsing", false);
-    return false;
-  }
-  return true;
-}
-
-bool VerifyUTF8Cord(const Cord& value, ParseContext* ctx) {
-  if (!UniLib::CordIsStructurallyValid(value)) {
     PrintUTF8ErrorLog(ctx->extra_parse_data().FieldName(), "parsing", false);
     return false;
   }
@@ -287,26 +238,6 @@ const char* StringParserUTF8(const char* begin, const char* end, void* object,
   return end;
 }
 
-const char* CordParserUTF8(const char* begin, const char* end, void* object,
-                           ParseContext* ctx) {
-  CordParser(begin, end, object, ctx);
-  if (ctx->AtLimit()) {
-    auto str = static_cast<Cord*>(object);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(VerifyUTF8Cord(*str, ctx));
-  }
-  return end;
-}
-
-const char* StringPieceParserUTF8(const char* begin, const char* end,
-                                  void* object, ParseContext* ctx) {
-  StringPieceParser(begin, end, object, ctx);
-  if (ctx->AtLimit()) {
-    auto s = static_cast<StringPieceField*>(object);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(VerifyUTF8(s->Get(), ctx));
-  }
-  return end;
-}
-
 const char* StringParserUTF8Verify(const char* begin, const char* end,
                                    void* object, ParseContext* ctx) {
   StringParser(begin, end, object, ctx);
@@ -319,35 +250,12 @@ const char* StringParserUTF8Verify(const char* begin, const char* end,
   return end;
 }
 
-const char* CordParserUTF8Verify(const char* begin, const char* end,
-                                 void* object, ParseContext* ctx) {
-  CordParser(begin, end, object, ctx);
-#ifndef NDEBUG
-  if (ctx->AtLimit()) {
-    auto str = static_cast<Cord*>(object);
-    VerifyUTF8Cord(*str, ctx);
-  }
-#endif
-  return end;
-}
-
-const char* StringPieceParserUTF8Verify(const char* begin, const char* end,
-                                        void* object, ParseContext* ctx) {
-  return StringPieceParser(begin, end, object, ctx);
-#ifndef NDEBUG
-  if (ctx->AtLimit()) {
-    auto s = static_cast<StringPieceField*>(object);
-    VerifyUTF8(s->Get(), ctx);
-  }
-#endif
-  return end;
-}
 
 const char* GreedyStringParser(const char* begin, const char* end, void* object,
                          ParseContext* ctx) {
   auto str = static_cast<string*>(object);
   auto limit = ctx->CurrentLimit();
-  ABSL_ASSERT(limit != -1);  // Always length delimited
+  GOOGLE_DCHECK(limit != -1);  // Always length delimited
   end += std::min<int>(limit, ParseContext::kSlopBytes);
   str->append(begin, end - begin);
   return end;
@@ -356,7 +264,7 @@ const char* GreedyStringParser(const char* begin, const char* end, void* object,
 const char* GreedyStringParserUTF8(const char* begin, const char* end, void* object,
                              ParseContext* ctx) {
   auto limit = ctx->CurrentLimit();
-  ABSL_ASSERT(limit != -1);  // Always length delimited
+  GOOGLE_DCHECK(limit != -1);  // Always length delimited
   bool at_end;
   if (limit <= ParseContext::kSlopBytes) {
     end += limit;
@@ -376,7 +284,7 @@ const char* GreedyStringParserUTF8(const char* begin, const char* end, void* obj
 const char* GreedyStringParserUTF8Verify(const char* begin, const char* end, void* object,
                              ParseContext* ctx) {
   auto limit = ctx->CurrentLimit();
-  ABSL_ASSERT(limit != -1);  // Always length delimited
+  GOOGLE_DCHECK(limit != -1);  // Always length delimited
   bool at_end;
   if (limit <= ParseContext::kSlopBytes) {
     end += limit;
@@ -402,7 +310,7 @@ const char* VarintParser(const char* begin, const char* end, void* object,
   auto ptr = begin;
   while (ptr < end) {
     uint64 varint;
-    ptr = Varint::Parse64(ptr, &varint);
+    ptr = io::Parse64(ptr, &varint);
     if (!ptr) return nullptr;
     T val;
     if (sign) {
@@ -467,7 +375,7 @@ const char* PackedValidEnumParserLite(const char* begin, const char* end,
   auto ptr = begin;
   while (ptr < end) {
     uint64 varint;
-    ptr = Varint::Parse64(ptr, &varint);
+    ptr = io::Parse64(ptr, &varint);
     if (!ptr) return nullptr;
     int val = varint;
     if (ctx->extra_parse_data().ValidateEnum<string>(val))
@@ -482,7 +390,7 @@ const char* PackedValidEnumParserLiteArg(const char* begin, const char* end,
   auto ptr = begin;
   while (ptr < end) {
     uint64 varint;
-    ptr = Varint::Parse64(ptr, &varint);
+    ptr = io::Parse64(ptr, &varint);
     if (!ptr) return nullptr;
     int val = varint;
     if (ctx->extra_parse_data().ValidateEnumArg<string>(val))
@@ -623,5 +531,3 @@ const char* SlowMapEntryParser(const char* begin, const char* end, void* object,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER

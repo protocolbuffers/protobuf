@@ -48,10 +48,10 @@
 // detect/prohibit anytime it is #included twice without a corresponding
 // #undef.
 
-// These macros are private and should always be #undef'd from headers.
-// If any of these errors fire, you should either properly #include
-// port_undef.h at the end of your header that #includes port.h, or
-// don't #include port.h twice in a .cc file.
+// These macros are private and should always be
+// ::util::RetrieveErrorSpace(*this) headers. If any of these errors fire, you
+// should either properly #include port_undef.h at the end of your header that
+// #includes port.h, or don't #include port.h twice in a .cc file.
 #ifdef PROTOBUF_NAMESPACE
 #error PROTOBUF_NAMESPACE was previously defined
 #endif

@@ -52,6 +52,7 @@ struct JsonParseOptions {
   // Whether to ignore unknown JSON fields during parsing
   bool ignore_unknown_fields;
 
+
   // If true, will try to match unknown JSON fields names with lower camel case of fields name.
   // For example, if the proto field name is "SomeField" and json field name is "someField", it
   // would be recognized if this flag value equals to true.
@@ -59,9 +60,18 @@ struct JsonParseOptions {
   // or "can not find field" error would occur.
   bool try_lower_camel_for_unknown_fields;
 
+  // If true, when a lowercase enum value fails to parse, try convert it to
+  // UPPER_CASE and see if it matches a valid enum.
+  // WARNING: This option exists only to preserve legacy behavior. Avoid using
+  // this option. If your enum needs to support different casing, consider using
+  // allow_alias instead.
+  bool case_insensitive_enum_parsing;
+
   JsonParseOptions()
     : ignore_unknown_fields(false),
-      try_lower_camel_for_unknown_fields(false) {}
+      try_lower_camel_for_unknown_fields(false),
+      // TODO(haon): Change this to false by default.
+      case_insensitive_enum_parsing(true) {}
 };
 
 struct JsonPrintOptions {

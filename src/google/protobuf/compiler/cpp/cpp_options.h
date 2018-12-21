@@ -43,8 +43,8 @@ class AccessInfoMap;
 namespace cpp {
 
 enum class EnforceOptimizeMode {
-  kNoEnforcement, // Use the runtime specified by the file specific options.
-  kSpeed, // This is the full runtime.
+  kNoEnforcement,  // Use the runtime specified by the file specific options.
+  kSpeed,  // This is the full runtime.
   kLiteRuntime,
 };
 

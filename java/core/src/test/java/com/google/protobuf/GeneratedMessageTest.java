@@ -578,6 +578,29 @@ public class GeneratedMessageTest extends TestCase {
     TestUtil.assertAllExtensionsSet(message);
   }
 
+  public void testGetBuilderForExtensionField() {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+    Message.Builder fieldBuilder =
+        builder.newBuilderForField(UnittestProto.optionalNestedMessageExtension.getDescriptor());
+    final int expected = 7432;
+    FieldDescriptor field =
+        NestedMessage.getDescriptor().findFieldByNumber(NestedMessage.BB_FIELD_NUMBER);
+    fieldBuilder.setField(field, expected);
+    assertEquals(expected, fieldBuilder.build().getField(field));
+  }
+
+
+  public void testGetBuilderForNonMessageExtensionField() {
+    TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
+    try {
+      // This should throw an exception because the extension field is not a message.
+      builder.newBuilderForField(UnittestProto.optionalInt32Extension.getDescriptor());
+      fail("Exception was not thrown");
+    } catch (UnsupportedOperationException e) {
+      // This exception is expected.
+    }
+  }
+
   public void testExtensionRepeatedSetters() throws Exception {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
     TestUtil.setAllExtensions(builder);
