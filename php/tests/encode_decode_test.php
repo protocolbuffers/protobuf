@@ -994,6 +994,18 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("0801", bin2hex($m1->getAny()->getValue()));
     }
 
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeAnyWithUnknownPacked()
+    {
+        $m = new TestAny();
+        $m->mergeFromJsonString(
+            "{\"any\":" .
+            "  {\"@type\":\"type.googleapis.com/unknown\"," .
+            "   \"value\":1}}");
+    }
+
     public function testEncodeTopLevelAny()
     {
         // Test a normal message.
@@ -1003,10 +1015,14 @@ class EncodeDecodeTest extends TestBase
 
         $m = new Any();
         $m->pack($packed);
-        $this->assertSame(
+        $expected1 =
             "{\"@type\":\"type.googleapis.com/foo.TestMessage\"," .
-            "\"optional_int32\":123,\"optional_string\":\"abc\"}",
-            $m->serializeToJsonString());
+            "\"optional_int32\":123,\"optional_string\":\"abc\"}";
+        $expected2 =
+            "{\"@type\":\"type.googleapis.com/foo.TestMessage\"," .
+            "\"optionalInt32\":123,\"optionalString\":\"abc\"}";
+        $result = $m->serializeToJsonString();
+        $this->assertTrue($expected1 === $result || $expected2 === $result);
 
         // Test a well known message.
         $packed = new Int32Value();
