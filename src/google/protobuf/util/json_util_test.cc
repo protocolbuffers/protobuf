@@ -454,6 +454,44 @@ TEST_F(JsonUtilTest, TestParsingUnknownEnumsProto3) {
   }
 }
 
+TEST_F(JsonUtilTest, TestParsingEnumIgnoreCase) {
+  TestMessage m;
+  {
+    JsonParseOptions options;
+    string input =
+        "{\n"
+        "  \"enum_value\":\"bar\"\n"
+        "}";
+    m.set_enum_value(proto3::FOO);
+    EXPECT_TRUE(FromJson(input, &m, options));
+    // Default behavior is case-insensitive.
+    // TODO(haon): Change the default behavior to case-sensitive.
+    ASSERT_EQ(proto3::BAR, m.enum_value());
+  }
+  {
+    JsonParseOptions options;
+    options.case_insensitive_enum_parsing = false;
+    string input =
+        "{\n"
+        "  \"enum_value\":\"bar\"\n"
+        "}";
+    m.set_enum_value(proto3::FOO);
+    EXPECT_FALSE(FromJson(input, &m, options));
+    ASSERT_EQ(proto3::FOO, m.enum_value());  // Keep previous value
+  }
+  {
+    JsonParseOptions options;
+    options.case_insensitive_enum_parsing = true;
+    string input =
+        "{\n"
+        "  \"enum_value\":\"bar\"\n"
+        "}";
+    m.set_enum_value(proto3::FOO);
+    EXPECT_TRUE(FromJson(input, &m, options));
+    ASSERT_EQ(proto3::BAR, m.enum_value());
+  }
+}
+
 typedef std::pair<char*, int> Segment;
 // A ZeroCopyOutputStream that writes to multiple buffers.
 class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
@@ -594,7 +632,7 @@ TEST_F(JsonUtilTest, TestWrongJsonInput) {
   delete resolver;
 
   EXPECT_FALSE(result_status.ok());
-  EXPECT_EQ(result_status.error_code(),
+  EXPECT_EQ(result_status.code(),
             util::error::INVALID_ARGUMENT);
 }
 

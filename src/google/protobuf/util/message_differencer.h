@@ -115,8 +115,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Determines whether the supplied messages are equal. Equality is defined as
   // all fields within the two messages being set to the same value. Primitive
   // fields and strings are compared by value while embedded messages/groups
-  // are compared as if via a recursive call. Use IgnoreField() and Compare()
-  // if some fields should be ignored in the comparison.
+  // are compared as if via a recursive call. Use Compare() with IgnoreField()
+  // if some fields should be ignored in the comparison. Use Compare() with
+  // TreatAsSet() if there are repeated fields where ordering does not matter.
   //
   // This method REQUIRES that the two messages have the same
   // Descriptor (message1.GetDescriptor() == message2.GetDescriptor()).

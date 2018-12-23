@@ -800,7 +800,8 @@ void MessageGenerator::GenerateSingularFieldHasBits(
       } else {
         format(
             "inline bool $classname$::has_$name$() const {\n"
-            "  return this != internal_default_instance() && $name$_ != nullptr;\n"
+            "  return this != internal_default_instance() "
+            "&& $name$_ != nullptr;\n"
             "}\n");
       }
     }
@@ -941,7 +942,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "public:\n"
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "static bool _ParseMap(const char* begin, const "
-        "char* end, void* object, ::google::protobuf::internal::ParseContext* ctx);\n"
+        "char* end, void* object, ::$proto_ns$::internal::ParseContext* ctx);\n"
         "#endif  // $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
         "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
@@ -1190,7 +1191,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     if (HasFastArraySerialization(descriptor_->file(), options_)) {
       format(
           "$uint8$* InternalSerializeWithCachedSizesToArray(\n"
-          "    bool deterministic, $uint8$* target) const final;\n");
+          "    $uint8$* target) const final;\n");
     }
   }
 
@@ -1654,8 +1655,10 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     return 2;
   }
   format(
-      "{PROTOBUF_FIELD_OFFSET($classtype$, _cached_size_), 0, 0, 0, nullptr},\n");
+      "{PROTOBUF_FIELD_OFFSET($classtype$, _cached_size_),"
+      " 0, 0, 0, nullptr},\n");
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  sorted_extensions.reserve(descriptor_->extension_range_count());
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }
@@ -1864,8 +1867,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     }
     format(
         "#if $GOOGLE_PROTOBUF$_ENABLE_EXPERIMENTAL_PARSER\n"
-        "bool $classname$::_ParseMap(const char* begin, const "
-        "char* end, void* object, ::google::protobuf::internal::ParseContext* ctx) {\n"
+        "bool $classname$::_ParseMap(const char* begin, const char* end, "
+        "void* object, ::$proto_ns$::internal::ParseContext* ctx) {\n"
         "  using MF = ::$proto_ns$::internal::MapField$1$<\n"
         "      $classname$, EntryKeyType, EntryValueType,\n"
         "      kEntryKeyFieldType, kEntryValueFieldType,\n"
@@ -1885,7 +1888,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
       format(
           "  DO_(parser.ParseMapEnumValidation(\n"
           "    begin, end, ctx->extra_parse_data().field_number,\n"
-          "    static_cast<::google::protobuf::internal::InternalMetadataWithArena$1$*>("
+          "    static_cast<::$proto_ns$::internal::"
+          "InternalMetadataWithArena$1$*>("
           "ctx->extra_parse_data().unknown_fields), $2$_IsValid));\n",
           HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite",
           QualifiedClassName(val->enum_type()));
@@ -3769,7 +3773,7 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
   if (to_array) {
     format(
         "target = _extensions_.InternalSerializeWithCachedSizesToArray(\n"
-        "    $start$, $end$, deterministic, target);\n\n");
+        "    $start$, $end$, target);\n\n");
   } else {
     format(
         "_extensions_.SerializeWithCachedSizes($start$, $end$, output);\n"
@@ -3819,10 +3823,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
     // Special-case MessageSet.
     format(
         "$uint8$* $classname$::InternalSerializeWithCachedSizesToArray(\n"
-        "    bool deterministic, $uint8$* target) const {\n"
+        "    $uint8$* target) const {\n"
         "  target = _extensions_."
-        "InternalSerializeMessageSetWithCachedSizesToArray(\n"
-        "               deterministic, target);\n");
+        "InternalSerializeMessageSetWithCachedSizesToArray(target);\n");
     GOOGLE_CHECK(UseUnknownFieldSet(descriptor_->file(), options_));
     std::map<string, string> vars;
     SetUnknkownFieldsVariable(descriptor_, options_, &vars);
@@ -3839,10 +3842,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
 
   format(
       "$uint8$* $classname$::InternalSerializeWithCachedSizesToArray(\n"
-      "    bool deterministic, $uint8$* target) const {\n");
+      "    $uint8$* target) const {\n");
   format.Indent();
 
-  format("(void)deterministic; // Unused\n");
   format("// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n");
 
   GenerateSerializeWithCachedSizesBody(printer, true);
@@ -3937,6 +3939,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
       SortFieldsByNumber(descriptor_);
 
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  sorted_extensions.reserve(descriptor_->extension_range_count());
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }

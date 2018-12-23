@@ -1386,6 +1386,23 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       "EnumField", REQUIRED,
       R"({"optionalNestedEnum": "FOO"})",
       "optional_nested_enum: FOO");
+  // Enum fields with alias
+  RunValidJsonTest(
+      "EnumFieldWithAlias", REQUIRED,
+      R"({"optionalAliasedEnum": "ALIAS_BAZ"})",
+      "optional_aliased_enum: ALIAS_BAZ");
+  RunValidJsonTest(
+      "EnumFieldWithAliasUseAlias", REQUIRED,
+      R"({"optionalAliasedEnum": "QUX"})",
+      "optional_aliased_enum: ALIAS_BAZ");
+  RunValidJsonTest(
+      "EnumFieldWithAliasLowerCase", REQUIRED,
+      R"({"optionalAliasedEnum": "qux"})",
+      "optional_aliased_enum: ALIAS_BAZ");
+  RunValidJsonTest(
+      "EnumFieldWithAliasDifferentCase", REQUIRED,
+      R"({"optionalAliasedEnum": "bAz"})",
+      "optional_aliased_enum: ALIAS_BAZ");
   // Enum values must be represented as strings.
   ExpectParseFailureForJson(
       "EnumFieldNotQuoted", REQUIRED,

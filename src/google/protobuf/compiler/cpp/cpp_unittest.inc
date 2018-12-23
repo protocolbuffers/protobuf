@@ -2154,6 +2154,7 @@ TEST(HELPERS_TEST_NAME, TestSCC) {
   MessageSCCAnalyzer scc_analyzer((Options()));
   const SCC* scc = scc_analyzer.GetSCC(a.GetDescriptor());
   std::vector<string> names;
+  names.reserve(scc->descriptors.size());
   for (int i = 0; i < scc->descriptors.size(); i++) {
     names.push_back(scc->descriptors[i]->full_name());
   }

@@ -1155,6 +1155,67 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest) {
             "modified: rm[2].b -> rm[0].b: 3 -> 0\n", diff_report);
 }
 
+TEST(MessageDifferencerTest, RepeatedFieldSmartSet_MultipleMatches) {
+  // Create the testing protos
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+  protobuf_unittest::TestField elem1_1, elem2_1, elem3_1;
+  protobuf_unittest::TestField elem2_2, elem3_2;
+
+  // Only one field is different for each pair of elememts
+  elem1_1.set_a(1);
+  elem1_1.set_b(1);
+  elem1_1.set_c(1);
+  elem2_1.set_a(2);  elem2_2.set_a(2);
+  elem2_1.set_b(2);  elem2_2.set_b(0);
+  elem2_1.set_c(2);  elem2_2.set_c(2);
+  elem3_1.set_a(3);  elem3_2.set_a(3);
+  elem3_1.set_b(3);  elem3_2.set_b(0);
+  elem3_1.set_c(3);  elem3_2.set_c(3);
+
+
+
+  // In this testcase, elem1_1 will match with elem2_2 first and then get
+  // reverted because elem2_1 matches with elem2_2 later.
+  *msg1.add_rm() = elem1_1;
+  *msg1.add_rm() = elem2_1;
+  *msg1.add_rm() = elem3_1;
+  *msg2.add_rm() = elem2_2;
+  *msg2.add_rm() = elem3_2;
+
+  string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_SET);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("modified: rm[1].b -> rm[0].b: 2 -> 0\n"
+            "modified: rm[2].b -> rm[1].b: 3 -> 0\n"
+            "deleted: rm[0]: { c: 1 a: 1 b: 1 }\n", diff_report);
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldSmartSet_MultipleMatchesNoReporter) {
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+  protobuf_unittest::TestField elem1, elem2, elem3, elem4;
+  elem1.set_a(1);
+  elem2.set_a(2);
+  elem3.set_a(3);
+  elem4.set_a(4);
+
+  *msg1.add_rm() = elem1;
+  *msg1.add_rm() = elem2;
+  *msg1.add_rm() = elem3;
+  *msg2.add_rm() = elem2;
+  *msg2.add_rm() = elem3;
+  *msg2.add_rm() = elem4;
+
+  util::MessageDifferencer differencer;
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_SET);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+}
+
 TEST(MessageDifferencerTest, RepeatedFieldSmartSet_NonMessageTypeTest) {
   // Create the testing protos
   protobuf_unittest::TestDiffMessage msg1;

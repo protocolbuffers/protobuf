@@ -8,6 +8,7 @@ require_once("Conformance/TestCategory.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
 require_once("Protobuf_test_messages/Proto3/ForeignEnum.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/AliasedEnum.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php");
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php");
 

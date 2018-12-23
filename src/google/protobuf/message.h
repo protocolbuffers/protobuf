@@ -1049,8 +1049,13 @@ class PROTOBUF_EXPORT Reflection {
 
   // Help method for MapIterator.
   friend class MapIterator;
-  virtual internal::MapFieldBase* MapData(
+  virtual internal::MapFieldBase* MutableMapData(
       Message* /* message */, const FieldDescriptor* /* field */) const {
+    return NULL;
+  }
+
+  virtual const internal::MapFieldBase* GetMapData(
+      const Message& /* message */, const FieldDescriptor* /* field */) const {
     return NULL;
   }
 

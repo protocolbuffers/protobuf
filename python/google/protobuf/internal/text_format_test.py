@@ -715,6 +715,24 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(m.optional_string, self._GOLDEN_UNICODE)
     self.assertEqual(m.repeated_bytes[0], self._GOLDEN_BYTES)
 
+  def testParseDuplicateMessages(self, message_module):
+    message = message_module.TestAllTypes()
+    text = ('optional_nested_message { bb: 1 } '
+            'optional_nested_message { bb: 2 }')
+    six.assertRaisesRegex(self, text_format.ParseError, (
+        r'1:59 : Message type "\w+.TestAllTypes" '
+        r'should not have multiple "optional_nested_message" fields.'),
+                          text_format.Parse, text,
+                          message)
+
+  def testParseDuplicateScalars(self, message_module):
+    message = message_module.TestAllTypes()
+    text = ('optional_int32: 42 ' 'optional_int32: 67')
+    six.assertRaisesRegex(self, text_format.ParseError, (
+        r'1:36 : Message type "\w+.TestAllTypes" should not '
+        r'have multiple "optional_int32" fields.'), text_format.Parse, text,
+                          message)
+
 
 @_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMergeTests(TextFormatBase):
@@ -1293,16 +1311,6 @@ class Proto2Tests(TextFormatBase):
         '"protobuf_unittest.optional_int32_extension" extensions.'),
                           text_format.Parse, text, message)
 
-  def testParseDuplicateMessages(self):
-    message = unittest_pb2.TestAllTypes()
-    text = ('optional_nested_message { bb: 1 } '
-            'optional_nested_message { bb: 2 }')
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        '1:59 : Message type "protobuf_unittest.TestAllTypes" '
-        'should not have multiple "optional_nested_message" fields.'),
-                          text_format.Parse, text,
-                          message)
-
   def testParseDuplicateExtensionMessages(self):
     message = unittest_pb2.TestAllExtensions()
     text = ('[protobuf_unittest.optional_nested_message_extension]: {} '
@@ -1312,14 +1320,6 @@ class Proto2Tests(TextFormatBase):
         'should not have multiple '
         '"protobuf_unittest.optional_nested_message_extension" extensions.'),
                           text_format.Parse, text, message)
-
-  def testParseDuplicateScalars(self):
-    message = unittest_pb2.TestAllTypes()
-    text = ('optional_int32: 42 ' 'optional_int32: 67')
-    six.assertRaisesRegex(self, text_format.ParseError, (
-        '1:36 : Message type "protobuf_unittest.TestAllTypes" should not '
-        'have multiple "optional_int32" fields.'), text_format.Parse, text,
-                          message)
 
   def testParseGroupNotClosed(self):
     message = unittest_pb2.TestAllTypes()

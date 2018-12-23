@@ -137,7 +137,8 @@
     const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
-    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type = zend_register_internal_class_ex(                     \
+        &class_type, message_type, NULL TSRMLS_CC);                          \
     LOWWERNAME##_type->create_object = message_create;                       \
     zend_do_inheritance(LOWWERNAME##_type, message_type TSRMLS_CC);
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
@@ -404,7 +405,8 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
     const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
-    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type = zend_register_internal_class_ex(                     \
+        &class_type, message_type TSRMLS_CC);                                \
     zend_do_inheritance(LOWWERNAME##_type, message_type TSRMLS_CC);
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
   }

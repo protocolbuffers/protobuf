@@ -213,6 +213,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/wire_format_lite.cc                          \
   google/protobuf/io/coded_stream.cc                           \
   google/protobuf/io/coded_stream_inl.h                        \
+  google/protobuf/io/strtod.cc                                 \
   google/protobuf/io/zero_copy_stream.cc                       \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
@@ -257,7 +258,6 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/wrappers.pb.cc                               \
   google/protobuf/io/gzip_stream.cc                            \
   google/protobuf/io/printer.cc                                \
-  google/protobuf/io/strtod.cc                                 \
   google/protobuf/io/tokenizer.cc                              \
   google/protobuf/io/zero_copy_stream_impl.cc                  \
   google/protobuf/compiler/importer.cc                         \

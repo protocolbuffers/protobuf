@@ -52,7 +52,17 @@ struct JsonParseOptions {
   // Whether to ignore unknown JSON fields during parsing
   bool ignore_unknown_fields;
 
-  JsonParseOptions() : ignore_unknown_fields(false) {}
+  // If true, when a lowercase enum value fails to parse, try convert it to
+  // UPPER_CASE and see if it matches a valid enum.
+  // WARNING: This option exists only to preserve legacy behavior. Avoid using
+  // this option. If your enum needs to support different casing, consider using
+  // allow_alias instead.
+  bool case_insensitive_enum_parsing;
+
+  JsonParseOptions()
+      : ignore_unknown_fields(false),
+        // TODO(haon): Change this to false by default.
+        case_insensitive_enum_parsing(true) {}
 };
 
 struct JsonPrintOptions {

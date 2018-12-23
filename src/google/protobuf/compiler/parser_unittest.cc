@@ -2739,6 +2739,33 @@ TEST_F(SourceInfoTest, ExtensionRanges) {
   EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
 }
 
+TEST_F(SourceInfoTest, ReservedRanges) {
+  EXPECT_TRUE(
+      Parse("message Message {\n"
+            "  $a$reserved $b$1$c$ to $d$4$e$, $f$6$g$;$h$\n"
+            "}\n"));
+
+  const DescriptorProto::ReservedRange& range1 =
+      file_.message_type(0).reserved_range(0);
+  const DescriptorProto::ReservedRange& range2 =
+      file_.message_type(0).reserved_range(1);
+
+  EXPECT_TRUE(HasSpan('a', 'h', file_.message_type(0), "reserved_range"));
+
+  EXPECT_TRUE(HasSpan('b', 'e', range1));
+  EXPECT_TRUE(HasSpan('b', 'c', range1, "start"));
+  EXPECT_TRUE(HasSpan('d', 'e', range1, "end"));
+
+  EXPECT_TRUE(HasSpan('f', 'g', range2));
+  EXPECT_TRUE(HasSpan('f', 'g', range2, "start"));
+  EXPECT_TRUE(HasSpan('f', 'g', range2, "end"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.message_type(0)));
+  EXPECT_TRUE(HasSpan(file_.message_type(0), "name"));
+}
+
 TEST_F(SourceInfoTest, Oneofs) {
   EXPECT_TRUE(Parse(
       "message Foo {\n"

@@ -783,13 +783,14 @@ Status ProtoStreamObjectSource::RenderField(
 
     bool use_type_renderer = type_renderer != nullptr;
 
+    RETURN_IF_ERROR(IncrementRecursionDepth(type->name(), field_name));
     if (use_type_renderer) {
       RETURN_IF_ERROR((*type_renderer)(this, *type, field_name, ow));
     } else {
-      RETURN_IF_ERROR(IncrementRecursionDepth(type->name(), field_name));
       RETURN_IF_ERROR(WriteMessage(*type, field_name, 0, true, ow));
-      --recursion_depth_;
     }
+    --recursion_depth_;
+
     if (!stream_->ConsumedEntireMessage()) {
       return Status(util::error::INVALID_ARGUMENT,
                     "Nested protocol message not parsed in its entirety.");
