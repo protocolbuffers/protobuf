@@ -182,13 +182,14 @@ _file_list_aspect = aspect(
 )
 
 def _upb_amalgamation(ctx):
+    inputs = []
     srcs = []
-    hdrs = []
     for lib in ctx.attr.libs:
-        srcs += lib[SrcList].srcs
-        hdrs += lib[SrcList].hdrs
+        inputs += lib[SrcList].srcs
+        inputs += lib[SrcList].hdrs
+        srcs += [src for src in lib[SrcList].srcs if src.path.endswith("c")]
     ctx.actions.run(
-        inputs = srcs + hdrs,
+        inputs = inputs,
         outputs = ctx.outputs.outs,
         arguments = ["", ctx.bin_dir.path + "/"] + [f.path for f in srcs],
         progress_message = "Making amalgamation",
