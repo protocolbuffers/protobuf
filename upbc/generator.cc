@@ -424,6 +424,20 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
         output("UPB_FIELD_AT(msg, $0, $1) = value; }\n", CType(field),
                GetSizeInit(layout.GetFieldOffset(field)));
       }
+      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+        output(
+            "UPB_INLINE struct $0* $1_mutable_$2($1 *msg, upb_arena *arena) {\n"
+            "  struct $0* sub = (struct $0*)$1_$2(msg);\n"
+            "  if (sub == NULL) {\n"
+            "    sub = (struct $0*)upb_msg_new(&$3, arena);\n"
+            "    if (!sub) return NULL;\n"
+            "    $1_set_$2(msg, sub);\n"
+            "  }\n"
+            "  return sub;\n"
+            "}\n",
+            MessageName(field->message_type()), msgname, field->name(),
+            MessageInit(field->message_type()));
+      }
     }
   }
 
