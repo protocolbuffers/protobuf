@@ -385,14 +385,15 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
   for (auto field : FieldNumberOrder(message)) {
     if (field->is_repeated()) {
       output(
-          "UPB_INLINE $0* $1_$2_mutable($1 *msg, size_t *len) { "
-          "return ($0*)_upb_array_mutable_accessor(msg, $3, len); }\n",
+          "UPB_INLINE $0* $1_$2_mutable($1 *msg, size_t *len) {\n"
+          "  return ($0*)_upb_array_mutable_accessor(msg, $3, len);\n"
+          "}\n",
           CType(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)));
       output(
           "UPB_INLINE $0* $1_$2_resize($1 *msg, size_t len, "
-          "upb_arena *arena) { "
-          "return ($0*)_upb_array_resize_accessor(msg, $3, len, $4, $5, arena); "
+          "upb_arena *arena) {\n"
+          "  return ($0*)_upb_array_resize_accessor(msg, $3, len, $4, $5, arena);\n"
           "}\n",
           CType(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)),
@@ -426,16 +427,23 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
         );
       }
     } else {
-      output("UPB_INLINE void $0_set_$1($0 *msg, $2 value) { ", msgname,
+      output("UPB_INLINE void $0_set_$1($0 *msg, $2 value) {\n", msgname,
              field->name(), CType(field));
       if (field->containing_oneof()) {
-        output("UPB_WRITE_ONEOF(msg, $0, $1, value, $2, $3); }\n", CType(field),
-               GetSizeInit(layout.GetFieldOffset(field)),
-               GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
-               field->number());
+        output(
+            "  UPB_WRITE_ONEOF(msg, $0, $1, value, $2, $3);\n"
+            "}\n",
+            CType(field), GetSizeInit(layout.GetFieldOffset(field)),
+            GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
+            field->number());
       } else {
-        output("UPB_FIELD_AT(msg, $0, $1) = value; }\n", CType(field),
-               GetSizeInit(layout.GetFieldOffset(field)));
+        if (MessageLayout::HasHasbit(field)) {
+          output("  _upb_sethas(msg, $0);\n", layout.GetHasbitIndex(field));
+        }
+        output(
+            "  UPB_FIELD_AT(msg, $0, $1) = value;\n"
+            "}\n",
+            CType(field), GetSizeInit(layout.GetFieldOffset(field)));
       }
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         output(
