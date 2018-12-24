@@ -33,6 +33,7 @@
 VALUE cError;
 VALUE cParseError;
 VALUE cTypeError;
+VALUE c_only_cookie;
 
 // -----------------------------------------------------------------------------
 // Utilities.

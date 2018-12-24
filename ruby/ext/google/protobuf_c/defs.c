@@ -606,9 +606,6 @@ VALUE ruby_to_label(VALUE label) {
  */
 VALUE FieldDescriptor_type(VALUE _self) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  if (!upb_fielddef_typeisset(self->fielddef)) {
-    return Qnil;
-  }
   return descriptortype_to_ruby(upb_fielddef_descriptortype(self->fielddef));
 }
 
@@ -1053,9 +1050,15 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
   DEFINE_SELF(MessageBuilderContext, self, _self);
   FileBuilderContext* file_builder = ruby_to_FileBuilderContext(_file_builder);
   google_protobuf_FileDescriptorProto* file_proto = file_builder->file_proto;
+
   self->file_builder = _file_builder;
+  fprintf(stderr, "Calling add_message_type\n");
   self->msg_proto = google_protobuf_FileDescriptorProto_add_message_type(
       file_proto, &file_builder->arena);
+
+  google_protobuf_DescriptorProto_set_name(
+      self->msg_proto, FileBuilderContext_strdup(_file_builder, name));
+
   return Qnil;
 }
 
@@ -1069,11 +1072,13 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
       google_protobuf_DescriptorProto_add_field(self->msg_proto,
                                                 &file_context->arena);
 
+
+  Check_Type(name, T_SYMBOL);
+  VALUE name_str = rb_id2str(SYM2ID(name));
   google_protobuf_FieldDescriptorProto_set_name(
-      field_proto, FileBuilderContext_strdup(self->file_builder, name));
+      field_proto, FileBuilderContext_strdup(self->file_builder, name_str));
   google_protobuf_FieldDescriptorProto_set_number(field_proto, NUM2INT(number));
-  google_protobuf_FieldDescriptorProto_set_label(field_proto,
-                                                 ruby_to_label(label));
+  google_protobuf_FieldDescriptorProto_set_label(field_proto, (int)label);
   google_protobuf_FieldDescriptorProto_set_type(
       field_proto, (int)ruby_to_descriptortype(type));
 
@@ -1108,21 +1113,26 @@ static VALUE make_mapentry(VALUE _message_builder, VALUE types, int argc,
                            VALUE* argv) {
   DEFINE_SELF(MessageBuilderContext, message_builder, _message_builder);
   VALUE type_class = rb_ary_entry(types, 2);
-  google_protobuf_MessageOptions* options;
+  FileBuilderContext* file_context =
+      ruby_to_FileBuilderContext(message_builder->file_builder);
+  google_protobuf_MessageOptions* options =
+      google_protobuf_DescriptorProto_mutable_options(
+          message_builder->msg_proto, &file_context->arena);
 
   google_protobuf_MessageOptions_set_map_entry(options, true);
 
   // optional <type> key = 1;
-  rb_funcall(_message_builder, rb_intern("optional"), 3, rb_str_new2("key"),
-             rb_ary_entry(types, 0), INT2NUM(1));
+  rb_funcall(_message_builder, rb_intern("optional"), 3,
+             ID2SYM(rb_intern("key")), rb_ary_entry(types, 0), INT2NUM(1));
 
   // optional <type> value = 2;
   if (type_class != Qnil) {
-    rb_funcall(_message_builder, rb_intern("optional"), 3, rb_str_new2("value"),
-               rb_ary_entry(types, 1), INT2NUM(2));
+    rb_funcall(_message_builder, rb_intern("optional"), 3,
+               ID2SYM(rb_intern("value")), rb_ary_entry(types, 1), INT2NUM(2));
   } else {
-    rb_funcall(_message_builder, rb_intern("optional"), 4, rb_str_new2("value"),
-               rb_ary_entry(types, 1), INT2NUM(2), type_class);
+    rb_funcall(_message_builder, rb_intern("optional"), 4,
+               ID2SYM(rb_intern("value")), rb_ary_entry(types, 1), INT2NUM(2),
+               type_class);
   }
 
   return Qnil;
@@ -1281,8 +1291,8 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
                 make_mapentry, types);
 
   // repeated MapEntry <name> = <number>;
-  rb_funcall(_self, rb_intern("repeated"), 4, name, rb_intern("message"), number,
-             mapentry_desc_name);
+  rb_funcall(_self, rb_intern("repeated"), 4, name,
+             ID2SYM(rb_intern("message")), number, mapentry_desc_name);
 
   return Qnil;
 }
@@ -1429,8 +1439,7 @@ void EnumBuilderContext_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "EnumBuilderContext", rb_cObject);
   rb_define_alloc_func(klass, EnumBuilderContext_alloc);
-  rb_define_method(klass, "initialize",
-                   EnumBuilderContext_initialize, 1);
+  rb_define_method(klass, "initialize", EnumBuilderContext_initialize, 2);
   rb_define_method(klass, "value", EnumBuilderContext_value, 2);
   rb_gc_register_address(&cEnumBuilderContext);
   cEnumBuilderContext = klass;
@@ -1443,7 +1452,8 @@ void EnumBuilderContext_register(VALUE module) {
  * Create a new builder context around the given enum descriptor. This class is
  * intended to serve as a DSL context to be used with #instance_eval.
  */
-VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder) {
+VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder,
+                                    VALUE name) {
   DEFINE_SELF(EnumBuilderContext, self, _self);
   FileBuilderContext* file_builder = ruby_to_FileBuilderContext(_file_builder);
   google_protobuf_FileDescriptorProto* file_proto = file_builder->file_proto;
@@ -1451,6 +1461,9 @@ VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder) {
   self->file_builder = _file_builder;
   self->enum_proto = google_protobuf_FileDescriptorProto_add_enum_type(
       file_proto, &file_builder->arena);
+
+  google_protobuf_EnumDescriptorProto_set_name(
+      self->enum_proto, FileBuilderContext_strdup(_file_builder, name));
 
   return Qnil;
 }
@@ -1466,13 +1479,15 @@ VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number) {
   DEFINE_SELF(EnumBuilderContext, self, _self);
   FileBuilderContext* file_builder =
       ruby_to_FileBuilderContext(self->file_builder);
+  Check_Type(name, T_SYMBOL);
+  VALUE name_str = rb_id2str(SYM2ID(name));
 
   google_protobuf_EnumValueDescriptorProto* enum_value =
       google_protobuf_EnumDescriptorProto_add_value(self->enum_proto,
                                                     &file_builder->arena);
 
   google_protobuf_EnumValueDescriptorProto_set_name(
-      enum_value, FileBuilderContext_strdup(self->file_builder, name));
+      enum_value, FileBuilderContext_strdup(self->file_builder, name_str));
   google_protobuf_EnumValueDescriptorProto_set_number(enum_value,
                                                       NUM2INT(number));
 
@@ -1536,9 +1551,15 @@ void FileBuilderContext_register(VALUE module) {
  * builder context. This class is intended to serve as a DSL context to be used
  * with #instance_eval.
  */
-VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool) {
+VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
+                                    VALUE name) {
   DEFINE_SELF(FileBuilderContext, self, _self);
   self->descriptor_pool = descriptor_pool;
+
+  rb_p(name);
+  google_protobuf_FileDescriptorProto_set_name(
+      self->file_proto, FileBuilderContext_strdup(_self, name));
+
   return Qnil;
 }
 
@@ -1652,9 +1673,13 @@ VALUE Builder_initialize(VALUE _self, VALUE pool) {
  */
 VALUE Builder_add_file(int argc, VALUE* argv, VALUE _self) {
   DEFINE_SELF(Builder, self, _self);
-  VALUE file_descriptor = rb_class_new_instance(argc, argv, cFileDescriptor);
-  VALUE args[2] = { file_descriptor, _self };
+  VALUE name, options;
+
+  rb_scan_args(argc, argv, "11", &name, &options);
+
+  VALUE args[2] = { self->descriptor_pool, name };
   VALUE ctx = rb_class_new_instance(2, args, cFileBuilderContext);
+
   VALUE block = rb_block_proc();
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
   FileBuilderContext_build(ctx);
@@ -1667,8 +1692,10 @@ static VALUE Builder_get_default_file(VALUE _self) {
 
   /* Lazily create only if legacy builder-level methods are called. */
   if (self->default_file_builder == Qnil) {
+    VALUE name = rb_str_new2("ruby_default_file.proto");
+    VALUE args [2] = { self->descriptor_pool, name };
     self->default_file_builder =
-        rb_class_new_instance(1, &self->descriptor_pool, cFileBuilderContext);
+        rb_class_new_instance(2, args, cFileBuilderContext);
   }
 
   return self->default_file_builder;

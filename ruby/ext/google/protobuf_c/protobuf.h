@@ -270,8 +270,8 @@ VALUE MessageBuilderContext_alloc(VALUE klass);
 void MessageBuilderContext_register(VALUE module);
 MessageBuilderContext* ruby_to_MessageBuilderContext(VALUE value);
 VALUE MessageBuilderContext_initialize(VALUE _self,
-                                       VALUE descriptor,
-                                       VALUE builder);
+                                       VALUE _file_builder,
+                                       VALUE name);
 VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self);
@@ -293,7 +293,8 @@ void EnumBuilderContext_free(void* _self);
 VALUE EnumBuilderContext_alloc(VALUE klass);
 void EnumBuilderContext_register(VALUE module);
 EnumBuilderContext* ruby_to_EnumBuilderContext(VALUE value);
-VALUE EnumBuilderContext_initialize(VALUE _self, VALUE enumdesc);
+VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder,
+                                    VALUE name);
 VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number);
 
 void FileBuilderContext_mark(void* _self);
@@ -302,7 +303,8 @@ VALUE FileBuilderContext_alloc(VALUE klass);
 void FileBuilderContext_register(VALUE module);
 FileBuilderContext* ruby_to_FileBuilderContext(VALUE _self);
 upb_stringview FileBuilderContext_strdup(VALUE _self, VALUE rb_str);
-VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool);
+VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
+                                    VALUE name);
 VALUE FileBuilderContext_add_message(VALUE _self, VALUE name);
 VALUE FileBuilderContext_add_enum(VALUE _self, VALUE name);
 VALUE FileBuilderContext_pending_descriptors(VALUE _self);
