@@ -42,6 +42,7 @@ UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
                                             upb_fieldtype_t type,
                                             upb_arena *arena) {
   upb_array *arr = *PTR_AT(msg, ofs, upb_array*);
+
   if (!arr) {
     arr = upb_array_new(type, arena);
     if (!arr) return NULL;
@@ -60,8 +61,23 @@ UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
     }
     arr->size = new_size;
   }
+
   arr->len = size;
   return arr->data;
+}
+
+UPB_INLINE bool _upb_array_append_accessor(void *msg, size_t ofs,
+                                           size_t elem_size,
+                                           upb_fieldtype_t type,
+                                           const void *value,
+                                           upb_arena *arena) {
+  upb_array *arr = *PTR_AT(msg, ofs, upb_array*);
+  size_t i = arr ? arr->len : 1;
+  void *data =
+      _upb_array_resize_accessor(msg, ofs, i + 1, elem_size, type, arena);
+  if (!data) return false;
+  memcpy(PTR_AT(data, i * elem_size, char), value, elem_size);
+  return true;
 }
 
 UPB_INLINE bool _upb_has_field(const void *msg, size_t idx) {

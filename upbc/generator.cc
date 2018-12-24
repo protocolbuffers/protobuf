@@ -177,6 +177,14 @@ std::string GetSizeInit(const MessageLayout::Size& size) {
   return absl::Substitute("UPB_SIZE($0, $1)", size.size32, size.size64);
 }
 
+std::string MessageName(const protobuf::Descriptor* descriptor) {
+  return ToCIdent(descriptor->full_name());
+}
+
+std::string MessageInit(const protobuf::Descriptor* descriptor) {
+  return MessageName(descriptor) + "_msginit";
+}
+
 std::string CTypeInternal(const protobuf::FieldDescriptor* field,
                           bool is_const) {
   std::string maybe_const = is_const ? "const " : "";
@@ -184,8 +192,8 @@ std::string CTypeInternal(const protobuf::FieldDescriptor* field,
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE: {
       std::string maybe_struct =
           field->file() != field->message_type()->file() ? "struct " : "";
-      return maybe_const + maybe_struct +
-             ToCIdent(field->message_type()->full_name()) + "*";
+      return maybe_const + maybe_struct + MessageName(field->message_type()) +
+             "*";
     }
     case protobuf::FieldDescriptor::CPPTYPE_ENUM:
       return ToCIdent(field->enum_type()->full_name());
@@ -286,20 +294,19 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
   output("/* $0 */\n\n", message->full_name());
   std::string msgname = ToCIdent(message->full_name());
   output(
-      "extern const upb_msglayout $0_msginit;\n"
       "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
-      "  return ($0 *)upb_msg_new(&$0_msginit, arena);\n"
+      "  return ($0 *)upb_msg_new(&$1, arena);\n"
       "}\n"
       "UPB_INLINE $0 *$0_parsenew(upb_stringview buf, upb_arena *arena) {\n"
       "  $0 *ret = $0_new(arena);\n"
-      "  return (ret && upb_decode(buf, ret, &$0_msginit)) ? ret : NULL;\n"
+      "  return (ret && upb_decode(buf, ret, &$1)) ? ret : NULL;\n"
       "}\n"
       "UPB_INLINE char *$0_serialize(const $0 *msg, upb_arena *arena, size_t "
       "*len) {\n"
-      "  return upb_encode(msg, &$0_msginit, arena, len);\n"
+      "  return upb_encode(msg, &$1, arena, len);\n"
       "}\n"
       "\n",
-      msgname);
+      MessageName(message), MessageInit(message));
 
   for (int i = 0; i < message->oneof_decl_count(); i++) {
     const protobuf::OneofDescriptor* oneof = message->oneof_decl(i);
@@ -378,6 +385,33 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           GetSizeInit(layout.GetFieldOffset(field)),
           GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size),
           "(upb_fieldtype_t)0" /* TODO */);
+      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+        output(
+            "UPB_INLINE struct $0* $1_add_$2($1 *msg, upb_arena *arena) {\n"
+            "  struct $0* sub = (struct $0*)upb_msg_new(&$3, arena);\n"
+            "  bool ok = _upb_array_append_accessor(\n"
+            "      msg, $4, $5, $6, &sub, arena);\n"
+            "  if (!ok) return NULL;\n"
+            "  return sub;\n"
+            "}\n",
+            MessageName(field->message_type()), msgname, field->name(),
+            MessageInit(field->message_type()),
+            GetSizeInit(layout.GetFieldOffset(field)),
+            GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size),
+            "(upb_fieldtype_t)0" /* TODO */
+        );
+      } else {
+        output(
+            "UPB_INLINE bool $1_add_$2($1 *msg, $0 val, upb_arena *arena) {\n"
+            "  return _upb_array_append_accessor(\n"
+            "      msg, $3, $4, $5, &val, arena);\n"
+            "}\n",
+            CType(field), msgname, field->name(),
+            GetSizeInit(layout.GetFieldOffset(field)),
+            GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size),
+            "(upb_fieldtype_t)0" /* TODO */
+        );
+      }
     } else {
       output("UPB_INLINE void $0_set_$1($0 *msg, $2 value) { ", msgname,
              field->name(), CType(field));
@@ -415,21 +449,27 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   }
   for (auto message : SortedMessages(file)) {
     output("typedef struct $0 $0;\n", ToCIdent(message->full_name()));
-  };
+  }
+  for (auto message : SortedMessages(file)) {
+    output("extern const upb_msglayout $0;\n", MessageInit(message));
+  }
 
   // Forward-declare types not in this file, but used as submessages.
-  std::set<std::string> forward_names;
+  std::set<const protobuf::Descriptor*> forward_messages;
   for (auto message : SortedMessages(file)) {
     for (int i = 0; i < message->field_count(); i++) {
       const protobuf::FieldDescriptor* field = message->field(i);
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE &&
-          field->file() != message->file()) {
-        forward_names.insert(ToCIdent(field->message_type()->full_name()));
+          field->file() != field->message_type()->file()) {
+        forward_messages.insert(field->message_type());
       }
     }
   }
-  for (const auto& name : forward_names) {
-    output("struct $0;\n", name);
+  for (const auto& descriptor : forward_messages) {
+    output("struct $0;\n", MessageName(descriptor));
+  }
+  for (const auto& descriptor : forward_messages) {
+    output("extern const upb_msglayout $0;\n", MessageInit(descriptor));
   }
 
   output(
@@ -497,8 +537,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
             submsg_indexes.end()) {
           continue;
         }
-        output("  &$0_msginit,\n",
-               ToCIdent(submsg->message_type()->full_name()));
+        output("  &$0,\n", MessageInit(submsg->message_type()));
         submsg_indexes[submsg->message_type()] = i++;
       }
 
@@ -543,7 +582,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
       output("};\n\n");
     }
 
-    output("const upb_msglayout $0_msginit = {\n", msgname);
+    output("const upb_msglayout $0 = {\n", MessageInit(message));
     output("  $0,\n", submsgs_array_ref);
     output("  $0,\n", fields_array_ref);
     output("  $0, $1, $2,\n", GetSizeInit(layout.message_size()),
