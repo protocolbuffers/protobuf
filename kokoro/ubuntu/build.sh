@@ -8,4 +8,4 @@ which bazel
 bazel version
 
 cd $(dirname $0)/../..
-bazel test :all
+bazel test --test_output=errors :all
