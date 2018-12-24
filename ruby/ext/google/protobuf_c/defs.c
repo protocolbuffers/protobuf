@@ -207,16 +207,12 @@ void Descriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
-  rb_define_method(klass, "initialize", Descriptor_initialize, 1);
   rb_define_method(klass, "each", Descriptor_each, 0);
   rb_define_method(klass, "lookup", Descriptor_lookup, 1);
-  rb_define_method(klass, "add_field", Descriptor_add_field, 1);
-  rb_define_method(klass, "add_oneof", Descriptor_add_oneof, 1);
   rb_define_method(klass, "each_oneof", Descriptor_each_oneof, 0);
   rb_define_method(klass, "lookup_oneof", Descriptor_lookup_oneof, 1);
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
-  rb_define_method(klass, "name=", Descriptor_name_set, 1);
   rb_define_method(klass, "file_descriptor", Descriptor_file_descriptor, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cDescriptor);
@@ -369,10 +365,8 @@ void FileDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "FileDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FileDescriptor_alloc);
-  rb_define_method(klass, "initialize", FileDescriptor_initialize, -1);
   rb_define_method(klass, "name", FileDescriptor_name, 0);
   rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
-  rb_define_method(klass, "syntax=", FileDescriptor_syntax_set, 1);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
 }
@@ -826,8 +820,6 @@ void OneofDescriptor_register(VALUE module) {
       module, "OneofDescriptor", rb_cObject);
   rb_define_alloc_func(klass, OneofDescriptor_alloc);
   rb_define_method(klass, "name", OneofDescriptor_name, 0);
-  rb_define_method(klass, "name=", OneofDescriptor_name_set, 1);
-  rb_define_method(klass, "add_field", OneofDescriptor_add_field, 1);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cOneofDescriptor);
@@ -902,8 +894,6 @@ void EnumDescriptor_register(VALUE module) {
       module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
   rb_define_method(klass, "name", EnumDescriptor_name, 0);
-  rb_define_method(klass, "name=", EnumDescriptor_name_set, 1);
-  rb_define_method(klass, "add_value", EnumDescriptor_add_value, 2);
   rb_define_method(klass, "lookup_name", EnumDescriptor_lookup_name, 1);
   rb_define_method(klass, "lookup_value", EnumDescriptor_lookup_value, 1);
   rb_define_method(klass, "each", EnumDescriptor_each, 0);
@@ -1283,7 +1273,6 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
   mapentry_desc_name = rb_str_cat2(mapentry_desc_name, "_MapEntry_");
   mapentry_desc_name =
       rb_str_cat2(mapentry_desc_name, rb_id2name(SYM2ID(name)));
-  Descriptor_name_set(mapentry_desc, mapentry_desc_name);
 
   // message <msgname>_MapEntry_ { /* ... */ }
   VALUE args[1] = { mapentry_desc_name };
