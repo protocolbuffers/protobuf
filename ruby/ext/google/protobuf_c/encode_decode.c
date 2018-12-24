@@ -931,7 +931,8 @@ VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
     stackenv_init(&se, "Error occurred during parsing: %s");
 
     upb_sink_reset(&sink, get_fill_handlers(desc), msg);
-    parser = upb_json_parser_create(&se.env, method, &sink, ignore_unknown_fields);
+    parser = upb_json_parser_create(&se.env, method, NULL, &sink,
+                                    ignore_unknown_fields);
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
                       upb_json_parser_input(parser));
 

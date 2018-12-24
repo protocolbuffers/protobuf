@@ -901,7 +901,6 @@ void EnumDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
-  rb_define_method(klass, "initialize", EnumDescriptor_initialize, 1);
   rb_define_method(klass, "name", EnumDescriptor_name, 0);
   rb_define_method(klass, "name=", EnumDescriptor_name_set, 1);
   rb_define_method(klass, "add_value", EnumDescriptor_add_value, 2);
@@ -913,19 +912,6 @@ void EnumDescriptor_register(VALUE module) {
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cEnumDescriptor);
   cEnumDescriptor = klass;
-}
-
-/*
- * call-seq:
- *    EnumDescriptor.new(file_descriptor)
- *
- * Initializes a new descriptor and assigns a file descriptor to it.
- */
-VALUE EnumDescriptor_initialize(VALUE _self, VALUE file_descriptor_rb) {
-  DEFINE_SELF(EnumDescriptor, self, _self);
-  FileDescriptor* file_descriptor = ruby_to_FileDescriptor(file_descriptor_rb);
-  add_def_obj(file_descriptor->filedef, file_descriptor_rb);
-  return Qnil;
 }
 
 /*
@@ -1078,9 +1064,8 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
   FileBuilderContext* file_builder = ruby_to_FileBuilderContext(_file_builder);
   google_protobuf_FileDescriptorProto* file_proto = file_builder->file_proto;
   self->file_builder = _file_builder;
-  self->msg_proto = google_protobuf_DescriptorProto_new(&file_builder->arena);
-  google_protobuf_FileDescriptorProto_add_message_type(
-      file_proto, self->msg_proto, &file_builder->arena);
+  self->msg_proto = google_protobuf_FileDescriptorProto_add_message_type(
+      file_proto, &file_builder->arena);
   return Qnil;
 }
 
@@ -1091,17 +1076,16 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
   FileBuilderContext* file_context =
       ruby_to_FileBuilderContext(self->file_builder);
   google_protobuf_FieldDescriptorProto* field_proto =
-      google_protobuf_FieldDescriptorProto_new(&file_context->arena);
-  google_protobuf_DescriptorProto_add_field(self->msg_proto, field_proto,
-                                            &file_context->arena);
+      google_protobuf_DescriptorProto_add_field(self->msg_proto,
+                                                &file_context->arena);
 
   google_protobuf_FieldDescriptorProto_set_name(
       field_proto, FileBuilderContext_strdup(self->file_builder, name));
   google_protobuf_FieldDescriptorProto_set_number(field_proto, NUM2INT(number));
   google_protobuf_FieldDescriptorProto_set_label(field_proto,
                                                  ruby_to_label(label));
-  google_protobuf_FieldDescriptorProto_set_type(field_proto,
-                                                ruby_to_fieldtype(type));
+  google_protobuf_FieldDescriptorProto_set_type(
+      field_proto, (int)ruby_to_descriptortype(type));
 
   if (type_class != Qnil) {
     Check_Type(type_class, T_STRING);
@@ -1336,7 +1320,7 @@ VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
 
   // Create oneof_proto and set its name.
   google_protobuf_OneofDescriptorProto* oneof_proto =
-      google_protobuf_DescriptorProto_new_oneof_decl(self->msg_proto,
+      google_protobuf_DescriptorProto_add_oneof_decl(self->msg_proto,
                                                      &file_context->arena);
   VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
   upb_stringview name_strview = upb_stringview_makez(StringValueCStr(name_str));
@@ -1476,11 +1460,8 @@ VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder) {
   google_protobuf_FileDescriptorProto* file_proto = file_builder->file_proto;
 
   self->file_builder = _file_builder;
-  self->enum_proto =
-      google_protobuf_EnumDescriptorProto_new(&file_builder->arena);
-
-  google_protobuf_FileDescriptorProto_add_enum_type(
-      file_proto, self->enum_proto, &file_builder->arena);
+  self->enum_proto = google_protobuf_FileDescriptorProto_add_enum_type(
+      file_proto, &file_builder->arena);
 
   return Qnil;
 }
@@ -1498,9 +1479,8 @@ VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number) {
       ruby_to_FileBuilderContext(self->file_builder);
 
   google_protobuf_EnumValueDescriptorProto* enum_value =
-      google_protobuf_EnumValueDescriptorProto_new(&file_builder->arena);
-  google_protobuf_EnumDescriptorProto_add_enum_value(self->enum_proto,
-                                                     enum_value);
+      google_protobuf_EnumDescriptorProto_add_value(self->enum_proto,
+                                                    &file_builder->arena);
 
   google_protobuf_EnumValueDescriptorProto_set_name(
       enum_value, FileBuilderContext_strdup(self->file_builder, name));
