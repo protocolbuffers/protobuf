@@ -254,19 +254,6 @@ module BasicTest
                     "b" => TestMessage2.new(:foo => 2)}
     end
 
-    def test_protobuf_decode_json_ignore_unknown_fields
-      m = TestMessage.decode_json({
-        optional_string: "foo",
-        not_in_message: "some_value"
-      }.to_json, { ignore_unknown_fields: true })
-
-      assert_equal m.optional_string, "foo"
-      e = assert_raise Google::Protobuf::ParseError do
-        TestMessage.decode_json({ not_in_message: "some_value" }.to_json)
-      end
-      assert_match(/No such field: not_in_message/, e.message)
-    end
-
     def test_to_h
       m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'], :repeated_msg => [TestMessage2.new(:foo => 100)])
       expected_result = {

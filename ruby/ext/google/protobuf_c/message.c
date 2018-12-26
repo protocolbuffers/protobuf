@@ -628,7 +628,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   rb_define_method(klass, "[]=", Message_index_set, 2);
   rb_define_singleton_method(klass, "decode", Message_decode, 1);
   rb_define_singleton_method(klass, "encode", Message_encode, 1);
-  rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
+  rb_define_singleton_method(klass, "decode_json", Message_decode_json, 1);
   rb_define_singleton_method(klass, "encode_json", Message_encode_json, -1);
   rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
 
