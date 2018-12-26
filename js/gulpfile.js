@@ -133,11 +133,18 @@ gulp.task('genproto_group3_commonjs_strict', function (cb) {
 });
 
 
-function getClosureBuilderCommand(exportsFile, outputFile) {
+function getClosureBuilderCommand(exportsFile, outputFile, keepSymbols) {
+  var compilationLevel = 'ADVANCED_OPTIMIZATIONS';
+  if (keepSymbols === true) {
+    compilationLevel = 'SIMPLE_OPTIMIZATIONS';
+  }
   return './node_modules/google-closure-library/closure/bin/build/closurebuilder.py ' +
   '--root node_modules ' +
   '-o compiled ' +
   '--compiler_jar node_modules/google-closure-compiler/compiler.jar ' +
+  `--compiler_flags="--compilation_level=${compilationLevel}" ` +
+  '--compiler_flags="--generate_exports" ' +
+  '--compiler_flags="--export_local_property_definitions" ' +
   '-i ' + exportsFile + ' ' +
   'map.js message.js binary/arith.js binary/constants.js binary/decoder.js ' +
   'binary/encoder.js binary/reader.js binary/utils.js binary/writer.js ' +
@@ -159,7 +166,8 @@ gulp.task('commonjs_asserts', function (cb) {
   exec('mkdir -p commonjs_out/test_node_modules && ' +
        getClosureBuilderCommand(
            'commonjs/export_asserts.js',
-           'commonjs_out/test_node_modules/closure_asserts_commonjs.js'),
+           'commonjs_out/test_node_modules/closure_asserts_commonjs.js',
+           true),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -171,7 +179,8 @@ gulp.task('commonjs_testdeps', function (cb) {
   exec('mkdir -p commonjs_out/test_node_modules && ' +
        getClosureBuilderCommand(
            'commonjs/export_testdeps.js',
-           'commonjs_out/test_node_modules/testdeps_commonjs.js'),
+           'commonjs_out/test_node_modules/testdeps_commonjs.js',
+           true),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);

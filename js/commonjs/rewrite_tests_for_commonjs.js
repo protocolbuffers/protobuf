@@ -67,7 +67,7 @@ console.log("var global = Function('return this')();");
 console.log("var googleProtobuf = require('google-protobuf');");
 console.log("var testdeps = require('testdeps_commonjs');");
 console.log("global.goog = testdeps.goog;");
-console.log("global.jspb = testdeps.jspb;");
+console.log("global.jspb = googleProtobuf.jspb;");
 console.log("var asserts = require('closure_asserts_commonjs');");
 console.log("");
 console.log("// Bring asserts into the global namespace.");

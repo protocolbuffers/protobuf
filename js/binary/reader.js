@@ -62,6 +62,7 @@ goog.require('jspb.BinaryDecoder');
  *     we'll throw an assertion if we go off the end of the block.
  * @constructor
  * @struct
+ * @export
  */
 jspb.BinaryReader = function(opt_bytes, opt_start, opt_length) {
   /**
@@ -118,6 +119,7 @@ jspb.BinaryReader.instanceCache_ = [];
  * @param {number=} opt_length The optional length of the block to read -
  *     we'll throw an assertion if we go off the end of the block.
  * @return {!jspb.BinaryReader}
+ * @export
  */
 jspb.BinaryReader.alloc =
     function(opt_bytes, opt_start, opt_length) {
@@ -140,12 +142,14 @@ jspb.BinaryReader.alloc =
  * @param {number=} opt_length The optional length of the block to read -
  *     we'll throw an assertion if we go off the end of the block.
  * @return {!jspb.BinaryReader}
+ * @export
  */
 jspb.BinaryReader.prototype.alloc = jspb.BinaryReader.alloc;
 
 
 /**
  * Puts this instance back in the instance cache.
+ * @export
  */
 jspb.BinaryReader.prototype.free = function() {
   this.decoder_.clear();
@@ -163,6 +167,7 @@ jspb.BinaryReader.prototype.free = function() {
 /**
  * Returns the cursor immediately before the current field's tag.
  * @return {number} The internal read cursor.
+ * @export
  */
 jspb.BinaryReader.prototype.getFieldCursor = function() {
   return this.fieldCursor_;
@@ -172,6 +177,7 @@ jspb.BinaryReader.prototype.getFieldCursor = function() {
 /**
  * Returns the internal read cursor.
  * @return {number} The internal read cursor.
+ * @export
  */
 jspb.BinaryReader.prototype.getCursor = function() {
   return this.decoder_.getCursor();
@@ -181,6 +187,7 @@ jspb.BinaryReader.prototype.getCursor = function() {
 /**
  * Returns the raw buffer.
  * @return {?Uint8Array} The raw buffer.
+ * @export
  */
 jspb.BinaryReader.prototype.getBuffer = function() {
   return this.decoder_.getBuffer();
@@ -190,6 +197,7 @@ jspb.BinaryReader.prototype.getBuffer = function() {
 /**
  * @return {number} The field number of the next field in the buffer, or
  *     INVALID_FIELD_NUMBER if there is no next field.
+ * @export
  */
 jspb.BinaryReader.prototype.getFieldNumber = function() {
   return this.nextField_;
@@ -199,6 +207,7 @@ jspb.BinaryReader.prototype.getFieldNumber = function() {
 /**
  * @return {jspb.BinaryConstants.WireType} The wire type of the next field
  *     in the stream, or WireType.INVALID if there is no next field.
+ * @export
  */
 jspb.BinaryReader.prototype.getWireType = function() {
   return this.nextWireType_;
@@ -208,6 +217,7 @@ jspb.BinaryReader.prototype.getWireType = function() {
 /**
  * @return {boolean} Whether the current wire type is an end-group tag. Used as
  * an exit condition in decoder loops in generated code.
+ * @export
  */
 jspb.BinaryReader.prototype.isEndGroup = function() {
   return this.nextWireType_ == jspb.BinaryConstants.WireType.END_GROUP;
@@ -217,6 +227,7 @@ jspb.BinaryReader.prototype.isEndGroup = function() {
 /**
  * Returns true if this reader hit an error due to corrupt data.
  * @return {boolean}
+ * @export
  */
 jspb.BinaryReader.prototype.getError = function() {
   return this.error_ || this.decoder_.getError();
@@ -228,6 +239,7 @@ jspb.BinaryReader.prototype.getError = function() {
  * @param {!Uint8Array} bytes The block of bytes we're reading from.
  * @param {number} start The offset to start reading at.
  * @param {number} length The length of the block to read.
+ * @export
  */
 jspb.BinaryReader.prototype.setBlock = function(bytes, start, length) {
   this.decoder_.setBlock(bytes, start, length);
@@ -239,6 +251,7 @@ jspb.BinaryReader.prototype.setBlock = function(bytes, start, length) {
 /**
  * Rewinds the stream cursor to the beginning of the buffer and resets all
  * internal state.
+ * @export
  */
 jspb.BinaryReader.prototype.reset = function() {
   this.decoder_.reset();
@@ -250,6 +263,7 @@ jspb.BinaryReader.prototype.reset = function() {
 /**
  * Advances the stream cursor by the given number of bytes.
  * @param {number} count The number of bytes to advance by.
+ * @export
  */
 jspb.BinaryReader.prototype.advance = function(count) {
   this.decoder_.advance(count);
@@ -261,6 +275,7 @@ jspb.BinaryReader.prototype.advance = function(count) {
  * we saw a valid field header or false if we've read the whole stream.
  * Throws an error if we encountered a deprecated START_GROUP/END_GROUP field.
  * @return {boolean} True if the stream contains more fields.
+ * @export
  */
 jspb.BinaryReader.prototype.nextField = function() {
   // If we're at the end of the block, there are no more fields.
@@ -306,6 +321,7 @@ jspb.BinaryReader.prototype.nextField = function() {
 
 /**
  * Winds the reader back to just before this field's header.
+ * @export
  */
 jspb.BinaryReader.prototype.unskipHeader = function() {
   this.decoder_.unskipVarint((this.nextField_ << 3) | this.nextWireType_);
@@ -314,6 +330,7 @@ jspb.BinaryReader.prototype.unskipHeader = function() {
 
 /**
  * Skips all contiguous fields whose header matches the one we just read.
+ * @export
  */
 jspb.BinaryReader.prototype.skipMatchingFields = function() {
   var field = this.nextField_;
@@ -331,6 +348,7 @@ jspb.BinaryReader.prototype.skipMatchingFields = function() {
 
 /**
  * Skips over the next varint field in the binary stream.
+ * @export
  */
 jspb.BinaryReader.prototype.skipVarintField = function() {
   if (this.nextWireType_ != jspb.BinaryConstants.WireType.VARINT) {
@@ -345,6 +363,7 @@ jspb.BinaryReader.prototype.skipVarintField = function() {
 
 /**
  * Skips over the next delimited field in the binary stream.
+ * @export
  */
 jspb.BinaryReader.prototype.skipDelimitedField = function() {
   if (this.nextWireType_ != jspb.BinaryConstants.WireType.DELIMITED) {
@@ -360,6 +379,7 @@ jspb.BinaryReader.prototype.skipDelimitedField = function() {
 
 /**
  * Skips over the next fixed32 field in the binary stream.
+ * @export
  */
 jspb.BinaryReader.prototype.skipFixed32Field = function() {
   if (this.nextWireType_ != jspb.BinaryConstants.WireType.FIXED32) {
@@ -374,6 +394,7 @@ jspb.BinaryReader.prototype.skipFixed32Field = function() {
 
 /**
  * Skips over the next fixed64 field in the binary stream.
+ * @export
  */
 jspb.BinaryReader.prototype.skipFixed64Field = function() {
   if (this.nextWireType_ != jspb.BinaryConstants.WireType.FIXED64) {
@@ -388,6 +409,7 @@ jspb.BinaryReader.prototype.skipFixed64Field = function() {
 
 /**
  * Skips over the next group field in the binary stream.
+ * @export
  */
 jspb.BinaryReader.prototype.skipGroup = function() {
   var previousField = this.nextField_;
@@ -415,6 +437,7 @@ jspb.BinaryReader.prototype.skipGroup = function() {
 /**
  * Skips over the next field in the binary stream - this is useful if we're
  * decoding a message that contain unknown fields.
+ * @export
  */
 jspb.BinaryReader.prototype.skipField = function() {
   switch (this.nextWireType_) {
@@ -443,6 +466,7 @@ jspb.BinaryReader.prototype.skipField = function() {
  * Registers a user-defined read callback.
  * @param {string} callbackName
  * @param {function(!jspb.BinaryReader):*} callback
+ * @export
  */
 jspb.BinaryReader.prototype.registerReadCallback =
     function(callbackName, callback) {
@@ -458,6 +482,7 @@ jspb.BinaryReader.prototype.registerReadCallback =
  * Runs a registered read callback.
  * @param {string} callbackName The name the callback is registered under.
  * @return {*} The value returned by the callback.
+ * @export
  */
 jspb.BinaryReader.prototype.runReadCallback = function(callbackName) {
   goog.asserts.assert(!goog.isNull(this.readCallbacks_));
@@ -471,6 +496,7 @@ jspb.BinaryReader.prototype.runReadCallback = function(callbackName) {
  * Reads a field of any valid non-message type from the binary stream.
  * @param {jspb.BinaryConstants.FieldType} fieldType
  * @return {jspb.AnyFieldType}
+ * @export
  */
 jspb.BinaryReader.prototype.readAny = function(fieldType) {
   this.nextWireType_ = jspb.BinaryConstants.FieldTypeToWireType(fieldType);
@@ -530,6 +556,7 @@ jspb.BinaryReader.prototype.readAny = function(fieldType) {
  * @template T
  * @param {T} message
  * @param {function(T, !jspb.BinaryReader)} reader
+ * @export
  */
 jspb.BinaryReader.prototype.readMessage = function(message, reader) {
   goog.asserts.assert(
@@ -559,6 +586,7 @@ jspb.BinaryReader.prototype.readMessage = function(message, reader) {
  * @param {number} field
  * @param {T} message
  * @param {function(T, !jspb.BinaryReader)} reader
+ * @export
  */
 jspb.BinaryReader.prototype.readGroup =
     function(field, message, reader) {
@@ -582,6 +610,7 @@ jspb.BinaryReader.prototype.readGroup =
 /**
  * Return a decoder that wraps the current delimited field.
  * @return {!jspb.BinaryDecoder}
+ * @export
  */
 jspb.BinaryReader.prototype.getFieldDecoder = function() {
   goog.asserts.assert(
@@ -603,6 +632,7 @@ jspb.BinaryReader.prototype.getFieldDecoder = function() {
  * error if the next field in the stream is not of the correct wire type.
  *
  * @return {number} The value of the signed 32-bit integer field.
+ * @export
  */
 jspb.BinaryReader.prototype.readInt32 = function() {
   goog.asserts.assert(
@@ -619,6 +649,7 @@ jspb.BinaryReader.prototype.readInt32 = function() {
  *
  * @return {string} The value of the signed 32-bit integer field as a decimal
  * string.
+ * @export
  */
 jspb.BinaryReader.prototype.readInt32String = function() {
   goog.asserts.assert(
@@ -632,6 +663,7 @@ jspb.BinaryReader.prototype.readInt32String = function() {
  * error if the next field in the stream is not of the correct wire type.
  *
  * @return {number} The value of the signed 64-bit integer field.
+ * @export
  */
 jspb.BinaryReader.prototype.readInt64 = function() {
   goog.asserts.assert(
@@ -648,6 +680,7 @@ jspb.BinaryReader.prototype.readInt64 = function() {
  *
  * @return {string} The value of the signed 64-bit integer field as a decimal
  * string.
+ * @export
  */
 jspb.BinaryReader.prototype.readInt64String = function() {
   goog.asserts.assert(
@@ -661,6 +694,7 @@ jspb.BinaryReader.prototype.readInt64String = function() {
  * error if the next field in the stream is not of the correct wire type.
  *
  * @return {number} The value of the unsigned 32-bit integer field.
+ * @export
  */
 jspb.BinaryReader.prototype.readUint32 = function() {
   goog.asserts.assert(
@@ -677,6 +711,7 @@ jspb.BinaryReader.prototype.readUint32 = function() {
  *
  * @return {string} The value of the unsigned 32-bit integer field as a decimal
  * string.
+ * @export
  */
 jspb.BinaryReader.prototype.readUint32String = function() {
   goog.asserts.assert(
@@ -690,6 +725,7 @@ jspb.BinaryReader.prototype.readUint32String = function() {
  * error if the next field in the stream is not of the correct wire type.
  *
  * @return {number} The value of the unsigned 64-bit integer field.
+ * @export
  */
 jspb.BinaryReader.prototype.readUint64 = function() {
   goog.asserts.assert(
@@ -706,6 +742,7 @@ jspb.BinaryReader.prototype.readUint64 = function() {
  *
  * @return {string} The value of the unsigned 64-bit integer field as a decimal
  * string.
+ * @export
  */
 jspb.BinaryReader.prototype.readUint64String = function() {
   goog.asserts.assert(
@@ -720,6 +757,7 @@ jspb.BinaryReader.prototype.readUint64String = function() {
  * wire type.
  *
  * @return {number} The value of the signed 32-bit integer field.
+ * @export
  */
 jspb.BinaryReader.prototype.readSint32 = function() {
   goog.asserts.assert(
@@ -734,6 +772,7 @@ jspb.BinaryReader.prototype.readSint32 = function() {
  * wire type.
  *
  * @return {number} The value of the signed 64-bit integer field.
+ * @export
  */
 jspb.BinaryReader.prototype.readSint64 = function() {
   goog.asserts.assert(
@@ -748,6 +787,7 @@ jspb.BinaryReader.prototype.readSint64 = function() {
  * wire type.
  *
  * @return {string} The value of the signed 64-bit integer field as a decimal string.
+ * @export
  */
 jspb.BinaryReader.prototype.readSint64String = function() {
   goog.asserts.assert(
@@ -762,6 +802,7 @@ jspb.BinaryReader.prototype.readSint64String = function() {
  * wire type.
  *
  * @return {number} The value of the double field.
+ * @export
  */
 jspb.BinaryReader.prototype.readFixed32 = function() {
   goog.asserts.assert(
@@ -776,6 +817,7 @@ jspb.BinaryReader.prototype.readFixed32 = function() {
  * wire type.
  *
  * @return {number} The value of the float field.
+ * @export
  */
 jspb.BinaryReader.prototype.readFixed64 = function() {
   goog.asserts.assert(
@@ -793,6 +835,7 @@ jspb.BinaryReader.prototype.readFixed64 = function() {
  *
  * @return {string} The value of the unsigned 64-bit integer field as a decimal
  * string.
+ * @export
  */
 jspb.BinaryReader.prototype.readFixed64String = function() {
   goog.asserts.assert(
@@ -807,6 +850,7 @@ jspb.BinaryReader.prototype.readFixed64String = function() {
  * type.
  *
  * @return {number} The value of the signed 32-bit integer field.
+ * @export
  */
 jspb.BinaryReader.prototype.readSfixed32 = function() {
   goog.asserts.assert(
@@ -822,6 +866,7 @@ jspb.BinaryReader.prototype.readSfixed32 = function() {
  *
  * @return {string} The value of the signed 32-bit integer field as a decimal
  * string.
+ * @export
  */
 jspb.BinaryReader.prototype.readSfixed32String = function() {
   goog.asserts.assert(
@@ -836,6 +881,7 @@ jspb.BinaryReader.prototype.readSfixed32String = function() {
  * type.
  *
  * @return {number} The value of the sfixed64 field.
+ * @export
  */
 jspb.BinaryReader.prototype.readSfixed64 = function() {
   goog.asserts.assert(
@@ -852,6 +898,7 @@ jspb.BinaryReader.prototype.readSfixed64 = function() {
  * Returns the value as a string.
  *
  * @return {string} The value of the sfixed64 field as a decimal string.
+ * @export
  */
 jspb.BinaryReader.prototype.readSfixed64String = function() {
   goog.asserts.assert(
@@ -865,6 +912,7 @@ jspb.BinaryReader.prototype.readSfixed64String = function() {
  * error if the next field in the stream is not of the correct wire type.
  *
  * @return {number} The value of the float field.
+ * @export
  */
 jspb.BinaryReader.prototype.readFloat = function() {
   goog.asserts.assert(
@@ -878,6 +926,7 @@ jspb.BinaryReader.prototype.readFloat = function() {
  * error if the next field in the stream is not of the correct wire type.
  *
  * @return {number} The value of the double field.
+ * @export
  */
 jspb.BinaryReader.prototype.readDouble = function() {
   goog.asserts.assert(
@@ -891,6 +940,7 @@ jspb.BinaryReader.prototype.readDouble = function() {
  * field in the stream is not of the correct wire type.
  *
  * @return {boolean} The value of the boolean field.
+ * @export
  */
 jspb.BinaryReader.prototype.readBool = function() {
   goog.asserts.assert(
@@ -904,6 +954,7 @@ jspb.BinaryReader.prototype.readBool = function() {
  * field in the stream is not of the correct wire type.
  *
  * @return {number} The value of the enum field.
+ * @export
  */
 jspb.BinaryReader.prototype.readEnum = function() {
   goog.asserts.assert(
@@ -917,6 +968,7 @@ jspb.BinaryReader.prototype.readEnum = function() {
  * field in the stream is not of the correct wire type.
  *
  * @return {string} The value of the string field.
+ * @export
  */
 jspb.BinaryReader.prototype.readString = function() {
   goog.asserts.assert(
@@ -931,6 +983,7 @@ jspb.BinaryReader.prototype.readString = function() {
  * null if the next field in the stream has an invalid length value.
  *
  * @return {!Uint8Array} The block of bytes.
+ * @export
  */
 jspb.BinaryReader.prototype.readBytes = function() {
   goog.asserts.assert(
@@ -946,6 +999,7 @@ jspb.BinaryReader.prototype.readBytes = function() {
  * if the next field in the stream is not of the correct wire type.
  *
  * @return {string} The hash value.
+ * @export
  */
 jspb.BinaryReader.prototype.readVarintHash64 = function() {
   goog.asserts.assert(
@@ -960,6 +1014,7 @@ jspb.BinaryReader.prototype.readVarintHash64 = function() {
  * if the next field in the stream is not of the correct wire type.
  *
  * @return {string} The hash value.
+ * @export
  */
 jspb.BinaryReader.prototype.readFixedHash64 = function() {
   goog.asserts.assert(
@@ -992,6 +1047,7 @@ jspb.BinaryReader.prototype.readPackedField_ = function(decodeMethod) {
  * Reads a packed int32 field, which consists of a length header and a list of
  * signed varints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedInt32 = function() {
   return this.readPackedField_(this.decoder_.readSignedVarint32);
@@ -1002,6 +1058,7 @@ jspb.BinaryReader.prototype.readPackedInt32 = function() {
  * Reads a packed int32 field, which consists of a length header and a list of
  * signed varints. Returns a list of strings.
  * @return {!Array<string>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedInt32String = function() {
   return this.readPackedField_(this.decoder_.readSignedVarint32String);
@@ -1012,6 +1069,7 @@ jspb.BinaryReader.prototype.readPackedInt32String = function() {
  * Reads a packed int64 field, which consists of a length header and a list of
  * signed varints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedInt64 = function() {
   return this.readPackedField_(this.decoder_.readSignedVarint64);
@@ -1022,6 +1080,7 @@ jspb.BinaryReader.prototype.readPackedInt64 = function() {
  * Reads a packed int64 field, which consists of a length header and a list of
  * signed varints. Returns a list of strings.
  * @return {!Array<string>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedInt64String = function() {
   return this.readPackedField_(this.decoder_.readSignedVarint64String);
@@ -1032,6 +1091,7 @@ jspb.BinaryReader.prototype.readPackedInt64String = function() {
  * Reads a packed uint32 field, which consists of a length header and a list of
  * unsigned varints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedUint32 = function() {
   return this.readPackedField_(this.decoder_.readUnsignedVarint32);
@@ -1042,6 +1102,7 @@ jspb.BinaryReader.prototype.readPackedUint32 = function() {
  * Reads a packed uint32 field, which consists of a length header and a list of
  * unsigned varints. Returns a list of strings.
  * @return {!Array<string>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedUint32String = function() {
   return this.readPackedField_(this.decoder_.readUnsignedVarint32String);
@@ -1052,6 +1113,7 @@ jspb.BinaryReader.prototype.readPackedUint32String = function() {
  * Reads a packed uint64 field, which consists of a length header and a list of
  * unsigned varints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedUint64 = function() {
   return this.readPackedField_(this.decoder_.readUnsignedVarint64);
@@ -1062,6 +1124,7 @@ jspb.BinaryReader.prototype.readPackedUint64 = function() {
  * Reads a packed uint64 field, which consists of a length header and a list of
  * unsigned varints. Returns a list of strings.
  * @return {!Array<string>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedUint64String = function() {
   return this.readPackedField_(this.decoder_.readUnsignedVarint64String);
@@ -1072,6 +1135,7 @@ jspb.BinaryReader.prototype.readPackedUint64String = function() {
  * Reads a packed sint32 field, which consists of a length header and a list of
  * zigzag varints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedSint32 = function() {
   return this.readPackedField_(this.decoder_.readZigzagVarint32);
@@ -1082,6 +1146,7 @@ jspb.BinaryReader.prototype.readPackedSint32 = function() {
  * Reads a packed sint64 field, which consists of a length header and a list of
  * zigzag varints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedSint64 = function() {
   return this.readPackedField_(this.decoder_.readZigzagVarint64);
@@ -1092,6 +1157,7 @@ jspb.BinaryReader.prototype.readPackedSint64 = function() {
  * Reads a packed sint64 field, which consists of a length header and a list of
  * zigzag varints.  Returns a list of strings.
  * @return {!Array<string>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedSint64String = function() {
   return this.readPackedField_(this.decoder_.readZigzagVarint64String);
@@ -1102,6 +1168,7 @@ jspb.BinaryReader.prototype.readPackedSint64String = function() {
  * Reads a packed fixed32 field, which consists of a length header and a list
  * of unsigned 32-bit ints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedFixed32 = function() {
   return this.readPackedField_(this.decoder_.readUint32);
@@ -1112,6 +1179,7 @@ jspb.BinaryReader.prototype.readPackedFixed32 = function() {
  * Reads a packed fixed64 field, which consists of a length header and a list
  * of unsigned 64-bit ints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedFixed64 = function() {
   return this.readPackedField_(this.decoder_.readUint64);
@@ -1122,6 +1190,7 @@ jspb.BinaryReader.prototype.readPackedFixed64 = function() {
  * Reads a packed fixed64 field, which consists of a length header and a list
  * of unsigned 64-bit ints.  Returns a list of strings.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedFixed64String = function() {
   return this.readPackedField_(this.decoder_.readUint64String);
@@ -1132,6 +1201,7 @@ jspb.BinaryReader.prototype.readPackedFixed64String = function() {
  * Reads a packed sfixed32 field, which consists of a length header and a list
  * of 32-bit ints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedSfixed32 = function() {
   return this.readPackedField_(this.decoder_.readInt32);
@@ -1142,6 +1212,7 @@ jspb.BinaryReader.prototype.readPackedSfixed32 = function() {
  * Reads a packed sfixed64 field, which consists of a length header and a list
  * of 64-bit ints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedSfixed64 = function() {
   return this.readPackedField_(this.decoder_.readInt64);
@@ -1152,6 +1223,7 @@ jspb.BinaryReader.prototype.readPackedSfixed64 = function() {
  * Reads a packed sfixed64 field, which consists of a length header and a list
  * of 64-bit ints.  Returns a list of strings.
  * @return {!Array<string>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedSfixed64String = function() {
   return this.readPackedField_(this.decoder_.readInt64String);
@@ -1162,6 +1234,7 @@ jspb.BinaryReader.prototype.readPackedSfixed64String = function() {
  * Reads a packed float field, which consists of a length header and a list of
  * floats.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedFloat = function() {
   return this.readPackedField_(this.decoder_.readFloat);
@@ -1172,6 +1245,7 @@ jspb.BinaryReader.prototype.readPackedFloat = function() {
  * Reads a packed double field, which consists of a length header and a list of
  * doubles.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedDouble = function() {
   return this.readPackedField_(this.decoder_.readDouble);
@@ -1182,6 +1256,7 @@ jspb.BinaryReader.prototype.readPackedDouble = function() {
  * Reads a packed bool field, which consists of a length header and a list of
  * unsigned varints.
  * @return {!Array<boolean>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedBool = function() {
   return this.readPackedField_(this.decoder_.readBool);
@@ -1192,6 +1267,7 @@ jspb.BinaryReader.prototype.readPackedBool = function() {
  * Reads a packed enum field, which consists of a length header and a list of
  * unsigned varints.
  * @return {!Array<number>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedEnum = function() {
   return this.readPackedField_(this.decoder_.readEnum);
@@ -1202,6 +1278,7 @@ jspb.BinaryReader.prototype.readPackedEnum = function() {
  * Reads a packed varint hash64 field, which consists of a length header and a
  * list of varint hash64s.
  * @return {!Array<string>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedVarintHash64 = function() {
   return this.readPackedField_(this.decoder_.readVarintHash64);
@@ -1212,6 +1289,7 @@ jspb.BinaryReader.prototype.readPackedVarintHash64 = function() {
  * Reads a packed fixed hash64 field, which consists of a length header and a
  * list of fixed hash64s.
  * @return {!Array<string>}
+ * @export
  */
 jspb.BinaryReader.prototype.readPackedFixedHash64 = function() {
   return this.readPackedField_(this.decoder_.readFixedHash64);

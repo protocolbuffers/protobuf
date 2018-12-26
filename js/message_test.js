@@ -740,7 +740,7 @@ describe('Message test suite', function() {
      /** @suppress {visibility} */ function() {
        var data =
            new proto.jspb.test.HasExtensions(['str1', {'a_key': 'an_object'}]);
-       assertEquals('an_object', data.extensionObject_['a_key']);
+       assertEquals('an_object', jspb.Message.getField(data, ['a_key']));
      });
 
   it('testToObject_hasExtensionField', function() {

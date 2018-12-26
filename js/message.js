@@ -87,18 +87,19 @@ goog.forwardDeclare('xid.String');
  * @constructor
  * @struct
  * @template T
+ * @export
  */
 jspb.ExtensionFieldInfo = function(fieldNumber, fieldName, ctor, toObjectFn,
     isRepeated) {
-  /** @const */
+  /** @const @export */
   this.fieldIndex = fieldNumber;
-  /** @const */
+  /** @const @export */
   this.fieldName = fieldName;
-  /** @const */
+  /** @const @export */
   this.ctor = ctor;
-  /** @const */
+  /** @const @export */
   this.toObjectFn = toObjectFn;
-  /** @const */
+  /** @const @export */
   this.isRepeated = isRepeated;
 };
 
@@ -114,25 +115,27 @@ jspb.ExtensionFieldInfo = function(fieldNumber, fieldName, ctor, toObjectFn,
  * @constructor
  * @struct
  * @template T
+ * @export
  */
 jspb.ExtensionFieldBinaryInfo = function(fieldInfo, binaryReaderFn, binaryWriterFn,
     opt_binaryMessageSerializeFn, opt_binaryMessageDeserializeFn, opt_isPacked) {
-  /** @const */
+  /** @const @export */
   this.fieldInfo = fieldInfo;
-  /** @const */
+  /** @const @export */
   this.binaryReaderFn = binaryReaderFn;
-  /** @const */
+  /** @const @export */
   this.binaryWriterFn = binaryWriterFn;
-  /** @const */
+  /** @const @export */
   this.binaryMessageSerializeFn = opt_binaryMessageSerializeFn;
-  /** @const */
+  /** @const @export */
   this.binaryMessageDeserializeFn = opt_binaryMessageDeserializeFn;
-  /** @const */
+  /** @const @export */
   this.isPacked = opt_isPacked;
 };
 
 /**
  * @return {boolean} Does this field represent a sub Message?
+ * @export
  */
 jspb.ExtensionFieldInfo.prototype.isMessageType = function() {
   return !!this.ctor;
@@ -158,6 +161,7 @@ jspb.ExtensionFieldInfo.prototype.isMessageType = function() {
  *
  * @constructor
  * @struct
+ * @export
  */
 jspb.Message = function() {
 };
@@ -170,6 +174,7 @@ jspb.Message = function() {
  *     calling toObject. Enabling this will disable the JSCompiler's ability to
  *     dead code eliminate fields used in protocol buffers that are never used
  *     in an application.
+ * @export
  */
 goog.define('jspb.Message.GENERATE_TO_OBJECT', true);
 
@@ -226,7 +231,7 @@ jspb.Message.SUPPORTS_UINT8ARRAY_ = (typeof Uint8Array == 'function');
 /**
  * The internal data array.
  * @type {!Array}
- * @protected
+ * @export
  */
 jspb.Message.prototype.array;
 
@@ -278,7 +283,7 @@ jspb.Message.prototype.convertedFloatingPointFields_;
 
 /**
  * Repeated fields numbers.
- * @protected {?Array<number>|undefined}
+ * @export {?Array<number>|undefined}
  */
 jspb.Message.prototype.repeatedFields;
 
@@ -291,6 +296,7 @@ jspb.Message.prototype.repeatedFields;
  * a protocol buffer.
  * @const {!xid.String|undefined} The xid or undefined if message is
  *     annotated to generate the xid.
+ * @export
  */
 jspb.Message.prototype.messageXid;
 
@@ -300,6 +306,7 @@ jspb.Message.prototype.messageXid;
  * Returns the JsPb message_id of this proto.
  * @return {string|undefined} the message id or undefined if this message
  *     has no id.
+ * @export
  */
 jspb.Message.prototype.getJsPbMessageId = function() {
   return this.messageId_;
@@ -354,7 +361,7 @@ jspb.Message.getFieldNumber_ = function(msg, index) {
  * @param {Array<number>} repeatedFields The message's repeated fields.
  * @param {Array<!Array<number>>=} opt_oneofFields The fields belonging to
  *     each of the message's oneof unions.
- * @protected
+ * @export
  */
 jspb.Message.initialize = function(
     msg, data, messageId, suggestedPivot, repeatedFields, opt_oneofFields) {
@@ -520,6 +527,7 @@ jspb.Message.maybeInitEmptyExtensionObject_ = function(msg) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Array<Object>} An array of converted message objects.
  * @template T
+ * @export
  */
 jspb.Message.toObjectList = function(field, toObjectFn, opt_includeInstance) {
   // Not using goog.array.map in the generated code to keep it small.
@@ -542,6 +550,7 @@ jspb.Message.toObjectList = function(field, toObjectFn, opt_includeInstance) {
  *     removal.
  * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
  *     for transitional soy proto support: http://goto/soy-param-migration
+ * @export
  */
 jspb.Message.toObjectExtension = function(proto, obj, extensions,
     getExtensionFn, opt_includeInstance) {
@@ -578,6 +587,7 @@ jspb.Message.toObjectExtension = function(proto, obj, extensions,
  * @param {!Object} extensions The proto class' registered extensions.
  * @param {function(this:jspb.Message,!jspb.ExtensionFieldInfo) : *} getExtensionFn The proto
  *     class' getExtension function. Passed for effective dead code removal.
+ * @export
  */
 jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
     getExtensionFn) {
@@ -629,6 +639,7 @@ jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
  * @param {!Object} extensions The extensions object.
  * @param {function(this:jspb.Message,!jspb.ExtensionFieldInfo)} getExtensionFn
  * @param {function(this:jspb.Message,!jspb.ExtensionFieldInfo, ?)} setExtensionFn
+ * @export
  */
 jspb.Message.readBinaryExtension = function(msg, reader, extensions,
     getExtensionFn, setExtensionFn) {
@@ -672,7 +683,7 @@ jspb.Message.readBinaryExtension = function(msg, reader, extensions,
  * @param {number} fieldNumber The field number.
  * @return {string|number|boolean|Uint8Array|Array|null|undefined}
  * The field's value.
- * @protected
+ * @export
  */
 jspb.Message.getField = function(msg, fieldNumber) {
   if (fieldNumber < msg.pivot_) {
@@ -701,7 +712,7 @@ jspb.Message.getField = function(msg, fieldNumber) {
  * @param {number} fieldNumber The field number.
  * @return {!Array}
  * The field's value.
- * @protected
+ * @export
  */
 jspb.Message.getRepeatedField = function(msg, fieldNumber) {
   if (fieldNumber < msg.pivot_) {
@@ -726,7 +737,7 @@ jspb.Message.getRepeatedField = function(msg, fieldNumber) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @return {?number|undefined} The field's value.
- * @protected
+ * @export
  */
 jspb.Message.getOptionalFloatingPointField = function(msg, fieldNumber) {
   var value = jspb.Message.getField(msg, fieldNumber);
@@ -740,7 +751,7 @@ jspb.Message.getOptionalFloatingPointField = function(msg, fieldNumber) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @return {!Array<number>} The field's value.
- * @protected
+ * @export
  */
 jspb.Message.getRepeatedFloatingPointField = function(msg, fieldNumber) {
   var values = jspb.Message.getRepeatedField(msg, fieldNumber);
@@ -763,6 +774,7 @@ jspb.Message.getRepeatedFloatingPointField = function(msg, fieldNumber) {
  * Coerce a 'bytes' field to a base 64 string.
  * @param {string|Uint8Array|null} value
  * @return {?string} The field's coerced value.
+ * @export
  */
 jspb.Message.bytesAsB64 = function(value) {
   if (value == null || goog.isString(value)) {
@@ -782,6 +794,7 @@ jspb.Message.bytesAsB64 = function(value) {
  * Mini. @see http://caniuse.com/Uint8Array
  * @param {string|Uint8Array|null} value
  * @return {?Uint8Array} The field's coerced value.
+ * @export
  */
 jspb.Message.bytesAsU8 = function(value) {
   if (value == null || value instanceof Uint8Array) {
@@ -800,6 +813,7 @@ jspb.Message.bytesAsU8 = function(value) {
  * Note: the returned array should be treated as immutable.
  * @param {!Array<string>|!Array<!Uint8Array>} value
  * @return {!Array<string?>} The field's coerced value.
+ * @export
  */
 jspb.Message.bytesListAsB64 = function(value) {
   jspb.Message.assertConsistentTypes_(value);
@@ -817,6 +831,7 @@ jspb.Message.bytesListAsB64 = function(value) {
  * Mini. @see http://caniuse.com/Uint8Array
  * @param {!Array<string>|!Array<!Uint8Array>} value
  * @return {!Array<Uint8Array?>} The field's coerced value.
+ * @export
  */
 jspb.Message.bytesListAsU8 = function(value) {
   jspb.Message.assertConsistentTypes_(value);
@@ -854,7 +869,7 @@ jspb.Message.assertConsistentTypes_ = function(array) {
  * @param {number} fieldNumber The field number.
  * @param {T} defaultValue The default value.
  * @return {T} The field's value.
- * @protected
+ * @export
  */
 jspb.Message.getFieldWithDefault = function(msg, fieldNumber, defaultValue) {
   var value = jspb.Message.getField(msg, fieldNumber);
@@ -873,7 +888,7 @@ jspb.Message.getFieldWithDefault = function(msg, fieldNumber, defaultValue) {
  * @param {number} fieldNumber The field number.
  * @param {T} defaultValue The default value.
  * @return {T} The field's value.
- * @protected
+ * @export
  */
 jspb.Message.getFieldProto3 = jspb.Message.getFieldWithDefault;
 
@@ -892,7 +907,7 @@ jspb.Message.getFieldProto3 = jspb.Message.getFieldWithDefault;
  * @param {boolean|undefined} noLazyCreate
  * @param {?=} opt_valueCtor
  * @return {!jspb.Map<K, V>|undefined}
- * @protected
+ * @export
  */
 jspb.Message.getMapField = function(msg, fieldNumber, noLazyCreate,
     opt_valueCtor) {
@@ -923,7 +938,7 @@ jspb.Message.getMapField = function(msg, fieldNumber, noLazyCreate,
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {string|number|boolean|Uint8Array|Array|undefined} value New value
- * @protected
+ * @export
  */
 jspb.Message.setField = function(msg, fieldNumber, value) {
   if (fieldNumber < msg.pivot_) {
@@ -940,7 +955,7 @@ jspb.Message.setField = function(msg, fieldNumber, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {number} value New value
- * @protected
+ * @export
  */
 jspb.Message.setProto3IntField = function(msg, fieldNumber, value) {
   jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, 0);
@@ -952,7 +967,7 @@ jspb.Message.setProto3IntField = function(msg, fieldNumber, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {number} value New value
- * @protected
+ * @export
  */
 jspb.Message.setProto3FloatField = function(msg, fieldNumber, value) {
   jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, 0.0);
@@ -964,7 +979,7 @@ jspb.Message.setProto3FloatField = function(msg, fieldNumber, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {boolean} value New value
- * @protected
+ * @export
  */
 jspb.Message.setProto3BooleanField = function(msg, fieldNumber, value) {
   jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, false);
@@ -976,7 +991,7 @@ jspb.Message.setProto3BooleanField = function(msg, fieldNumber, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {string} value New value
- * @protected
+ * @export
  */
 jspb.Message.setProto3StringField = function(msg, fieldNumber, value) {
   jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, "");
@@ -988,7 +1003,7 @@ jspb.Message.setProto3StringField = function(msg, fieldNumber, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {!Uint8Array|string} value New value
- * @protected
+ * @export
  */
 jspb.Message.setProto3BytesField = function(msg, fieldNumber, value) {
   jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, "");
@@ -1000,7 +1015,7 @@ jspb.Message.setProto3BytesField = function(msg, fieldNumber, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {number} value New value
- * @protected
+ * @export
  */
 jspb.Message.setProto3EnumField = function(msg, fieldNumber, value) {
   jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, 0);
@@ -1013,7 +1028,7 @@ jspb.Message.setProto3EnumField = function(msg, fieldNumber, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {string} value New value
- * @protected
+ * @export
  */
 jspb.Message.setProto3StringIntField = function(msg, fieldNumber, value) {
   jspb.Message.setFieldIgnoringDefault_(msg, fieldNumber, value, "0");
@@ -1045,7 +1060,7 @@ jspb.Message.setFieldIgnoringDefault_ = function(
  * @param {number} fieldNumber The field number.
  * @param {string|number|boolean|!Uint8Array} value New value
  * @param {number=} opt_index Index where to put new value.
- * @protected
+ * @export
  */
 jspb.Message.addToRepeatedField = function(msg, fieldNumber, value, opt_index) {
   var arr = jspb.Message.getRepeatedField(msg, fieldNumber);
@@ -1064,7 +1079,7 @@ jspb.Message.addToRepeatedField = function(msg, fieldNumber, value, opt_index) {
  * @param {number} fieldNumber The field number.
  * @param {!Array<number>} oneof The fields belonging to the union.
  * @param {string|number|boolean|Uint8Array|Array|undefined} value New value
- * @protected
+ * @export
  */
 jspb.Message.setOneofField = function(msg, fieldNumber, oneof, value) {
   var currentCase = jspb.Message.computeOneofCase(msg, oneof);
@@ -1093,7 +1108,7 @@ jspb.Message.setOneofField = function(msg, fieldNumber, oneof, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {!Array<number>} oneof The field numbers belonging to the union.
  * @return {number} The field number currently set in the union, or 0 if none.
- * @protected
+ * @export
  */
 jspb.Message.computeOneofCase = function(msg, oneof) {
   var oneofField;
@@ -1128,7 +1143,7 @@ jspb.Message.computeOneofCase = function(msg, oneof) {
  * @param {number} fieldNumber The field number.
  * @param {number=} opt_required True (1) if this is a required field.
  * @return {jspb.Message} The field as a jspb proto.
- * @protected
+ * @export
  */
 jspb.Message.getWrapperField = function(msg, ctor, fieldNumber, opt_required) {
   // TODO(mwr): Consider copying data and/or arrays.
@@ -1152,7 +1167,7 @@ jspb.Message.getWrapperField = function(msg, ctor, fieldNumber, opt_required) {
  * @param {function(new:jspb.Message, Array)} ctor Constructor for the field.
  * @param {number} fieldNumber The field number.
  * @return {!Array<!jspb.Message>} The repeated field as an array of protos.
- * @protected
+ * @export
  */
 jspb.Message.getRepeatedWrapperField = function(msg, ctor, fieldNumber) {
   jspb.Message.wrapRepeatedField_(msg, ctor, fieldNumber);
@@ -1192,7 +1207,7 @@ jspb.Message.wrapRepeatedField_ = function(msg, ctor, fieldNumber) {
  * @param {number} fieldNumber The field number.
  * @param {?jspb.Message|?jspb.Map|undefined} value A new value for this proto
  * field.
- * @protected
+ * @export
  */
 jspb.Message.setWrapperField = function(msg, fieldNumber, value) {
   if (!msg.wrappers_) {
@@ -1210,7 +1225,7 @@ jspb.Message.setWrapperField = function(msg, fieldNumber, value) {
  * @param {number} fieldNumber The field number.
  * @param {!Array<number>} oneof The fields belonging to the union.
  * @param {jspb.Message|undefined} value A new value for this proto field.
- * @protected
+ * @export
  */
 jspb.Message.setOneofWrapperField = function(msg, fieldNumber, oneof, value) {
   if (!msg.wrappers_) {
@@ -1227,7 +1242,7 @@ jspb.Message.setOneofWrapperField = function(msg, fieldNumber, oneof, value) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
  * @param {Array<!jspb.Message>|undefined} value An array of protos.
- * @protected
+ * @export
  */
 jspb.Message.setRepeatedWrapperField = function(msg, fieldNumber, value) {
   if (!msg.wrappers_) {
@@ -1262,7 +1277,7 @@ jspb.Message.setRepeatedWrapperField = function(msg, fieldNumber, value) {
  *       mapunion(T_CHILD, (X) =>
  *         cond(eq(X, 'undefined'), none(), X)))
  * =:
- * @protected
+ * @export
  */
 jspb.Message.addToRepeatedWrapperField = function(
     msg, fieldNumber, value, ctor, index) {
@@ -1300,6 +1315,7 @@ jspb.Message.addToRepeatedWrapperField = function(
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object<string, Object>} A map of proto or Soy objects.
  * @template T
+ * @export
  */
 jspb.Message.toMap = function(
     field, mapKeyGetterFn, opt_toObjectFn, opt_includeInstance) {
@@ -1350,6 +1366,7 @@ jspb.Message.prototype.syncMapFields_ = function() {
  * <p>Note: If you use this array to construct a second proto, the content
  * would then be partially shared between the two protos.
  * @return {!Array} The proto represented as an array.
+ * @export
  */
 jspb.Message.prototype.toArray = function() {
   this.syncMapFields_();
@@ -1365,6 +1382,7 @@ if (jspb.Message.GENERATE_TO_STRING) {
  * <p>NOTE: This string is *not* suitable for use in server requests.
  * @return {string} A string representation of this proto.
  * @override
+ * @export
  */
 jspb.Message.prototype.toString = function() {
   this.syncMapFields_();
@@ -1378,6 +1396,7 @@ jspb.Message.prototype.toString = function() {
  * @param {jspb.ExtensionFieldInfo<T>} fieldInfo Specifies the field to get.
  * @return {T} The value of the field.
  * @template T
+ * @export
  */
 jspb.Message.prototype.getExtension = function(fieldInfo) {
   if (!this.extensionObject_) {
@@ -1423,6 +1442,7 @@ jspb.Message.prototype.getExtension = function(fieldInfo) {
  * @return {THIS} For chaining
  * @this {THIS}
  * @template THIS
+ * @export
  */
 jspb.Message.prototype.setExtension = function(fieldInfo, value) {
   // Cast self, since the inferred THIS is unknown inside the function body.
@@ -1477,6 +1497,7 @@ jspb.Message.prototype.setExtension = function(fieldInfo, value) {
  *     send such a proto to the server. You can access the raw difference
  *     array with result.toArray().
  * @throws {Error} If the messages are responses with different types.
+ * @export
  */
 jspb.Message.difference = function(m1, m2) {
   if (!(m1 instanceof m2.constructor)) {
@@ -1506,6 +1527,7 @@ jspb.Message.difference = function(m1, m2) {
  * @param {jspb.Message|undefined} m2 The second message object.
  * @return {boolean} true if both messages are null/undefined, or if both are
  *     of the same type and have the same field values.
+ * @export
  */
 jspb.Message.equals = function(m1, m2) {
   return m1 == m2 || (!!(m1 && m2) && (m1 instanceof m2.constructor) &&
@@ -1519,6 +1541,7 @@ jspb.Message.equals = function(m1, m2) {
  * @param {!Object} extension2 The second field.
  * @return {boolean} true if the extensions are null/undefined, or otherwise
  *     equal.
+ * @export
  */
 jspb.Message.compareExtensions = function(extension1, extension2) {
   extension1 = extension1 || {};
@@ -1545,6 +1568,7 @@ jspb.Message.compareExtensions = function(extension1, extension2) {
  * @param {*} field1 The first field.
  * @param {*} field2 The second field.
  * @return {boolean} true if the fields are null/undefined, or otherwise equal.
+ * @export
  */
 jspb.Message.compareFields = function(field1, field2) {
   // If the fields are trivially equal, they're equal.
@@ -1634,6 +1658,7 @@ jspb.Message.compareFields = function(field1, field2) {
  * @return {THIS}
  * @this {THIS}
  * @template THIS
+ * @export
  */
 jspb.Message.prototype.cloneMessage = function() {
   return jspb.Message.cloneMessage(/** @type {!jspb.Message} */ (this));
@@ -1646,6 +1671,7 @@ jspb.Message.prototype.cloneMessage = function() {
  * @return {THIS}
  * @this {THIS}
  * @template THIS
+ * @export
  */
 jspb.Message.prototype.clone = function() {
   return jspb.Message.cloneMessage(/** @type {!jspb.Message} */ (this));
@@ -1657,6 +1683,7 @@ jspb.Message.prototype.clone = function() {
  * on each generated JsPb class. Do not call this function directly.
  * @param {!jspb.Message} msg A message to clone.
  * @return {!jspb.Message} A deep clone of the given message.
+ * @export
  */
 jspb.Message.clone = function(msg) {
   // Although we could include the wrappers, we leave them out here.
@@ -1667,7 +1694,7 @@ jspb.Message.clone = function(msg) {
 /**
  * @param {!jspb.Message} msg A message to clone.
  * @return {!jspb.Message} A deep clone of the given message.
- * @protected
+ * @export
  */
 jspb.Message.cloneMessage = function(msg) {
   // Although we could include the wrappers, we leave them out here.
@@ -1685,6 +1712,7 @@ jspb.Message.cloneMessage = function(msg) {
  * @param {MESSAGE} toMessage Message which will receive a copy of fromMessage
  *     as its contents.
  * @template MESSAGE
+ * @export
  */
 jspb.Message.copyInto = function(fromMessage, toMessage) {
   goog.asserts.assertInstanceof(fromMessage, jspb.Message);
@@ -1756,6 +1784,7 @@ jspb.Message.clone_ = function(obj) {
  * Registers a JsPb message type id with its constructor.
  * @param {string} id The id for this type of message.
  * @param {Function} constructor The message constructor.
+ * @export
  */
 jspb.Message.registerMessageType = function(id, constructor) {
   jspb.Message.registry_[id] = constructor;
