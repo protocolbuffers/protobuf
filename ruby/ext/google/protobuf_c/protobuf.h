@@ -570,7 +570,7 @@ VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value);
 VALUE Message_descriptor(VALUE klass);
 VALUE Message_decode(VALUE klass, VALUE data);
 VALUE Message_encode(VALUE klass, VALUE msg_rb);
-VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass);
+VALUE Message_decode_json(VALUE klass, VALUE data);
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
 
 VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);

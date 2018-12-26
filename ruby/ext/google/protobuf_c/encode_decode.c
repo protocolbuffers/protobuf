@@ -891,37 +891,18 @@ VALUE Message_decode(VALUE klass, VALUE data) {
 
 /*
  * call-seq:
- *     MessageClass.decode_json(data, options = {}) => message
+ *     MessageClass.decode_json(data) => message
  *
  * Decodes the given data (as a string containing bytes in protocol buffers wire
  * format) under the interpretration given by this message class's definition
  * and returns a message object with the corresponding field values.
- *
- * @param options [Hash] options for the decoder
- *   ignore_unknown_fields: set true to ignore unknown fields (default is to raise an error)
  */
-VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
+VALUE Message_decode_json(VALUE klass, VALUE data) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   VALUE msgklass = Descriptor_msgclass(descriptor);
   VALUE msg_rb;
-  VALUE data = argv[0];
-  VALUE ignore_unknown_fields = Qfalse;
   MessageHeader* msg;
-
-  if (argc < 1 || argc > 2) {
-    rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
-  }
-
-  if (argc == 2) {
-    VALUE hash_args = argv[1];
-    if (TYPE(hash_args) != T_HASH) {
-      rb_raise(rb_eArgError, "Expected hash arguments.");
-    }
-
-    ignore_unknown_fields = rb_hash_lookup2(
-        hash_args, ID2SYM(rb_intern("ignore_unknown_fields")), Qfalse);
-  }
 
   if (TYPE(data) != T_STRING) {
     rb_raise(rb_eArgError, "Expected string for JSON data.");
@@ -941,7 +922,7 @@ VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
     stackenv_init(&se, "Error occurred during parsing: %s");
 
     upb_sink_reset(&sink, get_fill_handlers(desc), msg);
-    parser = upb_json_parser_create(&se.env, method, &sink, ignore_unknown_fields);
+    parser = upb_json_parser_create(&se.env, method, &sink);
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
                       upb_json_parser_input(parser));
 
@@ -1329,12 +1310,9 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
 
 /*
  * call-seq:
- *     MessageClass.encode_json(msg, options = {}) => json_string
+ *     MessageClass.encode_json(msg) => json_string
  *
  * Encodes the given message object into its serialized JSON representation.
- * @param options [Hash] options for the decoder
- *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
- *  emit_defaults: set true to emit 0/false values (default is to omit them)
  */
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
