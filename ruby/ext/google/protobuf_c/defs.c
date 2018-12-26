@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <ctype.h>
+#include <errno.h>
 #include "protobuf.h"
 
 // -----------------------------------------------------------------------------
@@ -44,6 +46,109 @@ static VALUE rb_str_maybe_null(const char* s) {
     s = "";
   }
   return rb_str_new2(s);
+}
+
+static void rewrite_enum_default(const upb_symtab* symtab,
+                                 google_protobuf_FileDescriptorProto* file,
+                                 google_protobuf_FieldDescriptorProto* field) {
+  /* Look for TYPE_ENUM fields that have a default. */
+  if (google_protobuf_FieldDescriptorProto_type(field) !=
+          google_protobuf_FieldDescriptorProto_TYPE_ENUM ||
+      !google_protobuf_FieldDescriptorProto_has_default_value(field) ||
+      !google_protobuf_FieldDescriptorProto_has_type_name(field)) {
+    return;
+  }
+
+  upb_stringview defaultval =
+      google_protobuf_FieldDescriptorProto_default_value(field);
+  upb_stringview type_name =
+      google_protobuf_FieldDescriptorProto_type_name(field);
+
+  if (defaultval.size == 0 || !isdigit(defaultval.data[0])) {
+    return;
+  }
+
+  if (type_name.size == 0 || type_name.data[0] != '.') {
+    return;
+  }
+
+  /* Strip package name, if any. */
+  const char *type_name_str = strrchr(type_name.data, '.') + 1;
+
+  char *end;
+  errno = 0;
+  long val = strtol(defaultval.data, &end, 10);
+
+  if (errno != 0 || *end != 0 || val < INT32_MIN || val > INT32_MAX) {
+    return;
+  }
+
+  /* Now find the corresponding enum definition. */
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, type_name.data);
+  if (e) {
+    /* Look in previously loaded files. */
+    const char *label = upb_enumdef_iton(e, val);
+    if (!label) {
+      return;
+    }
+    google_protobuf_FieldDescriptorProto_set_default_value(
+        field, upb_stringview_makez(label));
+  } else {
+    /* Look in enums defined in this file. */
+    const google_protobuf_EnumDescriptorProto* matching_enum = NULL;
+    size_t i, n;
+    const google_protobuf_EnumDescriptorProto* const* enums =
+        google_protobuf_FileDescriptorProto_enum_type(file, &n);
+    for (i = 0; i < n; i++) {
+      if (upb_stringview_eql(google_protobuf_EnumDescriptorProto_name(enums[i]),
+                             upb_stringview_makez(type_name_str))) {
+        matching_enum = enums[i];
+        break;
+      }
+    }
+
+    if (!matching_enum) {
+      return;
+    }
+
+    const google_protobuf_EnumValueDescriptorProto* const* values =
+        google_protobuf_EnumDescriptorProto_value(matching_enum, &n);
+    for (i = 0; i < n; i++) {
+      if (google_protobuf_EnumValueDescriptorProto_number(values[i]) == val) {
+        google_protobuf_FieldDescriptorProto_set_default_value(
+            field, google_protobuf_EnumValueDescriptorProto_name(values[i]));
+        return;
+      }
+    }
+
+    /* We failed to find an enum default.  But we'll just leave the enum
+     * untouched and let the normal def-building code catch it. */
+  }
+}
+
+/* Historically we allowed the default to be specified as a number.  In
+ * retrospect this was a mistake as descriptors require defaults to be
+ * specified as a label. This can make a difference if multiple labels have the
+ * same number.
+ *
+ * Here we do a pass over all enum defaults and rewrite numeric defaults by
+ * looking up their labels.  This is compilcated by the fact that the enum
+ * definition can live in either the symtab or the file_proto.
+ * */
+static void rewrite_enum_defaults(
+    const upb_symtab* symtab, google_protobuf_FileDescriptorProto* file_proto) {
+  size_t i, n;
+  google_protobuf_DescriptorProto** msgs =
+      google_protobuf_FileDescriptorProto_message_type_mutable(file_proto, &n);
+
+  for (i = 0; i < n; i++) {
+    size_t j, m;
+    google_protobuf_FieldDescriptorProto** fields =
+        google_protobuf_DescriptorProto_field_mutable(msgs[i], &m);
+    for (j = 0; j < m; j++) {
+      rewrite_enum_default(symtab, file_proto, fields[j]);
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -207,6 +312,7 @@ void Descriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
+  rb_define_method(klass, "initialize", Descriptor_initialize, 2);
   rb_define_method(klass, "each", Descriptor_each, 0);
   rb_define_method(klass, "lookup", Descriptor_lookup, 1);
   rb_define_method(klass, "each_oneof", Descriptor_each_oneof, 0);
@@ -217,6 +323,25 @@ void Descriptor_register(VALUE module) {
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cDescriptor);
   cDescriptor = klass;
+}
+
+/*
+ * call-seq:
+ *    Descriptor.new(c_only_cookie, ptr) => Descriptor
+ *
+ * Creates a descriptor wrapper object.  May only be called from C.
+ */
+VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr) {
+  DEFINE_SELF(Descriptor, self, _self);
+
+  if (cookie != c_only_cookie) {
+    rb_raise(rb_eRuntimeError,
+             "Descriptor objects may not be created from Ruby.");
+  }
+
+  self->msgdef = (const upb_msgdef*)NUM2ULL(ptr);
+
+  return Qnil;
 }
 
 /*
@@ -869,14 +994,6 @@ void EnumDescriptor_free(void* _self) {
   xfree(_self);
 }
 
-/*
- * call-seq:
- *     EnumDescriptor.new => enum_descriptor
- *
- * Creates a new, empty, enum descriptor. Must be added to a pool before the
- * enum type can be used. The enum type may only be modified prior to adding to
- * a pool.
- */
 VALUE EnumDescriptor_alloc(VALUE klass) {
   EnumDescriptor* self = ALLOC(EnumDescriptor);
   VALUE ret = TypedData_Wrap_Struct(klass, &_EnumDescriptor_type, self);
@@ -886,10 +1003,30 @@ VALUE EnumDescriptor_alloc(VALUE klass) {
   return ret;
 }
 
+/*
+ * call-seq:
+ *    EnumDescriptor.new(c_only_cookie, ptr) => EnumDescriptor
+ *
+ * Creates a descriptor wrapper object.  May only be called from C.
+ */
+VALUE EnumDescriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr) {
+  DEFINE_SELF(EnumDescriptor, self, _self);
+
+  if (cookie != c_only_cookie) {
+    rb_raise(rb_eRuntimeError,
+             "Descriptor objects may not be created from Ruby.");
+  }
+
+  self->enumdef = (const upb_enumdef*)NUM2ULL(ptr);
+
+  return Qnil;
+}
+
 void EnumDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
+  rb_define_method(klass, "initialize", EnumDescriptor_initialize, 2);
   rb_define_method(klass, "name", EnumDescriptor_name, 0);
   rb_define_method(klass, "lookup_name", EnumDescriptor_lookup_name, 1);
   rb_define_method(klass, "lookup_value", EnumDescriptor_lookup_value, 1);
@@ -1052,12 +1189,11 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
   google_protobuf_FileDescriptorProto* file_proto = file_builder->file_proto;
 
   self->file_builder = _file_builder;
-  fprintf(stderr, "Calling add_message_type\n");
   self->msg_proto = google_protobuf_FileDescriptorProto_add_message_type(
       file_proto, &file_builder->arena);
 
   google_protobuf_DescriptorProto_set_name(
-      self->msg_proto, FileBuilderContext_strdup(_file_builder, name));
+      self->msg_proto, FileBuilderContext_strdup_name(_file_builder, name));
 
   return Qnil;
 }
@@ -1075,6 +1211,7 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
 
   Check_Type(name, T_SYMBOL);
   VALUE name_str = rb_id2str(SYM2ID(name));
+
   google_protobuf_FieldDescriptorProto_set_name(
       field_proto, FileBuilderContext_strdup(self->file_builder, name_str));
   google_protobuf_FieldDescriptorProto_set_number(field_proto, NUM2INT(number));
@@ -1096,7 +1233,12 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
 
     if (rb_funcall(options, rb_intern("key?"), 1,
                    ID2SYM(rb_intern("default"))) == Qtrue) {
-      VALUE default_value = rb_hash_lookup(options, ID2SYM(rb_intern("default")));
+      VALUE default_value =
+          rb_hash_lookup(options, ID2SYM(rb_intern("default")));
+
+      /* Call #to_s since all defaults are strings in the descriptor. */
+      default_value = rb_funcall(default_value, rb_intern("to_s"), 0);
+
       google_protobuf_FieldDescriptorProto_set_default_value(
           field_proto,
           FileBuilderContext_strdup(self->file_builder, default_value));
@@ -1126,7 +1268,7 @@ static VALUE make_mapentry(VALUE _message_builder, VALUE types, int argc,
              ID2SYM(rb_intern("key")), rb_ary_entry(types, 0), INT2NUM(1));
 
   // optional <type> value = 2;
-  if (type_class != Qnil) {
+  if (type_class == Qnil) {
     rb_funcall(_message_builder, rb_intern("optional"), 3,
                ID2SYM(rb_intern("value")), rb_ary_entry(types, 1), INT2NUM(2));
   } else {
@@ -1289,6 +1431,15 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
   VALUE types = rb_ary_new3(3, key_type, value_type, type_class);
   rb_block_call(self->file_builder, rb_intern("add_message"), 1, args,
                 make_mapentry, types);
+
+  // If this file is in a package, we need to qualify the map entry type.
+  if (google_protobuf_FileDescriptorProto_has_package(file_builder->file_proto)) {
+    upb_stringview package_view =
+        google_protobuf_FileDescriptorProto_package(file_builder->file_proto);
+    VALUE package = rb_str_new(package_view.data, package_view.size);
+    package = rb_str_cat2(package, ".");
+    mapentry_desc_name = rb_str_concat(package, mapentry_desc_name);
+  }
 
   // repeated MapEntry <name> = <number>;
   rb_funcall(_self, rb_intern("repeated"), 4, name,
@@ -1463,7 +1614,7 @@ VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder,
       file_proto, &file_builder->arena);
 
   google_protobuf_EnumDescriptorProto_set_name(
-      self->enum_proto, FileBuilderContext_strdup(_file_builder, name));
+      self->enum_proto, FileBuilderContext_strdup_name(_file_builder, name));
 
   return Qnil;
 }
@@ -1513,15 +1664,50 @@ void FileBuilderContext_free(void* _self) {
   xfree(self);
 }
 
-upb_stringview FileBuilderContext_strdup(VALUE _self, VALUE rb_str) {
+upb_stringview FileBuilderContext_strdup2(VALUE _self, const char *str) {
   DEFINE_SELF(FileBuilderContext, self, _self);
   upb_stringview ret;
-  const char *str = get_str(rb_str);
   ret.size = strlen(str);
-  char *data = upb_malloc(upb_arena_alloc(&self->arena), ret.size);
+  char *data = upb_malloc(upb_arena_alloc(&self->arena), ret.size + 1);
   ret.data = data;
   memcpy(data, str, ret.size);
+  /* Null-terminate required by rewrite_enum_defaults() above. */
+  data[ret.size] = '\0';
   return ret;
+}
+
+upb_stringview FileBuilderContext_strdup(VALUE _self, VALUE rb_str) {
+  const char *str = get_str(rb_str);
+  return FileBuilderContext_strdup2(_self, str);
+}
+
+upb_stringview FileBuilderContext_strdup_name(VALUE _self, VALUE rb_str) {
+  DEFINE_SELF(FileBuilderContext, self, _self);
+
+  const char *str = get_str(rb_str);
+  const char *sep = strchr(str, '.');
+
+  if (sep) {
+    VALUE this = rb_str_new(str, sep - str);
+    if (google_protobuf_FileDescriptorProto_has_package(self->file_proto)) {
+      /* Ensure it matches. */
+      upb_stringview package =
+          google_protobuf_FileDescriptorProto_package(self->file_proto);
+      VALUE existing = rb_str_new(package.data, package.size);
+      if (!rb_equal(existing, this)) {
+        rb_raise(rb_eRuntimeError,
+                 "package name '%s' didn't match previous name '%s",
+                 get_str(existing), get_str(this));
+      }
+    } else {
+      /* Set this as the package name. */
+      google_protobuf_FileDescriptorProto_set_package(
+          self->file_proto, FileBuilderContext_strdup(_self, this));
+    }
+    str = sep + 1;
+  }
+
+  return FileBuilderContext_strdup2(_self, str);
 }
 
 VALUE FileBuilderContext_alloc(VALUE klass) {
@@ -1556,7 +1742,6 @@ VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
   DEFINE_SELF(FileBuilderContext, self, _self);
   self->descriptor_pool = descriptor_pool;
 
-  rb_p(name);
   google_protobuf_FileDescriptorProto_set_name(
       self->file_proto, FileBuilderContext_strdup(_self, name));
 
@@ -1605,6 +1790,9 @@ VALUE FileBuilderContext_add_enum(VALUE _self, VALUE name) {
 void FileBuilderContext_build(VALUE _self) {
   DEFINE_SELF(FileBuilderContext, self, _self);
   DescriptorPool* pool = ruby_to_DescriptorPool(self->descriptor_pool);
+
+  rewrite_enum_defaults(pool->symtab, self->file_proto);
+
   CHECK_UPB(upb_symtab_addfile(pool->symtab, self->file_proto, &status),
             "Unable to add defs to DescriptorPool");
 }
