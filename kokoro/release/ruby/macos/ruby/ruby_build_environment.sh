@@ -5,10 +5,10 @@ set -ex
 set +ex  # rvm script is very verbose and exits with errorcode
 source $HOME/.rvm/scripts/rvm
 set -e  # rvm commands are very verbose
-time rvm install 2.5.1
-rvm use 2.5.1 --default
-gem install rake-compiler --no-ri --no-doc
-gem install bundler --no-ri --no-doc
+time rvm install 2.5.0
+rvm use 2.5.0 --default
+# gem install rake-compiler --no-ri --no-doc
+# gem install bundler --no-ri --no-doc
 rvm osx-ssl-certs status all
 rvm osx-ssl-certs update all
 set -ex
