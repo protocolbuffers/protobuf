@@ -947,7 +947,7 @@ GenerateClassDefinition(io::Printer* printer) {
       "  return reinterpret_cast<const $classname$*>(\n"
       "             &_$classname$_default_instance_);\n"
       "}\n"
-      "static constexpr int kIndexInFileMessages =\n"
+      "static const int kIndexInFileMessages =\n"
       "  $message_index$;\n"
       "\n");
 

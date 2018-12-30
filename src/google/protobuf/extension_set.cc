@@ -1881,7 +1881,7 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
 }
 
 // static
-constexpr uint16 ExtensionSet::kMaximumFlatCapacity;
+const uint16 ExtensionSet::kMaximumFlatCapacity;
 
 void ExtensionSet::Erase(int key) {
   if (GOOGLE_PREDICT_FALSE(is_large())) {

@@ -618,7 +618,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // Grows the flat_capacity_.
   // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.
   void GrowCapacity(size_t minimum_new_capacity);
-  static constexpr uint16 kMaximumFlatCapacity = 256;
+  static const uint16 kMaximumFlatCapacity = 256;
   bool is_large() const { return flat_capacity_ > kMaximumFlatCapacity; }
 
   // Removes a key from the ExtensionSet.
