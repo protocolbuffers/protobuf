@@ -2377,7 +2377,6 @@ static bool create_enumdef(
   return true;
 }
 
-#include <stdio.h>
 static bool create_msgdef(const symtab_addctx *ctx, const char *prefix,
                           const google_protobuf_DescriptorProto *msg_proto) {
   upb_msgdef *m;
@@ -2395,7 +2394,6 @@ static bool create_msgdef(const symtab_addctx *ctx, const char *prefix,
   m = (upb_msgdef*)&ctx->file->msgs[ctx->file->msg_count++];
   m->full_name = makefullname(ctx, prefix, name);
   CHK_OOM(symtab_add(ctx, m->full_name, pack_def(m, UPB_DEFTYPE_MSG)));
-  fprintf(stderr, "Adding symbol %s to symtab\n", m->full_name);
 
   CHK_OOM(upb_inttable_init2(&m->itof, UPB_CTYPE_CONSTPTR, ctx->alloc));
   CHK_OOM(upb_strtable_init2(&m->ntof, UPB_CTYPE_CONSTPTR, ctx->alloc));
@@ -2587,7 +2585,6 @@ static bool build_filedef(
       strviewdup(ctx, google_protobuf_FileDescriptorProto_name(file_proto));
   file->phpprefix = NULL;
   file->phpnamespace = NULL;
-  fprintf(stderr, "Adding file: %s\n", file->name);
 
   if (google_protobuf_FileDescriptorProto_has_package(file_proto)) {
     upb_stringview package =
@@ -2643,7 +2640,6 @@ static bool build_filedef(
 
   /* Create messages. */
   msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
-  fprintf(stderr, "Number of messages: %d\n", (int)n);
   for (i = 0; i < n; i++) {
     CHK(create_msgdef(ctx, file->package, msgs[i]));
   }

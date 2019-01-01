@@ -9,23 +9,7 @@ require 'google/protobuf'
 require 'json'
 require 'test/unit'
 
-# ------------- generated code --------------
-
 module BasicTestProto2
-  pool = Google::Protobuf::DescriptorPool.new
-  pool.build do
-    add_file "test_proto2.proto", syntax: :proto2 do
-      add_message "BadFieldNames" do
-        optional :dup, :int32, 1
-        optional :class, :int32, 2
-        optional :"a.b", :int32, 3
-      end
-    end
-  end
-
-  BadFieldNames = pool.lookup("BadFieldNames").msgclass
-
-# ------------ test cases ---------------
 
   class MessageContainerTest < Test::Unit::TestCase
     # Required by CommonTests module to resolve proto2 proto classes used in tests.

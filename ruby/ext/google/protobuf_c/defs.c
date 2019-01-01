@@ -72,8 +72,7 @@ static void rewrite_enum_default(const upb_symtab* symtab,
     return;
   }
 
-  /* Strip package name, if any. */
-  const char *type_name_str = strrchr(type_name.data, '.') + 1;
+  const char *type_name_str = type_name.data + 1;
 
   char *end;
   errno = 0;
@@ -84,7 +83,7 @@ static void rewrite_enum_default(const upb_symtab* symtab,
   }
 
   /* Now find the corresponding enum definition. */
-  const upb_enumdef *e = upb_symtab_lookupenum(symtab, type_name.data);
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, type_name_str);
   if (e) {
     /* Look in previously loaded files. */
     const char *label = upb_enumdef_iton(e, val);
@@ -141,14 +140,156 @@ static void rewrite_enum_defaults(
   google_protobuf_DescriptorProto** msgs =
       google_protobuf_FileDescriptorProto_message_type_mutable(file_proto, &n);
 
+  fprintf(stderr, "%p %d " UPB_STRINGVIEW_FORMAT "\n", msgs, (int)n,
+          UPB_STRINGVIEW_ARGS(
+              google_protobuf_FileDescriptorProto_name(file_proto)));
+
   for (i = 0; i < n; i++) {
     size_t j, m;
     google_protobuf_FieldDescriptorProto** fields =
         google_protobuf_DescriptorProto_field_mutable(msgs[i], &m);
+    fprintf(stderr, "- %p %d " UPB_STRINGVIEW_FORMAT "\n", fields, (int)m,
+            UPB_STRINGVIEW_ARGS(google_protobuf_DescriptorProto_name(msgs[i])));
     for (j = 0; j < m; j++) {
       rewrite_enum_default(symtab, file_proto, fields[j]);
     }
   }
+}
+
+static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
+                            google_protobuf_DescriptorProto* const* msgs,
+                            google_protobuf_EnumDescriptorProto* const* enums,
+                            upb_arena *arena) {
+  VALUE submsgs = rb_hash_aref(msg_ent, ID2SYM(rb_intern("msgs")));
+  VALUE enum_pos = rb_hash_aref(msg_ent, ID2SYM(rb_intern("enums")));
+
+  Check_Type(msgs, T_ARRAY);
+  Check_Type(enums, T_ARRAY);
+
+  int submsg_count = RARRAY_LEN(submsgs);
+  int enum_count = RARRAY_LEN(enum_pos);
+
+  google_protobuf_DescriptorProto** msg_msgs =
+      google_protobuf_DescriptorProto_nested_type_resize(msg, submsg_count,
+                                                         arena);
+  google_protobuf_EnumDescriptorProto** msg_enums =
+      google_protobuf_DescriptorProto_enum_type_resize(msg, enum_count, arena);
+
+  for (int i = 0; i < submsg_count; i++) {
+    VALUE submsg_ent = RARRAY_PTR(submsgs)[i];
+    VALUE pos = rb_hash_aref(msg_ent, ID2SYM(rb_intern("pos")));
+    msg_msgs[i] = msgs[NUM2INT(pos)];
+    rewrite_nesting(submsg_ent, msg_msgs[i], msgs, enums, arena);
+  }
+
+  for (int i = 0; i < enum_count; i++) {
+    VALUE pos = RARRAY_PTR(enum_pos)[i];
+    msg_enums[i] = enums[NUM2INT(pos)];
+  }
+}
+
+static bool has_prefix(upb_stringview str, upb_stringview prefix) {
+  fprintf(stderr, "%d %d %d\n", (int)str.size, (int)prefix.size, (int)memcmp(str.data, prefix.data, prefix.size));
+  return str.size >= prefix.size &&
+         memcmp(str.data, prefix.data, prefix.size) == 0;
+}
+
+static void remove_package(upb_stringview *name, upb_stringview package) {
+  size_t prefix_len = package.size + 1;
+  if (!has_prefix(*name, package) || prefix_len >= name->size ||
+      name->data[package.size] != '.') {
+    rb_raise(rb_eRuntimeError,
+             "Bad package name, wasn't prefix: " UPB_STRINGVIEW_FORMAT
+             ", " UPB_STRINGVIEW_FORMAT " %d %d %d %d",
+             UPB_STRINGVIEW_ARGS(*name), UPB_STRINGVIEW_ARGS(package),
+             (int)has_prefix(*name, package), (int)prefix_len, (int)name->size, (int)name->data[package.size]);
+  }
+  name->data += prefix_len;
+  name->size -= prefix_len;
+}
+
+static void rewrite_names(VALUE _file_builder,
+                          google_protobuf_FileDescriptorProto* file_proto) {
+  FileBuilderContext* file_builder = ruby_to_FileBuilderContext(_file_builder);
+  upb_arena *arena = &file_builder->arena;
+  // Build params (package, msg_names, enum_names).
+  VALUE package = Qnil;
+  VALUE msg_names = rb_ary_new();
+  VALUE enum_names = rb_ary_new();
+  size_t msg_count, enum_count, i;
+
+  if (google_protobuf_FileDescriptorProto_has_package(file_proto)) {
+    upb_stringview package_str =
+        google_protobuf_FileDescriptorProto_package(file_proto);
+    package = rb_str_new(package_str.data, package_str.size);
+  }
+
+  google_protobuf_DescriptorProto** msgs =
+      google_protobuf_FileDescriptorProto_message_type_mutable(file_proto,
+                                                               &msg_count);
+  for (i = 0; i < msg_count; i++) {
+    upb_stringview name = google_protobuf_DescriptorProto_name(msgs[i]);
+    rb_ary_push(msg_names, rb_str_new(name.data, name.size));
+  }
+
+  google_protobuf_EnumDescriptorProto** enums =
+      google_protobuf_FileDescriptorProto_enum_type_mutable(file_proto,
+                                                            &enum_count);
+  for (i = 0; i < enum_count; i++) {
+    upb_stringview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
+    rb_ary_push(enum_names, rb_str_new(name.data, name.size));
+  }
+
+  // Call Ruby code to calculate package name and nesting.
+  VALUE args[3] = { package, msg_names, enum_names };
+  VALUE internal = rb_eval_string("Google::Protobuf::Internal");
+  VALUE ret = rb_funcallv(internal, rb_intern("fixup_descriptor"), 3, args);
+  VALUE new_package = rb_ary_entry(ret, 0);
+  VALUE nesting = rb_ary_entry(ret, 1);
+
+  if (package == Qnil && new_package != Qnil) {
+    // We inferred a package name; set this package name on the file and remove
+    // the prefix from all msg/enum names.
+    upb_stringview new_package_str =
+        FileBuilderContext_strdup(_file_builder, new_package);
+    google_protobuf_FileDescriptorProto_set_package(file_proto,
+                                                    new_package_str);
+
+    for (i = 0; i < msg_count; i++) {
+      upb_stringview name = google_protobuf_DescriptorProto_name(msgs[i]);
+      remove_package(&name, new_package_str);
+      google_protobuf_DescriptorProto_set_name(msgs[i], name);
+    }
+
+    for (i = 0; i < enum_count; i++) {
+      upb_stringview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
+      remove_package(&name, new_package_str);
+      google_protobuf_EnumDescriptorProto_set_name(enums[i], name);
+    }
+  }
+
+  VALUE msg_ents = rb_hash_aref(nesting, ID2SYM(rb_intern("msgs")));
+  VALUE enum_ents = rb_hash_aref(nesting, ID2SYM(rb_intern("enums")));
+
+  Check_Type(msg_ents, T_ARRAY);
+  Check_Type(enum_ents, T_ARRAY);
+
+  for (i = 0; i < RARRAY_LEN(msg_ents); i++) {
+    VALUE msg_ent = rb_ary_entry(msg_ents, i);
+    VALUE pos = rb_hash_aref(msg_ent, ID2SYM(rb_intern("pos")));
+    msgs[i] = msgs[NUM2INT(pos)];
+    rewrite_nesting(msg_ent, msgs[i], msgs, enums, arena);
+  }
+
+  for (i = 0; i < RARRAY_LEN(enum_ents); i++) {
+    VALUE enum_pos = rb_ary_entry(enum_ents, i);
+    enums[i] = enums[NUM2INT(enum_pos)];
+  }
+
+  google_protobuf_FileDescriptorProto_message_type_resize(
+      file_proto, RARRAY_LEN(msg_ents), arena);
+  google_protobuf_FileDescriptorProto_enum_type_resize(
+      file_proto, RARRAY_LEN(enum_ents), arena);
 }
 
 // -----------------------------------------------------------------------------
@@ -1193,7 +1334,7 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
       file_proto, &file_builder->arena);
 
   google_protobuf_DescriptorProto_set_name(
-      self->msg_proto, FileBuilderContext_strdup_name(_file_builder, name));
+      self->msg_proto, FileBuilderContext_strdup(_file_builder, name));
 
   return Qnil;
 }
@@ -1412,10 +1553,10 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
   FileBuilderContext* file_builder =
       ruby_to_FileBuilderContext(self->file_builder);
   // TODO(haberman): what is the reason for this restriction?
-  if (file_builder->syntax == UPB_SYNTAX_PROTO2) {
-    rb_raise(rb_eArgError,
-             "Cannot add a native map field using proto2 syntax.");
-  }
+  //if (file_builder->syntax == UPB_SYNTAX_PROTO2) {
+  //  rb_raise(rb_eArgError,
+  //           "Cannot add a native map field using proto2 syntax.");
+  //}
 
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
@@ -1614,7 +1755,7 @@ VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder,
       file_proto, &file_builder->arena);
 
   google_protobuf_EnumDescriptorProto_set_name(
-      self->enum_proto, FileBuilderContext_strdup_name(_file_builder, name));
+      self->enum_proto, FileBuilderContext_strdup(_file_builder, name));
 
   return Qnil;
 }
@@ -1678,35 +1819,6 @@ upb_stringview FileBuilderContext_strdup2(VALUE _self, const char *str) {
 
 upb_stringview FileBuilderContext_strdup(VALUE _self, VALUE rb_str) {
   const char *str = get_str(rb_str);
-  return FileBuilderContext_strdup2(_self, str);
-}
-
-upb_stringview FileBuilderContext_strdup_name(VALUE _self, VALUE rb_str) {
-  DEFINE_SELF(FileBuilderContext, self, _self);
-
-  const char *str = get_str(rb_str);
-  const char *sep = strchr(str, '.');
-
-  if (sep) {
-    VALUE this = rb_str_new(str, sep - str);
-    if (google_protobuf_FileDescriptorProto_has_package(self->file_proto)) {
-      /* Ensure it matches. */
-      upb_stringview package =
-          google_protobuf_FileDescriptorProto_package(self->file_proto);
-      VALUE existing = rb_str_new(package.data, package.size);
-      if (!rb_equal(existing, this)) {
-        rb_raise(rb_eRuntimeError,
-                 "package name '%s' didn't match previous name '%s",
-                 get_str(existing), get_str(this));
-      }
-    } else {
-      /* Set this as the package name. */
-      google_protobuf_FileDescriptorProto_set_package(
-          self->file_proto, FileBuilderContext_strdup(_self, this));
-    }
-    str = sep + 1;
-  }
-
   return FileBuilderContext_strdup2(_self, str);
 }
 
@@ -1792,6 +1904,7 @@ void FileBuilderContext_build(VALUE _self) {
   DescriptorPool* pool = ruby_to_DescriptorPool(self->descriptor_pool);
 
   rewrite_enum_defaults(pool->symtab, self->file_proto);
+  rewrite_names(_self, self->file_proto);
 
   CHECK_UPB(upb_symtab_addfile(pool->symtab, self->file_proto, &status),
             "Unable to add defs to DescriptorPool");
