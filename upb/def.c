@@ -916,7 +916,7 @@ const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym) {
  * this code is used to directly build defs from Ruby (for example) we do need
  * to validate important constraints like uniqueness of names and numbers. */
 
-#define CHK(x) if (!(x)) { __builtin_trap(); return false; }
+#define CHK(x) if (!(x)) { return false; }
 #define CHK_OOM(x) if (!(x)) { upb_upberr_setoom(ctx->status); return false; }
 
 typedef struct {
@@ -1105,6 +1105,7 @@ static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
     case UPB_TYPE_BYTES:
       /* XXX: need to interpret the C-escaped value. */
       f->defaultval.str = newstr(ctx->alloc, str, len);
+      break;
     case UPB_TYPE_MESSAGE:
       /* Should not have a default value. */
       return false;
@@ -1449,8 +1450,10 @@ static bool resolve_fielddef(const symtab_addctx *ctx, const char *prefix,
     }
 
     if (!parse_default(ctx, defaultval.data, defaultval.size, f)) {
-      upb_status_seterrf(ctx->status, "couldn't parse default for field (%s)",
-                         f->full_name);
+      upb_status_seterrf(ctx->status,
+                         "couldn't parse default '" UPB_STRINGVIEW_FORMAT
+                         "' for field (%s)",
+                         UPB_STRINGVIEW_ARGS(defaultval), f->full_name);
       return false;
     }
   }

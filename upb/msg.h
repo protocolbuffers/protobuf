@@ -99,7 +99,7 @@ UPB_INLINE bool upb_stringview_eql(upb_stringview a, upb_stringview b) {
 }
 
 #define UPB_STRINGVIEW_FORMAT "%.*s"
-#define UPB_STRINGVIEW_ARGS(view) view.size, view.data
+#define UPB_STRINGVIEW_ARGS(view) (int)(view).size, (view).data
 
 #define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
 
