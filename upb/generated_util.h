@@ -30,7 +30,7 @@ UPB_INLINE void *_upb_array_mutable_accessor(void *msg, size_t ofs,
     if (size) *size = arr->size;
     return arr->data;
   } else {
-    if (size) size = 0;
+    if (size) *size = 0;
     return NULL;
   }
 }
@@ -46,6 +46,7 @@ UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
   if (!arr) {
     arr = upb_array_new(type, arena);
     if (!arr) return NULL;
+    *PTR_AT(msg, ofs, upb_array*) = arr;
   }
 
   if (size > arr->size) {
@@ -72,7 +73,7 @@ UPB_INLINE bool _upb_array_append_accessor(void *msg, size_t ofs,
                                            const void *value,
                                            upb_arena *arena) {
   upb_array *arr = *PTR_AT(msg, ofs, upb_array*);
-  size_t i = arr ? arr->len : 1;
+  size_t i = arr ? arr->len : 0;
   void *data =
       _upb_array_resize_accessor(msg, ofs, i + 1, elem_size, type, arena);
   if (!data) return false;
