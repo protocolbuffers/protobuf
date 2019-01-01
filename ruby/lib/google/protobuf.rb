@@ -96,7 +96,7 @@ else
 
           private
           def parent(name)
-            idx = name.index(?.)
+            idx = name.rindex(?.)
             if idx
               return name.slice(0, idx)
             else

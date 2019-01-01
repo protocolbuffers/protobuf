@@ -156,38 +156,6 @@ static void rewrite_enum_defaults(
   }
 }
 
-static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
-                            google_protobuf_DescriptorProto* const* msgs,
-                            google_protobuf_EnumDescriptorProto* const* enums,
-                            upb_arena *arena) {
-  VALUE submsgs = rb_hash_aref(msg_ent, ID2SYM(rb_intern("msgs")));
-  VALUE enum_pos = rb_hash_aref(msg_ent, ID2SYM(rb_intern("enums")));
-
-  Check_Type(msgs, T_ARRAY);
-  Check_Type(enums, T_ARRAY);
-
-  int submsg_count = RARRAY_LEN(submsgs);
-  int enum_count = RARRAY_LEN(enum_pos);
-
-  google_protobuf_DescriptorProto** msg_msgs =
-      google_protobuf_DescriptorProto_nested_type_resize(msg, submsg_count,
-                                                         arena);
-  google_protobuf_EnumDescriptorProto** msg_enums =
-      google_protobuf_DescriptorProto_enum_type_resize(msg, enum_count, arena);
-
-  for (int i = 0; i < submsg_count; i++) {
-    VALUE submsg_ent = RARRAY_PTR(submsgs)[i];
-    VALUE pos = rb_hash_aref(msg_ent, ID2SYM(rb_intern("pos")));
-    msg_msgs[i] = msgs[NUM2INT(pos)];
-    rewrite_nesting(submsg_ent, msg_msgs[i], msgs, enums, arena);
-  }
-
-  for (int i = 0; i < enum_count; i++) {
-    VALUE pos = RARRAY_PTR(enum_pos)[i];
-    msg_enums[i] = enums[NUM2INT(pos)];
-  }
-}
-
 static bool has_prefix(upb_stringview str, upb_stringview prefix) {
   fprintf(stderr, "%d %d %d\n", (int)str.size, (int)prefix.size, (int)memcmp(str.data, prefix.data, prefix.size));
   return str.size >= prefix.size &&
@@ -206,6 +174,53 @@ static void remove_package(upb_stringview *name, upb_stringview package) {
   }
   name->data += prefix_len;
   name->size -= prefix_len;
+}
+
+static void remove_path(upb_stringview *name) {
+  const char* last = strrchr(name->data, '.');
+  if (last) {
+    size_t remove = last - name->data + 1;
+    name->data += remove;
+    name->size -= remove;
+  }
+}
+
+static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
+                            google_protobuf_DescriptorProto* const* msgs,
+                            google_protobuf_EnumDescriptorProto* const* enums,
+                            upb_arena *arena) {
+  VALUE submsgs = rb_hash_aref(msg_ent, ID2SYM(rb_intern("msgs")));
+  VALUE enum_pos = rb_hash_aref(msg_ent, ID2SYM(rb_intern("enums")));
+
+  Check_Type(submsgs, T_ARRAY);
+  Check_Type(enum_pos, T_ARRAY);
+
+  int submsg_count = RARRAY_LEN(submsgs);
+  int enum_count = RARRAY_LEN(enum_pos);
+
+  printf("submsg_count: %d\n", submsg_count);
+
+  google_protobuf_DescriptorProto** msg_msgs =
+      google_protobuf_DescriptorProto_nested_type_resize(msg, submsg_count,
+                                                         arena);
+  google_protobuf_EnumDescriptorProto** msg_enums =
+      google_protobuf_DescriptorProto_enum_type_resize(msg, enum_count, arena);
+
+  for (int i = 0; i < submsg_count; i++) {
+    VALUE submsg_ent = RARRAY_PTR(submsgs)[i];
+    VALUE pos = rb_hash_aref(submsg_ent, ID2SYM(rb_intern("pos")));
+    printf("submsg from pos: %d\n", (int)NUM2INT(pos));
+    msg_msgs[i] = msgs[NUM2INT(pos)];
+    upb_stringview name = google_protobuf_DescriptorProto_name(msg_msgs[i]);
+    remove_path(&name);
+    google_protobuf_DescriptorProto_set_name(msg_msgs[i], name);
+    rewrite_nesting(submsg_ent, msg_msgs[i], msgs, enums, arena);
+  }
+
+  for (int i = 0; i < enum_count; i++) {
+    VALUE pos = RARRAY_PTR(enum_pos)[i];
+    msg_enums[i] = enums[NUM2INT(pos)];
+  }
 }
 
 static void rewrite_names(VALUE _file_builder,
@@ -1905,6 +1920,13 @@ void FileBuilderContext_build(VALUE _self) {
 
   rewrite_enum_defaults(pool->symtab, self->file_proto);
   rewrite_names(_self, self->file_proto);
+
+  size_t len;
+  const char* serialized = google_protobuf_FileDescriptorProto_serialize(
+      self->file_proto, &self->arena, &len);
+  FILE *dbg = fopen("/tmp/serialized", "wb");
+  fwrite(serialized, len, 1, dbg);
+  fclose(dbg);
 
   CHECK_UPB(upb_symtab_addfile(pool->symtab, self->file_proto, &status),
             "Unable to add defs to DescriptorPool");
