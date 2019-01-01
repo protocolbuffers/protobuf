@@ -215,11 +215,11 @@ UPB_INLINE bool google_protobuf_FileDescriptorProto_has_syntax(const google_prot
 UPB_INLINE upb_stringview google_protobuf_FileDescriptorProto_syntax(const google_protobuf_FileDescriptorProto *msg) { return UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(20, 40)); }
 
 UPB_INLINE void google_protobuf_FileDescriptorProto_set_name(google_protobuf_FileDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(4, 8)) = value;
 }
 UPB_INLINE void google_protobuf_FileDescriptorProto_set_package(google_protobuf_FileDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(12, 24)) = value;
 }
 UPB_INLINE upb_stringview* google_protobuf_FileDescriptorProto_dependency_mutable(google_protobuf_FileDescriptorProto *msg, size_t *len) {
@@ -285,7 +285,7 @@ UPB_INLINE struct google_protobuf_FieldDescriptorProto* google_protobuf_FileDesc
   return sub;
 }
 UPB_INLINE void google_protobuf_FileDescriptorProto_set_options(google_protobuf_FileDescriptorProto *msg, google_protobuf_FileOptions* value) {
-  _upb_sethas(msg, 3);
+  _upb_sethas(msg, 4);
   UPB_FIELD_AT(msg, google_protobuf_FileOptions*, UPB_SIZE(28, 56)) = value;
 }
 UPB_INLINE struct google_protobuf_FileOptions* google_protobuf_FileDescriptorProto_mutable_options(google_protobuf_FileDescriptorProto *msg, upb_arena *arena) {
@@ -298,7 +298,7 @@ UPB_INLINE struct google_protobuf_FileOptions* google_protobuf_FileDescriptorPro
   return sub;
 }
 UPB_INLINE void google_protobuf_FileDescriptorProto_set_source_code_info(google_protobuf_FileDescriptorProto *msg, google_protobuf_SourceCodeInfo* value) {
-  _upb_sethas(msg, 4);
+  _upb_sethas(msg, 5);
   UPB_FIELD_AT(msg, google_protobuf_SourceCodeInfo*, UPB_SIZE(32, 64)) = value;
 }
 UPB_INLINE struct google_protobuf_SourceCodeInfo* google_protobuf_FileDescriptorProto_mutable_source_code_info(google_protobuf_FileDescriptorProto *msg, upb_arena *arena) {
@@ -331,7 +331,7 @@ UPB_INLINE bool google_protobuf_FileDescriptorProto_add_weak_dependency(google_p
       msg, UPB_SIZE(60, 120), UPB_SIZE(4, 4), UPB_TYPE_INT32, &val, arena);
 }
 UPB_INLINE void google_protobuf_FileDescriptorProto_set_syntax(google_protobuf_FileDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(20, 40)) = value;
 }
 
@@ -363,7 +363,7 @@ UPB_INLINE const google_protobuf_DescriptorProto_ReservedRange* const* google_pr
 UPB_INLINE upb_stringview const* google_protobuf_DescriptorProto_reserved_name(const google_protobuf_DescriptorProto *msg, size_t *len) { return (upb_stringview const*)_upb_array_accessor(msg, UPB_SIZE(44, 88), len); }
 
 UPB_INLINE void google_protobuf_DescriptorProto_set_name(google_protobuf_DescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(4, 8)) = value;
 }
 UPB_INLINE google_protobuf_FieldDescriptorProto** google_protobuf_DescriptorProto_field_mutable(google_protobuf_DescriptorProto *msg, size_t *len) {
@@ -432,7 +432,7 @@ UPB_INLINE struct google_protobuf_FieldDescriptorProto* google_protobuf_Descript
   return sub;
 }
 UPB_INLINE void google_protobuf_DescriptorProto_set_options(google_protobuf_DescriptorProto *msg, google_protobuf_MessageOptions* value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, google_protobuf_MessageOptions*, UPB_SIZE(12, 24)) = value;
 }
 UPB_INLINE struct google_protobuf_MessageOptions* google_protobuf_DescriptorProto_mutable_options(google_protobuf_DescriptorProto *msg, upb_arena *arena) {
@@ -503,15 +503,15 @@ UPB_INLINE bool google_protobuf_DescriptorProto_ExtensionRange_has_options(const
 UPB_INLINE const google_protobuf_ExtensionRangeOptions* google_protobuf_DescriptorProto_ExtensionRange_options(const google_protobuf_DescriptorProto_ExtensionRange *msg) { return UPB_FIELD_AT(msg, const google_protobuf_ExtensionRangeOptions*, UPB_SIZE(12, 16)); }
 
 UPB_INLINE void google_protobuf_DescriptorProto_ExtensionRange_set_start(google_protobuf_DescriptorProto_ExtensionRange *msg, int32_t value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(4, 4)) = value;
 }
 UPB_INLINE void google_protobuf_DescriptorProto_ExtensionRange_set_end(google_protobuf_DescriptorProto_ExtensionRange *msg, int32_t value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(8, 8)) = value;
 }
 UPB_INLINE void google_protobuf_DescriptorProto_ExtensionRange_set_options(google_protobuf_DescriptorProto_ExtensionRange *msg, google_protobuf_ExtensionRangeOptions* value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, google_protobuf_ExtensionRangeOptions*, UPB_SIZE(12, 16)) = value;
 }
 UPB_INLINE struct google_protobuf_ExtensionRangeOptions* google_protobuf_DescriptorProto_ExtensionRange_mutable_options(google_protobuf_DescriptorProto_ExtensionRange *msg, upb_arena *arena) {
@@ -544,11 +544,11 @@ UPB_INLINE bool google_protobuf_DescriptorProto_ReservedRange_has_end(const goog
 UPB_INLINE int32_t google_protobuf_DescriptorProto_ReservedRange_end(const google_protobuf_DescriptorProto_ReservedRange *msg) { return UPB_FIELD_AT(msg, int32_t, UPB_SIZE(8, 8)); }
 
 UPB_INLINE void google_protobuf_DescriptorProto_ReservedRange_set_start(google_protobuf_DescriptorProto_ReservedRange *msg, int32_t value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(4, 4)) = value;
 }
 UPB_INLINE void google_protobuf_DescriptorProto_ReservedRange_set_end(google_protobuf_DescriptorProto_ReservedRange *msg, int32_t value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(8, 8)) = value;
 }
 
@@ -618,35 +618,35 @@ UPB_INLINE bool google_protobuf_FieldDescriptorProto_has_json_name(const google_
 UPB_INLINE upb_stringview google_protobuf_FieldDescriptorProto_json_name(const google_protobuf_FieldDescriptorProto *msg) { return UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(64, 96)); }
 
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_name(google_protobuf_FieldDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 4);
+  _upb_sethas(msg, 5);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(32, 32)) = value;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_extendee(google_protobuf_FieldDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 5);
+  _upb_sethas(msg, 6);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(40, 48)) = value;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_number(google_protobuf_FieldDescriptorProto *msg, int32_t value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(24, 24)) = value;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_label(google_protobuf_FieldDescriptorProto *msg, google_protobuf_FieldDescriptorProto_Label value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, google_protobuf_FieldDescriptorProto_Label, UPB_SIZE(8, 8)) = value;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_type(google_protobuf_FieldDescriptorProto *msg, google_protobuf_FieldDescriptorProto_Type value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, google_protobuf_FieldDescriptorProto_Type, UPB_SIZE(16, 16)) = value;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_type_name(google_protobuf_FieldDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 6);
+  _upb_sethas(msg, 7);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(48, 64)) = value;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_default_value(google_protobuf_FieldDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 7);
+  _upb_sethas(msg, 8);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(56, 80)) = value;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_options(google_protobuf_FieldDescriptorProto *msg, google_protobuf_FieldOptions* value) {
-  _upb_sethas(msg, 9);
+  _upb_sethas(msg, 10);
   UPB_FIELD_AT(msg, google_protobuf_FieldOptions*, UPB_SIZE(72, 112)) = value;
 }
 UPB_INLINE struct google_protobuf_FieldOptions* google_protobuf_FieldDescriptorProto_mutable_options(google_protobuf_FieldDescriptorProto *msg, upb_arena *arena) {
@@ -659,11 +659,11 @@ UPB_INLINE struct google_protobuf_FieldOptions* google_protobuf_FieldDescriptorP
   return sub;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_oneof_index(google_protobuf_FieldDescriptorProto *msg, int32_t value) {
-  _upb_sethas(msg, 3);
+  _upb_sethas(msg, 4);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(28, 28)) = value;
 }
 UPB_INLINE void google_protobuf_FieldDescriptorProto_set_json_name(google_protobuf_FieldDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 8);
+  _upb_sethas(msg, 9);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(64, 96)) = value;
 }
 
@@ -687,11 +687,11 @@ UPB_INLINE bool google_protobuf_OneofDescriptorProto_has_options(const google_pr
 UPB_INLINE const google_protobuf_OneofOptions* google_protobuf_OneofDescriptorProto_options(const google_protobuf_OneofDescriptorProto *msg) { return UPB_FIELD_AT(msg, const google_protobuf_OneofOptions*, UPB_SIZE(12, 24)); }
 
 UPB_INLINE void google_protobuf_OneofDescriptorProto_set_name(google_protobuf_OneofDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(4, 8)) = value;
 }
 UPB_INLINE void google_protobuf_OneofDescriptorProto_set_options(google_protobuf_OneofDescriptorProto *msg, google_protobuf_OneofOptions* value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, google_protobuf_OneofOptions*, UPB_SIZE(12, 24)) = value;
 }
 UPB_INLINE struct google_protobuf_OneofOptions* google_protobuf_OneofDescriptorProto_mutable_options(google_protobuf_OneofDescriptorProto *msg, upb_arena *arena) {
@@ -727,7 +727,7 @@ UPB_INLINE const google_protobuf_EnumDescriptorProto_EnumReservedRange* const* g
 UPB_INLINE upb_stringview const* google_protobuf_EnumDescriptorProto_reserved_name(const google_protobuf_EnumDescriptorProto *msg, size_t *len) { return (upb_stringview const*)_upb_array_accessor(msg, UPB_SIZE(24, 48), len); }
 
 UPB_INLINE void google_protobuf_EnumDescriptorProto_set_name(google_protobuf_EnumDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(4, 8)) = value;
 }
 UPB_INLINE google_protobuf_EnumValueDescriptorProto** google_protobuf_EnumDescriptorProto_value_mutable(google_protobuf_EnumDescriptorProto *msg, size_t *len) {
@@ -744,7 +744,7 @@ UPB_INLINE struct google_protobuf_EnumValueDescriptorProto* google_protobuf_Enum
   return sub;
 }
 UPB_INLINE void google_protobuf_EnumDescriptorProto_set_options(google_protobuf_EnumDescriptorProto *msg, google_protobuf_EnumOptions* value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, google_protobuf_EnumOptions*, UPB_SIZE(12, 24)) = value;
 }
 UPB_INLINE struct google_protobuf_EnumOptions* google_protobuf_EnumDescriptorProto_mutable_options(google_protobuf_EnumDescriptorProto *msg, upb_arena *arena) {
@@ -800,11 +800,11 @@ UPB_INLINE bool google_protobuf_EnumDescriptorProto_EnumReservedRange_has_end(co
 UPB_INLINE int32_t google_protobuf_EnumDescriptorProto_EnumReservedRange_end(const google_protobuf_EnumDescriptorProto_EnumReservedRange *msg) { return UPB_FIELD_AT(msg, int32_t, UPB_SIZE(8, 8)); }
 
 UPB_INLINE void google_protobuf_EnumDescriptorProto_EnumReservedRange_set_start(google_protobuf_EnumDescriptorProto_EnumReservedRange *msg, int32_t value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(4, 4)) = value;
 }
 UPB_INLINE void google_protobuf_EnumDescriptorProto_EnumReservedRange_set_end(google_protobuf_EnumDescriptorProto_EnumReservedRange *msg, int32_t value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(8, 8)) = value;
 }
 
@@ -830,15 +830,15 @@ UPB_INLINE bool google_protobuf_EnumValueDescriptorProto_has_options(const googl
 UPB_INLINE const google_protobuf_EnumValueOptions* google_protobuf_EnumValueDescriptorProto_options(const google_protobuf_EnumValueDescriptorProto *msg) { return UPB_FIELD_AT(msg, const google_protobuf_EnumValueOptions*, UPB_SIZE(16, 24)); }
 
 UPB_INLINE void google_protobuf_EnumValueDescriptorProto_set_name(google_protobuf_EnumValueDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(8, 8)) = value;
 }
 UPB_INLINE void google_protobuf_EnumValueDescriptorProto_set_number(google_protobuf_EnumValueDescriptorProto *msg, int32_t value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(4, 4)) = value;
 }
 UPB_INLINE void google_protobuf_EnumValueDescriptorProto_set_options(google_protobuf_EnumValueDescriptorProto *msg, google_protobuf_EnumValueOptions* value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, google_protobuf_EnumValueOptions*, UPB_SIZE(16, 24)) = value;
 }
 UPB_INLINE struct google_protobuf_EnumValueOptions* google_protobuf_EnumValueDescriptorProto_mutable_options(google_protobuf_EnumValueDescriptorProto *msg, upb_arena *arena) {
@@ -872,7 +872,7 @@ UPB_INLINE bool google_protobuf_ServiceDescriptorProto_has_options(const google_
 UPB_INLINE const google_protobuf_ServiceOptions* google_protobuf_ServiceDescriptorProto_options(const google_protobuf_ServiceDescriptorProto *msg) { return UPB_FIELD_AT(msg, const google_protobuf_ServiceOptions*, UPB_SIZE(12, 24)); }
 
 UPB_INLINE void google_protobuf_ServiceDescriptorProto_set_name(google_protobuf_ServiceDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(4, 8)) = value;
 }
 UPB_INLINE google_protobuf_MethodDescriptorProto** google_protobuf_ServiceDescriptorProto_method_mutable(google_protobuf_ServiceDescriptorProto *msg, size_t *len) {
@@ -889,7 +889,7 @@ UPB_INLINE struct google_protobuf_MethodDescriptorProto* google_protobuf_Service
   return sub;
 }
 UPB_INLINE void google_protobuf_ServiceDescriptorProto_set_options(google_protobuf_ServiceDescriptorProto *msg, google_protobuf_ServiceOptions* value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, google_protobuf_ServiceOptions*, UPB_SIZE(12, 24)) = value;
 }
 UPB_INLINE struct google_protobuf_ServiceOptions* google_protobuf_ServiceDescriptorProto_mutable_options(google_protobuf_ServiceDescriptorProto *msg, upb_arena *arena) {
@@ -930,19 +930,19 @@ UPB_INLINE bool google_protobuf_MethodDescriptorProto_has_server_streaming(const
 UPB_INLINE bool google_protobuf_MethodDescriptorProto_server_streaming(const google_protobuf_MethodDescriptorProto *msg) { return UPB_FIELD_AT(msg, bool, UPB_SIZE(2, 2)); }
 
 UPB_INLINE void google_protobuf_MethodDescriptorProto_set_name(google_protobuf_MethodDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(4, 8)) = value;
 }
 UPB_INLINE void google_protobuf_MethodDescriptorProto_set_input_type(google_protobuf_MethodDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 3);
+  _upb_sethas(msg, 4);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(12, 24)) = value;
 }
 UPB_INLINE void google_protobuf_MethodDescriptorProto_set_output_type(google_protobuf_MethodDescriptorProto *msg, upb_stringview value) {
-  _upb_sethas(msg, 4);
+  _upb_sethas(msg, 5);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(20, 40)) = value;
 }
 UPB_INLINE void google_protobuf_MethodDescriptorProto_set_options(google_protobuf_MethodDescriptorProto *msg, google_protobuf_MethodOptions* value) {
-  _upb_sethas(msg, 5);
+  _upb_sethas(msg, 6);
   UPB_FIELD_AT(msg, google_protobuf_MethodOptions*, UPB_SIZE(28, 56)) = value;
 }
 UPB_INLINE struct google_protobuf_MethodOptions* google_protobuf_MethodDescriptorProto_mutable_options(google_protobuf_MethodDescriptorProto *msg, upb_arena *arena) {
@@ -955,11 +955,11 @@ UPB_INLINE struct google_protobuf_MethodOptions* google_protobuf_MethodDescripto
   return sub;
 }
 UPB_INLINE void google_protobuf_MethodDescriptorProto_set_client_streaming(google_protobuf_MethodDescriptorProto *msg, bool value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(1, 1)) = value;
 }
 UPB_INLINE void google_protobuf_MethodDescriptorProto_set_server_streaming(google_protobuf_MethodDescriptorProto *msg, bool value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(2, 2)) = value;
 }
 
@@ -1016,75 +1016,75 @@ UPB_INLINE bool google_protobuf_FileOptions_php_generic_services(const google_pr
 UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_FileOptions_uninterpreted_option(const google_protobuf_FileOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(92, 160), len); }
 
 UPB_INLINE void google_protobuf_FileOptions_set_java_package(google_protobuf_FileOptions *msg, upb_stringview value) {
-  _upb_sethas(msg, 10);
+  _upb_sethas(msg, 11);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(28, 32)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_java_outer_classname(google_protobuf_FileOptions *msg, upb_stringview value) {
-  _upb_sethas(msg, 11);
+  _upb_sethas(msg, 12);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(36, 48)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_optimize_for(google_protobuf_FileOptions *msg, google_protobuf_FileOptions_OptimizeMode value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, google_protobuf_FileOptions_OptimizeMode, UPB_SIZE(8, 8)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_java_multiple_files(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(16, 16)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_go_package(google_protobuf_FileOptions *msg, upb_stringview value) {
-  _upb_sethas(msg, 12);
+  _upb_sethas(msg, 13);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(44, 64)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_cc_generic_services(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(17, 17)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_java_generic_services(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 3);
+  _upb_sethas(msg, 4);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(18, 18)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_py_generic_services(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 4);
+  _upb_sethas(msg, 5);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(19, 19)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_java_generate_equals_and_hash(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 5);
+  _upb_sethas(msg, 6);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(20, 20)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_deprecated(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 6);
+  _upb_sethas(msg, 7);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(21, 21)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_java_string_check_utf8(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 7);
+  _upb_sethas(msg, 8);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(22, 22)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_cc_enable_arenas(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 8);
+  _upb_sethas(msg, 9);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(23, 23)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_objc_class_prefix(google_protobuf_FileOptions *msg, upb_stringview value) {
-  _upb_sethas(msg, 13);
+  _upb_sethas(msg, 14);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(52, 80)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_csharp_namespace(google_protobuf_FileOptions *msg, upb_stringview value) {
-  _upb_sethas(msg, 14);
+  _upb_sethas(msg, 15);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(60, 96)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_swift_prefix(google_protobuf_FileOptions *msg, upb_stringview value) {
-  _upb_sethas(msg, 15);
+  _upb_sethas(msg, 16);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(68, 112)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_php_class_prefix(google_protobuf_FileOptions *msg, upb_stringview value) {
-  _upb_sethas(msg, 16);
+  _upb_sethas(msg, 17);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(76, 128)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_php_namespace(google_protobuf_FileOptions *msg, upb_stringview value) {
-  _upb_sethas(msg, 17);
+  _upb_sethas(msg, 18);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(84, 144)) = value;
 }
 UPB_INLINE void google_protobuf_FileOptions_set_php_generic_services(google_protobuf_FileOptions *msg, bool value) {
-  _upb_sethas(msg, 9);
+  _upb_sethas(msg, 10);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(24, 24)) = value;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FileOptions_uninterpreted_option_mutable(google_protobuf_FileOptions *msg, size_t *len) {
@@ -1126,19 +1126,19 @@ UPB_INLINE bool google_protobuf_MessageOptions_map_entry(const google_protobuf_M
 UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_MessageOptions_uninterpreted_option(const google_protobuf_MessageOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(8, 8), len); }
 
 UPB_INLINE void google_protobuf_MessageOptions_set_message_set_wire_format(google_protobuf_MessageOptions *msg, bool value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(1, 1)) = value;
 }
 UPB_INLINE void google_protobuf_MessageOptions_set_no_standard_descriptor_accessor(google_protobuf_MessageOptions *msg, bool value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(2, 2)) = value;
 }
 UPB_INLINE void google_protobuf_MessageOptions_set_deprecated(google_protobuf_MessageOptions *msg, bool value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(3, 3)) = value;
 }
 UPB_INLINE void google_protobuf_MessageOptions_set_map_entry(google_protobuf_MessageOptions *msg, bool value) {
-  _upb_sethas(msg, 3);
+  _upb_sethas(msg, 4);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(4, 4)) = value;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_MessageOptions_uninterpreted_option_mutable(google_protobuf_MessageOptions *msg, size_t *len) {
@@ -1184,27 +1184,27 @@ UPB_INLINE bool google_protobuf_FieldOptions_weak(const google_protobuf_FieldOpt
 UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_FieldOptions_uninterpreted_option(const google_protobuf_FieldOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(28, 32), len); }
 
 UPB_INLINE void google_protobuf_FieldOptions_set_ctype(google_protobuf_FieldOptions *msg, google_protobuf_FieldOptions_CType value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, google_protobuf_FieldOptions_CType, UPB_SIZE(8, 8)) = value;
 }
 UPB_INLINE void google_protobuf_FieldOptions_set_packed(google_protobuf_FieldOptions *msg, bool value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(24, 24)) = value;
 }
 UPB_INLINE void google_protobuf_FieldOptions_set_deprecated(google_protobuf_FieldOptions *msg, bool value) {
-  _upb_sethas(msg, 3);
+  _upb_sethas(msg, 4);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(25, 25)) = value;
 }
 UPB_INLINE void google_protobuf_FieldOptions_set_lazy(google_protobuf_FieldOptions *msg, bool value) {
-  _upb_sethas(msg, 4);
+  _upb_sethas(msg, 5);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(26, 26)) = value;
 }
 UPB_INLINE void google_protobuf_FieldOptions_set_jstype(google_protobuf_FieldOptions *msg, google_protobuf_FieldOptions_JSType value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, google_protobuf_FieldOptions_JSType, UPB_SIZE(16, 16)) = value;
 }
 UPB_INLINE void google_protobuf_FieldOptions_set_weak(google_protobuf_FieldOptions *msg, bool value) {
-  _upb_sethas(msg, 5);
+  _upb_sethas(msg, 6);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(27, 27)) = value;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_FieldOptions_uninterpreted_option_mutable(google_protobuf_FieldOptions *msg, size_t *len) {
@@ -1272,11 +1272,11 @@ UPB_INLINE bool google_protobuf_EnumOptions_deprecated(const google_protobuf_Enu
 UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_EnumOptions_uninterpreted_option(const google_protobuf_EnumOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(4, 8), len); }
 
 UPB_INLINE void google_protobuf_EnumOptions_set_allow_alias(google_protobuf_EnumOptions *msg, bool value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(1, 1)) = value;
 }
 UPB_INLINE void google_protobuf_EnumOptions_set_deprecated(google_protobuf_EnumOptions *msg, bool value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(2, 2)) = value;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_EnumOptions_uninterpreted_option_mutable(google_protobuf_EnumOptions *msg, size_t *len) {
@@ -1312,7 +1312,7 @@ UPB_INLINE bool google_protobuf_EnumValueOptions_deprecated(const google_protobu
 UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_EnumValueOptions_uninterpreted_option(const google_protobuf_EnumValueOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(4, 8), len); }
 
 UPB_INLINE void google_protobuf_EnumValueOptions_set_deprecated(google_protobuf_EnumValueOptions *msg, bool value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(1, 1)) = value;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_EnumValueOptions_uninterpreted_option_mutable(google_protobuf_EnumValueOptions *msg, size_t *len) {
@@ -1348,7 +1348,7 @@ UPB_INLINE bool google_protobuf_ServiceOptions_deprecated(const google_protobuf_
 UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_ServiceOptions_uninterpreted_option(const google_protobuf_ServiceOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(4, 8), len); }
 
 UPB_INLINE void google_protobuf_ServiceOptions_set_deprecated(google_protobuf_ServiceOptions *msg, bool value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(1, 1)) = value;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_ServiceOptions_uninterpreted_option_mutable(google_protobuf_ServiceOptions *msg, size_t *len) {
@@ -1386,11 +1386,11 @@ UPB_INLINE google_protobuf_MethodOptions_IdempotencyLevel google_protobuf_Method
 UPB_INLINE const google_protobuf_UninterpretedOption* const* google_protobuf_MethodOptions_uninterpreted_option(const google_protobuf_MethodOptions *msg, size_t *len) { return (const google_protobuf_UninterpretedOption* const*)_upb_array_accessor(msg, UPB_SIZE(20, 24), len); }
 
 UPB_INLINE void google_protobuf_MethodOptions_set_deprecated(google_protobuf_MethodOptions *msg, bool value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(16, 16)) = value;
 }
 UPB_INLINE void google_protobuf_MethodOptions_set_idempotency_level(google_protobuf_MethodOptions *msg, google_protobuf_MethodOptions_IdempotencyLevel value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, google_protobuf_MethodOptions_IdempotencyLevel, UPB_SIZE(8, 8)) = value;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_MethodOptions_uninterpreted_option_mutable(google_protobuf_MethodOptions *msg, size_t *len) {
@@ -1449,27 +1449,27 @@ UPB_INLINE struct google_protobuf_UninterpretedOption_NamePart* google_protobuf_
   return sub;
 }
 UPB_INLINE void google_protobuf_UninterpretedOption_set_identifier_value(google_protobuf_UninterpretedOption *msg, upb_stringview value) {
-  _upb_sethas(msg, 3);
+  _upb_sethas(msg, 4);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(32, 32)) = value;
 }
 UPB_INLINE void google_protobuf_UninterpretedOption_set_positive_int_value(google_protobuf_UninterpretedOption *msg, uint64_t value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, uint64_t, UPB_SIZE(8, 8)) = value;
 }
 UPB_INLINE void google_protobuf_UninterpretedOption_set_negative_int_value(google_protobuf_UninterpretedOption *msg, int64_t value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, int64_t, UPB_SIZE(16, 16)) = value;
 }
 UPB_INLINE void google_protobuf_UninterpretedOption_set_double_value(google_protobuf_UninterpretedOption *msg, double value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, double, UPB_SIZE(24, 24)) = value;
 }
 UPB_INLINE void google_protobuf_UninterpretedOption_set_string_value(google_protobuf_UninterpretedOption *msg, upb_stringview value) {
-  _upb_sethas(msg, 4);
+  _upb_sethas(msg, 5);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(40, 48)) = value;
 }
 UPB_INLINE void google_protobuf_UninterpretedOption_set_aggregate_value(google_protobuf_UninterpretedOption *msg, upb_stringview value) {
-  _upb_sethas(msg, 5);
+  _upb_sethas(msg, 6);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(48, 64)) = value;
 }
 
@@ -1493,11 +1493,11 @@ UPB_INLINE bool google_protobuf_UninterpretedOption_NamePart_has_is_extension(co
 UPB_INLINE bool google_protobuf_UninterpretedOption_NamePart_is_extension(const google_protobuf_UninterpretedOption_NamePart *msg) { return UPB_FIELD_AT(msg, bool, UPB_SIZE(1, 1)); }
 
 UPB_INLINE void google_protobuf_UninterpretedOption_NamePart_set_name_part(google_protobuf_UninterpretedOption_NamePart *msg, upb_stringview value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(4, 8)) = value;
 }
 UPB_INLINE void google_protobuf_UninterpretedOption_NamePart_set_is_extension(google_protobuf_UninterpretedOption_NamePart *msg, bool value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, bool, UPB_SIZE(1, 1)) = value;
 }
 
@@ -1574,11 +1574,11 @@ UPB_INLINE bool google_protobuf_SourceCodeInfo_Location_add_span(google_protobuf
       msg, UPB_SIZE(24, 48), UPB_SIZE(4, 4), UPB_TYPE_INT32, &val, arena);
 }
 UPB_INLINE void google_protobuf_SourceCodeInfo_Location_set_leading_comments(google_protobuf_SourceCodeInfo_Location *msg, upb_stringview value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(4, 8)) = value;
 }
 UPB_INLINE void google_protobuf_SourceCodeInfo_Location_set_trailing_comments(google_protobuf_SourceCodeInfo_Location *msg, upb_stringview value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(12, 24)) = value;
 }
 UPB_INLINE upb_stringview* google_protobuf_SourceCodeInfo_Location_leading_detached_comments_mutable(google_protobuf_SourceCodeInfo_Location *msg, size_t *len) {
@@ -1655,15 +1655,15 @@ UPB_INLINE bool google_protobuf_GeneratedCodeInfo_Annotation_add_path(google_pro
       msg, UPB_SIZE(20, 32), UPB_SIZE(4, 4), UPB_TYPE_INT32, &val, arena);
 }
 UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_source_file(google_protobuf_GeneratedCodeInfo_Annotation *msg, upb_stringview value) {
-  _upb_sethas(msg, 2);
+  _upb_sethas(msg, 3);
   UPB_FIELD_AT(msg, upb_stringview, UPB_SIZE(12, 16)) = value;
 }
 UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_begin(google_protobuf_GeneratedCodeInfo_Annotation *msg, int32_t value) {
-  _upb_sethas(msg, 0);
+  _upb_sethas(msg, 1);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(4, 4)) = value;
 }
 UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_end(google_protobuf_GeneratedCodeInfo_Annotation *msg, int32_t value) {
-  _upb_sethas(msg, 1);
+  _upb_sethas(msg, 2);
   UPB_FIELD_AT(msg, int32_t, UPB_SIZE(8, 8)) = value;
 }
 
