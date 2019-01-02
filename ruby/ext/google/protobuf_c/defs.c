@@ -399,12 +399,12 @@ VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
 
   const upb_msgdef* msgdef = upb_symtab_lookupmsg(self->symtab, name_str);
   if (msgdef) {
-    return get_msgdef_obj(msgdef);
+    return get_msgdef_obj(_self, msgdef);
   }
 
   const upb_enumdef* enumdef = upb_symtab_lookupenum(self->symtab, name_str);
   if (enumdef) {
-    return get_enumdef_obj(enumdef);
+    return get_enumdef_obj(_self, enumdef);
   }
 
   return Qnil;
@@ -508,7 +508,7 @@ VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr) {
  */
 VALUE Descriptor_file_descriptor(VALUE _self) {
   DEFINE_SELF(Descriptor, self, _self);
-  return get_filedef_obj(upb_msgdef_file(self->msgdef));
+  return get_filedef_obj(self->descriptor_pool, upb_msgdef_file(self->msgdef));
 }
 
 /*
@@ -537,7 +537,7 @@ VALUE Descriptor_each(VALUE _self) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE obj = get_fielddef_obj(field);
+    VALUE obj = get_fielddef_obj(self->descriptor_pool, field);
     rb_yield(obj);
   }
   return Qnil;
@@ -557,7 +557,7 @@ VALUE Descriptor_lookup(VALUE _self, VALUE name) {
   if (field == NULL) {
     return Qnil;
   }
-  return get_fielddef_obj(field);
+  return get_fielddef_obj(self->descriptor_pool, field);
 }
 
 /*
@@ -575,7 +575,7 @@ VALUE Descriptor_each_oneof(VALUE _self) {
        !upb_msg_oneof_done(&it);
        upb_msg_oneof_next(&it)) {
     const upb_oneofdef* oneof = upb_msg_iter_oneof(&it);
-    VALUE obj = get_oneofdef_obj(oneof);
+    VALUE obj = get_oneofdef_obj(self->descriptor_pool, oneof);
     rb_yield(obj);
   }
   return Qnil;
@@ -595,20 +595,19 @@ VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name) {
   if (oneof == NULL) {
     return Qnil;
   }
-  return get_oneofdef_obj(oneof);
+  return get_oneofdef_obj(self->descriptor_pool, oneof);
 }
 
 /*
  * call-seq:
  *     Descriptor.msgclass => message_klass
  *
- * Returns the Ruby class created for this message type. Valid only once the
- * message type has been added to a pool.
+ * Returns the Ruby class created for this message type.
  */
 VALUE Descriptor_msgclass(VALUE _self) {
   DEFINE_SELF(Descriptor, self, _self);
   if (self->klass == Qnil) {
-    self->klass = build_class_from_descriptor(self);
+    self->klass = build_class_from_descriptor(_self);
   }
   return self->klass;
 }
@@ -981,9 +980,11 @@ VALUE FieldDescriptor_subtype(VALUE _self) {
   DEFINE_SELF(FieldDescriptor, self, _self);
   switch (upb_fielddef_type(self->fielddef)) {
     case UPB_TYPE_ENUM:
-      return get_enumdef_obj(upb_fielddef_enumsubdef(self->fielddef));
+      return get_enumdef_obj(self->descriptor_pool,
+                             upb_fielddef_enumsubdef(self->fielddef));
     case UPB_TYPE_MESSAGE:
-      return get_msgdef_obj(upb_fielddef_msgsubdef(self->fielddef));
+      return get_msgdef_obj(self->descriptor_pool,
+                            upb_fielddef_msgsubdef(self->fielddef));
     default:
       return Qnil;
   }
@@ -1128,7 +1129,7 @@ VALUE OneofDescriptor_each(VALUE _self, VALUE field) {
        !upb_oneof_done(&it);
        upb_oneof_next(&it)) {
     const upb_fielddef* f = upb_oneof_iter_field(&it);
-    VALUE obj = get_fielddef_obj(f);
+    VALUE obj = get_fielddef_obj(self->descriptor_pool, f);
     rb_yield(obj);
   }
   return Qnil;
@@ -1202,7 +1203,8 @@ void EnumDescriptor_register(VALUE module) {
  */
 VALUE EnumDescriptor_file_descriptor(VALUE _self) {
   DEFINE_SELF(EnumDescriptor, self, _self);
-  return get_filedef_obj(upb_enumdef_file(self->enumdef));
+  return get_filedef_obj(self->descriptor_pool,
+                         upb_enumdef_file(self->enumdef));
 }
 
 /*
@@ -1278,13 +1280,12 @@ VALUE EnumDescriptor_each(VALUE _self) {
  * call-seq:
  *     EnumDescriptor.enummodule => module
  *
- * Returns the Ruby module corresponding to this enum type. Cannot be called
- * until the enum descriptor has been added to a pool.
+ * Returns the Ruby module corresponding to this enum type.
  */
 VALUE EnumDescriptor_enummodule(VALUE _self) {
   DEFINE_SELF(EnumDescriptor, self, _self);
   if (self->module == Qnil) {
-    self->module = build_module_from_enumdesc(self);
+    self->module = build_module_from_enumdesc(_self);
   }
   return self->module;
 }
@@ -2104,22 +2105,22 @@ static VALUE get_def_obj(const void* ptr, VALUE klass) {
   return def;
 }
 
-VALUE get_msgdef_obj(const upb_msgdef* def) {
+VALUE get_msgdef_obj(VALUE descriptor_pool, const upb_msgdef* def) {
   return get_def_obj(def, cDescriptor);
 }
 
-VALUE get_enumdef_obj(const upb_enumdef* def) {
+VALUE get_enumdef_obj(VALUE descriptor_pool, const upb_enumdef* def) {
   return get_def_obj(def, cEnumDescriptor);
 }
 
-VALUE get_fielddef_obj(const upb_fielddef* def) {
+VALUE get_fielddef_obj(VALUE descriptor_pool, const upb_fielddef* def) {
   return get_def_obj(def, cFieldDescriptor);
 }
 
-VALUE get_filedef_obj(const upb_filedef* def) {
+VALUE get_filedef_obj(VALUE descriptor_pool, const upb_filedef* def) {
   return get_def_obj(def, cFileDescriptor);
 }
 
-VALUE get_oneofdef_obj(const upb_oneofdef* def) {
+VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def) {
   return get_def_obj(def, cOneofDescriptor);
 }

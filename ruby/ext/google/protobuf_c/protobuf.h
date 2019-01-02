@@ -113,7 +113,7 @@ struct DescriptorPool {
 struct Descriptor {
   const upb_msgdef* msgdef;
   MessageLayout* layout;
-  VALUE klass;  // begins as nil
+  VALUE klass;  // Starts as nil, created lazily.
   VALUE descriptor_pool;  // Owns the upb_msgdef and keeps it alive.
   const upb_handlers* fill_handlers;
   const upb_pbdecodermethod* fill_method;
@@ -360,7 +360,7 @@ extern rb_encoding* kRubyStringUtf8Encoding;
 extern rb_encoding* kRubyStringASCIIEncoding;
 extern rb_encoding* kRubyString8bitEncoding;
 
-VALUE field_type_class(const upb_fielddef* field);
+VALUE field_type_class(const MessageLayout* layout, const upb_fielddef* field);
 
 #define MAP_KEY_FIELD 1
 #define MAP_VALUE_FIELD 2
@@ -495,12 +495,13 @@ struct MessageField {
 
 // MessageLayout is owned by the enclosing Descriptor, which must outlive us.
 struct MessageLayout {
+  const Descriptor* desc;
   const upb_msgdef* msgdef;
   MessageField* fields;
   size_t size;
 };
 
-MessageLayout* create_layout(const upb_msgdef* msgdef);
+MessageLayout* create_layout(const Descriptor* desc);
 void free_layout(MessageLayout* layout);
 bool field_contains_hasbit(MessageLayout* layout,
                  const upb_fielddef* field);
@@ -549,7 +550,7 @@ struct MessageHeader {
 
 extern rb_data_type_t Message_type;
 
-VALUE build_class_from_descriptor(Descriptor* descriptor);
+VALUE build_class_from_descriptor(VALUE descriptor);
 void* Message_data(void* msg);
 void Message_mark(void* self);
 void Message_free(void* self);
@@ -573,7 +574,7 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
 VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
 
-VALUE build_module_from_enumdesc(EnumDescriptor* enumdef);
+VALUE build_module_from_enumdesc(VALUE _enumdesc);
 VALUE enum_lookup(VALUE self, VALUE number);
 VALUE enum_resolve(VALUE self, VALUE sym);
 
@@ -588,11 +589,11 @@ const upb_pbdecodermethod *new_fillmsg_decodermethod(
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
 // -----------------------------------------------------------------------------
-VALUE get_msgdef_obj(const upb_msgdef* def);
-VALUE get_enumdef_obj(const upb_enumdef* def);
-VALUE get_fielddef_obj(const upb_fielddef* def);
-VALUE get_filedef_obj(const upb_filedef* def);
-VALUE get_oneofdef_obj(const upb_oneofdef* def);
+VALUE get_msgdef_obj(VALUE descriptor_pool, const upb_msgdef* def);
+VALUE get_enumdef_obj(VALUE descriptor_pool, const upb_enumdef* def);
+VALUE get_fielddef_obj(VALUE descriptor_pool, const upb_fielddef* def);
+VALUE get_filedef_obj(VALUE descriptor_pool, const upb_filedef* def);
+VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def);
 
 // -----------------------------------------------------------------------------
 // Utilities.
