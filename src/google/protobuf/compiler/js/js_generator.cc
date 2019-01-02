@@ -2848,44 +2848,50 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
   // fields with presence.
   if (field->is_map()) {
     printer->Print(
+        "/** Clears values from the map. The map will be non-null. */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  this.$gettername$().clear();$returnvalue$\n"
         "};\n"
         "\n"
         "\n",
         "class", GetMessagePath(options, field->containing_type()),
-        "clearername", "clear" + JSGetterName(options, field),
-        "gettername", "get" + JSGetterName(options, field),
-        "returnvalue", JSReturnClause(field));
+        "clearername", "clear" + JSGetterName(options, field), "gettername",
+        "get" + JSGetterName(options, field), "returnvalue",
+        JSReturnClause(field));
     printer->Annotate("clearername", field);
   } else if (field->is_repeated() ||
              (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
               !field->is_required())) {
     // Fields where we can delegate to the regular setter.
     printer->Print(
+        "/** $jsdoc$ */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  this.$settername$($clearedvalue$);$returnvalue$\n"
         "};\n"
         "\n"
         "\n",
+        "jsdoc",
+        field->is_repeated() ? "Clears the list making it empty but non-null."
+                             : "Clears the message field making it undefined.",
         "class", GetMessagePath(options, field->containing_type()),
-        "clearername", "clear" + JSGetterName(options, field),
-        "settername", "set" + JSGetterName(options, field),
-        "clearedvalue", (field->is_repeated() ? "[]" : "undefined"),
-        "returnvalue", JSReturnClause(field));
+        "clearername", "clear" + JSGetterName(options, field), "settername",
+        "set" + JSGetterName(options, field), "clearedvalue",
+        (field->is_repeated() ? "[]" : "undefined"), "returnvalue",
+        JSReturnClause(field));
     printer->Annotate("clearername", field);
   } else if (HasFieldPresence(options, field)) {
     // Fields where we can't delegate to the regular setter because it doesn't
     // accept "undefined" as an argument.
     printer->Print(
+        "/** Clears the field making it undefined. */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  jspb.Message.set$maybeoneof$Field(this, "
         "$index$$maybeoneofgroup$, ",
         "class", GetMessagePath(options, field->containing_type()),
-        "clearername", "clear" + JSGetterName(options, field),
-        "maybeoneof", (field->containing_oneof() ? "Oneof" : ""),
-        "maybeoneofgroup", (field->containing_oneof() ?
-                           (", " + JSOneofArray(options, field)) : ""),
+        "clearername", "clear" + JSGetterName(options, field), "maybeoneof",
+        (field->containing_oneof() ? "Oneof" : ""), "maybeoneofgroup",
+        (field->containing_oneof() ? (", " + JSOneofArray(options, field))
+                                   : ""),
         "index", JSFieldIndex(field));
     printer->Annotate("clearername", field);
     printer->Print(
@@ -2963,14 +2969,15 @@ void Generator::GenerateRepeatedMessageHelperMethods(
       " * @param {number=} opt_index\n"
       " * @return {!$optionaltype$}\n"
       " */\n"
-      "$class$.prototype.add$name$ = function(opt_value, opt_index) {\n"
+      "$class$.prototype.$addername$ = function(opt_value, opt_index) {\n"
       "  return jspb.Message.addTo$repeatedtag$WrapperField(",
-      "optionaltype", JSTypeName(options, field, BYTES_DEFAULT),
-      "class", GetMessagePath(options, field->containing_type()),
-      "name", JSGetterName(options, field, BYTES_DEFAULT,
-                   /* drop_list = */ true),
+      "optionaltype", JSTypeName(options, field, BYTES_DEFAULT), "class",
+      GetMessagePath(options, field->containing_type()), "addername",
+      "add" + JSGetterName(options, field, BYTES_DEFAULT,
+                           /* drop_list = */ true),
       "repeatedtag", (field->is_repeated() ? "Repeated" : ""));
 
+  printer->Annotate("addername", field);
   printer->Print(
       "this, $index$$oneofgroup$, opt_value, $ctor$, opt_index);\n"
       "};\n"

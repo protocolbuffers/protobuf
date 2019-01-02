@@ -178,9 +178,15 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
               default_enum_value>::Clear() {
-  MapFieldBase::SyncMapWithRepeatedField();
+  if (this->MapFieldBase::repeated_field_ != nullptr) {
+    RepeatedPtrField<EntryType>* repeated_field =
+        reinterpret_cast<RepeatedPtrField<EntryType>*>(
+            this->MapFieldBase::repeated_field_);
+    repeated_field->Clear();
+  }
+
   impl_.MutableMap()->clear();
-  MapFieldBase::SetMapDirty();
+  MapFieldBase::SetClean();
 }
 
 template <typename Derived, typename Key, typename T,
