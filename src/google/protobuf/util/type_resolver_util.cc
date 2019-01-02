@@ -118,6 +118,27 @@ class DescriptorPoolTypeResolver : public TypeResolver {
 
   void ConvertMessageOptions(const MessageOptions& options,
                              RepeatedPtrField<Option>* output) {
+    return ConvertOptionsInternal(options, output);
+  }
+
+  void ConvertFieldOptions(const FieldOptions& options,
+                           RepeatedPtrField<Option>* output) {
+    return ConvertOptionsInternal(options, output);
+  }
+
+  void ConvertEnumOptions(const EnumOptions& options,
+                          RepeatedPtrField<Option>* output) {
+    return ConvertOptionsInternal(options, output);
+  }
+
+  void ConvertEnumValueOptions(const EnumValueOptions& options,
+                               RepeatedPtrField<Option>* output) {
+    return ConvertOptionsInternal(options, output);
+  }
+
+  // Implementation details for Convert*Options.
+  void ConvertOptionsInternal(const Message& options,
+                              RepeatedPtrField<Option>* output) {
     const Reflection* reflection = options.GetReflection();
     std::vector<const FieldDescriptor*> fields;
     reflection->ListFields(options, &fields);
@@ -125,18 +146,18 @@ class DescriptorPoolTypeResolver : public TypeResolver {
       if (field->is_repeated()) {
         const int size = reflection->FieldSize(options, field);
         for (int i = 0; i < size; i++) {
-          ConvertMessageOption(reflection, options, field, i, output->Add());
+          ConvertOptionField(reflection, options, field, i, output->Add());
         }
       } else {
-        ConvertMessageOption(reflection, options, field, -1, output->Add());
+        ConvertOptionField(reflection, options, field, -1, output->Add());
       }
     }
   }
 
-  static void ConvertMessageOption(const Reflection* reflection,
-                                   const MessageOptions& options,
-                                   const FieldDescriptor* field, int index,
-                                   Option* out) {
+  static void ConvertOptionField(const Reflection* reflection,
+                                 const Message& options,
+                                 const FieldDescriptor* field, int index,
+                                 Option* out) {
     out->set_name(field->is_extension() ? field->full_name() : field->name());
     Any* value = out->mutable_value();
     switch (field->cpp_type()) {
@@ -250,7 +271,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
       field->set_packed(true);
     }
 
-    // TODO(xiaofeng): Set other field "options"?
+    ConvertFieldOptions(descriptor->options(), field->mutable_options());
   }
 
   void ConvertEnumDescriptor(const EnumDescriptor* descriptor,
@@ -265,9 +286,11 @@ class DescriptorPoolTypeResolver : public TypeResolver {
       value->set_name(value_descriptor->name());
       value->set_number(value_descriptor->number());
 
-      // TODO(xiaofeng): Set EnumValue options.
+      ConvertEnumValueOptions(value_descriptor->options(),
+                              value->mutable_options());
     }
-    // TODO(xiaofeng): Set Enum "options".
+
+    ConvertEnumOptions(descriptor->options(), enum_type->mutable_options());
   }
 
   string GetTypeUrl(const Descriptor* descriptor) {

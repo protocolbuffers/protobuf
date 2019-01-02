@@ -867,9 +867,7 @@ void GeneratedMessageReflection::ClearField(
 
       case FieldDescriptor::CPPTYPE_MESSAGE: {
         if (IsMapFieldInApi(field)) {
-          MutableRaw<MapFieldBase>(message, field)
-              ->MutableRepeatedField()
-              ->Clear<GenericTypeHandler<Message> >();
+          MutableRaw<MapFieldBase>(message, field)->Clear();
         } else {
           // We don't know which subclass of RepeatedPtrFieldBase the type is,
           // so we use RepeatedPtrFieldBase directly.

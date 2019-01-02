@@ -46,6 +46,7 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
+
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -181,15 +182,17 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Renders a NWP map.
   // Returns the next tag after reading all map entries. The caller should use
   // this tag before reading more tags from the stream.
-  util::StatusOr<uint32> RenderMap(const google::protobuf::Field* field,
-                                     StringPiece name, uint32 list_tag,
-                                     ObjectWriter* ow) const;
+  util::StatusOr<uint32>
+      RenderMap(const google::protobuf::Field* field,
+                StringPiece name, uint32 list_tag,
+                ObjectWriter* ow) const;
 
   // Renders a packed repeating field. A packed field is stored as:
   // {tag length item1 item2 item3} instead of the less efficient
   // {tag item1 tag item2 tag item3}.
   util::Status RenderPacked(const google::protobuf::Field* field,
                               ObjectWriter* ow) const;
+
 
   // Renders a google.protobuf.Timestamp value to ObjectWriter
   static util::Status RenderTimestamp(const ProtoStreamObjectSource* os,
