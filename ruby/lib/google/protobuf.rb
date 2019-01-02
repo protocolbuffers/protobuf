@@ -78,7 +78,6 @@ else
 
             msg_names.each { |name| @msg_children[parent(name)] << name }
             enum_names.each { |name| @enum_children[parent(name)] << name }
-            p self
           end
 
           def build(package)
@@ -112,9 +111,7 @@ else
 
           nesting = NestingBuilder.new(msg_names, enum_names).build(package)
 
-          ret = [package, nesting]
-          p ret
-          return ret
+          return package, nesting
         end
       end
     end

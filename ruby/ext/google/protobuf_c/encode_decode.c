@@ -813,13 +813,14 @@ static void stackenv_uninit(stackenv* se);
 // Callback invoked by upb if any error occurs during parsing or serialization.
 static bool env_error_func(void* ud, const upb_status* status) {
   stackenv* se = ud;
+  VALUE errmsg = rb_str_new2(upb_status_errmsg(status));
   // Free the env -- rb_raise will longjmp up the stack past the encode/decode
   // function so it would not otherwise have been freed.
   stackenv_uninit(se);
 
   // TODO(haberman): have a way to verify that this is actually a parse error,
   // instead of just throwing "parse error" unconditionally.
-  rb_raise(cParseError, se->ruby_error_template, upb_status_errmsg(status));
+  rb_raise(cParseError, se->ruby_error_template, errmsg);
   // Never reached: rb_raise() always longjmp()s up the stack, past all of our
   // code, back to Ruby.
   return false;
@@ -863,7 +864,7 @@ VALUE Message_decode(VALUE klass, VALUE data) {
     stackenv se;
     upb_sink sink;
     upb_pbdecoder* decoder;
-    stackenv_init(&se, "Error occurred during parsing: %s");
+    stackenv_init(&se, "Error occurred during parsing: %" PRIsVALUE);
 
     upb_sink_reset(&sink, h, msg);
     decoder = upb_pbdecoder_create(&se.env, method, &sink);
@@ -925,7 +926,7 @@ VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
     stackenv se;
     upb_sink sink;
     upb_json_parser* parser;
-    stackenv_init(&se, "Error occurred during parsing: %s");
+    stackenv_init(&se, "Error occurred during parsing: %" PRIsVALUE);
 
     upb_sink_reset(&sink, get_fill_handlers(desc), msg);
     parser = upb_json_parser_create(&se.env, method, NULL, &sink,
@@ -1301,7 +1302,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
     upb_pb_encoder* encoder;
     VALUE ret;
 
-    stackenv_init(&se, "Error occurred during encoding: %s");
+    stackenv_init(&se, "Error occurred during encoding: %" PRIsVALUE);
     encoder = upb_pb_encoder_create(&se.env, serialize_handlers, &sink.sink);
 
     putmsg(msg_rb, desc, upb_pb_encoder_input(encoder), 0, false);
@@ -1359,7 +1360,7 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
     stackenv se;
     VALUE ret;
 
-    stackenv_init(&se, "Error occurred during encoding: %s");
+    stackenv_init(&se, "Error occurred during encoding: %" PRIsVALUE);
     printer = upb_json_printer_create(&se.env, serialize_handlers, &sink.sink);
 
     putmsg(msg_rb, desc, upb_json_printer_input(printer), 0, RTEST(emit_defaults));

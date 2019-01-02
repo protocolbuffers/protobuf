@@ -304,7 +304,6 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   }
 
   f = upb_msgdef_ntofz(self->descriptor->msgdef, name);
-  fprintf(stderr, "YO2: %s\n", upb_msgdef_fullname(self->descriptor->msgdef));
   if (f == NULL) {
     rb_raise(rb_eArgError,
              "Unknown field name '%s' in initialization map entry.", name);

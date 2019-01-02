@@ -140,16 +140,16 @@ static void rewrite_enum_defaults(
   google_protobuf_DescriptorProto** msgs =
       google_protobuf_FileDescriptorProto_message_type_mutable(file_proto, &n);
 
-  fprintf(stderr, "%p %d " UPB_STRINGVIEW_FORMAT "\n", msgs, (int)n,
-          UPB_STRINGVIEW_ARGS(
-              google_protobuf_FileDescriptorProto_name(file_proto)));
+  //fprintf(stderr, "%p %d " UPB_STRINGVIEW_FORMAT "\n", msgs, (int)n,
+  //        UPB_STRINGVIEW_ARGS(
+  //            google_protobuf_FileDescriptorProto_name(file_proto)));
 
   for (i = 0; i < n; i++) {
     size_t j, m;
     google_protobuf_FieldDescriptorProto** fields =
         google_protobuf_DescriptorProto_field_mutable(msgs[i], &m);
-    fprintf(stderr, "- %p %d " UPB_STRINGVIEW_FORMAT "\n", fields, (int)m,
-            UPB_STRINGVIEW_ARGS(google_protobuf_DescriptorProto_name(msgs[i])));
+    //fprintf(stderr, "- %p %d " UPB_STRINGVIEW_FORMAT "\n", fields, (int)m,
+    //        UPB_STRINGVIEW_ARGS(google_protobuf_DescriptorProto_name(msgs[i])));
     for (j = 0; j < m; j++) {
       rewrite_enum_default(symtab, file_proto, fields[j]);
     }
@@ -157,7 +157,7 @@ static void rewrite_enum_defaults(
 }
 
 static bool has_prefix(upb_stringview str, upb_stringview prefix) {
-  fprintf(stderr, "%d %d %d\n", (int)str.size, (int)prefix.size, (int)memcmp(str.data, prefix.data, prefix.size));
+  //fprintf(stderr, "%d %d %d\n", (int)str.size, (int)prefix.size, (int)memcmp(str.data, prefix.data, prefix.size));
   return str.size >= prefix.size &&
          memcmp(str.data, prefix.data, prefix.size) == 0;
 }
@@ -198,7 +198,7 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
   int submsg_count = RARRAY_LEN(submsgs);
   int enum_count = RARRAY_LEN(enum_pos);
 
-  printf("submsg_count: %d\n", submsg_count);
+  //printf("submsg_count: %d\n", submsg_count);
 
   google_protobuf_DescriptorProto** msg_msgs =
       google_protobuf_DescriptorProto_nested_type_resize(msg, submsg_count,
@@ -209,7 +209,7 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
   for (int i = 0; i < submsg_count; i++) {
     VALUE submsg_ent = RARRAY_PTR(submsgs)[i];
     VALUE pos = rb_hash_aref(submsg_ent, ID2SYM(rb_intern("pos")));
-    printf("submsg from pos: %d\n", (int)NUM2INT(pos));
+    //printf("submsg from pos: %d\n", (int)NUM2INT(pos));
     msg_msgs[i] = msgs[NUM2INT(pos)];
     upb_stringview name = google_protobuf_DescriptorProto_name(msg_msgs[i]);
     remove_path(&name);
@@ -468,7 +468,7 @@ void Descriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
-  rb_define_method(klass, "initialize", Descriptor_initialize, 2);
+  rb_define_method(klass, "initialize", Descriptor_initialize, 3);
   rb_define_method(klass, "each", Descriptor_each, 0);
   rb_define_method(klass, "lookup", Descriptor_lookup, 1);
   rb_define_method(klass, "each_oneof", Descriptor_each_oneof, 0);
@@ -487,7 +487,8 @@ void Descriptor_register(VALUE module) {
  *
  * Creates a descriptor wrapper object.  May only be called from C.
  */
-VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr) {
+VALUE Descriptor_initialize(VALUE _self, VALUE cookie,
+                            VALUE descriptor_pool, VALUE ptr) {
   DEFINE_SELF(Descriptor, self, _self);
 
   if (cookie != c_only_cookie) {
@@ -495,8 +496,9 @@ VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr) {
              "Descriptor objects may not be created from Ruby.");
   }
 
+  self->descriptor_pool = descriptor_pool;
   self->msgdef = (const upb_msgdef*)NUM2ULL(ptr);
-  fprintf(stderr, "YO: %p\n", self->msgdef);
+  //fprintf(stderr, "YO: %p\n", self->msgdef);
 
   return Qnil;
 }
@@ -628,6 +630,14 @@ void FileDescriptor_free(void* _self) {
   xfree(_self);
 }
 
+VALUE FileDescriptor_alloc(VALUE klass) {
+  FileDescriptor* self = ALLOC(FileDescriptor);
+  VALUE ret = TypedData_Wrap_Struct(klass, &_FileDescriptor_type, self);
+  self->descriptor_pool = Qnil;
+  self->filedef = NULL;
+  return ret;
+}
+
 /*
  * call-seq:
  *     FileDescriptor.new => file
@@ -635,17 +645,26 @@ void FileDescriptor_free(void* _self) {
  * Returns a new file descriptor. The syntax must be set before it's passed
  * to a builder.
  */
-VALUE FileDescriptor_alloc(VALUE klass) {
-  FileDescriptor* self = ALLOC(FileDescriptor);
-  VALUE ret = TypedData_Wrap_Struct(klass, &_FileDescriptor_type, self);
-  self->filedef = NULL;
-  return ret;
+VALUE FileDescriptor_initialize(VALUE _self, VALUE cookie,
+                                VALUE descriptor_pool, VALUE ptr) {
+  DEFINE_SELF(FileDescriptor, self, _self);
+
+  if (cookie != c_only_cookie) {
+    rb_raise(rb_eRuntimeError,
+             "Descriptor objects may not be created from Ruby.");
+  }
+
+  self->descriptor_pool = descriptor_pool;
+  self->filedef = (const upb_filedef*)NUM2ULL(ptr);
+
+  return Qnil;
 }
 
 void FileDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "FileDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FileDescriptor_alloc);
+  rb_define_method(klass, "initialize", FileDescriptor_initialize, 3);
   rb_define_method(klass, "name", FileDescriptor_name, 0);
   rb_define_method(klass, "syntax", FileDescriptor_syntax, 0);
   rb_gc_register_address(&cFileDescriptor);
@@ -716,6 +735,7 @@ void FieldDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "FieldDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FieldDescriptor_alloc);
+  rb_define_method(klass, "initialize", FieldDescriptor_initialize, 3);
   rb_define_method(klass, "name", FieldDescriptor_name, 0);
   rb_define_method(klass, "type", FieldDescriptor_type, 0);
   rb_define_method(klass, "default", FieldDescriptor_default, 0);
@@ -729,6 +749,27 @@ void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "set", FieldDescriptor_set, 2);
   rb_gc_register_address(&cFieldDescriptor);
   cFieldDescriptor = klass;
+}
+
+/*
+ * call-seq:
+ *    EnumDescriptor.new(c_only_cookie, pool, ptr) => EnumDescriptor
+ *
+ * Creates a descriptor wrapper object.  May only be called from C.
+ */
+VALUE FieldDescriptor_initialize(VALUE _self, VALUE cookie,
+                                 VALUE descriptor_pool, VALUE ptr) {
+  DEFINE_SELF(FieldDescriptor, self, _self);
+
+  if (cookie != c_only_cookie) {
+    rb_raise(rb_eRuntimeError,
+             "Descriptor objects may not be created from Ruby.");
+  }
+
+  self->descriptor_pool = descriptor_pool;
+  self->fielddef = (const upb_fielddef*)NUM2ULL(ptr);
+
+  return Qnil;
 }
 
 /*
@@ -1167,7 +1208,8 @@ VALUE EnumDescriptor_alloc(VALUE klass) {
  *
  * Creates a descriptor wrapper object.  May only be called from C.
  */
-VALUE EnumDescriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr) {
+VALUE EnumDescriptor_initialize(VALUE _self, VALUE cookie,
+                                VALUE descriptor_pool, VALUE ptr) {
   DEFINE_SELF(EnumDescriptor, self, _self);
 
   if (cookie != c_only_cookie) {
@@ -1175,6 +1217,7 @@ VALUE EnumDescriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr) {
              "Descriptor objects may not be created from Ruby.");
   }
 
+  self->descriptor_pool = descriptor_pool;
   self->enumdef = (const upb_enumdef*)NUM2ULL(ptr);
 
   return Qnil;
@@ -1184,7 +1227,7 @@ void EnumDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
-  rb_define_method(klass, "initialize", EnumDescriptor_initialize, 2);
+  rb_define_method(klass, "initialize", EnumDescriptor_initialize, 3);
   rb_define_method(klass, "name", EnumDescriptor_name, 0);
   rb_define_method(klass, "lookup_name", EnumDescriptor_lookup_name, 1);
   rb_define_method(klass, "lookup_value", EnumDescriptor_lookup_value, 1);
@@ -2088,7 +2131,7 @@ VALUE Builder_build(VALUE _self) {
 // We populate it lazily.
 VALUE upb_def_to_ruby_obj_map;
 
-static VALUE get_def_obj(const void* ptr, VALUE klass) {
+static VALUE get_def_obj(VALUE descriptor_pool, const void* ptr, VALUE klass) {
   VALUE key = ULL2NUM((intptr_t)ptr);
   VALUE def = rb_hash_aref(upb_def_to_ruby_obj_map, key);
 
@@ -2098,8 +2141,8 @@ static VALUE get_def_obj(const void* ptr, VALUE klass) {
 
   if (def == Qnil) {
     // Lazily create wrapper object.
-    VALUE args[2] = { c_only_cookie, key };
-    def = rb_class_new_instance(2, args, klass);
+    VALUE args[3] = { c_only_cookie, descriptor_pool, key };
+    def = rb_class_new_instance(3, args, klass);
     rb_hash_aset(upb_def_to_ruby_obj_map, key, def);
   }
 
@@ -2107,21 +2150,21 @@ static VALUE get_def_obj(const void* ptr, VALUE klass) {
 }
 
 VALUE get_msgdef_obj(VALUE descriptor_pool, const upb_msgdef* def) {
-  return get_def_obj(def, cDescriptor);
+  return get_def_obj(descriptor_pool, def, cDescriptor);
 }
 
 VALUE get_enumdef_obj(VALUE descriptor_pool, const upb_enumdef* def) {
-  return get_def_obj(def, cEnumDescriptor);
+  return get_def_obj(descriptor_pool, def, cEnumDescriptor);
 }
 
 VALUE get_fielddef_obj(VALUE descriptor_pool, const upb_fielddef* def) {
-  return get_def_obj(def, cFieldDescriptor);
+  return get_def_obj(descriptor_pool, def, cFieldDescriptor);
 }
 
 VALUE get_filedef_obj(VALUE descriptor_pool, const upb_filedef* def) {
-  return get_def_obj(def, cFileDescriptor);
+  return get_def_obj(descriptor_pool, def, cFileDescriptor);
 }
 
 VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def) {
-  return get_def_obj(def, cOneofDescriptor);
+  return get_def_obj(descriptor_pool, def, cOneofDescriptor);
 }

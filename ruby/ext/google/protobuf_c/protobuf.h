@@ -206,7 +206,8 @@ void Descriptor_free(void* _self);
 VALUE Descriptor_alloc(VALUE klass);
 void Descriptor_register(VALUE module);
 Descriptor* ruby_to_Descriptor(VALUE value);
-VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr);
+VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE descriptor_pool,
+                            VALUE ptr);
 VALUE Descriptor_name(VALUE _self);
 VALUE Descriptor_each(VALUE _self);
 VALUE Descriptor_lookup(VALUE _self, VALUE name);
@@ -221,7 +222,8 @@ void FileDescriptor_free(void* _self);
 VALUE FileDescriptor_alloc(VALUE klass);
 void FileDescriptor_register(VALUE module);
 FileDescriptor* ruby_to_FileDescriptor(VALUE value);
-VALUE FileDescriptor_initialize(int argc, VALUE* argv, VALUE _self);
+VALUE FileDescriptor_initialize(VALUE _self, VALUE cookie,
+                                VALUE descriptor_pool, VALUE ptr);
 VALUE FileDescriptor_name(VALUE _self);
 VALUE FileDescriptor_syntax(VALUE _self);
 
@@ -230,6 +232,8 @@ void FieldDescriptor_free(void* _self);
 VALUE FieldDescriptor_alloc(VALUE klass);
 void FieldDescriptor_register(VALUE module);
 FieldDescriptor* ruby_to_FieldDescriptor(VALUE value);
+VALUE FieldDescriptor_initialize(VALUE _self, VALUE cookie,
+                                 VALUE descriptor_pool, VALUE ptr);
 VALUE FieldDescriptor_name(VALUE _self);
 VALUE FieldDescriptor_type(VALUE _self);
 VALUE FieldDescriptor_default(VALUE _self);
@@ -255,7 +259,8 @@ VALUE OneofDescriptor_each(VALUE _self, VALUE field);
 void EnumDescriptor_mark(void* _self);
 void EnumDescriptor_free(void* _self);
 VALUE EnumDescriptor_alloc(VALUE klass);
-VALUE EnumDescriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr);
+VALUE EnumDescriptor_initialize(VALUE _self, VALUE cookie,
+                                VALUE descriptor_pool, VALUE ptr);
 void EnumDescriptor_register(VALUE module);
 EnumDescriptor* ruby_to_EnumDescriptor(VALUE value);
 VALUE EnumDescriptor_file_descriptor(VALUE _self);
