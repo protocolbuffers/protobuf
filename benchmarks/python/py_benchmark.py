@@ -138,7 +138,7 @@ class Benchmark:
         t = timeit.timeit(stmt="%s(%s)" % (self.test_method, test_method_args),
                           setup=self.full_setup_code(setup_method_args),
                           number=reps);
-    return self.total_bytes * 1.0 / 2 ** 20 / (1.0 * t / reps)
+    return self.total_bytes * 1.0 / 2 ** 20 / (1.0 * t / reps * self.full_iteration)  
   
 
 if __name__ == "__main__":

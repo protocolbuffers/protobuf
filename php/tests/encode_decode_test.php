@@ -5,12 +5,14 @@ require_once('test_util.php');
 
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
+use Foo\TestAny;
 use Foo\TestEnum;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
+use Google\Protobuf\Any;
 use Google\Protobuf\DoubleValue;
 use Google\Protobuf\FloatValue;
 use Google\Protobuf\Int32Value;
@@ -913,6 +915,145 @@ class EncodeDecodeTest extends TestBase
         $sub->setNumberValue(1.5);
         $map["a"] = $sub;
         $this->assertSame("{\"a\":1.5}", $m->serializeToJsonString());
+    }
+
+    public function testDecodeTopLevelAny()
+    {
+        // Make sure packed message has been created at least once.
+        $packed = new TestMessage();
+
+        $m1 = new Any();
+        $m1->mergeFromJsonString(
+            "{\"optionalInt32\": 1, " .
+            "\"@type\":\"type.googleapis.com/foo.TestMessage\"}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m1->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m1->getValue()));
+
+        $m2 = new Any();
+        $m2->mergeFromJsonString(
+            "{\"@type\":\"type.googleapis.com/foo.TestMessage\", " .
+            "\"optionalInt32\": 1}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m2->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m2->getValue()));
+
+        $m3 = new Any();
+        $m3->mergeFromJsonString(
+            "{\"optionalInt32\": 1, " .
+            "\"@type\":\"type.googleapis.com/foo.TestMessage\", " .
+            "\"optionalInt64\": 2}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m3->getTypeUrl());
+        $this->assertSame("08011002", bin2hex($m3->getValue()));
+    }
+
+    public function testDecodeAny()
+    {
+        // Make sure packed message has been created at least once.
+        $packed = new TestMessage();
+
+        $m1 = new TestAny();
+        $m1->mergeFromJsonString(
+            "{\"any\": {\"optionalInt32\": 1, " .
+            "\"@type\":\"type.googleapis.com/foo.TestMessage\"}}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m1->getAny()->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m1->getAny()->getValue()));
+
+        $m2 = new TestAny();
+        $m2->mergeFromJsonString(
+            "{\"any\":{\"@type\":\"type.googleapis.com/foo.TestMessage\", " .
+            "\"optionalInt32\": 1}}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m2->getAny()->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m2->getAny()->getValue()));
+
+        $m3 = new TestAny();
+        $m3->mergeFromJsonString(
+            "{\"any\":{\"optionalInt32\": 1, " .
+            "\"@type\":\"type.googleapis.com/foo.TestMessage\", " .
+            "\"optionalInt64\": 2}}");
+        $this->assertSame("type.googleapis.com/foo.TestMessage",
+                          $m3->getAny()->getTypeUrl());
+        $this->assertSame("08011002", bin2hex($m3->getAny()->getValue()));
+    }
+
+    public function testDecodeAnyWithWellKnownPacked()
+    {
+        // Make sure packed message has been created at least once.
+        $packed = new Int32Value();
+
+        $m1 = new TestAny();
+        $m1->mergeFromJsonString(
+            "{\"any\":" .
+            "  {\"@type\":\"type.googleapis.com/google.protobuf.Int32Value\"," .
+            "   \"value\":1}}");
+        $this->assertSame("type.googleapis.com/google.protobuf.Int32Value",
+                          $m1->getAny()->getTypeUrl());
+        $this->assertSame("0801", bin2hex($m1->getAny()->getValue()));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeAnyWithUnknownPacked()
+    {
+        $m = new TestAny();
+        $m->mergeFromJsonString(
+            "{\"any\":" .
+            "  {\"@type\":\"type.googleapis.com/unknown\"," .
+            "   \"value\":1}}");
+    }
+
+    public function testEncodeTopLevelAny()
+    {
+        // Test a normal message.
+        $packed = new TestMessage();
+        $packed->setOptionalInt32(123);
+        $packed->setOptionalString("abc");
+
+        $m = new Any();
+        $m->pack($packed);
+        $expected1 =
+            "{\"@type\":\"type.googleapis.com/foo.TestMessage\"," .
+            "\"optional_int32\":123,\"optional_string\":\"abc\"}";
+        $expected2 =
+            "{\"@type\":\"type.googleapis.com/foo.TestMessage\"," .
+            "\"optionalInt32\":123,\"optionalString\":\"abc\"}";
+        $result = $m->serializeToJsonString();
+        $this->assertTrue($expected1 === $result || $expected2 === $result);
+
+        // Test a well known message.
+        $packed = new Int32Value();
+        $packed->setValue(123);
+
+        $m = new Any();
+        $m->pack($packed);
+        $this->assertSame(
+            "{\"@type\":\"type.googleapis.com/google.protobuf.Int32Value\"," .
+            "\"value\":123}",
+            $m->serializeToJsonString());
+
+        // Test an Any message.
+        $outer = new Any();
+        $outer->pack($m);
+        $this->assertSame(
+            "{\"@type\":\"type.googleapis.com/google.protobuf.Any\"," .
+            "\"value\":{\"@type\":\"type.googleapis.com/google.protobuf.Int32Value\"," .
+            "\"value\":123}}",
+            $outer->serializeToJsonString());
+
+        // Test a Timestamp message.
+        $packed = new Google\Protobuf\Timestamp();
+        $packed->setSeconds(946684800);
+        $packed->setNanos(123456789);
+        $m = new Any();
+        $m->pack($packed);
+        $this->assertSame(
+            "{\"@type\":\"type.googleapis.com/google.protobuf.Timestamp\"," .
+            "\"value\":\"2000-01-01T00:00:00.123456789Z\"}",
+            $m->serializeToJsonString());
     }
 
 }

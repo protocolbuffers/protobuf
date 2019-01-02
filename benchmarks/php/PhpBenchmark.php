@@ -1,6 +1,7 @@
 <?php
 
 namespace Google\Protobuf\Benchmark;
+ini_set('memory_limit', '4096M');
 
 const NAME = "PhpBenchmark.php";
 
