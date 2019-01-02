@@ -1140,11 +1140,33 @@ void OneofDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(
       module, "OneofDescriptor", rb_cObject);
   rb_define_alloc_func(klass, OneofDescriptor_alloc);
+  rb_define_method(klass, "initialize", OneofDescriptor_initialize, 3);
   rb_define_method(klass, "name", OneofDescriptor_name, 0);
   rb_define_method(klass, "each", OneofDescriptor_each, 0);
   rb_include_module(klass, rb_mEnumerable);
   rb_gc_register_address(&cOneofDescriptor);
   cOneofDescriptor = klass;
+}
+
+/*
+ * call-seq:
+ *    OneofDescriptor.new(c_only_cookie, pool, ptr) => OneofDescriptor
+ *
+ * Creates a descriptor wrapper object.  May only be called from C.
+ */
+VALUE OneofDescriptor_initialize(VALUE _self, VALUE cookie,
+                                 VALUE descriptor_pool, VALUE ptr) {
+  DEFINE_SELF(OneofDescriptor, self, _self);
+
+  if (cookie != c_only_cookie) {
+    rb_raise(rb_eRuntimeError,
+             "Descriptor objects may not be created from Ruby.");
+  }
+
+  self->descriptor_pool = descriptor_pool;
+  self->oneofdef = (const upb_oneofdef*)NUM2ULL(ptr);
+
+  return Qnil;
 }
 
 /*
@@ -1612,11 +1634,13 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
 
   FileBuilderContext* file_builder =
       ruby_to_FileBuilderContext(self->file_builder);
-  // TODO(haberman): what is the reason for this restriction?
+
+  // TODO(haberman): remove this restriction, maps are supported in proto2.
   //if (file_builder->syntax == UPB_SYNTAX_PROTO2) {
   //  rb_raise(rb_eArgError,
   //           "Cannot add a native map field using proto2 syntax.");
   //}
+
 
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
@@ -1894,7 +1918,7 @@ VALUE FileBuilderContext_alloc(VALUE klass) {
 void FileBuilderContext_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FileBuilderContext", rb_cObject);
   rb_define_alloc_func(klass, FileBuilderContext_alloc);
-  rb_define_method(klass, "initialize", FileBuilderContext_initialize, 2);
+  rb_define_method(klass, "initialize", FileBuilderContext_initialize, 3);
   rb_define_method(klass, "add_message", FileBuilderContext_add_message, 1);
   rb_define_method(klass, "add_enum", FileBuilderContext_add_enum, 1);
   rb_gc_register_address(&cFileBuilderContext);
@@ -1910,12 +1934,30 @@ void FileBuilderContext_register(VALUE module) {
  * with #instance_eval.
  */
 VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
-                                    VALUE name) {
+                                    VALUE name, VALUE options) {
   DEFINE_SELF(FileBuilderContext, self, _self);
   self->descriptor_pool = descriptor_pool;
 
   google_protobuf_FileDescriptorProto_set_name(
       self->file_proto, FileBuilderContext_strdup(_self, name));
+
+  // Default syntax for Ruby is proto3.
+  google_protobuf_FileDescriptorProto_set_syntax(
+      self->file_proto,
+      FileBuilderContext_strdup(_self, rb_str_new2("proto3")));
+
+  if (options != Qnil) {
+    Check_Type(options, T_HASH);
+
+    VALUE syntax = rb_hash_lookup2(options, ID2SYM(rb_intern("syntax")), Qnil);
+
+    if (syntax != Qnil) {
+      Check_Type(syntax, T_SYMBOL);
+      VALUE syntax_str = rb_id2str(SYM2ID(syntax));
+      google_protobuf_FileDescriptorProto_set_syntax(
+          self->file_proto, FileBuilderContext_strdup(_self, syntax_str));
+    }
+  }
 
   return Qnil;
 }
@@ -2045,8 +2087,8 @@ VALUE Builder_add_file(int argc, VALUE* argv, VALUE _self) {
 
   rb_scan_args(argc, argv, "11", &name, &options);
 
-  VALUE args[2] = { self->descriptor_pool, name };
-  VALUE ctx = rb_class_new_instance(2, args, cFileBuilderContext);
+  VALUE args[3] = { self->descriptor_pool, name, options };
+  VALUE ctx = rb_class_new_instance(3, args, cFileBuilderContext);
 
   VALUE block = rb_block_proc();
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
@@ -2061,9 +2103,9 @@ static VALUE Builder_get_default_file(VALUE _self) {
   /* Lazily create only if legacy builder-level methods are called. */
   if (self->default_file_builder == Qnil) {
     VALUE name = rb_str_new2("ruby_default_file.proto");
-    VALUE args [2] = { self->descriptor_pool, name };
+    VALUE args [3] = { self->descriptor_pool, name, rb_hash_new() };
     self->default_file_builder =
-        rb_class_new_instance(2, args, cFileBuilderContext);
+        rb_class_new_instance(3, args, cFileBuilderContext);
   }
 
   return self->default_file_builder;

@@ -162,7 +162,6 @@ struct EnumBuilderContext {
 struct FileBuilderContext {
   upb_arena arena;
   google_protobuf_FileDescriptorProto* file_proto;
-  upb_syntax_t syntax;
   VALUE descriptor_pool;
 };
 
@@ -253,6 +252,8 @@ void OneofDescriptor_free(void* _self);
 VALUE OneofDescriptor_alloc(VALUE klass);
 void OneofDescriptor_register(VALUE module);
 OneofDescriptor* ruby_to_OneofDescriptor(VALUE value);
+VALUE OneofDescriptor_initialize(VALUE _self, VALUE cookie,
+                                 VALUE descriptor_pool, VALUE ptr);
 VALUE OneofDescriptor_name(VALUE _self);
 VALUE OneofDescriptor_each(VALUE _self, VALUE field);
 
@@ -312,7 +313,7 @@ FileBuilderContext* ruby_to_FileBuilderContext(VALUE _self);
 upb_stringview FileBuilderContext_strdup(VALUE _self, VALUE rb_str);
 upb_stringview FileBuilderContext_strdup_name(VALUE _self, VALUE rb_str);
 VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
-                                    VALUE name);
+                                    VALUE name, VALUE options);
 VALUE FileBuilderContext_add_message(VALUE _self, VALUE name);
 VALUE FileBuilderContext_add_enum(VALUE _self, VALUE name);
 VALUE FileBuilderContext_pending_descriptors(VALUE _self);
