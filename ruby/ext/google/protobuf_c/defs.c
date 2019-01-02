@@ -496,6 +496,7 @@ VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE ptr) {
   }
 
   self->msgdef = (const upb_msgdef*)NUM2ULL(ptr);
+  fprintf(stderr, "YO: %p\n", self->msgdef);
 
   return Qnil;
 }

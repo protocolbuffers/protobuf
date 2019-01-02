@@ -60,6 +60,11 @@ rb_data_type_t Message_type = {
 VALUE Message_alloc(VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
+
+  if (desc->layout == NULL) {
+    desc->layout = create_layout(desc);
+  }
+
   MessageHeader* msg = (MessageHeader*)ALLOC_N(
       uint8_t, sizeof(MessageHeader) + desc->layout->size);
   VALUE ret;
@@ -299,6 +304,7 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   }
 
   f = upb_msgdef_ntofz(self->descriptor->msgdef, name);
+  fprintf(stderr, "YO2: %s\n", upb_msgdef_fullname(self->descriptor->msgdef));
   if (f == NULL) {
     rb_raise(rb_eArgError,
              "Unknown field name '%s' in initialization map entry.", name);
@@ -584,13 +590,6 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   const char *name;
   VALUE klass;
-
-  if (desc->layout == NULL) {
-    desc->layout = create_layout(desc);
-  }
-  if (desc->fill_method == NULL) {
-    desc->fill_method = new_fillmsg_decodermethod(desc, &desc->fill_method);
-  }
 
   name = upb_msgdef_fullname(desc->msgdef);
   if (name == NULL) {

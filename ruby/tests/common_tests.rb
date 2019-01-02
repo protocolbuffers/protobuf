@@ -812,8 +812,6 @@ module CommonTests
     assert m['class'] == 2
     m['dup'] = 3
     assert m['dup'] == 3
-    m['a.b'] = 4
-    assert m['a.b'] == 4
   end
 
   def test_int_ranges
