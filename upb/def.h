@@ -429,7 +429,7 @@ void upb_msg_field_iter_setdone(upb_msg_field_iter *iter);
 void upb_msg_oneof_begin(upb_msg_oneof_iter *iter, const upb_msgdef *m);
 void upb_msg_oneof_next(upb_msg_oneof_iter *iter);
 bool upb_msg_oneof_done(const upb_msg_oneof_iter *iter);
-upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter);
+const upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter);
 void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter *iter);
 
 UPB_END_EXTERN_C

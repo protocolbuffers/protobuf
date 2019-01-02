@@ -295,7 +295,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   for(upb_msg_oneof_begin(&k, m), i = 0;
       !upb_msg_oneof_done(&k);
       upb_msg_oneof_next(&k), i++) {
-    upb_oneofdef *o = upb_msg_iter_oneof(&k);
+    upb_oneofdef *o = (upb_oneofdef*)upb_msg_iter_oneof(&k);
     o->index = i;
   }
 
@@ -570,8 +570,13 @@ const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len) {
   UPB_ASSERT(upb_fielddef_type(f) == UPB_TYPE_STRING ||
          upb_fielddef_type(f) == UPB_TYPE_BYTES ||
          upb_fielddef_type(f) == UPB_TYPE_ENUM);
-  if (len) *len = str->len;
-  return str->str;
+  if (str) {
+    if (len) *len = str->len;
+    return str->str;
+  } else {
+    if (len) *len = 0;
+    return NULL;
+  }
 }
 
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f) {
@@ -759,8 +764,8 @@ bool upb_msg_oneof_done(const upb_msg_oneof_iter *iter) {
   return upb_strtable_done(iter);
 }
 
-upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter) {
-  return (upb_oneofdef *)upb_value_getconstptr(upb_strtable_iter_value(iter));
+const upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter) {
+  return unpack_def(upb_strtable_iter_value(iter), UPB_DEFTYPE_ONEOF);
 }
 
 void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter *iter) {
@@ -1026,13 +1031,15 @@ static bool create_oneofdef(
     const google_protobuf_OneofDescriptorProto *oneof_proto) {
   upb_oneofdef *o;
   upb_stringview name = google_protobuf_OneofDescriptorProto_name(oneof_proto);
+  upb_value v;
 
   o = (upb_oneofdef*)&m->oneofs[m->oneof_count++];
   o->parent = m;
   o->full_name = makefullname(ctx, m->full_name, name);
-  CHK_OOM(symtab_add(ctx, o->full_name, pack_def(o, UPB_DEFTYPE_ONEOF)));
-  CHK_OOM(upb_strtable_insert3(&m->ntof, name.data, name.size, upb_value_ptr(o),
-                               ctx->alloc));
+
+  v = pack_def(o, UPB_DEFTYPE_ONEOF);
+  CHK_OOM(symtab_add(ctx, o->full_name, v));
+  CHK_OOM(upb_strtable_insert3(&m->ntof, name.data, name.size, v, ctx->alloc));
 
   CHK_OOM(upb_inttable_init2(&o->itof, UPB_CTYPE_CONSTPTR, ctx->alloc));
   CHK_OOM(upb_strtable_init2(&o->ntof, UPB_CTYPE_CONSTPTR, ctx->alloc));
@@ -1113,6 +1120,33 @@ static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
   return true;
 }
 
+static void set_default_default(const symtab_addctx *ctx, upb_fielddef *f) {
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_ENUM:
+      f->defaultval.sint = 0;
+      break;
+    case UPB_TYPE_UINT64:
+    case UPB_TYPE_UINT32:
+      f->defaultval.uint = 0;
+      break;
+    case UPB_TYPE_DOUBLE:
+    case UPB_TYPE_FLOAT:
+      f->defaultval.dbl = 0;
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      f->defaultval.str = newstr(ctx->alloc, NULL, 0);
+      break;
+    case UPB_TYPE_BOOL:
+      f->defaultval.boolean = false;
+      break;
+    case UPB_TYPE_MESSAGE:
+      break;
+  }
+}
+
 static bool create_fielddef(
     const symtab_addctx *ctx, const char *prefix, upb_msgdef *m,
     const google_protobuf_FieldDescriptorProto *field_proto) {
@@ -1190,6 +1224,8 @@ static bool create_fielddef(
   if (google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
     int oneof_index =
         google_protobuf_FieldDescriptorProto_oneof_index(field_proto);
+    upb_oneofdef *oneof;
+    upb_value v = upb_value_constptr(f);
 
     if (upb_fielddef_label(f) != UPB_LABEL_OPTIONAL) {
       upb_status_seterrf(ctx->status,
@@ -1211,7 +1247,11 @@ static bool create_fielddef(
       return false;
     }
 
-    f->oneof = &m->oneofs[oneof_index];
+    oneof = (upb_oneofdef*)&m->oneofs[oneof_index];
+    f->oneof = oneof;
+
+    CHK(upb_inttable_insert2(&oneof->itof, f->number_, v, alloc));
+    CHK(upb_strtable_insert3(&oneof->ntof, name.data, name.size, v, alloc));
   } else {
     f->oneof = NULL;
   }
@@ -1246,6 +1286,7 @@ static bool create_enumdef(
   CHK_OOM(upb_strtable_init2(&e->ntoi, UPB_CTYPE_INT32, ctx->alloc));
   CHK_OOM(upb_inttable_init2(&e->iton, UPB_CTYPE_CSTR, ctx->alloc));
 
+  e->file = ctx->file;
   e->defaultval = 0;
 
   values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n);
@@ -1456,6 +1497,8 @@ static bool resolve_fielddef(const symtab_addctx *ctx, const char *prefix,
                          UPB_STRINGVIEW_ARGS(defaultval), f->full_name);
       return false;
     }
+  } else {
+    set_default_default(ctx, f);
   }
 
   return true;
