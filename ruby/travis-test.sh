@@ -15,7 +15,7 @@ test_version() {
        rake test"
   elif [ "$version" == "ruby-2.6.0" ] ; then
     bash --login -c \
-      "rvm use $version && \
+      "rvm install $version && rvm use $version && \
        which ruby && \
        git clean -f && \
        gem install bundler -v 1.17.3 && bundle && \
@@ -26,7 +26,7 @@ test_version() {
        cp -R ../../lib lib && ./test.sh"
   else
     bash --login -c \
-      "rvm use $version && \
+      "rvm install $version && rvm use $version && \
        which ruby && \
        git clean -f && \
        gem install bundler -v 1.17.3 && bundle && \
