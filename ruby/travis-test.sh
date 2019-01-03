@@ -18,7 +18,7 @@ test_version() {
       "rvm install $version && rvm use $version && \
        which ruby && \
        git clean -f && \
-       gem install bundler && bundle && \
+       gem install bundler -v 1.17.3 && bundle && \
        rake test &&
        rake gc_test &&
        cd ../conformance && make test_ruby &&
