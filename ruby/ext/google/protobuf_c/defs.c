@@ -166,11 +166,10 @@ static void remove_package(upb_stringview *name, upb_stringview package) {
   size_t prefix_len = package.size + 1;
   if (!has_prefix(*name, package) || prefix_len >= name->size ||
       name->data[package.size] != '.') {
-    rb_raise(rb_eRuntimeError,
+    rb_raise(cTypeError,
              "Bad package name, wasn't prefix: " UPB_STRINGVIEW_FORMAT
-             ", " UPB_STRINGVIEW_FORMAT " %d %d %d %d",
-             UPB_STRINGVIEW_ARGS(*name), UPB_STRINGVIEW_ARGS(package),
-             (int)has_prefix(*name, package), (int)prefix_len, (int)name->size, (int)name->data[package.size]);
+             ", " UPB_STRINGVIEW_FORMAT,
+             UPB_STRINGVIEW_ARGS(*name), UPB_STRINGVIEW_ARGS(package));
   }
   name->data += prefix_len;
   name->size -= prefix_len;
@@ -1636,11 +1635,12 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
       ruby_to_FileBuilderContext(self->file_builder);
 
   // TODO(haberman): remove this restriction, maps are supported in proto2.
-  //if (file_builder->syntax == UPB_SYNTAX_PROTO2) {
-  //  rb_raise(rb_eArgError,
-  //           "Cannot add a native map field using proto2 syntax.");
-  //}
-
+  if (upb_stringview_eql(
+          google_protobuf_FileDescriptorProto_syntax(file_builder->file_proto),
+          upb_stringview_makez("proto2"))) {
+    rb_raise(rb_eArgError,
+             "Cannot add a native map field using proto2 syntax.");
+  }
 
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
@@ -2008,15 +2008,11 @@ void FileBuilderContext_build(VALUE _self) {
   rewrite_enum_defaults(pool->symtab, self->file_proto);
   rewrite_names(_self, self->file_proto);
 
-  size_t len;
-  const char* serialized = google_protobuf_FileDescriptorProto_serialize(
-      self->file_proto, &self->arena, &len);
-  FILE *dbg = fopen("/tmp/serialized", "wb");
-  fwrite(serialized, len, 1, dbg);
-  fclose(dbg);
-
-  CHECK_UPB(upb_symtab_addfile(pool->symtab, self->file_proto, &status),
-            "Unable to add defs to DescriptorPool");
+  upb_status status = UPB_STATUS_INIT;
+  if (!upb_symtab_addfile(pool->symtab, self->file_proto, &status)) {
+    rb_raise(cTypeError, "Unable to add defs to DescriptorPool: %s",
+             upb_status_errmsg(&status));
+  }
 }
 
 // -----------------------------------------------------------------------------

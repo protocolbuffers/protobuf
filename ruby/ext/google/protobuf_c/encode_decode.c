@@ -701,16 +701,11 @@ static bool unknown_field_handler(void* closure, const void* hd,
 }
 
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
-  Descriptor* desc = (Descriptor*)closure;
+  const Descriptor* base_desc = closure;
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
+  Descriptor* desc =
+      ruby_to_Descriptor(get_msgdef_obj(base_desc->descriptor_pool, msgdef));
   upb_msg_field_iter i;
-
-  // If this is a mapentry message type, set up a special set of handlers and
-  // bail out of the normal (user-defined) message type handling.
-  if (upb_msgdef_mapentry(msgdef)) {
-    add_handlers_for_mapentry(msgdef, h, desc);
-    return;
-  }
 
   // Ensure layout exists. We may be invoked to create handlers for a given
   // message if we are included as a submsg of another message type before our
@@ -718,6 +713,13 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
   // (and handlers, in the class-building function) on-demand.
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc);
+  }
+
+  // If this is a mapentry message type, set up a special set of handlers and
+  // bail out of the normal (user-defined) message type handling.
+  if (upb_msgdef_mapentry(msgdef)) {
+    add_handlers_for_mapentry(msgdef, h, desc);
+    return;
   }
 
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
@@ -750,6 +752,7 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
 // Creates upb handlers for populating a message.
 static const upb_handlers *new_fill_handlers(Descriptor* desc,
                                              const void* owner) {
+
   // TODO(cfallin, haberman): once upb gets a caching/memoization layer for
   // handlers, reuse subdef handlers so that e.g. if we already parse
   // B-with-field-of-type-C, we don't have to rebuild the whole hierarchy to

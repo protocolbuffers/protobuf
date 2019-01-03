@@ -1640,7 +1640,7 @@ uint32_t upb_fielddef_defaultuint32(const upb_fielddef *f) {
 
 bool upb_fielddef_defaultbool(const upb_fielddef *f) {
   chkdefaulttype(f, UPB_TYPE_BOOL);
-  return f->defaultval.uint;
+  return f->defaultval.boolean;
 }
 
 float upb_fielddef_defaultfloat(const upb_fielddef *f) {
@@ -2182,7 +2182,7 @@ static bool parse_default(const symtab_addctx *ctx, const char *str, size_t len,
       /* XXX: Need to write our own strtof, since it's not available in c89. */
       float val = strtod(str, &end);
       CHK(errno != ERANGE && !*end);
-      f->defaultval.dbl = val;
+      f->defaultval.flt = val;
       break;
     }
     case UPB_TYPE_BOOL: {
@@ -2393,7 +2393,7 @@ static bool create_enumdef(
     int32_t num = google_protobuf_EnumValueDescriptorProto_number(value);
     upb_value v = upb_value_int32(num);
 
-    if (n == 0 && e->file->syntax == UPB_SYNTAX_PROTO3 && num != 0) {
+    if (i == 0 && e->file->syntax == UPB_SYNTAX_PROTO3 && num != 0) {
       upb_status_seterrf(ctx->status,
                          "for proto3, the first enum value must be zero (%s)",
                          e->full_name);
