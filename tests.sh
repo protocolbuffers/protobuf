@@ -322,10 +322,9 @@ build_ruby25() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.5.1 && cd ..
 }
-build_ruby_all() {
-  build_ruby23
-  build_ruby24
-  build_ruby25
+build_ruby26() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh ruby-2.6.0 && cd ..
 }
 
 build_javascript() {
@@ -616,6 +615,7 @@ Usage: $0 { cpp |
             ruby23 |
             ruby24 |
             ruby25 |
+            ruby26 |
             jruby |
             ruby_all |
             php5.5   |
