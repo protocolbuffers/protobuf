@@ -212,7 +212,7 @@ std::string CTypeInternal(const protobuf::FieldDescriptor* field,
     case protobuf::FieldDescriptor::CPPTYPE_UINT64:
       return "uint64_t";
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "upb_stringview";
+      return "upb_strview";
     default:
       fprintf(stderr, "Unexpected type");
       abort();
@@ -252,7 +252,7 @@ std::string FieldDefault(const protobuf::FieldDescriptor* field) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
       return "NULL";
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return absl::Substitute("upb_stringview_make(\"$0\", strlen(\"$0\"))",
+      return absl::Substitute("upb_strview_make(\"$0\", strlen(\"$0\"))",
                               absl::CEscape(field->default_value_string()));
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
       return absl::StrCat(field->default_value_int32());
@@ -325,7 +325,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
       "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
       "  return ($0 *)upb_msg_new(&$1, arena);\n"
       "}\n"
-      "UPB_INLINE $0 *$0_parsenew(upb_stringview buf, upb_arena *arena) {\n"
+      "UPB_INLINE $0 *$0_parsenew(upb_strview buf, upb_arena *arena) {\n"
       "  $0 *ret = $0_new(arena);\n"
       "  return (ret && upb_decode(buf, ret, &$1)) ? ret : NULL;\n"
       "}\n"

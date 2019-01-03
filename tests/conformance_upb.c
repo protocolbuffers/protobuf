@@ -39,7 +39,7 @@ void CheckedWrite(int fd, const void *buf, size_t len) {
   }
 }
 
-bool stringview_eql(upb_stringview view, const char *str) {
+bool stringview_eql(upb_strview view, const char *str) {
   return view.size == strlen(str) && memcmp(view.data, str, view.size) == 0;
 }
 
@@ -54,7 +54,7 @@ void DoTest(
                       proto3_msg)) {
     static const char msg[] = "Only proto3 for now.";
     conformance_ConformanceResponse_set_skipped(
-        response, upb_stringview_make(msg, sizeof(msg)));
+        response, upb_strview_make(msg, sizeof(msg)));
     return;
   }
 
@@ -62,14 +62,14 @@ void DoTest(
 
   switch (conformance_ConformanceRequest_payload_case(request)) {
     case conformance_ConformanceRequest_payload_protobuf_payload: {
-      upb_stringview payload = conformance_ConformanceRequest_protobuf_payload(request);
+      upb_strview payload = conformance_ConformanceRequest_protobuf_payload(request);
       test_message = protobuf_test_messages_proto3_TestAllTypesProto3_parsenew(
           payload, arena);
 
       if (!test_message) {
         static const char msg[] = "Parse error";
         conformance_ConformanceResponse_set_parse_error(
-            response, upb_stringview_make(msg, sizeof(msg)));
+            response, upb_strview_make(msg, sizeof(msg)));
         return;
       }
       break;
@@ -78,7 +78,7 @@ void DoTest(
     case conformance_ConformanceRequest_payload_json_payload: {
       static const char msg[] = "JSON support not yet implemented.";
       conformance_ConformanceResponse_set_skipped(
-          response, upb_stringview_make(msg, sizeof(msg)));
+          response, upb_strview_make(msg, sizeof(msg)));
       return;
     }
 
@@ -105,18 +105,18 @@ void DoTest(
       if (!serialized) {
         static const char msg[] = "Error serializing.";
         conformance_ConformanceResponse_set_serialize_error(
-            response, upb_stringview_make(msg, sizeof(msg)));
+            response, upb_strview_make(msg, sizeof(msg)));
         return;
       }
       conformance_ConformanceResponse_set_protobuf_payload(
-          response, upb_stringview_make(serialized, serialized_len));
+          response, upb_strview_make(serialized, serialized_len));
       break;
     }
 
     case conformance_JSON: {
       static const char msg[] = "JSON support not yet implemented.";
       conformance_ConformanceResponse_set_skipped(
-          response, upb_stringview_make(msg, sizeof(msg)));
+          response, upb_strview_make(msg, sizeof(msg)));
       break;
     }
 
@@ -155,7 +155,7 @@ bool DoTestIo() {
   }
 
   request = conformance_ConformanceRequest_parsenew(
-      upb_stringview_make(serialized_input, input_size), &arena);
+      upb_strview_make(serialized_input, input_size), &arena);
   response = conformance_ConformanceResponse_new(&arena);
 
   if (request) {
