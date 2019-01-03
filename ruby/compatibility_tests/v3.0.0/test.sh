@@ -14,4 +14,5 @@ wget http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0/${PROTOC_BIN
 chmod +x protoc
 
 # Run tests
+readelf -d ../../lib/google/protobuf_c.so
 rake test
