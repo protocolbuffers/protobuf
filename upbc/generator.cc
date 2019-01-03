@@ -400,13 +400,13 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
   for (auto field : FieldNumberOrder(message)) {
     if (field->is_repeated()) {
       output(
-          "UPB_INLINE $0* $1_$2_mutable($1 *msg, size_t *len) {\n"
+          "UPB_INLINE $0* $1_mutable_$2($1 *msg, size_t *len) {\n"
           "  return ($0*)_upb_array_mutable_accessor(msg, $3, len);\n"
           "}\n",
           CType(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)));
       output(
-          "UPB_INLINE $0* $1_$2_resize($1 *msg, size_t len, "
+          "UPB_INLINE $0* $1_resize_$2($1 *msg, size_t len, "
           "upb_arena *arena) {\n"
           "  return ($0*)_upb_array_resize_accessor(msg, $3, len, $4, $5, "
           "arena);\n"
