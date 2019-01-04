@@ -59,10 +59,9 @@ static void rewrite_enum_default(const upb_symtab* symtab,
     return;
   }
 
-  upb_stringview defaultval =
+  upb_strview defaultval =
       google_protobuf_FieldDescriptorProto_default_value(field);
-  upb_stringview type_name =
-      google_protobuf_FieldDescriptorProto_type_name(field);
+  upb_strview type_name = google_protobuf_FieldDescriptorProto_type_name(field);
 
   if (defaultval.size == 0 || !isdigit(defaultval.data[0])) {
     return;
@@ -91,7 +90,7 @@ static void rewrite_enum_default(const upb_symtab* symtab,
       return;
     }
     google_protobuf_FieldDescriptorProto_set_default_value(
-        field, upb_stringview_makez(label));
+        field, upb_strview_makez(label));
   } else {
     /* Look in enums defined in this file. */
     const google_protobuf_EnumDescriptorProto* matching_enum = NULL;
@@ -99,8 +98,8 @@ static void rewrite_enum_default(const upb_symtab* symtab,
     const google_protobuf_EnumDescriptorProto* const* enums =
         google_protobuf_FileDescriptorProto_enum_type(file, &n);
     for (i = 0; i < n; i++) {
-      if (upb_stringview_eql(google_protobuf_EnumDescriptorProto_name(enums[i]),
-                             upb_stringview_makez(type_name_str))) {
+      if (upb_strview_eql(google_protobuf_EnumDescriptorProto_name(enums[i]),
+                          upb_strview_makez(type_name_str))) {
         matching_enum = enums[i];
         break;
       }
@@ -138,7 +137,7 @@ static void rewrite_enum_defaults(
     const upb_symtab* symtab, google_protobuf_FileDescriptorProto* file_proto) {
   size_t i, n;
   google_protobuf_DescriptorProto** msgs =
-      google_protobuf_FileDescriptorProto_message_type_mutable(file_proto, &n);
+      google_protobuf_FileDescriptorProto_mutable_message_type(file_proto, &n);
 
   //fprintf(stderr, "%p %d " UPB_STRINGVIEW_FORMAT "\n", msgs, (int)n,
   //        UPB_STRINGVIEW_ARGS(
@@ -147,7 +146,7 @@ static void rewrite_enum_defaults(
   for (i = 0; i < n; i++) {
     size_t j, m;
     google_protobuf_FieldDescriptorProto** fields =
-        google_protobuf_DescriptorProto_field_mutable(msgs[i], &m);
+        google_protobuf_DescriptorProto_mutable_field(msgs[i], &m);
     //fprintf(stderr, "- %p %d " UPB_STRINGVIEW_FORMAT "\n", fields, (int)m,
     //        UPB_STRINGVIEW_ARGS(google_protobuf_DescriptorProto_name(msgs[i])));
     for (j = 0; j < m; j++) {
@@ -156,26 +155,26 @@ static void rewrite_enum_defaults(
   }
 }
 
-static bool has_prefix(upb_stringview str, upb_stringview prefix) {
+static bool has_prefix(upb_strview str, upb_strview prefix) {
   //fprintf(stderr, "%d %d %d\n", (int)str.size, (int)prefix.size, (int)memcmp(str.data, prefix.data, prefix.size));
   return str.size >= prefix.size &&
          memcmp(str.data, prefix.data, prefix.size) == 0;
 }
 
-static void remove_package(upb_stringview *name, upb_stringview package) {
+static void remove_package(upb_strview *name, upb_strview package) {
   size_t prefix_len = package.size + 1;
   if (!has_prefix(*name, package) || prefix_len >= name->size ||
       name->data[package.size] != '.') {
     rb_raise(cTypeError,
-             "Bad package name, wasn't prefix: " UPB_STRINGVIEW_FORMAT
-             ", " UPB_STRINGVIEW_FORMAT,
-             UPB_STRINGVIEW_ARGS(*name), UPB_STRINGVIEW_ARGS(package));
+             "Bad package name, wasn't prefix: " UPB_STRVIEW_FORMAT
+             ", " UPB_STRVIEW_FORMAT,
+             UPB_STRVIEW_ARGS(*name), UPB_STRVIEW_ARGS(package));
   }
   name->data += prefix_len;
   name->size -= prefix_len;
 }
 
-static void remove_path(upb_stringview *name) {
+static void remove_path(upb_strview *name) {
   const char* last = strrchr(name->data, '.');
   if (last) {
     size_t remove = last - name->data + 1;
@@ -200,17 +199,17 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
   //printf("submsg_count: %d\n", submsg_count);
 
   google_protobuf_DescriptorProto** msg_msgs =
-      google_protobuf_DescriptorProto_nested_type_resize(msg, submsg_count,
+      google_protobuf_DescriptorProto_resize_nested_type(msg, submsg_count,
                                                          arena);
   google_protobuf_EnumDescriptorProto** msg_enums =
-      google_protobuf_DescriptorProto_enum_type_resize(msg, enum_count, arena);
+      google_protobuf_DescriptorProto_resize_enum_type(msg, enum_count, arena);
 
   for (int i = 0; i < submsg_count; i++) {
     VALUE submsg_ent = RARRAY_PTR(submsgs)[i];
     VALUE pos = rb_hash_aref(submsg_ent, ID2SYM(rb_intern("pos")));
     //printf("submsg from pos: %d\n", (int)NUM2INT(pos));
     msg_msgs[i] = msgs[NUM2INT(pos)];
-    upb_stringview name = google_protobuf_DescriptorProto_name(msg_msgs[i]);
+    upb_strview name = google_protobuf_DescriptorProto_name(msg_msgs[i]);
     remove_path(&name);
     google_protobuf_DescriptorProto_set_name(msg_msgs[i], name);
     rewrite_nesting(submsg_ent, msg_msgs[i], msgs, enums, arena);
@@ -233,24 +232,24 @@ static void rewrite_names(VALUE _file_builder,
   size_t msg_count, enum_count, i;
 
   if (google_protobuf_FileDescriptorProto_has_package(file_proto)) {
-    upb_stringview package_str =
+    upb_strview package_str =
         google_protobuf_FileDescriptorProto_package(file_proto);
     package = rb_str_new(package_str.data, package_str.size);
   }
 
   google_protobuf_DescriptorProto** msgs =
-      google_protobuf_FileDescriptorProto_message_type_mutable(file_proto,
+      google_protobuf_FileDescriptorProto_mutable_message_type(file_proto,
                                                                &msg_count);
   for (i = 0; i < msg_count; i++) {
-    upb_stringview name = google_protobuf_DescriptorProto_name(msgs[i]);
+    upb_strview name = google_protobuf_DescriptorProto_name(msgs[i]);
     rb_ary_push(msg_names, rb_str_new(name.data, name.size));
   }
 
   google_protobuf_EnumDescriptorProto** enums =
-      google_protobuf_FileDescriptorProto_enum_type_mutable(file_proto,
+      google_protobuf_FileDescriptorProto_mutable_enum_type(file_proto,
                                                             &enum_count);
   for (i = 0; i < enum_count; i++) {
-    upb_stringview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
+    upb_strview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
     rb_ary_push(enum_names, rb_str_new(name.data, name.size));
   }
 
@@ -264,19 +263,19 @@ static void rewrite_names(VALUE _file_builder,
   if (package == Qnil && new_package != Qnil) {
     // We inferred a package name; set this package name on the file and remove
     // the prefix from all msg/enum names.
-    upb_stringview new_package_str =
+    upb_strview new_package_str =
         FileBuilderContext_strdup(_file_builder, new_package);
     google_protobuf_FileDescriptorProto_set_package(file_proto,
                                                     new_package_str);
 
     for (i = 0; i < msg_count; i++) {
-      upb_stringview name = google_protobuf_DescriptorProto_name(msgs[i]);
+      upb_strview name = google_protobuf_DescriptorProto_name(msgs[i]);
       remove_package(&name, new_package_str);
       google_protobuf_DescriptorProto_set_name(msgs[i], name);
     }
 
     for (i = 0; i < enum_count; i++) {
-      upb_stringview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
+      upb_strview name = google_protobuf_EnumDescriptorProto_name(enums[i]);
       remove_package(&name, new_package_str);
       google_protobuf_EnumDescriptorProto_set_name(enums[i], name);
     }
@@ -300,9 +299,9 @@ static void rewrite_names(VALUE _file_builder,
     enums[i] = enums[NUM2INT(enum_pos)];
   }
 
-  google_protobuf_FileDescriptorProto_message_type_resize(
+  google_protobuf_FileDescriptorProto_resize_message_type(
       file_proto, RARRAY_LEN(msg_ents), arena);
-  google_protobuf_FileDescriptorProto_enum_type_resize(
+  google_protobuf_FileDescriptorProto_resize_enum_type(
       file_proto, RARRAY_LEN(enum_ents), arena);
 }
 
@@ -1635,17 +1634,16 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
       ruby_to_FileBuilderContext(self->file_builder);
 
   // TODO(haberman): remove this restriction, maps are supported in proto2.
-  if (upb_stringview_eql(
+  if (upb_strview_eql(
           google_protobuf_FileDescriptorProto_syntax(file_builder->file_proto),
-          upb_stringview_makez("proto2"))) {
+          upb_strview_makez("proto2"))) {
     rb_raise(rb_eArgError,
              "Cannot add a native map field using proto2 syntax.");
   }
 
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
-  upb_stringview msg_name =
-      google_protobuf_DescriptorProto_name(self->msg_proto);
+  upb_strview msg_name = google_protobuf_DescriptorProto_name(self->msg_proto);
   mapentry_desc_name = rb_str_new(msg_name.data, msg_name.size);
   mapentry_desc_name = rb_str_cat2(mapentry_desc_name, "_MapEntry_");
   mapentry_desc_name =
@@ -1659,7 +1657,7 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
 
   // If this file is in a package, we need to qualify the map entry type.
   if (google_protobuf_FileDescriptorProto_has_package(file_builder->file_proto)) {
-    upb_stringview package_view =
+    upb_strview package_view =
         google_protobuf_FileDescriptorProto_package(file_builder->file_proto);
     VALUE package = rb_str_new(package_view.data, package_view.size);
     package = rb_str_cat2(package, ".");
@@ -1698,7 +1696,7 @@ VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
       google_protobuf_DescriptorProto_add_oneof_decl(self->msg_proto,
                                                      &file_context->arena);
   VALUE name_str = rb_str_new2(rb_id2name(SYM2ID(name)));
-  upb_stringview name_strview = upb_stringview_makez(StringValueCStr(name_str));
+  upb_strview name_strview = upb_strview_makez(StringValueCStr(name_str));
   google_protobuf_OneofDescriptorProto_set_name(oneof_proto, name_strview);
 
   // Evaluate the block with the builder as argument.
@@ -1889,9 +1887,9 @@ void FileBuilderContext_free(void* _self) {
   xfree(self);
 }
 
-upb_stringview FileBuilderContext_strdup2(VALUE _self, const char *str) {
+upb_strview FileBuilderContext_strdup2(VALUE _self, const char *str) {
   DEFINE_SELF(FileBuilderContext, self, _self);
-  upb_stringview ret;
+  upb_strview ret;
   ret.size = strlen(str);
   char *data = upb_malloc(upb_arena_alloc(&self->arena), ret.size + 1);
   ret.data = data;
@@ -1901,7 +1899,7 @@ upb_stringview FileBuilderContext_strdup2(VALUE _self, const char *str) {
   return ret;
 }
 
-upb_stringview FileBuilderContext_strdup(VALUE _self, VALUE rb_str) {
+upb_strview FileBuilderContext_strdup(VALUE _self, VALUE rb_str) {
   const char *str = get_str(rb_str);
   return FileBuilderContext_strdup2(_self, str);
 }
