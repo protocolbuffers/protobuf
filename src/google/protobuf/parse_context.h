@@ -347,8 +347,6 @@ class PROTOBUF_EXPORT ParseContext {
   const char* StoreAndTailCall(const char* ptr, const char* end,
                                ParseClosure current_parser,
                                ParseClosure child_parser, int32 size) {
-    // if size was bigger than 2GB we should fail
-    if (size < 0) return nullptr;
     // At this point ptr could be past end. Hence a malicious size could
     // overflow.
     int64 safe_new_limit = size - static_cast<int64>(end - ptr);
@@ -650,8 +648,8 @@ std::pair<const char*, bool> FieldParser(uint64 tag, ParseClosure parent,
       break;
     }
     case WireType::WIRETYPE_LENGTH_DELIMITED: {
-      uint32 size;
-      ptr = io::Parse32(ptr, &size);
+      int32 size;
+      ptr = io::ReadSize(ptr, &size);
       GOOGLE_PROTOBUF_ASSERT_RETURN(ptr != nullptr, {});
       ParseClosure child = field_parser.AddLengthDelimited(number, size);
       if (size > end - ptr) {

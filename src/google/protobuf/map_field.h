@@ -137,9 +137,6 @@ class PROTOBUF_EXPORT MapFieldBase {
   // Tells MapFieldBase that there is new change to RepeatedPTrField.
   void SetRepeatedDirty();
 
-  // Tells MapFieldBase that map and repeated are the same.
-  void SetClean();
-
   // Provides derived class the access to repeated field.
   void* MutableRepeatedPtrField() const;
 

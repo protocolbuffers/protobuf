@@ -1584,8 +1584,6 @@ void MapReflectionTester::ExpectClearViaReflection(
   EXPECT_EQ(0, reflection->FieldSize(message, F("map_int32_foreign_message")));
   EXPECT_TRUE(reflection->GetMapData(
       message, F("map_int32_foreign_message"))->IsMapValid());
-  EXPECT_TRUE(reflection->GetMapData(
-      message, F("map_int32_foreign_message"))->IsRepeatedFieldValid());
 }
 
 void MapReflectionTester::ExpectClearViaReflectionIterator(
