@@ -8,7 +8,7 @@ cd -
 
 DOCKERHUB_ORGANIZATION=protobuftesting
 
-for DOCKERFILE_DIR in test/*
+for DOCKERFILE_DIR in test/* release/*
 do
   # Generate image name based on Dockerfile checksum. That works well as long
   # as can count on dockerfiles being written in a way that changing the logical
