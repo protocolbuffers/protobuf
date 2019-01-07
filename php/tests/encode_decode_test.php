@@ -900,9 +900,9 @@ class EncodeDecodeTest extends TestBase
 
     public function testEncodeEmptyListValue()
     {
-        $m = new TestMessage();
-        $m->setRepeatedInt32([]);
-        $this->assertSame('{}', $m->serializeToJsonString());
+        $m = new Struct();
+        $m->setFields(['test' => (new Value())->setListValue(new ListValue())]);
+        $this->assertSame('{"test":[]}', $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelStruct()
