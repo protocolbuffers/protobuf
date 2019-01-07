@@ -70,7 +70,7 @@ else
 
   task 'gem:windows' do
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.1:2.4.0:2.3.0"
+    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0"
   end
 
   if RUBY_PLATFORM =~ /darwin/
