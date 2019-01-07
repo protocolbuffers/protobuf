@@ -180,11 +180,8 @@ build_objectivec_ios() {
   # Reused the build script that takes care of configuring and ensuring things
   # are up to date.  The OS X test runs the objc conformance test, so skip it
   # here.
-  # Note: travis has xctool installed, and we've looked at using it in the past
-  # but it has ended up proving unreliable (bugs), an they are removing build
-  # support in favor of xcbuild (or just xcodebuild).
   objectivec/DevTools/full_mac_build.sh \
-      --core-only --skip-xcode-osx --skip-objc-conformance "$@"
+      --core-only --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance "$@"
 }
 
 build_objectivec_ios_debug() {
@@ -199,7 +196,23 @@ build_objectivec_osx() {
   # Reused the build script that takes care of configuring and ensuring things
   # are up to date.
   objectivec/DevTools/full_mac_build.sh \
-      --core-only --skip-xcode-ios
+      --core-only --skip-xcode-ios --skip-xcode-tvos
+}
+
+build_objectivec_tvos() {
+  # Reused the build script that takes care of configuring and ensuring things
+  # are up to date.  The OS X test runs the objc conformance test, so skip it
+  # here.
+  objectivec/DevTools/full_mac_build.sh \
+      --core-only --skip-xcode-ios --skip-xcode-osx --skip-objc-conformance "$@"
+}
+
+build_objectivec_tvos_debug() {
+  build_objectivec_tvos --skip-xcode-release
+}
+
+build_objectivec_tvos_release() {
+  build_objectivec_tvos --skip-xcode-debug
 }
 
 build_objectivec_cocoapods_integration() {
@@ -608,6 +621,9 @@ Usage: $0 { cpp |
             objectivec_ios_debug |
             objectivec_ios_release |
             objectivec_osx |
+            objectivec_tvos |
+            objectivec_tvos_debug |
+            objectivec_tvos_release |
             objectivec_cocoapods_integration |
             python |
             python_cpp |
