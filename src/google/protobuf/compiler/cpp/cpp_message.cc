@@ -244,6 +244,12 @@ bool HasPrivateHasMethod(const FieldDescriptor* field) {
 // TODO(ckennelly):  Cull these exclusions if/when these protos do not have
 // their methods overriden by subclasses.
 
+bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
+                            const Options& options) {
+  const string name = ClassName(descriptor, true);
+  return HasPrefixString(name, "::google::protobuf");
+}
+
 bool ShouldMarkClearAsFinal(const Descriptor* descriptor,
                             const Options& options) {
   static std::set<string> exclusions{
@@ -926,6 +932,9 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   Formatter format(printer, variables_);
+  format.Set("class_final",
+             ShouldMarkClassAsFinal(descriptor_, options_) ? "final": "");
+
   if (IsMapEntryMessage(descriptor_)) {
     std::map<string, string> vars;
     CollectMapInfo(options_, descriptor_, &vars);
@@ -967,9 +976,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   }
 
   format(
-      "class $dllexport_decl $${1$$classname$$}$ : public $superclass$ "
-      "/* @@protoc_insertion_point(class_definition:$full_name$) */ "
-      "{\n",
+      "class $dllexport_decl $${1$$classname$$}$$ class_final$ :\n"
+      "    public $superclass$ /* @@protoc_insertion_point("
+      "class_definition:$full_name$) */ {\n",
       descriptor_);
   format(" public:\n");
   format.Indent();

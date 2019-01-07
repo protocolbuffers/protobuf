@@ -805,6 +805,37 @@ TEST(Base64, EscapeAndUnescape) {
   }
 }
 
+// Test StrCat of ints and longs of various sizes and signdedness.
+TEST(StrCat, Ints) {
+  const short s = -1;  // NOLINT(runtime/int)
+  const uint16_t us = 2;
+  const int i = -3;
+  const unsigned int ui = 4;
+  const long l = -5;                 // NOLINT(runtime/int)
+  const unsigned long ul = 6;        // NOLINT(runtime/int)
+  const long long ll = -7;           // NOLINT(runtime/int)
+  const unsigned long long ull = 8;  // NOLINT(runtime/int)
+  const ptrdiff_t ptrdiff = -9;
+  const size_t size = 10;
+  const intptr_t intptr = -12;
+  const uintptr_t uintptr = 13;
+  string answer;
+  answer = StrCat(s, us);
+  EXPECT_EQ(answer, "-12");
+  answer = StrCat(i, ui);
+  EXPECT_EQ(answer, "-34");
+  answer = StrCat(l, ul);
+  EXPECT_EQ(answer, "-56");
+  answer = StrCat(ll, ull);
+  EXPECT_EQ(answer, "-78");
+  answer = StrCat(ptrdiff, size);
+  EXPECT_EQ(answer, "-910");
+  answer = StrCat(ptrdiff, intptr);
+  EXPECT_EQ(answer, "-9-12");
+  answer = StrCat(uintptr, 0);
+  EXPECT_EQ(answer, "130");
+}
+
 }  // anonymous namespace
 }  // namespace protobuf
 }  // namespace google

@@ -447,7 +447,7 @@ TEST_P(MapFieldStateTest, SwapRepeatedDirty) {
 TEST_P(MapFieldStateTest, Clear) {
   map_field_->Clear();
 
-  Expect(map_field_.get(), CLEAN, 0, 0, false);
+  Expect(map_field_.get(), MAP_DIRTY, 0, 0, false);
 }
 
 TEST_P(MapFieldStateTest, SpaceUsedExcludingSelf) {
