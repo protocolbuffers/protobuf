@@ -4,9 +4,11 @@
 set -e
 
 test_conformance() {
-  if [[ $(uname -s) == Linux ]] then
+  if [[ $(uname -s) == Linux ]]
+  then
     make test_ruby
-  elif [[ $(uname -s) == Darwin ]] then
+  elif [[ $(uname -s) == Darwin ]]
+  then
     # TODO(teboring): timestamp parsing is incorrect only on mac due to mktime.
     make test_ruby_mac
   fi
