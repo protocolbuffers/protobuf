@@ -3,6 +3,7 @@
 require_once("Conformance/WireFormat.php");
 require_once("Conformance/ConformanceResponse.php");
 require_once("Conformance/ConformanceRequest.php");
+require_once("Conformance/FailureSet.php");
 require_once("Conformance/JspbEncodingConfig.php");
 require_once("Conformance/TestCategory.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
@@ -29,7 +30,10 @@ function doTest($request)
     $test_message = new \Protobuf_test_messages\Proto3\TestAllTypesProto3();
     $response = new \Conformance\ConformanceResponse();
     if ($request->getPayload() == "protobuf_payload") {
-      if ($request->getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
+      if ($request->getMessageType() == "conformance.FailureSet") {
+        $response->setProtobufPayload("");
+        return $response;
+      } elseif ($request->getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
         try {
           $test_message->mergeFromString($request->getProtobufPayload());
         } catch (Exception $e) {
