@@ -1323,7 +1323,7 @@ class ParseLoopGenerator {
         "end, void* object,\n"
         "                  ::$proto_ns$::internal::ParseContext* ctx) {\n"
         "  auto msg = static_cast<$classname$*>(object);\n"
-        "  $uint32$ size; (void)size;\n"
+        "  $int32$ size; (void)size;\n"
         "  int depth; (void)depth;\n"
         "  $uint32$ tag;\n"
         "  ::$proto_ns$::internal::ParseFunc parser_till_end; "
@@ -1548,7 +1548,7 @@ class ParseLoopGenerator {
 
   void GenerateLengthDelim(const FieldDescriptor* field) {
     format_(
-        "ptr = ::$proto_ns$::io::Parse32(ptr, &size);\n"
+        "ptr = ::$proto_ns$::io::ReadSize(ptr, &size);\n"
         "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
     if (!IsProto1(field->file(), options_) && field->is_packable()) {
       if (!HasPreservingUnknownEnumSemantics(field->file()) &&

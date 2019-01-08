@@ -45,7 +45,8 @@ import java.util.RandomAccess;
 final class LongArrayList extends AbstractProtobufList<Long>
     implements LongList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final LongArrayList EMPTY_LIST = new LongArrayList();
+  private static final LongArrayList EMPTY_LIST = new LongArrayList(new long[0], 0);
+
   static {
     EMPTY_LIST.makeImmutable();
   }

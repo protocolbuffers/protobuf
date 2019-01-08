@@ -61,7 +61,8 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
+class PROTOBUF_EXPORT Empty final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   Empty();
   virtual ~Empty();

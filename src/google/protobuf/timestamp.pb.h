@@ -61,7 +61,8 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
+class PROTOBUF_EXPORT Timestamp final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
  public:
   Timestamp();
   virtual ~Timestamp();

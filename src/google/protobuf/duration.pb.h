@@ -61,7 +61,8 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
+class PROTOBUF_EXPORT Duration final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
  public:
   Duration();
   virtual ~Duration();

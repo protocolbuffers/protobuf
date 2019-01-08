@@ -150,15 +150,6 @@ string ConformanceTestSuite::ConformanceRequestSetting::
   return "";
 }
 
-void ConformanceTestSuite::SetFailureList(
-    const string& filename,
-    const std::vector<string>& failure_list) {
-  failure_list_filename_ = filename;
-  expected_to_fail_.clear();
-  std::copy(failure_list.begin(), failure_list.end(),
-            std::inserter(expected_to_fail_, expected_to_fail_.end()));
-}
-
 void ConformanceTestSuite::ReportSuccess(const string& test_name) {
   if (expected_to_fail_.erase(test_name) != 0) {
     StringAppendF(&output_,
@@ -359,8 +350,9 @@ string ConformanceTestSuite::WireFormatToString(
   return "";
 }
 
-bool ConformanceTestSuite::RunSuite(
-    ConformanceTestRunner* runner, std::string* output) {
+bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
+                                    std::string* output, const string& filename,
+                                    conformance::FailureSet* failure_list) {
   runner_ = runner;
   successes_ = 0;
   expected_failures_ = 0;
@@ -371,6 +363,18 @@ bool ConformanceTestSuite::RunSuite(
 
   output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
 
+  ConformanceRequest req;
+  ConformanceResponse res;
+  req.set_message_type(failure_list->GetTypeName());
+  req.set_protobuf_payload("");
+  req.set_requested_output_format(conformance::WireFormat::PROTOBUF);
+  RunTest("FindFailures", req, &res);
+  GOOGLE_CHECK(failure_list->MergeFromString(res.protobuf_payload()));
+  failure_list_filename_ = filename;
+  expected_to_fail_.clear();
+  for (const string& failure : failure_list->failure()) {
+    expected_to_fail_.insert(failure);
+  }
   RunSuiteImpl();
 
   bool ok = true;
