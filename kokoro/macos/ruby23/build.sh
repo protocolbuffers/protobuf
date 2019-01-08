@@ -2,6 +2,7 @@
 #
 # Build file to set up and run tests
 
+cat /VERSION
 # Change to repo root
 cd $(dirname $0)/../../..
 
