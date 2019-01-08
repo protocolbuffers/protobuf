@@ -1099,6 +1099,12 @@ static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
                       bool open_msg TSRMLS_DC);
 static void putjsonany(MessageHeader* msg, const Descriptor* desc,
                        upb_sink* sink, int depth TSRMLS_DC);
+static void putjsonlistvalue(
+    MessageHeader* msg, const Descriptor* desc,
+    upb_sink* sink, int depth TSRMLS_DC);
+static void putjsonstruct(
+    MessageHeader* msg, const Descriptor* desc,
+    upb_sink* sink, int depth TSRMLS_DC);
 
 static void putstr(zval* str, const upb_fielddef* f, upb_sink* sink,
                    bool force_default);
@@ -1342,14 +1348,85 @@ static void putjsonany(MessageHeader* msg, const Descriptor* desc,
   upb_sink_endmsg(sink, &status);
 }
 
+static void putjsonlistvalue(
+    MessageHeader* msg, const Descriptor* desc,
+    upb_sink* sink, int depth TSRMLS_DC) {
+  upb_status status;
+  upb_sink subsink;
+  const upb_fielddef* f = upb_msgdef_itof(desc->msgdef, 1);
+  uint32_t offset = desc->layout->fields[upb_fielddef_index(f)].offset;
+  zval* array;
+  RepeatedField* intern;
+  HashTable *ht;
+  int size, i;
+
+  upb_sink_startmsg(sink);
+
+  array = CACHED_PTR_TO_ZVAL_PTR(
+      DEREF(message_data(msg), offset, CACHED_VALUE*));
+  intern = UNBOX(RepeatedField, array);
+  ht = PHP_PROTO_HASH_OF(intern->array);
+  size = zend_hash_num_elements(ht);
+
+  if (size == 0) {
+    upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
+    upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
+  } else {
+    putarray(array, f, sink, depth, true TSRMLS_CC);
+  }
+
+  upb_sink_endmsg(sink, &status);
+}
+
+static void putjsonstruct(
+    MessageHeader* msg, const Descriptor* desc,
+    upb_sink* sink, int depth TSRMLS_DC) {
+  upb_status status;
+  upb_sink subsink;
+  const upb_fielddef* f = upb_msgdef_itof(desc->msgdef, 1);
+  uint32_t offset = desc->layout->fields[upb_fielddef_index(f)].offset;
+  zval* map;
+  Map* intern;
+  int size;
+
+  upb_sink_startmsg(sink);
+
+  map = CACHED_PTR_TO_ZVAL_PTR(
+      DEREF(message_data(msg), offset, CACHED_VALUE*));
+  intern = UNBOX(Map, map);
+  size = upb_strtable_count(&intern->table);
+
+  if (size == 0) {
+    upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
+    upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
+  } else {
+    putmap(map, f, sink, depth, true TSRMLS_CC);
+  }
+
+  upb_sink_endmsg(sink, &status);
+}
+
 static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
                       upb_sink* sink, int depth, bool is_json,
                       bool open_msg TSRMLS_DC) {
   upb_msg_field_iter i;
   upb_status status;
 
-  if (is_json && upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_ANY) {
+  if (is_json &&
+      upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_ANY) {
     putjsonany(msg, desc, sink, depth TSRMLS_CC);
+    return;
+  }
+
+  if (is_json &&
+      upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_LISTVALUE) {
+    putjsonlistvalue(msg, desc, sink, depth TSRMLS_CC);
+    return;
+  }
+
+  if (is_json &&
+      upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_STRUCT) {
+    putjsonstruct(msg, desc, sink, depth TSRMLS_CC);
     return;
   }
 
