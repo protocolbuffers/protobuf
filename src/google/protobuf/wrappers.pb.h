@@ -93,7 +93,8 @@ namespace protobuf {
 
 // ===================================================================
 
-class PROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
+class PROTOBUF_EXPORT DoubleValue final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
  public:
   DoubleValue();
   virtual ~DoubleValue();
@@ -219,7 +220,8 @@ class PROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@prot
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
+class PROTOBUF_EXPORT FloatValue final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
  public:
   FloatValue();
   virtual ~FloatValue();
@@ -345,7 +347,8 @@ class PROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@proto
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
+class PROTOBUF_EXPORT Int64Value final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
  public:
   Int64Value();
   virtual ~Int64Value();
@@ -471,7 +474,8 @@ class PROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@proto
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
+class PROTOBUF_EXPORT UInt64Value final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
  public:
   UInt64Value();
   virtual ~UInt64Value();
@@ -597,7 +601,8 @@ class PROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@prot
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
+class PROTOBUF_EXPORT Int32Value final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
  public:
   Int32Value();
   virtual ~Int32Value();
@@ -723,7 +728,8 @@ class PROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@proto
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
+class PROTOBUF_EXPORT UInt32Value final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
  public:
   UInt32Value();
   virtual ~UInt32Value();
@@ -849,7 +855,8 @@ class PROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@prot
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
+class PROTOBUF_EXPORT BoolValue final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
  public:
   BoolValue();
   virtual ~BoolValue();
@@ -975,7 +982,8 @@ class PROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@protoc
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
+class PROTOBUF_EXPORT StringValue final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
  public:
   StringValue();
   virtual ~StringValue();
@@ -1118,7 +1126,8 @@ class PROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@prot
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
+class PROTOBUF_EXPORT BytesValue final :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
  public:
   BytesValue();
   virtual ~BytesValue();

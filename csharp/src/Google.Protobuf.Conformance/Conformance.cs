@@ -24,28 +24,30 @@ namespace Conformance {
     static ConformanceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UirQIKEkNvbmZvcm1h",
-            "bmNlUmVxdWVzdBIaChBwcm90b2J1Zl9wYXlsb2FkGAEgASgMSAASFgoManNv",
-            "bl9wYXlsb2FkGAIgASgJSAASFgoManNwYl9wYXlsb2FkGAcgASgJSAASOAoX",
-            "cmVxdWVzdGVkX291dHB1dF9mb3JtYXQYAyABKA4yFy5jb25mb3JtYW5jZS5X",
-            "aXJlRm9ybWF0EhQKDG1lc3NhZ2VfdHlwZRgEIAEoCRIwCg10ZXN0X2NhdGVn",
-            "b3J5GAUgASgOMhkuY29uZm9ybWFuY2UuVGVzdENhdGVnb3J5Ej4KFWpzcGJf",
-            "ZW5jb2Rpbmdfb3B0aW9ucxgGIAEoCzIfLmNvbmZvcm1hbmNlLkpzcGJFbmNv",
-            "ZGluZ0NvbmZpZ0IJCgdwYXlsb2FkIskBChNDb25mb3JtYW5jZVJlc3BvbnNl",
-            "EhUKC3BhcnNlX2Vycm9yGAEgASgJSAASGQoPc2VyaWFsaXplX2Vycm9yGAYg",
-            "ASgJSAASFwoNcnVudGltZV9lcnJvchgCIAEoCUgAEhoKEHByb3RvYnVmX3Bh",
-            "eWxvYWQYAyABKAxIABIWCgxqc29uX3BheWxvYWQYBCABKAlIABIRCgdza2lw",
-            "cGVkGAUgASgJSAASFgoManNwYl9wYXlsb2FkGAcgASgJSABCCAoGcmVzdWx0",
-            "IjcKEkpzcGJFbmNvZGluZ0NvbmZpZxIhChl1c2VfanNwYl9hcnJheV9hbnlf",
-            "Zm9ybWF0GAEgASgIKj8KCldpcmVGb3JtYXQSDwoLVU5TUEVDSUZJRUQQABIM",
-            "CghQUk9UT0JVRhABEggKBEpTT04QAhIICgRKU1BCEAMqeQoMVGVzdENhdGVn",
-            "b3J5EhQKEFVOU1BFQ0lGSUVEX1RFU1QQABIPCgtCSU5BUllfVEVTVBABEg0K",
-            "CUpTT05fVEVTVBACEiQKIEpTT05fSUdOT1JFX1VOS05PV05fUEFSU0lOR19U",
-            "RVNUEAMSDQoJSlNQQl9URVNUEARCIQofY29tLmdvb2dsZS5wcm90b2J1Zi5j",
-            "b25mb3JtYW5jZWIGcHJvdG8z"));
+            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UiHQoKRmFpbHVyZVNl",
+            "dBIPCgdmYWlsdXJlGAEgAygJIq0CChJDb25mb3JtYW5jZVJlcXVlc3QSGgoQ",
+            "cHJvdG9idWZfcGF5bG9hZBgBIAEoDEgAEhYKDGpzb25fcGF5bG9hZBgCIAEo",
+            "CUgAEhYKDGpzcGJfcGF5bG9hZBgHIAEoCUgAEjgKF3JlcXVlc3RlZF9vdXRw",
+            "dXRfZm9ybWF0GAMgASgOMhcuY29uZm9ybWFuY2UuV2lyZUZvcm1hdBIUCgxt",
+            "ZXNzYWdlX3R5cGUYBCABKAkSMAoNdGVzdF9jYXRlZ29yeRgFIAEoDjIZLmNv",
+            "bmZvcm1hbmNlLlRlc3RDYXRlZ29yeRI+ChVqc3BiX2VuY29kaW5nX29wdGlv",
+            "bnMYBiABKAsyHy5jb25mb3JtYW5jZS5Kc3BiRW5jb2RpbmdDb25maWdCCQoH",
+            "cGF5bG9hZCLJAQoTQ29uZm9ybWFuY2VSZXNwb25zZRIVCgtwYXJzZV9lcnJv",
+            "chgBIAEoCUgAEhkKD3NlcmlhbGl6ZV9lcnJvchgGIAEoCUgAEhcKDXJ1bnRp",
+            "bWVfZXJyb3IYAiABKAlIABIaChBwcm90b2J1Zl9wYXlsb2FkGAMgASgMSAAS",
+            "FgoManNvbl9wYXlsb2FkGAQgASgJSAASEQoHc2tpcHBlZBgFIAEoCUgAEhYK",
+            "DGpzcGJfcGF5bG9hZBgHIAEoCUgAQggKBnJlc3VsdCI3ChJKc3BiRW5jb2Rp",
+            "bmdDb25maWcSIQoZdXNlX2pzcGJfYXJyYXlfYW55X2Zvcm1hdBgBIAEoCCo/",
+            "CgpXaXJlRm9ybWF0Eg8KC1VOU1BFQ0lGSUVEEAASDAoIUFJPVE9CVUYQARII",
+            "CgRKU09OEAISCAoESlNQQhADKnkKDFRlc3RDYXRlZ29yeRIUChBVTlNQRUNJ",
+            "RklFRF9URVNUEAASDwoLQklOQVJZX1RFU1QQARINCglKU09OX1RFU1QQAhIk",
+            "CiBKU09OX0lHTk9SRV9VTktOT1dOX1BBUlNJTkdfVEVTVBADEg0KCUpTUEJf",
+            "VEVTVBAEQiEKH2NvbS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFuY2ViBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Failure" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions" }, new[]{ "Payload" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload" }, new[]{ "Result" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.JspbEncodingConfig), global::Conformance.JspbEncodingConfig.Parser, new[]{ "UseJspbArrayAnyFormat" }, null, null, null)
@@ -92,6 +94,129 @@ namespace Conformance {
   #endregion
 
   #region Messages
+  public sealed partial class FailureSet : pb::IMessage<FailureSet> {
+    private static readonly pb::MessageParser<FailureSet> _parser = new pb::MessageParser<FailureSet>(() => new FailureSet());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<FailureSet> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[0]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FailureSet() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FailureSet(FailureSet other) : this() {
+      failure_ = other.failure_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public FailureSet Clone() {
+      return new FailureSet(this);
+    }
+
+    /// <summary>Field number for the "failure" field.</summary>
+    public const int FailureFieldNumber = 1;
+    private static readonly pb::FieldCodec<string> _repeated_failure_codec
+        = pb::FieldCodec.ForString(10);
+    private readonly pbc::RepeatedField<string> failure_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public pbc::RepeatedField<string> Failure {
+      get { return failure_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as FailureSet);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(FailureSet other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if(!failure_.Equals(other.failure_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      hash ^= failure_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      failure_.WriteTo(output, _repeated_failure_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      size += failure_.CalculateSize(_repeated_failure_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(FailureSet other) {
+      if (other == null) {
+        return;
+      }
+      failure_.Add(other.failure_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::UnknownFieldSet.MergeFieldFrom(ref _unknownFields, input)) {
+              return;
+            }
+            break;
+          case 10: {
+            failure_.AddEntriesFrom(input, _repeated_failure_codec);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   /// <summary>
   /// Represents a single test case's input.  The testee should:
   ///
@@ -107,7 +232,7 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -468,7 +593,7 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -850,7 +975,7 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

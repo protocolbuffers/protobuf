@@ -178,8 +178,8 @@ const char* VarintParse(const char* p, T* out) {
     res += byte << (i * 7);
     int j = i + 1;
     if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
-        *out = res - extra;
-        return p + j;
+      *out = res - extra;
+      return p + j;
     }
     extra += 128ull << (i * 7);
   }
@@ -191,6 +191,27 @@ inline const char* Parse32(const char* p, uint32* out) {
 }
 inline const char* Parse64(const char* p, uint64* out) {
   return VarintParse<10>(p, out);
+}
+
+inline const char* ReadSize(const char* p, int32* out) {
+  int32 res = 0;
+  int32 extra = 0;
+  for (int i = 0; i < 4; i++) {
+    uint32 byte = static_cast<uint8>(p[i]);
+    res += byte << (i * 7);
+    int j = i + 1;
+    if (PROTOBUF_PREDICT_TRUE(byte < 128)) {
+      *out = res - extra;
+      return p + j;
+    }
+    extra += 128ull << (i * 7);
+  }
+  uint32 byte = static_cast<uint8>(p[4]);
+  // size may not be negative, so only the lowest 3 bits can be set.
+  if (byte >= 8) return nullptr;
+  res += byte << (4 * 7);
+  *out = res - extra;
+  return p + 5;
 }
 
 // Class which reads and decodes binary data which is composed of varint-

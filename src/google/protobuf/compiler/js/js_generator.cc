@@ -3064,38 +3064,42 @@ void Generator::GenerateClassDeserializeBinary(const GeneratorOptions& options,
       " * @return {!$class$}\n"
       " */\n"
       "$class$.deserializeBinaryFromReader = function(msg, reader) {\n"
-      "  while (reader.nextField()) {\n"
-      "    if (reader.isEndGroup()) {\n"
-      "      break;\n"
-      "    }\n"
-      "    var field = reader.getFieldNumber();\n"
-      "    switch (field) {\n",
+      "  while (reader.nextField()) {\n",
       "class", GetMessagePath(options, desc));
+    printer->Print(
+        "    if (reader.isEndGroup()) {\n"
+        "      break;\n"
+        "    }\n"
+        "    var field = reader.getFieldNumber();\n"
+        "    switch (field) {\n");
 
-  for (int i = 0; i < desc->field_count(); i++) {
-    if (!IgnoreField(desc->field(i))) {
-      GenerateClassDeserializeBinaryField(options, printer, desc->field(i));
+
+    for (int i = 0; i < desc->field_count(); i++) {
+      if (!IgnoreField(desc->field(i))) {
+        GenerateClassDeserializeBinaryField(options, printer, desc->field(i));
+      }
     }
-  }
+
+    printer->Print(
+        "    default:\n");
+    if (IsExtendable(desc)) {
+      printer->Print(
+          "      jspb.Message.readBinaryExtension(msg, reader,\n"
+          "        $extobj$Binary,\n"
+          "        $class$.prototype.getExtension,\n"
+          "        $class$.prototype.setExtension);\n"
+          "      break;\n"
+          "    }\n",
+          "extobj", JSExtensionsObjectName(options, desc->file(), desc),
+          "class", GetMessagePath(options, desc));
+    } else {
+      printer->Print(
+          "      reader.skipField();\n"
+          "      break;\n"
+          "    }\n");
+    }
 
   printer->Print(
-      "    default:\n");
-  if (IsExtendable(desc)) {
-    printer->Print(
-        "      jspb.Message.readBinaryExtension(msg, reader, $extobj$Binary,\n"
-        "        $class$.prototype.getExtension,\n"
-        "        $class$.prototype.setExtension);\n"
-        "      break;\n",
-        "extobj", JSExtensionsObjectName(options, desc->file(), desc),
-        "class", GetMessagePath(options, desc));
-  } else {
-    printer->Print(
-        "      reader.skipField();\n"
-        "      break;\n");
-  }
-
-  printer->Print(
-      "    }\n"
       "  }\n"
       "  return msg;\n"
       "};\n"

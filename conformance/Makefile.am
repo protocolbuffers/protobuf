@@ -107,6 +107,7 @@ other_language_protoc_outputs =                                \
   google/protobuf/wrappers_pb2.py                              \
   Conformance/ConformanceRequest.php                           \
   Conformance/ConformanceResponse.php                          \
+  Conformance/FailureSet.php                                   \
   Conformance/WireFormat.php                                   \
   GPBMetadata/Conformance.php                                  \
   GPBMetadata/Google/Protobuf/Any.php                          \

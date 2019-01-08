@@ -201,7 +201,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/time.cc                                \
   google/protobuf/stubs/time.h                                 \
   google/protobuf/arena.cc                                     \
-  google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
   google/protobuf/generated_message_table_driven_lite.h        \

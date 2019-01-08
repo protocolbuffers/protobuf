@@ -57,6 +57,35 @@ using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
+const char* kFailures[] = {
+#if !GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+    "Required.Proto2.ProtobufInput."
+    "PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE",
+    "Required.Proto2.ProtobufInput."
+    "PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.BOOL",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.ENUM",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.INT32",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.INT64",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT32",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.SINT64",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT32",
+    "Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT64",
+    "Required.Proto3.ProtobufInput."
+    "PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE",
+    "Required.Proto3.ProtobufInput."
+    "PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.BOOL",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.ENUM",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.INT32",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.INT64",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.SINT32",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.SINT64",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.UINT32",
+    "Required.Proto3.ProtobufInput.PrematureEofInPackedField.UINT64",
+#endif
+};
+
 static string GetTypeUrl(const Descriptor* message) {
   return string(kTypeUrlPrefix) + "/" + message->full_name();
 }
@@ -142,6 +171,12 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       GOOGLE_LOG(FATAL) << "unknown payload type: "
                         << request.payload_case();
       break;
+  }
+
+  conformance::FailureSet failures;
+  if (descriptor == failures.GetDescriptor()) {
+    for (const char* s : kFailures) failures.add_failure(s);
+    test_message = &failures;
   }
 
   switch (request.requested_output_format()) {

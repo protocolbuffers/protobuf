@@ -61,7 +61,7 @@ enum WireFormat {
 enum TestCategory {
   UNSPECIFIED_TEST = 0;
   BINARY_TEST = 1;  // Test binary wire format.
-  JSON_TEST = 2;  // Test json wire format.
+  JSON_TEST = 2;    // Test json wire format.
   // Similar to JSON_TEST. However, during parsing json, testee should ignore
   // unknown fields. This feature is optional. Each implementation can descide
   // whether to support it.  See
@@ -70,6 +70,10 @@ enum TestCategory {
   JSON_IGNORE_UNKNOWN_PARSING_TEST = 3;
   JSPB_TEST = 4;  // Test jspb wire format. Google internal only.
                   // Opensource testees just skip it.
+}
+
+message FailureSet {
+  repeated string failure = 1;
 }
 
 // Represents a single test case's input.  The testee should:

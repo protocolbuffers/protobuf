@@ -37,7 +37,8 @@ import java.util.List;
 /** Implements {@link ProtobufList} for non-primitive and {@link String} types. */
 final class ProtobufArrayList<E> extends AbstractProtobufList<E> {
 
-  private static final ProtobufArrayList<Object> EMPTY_LIST = new ProtobufArrayList<Object>();
+  private static final ProtobufArrayList<Object> EMPTY_LIST =
+      new ProtobufArrayList<Object>(new ArrayList<Object>(0));
 
   static {
     EMPTY_LIST.makeImmutable();

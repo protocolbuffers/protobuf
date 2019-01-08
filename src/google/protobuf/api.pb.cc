@@ -301,7 +301,7 @@ void Api::Clear() {
 const char* Api::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<Api*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -313,7 +313,7 @@ const char* Api::_InternalParse(const char* begin, const char* end, void* object
       // string name = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ctx->extra_parse_data().SetFieldName("google.protobuf.Api.name");
         auto str = msg->mutable_name();
@@ -333,7 +333,7 @@ const char* Api::_InternalParse(const char* begin, const char* end, void* object
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
         do {
-          ptr = ::google::protobuf::io::Parse32(ptr, &size);
+          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           parser_till_end = ::google::protobuf::Method::_InternalParse;
           object = msg->add_methods();
@@ -351,7 +351,7 @@ const char* Api::_InternalParse(const char* begin, const char* end, void* object
       case 3: {
         if (static_cast<::google::protobuf::uint8>(tag) != 26) goto handle_unusual;
         do {
-          ptr = ::google::protobuf::io::Parse32(ptr, &size);
+          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           parser_till_end = ::google::protobuf::Option::_InternalParse;
           object = msg->add_options();
@@ -368,7 +368,7 @@ const char* Api::_InternalParse(const char* begin, const char* end, void* object
       // string version = 4;
       case 4: {
         if (static_cast<::google::protobuf::uint8>(tag) != 34) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ctx->extra_parse_data().SetFieldName("google.protobuf.Api.version");
         auto str = msg->mutable_version();
@@ -387,7 +387,7 @@ const char* Api::_InternalParse(const char* begin, const char* end, void* object
       // .google.protobuf.SourceContext source_context = 5;
       case 5: {
         if (static_cast<::google::protobuf::uint8>(tag) != 42) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         parser_till_end = ::google::protobuf::SourceContext::_InternalParse;
         object = msg->mutable_source_context();
@@ -403,7 +403,7 @@ const char* Api::_InternalParse(const char* begin, const char* end, void* object
       case 6: {
         if (static_cast<::google::protobuf::uint8>(tag) != 50) goto handle_unusual;
         do {
-          ptr = ::google::protobuf::io::Parse32(ptr, &size);
+          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           parser_till_end = ::google::protobuf::Mixin::_InternalParse;
           object = msg->add_mixins();
@@ -972,7 +972,7 @@ void Method::Clear() {
 const char* Method::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<Method*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -984,7 +984,7 @@ const char* Method::_InternalParse(const char* begin, const char* end, void* obj
       // string name = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ctx->extra_parse_data().SetFieldName("google.protobuf.Method.name");
         auto str = msg->mutable_name();
@@ -1003,7 +1003,7 @@ const char* Method::_InternalParse(const char* begin, const char* end, void* obj
       // string request_type_url = 2;
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ctx->extra_parse_data().SetFieldName("google.protobuf.Method.request_type_url");
         auto str = msg->mutable_request_type_url();
@@ -1032,7 +1032,7 @@ const char* Method::_InternalParse(const char* begin, const char* end, void* obj
       // string response_type_url = 4;
       case 4: {
         if (static_cast<::google::protobuf::uint8>(tag) != 34) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ctx->extra_parse_data().SetFieldName("google.protobuf.Method.response_type_url");
         auto str = msg->mutable_response_type_url();
@@ -1062,7 +1062,7 @@ const char* Method::_InternalParse(const char* begin, const char* end, void* obj
       case 6: {
         if (static_cast<::google::protobuf::uint8>(tag) != 50) goto handle_unusual;
         do {
-          ptr = ::google::protobuf::io::Parse32(ptr, &size);
+          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           parser_till_end = ::google::protobuf::Option::_InternalParse;
           object = msg->add_options();
@@ -1601,7 +1601,7 @@ void Mixin::Clear() {
 const char* Mixin::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
   auto msg = static_cast<Mixin*>(object);
-  ::google::protobuf::uint32 size; (void)size;
+  ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
   ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
@@ -1613,7 +1613,7 @@ const char* Mixin::_InternalParse(const char* begin, const char* end, void* obje
       // string name = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ctx->extra_parse_data().SetFieldName("google.protobuf.Mixin.name");
         auto str = msg->mutable_name();
@@ -1632,7 +1632,7 @@ const char* Mixin::_InternalParse(const char* begin, const char* end, void* obje
       // string root = 2;
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::Parse32(ptr, &size);
+        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ctx->extra_parse_data().SetFieldName("google.protobuf.Mixin.root");
         auto str = msg->mutable_root();

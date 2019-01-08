@@ -144,15 +144,6 @@ class ConformanceTestSuite {
 
   void SetVerbose(bool verbose) { verbose_ = verbose; }
 
-  // Sets the list of tests that are expected to fail when RunSuite() is called.
-  // RunSuite() will fail unless the set of failing tests is exactly the same
-  // as this list.
-  //
-  // The filename here is *only* used to create/format useful error messages for
-  // how to update the failure list.  We do NOT read this file at all.
-  void SetFailureList(const std::string& filename,
-                      const std::vector<std::string>& failure_list);
-
   // Whether to require the testee to pass RECOMMENDED tests. By default failing
   // a RECOMMENDED test case will not fail the entire suite but will only
   // generated a warning. If this flag is set to true, RECOMMENDED tests will
@@ -169,9 +160,12 @@ class ConformanceTestSuite {
   // Test output will be stored in "output".
   //
   // Returns true if the set of failing tests was exactly the same as the
-  // failure list.  If SetFailureList() was not called, returns true if all
-  // tests passed.
-  bool RunSuite(ConformanceTestRunner* runner, std::string* output);
+  // failure list.
+  // The filename here is *only* used to create/format useful error messages for
+  // how to update the failure list.  We do NOT read this file at all.
+  bool RunSuite(ConformanceTestRunner* runner, std::string* output,
+                const std::string& filename,
+                conformance::FailureSet* failure_list);
 
  protected:
   // Test cases are classified into a few categories:

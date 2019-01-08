@@ -41,6 +41,8 @@ goog.provide('jspb.Message');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt.base64');
+goog.require('jspb.BinaryConstants');
+goog.require('jspb.BinaryReader');
 goog.require('jspb.Map');
 
 // Not needed in compilation units that have no protos with xids.
@@ -622,10 +624,7 @@ jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
  * Reads an extension field from the given reader and, if a valid extension,
  * sets the extension value.
  * @param {!jspb.Message} msg A jspb proto.
- * @param {{
- *   skipField:function(this:jspb.BinaryReader),
- *   getFieldNumber:function(this:jspb.BinaryReader):number
- * }} reader
+ * @param {!jspb.BinaryReader} reader
  * @param {!Object} extensions The extensions object.
  * @param {function(this:jspb.Message,!jspb.ExtensionFieldInfo)} getExtensionFn
  * @param {function(this:jspb.Message,!jspb.ExtensionFieldInfo, ?)} setExtensionFn
