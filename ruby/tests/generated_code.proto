@@ -53,6 +53,13 @@ message TestMessage {
   map<string, bool> map_string_bool = 70;
 
   message NestedMessage {
+    message Hello {
+      message You {
+        message Found {
+          message Me {}
+        }
+      }
+    }
     int32 foo = 1;
   }
 
@@ -62,12 +69,17 @@ message TestMessage {
   // int32 non_exist = 89;
 }
 
+message OtherNestedMessage {
+  TestMessage.NestedMessage.Hello World = 1;
+}
+
 enum TestEnum {
   Default = 0;
   A = 1;
   B = 2;
   C = 3;
 }
+
 
 message TestUnknown {
   TestUnknown optional_unknown = 11;

@@ -15,6 +15,14 @@ class GeneratedCodeTest < Test::Unit::TestCase
     # successfully creates message definitions and classes, not to test every
     # aspect of the extension (basic.rb is for that).
     A::B::C::TestMessage.new
+    A::B::C::TestMessage::NestedMessage.new
+    A::B::C::TestMessage::NestedMessage::Hello.new
+    A::B::C::TestMessage::NestedMessage::Hello::You.new
+    A::B::C::TestMessage::NestedMessage::Hello::You::Found.new
+    A::B::C::TestMessage::NestedMessage::Hello::You::Found::Me.new
+    A::B::C::OtherNestedMessage.new(
+      :World => A::B::C::TestMessage::NestedMessage::Hello.new
+    )
     FooBar::TestImportedMessage.new
     A::B::TestRubyPackageMessage.new
   end
