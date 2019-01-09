@@ -11,6 +11,7 @@ use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
 use Foo\TestRandomFieldOrder;
+use Foo\TestTimestamp;
 use Foo\TestUnpackedMessage;
 use Google\Protobuf\Any;
 use Google\Protobuf\DoubleValue;
@@ -824,6 +825,23 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromJsonString("\"2000-01-01T00:00:00.123456789Z\"");
         $this->assertEquals(946684800, $m->getSeconds());
         $this->assertEquals(123456789, $m->getNanos());
+
+        $m1 = new Google\Protobuf\Timestamp();
+        $m1->mergeFromJsonString("\"2018-02-25T03:48:17.428086000Z\"");
+        var_dump($m1->getSeconds());
+        var_dump($m1->getNanos());
+        # $this->assertEquals(946684800, $m->getSeconds());
+        # $this->assertEquals(123456789, $m->getNanos());
+
+        $nanoArray = ['timestamp' => "2018-02-25T03:48:17.428086000Z"];
+        var_dump(json_encode($nanoArray));
+        $m2 = new TestTimestamp();
+        $m2->mergeFromJsonString(json_encode($nanoArray));
+        var_dump($m2->getTimestamp()->getSeconds());
+        var_dump($m2->getTimestamp()->getNanos());
+
+        $this->assertEquals($m1->getSeconds(),
+                            $m2->getTimestamp()->getSeconds());
     }
 
     public function testEncodeTimestamp()

@@ -21,6 +21,7 @@ require_once('generated/Foo/PBARRAY.php');
 require_once('generated/Foo/PBEmpty.php');
 require_once('generated/Foo/TestAny.php');
 require_once('generated/Foo/TestEnum.php');
+require_once('generated/Foo/TestTimestamp.php');
 require_once('generated/Foo/TestIncludeNamespaceMessage.php');
 require_once('generated/Foo/TestIncludePrefixMessage.php');
 require_once('generated/Foo/TestMessage.php');
