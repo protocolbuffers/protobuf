@@ -56,6 +56,7 @@ enum WireFormat {
   PROTOBUF = 1;
   JSON = 2;
   JSPB = 3;  // Google internal only. Opensource testees just skip it.
+  TEXT_FORMAT = 4;
 }
 
 enum TestCategory {
@@ -70,8 +71,12 @@ enum TestCategory {
   JSON_IGNORE_UNKNOWN_PARSING_TEST = 3;
   JSPB_TEST = 4;  // Test jspb wire format. Google internal only.
                   // Opensource testees just skip it.
+  TEXT_FORMAT_TEST = 5;  // Test text format.
 }
 
+// The conformance runner will request a list of failures as the first request.
+// This will be known by message_type == "conformance.FailureSet", a conformance
+// test should return a serialized FailureSet in protobuf_payload.
 message FailureSet {
   repeated string failure = 1;
 }
@@ -94,6 +99,7 @@ message ConformanceRequest {
     string json_payload = 2;
     string jspb_payload = 7;  // Google internal only.
                               // Opensource testees just skip it.
+    string text_payload = 8;
   }
 
   // Which format should the testee serialize its message to?
@@ -149,6 +155,10 @@ message ConformanceResponse {
     // serialize to JSPB and set it in this field. JSPB is google internal only
     // format. Opensource testees can just skip it.
     string jspb_payload = 7;
+
+    // If the input was successfully parsed and the requested output was
+    // TEXT_FORMAT, serialize to TEXT_FORMAT and set it in this field.
+    string text_payload = 8;
   }
 }
 

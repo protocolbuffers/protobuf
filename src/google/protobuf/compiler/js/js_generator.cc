@@ -2847,52 +2847,69 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
   // Generate clearFoo() method for map fields, repeated fields, and other
   // fields with presence.
   if (field->is_map()) {
+    // clang-format off
     printer->Print(
-        "/** Clears values from the map. The map will be non-null. */\n"
+        "/**\n"
+        " * Clears values from the map. The map will be non-null."
+        "$returndoc$\n"
+        " */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  this.$gettername$().clear();$returnvalue$\n"
         "};\n"
         "\n"
         "\n",
+        "returndoc", JSReturnDoc(options, field),
         "class", GetMessagePath(options, field->containing_type()),
-        "clearername", "clear" + JSGetterName(options, field), "gettername",
-        "get" + JSGetterName(options, field), "returnvalue",
-        JSReturnClause(field));
+        "clearername", "clear" + JSGetterName(options, field),
+        "gettername", "get" + JSGetterName(options, field),
+        "returnvalue", JSReturnClause(field));
+    // clang-format on
     printer->Annotate("clearername", field);
   } else if (field->is_repeated() ||
              (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
               !field->is_required())) {
     // Fields where we can delegate to the regular setter.
+    // clang-format off
     printer->Print(
-        "/** $jsdoc$ */\n"
+        "/**\n"
+        " * $jsdoc$$returndoc$\n"
+        " */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  this.$settername$($clearedvalue$);$returnvalue$\n"
         "};\n"
         "\n"
         "\n",
-        "jsdoc",
-        field->is_repeated() ? "Clears the list making it empty but non-null."
-                             : "Clears the message field making it undefined.",
+       "jsdoc", field->is_repeated()
+           ? "Clears the list making it empty but non-null."
+           : "Clears the message field making it undefined.",
+        "returndoc", JSReturnDoc(options, field),
         "class", GetMessagePath(options, field->containing_type()),
-        "clearername", "clear" + JSGetterName(options, field), "settername",
-        "set" + JSGetterName(options, field), "clearedvalue",
-        (field->is_repeated() ? "[]" : "undefined"), "returnvalue",
-        JSReturnClause(field));
+        "clearername", "clear" + JSGetterName(options, field),
+        "settername", "set" + JSGetterName(options, field),
+        "clearedvalue", (field->is_repeated() ? "[]" : "undefined"),
+        "returnvalue", JSReturnClause(field));
+    // clang-format on
     printer->Annotate("clearername", field);
   } else if (HasFieldPresence(options, field)) {
     // Fields where we can't delegate to the regular setter because it doesn't
     // accept "undefined" as an argument.
+    // clang-format off
     printer->Print(
-        "/** Clears the field making it undefined. */\n"
+        "/**\n"
+        " * Clears the field making it undefined.$returndoc$\n"
+        " */\n"
         "$class$.prototype.$clearername$ = function() {\n"
         "  jspb.Message.set$maybeoneof$Field(this, "
         "$index$$maybeoneofgroup$, ",
+        "returndoc", JSReturnDoc(options, field),
         "class", GetMessagePath(options, field->containing_type()),
-        "clearername", "clear" + JSGetterName(options, field), "maybeoneof",
-        (field->containing_oneof() ? "Oneof" : ""), "maybeoneofgroup",
-        (field->containing_oneof() ? (", " + JSOneofArray(options, field))
-                                   : ""),
+        "clearername", "clear" + JSGetterName(options, field),
+        "maybeoneof", (field->containing_oneof() ? "Oneof" : ""),
+        "maybeoneofgroup", (field->containing_oneof()
+                            ? (", " + JSOneofArray(options, field))
+                            : ""),
         "index", JSFieldIndex(field));
+    // clang-format on
     printer->Annotate("clearername", field);
     printer->Print(
         "$clearedvalue$);$returnvalue$\n"
