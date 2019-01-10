@@ -53,11 +53,8 @@ message TestMessage {
   map<string, bool> map_string_bool = 70;
 
   message NestedMessage {
-    message Hello {
-      message You {
-        message Found {
-          message Me {}
-        }
+    message hello {
+      message _underscore {
       }
     }
     int32 foo = 1;
@@ -70,7 +67,7 @@ message TestMessage {
 }
 
 message OtherNestedMessage {
-  TestMessage.NestedMessage.Hello World = 1;
+  TestMessage.NestedMessage.hello World = 1;
 }
 
 enum TestEnum {

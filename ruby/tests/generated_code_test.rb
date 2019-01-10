@@ -17,9 +17,7 @@ class GeneratedCodeTest < Test::Unit::TestCase
     A::B::C::TestMessage.new
     A::B::C::TestMessage::NestedMessage.new
     A::B::C::TestMessage::NestedMessage::Hello.new
-    A::B::C::TestMessage::NestedMessage::Hello::You.new
-    A::B::C::TestMessage::NestedMessage::Hello::You::Found.new
-    A::B::C::TestMessage::NestedMessage::Hello::You::Found::Me.new
+    A::B::C::TestMessage::NestedMessage::Hello::PB__underscore.new
     A::B::C::OtherNestedMessage.new(
       :World => A::B::C::TestMessage::NestedMessage::Hello.new
     )
