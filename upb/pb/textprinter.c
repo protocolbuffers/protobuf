@@ -327,9 +327,8 @@ upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
   return p;
 }
 
-const upb_handlers *upb_textprinter_newhandlers(const upb_msgdef *m,
-                                                const void *owner) {
-  return upb_handlers_newfrozen(m, owner, &onmreg, NULL);
+upb_handlercache *upb_textprinter_newcache() {
+  return upb_handlercache_new(&onmreg, NULL);
 }
 
 upb_sink *upb_textprinter_input(upb_textprinter *p) { return &p->input_; }

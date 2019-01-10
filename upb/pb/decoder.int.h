@@ -11,17 +11,6 @@
 #include "upb/sink.h"
 #include "upb/table.int.h"
 
-/* C++ names are not actually used since this type isn't exposed to users. */
-#ifdef __cplusplus
-namespace upb {
-namespace pb {
-class MessageGroup;
-}  /* namespace pb */
-}  /* namespace upb */
-#endif
-UPB_DECLARE_DERIVED_TYPE(upb::pb::MessageGroup, upb::RefCounted,
-                         mgroup, upb_refcounted)
-
 /* Opcode definitions.  The canonical meaning of each opcode is its
  * implementation in the interpreter (the JIT is written to match this).
  *
@@ -83,29 +72,24 @@ typedef enum {
 
 UPB_INLINE opcode getop(uint32_t instr) { return instr & 0xff; }
 
+struct upb_pbcodecache {
+  upb_arena arena;
+  upb_handlercache *dest;
+  bool allow_jit;
+  bool lazy;
+
+  /* Array of mgroups. */
+  upb_inttable groups;
+};
+
 /* Method group; represents a set of decoder methods that had their code
- * emitted together, and must therefore be freed together.  Immutable once
- * created.  It is possible we may want to expose this to users at some point.
- *
- * Overall ownership of Decoder objects looks like this:
- *
- *                +----------+
- *                |          | <---> DecoderMethod
- *                | method   |
- * CodeCache ---> |  group   | <---> DecoderMethod
- *                |          |
- *                | (mgroup) | <---> DecoderMethod
- *                +----------+
- */
-struct mgroup {
-  upb_refcounted base;
-
-  /* Maps upb_msgdef/upb_handlers -> upb_pbdecodermethod.  We own refs on the
-   * methods. */
+ * emitted together.  Immutable once created.  */
+typedef struct {
+  /* Maps upb_msgdef/upb_handlers -> upb_pbdecodermethod.  Owned by us.
+   *
+   * Ideally this would be on pbcodecache (if we were actually caching code).
+   * Right now we don't actually cache anything, which is wasteful. */
   upb_inttable methods;
-
-  /* When we add the ability to link to previously existing mgroups, we'll
-   * need an array of mgroups we reference here, and own refs on them. */
 
   /* The bytecode for our methods, if any exists.  Owned by us. */
   uint32_t *bytecode;
@@ -119,7 +103,7 @@ struct mgroup {
   char *debug_info;
   void *dl;
 #endif
-};
+} mgroup;
 
 /* The maximum that any submessages can be nested.  Matches proto2's limit.
  * This specifies the size of the decoder's statically-sized array and therefore
@@ -159,8 +143,6 @@ typedef struct {
 } upb_pbdecoder_frame;
 
 struct upb_pbdecodermethod {
-  upb_refcounted base;
-
   /* While compiling, the base is relative in "ofs", after compiling it is
    * absolute in "ptr". */
   union {
@@ -168,14 +150,8 @@ struct upb_pbdecodermethod {
     void *ptr;        /* Pointer to bytecode or machine code for this method. */
   } code_base;
 
-  /* The decoder method group to which this method belongs.  We own a ref.
-   * Owning a ref on the entire group is more coarse-grained than is strictly
-   * necessary; all we truly require is that methods we directly reference
-   * outlive us, while the group could contain many other messages we don't
-   * require.  But the group represents the messages that were
-   * allocated+compiled together, so it makes the most sense to free them
-   * together also. */
-  const upb_refcounted *group;
+  /* The decoder method group to which this method belongs. */
+  const mgroup *group;
 
   /* Whether this method is native code or bytecode. */
   bool is_native_;
@@ -276,7 +252,6 @@ const char *upb_pbdecoder_getopname(unsigned int op);
 /* JIT codegen entry point. */
 void upb_pbdecoder_jit(mgroup *group);
 void upb_pbdecoder_freejit(mgroup *group);
-UPB_REFCOUNTED_CMETHODS(mgroup, mgroup_upcast)
 
 /* A special label that means "do field dispatch for this message and branch to
  * wherever that takes you." */

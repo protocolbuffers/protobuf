@@ -34,7 +34,7 @@ class upb::pb::TextPrinter {
 
   /* If handler caching becomes a requirement we can add a code cache as in
    * decoder.h */
-  static reffed_ptr<const Handlers> NewHandlers(const MessageDef* md);
+  static HandlerCache* NewCache();
 };
 
 #endif
@@ -47,8 +47,7 @@ upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
 void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line);
 upb_sink *upb_textprinter_input(upb_textprinter *p);
 
-const upb_handlers *upb_textprinter_newhandlers(const upb_msgdef *m,
-                                                const void *owner);
+upb_handlercache *upb_textprinter_newcache();
 
 UPB_END_EXTERN_C
 
@@ -67,10 +66,8 @@ inline void TextPrinter::SetSingleLineMode(bool single_line) {
 inline Sink* TextPrinter::input() {
   return upb_textprinter_input(this);
 }
-inline reffed_ptr<const Handlers> TextPrinter::NewHandlers(
-    const MessageDef *md) {
-  const Handlers* h = upb_textprinter_newhandlers(md, &h);
-  return reffed_ptr<const Handlers>(h, &h);
+inline HandlerCache* TextPrinter::NewCache() {
+  return upb_textprinter_newcache();
 }
 }  /* namespace pb */
 }  /* namespace upb */

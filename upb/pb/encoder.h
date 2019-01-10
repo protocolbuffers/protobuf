@@ -47,7 +47,7 @@ class upb::pb::Encoder {
   Sink* input();
 
   /* Creates a new set of handlers for this MessageDef. */
-  static reffed_ptr<const Handlers> NewHandlers(const MessageDef* msg);
+  static upb_handlercache* NewCache();
 
   static const size_t kSize = UPB_PB_ENCODER_SIZE;
 
@@ -59,11 +59,11 @@ class upb::pb::Encoder {
 
 UPB_BEGIN_EXTERN_C
 
-const upb_handlers *upb_pb_encoder_newhandlers(const upb_msgdef *m,
-                                               const void *owner);
 upb_sink *upb_pb_encoder_input(upb_pb_encoder *p);
 upb_pb_encoder* upb_pb_encoder_create(upb_env* e, const upb_handlers* h,
                                       upb_bytessink* output);
+
+upb_handlercache *upb_pb_encoder_newcache();
 
 UPB_END_EXTERN_C
 
@@ -78,10 +78,8 @@ inline Encoder* Encoder::Create(Environment* env, const Handlers* handlers,
 inline Sink* Encoder::input() {
   return upb_pb_encoder_input(this);
 }
-inline reffed_ptr<const Handlers> Encoder::NewHandlers(
-    const upb::MessageDef *md) {
-  const Handlers* h = upb_pb_encoder_newhandlers(md, &h);
-  return reffed_ptr<const Handlers>(h, &h);
+inline upb_handlercache* Encoder::NewCache() {
+  return upb_pb_encoder_newcache();
 }
 }  /* namespace pb */
 }  /* namespace upb */

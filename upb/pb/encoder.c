@@ -526,9 +526,8 @@ void upb_pb_encoder_reset(upb_pb_encoder *e) {
 
 /* public API *****************************************************************/
 
-const upb_handlers *upb_pb_encoder_newhandlers(const upb_msgdef *m,
-                                               const void *owner) {
-  return upb_handlers_newfrozen(m, owner, newhandlers_callback, NULL);
+upb_handlercache *upb_pb_encoder_newcache() {
+  return upb_handlercache_new(newhandlers_callback, NULL);
 }
 
 upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,

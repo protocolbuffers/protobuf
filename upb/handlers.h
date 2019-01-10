@@ -21,7 +21,6 @@
 
 #include "upb/def.h"
 #include "upb/table.int.h"
-#include "upb/refcounted.h"
 
 #ifdef __cplusplus
 namespace upb {
@@ -29,6 +28,7 @@ class BufferHandle;
 class BytesHandler;
 class HandlerAttributes;
 class Handlers;
+class HandlerCache;
 template <class T> class Handler;
 template <class T> struct CanonicalType;
 }  /* namespace upb */
@@ -37,8 +37,8 @@ template <class T> struct CanonicalType;
 UPB_DECLARE_TYPE(upb::BufferHandle, upb_bufhandle)
 UPB_DECLARE_TYPE(upb::BytesHandler, upb_byteshandler)
 UPB_DECLARE_TYPE(upb::HandlerAttributes, upb_handlerattr)
-UPB_DECLARE_DERIVED_TYPE(upb::Handlers, upb::RefCounted,
-                         upb_handlers, upb_refcounted)
+UPB_DECLARE_TYPE(upb::Handlers, upb_handlers)
+UPB_DECLARE_TYPE(upb::HandlerCache, upb_handlercache)
 
 /* The maximum depth that the handler graph can have.  This is a resource limit
  * for the C stack since we sometimes need to recursively traverse the graph.
@@ -275,22 +275,6 @@ class upb::Handlers {
 
   typedef void HandlersCallback(const void *closure, upb_handlers *h);
 
-  /* Returns a new handlers object for the given frozen msgdef.
-   * Returns NULL if memory allocation failed. */
-  static reffed_ptr<Handlers> New(const MessageDef *m);
-
-  /* Convenience function for registering a graph of handlers that mirrors the
-   * graph of msgdefs for some message.  For "m" and all its children a new set
-   * of handlers will be created and the given callback will be invoked,
-   * allowing the client to register handlers for this message.  Note that any
-   * subhandlers set by the callback will be overwritten. */
-  static reffed_ptr<const Handlers> NewFrozen(const MessageDef *m,
-                                              HandlersCallback *callback,
-                                              const void *closure);
-
-  /* Functionality from upb::RefCounted. */
-  UPB_REFCOUNTED_CPPMETHODS
-
   /* All handler registration functions return bool to indicate success or
    * failure; details about failures are stored in this status object.  If a
    * failure does occur, it must be cleared before the Handlers are frozen,
@@ -298,16 +282,6 @@ class upb::Handlers {
    * used while the Handlers are mutable. */
   const Status* status();
   void ClearError();
-
-  /* Call to freeze these Handlers.  Requires that any SubHandlers are already
-   * frozen.  For cycles, you must use the static version below and freeze the
-   * whole graph at once. */
-  bool Freeze(Status* s);
-
-  /* Freezes the given set of handlers.  You may not freeze a handler without
-   * also freezing any handlers they point to. */
-  static bool Freeze(Handlers*const* handlers, int n, Status* s);
-  static bool Freeze(const std::vector<Handlers*>& handlers, Status* s);
 
   /* Returns the msgdef associated with this handlers object. */
   const MessageDef* message_def() const;
@@ -473,9 +447,8 @@ class upb::Handlers {
    */
   bool SetEndSequenceHandler(const FieldDef* f, const EndFieldHandler& h);
 
-  /* Sets or gets the object that specifies handlers for the given field, which
+  /* Gets the object that specifies handlers for the given field, which
    * must be a submessage or group.  Returns NULL if no handlers are set. */
-  bool SetSubHandlers(const FieldDef* f, const Handlers* sub);
   const Handlers* GetSubHandlers(const FieldDef* f) const;
 
   /* Equivalent to GetSubHandlers, but takes the STARTSUBMSG selector for the
@@ -519,13 +492,10 @@ class upb::Handlers {
 #else
 struct upb_handlers {
 #endif
-  upb_refcounted base;
-
+  upb_handlercache *cache;
   const upb_msgdef *msg;
   const upb_handlers **sub;
   const void *top_closure_type;
-  upb_inttable cleanup_;
-  upb_status status_;  /* Used only when mutable. */
   upb_handlers_tabent table[1];  /* Dynamically-sized field handler array. */
 };
 
@@ -675,17 +645,6 @@ UPB_INLINE const void *upb_handlerattr_handlerdata(
 }
 
 /* upb_handlers */
-typedef void upb_handlers_callback(const void *closure, upb_handlers *h);
-upb_handlers *upb_handlers_new(const upb_msgdef *m,
-                               const void *owner);
-const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
-                                           const void *owner,
-                                           upb_handlers_callback *callback,
-                                           const void *closure);
-
-/* Include refcounted methods like upb_handlers_ref(). */
-UPB_REFCOUNTED_CMETHODS(upb_handlers, upb_handlers_upcast)
-
 const upb_status *upb_handlers_status(upb_handlers *h);
 void upb_handlers_clearerr(upb_handlers *h);
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h);
@@ -737,8 +696,6 @@ bool upb_handlers_setendseq(upb_handlers *h, const upb_fielddef *f,
                             upb_endfield_handlerfunc *func,
                             upb_handlerattr *attr);
 
-bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
-                                 const upb_handlers *sub);
 const upb_handlers *upb_handlers_getsubhandlers(const upb_handlers *h,
                                                 const upb_fielddef *f);
 const upb_handlers *upb_handlers_getsubhandlers_sel(const upb_handlers *h,
@@ -756,6 +713,36 @@ UPB_INLINE const void *upb_handlers_gethandlerdata(const upb_handlers *h,
                                                    upb_selector_t s) {
   return upb_handlerattr_handlerdata(&h->table[s].attr);
 }
+
+typedef void upb_handlers_callback(const void *closure, upb_handlers *h);
+
+#ifdef __cplusplus
+
+class upb::HandlerCache {
+ public:
+  static HandlerCache *New(upb_handlers_callback *callback,
+                           const void *closure);
+  static void Free(HandlerCache* cache);
+
+  const Handlers* Get(const MessageDef* md);
+
+ private:
+  UPB_DISALLOW_POD_OPS(HandlerCache, upb::pb::HandlerCache)
+#else
+struct upb_handlercache {
+#endif
+  upb_arena arena;
+  upb_inttable tab;  /* maps upb_msgdef* -> upb_handlers*. */
+  upb_inttable cleanup_;
+  upb_handlers_callback *callback;
+  const void *closure;
+};
+
+upb_handlercache *upb_handlercache_new(upb_handlers_callback *callback,
+                                       const void *closure);
+void upb_handlercache_free(upb_handlercache *cache);
+const upb_handlers *upb_handlercache_get(upb_handlercache *cache,
+                                         const upb_msgdef *md);
 
 #ifdef __cplusplus
 
@@ -788,7 +775,6 @@ bool upb_byteshandler_setendstr(upb_byteshandler *h,
                                 upb_endfield_handlerfunc *func, void *d);
 
 /* "Static" methods */
-bool upb_handlers_freeze(upb_handlers *const *handlers, int n, upb_status *s);
 upb_handlertype_t upb_handlers_getprimitivehandlertype(const upb_fielddef *f);
 bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
                               upb_selector_t *s);

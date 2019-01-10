@@ -48,6 +48,10 @@ void freestrpc(void *ptr) {
   upb_gfree(pc);
 }
 
+typedef struct {
+  bool preserve_fieldnames;
+} upb_json_printercache;
+
 /* Convert fielddef name to JSON name and return as a string piece. */
 strpc *newstrpc(upb_handlers *h, const upb_fielddef *f,
                 bool preserve_fieldnames) {
@@ -1112,8 +1116,8 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
   bool is_mapentry = upb_msgdef_mapentry(md);
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
   upb_msg_field_iter i;
-  const bool *preserve_fieldnames_ptr = closure;
-  const bool preserve_fieldnames = *preserve_fieldnames_ptr;
+  const upb_json_printercache *cache = closure;
+  const bool preserve_fieldnames = cache->preserve_fieldnames;
 
   if (is_mapentry) {
     /* mapentry messages are sufficiently different that we handle them
@@ -1281,9 +1285,8 @@ upb_sink *upb_json_printer_input(upb_json_printer *p) {
   return &p->input_;
 }
 
-const upb_handlers *upb_json_printer_newhandlers(const upb_msgdef *md,
-                                                 bool preserve_fieldnames,
-                                                 const void *owner) {
-  return upb_handlers_newfrozen(
-      md, owner, printer_sethandlers, &preserve_fieldnames);
+upb_handlercache *upb_json_printer_newcache(bool preserve_proto_fieldnames) {
+  upb_json_printercache *cache = upb_gmalloc(sizeof(*cache));
+  cache->preserve_fieldnames = preserve_proto_fieldnames;
+  return upb_handlercache_new(printer_sethandlers, cache);
 }

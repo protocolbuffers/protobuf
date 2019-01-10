@@ -84,9 +84,7 @@ void lupb_pushuint32(lua_State *L, uint32_t val);
 void lupb_pushdouble(lua_State *L, double val);
 void lupb_pushfloat(lua_State *L, float val);
 
-/* Registers a type with the given name, methods, and metamethods.
- * If "refcount_gc" is true, adds a __gc metamethod that does an unref.
- * Refcounted types must be allocated with lupb_refcounted_push[new]wrapper. */
+/* Registers a type with the given name, methods, and metamethods. */
 void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
                         const luaL_Reg *mm);
 
@@ -98,15 +96,12 @@ void lupb_checkstatus(lua_State *L, upb_status *s);
 
 upb_fieldtype_t lupb_checkfieldtype(lua_State *L, int narg);
 
-void *lupb_refcounted_check(lua_State *L, int narg, const char *type);
 const upb_msgdef *lupb_msgdef_check(lua_State *L, int narg);
 const upb_enumdef *lupb_enumdef_check(lua_State *L, int narg);
 const upb_fielddef *lupb_fielddef_check(lua_State *L, int narg);
 upb_symtab *lupb_symtab_check(lua_State *L, int narg);
 
 void lupb_def_registertypes(lua_State *L);
-
-int lupb_refcounted_gc(lua_State *L);
 
 
 /** From msg.c. ***************************************************************/

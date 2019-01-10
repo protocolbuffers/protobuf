@@ -9,8 +9,8 @@
 
 #include "upb/sink.h"
 
-static void *upb_calloc(size_t size) {
-  void *mem = upb_gmalloc(size);
+static void *upb_calloc(upb_arena *arena, size_t size) {
+  void *mem = upb_malloc(upb_arena_alloc(arena), size);
   if (mem) {
     memset(mem, 0, size);
   }
@@ -20,86 +20,6 @@ static void *upb_calloc(size_t size) {
 /* Defined for the sole purpose of having a unique pointer value for
  * UPB_NO_CLOSURE. */
 char _upb_noclosure;
-
-static void freehandlers(upb_refcounted *r) {
-  upb_handlers *h = (upb_handlers*)r;
-
-  upb_inttable_iter i;
-  upb_inttable_begin(&i, &h->cleanup_);
-  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-    void *val = (void*)upb_inttable_iter_key(&i);
-    upb_value func_val = upb_inttable_iter_value(&i);
-    upb_handlerfree *func = upb_value_getfptr(func_val);
-    func(val);
-  }
-
-  upb_inttable_uninit(&h->cleanup_);
-  upb_gfree(h->sub);
-  upb_gfree(h);
-}
-
-static void visithandlers(const upb_refcounted *r, upb_refcounted_visit *visit,
-                          void *closure) {
-  const upb_handlers *h = (const upb_handlers*)r;
-  upb_msg_field_iter i;
-  for(upb_msg_field_begin(&i, h->msg);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_msg_iter_field(&i);
-    const upb_handlers *sub;
-    if (!upb_fielddef_issubmsg(f)) continue;
-    sub = upb_handlers_getsubhandlers(h, f);
-    if (sub) visit(r, upb_handlers_upcast(sub), closure);
-  }
-}
-
-static const struct upb_refcounted_vtbl vtbl = {visithandlers, freehandlers};
-
-typedef struct {
-  upb_inttable tab;  /* maps upb_msgdef* -> upb_handlers*. */
-  upb_handlers_callback *callback;
-  const void *closure;
-} dfs_state;
-
-/* TODO(haberman): discard upb_handlers* objects that do not actually have any
- * handlers set and cannot reach any upb_handlers* object that does.  This is
- * slightly tricky to do correctly. */
-static upb_handlers *newformsg(const upb_msgdef *m, const void *owner,
-                               dfs_state *s) {
-  upb_msg_field_iter i;
-  upb_handlers *h = upb_handlers_new(m, owner);
-  if (!h) return NULL;
-  if (!upb_inttable_insertptr(&s->tab, m, upb_value_ptr(h))) goto oom;
-
-  s->callback(s->closure, h);
-
-  /* For each submessage field, get or create a handlers object and set it as
-   * the subhandlers. */
-  for(upb_msg_field_begin(&i, m);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_msg_iter_field(&i);
-    const upb_msgdef *subdef;
-    upb_value subm_ent;
-
-    if (!upb_fielddef_issubmsg(f)) continue;
-
-    subdef = upb_fielddef_msgsubdef(f);
-    if (upb_inttable_lookupptr(&s->tab, subdef, &subm_ent)) {
-      upb_handlers_setsubhandlers(h, f, upb_value_getptr(subm_ent));
-    } else {
-      upb_handlers *sub_mh = newformsg(subdef, &sub_mh, s);
-      if (!sub_mh) goto oom;
-      upb_handlers_setsubhandlers(h, f, sub_mh);
-      upb_handlers_unref(sub_mh, &sub_mh);
-    }
-  }
-  return h;
-
-oom:
-  upb_handlers_unref(h, owner);
-  return NULL;
-}
 
 /* Given a selector for a STARTSUBMSG handler, resolves to a pointer to the
  * subhandlers for this submessage field. */
@@ -111,20 +31,13 @@ oom:
 static int32_t trygetsel(upb_handlers *h, const upb_fielddef *f,
                          upb_handlertype_t type) {
   upb_selector_t sel;
-  UPB_ASSERT(!upb_handlers_isfrozen(h));
-  if (upb_handlers_msgdef(h) != upb_fielddef_containingtype(f)) {
-    upb_status_seterrf(
-        &h->status_, "type mismatch: field %s does not belong to message %s",
-        upb_fielddef_name(f), upb_msgdef_fullname(upb_handlers_msgdef(h)));
-    return -1;
-  }
-  if (!upb_handlers_getselector(f, type, &sel)) {
-    upb_status_seterrf(
-        &h->status_,
-        "type mismatch: cannot register handler type %d for field %s",
-        type, upb_fielddef_name(f));
-    return -1;
-  }
+  bool ok;
+
+  ok = upb_handlers_getselector(f, type, &sel);
+
+  UPB_ASSERT(upb_handlers_msgdef(h) == upb_fielddef_containingtype(f));
+  UPB_ASSERT(ok);
+
   return sel;
 }
 
@@ -147,19 +60,7 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
   const void *closure_type;
   const void **context_closure_type;
 
-  UPB_ASSERT(!upb_handlers_isfrozen(h));
-
-  if (sel < 0) {
-    upb_status_seterrmsg(&h->status_,
-                         "incorrect handler type for this field.");
-    return false;
-  }
-
-  if (h->table[sel].func) {
-    upb_status_seterrmsg(&h->status_,
-                         "cannot change handler once it has been set.");
-    return false;
-  }
+  UPB_ASSERT(!h->table[sel].func);
 
   if (attr) {
     set_attr = *attr;
@@ -181,16 +82,7 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
 
   if (closure_type && *context_closure_type &&
       closure_type != *context_closure_type) {
-    /* TODO(haberman): better message for debugging. */
-    if (f) {
-      upb_status_seterrf(&h->status_,
-                         "closure type does not match for field %s",
-                         upb_fielddef_name(f));
-    } else {
-      upb_status_seterrmsg(
-          &h->status_, "closure type does not match for message-level handler");
-    }
-    return false;
+    UPB_ASSERT(false);
   }
 
   if (closure_type)
@@ -203,8 +95,7 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
     const void *table_return_type =
         upb_handlerattr_returnclosuretype(&h->table[sel].attr);
     if (return_type && table_return_type && return_type != table_return_type) {
-      upb_status_seterrmsg(&h->status_, "closure return type does not match");
-      return false;
+      UPB_ASSERT(false);
     }
 
     if (table_return_type && !return_type)
@@ -268,80 +159,36 @@ bool checkstart(upb_handlers *h, const upb_fielddef *f, upb_handlertype_t type,
   return_closure_type = upb_handlerattr_returnclosuretype(attr);
   if (closure_type && return_closure_type &&
       closure_type != return_closure_type) {
-    upb_status_seterrf(status,
-                       "expected start handler to return sub type for field %f",
-                       upb_fielddef_name(f));
-    return false;
+    UPB_ASSERT(false);
   }
   return true;
 }
 
-/* Public interface ***********************************************************/
-
-upb_handlers *upb_handlers_new(const upb_msgdef *md, const void *owner) {
+static upb_handlers *upb_handlers_new(const upb_msgdef *md, upb_handlercache *cache) {
   int extra;
   upb_handlers *h;
 
   extra = sizeof(upb_handlers_tabent) * (upb_msgdef_selectorcount(md) - 1);
-  h = upb_calloc(sizeof(*h) + extra);
+  h = upb_calloc(&cache->arena, sizeof(*h) + extra);
   if (!h) return NULL;
 
+  h->cache = cache;
   h->msg = md;
-  upb_status_clear(&h->status_);
 
   if (upb_msgdef_submsgfieldcount(md) > 0) {
-    h->sub = upb_calloc(upb_msgdef_submsgfieldcount(md) * sizeof(*h->sub));
-    if (!h->sub) goto oom;
+    size_t bytes = upb_msgdef_submsgfieldcount(md) * sizeof(*h->sub);
+    h->sub = upb_calloc(&cache->arena, bytes);
+    if (!h->sub) return NULL;
   } else {
     h->sub = 0;
   }
 
-  if (!upb_refcounted_init(upb_handlers_upcast_mutable(h), &vtbl, owner))
-    goto oom;
-  if (!upb_inttable_init(&h->cleanup_, UPB_CTYPE_FPTR)) goto oom;
-
   /* calloc() above initialized all handlers to NULL. */
   return h;
-
-oom:
-  freehandlers(upb_handlers_upcast_mutable(h));
-  return NULL;
 }
 
-const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
-                                           const void *owner,
-                                           upb_handlers_callback *callback,
-                                           const void *closure) {
-  dfs_state state;
-  upb_handlers *ret;
-  bool ok;
-  upb_refcounted *r;
 
-  state.callback = callback;
-  state.closure = closure;
-  if (!upb_inttable_init(&state.tab, UPB_CTYPE_PTR)) return NULL;
-
-  ret = newformsg(m, owner, &state);
-
-  upb_inttable_uninit(&state.tab);
-  if (!ret) return NULL;
-
-  r = upb_handlers_upcast_mutable(ret);
-  ok = upb_refcounted_freeze(&r, 1, NULL, UPB_MAX_HANDLER_DEPTH);
-  UPB_ASSERT(ok);
-
-  return ret;
-}
-
-const upb_status *upb_handlers_status(upb_handlers *h) {
-  UPB_ASSERT(!upb_handlers_isfrozen(h));
-  return &h->status_;
-}
-
-void upb_handlers_clearerr(upb_handlers *h) {
-  UPB_ASSERT(!upb_handlers_isfrozen(h));
-  upb_status_clear(&h->status_);
-}
+/* Public interface ***********************************************************/
 
 #define SETTER(name, handlerctype, handlertype) \
   bool upb_handlers_set ## name(upb_handlers *h, const upb_fielddef *f, \
@@ -381,7 +228,6 @@ bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
 
 bool upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handlerfunc *func,
                             upb_handlerattr *attr) {
-  UPB_ASSERT(!upb_handlers_isfrozen(h));
   return doset(h, UPB_ENDMSG_SELECTOR, NULL, UPB_HANDLER_INT32,
                (upb_func *)func, attr);
 }
@@ -389,14 +235,12 @@ bool upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handlerfunc *func,
 bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
                                  const upb_handlers *sub) {
   UPB_ASSERT(sub);
-  UPB_ASSERT(!upb_handlers_isfrozen(h));
   UPB_ASSERT(upb_fielddef_issubmsg(f));
   if (SUBH_F(h, f)) return false;  /* Can't reset. */
   if (upb_handlers_msgdef(sub) != upb_fielddef_msgsubdef(f)) {
     return false;
   }
   SUBH_F(h, f) = sub;
-  upb_ref2(sub, h);
   return true;
 }
 
@@ -424,98 +268,11 @@ const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h) { return h->msg; }
 
 bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *func) {
   bool ok;
-  if (upb_inttable_lookupptr(&h->cleanup_, p, NULL)) {
+  if (upb_inttable_lookupptr(&h->cache->cleanup_, p, NULL)) {
     return false;
   }
-  ok = upb_inttable_insertptr(&h->cleanup_, p, upb_value_fptr(func));
+  ok = upb_inttable_insertptr(&h->cache->cleanup_, p, upb_value_fptr(func));
   UPB_ASSERT(ok);
-  return true;
-}
-
-
-/* "Static" methods ***********************************************************/
-
-bool upb_handlers_freeze(upb_handlers *const*handlers, int n, upb_status *s) {
-  /* TODO: verify we have a transitive closure. */
-  int i;
-  for (i = 0; i < n; i++) {
-    upb_msg_field_iter j;
-    upb_handlers *h = handlers[i];
-
-    if (!upb_ok(&h->status_)) {
-      upb_status_seterrf(s, "handlers for message %s had error status: %s",
-                         upb_msgdef_fullname(upb_handlers_msgdef(h)),
-                         upb_status_errmsg(&h->status_));
-      return false;
-    }
-
-    /* Check that there are no closure mismatches due to missing Start* handlers
-     * or subhandlers with different type-level types. */
-    for(upb_msg_field_begin(&j, h->msg);
-        !upb_msg_field_done(&j);
-        upb_msg_field_next(&j)) {
-
-      const upb_fielddef *f = upb_msg_iter_field(&j);
-      if (upb_fielddef_isseq(f)) {
-        if (!checkstart(h, f, UPB_HANDLER_STARTSEQ, s))
-          return false;
-      }
-
-      if (upb_fielddef_isstring(f)) {
-        if (!checkstart(h, f, UPB_HANDLER_STARTSTR, s))
-          return false;
-      }
-
-      if (upb_fielddef_issubmsg(f)) {
-        bool hashandler = false;
-        if (upb_handlers_gethandler(
-                h, handlers_getsel(h, f, UPB_HANDLER_STARTSUBMSG)) ||
-            upb_handlers_gethandler(
-                h, handlers_getsel(h, f, UPB_HANDLER_ENDSUBMSG))) {
-          hashandler = true;
-        }
-
-        if (upb_fielddef_isseq(f) &&
-            (upb_handlers_gethandler(
-                 h, handlers_getsel(h, f, UPB_HANDLER_STARTSEQ)) ||
-             upb_handlers_gethandler(
-                 h, handlers_getsel(h, f, UPB_HANDLER_ENDSEQ)))) {
-          hashandler = true;
-        }
-
-        if (hashandler && !upb_handlers_getsubhandlers(h, f)) {
-          /* For now we add an empty subhandlers in this case.  It makes the
-           * decoder code generator simpler, because it only has to handle two
-           * cases (submessage has handlers or not) as opposed to three
-           * (submessage has handlers in enclosing message but no subhandlers).
-           *
-           * This makes parsing less efficient in the case that we want to
-           * notice a submessage but skip its contents (like if we're testing
-           * for submessage presence or counting the number of repeated
-           * submessages).  In this case we will end up parsing the submessage
-           * field by field and throwing away the results for each, instead of
-           * skipping the whole delimited thing at once.  If this is an issue we
-           * can revisit it, but do remember that this only arises when you have
-           * handlers (startseq/startsubmsg/endsubmsg/endseq) set for the
-           * submessage but no subhandlers.  The uses cases for this are
-           * limited. */
-          upb_handlers *sub = upb_handlers_new(upb_fielddef_msgsubdef(f), &sub);
-          upb_handlers_setsubhandlers(h, f, sub);
-          upb_handlers_unref(sub, &sub);
-        }
-
-        /* TODO(haberman): check type of submessage.
-         * This is slightly tricky; also consider whether we should check that
-         * they match at setsubhandlers time. */
-      }
-    }
-  }
-
-  if (!upb_refcounted_freeze((upb_refcounted*const*)handlers, n, s,
-                             UPB_MAX_HANDLER_DEPTH)) {
-    return false;
-  }
-
   return true;
 }
 
@@ -614,6 +371,85 @@ uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
     }
   }
   return ret;
+}
+
+/* upb_handlercache ***********************************************************/
+
+const upb_handlers *upb_handlercache_get(upb_handlercache *c,
+                                         const upb_msgdef *md) {
+  upb_msg_field_iter i;
+  upb_value v;
+  upb_handlers *h;
+
+  if (upb_inttable_lookupptr(&c->tab, md, &v)) {
+    return upb_value_getptr(v);
+  }
+
+  h = upb_handlers_new(md, c);
+  v = upb_value_ptr(h);
+
+  if (!h) return NULL;
+  if (!upb_inttable_insertptr(&c->tab, md, v)) return NULL;
+
+  c->callback(c->closure, h);
+
+  /* For each submessage field, get or create a handlers object and set it as
+   * the subhandlers. */
+  for(upb_msg_field_begin(&i, md);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
+    upb_fielddef *f = upb_msg_iter_field(&i);
+
+    if (upb_fielddef_issubmsg(f)) {
+      const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
+      const upb_handlers *sub_mh = upb_handlercache_get(c, subdef);
+
+      if (!sub_mh) return NULL;
+
+      upb_handlers_setsubhandlers(h, f, sub_mh);
+    }
+  }
+
+  return h;
+}
+
+
+upb_handlercache *upb_handlercache_new(upb_handlers_callback *callback,
+                                       const void *closure) {
+  upb_handlercache *cache = upb_gmalloc(sizeof(*cache));
+
+  if (!cache) return NULL;
+
+  upb_arena_init(&cache->arena);
+
+  cache->callback = callback;
+  cache->closure = closure;
+
+  if (!upb_inttable_init(&cache->tab, UPB_CTYPE_PTR)) goto oom;
+  if (!upb_inttable_init(&cache->cleanup_, UPB_CTYPE_FPTR)) goto oom;
+
+  return cache;
+
+oom:
+  upb_gfree(cache);
+  return NULL;
+}
+
+void upb_handlercache_free(upb_handlercache *cache) {
+  upb_inttable_iter i;
+
+  upb_inttable_begin(&i, &cache->cleanup_);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    void *val = (void*)upb_inttable_iter_key(&i);
+    upb_value func_val = upb_inttable_iter_value(&i);
+    upb_handlerfree *func = upb_value_getfptr(func_val);
+    func(val);
+  }
+
+  upb_inttable_uninit(&cache->tab);
+  upb_inttable_uninit(&cache->cleanup_);
+  upb_arena_uninit(&cache->arena);
+  upb_gfree(cache);
 }
 
 

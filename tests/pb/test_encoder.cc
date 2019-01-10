@@ -19,6 +19,11 @@ std::string read_string(const char *filename) {
 void test_pb_roundtrip() {
   std::string input = read_string("google/protobuf/descriptor.pb");
   upb::SymbolTable* symtab = upb::SymbolTable::New();
+  upb::HandlerCache* encoder_cache = upb::pb::Encoder::NewCache();
+  upb::pb::CodeCache* decoder_cache = upb::pb::CodeCache::New(encoder_cache);
+  ASSERT(symtab);
+  ASSERT(encoder_cache);
+  ASSERT(decoder_cache);
   upb::Arena arena;
   google_protobuf_FileDescriptorSet *set =
       google_protobuf_FileDescriptorSet_parsenew(
@@ -37,24 +42,23 @@ void test_pb_roundtrip() {
   const upb::MessageDef *md =
       symtab->LookupMessage("google.protobuf.FileDescriptorSet");
   ASSERT(md);
-  printf("name: %s\n", md->full_name());
-  upb::reffed_ptr<const upb::Handlers> encoder_handlers(
-      upb::pb::Encoder::NewHandlers(md));
-  upb::reffed_ptr<const upb::pb::DecoderMethod> method(
-      upb::pb::DecoderMethod::New(
-          upb::pb::DecoderMethodOptions(encoder_handlers.get())));
+  const upb::Handlers* encoder_handlers = encoder_cache->Get(md);
+  ASSERT(encoder_handlers);
+  const upb::pb::DecoderMethod* method = decoder_cache->Get(md);
+  ASSERT(method);
 
   upb::InlinedEnvironment<512> env;
   std::string output;
   upb::StringSink string_sink(&output);
   upb::pb::Encoder* encoder =
-      upb::pb::Encoder::Create(&env, encoder_handlers.get(),
-                               string_sink.input());
+      upb::pb::Encoder::Create(&env, encoder_handlers, string_sink.input());
   upb::pb::Decoder* decoder =
-      upb::pb::Decoder::Create(&env, method.get(), encoder->input());
+      upb::pb::Decoder::Create(&env, method, encoder->input());
   ok = upb::BufferSource::PutBuffer(input, decoder->input());
   ASSERT(ok);
   ASSERT(input == output);
+  upb::pb::CodeCache::Free(decoder_cache);
+  upb::HandlerCache::Free(encoder_cache);
   upb::SymbolTable::Free(symtab);
 }
 

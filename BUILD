@@ -1,15 +1,18 @@
 load(
     ":build_defs.bzl",
+    "generated_file_staleness_test",
+    "lua_binary",
     "lua_cclibrary",
     "lua_library",
-    "lua_binary",
     "lua_test",
-    "generated_file_staleness_test",
     "make_shell_script",
     "upb_amalgamation",
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
+
+# Remove once our C++ wrappers are more sane.
+CXX_COPTS = ["-Wno-unused-private-field"]
 
 # C/C++ rules ##################################################################
 
@@ -26,7 +29,6 @@ cc_library(
         "upb/msgfactory.c",
         "upb/port_def.inc",
         "upb/port_undef.inc",
-        "upb/refcounted.c",
         "upb/sink.c",
         "upb/structs.int.h",
         "upb/table.c",
@@ -42,7 +44,6 @@ cc_library(
         "upb/handlers.h",
         "upb/msg.h",
         "upb/msgfactory.h",
-        "upb/refcounted.h",
         "upb/sink.h",
         "upb/upb.h",
     ],
@@ -161,8 +162,8 @@ cc_test(
 
 upb_proto_reflection_library(
     name = "descriptor_upbproto",
-    deps = ["descriptor_proto"],
     upbc = ":protoc-gen-upb",
+    deps = ["descriptor_proto"],
 )
 
 cc_test(
@@ -178,14 +179,14 @@ cc_test(
 proto_library(
     name = "test_decoder_proto",
     srcs = [
-        "tests/pb/test_decoder.proto"
-    ]
+        "tests/pb/test_decoder.proto",
+    ],
 )
 
 upb_proto_reflection_library(
     name = "test_decoder_upbproto",
-    deps = ["test_decoder_proto"],
     upbc = ":protoc-gen-upb",
+    deps = ["test_decoder_proto"],
 )
 
 cc_test(
@@ -201,6 +202,7 @@ cc_test(
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
+    copts = CXX_COPTS,
     data = ["google/protobuf/descriptor.pb"],
     deps = [
         ":upb_cc_bindings",
@@ -212,19 +214,20 @@ cc_test(
 proto_library(
     name = "test_cpp_proto",
     srcs = [
-        "tests/test_cpp.proto"
-    ]
+        "tests/test_cpp.proto",
+    ],
 )
 
 upb_proto_reflection_library(
     name = "test_cpp_upbproto",
-    deps = ["test_cpp_proto"],
     upbc = ":protoc-gen-upb",
+    deps = ["test_cpp_proto"],
 )
 
 cc_test(
     name = "test_cpp",
     srcs = ["tests/test_cpp.cc"],
+    copts = CXX_COPTS,
     deps = [
         ":test_cpp_upbproto",
         ":upb",
@@ -249,8 +252,8 @@ proto_library(
 
 upb_proto_reflection_library(
     name = "test_json_upbproto",
-    deps = ["test_json_proto"],
     upbc = ":protoc-gen-upb",
+    deps = ["test_json_proto"],
 )
 
 cc_test(
@@ -258,6 +261,7 @@ cc_test(
     srcs = [
         "tests/json/test_json.cc",
     ],
+    copts = CXX_COPTS,
     deps = [
         ":test_json_upbproto",
         ":upb_json",
@@ -279,11 +283,11 @@ cc_binary(
     srcs = [
         "tests/conformance_upb.c",
     ],
+    copts = ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
         ":conformance_proto_upb",
         ":upb",
     ],
-    copts = ["-Ibazel-out/k8-fastbuild/bin"],
 )
 
 make_shell_script(
@@ -363,12 +367,16 @@ lua_test(
 
 cc_library(
     name = "upbc_generator",
+    srcs = [
+        "upbc/generator.cc",
+        "upbc/message_layout.cc",
+        "upbc/message_layout.h",
+    ],
     hdrs = ["upbc/generator.h"],
-    srcs = ["upbc/generator.cc", "upbc/message_layout.h", "upbc/message_layout.cc"],
     deps = [
+        "@absl//absl/strings",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protoc_lib",
-        "@absl//absl/strings",
     ],
 )
 
@@ -386,7 +394,7 @@ cc_binary(
 make_shell_script(
     name = "gen_run_cmake_build",
     out = "run_cmake_build.sh",
-    contents = "mkdir build && cd build && cmake .. && make -j8 && make test"
+    contents = "mkdir build && cd build && cmake .. && make -j8 && make test",
 )
 
 sh_test(
@@ -447,10 +455,13 @@ genrule(
 
 genrule(
     name = "gen_cmakelists",
+    srcs = [
+        "BUILD",
+        "WORKSPACE",
+    ],
     outs = ["generated/CMakeLists.txt"],
-    srcs = ["BUILD", "WORKSPACE"],
+    cmd = "$(location :make_cmakelists) $@",
     tools = [":make_cmakelists"],
-    cmd = "$(location :make_cmakelists) $@"
 )
 
 proto_library(
@@ -469,8 +480,8 @@ genrule(
     ],
     cmd = "$(location @com_google_protobuf//:protoc) $< --upb_out=$(GENDIR)/generated --plugin=protoc-gen-upb=$(location :protoc-gen-upb)",
     tools = [
+        ":protoc-gen-upb",
         "@com_google_protobuf//:protoc",
-        ":protoc-gen-upb"
     ],
 )
 

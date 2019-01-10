@@ -204,12 +204,15 @@ void test_json_roundtrip_message(const char* json_src,
 // and compares the result.
 void test_json_roundtrip() {
   upb::SymbolTable* symtab = upb::SymbolTable::New();
+  upb::HandlerCache* serialize_handlercache = upb::json::Printer::NewCache(false);
+  upb::json::CodeCache* parse_codecache = upb::json::CodeCache::New();
+
   const upb::MessageDef* md = upb_test_json_TestMessage_getmsgdef(symtab);
   ASSERT(md);
-  upb::reffed_ptr<const upb::Handlers> serialize_handlers(
-      upb::json::Printer::NewHandlers(md, false));
-  upb::reffed_ptr<const upb::json::ParserMethod> parser_method(
-      upb::json::ParserMethod::New(md));
+  const upb::Handlers* serialize_handlers = serialize_handlercache->Get(md);
+  const upb::json::ParserMethod* parser_method = parse_codecache->Get(md);
+  ASSERT(serialize_handlers);
+  ASSERT(parser_method);
 
   for (const TestCase* test_case = kTestRoundtripMessages;
        test_case->input != NULL; test_case++) {
@@ -220,12 +223,13 @@ void test_json_roundtrip() {
 
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
-                                  serialize_handlers.get(), parser_method.get(),
-                                  i);
+                                  serialize_handlers, parser_method, i);
     }
   }
 
-  serialize_handlers = upb::json::Printer::NewHandlers(md, true);
+  upb::HandlerCache::Free(serialize_handlercache);
+  serialize_handlercache = upb::json::Printer::NewCache(true);
+  serialize_handlers = serialize_handlercache->Get(md);
 
   for (const TestCase* test_case = kTestRoundtripMessagesPreserve;
        test_case->input != NULL; test_case++) {
@@ -236,11 +240,12 @@ void test_json_roundtrip() {
 
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
-                                  serialize_handlers.get(), parser_method.get(),
-                                  i);
+                                  serialize_handlers, parser_method, i);
     }
   }
 
+  upb::HandlerCache::Free(serialize_handlercache);
+  upb::json::CodeCache::Free(parse_codecache);
   upb::SymbolTable::Free(symtab);
 }
 

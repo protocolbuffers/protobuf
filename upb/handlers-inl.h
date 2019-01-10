@@ -997,31 +997,11 @@ const T* BufferHandle::GetAttachedObject() const {
                                : NULL;
 }
 
-inline reffed_ptr<Handlers> Handlers::New(const MessageDef *m) {
-  upb_handlers *h = upb_handlers_new(m, &h);
-  return reffed_ptr<Handlers>(h, &h);
-}
-inline reffed_ptr<const Handlers> Handlers::NewFrozen(
-    const MessageDef *m, upb_handlers_callback *callback,
-    const void *closure) {
-  const upb_handlers *h = upb_handlers_newfrozen(m, &h, callback, closure);
-  return reffed_ptr<const Handlers>(h, &h);
-}
 inline const Status* Handlers::status() {
   return upb_handlers_status(this);
 }
 inline void Handlers::ClearError() {
   return upb_handlers_clearerr(this);
-}
-inline bool Handlers::Freeze(Status *s) {
-  upb::Handlers* h = this;
-  return upb_handlers_freeze(&h, 1, s);
-}
-inline bool Handlers::Freeze(Handlers *const *handlers, int n, Status *s) {
-  return upb_handlers_freeze(handlers, n, s);
-}
-inline bool Handlers::Freeze(const std::vector<Handlers*>& h, Status* status) {
-  return upb_handlers_freeze((Handlers* const*)&h[0], h.size(), status);
 }
 inline const MessageDef *Handlers::message_def() const {
   return upb_handlers_msgdef(this);
@@ -1092,9 +1072,6 @@ inline bool Handlers::SetEndSequenceHandler(const FieldDef *f,
   handler.AddCleanup(this);
   return upb_handlers_setendseq(this, f, handler.handler_, &handler.attr_);
 }
-inline bool Handlers::SetSubHandlers(const FieldDef *f, const Handlers *sub) {
-  return upb_handlers_setsubhandlers(this, f, sub);
-}
 inline const Handlers *Handlers::GetSubHandlers(const FieldDef *f) const {
   return upb_handlers_getsubhandlers(this, f);
 }
@@ -1114,6 +1091,17 @@ inline Handlers::GenericFunction *Handlers::GetHandler(
 }
 inline const void *Handlers::GetHandlerData(Handlers::Selector selector) {
   return upb_handlers_gethandlerdata(this, selector);
+}
+
+inline HandlerCache *HandlerCache::New(upb_handlers_callback *callback,
+                                       const void *closure) {
+  return upb_handlercache_new(callback, closure);
+}
+inline void HandlerCache::Free(HandlerCache* cache) {
+  return upb_handlercache_free(cache);
+}
+const Handlers* HandlerCache::Get(const MessageDef* md) {
+  return upb_handlercache_get(this, md);
 }
 
 inline BytesHandler::BytesHandler() {

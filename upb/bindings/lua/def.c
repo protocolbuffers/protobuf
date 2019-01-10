@@ -22,15 +22,9 @@
   } while (0)
 
 
-/* lupb_refcounted ************************************************************/
+/* lupb_wrapper ***************************************************************/
 
-/* All upb objects that use upb_refcounted have a userdata that begins with a
- * pointer to that object.  Each type has its own metatable.  Objects are cached
- * in a weak table indexed by the C pointer of the object they are caching.
- *
- * Note that we consistently use memcpy() to read to/from the object.  This
- * allows the userdata to use its own struct without violating aliasing, as
- * long as it begins with a pointer. */
+/* Wrappers around upb objects. */
 
 /* Checks type; if it matches, pulls the pointer out of the wrapper. */
 void *lupb_checkwrapper(lua_State *L, int narg, const char *type) {
@@ -263,7 +257,7 @@ void lupb_oneofdef_pushwrapper(lua_State *L, const upb_oneofdef *o) {
 }
 
 const upb_oneofdef *lupb_oneofdef_check(lua_State *L, int narg) {
-  return lupb_refcounted_check(L, narg, LUPB_ONEOFDEF);
+  return lupb_checkwrapper(L, narg, LUPB_ONEOFDEF);
 }
 
 static int lupb_oneofdef_containingtype(lua_State *L) {
@@ -345,7 +339,7 @@ void lupb_msgdef_pushwrapper(lua_State *L, const upb_msgdef *m) {
 }
 
 const upb_msgdef *lupb_msgdef_check(lua_State *L, int narg) {
-  return lupb_refcounted_check(L, narg, LUPB_MSGDEF);
+  return lupb_checkwrapper(L, narg, LUPB_MSGDEF);
 }
 
 static int lupb_msgdef_len(lua_State *L) {
@@ -453,7 +447,7 @@ static const struct luaL_Reg lupb_msgdef_m[] = {
 /* lupb_enumdef ***************************************************************/
 
 const upb_enumdef *lupb_enumdef_check(lua_State *L, int narg) {
-  return lupb_refcounted_check(L, narg, LUPB_ENUMDEF);
+  return lupb_checkwrapper(L, narg, LUPB_ENUMDEF);
 }
 
 static void lupb_enumdef_pushwrapper(lua_State *L, const upb_enumdef *e) {
@@ -527,7 +521,7 @@ void lupb_filedef_pushwrapper(lua_State *L, const upb_filedef *f) {
 }
 
 const upb_filedef *lupb_filedef_check(lua_State *L, int narg) {
-  return lupb_refcounted_check(L, narg, LUPB_FILEDEF);
+  return lupb_checkwrapper(L, narg, LUPB_FILEDEF);
 }
 
 static int lupb_filedef_dep(lua_State *L) {
