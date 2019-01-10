@@ -69,9 +69,11 @@ enum TestCategory {
   // https://developers.google.com/protocol-buffers/docs/proto3#json_options
   // for more detail.
   JSON_IGNORE_UNKNOWN_PARSING_TEST = 3;
-  JSPB_TEST = 4;  // Test jspb wire format. Google internal only.
-                  // Opensource testees just skip it.
-  TEXT_FORMAT_TEST = 5;  // Test text format.
+  // Test jspb wire format. Google internal only. Opensource testees just skip it.
+  JSPB_TEST = 4;
+  // Test text format. Google internal only currently. Opensource won't have any
+  // test with this category.
+  TEXT_FORMAT_TEST = 5;
 }
 
 // The conformance runner will request a list of failures as the first request.
@@ -97,9 +99,9 @@ message ConformanceRequest {
   oneof payload {
     bytes protobuf_payload = 1;
     string json_payload = 2;
-    string jspb_payload = 7;  // Google internal only.
-                              // Opensource testees just skip it.
-	// Google internal only. Opensource won't have any test with this type.
+    // Google internal only.  Opensource testees just skip it.
+    string jspb_payload = 7;
+    // Google internal only. Opensource won't have any test with this payload.
     string text_payload = 8;
   }
 
