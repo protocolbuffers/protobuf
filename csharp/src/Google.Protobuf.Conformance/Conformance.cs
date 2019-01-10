@@ -93,7 +93,9 @@ namespace Conformance {
     /// </summary>
     [pbr::OriginalName("JSPB_TEST")] JspbTest = 4,
     /// <summary>
-    /// Opensource testees just skip it.
+    /// Test text format. Google internal only currently. Opensource doesn't 
+    /// have any test with this category for now. For cpp java and python,
+    /// testee can already dual with this type.
     /// </summary>
     [pbr::OriginalName("TEXT_FORMAT_TEST")] TextFormatTest = 5,
   }
@@ -327,7 +329,8 @@ namespace Conformance {
     /// <summary>Field number for the "text_payload" field.</summary>
     public const int TextPayloadFieldNumber = 8;
     /// <summary>
-    /// Opensource testees just skip it.
+    /// Google internal only. Opensource doesn't have any test with this payload
+    /// for now.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string TextPayload {
