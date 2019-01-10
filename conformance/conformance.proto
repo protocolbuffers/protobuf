@@ -99,6 +99,7 @@ message ConformanceRequest {
     string json_payload = 2;
     string jspb_payload = 7;  // Google internal only.
                               // Opensource testees just skip it.
+	// Google internal only. Opensource won't have any test with this type.
     string text_payload = 8;
   }
 
