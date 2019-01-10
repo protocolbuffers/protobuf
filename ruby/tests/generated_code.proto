@@ -70,10 +70,11 @@ enum TestEnum {
 }
 
 message TestNestedMsg {
-  message lowercase {
-    message _underscore {}
+  message testLowercase {
+    message lowercase{}
   }
 }
+
 
 message TestUnknown {
   TestUnknown optional_unknown = 11;
