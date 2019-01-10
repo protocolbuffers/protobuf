@@ -86,7 +86,7 @@ namespace Conformance {
     /// </summary>
     [pbr::OriginalName("JSON_IGNORE_UNKNOWN_PARSING_TEST")] JsonIgnoreUnknownParsingTest = 3,
     /// <summary>
-    /// Test jspb wire format. Google internal only.
+    /// Test jspb wire format. Google internal only. Opensource testees just skip it.
     /// </summary>
     [pbr::OriginalName("JSPB_TEST")] JspbTest = 4,
   }
@@ -298,7 +298,7 @@ namespace Conformance {
     /// <summary>Field number for the "jspb_payload" field.</summary>
     public const int JspbPayloadFieldNumber = 7;
     /// <summary>
-    /// Google internal only.
+    /// Google internal only.  Opensource testees just skip it.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string JspbPayload {
