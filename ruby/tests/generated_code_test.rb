@@ -16,11 +16,8 @@ class GeneratedCodeTest < Test::Unit::TestCase
     # aspect of the extension (basic.rb is for that).
     A::B::C::TestMessage.new
     A::B::C::TestMessage::NestedMessage.new
-    A::B::C::TestMessage::NestedMessage::Hello.new
-    A::B::C::TestMessage::NestedMessage::Hello::PB__underscore.new
-    A::B::C::OtherNestedMessage.new(
-      :World => A::B::C::TestMessage::NestedMessage::Hello.new
-    )
+    A::B::C::TestNestedMsg::Lowercase.new
+    A::B::C::TestNestedMsg::Lowercase::PB__underscore.new
     FooBar::TestImportedMessage.new
     A::B::TestRubyPackageMessage.new
   end

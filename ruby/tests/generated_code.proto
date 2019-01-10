@@ -53,10 +53,6 @@ message TestMessage {
   map<string, bool> map_string_bool = 70;
 
   message NestedMessage {
-    message hello {
-      message _underscore {
-      }
-    }
     int32 foo = 1;
   }
 
@@ -66,10 +62,6 @@ message TestMessage {
   // int32 non_exist = 89;
 }
 
-message OtherNestedMessage {
-  TestMessage.NestedMessage.hello World = 1;
-}
-
 enum TestEnum {
   Default = 0;
   A = 1;
@@ -77,6 +69,11 @@ enum TestEnum {
   C = 3;
 }
 
+message TestNestedMsg {
+  message lowercase {
+    message _underscore {}
+  }
+}
 
 message TestUnknown {
   TestUnknown optional_unknown = 11;
