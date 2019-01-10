@@ -71,8 +71,8 @@ enum TestCategory {
   JSON_IGNORE_UNKNOWN_PARSING_TEST = 3;
   // Test jspb wire format. Google internal only. Opensource testees just skip it.
   JSPB_TEST = 4;
-  // Test text format. Google internal only currently. Opensource won't have any
-  // test with this category.
+  // Test text format. Google internal only currently. Opensource doesn't 
+  // have any test with this category for now.
   TEXT_FORMAT_TEST = 5;
 }
 
@@ -101,7 +101,8 @@ message ConformanceRequest {
     string json_payload = 2;
     // Google internal only.  Opensource testees just skip it.
     string jspb_payload = 7;
-    // Google internal only. Opensource won't have any test with this payload.
+    // Google internal only. Opensource doesn't have any test with this payload
+    // for now.
     string text_payload = 8;
   }
 
