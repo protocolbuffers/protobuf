@@ -68,8 +68,8 @@ enum TestCategory {
   // https://developers.google.com/protocol-buffers/docs/proto3#json_options
   // for more detail.
   JSON_IGNORE_UNKNOWN_PARSING_TEST = 3;
-  JSPB_TEST = 4;  // Test jspb wire format. Google internal only.
-                  // Opensource testees just skip it.
+  // Test jspb wire format. Google internal only. Opensource testees just skip it.
+  JSPB_TEST = 4;
 }
 
 message FailureSet {
@@ -92,8 +92,8 @@ message ConformanceRequest {
   oneof payload {
     bytes protobuf_payload = 1;
     string json_payload = 2;
-    string jspb_payload = 7;  // Google internal only.
-                              // Opensource testees just skip it.
+    // Google internal only.  Opensource testees just skip it.
+    string jspb_payload = 7;
   }
 
   // Which format should the testee serialize its message to?
