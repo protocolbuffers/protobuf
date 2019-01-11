@@ -85,6 +85,11 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
       break;
     }
 
+    case conformance::TEXT_FORMAT: {
+      request_.set_text_payload(input);
+      break;
+    }
+
     default:
       GOOGLE_LOG(FATAL) << "Unspecified input format";
   }
@@ -131,6 +136,8 @@ string ConformanceTestSuite::ConformanceRequestSetting::
       return "ProtobufInput";
     case conformance::JSON:
       return "JsonInput";
+    case conformance::TEXT_FORMAT:
+      return "TextFormatInput";
     default:
       GOOGLE_LOG(FATAL) << "Unspecified output format";
   }
@@ -144,6 +151,8 @@ string ConformanceTestSuite::ConformanceRequestSetting::
       return "ProtobufOutput";
     case conformance::JSON:
       return "JsonOutput";
+    case conformance::TEXT_FORMAT:
+      return "TextFormatOutput";
     default:
       GOOGLE_LOG(FATAL) << "Unspecified output format";
   }
@@ -341,6 +350,8 @@ string ConformanceTestSuite::WireFormatToString(
       return "JSON";
     case conformance::JSPB:
       return "JSPB";
+    case conformance::TEXT_FORMAT:
+      return "TEXT_FORMAT";
     case conformance::UNSPECIFIED:
       return "UNSPECIFIED";
     default:

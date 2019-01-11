@@ -44,6 +44,7 @@ from google.protobuf import json_format
 from google.protobuf import message
 from google.protobuf import test_messages_proto3_pb2
 from google.protobuf import test_messages_proto2_pb2
+from google.protobuf import text_format
 import conformance_pb2
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'wb', 0)
@@ -136,6 +137,13 @@ def do_test(request):
         response.parse_error = str(e)
         return response
 
+    elif request.WhichOneof('payload') == 'text_payload':
+      try:
+        text_format.Parse(request.text_payload, test_message)
+      except Exception as e:
+        response.parse_error = str(e)
+        return response
+
     else:
       raise ProtocolError("Request didn't have payload.")
 
@@ -151,6 +159,9 @@ def do_test(request):
       except Exception as e:
         response.serialize_error = str(e)
         return response
+
+    elif request.requested_output_format == conformance_pb2.TEXT_FORMAT:
+      response.text_payload = text_format.MessageToString(test_message)
 
   except Exception as e:
     response.runtime_error = str(e)

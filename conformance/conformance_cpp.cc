@@ -36,6 +36,7 @@
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
 
@@ -45,14 +46,15 @@ using google::protobuf::Descriptor;
 using google::protobuf::DescriptorPool;
 using google::protobuf::Message;
 using google::protobuf::MessageFactory;
+using google::protobuf::TextFormat;
 using google::protobuf::util::BinaryToJsonString;
 using google::protobuf::util::JsonParseOptions;
 using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
 using google::protobuf::util::TypeResolver;
-using protobuf_test_messages::proto3::TestAllTypesProto3;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
+using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
@@ -163,6 +165,14 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       break;
     }
 
+    case ConformanceRequest::kTextPayload: {
+      if (!TextFormat::ParseFromString(request.text_payload(), test_message)) {
+        response->set_parse_error("Parse error");
+        return;
+      }
+      break;
+    }
+
     case ConformanceRequest::PAYLOAD_NOT_SET:
       GOOGLE_LOG(FATAL) << "Request didn't have payload.";
       break;
@@ -200,6 +210,12 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
             status.error_message().as_string());
         return;
       }
+      break;
+    }
+
+    case conformance::TEXT_FORMAT: {
+      GOOGLE_CHECK(TextFormat::PrintToString(*test_message,
+                                             response->mutable_text_payload()));
       break;
     }
 
