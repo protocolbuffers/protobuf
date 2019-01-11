@@ -834,12 +834,14 @@ void Generator::PrintMessages() const {
 void Generator::PrintMessage(const Descriptor& message_descriptor,
                              const string& prefix,
                              std::vector<string>* to_register) const {
-  string qualified_name(prefix + message_descriptor.name());
+  string message_name = message_descriptor.name();
+  string safe_message_name = ContainsPythonKeyword(message_name) ? message_name + "_" : message_name;
+  string qualified_name(prefix + safe_message_name);
   to_register->push_back(qualified_name);
   printer_->Print(
       "$name$ = _reflection.GeneratedProtocolMessageType('$name$', "
       "(_message.Message,), dict(\n",
-      "name", message_descriptor.name());
+      "name", safe_message_name);
   printer_->Indent();
 
   PrintNestedMessages(message_descriptor, qualified_name + ".", to_register);
