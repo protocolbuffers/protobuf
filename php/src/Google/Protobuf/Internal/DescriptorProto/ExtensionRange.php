@@ -118,7 +118,7 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\ExtensionRangeOptions $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(\Google\Protobuf\Internal\ExtensionRangeOptions $var = null)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\ExtensionRangeOptions::class);
         $this->options = $var;

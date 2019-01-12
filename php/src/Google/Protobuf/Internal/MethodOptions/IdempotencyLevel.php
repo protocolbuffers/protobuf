@@ -6,13 +6,6 @@ namespace Google\Protobuf\Internal\MethodOptions;
 
 use UnexpectedValueException;
 
-/**
- * Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
- * or neither? HTTP based RPC implementation may choose GET verb for safe
- * methods, and PUT verb for idempotent methods instead of the default POST.
- *
- * Protobuf type <code>google.protobuf.MethodOptions.IdempotencyLevel</code>
- */
 class IdempotencyLevel
 {
     /**

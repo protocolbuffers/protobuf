@@ -6,9 +6,6 @@ namespace Google\Protobuf\Internal\FieldDescriptorProto;
 
 use UnexpectedValueException;
 
-/**
- * Protobuf type <code>google.protobuf.FieldDescriptorProto.Type</code>
- */
 class Type
 {
     /**
