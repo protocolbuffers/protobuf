@@ -525,19 +525,6 @@ class ImplementationTest extends TestBase
         ]);
     }
 
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage Expect Foo\TestMessage_Sub.
-     */
-    public function testArraysForMessagesThrowsException()
-    {
-        $m = new TestMessage([
-            'optional_message' => [
-                'a' => 33
-            ]
-        ]);
-    }
-
     public function testArrayConstructorWithNullValues()
     {
         $requestData = [
