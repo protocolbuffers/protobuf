@@ -6,6 +6,9 @@ namespace Google\Protobuf\Internal\FieldDescriptorProto;
 
 use UnexpectedValueException;
 
+/**
+ * Protobuf type <code>google.protobuf.FieldDescriptorProto.Label</code>
+ */
 class Label
 {
     /**

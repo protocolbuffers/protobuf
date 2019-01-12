@@ -6,6 +6,11 @@ namespace Google\Protobuf\Internal\FileOptions;
 
 use UnexpectedValueException;
 
+/**
+ * Generated classes can be optimized for speed or code size.
+ *
+ * Protobuf type <code>google.protobuf.FileOptions.OptimizeMode</code>
+ */
 class OptimizeMode
 {
     /**

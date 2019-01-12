@@ -975,11 +975,7 @@ class Message
      *
      * @param array $array An array containing message properties and values.
      * @return null.
-<<<<<<< HEAD
      * @throws \Exception Invalid data.
-=======
-     * @throws Exception Invalid data.
->>>>>>> php-generated-dev
      */
     protected function mergeFromArray(array $array)
     {
@@ -991,17 +987,13 @@ class Message
                     'Invalid message property: ' . $key);
             }
             $setter = $field->getSetter();
-<<<<<<< HEAD
             if ($field->isWrapperType()) {
                 self::normalizeToMessageType($value, $field->getMessageType()->getClass());
             }
-=======
->>>>>>> php-generated-dev
             $this->$setter($value);
         }
     }
 
-<<<<<<< HEAD
     /**
      * Tries to normalize $value into a provided protobuf wrapper type $class.
      * If $value is any type other than an object, we attempt to construct an
@@ -1036,8 +1028,6 @@ class Message
         }
     }
 
-=======
->>>>>>> php-generated-dev
     protected function mergeFromJsonArray($array)
     {
         if (is_a($this, "Google\Protobuf\Any")) {

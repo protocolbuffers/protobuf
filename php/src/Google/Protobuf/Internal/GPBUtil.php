@@ -379,12 +379,9 @@ class GPBUtil
                 implode('\\', $parts) .
                 "\\".self::getClassNamePrefix($class_name_without_package,$file_proto).
                 $class_name_without_package;
-<<<<<<< HEAD
             $legacy_classname =
                 implode('\\', array_map('ucwords', explode('.', $package))).
                 "\\".$legacy_class_name_without_package;
-=======
->>>>>>> php-generated-dev
         }
     }
 

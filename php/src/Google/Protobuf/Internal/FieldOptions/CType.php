@@ -6,6 +6,9 @@ namespace Google\Protobuf\Internal\FieldOptions;
 
 use UnexpectedValueException;
 
+/**
+ * Protobuf type <code>google.protobuf.FieldOptions.CType</code>
+ */
 class CType
 {
     /**

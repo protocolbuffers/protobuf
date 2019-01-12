@@ -1160,6 +1160,8 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     printer.Print("use UnexpectedValueException;\n\n");
   }
 
+  GenerateEnumDocComment(&printer, en, is_descriptor);
+
   if (lastindex != string::npos) {
     fullname = fullname.substr(lastindex + 1);
   }
