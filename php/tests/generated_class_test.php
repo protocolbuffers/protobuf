@@ -281,17 +281,6 @@ class GeneratedClassTest extends TestBase
         $this->assertTrue(true);
     }
 
-    public function testLegacyTypehintWithNestedEnums()
-    {
-        $this->legacyEnum(new TestLegacyMessage\NestedEnum);
-    }
-
-    private function legacyEnum(TestLegacyMessage_NestedEnum $enum)
-    {
-        // If we made it here without a PHP Fatal error, the typehint worked
-        $this->assertTrue(true);
-    }
-
     #########################################################
     # Test float field.
     #########################################################
