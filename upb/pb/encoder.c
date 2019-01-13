@@ -95,7 +95,7 @@ struct upb_pb_encoder {
 
   /* Our input and output. */
   upb_sink input_;
-  upb_bytessink *output_;
+  upb_bytessink output_;
 
   /* The "subclosure" -- used as the inner closure as part of the bytessink
    * protocol. */
@@ -127,7 +127,7 @@ struct upb_pb_encoder {
 
 /* TODO(haberman): handle pushback */
 static void putbuf(upb_pb_encoder *e, const char *buf, size_t len) {
-  size_t n = upb_bytessink_putbuf(e->output_, e->subc, buf, len, NULL);
+  size_t n = upb_bytessink_putbuf(&e->output_, e->subc, buf, len, NULL);
   UPB_ASSERT(n == len);
 }
 
@@ -353,7 +353,7 @@ static bool startmsg(void *c, const void *hd) {
   upb_pb_encoder *e = c;
   UPB_UNUSED(hd);
   if (e->depth++ == 0) {
-    upb_bytessink_start(e->output_, 0, &e->subc);
+    upb_bytessink_start(&e->output_, 0, &e->subc);
   }
   return true;
 }
@@ -363,7 +363,7 @@ static bool endmsg(void *c, const void *hd, upb_status *status) {
   UPB_UNUSED(hd);
   UPB_UNUSED(status);
   if (--e->depth == 0) {
-    upb_bytessink_end(e->output_);
+    upb_bytessink_end(&e->output_);
   }
   return true;
 }
@@ -527,7 +527,7 @@ upb_handlercache *upb_pb_encoder_newcache() {
 }
 
 upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
-                                      upb_bytessink *output) {
+                                      upb_bytessink output) {
   const size_t initial_bufsize = 256;
   const size_t initial_segbufsize = 16;
   /* TODO(haberman): make this configurable. */
@@ -556,7 +556,7 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
 
   e->env = env;
   e->output_ = output;
-  e->subc = output->closure;
+  e->subc = output.closure;
   e->ptr = e->buf;
 
   /* If this fails, increase the value in encoder.h. */
@@ -565,4 +565,4 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
   return e;
 }
 
-upb_sink *upb_pb_encoder_input(upb_pb_encoder *e) { return &e->input_; }
+upb_sink upb_pb_encoder_input(upb_pb_encoder *e) { return e->input_; }

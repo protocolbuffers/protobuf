@@ -279,7 +279,7 @@ int* startstr(int* depth, const uint32_t* num, size_t size_hint) {
 }
 
 size_t value_string(int* depth, const uint32_t* num, const char* buf,
-                    size_t n, const upb::BufferHandle* handle) {
+                    size_t n, const upb_bufhandle* handle) {
   UPB_UNUSED(num);
   UPB_UNUSED(depth);
   check_stack_alignment();
@@ -348,13 +348,13 @@ void free_uint32(void *val) {
 }
 
 template<class T, bool F(int*, const uint32_t*, T)>
-void doreg(upb_handlers *h, uint32_t num) {
-  const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
+void doreg(upb::HandlersPtr h, uint32_t num) {
+  upb::FieldDefPtr f = h.message_def().FindFieldByNumber(num);
   ASSERT(f);
-  ASSERT(h->SetValueHandler<T>(f, UpbBindT(F, new uint32_t(num))));
-  if (f->IsSequence()) {
-    ASSERT(h->SetStartSequenceHandler(f, UpbBind(startseq, new uint32_t(num))));
-    ASSERT(h->SetEndSequenceHandler(f, UpbBind(endseq, new uint32_t(num))));
+  ASSERT(h.SetValueHandler<T>(f, UpbBind(F, new uint32_t(num))));
+  if (f.IsSequence()) {
+    ASSERT(h.SetStartSequenceHandler(f, UpbBind(startseq, new uint32_t(num))));
+    ASSERT(h.SetEndSequenceHandler(f, UpbBind(endseq, new uint32_t(num))));
   }
 }
 
@@ -368,7 +368,7 @@ uint32_t rep_fn(uint32_t fn) {
 #define UNKNOWN_FIELD 666
 
 template <class T, bool F(int*, const uint32_t*, T)>
-void reg(upb_handlers *h, upb_descriptortype_t type) {
+void reg(upb::HandlersPtr h, upb_descriptortype_t type) {
   // We register both a repeated and a non-repeated field for every type.
   // For the non-repeated field we make the field number the same as the
   // type.  For the repeated field we make it a function of the type.
@@ -376,39 +376,40 @@ void reg(upb_handlers *h, upb_descriptortype_t type) {
   doreg<T, F>(h, rep_fn(type));
 }
 
-void regseq(upb::Handlers* h, const upb::FieldDef* f, uint32_t num) {
-  ASSERT(h->SetStartSequenceHandler(f, UpbBind(startseq, new uint32_t(num))));
-  ASSERT(h->SetEndSequenceHandler(f, UpbBind(endseq, new uint32_t(num))));
+void regseq(upb::HandlersPtr h, upb::FieldDefPtr f, uint32_t num) {
+  ASSERT(h.SetStartSequenceHandler(f, UpbBind(startseq, new uint32_t(num))));
+  ASSERT(h.SetEndSequenceHandler(f, UpbBind(endseq, new uint32_t(num))));
 }
 
-void reg_subm(upb_handlers *h, uint32_t num) {
-  const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
+void reg_subm(upb::HandlersPtr h, uint32_t num) {
+  upb::FieldDefPtr f = h.message_def().FindFieldByNumber(num);
   ASSERT(f);
-  if (f->IsSequence()) regseq(h, f, num);
+  if (f.IsSequence()) regseq(h, f, num);
   ASSERT(
-      h->SetStartSubMessageHandler(f, UpbBind(startsubmsg, new uint32_t(num))));
-  ASSERT(h->SetEndSubMessageHandler(f, UpbBind(endsubmsg, new uint32_t(num))));
+      h.SetStartSubMessageHandler(f, UpbBind(startsubmsg, new uint32_t(num))));
+  ASSERT(h.SetEndSubMessageHandler(f, UpbBind(endsubmsg, new uint32_t(num))));
 }
 
-void reg_str(upb_handlers *h, uint32_t num) {
-  const upb_fielddef *f = upb_msgdef_itof(upb_handlers_msgdef(h), num);
+void reg_str(upb::HandlersPtr h, uint32_t num) {
+  upb::FieldDefPtr f = h.message_def().FindFieldByNumber(num);
   ASSERT(f);
-  if (f->IsSequence()) regseq(h, f, num);
-  ASSERT(h->SetStartStringHandler(f, UpbBind(startstr, new uint32_t(num))));
-  ASSERT(h->SetEndStringHandler(f, UpbBind(endstr, new uint32_t(num))));
-  ASSERT(h->SetStringHandler(f, UpbBind(value_string, new uint32_t(num))));
+  if (f.IsSequence()) regseq(h, f, num);
+  ASSERT(h.SetStartStringHandler(f, UpbBind(startstr, new uint32_t(num))));
+  ASSERT(h.SetEndStringHandler(f, UpbBind(endstr, new uint32_t(num))));
+  ASSERT(h.SetStringHandler(f, UpbBind(value_string, new uint32_t(num))));
 }
 
 struct HandlerRegisterData {
   TestMode mode;
 };
 
-void callback(const void *closure, upb_handlers *h) {
+void callback(const void *closure, upb::Handlers* h_ptr) {
+  upb::HandlersPtr h(h_ptr);
   const HandlerRegisterData* data =
       static_cast<const HandlerRegisterData*>(closure);
   if (data->mode == ALL_HANDLERS) {
-    h->SetStartMessageHandler(UpbMakeHandler(startmsg));
-    h->SetEndMessageHandler(UpbMakeHandler(endmsg));
+    h.SetStartMessageHandler(UpbMakeHandler(startmsg));
+    h.SetEndMessageHandler(UpbMakeHandler(endmsg));
 
     // Register handlers for each type.
     reg<double,   value_double>(h, UPB_DESCRIPTOR_TYPE_DOUBLE);
@@ -436,7 +437,7 @@ void callback(const void *closure, upb_handlers *h) {
     reg_subm(h, UPB_DESCRIPTOR_TYPE_MESSAGE);
     reg_subm(h, rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
 
-    if (h->message_def()->full_name() == std::string("DecoderTest")) {
+    if (h.message_def().full_name() == std::string("DecoderTest")) {
       reg_subm(h, UPB_DESCRIPTOR_TYPE_GROUP);
       reg_subm(h, rep_fn(UPB_DESCRIPTOR_TYPE_GROUP));
     }
@@ -446,25 +447,16 @@ void callback(const void *closure, upb_handlers *h) {
   }
 }
 
-upb::reffed_ptr<const upb::Handlers> NewHandlers(upb::SymbolTable* symtab,
-                                                 TestMode mode) {
-  HandlerRegisterData handlerdata;
-  handlerdata.mode = mode;
-  return upb::Handlers::NewFrozen(DecoderTest_getmsgdef(symtab), callback,
-                                  &handlerdata);
-}
-
 /* Running of test cases ******************************************************/
 
 const upb::Handlers *global_handlers;
-const upb::pb::DecoderMethod *global_method;
+upb::pb::DecoderMethodPtr global_method;
 
-upb::pb::Decoder* CreateDecoder(upb::Environment* env,
-                                const upb::pb::DecoderMethod* method,
-                                upb::Sink* sink) {
-  upb::pb::Decoder *ret = upb::pb::Decoder::Create(env, method, sink);
-  ASSERT(ret != NULL);
-  ret->set_max_nesting(MAX_NESTING);
+upb::pb::DecoderPtr CreateDecoder(upb::Environment* env,
+                                  upb::pb::DecoderMethodPtr method,
+                                  upb::Sink sink) {
+  upb::pb::DecoderPtr ret = upb::pb::DecoderPtr::Create(env, method, sink);
+  ret.set_max_nesting(MAX_NESTING);
   return ret;
 }
 
@@ -479,7 +471,7 @@ uint32_t Hash(const string& proto, const string* expected_output, size_t seam1,
   return hash;
 }
 
-void CheckBytesParsed(const upb::pb::Decoder& decoder, size_t ofs) {
+void CheckBytesParsed(upb::pb::DecoderPtr decoder, size_t ofs) {
   // We can't have parsed more data than the decoder callback is telling us it
   // parsed.
   ASSERT(decoder.BytesParsed() <= ofs);
@@ -491,7 +483,7 @@ void CheckBytesParsed(const upb::pb::Decoder& decoder, size_t ofs) {
 }
 
 static bool parse(VerboseParserEnvironment* env,
-                  const upb::pb::Decoder& decoder, int bytes) {
+                  upb::pb::DecoderPtr decoder, int bytes) {
   CheckBytesParsed(decoder, env->ofs());
   bool ret = env->ParseBuffer(bytes);
   if (ret) {
@@ -501,11 +493,11 @@ static bool parse(VerboseParserEnvironment* env,
   return ret;
 }
 
-void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
+void do_run_decoder(VerboseParserEnvironment* env, upb::pb::DecoderPtr decoder,
                     const string& proto, const string* expected_output,
                     size_t i, size_t j, bool may_skip) {
   env->Reset(proto.c_str(), proto.size(), may_skip, expected_output == NULL);
-  decoder->Reset();
+  decoder.Reset();
 
   testhash = Hash(proto, expected_output, i, j, may_skip);
   if (filter_hash && testhash != filter_hash) return;
@@ -515,7 +507,7 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
     if (filter_hash) {
       fprintf(stderr, "RUNNING TEST CASE, hash=%x\n", testhash);
       fprintf(stderr, "JIT on: %s\n",
-              global_method->is_native() ? "true" : "false");
+              global_method.is_native() ? "true" : "false");
       fprintf(stderr, "Input (len=%u): ", (unsigned)proto.size());
       PrintBinary(proto);
       fprintf(stderr, "\n");
@@ -534,9 +526,9 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
     }
 
     bool ok = env->Start() &&
-              parse(env, *decoder, i) &&
-              parse(env, *decoder, j - i) &&
-              parse(env, *decoder, -1) &&
+              parse(env, decoder, i) &&
+              parse(env, decoder, j - i) &&
+              parse(env, decoder, -1) &&
               env->End();
 
     ASSERT(env->CheckConsistency());
@@ -564,8 +556,8 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
 void run_decoder(const string& proto, const string* expected_output) {
   VerboseParserEnvironment env(filter_hash != 0);
   upb::Sink sink(global_handlers, &closures[0]);
-  upb::pb::Decoder *decoder = CreateDecoder(env.env(), global_method, &sink);
-  env.ResetBytesSink(decoder->input());
+  upb::pb::DecoderPtr decoder = CreateDecoder(env.env(), global_method, sink);
+  env.ResetBytesSink(decoder.input());
   for (size_t i = 0; i < proto.size(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.size(), i + 5); j++) {
       do_run_decoder(&env, decoder, proto, expected_output, i, j, true);
@@ -883,9 +875,9 @@ void test_valid() {
     upb::Environment env;
     env.ReportErrorsTo(&status);
     upb::Sink sink(global_handlers, &closures[0]);
-    upb::pb::Decoder* decoder = CreateDecoder(&env, global_method, &sink);
+    upb::pb::DecoderPtr decoder = CreateDecoder(&env, global_method, sink);
     output.clear();
-    bool ok = upb::BufferSource::PutBuffer("", 0, decoder->input());
+    bool ok = upb::PutBuffer(std::string(), decoder.input());
     ASSERT(ok);
     ASSERT(status.ok());
     if (test_mode == ALL_HANDLERS) {
@@ -1133,23 +1125,22 @@ void test_valid() {
   run_decoder(buf, &textbuf);
 }
 
-upb::reffed_ptr<const upb::pb::DecoderMethod> NewMethod(
-    const upb::Handlers* dest_handlers, bool allow_jit) {
-  upb::pb::CodeCache cache;
-  cache.set_allow_jit(allow_jit);
-  return cache.GetDecoderMethod(upb::pb::DecoderMethodOptions(dest_handlers));
-}
+void empty_callback(const void *closure, upb::Handlers* h_ptr) {}
 
 void test_emptyhandlers(upb::SymbolTable* symtab, bool allowjit) {
   // Create an empty handlers to make sure that the decoder can handle empty
   // messages.
-  const upb::MessageDef* md = Empty_getmsgdef(symtab);
-  upb::reffed_ptr<upb::Handlers> h(upb::Handlers::New(md));
-  bool ok = h->Freeze(NULL);
-  ASSERT(ok);
-upb::reffed_ptr<const upb::pb::DecoderMethod> method =
-      NewMethod(h.get(), allowjit);
-  ASSERT(method.get());
+  HandlerRegisterData handlerdata;
+  handlerdata.mode = test_mode;
+
+  upb::HandlerCache handler_cache(empty_callback, &handlerdata);
+  upb::pb::CodeCache pb_code_cache(&handler_cache);
+
+  pb_code_cache.set_allow_jit(allowjit);
+
+  upb::MessageDefPtr md = upb::MessageDefPtr(Empty_getmsgdef(symtab->ptr()));
+  global_handlers = handler_cache.Get(md);
+  global_method = pb_code_cache.Get(md);
 
   // TODO: also test the case where a message has fields, but the fields are
   // submessage fields and have no handlers. This also results in a decoder
@@ -1169,9 +1160,9 @@ upb::reffed_ptr<const upb::pb::DecoderMethod> method =
   };
   for (int i = 0; testdata[i].data; i++) {
     VerboseParserEnvironment env(filter_hash != 0);
-    upb::Sink sink(method->dest_handlers(), &closures[0]);
-    upb::pb::Decoder* decoder = CreateDecoder(env.env(), method.get(), &sink);
-    env.ResetBytesSink(decoder->input());
+    upb::Sink sink(global_method.dest_handlers(), &closures[0]);
+    upb::pb::DecoderPtr decoder = CreateDecoder(env.env(), global_method, sink);
+    env.ResetBytesSink(decoder.input());
     env.Reset(testdata[i].data, testdata[i].length, true, false);
     ASSERT(env.Start());
     ASSERT(env.ParseBuffer(-1));
@@ -1181,24 +1172,25 @@ upb::reffed_ptr<const upb::pb::DecoderMethod> method =
 }
 
 void run_tests(bool use_jit) {
-  upb::reffed_ptr<const upb::pb::DecoderMethod> method;
-  upb::reffed_ptr<const upb::Handlers> handlers;
-  upb::SymbolTable* symtab = upb::SymbolTable::New();
+  HandlerRegisterData handlerdata;
+  handlerdata.mode = test_mode;
 
-  handlers = NewHandlers(symtab, test_mode);
-  global_handlers = handlers.get();
+  upb::SymbolTable symtab;
+  upb::HandlerCache handler_cache(callback, &handlerdata);
+  upb::pb::CodeCache pb_code_cache(&handler_cache);
 
-  method = NewMethod(handlers.get(), use_jit);
-  global_method = method.get();
-  ASSERT(use_jit == global_method->is_native());
+  pb_code_cache.set_allow_jit(use_jit);
+
+  upb::MessageDefPtr md(DecoderTest_getmsgdef(symtab.ptr()));
+  global_handlers = handler_cache.Get(md);
+  global_method = pb_code_cache.Get(md);
+  ASSERT(use_jit == global_method.is_native());
   completed = 0;
 
   test_invalid();
   test_valid();
 
-  test_emptyhandlers(symtab, use_jit);
-
-  upb::SymbolTable::Free(symtab);
+  test_emptyhandlers(&symtab, use_jit);
 }
 
 void run_test_suite() {
@@ -1217,9 +1209,6 @@ int run_tests(int argc, char *argv[]) {
   for (int i = 0; i < MAX_NESTING; i++) {
     closures[i] = i;
   }
-
-  upb::reffed_ptr<const upb::pb::DecoderMethod> method;
-  upb::reffed_ptr<const upb::Handlers> handlers;
 
   // Count tests.
   count = &total;

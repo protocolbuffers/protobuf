@@ -858,7 +858,7 @@ inline Handler<T>::Handler(F func)
     : registered_(false),
       cleanup_data_(func.GetData()),
       cleanup_func_(func.GetCleanup()) {
-  upb_handlerattr_sethandlerdata(&attr_, func.GetData());
+  attr_.handler_data = func.GetData();
   typedef typename ReturnOf<T>::Return Return;
   typedef typename ConvertParams<F, T>::Func ConvertedParamsFunc;
   typedef typename MaybeWrapReturn<ConvertedParamsFunc, Return>::Func

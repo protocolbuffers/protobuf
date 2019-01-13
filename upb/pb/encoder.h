@@ -30,16 +30,16 @@ class EncoderPtr;
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the decoder library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_PB_ENCODER_SIZE 768
+#define UPB_PB_ENCODER_SIZE 784
 
 struct upb_pb_encoder;
 typedef struct upb_pb_encoder upb_pb_encoder;
 
 UPB_BEGIN_EXTERN_C
 
-upb_sink *upb_pb_encoder_input(upb_pb_encoder *p);
+upb_sink upb_pb_encoder_input(upb_pb_encoder *p);
 upb_pb_encoder* upb_pb_encoder_create(upb_env* e, const upb_handlers* h,
-                                      upb_bytessink* output);
+                                      upb_bytessink output);
 
 upb_handlercache *upb_pb_encoder_newcache();
 
@@ -56,12 +56,12 @@ class upb::pb::EncoderPtr {
   /* Creates a new encoder in the given environment.  The Handlers must have
    * come from NewHandlers() below. */
   static EncoderPtr Create(Environment* env, const Handlers* handlers,
-                         BytesSink* output) {
-    return EncoderPtr(upb_pb_encoder_create(env, handlers, output->ptr()));
+                           BytesSink output) {
+    return EncoderPtr(upb_pb_encoder_create(env, handlers, output.sink()));
   }
 
   /* The input to the encoder. */
-  upb_sink* input() { return upb_pb_encoder_input(ptr()); }
+  upb::Sink input() { return upb_pb_encoder_input(ptr()); }
 
   /* Creates a new set of handlers for this MessageDef. */
   static HandlerCache NewCache() {

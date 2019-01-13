@@ -144,7 +144,7 @@ class StringSink {
   }
   ~StringSink() { }
 
-  upb_bytessink* Sink() { return &bytessink_; }
+  upb_bytessink Sink() { return bytessink_; }
 
   const std::string& Data() { return s_; }
 
@@ -169,16 +169,15 @@ class StringSink {
 void test_json_roundtrip_message(const char* json_src,
                                  const char* json_expected,
                                  const upb::Handlers* serialize_handlers,
-                                 const upb::json::ParserMethod* parser_method,
+                                 const upb::json::ParserMethodPtr parser_method,
                                  int seam) {
   VerboseParserEnvironment env(verbose);
   StringSink data_sink;
-  upb::json::Printer* printer = upb::json::Printer::Create(
+  upb::json::PrinterPtr printer = upb::json::PrinterPtr::Create(
       env.env(), serialize_handlers, data_sink.Sink());
-  upb::json::Parser* parser =
-      upb::json::Parser::Create(
-          env.env(), parser_method, NULL, printer->input(), false);
-  env.ResetBytesSink(parser->input());
+  upb::json::ParserPtr parser = upb::json::ParserPtr::Create(
+      env.env(), parser_method, NULL, printer.input(), false);
+  env.ResetBytesSink(parser.input());
   env.Reset(json_src, strlen(json_src), false, false);
 
   bool ok = env.Start() &&
@@ -203,16 +202,16 @@ void test_json_roundtrip_message(const char* json_src,
 // Starts with a message in JSON format, parses and directly serializes again,
 // and compares the result.
 void test_json_roundtrip() {
-  upb::SymbolTable* symtab = upb::SymbolTable::New();
-  upb::HandlerCache* serialize_handlercache = upb::json::Printer::NewCache(false);
-  upb::json::CodeCache* parse_codecache = upb::json::CodeCache::New();
+  upb::SymbolTable symtab;
+  upb::HandlerCache serialize_handlercache(
+      upb::json::PrinterPtr::NewCache(false));
+  upb::json::CodeCache parse_codecache;
 
-  const upb::MessageDef* md = upb_test_json_TestMessage_getmsgdef(symtab);
+  upb::MessageDefPtr md(upb_test_json_TestMessage_getmsgdef(symtab.ptr()));
   ASSERT(md);
-  const upb::Handlers* serialize_handlers = serialize_handlercache->Get(md);
-  const upb::json::ParserMethod* parser_method = parse_codecache->Get(md);
+  const upb::Handlers* serialize_handlers = serialize_handlercache.Get(md);
+  const upb::json::ParserMethodPtr parser_method = parse_codecache.Get(md);
   ASSERT(serialize_handlers);
-  ASSERT(parser_method);
 
   for (const TestCase* test_case = kTestRoundtripMessages;
        test_case->input != NULL; test_case++) {
@@ -227,9 +226,8 @@ void test_json_roundtrip() {
     }
   }
 
-  upb::HandlerCache::Free(serialize_handlercache);
-  serialize_handlercache = upb::json::Printer::NewCache(true);
-  serialize_handlers = serialize_handlercache->Get(md);
+  serialize_handlercache = upb::json::PrinterPtr::NewCache(true);
+  serialize_handlers = serialize_handlercache.Get(md);
 
   for (const TestCase* test_case = kTestRoundtripMessagesPreserve;
        test_case->input != NULL; test_case++) {
@@ -243,10 +241,6 @@ void test_json_roundtrip() {
                                   serialize_handlers, parser_method, i);
     }
   }
-
-  upb::HandlerCache::Free(serialize_handlercache);
-  upb::json::CodeCache::Free(parse_codecache);
-  upb::SymbolTable::Free(symtab);
 }
 
 extern "C" {

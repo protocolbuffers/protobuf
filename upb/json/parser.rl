@@ -299,13 +299,13 @@ static void json_parser_any_frame_set_payload_type(
 
   /* Initialize encoder. */
   h = upb_handlercache_get(frame->encoder_handlercache, payload_type);
-  encoder = upb_pb_encoder_create(p->env, h, &frame->stringsink.sink);
+  encoder = upb_pb_encoder_create(p->env, h, frame->stringsink.sink);
 
   /* Initialize parser. */
   parser_method = upb_json_codecache_get(frame->parser_codecache, payload_type);
   upb_sink_reset(&frame->sink, h, encoder);
   frame->parser = upb_json_parser_create(p->env, parser_method, p->symtab,
-                                         &frame->sink, p->ignore_json_unknown);
+                                         frame->sink, p->ignore_json_unknown);
 }
 
 static void json_parser_any_frame_free(upb_jsonparser_any_frame *frame) {
@@ -381,9 +381,12 @@ static bool check_stack(upb_json_parser *p) {
 static void set_name_table(upb_json_parser *p, upb_jsonparser_frame *frame) {
   upb_value v;
   const upb_json_codecache *cache = p->method->cache;
-  bool ok = upb_inttable_lookupptr(&cache->methods, frame->m, &v);
-  const upb_json_parsermethod *method = upb_value_getptr(v);
+  bool ok;
+  const upb_json_parsermethod *method;
+
+  ok = upb_inttable_lookupptr(&cache->methods, frame->m, &v);
   UPB_ASSERT(ok);
+  method = upb_value_getconstptr(v);
 
   frame->name_table = &method->name_table;
 }
@@ -1285,7 +1288,7 @@ static bool end_any_stringval(upb_json_parser *p) {
     }
 
     json_parser_any_frame_set_payload_type(p, p->top->any_frame, payload_type);
-    
+
     return true;
   } else {
     upb_status_seterrf(
@@ -2661,7 +2664,7 @@ static upb_json_parsermethod *parsermethod_new(upb_json_codecache *c,
   upb_msg_field_iter i;
   upb_alloc *alloc = upb_arena_alloc(&c->arena);
 
-  upb_json_parsermethod *m = upb_gmalloc(sizeof(*m));
+  upb_json_parsermethod *m = upb_malloc(alloc, sizeof(*m));
 
   m->cache = c;
 
@@ -2684,7 +2687,7 @@ static upb_json_parsermethod *parsermethod_new(upb_json_codecache *c,
     size_t len = upb_fielddef_getjsonname(f, NULL, 0);
     buf = upb_malloc(alloc, len);
     upb_fielddef_getjsonname(f, buf, len);
-    upb_strtable_insert3(&m->name_table, buf, len, v, alloc);
+    upb_strtable_insert3(&m->name_table, buf, strlen(buf), v, alloc);
 
     if (strcmp(buf, upb_fielddef_name(f)) != 0) {
       /* Since the JSON name is different from the regular field name, add an
@@ -2703,7 +2706,7 @@ static upb_json_parsermethod *parsermethod_new(upb_json_codecache *c,
 upb_json_parser *upb_json_parser_create(upb_env *env,
                                         const upb_json_parsermethod *method,
                                         const upb_symtab* symtab,
-                                        upb_sink *output,
+                                        upb_sink output,
                                         bool ignore_json_unknown) {
 #ifndef NDEBUG
   const size_t size_before = upb_env_bytesallocated(env);
@@ -2719,8 +2722,8 @@ upb_json_parser *upb_json_parser_create(upb_env *env,
   upb_bytessink_reset(&p->input_, &method->input_handler_, p);
 
   json_parser_reset(p);
-  upb_sink_reset(&p->top->sink, output->handlers, output->closure);
-  p->top->m = upb_handlers_msgdef(output->handlers);
+  p->top->sink = output;
+  p->top->m = upb_handlers_msgdef(output.handlers);
   if (is_wellknown_msg(p, UPB_WELLKNOWN_ANY)) {
     p->top->is_any = true;
     p->top->any_frame = json_parser_any_frame_new(p);
@@ -2740,8 +2743,8 @@ upb_json_parser *upb_json_parser_create(upb_env *env,
   return p;
 }
 
-upb_bytessink *upb_json_parser_input(upb_json_parser *p) {
-  return &p->input_;
+upb_bytessink upb_json_parser_input(upb_json_parser *p) {
+  return p->input_;
 }
 
 const upb_byteshandler *upb_json_parsermethod_inputhandler(
@@ -2768,21 +2771,22 @@ void upb_json_codecache_free(upb_json_codecache *c) {
   upb_gfree(c);
 }
 
-upb_json_parsermethod *upb_json_codecache_get(upb_json_codecache *c,
-                                              const upb_msgdef *md) {
+const upb_json_parsermethod *upb_json_codecache_get(upb_json_codecache *c,
+                                                    const upb_msgdef *md) {
   upb_json_parsermethod *m;
   upb_value v;
   upb_msg_field_iter i;
+  upb_alloc *alloc = upb_arena_alloc(&c->arena);
 
   if (upb_inttable_lookupptr(&c->methods, md, &v)) {
-    return upb_value_getptr(v);
+    return upb_value_getconstptr(v);
   }
 
   m = parsermethod_new(c, md);
-  v = upb_value_ptr(m);
+  v = upb_value_constptr(m);
 
   if (!m) return NULL;
-  if (!upb_inttable_insertptr(&c->methods, m, v)) return NULL;
+  if (!upb_inttable_insertptr2(&c->methods, md, v, alloc)) return NULL;
 
   /* Populate parser methods for all submessages, so the name tables will
    * be available during parsing. */

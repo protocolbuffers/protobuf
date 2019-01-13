@@ -286,6 +286,10 @@ const upb_handlers *upb_handlers_getsubhandlers_sel(const upb_handlers *h,
 
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h) { return h->msg; }
 
+bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *func) {
+  return upb_handlercache_addcleanup(h->cache, p, func);
+}
+
 upb_handlertype_t upb_handlers_getprimitivehandlertype(const upb_fielddef *f) {
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_INT32:
@@ -470,12 +474,13 @@ void upb_handlercache_free(upb_handlercache *cache) {
   upb_gfree(cache);
 }
 
-bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *func) {
+bool upb_handlercache_addcleanup(upb_handlercache *c, void *p,
+                                 upb_handlerfree *func) {
   bool ok;
-  if (upb_inttable_lookupptr(&h->cache->cleanup_, p, NULL)) {
+  if (upb_inttable_lookupptr(&c->cleanup_, p, NULL)) {
     return false;
   }
-  ok = upb_inttable_insertptr(&h->cache->cleanup_, p, upb_value_fptr(func));
+  ok = upb_inttable_insertptr(&c->cleanup_, p, upb_value_fptr(func));
   UPB_ASSERT(ok);
   return true;
 }

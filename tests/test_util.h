@@ -78,14 +78,14 @@ class VerboseParserEnvironment {
     if (verbose_) {
       fprintf(stderr, "Calling start()\n");
     }
-    return sink_->Start(len_, &subc_);
+    return sink_.Start(len_, &subc_);
   }
 
   bool End() {
     if (verbose_) {
       fprintf(stderr, "Calling end()\n");
     }
-    end_ok_ = sink_->End();
+    end_ok_ = sink_.End();
     end_ok_set_ = true;
 
     return end_ok_;
@@ -137,7 +137,7 @@ class VerboseParserEnvironment {
               (unsigned)bytes, (unsigned)ofs_, (unsigned)(ofs_ + bytes));
     }
 
-    int parsed = sink_->PutBuffer(subc_, buf2, bytes, &global_handle);
+    int parsed = sink_.PutBuffer(subc_, buf2, bytes, &global_handle);
     free(buf2);
 
     if (verbose_) {
@@ -170,7 +170,7 @@ class VerboseParserEnvironment {
     return true;
   }
 
-  void ResetBytesSink(upb::BytesSink* sink) {
+  void ResetBytesSink(upb::BytesSink sink) {
     sink_ = sink;
   }
 
@@ -181,7 +181,7 @@ class VerboseParserEnvironment {
 
  private:
   upb::Environment env_;
-  upb::BytesSink* sink_;
+  upb::BytesSink sink_;
   const char* buf_;
   size_t len_;
   bool verbose_;

@@ -48,11 +48,12 @@ class StringSink {
   explicit StringSink(T* target) {
     // TODO(haberman): we need to avoid rebuilding a new handler every time,
     // but with class globals disallowed for google3 C++ this is tricky.
+    upb_byteshandler_init(&handler_);
     FillStringHandler<T>::SetHandler(&handler_);
     input_.Reset(&handler_, target);
   }
 
-  BytesSink* input() { return &input_; }
+  BytesSink input() { return input_; }
 
  private:
   upb_byteshandler handler_;

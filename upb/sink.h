@@ -237,6 +237,17 @@ class upb::Sink {
   /* Constructor with no initialization; must be Reset() before use. */
   Sink() {}
 
+  Sink(const Sink&) = default;
+  Sink& operator=(const Sink&) = default;
+
+  Sink(const upb_sink& sink) : sink_(sink) {}
+  Sink &operator=(const upb_sink &sink) {
+    sink_ = sink;
+    return *this;
+  }
+
+  upb_sink sink() { return sink_; }
+
   /* Constructs a new sink for the given frozen handlers and closure.
    *
    * TODO: once the Handlers know the expected closure type, verify that T
@@ -406,7 +417,16 @@ class upb::BytesSink {
  public:
   BytesSink() {}
 
-  upb_bytessink* ptr() { return &sink_; }
+  BytesSink(const BytesSink&) = default;
+  BytesSink& operator=(const BytesSink&) = default;
+
+  BytesSink(const upb_bytessink& sink) : sink_(sink) {}
+  BytesSink &operator=(const upb_bytessink &sink) {
+    sink_ = sink;
+    return *this;
+  }
+
+  upb_bytessink sink() { return sink_; }
 
   /* Constructs a new sink for the given frozen handlers and closure.
    *
@@ -444,15 +464,15 @@ class upb::BytesSink {
 
 UPB_BEGIN_EXTERN_C
 
-bool upb_bufsrc_putbuf(const char *buf, size_t len, upb_bytessink *sink);
+bool upb_bufsrc_putbuf(const char *buf, size_t len, upb_bytessink sink);
 
 UPB_END_EXTERN_C
 
 #ifdef __cplusplus
 
 namespace upb {
-template <class T> bool PutBuffer(const T& str, upb_bytessink* sink) {
-  return upb_bufsrc_putbuf(str.c_str(), str.size(), sink);
+template <class T> bool PutBuffer(const T& str, BytesSink sink) {
+  return upb_bufsrc_putbuf(str.c_str(), str.size(), sink.sink());
 }
 }
 

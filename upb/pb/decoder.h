@@ -56,6 +56,7 @@ UPB_END_EXTERN_C
  * Handlers. */
 class upb::pb::DecoderMethodPtr {
  public:
+  DecoderMethodPtr() : ptr_(nullptr) {}
   DecoderMethodPtr(const upb_pbdecodermethod* ptr) : ptr_(ptr) {}
 
   const upb_pbdecodermethod* ptr() { return ptr_; }
@@ -98,9 +99,9 @@ UPB_BEGIN_EXTERN_C
 
 upb_pbdecoder *upb_pbdecoder_create(upb_env *e,
                                     const upb_pbdecodermethod *method,
-                                    upb_sink *output);
+                                    upb_sink output);
 const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d);
-upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d);
+upb_bytessink upb_pbdecoder_input(upb_pbdecoder *d);
 uint64_t upb_pbdecoder_bytesparsed(const upb_pbdecoder *d);
 size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d);
 bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max);
@@ -124,8 +125,8 @@ class upb::pb::DecoderPtr {
    *
    * The sink must match the given method. */
   static DecoderPtr Create(Environment *env, DecoderMethodPtr method,
-                           upb_sink *output) {
-    return DecoderPtr(upb_pbdecoder_create(env, method.ptr(), output));
+                           upb::Sink output) {
+    return DecoderPtr(upb_pbdecoder_create(env, method.ptr(), output.sink()));
   }
 
   /* Returns the DecoderMethod this decoder is parsing from. */
@@ -134,7 +135,7 @@ class upb::pb::DecoderPtr {
   }
 
   /* The sink on which this decoder receives input. */
-  upb_bytessink* input() { return upb_pbdecoder_input(ptr()); }
+  BytesSink input() { return BytesSink(upb_pbdecoder_input(ptr())); }
 
   /* Returns number of bytes successfully parsed.
    *

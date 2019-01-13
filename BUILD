@@ -166,16 +166,6 @@ upb_proto_reflection_library(
     deps = ["descriptor_proto"],
 )
 
-cc_test(
-    name = "test_handlers",
-    srcs = ["tests/test_handlers.c"],
-    deps = [
-        ":descriptor_upbproto",
-        ":upb_pb",
-        ":upb_test",
-    ],
-)
-
 proto_library(
     name = "test_decoder_proto",
     srcs = [

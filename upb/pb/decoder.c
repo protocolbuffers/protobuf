@@ -993,7 +993,7 @@ void upb_pbdecoder_reset(upb_pbdecoder *d) {
 }
 
 upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
-                                    upb_sink *sink) {
+                                    upb_sink sink) {
   const size_t default_max_nesting = 64;
 #ifndef NDEBUG
   size_t size_before = upb_env_bytesallocated(e);
@@ -1017,12 +1017,11 @@ upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
   upb_pbdecoder_reset(d);
   upb_bytessink_reset(&d->input_, &m->input_handler_, d);
 
-  UPB_ASSERT(sink);
   if (d->method_->dest_handlers_) {
-    if (sink->handlers != d->method_->dest_handlers_)
+    if (sink.handlers != d->method_->dest_handlers_)
       return NULL;
   }
-  upb_sink_reset(&d->top->sink, sink->handlers, sink->closure);
+  d->top->sink = sink;
 
   /* If this fails, increase the value in decoder.h. */
   UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(e) - size_before <=
@@ -1038,8 +1037,8 @@ const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d) {
   return d->method_;
 }
 
-upb_bytessink *upb_pbdecoder_input(upb_pbdecoder *d) {
-  return &d->input_;
+upb_bytessink upb_pbdecoder_input(upb_pbdecoder *d) {
+  return d->input_;
 }
 
 size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d) {

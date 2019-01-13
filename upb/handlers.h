@@ -602,6 +602,8 @@ upb_handlercache *upb_handlercache_new(upb_handlers_callback *callback,
 void upb_handlercache_free(upb_handlercache *cache);
 const upb_handlers *upb_handlercache_get(upb_handlercache *cache,
                                          const upb_msgdef *md);
+bool upb_handlercache_addcleanup(upb_handlercache *h, void *p,
+                                 upb_handlerfree *hfree);
 
 UPB_END_EXTERN_C
 
