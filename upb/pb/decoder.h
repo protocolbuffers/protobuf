@@ -21,16 +21,12 @@
 namespace upb {
 namespace pb {
 class CodeCache;
-class Decoder;
-class DecoderMethod;
+class DecoderPtr;
+class DecoderMethodPtr;
 class DecoderMethodOptions;
 }  /* namespace pb */
 }  /* namespace upb */
 #endif
-
-UPB_DECLARE_TYPE(upb::pb::CodeCache, upb_pbcodecache)
-UPB_DECLARE_TYPE(upb::pb::Decoder, upb_pbdecoder)
-UPB_DECLARE_TYPE(upb::pb::DecoderMethod, upb_pbdecodermethod)
 
 /* The maximum number of bytes we are required to buffer internally between
  * calls to the decoder.  The value is 14: a 5 byte unknown tag plus ten-byte
@@ -39,28 +35,55 @@ UPB_DECLARE_TYPE(upb::pb::DecoderMethod, upb_pbdecodermethod)
  * Should only be used by unit tests. */
 #define UPB_DECODER_MAX_RESIDUAL_BYTES 14
 
+/* upb_pbdecodermethod ********************************************************/
+
+struct upb_pbdecodermethod;
+typedef struct upb_pbdecodermethod upb_pbdecodermethod;
+
+UPB_BEGIN_EXTERN_C
+
+const upb_handlers *upb_pbdecodermethod_desthandlers(
+    const upb_pbdecodermethod *m);
+const upb_byteshandler *upb_pbdecodermethod_inputhandler(
+    const upb_pbdecodermethod *m);
+bool upb_pbdecodermethod_isnative(const upb_pbdecodermethod *m);
+
+UPB_END_EXTERN_C
+
 #ifdef __cplusplus
 
 /* Represents the code to parse a protobuf according to a destination
  * Handlers. */
-class upb::pb::DecoderMethod {
+class upb::pb::DecoderMethodPtr {
  public:
+  DecoderMethodPtr(const upb_pbdecodermethod* ptr) : ptr_(ptr) {}
+
+  const upb_pbdecodermethod* ptr() { return ptr_; }
+
   /* The destination handlers that are statically bound to this method.
    * This method is only capable of outputting to a sink that uses these
    * handlers. */
-  const Handlers* dest_handlers() const;
+  const Handlers *dest_handlers() const {
+    return upb_pbdecodermethod_desthandlers(ptr_);
+  }
 
   /* The input handlers for this decoder method. */
-  const BytesHandler* input_handler() const;
+  const BytesHandler* input_handler() const {
+    return upb_pbdecodermethod_inputhandler(ptr_);
+  }
 
   /* Whether this method is native. */
-  bool is_native() const;
+  bool is_native() const {
+    return upb_pbdecodermethod_isnative(ptr_);
+  }
 
  private:
-  UPB_DISALLOW_POD_OPS(DecoderMethod, upb::pb::DecoderMethod)
+  const upb_pbdecodermethod* ptr_;
 };
 
 #endif
+
+/* upb_pbdecoder **************************************************************/
 
 /* Preallocation hint: decoder won't allocate more bytes than this when first
  * constructed.  This hint may be an overestimate for some build configurations.
@@ -68,89 +91,8 @@ class upb::pb::DecoderMethod {
  * it may be an underestimate. */
 #define UPB_PB_DECODER_SIZE 4416
 
-#ifdef __cplusplus
-
-/* A Decoder receives binary protobuf data on its input sink and pushes the
- * decoded data to its output sink. */
-class upb::pb::Decoder {
- public:
-  /* Constructs a decoder instance for the given method, which must outlive this
-   * decoder.  Any errors during parsing will be set on the given status, which
-   * must also outlive this decoder.
-   *
-   * The sink must match the given method. */
-  static Decoder* Create(Environment* env, const DecoderMethod* method,
-                         Sink* output);
-
-  /* Returns the DecoderMethod this decoder is parsing from. */
-  const DecoderMethod* method() const;
-
-  /* The sink on which this decoder receives input. */
-  BytesSink* input();
-
-  /* Returns number of bytes successfully parsed.
-   *
-   * This can be useful for determining the stream position where an error
-   * occurred.
-   *
-   * This value may not be up-to-date when called from inside a parsing
-   * callback. */
-  uint64_t BytesParsed() const;
-
-  /* Gets/sets the parsing nexting limit.  If the total number of nested
-   * submessages and repeated fields hits this limit, parsing will fail.  This
-   * is a resource limit that controls the amount of memory used by the parsing
-   * stack.
-   *
-   * Setting the limit will fail if the parser is currently suspended at a depth
-   * greater than this, or if memory allocation of the stack fails. */
-  size_t max_nesting() const;
-  bool set_max_nesting(size_t max);
-
-  void Reset();
-
-  static const size_t kSize = UPB_PB_DECODER_SIZE;
-
- private:
-  UPB_DISALLOW_POD_OPS(Decoder, upb::pb::Decoder)
-};
-
-/* A class for caching protobuf processing code, whether bytecode for the
- * interpreted decoder or machine code for the JIT.
- *
- * This class is not thread-safe. */
-class upb::pb::CodeCache {
- public:
-  static CodeCache* New(HandlerCache* dest);
-  static void Free(CodeCache* cache);
-
-  /* Whether the cache is allowed to generate machine code.  Defaults to true.
-   * There is no real reason to turn it off except for testing or if you are
-   * having a specific problem with the JIT.
-   *
-   * Note that allow_jit = true does not *guarantee* that the code will be JIT
-   * compiled.  If this platform is not supported or the JIT was not compiled
-   * in, the code may still be interpreted. */
-  bool allow_jit() const;
-
-  /* This may only be called when the object is first constructed, and prior to
-   * any code generation. */
-  void set_allow_jit(bool allow);
-
-  /* Should the decoder push submessages to lazy handlers for fields that have
-   * them?  The caller should set this iff the lazy handlers expect data that is
-   * in protobuf binary format and the caller wishes to lazy parse it. */
-  void set_lazy(bool lazy);
-
-  /* Returns a DecoderMethod that can push data to the given handlers.
-   * If a suitable method already exists, it will be returned from the cache. */
-  const DecoderMethod *Get(const MessageDef* md);
-
- private:
-  UPB_DISALLOW_POD_OPS(CodeCache, upb::pb::CodeCache)
-};
-
-#endif
+struct upb_pbdecoder;
+typedef struct upb_pbdecoder upb_pbdecoder;
 
 UPB_BEGIN_EXTERN_C
 
@@ -164,13 +106,71 @@ size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d);
 bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max);
 void upb_pbdecoder_reset(upb_pbdecoder *d);
 
+UPB_END_EXTERN_C
 
+#ifdef __cplusplus
 
-const upb_handlers *upb_pbdecodermethod_desthandlers(
-    const upb_pbdecodermethod *m);
-const upb_byteshandler *upb_pbdecodermethod_inputhandler(
-    const upb_pbdecodermethod *m);
-bool upb_pbdecodermethod_isnative(const upb_pbdecodermethod *m);
+/* A Decoder receives binary protobuf data on its input sink and pushes the
+ * decoded data to its output sink. */
+class upb::pb::DecoderPtr {
+ public:
+  DecoderPtr(upb_pbdecoder* ptr) : ptr_(ptr) {}
+
+  upb_pbdecoder* ptr() { return ptr_; }
+
+  /* Constructs a decoder instance for the given method, which must outlive this
+   * decoder.  Any errors during parsing will be set on the given status, which
+   * must also outlive this decoder.
+   *
+   * The sink must match the given method. */
+  static DecoderPtr Create(Environment *env, DecoderMethodPtr method,
+                           upb_sink *output) {
+    return DecoderPtr(upb_pbdecoder_create(env, method.ptr(), output));
+  }
+
+  /* Returns the DecoderMethod this decoder is parsing from. */
+  const DecoderMethodPtr method() const {
+    return DecoderMethodPtr(upb_pbdecoder_method(ptr_));
+  }
+
+  /* The sink on which this decoder receives input. */
+  upb_bytessink* input() { return upb_pbdecoder_input(ptr()); }
+
+  /* Returns number of bytes successfully parsed.
+   *
+   * This can be useful for determining the stream position where an error
+   * occurred.
+   *
+   * This value may not be up-to-date when called from inside a parsing
+   * callback. */
+  uint64_t BytesParsed() { return upb_pbdecoder_bytesparsed(ptr()); }
+
+  /* Gets/sets the parsing nexting limit.  If the total number of nested
+   * submessages and repeated fields hits this limit, parsing will fail.  This
+   * is a resource limit that controls the amount of memory used by the parsing
+   * stack.
+   *
+   * Setting the limit will fail if the parser is currently suspended at a depth
+   * greater than this, or if memory allocation of the stack fails. */
+  size_t max_nesting() { return upb_pbdecoder_maxnesting(ptr()); }
+  bool set_max_nesting(size_t max) { return upb_pbdecoder_maxnesting(ptr()); }
+
+  void Reset() { upb_pbdecoder_reset(ptr()); }
+
+  static const size_t kSize = UPB_PB_DECODER_SIZE;
+
+ private:
+  upb_pbdecoder *ptr_;
+};
+
+#endif  /* __cplusplus */
+
+/* upb_pbcodecache ************************************************************/
+
+struct upb_pbcodecache;
+typedef struct upb_pbcodecache upb_pbcodecache;
+
+UPB_BEGIN_EXTERN_C
 
 upb_pbcodecache *upb_pbcodecache_new(upb_handlercache *dest);
 void upb_pbcodecache_free(upb_pbcodecache *c);
@@ -184,60 +184,47 @@ UPB_END_EXTERN_C
 
 #ifdef __cplusplus
 
-namespace upb {
+/* A class for caching protobuf processing code, whether bytecode for the
+ * interpreted decoder or machine code for the JIT.
+ *
+ * This class is not thread-safe. */
+class upb::pb::CodeCache {
+ public:
+  CodeCache(upb::HandlerCache *dest)
+      : ptr_(upb_pbcodecache_new(dest->ptr()), upb_pbcodecache_free) {}
+  CodeCache(CodeCache&&) = default;
+  CodeCache& operator=(CodeCache&&) = default;
 
-namespace pb {
+  upb_pbcodecache* ptr() { return ptr_.get(); }
+  const upb_pbcodecache* ptr() const { return ptr_.get(); }
 
-/* static */
-inline Decoder* Decoder::Create(Environment* env, const DecoderMethod* m,
-                                Sink* sink) {
-  return upb_pbdecoder_create(env, m, sink);
-}
-inline const DecoderMethod* Decoder::method() const {
-  return upb_pbdecoder_method(this);
-}
-inline BytesSink* Decoder::input() {
-  return upb_pbdecoder_input(this);
-}
-inline uint64_t Decoder::BytesParsed() const {
-  return upb_pbdecoder_bytesparsed(this);
-}
-inline size_t Decoder::max_nesting() const {
-  return upb_pbdecoder_maxnesting(this);
-}
-inline bool Decoder::set_max_nesting(size_t max) {
-  return upb_pbdecoder_setmaxnesting(this, max);
-}
-inline void Decoder::Reset() { upb_pbdecoder_reset(this); }
+  /* Whether the cache is allowed to generate machine code.  Defaults to true.
+   * There is no real reason to turn it off except for testing or if you are
+   * having a specific problem with the JIT.
+   *
+   * Note that allow_jit = true does not *guarantee* that the code will be JIT
+   * compiled.  If this platform is not supported or the JIT was not compiled
+   * in, the code may still be interpreted. */
+  bool allow_jit() const { return upb_pbcodecache_allowjit(ptr()); }
 
-inline const Handlers* DecoderMethod::dest_handlers() const {
-  return upb_pbdecodermethod_desthandlers(this);
-}
-inline const BytesHandler* DecoderMethod::input_handler() const {
-  return upb_pbdecodermethod_inputhandler(this);
-}
-inline bool DecoderMethod::is_native() const {
-  return upb_pbdecodermethod_isnative(this);
-}
+  /* This may only be called when the object is first constructed, and prior to
+   * any code generation. */
+  void set_allow_jit(bool allow) { upb_pbcodecache_setallowjit(ptr(), allow); }
 
-inline CodeCache* CodeCache::New(HandlerCache* dest) {
-  return upb_pbcodecache_new(dest);
-}
-inline void CodeCache::Free(CodeCache* cache) {
-  upb_pbcodecache_free(cache);
-}
-inline bool CodeCache::allow_jit() const {
-  return upb_pbcodecache_allowjit(this);
-}
-inline void CodeCache::set_allow_jit(bool allow) {
-  upb_pbcodecache_setallowjit(this, allow);
-}
-inline const DecoderMethod *CodeCache::Get(const MessageDef *md) {
-  return upb_pbcodecache_get(this, md);
-}
+  /* Should the decoder push submessages to lazy handlers for fields that have
+   * them?  The caller should set this iff the lazy handlers expect data that is
+   * in protobuf binary format and the caller wishes to lazy parse it. */
+  void set_lazy(bool lazy) { upb_pbcodecache_setlazy(ptr(), lazy); }
 
-}  /* namespace pb */
-}  /* namespace upb */
+  /* Returns a DecoderMethod that can push data to the given handlers.
+   * If a suitable method already exists, it will be returned from the cache. */
+  const DecoderMethodPtr Get(MessageDefPtr md) {
+    return DecoderMethodPtr(upb_pbcodecache_get(ptr(), md.ptr()));
+  }
+
+ private:
+  std::unique_ptr<upb_pbcodecache, decltype(&upb_pbcodecache_free)> ptr_;
+};
 
 #endif  /* __cplusplus */
 

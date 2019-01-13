@@ -74,7 +74,6 @@ template <int N> class InlinedEnvironment;
 #error Need implementations of [v]snprintf and va_copy
 #endif
 
-
 #if ((defined(__cplusplus) && __cplusplus >= 201103L) || \
       defined(__GXX_EXPERIMENTAL_CXX0X__)) && !defined(UPB_NO_CXX11)
 #define UPB_CXX11
@@ -110,73 +109,12 @@ template <int N> class InlinedEnvironment;
 #define UPB_FINAL
 #endif
 
-/* UPB_DECLARE_TYPE()
- * UPB_DECLARE_DERIVED_TYPE()
- * UPB_DECLARE_DERIVED_TYPE2()
- *
- * Macros for declaring C and C++ types both, including inheritance.
- * The inheritance doesn't use real C++ inheritance, to stay compatible with C.
- *
- * These macros also provide upcasts:
- *  - in C: types-specific functions (ie. upb_foo_upcast(foo))
- *  - in C++: upb::upcast(foo) along with implicit conversions
- *
- * Downcasts are not provided, but upb/def.h defines downcasts for upb::Def. */
-
-#define UPB_C_UPCASTS(ty, base)                                      \
-  UPB_INLINE base *ty ## _upcast_mutable(ty *p) { return (base*)p; } \
-  UPB_INLINE const base *ty ## _upcast(const ty *p) { return (const base*)p; }
-
-#define UPB_C_UPCASTS2(ty, base, base2)                                 \
-  UPB_C_UPCASTS(ty, base)                                               \
-  UPB_INLINE base2 *ty ## _upcast2_mutable(ty *p) { return (base2*)p; } \
-  UPB_INLINE const base2 *ty ## _upcast2(const ty *p) { return (const base2*)p; }
-
 #ifdef __cplusplus
 
 #define UPB_BEGIN_EXTERN_C extern "C" {
 #define UPB_END_EXTERN_C }
 #define UPB_PRIVATE_FOR_CPP private:
 #define UPB_DECLARE_TYPE(cppname, cname) typedef cppname cname;
-
-#define UPB_DECLARE_DERIVED_TYPE(cppname, cppbase, cname, cbase)  \
-  UPB_DECLARE_TYPE(cppname, cname)                                \
-  UPB_C_UPCASTS(cname, cbase)                                     \
-  namespace upb {                                                 \
-  template <>                                                     \
-  class Pointer<cppname> : public PointerBase<cppname, cppbase> { \
-   public:                                                        \
-    explicit Pointer(cppname* ptr)                                \
-        : PointerBase<cppname, cppbase>(ptr) {}                   \
-  };                                                              \
-  template <>                                                     \
-  class Pointer<const cppname>                                    \
-      : public PointerBase<const cppname, const cppbase> {        \
-   public:                                                        \
-    explicit Pointer(const cppname* ptr)                          \
-        : PointerBase<const cppname, const cppbase>(ptr) {}       \
-  };                                                              \
-  }
-
-#define UPB_DECLARE_DERIVED_TYPE2(cppname, cppbase, cppbase2, cname, cbase,  \
-                                  cbase2)                                    \
-  UPB_DECLARE_TYPE(cppname, cname)                                           \
-  UPB_C_UPCASTS2(cname, cbase, cbase2)                                       \
-  namespace upb {                                                            \
-  template <>                                                                \
-  class Pointer<cppname> : public PointerBase2<cppname, cppbase, cppbase2> { \
-   public:                                                                   \
-    explicit Pointer(cppname* ptr)                                           \
-        : PointerBase2<cppname, cppbase, cppbase2>(ptr) {}                   \
-  };                                                                         \
-  template <>                                                                \
-  class Pointer<const cppname>                                               \
-      : public PointerBase2<const cppname, const cppbase, const cppbase2> {  \
-   public:                                                                   \
-    explicit Pointer(const cppname* ptr)                                     \
-        : PointerBase2<const cppname, const cppbase, const cppbase2>(ptr) {} \
-  };                                                                         \
-  }
 
 #else  /* !defined(__cplusplus) */
 
@@ -186,13 +124,6 @@ template <int N> class InlinedEnvironment;
 #define UPB_DECLARE_TYPE(cppname, cname) \
   struct cname;                          \
   typedef struct cname cname;
-#define UPB_DECLARE_DERIVED_TYPE(cppname, cppbase, cname, cbase) \
-  UPB_DECLARE_TYPE(cppname, cname)                               \
-  UPB_C_UPCASTS(cname, cbase)
-#define UPB_DECLARE_DERIVED_TYPE2(cppname, cppbase, cppbase2,    \
-                                  cname, cbase, cbase2)          \
-  UPB_DECLARE_TYPE(cppname, cname)                               \
-  UPB_C_UPCASTS2(cname, cbase, cbase2)
 
 #endif  /* defined(__cplusplus) */
 

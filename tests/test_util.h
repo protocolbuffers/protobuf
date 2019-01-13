@@ -12,7 +12,7 @@
 
 #ifdef __cplusplus
 
-upb::BufferHandle global_handle;
+upb_bufhandle global_handle;
 
 /* A convenience class for parser tests.  Provides some useful features:
  *

@@ -601,7 +601,7 @@ static void set_enum_hd(upb_handlers *h,
   hd->enumdef = upb_fielddef_enumsubdef(f);
   hd->keyname = newstrpc(h, f, preserve_fieldnames);
   upb_handlers_addcleanup(h, hd, upb_gfree);
-  upb_handlerattr_sethandlerdata(attr, hd);
+  attr->handler_data = hd;
 }
 
 /* Set up handlers for a mapentry submessage (i.e., an individual key/value pair
@@ -626,7 +626,7 @@ void printer_sethandlers_mapentry(const void *closure, bool preserve_fieldnames,
   const upb_fielddef* key_field = upb_msgdef_itof(md, UPB_MAPENTRY_KEY);
   const upb_fielddef* value_field = upb_msgdef_itof(md, UPB_MAPENTRY_VALUE);
 
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   UPB_UNUSED(closure);
 
@@ -690,10 +690,9 @@ void printer_sethandlers_mapentry(const void *closure, bool preserve_fieldnames,
       upb_handlers_setstring(h, value_field, putbytes, &empty_attr);
       break;
     case UPB_TYPE_ENUM: {
-      upb_handlerattr enum_attr = UPB_HANDLERATTR_INITIALIZER;
+      upb_handlerattr enum_attr = UPB_HANDLERATTR_INIT;
       set_enum_hd(h, value_field, preserve_fieldnames, &enum_attr);
       upb_handlers_setint32(h, value_field, mapvalue_enum, &enum_attr);
-      upb_handlerattr_uninit(&enum_attr);
       break;
     }
     case UPB_TYPE_MESSAGE:
@@ -701,8 +700,6 @@ void printer_sethandlers_mapentry(const void *closure, bool preserve_fieldnames,
        * as appropriate. */
       break;
   }
-
-  upb_handlerattr_uninit(&empty_attr);
 }
 
 static bool putseconds(void *closure, const void *handler_data,
@@ -948,16 +945,16 @@ void printer_sethandlers_any(const void *closure, upb_handlers *h) {
   const upb_fielddef* type_field = upb_msgdef_itof(md, UPB_ANY_TYPE);
   const upb_fielddef* value_field = upb_msgdef_itof(md, UPB_ANY_VALUE);
 
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   /* type_url's json name is "@type" */
-  upb_handlerattr type_name_attr = UPB_HANDLERATTR_INITIALIZER;
-  upb_handlerattr value_name_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr type_name_attr = UPB_HANDLERATTR_INIT;
+  upb_handlerattr value_name_attr = UPB_HANDLERATTR_INIT;
   strpc *type_url_json_name = newstrpc_str(h, "@type");
   strpc *value_json_name = newstrpc_str(h, "value");
 
-  upb_handlerattr_sethandlerdata(&type_name_attr, type_url_json_name);
-  upb_handlerattr_sethandlerdata(&value_name_attr, value_json_name);
+  type_name_attr.handler_data = type_url_json_name;
+  value_name_attr.handler_data = value_json_name;
 
   /* Set up handlers. */
   upb_handlers_setstartmsg(h, printer_startmsg, &empty_attr);
@@ -985,7 +982,7 @@ void printer_sethandlers_duration(const void *closure, upb_handlers *h) {
   const upb_fielddef* nanos_field =
       upb_msgdef_itof(md, UPB_DURATION_NANOS);
 
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_setstartmsg(h, printer_startdurationmsg, &empty_attr);
   upb_handlers_setint64(h, seconds_field, putseconds, &empty_attr);
@@ -1005,7 +1002,7 @@ void printer_sethandlers_timestamp(const void *closure, upb_handlers *h) {
   const upb_fielddef* nanos_field =
       upb_msgdef_itof(md, UPB_TIMESTAMP_NANOS);
 
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_setstartmsg(h, printer_starttimestampmsg, &empty_attr);
   upb_handlers_setint64(h, seconds_field, putseconds, &empty_attr);
@@ -1019,7 +1016,7 @@ void printer_sethandlers_value(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   upb_msg_field_iter i;
 
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
   upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
@@ -1058,7 +1055,7 @@ void printer_sethandlers_value(const void *closure, upb_handlers *h) {
 void printer_sethandlers_##wrapper(const void *closure, upb_handlers *h) { \
   const upb_msgdef *md = upb_handlers_msgdef(h);                           \
   const upb_fielddef* f = upb_msgdef_itof(md, 1);                          \
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;                \
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;                \
   upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);      \
   upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);          \
   upb_handlers_set##type(h, f, putmethod, &empty_attr);                    \
@@ -1081,7 +1078,7 @@ void printer_sethandlers_listvalue(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   const upb_fielddef* f = upb_msgdef_itof(md, 1);
 
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_setstartseq(h, f, startseq_nokey, &empty_attr);
   upb_handlers_setendseq(h, f, endseq, &empty_attr);
@@ -1098,7 +1095,7 @@ void printer_sethandlers_structvalue(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   const upb_fielddef* f = upb_msgdef_itof(md, 1);
 
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_setstartseq(h, f, startmap_nokey, &empty_attr);
   upb_handlers_setendseq(h, f, endmap, &empty_attr);
@@ -1114,7 +1111,7 @@ void printer_sethandlers_structvalue(const void *closure, upb_handlers *h) {
 void printer_sethandlers(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   bool is_mapentry = upb_msgdef_mapentry(md);
-  upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
   upb_msg_field_iter i;
   const upb_json_printercache *cache = closure;
   const bool preserve_fieldnames = cache->preserve_fieldnames;
@@ -1181,9 +1178,8 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
   for(; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
 
-    upb_handlerattr name_attr = UPB_HANDLERATTR_INITIALIZER;
-    upb_handlerattr_sethandlerdata(&name_attr,
-                                   newstrpc(h, f, preserve_fieldnames));
+    upb_handlerattr name_attr = UPB_HANDLERATTR_INIT;
+    name_attr.handler_data = newstrpc(h, f, preserve_fieldnames);
 
     if (upb_fielddef_ismap(f)) {
       upb_handlers_setstartseq(h, f, startmap, &name_attr);
@@ -1205,7 +1201,7 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
         /* For now, we always emit symbolic names for enums. We may want an
          * option later to control this behavior, but we will wait for a real
          * need first. */
-        upb_handlerattr enum_attr = UPB_HANDLERATTR_INITIALIZER;
+        upb_handlerattr enum_attr = UPB_HANDLERATTR_INIT;
         set_enum_hd(h, f, preserve_fieldnames, &enum_attr);
 
         if (upb_fielddef_isseq(f)) {
@@ -1214,7 +1210,6 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
           upb_handlers_setint32(h, f, scalar_enum, &enum_attr);
         }
 
-        upb_handlerattr_uninit(&enum_attr);
         break;
       }
       case UPB_TYPE_STRING:
@@ -1245,11 +1240,8 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
         }
         break;
     }
-
-    upb_handlerattr_uninit(&name_attr);
   }
 
-  upb_handlerattr_uninit(&empty_attr);
 #undef TYPE
 }
 

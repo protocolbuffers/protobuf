@@ -304,8 +304,7 @@ static void new_tag(upb_handlers *h, const upb_fielddef *f, upb_wiretype_t wt,
   tag_t *tag = upb_gmalloc(sizeof(tag_t));
   tag->bytes = upb_vencode64((n << 3) | wt, tag->tag);
 
-  upb_handlerattr_init(attr);
-  upb_handlerattr_sethandlerdata(attr, tag);
+  attr->handler_data = tag;
   upb_handlers_addcleanup(h, tag, upb_gfree);
 }
 
@@ -451,7 +450,7 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     bool packed = upb_fielddef_isseq(f) && upb_fielddef_isprimitive(f) &&
                   upb_fielddef_packed(f);
-    upb_handlerattr attr;
+    upb_handlerattr attr = UPB_HANDLERATTR_INIT;
     upb_wiretype_t wt =
         packed ? UPB_WIRE_TYPE_DELIMITED
                : upb_pb_native_wire_types[upb_fielddef_descriptortype(f)];
@@ -500,20 +499,17 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
         break;
       case UPB_DESCRIPTOR_TYPE_GROUP: {
         /* Endgroup takes a different tag (wire_type = END_GROUP). */
-        upb_handlerattr attr2;
+        upb_handlerattr attr2 = UPB_HANDLERATTR_INIT;
         new_tag(h, f, UPB_WIRE_TYPE_END_GROUP, &attr2);
 
         upb_handlers_setstartsubmsg(h, f, encode_startgroup, &attr);
         upb_handlers_setendsubmsg(h, f, encode_endgroup, &attr2);
 
-        upb_handlerattr_uninit(&attr2);
         break;
       }
     }
 
 #undef T
-
-    upb_handlerattr_uninit(&attr);
   }
 }
 

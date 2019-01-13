@@ -516,7 +516,7 @@ static upb_pbdecodermethod *find_submethod(const compiler *c,
 
 static void putsel(compiler *c, opcode op, upb_selector_t sel,
                    const upb_handlers *h) {
-  if (upb_handlers_gethandler(h, sel)) {
+  if (upb_handlers_gethandler(h, sel, NULL)) {
     putop(c, op, sel);
   }
 }
@@ -532,9 +532,9 @@ static bool haslazyhandlers(const upb_handlers *h, const upb_fielddef *f) {
   if (!upb_fielddef_lazy(f))
     return false;
 
-  return upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_STARTSTR)) ||
-         upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_STRING)) ||
-         upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_ENDSTR));
+  return upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_STARTSTR), NULL) ||
+         upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_STRING), NULL) ||
+         upb_handlers_gethandler(h, getsel(f, UPB_HANDLER_ENDSTR), NULL);
 }
 
 

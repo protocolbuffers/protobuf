@@ -9,6 +9,15 @@
 
 #include "upb/sink.h"
 
+
+struct upb_handlers {
+  upb_handlercache *cache;
+  const upb_msgdef *msg;
+  const upb_handlers **sub;
+  const void *top_closure_type;
+  upb_handlers_tabent table[1];  /* Dynamically-sized field handler array. */
+};
+
 static void *upb_calloc(upb_arena *arena, size_t size) {
   void *mem = upb_malloc(upb_arena_alloc(arena), size);
   if (mem) {
@@ -50,13 +59,13 @@ static upb_selector_t handlers_getsel(upb_handlers *h, const upb_fielddef *f,
 
 static const void **returntype(upb_handlers *h, const upb_fielddef *f,
                                upb_handlertype_t type) {
-  return &h->table[handlers_getsel(h, f, type)].attr.return_closure_type_;
+  return &h->table[handlers_getsel(h, f, type)].attr.return_closure_type;
 }
 
 static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
                   upb_handlertype_t type, upb_func *func,
-                  upb_handlerattr *attr) {
-  upb_handlerattr set_attr = UPB_HANDLERATTR_INITIALIZER;
+                  const upb_handlerattr *attr) {
+  upb_handlerattr set_attr = UPB_HANDLERATTR_INIT;
   const void *closure_type;
   const void **context_closure_type;
 
@@ -68,7 +77,7 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
 
   /* Check that the given closure type matches the closure type that has been
    * established for this context (if any). */
-  closure_type = upb_handlerattr_closuretype(&set_attr);
+  closure_type = set_attr.closure_type;
 
   if (type == UPB_HANDLER_STRING) {
     context_closure_type = returntype(h, f, UPB_HANDLER_STARTSTR);
@@ -91,15 +100,15 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
   /* If this is a STARTSEQ or STARTSTR handler, check that the returned pointer
    * matches any pre-existing expectations about what type is expected. */
   if (type == UPB_HANDLER_STARTSEQ || type == UPB_HANDLER_STARTSTR) {
-    const void *return_type = upb_handlerattr_returnclosuretype(&set_attr);
-    const void *table_return_type =
-        upb_handlerattr_returnclosuretype(&h->table[sel].attr);
+    const void *return_type = set_attr.return_closure_type;
+    const void *table_return_type = h->table[sel].attr.return_closure_type;
     if (return_type && table_return_type && return_type != table_return_type) {
       UPB_ASSERT(false);
     }
 
-    if (table_return_type && !return_type)
-      upb_handlerattr_setreturnclosuretype(&set_attr, table_return_type);
+    if (table_return_type && !return_type) {
+      set_attr.return_closure_type = table_return_type;
+    }
   }
 
   h->table[sel].func = (upb_func*)func;
@@ -125,18 +134,18 @@ const void *effective_closure_type(upb_handlers *h, const upb_fielddef *f,
       type != UPB_HANDLER_STARTSEQ &&
       type != UPB_HANDLER_ENDSEQ &&
       h->table[sel = handlers_getsel(h, f, UPB_HANDLER_STARTSEQ)].func) {
-    ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
+    ret = h->table[sel].attr.return_closure_type;
   }
 
   if (type == UPB_HANDLER_STRING &&
       h->table[sel = handlers_getsel(h, f, UPB_HANDLER_STARTSTR)].func) {
-    ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
+    ret = h->table[sel].attr.return_closure_type;
   }
 
   /* The effective type of the submessage; not used yet.
    * if (type == SUBMESSAGE &&
    *     h->table[sel = handlers_getsel(h, f, UPB_HANDLER_STARTSUBMSG)].func) {
-   *   ret = upb_handlerattr_returnclosuretype(&h->table[sel].attr);
+   *   ret = h->table[sel].attr.return_closure_type;
    * } */
 
   return ret;
@@ -156,7 +165,7 @@ bool checkstart(upb_handlers *h, const upb_fielddef *f, upb_handlertype_t type,
   if (h->table[sel].func) return true;
   closure_type = effective_closure_type(h, f, type);
   attr = &h->table[sel].attr;
-  return_closure_type = upb_handlerattr_returnclosuretype(attr);
+  return_closure_type = attr->return_closure_type;
   if (closure_type && return_closure_type &&
       closure_type != return_closure_type) {
     UPB_ASSERT(false);
@@ -164,12 +173,14 @@ bool checkstart(upb_handlers *h, const upb_fielddef *f, upb_handlertype_t type,
   return true;
 }
 
-static upb_handlers *upb_handlers_new(const upb_msgdef *md, upb_handlercache *cache) {
+static upb_handlers *upb_handlers_new(const upb_msgdef *md,
+                                      upb_handlercache *cache,
+                                      upb_arena *arena) {
   int extra;
   upb_handlers *h;
 
   extra = sizeof(upb_handlers_tabent) * (upb_msgdef_selectorcount(md) - 1);
-  h = upb_calloc(&cache->arena, sizeof(*h) + extra);
+  h = upb_calloc(arena, sizeof(*h) + extra);
   if (!h) return NULL;
 
   h->cache = cache;
@@ -177,7 +188,7 @@ static upb_handlers *upb_handlers_new(const upb_msgdef *md, upb_handlercache *ca
 
   if (upb_msgdef_submsgfieldcount(md) > 0) {
     size_t bytes = upb_msgdef_submsgfieldcount(md) * sizeof(*h->sub);
-    h->sub = upb_calloc(&cache->arena, bytes);
+    h->sub = upb_calloc(arena, bytes);
     if (!h->sub) return NULL;
   } else {
     h->sub = 0;
@@ -187,14 +198,14 @@ static upb_handlers *upb_handlers_new(const upb_msgdef *md, upb_handlercache *ca
   return h;
 }
 
-
 /* Public interface ***********************************************************/
 
-#define SETTER(name, handlerctype, handlertype) \
-  bool upb_handlers_set ## name(upb_handlers *h, const upb_fielddef *f, \
-                                handlerctype func, upb_handlerattr *attr) { \
-    int32_t sel = trygetsel(h, f, handlertype); \
-    return doset(h, sel, f, handlertype, (upb_func*)func, attr); \
+#define SETTER(name, handlerctype, handlertype)                       \
+  bool upb_handlers_set##name(upb_handlers *h, const upb_fielddef *f, \
+                              handlerctype func,                      \
+                              const upb_handlerattr *attr) {          \
+    int32_t sel = trygetsel(h, f, handlertype);                       \
+    return doset(h, sel, f, handlertype, (upb_func *)func, attr);     \
   }
 
 SETTER(int32,       upb_int32_handlerfunc*,       UPB_HANDLER_INT32)
@@ -215,19 +226,19 @@ SETTER(endseq,      upb_endfield_handlerfunc*,    UPB_HANDLER_ENDSEQ)
 #undef SETTER
 
 bool upb_handlers_setunknown(upb_handlers *h, upb_unknown_handlerfunc *func,
-                             upb_handlerattr *attr) {
+                             const upb_handlerattr *attr) {
   return doset(h, UPB_UNKNOWN_SELECTOR, NULL, UPB_HANDLER_INT32,
                (upb_func *)func, attr);
 }
 
 bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
-                              upb_handlerattr *attr) {
+                              const upb_handlerattr *attr) {
   return doset(h, UPB_STARTMSG_SELECTOR, NULL, UPB_HANDLER_INT32,
                (upb_func *)func, attr);
 }
 
 bool upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handlerfunc *func,
-                            upb_handlerattr *attr) {
+                            const upb_handlerattr *attr) {
   return doset(h, UPB_ENDMSG_SELECTOR, NULL, UPB_HANDLER_INT32,
                (upb_func *)func, attr);
 }
@@ -250,9 +261,18 @@ const upb_handlers *upb_handlers_getsubhandlers(const upb_handlers *h,
   return SUBH_F(h, f);
 }
 
+upb_func *upb_handlers_gethandler(const upb_handlers *h, upb_selector_t s,
+                                  const void **handler_data) {
+  upb_func *ret = (upb_func *)h->table[s].func;
+  if (ret && handler_data) {
+    *handler_data = h->table[s].attr.handler_data;
+  }
+  return ret;
+}
+
 bool upb_handlers_getattr(const upb_handlers *h, upb_selector_t sel,
                           upb_handlerattr *attr) {
-  if (!upb_handlers_gethandler(h, sel))
+  if (!upb_handlers_gethandler(h, sel, NULL))
     return false;
   *attr = h->table[sel].attr;
   return true;
@@ -265,16 +285,6 @@ const upb_handlers *upb_handlers_getsubhandlers_sel(const upb_handlers *h,
 }
 
 const upb_msgdef *upb_handlers_msgdef(const upb_handlers *h) { return h->msg; }
-
-bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *func) {
-  bool ok;
-  if (upb_inttable_lookupptr(&h->cache->cleanup_, p, NULL)) {
-    return false;
-  }
-  ok = upb_inttable_insertptr(&h->cache->cleanup_, p, upb_value_fptr(func));
-  UPB_ASSERT(ok);
-  return true;
-}
 
 upb_handlertype_t upb_handlers_getprimitivehandlertype(const upb_fielddef *f) {
   switch (upb_fielddef_type(f)) {
@@ -375,6 +385,14 @@ uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
 
 /* upb_handlercache ***********************************************************/
 
+struct upb_handlercache {
+  upb_arena arena;
+  upb_inttable tab;  /* maps upb_msgdef* -> upb_handlers*. */
+  upb_inttable cleanup_;
+  upb_handlers_callback *callback;
+  const void *closure;
+};
+
 const upb_handlers *upb_handlercache_get(upb_handlercache *c,
                                          const upb_msgdef *md) {
   upb_msg_field_iter i;
@@ -385,7 +403,7 @@ const upb_handlers *upb_handlercache_get(upb_handlercache *c,
     return upb_value_getptr(v);
   }
 
-  h = upb_handlers_new(md, c);
+  h = upb_handlers_new(md, c, &c->arena);
   v = upb_value_ptr(h);
 
   if (!h) return NULL;
@@ -452,89 +470,38 @@ void upb_handlercache_free(upb_handlercache *cache) {
   upb_gfree(cache);
 }
 
-
-/* upb_handlerattr ************************************************************/
-
-void upb_handlerattr_init(upb_handlerattr *attr) {
-  upb_handlerattr from = UPB_HANDLERATTR_INITIALIZER;
-  memcpy(attr, &from, sizeof(*attr));
-}
-
-void upb_handlerattr_uninit(upb_handlerattr *attr) {
-  UPB_UNUSED(attr);
-}
-
-bool upb_handlerattr_sethandlerdata(upb_handlerattr *attr, const void *hd) {
-  attr->handler_data_ = hd;
+bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *func) {
+  bool ok;
+  if (upb_inttable_lookupptr(&h->cache->cleanup_, p, NULL)) {
+    return false;
+  }
+  ok = upb_inttable_insertptr(&h->cache->cleanup_, p, upb_value_fptr(func));
+  UPB_ASSERT(ok);
   return true;
-}
-
-bool upb_handlerattr_setclosuretype(upb_handlerattr *attr, const void *type) {
-  attr->closure_type_ = type;
-  return true;
-}
-
-const void *upb_handlerattr_closuretype(const upb_handlerattr *attr) {
-  return attr->closure_type_;
-}
-
-bool upb_handlerattr_setreturnclosuretype(upb_handlerattr *attr,
-                                          const void *type) {
-  attr->return_closure_type_ = type;
-  return true;
-}
-
-const void *upb_handlerattr_returnclosuretype(const upb_handlerattr *attr) {
-  return attr->return_closure_type_;
-}
-
-bool upb_handlerattr_setalwaysok(upb_handlerattr *attr, bool alwaysok) {
-  attr->alwaysok_ = alwaysok;
-  return true;
-}
-
-bool upb_handlerattr_alwaysok(const upb_handlerattr *attr) {
-  return attr->alwaysok_;
-}
-
-/* upb_bufhandle **************************************************************/
-
-size_t upb_bufhandle_objofs(const upb_bufhandle *h) {
-  return h->objofs_;
 }
 
 /* upb_byteshandler ***********************************************************/
 
-void upb_byteshandler_init(upb_byteshandler* h) {
-  memset(h, 0, sizeof(*h));
-}
-
-/* For when we support handlerfree callbacks. */
-void upb_byteshandler_uninit(upb_byteshandler* h) {
-  UPB_UNUSED(h);
-}
-
 bool upb_byteshandler_setstartstr(upb_byteshandler *h,
                                   upb_startstr_handlerfunc *func, void *d) {
   h->table[UPB_STARTSTR_SELECTOR].func = (upb_func*)func;
-  h->table[UPB_STARTSTR_SELECTOR].attr.handler_data_ = d;
+  h->table[UPB_STARTSTR_SELECTOR].attr.handler_data = d;
   return true;
 }
 
 bool upb_byteshandler_setstring(upb_byteshandler *h,
                                 upb_string_handlerfunc *func, void *d) {
   h->table[UPB_STRING_SELECTOR].func = (upb_func*)func;
-  h->table[UPB_STRING_SELECTOR].attr.handler_data_ = d;
+  h->table[UPB_STRING_SELECTOR].attr.handler_data = d;
   return true;
 }
 
 bool upb_byteshandler_setendstr(upb_byteshandler *h,
                                 upb_endfield_handlerfunc *func, void *d) {
   h->table[UPB_ENDSTR_SELECTOR].func = (upb_func*)func;
-  h->table[UPB_ENDSTR_SELECTOR].attr.handler_data_ = d;
+  h->table[UPB_ENDSTR_SELECTOR].attr.handler_data = d;
   return true;
 }
-
 
 /** Handlers for upb_msg ******************************************************/
 
@@ -564,7 +531,7 @@ MSG_WRITER(bool,   bool)
 
 bool upb_msg_setscalarhandler(upb_handlers *h, const upb_fielddef *f,
                               size_t offset, int32_t hasbit) {
-  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr attr = UPB_HANDLERATTR_INIT;
   bool ok;
 
   upb_msg_handlerdata *d = upb_gmalloc(sizeof(*d));
@@ -572,8 +539,8 @@ bool upb_msg_setscalarhandler(upb_handlers *h, const upb_fielddef *f,
   d->offset = offset;
   d->hasbit = hasbit;
 
-  upb_handlerattr_sethandlerdata(&attr, d);
-  upb_handlerattr_setalwaysok(&attr, true);
+  attr.handler_data = d;
+  attr.alwaysok = true;
   upb_handlers_addcleanup(h, d, upb_gfree);
 
 #define TYPE(u, l) \
@@ -595,7 +562,6 @@ bool upb_msg_setscalarhandler(upb_handlers *h, const upb_fielddef *f,
   }
 #undef TYPE
 
-  upb_handlerattr_uninit(&attr);
   return ok;
 }
 
@@ -605,7 +571,8 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
                                   size_t *offset,
                                   int32_t *hasbit) {
   const upb_msg_handlerdata *d;
-  upb_func *f = upb_handlers_gethandler(h, s);
+  const void *p;
+  upb_func *f = upb_handlers_gethandler(h, s, &p);
 
   if ((upb_int64_handlerfunc*)f == upb_msg_setint64) {
     *type = UPB_TYPE_INT64;
@@ -625,7 +592,7 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
     return false;
   }
 
-  d = upb_handlers_gethandlerdata(h, s);
+  d = p;
   *offset = d->offset;
   *hasbit = d->hasbit;
   return true;

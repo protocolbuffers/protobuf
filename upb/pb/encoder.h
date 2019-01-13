@@ -17,16 +17,14 @@
 #ifdef __cplusplus
 namespace upb {
 namespace pb {
-class Encoder;
+class EncoderPtr;
 }  /* namespace pb */
 }  /* namespace upb */
 #endif
 
-UPB_DECLARE_TYPE(upb::pb::Encoder, upb_pb_encoder)
-
 #define UPB_PBENCODER_MAX_NESTING 100
 
-/* upb::pb::Encoder ***********************************************************/
+/* upb_pb_encoder *************************************************************/
 
 /* Preallocation hint: decoder won't allocate more bytes than this when first
  * constructed.  This hint may be an overestimate for some build configurations.
@@ -34,28 +32,8 @@ UPB_DECLARE_TYPE(upb::pb::Encoder, upb_pb_encoder)
  * it may be an underestimate. */
 #define UPB_PB_ENCODER_SIZE 768
 
-#ifdef __cplusplus
-
-class upb::pb::Encoder {
- public:
-  /* Creates a new encoder in the given environment.  The Handlers must have
-   * come from NewHandlers() below. */
-  static Encoder* Create(Environment* env, const Handlers* handlers,
-                         BytesSink* output);
-
-  /* The input to the encoder. */
-  Sink* input();
-
-  /* Creates a new set of handlers for this MessageDef. */
-  static upb_handlercache* NewCache();
-
-  static const size_t kSize = UPB_PB_ENCODER_SIZE;
-
- private:
-  UPB_DISALLOW_POD_OPS(Encoder, upb::pb::Encoder)
-};
-
-#endif
+struct upb_pb_encoder;
+typedef struct upb_pb_encoder upb_pb_encoder;
 
 UPB_BEGIN_EXTERN_C
 
@@ -69,21 +47,33 @@ UPB_END_EXTERN_C
 
 #ifdef __cplusplus
 
-namespace upb {
-namespace pb {
-inline Encoder* Encoder::Create(Environment* env, const Handlers* handlers,
-                                BytesSink* output) {
-  return upb_pb_encoder_create(env, handlers, output);
-}
-inline Sink* Encoder::input() {
-  return upb_pb_encoder_input(this);
-}
-inline upb_handlercache* Encoder::NewCache() {
-  return upb_pb_encoder_newcache();
-}
-}  /* namespace pb */
-}  /* namespace upb */
+class upb::pb::EncoderPtr {
+ public:
+  EncoderPtr(upb_pb_encoder* ptr) : ptr_(ptr) {}
 
-#endif
+  upb_pb_encoder* ptr() { return ptr_; }
+
+  /* Creates a new encoder in the given environment.  The Handlers must have
+   * come from NewHandlers() below. */
+  static EncoderPtr Create(Environment* env, const Handlers* handlers,
+                         BytesSink* output) {
+    return EncoderPtr(upb_pb_encoder_create(env, handlers, output->ptr()));
+  }
+
+  /* The input to the encoder. */
+  upb_sink* input() { return upb_pb_encoder_input(ptr()); }
+
+  /* Creates a new set of handlers for this MessageDef. */
+  static HandlerCache NewCache() {
+    return HandlerCache(upb_pb_encoder_newcache());
+  }
+
+  static const size_t kSize = UPB_PB_ENCODER_SIZE;
+
+ private:
+  upb_pb_encoder* ptr_;
+};
+
+#endif  /* __cplusplus */
 
 #endif  /* UPB_ENCODER_H_ */

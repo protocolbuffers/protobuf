@@ -260,8 +260,8 @@ static void onmreg(const void *c, upb_handlers *h) {
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
-    upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-    upb_handlerattr_sethandlerdata(&attr, f);
+    upb_handlerattr attr = UPB_HANDLERATTR_INIT;
+    attr.handler_data = f;
     switch (upb_fielddef_type(f)) {
       case UPB_TYPE_INT32:
         upb_handlers_setint32(h, f, textprinter_putint32, &attr);
@@ -295,7 +295,7 @@ static void onmreg(const void *c, upb_handlers *h) {
             upb_fielddef_descriptortype(f) == UPB_DESCRIPTOR_TYPE_GROUP
                 ? shortname(upb_msgdef_fullname(upb_fielddef_msgsubdef(f)))
                 : upb_fielddef_name(f);
-        upb_handlerattr_sethandlerdata(&attr, name);
+        attr.handler_data = name;
         upb_handlers_setstartsubmsg(h, f, textprinter_startsubmsg, &attr);
         upb_handlers_setendsubmsg(h, f, textprinter_endsubmsg, &attr);
         break;

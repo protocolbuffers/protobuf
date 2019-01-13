@@ -70,7 +70,6 @@ add_library(upb
   upb/msgfactory.c
   upb/port_def.inc
   upb/port_undef.inc
-  upb/refcounted.c
   upb/sink.c
   upb/structs.int.h
   upb/table.c
@@ -84,7 +83,6 @@ add_library(upb
   upb/handlers.h
   upb/msg.h
   upb/msgfactory.h
-  upb/refcounted.h
   upb/sink.h
   upb/upb.h)
 add_library(upb_pb
