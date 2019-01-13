@@ -25,18 +25,6 @@ static void nullz(upb_status *status) {
   memcpy(status->msg + sizeof(status->msg) - len, ellipsis, len);
 }
 
-
-/* upb_upberr *****************************************************************/
-
-upb_errorspace upb_upberr = {"upb error"};
-
-void upb_upberr_setoom(upb_status *status) {
-  __builtin_trap();
-  status->error_space_ = &upb_upberr;
-  upb_status_seterrmsg(status, "Out of memory");
-}
-
-
 /* upb_status *****************************************************************/
 
 void upb_status_clear(upb_status *status) {
@@ -108,6 +96,30 @@ static const size_t maxalign = 16;
 static size_t align_up_max(size_t size) {
   return ((size + maxalign - 1) / maxalign) * maxalign;
 }
+
+struct upb_arena {
+  /* We implement the allocator interface.
+   * This must be the first member of upb_arena! */
+  upb_alloc alloc;
+
+  /* Allocator to allocate arena blocks.  We are responsible for freeing these
+   * when we are destroyed. */
+  upb_alloc *block_alloc;
+
+  size_t bytes_allocated;
+  size_t next_block_size;
+  size_t max_block_size;
+
+  /* Linked list of blocks.  Points to an arena_block, defined in env.c */
+  void *block_head;
+
+  /* Cleanup entries.  Pointer to a cleanup_ent, defined in env.c */
+  void *cleanup_head;
+
+  /* For future expansion, since the size of this struct is exposed to users. */
+  void *future1;
+  void *future2;
+} upb_arena;
 
 typedef struct mem_block {
   struct mem_block *next;
@@ -254,77 +266,4 @@ bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud) {
 
 size_t upb_arena_bytesallocated(const upb_arena *a) {
   return a->bytes_allocated;
-}
-
-
-/* Standard error functions ***************************************************/
-
-static bool default_err(void *ud, const upb_status *status) {
-  UPB_UNUSED(ud);
-  UPB_UNUSED(status);
-  return false;
-}
-
-static bool write_err_to(void *ud, const upb_status *status) {
-  upb_status *copy_to = ud;
-  upb_status_copy(copy_to, status);
-  return false;
-}
-
-
-/* upb_env ********************************************************************/
-
-void upb_env_initonly(upb_env *e) {
-  e->ok_ = true;
-  e->error_func_ = &default_err;
-  e->error_ud_ = NULL;
-}
-
-void upb_env_init(upb_env *e) {
-  upb_arena_init(&e->arena_);
-  upb_env_initonly(e);
-}
-
-void upb_env_init2(upb_env *e, void *mem, size_t n, upb_alloc *alloc) {
-  upb_arena_init2(&e->arena_, mem, n, alloc);
-  upb_env_initonly(e);
-}
-
-void upb_env_uninit(upb_env *e) {
-  upb_arena_uninit(&e->arena_);
-}
-
-void upb_env_seterrorfunc(upb_env *e, upb_error_func *func, void *ud) {
-  e->error_func_ = func;
-  e->error_ud_ = ud;
-}
-
-void upb_env_reporterrorsto(upb_env *e, upb_status *s) {
-  e->error_func_ = &write_err_to;
-  e->error_ud_ = s;
-}
-
-bool upb_env_reporterror(upb_env *e, const upb_status *status) {
-  e->ok_ = false;
-  return e->error_func_(e->error_ud_, status);
-}
-
-void *upb_env_malloc(upb_env *e, size_t size) {
-  return upb_malloc(&e->arena_.alloc, size);
-}
-
-void *upb_env_realloc(upb_env *e, void *ptr, size_t oldsize, size_t size) {
-  return upb_realloc(&e->arena_.alloc, ptr, oldsize, size);
-}
-
-void upb_env_free(upb_env *e, void *ptr) {
-  upb_free(&e->arena_.alloc, ptr);
-}
-
-bool upb_env_addcleanup(upb_env *e, upb_cleanup_func *func, void *ud) {
-  return upb_arena_addcleanup(&e->arena_, func, ud);
-}
-
-size_t upb_env_bytesallocated(const upb_env *e) {
-  return upb_arena_bytesallocated(&e->arena_);
 }

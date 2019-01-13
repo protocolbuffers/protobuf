@@ -74,9 +74,12 @@ template <int N> class InlinedEnvironment;
 #error Need implementations of [v]snprintf and va_copy
 #endif
 
-#if ((defined(__cplusplus) && __cplusplus >= 201103L) || \
-      defined(__GXX_EXPERIMENTAL_CXX0X__)) && !defined(UPB_NO_CXX11)
-#define UPB_CXX11
+#if (defined(__cplusplus) && __cplusplus >= 201103L) || \
+    defined(__GXX_EXPERIMENTAL_CXX0X__) ||              \
+    (defined(_MSC_VER) && _MSC_VER >= 1900)
+// C++11 is present
+#else
+#error upb requires C++11 for C++ support
 #endif
 
 /* UPB_DISALLOW_COPY_AND_ASSIGN()
@@ -84,7 +87,6 @@ template <int N> class InlinedEnvironment;
  *
  * Declare these in the "private" section of a C++ class to forbid copy/assign
  * or all POD ops (construct, destruct, copy, assign) on that class. */
-#ifdef UPB_CXX11
 #include <type_traits>
 #define UPB_DISALLOW_COPY_AND_ASSIGN(class_name) \
   class_name(const class_name&) = delete; \
@@ -96,31 +98,17 @@ template <int N> class InlinedEnvironment;
 #define UPB_ASSERT_STDLAYOUT(type) \
   static_assert(std::is_standard_layout<type>::value, \
                 #type " must be standard layout");
-#define UPB_FINAL final
-#else  /* !defined(UPB_CXX11) */
-#define UPB_DISALLOW_COPY_AND_ASSIGN(class_name) \
-  class_name(const class_name&); \
-  void operator=(const class_name&);
-#define UPB_DISALLOW_POD_OPS(class_name, full_class_name) \
-  class_name(); \
-  ~class_name(); \
-  UPB_DISALLOW_COPY_AND_ASSIGN(class_name)
-#define UPB_ASSERT_STDLAYOUT(type)
-#define UPB_FINAL
-#endif
 
 #ifdef __cplusplus
 
 #define UPB_BEGIN_EXTERN_C extern "C" {
 #define UPB_END_EXTERN_C }
-#define UPB_PRIVATE_FOR_CPP private:
 #define UPB_DECLARE_TYPE(cppname, cname) typedef cppname cname;
 
 #else  /* !defined(__cplusplus) */
 
 #define UPB_BEGIN_EXTERN_C
 #define UPB_END_EXTERN_C
-#define UPB_PRIVATE_FOR_CPP
 #define UPB_DECLARE_TYPE(cppname, cname) \
   struct cname;                          \
   typedef struct cname cname;
@@ -150,119 +138,6 @@ template <int N> class InlinedEnvironment;
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
 #endif
 
-/* Generic function type. */
-typedef void upb_func();
-
-
-/* C++ Casts ******************************************************************/
-
-#ifdef __cplusplus
-
-namespace upb {
-
-template <class T> class Pointer;
-
-/* Casts to a subclass.  The caller must know that cast is correct; an
- * incorrect cast will throw an assertion failure in debug mode.
- *
- * Example:
- *   upb::Def* def = GetDef();
- *   // Assert-fails if this was not actually a MessageDef.
- *   upb::MessgeDef* md = upb::down_cast<upb::MessageDef>(def);
- *
- * Note that downcasts are only defined for some types (at the moment you can
- * only downcast from a upb::Def to a specific Def type). */
-template<class To, class From> To down_cast(From* f);
-
-/* Casts to a subclass.  If the class does not actually match the given To type,
- * returns NULL.
- *
- * Example:
- *   upb::Def* def = GetDef();
- *   // md will be NULL if this was not actually a MessageDef.
- *   upb::MessgeDef* md = upb::down_cast<upb::MessageDef>(def);
- *
- * Note that dynamic casts are only defined for some types (at the moment you
- * can only downcast from a upb::Def to a specific Def type).. */
-template<class To, class From> To dyn_cast(From* f);
-
-/* Casts to any base class, or the type itself (ie. can be a no-op).
- *
- * Example:
- *   upb::MessageDef* md = GetDef();
- *   // This will fail to compile if this wasn't actually a base class.
- *   upb::Def* def = upb::upcast(md);
- */
-template <class T> inline Pointer<T> upcast(T *f) { return Pointer<T>(f); }
-
-/* Attempt upcast to specific base class.
- *
- * Example:
- *   upb::MessageDef* md = GetDef();
- *   upb::upcast_to<upb::Def>(md)->MethodOnDef();
- */
-template <class T, class F> inline T* upcast_to(F *f) {
-  return static_cast<T*>(upcast(f));
-}
-
-/* PointerBase<T>: implementation detail of upb::upcast().
- * It is implicitly convertable to pointers to the Base class(es).
- */
-template <class T, class Base>
-class PointerBase {
- public:
-  explicit PointerBase(T* ptr) : ptr_(ptr) {}
-  operator T*() { return ptr_; }
-  operator Base*() { return (Base*)ptr_; }
-
- private:
-  T* ptr_;
-};
-
-template <class T, class Base, class Base2>
-class PointerBase2 : public PointerBase<T, Base> {
- public:
-  explicit PointerBase2(T* ptr) : PointerBase<T, Base>(ptr) {}
-  operator Base2*() { return Pointer<Base>(*this); }
-};
-
-}
-
-#endif
-
-/* A list of types as they are encoded on-the-wire. */
-typedef enum {
-  UPB_WIRE_TYPE_VARINT      = 0,
-  UPB_WIRE_TYPE_64BIT       = 1,
-  UPB_WIRE_TYPE_DELIMITED   = 2,
-  UPB_WIRE_TYPE_START_GROUP = 3,
-  UPB_WIRE_TYPE_END_GROUP   = 4,
-  UPB_WIRE_TYPE_32BIT       = 5
-} upb_wiretype_t;
-
-
-/* upb::ErrorSpace ************************************************************/
-
-/* A upb::ErrorSpace represents some domain of possible error values.  This lets
- * upb::Status attach specific error codes to operations, like POSIX/C errno,
- * Win32 error codes, etc.  Clients who want to know the very specific error
- * code can check the error space and then know the type of the integer code.
- *
- * NOTE: upb::ErrorSpace is currently not used and should be considered
- * experimental.  It is important primarily in cases where upb is performing
- * I/O, but upb doesn't currently have any components that do this. */
-
-UPB_DECLARE_TYPE(upb::ErrorSpace, upb_errorspace)
-
-#ifdef __cplusplus
-class upb::ErrorSpace {
-#else
-struct upb_errorspace {
-#endif
-  const char *name;
-};
-
-
 /* upb::Status ****************************************************************/
 
 /* upb::Status represents a success or failure status and error message.
@@ -277,7 +152,6 @@ UPB_BEGIN_EXTERN_C
 
 const char *upb_status_errmsg(const upb_status *status);
 bool upb_ok(const upb_status *status);
-upb_errorspace *upb_status_errspace(const upb_status *status);
 int upb_status_errcode(const upb_status *status);
 
 /* Any of the functions that write to a status object allow status to be NULL,
@@ -342,33 +216,16 @@ struct upb_status {
 
 #define UPB_STATUS_INIT {true, 0, NULL, {0}}
 
+/** upb_alloc *****************************************************************/
 
-/** Built-in error spaces. ****************************************************/
-
-/* Errors raised by upb that we want to be able to detect programmatically. */
-typedef enum {
-  UPB_NOMEM   /* Can't reuse ENOMEM because it is POSIX, not ISO C. */
-} upb_errcode_t;
-
-extern upb_errorspace upb_upberr;
-
-void upb_upberr_setoom(upb_status *s);
-
-/* Since errno is defined by standard C, we define an error space for it in
- * core upb.  Other error spaces should be defined in other, platform-specific
- * modules. */
-
-extern upb_errorspace upb_errnoerr;
-
-
-/** upb::Allocator ************************************************************/
-
-/* A upb::Allocator is a possibly-stateful allocator object.
+/* A upb_alloc is a possibly-stateful allocator object.
  *
  * It could either be an arena allocator (which doesn't require individual
  * free() calls) or a regular malloc() (which does).  The client must therefore
  * free memory unless it knows that the allocator is an arena allocator. */
-UPB_DECLARE_TYPE(upb::Allocator, upb_alloc)
+
+struct upb_alloc;
+typedef struct upb_alloc upb_alloc;
 
 /* A malloc()/free() function.
  * If "size" is 0 then the function acts like free(), otherwise it acts like
@@ -376,19 +233,7 @@ UPB_DECLARE_TYPE(upb::Allocator, upb_alloc)
 typedef void *upb_alloc_func(upb_alloc *alloc, void *ptr, size_t oldsize,
                              size_t size);
 
-#ifdef __cplusplus
-
-class upb::Allocator UPB_FINAL {
- public:
-  Allocator() {}
-
- private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Allocator)
-
- public:
-#else
 struct upb_alloc {
-#endif  /* __cplusplus */
   upb_alloc_func *func;
 };
 
@@ -429,41 +274,45 @@ UPB_INLINE void upb_gfree(void *ptr) {
   upb_free(&upb_alloc_global, ptr);
 }
 
-/* upb::Arena *****************************************************************/
+/* upb_arena ******************************************************************/
 
-/* upb::Arena is a specific allocator implementation that uses arena allocation.
+/* upb_arena is a specific allocator implementation that uses arena allocation.
  * The user provides an allocator that will be used to allocate the underlying
  * arena blocks.  Arenas by nature do not require the individual allocations
  * to be freed.  However the Arena does allow users to register cleanup
  * functions that will run when the arena is destroyed.
  *
- * A upb::Arena is *not* thread-safe.
+ * A upb_arena is *not* thread-safe.
  *
  * You could write a thread-safe arena allocator that satisfies the
- * upb::Allocator interface, but it would not be as efficient for the
+ * upb_alloc interface, but it would not be as efficient for the
  * single-threaded case. */
-UPB_DECLARE_TYPE(upb::Arena, upb_arena)
 
 typedef void upb_cleanup_func(void *ud);
 
-#define UPB_ARENA_BLOCK_OVERHEAD (sizeof(size_t)*4)
+struct upb_arena;
+typedef upb_arena upb_arena;
 
 UPB_BEGIN_EXTERN_C
 
-void upb_arena_init(upb_arena *a);
-void upb_arena_init2(upb_arena *a, void *mem, size_t n, upb_alloc *alloc);
-void upb_arena_uninit(upb_arena *a);
+upb_arena *upb_arena_new2(void *mem, size_t n, upb_alloc *alloc);
+void upb_arena_free(upb_arena *a);
 bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud);
 size_t upb_arena_bytesallocated(const upb_arena *a);
-void upb_arena_setnextblocksize(upb_arena *a, size_t size);
-void upb_arena_setmaxblocksize(upb_arena *a, size_t size);
+
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
+
 UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
   return upb_malloc(upb_arena_alloc(a), size);
 }
+
 UPB_INLINE void *upb_arena_realloc(upb_arena *a, void *ptr, size_t oldsize,
                                    size_t size) {
   return upb_realloc(upb_arena_alloc(a), ptr, oldsize, size);
+}
+
+UPB_INLINE upb_arena *upb_arena_new() {
+  return upb_arena_new2(NULL, 0, &upb_alloc_global);
 }
 
 UPB_END_EXTERN_C
@@ -473,7 +322,9 @@ UPB_END_EXTERN_C
 class upb::Arena {
  public:
   /* A simple arena with no initial memory block and the default allocator. */
-  Arena() { upb_arena_init(this); }
+  Arena() { upb_arena_init(&arena_); }
+
+  upb_arena* ptr() { return &arena_; }
 
   /* Constructs an arena with the given initial block which allocates blocks
    * with the given allocator.  The given allocator must outlive the Arena.
@@ -481,167 +332,40 @@ class upb::Arena {
    * If you pass NULL for the allocator it will default to the global allocator
    * upb_alloc_global, and NULL/0 for the initial block will cause there to be
    * no initial block. */
-  Arena(void *mem, size_t len, Allocator* a) {
-    upb_arena_init2(this, mem, len, a);
+  Arena(void *mem, size_t len, upb_alloc *a) {
+    upb_arena_init2(&arena_, mem, len, a);
   }
 
-  ~Arena() { upb_arena_uninit(this); }
-
-  /* Sets the size of the next block the Arena will request (unless the
-   * requested allocation is larger).  Each block will double in size until the
-   * max limit is reached. */
-  void SetNextBlockSize(size_t size) { upb_arena_setnextblocksize(this, size); }
-
-  /* Sets the maximum block size.  No blocks larger than this will be requested
-   * from the underlying allocator unless individual arena allocations are
-   * larger. */
-  void SetMaxBlockSize(size_t size) { upb_arena_setmaxblocksize(this, size); }
+  ~Arena() { upb_arena_uninit(&arena_); }
 
   /* Allows this arena to be used as a generic allocator.
    *
    * The arena does not need free() calls so when using Arena as an allocator
    * it is safe to skip them.  However they are no-ops so there is no harm in
    * calling free() either. */
-  Allocator* allocator() { return upb_arena_alloc(this); }
+  upb_alloc *allocator() { return upb_arena_alloc(&arena_); }
 
   /* Add a cleanup function to run when the arena is destroyed.
    * Returns false on out-of-memory. */
-  bool AddCleanup(upb_cleanup_func* func, void* ud) {
-    return upb_arena_addcleanup(this, func, ud);
+  bool AddCleanup(upb_cleanup_func *func, void *ud) {
+    return upb_arena_addcleanup(&arena_, func, ud);
   }
 
   /* Total number of bytes that have been allocated.  It is undefined what
-   * Realloc() does to this counter. */
-  size_t BytesAllocated() const {
-    return upb_arena_bytesallocated(this);
-  }
+   * Realloc() does to &arena_ counter. */
+  size_t BytesAllocated() const { return upb_arena_bytesallocated(&arena_); }
 
  private:
   UPB_DISALLOW_COPY_AND_ASSIGN(Arena)
-
-#else
-struct upb_arena {
-#endif  /* __cplusplus */
-  /* We implement the allocator interface.
-   * This must be the first member of upb_arena! */
-  upb_alloc alloc;
-
-  /* Allocator to allocate arena blocks.  We are responsible for freeing these
-   * when we are destroyed. */
-  upb_alloc *block_alloc;
-
-  size_t bytes_allocated;
-  size_t next_block_size;
-  size_t max_block_size;
-
-  /* Linked list of blocks.  Points to an arena_block, defined in env.c */
-  void *block_head;
-
-  /* Cleanup entries.  Pointer to a cleanup_ent, defined in env.c */
-  void *cleanup_head;
-
-  /* For future expansion, since the size of this struct is exposed to users. */
-  void *future1;
-  void *future2;
-};
-
-
-/* upb::Environment ***********************************************************/
-
-/* A upb::Environment provides a means for injecting malloc and an
- * error-reporting callback into encoders/decoders.  This allows them to be
- * independent of nearly all assumptions about their actual environment.
- *
- * It is also a container for allocating the encoders/decoders themselves that
- * insulates clients from knowing their actual size.  This provides ABI
- * compatibility even if the size of the objects change.  And this allows the
- * structure definitions to be in the .c files instead of the .h files, making
- * the .h files smaller and more readable.
- *
- * We might want to consider renaming this to "Pipeline" if/when the concept of
- * a pipeline element becomes more formalized. */
-UPB_DECLARE_TYPE(upb::Environment, upb_env)
-
-/* A function that receives an error report from an encoder or decoder.  The
- * callback can return true to request that the error should be recovered, but
- * if the error is not recoverable this has no effect. */
-typedef bool upb_error_func(void *ud, const upb_status *status);
-
-UPB_BEGIN_EXTERN_C
-
-void upb_env_init(upb_env *e);
-void upb_env_init2(upb_env *e, void *mem, size_t n, upb_alloc *alloc);
-void upb_env_uninit(upb_env *e);
-
-void upb_env_initonly(upb_env *e);
-
-UPB_INLINE upb_arena *upb_env_arena(upb_env *e) { return (upb_arena*)e; }
-bool upb_env_ok(const upb_env *e);
-void upb_env_seterrorfunc(upb_env *e, upb_error_func *func, void *ud);
-
-/* Convenience wrappers around the methods of the contained arena. */
-void upb_env_reporterrorsto(upb_env *e, upb_status *s);
-bool upb_env_reporterror(upb_env *e, const upb_status *s);
-void *upb_env_malloc(upb_env *e, size_t size);
-void *upb_env_realloc(upb_env *e, void *ptr, size_t oldsize, size_t size);
-void upb_env_free(upb_env *e, void *ptr);
-bool upb_env_addcleanup(upb_env *e, upb_cleanup_func *func, void *ud);
-size_t upb_env_bytesallocated(const upb_env *e);
-
-UPB_END_EXTERN_C
-
-#ifdef __cplusplus
-
-class upb::Environment {
- public:
-  /* The given Arena must outlive this environment. */
-  Environment() { upb_env_initonly(this); }
-
-  Environment(void *mem, size_t len, Allocator *a) : arena_(mem, len, a) {
-    upb_env_initonly(this);
-  }
-
-  Arena* arena() { return upb_env_arena(this); }
-
-  /* Set a custom error reporting function. */
-  void SetErrorFunction(upb_error_func* func, void* ud) {
-    upb_env_seterrorfunc(this, func, ud);
-  }
-
-  /* Set the error reporting function to simply copy the status to the given
-   * status and abort. */
-  void ReportErrorsTo(Status* status) { upb_env_reporterrorsto(this, status); }
-
-  /* Returns true if all allocations and AddCleanup() calls have succeeded,
-   * and no errors were reported with ReportError() (except ones that recovered
-   * successfully). */
-  bool ok() const { return upb_env_ok(this); }
-
-  /* Reports an error to this environment's callback, returning true if
-   * the caller should try to recover. */
-  bool ReportError(const Status* status) {
-    return upb_env_reporterror(this, status);
-  }
-
- private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Environment)
-
-#else
-struct upb_env {
-#endif  /* __cplusplus */
   upb_arena arena_;
-  upb_error_func *error_func_;
-  void *error_ud_;
-  bool ok_;
 };
 
+#endif
 
 /* upb::InlinedArena **********************************************************/
-/* upb::InlinedEnvironment ****************************************************/
 
-/* upb::InlinedArena and upb::InlinedEnvironment seed their arenas with a
- * predefined amount of memory.  No heap memory will be allocated until the
- * initial block is exceeded.
+/* upb::InlinedArena seeds the arenas with a predefined amount of memory.  No
+ * heap memory will be allocated until the initial block is exceeded.
  *
  * These types only exist in C++ */
 
@@ -658,19 +382,22 @@ template <int N> class upb::InlinedArena : public upb::Arena {
   char initial_block_[N + UPB_ARENA_BLOCK_OVERHEAD];
 };
 
-template <int N> class upb::InlinedEnvironment : public upb::Environment {
- public:
-  InlinedEnvironment() : Environment(initial_block_, N, NULL) {}
-  explicit InlinedEnvironment(Allocator *a)
-      : Environment(initial_block_, N, a) {}
-
- private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(InlinedEnvironment)
-
-  char initial_block_[N + UPB_ARENA_BLOCK_OVERHEAD];
-};
-
 #endif  /* __cplusplus */
+
+/* Constants ******************************************************************/
+
+/* Generic function type. */
+typedef void upb_func();
+
+/* A list of types as they are encoded on-the-wire. */
+typedef enum {
+  UPB_WIRE_TYPE_VARINT      = 0,
+  UPB_WIRE_TYPE_64BIT       = 1,
+  UPB_WIRE_TYPE_DELIMITED   = 2,
+  UPB_WIRE_TYPE_START_GROUP = 3,
+  UPB_WIRE_TYPE_END_GROUP   = 4,
+  UPB_WIRE_TYPE_32BIT       = 5
+} upb_wiretype_t;
 
 /* The types a field can have.  Note that this list is not identical to the
  * types defined in descriptor.proto, which gives INT32 and SINT32 separate

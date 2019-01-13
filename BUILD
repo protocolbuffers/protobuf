@@ -11,9 +11,6 @@ load(
     "upb_proto_reflection_library",
 )
 
-# Remove once our C++ wrappers are more sane.
-CXX_COPTS = ["-Wno-unused-private-field"]
-
 # C/C++ rules ##################################################################
 
 cc_library(
@@ -192,7 +189,6 @@ cc_test(
 cc_test(
     name = "test_encoder",
     srcs = ["tests/pb/test_encoder.cc"],
-    copts = CXX_COPTS,
     data = ["google/protobuf/descriptor.pb"],
     deps = [
         ":upb_cc_bindings",
@@ -217,7 +213,6 @@ upb_proto_reflection_library(
 cc_test(
     name = "test_cpp",
     srcs = ["tests/test_cpp.cc"],
-    copts = CXX_COPTS,
     deps = [
         ":test_cpp_upbproto",
         ":upb",
@@ -251,7 +246,6 @@ cc_test(
     srcs = [
         "tests/json/test_json.cc",
     ],
-    copts = CXX_COPTS,
     deps = [
         ":test_json_upbproto",
         ":upb_json",
