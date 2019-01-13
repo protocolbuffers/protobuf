@@ -326,18 +326,37 @@ class upb::Sink {
    *
    * For StartString(), the function will write a sink for the string to "sub."
    * The sub-sink must be used for any/all PutStringBuffer() calls. */
-  bool StartString(HandlersPtr::Selector s, size_t size_hint, Sink* sub);
+  bool StartString(HandlersPtr::Selector s, size_t size_hint, Sink* sub) {
+    upb_sink sub_c;
+    bool ret = upb_sink_startstr(&sink_, s, size_hint, &sub_c);
+    *sub = sub_c;
+    return ret;
+  }
+
   size_t PutStringBuffer(HandlersPtr::Selector s, const char *buf, size_t len,
-                         const upb_bufhandle *handle);
-  bool EndString(HandlersPtr::Selector s);
+                         const upb_bufhandle *handle) {
+    return upb_sink_putstring(&sink_, s, buf, len, handle);
+  }
+
+  bool EndString(HandlersPtr::Selector s) {
+    return upb_sink_endstr(&sink_, s);
+  }
 
   /* For submessage fields.
    *
    * For StartSubMessage(), the function will write a sink for the string to
    * "sub." The sub-sink must be used for any/all handlers called within the
    * submessage. */
-  bool StartSubMessage(HandlersPtr::Selector s, Sink* sub);
-  bool EndSubMessage(HandlersPtr::Selector s);
+  bool StartSubMessage(HandlersPtr::Selector s, Sink* sub) {
+    upb_sink sub_c;
+    bool ret = upb_sink_startsubmsg(&sink_, s, &sub_c);
+    *sub = sub_c;
+    return ret;
+  }
+
+  bool EndSubMessage(HandlersPtr::Selector s) {
+    return upb_sink_endsubmsg(&sink_, s);
+  }
 
   /* For repeated fields of any type, the sequence of values must be wrapped in
    * these calls.
@@ -345,8 +364,16 @@ class upb::Sink {
    * For StartSequence(), the function will write a sink for the string to
    * "sub." The sub-sink must be used for any/all handlers called within the
    * sequence. */
-  bool StartSequence(HandlersPtr::Selector s, Sink* sub);
-  bool EndSequence(HandlersPtr::Selector s);
+  bool StartSequence(HandlersPtr::Selector s, Sink* sub) {
+    upb_sink sub_c;
+    bool ret = upb_sink_startseq(&sink_, s, &sub_c);
+    *sub = sub_c;
+    return ret;
+  }
+
+  bool EndSequence(HandlersPtr::Selector s) {
+    return upb_sink_endseq(&sink_, s);
+  }
 
   /* Copy and assign specifically allowed.
    * We don't even bother making these members private because so many

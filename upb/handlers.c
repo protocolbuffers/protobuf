@@ -91,7 +91,7 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
 
   if (closure_type && *context_closure_type &&
       closure_type != *context_closure_type) {
-    UPB_ASSERT(false);
+    return false;
   }
 
   if (closure_type)
@@ -103,7 +103,7 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
     const void *return_type = set_attr.return_closure_type;
     const void *table_return_type = h->table[sel].attr.return_closure_type;
     if (return_type && table_return_type && return_type != table_return_type) {
-      UPB_ASSERT(false);
+      return false;
     }
 
     if (table_return_type && !return_type) {
@@ -168,7 +168,7 @@ bool checkstart(upb_handlers *h, const upb_fielddef *f, upb_handlertype_t type,
   return_closure_type = attr->return_closure_type;
   if (closure_type && return_closure_type &&
       closure_type != return_closure_type) {
-    UPB_ASSERT(false);
+    return false;
   }
   return true;
 }
