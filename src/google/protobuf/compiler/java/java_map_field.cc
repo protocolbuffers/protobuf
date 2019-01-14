@@ -773,8 +773,8 @@ void ImmutableMapFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "result = result && internalGet$capitalized_name$().equals(\n"
-      "    other.internalGet$capitalized_name$());\n");
+      "if (!internalGet$capitalized_name$().equals(\n"
+      "    other.internalGet$capitalized_name$())) return false;\n");
 }
 
 void ImmutableMapFieldGenerator::

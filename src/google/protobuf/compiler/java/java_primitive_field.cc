@@ -46,6 +46,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -113,8 +114,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["capitalized_type"] =
       GetCapitalizedType(descriptor, /* immutable = */ true);
   (*variables)["tag"] =
-      SimpleItoa(static_cast<int32>(WireFormat::MakeTag(descriptor)));
-  (*variables)["tag_size"] = SimpleItoa(
+      StrCat(static_cast<int32>(WireFormat::MakeTag(descriptor)));
+  (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   if (IsReferenceType(GetJavaType(descriptor))) {
     (*variables)["null_check"] =
@@ -130,7 +131,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       ? "@java.lang.Deprecated " : "";
   int fixed_size = FixedSize(GetType(descriptor));
   if (fixed_size != -1) {
-    (*variables)["fixed_size"] = SimpleItoa(fixed_size);
+    (*variables)["fixed_size"] = StrCat(fixed_size);
   }
   (*variables)["on_changed"] = "onChanged();";
 
@@ -385,31 +386,29 @@ GenerateEqualsCode(io::Printer* printer) const {
     case JAVATYPE_LONG:
     case JAVATYPE_BOOLEAN:
       printer->Print(variables_,
-        "result = result && (get$capitalized_name$()\n"
-        "    == other.get$capitalized_name$());\n");
+        "if (get$capitalized_name$()\n"
+        "    != other.get$capitalized_name$()) return false;\n");
       break;
 
     case JAVATYPE_FLOAT:
       printer->Print(variables_,
-        "result = result && (\n"
-        "    java.lang.Float.floatToIntBits(get$capitalized_name$())\n"
-        "    == java.lang.Float.floatToIntBits(\n"
-        "        other.get$capitalized_name$()));\n");
+        "if (java.lang.Float.floatToIntBits(get$capitalized_name$())\n"
+        "    != java.lang.Float.floatToIntBits(\n"
+        "        other.get$capitalized_name$())) return false;\n");
       break;
 
     case JAVATYPE_DOUBLE:
       printer->Print(variables_,
-        "result = result && (\n"
-        "    java.lang.Double.doubleToLongBits(get$capitalized_name$())\n"
-        "    == java.lang.Double.doubleToLongBits(\n"
-        "        other.get$capitalized_name$()));\n");
+        "if (java.lang.Double.doubleToLongBits(get$capitalized_name$())\n"
+        "    != java.lang.Double.doubleToLongBits(\n"
+        "        other.get$capitalized_name$())) return false;\n");
       break;
 
     case JAVATYPE_STRING:
     case JAVATYPE_BYTES:
       printer->Print(variables_,
-        "result = result && get$capitalized_name$()\n"
-        "    .equals(other.get$capitalized_name$());\n");
+        "if (!get$capitalized_name$()\n"
+        "    .equals(other.get$capitalized_name$())) return false;\n");
       break;
 
     case JAVATYPE_ENUM:
@@ -926,8 +925,8 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 void RepeatedImmutablePrimitiveFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "result = result && get$capitalized_name$List()\n"
-    "    .equals(other.get$capitalized_name$List());\n");
+    "if (!get$capitalized_name$List()\n"
+    "    .equals(other.get$capitalized_name$List())) return false;\n");
 }
 
 void RepeatedImmutablePrimitiveFieldGenerator::

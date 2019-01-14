@@ -65,6 +65,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -218,13 +219,13 @@ string StringifyDefaultValue(const FieldDescriptor& field) {
 
   switch (field.cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return SimpleItoa(field.default_value_int32());
+      return StrCat(field.default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return SimpleItoa(field.default_value_uint32());
+      return StrCat(field.default_value_uint32());
     case FieldDescriptor::CPPTYPE_INT64:
-      return SimpleItoa(field.default_value_int64());
+      return StrCat(field.default_value_int64());
     case FieldDescriptor::CPPTYPE_UINT64:
-      return SimpleItoa(field.default_value_uint64());
+      return StrCat(field.default_value_uint64());
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field.default_value_double();
       if (value == std::numeric_limits<double>::infinity()) {
@@ -260,7 +261,7 @@ string StringifyDefaultValue(const FieldDescriptor& field) {
     case FieldDescriptor::CPPTYPE_BOOL:
       return field.default_value_bool() ? "True" : "False";
     case FieldDescriptor::CPPTYPE_ENUM:
-      return SimpleItoa(field.default_value_enum()->number());
+      return StrCat(field.default_value_enum()->number());
     case FieldDescriptor::CPPTYPE_STRING:
 //##!PY25      return "b\"" + CEscape(field.default_value_string()) +
 //##!PY25             (field.type() != FieldDescriptor::TYPE_STRING ? "\"" :
@@ -495,7 +496,7 @@ void Generator::PrintTopLevelEnums() const {
   for (int i = 0; i < top_level_enum_values.size(); ++i) {
     printer_->Print("$name$ = $value$\n", "name",
                     top_level_enum_values[i].first, "value",
-                    SimpleItoa(top_level_enum_values[i].second));
+                    StrCat(top_level_enum_values[i].second));
   }
   printer_->Print("\n");
 }
@@ -569,7 +570,7 @@ void Generator::PrintTopLevelExtensions() const {
     UpperString(&constant_name);
     printer_->Print("$constant_name$ = $number$\n", "constant_name",
                     constant_name, "number",
-                    SimpleItoa(extension_field.number()));
+                    StrCat(extension_field.number()));
     printer_->Print("$name$ = ", "name", extension_field.name());
     PrintFieldDescriptor(extension_field, is_extension);
     printer_->Print("\n");
@@ -616,7 +617,7 @@ void Generator::PrintServiceDescriptor(
   m["name"] = descriptor.name();
   m["full_name"] = descriptor.full_name();
   m["file"] = kDescriptorKey;
-  m["index"] = SimpleItoa(descriptor.index());
+  m["index"] = StrCat(descriptor.index());
   m["options_value"] = OptionsValue(options_string);
   const char required_function_arguments[] =
       "name='$name$',\n"
@@ -637,7 +638,7 @@ void Generator::PrintServiceDescriptor(
     m.clear();
     m["name"] = method->name();
     m["full_name"] = method->full_name();
-    m["index"] = SimpleItoa(method->index());
+    m["index"] = StrCat(method->index());
     m["serialized_options"] = CEscape(options_string);
     m["input_type"] = ModuleLevelDescriptorName(*(method->input_type()));
     m["output_type"] = ModuleLevelDescriptorName(*(method->output_type()));
@@ -762,9 +763,8 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
   for (int i = 0; i < message_descriptor.extension_range_count(); ++i) {
     const Descriptor::ExtensionRange* range =
         message_descriptor.extension_range(i);
-    printer_->Print("($start$, $end$), ", "start",
-                    SimpleItoa(range->start), "end",
-                    SimpleItoa(range->end));
+    printer_->Print("($start$, $end$), ", "start", StrCat(range->start),
+                    "end", StrCat(range->end));
   }
   printer_->Print("],\n");
   printer_->Print("oneofs=[\n");
@@ -774,7 +774,7 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
     std::map<string, string> m;
     m["name"] = desc->name();
     m["full_name"] = desc->full_name();
-    m["index"] = SimpleItoa(desc->index());
+    m["index"] = StrCat(desc->index());
     string options_string =
         OptionsValue(desc->options().SerializeAsString());
     if (options_string == "None") {
@@ -1108,8 +1108,8 @@ void Generator::PrintEnumValueDescriptor(
   descriptor.options().SerializeToString(&options_string);
   std::map<string, string> m;
   m["name"] = descriptor.name();
-  m["index"] = SimpleItoa(descriptor.index());
-  m["number"] = SimpleItoa(descriptor.number());
+  m["index"] = StrCat(descriptor.index());
+  m["number"] = StrCat(descriptor.number());
   m["options"] = OptionsValue(options_string);
   printer_->Print(
       m,
@@ -1137,11 +1137,11 @@ void Generator::PrintFieldDescriptor(
   std::map<string, string> m;
   m["name"] = field.name();
   m["full_name"] = field.full_name();
-  m["index"] = SimpleItoa(field.index());
-  m["number"] = SimpleItoa(field.number());
-  m["type"] = SimpleItoa(field.type());
-  m["cpp_type"] = SimpleItoa(field.cpp_type());
-  m["label"] = SimpleItoa(field.label());
+  m["index"] = StrCat(field.index());
+  m["number"] = StrCat(field.number());
+  m["type"] = StrCat(field.type());
+  m["cpp_type"] = StrCat(field.cpp_type());
+  m["label"] = StrCat(field.label());
   m["has_default_value"] = field.has_default_value() ? "True" : "False";
   m["default_value"] = StringifyDefaultValue(field);
   m["is_extension"] = is_extension ? "True" : "False";
@@ -1281,8 +1281,8 @@ void Generator::PrintSerializedPbInterval(
   printer_->Print(
       "serialized_start=$serialized_start$,\n"
       "serialized_end=$serialized_end$,\n",
-      "serialized_start", SimpleItoa(offset), "serialized_end",
-      SimpleItoa(offset + sp.size()));
+      "serialized_start", StrCat(offset), "serialized_end",
+      StrCat(offset + sp.size()));
 }
 
 namespace {

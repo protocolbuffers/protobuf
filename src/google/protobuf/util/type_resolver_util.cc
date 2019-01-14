@@ -315,16 +315,16 @@ class DescriptorPoolTypeResolver : public TypeResolver {
   string DefaultValueAsString(const FieldDescriptor* descriptor) {
     switch (descriptor->cpp_type()) {
       case FieldDescriptor::CPPTYPE_INT32:
-        return SimpleItoa(descriptor->default_value_int32());
+        return StrCat(descriptor->default_value_int32());
         break;
       case FieldDescriptor::CPPTYPE_INT64:
-        return SimpleItoa(descriptor->default_value_int64());
+        return StrCat(descriptor->default_value_int64());
         break;
       case FieldDescriptor::CPPTYPE_UINT32:
-        return SimpleItoa(descriptor->default_value_uint32());
+        return StrCat(descriptor->default_value_uint32());
         break;
       case FieldDescriptor::CPPTYPE_UINT64:
-        return SimpleItoa(descriptor->default_value_uint64());
+        return StrCat(descriptor->default_value_uint64());
         break;
       case FieldDescriptor::CPPTYPE_FLOAT:
         return SimpleFtoa(descriptor->default_value_float());

@@ -1761,16 +1761,14 @@ void MessageDifferencer::StreamReporter::PrintPath(
         continue;
       }
     } else {
-      printer_->PrintRaw(
-          SimpleItoa(specific_field.unknown_field_number));
+      printer_->PrintRaw(StrCat(specific_field.unknown_field_number));
     }
     if (left_side && specific_field.index >= 0) {
-      printer_->Print("[$name$]", "name",
-                      SimpleItoa(specific_field.index));
+      printer_->Print("[$name$]", "name", StrCat(specific_field.index));
     }
     if (!left_side && specific_field.new_index >= 0) {
       printer_->Print("[$name$]", "name",
-                      SimpleItoa(specific_field.new_index));
+                      StrCat(specific_field.new_index));
     }
   }
 }
@@ -1825,7 +1823,7 @@ StreamReporter::PrintUnknownFieldValue(const UnknownField* unknown_field) {
   string output;
   switch (unknown_field->type()) {
     case UnknownField::TYPE_VARINT:
-      output = SimpleItoa(unknown_field->varint());
+      output = StrCat(unknown_field->varint());
       break;
     case UnknownField::TYPE_FIXED32:
       output = StrCat(

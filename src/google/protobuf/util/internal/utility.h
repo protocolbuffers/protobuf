@@ -39,8 +39,9 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/stringpiece.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/stringpiece.h>
+
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
@@ -187,7 +188,7 @@ PROTOBUF_EXPORT std::string FloatAsString(float value);
 // Convert from int32, int64, uint32, uint64, double or float to string.
 template <typename T>
 std::string ValueAsString(T value) {
-  return SimpleItoa(value);
+  return StrCat(value);
 }
 
 template <>

@@ -137,7 +137,9 @@ struct ParseClosure {
   //   (end <= retval < end + kSlopBytes).
   //   All tag/value pairs between in [begin, retval) are parsed and retval
   //   points to start of a tag.
-  const char* operator()(const char* ptr, const char* end, ParseContext* ctx) {
+  PROTOBUF_ALWAYS_INLINE  // Don't pay for extra stack frame in debug mode
+      const char*
+      operator()(const char* ptr, const char* end, ParseContext* ctx) {
     GOOGLE_DCHECK(ptr < end);
     return func(ptr, end, object, ctx);
   }

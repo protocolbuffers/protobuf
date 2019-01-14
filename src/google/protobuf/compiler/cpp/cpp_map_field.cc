@@ -80,9 +80,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["val_wire_type"] =
       "TYPE_" + ToUpper(DeclaredTypeMethodName(val->type()));
   (*variables)["map_classname"] = ClassName(descriptor->message_type(), false);
-  (*variables)["number"] = SimpleItoa(descriptor->number());
-  (*variables)["tag"] =
-      SimpleItoa(internal::WireFormat::MakeTag(descriptor));
+  (*variables)["number"] = StrCat(descriptor->number());
+  (*variables)["tag"] = StrCat(internal::WireFormat::MakeTag(descriptor));
 
   if (HasDescriptorMethods(descriptor->file(), options)) {
     (*variables)["lite"] = "";

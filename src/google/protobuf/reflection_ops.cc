@@ -45,6 +45,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -288,7 +289,7 @@ static string SubMessagePrefix(const string& prefix,
   }
   if (index != -1) {
     result.append("[");
-    result.append(SimpleItoa(index));
+    result.append(StrCat(index));
     result.append("]");
   }
   result.append(".");

@@ -46,6 +46,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -67,10 +68,10 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
       name_resolver->GetMutableClassName(descriptor->enum_type());
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
   (*variables)["default_number"] =
-      SimpleItoa(descriptor->default_value_enum()->number());
-  (*variables)["tag"] = SimpleItoa(
+      StrCat(descriptor->default_value_enum()->number());
+  (*variables)["tag"] = StrCat(
       static_cast<int32>(internal::WireFormat::MakeTag(descriptor)));
-  (*variables)["tag_size"] = SimpleItoa(
+  (*variables)["tag_size"] = StrCat(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler

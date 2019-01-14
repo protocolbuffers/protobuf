@@ -41,6 +41,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
+
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -420,7 +421,7 @@ string FieldConstantName(const FieldDescriptor* field) {
     // This field's camelcase name is not unique.  As a hack, add the field
     // number to the constant name.  This makes the constant rather useless,
     // but what can we do?
-    result += "_" + SimpleItoa(field->number());
+    result += "_" + StrCat(field->number());
   }
 
   return result;
@@ -555,9 +556,9 @@ string Int32ToString(int number) {
   if (number == kint32min) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
-    return SimpleItoa(number + 1) + " - 1";
+    return StrCat(number + 1, " - 1");
   } else {
-    return SimpleItoa(number);
+    return StrCat(number);
   }
 }
 
@@ -565,14 +566,13 @@ string Int64ToString(const string& macro_prefix, int64 number) {
   if (number == kint64min) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
-    return macro_prefix + "_LONGLONG(" + SimpleItoa(number + 1) +
-           ") - 1";
+    return StrCat(macro_prefix, "_LONGLONG(", number + 1, ") - 1");
   }
-  return macro_prefix + "_LONGLONG(" + SimpleItoa(number) + ")";
+  return StrCat(macro_prefix, "_LONGLONG(", number, ")");
 }
 
 string UInt64ToString(const string& macro_prefix, uint64 number) {
-  return macro_prefix + "_ULONGLONG(" + SimpleItoa(number) + ")";
+  return StrCat(macro_prefix, "_ULONGLONG(", number, ")");
 }
 
 string DefaultValue(const FieldDescriptor* field) {
@@ -591,7 +591,7 @@ string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_INT32:
       return Int32ToString(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return SimpleItoa(field->default_value_uint32()) + "u";
+      return StrCat(field->default_value_uint32()) + "u";
     case FieldDescriptor::CPPTYPE_INT64:
       return Int64ToString("PROTOBUF", field->default_value_int64());
     case FieldDescriptor::CPPTYPE_UINT64:
@@ -1422,6 +1422,26 @@ class ParseLoopGenerator {
         "    }  // switch\n"
         "  }  // while\n"
         "  return ptr;\n");
+    if (use_string_) {
+      format_(
+          "string_till_end:\n"
+          "  static_cast<$string$*>(object)->clear();\n"
+          // TODO(gerbens) evaluate security
+          "  static_cast<$string$*>(object)->reserve(size);\n"
+          "  goto len_delim_till_end;\n");
+    }
+    if (use_arena_string_) {
+      format_(
+          "arena_string_till_end:\n"
+          "  object = "
+          "static_cast<::$proto_ns$::internal::ArenaStringPtr*>(object)->"
+          "Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), "
+          "msg->GetArenaNoVirtual());\n"
+          "  static_cast<$string$*>(object)->clear();\n"
+          // TODO(gerbens) evaluate security
+          "  static_cast<$string$*>(object)->reserve(size);\n"
+          "  goto len_delim_till_end;\n");
+    }
     if (use_length_delimited_) {
       format_(
           "len_delim_till_end:\n"
@@ -1447,33 +1467,30 @@ class ParseLoopGenerator {
   Formatter format_;
   bool use_length_delimited_ = false;
   bool use_group_ = false;
+  bool use_string_ = false;
+  bool use_arena_string_ = false;
 
   using WireFormat = internal::WireFormat;
   using WireFormatLite = internal::WireFormatLite;
 
   void GenerateArenaString(const FieldDescriptor* field, const string& utf8) {
-    format_(
-        "if (size > end - ptr + "
-        "::$proto_ns$::internal::ParseContext::kSlopBytes) {\n"
-        "  auto str = msg->mutable_$1$();\n"
-        "  str->clear();\n"
-        // TODO(gerbens) evaluate security
-        "  str->reserve(size);\n"
-        "  object = str;\n"
-        "  parser_till_end = ::$proto_ns$::internal::GreedyStringParser$2$;\n"
-        "  goto len_delim_till_end;\n"
-        "}\n"
-        "$GOOGLE_PROTOBUF$_PARSER_ASSERT(::$proto_ns$::internal::StringCheck$2$"
-        "(ptr, size, ctx));\n",
-        FieldName(field), utf8);
+    use_arena_string_ = true;
     if (HasFieldPresence(field->file())) {
       format_("HasBitSetters::set_has_$1$(msg);\n", FieldName(field));
     }
     format_(
+        "if (size > end - ptr + "
+        "::$proto_ns$::internal::ParseContext::kSlopBytes) {\n"
+        "  object = &msg->$1$_;\n"
+        "  parser_till_end = ::$proto_ns$::internal::GreedyStringParser$2$;\n"
+        "  goto arena_string_till_end;\n"
+        "}\n"
+        "$GOOGLE_PROTOBUF$_PARSER_ASSERT(::$proto_ns$::internal::StringCheck$2$"
+        "(ptr, size, ctx));\n"
         "::$proto_ns$::internal::CopyIntoArenaString(ptr, size, &msg->$1$_, "
         "msg->GetArenaNoVirtual());\n"
         "ptr += size;\n",
-        FieldName(field));
+        FieldName(field), utf8);
   }
 
   void GenerateStrings(const FieldDescriptor* field, bool check_utf8) {
@@ -1510,40 +1527,40 @@ class ParseLoopGenerator {
       return;
     }
     format_(
-        "auto str = msg->$1$_$2$();\n"
+        "object = msg->$1$_$2$();\n"
         "if (size > end - ptr + "
-        "::$proto_ns$::internal::ParseContext::kSlopBytes) {\n"
-        "  object = str;\n",
+        "::$proto_ns$::internal::ParseContext::kSlopBytes) {\n",
         field->is_repeated() && !field->is_packable() ? "add" : "mutable",
         FieldName(field));
     string name;
+    string label = "len_delim_till_end";
     switch (ctype) {
       case FieldOptions::STRING:
         name = "GreedyStringParser";
-        format_(
-            "  str->clear();\n"
-            // TODO(gerbens) evaluate security
-            "  str->reserve(size);\n");
+        use_string_ = true;
+        label = "string_till_end";
         break;
       case FieldOptions::CORD:
         name = "CordParser";
-        format_("  str->Clear();\n");
+        format_("  static_cast<::Cord*>(object)->Clear();\n");
         break;
       case FieldOptions::STRING_PIECE:
         name = "StringPieceParser";
-        format_("  str->Clear();\n");
+        format_(
+            "  "
+            "static_cast<::$proto_ns$::internal::StringPieceField*>(object)->"
+            "Clear();\n");
         break;
     }
     format_(
         "  parser_till_end = ::$proto_ns$::internal::$1$$2$;\n"
-        "  goto len_delim_till_end;\n"
+        "  goto $3$;\n"
         "}\n"
         "$GOOGLE_PROTOBUF$_PARSER_ASSERT(::$proto_ns$::internal::StringCheck$2$"
-        "("
-        "ptr, size, ctx));\n"
-        "::$proto_ns$::internal::Inline$1$(str, ptr, size, ctx);\n"
+        "(ptr, size, ctx));\n"
+        "::$proto_ns$::internal::Inline$1$(object, ptr, size, ctx);\n"
         "ptr += size;\n",
-        name, utf8);
+        name, utf8, label);
   }
 
   void GenerateLengthDelim(const FieldDescriptor* field) {
@@ -1690,11 +1707,9 @@ class ParseLoopGenerator {
           }
           format_(
               "if (size > end - ptr) goto len_delim_till_end;\n"
-              "auto newend = ptr + size;\n"
-              "bool ok = ctx->ParseExactRange({parser_till_end, object},\n"
-              "                               ptr, newend);\n"
-              "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ok);\n"
-              "ptr = newend;\n");
+              "ptr += size;\n"
+              "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ctx->ParseExactRange(\n"
+              "    {parser_till_end, object}, ptr - size, ptr));\n");
           break;
         }
         default:
@@ -1712,21 +1727,11 @@ class ParseLoopGenerator {
     }
     switch (wiretype) {
       case WireFormatLite::WIRETYPE_VARINT: {
-        format_(
-            "$uint64$ val;\n"
-            "ptr = ::$proto_ns$::io::Parse64(ptr, &val);\n"
-            "$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
         string type = PrimitiveTypeName(options_, field->cpp_type());
-        if ((field->type() == FieldDescriptor::TYPE_SINT32 ||
-             field->type() == FieldDescriptor::TYPE_SINT64) &&
+        string prefix = field->is_repeated() ? "add" : "set";
+        if (field->type() == FieldDescriptor::TYPE_ENUM &&
             !IsProto1(field->file(), options_)) {
-          int size = field->type() == FieldDescriptor::TYPE_SINT32 ? 32 : 64;
-          format_(
-              "$1$ value = "
-              "::$proto_ns$::internal::WireFormatLite::ZigZagDecode$2$(val);\n",
-              type, size);
-        } else if (field->type() == FieldDescriptor::TYPE_ENUM &&
-                   !IsProto1(field->file(), options_)) {
+          format_("$uint64$ val = ::$proto_ns$::internal::ReadVarint(&ptr);\n");
           if (!HasPreservingUnknownEnumSemantics(field->file())) {
             format_(
                 "if (!$1$_IsValid(val)) {\n"
@@ -1736,30 +1741,31 @@ class ParseLoopGenerator {
                 "}\n",
                 QualifiedClassName(field->enum_type()), field->number());
           }
-          format_("$1$ value = static_cast<$1$>(val);\n",
-                  QualifiedClassName(field->enum_type()));
+          format_("msg->$1$_$2$(static_cast<$3$>(val));\n", prefix,
+                  FieldName(field), QualifiedClassName(field->enum_type()));
         } else {
-          format_("$1$ value = val;\n", type);
+          string zigzag;
+          if ((field->type() == FieldDescriptor::TYPE_SINT32 ||
+               field->type() == FieldDescriptor::TYPE_SINT64) &&
+              !IsProto1(field->file(), options_)) {
+            int size = field->type() == FieldDescriptor::TYPE_SINT32 ? 32 : 64;
+            zigzag = StrCat("ZigZag", size);
+          }
+          format_(
+              "msg->$1$_$2$(::$proto_ns$::internal::ReadVarint$3$(&ptr));\n",
+              prefix, FieldName(field), zigzag);
         }
-        if (field->is_repeated()) {
-          format_("msg->add_$1$(value);\n", FieldName(field));
-        } else {
-          format_("msg->set_$1$(value);\n", FieldName(field));
-        }
+        format_("$GOOGLE_PROTOBUF$_PARSER_ASSERT(ptr);\n");
         break;
       }
+      case WireFormatLite::WIRETYPE_FIXED32:
       case WireFormatLite::WIRETYPE_FIXED64: {
+        string prefix = field->is_repeated() ? "add" : "set";
         string type = PrimitiveTypeName(options_, field->cpp_type());
         format_(
-            "$1$ val;\n"
-            "::std::memcpy(&val, ptr, 8);\n"
-            "ptr += 8;\n",
-            type);
-        if (field->is_repeated()) {
-          format_("msg->add_$1$(val);\n", FieldName(field));
-        } else {
-          format_("msg->set_$1$(val);\n", FieldName(field));
-        }
+            "msg->$1$_$2$(::$proto_ns$::io::UnalignedLoad<$3$>(ptr));\n"
+            "ptr += sizeof($3$);\n",
+            prefix, FieldName(field), type);
         break;
       }
       case WireFormatLite::WIRETYPE_LENGTH_DELIMITED: {
@@ -1784,20 +1790,6 @@ class ParseLoopGenerator {
       }
       case WireFormatLite::WIRETYPE_END_GROUP: {
         GOOGLE_LOG(FATAL) << "Can't have end group field\n";
-        break;
-      }
-      case WireFormatLite::WIRETYPE_FIXED32: {
-        string type = PrimitiveTypeName(options_, field->cpp_type());
-        format_(
-            "$1$ val;\n"
-            "std::memcpy(&val, ptr, 4);\n"
-            "ptr += 4;\n",
-            type);
-        if (field->is_repeated()) {
-          format_("msg->add_$1$(val);\n", FieldName(field));
-        } else {
-          format_("msg->set_$1$(val);\n", FieldName(field));
-        }
         break;
       }
     }  // switch (wire_type)

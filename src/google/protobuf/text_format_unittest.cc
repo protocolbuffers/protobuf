@@ -54,6 +54,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -1284,9 +1285,9 @@ class TextFormatParserTest : public testing::Test {
     parser.RecordErrorsTo(&error_collector);
     EXPECT_EQ(expected_result, parser.ParseFromString(input, proto))
         << input << " -> " << proto->DebugString();
-    EXPECT_EQ(SimpleItoa(line) + ":" + SimpleItoa(col) +
-                  ": " + message + "\n",
-              error_collector.text_);
+    EXPECT_EQ(
+        StrCat(line) + ":" + StrCat(col) + ": " + message + "\n",
+        error_collector.text_);
   }
 
   void ExpectSuccessAndTree(const string& input, Message* proto,
@@ -1509,7 +1510,7 @@ TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
   // enum
   EXPECT_FIELD(nested_enum, unittest::TestAllTypes::BAR, "BAR");
   EXPECT_FIELD(nested_enum, unittest::TestAllTypes::BAZ,
-               SimpleItoa(unittest::TestAllTypes::BAZ));
+               StrCat(unittest::TestAllTypes::BAZ));
   EXPECT_INVALID(nested_enum, "FOOBAR");
 
   // message

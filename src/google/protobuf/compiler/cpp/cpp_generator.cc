@@ -46,6 +46,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -203,8 +204,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       }
       for (int i = 0; i < num_cc_files; i++) {
         std::unique_ptr<io::ZeroCopyOutputStream> output(
-            generator_context->Open(basename + ".out/" +
-                                    SimpleItoa(i) + ".cc"));
+            generator_context->Open(StrCat(basename, ".out/", i, ".cc")));
         io::Printer printer(output.get(), '$');
         if (i < file_generator.NumMessages()) {
           file_generator.GenerateSourceForMessage(i, &printer);

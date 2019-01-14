@@ -51,6 +51,7 @@
 
 #include <google/protobuf/port_def.inc>
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -593,7 +594,7 @@ class PROTOC_EXPORT Formatter {
   template <typename I, typename = typename std::enable_if<
                             std::is_integral<I>::value>::type>
   static std::string ToString(I x) {
-    return SimpleItoa(x);
+    return StrCat(x);
   }
   static std::string ToString(strings::Hex x) { return StrCat(x); }
   static std::string ToString(const FieldDescriptor* d) { return Payload(d); }

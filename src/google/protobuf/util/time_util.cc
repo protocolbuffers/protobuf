@@ -38,6 +38,7 @@
 #include <google/protobuf/timestamp.pb.h>
 
 
+
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -184,7 +185,7 @@ string TimeUtil::ToString(const Duration& duration) {
     seconds = -seconds;
     nanos = -nanos;
   }
-  result += SimpleItoa(seconds);
+  result += StrCat(seconds);
   if (nanos != 0) {
     result += "." + FormatNanos(nanos);
   }

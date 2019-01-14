@@ -49,6 +49,7 @@
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -1786,11 +1787,11 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
     string* new_data = new string;
-    *new_data = "name-" + SimpleItoa(i);
+    *new_data = "name-" + StrCat(i);
     data.push_back(new_data);
 
     new_data = goldenproto.add_repeated_string();
-    *new_data = "name-" + SimpleItoa(i);
+    *new_data = "name-" + StrCat(i);
   }
   TestAllTypes testproto;
   std::copy(data.begin(), data.end(), AllocatedRepeatedPtrFieldBackInserter(
@@ -1823,11 +1824,11 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
     string* new_data = new string;
-    *new_data = "name-" + SimpleItoa(i);
+    *new_data = "name-" + StrCat(i);
     data.push_back(new_data);
 
     new_data = goldenproto.add_repeated_string();
-    *new_data = "name-" + SimpleItoa(i);
+    *new_data = "name-" + StrCat(i);
   }
   TestAllTypes testproto;
   std::copy(data.begin(), data.end(),
