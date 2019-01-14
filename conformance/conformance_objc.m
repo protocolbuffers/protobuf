@@ -98,6 +98,10 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
           @"ConformanceRequest had a jspb_payload ConformanceRequest.payload;"
           " those aren't supposed to happen with opensource.";
       break;
+
+    case ConformanceRequest_Payload_OneOfCase_TextPayload:
+      response.skipped = @"ObjC doesn't support parsing TextFormat";
+      break;
   }
 
   if (testMessage) {
@@ -123,6 +127,12 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
         response.skipped =
             @"ConformanceRequest had a requested_output_format of JSPB WireFormat; that"
             " isn't supposed to happen with opensource.";
+        break;
+
+      case WireFormat_TextFormat:
+        // ObjC only has partial objc generation, so don't attempt any tests that need
+        // support.
+        response.skipped = @"ObjC doesn't support generating TextFormat";
         break;
     }
   }
