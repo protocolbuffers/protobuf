@@ -2272,7 +2272,7 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
       " * @suppress {unusedLocalVariables} f is only used for nested messages\n"
       " */\n"
       "$classname$.toObject = function(includeInstance, msg) {\n"
-      "  var f, obj = {",
+      "  var obj = {",
       "classname", GetMessagePath(options, desc));
 
   bool first = true;
