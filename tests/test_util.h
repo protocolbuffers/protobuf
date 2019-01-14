@@ -30,14 +30,10 @@ upb_bufhandle global_handle;
 class VerboseParserEnvironment {
  public:
   /* Pass verbose=true to print detailed diagnostics to stderr. */
-  VerboseParserEnvironment(bool verbose) : verbose_(verbose) {
-    env_.SetErrorFunction(&VerboseParserEnvironment::OnError, this);
-  }
+  VerboseParserEnvironment(bool verbose) : verbose_(verbose) {}
 
   static bool OnError(void *ud, const upb::Status* status) {
     VerboseParserEnvironment* env = static_cast<VerboseParserEnvironment*>(ud);
-
-    env->saw_error_ = true;
 
     if (env->expect_error_ && env->verbose_) {
       fprintf(stderr, "Encountered error, as expected: ");
@@ -56,7 +52,6 @@ class VerboseParserEnvironment {
     len_ = len;
     ofs_ = 0;
     expect_error_ = expect_error;
-    saw_error_ = false;
     end_ok_set_ = false;
     skip_until_ = may_skip ? 0 : -1;
     skipped_with_null_ = false;
@@ -94,12 +89,12 @@ class VerboseParserEnvironment {
   bool CheckConsistency() {
     /* If we called end (which we should only do when previous bytes are fully
      * accepted), then end() should return true iff there were no errors. */
-    if (end_ok_set_ && end_ok_ != !saw_error_) {
+    if (end_ok_set_ && end_ok_ != status_.ok()) {
       fprintf(stderr, "End() status and saw_error didn't match.\n");
       return false;
     }
 
-    if (expect_error_ && !saw_error_) {
+    if (expect_error_ && status_.ok()) {
       fprintf(stderr, "Expected error but saw none.\n");
       return false;
     }
@@ -158,8 +153,9 @@ class VerboseParserEnvironment {
       }
     }
 
-    if (saw_error_)
+    if (!status_.ok()) {
       return false;
+    }
 
     if (parsed > bytes && skip_until_ >= 0) {
       skip_until_ = ofs_ + parsed;
@@ -175,12 +171,14 @@ class VerboseParserEnvironment {
   }
 
   size_t ofs() { return ofs_; }
-  upb::Environment* env() { return &env_; }
 
   bool SkippedWithNull() { return skipped_with_null_; }
 
+  upb::Arena* arena() { return &arena_; }
+
  private:
-  upb::Environment env_;
+  upb::Arena arena_;
+  upb::Status status_;
   upb::BytesSink sink_;
   const char* buf_;
   size_t len_;
@@ -188,7 +186,6 @@ class VerboseParserEnvironment {
   size_t ofs_;
   void *subc_;
   bool expect_error_;
-  bool saw_error_;
   bool end_ok_;
   bool end_ok_set_;
 

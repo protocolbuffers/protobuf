@@ -174,9 +174,9 @@ void test_json_roundtrip_message(const char* json_src,
   VerboseParserEnvironment env(verbose);
   StringSink data_sink;
   upb::json::PrinterPtr printer = upb::json::PrinterPtr::Create(
-      env.env(), serialize_handlers, data_sink.Sink());
+      env.arena(), serialize_handlers, data_sink.Sink());
   upb::json::ParserPtr parser = upb::json::ParserPtr::Create(
-      env.env(), parser_method, NULL, printer.input(), false);
+      env.arena(), parser_method, NULL, printer.input(), false);
   env.ResetBytesSink(parser.input());
   env.Reset(json_src, strlen(json_src), false, false);
 

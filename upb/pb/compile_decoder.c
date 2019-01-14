@@ -907,7 +907,7 @@ upb_pbcodecache *upb_pbcodecache_new(upb_handlercache *dest) {
   c->allow_jit = true;
   c->lazy = false;
 
-  upb_arena_init(&c->arena);
+  c->arena = upb_arena_new();
   if (!upb_inttable_init(&c->groups, UPB_CTYPE_CONSTPTR)) return NULL;
 
   return c;

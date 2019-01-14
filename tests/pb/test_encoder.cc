@@ -24,7 +24,7 @@ void test_pb_roundtrip() {
   upb::Arena arena;
   google_protobuf_FileDescriptorSet *set =
       google_protobuf_FileDescriptorSet_parsenew(
-          upb_stringview_make(input.c_str(), input.size()), &arena);
+          upb_stringview_make(input.c_str(), input.size()), arena.ptr());
   ASSERT(set);
   size_t n;
   const google_protobuf_FileDescriptorProto *const *files =
@@ -33,7 +33,7 @@ void test_pb_roundtrip() {
   upb::Status status;
   bool ok = symtab.AddFile(files[0], &status);
   if (!ok) {
-    fprintf(stderr, "Error building def: %s\n", upb_status_errmsg(&status));
+    fprintf(stderr, "Error building def: %s\n", status.error_message());
     ASSERT(false);
   }
   upb::MessageDefPtr md =
@@ -43,13 +43,12 @@ void test_pb_roundtrip() {
   ASSERT(encoder_handlers);
   const upb::pb::DecoderMethodPtr method = decoder_cache.Get(md);
 
-  upb::InlinedEnvironment<512> env;
   std::string output;
   upb::StringSink string_sink(&output);
   upb::pb::EncoderPtr encoder =
-      upb::pb::EncoderPtr::Create(&env, encoder_handlers, string_sink.input());
+      upb::pb::EncoderPtr::Create(&arena, encoder_handlers, string_sink.input());
   upb::pb::DecoderPtr decoder =
-      upb::pb::DecoderPtr::Create(&env, method, encoder.input());
+      upb::pb::DecoderPtr::Create(&arena, method, encoder.input());
   ok = upb::PutBuffer(input, decoder.input());
   ASSERT(ok);
   ASSERT(input == output);

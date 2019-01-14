@@ -16,7 +16,9 @@
 #include "upb/decode.h"
 #include "upb/encode.h"
 #include "upb/port_def.inc"
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct google_protobuf_FileDescriptorSet;
 struct google_protobuf_FileDescriptorProto;
@@ -1668,7 +1670,9 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_end(google_prot
 }
 
 
-UPB_END_EXTERN_C
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #include "upb/port_undef.inc"
 

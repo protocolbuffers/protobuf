@@ -25,14 +25,15 @@ class ParserMethodPtr;
 struct upb_json_parsermethod;
 typedef struct upb_json_parsermethod upb_json_parsermethod;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const upb_byteshandler* upb_json_parsermethod_inputhandler(
     const upb_json_parsermethod* m);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 class upb::json::ParserMethodPtr {
  public:
@@ -62,17 +63,19 @@ class upb::json::ParserMethodPtr {
 struct upb_json_parser;
 typedef struct upb_json_parser upb_json_parser;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-upb_json_parser*
-upb_json_parser_create(upb_env* e, const upb_json_parsermethod* m,
-                       const upb_symtab* symtab, upb_sink output,
-                       bool ignore_json_unknown);
+upb_json_parser* upb_json_parser_create(upb_arena* a,
+                                        const upb_json_parsermethod* m,
+                                        const upb_symtab* symtab,
+                                        upb_sink output,
+                                        bool ignore_json_unknown);
 upb_bytessink upb_json_parser_input(upb_json_parser* p);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* Parses an incoming BytesStream, pushing the results to the destination
  * sink. */
@@ -80,12 +83,13 @@ class upb::json::ParserPtr {
  public:
   ParserPtr(upb_json_parser* ptr) : ptr_(ptr) {}
 
-  static ParserPtr Create(Environment* env, ParserMethodPtr method,
+  static ParserPtr Create(Arena* arena, ParserMethodPtr method,
                           SymbolTable* symtab, Sink output,
                           bool ignore_json_unknown) {
     upb_symtab* symtab_ptr = symtab ? symtab->ptr() : nullptr;
-    return ParserPtr(upb_json_parser_create(
-        env, method.ptr(), symtab_ptr, output.sink(), ignore_json_unknown));
+    return ParserPtr(upb_json_parser_create(arena->ptr(), method.ptr(),
+                                            symtab_ptr, output.sink(),
+                                            ignore_json_unknown));
   }
 
   BytesSink input() { return upb_json_parser_input(ptr_); }
@@ -101,16 +105,17 @@ class upb::json::ParserPtr {
 struct upb_json_codecache;
 typedef struct upb_json_codecache upb_json_codecache;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 upb_json_codecache *upb_json_codecache_new();
 void upb_json_codecache_free(upb_json_codecache *cache);
 const upb_json_parsermethod* upb_json_codecache_get(upb_json_codecache* cache,
                                                     const upb_msgdef* md);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 class upb::json::CodeCache {
  public:

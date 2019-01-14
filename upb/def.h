@@ -56,7 +56,9 @@ typedef struct upb_symtab upb_symtab;
  * protobuf wire format. */
 #define UPB_MAX_FIELDNUMBER ((1 << 29) - 1)
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const char *upb_fielddef_fullname(const upb_fielddef *f);
 upb_fieldtype_t upb_fielddef_type(const upb_fielddef *f);
@@ -93,9 +95,8 @@ const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
 /* Internal only. */
 uint32_t upb_fielddef_selectorbase(const upb_fielddef *f);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* A upb_fielddef describes a single field in a message.  It is most often
  * found as a part of a upb_msgdef, but can also stand alone to represent
@@ -228,7 +229,9 @@ class upb::FieldDefPtr {
 
 /* upb_oneofdef ***************************************************************/
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef upb_inttable_iter upb_oneof_iter;
 
@@ -262,9 +265,8 @@ void upb_oneof_iter_setdone(upb_oneof_iter *iter);
 bool upb_oneof_iter_isequal(const upb_oneof_iter *iter1,
                             const upb_oneof_iter *iter2);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* Class that represents a oneof. */
 class upb::OneofDefPtr {
@@ -365,7 +367,9 @@ typedef upb_strtable_iter upb_msg_oneof_iter;
 #define UPB_TIMESTAMP_SECONDS 1
 #define UPB_TIMESTAMP_NANOS 2
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const char *upb_msgdef_fullname(const upb_msgdef *m);
 const upb_filedef *upb_msgdef_file(const upb_msgdef *m);
@@ -441,9 +445,8 @@ void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter * iter);
 bool upb_msg_oneof_iter_isequal(const upb_msg_oneof_iter *iter1,
                                 const upb_msg_oneof_iter *iter2);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* Structure that describes a single .proto message type. */
 class upb::MessageDefPtr {
@@ -711,7 +714,9 @@ class upb::EnumDefPtr {
 
 /* upb_filedef ****************************************************************/
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const char *upb_filedef_name(const upb_filedef *f);
 const char *upb_filedef_package(const upb_filedef *f);
@@ -725,9 +730,8 @@ const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i);
 const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i);
 const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* Class that represents a .proto file with some things defined in it.
  *
@@ -773,7 +777,9 @@ class upb::FileDefPtr {
 
 /* upb_symtab *****************************************************************/
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 upb_symtab *upb_symtab_new();
 void upb_symtab_free(upb_symtab* s);
@@ -795,9 +801,8 @@ typedef struct upb_def_init {
 
 bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* Non-const methods in upb::SymbolTable are NOT thread-safe. */
 class upb::SymbolTable {
@@ -823,7 +828,7 @@ class upb::SymbolTable {
   /* Adds the given serialized FileDescriptorProto to the pool. */
   bool AddFile(const google_protobuf_FileDescriptorProto *file_proto,
                Status *status) {
-    return upb_symtab_addfile(ptr_.get(), file_proto, status);
+    return upb_symtab_addfile(ptr_.get(), file_proto, status->ptr());
   }
 
  private:

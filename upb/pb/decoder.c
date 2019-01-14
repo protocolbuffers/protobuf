@@ -99,9 +99,7 @@ static bool in_residual_buf(const upb_pbdecoder *d, const char *p);
  * benchmarks. */
 
 static void seterr(upb_pbdecoder *d, const char *msg) {
-  upb_status status = UPB_STATUS_INIT;
-  upb_status_seterrmsg(&status, msg);
-  upb_env_reporterror(d->env, &status);
+  upb_status_seterrmsg(d->status, msg);
 }
 
 void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg) {
@@ -992,24 +990,24 @@ void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->residual_end = d->residual;
 }
 
-upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
+upb_pbdecoder *upb_pbdecoder_create(upb_arena *a, const upb_pbdecodermethod *m,
                                     upb_sink sink) {
   const size_t default_max_nesting = 64;
 #ifndef NDEBUG
-  size_t size_before = upb_env_bytesallocated(e);
+  size_t size_before = upb_arena_bytesallocated(a);
 #endif
 
-  upb_pbdecoder *d = upb_env_malloc(e, sizeof(upb_pbdecoder));
+  upb_pbdecoder *d = upb_arena_malloc(a, sizeof(upb_pbdecoder));
   if (!d) return NULL;
 
   d->method_ = m;
-  d->callstack = upb_env_malloc(e, callstacksize(d, default_max_nesting));
-  d->stack = upb_env_malloc(e, stacksize(d, default_max_nesting));
+  d->callstack = upb_arena_malloc(a, callstacksize(d, default_max_nesting));
+  d->stack = upb_arena_malloc(a, stacksize(d, default_max_nesting));
   if (!d->stack || !d->callstack) {
     return NULL;
   }
 
-  d->env = e;
+  d->arena = a;
   d->limit = d->stack + default_max_nesting - 1;
   d->stack_size = default_max_nesting;
   d->status = NULL;
@@ -1024,7 +1022,7 @@ upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
   d->top->sink = sink;
 
   /* If this fails, increase the value in decoder.h. */
-  UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(e) - size_before <=
+  UPB_ASSERT_DEBUGVAR(upb_arena_bytesallocated(a) - size_before <=
                       UPB_PB_DECODER_SIZE);
   return d;
 }
@@ -1057,7 +1055,7 @@ bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max) {
     /* Need to reallocate stack and callstack to accommodate. */
     size_t old_size = stacksize(d, d->stack_size);
     size_t new_size = stacksize(d, max);
-    void *p = upb_env_realloc(d->env, d->stack, old_size, new_size);
+    void *p = upb_arena_realloc(d->arena, d->stack, old_size, new_size);
     if (!p) {
       return false;
     }
@@ -1065,7 +1063,7 @@ bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max) {
 
     old_size = callstacksize(d, d->stack_size);
     new_size = callstacksize(d, max);
-    p = upb_env_realloc(d->env, d->callstack, old_size, new_size);
+    p = upb_arena_realloc(d->arena, d->callstack, old_size, new_size);
     if (!p) {
       return false;
     }

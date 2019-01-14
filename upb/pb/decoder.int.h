@@ -73,7 +73,7 @@ typedef enum {
 UPB_INLINE opcode getop(uint32_t instr) { return instr & 0xff; }
 
 struct upb_pbcodecache {
-  upb_arena arena;
+  upb_arena *arena;
   upb_handlercache *dest;
   bool allow_jit;
   bool lazy;
@@ -169,7 +169,7 @@ struct upb_pbdecodermethod {
 };
 
 struct upb_pbdecoder {
-  upb_env *env;
+  upb_arena *arena;
 
   /* Our input sink. */
   upb_bytessink input_;

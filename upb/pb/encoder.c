@@ -91,7 +91,7 @@ typedef struct {
 } upb_pb_encoder_segment;
 
 struct upb_pb_encoder {
-  upb_env *env;
+  upb_arena *arena;
 
   /* Our input and output. */
   upb_sink input_;
@@ -150,7 +150,7 @@ static bool reserve(upb_pb_encoder *e, size_t bytes) {
       new_size *= 2;
     }
 
-    new_buf = upb_env_realloc(e->env, e->buf, old_size, new_size);
+    new_buf = upb_arena_realloc(e->arena, e->buf, old_size, new_size);
 
     if (new_buf == NULL) {
       return false;
@@ -230,7 +230,7 @@ static bool start_delim(upb_pb_encoder *e) {
           (e->seglimit - e->segbuf) * sizeof(upb_pb_encoder_segment);
       size_t new_size = old_size * 2;
       upb_pb_encoder_segment *new_buf =
-          upb_env_realloc(e->env, e->segbuf, old_size, new_size);
+          upb_arena_realloc(e->arena, e->segbuf, old_size, new_size);
 
       if (new_buf == NULL) {
         return false;
@@ -526,22 +526,22 @@ upb_handlercache *upb_pb_encoder_newcache() {
   return upb_handlercache_new(newhandlers_callback, NULL);
 }
 
-upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
+upb_pb_encoder *upb_pb_encoder_create(upb_arena *arena, const upb_handlers *h,
                                       upb_bytessink output) {
   const size_t initial_bufsize = 256;
   const size_t initial_segbufsize = 16;
   /* TODO(haberman): make this configurable. */
   const size_t stack_size = 64;
 #ifndef NDEBUG
-  const size_t size_before = upb_env_bytesallocated(env);
+  const size_t size_before = upb_arena_bytesallocated(arena);
 #endif
 
-  upb_pb_encoder *e = upb_env_malloc(env, sizeof(upb_pb_encoder));
+  upb_pb_encoder *e = upb_arena_malloc(arena, sizeof(upb_pb_encoder));
   if (!e) return NULL;
 
-  e->buf = upb_env_malloc(env, initial_bufsize);
-  e->segbuf = upb_env_malloc(env, initial_segbufsize * sizeof(*e->segbuf));
-  e->stack = upb_env_malloc(env, stack_size * sizeof(*e->stack));
+  e->buf = upb_arena_malloc(arena, initial_bufsize);
+  e->segbuf = upb_arena_malloc(arena, initial_segbufsize * sizeof(*e->segbuf));
+  e->stack = upb_arena_malloc(arena, stack_size * sizeof(*e->stack));
 
   if (!e->buf || !e->segbuf || !e->stack) {
     return NULL;
@@ -554,13 +554,13 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
   upb_pb_encoder_reset(e);
   upb_sink_reset(&e->input_, h, e);
 
-  e->env = env;
+  e->arena = arena;
   e->output_ = output;
   e->subc = output.closure;
   e->ptr = e->buf;
 
   /* If this fails, increase the value in encoder.h. */
-  UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(env) - size_before <=
+  UPB_ASSERT_DEBUGVAR(upb_arena_bytesallocated(arena) - size_before <=
                       UPB_PB_ENCODER_SIZE);
   return e;
 }

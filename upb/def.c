@@ -125,7 +125,7 @@ static upb_value pack_def(const void *ptr, upb_deftype_t type) {
 }
 
 struct upb_symtab {
-  upb_arena arena;
+  upb_arena *arena;
   upb_strtable syms;  /* full_name -> packed def ptr */
   upb_strtable files;  /* file_name -> upb_filedef* */
 };
@@ -224,7 +224,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
 
   fields = upb_gmalloc(n * sizeof(*fields));
   if (!fields) {
-    upb_upberr_setoom(s);
+    upb_status_setoom(s);
     return false;
   }
 
@@ -870,7 +870,7 @@ const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i) {
 }
 
 void upb_symtab_free(upb_symtab *s) {
-  upb_arena_uninit(&s->arena);
+  upb_arena_free(s->arena);
   upb_gfree(s);
 }
 
@@ -882,12 +882,12 @@ upb_symtab *upb_symtab_new() {
     return NULL;
   }
 
-  upb_arena_init(&s->arena);
-  alloc = upb_arena_alloc(&s->arena);
+  s->arena = upb_arena_new();
+  alloc = upb_arena_alloc(s->arena);
 
   if (!upb_strtable_init2(&s->syms, UPB_CTYPE_CONSTPTR, alloc) ||
       !upb_strtable_init2(&s->files, UPB_CTYPE_CONSTPTR, alloc)) {
-    upb_arena_uninit(&s->arena);
+    upb_arena_free(s->arena);
     upb_gfree(s);
     s = NULL;
   }
@@ -922,7 +922,7 @@ const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym) {
  * to validate important constraints like uniqueness of names and numbers. */
 
 #define CHK(x) if (!(x)) { return false; }
-#define CHK_OOM(x) if (!(x)) { upb_upberr_setoom(ctx->status); return false; }
+#define CHK_OOM(x) if (!(x)) { upb_status_setoom(ctx->status); return false; }
 
 typedef struct {
   const upb_symtab *symtab;
@@ -1632,7 +1632,7 @@ static bool build_filedef(
 static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
                                  upb_status *status) {
   const upb_filedef *file = ctx->file;
-  upb_alloc *alloc = upb_arena_alloc(&s->arena);
+  upb_alloc *alloc = upb_arena_alloc(s->arena);
   upb_strtable_iter iter;
 
   CHK_OOM(upb_strtable_insert3(&s->files, file->name, strlen(file->name),
@@ -1652,9 +1652,9 @@ static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
 bool upb_symtab_addfile(upb_symtab *s,
                         const google_protobuf_FileDescriptorProto *file_proto,
                         upb_status *status) {
-  upb_arena tmparena;
+  upb_arena *tmparena = upb_arena_new();
   upb_strtable addtab;
-  upb_alloc *alloc = upb_arena_alloc(&s->arena);
+  upb_alloc *alloc = upb_arena_alloc(s->arena);
   upb_filedef *file = upb_malloc(alloc, sizeof(*file));
   bool ok;
   symtab_addctx ctx;
@@ -1662,18 +1662,16 @@ bool upb_symtab_addfile(upb_symtab *s,
   ctx.file = file;
   ctx.symtab = s;
   ctx.alloc = alloc;
-  ctx.tmp = upb_arena_alloc(&tmparena);
+  ctx.tmp = upb_arena_alloc(tmparena);
   ctx.addtab = &addtab;
   ctx.status = status;
-
-  upb_arena_init(&tmparena);
 
   ok = file &&
       upb_strtable_init2(&addtab, UPB_CTYPE_CONSTPTR, ctx.tmp) &&
       build_filedef(&ctx, file, file_proto) &&
       upb_symtab_addtotabs(s, &ctx, status);
 
-  upb_arena_uninit(&tmparena);
+  upb_arena_free(tmparena);
   return ok;
 }
 
@@ -1685,19 +1683,22 @@ bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init) {
    * print errors to stderr instead of returning error status to the user. */
   upb_def_init **deps = init->deps;
   google_protobuf_FileDescriptorProto *file;
-  upb_arena arena;
-  upb_status status = UPB_STATUS_INIT;
+  upb_arena *arena;
+  upb_status status;
+
+  upb_status_clear(&status);
 
   if (upb_strtable_lookup(&s->files, init->filename, NULL)) {
     return true;
   }
 
+  arena = upb_arena_new();
+
   for (; *deps; deps++) {
     if (!_upb_symtab_loaddefinit(s, *deps)) goto err;
   }
 
-  upb_arena_init(&arena);
-  file = google_protobuf_FileDescriptorProto_parsenew(init->descriptor, &arena);
+  file = google_protobuf_FileDescriptorProto_parsenew(init->descriptor, arena);
 
   if (!file) {
     upb_status_seterrf(
@@ -1710,13 +1711,13 @@ bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init) {
 
   if (!upb_symtab_addfile(s, file, &status)) goto err;
 
-  upb_arena_uninit(&arena);
+  upb_arena_free(arena);
   return true;
 
 err:
   fprintf(stderr, "Error loading compiled-in descriptor: %s\n",
           upb_status_errmsg(&status));
-  upb_arena_uninit(&arena);
+  upb_arena_free(arena);
   return false;
 }
 

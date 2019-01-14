@@ -29,7 +29,9 @@ class Sink;
 
 /* upb_sink *******************************************************************/
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct {
   const upb_handlers *handlers;
@@ -192,9 +194,8 @@ UPB_INLINE bool upb_sink_endsubmsg(upb_sink *s, upb_selector_t sel) {
   return endsubmsg(s->closure, hd);
 }
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* A upb::Sink is an object that binds a upb::Handlers object to some runtime
  * state.  It represents an endpoint to which data can be sent.
@@ -288,7 +289,9 @@ class upb::Sink {
    *   sink->EndMessage(&status);
    *   sink->EndSubMessage(endsubmsg_selector); */
   bool StartMessage() { return upb_sink_startmsg(&sink_); }
-  bool EndMessage(Status* status) { return upb_sink_endmsg(&sink_, status); }
+  bool EndMessage(upb_status *status) {
+    return upb_sink_endmsg(&sink_, status);
+  }
 
   /* Putting of individual values.  These work for both repeated and
    * non-repeated fields, but for repeated fields you must wrap them in
@@ -489,13 +492,14 @@ class upb::BytesSink {
 
 /* upb_bufsrc *****************************************************************/
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 bool upb_bufsrc_putbuf(const char *buf, size_t len, upb_bytessink sink);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 namespace upb {
 template <class T> bool PutBuffer(const T& str, BytesSink sink) {
@@ -504,20 +508,5 @@ template <class T> bool PutBuffer(const T& str, BytesSink sink) {
 }
 
 #endif  /* __cplusplus */
-
-/* upb_bufsink ****************************************************************/
-
-/* A class for accumulating output string data in a flat buffer. */
-struct upb_bufsink;
-typedef struct upb_bufsink upb_bufsink;
-
-UPB_BEGIN_EXTERN_C
-
-upb_bufsink *upb_bufsink_init(upb_env *env);
-void upb_bufsink_free(upb_bufsink *sink);
-upb_bytessink *upb_bufsink_sink(upb_bufsink *sink);
-const char *upb_bufsink_getdata(const upb_bufsink *sink, size_t *len);
-
-UPB_END_EXTERN_C
 
 #endif

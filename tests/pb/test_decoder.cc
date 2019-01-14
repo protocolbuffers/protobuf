@@ -452,10 +452,10 @@ void callback(const void *closure, upb::Handlers* h_ptr) {
 const upb::Handlers *global_handlers;
 upb::pb::DecoderMethodPtr global_method;
 
-upb::pb::DecoderPtr CreateDecoder(upb::Environment* env,
+upb::pb::DecoderPtr CreateDecoder(upb::Arena* arena,
                                   upb::pb::DecoderMethodPtr method,
                                   upb::Sink sink) {
-  upb::pb::DecoderPtr ret = upb::pb::DecoderPtr::Create(env, method, sink);
+  upb::pb::DecoderPtr ret = upb::pb::DecoderPtr::Create(arena, method, sink);
   ret.set_max_nesting(MAX_NESTING);
   return ret;
 }
@@ -556,7 +556,7 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::DecoderPtr decoder,
 void run_decoder(const string& proto, const string* expected_output) {
   VerboseParserEnvironment env(filter_hash != 0);
   upb::Sink sink(global_handlers, &closures[0]);
-  upb::pb::DecoderPtr decoder = CreateDecoder(env.env(), global_method, sink);
+  upb::pb::DecoderPtr decoder = CreateDecoder(env.arena(), global_method, sink);
   env.ResetBytesSink(decoder.input());
   for (size_t i = 0; i < proto.size(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.size(), i + 5); j++) {
@@ -872,10 +872,9 @@ void test_valid() {
   if (!filter_hash || filter_hash == testhash) {
     testhash = emptyhash;
     upb::Status status;
-    upb::Environment env;
-    env.ReportErrorsTo(&status);
+    upb::Arena arena;
     upb::Sink sink(global_handlers, &closures[0]);
-    upb::pb::DecoderPtr decoder = CreateDecoder(&env, global_method, sink);
+    upb::pb::DecoderPtr decoder = CreateDecoder(&arena, global_method, sink);
     output.clear();
     bool ok = upb::PutBuffer(std::string(), decoder.input());
     ASSERT(ok);
@@ -1161,7 +1160,8 @@ void test_emptyhandlers(upb::SymbolTable* symtab, bool allowjit) {
   for (int i = 0; testdata[i].data; i++) {
     VerboseParserEnvironment env(filter_hash != 0);
     upb::Sink sink(global_method.dest_handlers(), &closures[0]);
-    upb::pb::DecoderPtr decoder = CreateDecoder(env.env(), global_method, sink);
+    upb::pb::DecoderPtr decoder =
+        CreateDecoder(env.arena(), global_method, sink);
     env.ResetBytesSink(decoder.input());
     env.Reset(testdata[i].data, testdata[i].length, true, false);
     ASSERT(env.Start());

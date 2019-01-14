@@ -8,12 +8,6 @@
 #include <string.h>
 #include "upb/upb.h"
 
-bool upb_dumptostderr(void *closure, const upb_status* status) {
-  UPB_UNUSED(closure);
-  fprintf(stderr, "%s\n", upb_status_errmsg(status));
-  return false;
-}
-
 /* Guarantee null-termination and provide ellipsis truncation.
  * It may be tempting to "optimize" this by initializing these final
  * four bytes up-front and then being careful never to overwrite them,
@@ -29,24 +23,17 @@ static void nullz(upb_status *status) {
 
 void upb_status_clear(upb_status *status) {
   if (!status) return;
-  status->ok_ = true;
-  status->code_ = 0;
+  status->ok = true;
   status->msg[0] = '\0';
 }
 
-bool upb_ok(const upb_status *status) { return status->ok_; }
-
-upb_errorspace *upb_status_errspace(const upb_status *status) {
-  return status->error_space_;
-}
-
-int upb_status_errcode(const upb_status *status) { return status->code_; }
+bool upb_ok(const upb_status *status) { return status->ok; }
 
 const char *upb_status_errmsg(const upb_status *status) { return status->msg; }
 
 void upb_status_seterrmsg(upb_status *status, const char *msg) {
   if (!status) return;
-  status->ok_ = false;
+  status->ok = false;
   strncpy(status->msg, msg, sizeof(status->msg));
   nullz(status);
 }
@@ -60,16 +47,10 @@ void upb_status_seterrf(upb_status *status, const char *fmt, ...) {
 
 void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args) {
   if (!status) return;
-  status->ok_ = false;
+  status->ok = false;
   _upb_vsnprintf(status->msg, sizeof(status->msg), fmt, args);
   nullz(status);
 }
-
-void upb_status_copy(upb_status *to, const upb_status *from) {
-  if (!to) return;
-  *to = *from;
-}
-
 
 /* upb_alloc ******************************************************************/
 
@@ -86,7 +67,6 @@ static void *upb_global_allocfunc(upb_alloc *alloc, void *ptr, size_t oldsize,
 }
 
 upb_alloc upb_alloc_global = {&upb_global_allocfunc};
-
 
 /* upb_arena ******************************************************************/
 
@@ -115,11 +95,7 @@ struct upb_arena {
 
   /* Cleanup entries.  Pointer to a cleanup_ent, defined in env.c */
   void *cleanup_head;
-
-  /* For future expansion, since the size of this struct is exposed to users. */
-  void *future1;
-  void *future2;
-} upb_arena;
+};
 
 typedef struct mem_block {
   struct mem_block *next;
@@ -148,7 +124,6 @@ static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size,
 
   /* TODO(haberman): ASAN poison. */
 }
-
 
 static mem_block *upb_arena_allocblock(upb_arena *a, size_t size) {
   size_t block_size = UPB_MAX(size, a->next_block_size) + sizeof(mem_block);
@@ -202,7 +177,25 @@ static void *upb_arena_doalloc(upb_alloc *alloc, void *ptr, size_t oldsize,
 
 /* Public Arena API ***********************************************************/
 
-void upb_arena_init(upb_arena *a) {
+upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
+  const size_t first_block_overhead = sizeof(upb_arena) + sizeof(mem_block);
+  upb_arena *a;
+  bool owned = false;
+
+  if (n < first_block_overhead) {
+    /* We need to malloc the initial block. */
+    n = first_block_overhead + 256;
+    owned = true;
+    if (!alloc || !(mem = upb_malloc(alloc, n))) {
+      return NULL;
+    }
+  }
+
+  a = mem;
+  mem = (char*)mem + sizeof(*a);
+  n -= sizeof(*a);
+  upb_arena_addblock(a, mem, n, owned);
+
   a->alloc.func = &upb_arena_doalloc;
   a->block_alloc = &upb_alloc_global;
   a->bytes_allocated = 0;
@@ -210,21 +203,12 @@ void upb_arena_init(upb_arena *a) {
   a->max_block_size = 16384;
   a->cleanup_head = NULL;
   a->block_head = NULL;
+  a->block_alloc = alloc;
+
+  return a;
 }
 
-void upb_arena_init2(upb_arena *a, void *mem, size_t size, upb_alloc *alloc) {
-  upb_arena_init(a);
-
-  if (size > sizeof(mem_block)) {
-    upb_arena_addblock(a, mem, size, false);
-  }
-
-  if (alloc) {
-    a->block_alloc = alloc;
-  }
-}
-
-void upb_arena_uninit(upb_arena *a) {
+void upb_arena_free(upb_arena *a) {
   cleanup_ent *ent = a->cleanup_head;
   mem_block *block = a->block_head;
 
@@ -236,6 +220,7 @@ void upb_arena_uninit(upb_arena *a) {
   /* Must do this after running cleanup functions, because this will delete
    * the memory we store our cleanup entries in! */
   while (block) {
+    /* Load first since we are deleting block. */
     mem_block *next = block->next;
 
     if (block->owned) {
@@ -244,10 +229,6 @@ void upb_arena_uninit(upb_arena *a) {
 
     block = next;
   }
-
-  /* Protect against multiple-uninit. */
-  a->cleanup_head = NULL;
-  a->block_head = NULL;
 }
 
 bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud) {

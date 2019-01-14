@@ -672,7 +672,7 @@ void DoNothingStringBufHandler(C* closure, const char *buf, size_t len) {
 }
 
 template <class C>
-void DoNothingEndMessageHandler(C* closure, upb::Status *status) {
+void DoNothingEndMessageHandler(C* closure, upb_status *status) {
   UPB_UNUSED(closure);
   UPB_UNUSED(status);
 }

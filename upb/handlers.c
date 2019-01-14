@@ -390,7 +390,7 @@ uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
 /* upb_handlercache ***********************************************************/
 
 struct upb_handlercache {
-  upb_arena arena;
+  upb_arena *arena;
   upb_inttable tab;  /* maps upb_msgdef* -> upb_handlers*. */
   upb_inttable cleanup_;
   upb_handlers_callback *callback;
@@ -407,7 +407,7 @@ const upb_handlers *upb_handlercache_get(upb_handlercache *c,
     return upb_value_getptr(v);
   }
 
-  h = upb_handlers_new(md, c, &c->arena);
+  h = upb_handlers_new(md, c, c->arena);
   v = upb_value_ptr(h);
 
   if (!h) return NULL;
@@ -442,7 +442,7 @@ upb_handlercache *upb_handlercache_new(upb_handlers_callback *callback,
 
   if (!cache) return NULL;
 
-  upb_arena_init(&cache->arena);
+  cache->arena = upb_arena_new();
 
   cache->callback = callback;
   cache->closure = closure;
@@ -470,7 +470,7 @@ void upb_handlercache_free(upb_handlercache *cache) {
 
   upb_inttable_uninit(&cache->tab);
   upb_inttable_uninit(&cache->cleanup_);
-  upb_arena_uninit(&cache->arena);
+  upb_arena_free(cache->arena);
   upb_gfree(cache);
 }
 

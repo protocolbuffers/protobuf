@@ -40,7 +40,9 @@ class DecoderMethodOptions;
 struct upb_pbdecodermethod;
 typedef struct upb_pbdecodermethod upb_pbdecodermethod;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const upb_handlers *upb_pbdecodermethod_desthandlers(
     const upb_pbdecodermethod *m);
@@ -48,9 +50,8 @@ const upb_byteshandler *upb_pbdecodermethod_inputhandler(
     const upb_pbdecodermethod *m);
 bool upb_pbdecodermethod_isnative(const upb_pbdecodermethod *m);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* Represents the code to parse a protobuf according to a destination
  * Handlers. */
@@ -95,9 +96,11 @@ class upb::pb::DecoderMethodPtr {
 struct upb_pbdecoder;
 typedef struct upb_pbdecoder upb_pbdecoder;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-upb_pbdecoder *upb_pbdecoder_create(upb_env *e,
+upb_pbdecoder *upb_pbdecoder_create(upb_arena *arena,
                                     const upb_pbdecodermethod *method,
                                     upb_sink output);
 const upb_pbdecodermethod *upb_pbdecoder_method(const upb_pbdecoder *d);
@@ -107,9 +110,8 @@ size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d);
 bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max);
 void upb_pbdecoder_reset(upb_pbdecoder *d);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* A Decoder receives binary protobuf data on its input sink and pushes the
  * decoded data to its output sink. */
@@ -124,9 +126,10 @@ class upb::pb::DecoderPtr {
    * must also outlive this decoder.
    *
    * The sink must match the given method. */
-  static DecoderPtr Create(Environment *env, DecoderMethodPtr method,
+  static DecoderPtr Create(Arena *arena, DecoderMethodPtr method,
                            upb::Sink output) {
-    return DecoderPtr(upb_pbdecoder_create(env, method.ptr(), output.sink()));
+    return DecoderPtr(
+        upb_pbdecoder_create(arena->ptr(), method.ptr(), output.sink()));
   }
 
   /* Returns the DecoderMethod this decoder is parsing from. */
@@ -171,7 +174,9 @@ class upb::pb::DecoderPtr {
 struct upb_pbcodecache;
 typedef struct upb_pbcodecache upb_pbcodecache;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 upb_pbcodecache *upb_pbcodecache_new(upb_handlercache *dest);
 void upb_pbcodecache_free(upb_pbcodecache *c);
@@ -181,9 +186,8 @@ void upb_pbcodecache_setlazy(upb_pbcodecache *c, bool lazy);
 const upb_pbdecodermethod *upb_pbcodecache_get(upb_pbcodecache *c,
                                                const upb_msgdef *md);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 /* A class for caching protobuf processing code, whether bytecode for the
  * interpreted decoder or machine code for the JIT.

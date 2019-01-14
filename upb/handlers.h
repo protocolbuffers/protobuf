@@ -157,7 +157,9 @@ typedef size_t upb_string_handlerfunc(void *c, const void *hd, const char *buf,
 struct upb_handlers;
 typedef struct upb_handlers upb_handlers;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Mutating accessors. */
 const upb_status *upb_handlers_status(upb_handlers *h);
@@ -235,9 +237,8 @@ UPB_INLINE upb_selector_t upb_handlers_getendselector(upb_selector_t start) {
 uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f);
 uint32_t upb_handlers_selectorcount(const upb_fielddef *f);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 namespace upb {
 typedef upb_handlers Handlers;
@@ -303,7 +304,9 @@ template <class T> class upb::Handler {
   const upb_handlerattr& attr() const { return attr_; }
 
  private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Handler)
+  Handler(const Handler&) = delete;
+  Handler& operator=(const Handler&) = delete;
+
   FuncPtr handler_;
   mutable upb_handlerattr attr_;
   mutable bool registered_;
@@ -334,7 +337,8 @@ class upb::HandlersPtr {
   typedef Handler<void *(*)(void *, const void *)> StartFieldHandler;
   typedef Handler<bool (*)(void *, const void *)> EndFieldHandler;
   typedef Handler<bool (*)(void *, const void *)> StartMessageHandler;
-  typedef Handler<bool (*)(void *, const void *, Status *)> EndMessageHandler;
+  typedef Handler<bool (*)(void *, const void *, upb_status *)>
+      EndMessageHandler;
   typedef Handler<void *(*)(void *, const void *, size_t)> StartStringHandler;
   typedef Handler<size_t (*)(void *, const void *, const char *, size_t,
                              const upb_bufhandle *)>
@@ -590,7 +594,9 @@ class upb::HandlersPtr {
 
 /* upb_handlercache ***********************************************************/
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct upb_handlercache;
 typedef struct upb_handlercache upb_handlercache;
@@ -605,9 +611,8 @@ const upb_handlers *upb_handlercache_get(upb_handlercache *cache,
 bool upb_handlercache_addcleanup(upb_handlercache *h, void *p,
                                  upb_handlerfree *hfree);
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 class upb::HandlerCache {
  public:
@@ -630,8 +635,6 @@ class upb::HandlerCache {
 #endif  /* __cplusplus */
 
 /* upb_byteshandler ***********************************************************/
-
-UPB_BEGIN_EXTERN_C
 
 typedef struct {
   upb_func *func;
@@ -665,6 +668,10 @@ UPB_INLINE void upb_byteshandler_init(upb_byteshandler *handler) {
   *handler = init;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Caller must ensure that "d" outlives the handlers. */
 bool upb_byteshandler_setstartstr(upb_byteshandler *h,
                                   upb_startstr_handlerfunc *func, void *d);
@@ -674,16 +681,18 @@ bool upb_byteshandler_setendstr(upb_byteshandler *h,
                                 upb_endfield_handlerfunc *func, void *d);
 
 #ifdef __cplusplus
+}  /* extern "C" */
+
 namespace upb {
 typedef upb_byteshandler BytesHandler;
 }
 #endif
 
-UPB_END_EXTERN_C
-
 /** Message handlers ******************************************************************/
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* These are the handlers used internally by upb_msgfactory_getmergehandlers().
  * They write scalar data to a known offset from the message pointer.
@@ -710,7 +719,9 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 
 
 
-UPB_END_EXTERN_C
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #include "upb/handlers-inl.h"
 

@@ -54,10 +54,9 @@ UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
     size_t new_size = UPB_MAX(arr->size, 4);
     size_t old_bytes = arr->size * elem_size;
     size_t new_bytes;
-    upb_alloc *alloc = upb_arena_alloc(arr->arena);
     while (new_size < size) new_size *= 2;
     new_bytes = new_size * elem_size;
-    arr->data = upb_realloc(alloc, arr->data, old_bytes, new_bytes);
+    arr->data = upb_arena_realloc(arena, arr->data, old_bytes, new_bytes);
     if (!arr->data) {
       return NULL;
     }

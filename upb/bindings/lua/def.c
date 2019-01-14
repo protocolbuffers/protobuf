@@ -15,12 +15,13 @@
 #define LUPB_SYMTAB "lupb.symtab"
 #define LUPB_OBJCACHE "lupb.objcache"
 
-#define CHK(pred) do { \
-    upb_status status = UPB_STATUS_INIT; \
-    pred; \
+#define CHK(pred)                 \
+  do {                            \
+    upb_status status;            \
+    upb_status_clear(&status);    \
+    pred;                         \
     lupb_checkstatus(L, &status); \
   } while (0)
-
 
 /* lupb_wrapper ***************************************************************/
 

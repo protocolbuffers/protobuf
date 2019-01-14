@@ -35,17 +35,18 @@ class EncoderPtr;
 struct upb_pb_encoder;
 typedef struct upb_pb_encoder upb_pb_encoder;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 upb_sink upb_pb_encoder_input(upb_pb_encoder *p);
-upb_pb_encoder* upb_pb_encoder_create(upb_env* e, const upb_handlers* h,
+upb_pb_encoder* upb_pb_encoder_create(upb_arena* a, const upb_handlers* h,
                                       upb_bytessink output);
 
 upb_handlercache *upb_pb_encoder_newcache();
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" { */
 
 class upb::pb::EncoderPtr {
  public:
@@ -55,9 +56,10 @@ class upb::pb::EncoderPtr {
 
   /* Creates a new encoder in the given environment.  The Handlers must have
    * come from NewHandlers() below. */
-  static EncoderPtr Create(Environment* env, const Handlers* handlers,
+  static EncoderPtr Create(Arena* arena, const Handlers* handlers,
                            BytesSink output) {
-    return EncoderPtr(upb_pb_encoder_create(env, handlers, output.sink()));
+    return EncoderPtr(
+        upb_pb_encoder_create(arena->ptr(), handlers, output.sink()));
   }
 
   /* The input to the encoder. */

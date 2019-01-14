@@ -17,60 +17,51 @@ class TextPrinter;
 }  /* namespace upb */
 #endif
 
-UPB_DECLARE_TYPE(upb::pb::TextPrinter, upb_textprinter)
+/* upb_textprinter ************************************************************/
+
+struct upb_textprinter;
+typedef struct upb_textprinter upb_textprinter;
 
 #ifdef __cplusplus
+extern "C" {
+#endif
 
-class upb::pb::TextPrinter {
+/* C API. */
+upb_textprinter *upb_textprinter_create(upb_arena *arena, const upb_handlers *h,
+                                        upb_bytessink output);
+void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line);
+upb_sink upb_textprinter_input(upb_textprinter *p);
+upb_handlercache *upb_textprinter_newcache();
+
+#ifdef __cplusplus
+}  /* extern "C" */
+
+class upb::pb::TextPrinterPtr {
  public:
+  TextPrinterPtr(upb_textprinter* ptr) : ptr_(ptr) {}
+
   /* The given handlers must have come from NewHandlers().  It must outlive the
    * TextPrinter. */
-  static TextPrinter *Create(Environment *env, const upb::Handlers *handlers,
-                             BytesSink *output);
+  static TextPrinterPtr *Create(Arena *arena, const upb::Handlers *handlers,
+                             BytesSink output) {
+    return TextPrinterPtr(upb_textprinter_create(arena, handlers, output));
+  }
 
-  void SetSingleLineMode(bool single_line);
+  void SetSingleLineMode(bool single_line) {
+    upb_textprinter_setsingleline(ptr_, single_line);
+  }
 
-  Sink* input();
+  Sink input() { return upb_textprinter_input(ptr_); }
 
   /* If handler caching becomes a requirement we can add a code cache as in
    * decoder.h */
-  static HandlerCache* NewCache();
+  static HandlerCache NewCache() {
+    return HandlerCache(upb_textprinter_newcache());
+  }
+
+ private:
+  upb_textprinter* ptr_;
 };
-
-#endif
-
-UPB_BEGIN_EXTERN_C
-
-/* C API. */
-upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
-                                        upb_bytessink *output);
-void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line);
-upb_sink *upb_textprinter_input(upb_textprinter *p);
-
-upb_handlercache *upb_textprinter_newcache();
-
-UPB_END_EXTERN_C
-
-#ifdef __cplusplus
-
-namespace upb {
-namespace pb {
-inline TextPrinter *TextPrinter::Create(Environment *env,
-                                        const upb::Handlers *handlers,
-                                        BytesSink *output) {
-  return upb_textprinter_create(env, handlers, output);
-}
-inline void TextPrinter::SetSingleLineMode(bool single_line) {
-  upb_textprinter_setsingleline(this, single_line);
-}
-inline Sink* TextPrinter::input() {
-  return upb_textprinter_input(this);
-}
-inline HandlerCache* TextPrinter::NewCache() {
-  return upb_textprinter_newcache();
-}
-}  /* namespace pb */
-}  /* namespace upb */
 
 #endif
 

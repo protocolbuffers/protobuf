@@ -5,9 +5,14 @@
 #ifndef UPB_MSGFACTORY_H_
 #define UPB_MSGFACTORY_H_
 
-UPB_DECLARE_TYPE(upb::MessageFactory, upb_msgfactory)
-
 /** upb_msgfactory ************************************************************/
+
+struct upb_msgfactory;
+typedef struct upb_msgfactory upb_msgfactory;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* A upb_msgfactory contains a cache of upb_msglayout, upb_handlers, and
  * upb_visitorplan objects.  These are the objects necessary to represent,
@@ -36,5 +41,8 @@ const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
 const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
                                               const upb_msgdef *m);
 
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #endif /* UPB_MSGFACTORY_H_ */

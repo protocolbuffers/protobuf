@@ -156,21 +156,6 @@ UPB_INLINE upb_value upb_value_double(double cval) {
  * initializing a non-first union member. */
 typedef uintptr_t upb_tabkey;
 
-#define UPB_TABKEY_NUM(n) n
-#define UPB_TABKEY_NONE 0
-/* The preprocessor isn't quite powerful enough to turn the compile-time string
- * length into a byte-wise string representation, so code generation needs to
- * help it along.
- *
- * "len1" is the low byte and len4 is the high byte. */
-#ifdef UPB_BIG_ENDIAN
-#define UPB_TABKEY_STR(len1, len2, len3, len4, strval) \
-    (uintptr_t)(len4 len3 len2 len1 strval)
-#else
-#define UPB_TABKEY_STR(len1, len2, len3, len4, strval) \
-    (uintptr_t)(len1 len2 len3 len4 strval)
-#endif
-
 UPB_INLINE char *upb_tabstr(upb_tabkey key, uint32_t *len) {
   char* mem = (char*)key;
   if (len) memcpy(len, mem, sizeof(*len));

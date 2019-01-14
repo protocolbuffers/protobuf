@@ -37,18 +37,22 @@ class MessageLayout;
 
 #endif
 
-UPB_DECLARE_TYPE(upb::Map, upb_map)
-UPB_DECLARE_TYPE(upb::MapIterator, upb_mapiter)
+/* TODO(haberman): C++ accessors */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef void upb_msg;
 
 struct upb_array;
 typedef struct upb_array upb_array;
 
-/* TODO(haberman): C++ accessors */
+struct upb_map;
+typedef struct upb_map upb_map;
 
-UPB_BEGIN_EXTERN_C
-
-typedef void upb_msg;
-
+struct upb_mapiter;
+typedef struct upb_mapiter upb_mapiter;
 
 /** upb_msglayout *************************************************************/
 
@@ -74,7 +78,6 @@ typedef struct upb_msglayout {
   uint16_t field_count;
   bool extendable;
 } upb_msglayout;
-
 
 /** upb_stringview ************************************************************/
 
@@ -102,7 +105,6 @@ UPB_INLINE bool upb_stringview_eql(upb_stringview a, upb_stringview b) {
 #define UPB_STRINGVIEW_ARGS(view) (int)(view).size, (view).data
 
 #define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
-
 
 /** upb_msgval ****************************************************************/
 
@@ -155,7 +157,6 @@ ACCESSORS(str,    str, upb_stringview)
 UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
   return upb_msgval_str(upb_stringview_make(data, size));
 }
-
 
 /** upb_msg *******************************************************************/
 
@@ -216,7 +217,6 @@ bool upb_msg_clearfield(upb_msg *msg,
 
 /* TODO(haberman): copyfrom()/mergefrom()? */
 
-
 /** upb_array *****************************************************************/
 
 /* A upb_array stores data for a repeated field.  The memory management
@@ -235,7 +235,6 @@ upb_msgval upb_array_get(const upb_array *arr, size_t i);
  * its memory management invariants. */
 
 bool upb_array_set(upb_array *arr, size_t i, upb_msgval val);
-
 
 /** upb_map *******************************************************************/
 
@@ -268,7 +267,6 @@ bool upb_map_set(upb_map *map,
 /* Deletes an entry in the map.  Returns true if the key was present. */
 bool upb_map_del(upb_map *map, upb_msgval key);
 
-
 /** upb_mapiter ***************************************************************/
 
 /* For iterating over a map.  Map iterators are invalidated by mutations to the
@@ -290,6 +288,8 @@ upb_msgval upb_mapiter_value(const upb_mapiter *i);
 void upb_mapiter_setdone(upb_mapiter *i);
 bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2);
 
-UPB_END_EXTERN_C
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #endif /* UPB_MSG_H_ */

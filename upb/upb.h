@@ -15,14 +15,11 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
+#include <memory>
 namespace upb {
-class Allocator;
 class Arena;
-class Environment;
-class ErrorSpace;
 class Status;
 template <int N> class InlinedArena;
-template <int N> class InlinedEnvironment;
 }
 #endif
 
@@ -74,46 +71,14 @@ template <int N> class InlinedEnvironment;
 #error Need implementations of [v]snprintf and va_copy
 #endif
 
-#if (defined(__cplusplus) && __cplusplus >= 201103L) || \
-    defined(__GXX_EXPERIMENTAL_CXX0X__) ||              \
+#ifdef __cplusplus
+#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__) || \
     (defined(_MSC_VER) && _MSC_VER >= 1900)
 // C++11 is present
 #else
 #error upb requires C++11 for C++ support
 #endif
-
-/* UPB_DISALLOW_COPY_AND_ASSIGN()
- * UPB_DISALLOW_POD_OPS()
- *
- * Declare these in the "private" section of a C++ class to forbid copy/assign
- * or all POD ops (construct, destruct, copy, assign) on that class. */
-#include <type_traits>
-#define UPB_DISALLOW_COPY_AND_ASSIGN(class_name) \
-  class_name(const class_name&) = delete; \
-  void operator=(const class_name&) = delete;
-#define UPB_DISALLOW_POD_OPS(class_name, full_class_name) \
-  class_name() = delete; \
-  ~class_name() = delete; \
-  UPB_DISALLOW_COPY_AND_ASSIGN(class_name)
-#define UPB_ASSERT_STDLAYOUT(type) \
-  static_assert(std::is_standard_layout<type>::value, \
-                #type " must be standard layout");
-
-#ifdef __cplusplus
-
-#define UPB_BEGIN_EXTERN_C extern "C" {
-#define UPB_END_EXTERN_C }
-#define UPB_DECLARE_TYPE(cppname, cname) typedef cppname cname;
-
-#else  /* !defined(__cplusplus) */
-
-#define UPB_BEGIN_EXTERN_C
-#define UPB_END_EXTERN_C
-#define UPB_DECLARE_TYPE(cppname, cname) \
-  struct cname;                          \
-  typedef struct cname cname;
-
-#endif  /* defined(__cplusplus) */
+#endif
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
@@ -138,21 +103,26 @@ template <int N> class InlinedEnvironment;
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
 #endif
 
-/* upb::Status ****************************************************************/
+/* upb_status *****************************************************************/
 
-/* upb::Status represents a success or failure status and error message.
+/* upb_status represents a success or failure status and error message.
  * It owns no resources and allocates no memory, so it should work
  * even in OOM situations. */
-UPB_DECLARE_TYPE(upb::Status, upb_status)
 
 /* The maximum length of an error message before it will get truncated. */
-#define UPB_STATUS_MAX_MESSAGE 128
+#define UPB_STATUS_MAX_MESSAGE 127
 
-UPB_BEGIN_EXTERN_C
+typedef struct {
+  bool ok;
+  char msg[UPB_STATUS_MAX_MESSAGE];  /* Error message; NULL-terminated. */
+} upb_status;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const char *upb_status_errmsg(const upb_status *status);
 bool upb_ok(const upb_status *status);
-int upb_status_errcode(const upb_status *status);
 
 /* Any of the functions that write to a status object allow status to be NULL,
  * to support use cases where the function's caller does not care about the
@@ -161,60 +131,44 @@ void upb_status_clear(upb_status *status);
 void upb_status_seterrmsg(upb_status *status, const char *msg);
 void upb_status_seterrf(upb_status *status, const char *fmt, ...);
 void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args);
-void upb_status_copy(upb_status *to, const upb_status *from);
 
-UPB_END_EXTERN_C
+UPB_INLINE void upb_status_setoom(upb_status *status) {
+  upb_status_seterrmsg(status, "out of memory");
+}
 
 #ifdef __cplusplus
+}  /* extern "C" */
 
 class upb::Status {
  public:
-  Status() { upb_status_clear(this); }
+  Status() { upb_status_clear(&status_); }
+
+  upb_status* ptr() { return &status_; }
 
   /* Returns true if there is no error. */
-  bool ok() const { return upb_ok(this); }
+  bool ok() const { return upb_ok(&status_); }
 
-  /* Optional error space and code, useful if the caller wants to
-   * programmatically check the specific kind of error. */
-  ErrorSpace* error_space() { return upb_status_errspace(this); }
-  int error_code() const { return upb_status_errcode(this); }
-
-  /* The returned string is invalidated by any other call into the status. */
-  const char *error_message() const { return upb_status_errmsg(this); }
+  /* Guaranteed to be NULL-terminated. */
+  const char *error_message() const { return upb_status_errmsg(&status_); }
 
   /* The error message will be truncated if it is longer than
    * UPB_STATUS_MAX_MESSAGE-4. */
-  void SetErrorMessage(const char* msg) { upb_status_seterrmsg(this, msg); }
-  void SetFormattedErrorMessage(const char* fmt, ...) {
+  void SetErrorMessage(const char *msg) { upb_status_seterrmsg(&status_, msg); }
+  void SetFormattedErrorMessage(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    upb_status_vseterrf(this, fmt, args);
+    upb_status_vseterrf(&status_, fmt, args);
     va_end(args);
   }
 
   /* Resets the status to a successful state with no message. */
-  void Clear() { upb_status_clear(this); }
-
-  void CopyFrom(const Status& other) { upb_status_copy(this, &other); }
+  void Clear() { upb_status_clear(&status_); }
 
  private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Status)
-#else
-struct upb_status {
-#endif
-  bool ok_;
-
-  /* Specific status code defined by some error space (optional). */
-  int code_;
-  upb_errorspace *error_space_;
-
-  /* TODO(haberman): add file/line of error? */
-
-  /* Error message; NULL-terminated. */
-  char msg[UPB_STATUS_MAX_MESSAGE];
+  upb_status status_;
 };
 
-#define UPB_STATUS_INIT {true, 0, NULL, {0}}
+#endif  /* __cplusplus */
 
 /** upb_alloc *****************************************************************/
 
@@ -291,17 +245,23 @@ UPB_INLINE void upb_gfree(void *ptr) {
 typedef void upb_cleanup_func(void *ud);
 
 struct upb_arena;
-typedef upb_arena upb_arena;
+typedef struct upb_arena upb_arena;
 
-UPB_BEGIN_EXTERN_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-upb_arena *upb_arena_new2(void *mem, size_t n, upb_alloc *alloc);
+/* Creates an arena from the given initial block (if any -- n may be 0).
+ * Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
+ * is a fixed-size arena and cannot grow. */
+upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc);
 void upb_arena_free(upb_arena *a);
 bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud);
 size_t upb_arena_bytesallocated(const upb_arena *a);
 
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
 
+/* Convenience wrappers around upb_alloc functions. */
 UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
   return upb_malloc(upb_arena_alloc(a), size);
 }
@@ -312,52 +272,38 @@ UPB_INLINE void *upb_arena_realloc(upb_arena *a, void *ptr, size_t oldsize,
 }
 
 UPB_INLINE upb_arena *upb_arena_new() {
-  return upb_arena_new2(NULL, 0, &upb_alloc_global);
+  return upb_arena_init(NULL, 0, &upb_alloc_global);
 }
 
-UPB_END_EXTERN_C
-
 #ifdef __cplusplus
+}  /* extern "C" */
 
 class upb::Arena {
  public:
   /* A simple arena with no initial memory block and the default allocator. */
-  Arena() { upb_arena_init(&arena_); }
+  Arena() : ptr_(upb_arena_new(), upb_arena_free) {}
 
-  upb_arena* ptr() { return &arena_; }
-
-  /* Constructs an arena with the given initial block which allocates blocks
-   * with the given allocator.  The given allocator must outlive the Arena.
-   *
-   * If you pass NULL for the allocator it will default to the global allocator
-   * upb_alloc_global, and NULL/0 for the initial block will cause there to be
-   * no initial block. */
-  Arena(void *mem, size_t len, upb_alloc *a) {
-    upb_arena_init2(&arena_, mem, len, a);
-  }
-
-  ~Arena() { upb_arena_uninit(&arena_); }
+  upb_arena* ptr() { return ptr_.get(); }
 
   /* Allows this arena to be used as a generic allocator.
    *
    * The arena does not need free() calls so when using Arena as an allocator
    * it is safe to skip them.  However they are no-ops so there is no harm in
    * calling free() either. */
-  upb_alloc *allocator() { return upb_arena_alloc(&arena_); }
+  upb_alloc *allocator() { return upb_arena_alloc(ptr_.get()); }
 
   /* Add a cleanup function to run when the arena is destroyed.
    * Returns false on out-of-memory. */
   bool AddCleanup(upb_cleanup_func *func, void *ud) {
-    return upb_arena_addcleanup(&arena_, func, ud);
+    return upb_arena_addcleanup(ptr_.get(), func, ud);
   }
 
   /* Total number of bytes that have been allocated.  It is undefined what
    * Realloc() does to &arena_ counter. */
-  size_t BytesAllocated() const { return upb_arena_bytesallocated(&arena_); }
+  size_t BytesAllocated() const { return upb_arena_bytesallocated(ptr_.get()); }
 
  private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Arena)
-  upb_arena arena_;
+  std::unique_ptr<upb_arena, decltype(&upb_arena_free)> ptr_;
 };
 
 #endif
@@ -373,13 +319,16 @@ class upb::Arena {
 
 template <int N> class upb::InlinedArena : public upb::Arena {
  public:
-  InlinedArena() : Arena(initial_block_, N, NULL) {}
-  explicit InlinedArena(Allocator* a) : Arena(initial_block_, N, a) {}
+  InlinedArena() : ptr_(upb_arena_new(&initial_block_, N, &upb_alloc_global)) {}
+
+  upb_arena* ptr() { return ptr_.get(); }
 
  private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(InlinedArena)
+  InlinedArena(const InlinedArena*) = delete;
+  InlinedArena& operator=(const InlinedArena*) = delete;
 
-  char initial_block_[N + UPB_ARENA_BLOCK_OVERHEAD];
+  std::unique_ptr<upb_arena, decltype(&upb_arena_free)> ptr_;
+  char initial_block_[N];
 };
 
 #endif  /* __cplusplus */

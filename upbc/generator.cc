@@ -502,7 +502,9 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
       "#include \"upb/decode.h\"\n"
       "#include \"upb/encode.h\"\n"
       "#include \"upb/port_def.inc\"\n"
-      "UPB_BEGIN_EXTERN_C\n\n",
+      "#ifdef __cplusplus\n"
+      "extern \"C\" {\n"
+      "#endif\n\n",
       ToPreproc(file->name()));
 
   // Forward-declare types defined in this file.
@@ -548,7 +550,9 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   }
 
   output(
-      "UPB_END_EXTERN_C\n"
+      "#ifdef __cplusplus\n"
+      "}  /* extern \"C\" */\n"
+      "#endif\n"
       "\n"
       "#include \"upb/port_undef.inc\"\n"
       "\n"
