@@ -183,6 +183,7 @@ const char* VarintParse(const char* p, T* out) {
     }
     extra += 128ull << (i * 7);
   }
+  *out = 0;
   return nullptr;
 }
 

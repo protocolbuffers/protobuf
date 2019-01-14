@@ -44,6 +44,7 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
 
@@ -887,7 +888,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
-              DataPiece(SimpleItoa(int_value.ValueOrDie()), true));
+              DataPiece(StrCat(int_value.ValueOrDie()), true));
           return Status();
         }
       }
@@ -902,7 +903,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
-              DataPiece(SimpleItoa(int_value.ValueOrDie()), true));
+              DataPiece(StrCat(int_value.ValueOrDie()), true));
           return Status();
         }
       }

@@ -54,6 +54,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -125,8 +126,7 @@ Generate(io::Printer* printer) {
         descriptor_->oneof_decl(i))->name;
     vars["oneof_capitalized_name"] = context_->GetOneofGeneratorInfo(
         descriptor_->oneof_decl(i))->capitalized_name;
-    vars["oneof_index"] =
-        SimpleItoa(descriptor_->oneof_decl(i)->index());
+    vars["oneof_index"] = StrCat(descriptor_->oneof_decl(i)->index());
     // oneofCase_ and oneof_
     printer->Print(vars,
       "private int $oneof_name$Case_ = 0;\n"
@@ -233,7 +233,7 @@ GenerateDescriptorMethods(io::Printer* printer) {
       printer->Print(
           "case $number$:\n"
           "  return internalGet$capitalized_name$();\n",
-          "number", SimpleItoa(field->number()), "capitalized_name",
+          "number", StrCat(field->number()), "capitalized_name",
           info->capitalized_name);
     }
     printer->Print(
@@ -259,7 +259,7 @@ GenerateDescriptorMethods(io::Printer* printer) {
       printer->Print(
           "case $number$:\n"
           "  return internalGetMutable$capitalized_name$();\n",
-          "number", SimpleItoa(field->number()), "capitalized_name",
+          "number", StrCat(field->number()), "capitalized_name",
           info->capitalized_name);
     }
     printer->Print(
@@ -685,7 +685,7 @@ void MessageBuilderGenerator::GenerateIsInitialized(
                 context_->GetOneofGeneratorInfo(oneof);
             printer->Print("if ($oneof_name$Case_ == $field_number$) {\n",
                            "oneof_name", oneof_info->name, "field_number",
-                           SimpleItoa(field->number()));
+                           StrCat(field->number()));
           } else {
             printer->Print(
               "if (has$name$()) {\n",

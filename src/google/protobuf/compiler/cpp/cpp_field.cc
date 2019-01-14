@@ -62,13 +62,13 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   SetCommonVars(options, variables);
   (*variables)["ns"] = Namespace(descriptor);
   (*variables)["name"] = FieldName(descriptor);
-  (*variables)["index"] = SimpleItoa(descriptor->index());
-  (*variables)["number"] = SimpleItoa(descriptor->number());
+  (*variables)["index"] = StrCat(descriptor->index());
+  (*variables)["number"] = StrCat(descriptor->number());
   (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
   (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
   (*variables)["field_member"] = FieldName(descriptor) + "_";
 
-  (*variables)["tag_size"] = SimpleItoa(
+  (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), descriptor->type()));
   (*variables)["deprecated_attr"] =
       DeprecatedAttribute(options, descriptor->options().deprecated());

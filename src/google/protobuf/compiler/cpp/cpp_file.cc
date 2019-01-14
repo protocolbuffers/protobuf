@@ -50,6 +50,7 @@
 #include <google/protobuf/stubs/strutil.h>
 
 
+
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -477,10 +478,9 @@ void FileGenerator::GenerateInternalForwardDeclarations(
     auto scc = scc_analyzer->GetSCC(msg);
     string repr =
         UniqueName(ClassName(scc->GetRepresentative()), msg, options_);
-    global_namespace_decls.insert(
-        "extern " + dllexport + weak_attr + " ::" + ProtobufNamespace(options) +
-        "::internal::SCCInfo<" + SimpleItoa(scc->children.size()) +
-        "> scc_info_" + repr);
+    global_namespace_decls.insert(StrCat(
+        "extern ", dllexport, weak_attr, " ::", ProtobufNamespace(options),
+        "::internal::SCCInfo<", scc->children.size(), "> scc_info_", repr));
   }
 
   format("\n");

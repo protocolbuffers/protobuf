@@ -912,6 +912,29 @@ inline size_t ComputeUnknownMessageSetItemsSize(const std::string& unknown_field
   return unknown_fields.size();
 }
 
+// Some convenience functions to simplify the generated parse loop code.
+// Returning the value and updating the buffer pointer allows for nicer
+// function composition. We rely on the compiler to inline this.
+// Also in debug compiles having local scoped variables tend to generated
+// stack frames that scale as O(num fields).
+inline uint64 ReadVarint(const char** p) {
+  uint64 tmp;
+  *p = io::Parse64(*p, &tmp);
+  return tmp;
+}
+
+inline int64 ReadVarintZigZag64(const char** p) {
+  uint64 tmp;
+  *p = io::Parse64(*p, &tmp);
+  return WireFormatLite::ZigZagDecode64(tmp);
+}
+
+inline int32 ReadVarintZigZag32(const char** p) {
+  uint64 tmp;
+  *p = io::Parse64(*p, &tmp);
+  return WireFormatLite::ZigZagDecode32(tmp);
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

@@ -246,8 +246,7 @@ bool HasPrivateHasMethod(const FieldDescriptor* field) {
 
 bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
                             const Options& options) {
-  const string name = ClassName(descriptor, true);
-  return HasPrefixString(name, "::google::protobuf");
+  return true;
 }
 
 bool ShouldMarkClearAsFinal(const Descriptor* descriptor,
@@ -909,7 +908,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
       format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
       format.Set("oneof_name", field->containing_oneof()->name());
       format.Set("oneof_index",
-                 SimpleItoa(field->containing_oneof()->index()));
+                 StrCat(field->containing_oneof()->index()));
       GenerateOneofMemberHasBits(field, format);
     } else {
       // Singular field.
@@ -1342,8 +1341,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   const string has_bits_decl =
       sizeof_has_bits == 0
           ? ""
-          : "::$proto_ns$::internal::HasBits<" +
-                SimpleItoa(sizeof_has_bits / 4) + "> _has_bits_;\n";
+          : StrCat("::$proto_ns$::internal::HasBits<",
+                         sizeof_has_bits / 4, "> _has_bits_;\n");
 
   // To minimize padding, data members are divided into three sections:
   // (1) members assumed to align to 8 bytes
@@ -1634,10 +1633,9 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       std::map<string, string> vars;
       vars["classtype"] = QualifiedClassName(descriptor_);
       vars["field_name"] = FieldName(field);
-      vars["tag"] = SimpleItoa(tag);
-      vars["hasbit"] = SimpleItoa(i);
-      vars["type"] =
-          SimpleItoa(CalcFieldNum(generator, field, options_));
+      vars["tag"] = StrCat(tag);
+      vars["hasbit"] = StrCat(i);
+      vars["type"] = StrCat(CalcFieldNum(generator, field, options_));
       vars["ptr"] = "nullptr";
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         GOOGLE_CHECK(!IsMapEntryMessage(field->message_type()));
@@ -1646,8 +1644,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
               "::" +
               UniqueName("TableStruct", field->message_type(), options_) +
               "::serialization_table + " +
-              SimpleItoa(
-                  FindMessageIndexInFile(field->message_type()));
+              StrCat(FindMessageIndexInFile(field->message_type()));
         }
       }
       Formatter::SaveState saver(&format);
@@ -1724,7 +1721,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
         ptr =
             "::" + UniqueName("TableStruct", field->message_type(), options_) +
             "::serialization_table + " +
-            SimpleItoa(FindMessageIndexInFile(field->message_type()));
+            StrCat(FindMessageIndexInFile(field->message_type()));
       }
     }
 
@@ -2172,16 +2169,15 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
     std::map<string, string> vars;
     if (field->containing_oneof() != NULL) {
       vars["name"] = field->containing_oneof()->name();
-      vars["presence"] =
-          SimpleItoa(field->containing_oneof()->index());
+      vars["presence"] = StrCat(field->containing_oneof()->index());
     } else {
       vars["name"] = FieldName(field);
-      vars["presence"] = SimpleItoa(has_bit_indices_[field->index()]);
+      vars["presence"] = StrCat(has_bit_indices_[field->index()]);
     }
-    vars["nwtype"] = SimpleItoa(normal_wiretype);
-    vars["pwtype"] = SimpleItoa(packed_wiretype);
-    vars["ptype"] = SimpleItoa(processing_type);
-    vars["tag_size"] = SimpleItoa(tag_size);
+    vars["nwtype"] = StrCat(normal_wiretype);
+    vars["pwtype"] = StrCat(packed_wiretype);
+    vars["ptype"] = StrCat(processing_type);
+    vars["tag_size"] = StrCat(tag_size);
 
     format.AddMap(vars);
 
@@ -2336,9 +2332,8 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   } else if (HasFieldPresence(descriptor_->file())) {
     entries += has_bit_indices_.size();
     for (int i = 0; i < has_bit_indices_.size(); i++) {
-      const string index = has_bit_indices_[i] >= 0
-                               ? SimpleItoa(has_bit_indices_[i])
-                               : "~0u";
+      const string index =
+          has_bit_indices_[i] >= 0 ? StrCat(has_bit_indices_[i]) : "~0u";
       format("$1$,\n", index);
     }
   }
@@ -3775,8 +3770,8 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range,
     bool to_array) {
   std::map<string, string> vars;
-  vars["start"] = SimpleItoa(range->start);
-  vars["end"] = SimpleItoa(range->end);
+  vars["start"] = StrCat(range->start);
+  vars["end"] = StrCat(range->end);
   Formatter format(printer, vars);
   format("// Extension range [$start$, $end$)\n");
   if (to_array) {

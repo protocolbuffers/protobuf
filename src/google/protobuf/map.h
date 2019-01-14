@@ -559,6 +559,7 @@ class Map {
 
     iterator find(const Key& k) { return iterator(FindHelper(k).first); }
     const_iterator find(const Key& k) const { return find(k, NULL); }
+    bool contains(const Key& k) const { return find(k) != end(); }
 
     // In traditional C++ style, this performs "insert if not present."
     std::pair<iterator, bool> insert(const KeyValuePair& kv) {
@@ -1079,6 +1080,7 @@ class Map {
     return const_iterator(iterator(elements_->find(key)));
   }
   iterator find(const key_type& key) { return iterator(elements_->find(key)); }
+  bool contains(const Key& key) const { return elements_->contains(key); }
   std::pair<const_iterator, const_iterator> equal_range(
       const key_type& key) const {
     const_iterator it = find(key);

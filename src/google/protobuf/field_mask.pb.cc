@@ -186,16 +186,13 @@ const char* FieldMask::_InternalParse(const char* begin, const char* end, void* 
           ptr = ::google::protobuf::io::ReadSize(ptr, &size);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           ctx->extra_parse_data().SetFieldName("google.protobuf.FieldMask.paths");
-          auto str = msg->add_paths();
+          object = msg->add_paths();
           if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-            object = str;
-            str->clear();
-            str->reserve(size);
             parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-            goto len_delim_till_end;
+            goto string_till_end;
           }
           GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-          ::google::protobuf::internal::InlineGreedyStringParser(str, ptr, size, ctx);
+          ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
           ptr += size;
           if (ptr >= end) break;
         } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 10 && (ptr += 1));
@@ -216,6 +213,10 @@ const char* FieldMask::_InternalParse(const char* begin, const char* end, void* 
     }  // switch
   }  // while
   return ptr;
+string_till_end:
+  static_cast<::std::string*>(object)->clear();
+  static_cast<::std::string*>(object)->reserve(size);
+  goto len_delim_till_end;
 len_delim_till_end:
   return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
                                {parser_till_end, object}, size);

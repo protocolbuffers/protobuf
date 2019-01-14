@@ -764,7 +764,7 @@ label_skip_parsing:
                    LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           int64 int_value;
           DO(ConsumeSignedInteger(&int_value, kint32max));
-          value = SimpleItoa(int_value);  // for error reporting
+          value = StrCat(int_value);  // for error reporting
           enum_value = enum_type->FindValueByNumber(int_value);
         } else {
           ReportError("Expected integer or identifier, got: " +
@@ -1575,19 +1575,19 @@ void TextFormat::FastFieldValuePrinter::PrintBool(
 }
 void TextFormat::FastFieldValuePrinter::PrintInt32(
     int32 val, BaseTextGenerator* generator) const {
-  generator->PrintString(SimpleItoa(val));
+  generator->PrintString(StrCat(val));
 }
 void TextFormat::FastFieldValuePrinter::PrintUInt32(
     uint32 val, BaseTextGenerator* generator) const {
-  generator->PrintString(SimpleItoa(val));
+  generator->PrintString(StrCat(val));
 }
 void TextFormat::FastFieldValuePrinter::PrintInt64(
     int64 val, BaseTextGenerator* generator) const {
-  generator->PrintString(SimpleItoa(val));
+  generator->PrintString(StrCat(val));
 }
 void TextFormat::FastFieldValuePrinter::PrintUInt64(
     uint64 val, BaseTextGenerator* generator) const {
-  generator->PrintString(SimpleItoa(val));
+  generator->PrintString(StrCat(val));
 }
 void TextFormat::FastFieldValuePrinter::PrintFloat(
     float val, BaseTextGenerator* generator) const {
@@ -2251,7 +2251,7 @@ void TextFormat::Printer::PrintFieldName(const Message& message,
   // if use_field_number_ is true, prints field number instead
   // of field name.
   if (use_field_number_) {
-    generator->PrintString(SimpleItoa(field->number()));
+    generator->PrintString(StrCat(field->number()));
     return;
   }
 
@@ -2396,13 +2396,13 @@ void TextFormat::Printer::PrintUnknownFields(
     const UnknownFieldSet& unknown_fields, TextGenerator* generator) const {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
-    string field_number = SimpleItoa(field.number());
+    string field_number = StrCat(field.number());
 
     switch (field.type()) {
       case UnknownField::TYPE_VARINT:
         generator->PrintString(field_number);
         generator->PrintLiteral(": ");
-        generator->PrintString(SimpleItoa(field.varint()));
+        generator->PrintString(StrCat(field.varint()));
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
         } else {

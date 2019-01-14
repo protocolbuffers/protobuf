@@ -63,6 +63,7 @@
 #include <google/protobuf/stubs/casts.h>
 
 
+
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/hash.h>
@@ -1926,16 +1927,16 @@ string FieldDescriptor::DefaultValueAsString(bool quote_string_type) const {
   GOOGLE_CHECK(has_default_value()) << "No default value";
   switch (cpp_type()) {
     case CPPTYPE_INT32:
-      return SimpleItoa(default_value_int32());
+      return StrCat(default_value_int32());
       break;
     case CPPTYPE_INT64:
-      return SimpleItoa(default_value_int64());
+      return StrCat(default_value_int64());
       break;
     case CPPTYPE_UINT32:
-      return SimpleItoa(default_value_uint32());
+      return StrCat(default_value_uint32());
       break;
     case CPPTYPE_UINT64:
-      return SimpleItoa(default_value_uint64());
+      return StrCat(default_value_uint64());
       break;
     case CPPTYPE_FLOAT:
       return SimpleFtoa(default_value_float());

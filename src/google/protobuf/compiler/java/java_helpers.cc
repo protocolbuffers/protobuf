@@ -46,6 +46,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+
 #include <google/protobuf/stubs/hash.h>  // for hash<T *>
 
 namespace google {
@@ -473,16 +474,14 @@ string DefaultValue(const FieldDescriptor* field, bool immutable,
   // of FieldDescriptor to call.
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return SimpleItoa(field->default_value_int32());
+      return StrCat(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
       // Need to print as a signed int since Java has no unsigned.
-      return SimpleItoa(
-          static_cast<int32>(field->default_value_uint32()));
+      return StrCat(static_cast<int32>(field->default_value_uint32()));
     case FieldDescriptor::CPPTYPE_INT64:
-      return SimpleItoa(field->default_value_int64()) + "L";
+      return StrCat(field->default_value_int64()) + "L";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return SimpleItoa(
-                 static_cast<int64>(field->default_value_uint64())) +
+      return StrCat(static_cast<int64>(field->default_value_uint64())) +
              "L";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
@@ -625,7 +624,7 @@ const char* bit_masks[] = {
 
 string GetBitFieldName(int index) {
   string varName = "bitField";
-  varName += SimpleItoa(index);
+  varName += StrCat(index);
   varName += "_";
   return varName;
 }
@@ -641,7 +640,7 @@ string GenerateGetBitInternal(const string& prefix, int bitIndex) {
   int bitInVarIndex = bitIndex % 32;
 
   string mask = bit_masks[bitInVarIndex];
-  string result = "((" + varName + " & " + mask + ") == " + mask + ")";
+  string result = "((" + varName + " & " + mask + ") != 0)";
   return result;
 }
 

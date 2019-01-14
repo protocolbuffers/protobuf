@@ -40,6 +40,7 @@
 #include <google/protobuf/stubs/strutil.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -95,7 +96,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["name"] = name;
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
-      SimpleItoa(static_cast<int>(descriptor_->type()));
+      StrCat(static_cast<int>(descriptor_->type()));
   variables_["packed"] = descriptor_->options().packed() ? "true" : "false";
 
   string scope =
@@ -103,7 +104,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["scope"] = scope;
   string scoped_name = scope + name;
   variables_["scoped_name"] = scoped_name;
-  variables_["number"] = SimpleItoa(descriptor_->number());
+  variables_["number"] = StrCat(descriptor_->number());
 }
 
 ExtensionGenerator::~ExtensionGenerator() {}

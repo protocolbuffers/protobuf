@@ -38,6 +38,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -85,11 +86,10 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = PrimitiveTypeName(options, descriptor->cpp_type());
   (*variables)["default"] = DefaultValue(options, descriptor);
-  (*variables)["tag"] =
-      SimpleItoa(internal::WireFormat::MakeTag(descriptor));
+  (*variables)["tag"] = StrCat(internal::WireFormat::MakeTag(descriptor));
   int fixed_size = FixedSize(descriptor->type());
   if (fixed_size != -1) {
-    (*variables)["fixed_size"] = SimpleItoa(fixed_size);
+    (*variables)["fixed_size"] = StrCat(fixed_size);
   }
   (*variables)["wire_format_field_type"] = FieldDescriptorProto_Type_Name(
       static_cast<FieldDescriptorProto_Type>(descriptor->type()));

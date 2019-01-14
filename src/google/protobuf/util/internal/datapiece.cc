@@ -34,6 +34,7 @@
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/utility.h>
+
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathlimits.h>
 #include <google/protobuf/stubs/mathutil.h>
@@ -231,13 +232,13 @@ string DataPiece::ValueAsStringOrDefault(
     StringPiece default_string) const {
   switch (type_) {
     case TYPE_INT32:
-      return SimpleItoa(i32_);
+      return StrCat(i32_);
     case TYPE_INT64:
-      return SimpleItoa(i64_);
+      return StrCat(i64_);
     case TYPE_UINT32:
-      return SimpleItoa(u32_);
+      return StrCat(u32_);
     case TYPE_UINT64:
-      return SimpleItoa(u64_);
+      return StrCat(u64_);
     case TYPE_DOUBLE:
       return DoubleAsString(double_);
     case TYPE_FLOAT:

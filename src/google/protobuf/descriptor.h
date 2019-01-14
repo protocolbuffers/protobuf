@@ -1135,10 +1135,8 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumValueDescriptor);
 };
 
-// Describes an RPC service.  To get the ServiceDescriptor for a service,
-// call Service::GetDescriptor().  Generated service classes also have a
-// static method called descriptor() which returns the type's
-// ServiceDescriptor.  Use DescriptorPool to construct your own descriptors.
+// Describes an RPC service. Use DescriptorPool to construct your own
+// descriptors.
 class PROTOBUF_EXPORT ServiceDescriptor {
  public:
   typedef ServiceDescriptorProto Proto;
