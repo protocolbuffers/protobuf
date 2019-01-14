@@ -93,7 +93,7 @@ namespace Conformance {
     /// </summary>
     [pbr::OriginalName("JSPB_TEST")] JspbTest = 4,
     /// <summary>
-    /// Test text format. For cpp, java and python, testees can already deal with 
+    /// Test text format. For cpp, java and python, testees can already deal with
     /// this type. Testees of other languages can simply skip it.
     /// </summary>
     [pbr::OriginalName("TEXT_FORMAT_TEST")] TextFormatTest = 5,
