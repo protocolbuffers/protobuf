@@ -143,7 +143,7 @@ static bool upb_isalphanum(char c) {
   return upb_isletter(c) || upb_isbetween(c, '0', '9');
 }
 
-static bool upb_isident(upb_stringview name, bool full, upb_status *s) {
+static bool upb_isident(upb_strview name, bool full, upb_status *s) {
   const char *str = name.data;
   size_t len = name.size;
   bool start = true;
@@ -933,7 +933,7 @@ typedef struct {
   upb_status *status;  /* Record errors here. */
 } symtab_addctx;
 
-static char* strviewdup(const symtab_addctx *ctx, upb_stringview view) {
+static char* strviewdup(const symtab_addctx *ctx, upb_strview view) {
   if (view.size == 0) {
     return NULL;
   }
@@ -944,12 +944,12 @@ static bool streql2(const char *a, size_t n, const char *b) {
   return n == strlen(b) && memcmp(a, b, n) == 0;
 }
 
-static bool streql_view(upb_stringview view, const char *b) {
+static bool streql_view(upb_strview view, const char *b) {
   return streql2(view.data, view.size, b);
 }
 
 static const char *makefullname(const symtab_addctx *ctx, const char *prefix,
-                                upb_stringview name) {
+                                upb_strview name) {
   if (prefix) {
     /* ret = prefix + '.' + name; */
     size_t n = strlen(prefix);
@@ -981,7 +981,7 @@ static bool symtab_add(const symtab_addctx *ctx, const char *name,
 /* Given a symbol and the base symbol inside which it is defined, find the
  * symbol's definition in t. */
 static bool resolvename(const upb_strtable *t, const upb_fielddef *f,
-                        const char *base, upb_stringview sym,
+                        const char *base, upb_strview sym,
                         upb_deftype_t type, upb_status *status,
                         const void **def) {
   if(sym.size == 0) return NULL;
@@ -1013,7 +1013,7 @@ static bool resolvename(const upb_strtable *t, const upb_fielddef *f,
 }
 
 const void *symtab_resolve(const symtab_addctx *ctx, const upb_fielddef *f,
-                           const char *base, upb_stringview sym,
+                           const char *base, upb_strview sym,
                            upb_deftype_t type) {
   const void *ret;
   if (!resolvename(ctx->addtab, f, base, sym, type, ctx->status, &ret) &&
@@ -1030,7 +1030,7 @@ static bool create_oneofdef(
     const symtab_addctx *ctx, upb_msgdef *m,
     const google_protobuf_OneofDescriptorProto *oneof_proto) {
   upb_oneofdef *o;
-  upb_stringview name = google_protobuf_OneofDescriptorProto_name(oneof_proto);
+  upb_strview name = google_protobuf_OneofDescriptorProto_name(oneof_proto);
   upb_value v;
 
   o = (upb_oneofdef*)&m->oneofs[m->oneof_count++];
@@ -1153,7 +1153,7 @@ static bool create_fielddef(
   upb_alloc *alloc = ctx->alloc;
   upb_fielddef *f;
   const google_protobuf_FieldOptions *options;
-  upb_stringview name;
+  upb_strview name;
   const char *full_name;
   const char *shortname;
   uint32_t field_number;
@@ -1273,7 +1273,7 @@ static bool create_enumdef(
     const google_protobuf_EnumDescriptorProto *enum_proto) {
   upb_enumdef *e;
   const google_protobuf_EnumValueDescriptorProto *const *values;
-  upb_stringview name;
+  upb_strview name;
   size_t i, n;
 
   name = google_protobuf_EnumDescriptorProto_name(enum_proto);
@@ -1300,7 +1300,7 @@ static bool create_enumdef(
 
   for (i = 0; i < n; i++) {
     const google_protobuf_EnumValueDescriptorProto *value = values[i];
-    upb_stringview name = google_protobuf_EnumValueDescriptorProto_name(value);
+    upb_strview name = google_protobuf_EnumValueDescriptorProto_name(value);
     char *name2 = strviewdup(ctx, name);
     int32_t num = google_protobuf_EnumValueDescriptorProto_number(value);
     upb_value v = upb_value_int32(num);
@@ -1339,7 +1339,7 @@ static bool create_msgdef(const symtab_addctx *ctx, const char *prefix,
   const google_protobuf_EnumDescriptorProto *const *enums;
   const google_protobuf_DescriptorProto *const *msgs;
   size_t i, n;
-  upb_stringview name;
+  upb_strview name;
 
   name = google_protobuf_DescriptorProto_name(msg_proto);
   CHK(upb_isident(name, false, ctx->status));
@@ -1437,7 +1437,7 @@ static void count_types_in_file(
 
 static bool resolve_fielddef(const symtab_addctx *ctx, const char *prefix,
                              upb_fielddef *f) {
-  upb_stringview name;
+  upb_strview name;
   const google_protobuf_FieldDescriptorProto *field_proto = f->sub.unresolved;
 
   if (f->is_extension_) {
@@ -1473,7 +1473,7 @@ static bool resolve_fielddef(const symtab_addctx *ctx, const char *prefix,
   /* Have to delay resolving of the default value until now because of the enum
    * case, since enum defaults are specified with a label. */
   if (google_protobuf_FieldDescriptorProto_has_default_value(field_proto)) {
-    upb_stringview defaultval =
+    upb_strview defaultval =
         google_protobuf_FieldDescriptorProto_default_value(field_proto);
 
     if (f->file->syntax == UPB_SYNTAX_PROTO3) {
@@ -1492,9 +1492,9 @@ static bool resolve_fielddef(const symtab_addctx *ctx, const char *prefix,
 
     if (!parse_default(ctx, defaultval.data, defaultval.size, f)) {
       upb_status_seterrf(ctx->status,
-                         "couldn't parse default '" UPB_STRINGVIEW_FORMAT
+                         "couldn't parse default '" UPB_STRVIEW_FORMAT
                          "' for field (%s)",
-                         UPB_STRINGVIEW_ARGS(defaultval), f->full_name);
+                         UPB_STRVIEW_ARGS(defaultval), f->full_name);
       return false;
     }
   } else {
@@ -1512,7 +1512,7 @@ static bool build_filedef(
   const google_protobuf_DescriptorProto *const *msgs;
   const google_protobuf_EnumDescriptorProto *const *enums;
   const google_protobuf_FieldDescriptorProto *const *exts;
-  const upb_stringview* strs;
+  const upb_strview* strs;
   size_t i, n;
   decl_counts counts = {0};
 
@@ -1542,7 +1542,7 @@ static bool build_filedef(
   file->phpnamespace = NULL;
 
   if (google_protobuf_FileDescriptorProto_has_package(file_proto)) {
-    upb_stringview package =
+    upb_strview package =
         google_protobuf_FileDescriptorProto_package(file_proto);
     CHK(upb_isident(package, true, ctx->status));
     file->package = strviewdup(ctx, package);
@@ -1551,7 +1551,7 @@ static bool build_filedef(
   }
 
   if (google_protobuf_FileDescriptorProto_has_syntax(file_proto)) {
-    upb_stringview syntax =
+    upb_strview syntax =
         google_protobuf_FileDescriptorProto_syntax(file_proto);
 
     if (streql_view(syntax, "proto2")) {
@@ -1581,7 +1581,7 @@ static bool build_filedef(
   CHK_OOM(n == 0 || file->deps);
 
   for (i = 0; i < n; i++) {
-    upb_stringview dep_name = strs[i];
+    upb_strview dep_name = strs[i];
     upb_value v;
     if (!upb_strtable_lookup2(&ctx->symtab->files, dep_name.data,
                               dep_name.size, &v)) {

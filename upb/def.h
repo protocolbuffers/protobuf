@@ -796,7 +796,7 @@ bool upb_symtab_addfile(upb_symtab *s,
 typedef struct upb_def_init {
   struct upb_def_init **deps;
   const char *filename;
-  upb_stringview descriptor;
+  upb_strview descriptor;
 } upb_def_init;
 
 bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init);

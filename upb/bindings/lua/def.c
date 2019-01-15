@@ -639,8 +639,8 @@ static int lupb_symtab_add(lua_State *L) {
   lupb_arena_new(L);
   arena = lupb_arena_check(L, -1);
 
-  set = google_protobuf_FileDescriptorSet_parsenew(
-      upb_stringview_make(str, len), arena);
+  set = google_protobuf_FileDescriptorSet_parsenew(upb_strview_make(str, len),
+                                                   arena);
 
   if (!set) {
     luaL_argerror(L, 2, "failed to parse descriptor");

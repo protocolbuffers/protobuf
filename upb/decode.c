@@ -113,14 +113,14 @@ static int64_t upb_zzdecode_64(uint64_t n) {
 }
 
 static bool upb_decode_string(const char **ptr, const char *limit,
-                              upb_stringview *val) {
+                              upb_strview *val) {
   uint32_t len;
 
   CHK(upb_decode_varint32(ptr, limit, &len) &&
       len < INT32_MAX &&
       limit - *ptr >= (int32_t)len);
 
-  *val = upb_stringview_make(*ptr, len);
+  *val = upb_strview_make(*ptr, len);
   *ptr += len;
   return true;
 }
@@ -151,7 +151,7 @@ static bool upb_skip_unknownfielddata(upb_decstate *d, upb_decframe *frame,
       return upb_decode_64bit(&d->ptr, frame->limit, &val);
     }
     case UPB_WIRE_TYPE_DELIMITED: {
-      upb_stringview val;
+      upb_strview val;
       return upb_decode_string(&d->ptr, frame->limit, &val);
     }
     case UPB_WIRE_TYPE_START_GROUP:
@@ -375,7 +375,7 @@ static bool upb_decode_32bitfield(upb_decstate *d, upb_decframe *frame,
   return true;
 }
 
-static bool upb_decode_fixedpacked(upb_array *arr, upb_stringview data,
+static bool upb_decode_fixedpacked(upb_array *arr, upb_strview data,
                                    int elem_size) {
   int elements = data.size / elem_size;
   void *field_mem;
@@ -390,7 +390,7 @@ static bool upb_decode_fixedpacked(upb_array *arr, upb_stringview data,
 static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
                                const char *field_start,
                                const upb_msglayout_field *field,
-                               upb_stringview val) {
+                               upb_strview val) {
   upb_array *arr = upb_getorcreatearr(frame, field);
 
 #define VARINT_CASE(ctype, decode) { \
@@ -471,7 +471,7 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
 static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,
                                       const char *field_start,
                                       const upb_msglayout_field *field) {
-  upb_stringview val;
+  upb_strview val;
 
   CHK(upb_decode_string(&d->ptr, frame->limit, &val));
 
@@ -585,7 +585,7 @@ static bool upb_decode_message(upb_decstate *d, const char *limit,
   return true;
 }
 
-bool upb_decode(upb_stringview buf, void *msg, const upb_msglayout *l) {
+bool upb_decode(upb_strview buf, void *msg, const upb_msglayout *l) {
   upb_decstate state;
   state.ptr = buf.data;
 

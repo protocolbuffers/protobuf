@@ -33,7 +33,7 @@ static size_t upb_msgval_sizeof2(upb_fieldtype_t type) {
       return sizeof(void*);
     case UPB_TYPE_BYTES:
     case UPB_TYPE_STRING:
-      return sizeof(upb_stringview);
+      return sizeof(upb_strview);
   }
   UPB_UNREACHABLE();
 }

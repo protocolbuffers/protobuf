@@ -24,7 +24,7 @@ void test_pb_roundtrip() {
   upb::Arena arena;
   google_protobuf_FileDescriptorSet *set =
       google_protobuf_FileDescriptorSet_parsenew(
-          upb_stringview_make(input.c_str(), input.size()), arena.ptr());
+          upb_strview_make(input.c_str(), input.size()), arena.ptr());
   ASSERT(set);
   size_t n;
   const google_protobuf_FileDescriptorProto *const *files =

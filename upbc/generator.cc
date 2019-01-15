@@ -225,7 +225,7 @@ std::string CTypeInternal(const protobuf::FieldDescriptor* field,
     case protobuf::FieldDescriptor::CPPTYPE_UINT64:
       return "uint64_t";
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "upb_stringview";
+      return "upb_strview";
     default:
       fprintf(stderr, "Unexpected type");
       abort();
@@ -265,7 +265,7 @@ std::string FieldDefault(const protobuf::FieldDescriptor* field) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
       return "NULL";
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return absl::Substitute("upb_stringview_make(\"$0\", strlen(\"$0\"))",
+      return absl::Substitute("upb_strview_make(\"$0\", strlen(\"$0\"))",
                               absl::CEscape(field->default_value_string()));
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
       return absl::StrCat(field->default_value_int32());
@@ -338,7 +338,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
       "UPB_INLINE $0 *$0_new(upb_arena *arena) {\n"
       "  return ($0 *)upb_msg_new(&$1, arena);\n"
       "}\n"
-      "UPB_INLINE $0 *$0_parsenew(upb_stringview buf, upb_arena *arena) {\n"
+      "UPB_INLINE $0 *$0_parsenew(upb_strview buf, upb_arena *arena) {\n"
       "  $0 *ret = $0_new(arena);\n"
       "  return (ret && upb_decode(buf, ret, &$1)) ? ret : NULL;\n"
       "}\n"
@@ -413,13 +413,13 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
   for (auto field : FieldNumberOrder(message)) {
     if (field->is_repeated()) {
       output(
-          "UPB_INLINE $0* $1_$2_mutable($1 *msg, size_t *len) {\n"
+          "UPB_INLINE $0* $1_mutable_$2($1 *msg, size_t *len) {\n"
           "  return ($0*)_upb_array_mutable_accessor(msg, $3, len);\n"
           "}\n",
           CType(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)));
       output(
-          "UPB_INLINE $0* $1_$2_resize($1 *msg, size_t len, "
+          "UPB_INLINE $0* $1_resize_$2($1 *msg, size_t len, "
           "upb_arena *arena) {\n"
           "  return ($0*)_upb_array_resize_accessor(msg, $3, len, $4, $5, "
           "arena);\n"
@@ -748,7 +748,7 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
   output("upb_def_init $0 = {\n", DefInitSymbol(file));
   output("  deps,\n");
   output("  \"$0\",\n", file->name());
-  output("  UPB_STRINGVIEW_INIT(descriptor, $0)\n", file_data.size());
+  output("  UPB_STRVIEW_INIT(descriptor, $0)\n", file_data.size());
   output("};\n");
 }
 

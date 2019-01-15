@@ -79,32 +79,32 @@ typedef struct upb_msglayout {
   bool extendable;
 } upb_msglayout;
 
-/** upb_stringview ************************************************************/
+/** upb_strview ************************************************************/
 
 typedef struct {
   const char *data;
   size_t size;
-} upb_stringview;
+} upb_strview;
 
-UPB_INLINE upb_stringview upb_stringview_make(const char *data, size_t size) {
-  upb_stringview ret;
+UPB_INLINE upb_strview upb_strview_make(const char *data, size_t size) {
+  upb_strview ret;
   ret.data = data;
   ret.size = size;
   return ret;
 }
 
-UPB_INLINE upb_stringview upb_stringview_makez(const char *data) {
-  return upb_stringview_make(data, strlen(data));
+UPB_INLINE upb_strview upb_strview_makez(const char *data) {
+  return upb_strview_make(data, strlen(data));
 }
 
-UPB_INLINE bool upb_stringview_eql(upb_stringview a, upb_stringview b) {
+UPB_INLINE bool upb_strview_eql(upb_strview a, upb_strview b) {
   return a.size == b.size && memcmp(a.data, b.data, a.size) == 0;
 }
 
-#define UPB_STRINGVIEW_FORMAT "%.*s"
-#define UPB_STRINGVIEW_ARGS(view) (int)(view).size, (view).data
+#define UPB_STRVIEW_INIT(ptr, len) {ptr, len}
 
-#define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
+#define UPB_STRVIEW_FORMAT "%.*s"
+#define UPB_STRVIEW_ARGS(view) (int)(view).size, (view).data
 
 /** upb_msgval ****************************************************************/
 
@@ -123,7 +123,7 @@ typedef union {
   const upb_msg* msg;
   const upb_array* arr;
   const void* ptr;
-  upb_stringview str;
+  upb_strview str;
 } upb_msgval;
 
 #define ACCESSORS(name, membername, ctype) \
@@ -150,12 +150,12 @@ ACCESSORS(map,    map, const upb_map*)
 ACCESSORS(msg,    msg, const upb_msg*)
 ACCESSORS(ptr,    ptr, const void*)
 ACCESSORS(arr,    arr, const upb_array*)
-ACCESSORS(str,    str, upb_stringview)
+ACCESSORS(str,    str, upb_strview)
 
 #undef ACCESSORS
 
 UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
-  return upb_msgval_str(upb_stringview_make(data, size));
+  return upb_msgval_str(upb_strview_make(data, size));
 }
 
 /** upb_msg *******************************************************************/
