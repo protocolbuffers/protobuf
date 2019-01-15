@@ -594,6 +594,10 @@ class upb::HandlersPtr {
 
 /* upb_handlercache ***********************************************************/
 
+/* A upb_handlercache lazily builds and caches upb_handlers.  You pass it a
+ * function (with optional closure) that can build handlers for a given
+ * message on-demand, and the cache maintains a map of msgdef->handlers. */
+
 #ifdef __cplusplus
 extern "C" {
 #endif

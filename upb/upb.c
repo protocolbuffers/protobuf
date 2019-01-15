@@ -231,7 +231,7 @@ void upb_arena_free(upb_arena *a) {
   }
 }
 
-bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud) {
+bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func) {
   cleanup_ent *ent = upb_malloc(&a->alloc, sizeof(cleanup_ent));
   if (!ent) {
     return false;  /* Out of memory. */

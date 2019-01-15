@@ -171,6 +171,9 @@ class upb::pb::DecoderPtr {
 
 /* upb_pbcodecache ************************************************************/
 
+/* Lazily builds and caches decoder methods that will push data to the given
+ * handlers.  The destination handlercache must outlive this object. */
+
 struct upb_pbcodecache;
 typedef struct upb_pbcodecache upb_pbcodecache;
 

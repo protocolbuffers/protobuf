@@ -103,6 +103,9 @@ class upb::json::ParserPtr {
 
 /* upb_json_codecache *********************************************************/
 
+/* Lazily builds and caches decoder methods that will push data to the given
+ * handlers.  The upb_symtab object(s) must outlive this object. */
+
 struct upb_json_codecache;
 typedef struct upb_json_codecache upb_json_codecache;
 

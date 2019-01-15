@@ -256,7 +256,7 @@ extern "C" {
  * is a fixed-size arena and cannot grow. */
 upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc);
 void upb_arena_free(upb_arena *a);
-bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud);
+bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func);
 size_t upb_arena_bytesallocated(const upb_arena *a);
 
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
@@ -295,8 +295,8 @@ class upb::Arena {
 
   /* Add a cleanup function to run when the arena is destroyed.
    * Returns false on out-of-memory. */
-  bool AddCleanup(upb_cleanup_func *func, void *ud) {
-    return upb_arena_addcleanup(ptr_.get(), func, ud);
+  bool AddCleanup(void *ud, upb_cleanup_func* func) {
+    return upb_arena_addcleanup(ptr_.get(), ud, func);
   }
 
   /* Total number of bytes that have been allocated.  It is undefined what
