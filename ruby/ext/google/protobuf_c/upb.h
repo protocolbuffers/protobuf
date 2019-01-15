@@ -300,7 +300,7 @@ extern "C" {
  * is a fixed-size arena and cannot grow. */
 upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc);
 void upb_arena_free(upb_arena *a);
-bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud);
+bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func);
 size_t upb_arena_bytesallocated(const upb_arena *a);
 
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
@@ -339,8 +339,8 @@ class upb::Arena {
 
   /* Add a cleanup function to run when the arena is destroyed.
    * Returns false on out-of-memory. */
-  bool AddCleanup(upb_cleanup_func *func, void *ud) {
-    return upb_arena_addcleanup(ptr_.get(), func, ud);
+  bool AddCleanup(void *ud, upb_cleanup_func* func) {
+    return upb_arena_addcleanup(ptr_.get(), ud, func);
   }
 
   /* Total number of bytes that have been allocated.  It is undefined what
@@ -4521,6 +4521,10 @@ class upb::HandlersPtr {
 
 /* upb_handlercache ***********************************************************/
 
+/* A upb_handlercache lazily builds and caches upb_handlers.  You pass it a
+ * function (with optional closure) that can build handlers for a given
+ * message on-demand, and the cache maintains a map of msgdef->handlers. */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -6305,6 +6309,9 @@ class upb::pb::DecoderPtr {
 
 /* upb_pbcodecache ************************************************************/
 
+/* Lazily builds and caches decoder methods that will push data to the given
+ * handlers.  The destination handlercache must outlive this object. */
+
 struct upb_pbcodecache;
 typedef struct upb_pbcodecache upb_pbcodecache;
 
@@ -6846,6 +6853,8 @@ upb_sink upb_pb_encoder_input(upb_pb_encoder *p);
 upb_pb_encoder* upb_pb_encoder_create(upb_arena* a, const upb_handlers* h,
                                       upb_bytessink output);
 
+/* Lazily builds and caches handlers that will push encoded data to a bytessink.
+ * Any msgdef objects used with this object must outlive it. */
 upb_handlercache *upb_pb_encoder_newcache();
 
 #ifdef __cplusplus
@@ -7053,6 +7062,9 @@ class upb::json::ParserPtr {
 
 /* upb_json_codecache *********************************************************/
 
+/* Lazily builds and caches decoder methods that will push data to the given
+ * handlers.  The upb_symtab object(s) must outlive this object. */
+
 struct upb_json_codecache;
 typedef struct upb_json_codecache upb_json_codecache;
 
@@ -7122,6 +7134,8 @@ const upb_handlers *upb_json_printer_newhandlers(const upb_msgdef *md,
                                                  bool preserve_fieldnames,
                                                  const void *owner);
 
+/* Lazily builds and caches handlers that will push encoded data to a bytessink.
+ * Any msgdef objects used with this object must outlive it. */
 upb_handlercache *upb_json_printer_newcache(bool preserve_proto_fieldnames);
 
 #ifdef __cplusplus

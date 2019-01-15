@@ -3597,7 +3597,6 @@ uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
 struct upb_handlercache {
   upb_arena *arena;
   upb_inttable tab;  /* maps upb_msgdef* -> upb_handlers*. */
-  upb_inttable cleanup_;
   upb_handlers_callback *callback;
   const void *closure;
 };
@@ -3653,7 +3652,6 @@ upb_handlercache *upb_handlercache_new(upb_handlers_callback *callback,
   cache->closure = closure;
 
   if (!upb_inttable_init(&cache->tab, UPB_CTYPE_PTR)) goto oom;
-  if (!upb_inttable_init(&cache->cleanup_, UPB_CTYPE_FPTR)) goto oom;
 
   return cache;
 
@@ -3663,31 +3661,14 @@ oom:
 }
 
 void upb_handlercache_free(upb_handlercache *cache) {
-  upb_inttable_iter i;
-
-  upb_inttable_begin(&i, &cache->cleanup_);
-  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-    void *val = (void*)upb_inttable_iter_key(&i);
-    upb_value func_val = upb_inttable_iter_value(&i);
-    upb_handlerfree *func = upb_value_getfptr(func_val);
-    func(val);
-  }
-
   upb_inttable_uninit(&cache->tab);
-  upb_inttable_uninit(&cache->cleanup_);
   upb_arena_free(cache->arena);
   upb_gfree(cache);
 }
 
 bool upb_handlercache_addcleanup(upb_handlercache *c, void *p,
                                  upb_handlerfree *func) {
-  bool ok;
-  if (upb_inttable_lookupptr(&c->cleanup_, p, NULL)) {
-    return false;
-  }
-  ok = upb_inttable_insertptr(&c->cleanup_, p, upb_value_fptr(func));
-  UPB_ASSERT(ok);
-  return true;
+  return upb_arena_addcleanup(c->arena, p, func);
 }
 
 /* upb_byteshandler ***********************************************************/
@@ -5736,7 +5717,7 @@ void upb_arena_free(upb_arena *a) {
   }
 }
 
-bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud) {
+bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func) {
   cleanup_ent *ent = upb_malloc(&a->alloc, sizeof(cleanup_ent));
   if (!ent) {
     return false;  /* Out of memory. */
